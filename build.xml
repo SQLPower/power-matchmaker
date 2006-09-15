@@ -1,0 +1,301 @@
+<project name="matchmaker" default="dist" basedir=".">
+
+	<!-- $Id$ -->
+	<!-- get the version number from source code MatchMakerUtils -->
+
+	<property file="user.properties" />
+
+	<property name="src" value="src"/>
+	<property name="build" value="build"/>
+	<property name="build.compiler" value="modern"/>
+	<property name="installer.dir" value="installer"/>
+	<!-- The staging directory is a temp dir that is used as a base for all the distributions -->
+	<property name="staging.dir" value="staging" />
+	<property name="izpack.dir" value="IzPack"/>
+
+	<condition property="isMac">
+		<os family="mac"/>
+	</condition>
+
+	<condition property="isNotMac">
+		<not>
+			<os family="mac"/>
+		</not>
+	</condition>
+
+	<target name="init">
+		<tstamp/>
+		<mkdir dir="${build}"/>
+		<javac srcdir="${src}" destdir="${build}"
+				classpathref="compile.classpath"
+				includes="ca/sqlpower/matchmaker/MatchMakerVersion.java"
+				debug="true" deprecation="true">
+		</javac>
+		<taskdef name="genVersion"
+					classname="ca/sqlpower/matchmaker/MatchMakerVersion"
+			        classpath="build"/>
+		<genVersion message="MatchMaker!"/>
+		<echo message="Building MatchMaker version: ${app_ver_major}.${app_ver_minor}.${app_ver_tiny}"> </echo>
+		<property name="deploy.dir" value="deploy/matchmaker-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}"/>
+		<mkdir dir="${deploy.dir}"/>
+
+	</target>
+
+	<target name="compile" depends="init,copyicons,copylog4jprops">
+		<javac srcdir="${src}" destdir="${build}" classpathref="compile.classpath" debug="true" deprecation="true">
+          <!-- <compilerarg compiler="jikes" value="+Pno-naming-convention"/> -->
+        </javac>
+	</target>
+
+    <!-- copies our custom icon files to the build dir so
+         they will be in the classpath at runtime. -->
+	<target name="copyicons" depends="init">
+		<mkdir dir="${build}/icons"/>
+        <copy todir="${build}/icons">
+			<fileset dir="src/icons">
+				<include name="*.gif"/>
+				<include name="*.png"/>
+			</fileset>
+		</copy>
+    </target>
+
+    <!-- Deploy the log4j.properties.example file to log4j.properties -->
+
+	<target name="copylog4jprops" depends="init">
+	    <!-- copies the template log4j config file into the build dir -->
+	    <copy tofile="${build}/log4j.properties"
+    	        file="src/log4j.properties.example"/>
+    </target>
+
+	<!-- DOCUMENTATION
+		There are THREE main documentation targets, all built from the
+		docbook XML file docs/PowerMatchMakerUsersGuide:
+			help - JavaHelp (jarred and shipped)
+			html - for quick viewing on our web site
+			PDF - because we can :-)
+	-->
+
+	<!-- NOTE: All XSLT steps currently require xalan on classpath since JDK1.5 is behind -->
+	<path id="docbookclasspath">
+		<fileset dir="doc/tools/xalan">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+
+
+
+	<!-- Create an intermediate docbook document - for use both by help and html -
+	with no width attributes on the images (the Swing HTML browser chokes
+	when there is width but no height in an image tag)
+	-->
+	<target name="xslt-stripwidths">
+		<xslt
+			style="doc/tools/strip-width.xsl"
+			in="doc/PowerMatchMakerUserGuide.xml"
+			out="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
+			classpathref="docbookclasspath">
+		</xslt>
+	</target>
+
+	<!-- Build the Help (JavaHelp, HTML-based format) -->
+	<target name="help" depends="xslt-stripwidths" description="Create JavaHelp">
+		<delete dir="${build}/help"/>
+		<mkdir dir="${build}/help"/>
+		<xslt
+			style="doc/tools/xslt/javahelp/javahelp.xsl"
+			in="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
+			out="${build}/help/zzz"
+			classpathref="docbookclasspath">
+		</xslt>
+		<!-- Seemed to need to give dest/file (help/zzz) in above, clean up -->
+		<delete file="${build}/help/zzz"/>
+
+		<!-- Index it I: limited-terms index: created manually, just copy it,
+		 *** overwriting empty one that DocBook Javahelp made.
+		 -->
+		<copy file="doc/jhelpidx.xml" todir="${build}/help" overwrite="true"/>
+
+		<!-- Index it II: full text search -->
+		<!-- DO NOT USE as it seems to have a built-in assumption
+		 *** that the help is all in one file.
+		<java classname="com.sun.java.help.search.Indexer"
+			classpath="lib/jhall.jar"
+			fork="true" failonerror="true">
+			<arg value="${build}/help"/>
+		</java>
+		<mkdir dir="${build}/help/JavaHelpSearch"/>
+		<move todir="${build}/help/JavaHelpSearch">
+			<fileset dir="JavaHelpSearch" includes="**"/>
+		</move>
+		-->
+		<!-- So, remove the search view from the JavaHelp config -->
+		<replace file="${build}/help/jhelpset.hs" value="">
+			<replacetoken><![CDATA[<view><name>Search</name><label>Search</label><type>javax.help.SearchView</type><data engine="com.sun.java.help.search.DefaultSearchEngine">JavaHelpSearch</data></view>]]></replacetoken>
+		</replace>
+
+		<!-- Add the Favorites/Bookmarks views into the JavaHelp Config -->
+		<replace file="${build}/help/jhelpset.hs" token="&lt;/helpset>"
+			value="&lt;view>&lt;name>favorites&lt;/name>&lt;label>Favorites&lt;/label>&lt;type>javax.help.FavoritesView&lt;/type>&lt;/view>&lt;/helpset>"/>
+
+		<!-- Copy the images and icons; the DocBook files have
+			these horrid "src/" and "doc/" paths prepended
+			so we have to preserve these here -->
+		<mkdir dir="${build}/help/doc/images"/>
+		<copy todir="${build}/help/doc/images" overwrite="true">
+			<fileset dir="doc/images">
+				<include name="*.png"/>
+			</fileset>
+		</copy>
+
+		<mkdir dir="${build}/help/src/icons"/>
+		<copy todir="${build}/help/src/icons" overwrite="true">
+			<fileset dir="src/icons">
+				<include name="*.gif"/>
+				<include name="*.png"/>
+			</fileset>
+		</copy>
+
+		<!-- Jar the whole mess up and add to working classpath -->
+		<jar file="lib/matchmakerhelp.jar" basedir="${build}/help" update="false">
+		</jar>
+	</target>
+
+	<!-- Build the HTML -->
+	<target name="html" depends="xslt-stripwidths" description="Create user guide in HTML">
+		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/" />
+
+		<xslt
+			style="doc/tools/xslt/html/chunk.xsl"
+			in="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
+			out="${build}/ca/sqlpower/matchmaker/doc/PowerMatchMakerUserGuide.html"
+			classpathref="docbookclasspath">
+		</xslt>
+
+		<!-- Warning: This is an extremely evil hack to get the product out the door!
+		              See bugzilla 1195 for details -->
+		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/doc/images" />
+		<copy todir="${build}/ca/sqlpower/matchmaker/doc/doc/images" overwrite="true">
+			<fileset dir="doc/images">
+				<include name="*.png"/>
+			</fileset>
+		</copy>
+		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/src/icons" />
+		<copy todir="${build}/ca/sqlpower/matchmaker/doc/src/icons" overwrite="true">
+			<fileset dir="src/icons">
+				<include name="*.gif"/>
+				<include name="*.png"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- Convert User Manual from XML to FO -->
+	<target name="fo" depends="init" description="Create user guide in XML Formatting Objects">
+		<mkdir dir="${build}/doc/" />
+        <xslt
+			style="doc/tools/xslt/fo/docbook.xsl"
+			in="doc/PowerMatchMakerUserGuide.xml"
+			out="${build}/doc/PowerMatchMakerUserGuide.fo"
+			classpathref="docbookclasspath">
+		</xslt>
+	</target>
+
+
+
+
+
+
+	<target name="run" depends="compile">
+		<java fork="true" classname="ca.sqlpower.matchmaker.swingui.MatchMakerFrame" classpathref="test.classpath">
+			<jvmarg value="-Dlog4j.configuration=log4j.properties"/>
+		</java>
+	</target>
+
+	<target name="clean" depends="init">
+		<delete dir="${build}"/>
+		<delete><fileset dir="${deploy.dir}" includes="lib,Power*MatchMaker.app,matchmaker.jar"/></delete>
+		<delete dir="webstart/lib"/>
+		<delete dir="${staging.dir}"/>
+		<delete dir="${deploy.dir}" />
+	</target>
+
+	<target name="dist-clean" depends="clean">
+		<delete >
+			<fileset dir="deploy" excludes="CVS/">
+			</fileset>
+		</delete>
+	</target>
+
+	<path id="compile.classpath">
+		<fileset dir="lib">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="buildlib">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+
+	<path id="test.classpath">
+		<pathelement location="build"/>
+		<fileset dir="lib">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="buildlib">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+
+	<target name="javadoc" depends="compile">
+		<mkdir dir="${build}/docs/api"/>
+		<javadoc sourcepath="${src}" destdir="${build}/docs/api"
+			packagenames="ca.sqlpower.*"
+			maxmemory="100m"
+			windowtitle="ca.sqlpower.matchmaker.* Power*MatchMaker"
+			Version="true" Author="true" Use="true"
+			Overview="html/overview.html"
+			classpathref="test.classpath"
+			>
+			<packageset dir="${src}" defaultexcludes="yes">
+				<include name="ca/sqlpower/**" />
+				<exclude name="regress/**"/>
+			</packageset>
+			<bottom><![CDATA[<i>Copyright &#169; 2003-2006 SQL Power Group Inc. <a href="http://www.sqlpower.ca/">www.sqlpower.ca</a>]]></bottom>
+		</javadoc>
+		<copy file="html/index.html" todir="${build}/docs"/>
+
+	</target>
+
+
+	<target name="windows_installer" >
+
+	</target>
+
+	<target name="osx_dist">
+
+	</target>
+
+	<!-- This target will only work on OS X (it needs the hdiutil command) -->
+
+	<target name="osx_dmg" depends="osx_dist" if="isMac">
+
+	</target>
+
+	<target name="osx_tgz" depends="osx_dist" if="isNotMac">
+
+	</target>
+
+	<!-- Build a "generic" (e.g., UNIX) install that users will just un-tar -->
+    <target name="generic_install" >
+
+    </target>
+
+	<target name="dist" depends="windows_installer,generic_install,osx_tgz,osx_dmg"><!-- ,osx_dmg -->
+		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
+	    <copy tofile="${deploy.dir}/index.html" file="html/SQL Power - PowerMatchMaker.html"/>
+		<replace file="${deploy.dir}/index.html">
+			<replacefilter token="@@app_ver_major" value="${app_ver_major}"/>
+			<replacefilter token="@@app_var_minor" value="${app_ver_minor}"/>
+			<replacefilter token="@@app_ver_tiny" value="${app_ver_tiny}"/>
+		</replace>
+		<echo>Did you forget to turn off all the debugging in log4j.properties?!</echo>
+	</target>
+</project>
