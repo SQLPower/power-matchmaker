@@ -1,88 +1,115 @@
 package ca.sqlpower.matchmaker;
 
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.util.List;
+
+import ca.sqlpower.persistance.CatNap;
 
 
 public class Match {
-    String matchID;
-    String matchDescr;
-    String tableOwner;
-    String matchTable;
-    String pkColumn;
-    String filter;
-    String resultsTable;
-    Date createDate;
-    Date lastUpdateDate;
-    String lastUpdateUser;
-    String sequenceName;
-    String compileFlag;
-    String mergeScriptFileName;
-    int autoMatchThreshold;
-    Date mergeCompletionDate;
-    String mergeLastUser;
-    String mergeRunStats;
-    Date matchLastRunDate;
-    String matchLastRunUser;
-    int mergeTotalSteps;
-    int mergeStepsCopmleted;
-    Date mergeLastRunDate;
-    String mergLastRunUser;
-    String matchPackageName;
-    String matchProcedureNameAll;
-    String matchProcedureNameOne;
-    String mergePackageName;
-    String mergeProcedureName;
-    String matchRunStatus;
-    String matchRunTablePKColumnFormat;
-    int mergeRowsInserted;
-    String mergeDesc;
-    String matchLogFileName;
-    boolean matchAppendToLog;
-    int matchProcessCNT;
-    int matchShowProgressFreqw;
-    boolean matchDebugMode;
-    String matchRollbackSegmentName;
-    boolean augmentNull;
-    String matchScriptFileName;
-    int matchTotalSteps;
-    int matchStepsCompleted;
-    int matchRowsInserted;
-    String batchFileName;
-    String selectClause;
-    String fromClause;
-    String whereClause;
-    String filterCriteria;
-    String resultsTableOwner;
-    boolean matchBreak;
-    String matchType;
-    String lastUpdateOSUser;
-    String matchStepDesc;
-    String mergeStepDesc;
-    boolean mergeTablesBackup;
-    String matchStatus;
-    int lastBackupNo;
-    boolean checkedOut;
-    Date checkedOutDate;
-    String checkedOutUser;
-    String checkedOutOSUser;
-    String tempSourceTableName;
-    String tempCanDupTableName;
-    String tempCandDupTableName;
-    List<String> indexColumName;
-    String fromClauseDB;
-    List<String> indexColumnType;
-    boolean matchSendEmail;
-    boolean mergeSendEmail;
-    boolean truncateCandDup;
-    String xRefOwner;
-    String xRefTableName;
-    boolean autoMatchActive;
-    List <MatchXRefMap> matchXRefMap;
+	// Key
+    private String matchID;
+    // non-key
+    private String matchDescr;
+    private String tableOwner;
+    private String matchTable;
+    private String pkColumn;
+    private String filter;
+    private String resultsTable;
+    private Date createDate;
+    private Date lastUpdateDate;
+    private String lastUpdateUser;
+    private String sequenceName;
+    private String compileFlag;
+    private String mergeScriptFileName;
+    private int autoMatchThreshold;
+    private Date mergeCompletionDate;
+    private String mergeLastUser;
+    private String mergeRunStats;
+    private Date matchLastRunDate;
+    private String matchLastRunUser;
+    private int mergeTotalSteps;
+    private int mergeStepsCompleted;
+    private Date mergeLastRunDate;
+    private String mergLastRunUser;
+    private String matchPackageName;
+    private String matchProcedureNameAll;
+    private String matchProcedureNameOne;
+    private String mergePackageName;
+    private String mergeProcedureName;
+    private String matchRunStatus;
+    private String matchRunTablePkColumnFormat;
+    private int mergeRowsInserted;
+    private String mergeDesc;
+    private String matchLogFileName;
+    private boolean matchAppendToLogInd;
+    private int matchProcessCnt;
+    private int matchShowProgressFreqw;
+    private boolean matchDebugModeInd;
+    private String matchRollbackSegmentName;
+    private boolean augmentNull;
+    private String matchScriptFileName;
+    private int matchTotalSteps;
+    private int matchStepsCompleted;
+    private int matchRowsInserted;
+    private String batchFileName;
+    private String selectClause;
+    private String fromClause;
+    private String whereClause;
+    private String filterCriteria;
+    private String resultsTableOwner;
+    private boolean matchBreakInd;
+    private String matchType;
+    private String lastUpdateOSUser;
+    private String matchStepDesc;
+    private String mergeStepDesc;
+    private boolean mergeTablesBackupInd;
+    private String matchStatus;
+    private int lastBackupNo;
+    private boolean checkedOutInd;
+    private Date checkedOutDate;
+    private String checkedOutUser;
+    private String checkedOutOSUser;
+    private String tempSourceTableName;
+    private String tempCanDupTableName;
+    private String tempCandDupTableName;
+    private String indexColumName0;
+    private String indexColumName1;
+    private String indexColumName2;
+    private String indexColumName3;
+    private String indexColumName4;
+    private String indexColumName5;
+    private String indexColumName6;
+    private String indexColumName7;
+    private String indexColumName8;
+    private String indexColumName9;
+    private String fromClauseDB;
+    private String indexColumnType0;
+    private String indexColumnType1;
+    private String indexColumnType2;
+    private String indexColumnType3;
+    private String indexColumnType4;
+    private String indexColumnType5;
+    private String indexColumnType6;
+    private String indexColumnType7;
+    private String indexColumnType8;
+    private String indexColumnType9;
+    private boolean matchSendEmailInd;
+    private boolean mergeSendEmailInd;
+    private boolean truncateCandDup;
+    private String xRefOwner;
+    private String xRefTableName;
+    private boolean autoMatchActiveInd;
+    List <MatchXrefMap> matchXRefMap;
     List <MatchGroup> matchGroup;
     List <MergeConsolidateCriteria> mergeConsolidateCriteria;
     List <MergeCriteria> mergeCriteria;
 
+  
+    
     @Override
     public int hashCode() {
         final int PRIME = 31;
@@ -116,14 +143,7 @@ public class Match {
         this.augmentNull = augmentNull;
     }
 
-    public boolean isAutoMatchActive() {
-        return autoMatchActive;
-    }
-
-    public void setAutoMatchActive(boolean autoMatchActive) {
-        this.autoMatchActive = autoMatchActive;
-    }
-
+  
     public int getAutoMatchThreshold() {
         return autoMatchThreshold;
     }
@@ -140,13 +160,6 @@ public class Match {
         this.batchFileName = batchFileName;
     }
 
-    public boolean isCheckedOut() {
-        return checkedOut;
-    }
-
-    public void setCheckedOut(boolean checkedOut) {
-        this.checkedOut = checkedOut;
-    }
 
     public Date getCheckedOutDate() {
         return checkedOutDate;
@@ -220,23 +233,167 @@ public class Match {
         this.fromClauseDB = fromClauseDB;
     }
 
-    public List<String> getIndexColumName() {
-        return indexColumName;
-    }
+    public String getIndexColumName0() {
+		return indexColumName0;
+	}
 
-    public void setIndexColumName(List<String> indexColumName) {
-        this.indexColumName = indexColumName;
-    }
+	public void setIndexColumName0(String indexColumName0) {
+		this.indexColumName0 = indexColumName0;
+	}
 
-    public List<String> getIndexColumnType() {
-        return indexColumnType;
-    }
+	public String getIndexColumName1() {
+		return indexColumName1;
+	}
 
-    public void setIndexColumnType(List<String> indexColumnType) {
-        this.indexColumnType = indexColumnType;
-    }
+	public void setIndexColumName1(String indexColumName1) {
+		this.indexColumName1 = indexColumName1;
+	}
 
-    public int getLastBackupNo() {
+	public String getIndexColumName2() {
+		return indexColumName2;
+	}
+
+	public void setIndexColumName2(String indexColumName2) {
+		this.indexColumName2 = indexColumName2;
+	}
+
+	public String getIndexColumName3() {
+		return indexColumName3;
+	}
+
+	public void setIndexColumName3(String indexColumName3) {
+		this.indexColumName3 = indexColumName3;
+	}
+
+	public String getIndexColumName4() {
+		return indexColumName4;
+	}
+
+	public void setIndexColumName4(String indexColumName4) {
+		this.indexColumName4 = indexColumName4;
+	}
+
+	public String getIndexColumName5() {
+		return indexColumName5;
+	}
+
+	public void setIndexColumName5(String indexColumName5) {
+		this.indexColumName5 = indexColumName5;
+	}
+
+	public String getIndexColumName6() {
+		return indexColumName6;
+	}
+
+	public void setIndexColumName6(String indexColumName6) {
+		this.indexColumName6 = indexColumName6;
+	}
+
+	public String getIndexColumName7() {
+		return indexColumName7;
+	}
+
+	public void setIndexColumName7(String indexColumName7) {
+		this.indexColumName7 = indexColumName7;
+	}
+
+	public String getIndexColumName8() {
+		return indexColumName8;
+	}
+
+	public void setIndexColumName8(String indexColumName8) {
+		this.indexColumName8 = indexColumName8;
+	}
+
+	public String getIndexColumName9() {
+		return indexColumName9;
+	}
+
+	public void setIndexColumName9(String indexColumName9) {
+		this.indexColumName9 = indexColumName9;
+	}
+
+	public String getIndexColumnType0() {
+		return indexColumnType0;
+	}
+
+	public void setIndexColumnType0(String indexColumnType0) {
+		this.indexColumnType0 = indexColumnType0;
+	}
+
+	public String getIndexColumnType1() {
+		return indexColumnType1;
+	}
+
+	public void setIndexColumnType1(String indexColumnType1) {
+		this.indexColumnType1 = indexColumnType1;
+	}
+
+	public String getIndexColumnType2() {
+		return indexColumnType2;
+	}
+
+	public void setIndexColumnType2(String indexColumnType2) {
+		this.indexColumnType2 = indexColumnType2;
+	}
+
+	public String getIndexColumnType3() {
+		return indexColumnType3;
+	}
+
+	public void setIndexColumnType3(String indexColumnType3) {
+		this.indexColumnType3 = indexColumnType3;
+	}
+
+	public String getIndexColumnType4() {
+		return indexColumnType4;
+	}
+
+	public void setIndexColumnType4(String indexColumnType4) {
+		this.indexColumnType4 = indexColumnType4;
+	}
+
+	public String getIndexColumnType5() {
+		return indexColumnType5;
+	}
+
+	public void setIndexColumnType5(String indexColumnType5) {
+		this.indexColumnType5 = indexColumnType5;
+	}
+
+	public String getIndexColumnType6() {
+		return indexColumnType6;
+	}
+
+	public void setIndexColumnType6(String indexColumnType6) {
+		this.indexColumnType6 = indexColumnType6;
+	}
+
+	public String getIndexColumnType7() {
+		return indexColumnType7;
+	}
+
+	public void setIndexColumnType7(String indexColumnType7) {
+		this.indexColumnType7 = indexColumnType7;
+	}
+
+	public String getIndexColumnType8() {
+		return indexColumnType8;
+	}
+
+	public void setIndexColumnType8(String indexColumnType8) {
+		this.indexColumnType8 = indexColumnType8;
+	}
+
+	public String getIndexColumnType9() {
+		return indexColumnType9;
+	}
+
+	public void setIndexColumnType9(String indexColumnType9) {
+		this.indexColumnType9 = indexColumnType9;
+	}
+
+	public int getLastBackupNo() {
         return lastBackupNo;
     }
 
@@ -268,29 +425,6 @@ public class Match {
         this.lastUpdateUser = lastUpdateUser;
     }
 
-    public boolean isMatchAppendToLog() {
-        return matchAppendToLog;
-    }
-
-    public void setMatchAppendToLog(boolean matchAppendToLog) {
-        this.matchAppendToLog = matchAppendToLog;
-    }
-
-    public boolean isMatchBreak() {
-        return matchBreak;
-    }
-
-    public void setMatchBreak(boolean matchBreak) {
-        this.matchBreak = matchBreak;
-    }
-
-    public boolean isMatchDebugMode() {
-        return matchDebugMode;
-    }
-
-    public void setMatchDebugMode(boolean matchDebugMode) {
-        this.matchDebugMode = matchDebugMode;
-    }
 
     public String getMatchDescr() {
         return matchDescr;
@@ -364,13 +498,6 @@ public class Match {
         this.matchProcedureNameOne = matchProcedureNameOne;
     }
 
-    public int getMatchProcessCNT() {
-        return matchProcessCNT;
-    }
-
-    public void setMatchProcessCNT(int matchProcessCNT) {
-        this.matchProcessCNT = matchProcessCNT;
-    }
 
     public String getMatchRollbackSegmentName() {
         return matchRollbackSegmentName;
@@ -396,28 +523,13 @@ public class Match {
         this.matchRunStatus = matchRunStatus;
     }
 
-    public String getMatchRunTablePKColumnFormat() {
-        return matchRunTablePKColumnFormat;
-    }
-
-    public void setMatchRunTablePKColumnFormat(String matchRunTablePKColumnFormat) {
-        this.matchRunTablePKColumnFormat = matchRunTablePKColumnFormat;
-    }
-
+   
     public String getMatchScriptFileName() {
         return matchScriptFileName;
     }
 
     public void setMatchScriptFileName(String matchScriptFileName) {
         this.matchScriptFileName = matchScriptFileName;
-    }
-
-    public boolean isMatchSendEmail() {
-        return matchSendEmail;
-    }
-
-    public void setMatchSendEmail(boolean matchSendEmail) {
-        this.matchSendEmail = matchSendEmail;
     }
 
     public int getMatchShowProgressFreqw() {
@@ -476,11 +588,11 @@ public class Match {
         this.matchType = matchType;
     }
 
-    public List<MatchXRefMap> getMatchXRefMap() {
+    public List<MatchXrefMap> getMatchXRefMap() {
         return matchXRefMap;
     }
 
-    public void setMatchXRefMap(List<MatchXRefMap> matchXRefMap) {
+    public void setMatchXRefMap(List<MatchXrefMap> matchXRefMap) {
         this.matchXRefMap = matchXRefMap;
     }
 
@@ -573,13 +685,6 @@ public class Match {
         this.mergeScriptFileName = mergeScriptFileName;
     }
 
-    public boolean isMergeSendEmail() {
-        return mergeSendEmail;
-    }
-
-    public void setMergeSendEmail(boolean mergeSendEmail) {
-        this.mergeSendEmail = mergeSendEmail;
-    }
 
     public String getMergeStepDesc() {
         return mergeStepDesc;
@@ -589,23 +694,95 @@ public class Match {
         this.mergeStepDesc = mergeStepDesc;
     }
 
-    public int getMergeStepsCopmleted() {
-        return mergeStepsCopmleted;
-    }
+    public boolean isAutoMatchActiveInd() {
+		return autoMatchActiveInd;
+	}
 
-    public void setMergeStepsCopmleted(int mergeStepsCopmleted) {
-        this.mergeStepsCopmleted = mergeStepsCopmleted;
-    }
+	public void setAutoMatchActiveInd(boolean autoMatchActiveInd) {
+		this.autoMatchActiveInd = autoMatchActiveInd;
+	}
 
-    public boolean isMergeTablesBackup() {
-        return mergeTablesBackup;
-    }
+	public boolean isCheckedOutInd() {
+		return checkedOutInd;
+	}
 
-    public void setMergeTablesBackup(boolean mergeTablesBackup) {
-        this.mergeTablesBackup = mergeTablesBackup;
-    }
+	public void setCheckedOutInd(boolean checkedOutInd) {
+		this.checkedOutInd = checkedOutInd;
+	}
 
-    public int getMergeTotalSteps() {
+	public boolean isMatchAppendToLogInd() {
+		return matchAppendToLogInd;
+	}
+
+	public void setMatchAppendToLogInd(boolean matchAppendToLogInd) {
+		this.matchAppendToLogInd = matchAppendToLogInd;
+	}
+
+	public boolean isMatchBreakInd() {
+		return matchBreakInd;
+	}
+
+	public void setMatchBreakInd(boolean matchBreakInd) {
+		this.matchBreakInd = matchBreakInd;
+	}
+
+	public boolean isMatchDebugModeInd() {
+		return matchDebugModeInd;
+	}
+
+	public void setMatchDebugModeInd(boolean matchDebugModeInd) {
+		this.matchDebugModeInd = matchDebugModeInd;
+	}
+
+	public int getMatchProcessCnt() {
+		return matchProcessCnt;
+	}
+
+	public void setMatchProcessCnt(int matchProcessCnt) {
+		this.matchProcessCnt = matchProcessCnt;
+	}
+
+	public String getMatchRunTablePkColumnFormat() {
+		return matchRunTablePkColumnFormat;
+	}
+
+	public void setMatchRunTablePkColumnFormat(String matchRunTablePkColumnFormat) {
+		this.matchRunTablePkColumnFormat = matchRunTablePkColumnFormat;
+	}
+
+	public boolean isMatchSendEmailInd() {
+		return matchSendEmailInd;
+	}
+
+	public void setMatchSendEmailInd(boolean matchSendEmailInd) {
+		this.matchSendEmailInd = matchSendEmailInd;
+	}
+
+	public boolean isMergeSendEmailInd() {
+		return mergeSendEmailInd;
+	}
+
+	public void setMergeSendEmailInd(boolean mergeSendEmailInd) {
+		this.mergeSendEmailInd = mergeSendEmailInd;
+	}
+
+	public int getMergeStepsCompleted() {
+		return mergeStepsCompleted;
+	}
+
+	public void setMergeStepsCompleted(int mergeStepsCompleted) {
+		this.mergeStepsCompleted = mergeStepsCompleted;
+	}
+
+	public boolean isMergeTablesBackupInd() {
+		return mergeTablesBackupInd;
+	}
+
+	public void setMergeTablesBackupInd(boolean mergeTablesBackupInd) {
+		this.mergeTablesBackupInd = mergeTablesBackupInd;
+	}
+
+	public int getMergeTotalSteps() {
         return mergeTotalSteps;
     }
 

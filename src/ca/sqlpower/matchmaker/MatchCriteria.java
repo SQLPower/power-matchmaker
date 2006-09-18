@@ -2,8 +2,10 @@ package ca.sqlpower.matchmaker;
 
 import java.util.Date;
 
+import ca.sqlpower.persistance.CatNap;
 
-public class MatchCriteria {
+
+public class MatchCriteria{
 	//Keys
 	private String matchId;
 	private String groupId;
