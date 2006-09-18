@@ -3,6 +3,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 
 
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
@@ -38,8 +39,6 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
-import ca.sqlpower.architect.swingui.ASUtils.LabelValueBean;
-import ca.sqlpower.sql.SQL;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
