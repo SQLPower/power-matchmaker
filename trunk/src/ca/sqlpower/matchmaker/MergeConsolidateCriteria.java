@@ -2,8 +2,10 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.Date;
 
+import ca.sqlpower.persistance.CatNap;
 
-public class MergeConsolidateCriteria {
+
+public class MergeConsolidateCriteria extends CatNap{
 
     private String mathId;
     private String owner;
@@ -13,7 +15,7 @@ public class MergeConsolidateCriteria {
     private String actionType;
     private Date lastUpdateDate;
     private String listUpdateUser;
-    private boolean carUpdateAction;
+    private boolean canUpdateActionInd;
     private long columnLength;
     private String laastUpdateOsUSer;
 
@@ -29,15 +31,19 @@ public class MergeConsolidateCriteria {
         this.actionType = actionType;
     }
 
-    public boolean isCarUpdateAction() {
-        return carUpdateAction;
-    }
+    public boolean isCanUpdateActionInd() {
+		return canUpdateActionInd;
+	}
 
-    public void setCarUpdateAction(boolean carUpdateAction) {
-        this.carUpdateAction = carUpdateAction;
-    }
+	public void setCanUpdateActionInd(boolean canUpdateActionInd) {
+		this.canUpdateActionInd = canUpdateActionInd;
+	}
 
-    public String getColumnFormat() {
+	public void setColumnLength(long columnLength) {
+		this.columnLength = columnLength;
+	}
+
+	public String getColumnFormat() {
         return columnFormat;
     }
 

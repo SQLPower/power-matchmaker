@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-reverse-engineering PUBLIC "-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-reverse-engineering-3.0.dtd" >
+
+<hibernate-reverse-engineering>
+	<type-mapping>
+		<sql-type jdbc-type="VARCHAR" hibernate-type="string"></sql-type>
+		<sql-type jdbc-type="NUMERIC" hibernate-type="long"></sql-type>
+		<sql-type jdbc-type="VARCHAR" hibernate-type="boolean"
+			length="1" >
+		</sql-type>
+		<sql-type jdbc-type="DATE" hibernate-type="date"></sql-type>
+	</type-mapping>
+	<table-filter match-name="PL_MATCH.*" />
+	<table-filter match-name="PL_MERGE.*" />
+	<table-filter match-name="DEF_PARAM" />
+</hibernate-reverse-engineering>

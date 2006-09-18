@@ -13,10 +13,48 @@
 	<property name="staging.dir" value="staging" />
 	<property name="izpack.dir" value="IzPack"/>
 
+	
+	<path id="toolslib">
+	 <fileset dir="lib">
+	 		<include name="**/*.jar"/>
+	 </fileset>
+	 <fileset dir="buildlib">
+		 <include name="**/*.jar"/>
+	 </fileset>	
+	 <path location="${jdbc.driver.jar}" />
+	 <path location="bin"/>
+	</path>
+	   
+	<taskdef name="hibernatetool" 
+	         classname="org.hibernate.tool.ant.HibernateToolTask" 
+	         classpathref="toolslib" />
+	
 	<condition property="isMac">
 		<os family="mac"/>
 	</condition>
 
+	<target name="hibernate-generate">
+		
+		<!-- Remove the fail line to regenerate the persistance classes -->
+		
+		<fail/>
+		<hibernatetool
+	  destdir="src/generated" >  
+		
+	  <classpath refid="toolslib"/>
+	  <propertyset />         
+
+		<jdbcconfiguration configurationfile="hibernate/hibernate.cfg.xml"
+		  packagename="ca.sqlpower.matchmaker.generated"
+		  revengfile="hibernate/MatchMaker.reveng.xml"
+		  detectmanytomany="true"
+		>
+		  
+		</jdbcconfiguration>
+	  	<hbm2java destdir="src"/>
+		<hbm2dao destdir="src"/>
+	</hibernatetool> </target>
+	
 	<condition property="isNotMac">
 		<not>
 			<os family="mac"/>

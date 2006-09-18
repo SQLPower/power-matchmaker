@@ -3,6 +3,8 @@ package ca.sqlpower.matchmaker;
 import java.sql.Date;
 import java.util.List;
 
+import ca.sqlpower.persistance.CatNap;
+
 
 public class MatchGroup {
     
@@ -13,7 +15,7 @@ public class MatchGroup {
     private Date lastUpdateDate;
     private String lastUserName;
     private String filterCriteria;
-    private boolean active;
+    private boolean activeInd;
     private String lastUpdateOSUser;
     private List <MatchCriteria> matchCriteria;
     
@@ -50,14 +52,6 @@ public class MatchGroup {
 
     public void matchGroup(){
         
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 
     public String getDescription() {
@@ -123,6 +117,22 @@ public class MatchGroup {
     public void setMatchPercent(int matchPercent) {
         this.matchPercent = matchPercent;
     }
+
+	public boolean isActiveInd() {
+		return activeInd;
+	}
+
+	public void setActiveInd(boolean activeInd) {
+		this.activeInd = activeInd;
+	}
+
+	public List<MatchCriteria> getMatchCriteria() {
+		return matchCriteria;
+	}
+
+	public void setMatchCriteria(List<MatchCriteria> matchCriteria) {
+		this.matchCriteria = matchCriteria;
+	}
     
     
 }
