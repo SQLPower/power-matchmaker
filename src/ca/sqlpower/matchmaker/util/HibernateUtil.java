@@ -14,7 +14,7 @@ public class HibernateUtil {
 
 	private static final SessionFactory sessionFactory;
 
-	private static final Log log = LogFactory.getLog(DefParamHome.class);
+	private static final Log log = LogFactory.getLog(HibernateUtil.class);
 
 	static {
 		try {
