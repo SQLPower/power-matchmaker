@@ -1,7 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.util.List;
@@ -9,7 +7,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -26,10 +24,12 @@ import ca.sqlpower.architect.ArchitectException;
 import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 
 
-public class DatabaseConnectionManager extends JFrame {
+public class DatabaseConnectionManager extends JDialog {
 
 	private static Logger logger = Logger.getLogger(DatabaseConnectionManager.class);
 
@@ -41,94 +41,88 @@ public class DatabaseConnectionManager extends JFrame {
 
 		}};
 
+	private JPanel panel;
+
 	private DatabaseConnectionManager() throws HeadlessException {
 		super();
-		buildUI();
 	}
 
 
 	public DatabaseConnectionManager(List<ArchitectDataSource> connections) {
 		this();
 		this.connections = connections;
+		setTitle("Database Connection Manager");
+		panel = createPanel();
+		getContentPane().add(panel);
+		setModal(true);
 	}
 
-	private void buildUI() {
+	private JPanel createPanel() {
 
-		JPanel space1 = new JPanel();
-		space1.setPreferredSize(new Dimension(40,30));
-		JPanel space2 = new JPanel();
-		space2.setPreferredSize(new Dimension(40,30));
-		JPanel space3 = new JPanel();
-		space3.setPreferredSize(new Dimension(40,30));
 
-		setLayout(new BorderLayout());
-		setTitle("Database Connection Manager");
+		FormLayout layout = new FormLayout(
+				"6dlu, fill:min(160dlu;default):grow, 6dlu, fill:min(50dlu;default), 6dlu", // columns
+				" 6dlu,10dlu,6dlu,fill:min(180dlu;default):grow,10dlu"); // rows
 
-		JPanel tableView = new JPanel(new BorderLayout());
-		tableView.add(space1,BorderLayout.NORTH);
-		tableView.add(new JLabel("Available Database Connection:"),BorderLayout.CENTER);
+		layout.setColumnGroups(new int [][] { {1,3,5}});
+		CellConstraints cc = new CellConstraints();
+
+		PanelBuilder pb;
+		JPanel p = logger.isDebugEnabled()  ? new FormDebugPanel(layout) : new JPanel(layout);
+		pb = new PanelBuilder(layout,p);
+		pb.setDefaultDialogBorder();
+
+		pb.add(new JLabel("Available Database Connection:"), cc.xy(2, 2));
+
 		TableModel tm = new ConnectionTableModel();
 		JTable connectionList = new JTable(tm);
 		connectionList.setTableHeader(null);
 		JScrollPane sp = new JScrollPane(connectionList);
 
-		tableView.add(sp,BorderLayout.SOUTH);
-		//getContentPane().add(tableView);
-		add(tableView, BorderLayout.WEST);
-
-		add(space2,BorderLayout.CENTER);
-		add(space3,BorderLayout.SOUTH);
-
+		pb.add(sp, cc.xy(2, 4));
 
 		ButtonStackBuilder bsb = new ButtonStackBuilder();
 
-
-		bsb.addUnrelatedGap();
-		bsb.addUnrelatedGap();
 		bsb.addUnrelatedGap();
 		JButton newButton = new JButton(helpAction);
 		newButton.setText("New");
 		bsb.addGridded(newButton);
-		bsb.addUnrelatedGap();
-		bsb.addGlue();
+		bsb.addRelatedGap();
 		JButton editButton = new JButton(helpAction);
 		editButton.setText("Edit");
 		bsb.addGridded(editButton);
-		bsb.addUnrelatedGap();
-		bsb.addGlue();
+		bsb.addRelatedGap();
 		JButton removeButton = new JButton(helpAction);
 		removeButton.setText("Remove");
 		bsb.addGridded(removeButton);
-		bsb.addGlue();
 
-		bsb.addRelatedGap();
+
+		bsb.addUnrelatedGap();
 		JButton loginButton = new JButton(helpAction);
 		loginButton.setText("Login");
 		bsb.addGridded(loginButton);
-		bsb.addUnrelatedGap();
-		bsb.addGlue();
+		bsb.addRelatedGap();
 		JButton auxLoginButton = new JButton(helpAction);
 		auxLoginButton.setText("Aux Login");
 		bsb.addGridded(auxLoginButton);
-		bsb.addGlue();
 
-		bsb.addRelatedGap();
+		bsb.addUnrelatedGap();
 		JButton helpButton = new JButton(helpAction);
 		helpButton.setText("Help");
 		bsb.addGridded (helpButton);
-		bsb.addUnrelatedGap();
-		bsb.addGlue();
+		bsb.addRelatedGap();
 
 		JButton cancelButton = new JButton(new AbstractAction(){
 			public void actionPerformed(ActionEvent e) {
 				DatabaseConnectionManager.this.setVisible(false);
 			}});
 		cancelButton.setText("Exit");
-		bsb.addRelatedGap();
 		bsb.addGridded(cancelButton);
+		bsb.addGlue();
 
-		add(bsb.getPanel(), BorderLayout.EAST);
-	//	getContentPane().add(bsb.getPanel());
+		pb.add(bsb.getPanel(), cc.xy(4,4));
+		return pb.getPanel();
+
 	}
 
 	private class ConnectionTableModel extends AbstractTableModel {
@@ -163,7 +157,7 @@ public class DatabaseConnectionManager extends JFrame {
 
 	public static void main(String args[]) throws ArchitectException {
 
-		final JFrame d = new DatabaseConnectionManager(
+		final JDialog d = new DatabaseConnectionManager(
 				MatchMakerFrame.getMainInstance().getUserSettings().getConnections());
 
 		SwingUtilities.invokeLater(new Runnable() {
