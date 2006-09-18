@@ -21,6 +21,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
@@ -37,6 +38,7 @@ import ca.sqlpower.architect.UserSettings;
 import ca.sqlpower.architect.qfa.ExceptionHandler;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
+
 import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.HelpAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
@@ -62,11 +64,10 @@ public class MatchMakerFrame extends JFrame {
 	protected ArchitectSession architectSession = null;
 	protected ConfigFile configFile = null;
 	protected UserSettings sprefs = null;
-	protected JToolBar projectBar = null;
-	protected JToolBar ppBar = null;
+	protected JToolBar toolBar = null;
 	protected JMenuBar menuBar = null;
 
-    private JMenu connectionsMenu;
+    private JMenu databaseMenu;
 
 	protected AboutAction aboutAction;
  	protected  JComponent contentPane;
@@ -77,20 +78,87 @@ public class MatchMakerFrame extends JFrame {
 	    }
 	};
 
-	/**
-	 * Updates the swing settings and then writes all settings to the
-	 * config file whenever actionPerformed is invoked.
-	 */
-	protected Action saveSettingsAction = new AbstractAction("Save User Preferences") {
-	    public void actionPerformed(ActionEvent e) {
-	        try {
-	            saveSettings();
-	        } catch (ArchitectException ex) {
-	            logger.error("Couldn't save settings", ex);
-	        }
-	    }
+	protected Action loginAction = new AbstractAction("Login") {
+		public void actionPerformed(ActionEvent e) {
+			LoginFrame l = new LoginFrame();
+			l.pack();
+	    	l.setVisible(true);
+		}
 	};
 
+	protected Action logoutAction = new AbstractAction("Logout") {
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	protected Action newMatchAction = new AbstractAction("New") {
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	protected Action runMatchAction = new AbstractAction("Run Match") {
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	protected Action runMergeAction = new AbstractAction("Run Merge") {
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	protected Action dbBrowseAction = new AbstractAction("Database Browser") {
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	protected Action configAction = new AbstractAction("Config") {
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	protected Action helpAction = new AbstractAction("Help") {
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	protected Action databasePreferenceAction = new AbstractAction("Database Preference") {
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+	};
+
+	private MatchMakerFrameWindowListener windowListener;
 
 	/**
 	 * You can't create an architect frame using this constructor.  You have to
@@ -179,77 +247,64 @@ public class MatchMakerFrame extends JFrame {
 
 		// Create actions
 		aboutAction = new AboutAction();
-
         Action helpAction = new HelpAction();
-
 
 		menuBar = new JMenuBar();
 
 		//Settingup
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
-		fileMenu.add(aboutAction);
-		fileMenu.add(aboutAction);
-		fileMenu.add(aboutAction);
-		fileMenu.add(aboutAction);
-		fileMenu.addSeparator();
-		fileMenu.add(aboutAction);
-		fileMenu.add(aboutAction);
-		fileMenu.add(aboutAction);
-		fileMenu.addSeparator();
-
-		fileMenu.add(exitAction);
+		fileMenu.add(databasePreferenceAction);
 		fileMenu.add(exitAction);
 
 		menuBar.add(fileMenu);
 
-		JMenu editMenu = new JMenu("Edit");
-		editMenu.setMnemonic('e');
-		editMenu.add(aboutAction);
-		editMenu.add(aboutAction);
-		editMenu.addSeparator();
-		editMenu.add(aboutAction);
-		editMenu.addSeparator();
-		editMenu.add(aboutAction);
-		menuBar.add(editMenu);
+		JMenu explorerMenu = new JMenu("Explorers");
+		explorerMenu.setMnemonic('x');
+		explorerMenu.add("Match Maker");
+		explorerMenu.add("Adminstration");
+		menuBar.add(explorerMenu);
 
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
-		connectionsMenu = new JMenu("Connections");
-		connectionsMenu.setMnemonic('c');
-		menuBar.add(connectionsMenu);
+		databaseMenu = new JMenu("Database");
+		databaseMenu.setMnemonic('D');
+		databaseMenu.add(logoutAction);
+		menuBar.add(databaseMenu);
 
-		JMenu etlMenu = new JMenu("ETL");
-		etlMenu.setMnemonic('l');
-		JMenu etlSubmenuOne = new JMenu("Power*Loader");
-		etlSubmenuOne.add(aboutAction);
+		JMenu matchesMenu = new JMenu("Matches");
+		matchesMenu.setMnemonic('M');
+		matchesMenu.add(newMatchAction);
+		matchesMenu.add("Edit");
+		matchesMenu.add("Delete");
+		matchesMenu.add(".....");
+		menuBar.add(matchesMenu);
 
-		// Todo add in ability to run the engine from the architect
-        /*
-            Action runPL = new RunPLAction();
-            runPL.putValue(Action.NAME,"Run Power*Loader");
-		    etlSubmenuOne.add(runPL);
-        */
+		JMenu mergeMenu = new JMenu("Merges");
+		mergeMenu.add(newMatchAction);
+		mergeMenu.add("Edit");
+		mergeMenu.add("Delete");
+		mergeMenu.add(".....");
+		menuBar.add(mergeMenu);
 
-		etlSubmenuOne.add(aboutAction);
-
-		etlSubmenuOne.add(aboutAction);
-		etlMenu.add(etlSubmenuOne);
-        etlMenu.add(aboutAction);
-        etlMenu.add(aboutAction);
-		menuBar.add(etlMenu);
+		JMenu folderMenu = new JMenu("Folders");
+		folderMenu.setMnemonic('F');
+		folderMenu.add(newMatchAction);
+		folderMenu.add("Edit");
+		folderMenu.add("Delete");
+		folderMenu.add(".....");
+		menuBar.add(folderMenu);
 
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
 		toolsMenu.add(aboutAction);
-		toolsMenu.add(aboutAction);
         toolsMenu.add(new SQLRunnerAction());
 		menuBar.add(toolsMenu);
 
-        JMenu profileMenu = new JMenu("Profile");
-        profileMenu.setMnemonic('p');
-        profileMenu.add(aboutAction);
-        profileMenu.add(aboutAction);
-        menuBar.add(profileMenu);
+        JMenu windowMenu = new JMenu("Window");
+        windowMenu.setMnemonic('w');
+        windowMenu.add(aboutAction);
+        windowMenu.add(aboutAction);
+        menuBar.add(windowMenu);
 
 		JMenu helpMenu = new JMenu("Help");
 		helpMenu.setMnemonic('h');
@@ -259,28 +314,29 @@ public class MatchMakerFrame extends JFrame {
         }
         helpMenu.add(helpAction);
 		menuBar.add(helpMenu);
-
 		setJMenuBar(menuBar);
 
-		projectBar = new JToolBar(JToolBar.HORIZONTAL);
-		ppBar = new JToolBar(JToolBar.VERTICAL);
+		toolBar = new JToolBar(JToolBar.HORIZONTAL);
 
-		projectBar.add(aboutAction);
-		projectBar.add(aboutAction);
-        projectBar.addSeparator();
-        projectBar.add(helpAction);
-		projectBar.setToolTipText("Project Toolbar");
-		projectBar.setName("Project Toolbar");
-
-
-
+		toolBar.add(loginAction);
+		toolBar.add(newMatchAction);
+        toolBar.addSeparator();
+        toolBar.add(runMatchAction);
+        toolBar.add(runMergeAction);
+        toolBar.addSeparator();
+        toolBar.add(databasePreferenceAction);
+        toolBar.add(configAction);
+        toolBar.addSeparator();
+        toolBar.add(helpAction);
+        toolBar.add(exitAction);
+		toolBar.setToolTipText("MatchMaker Toolbar");
+		toolBar.setName("MatchMaker Toolbar");
 
 		Container projectBarPane = getContentPane();
 		projectBarPane.setLayout(new BorderLayout());
-		projectBarPane.add(projectBar, BorderLayout.NORTH);
+		projectBarPane.add(toolBar, BorderLayout.NORTH);
 
 		JPanel cp = new JPanel(new BorderLayout());
-		cp.add(ppBar, BorderLayout.EAST);
 		projectBarPane.add(cp, BorderLayout.CENTER);
 
 
@@ -290,18 +346,9 @@ public class MatchMakerFrame extends JFrame {
 		bounds.width = prefs.getInt(SwingUserSettings.MAIN_FRAME_WIDTH, 600);
 		bounds.height = prefs.getInt(SwingUserSettings.MAIN_FRAME_HEIGHT, 440);
 		setBounds(bounds);
+		addWindowListener(windowListener = new MatchMakerFrameWindowListener());
 	}
 
-
-
-	/**
-	 * Points all the actions to the correct PlayPen and DBTree
-	 * instances.  This method is called by setProject.
-	 * @throws ArchitectException if the undo manager can't get the playpen's children on the listener list
-	 */
-	protected void setupActions() throws ArchitectException {
-
-	}
 
 	public static synchronized MatchMakerFrame getMainInstance() {
 		if (mainInstance == null) {
@@ -326,6 +373,7 @@ public class MatchMakerFrame extends JFrame {
 	}
 
 	class MatchMakerFrameWindowListener extends WindowAdapter {
+		@Override
 		public void windowClosing(WindowEvent e) {
 			exit();
 		}
@@ -368,7 +416,6 @@ public class MatchMakerFrame extends JFrame {
 		ArchitectUtils.configureLog4j();
 
 		getMainInstance();
-
 
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
@@ -429,7 +476,7 @@ public class MatchMakerFrame extends JFrame {
 
 
 	public JToolBar getProjectToolBar() {
-		return projectBar;
+		return toolBar;
 	}
 	public UserSettings getSwingUserSettings() {
 		return sprefs;
