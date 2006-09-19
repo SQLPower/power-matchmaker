@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 
 
 import java.util.List;
-import javax.naming.InitialContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
@@ -15,26 +15,14 @@ import org.hibernate.criterion.Example;
  * @see ca.sqlpower.matchmaker.PlMatchGroup
  * @author Hibernate Tools
  */
-public class PlMatchGroupHome {
+public class PlMatchGroupHome extends DefaultHome{
 
     private static final Log log = LogFactory.getLog(PlMatchGroupHome.class);
-
-    private final SessionFactory sessionFactory = getSessionFactory();
-    
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext().lookup("SessionFactory");
-        }
-        catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException("Could not locate SessionFactory in JNDI");
-        }
-    }
     
     public void persist(PlMatchGroup transientInstance) {
         log.debug("persisting PlMatchGroup instance");
         try {
-            sessionFactory.getCurrentSession().persist(transientInstance);
+            getCurrentSession().persist(transientInstance);
             log.debug("persist successful");
         }
         catch (RuntimeException re) {
@@ -46,7 +34,7 @@ public class PlMatchGroupHome {
     public void attachDirty(PlMatchGroup instance) {
         log.debug("attaching dirty PlMatchGroup instance");
         try {
-            sessionFactory.getCurrentSession().saveOrUpdate(instance);
+            getCurrentSession().saveOrUpdate(instance);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -58,7 +46,7 @@ public class PlMatchGroupHome {
     public void attachClean(PlMatchGroup instance) {
         log.debug("attaching clean PlMatchGroup instance");
         try {
-            sessionFactory.getCurrentSession().lock(instance, LockMode.NONE);
+            getCurrentSession().lock(instance, LockMode.NONE);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -70,7 +58,7 @@ public class PlMatchGroupHome {
     public void delete(PlMatchGroup persistentInstance) {
         log.debug("deleting PlMatchGroup instance");
         try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
+            getCurrentSession().delete(persistentInstance);
             log.debug("delete successful");
         }
         catch (RuntimeException re) {
@@ -82,7 +70,7 @@ public class PlMatchGroupHome {
     public PlMatchGroup merge(PlMatchGroup detachedInstance) {
         log.debug("merging PlMatchGroup instance");
         try {
-            PlMatchGroup result = (PlMatchGroup) sessionFactory.getCurrentSession()
+            PlMatchGroup result = (PlMatchGroup) getCurrentSession()
                     .merge(detachedInstance);
             log.debug("merge successful");
             return result;
@@ -96,7 +84,7 @@ public class PlMatchGroupHome {
     public PlMatchGroup findById( ca.sqlpower.matchmaker.PlMatchGroupId id) {
         log.debug("getting PlMatchGroup instance with id: " + id);
         try {
-            PlMatchGroup instance = (PlMatchGroup) sessionFactory.getCurrentSession()
+            PlMatchGroup instance = (PlMatchGroup) getCurrentSession()
                     .get("ca.sqlpower.matchmaker.generated.PlMatchGroup", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
@@ -115,7 +103,7 @@ public class PlMatchGroupHome {
     public List findByExample(PlMatchGroup instance) {
         log.debug("finding PlMatchGroup instance by example");
         try {
-            List results = sessionFactory.getCurrentSession()
+            List results = getCurrentSession()
                     .createCriteria("ca.sqlpower.matchmaker.generated.PlMatchGroup")
                     .add(Example.create(instance))
             .list();

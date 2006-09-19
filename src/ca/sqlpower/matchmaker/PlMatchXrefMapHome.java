@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 
 
 import java.util.List;
-import javax.naming.InitialContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
@@ -15,26 +15,14 @@ import org.hibernate.criterion.Example;
  * @see ca.sqlpower.matchmaker.PlMatchXrefMap
  * @author Hibernate Tools
  */
-public class PlMatchXrefMapHome {
+public class PlMatchXrefMapHome extends DefaultHome {
 
     private static final Log log = LogFactory.getLog(PlMatchXrefMapHome.class);
 
-    private final SessionFactory sessionFactory = getSessionFactory();
-    
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext().lookup("SessionFactory");
-        }
-        catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException("Could not locate SessionFactory in JNDI");
-        }
-    }
-    
     public void persist(PlMatchXrefMap transientInstance) {
         log.debug("persisting PlMatchXrefMap instance");
         try {
-            sessionFactory.getCurrentSession().persist(transientInstance);
+            getCurrentSession().persist(transientInstance);
             log.debug("persist successful");
         }
         catch (RuntimeException re) {
@@ -46,7 +34,7 @@ public class PlMatchXrefMapHome {
     public void attachDirty(PlMatchXrefMap instance) {
         log.debug("attaching dirty PlMatchXrefMap instance");
         try {
-            sessionFactory.getCurrentSession().saveOrUpdate(instance);
+            getCurrentSession().saveOrUpdate(instance);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -58,7 +46,7 @@ public class PlMatchXrefMapHome {
     public void attachClean(PlMatchXrefMap instance) {
         log.debug("attaching clean PlMatchXrefMap instance");
         try {
-            sessionFactory.getCurrentSession().lock(instance, LockMode.NONE);
+            getCurrentSession().lock(instance, LockMode.NONE);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -70,7 +58,7 @@ public class PlMatchXrefMapHome {
     public void delete(PlMatchXrefMap persistentInstance) {
         log.debug("deleting PlMatchXrefMap instance");
         try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
+            getCurrentSession().delete(persistentInstance);
             log.debug("delete successful");
         }
         catch (RuntimeException re) {
@@ -82,7 +70,7 @@ public class PlMatchXrefMapHome {
     public PlMatchXrefMap merge(PlMatchXrefMap detachedInstance) {
         log.debug("merging PlMatchXrefMap instance");
         try {
-            PlMatchXrefMap result = (PlMatchXrefMap) sessionFactory.getCurrentSession()
+            PlMatchXrefMap result = (PlMatchXrefMap) getCurrentSession()
                     .merge(detachedInstance);
             log.debug("merge successful");
             return result;
@@ -96,7 +84,7 @@ public class PlMatchXrefMapHome {
     public PlMatchXrefMap findById( ca.sqlpower.matchmaker.PlMatchXrefMapId id) {
         log.debug("getting PlMatchXrefMap instance with id: " + id);
         try {
-            PlMatchXrefMap instance = (PlMatchXrefMap) sessionFactory.getCurrentSession()
+            PlMatchXrefMap instance = (PlMatchXrefMap) getCurrentSession()
                     .get("ca.sqlpower.matchmaker.generated.PlMatchXrefMap", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
@@ -115,7 +103,7 @@ public class PlMatchXrefMapHome {
     public List findByExample(PlMatchXrefMap instance) {
         log.debug("finding PlMatchXrefMap instance by example");
         try {
-            List results = sessionFactory.getCurrentSession()
+            List results = getCurrentSession()
                     .createCriteria("ca.sqlpower.matchmaker.generated.PlMatchXrefMap")
                     .add(Example.create(instance))
             .list();

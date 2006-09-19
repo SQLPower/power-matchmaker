@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 
 
 import java.util.List;
-import javax.naming.InitialContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
@@ -15,26 +15,14 @@ import org.hibernate.criterion.Example;
  * @see ca.sqlpower.matchmaker.DefParam
  * @author Hibernate Tools
  */
-public class DefParamHome {
+public class DefParamHome extends DefaultHome {
 
     private static final Log log = LogFactory.getLog(DefParamHome.class);
-
-    private final SessionFactory sessionFactory = getSessionFactory();
-    
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext().lookup("SessionFactory");
-        }
-        catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException("Could not locate SessionFactory in JNDI");
-        }
-    }
     
     public void persist(DefParam transientInstance) {
         log.debug("persisting DefParam instance");
         try {
-            sessionFactory.getCurrentSession().persist(transientInstance);
+            getCurrentSession().persist(transientInstance);
             log.debug("persist successful");
         }
         catch (RuntimeException re) {
@@ -46,7 +34,7 @@ public class DefParamHome {
     public void attachDirty(DefParam instance) {
         log.debug("attaching dirty DefParam instance");
         try {
-            sessionFactory.getCurrentSession().saveOrUpdate(instance);
+            getCurrentSession().saveOrUpdate(instance);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -58,7 +46,7 @@ public class DefParamHome {
     public void attachClean(DefParam instance) {
         log.debug("attaching clean DefParam instance");
         try {
-            sessionFactory.getCurrentSession().lock(instance, LockMode.NONE);
+            getCurrentSession().lock(instance, LockMode.NONE);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -70,7 +58,7 @@ public class DefParamHome {
     public void delete(DefParam persistentInstance) {
         log.debug("deleting DefParam instance");
         try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
+            getCurrentSession().delete(persistentInstance);
             log.debug("delete successful");
         }
         catch (RuntimeException re) {
@@ -82,7 +70,7 @@ public class DefParamHome {
     public DefParam merge(DefParam detachedInstance) {
         log.debug("merging DefParam instance");
         try {
-            DefParam result = (DefParam) sessionFactory.getCurrentSession()
+            DefParam result = (DefParam) getCurrentSession()
                     .merge(detachedInstance);
             log.debug("merge successful");
             return result;
@@ -96,7 +84,7 @@ public class DefParamHome {
     public DefParam findById( java.lang.String id) {
         log.debug("getting DefParam instance with id: " + id);
         try {
-            DefParam instance = (DefParam) sessionFactory.getCurrentSession()
+            DefParam instance = (DefParam) getCurrentSession()
                     .get("ca.sqlpower.matchmaker.generated.DefParam", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
@@ -115,7 +103,7 @@ public class DefParamHome {
     public List findByExample(DefParam instance) {
         log.debug("finding DefParam instance by example");
         try {
-            List results = sessionFactory.getCurrentSession()
+            List results = getCurrentSession()
                     .createCriteria("ca.sqlpower.matchmaker.generated.DefParam")
                     .add(Example.create(instance))
             .list();

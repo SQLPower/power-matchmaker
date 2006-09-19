@@ -2,9 +2,6 @@ package ca.sqlpower.matchmaker;
 
 
 import java.sql.Date;
-import java.util.List;
-
-import ca.sqlpower.persistance.CatNap;
 
 public class MergeCriteria {
 

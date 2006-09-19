@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 
 
 import java.util.List;
-import javax.naming.InitialContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
@@ -15,26 +15,14 @@ import org.hibernate.criterion.Example;
  * @see ca.sqlpower.matchmaker.PlMergeCriteria
  * @author Hibernate Tools
  */
-public class PlMergeCriteriaHome {
+public class PlMergeCriteriaHome extends DefaultHome {
 
     private static final Log log = LogFactory.getLog(PlMergeCriteriaHome.class);
 
-    private final SessionFactory sessionFactory = getSessionFactory();
-    
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext().lookup("SessionFactory");
-        }
-        catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException("Could not locate SessionFactory in JNDI");
-        }
-    }
-    
     public void persist(PlMergeCriteria transientInstance) {
         log.debug("persisting PlMergeCriteria instance");
         try {
-            sessionFactory.getCurrentSession().persist(transientInstance);
+            getCurrentSession().persist(transientInstance);
             log.debug("persist successful");
         }
         catch (RuntimeException re) {
@@ -46,7 +34,7 @@ public class PlMergeCriteriaHome {
     public void attachDirty(PlMergeCriteria instance) {
         log.debug("attaching dirty PlMergeCriteria instance");
         try {
-            sessionFactory.getCurrentSession().saveOrUpdate(instance);
+            getCurrentSession().saveOrUpdate(instance);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -58,7 +46,7 @@ public class PlMergeCriteriaHome {
     public void attachClean(PlMergeCriteria instance) {
         log.debug("attaching clean PlMergeCriteria instance");
         try {
-            sessionFactory.getCurrentSession().lock(instance, LockMode.NONE);
+            getCurrentSession().lock(instance, LockMode.NONE);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -70,7 +58,7 @@ public class PlMergeCriteriaHome {
     public void delete(PlMergeCriteria persistentInstance) {
         log.debug("deleting PlMergeCriteria instance");
         try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
+            getCurrentSession().delete(persistentInstance);
             log.debug("delete successful");
         }
         catch (RuntimeException re) {
@@ -82,7 +70,7 @@ public class PlMergeCriteriaHome {
     public PlMergeCriteria merge(PlMergeCriteria detachedInstance) {
         log.debug("merging PlMergeCriteria instance");
         try {
-            PlMergeCriteria result = (PlMergeCriteria) sessionFactory.getCurrentSession()
+            PlMergeCriteria result = (PlMergeCriteria) getCurrentSession()
                     .merge(detachedInstance);
             log.debug("merge successful");
             return result;
@@ -96,7 +84,7 @@ public class PlMergeCriteriaHome {
     public PlMergeCriteria findById( ca.sqlpower.matchmaker.PlMergeCriteriaId id) {
         log.debug("getting PlMergeCriteria instance with id: " + id);
         try {
-            PlMergeCriteria instance = (PlMergeCriteria) sessionFactory.getCurrentSession()
+            PlMergeCriteria instance = (PlMergeCriteria) getCurrentSession()
                     .get("ca.sqlpower.matchmaker.generated.PlMergeCriteria", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
@@ -115,7 +103,7 @@ public class PlMergeCriteriaHome {
     public List findByExample(PlMergeCriteria instance) {
         log.debug("finding PlMergeCriteria instance by example");
         try {
-            List results = sessionFactory.getCurrentSession()
+            List results = getCurrentSession()
                     .createCriteria("ca.sqlpower.matchmaker.generated.PlMergeCriteria")
                     .add(Example.create(instance))
             .list();
