@@ -29,6 +29,8 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
+import sun.security.jca.GetInstance;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.ArchitectUtils;
@@ -160,6 +162,16 @@ public class MatchMakerFrame extends JFrame {
 
 	private MatchMakerFrameWindowListener windowListener;
 
+	private Action databaseConnectionAction = new AbstractAction("Database Connection...") {
+
+		public void actionPerformed(ActionEvent e) {
+			DatabaseConnectionManager dm = new DatabaseConnectionManager(
+					MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
+			dm.pack();
+			dm.setVisible(true);
+
+		}};
+
 	/**
 	 * You can't create an architect frame using this constructor.  You have to
 	 * call {@link #getMainInstance()}.
@@ -269,6 +281,8 @@ public class MatchMakerFrame extends JFrame {
 		databaseMenu = new JMenu("Database");
 		databaseMenu.setMnemonic('D');
 		databaseMenu.add(logoutAction);
+		databaseMenu.addSeparator();
+		databaseMenu.add(databaseConnectionAction );
 		menuBar.add(databaseMenu);
 
 		JMenu matchesMenu = new JMenu("Matches");
