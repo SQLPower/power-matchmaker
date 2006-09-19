@@ -7,7 +7,7 @@
 <hibernate-mapping>
 
 <class 
-    name="PlMatch"
+    name="ca.sqlpower.matchmaker.hibernate.PlMatch"
     table="PL_MATCH"
     catalog="pl"
 >
@@ -82,7 +82,7 @@
   	</property>
     <property
         name="compileFlag"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="COMPILE_FLAG" length="1" />
   	</property>
@@ -94,7 +94,7 @@
   	</property>
     <property
         name="autoMatchThreshold"
-        type="long"
+        type="short"
     >
 <column name="AUTO_MATCH_THRESHOLD" precision="3" scale="0" />
   	</property>
@@ -130,7 +130,7 @@
   	</property>
     <property
         name="matchAppendToLogInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MATCH_APPEND_TO_LOG_IND" length="1" />
   	</property>
@@ -148,7 +148,7 @@
   	</property>
     <property
         name="matchDebugModeInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MATCH_DEBUG_MODE_IND" length="1" />
   	</property>
@@ -166,25 +166,25 @@
   	</property>
     <property
         name="mergeAppendToLogInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MERGE_APPEND_TO_LOG_IND" length="1" />
   	</property>
     <property
         name="mergeProcessCnt"
-        type="long"
+        type="big_decimal"
     >
 <column name="MERGE_PROCESS_CNT" precision="18" scale="0" />
   	</property>
     <property
         name="mergeShowProgressFreq"
-        type="long"
+        type="big_decimal"
     >
 <column name="MERGE_SHOW_PROGRESS_FREQ" precision="18" scale="0" />
   	</property>
     <property
         name="mergeDebugModeInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MERGE_DEBUG_MODE_IND" length="1" />
   	</property>
@@ -196,7 +196,7 @@
   	</property>
     <property
         name="mergeAugmentNullInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MERGE_AUGMENT_NULL_IND" length="1" />
   	</property>
@@ -214,19 +214,19 @@
   	</property>
     <property
         name="matchTotalSteps"
-        type="long"
+        type="big_decimal"
     >
 <column name="MATCH_TOTAL_STEPS" precision="18" scale="0" />
   	</property>
     <property
         name="matchStepsCompleted"
-        type="long"
+        type="big_decimal"
     >
 <column name="MATCH_STEPS_COMPLETED" precision="18" scale="0" />
   	</property>
     <property
         name="matchRowsInserted"
-        type="long"
+        type="big_decimal"
     >
 <column name="MATCH_ROWS_INSERTED" precision="18" scale="0" />
   	</property>
@@ -244,13 +244,13 @@
   	</property>
     <property
         name="mergeTotalSteps"
-        type="long"
+        type="big_decimal"
     >
 <column name="MERGE_TOTAL_STEPS" precision="18" scale="0" />
   	</property>
     <property
         name="mergeStepsCompleted"
-        type="long"
+        type="big_decimal"
     >
 <column name="MERGE_STEPS_COMPLETED" precision="18" scale="0" />
   	</property>
@@ -304,7 +304,7 @@
   	</property>
     <property
         name="mergeRowsInserted"
-        type="long"
+        type="big_decimal"
     >
 <column name="MERGE_ROWS_INSERTED" precision="18" scale="0" />
   	</property>
@@ -340,7 +340,7 @@
   	</property>
     <property
         name="matchBreakInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MATCH_BREAK_IND" length="1" />
   	</property>
@@ -376,7 +376,7 @@
   	</property>
     <property
         name="mergeTablesBackupInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MERGE_TABLES_BACKUP_IND" length="1" />
   	</property>
@@ -388,13 +388,13 @@
   	</property>
     <property
         name="lastBackupNo"
-        type="long"
+        type="big_decimal"
     >
 <column name="last_backup_no" precision="18" scale="0" />
   	</property>
     <property
         name="checkedOutInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="checked_out_ind" length="1" />
   	</property>
@@ -556,19 +556,19 @@
   	</property>
     <property
         name="truncateCandDupInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="truncate_cand_dup_ind" length="1" />
   	</property>
     <property
         name="matchSendEmailInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="match_send_email_ind" length="1" />
   	</property>
     <property
         name="mergeSendEmailInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="merge_send_email_ind" length="1" />
   	</property>
@@ -586,7 +586,7 @@
   	</property>
     <property
         name="autoMatchActiveInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType" 
     >
 <column name="auto_match_active_ind" length="1" />
   	</property>
@@ -598,7 +598,7 @@
 <column name="MATCH_ID" length="80" not-null="true" />
         </key>
 		<one-to-many 
-			 class="PlMergeConsolidateCriteria"
+			 class="ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria"
 			/>			
 	</set>
 	<set
@@ -609,7 +609,7 @@
 <column name="MATCH_ID" length="80" not-null="true" />
         </key>
 		<one-to-many 
-			 class="PlMergeCriteria"
+			 class="ca.sqlpower.matchmaker.hibernate.PlMergeCriteria"
 			/>			
 	</set>
 	<set
@@ -620,9 +620,10 @@
 <column name="MATCH_ID" length="80" not-null="true" />
         </key>
 		<one-to-many 
-			 class="PlMatchGroup"
+			 class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup"
 			/>			
 	</set>
+	
 
 </class>
 </hibernate-mapping>

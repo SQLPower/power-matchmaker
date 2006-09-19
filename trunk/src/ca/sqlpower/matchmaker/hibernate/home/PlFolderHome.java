@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.hibernate.home;
 // Generated 19-Sep-2006 12:08:40 PM by Hibernate Tools 3.2.0.beta7
 
 
+import java.sql.Connection;
 import java.util.List;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
@@ -9,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
+import org.hibernate.loader.criteria.CriteriaQueryTranslator;
 
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 
@@ -21,6 +23,9 @@ public class PlFolderHome  extends DefaultHome{
 
     private static final Log log = LogFactory.getLog(PlFolderHome.class);
 
+    public PlFolderHome(Connection con) {
+		this.setCon(con);
+	}
     
     public void persist(PlFolder transientInstance) {
         log.debug("persisting PlFolder instance");
@@ -89,7 +94,7 @@ public class PlFolderHome  extends DefaultHome{
         log.debug("getting PlFolder instance with id: " + id);
         try {
             PlFolder instance = (PlFolder)getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.generated.PlFolder", id);
+                    .get("ca.sqlpower.matchmaker.hibernate.PlFolder", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -104,11 +109,27 @@ public class PlFolderHome  extends DefaultHome{
         }
     }
     
+    public List<PlFolder> findMatchMakerFolders(){
+    	   log.debug("finding PlFolders with Matches");
+           try {
+               List<PlFolder> results =getCurrentSession()
+                       .createCriteria("ca.sqlpower.matchmaker.hibernate.PlFolder")
+                       .list();               
+              
+               log.debug("find by Match Maker successful, result size: " + results.size());
+               return results;
+           }
+           catch (RuntimeException re) {
+               log.error("find by MatchMaker failed", re);
+               throw re;
+           }
+    }
+    
     public List findByExample(PlFolder instance) {
         log.debug("finding PlFolder instance by example");
         try {
             List results =getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.generated.PlFolder")
+                    .createCriteria("ca.sqlpower.matchmaker.hibernate.PlFolder")
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());

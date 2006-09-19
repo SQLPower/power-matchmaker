@@ -7,7 +7,7 @@
 <hibernate-mapping>
 
 <class 
-    name="DefParam"
+    name="ca.sqlpower.matchmaker.hibernate.DefParam"
     table="DEF_PARAM"
     catalog="pl"
 >
@@ -28,25 +28,25 @@
   	</property>
     <property
         name="processAddInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="PROCESS_ADD_IND" length="1" />
   	</property>
     <property
         name="processUpdInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="PROCESS_UPD_IND" length="1" />
   	</property>
     <property
         name="processDelInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="PROCESS_DEL_IND" length="1" />
   	</property>
     <property
         name="writeDbErrorsInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="WRITE_DB_ERRORS_IND" length="1" />
   	</property>
@@ -100,19 +100,19 @@
   	</property>
     <property
         name="appendToLogInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="APPEND_TO_LOG_IND" length="1" />
   	</property>
     <property
         name="appendToErrInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="APPEND_TO_ERR_IND" length="1" />
   	</property>
     <property
         name="appendToBadInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="APPEND_TO_BAD_IND" length="1" />
   	</property>
@@ -148,7 +148,7 @@
   	</property>
     <property
         name="trialInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="TRIAL_IND" length="1" />
   	</property>
@@ -232,7 +232,7 @@
   	</property>
     <property
         name="mmAppendToLogInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MM_APPEND_TO_LOG_IND" length="1" />
   	</property>
@@ -244,7 +244,7 @@
   	</property>
     <property
         name="summAppendToLogInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="SUMM_APPEND_TO_LOG_IND" length="1" />
   	</property>
@@ -268,7 +268,7 @@
   	</property>
     <property
         name="scrcrdAppendToLogInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="SCRCRD_APPEND_TO_LOG_IND" length="1" />
   	</property>
@@ -310,13 +310,13 @@
   	</property>
     <property
         name="licensedCdnAdrsCorrInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="licensed_cdn_adrs_corr_ind" length="1" />
   	</property>
     <property
         name="licensedUsAdrsCorrInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="licensed_us_adrs_corr_ind" length="1" />
   	</property>
@@ -340,7 +340,7 @@
   	</property>
     <property
         name="versionControlInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="version_control_ind" length="1" />
   	</property>
@@ -352,7 +352,7 @@
   	</property>
     <property
         name="compileInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="compile_ind" length="1" />
   	</property>

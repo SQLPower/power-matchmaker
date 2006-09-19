@@ -7,13 +7,13 @@
 <hibernate-mapping>
 
 <class 
-    name="PlMergeCriteria"
+    name="ca.sqlpower.matchmaker.hibernate.PlMergeCriteria"
     table="PL_MERGE_CRITERIA"
     catalog="pl"
 >
     <composite-id
 		name="id"
-        class="PlMergeCriteriaId"
+        class="ca.sqlpower.matchmaker.hibernate.PlMergeCriteriaId"
     >		
 	        <key-property name="matchId" type="string">
 <column name="MATCH_ID" length="80" />
@@ -32,12 +32,12 @@
 
     <many-to-one
 	    name="plMatch"
-	    class="PlMatch"
+	    class="ca.sqlpower.matchmaker.hibernate.PlMatch"
         update="false"
         insert="false"
         fetch="select"
     >
-<column name="MATCH_ID" length="80" not-null="true" />
+		<column name="MATCH_ID" length="80" not-null="true" />
    </many-to-one>
     <property
         name="columnName"
@@ -59,7 +59,7 @@
   	</property>
     <property
         name="deleteDupInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="DELETE_DUP_IND" length="1" />
   	</property>

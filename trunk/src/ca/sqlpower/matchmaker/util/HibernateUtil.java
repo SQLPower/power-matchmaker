@@ -1,9 +1,12 @@
 package ca.sqlpower.matchmaker.util;
 
+import java.io.File;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.impl.SessionFactoryImpl;
 
 import ca.sqlpower.matchmaker.hibernate.home.DefParamHome;
 
@@ -19,7 +22,7 @@ public class HibernateUtil {
 	static {
 		try {
 			// Create the SessionFactory from hibernate.cfg.xml
-			sessionFactory = new Configuration().configure()
+			sessionFactory = new Configuration().configure(new File("./hibernate/hibernate.cfg.xml"))
 					.buildSessionFactory();
 		} catch (Throwable ex) {
 			log.error("Initial SessionFactory creation failed." + ex);

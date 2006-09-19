@@ -34,8 +34,8 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
      private String mergeDesc;
      private String matchLogFileName;
      private boolean matchAppendToLogInd;
-     private BigDecimal matchProcessCnt;
-     private BigDecimal matchShowProgressFreq;
+     private Long matchProcessCnt;
+     private Long matchShowProgressFreq;
      private boolean matchDebugModeInd;
      private String matchRollbackSegmentName;
      private String mergeLogFileName;
@@ -127,7 +127,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
         this.matchType = matchType;
     }
     /** full constructor */
-    public PlMatch(String matchId, String matchDesc, String tableOwner, String matchTable, String pkColumn, String filter, String resultsTable, Date createDate, Date lastUpdateDate, String lastUpdateUser, String sequenceName, boolean compileFlag, String mergeScriptFileName, Short autoMatchThreshold, Date mergeCompletionDate, String mergeLastUser, String mergeRunStatus, String mergeDesc, String matchLogFileName, boolean matchAppendToLogInd, BigDecimal matchProcessCnt, BigDecimal matchShowProgressFreq, boolean matchDebugModeInd, String matchRollbackSegmentName, String mergeLogFileName, boolean mergeAppendToLogInd, BigDecimal mergeProcessCnt, BigDecimal mergeShowProgressFreq, boolean mergeDebugModeInd, String mergeRollbackSegmentName, boolean mergeAugmentNullInd, String matchRunStatus, String matchScriptFileName, BigDecimal matchTotalSteps, BigDecimal matchStepsCompleted, BigDecimal matchRowsInserted, Date matchLastRunDate, String matchLastRunUser, BigDecimal mergeTotalSteps, BigDecimal mergeStepsCompleted, Date mergeLastRunDate, String mergeLastRunUser, String matchPackageName, String matchProcedureNameAll, String matchProcedureNameOne, String mergePackageName, String mergeProcedureName, String matchTablePkColumnFormat, BigDecimal mergeRowsInserted, String batchFileName, String selectClause, String fromClause, String whereClause, String resultsTableOwner, boolean matchBreakInd, String filterCriteria, String matchType, String lastUpdateOsUser, String matchStepDesc, String mergeStepDesc, boolean mergeTablesBackupInd, String matchStatus, BigDecimal lastBackupNo, boolean checkedOutInd, Date checkedOutDate, String checkedOutUser, String checkedOutOsUser, String indexColumnName0, String indexColumnName1, String indexColumnName2, String indexColumnName3, String indexColumnName4, String indexColumnName5, String indexColumnName6, String indexColumnName7, String indexColumnName8, String indexColumnName9, String tempSourceTableName, String tempCandDupTableName, String fromClauseDb, String indexColumnType0, String indexColumnType1, String indexColumnType2, String indexColumnType3, String indexColumnType4, String indexColumnType5, String indexColumnType6, String indexColumnType7, String indexColumnType8, String indexColumnType9, boolean truncateCandDupInd, boolean matchSendEmailInd, boolean mergeSendEmailInd, String xrefOwner, String xrefTableName, boolean autoMatchActiveInd, Set plMergeConsolidateCriterias, Set plMatchXrefMaps, Set plMergeCriterias, Set plMatchGroups) {
+    public PlMatch(String matchId, String matchDesc, String tableOwner, String matchTable, String pkColumn, String filter, String resultsTable, Date createDate, Date lastUpdateDate, String lastUpdateUser, String sequenceName, boolean compileFlag, String mergeScriptFileName, Short autoMatchThreshold, Date mergeCompletionDate, String mergeLastUser, String mergeRunStatus, String mergeDesc, String matchLogFileName, boolean matchAppendToLogInd, Long matchProcessCnt, Long matchShowProgressFreq, boolean matchDebugModeInd, String matchRollbackSegmentName, String mergeLogFileName, boolean mergeAppendToLogInd, BigDecimal mergeProcessCnt, BigDecimal mergeShowProgressFreq, boolean mergeDebugModeInd, String mergeRollbackSegmentName, boolean mergeAugmentNullInd, String matchRunStatus, String matchScriptFileName, BigDecimal matchTotalSteps, BigDecimal matchStepsCompleted, BigDecimal matchRowsInserted, Date matchLastRunDate, String matchLastRunUser, BigDecimal mergeTotalSteps, BigDecimal mergeStepsCompleted, Date mergeLastRunDate, String mergeLastRunUser, String matchPackageName, String matchProcedureNameAll, String matchProcedureNameOne, String mergePackageName, String mergeProcedureName, String matchTablePkColumnFormat, BigDecimal mergeRowsInserted, String batchFileName, String selectClause, String fromClause, String whereClause, String resultsTableOwner, boolean matchBreakInd, String filterCriteria, String matchType, String lastUpdateOsUser, String matchStepDesc, String mergeStepDesc, boolean mergeTablesBackupInd, String matchStatus, BigDecimal lastBackupNo, boolean checkedOutInd, Date checkedOutDate, String checkedOutUser, String checkedOutOsUser, String indexColumnName0, String indexColumnName1, String indexColumnName2, String indexColumnName3, String indexColumnName4, String indexColumnName5, String indexColumnName6, String indexColumnName7, String indexColumnName8, String indexColumnName9, String tempSourceTableName, String tempCandDupTableName, String fromClauseDb, String indexColumnType0, String indexColumnType1, String indexColumnType2, String indexColumnType3, String indexColumnType4, String indexColumnType5, String indexColumnType6, String indexColumnType7, String indexColumnType8, String indexColumnType9, boolean truncateCandDupInd, boolean matchSendEmailInd, boolean mergeSendEmailInd, String xrefOwner, String xrefTableName, boolean autoMatchActiveInd, Set plMergeConsolidateCriterias, Set plMatchXrefMaps, Set plMergeCriterias, Set plMatchGroups) {
        this.matchId = matchId;
        this.matchDesc = matchDesc;
        this.tableOwner = tableOwner;
@@ -371,18 +371,18 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMatchAppendToLogInd(boolean matchAppendToLogInd) {
         this.matchAppendToLogInd = matchAppendToLogInd;
     }
-    public BigDecimal getMatchProcessCnt() {
+    public Long getMatchProcessCnt() {
         return this.matchProcessCnt;
     }
     
-    public void setMatchProcessCnt(BigDecimal matchProcessCnt) {
+    public void setMatchProcessCnt(Long matchProcessCnt) {
         this.matchProcessCnt = matchProcessCnt;
     }
-    public BigDecimal getMatchShowProgressFreq() {
+    public Long getMatchShowProgressFreq() {
         return this.matchShowProgressFreq;
     }
     
-    public void setMatchShowProgressFreq(BigDecimal matchShowProgressFreq) {
+    public void setMatchShowProgressFreq(Long matchShowProgressFreq) {
         this.matchShowProgressFreq = matchShowProgressFreq;
     }
     public boolean isMatchDebugModeInd() {

@@ -88,7 +88,7 @@ public class PlMatchTranslateHome extends DefaultHome {
         log.debug("getting PlMatchTranslate instance with id: " + id);
         try {
             PlMatchTranslate instance = (PlMatchTranslate) getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.generated.PlMatchTranslate", id);
+                    .get("ca.sqlpower.matchmaker.hibernate.PlMatchTranslate", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -107,7 +107,7 @@ public class PlMatchTranslateHome extends DefaultHome {
         log.debug("finding PlMatchTranslate instance by example");
         try {
             List results = getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.generated.PlMatchTranslate")
+                    .createCriteria("ca.sqlpower.matchmaker.hibernate.PlMatchTranslate")
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());

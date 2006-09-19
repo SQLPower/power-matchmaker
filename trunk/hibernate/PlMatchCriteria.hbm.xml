@@ -7,13 +7,13 @@
 <hibernate-mapping>
 
 <class 
-    name="PlMatchCriteria"
+    name="ca.sqlpower.matchmaker.hibernate.PlMatchCriteria"
     table="PL_MATCH_CRITERIA"
     catalog="pl"
 >
     <composite-id
 		name="id"
-        class="PlMatchCriteriaId"
+        class="ca.sqlpower.matchmaker.hibernate.PlMatchCriteriaId"
     >		
 	        <key-property name="matchId" type="string">
 <column name="MATCH_ID" length="80" />
@@ -29,7 +29,7 @@
 
     <many-to-one
 	    name="plMatchGroup"
-	    class="PlMatchGroup"
+	    class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup"
         update="false"
         insert="false"
         fetch="select"
@@ -39,7 +39,7 @@
    </many-to-one>
     <property
         name="caseSensitiveInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="CASE_SENSITIVE_IND" length="1" />
   	</property>
@@ -51,7 +51,7 @@
   	</property>
     <property
         name="soundInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="SOUND_IND" length="1" />
   	</property>
@@ -81,13 +81,13 @@
   	</property>
     <property
         name="matchStart"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MATCH_START" length="1" />
   	</property>
     <property
         name="matchEnd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MATCH_END" length="1" />
   	</property>
@@ -111,7 +111,7 @@
   	</property>
     <property
         name="allowNullInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="allow_null_ind" length="1" />
   	</property>
@@ -123,19 +123,19 @@
   	</property>
     <property
         name="removeSpecialChars"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="remove_special_chars" length="1" />
   	</property>
     <property
         name="countWordsInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="count_words_ind" length="1" />
   	</property>
     <property
         name="replaceWithSpaceInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="replace_with_space_ind" length="1" />
   	</property>
@@ -147,13 +147,13 @@
   	</property>
     <property
         name="reorderInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="reorder_ind" length="1" />
   	</property>
     <property
         name="firstNCharByWordInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="first_n_char_by_word_ind" length="1" />
   	</property>
@@ -177,7 +177,7 @@
   	</property>
     <property
         name="matchFirstPlusOneInd"
-        type="boolean"
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="match_first_plus_one_ind" length="1" />
   	</property>
