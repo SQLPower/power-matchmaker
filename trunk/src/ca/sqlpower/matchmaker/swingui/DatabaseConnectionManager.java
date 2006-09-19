@@ -2,16 +2,22 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
@@ -43,6 +49,9 @@ public class DatabaseConnectionManager extends JDialog implements DBConnectionCa
 
 	private JDialog newConnectionDialog;
 	private JTable dsTable;
+	private JPanel panel;
+	private PlDotIni plDotIni;
+
 	private Action helpAction = new AbstractAction(){
 
 		public void actionPerformed(ActionEvent e) {
@@ -156,9 +165,29 @@ public class DatabaseConnectionManager extends JDialog implements DBConnectionCa
 			plDotIni.removeDataSource(dbcs);
 		}
 	};
-	private JPanel panel;
 
-	private PlDotIni plDotIni;
+	private Action loginDatabaseConnectionAction = new AbstractAction("Login") {
+
+		public void actionPerformed(ActionEvent e) {
+			int selectedRow = dsTable.getSelectedRow();
+			if ( selectedRow == -1 ) {
+				return;
+			}
+			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
+			cancelAction.actionPerformed(null);
+			LoginFrame l = new LoginFrame();
+			l.setDbSource(dbcs);
+			l.pack();
+	    	l.setVisible(true);
+		}
+	};
+
+	private Action cancelAction = new AbstractAction(){
+		public void actionPerformed(ActionEvent e) {
+			if ( getNewConnectionDialog() != null )
+				return;
+			DatabaseConnectionManager.this.setVisible(false);
+		}};
 
 	private DatabaseConnectionManager() throws HeadlessException {
 		super();
@@ -195,7 +224,7 @@ public class DatabaseConnectionManager extends JDialog implements DBConnectionCa
 		dsTable.setTableHeader(null);
 		dsTable.setShowGrid(false);
 		dsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		dsTable.setAutoscrolls(true);
+		dsTable.addMouseListener(new DSTableMouseListener());
 
 		JScrollPane sp = new JScrollPane(dsTable);
 
@@ -217,7 +246,7 @@ public class DatabaseConnectionManager extends JDialog implements DBConnectionCa
 
 
 		bsb.addUnrelatedGap();
-		JButton loginButton = new JButton(helpAction);
+		JButton loginButton = new JButton(loginDatabaseConnectionAction);
 		loginButton.setText("Login");
 		bsb.addGridded(loginButton);
 		bsb.addRelatedGap();
@@ -231,12 +260,19 @@ public class DatabaseConnectionManager extends JDialog implements DBConnectionCa
 		bsb.addGridded (helpButton);
 		bsb.addRelatedGap();
 
-		JButton cancelButton = new JButton(new AbstractAction(){
-			public void actionPerformed(ActionEvent e) {
-				DatabaseConnectionManager.this.setVisible(false);
-			}});
+
+		JButton cancelButton = new JButton(cancelAction);
 		cancelButton.setText("Exit");
 		bsb.addGridded(cancelButton);
+
+
+		JComponent c = (JComponent) getRootPane();
+		InputMap inputMap = c.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		ActionMap actionMap = c.getActionMap();
+
+		inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "cancel");
+		actionMap.put("cancel", cancelAction);
+
 
 		pb.add(bsb.getPanel(), cc.xy(4,4));
 		return pb.getPanel();
@@ -320,5 +356,31 @@ public class DatabaseConnectionManager extends JDialog implements DBConnectionCa
 		this.plDotIni = plDotIni;
 	}
 
+	private class DSTableMouseListener implements MouseListener {
+
+		public void mouseClicked(MouseEvent evt) {
+            Object obj = evt.getSource();
+            if (evt.getClickCount() == 2) {
+            	editDatabaseConnectionAction.actionPerformed(null);
+            }
+        }
+
+		public void mousePressed(MouseEvent e) {
+			// we don't care
+		}
+
+		public void mouseReleased(MouseEvent e) {
+			// we don't care
+		}
+
+		public void mouseEntered(MouseEvent e) {
+			// we don't care
+		}
+
+		public void mouseExited(MouseEvent e) {
+			// we don't care
+		}
+
+	}
 
 }

@@ -58,6 +58,7 @@ public class LoginFrame extends JDialog {
 	protected JButton loginButton = new JButton();
 	protected JProgressBar progressBar = new JProgressBar();
 	protected ArchitectDataSource dbSource;
+	private ConnectionComboBoxModel connectionModel;
 
 	private JComponent panel;
 	private Action helpLoginAction = new AbstractAction(){
@@ -176,7 +177,21 @@ public class LoginFrame extends JDialog {
 
 	}
 
+	private ListDataListener connListener = new ListDataListener(){
 
+		public void intervalAdded(ListDataEvent e) {
+		}
+
+		public void intervalRemoved(ListDataEvent e) {
+		}
+
+		public void contentsChanged(ListDataEvent e) {
+			ArchitectDataSource dbSource = (ArchitectDataSource) ((ConnectionComboBoxModel) (e.getSource())).getSelectedItem();
+			dbSourceName.setText(dbSource.getName());
+			userID.setText(dbSource.getUser());
+			password.setText(dbSource.getPass());
+			LoginFrame.this.dbSource = dbSource;
+		}};
 
 	public LoginFrame()
 	{
@@ -197,22 +212,8 @@ public class LoginFrame extends JDialog {
 
 		CellConstraints cc = new CellConstraints();
 		JLabel line1 = new JLabel("Please choose one of the following databases for login:");
-		ConnectionComboBoxModel connectionModel = new ConnectionComboBoxModel(MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
-		connectionModel.addListDataListener(new ListDataListener(){
-
-			public void intervalAdded(ListDataEvent e) {
-			}
-
-			public void intervalRemoved(ListDataEvent e) {
-			}
-
-			public void contentsChanged(ListDataEvent e) {
-				ArchitectDataSource dbSource = (ArchitectDataSource) ((ConnectionComboBoxModel) (e.getSource())).getSelectedItem();
-				dbSourceName.setText(dbSource.getName());
-				userID.setText(dbSource.getUser());
-				password.setText(dbSource.getPass());
-				LoginFrame.this.dbSource = dbSource;
-			}});
+		connectionModel = new ConnectionComboBoxModel(MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
+		connectionModel.addListDataListener(connListener);
 		dbList = new JComboBox(connectionModel);
 		JLabel dbSourceName1 = new JLabel("Database source name:");
 
@@ -296,6 +297,10 @@ public class LoginFrame extends JDialog {
 
 	public ArchitectDataSource getDbSource() {
 		return dbSource;
+	}
+
+	public void setDbSource(ArchitectDataSource dbSource) {
+		connectionModel.setSelectedItem(dbSource);
 	}
 
 }
