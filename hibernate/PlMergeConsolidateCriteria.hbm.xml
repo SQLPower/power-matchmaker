@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
+<hibernate-mapping>
+
+<class 
+    name="PlMergeConsolidateCriteria"
+    table="PL_MERGE_CONSOLIDATE_CRITERIA"
+    catalog="pl"
+>
+    <composite-id
+		name="id"
+        class="PlMergeConsolidateCriteriaId"
+    >		
+	        <key-property name="matchId" type="string">
+<column name="MATCH_ID" length="80" />
+	        </key-property>
+	        <key-property name="owner" type="string">
+<column name="OWNER" length="30" />
+	        </key-property>
+	        <key-property name="tableName" type="string">
+<column name="TABLE_NAME" length="30" />
+	        </key-property>
+	        <key-property name="columnName" type="string">
+<column name="COLUMN_NAME" length="30" />
+	        </key-property>
+    </composite-id>	
+
+
+    <many-to-one
+	    name="plMatch"
+	    class="PlMatch"
+        update="false"
+        insert="false"
+        fetch="select"
+    >
+<column name="MATCH_ID" length="80" not-null="true" />
+   </many-to-one>
+    <property
+        name="columnFormat"
+        type="string"
+    >
+<column name="COLUMN_FORMAT" length="12" />
+  	</property>
+    <property
+        name="columnLength"
+        type="long"
+    >
+<column name="COLUMN_LENGTH" precision="18" scale="0" />
+  	</property>
+    <property
+        name="canUpdateActionInd"
+        type="boolean"
+    >
+<column name="CAN_update_ACTION_IND" length="1" />
+  	</property>
+    <property
+        name="actionType"
+        type="string"
+    >
+<column name="ACTION_TYPE" length="12" />
+  	</property>
+    <property
+        name="lastUpdateDate"
+        type="timestamp"
+    >
+<column name="LAST_update_DATE" length="23" />
+  	</property>
+    <property
+        name="lastUpdateUser"
+        type="string"
+    >
+<column name="LAST_update_USER" length="30" />
+  	</property>
+    <property
+        name="lastUpdateOsUser"
+        type="string"
+    >
+<column name="LAST_update_OS_USER" length="30" />
+  	</property>
+
+</class>
+</hibernate-mapping>

@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
-import ca.sqlpower.matchmaker.DefParamHome;
+import ca.sqlpower.matchmaker.hibernate.home.DefParamHome;
 
 /**
  * Some Utils to encapsulate common Hibernate operations.

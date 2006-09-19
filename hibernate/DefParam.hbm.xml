@@ -1,0 +1,379 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
+<hibernate-mapping>
+
+<class 
+    name="DefParam"
+    table="DEF_PARAM"
+    catalog="pl"
+>
+	<id 
+        name="companyName"
+        type="string"
+    >
+<column name="COMPANY_NAME" length="35" />
+	    <generator class="assigned" />
+    </id>
+
+
+    <property
+        name="commitFreq"
+        type="long"
+    >
+<column name="COMMIT_FREQ" precision="8" scale="0" />
+  	</property>
+    <property
+        name="processAddInd"
+        type="boolean"
+    >
+<column name="PROCESS_ADD_IND" length="1" />
+  	</property>
+    <property
+        name="processUpdInd"
+        type="boolean"
+    >
+<column name="PROCESS_UPD_IND" length="1" />
+  	</property>
+    <property
+        name="processDelInd"
+        type="boolean"
+    >
+<column name="PROCESS_DEL_IND" length="1" />
+  	</property>
+    <property
+        name="writeDbErrorsInd"
+        type="boolean"
+    >
+<column name="WRITE_DB_ERRORS_IND" length="1" />
+  	</property>
+    <property
+        name="showProgressFreq"
+        type="long"
+    >
+<column name="SHOW_PROGRESS_FREQ" precision="8" scale="0" />
+  	</property>
+    <property
+        name="fiscalYearEndDate"
+        type="timestamp"
+    >
+<column name="FISCAL_YEAR_END_DATE" length="23" />
+  	</property>
+    <property
+        name="defaultLogFilePath"
+        type="string"
+    >
+<column name="DEFAULT_LOG_FILE_PATH" length="200" />
+  	</property>
+    <property
+        name="defaultErrFilePath"
+        type="string"
+    >
+<column name="DEFAULT_ERR_FILE_PATH" length="200" />
+  	</property>
+    <property
+        name="defaultBadFilePath"
+        type="string"
+    >
+<column name="DEFAULT_BAD_FILE_PATH" length="200" />
+  	</property>
+    <property
+        name="defaultUnixLogFilePath"
+        type="string"
+    >
+<column name="DEFAULT_UNIX_LOG_FILE_PATH" length="200" />
+  	</property>
+    <property
+        name="defaultUnixErrFilePath"
+        type="string"
+    >
+<column name="DEFAULT_UNIX_ERR_FILE_PATH" length="200" />
+  	</property>
+    <property
+        name="defaultUnixBadFilePath"
+        type="string"
+    >
+<column name="DEFAULT_UNIX_BAD_FILE_PATH" length="200" />
+  	</property>
+    <property
+        name="appendToLogInd"
+        type="boolean"
+    >
+<column name="APPEND_TO_LOG_IND" length="1" />
+  	</property>
+    <property
+        name="appendToErrInd"
+        type="boolean"
+    >
+<column name="APPEND_TO_ERR_IND" length="1" />
+  	</property>
+    <property
+        name="appendToBadInd"
+        type="boolean"
+    >
+<column name="APPEND_TO_BAD_IND" length="1" />
+  	</property>
+    <property
+        name="rollbackSegmentName"
+        type="string"
+    >
+<column name="ROLLBACK_SEGMENT_NAME" length="30" />
+  	</property>
+    <property
+        name="lastUpdateDate"
+        type="timestamp"
+    >
+<column name="LAST_UPDATE_DATE" length="23" />
+  	</property>
+    <property
+        name="lastUpdateUser"
+        type="string"
+    >
+<column name="LAST_update_USER" length="30" />
+  	</property>
+    <property
+        name="defaultDataFilePath"
+        type="string"
+    >
+<column name="DEFAULT_DATA_FILE_PATH" length="200" />
+  	</property>
+    <property
+        name="defaultUnixDataFilePath"
+        type="string"
+    >
+<column name="DEFAULT_UNIX_DATA_FILE_PATH" length="200" />
+  	</property>
+    <property
+        name="trialInd"
+        type="boolean"
+    >
+<column name="TRIAL_IND" length="1" />
+  	</property>
+    <property
+        name="trialLength"
+        type="long"
+    >
+<column name="TRIAL_LENGTH" precision="18" scale="0" />
+  	</property>
+    <property
+        name="emailNotificationReturnAdrs"
+        type="string"
+    >
+<column name="EMAIL_NOTIFICATION_RETURN_ADRS" length="120" />
+  	</property>
+    <property
+        name="mailServerName"
+        type="string"
+    >
+<column name="MAIL_SERVER_NAME" length="80" />
+  	</property>
+    <property
+        name="engineExePath"
+        type="string"
+    >
+<column name="ENGINE_EXE_PATH" length="200" />
+  	</property>
+    <property
+        name="tableTablespaceName"
+        type="string"
+    >
+<column name="TABLE_TABLESPACE_NAME" length="30" />
+  	</property>
+    <property
+        name="tableInitialExtent"
+        type="long"
+    >
+<column name="TABLE_INITIAL_EXTENT" precision="18" scale="0" />
+  	</property>
+    <property
+        name="tableNextExtent"
+        type="long"
+    >
+<column name="TABLE_NEXT_EXTENT" precision="18" scale="0" />
+  	</property>
+    <property
+        name="tablePctIncrease"
+        type="long"
+    >
+<column name="TABLE_PCT_INCREASE" precision="18" scale="0" />
+  	</property>
+    <property
+        name="indexTablespaceName"
+        type="string"
+    >
+<column name="INDEX_TABLESPACE_NAME" length="30" />
+  	</property>
+    <property
+        name="indexInitialExtent"
+        type="long"
+    >
+<column name="INDEX_INITIAL_EXTENT" precision="18" scale="0" />
+  	</property>
+    <property
+        name="indexNextExtent"
+        type="long"
+    >
+<column name="INDEX_NEXT_EXTENT" precision="18" scale="0" />
+  	</property>
+    <property
+        name="indexPctIncrease"
+        type="long"
+    >
+<column name="INDEX_PCT_INCREASE" precision="18" scale="0" />
+  	</property>
+    <property
+        name="mmDefaultLogFilePath"
+        type="string"
+    >
+<column name="MM_DEFAULT_LOG_FILE_PATH" length="200" />
+  	</property>
+    <property
+        name="mmAppendToLogInd"
+        type="boolean"
+    >
+<column name="MM_APPEND_TO_LOG_IND" length="1" />
+  	</property>
+    <property
+        name="summDefaultLogFilePath"
+        type="string"
+    >
+<column name="SUMM_DEFAULT_LOG_FILE_PATH" length="200" />
+  	</property>
+    <property
+        name="summAppendToLogInd"
+        type="boolean"
+    >
+<column name="SUMM_APPEND_TO_LOG_IND" length="1" />
+  	</property>
+    <property
+        name="lastUpdateOsUser"
+        type="string"
+    >
+<column name="LAST_update_OS_USER" length="30" />
+  	</property>
+    <property
+        name="webReportsUrl"
+        type="string"
+    >
+<column name="WEB_REPORTS_URL" length="200" />
+  	</property>
+    <property
+        name="scrcrdDefaultLogFilePath"
+        type="string"
+    >
+<column name="SCRCRD_DEFAULT_LOG_FILE_PATH" length="80" />
+  	</property>
+    <property
+        name="scrcrdAppendToLogInd"
+        type="boolean"
+    >
+<column name="SCRCRD_APPEND_TO_LOG_IND" length="1" />
+  	</property>
+    <property
+        name="dbHost"
+        type="string"
+    >
+<column name="DB_HOST" length="35" />
+  	</property>
+    <property
+        name="portNo"
+        type="long"
+    >
+<column name="PORT_NO" precision="18" scale="0" />
+  	</property>
+    <property
+        name="dbName"
+        type="string"
+    >
+<column name="DB_NAME" length="35" />
+  	</property>
+    <property
+        name="dashboardUrl"
+        type="string"
+    >
+<column name="DASHBOARD_URL" length="200" />
+  	</property>
+    <property
+        name="schemaVersion"
+        type="string"
+    >
+<column name="SCHEMA_VERSION" length="20" />
+  	</property>
+    <property
+        name="defaultScriptFilePath"
+        type="string"
+    >
+<column name="default_script_file_path" length="200" />
+  	</property>
+    <property
+        name="licensedCdnAdrsCorrInd"
+        type="boolean"
+    >
+<column name="licensed_cdn_adrs_corr_ind" length="1" />
+  	</property>
+    <property
+        name="licensedUsAdrsCorrInd"
+        type="boolean"
+    >
+<column name="licensed_us_adrs_corr_ind" length="1" />
+  	</property>
+    <property
+        name="mmDefaultScriptFilePath"
+        type="string"
+    >
+<column name="mm_default_script_file_path" length="200" />
+  	</property>
+    <property
+        name="summDefaultScriptFilePath"
+        type="string"
+    >
+<column name="summ_default_script_file_path" length="200" />
+  	</property>
+    <property
+        name="dashDefaultScriptFilePath"
+        type="string"
+    >
+<column name="dash_default_script_file_path" length="200" />
+  	</property>
+    <property
+        name="versionControlInd"
+        type="boolean"
+    >
+<column name="version_control_ind" length="1" />
+  	</property>
+    <property
+        name="dashScrcrdBaseRank"
+        type="java.lang.Integer"
+    >
+<column name="dash_scrcrd_base_rank" />
+  	</property>
+    <property
+        name="compileInd"
+        type="boolean"
+    >
+<column name="compile_ind" length="1" />
+  	</property>
+    <property
+        name="audDefaultLogFilePath"
+        type="string"
+    >
+<column name="aud_default_log_file_path" length="200" />
+  	</property>
+    <property
+        name="audDefaultScriptFilePath"
+        type="string"
+    >
+<column name="aud_default_script_file_path" length="200" />
+  	</property>
+    <property
+        name="dashDefaultTargetGrowthPct"
+        type="long"
+    >
+<column name="dash_default_target_growth_pct" precision="18" scale="0" />
+  	</property>
+
+</class>
+</hibernate-mapping>
