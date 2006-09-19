@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
+<hibernate-mapping>
+
+<class 
+    name="PlMatchCriteria"
+    table="PL_MATCH_CRITERIA"
+    catalog="pl"
+>
+    <composite-id
+		name="id"
+        class="PlMatchCriteriaId"
+    >		
+	        <key-property name="matchId" type="string">
+<column name="MATCH_ID" length="80" />
+	        </key-property>
+	        <key-property name="groupId" type="string">
+<column name="GROUP_ID" length="30" />
+	        </key-property>
+	        <key-property name="columnName" type="string">
+<column name="COLUMN_NAME" length="30" />
+	        </key-property>
+    </composite-id>	
+
+
+    <many-to-one
+	    name="plMatchGroup"
+	    class="PlMatchGroup"
+        update="false"
+        insert="false"
+        fetch="select"
+    >
+<column name="MATCH_ID" length="80" not-null="true" />
+<column name="GROUP_ID" length="30" not-null="true" />
+   </many-to-one>
+    <property
+        name="caseSensitiveInd"
+        type="boolean"
+    >
+<column name="CASE_SENSITIVE_IND" length="1" />
+  	</property>
+    <property
+        name="suppressChar"
+        type="string"
+    >
+<column name="SUPPRESS_CHAR" length="50" />
+  	</property>
+    <property
+        name="soundInd"
+        type="boolean"
+    >
+<column name="SOUND_IND" length="1" />
+  	</property>
+    <property
+        name="firstNChar"
+        type="long"
+    >
+<column name="FIRST_N_CHAR" precision="18" scale="0" />
+  	</property>
+    <property
+        name="lastUpdateDate"
+        type="timestamp"
+    >
+<column name="LAST_update_DATE" length="23" />
+  	</property>
+    <property
+        name="lastUpdateUser"
+        type="string"
+    >
+<column name="LAST_update_USER" length="30" />
+  	</property>
+    <property
+        name="seqNo"
+        type="long"
+    >
+<column name="SEQ_NO" precision="18" scale="0" />
+  	</property>
+    <property
+        name="matchStart"
+        type="boolean"
+    >
+<column name="MATCH_START" length="1" />
+  	</property>
+    <property
+        name="matchEnd"
+        type="boolean"
+    >
+<column name="MATCH_END" length="1" />
+  	</property>
+    <property
+        name="varianceAmt"
+        type="long"
+    >
+<column name="VARIANCE_AMT" precision="18" scale="0" />
+  	</property>
+    <property
+        name="varianceType"
+        type="string"
+    >
+<column name="VARIANCE_TYPE" length="35" />
+  	</property>
+    <property
+        name="lastUpdateOsUser"
+        type="string"
+    >
+<column name="LAST_update_OS_USER" length="30" />
+  	</property>
+    <property
+        name="allowNullInd"
+        type="boolean"
+    >
+<column name="allow_null_ind" length="1" />
+  	</property>
+    <property
+        name="translateGroupName"
+        type="string"
+    >
+<column name="translate_group_name" length="35" />
+  	</property>
+    <property
+        name="removeSpecialChars"
+        type="boolean"
+    >
+<column name="remove_special_chars" length="1" />
+  	</property>
+    <property
+        name="countWordsInd"
+        type="boolean"
+    >
+<column name="count_words_ind" length="1" />
+  	</property>
+    <property
+        name="replaceWithSpaceInd"
+        type="boolean"
+    >
+<column name="replace_with_space_ind" length="1" />
+  	</property>
+    <property
+        name="replaceWithSpace"
+        type="string"
+    >
+<column name="replace_with_space" length="50" />
+  	</property>
+    <property
+        name="reorderInd"
+        type="boolean"
+    >
+<column name="reorder_ind" length="1" />
+  	</property>
+    <property
+        name="firstNCharByWordInd"
+        type="boolean"
+    >
+<column name="first_n_char_by_word_ind" length="1" />
+  	</property>
+    <property
+        name="firstNCharByWord"
+        type="long"
+    >
+<column name="first_n_char_by_word" precision="18" scale="0" />
+  	</property>
+    <property
+        name="minWordsInCommon"
+        type="long"
+    >
+<column name="min_words_in_common" precision="18" scale="0" />
+  	</property>
+    <property
+        name="wordsInCommonNumWords"
+        type="long"
+    >
+<column name="words_in_common_num_words" precision="18" scale="0" />
+  	</property>
+    <property
+        name="matchFirstPlusOneInd"
+        type="boolean"
+    >
+<column name="match_first_plus_one_ind" length="1" />
+  	</property>
+
+</class>
+</hibernate-mapping>

@@ -15,11 +15,11 @@
 	</session-factory>
 	-->
     <session-factory name="deepthought">
-        <property name="connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
+        <property name="connection.driver_class">com.microsoft.jdbc.sqlserver.SQLServerDriver</property>
         <property name="connection.password">pl</property>
-        <property name="connection.url">jdbc:oracle:thin:@deepthought:1521:stock</property>
+        <property name="connection.url">jdbc:microsoft:sqlserver://localhost:1433;SelectMethod=cursor</property>
         <property name="connection.username">pl</property>
-        <property name="default_schema">PL</property>
+        <property name="default_schema">pl</property>
    <!-- JDBC connection pool (use the built-in) -->
         <property name="connection.pool_size">1</property>
 
@@ -32,6 +32,13 @@
         <!-- Disable the second-level cache  -->
         <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
         <property name="show_sql">true</property>
+        <mapping file="PlFolder.hbm.xml"/>
+        <mapping file="PlFolderDetail.hbm.xml"/>
+        <mapping file="PlMatch.hbm.xml"/>
+        <mapping file="PlMatchCriteria.hbm.xml"/>
+        <mapping file="PlMatchGroup.hbm.xml"/>
+        <mapping file="PlMergeCriteria.hbm.xml"/>
+        <mapping file="PlMergeConsolidateCriteria.hbm.xml"/>
     </session-factory>
-
+	
 </hibernate-configuration>

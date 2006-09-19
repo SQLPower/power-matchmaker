@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
+<hibernate-mapping>
+
+<class 
+    name="PlFolderDetail"
+    table="PL_FOLDER_DETAIL"
+    catalog="pl"
+>
+    <composite-id
+		name="id"
+        class="ca.sqlpower.matchmaker.generated.PlFolderDetailId"
+    >		
+	        <key-property name="folderName" type="string">
+<column name="folder_name" length="80" />
+	        </key-property>
+	        <key-property name="objectType" type="string">
+<column name="object_type" length="30" />
+	        </key-property>
+	        <key-property name="objectName" type="string">
+<column name="object_name" length="200" />
+	        </key-property>
+    </composite-id>	
+
+
+</class>
+</hibernate-mapping>
