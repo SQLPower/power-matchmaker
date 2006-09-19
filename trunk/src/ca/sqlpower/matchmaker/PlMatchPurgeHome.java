@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 
 
 import java.util.List;
-import javax.naming.InitialContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
@@ -15,26 +15,14 @@ import org.hibernate.criterion.Example;
  * @see ca.sqlpower.matchmaker.PlMatchPurge
  * @author Hibernate Tools
  */
-public class PlMatchPurgeHome {
+public class PlMatchPurgeHome extends DefaultHome {
 
     private static final Log log = LogFactory.getLog(PlMatchPurgeHome.class);
 
-    private final SessionFactory sessionFactory = getSessionFactory();
-    
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext().lookup("SessionFactory");
-        }
-        catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException("Could not locate SessionFactory in JNDI");
-        }
-    }
-    
     public void persist(PlMatchPurge transientInstance) {
         log.debug("persisting PlMatchPurge instance");
         try {
-            sessionFactory.getCurrentSession().persist(transientInstance);
+            getCurrentSession().persist(transientInstance);
             log.debug("persist successful");
         }
         catch (RuntimeException re) {
@@ -46,7 +34,7 @@ public class PlMatchPurgeHome {
     public void attachDirty(PlMatchPurge instance) {
         log.debug("attaching dirty PlMatchPurge instance");
         try {
-            sessionFactory.getCurrentSession().saveOrUpdate(instance);
+            getCurrentSession().saveOrUpdate(instance);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -58,7 +46,7 @@ public class PlMatchPurgeHome {
     public void attachClean(PlMatchPurge instance) {
         log.debug("attaching clean PlMatchPurge instance");
         try {
-            sessionFactory.getCurrentSession().lock(instance, LockMode.NONE);
+            getCurrentSession().lock(instance, LockMode.NONE);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -70,7 +58,7 @@ public class PlMatchPurgeHome {
     public void delete(PlMatchPurge persistentInstance) {
         log.debug("deleting PlMatchPurge instance");
         try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
+            getCurrentSession().delete(persistentInstance);
             log.debug("delete successful");
         }
         catch (RuntimeException re) {
@@ -82,7 +70,7 @@ public class PlMatchPurgeHome {
     public PlMatchPurge merge(PlMatchPurge detachedInstance) {
         log.debug("merging PlMatchPurge instance");
         try {
-            PlMatchPurge result = (PlMatchPurge) sessionFactory.getCurrentSession()
+            PlMatchPurge result = (PlMatchPurge) getCurrentSession()
                     .merge(detachedInstance);
             log.debug("merge successful");
             return result;
@@ -96,7 +84,7 @@ public class PlMatchPurgeHome {
     public PlMatchPurge findById( java.lang.String id) {
         log.debug("getting PlMatchPurge instance with id: " + id);
         try {
-            PlMatchPurge instance = (PlMatchPurge) sessionFactory.getCurrentSession()
+            PlMatchPurge instance = (PlMatchPurge) getCurrentSession()
                     .get("ca.sqlpower.matchmaker.generated.PlMatchPurge", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
@@ -115,7 +103,7 @@ public class PlMatchPurgeHome {
     public List findByExample(PlMatchPurge instance) {
         log.debug("finding PlMatchPurge instance by example");
         try {
-            List results = sessionFactory.getCurrentSession()
+            List results = getCurrentSession()
                     .createCriteria("ca.sqlpower.matchmaker.generated.PlMatchPurge")
                     .add(Example.create(instance))
             .list();

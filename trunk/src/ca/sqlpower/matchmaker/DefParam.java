@@ -569,6 +569,340 @@ public class DefParam  implements java.io.Serializable {
         this.dashDefaultTargetGrowthPct = dashDefaultTargetGrowthPct;
     }
 
+	@Override
+	public int hashCode() {
+		final int PRIME = 31;
+		int result = 1;
+		result = PRIME * result + (appendToBadInd ? 1231 : 1237);
+		result = PRIME * result + (appendToErrInd ? 1231 : 1237);
+		result = PRIME * result + (appendToLogInd ? 1231 : 1237);
+		result = PRIME * result + ((audDefaultLogFilePath == null) ? 0 : audDefaultLogFilePath.hashCode());
+		result = PRIME * result + ((audDefaultScriptFilePath == null) ? 0 : audDefaultScriptFilePath.hashCode());
+		result = PRIME * result + ((commitFreq == null) ? 0 : commitFreq.hashCode());
+		result = PRIME * result + ((companyName == null) ? 0 : companyName.hashCode());
+		result = PRIME * result + (compileInd ? 1231 : 1237);
+		result = PRIME * result + ((dashDefaultScriptFilePath == null) ? 0 : dashDefaultScriptFilePath.hashCode());
+		result = PRIME * result + ((dashDefaultTargetGrowthPct == null) ? 0 : dashDefaultTargetGrowthPct.hashCode());
+		result = PRIME * result + ((dashScrcrdBaseRank == null) ? 0 : dashScrcrdBaseRank.hashCode());
+		result = PRIME * result + ((dashboardUrl == null) ? 0 : dashboardUrl.hashCode());
+		result = PRIME * result + ((dbHost == null) ? 0 : dbHost.hashCode());
+		result = PRIME * result + ((dbName == null) ? 0 : dbName.hashCode());
+		result = PRIME * result + ((defaultBadFilePath == null) ? 0 : defaultBadFilePath.hashCode());
+		result = PRIME * result + ((defaultDataFilePath == null) ? 0 : defaultDataFilePath.hashCode());
+		result = PRIME * result + ((defaultErrFilePath == null) ? 0 : defaultErrFilePath.hashCode());
+		result = PRIME * result + ((defaultLogFilePath == null) ? 0 : defaultLogFilePath.hashCode());
+		result = PRIME * result + ((defaultScriptFilePath == null) ? 0 : defaultScriptFilePath.hashCode());
+		result = PRIME * result + ((defaultUnixBadFilePath == null) ? 0 : defaultUnixBadFilePath.hashCode());
+		result = PRIME * result + ((defaultUnixDataFilePath == null) ? 0 : defaultUnixDataFilePath.hashCode());
+		result = PRIME * result + ((defaultUnixErrFilePath == null) ? 0 : defaultUnixErrFilePath.hashCode());
+		result = PRIME * result + ((defaultUnixLogFilePath == null) ? 0 : defaultUnixLogFilePath.hashCode());
+		result = PRIME * result + ((emailNotificationReturnAdrs == null) ? 0 : emailNotificationReturnAdrs.hashCode());
+		result = PRIME * result + ((engineExePath == null) ? 0 : engineExePath.hashCode());
+		result = PRIME * result + ((fiscalYearEndDate == null) ? 0 : fiscalYearEndDate.hashCode());
+		result = PRIME * result + ((indexInitialExtent == null) ? 0 : indexInitialExtent.hashCode());
+		result = PRIME * result + ((indexNextExtent == null) ? 0 : indexNextExtent.hashCode());
+		result = PRIME * result + ((indexPctIncrease == null) ? 0 : indexPctIncrease.hashCode());
+		result = PRIME * result + ((indexTablespaceName == null) ? 0 : indexTablespaceName.hashCode());
+		result = PRIME * result + ((lastUpdateDate == null) ? 0 : lastUpdateDate.hashCode());
+		result = PRIME * result + ((lastUpdateOsUser == null) ? 0 : lastUpdateOsUser.hashCode());
+		result = PRIME * result + ((lastUpdateUser == null) ? 0 : lastUpdateUser.hashCode());
+		result = PRIME * result + (licensedCdnAdrsCorrInd ? 1231 : 1237);
+		result = PRIME * result + (licensedUsAdrsCorrInd ? 1231 : 1237);
+		result = PRIME * result + ((mailServerName == null) ? 0 : mailServerName.hashCode());
+		result = PRIME * result + (mmAppendToLogInd ? 1231 : 1237);
+		result = PRIME * result + ((mmDefaultLogFilePath == null) ? 0 : mmDefaultLogFilePath.hashCode());
+		result = PRIME * result + ((mmDefaultScriptFilePath == null) ? 0 : mmDefaultScriptFilePath.hashCode());
+		result = PRIME * result + ((portNo == null) ? 0 : portNo.hashCode());
+		result = PRIME * result + (processAddInd ? 1231 : 1237);
+		result = PRIME * result + (processDelInd ? 1231 : 1237);
+		result = PRIME * result + (processUpdInd ? 1231 : 1237);
+		result = PRIME * result + ((rollbackSegmentName == null) ? 0 : rollbackSegmentName.hashCode());
+		result = PRIME * result + ((schemaVersion == null) ? 0 : schemaVersion.hashCode());
+		result = PRIME * result + (scrcrdAppendToLogInd ? 1231 : 1237);
+		result = PRIME * result + ((scrcrdDefaultLogFilePath == null) ? 0 : scrcrdDefaultLogFilePath.hashCode());
+		result = PRIME * result + ((showProgressFreq == null) ? 0 : showProgressFreq.hashCode());
+		result = PRIME * result + (summAppendToLogInd ? 1231 : 1237);
+		result = PRIME * result + ((summDefaultLogFilePath == null) ? 0 : summDefaultLogFilePath.hashCode());
+		result = PRIME * result + ((summDefaultScriptFilePath == null) ? 0 : summDefaultScriptFilePath.hashCode());
+		result = PRIME * result + ((tableInitialExtent == null) ? 0 : tableInitialExtent.hashCode());
+		result = PRIME * result + ((tableNextExtent == null) ? 0 : tableNextExtent.hashCode());
+		result = PRIME * result + ((tablePctIncrease == null) ? 0 : tablePctIncrease.hashCode());
+		result = PRIME * result + ((tableTablespaceName == null) ? 0 : tableTablespaceName.hashCode());
+		result = PRIME * result + (trialInd ? 1231 : 1237);
+		result = PRIME * result + ((trialLength == null) ? 0 : trialLength.hashCode());
+		result = PRIME * result + (versionControlInd ? 1231 : 1237);
+		result = PRIME * result + ((webReportsUrl == null) ? 0 : webReportsUrl.hashCode());
+		result = PRIME * result + (writeDbErrorsInd ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final DefParam other = (DefParam) obj;
+		if (appendToBadInd != other.appendToBadInd)
+			return false;
+		if (appendToErrInd != other.appendToErrInd)
+			return false;
+		if (appendToLogInd != other.appendToLogInd)
+			return false;
+		if (audDefaultLogFilePath == null) {
+			if (other.audDefaultLogFilePath != null)
+				return false;
+		} else if (!audDefaultLogFilePath.equals(other.audDefaultLogFilePath))
+			return false;
+		if (audDefaultScriptFilePath == null) {
+			if (other.audDefaultScriptFilePath != null)
+				return false;
+		} else if (!audDefaultScriptFilePath.equals(other.audDefaultScriptFilePath))
+			return false;
+		if (commitFreq == null) {
+			if (other.commitFreq != null)
+				return false;
+		} else if (!commitFreq.equals(other.commitFreq))
+			return false;
+		if (companyName == null) {
+			if (other.companyName != null)
+				return false;
+		} else if (!companyName.equals(other.companyName))
+			return false;
+		if (compileInd != other.compileInd)
+			return false;
+		if (dashDefaultScriptFilePath == null) {
+			if (other.dashDefaultScriptFilePath != null)
+				return false;
+		} else if (!dashDefaultScriptFilePath.equals(other.dashDefaultScriptFilePath))
+			return false;
+		if (dashDefaultTargetGrowthPct == null) {
+			if (other.dashDefaultTargetGrowthPct != null)
+				return false;
+		} else if (!dashDefaultTargetGrowthPct.equals(other.dashDefaultTargetGrowthPct))
+			return false;
+		if (dashScrcrdBaseRank == null) {
+			if (other.dashScrcrdBaseRank != null)
+				return false;
+		} else if (!dashScrcrdBaseRank.equals(other.dashScrcrdBaseRank))
+			return false;
+		if (dashboardUrl == null) {
+			if (other.dashboardUrl != null)
+				return false;
+		} else if (!dashboardUrl.equals(other.dashboardUrl))
+			return false;
+		if (dbHost == null) {
+			if (other.dbHost != null)
+				return false;
+		} else if (!dbHost.equals(other.dbHost))
+			return false;
+		if (dbName == null) {
+			if (other.dbName != null)
+				return false;
+		} else if (!dbName.equals(other.dbName))
+			return false;
+		if (defaultBadFilePath == null) {
+			if (other.defaultBadFilePath != null)
+				return false;
+		} else if (!defaultBadFilePath.equals(other.defaultBadFilePath))
+			return false;
+		if (defaultDataFilePath == null) {
+			if (other.defaultDataFilePath != null)
+				return false;
+		} else if (!defaultDataFilePath.equals(other.defaultDataFilePath))
+			return false;
+		if (defaultErrFilePath == null) {
+			if (other.defaultErrFilePath != null)
+				return false;
+		} else if (!defaultErrFilePath.equals(other.defaultErrFilePath))
+			return false;
+		if (defaultLogFilePath == null) {
+			if (other.defaultLogFilePath != null)
+				return false;
+		} else if (!defaultLogFilePath.equals(other.defaultLogFilePath))
+			return false;
+		if (defaultScriptFilePath == null) {
+			if (other.defaultScriptFilePath != null)
+				return false;
+		} else if (!defaultScriptFilePath.equals(other.defaultScriptFilePath))
+			return false;
+		if (defaultUnixBadFilePath == null) {
+			if (other.defaultUnixBadFilePath != null)
+				return false;
+		} else if (!defaultUnixBadFilePath.equals(other.defaultUnixBadFilePath))
+			return false;
+		if (defaultUnixDataFilePath == null) {
+			if (other.defaultUnixDataFilePath != null)
+				return false;
+		} else if (!defaultUnixDataFilePath.equals(other.defaultUnixDataFilePath))
+			return false;
+		if (defaultUnixErrFilePath == null) {
+			if (other.defaultUnixErrFilePath != null)
+				return false;
+		} else if (!defaultUnixErrFilePath.equals(other.defaultUnixErrFilePath))
+			return false;
+		if (defaultUnixLogFilePath == null) {
+			if (other.defaultUnixLogFilePath != null)
+				return false;
+		} else if (!defaultUnixLogFilePath.equals(other.defaultUnixLogFilePath))
+			return false;
+		if (emailNotificationReturnAdrs == null) {
+			if (other.emailNotificationReturnAdrs != null)
+				return false;
+		} else if (!emailNotificationReturnAdrs.equals(other.emailNotificationReturnAdrs))
+			return false;
+		if (engineExePath == null) {
+			if (other.engineExePath != null)
+				return false;
+		} else if (!engineExePath.equals(other.engineExePath))
+			return false;
+		if (fiscalYearEndDate == null) {
+			if (other.fiscalYearEndDate != null)
+				return false;
+		} else if (!fiscalYearEndDate.equals(other.fiscalYearEndDate))
+			return false;
+		if (indexInitialExtent == null) {
+			if (other.indexInitialExtent != null)
+				return false;
+		} else if (!indexInitialExtent.equals(other.indexInitialExtent))
+			return false;
+		if (indexNextExtent == null) {
+			if (other.indexNextExtent != null)
+				return false;
+		} else if (!indexNextExtent.equals(other.indexNextExtent))
+			return false;
+		if (indexPctIncrease == null) {
+			if (other.indexPctIncrease != null)
+				return false;
+		} else if (!indexPctIncrease.equals(other.indexPctIncrease))
+			return false;
+		if (indexTablespaceName == null) {
+			if (other.indexTablespaceName != null)
+				return false;
+		} else if (!indexTablespaceName.equals(other.indexTablespaceName))
+			return false;
+		if (lastUpdateDate == null) {
+			if (other.lastUpdateDate != null)
+				return false;
+		} else if (!lastUpdateDate.equals(other.lastUpdateDate))
+			return false;
+		if (lastUpdateOsUser == null) {
+			if (other.lastUpdateOsUser != null)
+				return false;
+		} else if (!lastUpdateOsUser.equals(other.lastUpdateOsUser))
+			return false;
+		if (lastUpdateUser == null) {
+			if (other.lastUpdateUser != null)
+				return false;
+		} else if (!lastUpdateUser.equals(other.lastUpdateUser))
+			return false;
+		if (licensedCdnAdrsCorrInd != other.licensedCdnAdrsCorrInd)
+			return false;
+		if (licensedUsAdrsCorrInd != other.licensedUsAdrsCorrInd)
+			return false;
+		if (mailServerName == null) {
+			if (other.mailServerName != null)
+				return false;
+		} else if (!mailServerName.equals(other.mailServerName))
+			return false;
+		if (mmAppendToLogInd != other.mmAppendToLogInd)
+			return false;
+		if (mmDefaultLogFilePath == null) {
+			if (other.mmDefaultLogFilePath != null)
+				return false;
+		} else if (!mmDefaultLogFilePath.equals(other.mmDefaultLogFilePath))
+			return false;
+		if (mmDefaultScriptFilePath == null) {
+			if (other.mmDefaultScriptFilePath != null)
+				return false;
+		} else if (!mmDefaultScriptFilePath.equals(other.mmDefaultScriptFilePath))
+			return false;
+		if (portNo == null) {
+			if (other.portNo != null)
+				return false;
+		} else if (!portNo.equals(other.portNo))
+			return false;
+		if (processAddInd != other.processAddInd)
+			return false;
+		if (processDelInd != other.processDelInd)
+			return false;
+		if (processUpdInd != other.processUpdInd)
+			return false;
+		if (rollbackSegmentName == null) {
+			if (other.rollbackSegmentName != null)
+				return false;
+		} else if (!rollbackSegmentName.equals(other.rollbackSegmentName))
+			return false;
+		if (schemaVersion == null) {
+			if (other.schemaVersion != null)
+				return false;
+		} else if (!schemaVersion.equals(other.schemaVersion))
+			return false;
+		if (scrcrdAppendToLogInd != other.scrcrdAppendToLogInd)
+			return false;
+		if (scrcrdDefaultLogFilePath == null) {
+			if (other.scrcrdDefaultLogFilePath != null)
+				return false;
+		} else if (!scrcrdDefaultLogFilePath.equals(other.scrcrdDefaultLogFilePath))
+			return false;
+		if (showProgressFreq == null) {
+			if (other.showProgressFreq != null)
+				return false;
+		} else if (!showProgressFreq.equals(other.showProgressFreq))
+			return false;
+		if (summAppendToLogInd != other.summAppendToLogInd)
+			return false;
+		if (summDefaultLogFilePath == null) {
+			if (other.summDefaultLogFilePath != null)
+				return false;
+		} else if (!summDefaultLogFilePath.equals(other.summDefaultLogFilePath))
+			return false;
+		if (summDefaultScriptFilePath == null) {
+			if (other.summDefaultScriptFilePath != null)
+				return false;
+		} else if (!summDefaultScriptFilePath.equals(other.summDefaultScriptFilePath))
+			return false;
+		if (tableInitialExtent == null) {
+			if (other.tableInitialExtent != null)
+				return false;
+		} else if (!tableInitialExtent.equals(other.tableInitialExtent))
+			return false;
+		if (tableNextExtent == null) {
+			if (other.tableNextExtent != null)
+				return false;
+		} else if (!tableNextExtent.equals(other.tableNextExtent))
+			return false;
+		if (tablePctIncrease == null) {
+			if (other.tablePctIncrease != null)
+				return false;
+		} else if (!tablePctIncrease.equals(other.tablePctIncrease))
+			return false;
+		if (tableTablespaceName == null) {
+			if (other.tableTablespaceName != null)
+				return false;
+		} else if (!tableTablespaceName.equals(other.tableTablespaceName))
+			return false;
+		if (trialInd != other.trialInd)
+			return false;
+		if (trialLength == null) {
+			if (other.trialLength != null)
+				return false;
+		} else if (!trialLength.equals(other.trialLength))
+			return false;
+		if (versionControlInd != other.versionControlInd)
+			return false;
+		if (webReportsUrl == null) {
+			if (other.webReportsUrl != null)
+				return false;
+		} else if (!webReportsUrl.equals(other.webReportsUrl))
+			return false;
+		if (writeDbErrorsInd != other.writeDbErrorsInd)
+			return false;
+		return true;
+	}
+
 
 
 

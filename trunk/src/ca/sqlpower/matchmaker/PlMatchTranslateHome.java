@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 
 
 import java.util.List;
-import javax.naming.InitialContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
@@ -15,26 +15,14 @@ import org.hibernate.criterion.Example;
  * @see ca.sqlpower.matchmaker.PlMatchTranslate
  * @author Hibernate Tools
  */
-public class PlMatchTranslateHome {
+public class PlMatchTranslateHome extends DefaultHome {
 
     private static final Log log = LogFactory.getLog(PlMatchTranslateHome.class);
 
-    private final SessionFactory sessionFactory = getSessionFactory();
-    
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext().lookup("SessionFactory");
-        }
-        catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException("Could not locate SessionFactory in JNDI");
-        }
-    }
-    
     public void persist(PlMatchTranslate transientInstance) {
         log.debug("persisting PlMatchTranslate instance");
         try {
-            sessionFactory.getCurrentSession().persist(transientInstance);
+            getCurrentSession().persist(transientInstance);
             log.debug("persist successful");
         }
         catch (RuntimeException re) {
@@ -46,7 +34,7 @@ public class PlMatchTranslateHome {
     public void attachDirty(PlMatchTranslate instance) {
         log.debug("attaching dirty PlMatchTranslate instance");
         try {
-            sessionFactory.getCurrentSession().saveOrUpdate(instance);
+            getCurrentSession().saveOrUpdate(instance);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -58,7 +46,7 @@ public class PlMatchTranslateHome {
     public void attachClean(PlMatchTranslate instance) {
         log.debug("attaching clean PlMatchTranslate instance");
         try {
-            sessionFactory.getCurrentSession().lock(instance, LockMode.NONE);
+            getCurrentSession().lock(instance, LockMode.NONE);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -70,7 +58,7 @@ public class PlMatchTranslateHome {
     public void delete(PlMatchTranslate persistentInstance) {
         log.debug("deleting PlMatchTranslate instance");
         try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
+            getCurrentSession().delete(persistentInstance);
             log.debug("delete successful");
         }
         catch (RuntimeException re) {
@@ -82,7 +70,7 @@ public class PlMatchTranslateHome {
     public PlMatchTranslate merge(PlMatchTranslate detachedInstance) {
         log.debug("merging PlMatchTranslate instance");
         try {
-            PlMatchTranslate result = (PlMatchTranslate) sessionFactory.getCurrentSession()
+            PlMatchTranslate result = (PlMatchTranslate) getCurrentSession()
                     .merge(detachedInstance);
             log.debug("merge successful");
             return result;
@@ -96,7 +84,7 @@ public class PlMatchTranslateHome {
     public PlMatchTranslate findById( ca.sqlpower.matchmaker.PlMatchTranslateId id) {
         log.debug("getting PlMatchTranslate instance with id: " + id);
         try {
-            PlMatchTranslate instance = (PlMatchTranslate) sessionFactory.getCurrentSession()
+            PlMatchTranslate instance = (PlMatchTranslate) getCurrentSession()
                     .get("ca.sqlpower.matchmaker.generated.PlMatchTranslate", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
@@ -115,7 +103,7 @@ public class PlMatchTranslateHome {
     public List findByExample(PlMatchTranslate instance) {
         log.debug("finding PlMatchTranslate instance by example");
         try {
-            List results = sessionFactory.getCurrentSession()
+            List results = getCurrentSession()
                     .createCriteria("ca.sqlpower.matchmaker.generated.PlMatchTranslate")
                     .add(Example.create(instance))
             .list();

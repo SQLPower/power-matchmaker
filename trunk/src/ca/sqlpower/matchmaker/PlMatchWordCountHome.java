@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 
 
 import java.util.List;
-import javax.naming.InitialContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
@@ -15,26 +15,14 @@ import org.hibernate.criterion.Example;
  * @see ca.sqlpower.matchmaker.PlMatchWordCount
  * @author Hibernate Tools
  */
-public class PlMatchWordCountHome {
+public class PlMatchWordCountHome extends DefaultHome{
 
     private static final Log log = LogFactory.getLog(PlMatchWordCountHome.class);
 
-    private final SessionFactory sessionFactory = getSessionFactory();
-    
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext().lookup("SessionFactory");
-        }
-        catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException("Could not locate SessionFactory in JNDI");
-        }
-    }
-    
     public void persist(PlMatchWordCount transientInstance) {
         log.debug("persisting PlMatchWordCount instance");
         try {
-            sessionFactory.getCurrentSession().persist(transientInstance);
+            getCurrentSession().persist(transientInstance);
             log.debug("persist successful");
         }
         catch (RuntimeException re) {
@@ -46,7 +34,7 @@ public class PlMatchWordCountHome {
     public void attachDirty(PlMatchWordCount instance) {
         log.debug("attaching dirty PlMatchWordCount instance");
         try {
-            sessionFactory.getCurrentSession().saveOrUpdate(instance);
+            getCurrentSession().saveOrUpdate(instance);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -58,7 +46,7 @@ public class PlMatchWordCountHome {
     public void attachClean(PlMatchWordCount instance) {
         log.debug("attaching clean PlMatchWordCount instance");
         try {
-            sessionFactory.getCurrentSession().lock(instance, LockMode.NONE);
+            getCurrentSession().lock(instance, LockMode.NONE);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -70,7 +58,7 @@ public class PlMatchWordCountHome {
     public void delete(PlMatchWordCount persistentInstance) {
         log.debug("deleting PlMatchWordCount instance");
         try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
+            getCurrentSession().delete(persistentInstance);
             log.debug("delete successful");
         }
         catch (RuntimeException re) {
@@ -82,7 +70,7 @@ public class PlMatchWordCountHome {
     public PlMatchWordCount merge(PlMatchWordCount detachedInstance) {
         log.debug("merging PlMatchWordCount instance");
         try {
-            PlMatchWordCount result = (PlMatchWordCount) sessionFactory.getCurrentSession()
+            PlMatchWordCount result = (PlMatchWordCount) getCurrentSession()
                     .merge(detachedInstance);
             log.debug("merge successful");
             return result;
@@ -96,7 +84,7 @@ public class PlMatchWordCountHome {
     public PlMatchWordCount findById( ca.sqlpower.matchmaker.PlMatchWordCountId id) {
         log.debug("getting PlMatchWordCount instance with id: " + id);
         try {
-            PlMatchWordCount instance = (PlMatchWordCount) sessionFactory.getCurrentSession()
+            PlMatchWordCount instance = (PlMatchWordCount) getCurrentSession()
                     .get("ca.sqlpower.matchmaker.generated.PlMatchWordCount", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
@@ -115,7 +103,7 @@ public class PlMatchWordCountHome {
     public List findByExample(PlMatchWordCount instance) {
         log.debug("finding PlMatchWordCount instance by example");
         try {
-            List results = sessionFactory.getCurrentSession()
+            List results = getCurrentSession()
                     .createCriteria("ca.sqlpower.matchmaker.generated.PlMatchWordCount")
                     .add(Example.create(instance))
             .list();

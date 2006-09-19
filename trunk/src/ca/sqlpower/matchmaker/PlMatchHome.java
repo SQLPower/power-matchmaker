@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 
 
 import java.util.List;
-import javax.naming.InitialContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
@@ -15,26 +15,15 @@ import org.hibernate.criterion.Example;
  * @see ca.sqlpower.matchmaker.PlMatch
  * @author Hibernate Tools
  */
-public class PlMatchHome {
+public class PlMatchHome extends DefaultHome {
 
     private static final Log log = LogFactory.getLog(PlMatchHome.class);
 
-    private final SessionFactory sessionFactory = getSessionFactory();
-    
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext().lookup("SessionFactory");
-        }
-        catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException("Could not locate SessionFactory in JNDI");
-        }
-    }
     
     public void persist(PlMatch transientInstance) {
         log.debug("persisting PlMatch instance");
         try {
-            sessionFactory.getCurrentSession().persist(transientInstance);
+            getCurrentSession().persist(transientInstance);
             log.debug("persist successful");
         }
         catch (RuntimeException re) {
@@ -46,7 +35,7 @@ public class PlMatchHome {
     public void attachDirty(PlMatch instance) {
         log.debug("attaching dirty PlMatch instance");
         try {
-            sessionFactory.getCurrentSession().saveOrUpdate(instance);
+            getCurrentSession().saveOrUpdate(instance);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -58,7 +47,7 @@ public class PlMatchHome {
     public void attachClean(PlMatch instance) {
         log.debug("attaching clean PlMatch instance");
         try {
-            sessionFactory.getCurrentSession().lock(instance, LockMode.NONE);
+            getCurrentSession().lock(instance, LockMode.NONE);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -70,7 +59,7 @@ public class PlMatchHome {
     public void delete(PlMatch persistentInstance) {
         log.debug("deleting PlMatch instance");
         try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
+            getCurrentSession().delete(persistentInstance);
             log.debug("delete successful");
         }
         catch (RuntimeException re) {
@@ -82,7 +71,7 @@ public class PlMatchHome {
     public PlMatch merge(PlMatch detachedInstance) {
         log.debug("merging PlMatch instance");
         try {
-            PlMatch result = (PlMatch) sessionFactory.getCurrentSession()
+            PlMatch result = (PlMatch) getCurrentSession()
                     .merge(detachedInstance);
             log.debug("merge successful");
             return result;
@@ -96,7 +85,7 @@ public class PlMatchHome {
     public PlMatch findById( java.lang.String id) {
         log.debug("getting PlMatch instance with id: " + id);
         try {
-            PlMatch instance = (PlMatch) sessionFactory.getCurrentSession()
+            PlMatch instance = (PlMatch) getCurrentSession()
                     .get("ca.sqlpower.matchmaker.generated.PlMatch", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
@@ -115,7 +104,7 @@ public class PlMatchHome {
     public List findByExample(PlMatch instance) {
         log.debug("finding PlMatch instance by example");
         try {
-            List results = sessionFactory.getCurrentSession()
+            List results = getCurrentSession()
                     .createCriteria("ca.sqlpower.matchmaker.generated.PlMatch")
                     .add(Example.create(instance))
             .list();
