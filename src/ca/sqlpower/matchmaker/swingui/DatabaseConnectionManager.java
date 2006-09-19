@@ -2,16 +2,17 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -20,6 +21,13 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.DatabaseListChangeEvent;
+import ca.sqlpower.architect.DatabaseListChangeListener;
+import ca.sqlpower.architect.PlDotIni;
+import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
+import ca.sqlpower.architect.swingui.DBCSPanel;
+import ca.sqlpower.architect.swingui.DBConnectionCallBack;
+import ca.sqlpower.architect.swingui.action.DBCS_OkAction;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -29,32 +37,140 @@ import com.jgoodies.forms.layout.FormLayout;
 
 
 
-public class DatabaseConnectionManager extends JDialog {
+public class DatabaseConnectionManager extends JDialog implements DBConnectionCallBack {
 
 	private static Logger logger = Logger.getLogger(DatabaseConnectionManager.class);
 
-	private List<ArchitectDataSource> connections;
+	private JDialog newConnectionDialog;
+	private JTable dsTable;
 	private Action helpAction = new AbstractAction(){
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-
 		}};
 
+
+	public synchronized JDialog getNewConnectionDialog() {
+		return newConnectionDialog;
+	}
+
+	private synchronized void setNewConnectionDialog(JDialog d) {
+		newConnectionDialog = d;
+	}
+	private Action newDatabaseConnectionAction = new AbstractAction("Add") {
+
+		public void actionPerformed(ActionEvent e) {
+			if (getNewConnectionDialog() != null) {
+				getNewConnectionDialog().requestFocus();
+				return;
+			}
+			final DBCSPanel dbcsPanel = new DBCSPanel();
+			dbcsPanel.setDbcs(new ArchitectDataSource());
+
+			DBCS_OkAction okAction = new DBCS_OkAction(dbcsPanel,
+					true,
+					MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
+			okAction.setConnectionSelectionCallBack(DatabaseConnectionManager.this);
+			Action cancelAction = new AbstractAction() {
+				public void actionPerformed(ActionEvent e) {
+					dbcsPanel.discardChanges();
+					setNewConnectionDialog(null);
+				}
+			};
+
+			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
+					dbcsPanel, SwingUtilities.getWindowAncestor(
+							DatabaseConnectionManager.this),
+							"New Database Connection",
+							ArchitectPanelBuilder.OK_BUTTON_LABEL,
+							okAction, cancelAction);
+
+			okAction.setConnectionDialog(d);
+			setNewConnectionDialog(d);
+			d.setVisible(true);
+		}
+	};
+
+
+	private Action editDatabaseConnectionAction = new AbstractAction("Edit") {
+
+		public void actionPerformed(ActionEvent e) {
+			int selectedRow = dsTable.getSelectedRow();
+			if ( selectedRow == -1 ) {
+				return;
+			}
+			if (getNewConnectionDialog() != null) {
+				getNewConnectionDialog().requestFocus();
+				return;
+			}
+			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
+
+			final DBCSPanel dbcsPanel = new DBCSPanel();
+			dbcsPanel.setDbcs(dbcs);
+
+			DBCS_OkAction okAction = new DBCS_OkAction(dbcsPanel,
+					false,
+					MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
+			okAction.setConnectionSelectionCallBack(DatabaseConnectionManager.this);
+
+			Action cancelAction = new AbstractAction() {
+				public void actionPerformed(ActionEvent evt) {
+					dbcsPanel.discardChanges();
+					setNewConnectionDialog(null);
+				}
+			};
+
+			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
+					dbcsPanel, SwingUtilities.getWindowAncestor(
+							DatabaseConnectionManager.this),
+							"Edit Database Connection",
+							ArchitectPanelBuilder.OK_BUTTON_LABEL,
+							okAction, cancelAction);
+
+			okAction.setConnectionDialog(d);
+			setNewConnectionDialog(d);
+
+/*			d.pack();*/
+			d.setLocationRelativeTo(MatchMakerFrame.getMainInstance());
+			d.setVisible(true);
+			logger.debug("Editting existing DBCS on panel: "+dbcs);
+		}
+	};
+
+	private Action removeDatabaseConnectionAction = new AbstractAction("Remove") {
+
+		public void actionPerformed(ActionEvent e) {
+			int selectedRow = dsTable.getSelectedRow();
+			if ( selectedRow == -1 ) {
+				return;
+			}
+			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
+			int option = JOptionPane.showConfirmDialog(
+					DatabaseConnectionManager.this,
+					"Do you want to delete this database connection? ["+dbcs.getName()+"]",
+					"Remove",
+					JOptionPane.YES_NO_OPTION);
+			if ( option != JOptionPane.YES_OPTION ) {
+				return;
+			}
+			plDotIni.removeDataSource(dbcs);
+		}
+	};
 	private JPanel panel;
+
+	private PlDotIni plDotIni;
 
 	private DatabaseConnectionManager() throws HeadlessException {
 		super();
 	}
 
 
-	public DatabaseConnectionManager(List<ArchitectDataSource> connections) {
+	public DatabaseConnectionManager(PlDotIni plDotIni) {
 		this();
-		this.connections = connections;
+		this.plDotIni = plDotIni;
 		setTitle("Database Connection Manager");
 		panel = createPanel();
 		getContentPane().add(panel);
-		setModal(true);
 	}
 
 	private JPanel createPanel() {
@@ -74,25 +190,28 @@ public class DatabaseConnectionManager extends JDialog {
 
 		pb.add(new JLabel("Available Database Connection:"), cc.xy(2, 2));
 
-		TableModel tm = new ConnectionTableModel();
-		JTable connectionList = new JTable(tm);
-		connectionList.setTableHeader(null);
-		JScrollPane sp = new JScrollPane(connectionList);
+		TableModel tm = new ConnectionTableModel(this.plDotIni);
+		dsTable = new JTable(tm);
+		dsTable.setTableHeader(null);
+		dsTable.setShowGrid(false);
+		dsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		dsTable.setAutoscrolls(true);
+
+		JScrollPane sp = new JScrollPane(dsTable);
 
 		pb.add(sp, cc.xy(2, 4));
 
 		ButtonStackBuilder bsb = new ButtonStackBuilder();
 
-		bsb.addUnrelatedGap();
-		JButton newButton = new JButton(helpAction);
+		JButton newButton = new JButton(newDatabaseConnectionAction);
 		newButton.setText("New");
 		bsb.addGridded(newButton);
 		bsb.addRelatedGap();
-		JButton editButton = new JButton(helpAction);
+		JButton editButton = new JButton(editDatabaseConnectionAction);
 		editButton.setText("Edit");
 		bsb.addGridded(editButton);
 		bsb.addRelatedGap();
-		JButton removeButton = new JButton(helpAction);
+		JButton removeButton = new JButton(removeDatabaseConnectionAction);
 		removeButton.setText("Remove");
 		bsb.addGridded(removeButton);
 
@@ -118,7 +237,6 @@ public class DatabaseConnectionManager extends JDialog {
 			}});
 		cancelButton.setText("Exit");
 		bsb.addGridded(cancelButton);
-		bsb.addGlue();
 
 		pb.add(bsb.getPanel(), cc.xy(4,4));
 		return pb.getPanel();
@@ -127,8 +245,23 @@ public class DatabaseConnectionManager extends JDialog {
 
 	private class ConnectionTableModel extends AbstractTableModel {
 
+		public ConnectionTableModel(PlDotIni ini) {
+			super();
+			if ( ini != null ) {
+				ini.addDatabaseListChangeListener(new DatabaseListChangeListener(){
+					public void databaseAdded(DatabaseListChangeEvent e) {
+						fireTableDataChanged();
+					}
+
+					public void databaseRemoved(DatabaseListChangeEvent e) {
+						fireTableDataChanged();
+					}});
+
+			}
+		}
+
 		public int getRowCount() {
-			return connections.size();
+			return plDotIni == null?0:plDotIni.getConnections().size();
 		}
 
 		public int getColumnCount() {
@@ -151,14 +284,15 @@ public class DatabaseConnectionManager extends JDialog {
 		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			return connections.get(rowIndex);
+			return plDotIni == null?null:plDotIni.getConnections().get(rowIndex);
 		}
+
 	}
 
 	public static void main(String args[]) throws ArchitectException {
 
 		final JDialog d = new DatabaseConnectionManager(
-				MatchMakerFrame.getMainInstance().getUserSettings().getConnections());
+				MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
 
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
@@ -166,6 +300,24 @@ public class DatabaseConnectionManager extends JDialog {
 		    	d.setVisible(true);
 		    }
 		});
+	}
+
+	public void selectDBConnection(ArchitectDataSource ds) {
+		for ( int i=0; i<dsTable.getRowCount(); i++ ) {
+			if ( dsTable.getValueAt(i,0) == ds ) {
+				dsTable.setRowSelectionInterval(i,i);
+				dsTable.scrollRectToVisible(dsTable.getCellRect(i,0,true));
+				break;
+			}
+		}
+	}
+
+	public PlDotIni getPlDotIni() {
+		return plDotIni;
+	}
+
+	public void setPlDotIni(PlDotIni plDotIni) {
+		this.plDotIni = plDotIni;
 	}
 
 
