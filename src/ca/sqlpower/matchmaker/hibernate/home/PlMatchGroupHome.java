@@ -88,7 +88,7 @@ public class PlMatchGroupHome extends DefaultHome{
         log.debug("getting PlMatchGroup instance with id: " + id);
         try {
             PlMatchGroup instance = (PlMatchGroup) getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.generated.PlMatchGroup", id);
+                    .get("ca.sqlpower.matchmaker.hibernate.PlMatchGroup", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -107,7 +107,7 @@ public class PlMatchGroupHome extends DefaultHome{
         log.debug("finding PlMatchGroup instance by example");
         try {
             List results = getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.generated.PlMatchGroup")
+                    .createCriteria("ca.sqlpower.matchmaker.hibernate.PlMatchGroup")
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());

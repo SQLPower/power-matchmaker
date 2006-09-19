@@ -7,13 +7,13 @@
 <hibernate-mapping>
 
 <class 
-    name="PlMatchGroup"
+    name="ca.sqlpower.matchmaker.hibernate.PlMatchGroup"
     table="PL_MATCH_GROUP"
     catalog="pl"
 >
     <composite-id
 		name="id"
-        class="PlMatchGroupId"
+        class="ca.sqlpower.matchmaker.hibernate.PlMatchGroupId"
     >		
 	        <key-property name="matchId" type="string">
 <column name="MATCH_ID" length="80" />
@@ -26,7 +26,7 @@
 
     <many-to-one
 	    name="plMatch"
-	    class="PlMatch"
+	    class="ca.sqlpower.matchmaker.hibernate.PlMatch"
         update="false"
         insert="false"
         fetch="select"
@@ -65,8 +65,8 @@
   	</property>
     <property
         name="activeInd"
-        type="boolean"
-    >
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
+    > 
 <column name="ACTIVE_IND" length="1" />
   	</property>
     <property
@@ -84,7 +84,7 @@
 <column name="GROUP_ID" length="30" not-null="true" />
         </key>
 		<one-to-many 
-			 class="PlMatchCriteria"
+			 class="ca.sqlpower.matchmaker.hibernate.PlMatchCriteria"
 			/>			
 	</set>
 

@@ -90,7 +90,7 @@ public class PlFolderDetailHome extends DefaultHome{
         log.debug("getting PlFolderDetail instance with id: " + id);
         try {
             PlFolderDetail instance = (PlFolderDetail)getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.generated.PlFolderDetail", id);
+                    .get("PlFolderDetail", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -109,7 +109,7 @@ public class PlFolderDetailHome extends DefaultHome{
         log.debug("finding PlFolderDetail instance by example");
         try {
             List results =getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.generated.PlFolderDetail")
+                    .createCriteria("PlFolderDetail")
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());

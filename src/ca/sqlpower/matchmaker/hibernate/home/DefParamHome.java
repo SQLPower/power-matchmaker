@@ -87,7 +87,7 @@ public class DefParamHome extends DefaultHome {
         log.debug("getting DefParam instance with id: " + id);
         try {
             DefParam instance = (DefParam) getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.generated.DefParam", id);
+                    .get("ca.sqlpower.matchmaker.hibernate.DefParam", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -106,7 +106,7 @@ public class DefParamHome extends DefaultHome {
         log.debug("finding DefParam instance by example");
         try {
             List results = getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.generated.DefParam")
+                    .createCriteria("ca.sqlpower.matchmaker.hibernate.DefParam")
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());

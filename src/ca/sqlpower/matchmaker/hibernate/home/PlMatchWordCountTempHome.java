@@ -88,7 +88,7 @@ public class PlMatchWordCountTempHome extends DefaultHome {
         log.debug("getting PlMatchWordCountTemp instance with id: " + id);
         try {
             PlMatchWordCountTemp instance = (PlMatchWordCountTemp) getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.generated.PlMatchWordCountTemp", id);
+                    .get("ca.sqlpower.matchmaker.hibernate.PlMatchWordCountTemp", id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -107,7 +107,7 @@ public class PlMatchWordCountTempHome extends DefaultHome {
         log.debug("finding PlMatchWordCountTemp instance by example");
         try {
             List results = getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.generated.PlMatchWordCountTemp")
+                    .createCriteria("ca.sqlpower.matchmaker.hibernate.PlMatchWordCountTemp")
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());

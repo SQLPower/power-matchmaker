@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -25,6 +26,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
@@ -68,6 +70,8 @@ public class MatchMakerFrame extends JFrame {
 	protected UserSettings sprefs = null;
 	protected JToolBar toolBar = null;
 	protected JMenuBar menuBar = null;
+	
+	protected JTree tree = null;
 
     private JMenu databaseMenu;
 
@@ -352,7 +356,8 @@ public class MatchMakerFrame extends JFrame {
 
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
-
+		tree = new JTree(new MatchMakerTreeModel());
+		cp.add(tree);
 
 		Rectangle bounds = new Rectangle();
 		bounds.x = prefs.getInt(SwingUserSettings.MAIN_FRAME_X, 40);
@@ -361,6 +366,10 @@ public class MatchMakerFrame extends JFrame {
 		bounds.height = prefs.getInt(SwingUserSettings.MAIN_FRAME_HEIGHT, 440);
 		setBounds(bounds);
 		addWindowListener(windowListener = new MatchMakerFrameWindowListener());
+	}
+	
+	public void newLogin(Connection con){
+		tree.setModel(new MatchMakerTreeModel(con));
 	}
 
 

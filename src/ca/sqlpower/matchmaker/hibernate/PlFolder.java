@@ -25,7 +25,7 @@ public class PlFolder extends DefaultHibernateObject implements java.io.Serializ
      private String folderName;
      private String folderDesc;
      private String folderStatus;
-     private long lastBackupNo;
+     private Long lastBackupNo;
      private Set<PlMatch> matches = new TreeSet<PlMatch>();
 
      // Constructors
@@ -80,11 +80,11 @@ public class PlFolder extends DefaultHibernateObject implements java.io.Serializ
     public void setFolderStatus(String folderStatus) {
         this.folderStatus = folderStatus;
     }
-    public long getLastBackupNo() {
+    public Long getLastBackupNo() {
         return this.lastBackupNo;
     }
     
-    public void setLastBackupNo(long lastBackupNo) {
+    public void setLastBackupNo(Long lastBackupNo) {
         this.lastBackupNo = lastBackupNo;
     }
 
@@ -96,7 +96,10 @@ public class PlFolder extends DefaultHibernateObject implements java.io.Serializ
 		this.matches = matches;
 	}
 
-
+	@Override
+	public String toString() {
+		return folderName;
+	}
 
 }
 

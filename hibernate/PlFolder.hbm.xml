@@ -7,7 +7,7 @@
 <hibernate-mapping>
 
 <class 
-    name="PlFolder"
+    name="ca.sqlpower.matchmaker.hibernate.PlFolder"
     table="PL_FOLDER"
     catalog="pl"
 >
@@ -39,9 +39,9 @@
 <column name="last_backup_no" precision="18" scale="0" />
   	</property>
 
-	<set name="matches" table="PL_FOLDER_DETAIL">
+	<set name="matches" lazy="true" table="PL_FOLDER_DETAIL">
            <key column="folder_name"/>
-           <many-to-many class="PlMatch" column="object_name"/>
+           <many-to-many unique="true" class="ca.sqlpower.matchmaker.hibernate.PlMatch" column="object_name"/>
     </set> 
 </class>
 

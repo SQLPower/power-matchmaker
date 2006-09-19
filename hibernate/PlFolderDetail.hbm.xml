@@ -7,13 +7,13 @@
 <hibernate-mapping>
 
 <class 
-    name="PlFolderDetail"
+    name="ca.sqlpower.matchmaker.hibernate.PlFolderDetail"
     table="PL_FOLDER_DETAIL"
     catalog="pl"
 >
     <composite-id
 		name="id"
-        class="ca.sqlpower.matchmaker.generated.PlFolderDetailId"
+        class="ca.sqlpower.matchmaker.hibernate.PlFolderDetailId"
     >		
 	        <key-property name="folderName" type="string">
 <column name="folder_name" length="80" />
