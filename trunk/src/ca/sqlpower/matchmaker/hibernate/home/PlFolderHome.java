@@ -23,9 +23,6 @@ public class PlFolderHome  extends DefaultHome{
 
     private static final Log log = LogFactory.getLog(PlFolderHome.class);
 
-    public PlFolderHome(Connection con) {
-		this.setCon(con);
-	}
     
     public void persist(PlFolder transientInstance) {
         log.debug("persisting PlFolder instance");

@@ -39,8 +39,5 @@ public class DefaultHome {
 			return sessionFactory.openSession(con);
 		}
 	}
-	
-
-	
 
 }

@@ -33,15 +33,18 @@ public class MatchMakerTreeModel implements TreeModel {
 		if (HibernateUtil.getSessionFactory() != null){
 			PlMatchHome matchHome = new PlMatchHome();
 			matches = matchHome.findAll();
-
+			PlFolderHome folders = new PlFolderHome();
+			
 			SortedSet<PlFolder> f = new TreeSet<PlFolder>();
 			for(PlMatch m:matches){
 				if (m.getFolders().size() > 0){
 					f.addAll(m.getFolders());
 				}
 			}
-
-			folders = new ArrayList<PlFolder>(f);
+			// add all the ones that don't have contents
+			f.addAll(folders.findMatchMakerFolders());
+			
+			this.folders = new ArrayList<PlFolder>(f);
 		}
 	}
 	
