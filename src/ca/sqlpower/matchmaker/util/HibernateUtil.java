@@ -50,6 +50,7 @@ public class HibernateUtil {
 			sessionFactory = cfg.buildSessionFactory();
 		} catch (Throwable ex) {
 			log.error("Initial SessionFactory creation failed." + ex);
+			sessionFactory = null;
 			throw new ExceptionInInitializerError(ex);
 		}
 		return sessionFactory;
@@ -78,17 +79,18 @@ public class HibernateUtil {
 	public static String plDbType2Dialect(String plType){
 		if (plType == null ) throw new IllegalArgumentException("No dialect for a null database");
 		String dbString = plType.toLowerCase();
-		if( dbString=="oracle") {
+
+		if( dbString.equals("oracle")) {
 			return "org.hibernate.dialect.OracleDialect";
-		} else if(dbString == "sql server"){
+		} else if(dbString.equals( "sql server")){
 			return "org.hibernate.dialect.SQLServerDialect";
-		} else if(dbString == "db2"){
+		} else if(dbString.equals( "db2")){
 			return "org.hibernate.dialect.DB2Dialect";
-		} else if(dbString == "postgres"){
+		} else if(dbString.equals( "postgres")){
 			return "org.hibernate.dialect.PostgreSQLDialect";
-		} else if(dbString == "hsqldb"){
+		} else if(dbString.equals( "hsqldb")){
 			return "org.hibernate.dialect.HSQLDialect";
-		} else if(dbString == "derby"){
+		} else if(dbString.equals( "derby")){
 			return "org.hibernate.dialect.DerbyDialect";
 		} else {
 			return "org.hibernate.dialect.DerbyDialect";

@@ -593,17 +593,20 @@
 	<set
 		name="plMergeConsolidateCriterias"
 		inverse="true"
+		lazy="true"
 		>
 		<key> 
 <column name="MATCH_ID" length="80" not-null="true" />
         </key>
 		<one-to-many 
+		
 			 class="ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria"
 			/>			
 	</set>
 	<set
 		name="plMergeCriterias"
 		inverse="true"
+		lazy="true"
 		>
 		<key> 
 <column name="MATCH_ID" length="80" not-null="true" />
@@ -614,6 +617,7 @@
 	</set>
 	<set
 		name="plMatchGroups"
+		lazy="true"
 		inverse="true"
 		>
 		<key> 
@@ -623,7 +627,7 @@
 			 class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup"
 			/>			
 	</set>
-	<set name="folders" table="PL_FOLDER_DETAIL">
+	<set name="folders" lazy="true" table="PL_FOLDER_DETAIL">
            <key column="OBJECT_NAME"/>
            <many-to-many class="ca.sqlpower.matchmaker.hibernate.PlFolder" column="FOLDER_NAME"/>
     </set>

@@ -41,7 +41,7 @@
   	</property>
     <property
         name="matchPercent"
-        type="long"
+        type="big_decimal"
     >
 <column name="MATCH_PERCENT" precision="18" scale="0" />
   	</property>
@@ -78,6 +78,7 @@
 	<set
 		name="plMatchCriterias"
 		inverse="true"
+		lazy="true"
 		>
 		<key> 
 <column name="MATCH_ID" length="80" not-null="true" />
