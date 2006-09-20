@@ -1,11 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-
-
-
-
-import static ca.sqlpower.matchmaker.swingui.LoginFrame.logger;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
