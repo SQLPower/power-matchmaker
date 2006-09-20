@@ -1,7 +1,6 @@
 package ca.sqlpower.matchmaker.swingui;
 
 
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -10,7 +9,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -19,7 +17,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
@@ -48,10 +45,10 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class TableQueryPanel extends JFrame {
+public class TableQueryFrame extends JFrame {
 
 
-	private static final Logger logger = Logger.getLogger(TableQueryPanel.class);
+	private static final Logger logger = Logger.getLogger(TableQueryFrame.class);
 	public static final String DBCS_DIALOG_TITLE = "New Database Connection";
 
 	private JProgressBar progressBar;
@@ -138,7 +135,7 @@ public class TableQueryPanel extends JFrame {
 				logger.debug(
 						"Unexpected architect exception in ConnectionListener",	e);
 				ASUtils.showExceptionDialog(
-						SwingUtilities.getWindowAncestor(TableQueryPanel.this),
+						SwingUtilities.getWindowAncestor(TableQueryFrame.this),
 						"Unexpected architect exception in ConnectionListener",
 						e);
 			}
@@ -238,10 +235,10 @@ public class TableQueryPanel extends JFrame {
 	            		" row(s) found");
 
 	        }  catch (ArchitectException e1 ) {
-	        	ASUtils.showExceptionDialogNoReport(TableQueryPanel.this,
+	        	ASUtils.showExceptionDialogNoReport(TableQueryFrame.this,
 						"Unknown Error ["+sql+"]", e1);
 			} catch (SQLException e1 ) {
-				ASUtils.showExceptionDialogNoReport(TableQueryPanel.this,
+				ASUtils.showExceptionDialogNoReport(TableQueryFrame.this,
 						"SQL Error ["+sql+"]", e1);
 			} finally {
 	        	try {
@@ -269,7 +266,7 @@ public class TableQueryPanel extends JFrame {
 		return buttonPanel;
 	}
 
-	public TableQueryPanel() {
+	public TableQueryFrame() {
 		super();
 		setTitle("Display Database Tables");
 		tableData = new ArrayList<List>();
@@ -366,7 +363,7 @@ public class TableQueryPanel extends JFrame {
 	 */
 	public static void main(String[] args) {
 
-		final JFrame f = new TableQueryPanel();
+		final JFrame f = new TableQueryFrame();
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
