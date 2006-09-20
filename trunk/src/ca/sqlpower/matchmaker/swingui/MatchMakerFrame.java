@@ -30,9 +30,11 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
+import org.hibernate.SessionFactory;
 
 import sun.security.jca.GetInstance;
 
+import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.ArchitectUtils;
@@ -46,6 +48,7 @@ import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.HelpAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
+import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 import com.darwinsys.util.PrefsUtils;
 
@@ -70,7 +73,6 @@ public class MatchMakerFrame extends JFrame {
 	protected UserSettings sprefs = null;
 	protected JToolBar toolBar = null;
 	protected JMenuBar menuBar = null;
-	
 	protected JTree tree = null;
 
     private JMenu databaseMenu;
@@ -368,8 +370,9 @@ public class MatchMakerFrame extends JFrame {
 		addWindowListener(windowListener = new MatchMakerFrameWindowListener());
 	}
 	
-	public void newLogin(Connection con){
-		tree.setModel(new MatchMakerTreeModel(con));
+	public void newLogin(ArchitectDataSource dbcs){
+		HibernateUtil.getSessionFactory(dbcs);
+		tree.setModel(new MatchMakerTreeModel());
 	}
 
 

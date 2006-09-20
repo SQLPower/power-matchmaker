@@ -114,10 +114,18 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
      private Set plMatchXrefMaps = new HashSet(0);
      private Set plMergeCriterias = new HashSet(0);
      private Set plMatchGroups = new HashSet(0);
-
+     private Set folders = new HashSet(0);
      // Constructors
 
-    /** default constructor */
+    public Set getFolders() {
+		return folders;
+	}
+
+	public void setFolders(Set folders) {
+		this.folders = folders;
+	}
+
+	/** default constructor */
     public PlMatch() {
     }
 
@@ -127,7 +135,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
         this.matchType = matchType;
     }
     /** full constructor */
-    public PlMatch(String matchId, String matchDesc, String tableOwner, String matchTable, String pkColumn, String filter, String resultsTable, Date createDate, Date lastUpdateDate, String lastUpdateUser, String sequenceName, boolean compileFlag, String mergeScriptFileName, Short autoMatchThreshold, Date mergeCompletionDate, String mergeLastUser, String mergeRunStatus, String mergeDesc, String matchLogFileName, boolean matchAppendToLogInd, Long matchProcessCnt, Long matchShowProgressFreq, boolean matchDebugModeInd, String matchRollbackSegmentName, String mergeLogFileName, boolean mergeAppendToLogInd, BigDecimal mergeProcessCnt, BigDecimal mergeShowProgressFreq, boolean mergeDebugModeInd, String mergeRollbackSegmentName, boolean mergeAugmentNullInd, String matchRunStatus, String matchScriptFileName, BigDecimal matchTotalSteps, BigDecimal matchStepsCompleted, BigDecimal matchRowsInserted, Date matchLastRunDate, String matchLastRunUser, BigDecimal mergeTotalSteps, BigDecimal mergeStepsCompleted, Date mergeLastRunDate, String mergeLastRunUser, String matchPackageName, String matchProcedureNameAll, String matchProcedureNameOne, String mergePackageName, String mergeProcedureName, String matchTablePkColumnFormat, BigDecimal mergeRowsInserted, String batchFileName, String selectClause, String fromClause, String whereClause, String resultsTableOwner, boolean matchBreakInd, String filterCriteria, String matchType, String lastUpdateOsUser, String matchStepDesc, String mergeStepDesc, boolean mergeTablesBackupInd, String matchStatus, BigDecimal lastBackupNo, boolean checkedOutInd, Date checkedOutDate, String checkedOutUser, String checkedOutOsUser, String indexColumnName0, String indexColumnName1, String indexColumnName2, String indexColumnName3, String indexColumnName4, String indexColumnName5, String indexColumnName6, String indexColumnName7, String indexColumnName8, String indexColumnName9, String tempSourceTableName, String tempCandDupTableName, String fromClauseDb, String indexColumnType0, String indexColumnType1, String indexColumnType2, String indexColumnType3, String indexColumnType4, String indexColumnType5, String indexColumnType6, String indexColumnType7, String indexColumnType8, String indexColumnType9, boolean truncateCandDupInd, boolean matchSendEmailInd, boolean mergeSendEmailInd, String xrefOwner, String xrefTableName, boolean autoMatchActiveInd, Set plMergeConsolidateCriterias, Set plMatchXrefMaps, Set plMergeCriterias, Set plMatchGroups) {
+    public PlMatch(String matchId, String matchDesc, String tableOwner, String matchTable, String pkColumn, String filter, String resultsTable, Date createDate, Date lastUpdateDate, String lastUpdateUser, String sequenceName, boolean compileFlag, String mergeScriptFileName, Short autoMatchThreshold, Date mergeCompletionDate, String mergeLastUser, String mergeRunStatus, String mergeDesc, String matchLogFileName, boolean matchAppendToLogInd, Long matchProcessCnt, Long matchShowProgressFreq, boolean matchDebugModeInd, String matchRollbackSegmentName, String mergeLogFileName, boolean mergeAppendToLogInd, BigDecimal mergeProcessCnt, BigDecimal mergeShowProgressFreq, boolean mergeDebugModeInd, String mergeRollbackSegmentName, boolean mergeAugmentNullInd, String matchRunStatus, String matchScriptFileName, BigDecimal matchTotalSteps, BigDecimal matchStepsCompleted, BigDecimal matchRowsInserted, Date matchLastRunDate, String matchLastRunUser, BigDecimal mergeTotalSteps, BigDecimal mergeStepsCompleted, Date mergeLastRunDate, String mergeLastRunUser, String matchPackageName, String matchProcedureNameAll, String matchProcedureNameOne, String mergePackageName, String mergeProcedureName, String matchTablePkColumnFormat, BigDecimal mergeRowsInserted, String batchFileName, String selectClause, String fromClause, String whereClause, String resultsTableOwner, boolean matchBreakInd, String filterCriteria, String matchType, String lastUpdateOsUser, String matchStepDesc, String mergeStepDesc, boolean mergeTablesBackupInd, String matchStatus, BigDecimal lastBackupNo, boolean checkedOutInd, Date checkedOutDate, String checkedOutUser, String checkedOutOsUser, String indexColumnName0, String indexColumnName1, String indexColumnName2, String indexColumnName3, String indexColumnName4, String indexColumnName5, String indexColumnName6, String indexColumnName7, String indexColumnName8, String indexColumnName9, String tempSourceTableName, String tempCandDupTableName, String fromClauseDb, String indexColumnType0, String indexColumnType1, String indexColumnType2, String indexColumnType3, String indexColumnType4, String indexColumnType5, String indexColumnType6, String indexColumnType7, String indexColumnType8, String indexColumnType9, boolean truncateCandDupInd, boolean matchSendEmailInd, boolean mergeSendEmailInd, String xrefOwner, String xrefTableName, boolean autoMatchActiveInd, Set plMergeConsolidateCriterias, Set plMatchXrefMaps, Set plMergeCriterias, Set plMatchGroups, Set folder) {
        this.matchId = matchId;
        this.matchDesc = matchDesc;
        this.tableOwner = tableOwner;
@@ -228,6 +236,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
        this.plMatchXrefMaps = plMatchXrefMaps;
        this.plMergeCriterias = plMergeCriterias;
        this.plMatchGroups = plMatchGroups;
+       this.folders = folder;
     }
    
     // Property accessors

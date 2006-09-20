@@ -22,10 +22,6 @@ public class PlMatchHome extends DefaultHome {
 
     private static final Log log = LogFactory.getLog(PlMatchHome.class);
 
-    
-    public PlMatchHome(Connection con) {
-    	this.setCon(con);
-	}
 
 	public void persist(PlMatch transientInstance) {
         log.debug("persisting PlMatch instance");

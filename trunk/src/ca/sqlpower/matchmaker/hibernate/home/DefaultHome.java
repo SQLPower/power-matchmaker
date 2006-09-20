@@ -33,12 +33,13 @@ public class DefaultHome {
 	public Session getCurrentSession() {
 		if (con == null) {
 			if(logger.isDebugEnabled()) logger.debug("Using the default session from the sessionFactory");
-			return sessionFactory.getCurrentSession();
+			return HibernateUtil.currentSession();
 		} else {
 			if(logger.isDebugEnabled()) logger.debug("Using the session from the connection "+con);
 			return sessionFactory.openSession(con);
 		}
 	}
+	
 
 	
 

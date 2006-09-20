@@ -124,7 +124,7 @@ public class LoginFrame extends JDialog {
 			        }
 
 			        // Now let someone else know we did something
-			        MatchMakerFrame.getMainInstance().newLogin(db.getConnection());
+			        MatchMakerFrame.getMainInstance().newLogin(dbSource);
 
 				} catch (ArchitectException e) {
 					ASUtils.showExceptionDialogNoReport(LoginFrame.this,
