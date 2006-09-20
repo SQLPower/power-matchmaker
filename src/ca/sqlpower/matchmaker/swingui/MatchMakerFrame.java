@@ -366,8 +366,10 @@ public class MatchMakerFrame extends JFrame {
 	}
 
 	public void newLogin(ArchitectDataSource dbcs){
+		HibernateUtil.closeSession();
 		HibernateUtil.getSessionFactory(dbcs);
 		tree.setModel(new MatchMakerTreeModel());
+		
 	}
 
 

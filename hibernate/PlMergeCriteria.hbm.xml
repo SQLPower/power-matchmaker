@@ -9,7 +9,7 @@
 <class 
     name="ca.sqlpower.matchmaker.hibernate.PlMergeCriteria"
     table="PL_MERGE_CRITERIA"
-    catalog="pl"
+    
 >
     <composite-id
 		name="id"

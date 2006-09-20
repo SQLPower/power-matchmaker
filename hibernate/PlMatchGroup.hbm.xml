@@ -9,7 +9,7 @@
 <class 
     name="ca.sqlpower.matchmaker.hibernate.PlMatchGroup"
     table="PL_MATCH_GROUP"
-    catalog="pl"
+   
 >
     <composite-id
 		name="id"

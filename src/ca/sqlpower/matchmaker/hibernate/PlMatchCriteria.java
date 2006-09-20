@@ -264,6 +264,35 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
         this.matchFirstPlusOneInd = matchFirstPlusOneInd;
     }
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PlMatchCriteria other = (PlMatchCriteria) obj;
+		return id.equals(other.getId());
+	}
+
+	@Override
+	public int hashCode() {
+		return id.hashCode();
+	}
+
+	public int compareTo(Object o) {
+		if (this.equals(o)) return 0;
+		PlMatchCriteria other = (PlMatchCriteria) o;
+		if (id.getMatchId().compareTo(other.getId().getMatchId())!=0 ) {
+			return id.getMatchId().compareTo(other.getId().getMatchId());
+		} else if (id.getGroupId().compareTo(other.getId().getGroupId()) != 0 ){
+			return id.getGroupId().compareTo(other.getId().getGroupId());
+		} else {
+			return id.getColumnName().compareTo(other.getId().getColumnName());
+		}
+	}
+
 
 
 

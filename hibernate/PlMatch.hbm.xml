@@ -9,7 +9,7 @@
 <class 
     name="ca.sqlpower.matchmaker.hibernate.PlMatch"
     table="PL_MATCH"
-    catalog="pl"
+   
 >
 	<id 
         name="matchId"
@@ -494,66 +494,7 @@
     >
 <column name="from_clause_db" length="800" />
   	</property>
-    <property
-        name="indexColumnType0"
-        type="string"
-    >
-<column name="index_column_type0" length="30" />
-  	</property>
-    <property
-        name="indexColumnType1"
-        type="string"
-    >
-<column name="index_column_type1" length="30" />
-  	</property>
-    <property
-        name="indexColumnType2"
-        type="string"
-    >
-<column name="index_column_type2" length="30" />
-  	</property>
-    <property
-        name="indexColumnType3"
-        type="string"
-    >
-<column name="index_column_type3" length="30" />
-  	</property>
-    <property
-        name="indexColumnType4"
-        type="string"
-    >
-<column name="index_column_type4" length="30" />
-  	</property>
-    <property
-        name="indexColumnType5"
-        type="string"
-    >
-<column name="index_column_type5" length="30" />
-  	</property>
-    <property
-        name="indexColumnType6"
-        type="string"
-    >
-<column name="index_column_type6" length="30" />
-  	</property>
-    <property
-        name="indexColumnType7"
-        type="string"
-    >
-<column name="index_column_type7" length="30" />
-  	</property>
-    <property
-        name="indexColumnType8"
-        type="string"
-    >
-<column name="index_column_type8" length="30" />
-  	</property>
-    <property
-        name="indexColumnType9"
-        type="string"
-    >
-<column name="index_column_type9" length="30" />
-  	</property>
+
     <property
         name="truncateCandDupInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"

@@ -9,7 +9,7 @@
 <class 
     name="ca.sqlpower.matchmaker.hibernate.PlMatchCriteria"
     table="PL_MATCH_CRITERIA"
-    catalog="pl"
+    
 >
     <composite-id
 		name="id"
@@ -57,7 +57,7 @@
   	</property>
     <property
         name="firstNChar"
-        type="long"
+        type="big_decimal"
     >
 <column name="FIRST_N_CHAR" precision="18" scale="0" />
   	</property>
@@ -75,7 +75,7 @@
   	</property>
     <property
         name="seqNo"
-        type="long"
+        type="big_decimal"
     >
 <column name="SEQ_NO" precision="18" scale="0" />
   	</property>
@@ -93,7 +93,7 @@
   	</property>
     <property
         name="varianceAmt"
-        type="long"
+        type="big_decimal"
     >
 <column name="VARIANCE_AMT" precision="18" scale="0" />
   	</property>
@@ -159,19 +159,19 @@
   	</property>
     <property
         name="firstNCharByWord"
-        type="long"
+        type="big_decimal"
     >
 <column name="first_n_char_by_word" precision="18" scale="0" />
   	</property>
     <property
         name="minWordsInCommon"
-        type="long"
+        type="big_decimal"
     >
 <column name="min_words_in_common" precision="18" scale="0" />
   	</property>
     <property
         name="wordsInCommonNumWords"
-        type="long"
+        type="big_decimal"
     >
 <column name="words_in_common_num_words" precision="18" scale="0" />
   	</property>
