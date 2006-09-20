@@ -13,51 +13,51 @@
 	<property name="staging.dir" value="staging" />
 	<property name="izpack.dir" value="IzPack"/>
 
-	
+
 	<path id="toolslib">
 	 <fileset dir="lib">
 	 		<include name="**/*.jar"/>
 	 </fileset>
 	 <fileset dir="buildlib">
 		 <include name="**/*.jar"/>
-	 </fileset>	
+	 </fileset>
 		 <fileset dir="c:/jdbc">
 				 <include name="**/*.jar"/>
-			 </fileset>	
+			 </fileset>
 	 <path location="${jdbc.driver.jar}" />
 	 <path location="bin"/>
 	</path>
-	   
-	<taskdef name="hibernatetool" 
-	         classname="org.hibernate.tool.ant.HibernateToolTask" 
+
+	<taskdef name="hibernatetool"
+	         classname="org.hibernate.tool.ant.HibernateToolTask"
 	         classpathref="toolslib" />
-	
+
 	<condition property="isMac">
 		<os family="mac"/>
 	</condition>
 
 	<target name="hibernate-generate">
-		
+
 		<!-- Remove the fail line to regenerate the persistance classes -->
-		
+
 		<hibernatetool
-	  destdir="src/generated" >  
-		
+	  destdir="src/generated" >
+
 	  <classpath refid="toolslib"/>
-	  <propertyset />         
+	  <propertyset />
 
 		<jdbcconfiguration configurationfile="hibernate/hibernate.cfg.xml"
 		  packagename="ca.sqlpower.matchmaker.generated"
 		  revengfile="hibernate/MatchMaker.reveng.xml"
 		  detectmanytomany="true"
 		>
-		  
+
 		</jdbcconfiguration>
 	  	<hbm2java destdir="src"/>
 		<hbm2dao destdir="src"/>
 		<hbm2hbmxml destdir="src"/>
 	</hibernatetool> </target>
-	
+
 	<condition property="isNotMac">
 		<not>
 			<os family="mac"/>
@@ -73,9 +73,9 @@
 				debug="true" deprecation="true">
 		</javac>
 		<taskdef name="genVersion"
-					classname="ca/sqlpower/matchmaker/MatchMakerVersion"
+					classname="ca.sqlpower.matchmaker.MatchMakerVersion"
 			        classpath="build"/>
-		<genVersion message="MatchMaker!"/>
+		<genVersion message="get MatchMaker version!"/>
 		<echo message="Building MatchMaker version: ${app_ver_major}.${app_ver_minor}.${app_ver_tiny}"> </echo>
 		<property name="deploy.dir" value="deploy/matchmaker-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}"/>
 		<mkdir dir="${deploy.dir}"/>
@@ -331,12 +331,12 @@
 
 	<target name="dist" depends="windows_installer,generic_install,osx_tgz,osx_dmg"><!-- ,osx_dmg -->
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
-	    <copy tofile="${deploy.dir}/index.html" file="html/SQL Power - PowerMatchMaker.html"/>
-		<replace file="${deploy.dir}/index.html">
+	    <!--copy tofile="${deploy.dir}/index.html" file="html/SQL Power - PowerMatchMaker.html"/-->
+		<!--replace file="${deploy.dir}/index.html">
 			<replacefilter token="@@app_ver_major" value="${app_ver_major}"/>
 			<replacefilter token="@@app_var_minor" value="${app_ver_minor}"/>
 			<replacefilter token="@@app_ver_tiny" value="${app_ver_tiny}"/>
-		</replace>
+		</replace-->
 		<echo>Did you forget to turn off all the debugging in log4j.properties?!</echo>
 	</target>
 </project>

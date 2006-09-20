@@ -161,6 +161,15 @@ public class MatchMakerFrame extends JFrame {
 
 	};
 
+	protected Action tableQueryAction = new AbstractAction("Table Explorer") {
+		public void actionPerformed(ActionEvent e) {
+			TableQueryFrame f = new TableQueryFrame();
+			f.pack();
+			f.setVisible(true);
+		}
+	};
+
+
 	private MatchMakerFrameWindowListener windowListener;
 
 	private Action databaseConnectionAction = new AbstractAction("Database Connection...") {
@@ -311,7 +320,7 @@ public class MatchMakerFrame extends JFrame {
 
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
-		toolsMenu.add(aboutAction);
+		toolsMenu.add(tableQueryAction);
         toolsMenu.add(new SQLRunnerAction());
 		menuBar.add(toolsMenu);
 
@@ -369,7 +378,7 @@ public class MatchMakerFrame extends JFrame {
 		HibernateUtil.closePrimarySession();
 		HibernateUtil.createSessionFactory(dbcs,HibernateUtil.primaryLogin);
 		tree.setModel(new MatchMakerTreeModel());
-		
+
 	}
 
 
