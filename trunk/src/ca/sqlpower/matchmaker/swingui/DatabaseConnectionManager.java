@@ -45,7 +45,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 
 public class DatabaseConnectionManager extends JDialog
-implements DBConnectionCallBack, NewDatabaseConnectionParent {
+implements DBConnectionCallBack, DBConnectionUniDialog {
 
 	private static Logger logger = Logger.getLogger(DatabaseConnectionManager.class);
 
