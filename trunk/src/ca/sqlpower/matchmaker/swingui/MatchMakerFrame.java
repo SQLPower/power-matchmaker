@@ -23,6 +23,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -363,7 +364,7 @@ public class MatchMakerFrame extends JFrame {
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel());
-		cp.add(tree);
+		cp.add(new JScrollPane(tree));
 
 		Rectangle bounds = new Rectangle();
 		bounds.x = prefs.getInt(SwingUserSettings.MAIN_FRAME_X, 40);
