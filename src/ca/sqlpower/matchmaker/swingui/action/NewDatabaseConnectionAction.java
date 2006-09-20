@@ -15,11 +15,11 @@ import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
 import ca.sqlpower.architect.swingui.action.DBCS_OkAction;
 import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
-import ca.sqlpower.matchmaker.swingui.NewDatabaseConnectionParent;
+import ca.sqlpower.matchmaker.swingui.DBConnectionUniDialog;
 
 public class NewDatabaseConnectionAction extends AbstractAction {
 
-	private NewDatabaseConnectionParent parent = null;
+	private DBConnectionUniDialog uniDialogParent = null;
 	private Component componentParent = null;
 	private DBConnectionCallBack callBackParent = null;
 
@@ -36,9 +36,9 @@ public class NewDatabaseConnectionAction extends AbstractAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		if ( parent != null ) {
-			if (parent.getNewConnectionDialog() != null) {
-				parent.getNewConnectionDialog().requestFocus();
+		if ( uniDialogParent != null ) {
+			if (uniDialogParent.getNewConnectionDialog() != null) {
+				uniDialogParent.getNewConnectionDialog().requestFocus();
 				return;
 			}
 		}
@@ -54,8 +54,8 @@ public class NewDatabaseConnectionAction extends AbstractAction {
 		Action cancelAction = new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				dbcsPanel.discardChanges();
-				if ( parent != null ) {
-					parent.setNewConnectionDialog(null);
+				if ( uniDialogParent != null ) {
+					uniDialogParent.setNewConnectionDialog(null);
 				}
 			}
 		};
@@ -68,18 +68,18 @@ public class NewDatabaseConnectionAction extends AbstractAction {
 						okAction, cancelAction);
 
 		okAction.setConnectionDialog(d);
-		if ( parent != null ) {
-			parent.setNewConnectionDialog(d);
+		if ( uniDialogParent != null ) {
+			uniDialogParent.setNewConnectionDialog(d);
 		}
 		d.setVisible(true);
 	}
 
-	public NewDatabaseConnectionParent getParent() {
-		return parent;
+	public DBConnectionUniDialog getParent() {
+		return uniDialogParent;
 	}
 
-	public void setParent(NewDatabaseConnectionParent parent) {
-		this.parent = parent;
+	public void setParent(DBConnectionUniDialog parent) {
+		this.uniDialogParent = parent;
 	}
 
 	public DBConnectionCallBack getCallBack() {

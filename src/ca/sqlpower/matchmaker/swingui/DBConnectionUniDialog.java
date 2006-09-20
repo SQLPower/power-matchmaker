@@ -2,7 +2,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.JDialog;
 
-public interface NewDatabaseConnectionParent {
+public interface DBConnectionUniDialog {
 	JDialog getNewConnectionDialog();
 
 	void setNewConnectionDialog(JDialog d);
