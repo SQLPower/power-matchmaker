@@ -79,6 +79,7 @@
 		name="plMatchCriterias"
 		inverse="true"
 		lazy="true"
+		fetch="subselect"
 		>
 		<key> 
 <column name="MATCH_ID" length="80" not-null="true" />

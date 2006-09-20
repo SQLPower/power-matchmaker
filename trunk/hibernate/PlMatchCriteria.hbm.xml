@@ -65,13 +65,13 @@
         name="lastUpdateDate"
         type="timestamp"
     >
-<column name="LAST_update_DATE" length="23" />
+<column name="LAST_UPDATE_DATE" length="23" />
   	</property>
     <property
         name="lastUpdateUser"
         type="string"
     >
-<column name="LAST_update_USER" length="30" />
+<column name="LAST_UPDATE_USER" length="30" />
   	</property>
     <property
         name="seqNo"
@@ -107,79 +107,79 @@
         name="lastUpdateOsUser"
         type="string"
     >
-<column name="LAST_update_OS_USER" length="30" />
+<column name="LAST_UPDATE_OS_USER" length="30" />
   	</property>
     <property
         name="allowNullInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
-<column name="allow_null_ind" length="1" />
+<column name="ALLOW_NULL_IND" length="1" />
   	</property>
     <property
         name="translateGroupName"
         type="string"
     >
-<column name="translate_group_name" length="35" />
+<column name="TRANSLATE_GROUP_NAME" length="35" />
   	</property>
     <property
         name="removeSpecialChars"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
-<column name="remove_special_chars" length="1" />
+<column name="REMOVE_SPECIAL_CHARS" length="1" />
   	</property>
     <property
         name="countWordsInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
-<column name="count_words_ind" length="1" />
+<column name="COUNT_WORDS_IND" length="1" />
   	</property>
     <property
         name="replaceWithSpaceInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
-<column name="replace_with_space_ind" length="1" />
+<column name="REPLACE_WITH_SPACE_IND" length="1" />
   	</property>
     <property
         name="replaceWithSpace"
         type="string"
     >
-<column name="replace_with_space" length="50" />
+<column name="REPLACE_WITH_SPACE" length="50" />
   	</property>
     <property
         name="reorderInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
-<column name="reorder_ind" length="1" />
+<column name="REORDER_IND" length="1" />
   	</property>
     <property
         name="firstNCharByWordInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
-<column name="first_n_char_by_word_ind" length="1" />
+<column name="FIRST_N_CHARS_BY_WORD_IND" length="1" />
   	</property>
     <property
         name="firstNCharByWord"
         type="big_decimal"
     >
-<column name="first_n_char_by_word" precision="18" scale="0" />
+<column name="FIRST_N_CHARS_BY_WORD" precision="18" scale="0" />
   	</property>
     <property
         name="minWordsInCommon"
         type="big_decimal"
     >
-<column name="min_words_in_common" precision="18" scale="0" />
+<column name="MIN_WORDS_IN_COMMON" precision="18" scale="0" />
   	</property>
     <property
         name="wordsInCommonNumWords"
         type="big_decimal"
     >
-<column name="words_in_common_num_words" precision="18" scale="0" />
+<column name="WORDS_IN_COMMON_NUM_WORDS" precision="18" scale="0" />
   	</property>
     <property
         name="matchFirstPlusOneInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
-<column name="match_first_plus_one_ind" length="1" />
+<column name="MATCH_FIRST_PLUS_ONE_IND" length="1" />
   	</property>
 
 </class>

@@ -1,6 +1,10 @@
 package ca.sqlpower.matchmaker.util;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,7 +20,10 @@ import ca.sqlpower.architect.ArchitectDataSource;
  */
 public class HibernateUtil {
 
-	private static SessionFactory sessionFactory=null;
+	public static final String primaryLogin = "primary login";
+	public static final String auxLogin = "Auxilliary login";
+	
+	private static final Map<String,SessionFactory> sessionFactories=new HashMap<String,SessionFactory>();
 
 	private static final Log log = LogFactory.getLog(HibernateUtil.class);
 
@@ -27,11 +34,17 @@ public class HibernateUtil {
 	 * @return
 	 */
 	public static SessionFactory getSessionFactory() {
-		return sessionFactory;
+		return sessionFactories.get(primaryLogin);
 	}
 	
-	public static SessionFactory getSessionFactory(ArchitectDataSource ds) {
+	public static SessionFactory getSessionFactoryImpl(ArchitectDataSource ds,String key) {
+		return sessionFactories.get(key);
+
+	}
+	
+	public static SessionFactory createSessionFactory(ArchitectDataSource ds,  String key){
 		Configuration cfg = new Configuration();
+		SessionFactory sessionFactory = null;
 		
 		cfg.configure(new File("./hibernate/hibernate.cfg.xml"));
 		cfg.setProperty("hibernate.connection.driver_class", ds.getDriverClass());
@@ -48,28 +61,29 @@ public class HibernateUtil {
         try {
 			// Create the SessionFactory from hibernate.cfg.xml
 			sessionFactory = cfg.buildSessionFactory();
+			
 		} catch (Throwable ex) {
 			log.error("Initial SessionFactory creation failed." + ex);
 			sessionFactory = null;
 			throw new ExceptionInInitializerError(ex);
 		}
 		return sessionFactory;
-
 	}
+	
 	
     public static ThreadLocal session = new ThreadLocal();
 
-    public static Session currentSession() throws HibernateException {
+    public static Session primarySession() throws HibernateException {
         Session s = (Session) session.get();
         // Open a new Session, if this Thread has none yet
         if (s == null) {
-            s = sessionFactory.openSession();
+            s = getSessionFactory().openSession();
             session.set(s);
         }
         return s;
     }
 
-    public static void closeSession() throws HibernateException {
+    public static void closePrimarySession() throws HibernateException {
         Session s = (Session) session.get();
         session.set(null);
         if (s != null)
