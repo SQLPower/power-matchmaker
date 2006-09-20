@@ -15,17 +15,7 @@
 	</session-factory>
 	-->
     <session-factory name="deepthought">
-        <property name="connection.driver_class">com.microsoft.jdbc.sqlserver.SQLServerDriver</property>
-        <property name="connection.password">pl</property>
-        <property name="connection.url">jdbc:microsoft:sqlserver://localhost:1433;SelectMethod=cursor</property>
-        <property name="connection.username">pl</property>
-        <property name="default_schema">pl</property>
-   <!-- JDBC connection pool (use the built-in) -->
-        <property name="connection.pool_size">1</property>
-
-        <!-- SQL dialect -->
-        <property name="dialect">org.hibernate.dialect.OracleDialect</property>
-
+    	
         <!-- Enable Hibernate's automatic session context management -->
         <property name="current_session_context_class">thread</property>
 

@@ -18,6 +18,7 @@ import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
+import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class MatchMakerTreeModel implements TreeModel {
 	
@@ -29,16 +30,22 @@ public class MatchMakerTreeModel implements TreeModel {
 	public List<PlMatch>  matches = new ArrayList<PlMatch>();
 	
 	public MatchMakerTreeModel(){
-		
+		if (HibernateUtil.getSessionFactory() != null){
+			PlMatchHome matchHome = new PlMatchHome();
+			matches = matchHome.findAll();
+
+			SortedSet<PlFolder> f = new TreeSet<PlFolder>();
+			for(PlMatch m:matches){
+				if (m.getFolders().size() > 0){
+					f.addAll(m.getFolders());
+				}
+			}
+
+			folders = new ArrayList<PlFolder>(f);
+		}
 	}
 	
-	public MatchMakerTreeModel(Connection con) {
-		PlMatchHome matchHome = new PlMatchHome(con);
-		matches = matchHome.findAll();
-		
-		SortedSet<PlFolder> f = new TreeSet<PlFolder>();
-		folders = new ArrayList<PlFolder>(f);
-	}
+
 	
 	public Object getChild(Object parent, int index) {
 		if(parent == root ){
