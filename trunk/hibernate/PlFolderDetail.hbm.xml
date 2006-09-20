@@ -9,7 +9,7 @@
 <class 
     name="ca.sqlpower.matchmaker.hibernate.PlFolderDetail"
     table="PL_FOLDER_DETAIL"
-    catalog="pl"
+    
 >
     <composite-id
 		name="id"

@@ -8,7 +8,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 
-public class DefaultHibernateObject  {
+public abstract class DefaultHibernateObject implements Comparable {
 	List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 	
 	public void addChangeListener(ChangeListener l) {
@@ -32,5 +32,11 @@ public class DefaultHibernateObject  {
 	public int getChildCount(){
 		return 0;
 	}
+
+	@Override
+	 public abstract int hashCode();
+	@Override
+	public abstract boolean equals(Object obj);
+	
 
 }

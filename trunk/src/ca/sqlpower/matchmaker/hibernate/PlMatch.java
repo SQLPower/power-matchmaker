@@ -30,12 +30,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
      private String lastUpdateUser;
      private String sequenceName;
      private boolean compileFlag;
-     private String mergeScriptFileName;
      private Short autoMatchThreshold;
-     private Date mergeCompletionDate;
-     private String mergeLastUser;
-     private String mergeRunStatus;
-     private String mergeDesc;
      private String matchLogFileName;
      private boolean matchAppendToLogInd;
      private Long matchProcessCnt;
@@ -43,12 +38,6 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
      private boolean matchDebugModeInd;
      private String matchRollbackSegmentName;
      private String mergeLogFileName;
-     private boolean mergeAppendToLogInd;
-     private BigDecimal mergeProcessCnt;
-     private BigDecimal mergeShowProgressFreq;
-     private boolean mergeDebugModeInd;
-     private String mergeRollbackSegmentName;
-     private boolean mergeAugmentNullInd;
      private String matchRunStatus;
      private String matchScriptFileName;
      private BigDecimal matchTotalSteps;
@@ -56,6 +45,17 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
      private BigDecimal matchRowsInserted;
      private Date matchLastRunDate;
      private String matchLastRunUser;
+     private Date mergeCompletionDate;
+     private String mergeScriptFileName;
+     private String mergeLastUser;
+     private String mergeRunStatus;
+     private String mergeDesc;
+     private boolean mergeAppendToLogInd;
+     private BigDecimal mergeProcessCnt;
+     private BigDecimal mergeShowProgressFreq;
+     private boolean mergeDebugModeInd;
+     private String mergeRollbackSegmentName;
+     private boolean mergeAugmentNullInd;
      private BigDecimal mergeTotalSteps;
      private BigDecimal mergeStepsCompleted;
      private Date mergeLastRunDate;
@@ -65,8 +65,10 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
      private String matchProcedureNameOne;
      private String mergePackageName;
      private String mergeProcedureName;
-     private String matchTablePkColumnFormat;
      private BigDecimal mergeRowsInserted;
+     private String mergeStepDesc;
+     private boolean mergeTablesBackupInd;
+     private String matchTablePkColumnFormat;
      private String batchFileName;
      private String selectClause;
      private String fromClause;
@@ -77,8 +79,6 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
      private String matchType;
      private String lastUpdateOsUser;
      private String matchStepDesc;
-     private String mergeStepDesc;
-     private boolean mergeTablesBackupInd;
      private String matchStatus;
      private BigDecimal lastBackupNo;
      private boolean checkedOutInd;
@@ -964,7 +964,38 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     	}
     	return Collections.unmodifiableList(children);
     }
+    
+    
 
+	@Override
+	public int hashCode() {
+		final int PRIME = 31;
+		int result = 1;
+		result = PRIME * result + ((matchId == null) ? 0 : matchId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final PlMatch other = (PlMatch) obj;
+		if (matchId == null) {
+			if (other.matchId != null)
+				return false;
+		} else if (!matchId.equals(other.matchId))
+			return false;
+		return true;
+	}
+
+	public int compareTo(Object o) {
+		final PlMatch other = (PlMatch) o;
+		return matchId.compareTo(other.getMatchId());
+	}
 
 }
 

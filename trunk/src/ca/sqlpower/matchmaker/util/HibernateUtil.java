@@ -57,7 +57,7 @@ public class HibernateUtil {
 
 	}
 	
-    public static final ThreadLocal session = new ThreadLocal();
+    public static ThreadLocal session = new ThreadLocal();
 
     public static Session currentSession() throws HibernateException {
         Session s = (Session) session.get();
