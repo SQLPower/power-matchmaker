@@ -4,6 +4,8 @@ package ca.sqlpower.matchmaker.swingui;
 
 
 
+import static ca.sqlpower.matchmaker.swingui.LoginFrame.logger;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
@@ -79,6 +81,7 @@ public class LoginFrame extends JDialog {
 		public void cleanup() {
 			progressBar.setVisible(false);
 			if ( db != null && db.isPopulated() && login ) {
+
 				SQLTable defParam = null;
 				SQLColumn schemaVersionCol = null;
 				try {
@@ -108,7 +111,7 @@ public class LoginFrame extends JDialog {
 
 			            logger.debug("connected to "+db.getName()+
 			            		"  schema version: " + ver );
-			            		LoginFrame.this.setVisible(false);
+			            LoginFrame.this.setVisible(false);
 			        } catch (SQLException e) {
 			            throw new ArchitectException("could not read def_param",e);
 			        } finally {

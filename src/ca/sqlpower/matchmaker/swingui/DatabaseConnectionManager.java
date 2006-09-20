@@ -34,6 +34,7 @@ import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
 import ca.sqlpower.architect.swingui.action.DBCS_OkAction;
+import ca.sqlpower.matchmaker.swingui.action.NewDatabaseConnectionAction;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -43,7 +44,8 @@ import com.jgoodies.forms.layout.FormLayout;
 
 
 
-public class DatabaseConnectionManager extends JDialog implements DBConnectionCallBack {
+public class DatabaseConnectionManager extends JDialog
+implements DBConnectionCallBack, NewDatabaseConnectionParent {
 
 	private static Logger logger = Logger.getLogger(DatabaseConnectionManager.class);
 
@@ -63,42 +65,10 @@ public class DatabaseConnectionManager extends JDialog implements DBConnectionCa
 		return newConnectionDialog;
 	}
 
-	private synchronized void setNewConnectionDialog(JDialog d) {
+	public synchronized void setNewConnectionDialog(JDialog d) {
 		newConnectionDialog = d;
 	}
-	private Action newDatabaseConnectionAction = new AbstractAction("Add") {
-
-		public void actionPerformed(ActionEvent e) {
-			if (getNewConnectionDialog() != null) {
-				getNewConnectionDialog().requestFocus();
-				return;
-			}
-			final DBCSPanel dbcsPanel = new DBCSPanel();
-			dbcsPanel.setDbcs(new ArchitectDataSource());
-
-			DBCS_OkAction okAction = new DBCS_OkAction(dbcsPanel,
-					true,
-					MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
-			okAction.setConnectionSelectionCallBack(DatabaseConnectionManager.this);
-			Action cancelAction = new AbstractAction() {
-				public void actionPerformed(ActionEvent e) {
-					dbcsPanel.discardChanges();
-					setNewConnectionDialog(null);
-				}
-			};
-
-			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
-					dbcsPanel, SwingUtilities.getWindowAncestor(
-							DatabaseConnectionManager.this),
-							"New Database Connection",
-							ArchitectPanelBuilder.OK_BUTTON_LABEL,
-							okAction, cancelAction);
-
-			okAction.setConnectionDialog(d);
-			setNewConnectionDialog(d);
-			d.setVisible(true);
-		}
-	};
+	private NewDatabaseConnectionAction newDatabaseConnectionAction = new NewDatabaseConnectionAction("Add");
 
 
 	private Action editDatabaseConnectionAction = new AbstractAction("Edit") {
@@ -191,6 +161,9 @@ public class DatabaseConnectionManager extends JDialog implements DBConnectionCa
 
 	private DatabaseConnectionManager() throws HeadlessException {
 		super();
+		newDatabaseConnectionAction.setCallBack(this);
+		newDatabaseConnectionAction.setComponentParent(this);
+		newDatabaseConnectionAction.setParent(this);
 	}
 
 
@@ -359,7 +332,6 @@ public class DatabaseConnectionManager extends JDialog implements DBConnectionCa
 	private class DSTableMouseListener implements MouseListener {
 
 		public void mouseClicked(MouseEvent evt) {
-            Object obj = evt.getSource();
             if (evt.getClickCount() == 2) {
             	editDatabaseConnectionAction.actionPerformed(null);
             }

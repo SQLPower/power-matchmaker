@@ -11,7 +11,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.sql.Connection;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -22,7 +21,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
@@ -30,9 +28,6 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
-import org.hibernate.SessionFactory;
-
-import sun.security.jca.GetInstance;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
@@ -44,7 +39,6 @@ import ca.sqlpower.architect.UserSettings;
 import ca.sqlpower.architect.qfa.ExceptionHandler;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
-
 import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.HelpAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
@@ -86,10 +80,11 @@ public class MatchMakerFrame extends JFrame {
 	    }
 	};
 
-	protected Action loginAction = new AbstractAction("Login") {
+	protected static Action loginAction = new AbstractAction("Login") {
 		public void actionPerformed(ActionEvent e) {
 			LoginFrame l = new LoginFrame();
 			l.pack();
+			l.setLocationRelativeTo(MatchMakerFrame.mainInstance);
 	    	l.setVisible(true);
 		}
 	};
@@ -369,7 +364,7 @@ public class MatchMakerFrame extends JFrame {
 		setBounds(bounds);
 		addWindowListener(windowListener = new MatchMakerFrameWindowListener());
 	}
-	
+
 	public void newLogin(ArchitectDataSource dbcs){
 		HibernateUtil.getSessionFactory(dbcs);
 		tree.setModel(new MatchMakerTreeModel());
@@ -454,8 +449,9 @@ public class MatchMakerFrame extends JFrame {
 		        logger.debug("new motion threshold is: " + System.getProperty("awt.dnd.drag.threshold"));
 
 		        getMainInstance().macOSXRegistration();
-
 		        getMainInstance().setVisible(true);
+
+		        loginAction.actionPerformed(null);
 		    }
 		});
 	}
