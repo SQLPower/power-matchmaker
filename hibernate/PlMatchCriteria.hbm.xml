@@ -127,12 +127,12 @@
     >
 <column name="REMOVE_SPECIAL_CHARS" length="1" />
   	</property>
-    <property
+<!--     <property
         name="countWordsInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="COUNT_WORDS_IND" length="1" />
-  	</property>
+  	</property> -->
     <property
         name="replaceWithSpaceInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
@@ -155,13 +155,13 @@
         name="firstNCharByWordInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
-<column name="FIRST_N_CHARS_BY_WORD_IND" length="1" />
+<column name="FIRST_N_CHAR_BY_WORD_IND" length="1" />
   	</property>
     <property
         name="firstNCharByWord"
         type="big_decimal"
     >
-<column name="FIRST_N_CHARS_BY_WORD" precision="18" scale="0" />
+<column name="FIRST_N_CHAR_BY_WORD" precision="18" scale="0" />
   	</property>
     <property
         name="minWordsInCommon"
