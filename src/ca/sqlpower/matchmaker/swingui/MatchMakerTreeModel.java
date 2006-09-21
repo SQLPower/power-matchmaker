@@ -1,12 +1,8 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -16,38 +12,30 @@ import javax.swing.tree.TreePath;
 import ca.sqlpower.matchmaker.hibernate.DefaultHibernateObject;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
-import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
-import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class MatchMakerTreeModel implements TreeModel {
-	
+
 	public static final String root="All Match/Merge Information";
 	public static final String current="Current Match/Merge Information";
 	public static final String allCurrent="All Current Match/Merge Information";
 	public static final String backup="Backup Match/Merge Information";
 	public List<PlFolder> folders = new ArrayList<PlFolder>();
 	public List<PlMatch>  matches = new ArrayList<PlMatch>();
-	
-	public MatchMakerTreeModel() {
-		if (HibernateUtil.getSessionFactory() != null){
 
-			PlFolderHome folders = new PlFolderHome();
-			
-			ArrayList<PlFolder> f = new ArrayList<PlFolder>();
-			// add all the ones that don't have contents
-			f.addAll(folders.findMatchMakerFolders());
-			
-			for (PlFolder folder: f){
-				matches.addAll(folder.getMatches());
-			}
-			
-			this.folders = new ArrayList<PlFolder>(f);
-		}
+	public MatchMakerTreeModel(List<PlFolder> folders, List<PlMatch> matches) {
+		this();
+		this.folders = folders;
+		this.matches = matches;
 	}
-	
 
-	
+
+
+	public MatchMakerTreeModel() {
+		super();
+	}
+
+
+
 	public Object getChild(Object parent, int index) {
 		if(parent == root ){
 			if(index == 0) {
@@ -65,10 +53,10 @@ public class MatchMakerTreeModel implements TreeModel {
 		}else if (parent == allCurrent){
 			return matches.get(index);
 		} else if(parent instanceof DefaultHibernateObject) {
-			return ((DefaultHibernateObject) parent).getChildren().get(index);		
+			return ((DefaultHibernateObject) parent).getChildren().get(index);
 		}
 		return null;
-		
+
 	}
 
 	public int getChildCount(Object parent) {
@@ -79,9 +67,9 @@ public class MatchMakerTreeModel implements TreeModel {
 		}else if (parent==allCurrent){
 			return matches.size();
 		} else if(parent instanceof DefaultHibernateObject) {
-			return ((DefaultHibernateObject) parent).getChildren().size();		
+			return ((DefaultHibernateObject) parent).getChildren().size();
 		}
-		
+
 		return 0;
 	}
 
@@ -91,7 +79,7 @@ public class MatchMakerTreeModel implements TreeModel {
 		} else {
 			return -1;
 		}
-		
+
 	}
 
 	public Object getRoot() {
@@ -112,10 +100,10 @@ public class MatchMakerTreeModel implements TreeModel {
 		// TODO Auto-generated method stub
 
 	}
-	
+
 	protected LinkedList treeModelListeners = new LinkedList();
 
-	public void addTreeModelListener(TreeModelListener l) {		
+	public void addTreeModelListener(TreeModelListener l) {
 		treeModelListeners.add(l);
 	}
 
@@ -126,19 +114,19 @@ public class MatchMakerTreeModel implements TreeModel {
 	protected void fireTreeNodesInserted(TreeModelEvent e) {
 
 	}
-	
+
 	protected void fireTreeNodesRemoved(TreeModelEvent e) {
 
 	}
 
 	protected void fireTreeNodesChanged(TreeModelEvent e) {
 
-		
+
 	}
 
 	protected void fireTreeStructureChanged(TreeModelEvent e) {
 
-		
+
 	}
 
 }
