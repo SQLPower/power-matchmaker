@@ -29,6 +29,10 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 	}
 	JPopupMenu m;
 	public void mousePressed(MouseEvent e) {
+		makePopup(e);
+	}
+
+	private void makePopup(MouseEvent e) {
 		if (e.isPopupTrigger()) {
 			JTree t = (JTree) e.getSource();
 			int row = t.getRowForLocation(e.getX(),e.getY());
@@ -60,7 +64,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 	}
 
 	public void mouseReleased(MouseEvent e) {
-
+		makePopup(e);
 
 	}
 
