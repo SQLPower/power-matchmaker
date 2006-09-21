@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -43,6 +44,9 @@ import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.HelpAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
+import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.hibernate.PlMatch;
+import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 import com.darwinsys.util.PrefsUtils;
@@ -183,6 +187,10 @@ public class MatchMakerFrame extends JFrame {
 
 		}};
 
+	private ArrayList<PlMatch> matches;
+
+	private ArrayList<PlFolder> folders;
+
 	/**
 	 * You can't create an architect frame using this constructor.  You have to
 	 * call {@link #getMainInstance()}.
@@ -291,6 +299,7 @@ public class MatchMakerFrame extends JFrame {
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
 		databaseMenu = new JMenu("Database");
 		databaseMenu.setMnemonic('D');
+		databaseMenu.add(loginAction);
 		databaseMenu.add(logoutAction);
 		databaseMenu.addSeparator();
 		databaseMenu.add(databaseConnectionAction );
@@ -379,7 +388,18 @@ public class MatchMakerFrame extends JFrame {
 	public void newLogin(ArchitectDataSource dbcs){
 		HibernateUtil.closePrimarySession();
 		HibernateUtil.createSessionFactory(dbcs,HibernateUtil.primaryLogin);
-		tree.setModel(new MatchMakerTreeModel());
+
+
+		if (HibernateUtil.getSessionFactory() != null){
+
+			PlFolderHome folderHome = new PlFolderHome();
+			folders = new ArrayList<PlFolder>(folderHome.findMatchMakerFolders());
+			matches = new ArrayList<PlMatch>();
+			for (PlFolder folder: folders){
+				matches.addAll(folder.getMatches());
+			}
+		}
+		tree.setModel(new MatchMakerTreeModel(folders,matches));
 
 	}
 
