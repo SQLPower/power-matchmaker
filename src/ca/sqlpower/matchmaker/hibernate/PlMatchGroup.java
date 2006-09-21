@@ -53,6 +53,20 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
        this.plMatchCriterias = plMatchCriterias;
     }
    
+    @Override
+    public int getChildCount() {
+    	return plMatchCriterias.size();
+    }
+    
+    @Override
+    public List<DefaultHibernateObject> getChildren() {
+    	List<DefaultHibernateObject> children = new ArrayList<DefaultHibernateObject>();
+    	for (PlMatchCriteria group : plMatchCriterias){
+    		children.add(group);
+    	}
+    	Collections.sort(children);
+    	return Collections.unmodifiableList(children);
+    }
     // Property accessors
     public PlMatchGroupId getId() {
         return this.id;

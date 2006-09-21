@@ -1,10 +1,13 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Component;
 import java.awt.Menu;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -15,6 +18,7 @@ import javax.swing.tree.TreePath;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
+import ca.sqlpower.matchmaker.swingui.action.EditMatchGroupAction;
 
 public class MatchMakerTreeMouseListener implements MouseListener {
 
@@ -31,30 +35,38 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 
 	}
 	JPopupMenu m;
+	Component source;
 	public void mousePressed(MouseEvent e) {
 		makePopup(e);
 	}
 
 	private void makePopup(MouseEvent e) {
 		if (e.isPopupTrigger()) {
+			m = new JPopupMenu();
 			JTree t = (JTree) e.getSource();
+			source = t;
 			int row = t.getRowForLocation(e.getX(),e.getY());
 			TreePath tp = t.getPathForRow(row);
-			Object o = tp.getLastPathComponent();
-			m = new JPopupMenu();
-			if(o instanceof PlFolder){
-				createFolderMenu((PlFolder) o);
-			} else if (o instanceof PlMatch){
-				createMatchMenu((PlMatch) o);
-			} else if (o instanceof PlMatchGroup){
-				createMatchGroupMenu((PlMatchGroup) o);
+			if (tp != null) {
+				Object o = tp.getLastPathComponent();
+				if(o instanceof PlFolder){
+					createFolderMenu((PlFolder) o);
+				} else if (o instanceof PlMatch){
+					createMatchMenu((PlMatch) o);
+				} else if (o instanceof PlMatchGroup){
+					createMatchGroupMenu((PlMatchGroup) o);
+				}
 			}
 			m.show(t, e.getX(), e.getY());
 		}
 	}
 
 	private void createMatchGroupMenu(PlMatchGroup group) {
-		m.add(new JMenuItem("Edit Match Group"));
+		Component c = source;
+		while(!(c instanceof Window ) && c !=null){
+			c = c.getParent();
+		}
+		m.add(new JMenuItem(new EditMatchGroupAction(group,(Window) c)));
 	}
 
 	private void createMatchMenu(final PlMatch match) {

@@ -12,6 +12,7 @@ import javax.swing.tree.TreePath;
 import ca.sqlpower.matchmaker.hibernate.DefaultHibernateObject;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
+import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 
 public class MatchMakerTreeModel implements TreeModel {
 
@@ -90,6 +91,9 @@ public class MatchMakerTreeModel implements TreeModel {
 		if(node instanceof PlFolder || root == node || current==node || allCurrent==node || backup == node){
 			return false;
 		} else if(node instanceof DefaultHibernateObject){
+			if (node instanceof PlMatchGroup){
+				return true;
+			}
 			return ((DefaultHibernateObject)node).getChildCount()==0;
 		}
 		return true;
