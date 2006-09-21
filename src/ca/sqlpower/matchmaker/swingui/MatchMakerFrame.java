@@ -11,7 +11,16 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -37,6 +46,10 @@ import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.ConfigFile;
 import ca.sqlpower.architect.CoreUserSettings;
+import ca.sqlpower.architect.SQLCatalog;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLSchema;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.UserSettings;
 import ca.sqlpower.architect.qfa.ExceptionHandler;
 import ca.sqlpower.architect.swingui.ASUtils;
@@ -189,6 +202,10 @@ public class MatchMakerFrame extends JFrame {
 
 	private ArrayList<PlMatch> matches;
 	private ArrayList<PlFolder> folders;
+	private ArrayList<SQLTable> tables;
+	private Set<SQLCatalog> catalogs;
+	private Set<SQLSchema> schemas;
+
 
 	/**
 	 * You can't create an architect frame using this constructor.  You have to
@@ -400,6 +417,71 @@ public class MatchMakerFrame extends JFrame {
 		}
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
 
+
+
+
+
+
+
+
+
+
+
+		SQLDatabase db = new SQLDatabase(dbcs);
+        ResultSet rs = null;
+        Connection connection = null;
+        this.tables = new ArrayList<SQLTable>();
+        this.catalogs  = new HashSet<SQLCatalog>();
+        this.schemas  = new HashSet<SQLSchema>();
+
+        Set catalogNameList  = new HashSet<String>();
+        Map schemaNameList  = new HashMap<String,String>();
+
+        try {
+            connection = db.getConnection();
+            rs = connection.getMetaData().getTables(
+            		null,null,null,null);
+            /*  #0  [TABLE_CAT]type [12]
+				#1  [TABLE_SCHEM]type [12]
+				#2  [TABLE_NAME]type [12]
+				#3  [TABLE_TYPE]type [12]
+				#4  [REMARKS]type [12]  */
+            while (rs.next()) {
+            	SQLTable table = new SQLTable(db,true);
+
+
+            	catalogNameList.add(rs.getString(1));
+            	schemaNameList.put(rs.getString(1),rs.getString(2));
+
+            	table.setName(rs.getString(3));
+            	table.setRemarks(rs.getString(5));
+				tables.add(table);
+            }
+
+            for( String s : (Set<String>)catalogNameList ) {
+            	System.out.println("catalog: "+s);
+            }
+            for ( Map.Entry s : (Set<Map.Entry>)schemaNameList.entrySet() ) {
+            	System.out.println("cat:"+s.getKey()+"  schema:"+s.getValue());
+            }
+            System.out.println("table count="+tables.size());
+		} catch (ArchitectException e) {
+			ASUtils.showExceptionDialogNoReport(MatchMakerFrame.this,
+					"Unknown Database MetaData Error", e);
+		} catch (SQLException e) {
+			ASUtils.showExceptionDialogNoReport(MatchMakerFrame.this,
+					"Unknown Database MetaData Error", e);
+		} finally {
+        	try {
+        		if (rs != null)
+        			rs.close();
+        		if ( connection != null )
+        			connection.close();
+        	} catch (SQLException e2) {
+        		e2.printStackTrace();
+        	}
+
+        }
 	}
 
 
