@@ -52,7 +52,8 @@ public class HibernateUtil {
         cfg.setProperty("hibernate.connection.url", ds.getUrl());
         cfg.setProperty("hibernate.connection.username",ds.getUser());
         cfg.setProperty("hibernate.default_schema",ds.getPlSchema());
-        cfg.setProperty("hibernate.dialect",plDbType2Dialect(ds.getPlDbType()));
+        String plDbType2Dialect = plDbType2Dialect(ds.getPlDbType());
+		cfg.setProperty("hibernate.dialect",plDbType2Dialect);
         cfg.setProperty("hibernate.c3p0.min_size","5");
         cfg.setProperty("hibernate.c3p0.max_size","20");
         cfg.setProperty("hibernate.c3p0.timeout","1800");
@@ -61,6 +62,7 @@ public class HibernateUtil {
         try {
 			// Create the SessionFactory from hibernate.cfg.xml
 			sessionFactory = cfg.buildSessionFactory();
+			System.out.println("creating connection with dialect: "+plDbType2Dialect);
 			sessionFactories.put(key, sessionFactory);
 		} catch (Throwable ex) {
 			log.error("Initial SessionFactory creation failed." + ex);

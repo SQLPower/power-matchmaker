@@ -55,6 +55,7 @@ public class PlFolder extends DefaultHibernateObject implements  java.io.Seriali
     @Override
     public List<DefaultHibernateObject> getChildren() {
     	List<DefaultHibernateObject> children = new ArrayList<DefaultHibernateObject>(matches);
+    	Collections.sort(children);
     	return Collections.unmodifiableList(children);
     }
     
