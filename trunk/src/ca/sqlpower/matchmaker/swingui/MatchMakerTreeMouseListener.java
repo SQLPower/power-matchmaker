@@ -1,9 +1,12 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Menu;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -54,8 +57,14 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 		m.add(new JMenuItem("Edit Match Group"));
 	}
 
-	private void createMatchMenu(PlMatch match) {
-		m.add(new JMenuItem("Edit Match"));
+	private void createMatchMenu(final PlMatch match) {
+		m.add(new JMenuItem(new AbstractAction("Edit Match"){
+
+			public void actionPerformed(ActionEvent e) {
+				MatchEditor me = new MatchEditor(match);
+				me.pack();
+				me.setVisible(true);
+			}}));
 		m.add(new JMenuItem("New Match Group"));
 	}
 
@@ -67,5 +76,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 		makePopup(e);
 
 	}
+
+
 
 }
