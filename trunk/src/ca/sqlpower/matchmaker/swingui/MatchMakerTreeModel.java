@@ -29,7 +29,7 @@ public class MatchMakerTreeModel implements TreeModel {
 	public List<PlFolder> folders = new ArrayList<PlFolder>();
 	public List<PlMatch>  matches = new ArrayList<PlMatch>();
 	
-	public MatchMakerTreeModel(){
+	public MatchMakerTreeModel() {
 		if (HibernateUtil.getSessionFactory() != null){
 
 			PlFolderHome folders = new PlFolderHome();

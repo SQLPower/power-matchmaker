@@ -364,6 +364,7 @@ public class MatchMakerFrame extends JFrame {
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel());
+		tree.addMouseListener(new MatchMakerTreeMouseListener());
 		cp.add(new JScrollPane(tree));
 
 		Rectangle bounds = new Rectangle();
