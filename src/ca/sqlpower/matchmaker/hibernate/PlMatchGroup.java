@@ -161,20 +161,6 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
 			return id.getGroupId().compareTo(other.getId().getGroupId());	
 		} 
 	}
-
-	 @Override
-	    public int getChildCount() {
-	    	return plMatchCriterias.size();
-	    }
-	    
-	    @Override
-	    public List<DefaultHibernateObject> getChildren() {
-	    	List<DefaultHibernateObject> children = new ArrayList<DefaultHibernateObject>();
-	    	for (PlMatchCriteria group : plMatchCriterias){
-	    		children.add(group);
-	    	}
-	    	return Collections.unmodifiableList(children);
-	    }
 	    
 }
 

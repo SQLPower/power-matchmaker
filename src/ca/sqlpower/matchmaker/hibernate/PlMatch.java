@@ -962,6 +962,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     	for (PlMatchGroup group : plMatchGroups){
     		children.add(group);
     	}
+    	Collections.sort(children);
     	return Collections.unmodifiableList(children);
     }
     
