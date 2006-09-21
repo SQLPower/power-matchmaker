@@ -160,6 +160,7 @@ public class LoginFrame extends JDialog {
 						"Please select a database connection first!",
 						"Unknown database connection",
 						JOptionPane.ERROR_MESSAGE);
+                loginButton.setEnabled(true);
 				return;
 			}
 			db = new SQLDatabase(dbSource);
@@ -170,6 +171,7 @@ public class LoginFrame extends JDialog {
 				ASUtils.showExceptionDialogNoReport(LoginFrame.this,
 						"Connection Error", e1 );
 			} finally {
+                loginButton.setEnabled(true);
 			}
 
 		}
@@ -185,11 +187,13 @@ public class LoginFrame extends JDialog {
 		}
 
 		public void contentsChanged(ListDataEvent e) {
-			ArchitectDataSource dbSource = (ArchitectDataSource) ((ConnectionComboBoxModel) (e.getSource())).getSelectedItem();
-			dbSourceName.setText(dbSource.getName());
-			userID.setText(dbSource.getUser());
-			password.setText(dbSource.getPass());
-			LoginFrame.this.dbSource = dbSource;
+		    if ( e.getType() == ListDataEvent.CONTENTS_CHANGED ) {
+		        ArchitectDataSource dbSource = (ArchitectDataSource) ((ConnectionComboBoxModel) (e.getSource())).getSelectedItem();
+		        dbSourceName.setText(dbSource.getName());
+		        userID.setText(dbSource.getUser());
+		        password.setText(dbSource.getPass());
+		        LoginFrame.this.dbSource = dbSource;
+            }
 		}};
 
 	public LoginFrame()

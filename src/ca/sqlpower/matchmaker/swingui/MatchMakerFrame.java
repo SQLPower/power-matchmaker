@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -203,9 +204,9 @@ public class MatchMakerFrame extends JFrame {
 
 	private ArrayList<PlMatch> matches;
 	private ArrayList<PlFolder> folders;
-	private ArrayList<SQLTable> tables;
-	private Set<SQLCatalog> catalogs;
-	private Set<SQLSchema> schemas;
+	private ArrayList<MySimpleTable> tables;
+	private Set<String> catalogs;
+	private Set<String> schemas;
 
 
 	/**
@@ -435,41 +436,67 @@ public class MatchMakerFrame extends JFrame {
 		SQLDatabase db = new SQLDatabase(dbcs);
         ResultSet rs = null;
         Connection connection = null;
-        this.tables = new ArrayList<SQLTable>();
-        this.catalogs  = new HashSet<SQLCatalog>();
-        this.schemas  = new HashSet<SQLSchema>();
-
-        Set catalogNameList  = new HashSet<String>();
-        Map schemaNameList  = new HashMap<String,String>();
-
+        this.tables = new ArrayList<MySimpleTable>();
+        this.catalogs  = new HashSet<String>();
+        this.schemas  = new HashSet<String>();
         try {
             connection = db.getConnection();
-            rs = connection.getMetaData().getTables(
-            		null,null,null,null);
-            /*  #0  [TABLE_CAT]type [12]
-				#1  [TABLE_SCHEM]type [12]
-				#2  [TABLE_NAME]type [12]
-				#3  [TABLE_TYPE]type [12]
-				#4  [REMARKS]type [12]  */
-            while (rs.next()) {
-            	SQLTable table = new SQLTable(db,true);
+            DatabaseMetaData dbMetaData = connection.getMetaData();
+            rs = dbMetaData.getCatalogs();
 
-
-            	catalogNameList.add(rs.getString(1));
-            	schemaNameList.put(rs.getString(1),rs.getString(2));
-
-            	table.setName(rs.getString(3));
-            	table.setRemarks(rs.getString(5));
-				tables.add(table);
+            while(rs.next()) {
+                catalogs.add(rs.getString(1));
             }
-
-            for( String s : (Set<String>)catalogNameList ) {
-            	System.out.println("catalog: "+s);
+            rs.close();
+            rs = dbMetaData.getSchemas();
+            while(rs.next()) {
+                schemas.add(rs.getString(1));
             }
-            for ( Map.Entry s : (Set<Map.Entry>)schemaNameList.entrySet() ) {
-            	System.out.println("cat:"+s.getKey()+"  schema:"+s.getValue());
+            rs.close();
+                 
+            if ( catalogs.size() == 0 ) {
+                catalogs.add(null);
             }
-            System.out.println("table count="+tables.size());
+            if ( schemas.size() == 0 ) {
+                schemas.add(null);
+            }
+            
+            boolean checkTable = dbMetaData.allTablesAreSelectable();
+            for ( String cat : catalogs ) {
+                for ( String sch : schemas ) {
+                    
+                    rs = connection.getMetaData().getTables(cat,sch,null,null);
+                    while (rs.next()) {
+                        
+                        boolean createTable = false;
+                        if ( checkTable ) {
+                            ResultSet rs2 = dbMetaData.getTablePrivileges(
+                                    rs.getString(1),
+                                    rs.getString(2),
+                                    rs.getString(3) );
+                            
+                            while( rs2.next()) {
+                                if ( rs2.getString(6).equalsIgnoreCase("SELECT") ) {
+                                    rs2.close();
+                                    createTable = true;
+                                    break;
+                                }
+                            }
+                        } 
+                        
+                        if ( !checkTable || createTable ) {
+                            tables.add(new MySimpleTable(
+                                    rs.getString(1),
+                                    rs.getString(2),
+                                    rs.getString(3),
+                                    rs.getString(4),
+                                    rs.getString(5) ));
+                        }
+                        
+                    }
+                    rs.close();
+                }
+            }
 		} catch (ArchitectException e) {
 			ASUtils.showExceptionDialogNoReport(MatchMakerFrame.this,
 					"Unknown Database MetaData Error", e);
@@ -643,4 +670,51 @@ public class MatchMakerFrame extends JFrame {
 		return matches;
 	}
 
+    private class MySimpleTable {
+        private String catalog;
+        private String schema;
+        private String name;
+        private String type;
+        private String remarks;
+        public MySimpleTable(String catalog, String schema, String name, String type, String remarks) {
+            super();
+            // TODO Auto-generated constructor stub
+            this.catalog = catalog;
+            this.schema = schema;
+            this.name = name;
+            this.type = type;
+            this.remarks = remarks;
+        }
+        public String getCatalog() {
+            return catalog;
+        }
+        public void setCatalog(String catalog) {
+            this.catalog = catalog;
+        }
+        public String getName() {
+            return name;
+        }
+        public void setName(String name) {
+            this.name = name;
+        }
+        public String getRemarks() {
+            return remarks;
+        }
+        public void setRemarks(String remarks) {
+            this.remarks = remarks;
+        }
+        public String getSchema() {
+            return schema;
+        }
+        public void setSchema(String schema) {
+            this.schema = schema;
+        }
+        public String getType() {
+            return type;
+        }
+        public void setType(String type) {
+            this.type = type;
+        }
+        
+    }
 }
