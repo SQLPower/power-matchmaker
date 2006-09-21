@@ -188,7 +188,6 @@ public class MatchMakerFrame extends JFrame {
 		}};
 
 	private ArrayList<PlMatch> matches;
-
 	private ArrayList<PlFolder> folders;
 
 	/**
@@ -547,6 +546,14 @@ public class MatchMakerFrame extends JFrame {
 
 	public Preferences getPrefs() {
 		return prefs;
+	}
+
+	public ArrayList<PlFolder> getFolders() {
+		return folders;
+	}
+
+	public ArrayList<PlMatch> getMatches() {
+		return matches;
 	}
 
 }
