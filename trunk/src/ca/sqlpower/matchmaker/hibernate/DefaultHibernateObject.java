@@ -20,6 +20,7 @@ public abstract class DefaultHibernateObject implements Comparable {
 	}
 	
 	protected void fireChangeEvent(ChangeEvent e){
+		
 		for (ChangeListener l:listeners){
 			l.stateChanged(e);
 		}
@@ -32,7 +33,8 @@ public abstract class DefaultHibernateObject implements Comparable {
 	public int getChildCount(){
 		return 0;
 	}
-
+	
+	
 	@Override
 	 public abstract int hashCode();
 	@Override
