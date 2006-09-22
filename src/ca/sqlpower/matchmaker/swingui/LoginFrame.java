@@ -145,6 +145,7 @@ public class LoginFrame extends JDialog {
 		        MatchMakerFrame.getMainInstance().newLogin(dbSource);
 				login = true;
 			} catch (ArchitectException e) {
+				e.printStackTrace();
 				logger.debug(
 					"Unexpected exception in ConnectionListener",	e);
 				ASUtils.showExceptionDialogNoReport(LoginFrame.this,

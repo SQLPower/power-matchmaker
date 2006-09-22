@@ -22,10 +22,15 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.TableCellRenderer;
 
+import org.hibernate.Transaction;
+
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.table.TableModelColumnAutofit;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
+import ca.sqlpower.matchmaker.hibernate.home.PlMatchGroupHome;
+import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.security.PLGroup;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -49,8 +54,8 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 
 
 	private JPanel groupEditPanel;
-	JTextField groupId;
-	JComboBox matches;
+	JLabel groupId;
+	JLabel matches;
 	JTextField description;
 	JTextField matchPercent;
 	JTextField filterCriteria;
@@ -60,8 +65,6 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	JLabel	lastUpdateOSUser;
 	Color textBackground;
 
-
-	private Color oldMatchesBG;
 
 	/**
 	 * This is the default constructor
@@ -110,7 +113,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			
 			public void keyReleased(KeyEvent e) {
 				// TODO Auto-generated method stub
-				
+				validateForm();	
 			}
 			
 			public void keyTyped(KeyEvent e) {
@@ -118,16 +121,12 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			}
 			
 		};
-		groupId = new JTextField(model.getId().getGroupId());
-		groupId.addKeyListener(listener);
-		textBackground = groupId.getBackground();
-		matches = new JComboBox();
-		oldMatchesBG= matches.getBackground();
-		matches.setModel(new FolderComboBoxModel<PlMatch>(MatchMakerFrame.getMainInstance().getMatches()));
-		
-		matches.setSelectedItem(model.getPlMatch());
+		groupId = new JLabel(model.getId().getGroupId());
+		matches = new JLabel(model.getId().getMatchId());
+
 		description = new JTextField(model.getDescription());
-		matchPercent = new JTextField(model.getMatchPercent().toPlainString());
+		textBackground = description.getBackground();
+		matchPercent = new JTextField(model.getMatchPercent().toString());
 		matchPercent.addKeyListener(listener);
 		filterCriteria = new JTextField(model.getFilterCriteria());
 		active = new JCheckBox();
@@ -141,27 +140,11 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	
 	private boolean validateForm(){
 		Boolean valid = true;
-		PlMatch parentMatch = (PlMatch) matches.getModel().getSelectedItem();
-		if (parentMatch == null){
-			matches.setBackground(Color.red);
-		} else {
-			matches.setBackground(oldMatchesBG);
-			for (PlMatchGroup group: parentMatch.getPlMatchGroups()){
-				if ( group.getId().getGroupId() == groupId.getText() 
-						&& group != model ){
-					groupId.setBackground(Color.red);
-					valid = false;
-					break;
-				} else {
-					groupId.setBackground(textBackground);
-				}
-				
-			}
-		}
 		
 		try {
-			BigDecimal d = new BigDecimal(matchPercent.getText());
-			if (d.intValue() >= 0 && d.intValue() <= 100){
+			Short d = Short.parseShort(matchPercent.getText());
+			
+			if (d >= 0 && d <= 100){
 				matchPercent.setBackground(textBackground);
 			} else {
 				valid = false;
@@ -179,12 +162,20 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	private boolean saveMatches(PlMatchGroup model) {
 		if ( validateForm()){
 			// load the new model
-			model.getId().setGroupId(groupId.getText());
-			model.getId().setMatchId(((PlMatch)matches.getSelectedItem()).getMatchId());
 			model.setDescription(description.getText());
-			model.setMatchPercent(new BigDecimal(matchPercent.getText()));
+			model.setMatchPercent(Short.parseShort(matchPercent.getText()));
 			model.setFilterCriteria(filterCriteria.getText());
 			model.setActiveInd(active.isSelected());
+	
+			try {
+				System.out.println("Saving "+model);
+				Transaction tx = HibernateUtil.primarySession().beginTransaction();
+				HibernateUtil.primarySession().flush();
+				tx.commit();
+			
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		return validateForm();
 	}

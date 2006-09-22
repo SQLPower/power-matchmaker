@@ -19,6 +19,9 @@ import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.swingui.action.EditMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.Refresh;
 
 public class MatchMakerTreeMouseListener implements MouseListener {
 
@@ -47,6 +50,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 			source = t;
 			int row = t.getRowForLocation(e.getX(),e.getY());
 			TreePath tp = t.getPathForRow(row);
+			m.add(new JMenuItem(new Refresh()));
 			if (tp != null) {
 				Object o = tp.getLastPathComponent();
 				if(o instanceof PlFolder){
@@ -62,11 +66,17 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 	}
 
 	private void createMatchGroupMenu(PlMatchGroup group) {
+		Window c = getWindow();
+		m.add(new JMenuItem(new EditMatchGroupAction(group, c)));
+		m.add(new JMenuItem(new DeleteMatchGroupAction(group)));
+	}
+
+	private Window getWindow() {
 		Component c = source;
 		while(!(c instanceof Window ) && c !=null){
 			c = c.getParent();
 		}
-		m.add(new JMenuItem(new EditMatchGroupAction(group,(Window) c)));
+		return (Window) c;
 	}
 
 	private void createMatchMenu(final PlMatch match) {
@@ -77,7 +87,8 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 				me.pack();
 				me.setVisible(true);
 			}}));
-		m.add(new JMenuItem("New Match Group"));
+		
+		m.add(new JMenuItem(new NewMatchGroupAction(match, getWindow())));
 	}
 
 	private void createFolderMenu(PlFolder folder) {

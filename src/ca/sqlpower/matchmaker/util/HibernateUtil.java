@@ -64,6 +64,8 @@ public class HibernateUtil {
 			sessionFactory = cfg.buildSessionFactory();
 			System.out.println("creating connection with dialect: "+plDbType2Dialect);
 			sessionFactories.put(key, sessionFactory);
+			
+			primarySession=sessionFactory.openSession();
 		} catch (Throwable ex) {
 			log.error("Initial SessionFactory creation failed." + ex);
 			sessionFactory = null;
@@ -72,26 +74,20 @@ public class HibernateUtil {
 		return sessionFactory;
 	}
 	
-	
+	private static Session primarySession=null;
     public static ThreadLocal session = new ThreadLocal();
 
     public static Session primarySession() throws HibernateException {
         Session s = (Session) session.get();
         // Open a new Session, if this Thread has none yet
         if (s == null) {
-            s = getSessionFactory().openSession();
+        	
+            s = primarySession;
             session.set(s);
         }
         return s;
     }
 
-    public static void closePrimarySession() throws HibernateException {
-        Session s = (Session) session.get();
-        session.set(null);
-        if (s != null)
-            s.close();
-    }
-	
 	public static String plDbType2Dialect(String plType){
 		if (plType == null ) throw new IllegalArgumentException("No dialect for a null database");
 		String dbString = plType.toLowerCase();

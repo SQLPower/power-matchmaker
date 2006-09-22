@@ -41,7 +41,7 @@
   	</property>
     <property
         name="matchPercent"
-        type="big_decimal"
+        type="short"
     >
 <column name="MATCH_PERCENT" precision="18" scale="0" />
   	</property>

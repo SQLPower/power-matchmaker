@@ -1,11 +1,9 @@
 package ca.sqlpower.matchmaker.swingui.action;
 
-import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
@@ -27,10 +25,8 @@ public class EditMatchGroupAction extends AbstractAction {
 
 
 	public void actionPerformed(ActionEvent e) {
-		System.out.println("Creating panel");
 		JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(new PlMatchGroupPanel(matchGroup), window, "Edit Match Group", "Save Match Group");
 		d.setVisible(true);
-		// TODO Auto-generated method stub
 		
 	}
 
