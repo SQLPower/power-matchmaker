@@ -14,8 +14,8 @@ import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
 import ca.sqlpower.architect.swingui.action.DBCS_OkAction;
-import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
 import ca.sqlpower.matchmaker.swingui.DBConnectionUniDialog;
+import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
 
 public class NewDatabaseConnectionAction extends AbstractAction {
 
