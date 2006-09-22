@@ -1,7 +1,11 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.LayoutManager;
+
 import javax.swing.JPanel;
 
 import ca.sqlpower.architect.swingui.ArchitectPanel;
@@ -56,14 +60,10 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	 * @return void
 	 */
 	private void initialize() {
-		GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
-		gridBagConstraints1.fill = GridBagConstraints.BOTH;
-		gridBagConstraints1.gridy = 0;
-		gridBagConstraints1.weightx = 1.0;
-		gridBagConstraints1.weighty = 1.0;
-		gridBagConstraints1.gridx = 0;
-		this.setLayout(new GridBagLayout());
-		this.add(getJSplitPane(), gridBagConstraints1);
+
+		this.setLayout(new BorderLayout());
+		this.add(getJSplitPane(), BorderLayout.CENTER);
+		
 	}
 
 	public PlMatchGroup getModel() {
@@ -72,7 +72,10 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 
 	public void setModel(PlMatchGroup model) {
 		this.model = model;
-		matchCriteriaTable.setModel(new TableModelSortDecorator(new TableModelColumnAutofit(new MatchCriteriaTableModel(model),matchCriteriaTable)));
+		TableModelColumnAutofit tableModelColumnAutofit = new TableModelColumnAutofit(new MatchCriteriaTableModel(model),matchCriteriaTable);
+		matchCriteriaTable.setModel(tableModelColumnAutofit);
+		tableModelColumnAutofit.setTableHeader(matchCriteriaTable.getTableHeader());
+		tableModelColumnAutofit.initColumnSizes();
 	}
 
 	/**
@@ -85,6 +88,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			jSplitPane = new JSplitPane();
 			jSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 			jSplitPane.setBottomComponent(getMatchCriteriaScrollPane());
+			jSplitPane.setTopComponent(new JPanel());
 			
 		}
 		return jSplitPane;
@@ -97,9 +101,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	 */
 	private JScrollPane getMatchCriteriaScrollPane() {
 		if (matchCriteriaScrollPane == null) {
-			matchCriteriaScrollPane = new JScrollPane();
-			matchCriteriaScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-			matchCriteriaScrollPane.setViewportView(getMatchCriteriaTable());
+			matchCriteriaScrollPane = new JScrollPane(getMatchCriteriaTable());
 		}
 		return matchCriteriaScrollPane;
 	}
@@ -112,6 +114,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	private JTable getMatchCriteriaTable() {
 		if (matchCriteriaTable == null) {
 			matchCriteriaTable = new JTable();
+			matchCriteriaTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			setModel(model);
 			
 			matchCriteriaTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
