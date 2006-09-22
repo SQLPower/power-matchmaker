@@ -105,7 +105,7 @@ public class MatchMakerTreeModel implements TreeModel {
 
 	}
 
-	protected LinkedList treeModelListeners = new LinkedList();
+	protected LinkedList<TreeModelListener> treeModelListeners = new LinkedList<TreeModelListener>();
 
 	public void addTreeModelListener(TreeModelListener l) {
 		treeModelListeners.add(l);
@@ -129,8 +129,14 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	protected void fireTreeStructureChanged(TreeModelEvent e) {
+		for (int i= treeModelListeners.size(); i >=0; i--){
+			treeModelListeners.get(i).treeStructureChanged(e);
+		}
 
+	}
 
+	public void refresh() {
+		fireTreeNodesChanged(new TreeModelEvent(root,new TreePath(root)));
 	}
 
 }

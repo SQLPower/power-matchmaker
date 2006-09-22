@@ -406,7 +406,7 @@ public class MatchMakerFrame extends JFrame {
 	}
 
 	public void newLogin(ArchitectDataSource dbcs){
-		HibernateUtil.closePrimarySession();
+
 		HibernateUtil.createSessionFactory(dbcs,HibernateUtil.primaryLogin);
 
 
@@ -426,15 +426,6 @@ public class MatchMakerFrame extends JFrame {
 			Collections.sort(folders);
 		}
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
-
-
-
-
-
-
-
-
-
 
 
 		SQLDatabase db = new SQLDatabase(dbcs);
@@ -721,4 +712,15 @@ public class MatchMakerFrame extends JFrame {
         }
         
     }
+
+	public JTree getTree() {
+		return tree;
+	}
+
+	public void setTree(JTree tree) {
+		if (this.tree != tree) {
+			this.tree = tree;
+			//TODO fire event
+		}
+	}
 }

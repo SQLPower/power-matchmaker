@@ -963,7 +963,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     		children.add(group);
     	}
     	Collections.sort(children);
-    	return Collections.unmodifiableList(children);
+    	return children;
     }
     
     

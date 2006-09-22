@@ -10,7 +10,7 @@
 	<classpathentry kind="lib" path="lib/darwinsys.jar"/>
 	<classpathentry kind="lib" path="/architect/lib/darwinsys.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate3.jar"/>
+	<classpathentry sourcepath="C:/download/hibernate-3.2.0.cr4/hibernate-3.2/src" kind="lib" path="lib/hibernate3.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-tools.jar"/>
 	<classpathentry kind="lib" path="lib/freemarker.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>

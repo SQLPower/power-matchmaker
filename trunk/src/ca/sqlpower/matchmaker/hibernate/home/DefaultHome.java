@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
+import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class DefaultHome {
@@ -34,10 +35,9 @@ public class DefaultHome {
 		if (con == null) {
 			if(logger.isDebugEnabled()) logger.debug("Using the default session from the sessionFactory");
 			return HibernateUtil.primarySession();
-		} else {
-			if(logger.isDebugEnabled()) logger.debug("Using the session from the connection "+con);
-			return sessionFactory.openSession(con);
-		}
+			
+		} 
+		return null;
 	}
 
 }
