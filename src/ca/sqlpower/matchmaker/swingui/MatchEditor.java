@@ -128,7 +128,7 @@ public class MatchEditor extends JFrame {
 
     private void buildUI() {
     	matchId = new JTextField();
-    	folder = new JComboBox(new FolderComboBoxModel(MatchMakerFrame.getMainInstance()));
+    	folder = new JComboBox(new FolderComboBoxModel<PlFolder>(MatchMakerFrame.getMainInstance().getFolders()));
     	desc = new JTextArea();
 
     	List types = new ArrayList();
