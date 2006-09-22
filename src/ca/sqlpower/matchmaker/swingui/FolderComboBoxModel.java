@@ -29,8 +29,8 @@ public class FolderComboBoxModel <t extends DefaultHibernateObject>
 
 		int selectedIndex = list.indexOf(anItem);
 		if (selectedIndex >= 0) {
-			if ( anItem instanceof PlFolder ) {
-				selectedItem = (PlFolder)anItem;
+			if ( anItem instanceof DefaultHibernateObject ) {
+				selectedItem = (t)anItem;
 			} else if ( anItem== null ) {
 				selectedItem = null;
 			}

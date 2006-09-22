@@ -17,8 +17,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -420,6 +422,8 @@ public class MatchMakerFrame extends JFrame {
 				matchSet.addAll(folder.getMatches());
 			}
 			matches = new ArrayList<PlMatch>(matchSet);
+			Collections.sort(matches);
+			Collections.sort(folders);
 		}
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
 

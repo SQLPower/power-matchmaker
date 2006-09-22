@@ -120,8 +120,7 @@ public class LoginFrame extends JDialog {
 
 			        }
 
-			        // Now let someone else know we did something
-			        MatchMakerFrame.getMainInstance().newLogin(dbSource);
+			      
 
 				} catch (ArchitectException e) {
 					ASUtils.showExceptionDialogNoReport(LoginFrame.this,
@@ -142,6 +141,8 @@ public class LoginFrame extends JDialog {
 					new ListerProgressBarUpdater(progressBar, this);
 				new javax.swing.Timer(100, progressBarUpdater).start();
 				db.populate();
+				// Now let someone else know we did something
+		        MatchMakerFrame.getMainInstance().newLogin(dbSource);
 				login = true;
 			} catch (ArchitectException e) {
 				logger.debug(
