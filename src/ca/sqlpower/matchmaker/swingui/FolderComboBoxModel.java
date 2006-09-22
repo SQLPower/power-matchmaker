@@ -7,6 +7,8 @@ import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import ca.sqlpower.matchmaker.MatchMakerFrame;
+import ca.sqlpower.matchmaker.hibernate.DefaultHibernateObject;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 
 public class FolderComboBoxModel
@@ -14,7 +16,7 @@ public class FolderComboBoxModel
 
 	private MatchMakerFrame parent;
 	List<ListDataListener> listenerList;
-	private PlFolder selectedItem;
+	private DefaultHibernateObject selectedItem;
 
 
 	public FolderComboBoxModel(MatchMakerFrame parent) {
