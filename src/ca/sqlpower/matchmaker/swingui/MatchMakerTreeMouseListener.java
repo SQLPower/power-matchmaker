@@ -83,16 +83,31 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 		m.add(new JMenuItem(new AbstractAction("Edit Match"){
 
 			public void actionPerformed(ActionEvent e) {
-				MatchEditor me = new MatchEditor(match);
+				MatchEditor me = new MatchEditor(match,null);
 				me.pack();
 				me.setVisible(true);
 			}}));
+		m.add(new JMenuItem("New Match Group"));
+        m.add(new JMenuItem(new AbstractAction("Run Match"){
+
+            public void actionPerformed(ActionEvent e) {
+                RunMatchPanel f = new RunMatchPanel(match);
+                f.pack();
+                f.setVisible(true);
+            }}));
 		
 		m.add(new JMenuItem(new NewMatchGroupAction(match, getWindow())));
 	}
 
-	private void createFolderMenu(PlFolder folder) {
-		m.add(new JMenuItem("New Match"));
+	private void createFolderMenu(final PlFolder folder) {
+        m.add(new JMenuItem(new AbstractAction("New Match"){
+
+            public void actionPerformed(ActionEvent e) {
+                MatchEditor me = new MatchEditor(null,folder);
+                me.pack();
+                me.setVisible(true);
+            }}));
+
 	}
 
 	public void mouseReleased(MouseEvent e) {

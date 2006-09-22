@@ -14,16 +14,12 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -49,10 +45,7 @@ import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.ConfigFile;
 import ca.sqlpower.architect.CoreUserSettings;
-import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.UserSettings;
 import ca.sqlpower.architect.qfa.ExceptionHandler;
 import ca.sqlpower.architect.swingui.ASUtils;
@@ -60,6 +53,7 @@ import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.HelpAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
+import ca.sqlpower.matchmaker.MySimpleTable;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
@@ -90,12 +84,13 @@ public class MatchMakerFrame extends JFrame {
 	protected JToolBar toolBar = null;
 	protected JMenuBar menuBar = null;
 	protected JTree tree = null;
-
     private JMenu databaseMenu;
 
 	protected AboutAction aboutAction;
  	protected  JComponent contentPane;
 
+    protected ArchitectDataSource dataSource;
+    
 	protected Action exitAction = new AbstractAction("Exit") {
 	    public void actionPerformed(ActionEvent e) {
 	        exit();
@@ -123,8 +118,9 @@ public class MatchMakerFrame extends JFrame {
 	protected Action newMatchAction = new AbstractAction("New") {
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-
+		    MatchEditor me = new MatchEditor(null,null);
+		    me.pack();
+		    me.setVisible(true);
 		}
 
 	};
@@ -191,7 +187,6 @@ public class MatchMakerFrame extends JFrame {
 		}
 	};
 
-
 	private MatchMakerFrameWindowListener windowListener;
 
 	private Action databaseConnectionAction = new AbstractAction("Database Connection...") {
@@ -206,9 +201,10 @@ public class MatchMakerFrame extends JFrame {
 
 	private ArrayList<PlMatch> matches;
 	private ArrayList<PlFolder> folders;
-	private ArrayList<MySimpleTable> tables;
-	private Set<String> catalogs;
-	private Set<String> schemas;
+	private List<MySimpleTable> tables;
+	private List<String> tablePaths;
+
+    private SQLDatabase database;
 
 
 	/**
@@ -226,6 +222,7 @@ public class MatchMakerFrame extends JFrame {
 	    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	    architectSession = ArchitectSession.getInstance();
 	    init();
+        this.tables = new ArrayList<MySimpleTable>();
 	}
 
 	private void init() throws ArchitectException {
@@ -428,44 +425,47 @@ public class MatchMakerFrame extends JFrame {
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
 
 
+
 		SQLDatabase db = new SQLDatabase(dbcs);
+        setDatabase(db);
         ResultSet rs = null;
+        ResultSet rs2 = null;
         Connection connection = null;
         this.tables = new ArrayList<MySimpleTable>();
-        this.catalogs  = new HashSet<String>();
-        this.schemas  = new HashSet<String>();
+        Set <String> catalogSet  = new HashSet<String>();
+        Set <String> schemaSet  = new HashSet<String>();
         try {
             connection = db.getConnection();
             DatabaseMetaData dbMetaData = connection.getMetaData();
             rs = dbMetaData.getCatalogs();
 
             while(rs.next()) {
-                catalogs.add(rs.getString(1));
+                catalogSet.add(rs.getString(1));
             }
             rs.close();
             rs = dbMetaData.getSchemas();
             while(rs.next()) {
-                schemas.add(rs.getString(1));
+                schemaSet.add(rs.getString(1));
             }
             rs.close();
-                 
-            if ( catalogs.size() == 0 ) {
-                catalogs.add(null);
+
+            if ( catalogSet.size() == 0 ) {
+                catalogSet.add(null);
             }
-            if ( schemas.size() == 0 ) {
-                schemas.add(null);
+            if ( schemaSet.size() == 0 ) {
+                schemaSet.add(null);
             }
             
             boolean checkTable = dbMetaData.allTablesAreSelectable();
-            for ( String cat : catalogs ) {
-                for ( String sch : schemas ) {
+            for ( String cat : catalogSet ) {
+                for ( String sch : schemaSet ) {
                     
                     rs = connection.getMetaData().getTables(cat,sch,null,null);
                     while (rs.next()) {
                         
                         boolean createTable = false;
                         if ( checkTable ) {
-                            ResultSet rs2 = dbMetaData.getTablePrivileges(
+                            rs2 = dbMetaData.getTablePrivileges(
                                     rs.getString(1),
                                     rs.getString(2),
                                     rs.getString(3) );
@@ -473,6 +473,7 @@ public class MatchMakerFrame extends JFrame {
                             while( rs2.next()) {
                                 if ( rs2.getString(6).equalsIgnoreCase("SELECT") ) {
                                     rs2.close();
+                                    rs2 = null;
                                     createTable = true;
                                     break;
                                 }
@@ -490,7 +491,17 @@ public class MatchMakerFrame extends JFrame {
                         
                     }
                     rs.close();
+                    rs = null;
                 }
+            }
+            connection.close();
+            connection = null;
+            
+            tablePaths = new ArrayList<String>();
+            for ( MySimpleTable t : tables ) {
+                String location = t.getPath();
+                if ( !tablePaths.contains(location))
+                    tablePaths.add(location);
             }
 		} catch (ArchitectException e) {
 			ASUtils.showExceptionDialogNoReport(MatchMakerFrame.this,
@@ -502,6 +513,8 @@ public class MatchMakerFrame extends JFrame {
         	try {
         		if (rs != null)
         			rs.close();
+                if (rs2 != null)
+                    rs2.close();
         		if ( connection != null )
         			connection.close();
         	} catch (SQLException e2) {
@@ -512,7 +525,11 @@ public class MatchMakerFrame extends JFrame {
 	}
 
 
-	public static synchronized MatchMakerFrame getMainInstance() {
+	private void setDatabase(SQLDatabase db) {
+	    database = db;
+    }
+
+    public static synchronized MatchMakerFrame getMainInstance() {
 		if (mainInstance == null) {
 			try {
 				new MatchMakerFrame();
@@ -665,52 +682,34 @@ public class MatchMakerFrame extends JFrame {
 		return matches;
 	}
 
-    private class MySimpleTable {
-        private String catalog;
-        private String schema;
-        private String name;
-        private String type;
-        private String remarks;
-        public MySimpleTable(String catalog, String schema, String name, String type, String remarks) {
-            super();
-            // TODO Auto-generated constructor stub
-            this.catalog = catalog;
-            this.schema = schema;
-            this.name = name;
-            this.type = type;
-            this.remarks = remarks;
+    public List<String> getTablePaths() {
+        return tablePaths;
+    }
+
+    public List<MySimpleTable> getTables() {
+        return getTables(null);
+    }
+    
+    public List<MySimpleTable> getTables(String path) {
+        List<MySimpleTable> tableList = new ArrayList<MySimpleTable>();
+        for ( MySimpleTable t : tables ) {
+            if ( path == null || t.getPath().equals(path) )
+                tableList.add(t);
         }
-        public String getCatalog() {
-            return catalog;
+        return tableList;
+    }
+    
+    public MySimpleTable getTable(String path, String name) {
+        for ( MySimpleTable t : tables ) {
+            if ( t.getName().equals(name) && 
+                    ( path == null || t.getPath().equals(path) ) )
+                return t;
         }
-        public void setCatalog(String catalog) {
-            this.catalog = catalog;
-        }
-        public String getName() {
-            return name;
-        }
-        public void setName(String name) {
-            this.name = name;
-        }
-        public String getRemarks() {
-            return remarks;
-        }
-        public void setRemarks(String remarks) {
-            this.remarks = remarks;
-        }
-        public String getSchema() {
-            return schema;
-        }
-        public void setSchema(String schema) {
-            this.schema = schema;
-        }
-        public String getType() {
-            return type;
-        }
-        public void setType(String type) {
-            this.type = type;
-        }
-        
+        return null;
+    }
+
+    public SQLDatabase getDatabase() {
+        return database;
     }
 
 	public JTree getTree() {
@@ -723,4 +722,5 @@ public class MatchMakerFrame extends JFrame {
 			//TODO fire event
 		}
 	}
+
 }
