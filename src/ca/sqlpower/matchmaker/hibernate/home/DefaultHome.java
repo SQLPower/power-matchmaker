@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class DefaultHome {

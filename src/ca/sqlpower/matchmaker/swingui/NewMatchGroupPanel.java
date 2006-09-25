@@ -14,14 +14,11 @@ import javax.swing.JTextField;
 
 import org.hibernate.Transaction;
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.MatchGenerator;
-
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroupId;
-import ca.sqlpower.matchmaker.hibernate.home.PlMatchGroupHome;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class NewMatchGroupPanel implements ArchitectPanel {
@@ -31,26 +28,26 @@ public class NewMatchGroupPanel implements ArchitectPanel {
 	JTextField groupName = new JTextField();
 	Color oldBackground = groupName.getBackground();
 	JPanel p = new JPanel(new BorderLayout());
-	
+
 	public NewMatchGroupPanel(PlMatch parent, Window window) {
 		this.parent = parent;
 		this.window = window;
 		KeyListener listener = new KeyListener(){
-			
+
 			public void keyPressed(KeyEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			public void keyReleased(KeyEvent e) {
 				// TODO Auto-generated method stub
-				validateForm();	
+				validateForm();
 			}
-			
+
 			public void keyTyped(KeyEvent e) {
-				validateForm();				
+				validateForm();
 			}
-			
+
 		};
 		groupName.addKeyListener(listener);
 		p.add(new JLabel("Group Name"),BorderLayout.WEST);
@@ -77,7 +74,7 @@ public class NewMatchGroupPanel implements ArchitectPanel {
 			groupName.setBackground(Color.red);
 			return false;
 		}
-		for (PlMatchGroup g: parent.getPlMatchGroups()){ 
+		for (PlMatchGroup g: parent.getPlMatchGroups()){
 			if (groupName.getText().equals(g.getId().getGroupId())){
 				groupName.setBackground(Color.red);
 				return false;

@@ -2,14 +2,11 @@ package ca.sqlpower.matchmaker.hibernate;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.event.ChangeEvent;
-
-import org.hibernate.type.OrderedSetType;
 
 // Generated 19-Sep-2006 12:08:38 PM by Hibernate Tools 3.2.0.beta7
 
@@ -20,8 +17,8 @@ import org.hibernate.type.OrderedSetType;
  */
 public class PlFolder extends DefaultHibernateObject implements  java.io.Serializable {
 
-	
-    // Fields    
+
+    // Fields
 
      private String folderName;
      private String folderDesc;
@@ -46,24 +43,24 @@ public class PlFolder extends DefaultHibernateObject implements  java.io.Seriali
        this.folderStatus = folderStatus;
        this.lastBackupNo = lastBackupNo;
     }
-   
+
     @Override
     public int getChildCount() {
     	return matches.size();
     }
-    
+
     @Override
     public List<DefaultHibernateObject> getChildren() {
     	List<DefaultHibernateObject> children = new ArrayList<DefaultHibernateObject>(matches);
     	Collections.sort(children);
     	return children;
     }
-    
+
     // Property accessors
     public String getFolderName() {
         return this.folderName;
     }
-    
+
     public void setFolderName(String folderName) {
         this.folderName = folderName;
         fireChangeEvent(new ChangeEvent(this));
@@ -71,21 +68,21 @@ public class PlFolder extends DefaultHibernateObject implements  java.io.Seriali
     public String getFolderDesc() {
         return this.folderDesc;
     }
-    
+
     public void setFolderDesc(String folderDesc) {
         this.folderDesc = folderDesc;
     }
     public String getFolderStatus() {
         return this.folderStatus;
     }
-    
+
     public void setFolderStatus(String folderStatus) {
         this.folderStatus = folderStatus;
     }
     public Long getLastBackupNo() {
         return this.lastBackupNo;
     }
-    
+
     public void setLastBackupNo(Long lastBackupNo) {
         this.lastBackupNo = lastBackupNo;
     }
