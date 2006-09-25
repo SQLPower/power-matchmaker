@@ -2,13 +2,11 @@ package ca.sqlpower.matchmaker.hibernate.home;
 // Generated Sep 18, 2006 4:34:45 PM by Hibernate Tools 3.2.0.beta7
 
 
-import java.sql.Connection;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
 
 import ca.sqlpower.matchmaker.hibernate.PlMatch;

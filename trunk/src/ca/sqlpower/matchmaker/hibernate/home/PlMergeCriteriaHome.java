@@ -7,11 +7,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
 
 import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
-import ca.sqlpower.matchmaker.hibernate.PlMergeCriteriaId;
 
 /**
  * Home object for domain model class PlMergeCriteria.

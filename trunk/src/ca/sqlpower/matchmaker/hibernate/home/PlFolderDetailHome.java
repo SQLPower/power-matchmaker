@@ -3,15 +3,13 @@ package ca.sqlpower.matchmaker.hibernate.home;
 
 
 import java.util.List;
-import javax.naming.InitialContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
 
 import ca.sqlpower.matchmaker.hibernate.PlFolderDetail;
-import ca.sqlpower.matchmaker.hibernate.PlFolderDetailId;
 
 /**
  * Home object for domain model class PlFolderDetail.
