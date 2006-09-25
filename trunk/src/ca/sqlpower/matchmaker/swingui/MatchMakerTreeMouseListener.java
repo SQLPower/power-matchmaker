@@ -20,6 +20,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.EditMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 
 public class MatchMakerTreeMouseListener implements MouseListener {
@@ -104,6 +105,9 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 				d.pack();
 				d.setVisible(true);
 			}}));
+		m.addSeparator();
+		m.add(new JMenuItem(new PlMatchExportAction(match)));
+
 	}
 
 	private void createFolderMenu(final PlFolder folder) {

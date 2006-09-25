@@ -3,9 +3,6 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.Font;
 import java.awt.HeadlessException;
 import java.text.DateFormat;
-import java.text.FieldPosition;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -16,6 +13,7 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
@@ -39,7 +37,7 @@ public class MatchInfoPanel implements ArchitectPanel {
 
 	private void buildUI() {
 
-		DateFormat df = new MySimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		DateFormat df = new DateFormatAllowsNull();
 
 		FormLayout layout = new FormLayout(
 				"4dlu,80dlu,4dlu,fill:200dlu:grow, 4dlu ", // columns
@@ -109,26 +107,6 @@ public class MatchInfoPanel implements ArchitectPanel {
 		    	d.setVisible(true);
 		    }
 		});
-	}
-
-	/**
-	 * to handle to null date object
-	 * @author Administrator
-	 *
-	 */
-	private class MySimpleDateFormat extends SimpleDateFormat {
-
-
-		public MySimpleDateFormat(String string) {
-			super(string);
-		}
-
-		@Override
-		public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos) {
-			if ( date == null )
-				return toAppendTo;
-			return super.format(date, toAppendTo, pos);
-		}
 	}
 
 	public boolean applyChanges() {
