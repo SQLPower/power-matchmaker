@@ -145,7 +145,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			}
 			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
 			cancelAction.actionPerformed(null);
-			LoginFrame l = new LoginFrame();
+			LoginDialog l = new LoginDialog();
 			l.setDbSource(dbcs);
 			l.pack();
 	    	l.setVisible(true);

@@ -42,9 +42,9 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class LoginFrame extends JDialog {
+public class LoginDialog extends JDialog {
 
-	private static Logger logger = Logger.getLogger(LoginFrame.class);
+	private static Logger logger = Logger.getLogger(LoginDialog.class);
 	private JComboBox dbList;
 	private JTextField userID;
 	private JPasswordField password;
@@ -59,7 +59,7 @@ public class LoginFrame extends JDialog {
 
 		public void actionPerformed(ActionEvent e) {
 			// XXX Hook up real help someday.
-			JOptionPane.showMessageDialog(LoginFrame.this,
+			JOptionPane.showMessageDialog(LoginDialog.this,
 					"Help is not yet available. We apologize for the inconvenience");
 		}};
 
@@ -104,7 +104,7 @@ public class LoginFrame extends JDialog {
 
 			            logger.debug("connected to "+db.getName()+
 			            		"  schema version: " + ver );
-			            LoginFrame.this.setVisible(false);
+			            LoginDialog.this.setVisible(false);
 			        } catch (SQLException e) {
 			            throw new ArchitectException("could not read def_param",e);
 			        } finally {
@@ -122,7 +122,7 @@ public class LoginFrame extends JDialog {
 
 
 				} catch (ArchitectException e) {
-					ASUtils.showExceptionDialogNoReport(LoginFrame.this,
+					ASUtils.showExceptionDialogNoReport(LoginDialog.this,
 							"Pl Schema Access Error", e );
 				} finally {
 					loginButton.setEnabled(true);
@@ -148,7 +148,7 @@ public class LoginFrame extends JDialog {
 				e.printStackTrace();
 				logger.debug(
 					"Unexpected exception in ConnectionListener",	e);
-				ASUtils.showExceptionDialogNoReport(LoginFrame.this,
+				ASUtils.showExceptionDialogNoReport(LoginDialog.this,
 						"Unexpected exception in ConnectionListener",
 						e );
                 login = false;
@@ -157,8 +157,8 @@ public class LoginFrame extends JDialog {
 
 		public void actionPerformed(ActionEvent e) {
 			loginButton.setEnabled(false);
-			if ( LoginFrame.this.dbSource == null ) {
-				JOptionPane.showMessageDialog(LoginFrame.this,
+			if ( LoginDialog.this.dbSource == null ) {
+				JOptionPane.showMessageDialog(LoginDialog.this,
 						"Please select a database connection first!",
 						"Unknown database connection",
 						JOptionPane.ERROR_MESSAGE);
@@ -168,7 +168,7 @@ public class LoginFrame extends JDialog {
 			db = new SQLDatabase(dbSource);
 			String driverClass = db.getDataSource().getDriverClass();
 			if (driverClass == null || driverClass.length() == 0) {
-				JOptionPane.showMessageDialog(LoginFrame.this,
+				JOptionPane.showMessageDialog(LoginDialog.this,
 						"Datasource not configured (no JDBC Driver)",
 						"Database connection incomplete",
 						JOptionPane.ERROR_MESSAGE);
@@ -178,7 +178,7 @@ public class LoginFrame extends JDialog {
 				progressMonitor = db.getProgressMonitor();
 				new Thread(this).start();
 			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialogNoReport(LoginFrame.this,
+				ASUtils.showExceptionDialogNoReport(LoginDialog.this,
 						"Connection Error", e1 );
 			} finally {
                 loginButton.setEnabled(true);
@@ -202,11 +202,11 @@ public class LoginFrame extends JDialog {
 		        dbSourceName.setText(dbSource.getName());
 		        userID.setText(dbSource.getUser());
 		        password.setText(dbSource.getPass());
-		        LoginFrame.this.dbSource = dbSource;
+		        LoginDialog.this.dbSource = dbSource;
             }
 		}};
 
-	public LoginFrame()
+	public LoginDialog()
 	{
 		super(MatchMakerFrame.getMainInstance());
 		setTitle("Database Connections");
@@ -251,7 +251,7 @@ public class LoginFrame extends JDialog {
 		loginButton.setText("Login");
 		JButton cancelButton = new JButton(new AbstractAction(){
 			public void actionPerformed(ActionEvent e) {
-				LoginFrame.this.setVisible(false);
+				LoginDialog.this.setVisible(false);
 			}});
 		cancelButton.setText("Cancel");
 		bbBuilder.addGridded(loginButton);
@@ -295,7 +295,7 @@ public class LoginFrame extends JDialog {
 	 */
 	public static void main(String args[]) throws ArchitectException {
 
-		final JDialog d = new LoginFrame();
+		final JDialog d = new LoginDialog();
 
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {

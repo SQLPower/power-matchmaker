@@ -99,7 +99,7 @@ public class MatchMakerFrame extends JFrame {
 
 	protected static Action loginAction = new AbstractAction("Login") {
 		public void actionPerformed(ActionEvent e) {
-			LoginFrame l = new LoginFrame();
+			LoginDialog l = new LoginDialog();
 			l.pack();
 			l.setLocationRelativeTo(MatchMakerFrame.mainInstance);
 	    	l.setVisible(true);
