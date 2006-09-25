@@ -30,6 +30,7 @@ public class RunMatchPanel extends JFrame{
     private static final Logger logger = Logger.getLogger(RunMatchPanel.class);
     private JTextField logFilePath;
     String lastAccessPath;
+    
     private JButton browse;
     private JCheckBox append;
     private JTextField recordsToProcess;
