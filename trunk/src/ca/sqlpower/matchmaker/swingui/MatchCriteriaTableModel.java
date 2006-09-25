@@ -54,16 +54,8 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 			return criteria.getSuppressChar();
 		case FIRST_N_CHAR:
 			return criteria.getFirstNChar();         
-		case SEQ_NO:             
-			return criteria.getSeqNo();
 		case MATCH_START:
 			return criteria.isMatchStart();
-		case MATCH_END:             
-			return criteria.isMatchEnd();
-		case VARIANCE_AMOUNT:             
-			return criteria.getVarianceAmt();
-		case VARIANCE_TYPE:
-			return criteria.getVarianceType(); 
 		case SOUND_IND:          
 			return criteria.isSoundInd();
 		case TRANSLATE_GROUP_NAME:           
@@ -84,8 +76,6 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 			return criteria.getFirstNCharByWord(); 
 		case MIN_WORDS_IN_COMMON:
 			return criteria.getMinWordsInCommon();
-		case WORDS_IN_COMMON_NUM_WORDS:    
-			return criteria.getWordsInCommonNumWords();
 		case MATCH_FIRST_PLUS_ONE_IND:
 			return criteria.isMatchFirstPlusOneInd();
 		case LAST_UPDATE_DATE:

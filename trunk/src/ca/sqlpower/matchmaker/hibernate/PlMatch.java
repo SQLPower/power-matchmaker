@@ -19,6 +19,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     // Fields    
 
      private String matchId;
+     private String objectType = "MATCH";
      private String matchDesc;
      private String tableOwner;
      private String matchTable;
@@ -131,6 +132,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 
 	/** default constructor */
     public PlMatch() {
+    	
     }
 
 	/** minimal constructor */
@@ -996,6 +998,17 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 	public int compareTo(Object o) {
 		final PlMatch other = (PlMatch) o;
 		return matchId.compareTo(other.getMatchId());
+	}
+
+	public String getObjectType() {
+		return objectType;
+	}
+
+	public void setObjectType(String objectType) {
+		if (this.objectType != objectType) {
+			this.objectType = objectType;
+			//TODO fire event
+		}
 	}
 
 }
