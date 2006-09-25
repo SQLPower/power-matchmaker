@@ -11,14 +11,11 @@ import java.util.Set;
  */
 public class PlFolderDetail  implements java.io.Serializable {
 
-    // Fields    
+    // Fields
 
      private PlFolderDetailId id;
-     private Set folderItems = new HashSet();
 
-     // Constructors
-
-    /** default constructor */
+     /** default constructor */
     public PlFolderDetail() {
     }
 
@@ -26,12 +23,12 @@ public class PlFolderDetail  implements java.io.Serializable {
     public PlFolderDetail(PlFolderDetailId id) {
        this.id = id;
     }
-   
+
     // Property accessors
     public PlFolderDetailId getId() {
         return this.id;
     }
-    
+
     public void setId(PlFolderDetailId id) {
         this.id = id;
     }
