@@ -58,8 +58,9 @@ public class LoginFrame extends JDialog {
 	private Action helpLoginAction = new AbstractAction(){
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-
+			// XXX Hook up real help someday.
+			JOptionPane.showMessageDialog(LoginFrame.this,
+					"Help is not yet available. We apologize for the inconvenience");
 		}};
 
 	private ActionListener loginAction = new LoginAction();
@@ -289,6 +290,9 @@ public class LoginFrame extends JDialog {
 	}
 
 
+	/**
+	 * This is just for testing; the real main class is in MatchMakerFrame.
+	 */
 	public static void main(String args[]) throws ArchitectException {
 
 		final JDialog d = new LoginFrame();
