@@ -167,6 +167,14 @@ public class LoginFrame extends JDialog {
 				return;
 			}
 			db = new SQLDatabase(dbSource);
+			String driverClass = db.getDataSource().getDriverClass();
+			if (driverClass == null || driverClass.length() == 0) {
+				JOptionPane.showMessageDialog(LoginFrame.this,
+						"Datasource not configured (no JDBC Driver)",
+						"Database connection incomplete",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			try {
 				progressMonitor = db.getProgressMonitor();
 				new Thread(this).start();
