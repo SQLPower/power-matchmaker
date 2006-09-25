@@ -7,11 +7,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.AbstractAction;
+import javax.swing.JDialog;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
+import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
@@ -78,7 +80,6 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 
 	private void createMatchMenu(final PlMatch match) {
 		m.add(new JMenuItem(new AbstractAction("Edit Match"){
-
 			public void actionPerformed(ActionEvent e) {
 				MatchEditor me = new MatchEditor(match,null);
 				me.pack();
@@ -86,7 +87,6 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 			}}));
 		m.add(new JMenuItem("New Match Group"));
         m.add(new JMenuItem(new AbstractAction("Run Match"){
-
             public void actionPerformed(ActionEvent e) {
                 RunMatchPanel f = new RunMatchPanel(match);
                 f.pack();
@@ -94,6 +94,16 @@ public class MatchMakerTreeMouseListener implements MouseListener {
             }}));
 
 		m.add(new JMenuItem(new NewMatchGroupAction(match, getWindow())));
+		m.addSeparator();
+		m.add(new JMenuItem(new AbstractAction("Audit Information"){
+			public void actionPerformed(ActionEvent e) {
+				MatchInfoPanel p = new MatchInfoPanel(match);
+				JDialog d = ArchitectPanelBuilder.createSingleButtonArchitectPanelDialog(
+						p,MatchMakerFrame.getMainInstance(),
+						"Audit Information","OK");
+				d.pack();
+				d.setVisible(true);
+			}}));
 	}
 
 	private void createFolderMenu(final PlFolder folder) {

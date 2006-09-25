@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
+<!DOCTYPE hibernate-mapping PUBLIC
 	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
 	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
 <hibernate-mapping>
 
-<class 
+<class
     name="ca.sqlpower.matchmaker.hibernate.PlFolder"
     table="PL_FOLDER"
-   
+
 >
-	<id 
+	<id
         name="folderName"
         type="string"
     >
@@ -39,10 +39,10 @@
 <column name="last_backup_no" precision="18" scale="0" />
   	</property>
 
-	<set name="matches" lazy="true" fetch="subselect" table="PL_FOLDER_DETAIL">
+	<set name="matches" lazy="true"  table="PL_FOLDER_DETAIL">
            <key column="folder_name"/>
            <many-to-many unique="true" not-found="ignore" class="ca.sqlpower.matchmaker.hibernate.PlMatch" column="object_name"/>
-    </set> 
+    </set>
 </class>
 
 </hibernate-mapping>
