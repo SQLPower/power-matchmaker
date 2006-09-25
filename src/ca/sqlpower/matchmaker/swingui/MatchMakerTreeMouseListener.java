@@ -26,7 +26,7 @@ import ca.sqlpower.matchmaker.swingui.action.Refresh;
 public class MatchMakerTreeMouseListener implements MouseListener {
 
 	public void mouseClicked(MouseEvent e) {
-
+		
 	}
 
 	public void mouseEntered(MouseEvent e) {
@@ -81,20 +81,24 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 
 	private void createMatchMenu(final PlMatch match) {
 		m.add(new JMenuItem(new AbstractAction("Edit Match"){
+
 			public void actionPerformed(ActionEvent e) {
 				MatchEditor me = new MatchEditor(match,null);
 				me.pack();
 				me.setVisible(true);
 			}}));
-		m.add(new JMenuItem("New Match Group"));
-        m.add(new JMenuItem(new AbstractAction("Run Match"){
+
+
+		m.add(new JMenuItem(new AbstractAction("Run Match"){
+
             public void actionPerformed(ActionEvent e) {
                 RunMatchPanel f = new RunMatchPanel(match);
                 f.pack();
                 f.setVisible(true);
             }}));
+		
+		
 
-		m.add(new JMenuItem(new NewMatchGroupAction(match, getWindow())));
 		m.addSeparator();
 		m.add(new JMenuItem(new AbstractAction("Audit Information"){
 			public void actionPerformed(ActionEvent e) {
@@ -107,6 +111,8 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 			}}));
 		m.addSeparator();
 		m.add(new JMenuItem(new PlMatchExportAction(match)));
+		m.addSeparator();
+		m.add(new JMenuItem(new NewMatchGroupAction(match, getWindow())));
 
 	}
 

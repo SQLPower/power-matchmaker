@@ -21,6 +21,7 @@ public class PlFolderDetailId  implements java.io.Serializable {
 
     /** default constructor */
     public PlFolderDetailId() {
+    	objectType = "MATCH";
     }
 
     /** full constructor */

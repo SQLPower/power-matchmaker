@@ -19,7 +19,7 @@
 <column name="folder_name" length="80" />
 	        </key-property>
 	        <key-property name="objectType" type="string">
-<column name="object_type" length="30" />
+<column name="object_type" length="30" default="MATCH" />
 	        </key-property>
 	        <key-property name="objectName" type="string">
 <column name="object_name" length="200" />

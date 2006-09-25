@@ -74,34 +74,10 @@
 <column name="LAST_UPDATE_USER" length="30" />
   	</property>
     <property
-        name="seqNo"
-        type="big_decimal"
-    >
-<column name="SEQ_NO" precision="18" scale="0" />
-  	</property>
-    <property
         name="matchStart"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="MATCH_START" length="1" />
-  	</property>
-    <property
-        name="matchEnd"
-        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
-    >
-<column name="MATCH_END" length="1" />
-  	</property>
-    <property
-        name="varianceAmt"
-        type="big_decimal"
-    >
-<column name="VARIANCE_AMT" precision="18" scale="0" />
-  	</property>
-    <property
-        name="varianceType"
-        type="string"
-    >
-<column name="VARIANCE_TYPE" length="35" />
   	</property>
     <property
         name="lastUpdateOsUser"
@@ -168,12 +144,6 @@
         type="big_decimal"
     >
 <column name="MIN_WORDS_IN_COMMON" precision="18" scale="0" />
-  	</property>
-    <property
-        name="wordsInCommonNumWords"
-        type="big_decimal"
-    >
-<column name="WORDS_IN_COMMON_NUM_WORDS" precision="18" scale="0" />
   	</property>
     <property
         name="matchFirstPlusOneInd"

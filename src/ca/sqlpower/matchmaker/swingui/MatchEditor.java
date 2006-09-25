@@ -5,8 +5,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -178,11 +176,11 @@ public class MatchEditor extends JFrame {
 
             plMatch.setResultsTable(resultTableName.getText());
             plMatch.setLastUpdateDate(new Date(System.currentTimeMillis()));
-
-            PlFolder f = (PlFolder)folderList.getSelectedItem();
-            Set<PlFolder> f2 = new TreeSet<PlFolder>();
-            f2.add(f);
-            plMatch.setFolders( f2);
+       //FIXME get around the foldersaving problem
+       //     PlFolder f = (PlFolder)folderList.getSelectedItem();
+       //     Set<PlFolder> f2 = new TreeSet<PlFolder>();
+       //     f2.add(f);
+       //     plMatch.setFolders( f2);
 
             Transaction tx = HibernateUtil.primarySession().beginTransaction();
 			HibernateUtil.primarySession().flush();
