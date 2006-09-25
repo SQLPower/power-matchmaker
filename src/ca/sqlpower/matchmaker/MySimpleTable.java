@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package ca.sqlpower.matchmaker;
 
@@ -8,22 +8,11 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.hibernate.SessionFactory;
-
-import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.matchmaker.hibernate.PlFolder;
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
-import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
-import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
 import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class MySimpleTable {
     String catalog;
@@ -33,7 +22,7 @@ public class MySimpleTable {
     String remarks;
     private List <MySimpleColumn> columns;
     private List <MySimpleIndex> indices;
-    
+
     public MySimpleTable(String catalog, String schema, String name, String type, String remarks) {
         super();
         // TODO Auto-generated constructor stub
@@ -75,7 +64,7 @@ public class MySimpleTable {
     public void setType(String type) {
         this.type = type;
     }
-    
+
     public String getPath() {
         StringBuffer s = new StringBuffer();
         if ( catalog != null && catalog.length() > 0 ) {
@@ -94,12 +83,12 @@ public class MySimpleTable {
     public void addColumn(MySimpleColumn col) {
         columns.add(col);
     }
-    
+
     public void populateColumn() throws SQLException, ArchitectException {
 
         Connection conn = null;
         ResultSet rs = null;
-        
+
         SQLDatabase db = MatchMakerFrame.getMainInstance().getDatabase();
         DatabaseMetaData dmd;
         try {
@@ -120,14 +109,14 @@ public class MySimpleTable {
                 rs.close();
             if ( conn != null )
                 conn.close();
-        }      
+        }
     }
-    
+
     public void populateIndex() throws SQLException, ArchitectException {
 
         Connection conn = null;
         ResultSet rs = null;
-        
+
         SQLDatabase db = MatchMakerFrame.getMainInstance().getDatabase();
         DatabaseMetaData dmd;
         try {
@@ -151,7 +140,7 @@ public class MySimpleTable {
                 rs.close();
             if ( conn != null )
                 conn.close();
-        }      
+        }
     }
     public List<MySimpleColumn> getColumns() {
         return columns;
@@ -159,11 +148,11 @@ public class MySimpleTable {
     public List<MySimpleIndex> getIndices() {
         return indices;
     }
-    
+
     public MySimpleIndex getIndexByName(String name) {
         if ( indices == null || name == null )
             return null;
-            
+
         for ( MySimpleIndex idx : indices ) {
             if ( idx.getName().equals(name) )
                 return idx;
