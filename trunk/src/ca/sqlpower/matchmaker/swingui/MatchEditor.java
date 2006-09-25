@@ -234,9 +234,7 @@ public class MatchEditor extends JFrame {
         List <String>tablePath = MatchMakerFrame.getMainInstance().getTablePaths();
         List <MySimpleTable>tableName = MatchMakerFrame.getMainInstance().getTables();
     	matchId = new JTextField();
-    	folderList = new JComboBox(new FolderComboBoxModelModel(MatchMakerFrame.getMainInstance()));
-
-    	folder = new JComboBox(new FolderComboBoxModel<PlFolder>(MatchMakerFrame.getMainInstance().getFolders()));
+    	folderList = new JComboBox(new FolderComboBoxModel<PlFolder>(MatchMakerFrame.getMainInstance().getFolders()));
     	desc = new JTextArea();
 
     	List types = new ArrayList();
