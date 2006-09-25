@@ -48,8 +48,6 @@ public class LoginFrame extends JDialog {
 	private JComboBox dbList;
 	private JTextField userID;
 	private JPasswordField password;
-	private JCheckBox refreshDB;
-	private JCheckBox refreshPL;
 	private JLabel dbSourceName;
 	protected JButton loginButton = new JButton();
 	protected JProgressBar progressBar = new JProgressBar();
@@ -237,8 +235,6 @@ public class LoginFrame extends JDialog {
 
 		userID = new JTextField(20);
 		password = new JPasswordField(20);
-		refreshDB = new JCheckBox();
-		refreshPL = new JCheckBox();
 		dbSourceName = new JLabel();
 
 
@@ -279,10 +275,6 @@ public class LoginFrame extends JDialog {
 
 		progressBar.setVisible(false);
 		pb.add(progressBar,cc.xyw(2,12,6));
-		pb.add(new JLabel("Refresh DB Schema"), cc.xy(2, 14,"r,c"));
-		pb.add(refreshDB,cc.xy(4,14));
-		pb.add(new JLabel("Refresh PL Schema"), cc.xy(5, 14, "r,c"));
-		pb.add(refreshPL,cc.xy(7,14));
 		pb.add(bbBuilder.getPanel(), cc.xyw(2,16,7));
 
 		return pb.getPanel();

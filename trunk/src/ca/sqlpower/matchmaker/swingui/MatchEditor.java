@@ -13,6 +13,7 @@ import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -23,9 +24,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Hibernate;
+import org.hibernate.Transaction;
 
-import ca.sqlpower.architect.swingui.ASUtils;
+import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.MatchType;
 import ca.sqlpower.matchmaker.MySimpleIndex;
 import ca.sqlpower.matchmaker.MySimpleTable;
@@ -96,7 +97,7 @@ public class MatchEditor extends JFrame {
 			setVisible(false);
 		}};
 
-        
+
     private boolean checkStringNullOrEmpty (String value, String name) {
         String trimedValue = null;
         if ( value != null ) {
@@ -112,7 +113,7 @@ public class MatchEditor extends JFrame {
         }
         return true;
     }
-    
+
     private boolean checkObjectNullOrEmpty (Object value, String name) {
         if ( value == null ) {
             JOptionPane.showMessageDialog(
@@ -124,7 +125,7 @@ public class MatchEditor extends JFrame {
         }
         return true;
     }
-    
+
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(ActionEvent e) {
 
@@ -139,8 +140,8 @@ public class MatchEditor extends JFrame {
             if ( !checkStringNullOrEmpty(((MySimpleTable) sourceTableName.getSelectedItem()).getName(),"Source Table Name") )
                 return;
 
-            
-            
+
+
             if ( plMatch == null ) {
                 plMatch = new PlMatch(
                         matchId.getText(),
@@ -148,7 +149,7 @@ public class MatchEditor extends JFrame {
                 plMatch.setCreateDate(new Date(System.currentTimeMillis()));
             }
             logger.debug("Saving Match:" + plMatch.getMatchId());
-            
+
             plMatch.setMatchDesc(desc.getText());
             plMatch.setTableOwner((String) sourceTableOwner.getSelectedItem());
             plMatch.setMatchTable(((MySimpleTable) sourceTableName.getSelectedItem()).getName());
@@ -162,7 +163,7 @@ public class MatchEditor extends JFrame {
             if ( resultTableOwner.getSelectedItem() != null ) {
                 plMatch.setResultsTableOwner(resultTableOwner.getSelectedItem().toString());
             }
-            
+
             String trimedValue = null;
             String resultTable = resultTableName.getText();
             if ( resultTable != null ) {
@@ -174,20 +175,24 @@ public class MatchEditor extends JFrame {
                 resultTableName.setText("MM_"+plMatch.getMatchId());
             }
 
-                
+
             plMatch.setResultsTable(resultTableName.getText());
             plMatch.setLastUpdateDate(new Date(System.currentTimeMillis()));
-            
+
             PlFolder f = (PlFolder)folderList.getSelectedItem();
             Set f2 = new TreeSet<PlFolder>();
             f2.add(f);
             plMatch.setFolders( f2);
 
-            HibernateUtil.primarySession().save(plMatch);
+            Transaction tx = HibernateUtil.primarySession().beginTransaction();
+			HibernateUtil.primarySession().flush();
+			tx.commit();
+
+/*            HibernateUtil.primarySession().save(plMatch);*/
             JOptionPane.showMessageDialog(MatchEditor.this,
                     "Match Interface Save Successfully",
                     "Saved",JOptionPane.INFORMATION_MESSAGE);
-            
+
 		}};
 
 	private Action editMatchCriteria = new AbstractAction("Match Criteria") {
@@ -198,7 +203,13 @@ public class MatchEditor extends JFrame {
 
 	private Action showAuditInfoAction = new AbstractAction("Show Audit Info") {
 		public void actionPerformed(ActionEvent e) {
-			// TODO:
+
+			MatchInfoPanel p = new MatchInfoPanel(plMatch);
+			JDialog d = ArchitectPanelBuilder.createSingleButtonArchitectPanelDialog(
+					p,MatchEditor.this,
+					"Audit Information","OK");
+			d.pack();
+			d.setVisible(true);
 		}};
 
 	private Action runMatchAction = new AbstractAction("Run Match") {
@@ -230,7 +241,7 @@ public class MatchEditor extends JFrame {
 		}};
 
     private void buildUI() {
-        
+
         List <String>tablePath = MatchMakerFrame.getMainInstance().getTablePaths();
         List <MySimpleTable>tableName = MatchMakerFrame.getMainInstance().getTables();
     	matchId = new JTextField();
@@ -274,16 +285,18 @@ public class MatchEditor extends JFrame {
 
     	if ( plMatch != null ) {
     		matchId.setText(plMatch.getMatchId());
-    		PlFolder f = (PlFolder) plMatch.getFolders().toArray()[0];
-    		if ( f != null ) {
-    			folderList.setSelectedItem(f);
+    		if ( plMatch.getFolders() != null && plMatch.getFolders().size() > 0 ) {
+    			PlFolder f = (PlFolder) plMatch.getFolders().toArray()[0];
+	    		if ( f != null ) {
+	    			folderList.setSelectedItem(f);
+	    		}
     		}
     		desc.setText(plMatch.getMatchDesc());
     		type.setSelectedItem(plMatch.getMatchType());
             sourceTableOwner.setSelectedItem(plMatch.getTableOwner());
             MySimpleTable t = MatchMakerFrame.getMainInstance().getTable(plMatch.getTableOwner(),plMatch.getMatchTable());
             sourceTableName.setSelectedItem(t);
-            
+
             System.out.println("pk column:"+plMatch.getPkColumn());
 
             filter.setText(plMatch.getFilter());
@@ -306,7 +319,7 @@ public class MatchEditor extends JFrame {
     	} else if ( plFolder != null ) {
                 folderList.setSelectedItem(plFolder);
         }
-        
+
         if ( plMatch == null ) {
             sourceTableOwner.setSelectedItem(null);
             sourceTableName.setSelectedItem(null);

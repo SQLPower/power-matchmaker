@@ -8,7 +8,6 @@
 	<classpathentry kind="lib" path="lib/forms-1.0.6.jar"/>
 	<classpathentry kind="lib" path="lib/sqlpower.jar"/>
 	<classpathentry kind="lib" path="lib/darwinsys.jar"/>
-	<classpathentry kind="lib" path="/architect/lib/darwinsys.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils.jar"/>
 	<classpathentry sourcepath="C:/download/hibernate-3.2.0.cr4/hibernate-3.2/src" kind="lib" path="lib/hibernate3.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-tools.jar"/>
@@ -23,13 +22,13 @@
 	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/c3p0-0.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/postgresql-8.1dev-401.jdbc3.jar"/>
-	<classpathentry kind="lib" path="lib/msutil.jar"/>
-	<classpathentry kind="lib" path="lib/mssqlserver.jar"/>
-	<classpathentry kind="lib" path="lib/msbase.jar"/>
-	<classpathentry kind="lib" path="lib/classes12.jar"/>
 	<classpathentry kind="src" path="regress"/>
 	<classpathentry sourcepath="ECLIPSE_HOME/plugins/org.eclipse.jdt.source_3.1.1/src/org.junit_3.8.1/junitsrc.zip" kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="src" path="testbed"/>
+	<classpathentry kind="lib" path="lib/msbase.jar"/>
+	<classpathentry kind="lib" path="lib/mssqlserver.jar"/>
+	<classpathentry kind="lib" path="lib/msutil.jar"/>
+	<classpathentry kind="lib" path="lib/postgresql-8.1dev-401.jdbc3.jar"/>
+	<classpathentry kind="lib" path="lib/classes12.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
