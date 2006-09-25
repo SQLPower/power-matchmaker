@@ -90,7 +90,7 @@ public class MatchMakerFrame extends JFrame {
  	protected  JComponent contentPane;
 
     protected ArchitectDataSource dataSource;
-    
+
 	protected Action exitAction = new AbstractAction("Exit") {
 	    public void actionPerformed(ActionEvent e) {
 	        exit();
@@ -187,8 +187,6 @@ public class MatchMakerFrame extends JFrame {
 		}
 	};
 
-	private MatchMakerFrameWindowListener windowListener;
-
 	private Action databaseConnectionAction = new AbstractAction("Database Connection...") {
 
 		public void actionPerformed(ActionEvent e) {
@@ -199,8 +197,8 @@ public class MatchMakerFrame extends JFrame {
 
 		}};
 
-	private ArrayList<PlMatch> matches;
-	private ArrayList<PlFolder> folders;
+	private List<PlMatch> matches;
+	private List<PlFolder> folders;
 	private List<MySimpleTable> tables;
 	private List<String> tablePaths;
 
@@ -399,7 +397,7 @@ public class MatchMakerFrame extends JFrame {
 		bounds.width = prefs.getInt(SwingUserSettings.MAIN_FRAME_WIDTH, 600);
 		bounds.height = prefs.getInt(SwingUserSettings.MAIN_FRAME_HEIGHT, 440);
 		setBounds(bounds);
-		addWindowListener(windowListener = new MatchMakerFrameWindowListener());
+		addWindowListener(new MatchMakerFrameWindowListener());
 	}
 
 	public void newLogin(ArchitectDataSource dbcs){
@@ -455,21 +453,21 @@ public class MatchMakerFrame extends JFrame {
             if ( schemaSet.size() == 0 ) {
                 schemaSet.add(null);
             }
-            
+
             boolean checkTable = dbMetaData.allTablesAreSelectable();
             for ( String cat : catalogSet ) {
                 for ( String sch : schemaSet ) {
-                    
+
                     rs = connection.getMetaData().getTables(cat,sch,null,null);
                     while (rs.next()) {
-                        
+
                         boolean createTable = false;
                         if ( checkTable ) {
                             rs2 = dbMetaData.getTablePrivileges(
                                     rs.getString(1),
                                     rs.getString(2),
                                     rs.getString(3) );
-                            
+
                             while( rs2.next()) {
                                 if ( rs2.getString(6).equalsIgnoreCase("SELECT") ) {
                                     rs2.close();
@@ -478,8 +476,8 @@ public class MatchMakerFrame extends JFrame {
                                     break;
                                 }
                             }
-                        } 
-                        
+                        }
+
                         if ( !checkTable || createTable ) {
                             tables.add(new MySimpleTable(
                                     rs.getString(1),
@@ -488,7 +486,7 @@ public class MatchMakerFrame extends JFrame {
                                     rs.getString(4),
                                     rs.getString(5) ));
                         }
-                        
+
                     }
                     rs.close();
                     rs = null;
@@ -496,7 +494,7 @@ public class MatchMakerFrame extends JFrame {
             }
             connection.close();
             connection = null;
-            
+
             tablePaths = new ArrayList<String>();
             for ( MySimpleTable t : tables ) {
                 String location = t.getPath();
@@ -674,11 +672,11 @@ public class MatchMakerFrame extends JFrame {
 		return prefs;
 	}
 
-	public ArrayList<PlFolder> getFolders() {
+	public List<PlFolder> getFolders() {
 		return folders;
 	}
 
-	public ArrayList<PlMatch> getMatches() {
+	public List<PlMatch> getMatches() {
 		return matches;
 	}
 
@@ -689,7 +687,7 @@ public class MatchMakerFrame extends JFrame {
     public List<MySimpleTable> getTables() {
         return getTables(null);
     }
-    
+
     public List<MySimpleTable> getTables(String path) {
         List<MySimpleTable> tableList = new ArrayList<MySimpleTable>();
         for ( MySimpleTable t : tables ) {
@@ -698,10 +696,10 @@ public class MatchMakerFrame extends JFrame {
         }
         return tableList;
     }
-    
+
     public MySimpleTable getTable(String path, String name) {
         for ( MySimpleTable t : tables ) {
-            if ( t.getName().equals(name) && 
+            if ( t.getName().equals(name) &&
                     ( path == null || t.getPath().equals(path) ) )
                 return t;
         }

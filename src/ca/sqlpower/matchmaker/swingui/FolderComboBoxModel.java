@@ -7,9 +7,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
-
 import ca.sqlpower.matchmaker.hibernate.DefaultHibernateObject;
-import ca.sqlpower.matchmaker.hibernate.PlFolder;
 
 public class FolderComboBoxModel <t extends DefaultHibernateObject>
 	implements ComboBoxModel, FolderListChangeListener {
@@ -30,7 +28,7 @@ public class FolderComboBoxModel <t extends DefaultHibernateObject>
 		int selectedIndex = list.indexOf(anItem);
 		if (selectedIndex >= 0) {
 			if ( anItem instanceof DefaultHibernateObject ) {
-				selectedItem = (t)anItem;
+				selectedItem = (DefaultHibernateObject) anItem;
 			} else if ( anItem== null ) {
 				selectedItem = null;
 			}

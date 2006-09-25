@@ -224,7 +224,7 @@ public class TableQueryFrame extends JFrame {
 	            	tableColumn.add(rsMeta.getColumnName(i+1));
 	            }
 	            while (rs.next()) {
-	            	List row = new ArrayList();
+	            	List<Object> row = new ArrayList<Object>();
 	            	for ( int i=0; i<tableColumn.size(); i++ ) {
 	            		row.add(rs.getObject(i+1));
 	            	}

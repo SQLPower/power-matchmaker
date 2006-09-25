@@ -180,7 +180,7 @@ public class MatchEditor extends JFrame {
             plMatch.setLastUpdateDate(new Date(System.currentTimeMillis()));
 
             PlFolder f = (PlFolder)folderList.getSelectedItem();
-            Set f2 = new TreeSet<PlFolder>();
+            Set<PlFolder> f2 = new TreeSet<PlFolder>();
             f2.add(f);
             plMatch.setFolders( f2);
 
@@ -248,7 +248,7 @@ public class MatchEditor extends JFrame {
     	folderList = new JComboBox(new FolderComboBoxModel<PlFolder>(MatchMakerFrame.getMainInstance().getFolders()));
     	desc = new JTextArea();
 
-    	List types = new ArrayList();
+    	List<String> types = new ArrayList<String>();
     	for ( MatchType mt : MatchType.values() ) {
     		types.add(mt.getName());
     	}
