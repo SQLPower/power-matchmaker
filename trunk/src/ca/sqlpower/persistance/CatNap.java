@@ -15,15 +15,15 @@ import ca.sqlpower.sql.SQL;
 /**
  * The Catnap class contains utilities for persisting our beans
  * to the database.  It is nothing like Hibernate.
- * 
+ *
  * It only supports numbers, strings and booleans for one.
  *
  */
 public abstract class CatNap {
-	
-	
+
+
 	public static void load(Connection con, String tableName, Object loadTo, String where) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SQLException {
-        Map<String,Object> beanProps = BeanUtils.describe(loadTo);
+		BeanUtils.describe(loadTo);
         Statement stmt = null;
         StringBuffer sql = new StringBuffer();
         try{
@@ -34,9 +34,9 @@ public abstract class CatNap {
         	ResultSet rs = stmt.executeQuery(sql.toString());
         	while (rs.next()) {
         		ResultSetMetaData metaData = rs.getMetaData();
-				for (int i = 0; i < metaData.getColumnCount(); i++){ 
+				for (int i = 0; i < metaData.getColumnCount(); i++){
         			String beanPropertyName = underscoreToCamelCaps(metaData.getColumnName(i).toLowerCase());
-        			
+
         			BeanUtils.setProperty(loadTo, beanPropertyName,rs.getObject(i));
 
         		}
@@ -53,13 +53,13 @@ public abstract class CatNap {
         	}
         }
 	}
-        
+
     public static void rename(Connection con, Object newBean, String tableName, String oldWhere) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SQLException {
     	insert(con,newBean,tableName);
     	delete(con,tableName,oldWhere);
     }
 
-    
+
     public static void insert(Connection con, Object bean, String tableName) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SQLException {
         Statement stmt = null;
         StringBuffer sql = new StringBuffer();
@@ -75,7 +75,7 @@ public abstract class CatNap {
                 }
                 sql.append(camelToUnderscore(ent.getKey()));
             }
-    
+
             sql.append("\n) VALUES (");
             first = true;
             for (Map.Entry<String, Object> ent : beanProps.entrySet()) {
@@ -114,15 +114,15 @@ public abstract class CatNap {
             }
         }
     }
-    
+
     public static void delete(Connection con, String tableName, String where) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SQLException {
         Statement stmt = null;
         StringBuffer sql = new StringBuffer();
         try {
-            sql.append("DELETE FROM "+tableName);  
+            sql.append("DELETE FROM "+tableName);
             sql.append(" WHERE "+where);
             sql.append("\n)");
-  
+
             stmt = con.createStatement();
             stmt.executeUpdate(sql.toString());
         } catch (SQLException ex) {
@@ -137,7 +137,7 @@ public abstract class CatNap {
             }
         }
     }
-    
+
     public static void update(Connection con, Object bean, String tableName, String where) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SQLException {
         Statement stmt = null;
         StringBuffer sql = new StringBuffer();
@@ -169,7 +169,7 @@ public abstract class CatNap {
             }
             sql.append(" WHERE "+where);
             sql.append("\n)");
-  
+
             stmt = con.createStatement();
             stmt.executeUpdate(sql.toString());
         } catch (SQLException ex) {
@@ -184,13 +184,13 @@ public abstract class CatNap {
             }
         }
     }
-    
+
     /**
      * Converts camelCaps strings into their equivalent strings having
      * underscores instead of camelCaps.  For example,
      * <tt>richardStallmanCantReadThisBecauseHeIsDyslexic</tt> becomes
      * <tt>richard_stallman_cant_read_this_because_he_is_dyslexic</tt>.
-     * 
+     *
      * @param camel The string to convert.  Must not be null.
      * @return The converted string.
      */
@@ -206,13 +206,13 @@ public abstract class CatNap {
         }
         return result.toString();
     }
-    
+
     /**
      * Converts underscore strings into their equivalent strings having
      * camelCaps instead of underscore.  For example,
      * <tt>richard_stallman_cant_read_this_because_he_is_dyslexic</tt> becomes
      * <tt>richardStallmanCantReadThisBecauseHeIsDyslexic</tt>.
-     * 
+     *
      * @param underScore The string to convert.  Must not be null.
      * @return The converted string.
      */
@@ -230,5 +230,5 @@ public abstract class CatNap {
         }
         return result.toString();
     }
-    
+
 }

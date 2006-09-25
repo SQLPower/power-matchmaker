@@ -8,13 +8,12 @@ import java.sql.Types;
 
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
-import org.hibernate.type.BooleanType;
 import org.hibernate.usertype.UserType;
 
 public class CustomBooleanType implements UserType {
 
 	Boolean b;
-	
+
     public CustomBooleanType() {
 
     }
@@ -22,7 +21,7 @@ public class CustomBooleanType implements UserType {
     public static class BooleanUtil {
     	public static String toYNString(Boolean bool){
     		String ynString;
-    		
+
     		if(bool != null){
     			if(bool.booleanValue()){
     				ynString = "Y";
@@ -32,10 +31,10 @@ public class CustomBooleanType implements UserType {
     		} else {
     			ynString = "N";
     		}
-    		
+
     		return ynString;
     	}
-    	
+
     	public static Boolean parseYN(String in){
     		if (in != null && (in.equalsIgnoreCase("y") ||
     				in.equalsIgnoreCase("yes") ||
@@ -47,7 +46,7 @@ public class CustomBooleanType implements UserType {
     		return Boolean.FALSE;
     	}
     }
-    
+
     public int[] sqlTypes() {
 
         return new int[] { Types.CHAR };
@@ -72,7 +71,7 @@ public class CustomBooleanType implements UserType {
 
         String val = (String)Hibernate.STRING.nullSafeGet(inResultSet, names[0]);
 
-        
+
         b = BooleanUtil.parseYN(val);
         return b;
     }
@@ -119,7 +118,7 @@ public class CustomBooleanType implements UserType {
 		 if (o==null) return 0;
 	     return ((Boolean)o).hashCode();
 	}
-    
+
 
 
 

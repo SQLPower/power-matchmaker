@@ -1,9 +1,7 @@
 package ca.sqlpower.matchmaker.util;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -22,7 +20,7 @@ public class HibernateUtil {
 
 	public static final String primaryLogin = "primary login";
 	public static final String auxLogin = "Auxilliary login";
-	
+
 	private static final Map<String,SessionFactory> sessionFactories=new HashMap<String,SessionFactory>();
 
 	private static final Log log = LogFactory.getLog(HibernateUtil.class);
@@ -36,16 +34,16 @@ public class HibernateUtil {
 	public static SessionFactory getSessionFactory() {
 		return sessionFactories.get(primaryLogin);
 	}
-	
+
 	public static SessionFactory getSessionFactoryImpl(ArchitectDataSource ds,String key) {
 		return sessionFactories.get(key);
 
 	}
-	
+
 	public static SessionFactory createSessionFactory(ArchitectDataSource ds,  String key){
 		Configuration cfg = new Configuration();
 		SessionFactory sessionFactory = null;
-		
+
 		cfg.configure(new File("./hibernate/hibernate.cfg.xml"));
 		cfg.setProperty("hibernate.connection.driver_class", ds.getDriverClass());
 		cfg.setProperty("hibernate.connection.password", ds.getPass());
@@ -58,13 +56,13 @@ public class HibernateUtil {
         cfg.setProperty("hibernate.c3p0.max_size","20");
         cfg.setProperty("hibernate.c3p0.timeout","1800");
         cfg.setProperty("hibernate.c3p0.max_statements","50");
-        
+
         try {
 			// Create the SessionFactory from hibernate.cfg.xml
 			sessionFactory = cfg.buildSessionFactory();
 			System.out.println("creating connection with dialect: "+plDbType2Dialect);
 			sessionFactories.put(key, sessionFactory);
-			
+
 			primarySession=sessionFactory.openSession();
 		} catch (Throwable ex) {
 			log.error("Initial SessionFactory creation failed." + ex);
@@ -73,7 +71,7 @@ public class HibernateUtil {
 		}
 		return sessionFactory;
 	}
-	
+
 	private static Session primarySession=null;
     public static ThreadLocal session = new ThreadLocal();
 
@@ -81,7 +79,7 @@ public class HibernateUtil {
         Session s = (Session) session.get();
         // Open a new Session, if this Thread has none yet
         if (s == null) {
-        	
+
             s = primarySession;
             session.set(s);
         }
@@ -107,6 +105,6 @@ public class HibernateUtil {
 		} else {
 			return "org.hibernate.dialect.DerbyDialect";
 		}
-		
+
 	}
 }

@@ -2,8 +2,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -41,13 +39,13 @@ public class FilterMakerFrame extends JFrame {
 	private JButton okButton;
 	private JButton cancelButton;
 	private JTextArea filterText;
-	
+
 
 	public FilterMakerFrame(){
-		buildUI();	
+		buildUI();
 		setTitle("Filter:");
 	}
-	
+
 	public void buildUI(){
 
 		FormLayout layout = new FormLayout(
@@ -55,12 +53,12 @@ public class FilterMakerFrame extends JFrame {
 				"10dlu,12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,20dlu,4dlu,fill:30dlu:grow,10dlu,30dlu,10dlu");
 
 		CellConstraints cc = new CellConstraints();
-		
+
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled()  ? new FormDebugPanel(layout) : new JPanel(layout);
 
 		pb = new PanelBuilder(layout,p);
-		
+
 		duplicate1 = new JComboBox();
 		duplicate2 = new JComboBox();
 		comparisonOperator = new JComboBox();
@@ -77,17 +75,17 @@ public class FilterMakerFrame extends JFrame {
 		okButton = new JButton(okAction);
 		cancelButton = new JButton(cancelAction);
 		filterText = new JTextArea();
-		
+
 		pb.add(new JLabel("Duplicate1:"), cc.xy(2,2,"l,c"));
 		pb.add(duplicate1, cc.xy(4,2,"f,c"));
 		pb.add(new JLabel("Comparison Operator:"), cc.xy(2,4,"l,c"));
 		pb.add(comparisonOperator, cc.xy(4,4));
 		pb.add(new JLabel("Duplicate2:"), cc.xy(2,6,"l,c"));
 		pb.add(duplicate2, cc.xy(4,6));
-		
+
 		pb.add(pasteButton, cc.xy(6,2,"r,c"));
 		pb.add(undoButton, cc.xy(6,4,"r,c"));
-		
+
 		ButtonBarBuilder syntaxBar = new ButtonBarBuilder();
 		syntaxBar.addGridded(andButton);
 		syntaxBar.addRelatedGap();
@@ -95,12 +93,12 @@ public class FilterMakerFrame extends JFrame {
 		syntaxBar.addRelatedGap();
 		syntaxBar.addGridded(notButton);
 		syntaxBar.addRelatedGap();
-		
+
 		pb.add(syntaxBar.getPanel(), cc.xyw(2,8,3));
 		pb.add(new JScrollPane(filterText), cc.xyw(2,10,5, "f,f"));
-		
+
 		ButtonBarBuilder bottomButtons = new ButtonBarBuilder();
-		
+
 		bottomButtons.addGridded(testButton);
 		bottomButtons.addRelatedGap();
 		bottomButtons.addGlue();
@@ -113,11 +111,11 @@ public class FilterMakerFrame extends JFrame {
 		bottomButtons.addGridded(cancelButton);
 		bottomButtons.addRelatedGap();
 		bottomButtons.addGlue();
-	
+
 		pb.add(bottomButtons.getPanel(), cc.xyw(2,12,5,"f,f"));
-	
-		
-		
+
+
+
 		getContentPane().add(pb.getPanel());
 	}
     public static void main(String[] args) {
@@ -131,69 +129,69 @@ public class FilterMakerFrame extends JFrame {
             }
         });
     }
-    
-    
+
+
     ////////////// The Action Variables//////////////////
 
 	private Action pasteAction = new AbstractAction("Paste"){
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub	
+			// TODO Auto-generated method stub
 		}
 	};
-	
+
 	private Action undoAction = new AbstractAction("Undo"){
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			
+
 		}
-		
+
 	};
-	
+
 	private Action andAction = new AbstractAction("AND"){
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			
+
 		}
-		
+
 	};
-	
+
 	private Action notAction = new AbstractAction("NOT"){
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			
+
 		}
-		
+
 	};
-	
+
 	private Action orAction = new AbstractAction("OR"){
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub	
+			// TODO Auto-generated method stub
 		}
 	};
-	
+
 	private Action testAction = new AbstractAction("Test"){
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub	
+			// TODO Auto-generated method stub
 		}
 	};
-	
+
 	private Action helpAction = new AbstractAction("Help"){
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub	
+			// TODO Auto-generated method stub
 		}
 	};
-	
+
 	private Action okAction = new AbstractAction("OK"){
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub	
+			// TODO Auto-generated method stub
 		}
 	};
 	private Action cancelAction = new AbstractAction("Cancel"){
