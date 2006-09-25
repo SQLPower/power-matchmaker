@@ -120,7 +120,7 @@ public class LoginFrame extends JDialog {
 
 			        }
 
-			      
+
 
 				} catch (ArchitectException e) {
 					ASUtils.showExceptionDialogNoReport(LoginFrame.this,
@@ -133,6 +133,7 @@ public class LoginFrame extends JDialog {
 		}
 
 		@Override
+		/** Called (once) by run() in superclass */
 		public void doStuff() throws Exception {
 			loginButton.setEnabled(false);
 			login = false;
