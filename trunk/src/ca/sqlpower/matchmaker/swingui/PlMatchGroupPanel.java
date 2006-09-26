@@ -3,17 +3,22 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Date;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
@@ -23,7 +28,8 @@ import javax.swing.table.TableCellRenderer;
 import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.swingui.ArchitectPanel;
-import ca.sqlpower.architect.swingui.table.TableModelColumnAutofit;
+import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
+import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
@@ -91,9 +97,8 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 
 	public void setModel(PlMatchGroup model) {
 		this.model = model;
-		TableModelColumnAutofit tableModelColumnAutofit = new TableModelColumnAutofit(new MatchCriteriaTableModel(model),matchCriteriaTable);
-		matchCriteriaTable.setModel(tableModelColumnAutofit);
-		tableModelColumnAutofit.setTableHeader(matchCriteriaTable.getTableHeader());
+		matchCriteriaTable.setModel(new MatchCriteriaTableModel(model));
+	
 		
 		loadMatches(model);
 	}
@@ -199,7 +204,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			pb.add(new JLabel("Filter Criteria"), cl.xy(2,10),filterCriteria, cc.xy(4,10));
 			pb.appendRelatedComponentsGapRow();
 			pb.appendRow("pref");
-			pb.add(new JLabel("Is Active"), cl.xy(2,12),active, cc.xy(4,12));
+			pb.add(new JLabel("Deactivate?"), cl.xy(2,12),active, cc.xy(4,12));
 			pb.appendRelatedComponentsGapRow();
 			pb.appendRow("pref");
 			pb.add(new JLabel("Last Updated"), cl.xy(2,14),lastUpdateDate, cc.xy(4,14));
@@ -254,6 +259,64 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			setModel(model);
 			
 			matchCriteriaTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
+			matchCriteriaTable.addMouseListener(new MouseListener(){
+
+				private Window getWindow() {
+					Component c = source;
+					while(!(c instanceof Window ) && c !=null){
+						c = c.getParent();
+					}
+					return (Window) c;
+				}
+				
+				public void mouseClicked(MouseEvent e) {
+					// TODO Auto-generated method stub
+					clickAction(e);
+					
+				}
+
+				public void mouseEntered(MouseEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				public void mouseExited(MouseEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				public void mousePressed(MouseEvent e) {
+
+				}
+
+				public void mouseReleased(MouseEvent e) {
+
+				}
+				JPopupMenu m;
+				Component source;
+				
+				private void clickAction(MouseEvent e) {
+					
+					if (e.getButton() == e.BUTTON1 && e.getClickCount() == 2) {
+						m = new JPopupMenu();
+						JTable t = (JTable) e.getSource();
+						source = t;
+						int row = t.rowAtPoint(e.getPoint());
+						MatchCriteriaTableModel tableModel = (MatchCriteriaTableModel) t.getModel();
+						if (row < 0) {
+							PlMatchCriteria newCriteria = new PlMatchCriteria();
+							newCriteria.setPlMatchGroup(model);
+							Action a = new EditMatchCriteriaAction(newCriteria,getWindow());
+							a.actionPerformed(new ActionEvent(this,0,""));;
+							
+						}else {
+							Action a = new EditMatchCriteriaAction(tableModel.getRow(row),getWindow());
+							a.actionPerformed(new ActionEvent(this,0,""));
+						}
+					}
+				}
+				
+			});
 			
 		}
 		return matchCriteriaTable;
@@ -264,12 +327,35 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	}
 
 	public void discardChanges() {
-		loadMatches(model);
+
 	}
 
 	public JComponent getPanel() {
 		return this;
 	}
+	private class EditMatchCriteriaAction extends AbstractAction {
+		private EditMatchCriteriaAction(String name) {
+			super(name);
+		}
+
+		public EditMatchCriteriaAction(PlMatchCriteria criteria, Window w) {
+			
+			this("Edit Match Criterion");
+			window = w;
+			this.criteria = criteria;
+		}
+
+		private PlMatchCriteria criteria;
+		private Window window;
+	
+
+		public void actionPerformed(ActionEvent e) {
+			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(new PlMatchCriteriaPanel(criteria), window, "Edit Match Criterion", "Save Match Criterion");
+			d.setVisible(true);
+			
+		}
+	}
+
 	class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
 
 		  CheckBoxRenderer() {

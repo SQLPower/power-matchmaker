@@ -57,7 +57,7 @@
   	</property>
     <property
         name="firstNChar"
-        type="big_decimal"
+        type="long"
     >
 <column name="FIRST_N_CHAR" precision="18" scale="0" />
   	</property>
@@ -135,13 +135,13 @@
   	</property>
     <property
         name="firstNCharByWord"
-        type="big_decimal"
+        type="long"
     >
 <column name="FIRST_N_CHAR_BY_WORD" precision="18" scale="0" />
   	</property>
     <property
         name="minWordsInCommon"
-        type="big_decimal"
+        type="long"
     >
 <column name="MIN_WORDS_IN_COMMON" precision="18" scale="0" />
   	</property>

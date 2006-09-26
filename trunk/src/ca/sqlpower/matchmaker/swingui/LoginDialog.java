@@ -218,7 +218,7 @@ public class LoginDialog extends JDialog {
 
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:min(70dlu;default), 4dlu, fill:min(50dlu;default):grow, min(20dlu;default), 4dlu, min(15dlu;default), fill:min, 4dlu", // columns
-				" 10dlu,10dlu,4dlu,12dlu,10dlu,12dlu,4dlu,12dlu,4dlu,12dlu,10dlu,10dlu,10dlu,10dlu,10dlu,20dlu,10dlu"); // rows
+				" 10dlu,pref,4dlu,pref,10dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,10dlu,pref,10dlu,pref,10dlu"); // rows
 
 		layout.setColumnGroups(new int [][] { {2,5},{4,7}});
 

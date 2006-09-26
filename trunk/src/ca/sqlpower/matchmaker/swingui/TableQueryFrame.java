@@ -299,7 +299,7 @@ public class TableQueryFrame extends JFrame {
 
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:min(70dlu;default),4dlu,fill:200dlu:grow, 4dlu,min(50dlu;default),4dlu, fill:60dlu,4dlu,fill:min(40dlu;default),4dlu", // columns
-				"10dlu,12dlu,4dlu, 0dlu,0dlu,12dlu,10dlu,10dlu,  10dlu,10dlu,40dlu,4dlu,16dlu,  10dlu, fill:120dlu:grow,10dlu"); // rows
+				"10dlu,pref,4dlu, 0dlu,0dlu,pref,10dlu,10dlu,  10dlu,10dlu,40dlu,4dlu,16dlu,  10dlu, fill:120dlu:grow,10dlu"); // rows
 
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout) : new JPanel(layout);
