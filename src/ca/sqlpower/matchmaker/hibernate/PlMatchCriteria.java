@@ -17,7 +17,7 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
      private boolean caseSensitiveInd;
      private String suppressChar;
      private boolean soundInd;
-     private BigDecimal firstNChar;
+     private Long firstNChar;
      private Date lastUpdateDate;
      private String lastUpdateUser;
      private BigDecimal seqNo;
@@ -34,9 +34,9 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
      private String replaceWithSpace;
      private boolean reorderInd;
      private boolean firstNCharByWordInd;
-     private BigDecimal firstNCharByWord;
-     private BigDecimal minWordsInCommon;
-     private BigDecimal wordsInCommonNumWords;
+     private Long firstNCharByWord;
+     private Long minWordsInCommon;
+     private Long wordsInCommonNumWords;
      private boolean matchFirstPlusOneInd;
 
      // Constructors
@@ -51,7 +51,7 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
         this.plMatchGroup = plMatchGroup;
     }
     /** full constructor */
-    public PlMatchCriteria(PlMatchCriteriaId id, PlMatchGroup plMatchGroup, boolean caseSensitiveInd, String suppressChar, boolean soundInd, BigDecimal firstNChar, Date lastUpdateDate, String lastUpdateUser, BigDecimal seqNo, boolean matchStart, boolean matchEnd, BigDecimal varianceAmt, String varianceType, String lastUpdateOsUser, boolean allowNullInd, String translateGroupName, boolean removeSpecialChars, boolean countWordsInd, boolean replaceWithSpaceInd, String replaceWithSpace, boolean reorderInd, boolean firstNCharByWordInd, BigDecimal firstNCharByWord, BigDecimal minWordsInCommon, BigDecimal wordsInCommonNumWords, boolean matchFirstPlusOneInd) {
+    public PlMatchCriteria(PlMatchCriteriaId id, PlMatchGroup plMatchGroup, boolean caseSensitiveInd, String suppressChar, boolean soundInd, Long firstNChar, Date lastUpdateDate, String lastUpdateUser, BigDecimal seqNo, boolean matchStart, boolean matchEnd, BigDecimal varianceAmt, String varianceType, String lastUpdateOsUser, boolean allowNullInd, String translateGroupName, boolean removeSpecialChars, boolean countWordsInd, boolean replaceWithSpaceInd, String replaceWithSpace, boolean reorderInd, boolean firstNCharByWordInd, Long firstNCharByWord, Long minWordsInCommon, Long wordsInCommonNumWords, boolean matchFirstPlusOneInd) {
        this.id = id;
        this.plMatchGroup = plMatchGroup;
        this.caseSensitiveInd = caseSensitiveInd;
@@ -116,11 +116,11 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
     public void setSoundInd(boolean soundInd) {
         this.soundInd = soundInd;
     }
-    public BigDecimal getFirstNChar() {
+    public Long getFirstNChar() {
         return this.firstNChar;
     }
     
-    public void setFirstNChar(BigDecimal firstNChar) {
+    public void setFirstNChar(Long firstNChar) {
         this.firstNChar = firstNChar;
     }
     public Date getLastUpdateDate() {
@@ -235,25 +235,25 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
     public void setFirstNCharByWordInd(boolean firstNCharByWordInd) {
         this.firstNCharByWordInd = firstNCharByWordInd;
     }
-    public BigDecimal getFirstNCharByWord() {
+    public Long getFirstNCharByWord() {
         return this.firstNCharByWord;
     }
     
-    public void setFirstNCharByWord(BigDecimal firstNCharByWord) {
+    public void setFirstNCharByWord(Long firstNCharByWord) {
         this.firstNCharByWord = firstNCharByWord;
     }
-    public BigDecimal getMinWordsInCommon() {
+    public Long getMinWordsInCommon() {
         return this.minWordsInCommon;
     }
     
-    public void setMinWordsInCommon(BigDecimal minWordsInCommon) {
+    public void setMinWordsInCommon(Long minWordsInCommon) {
         this.minWordsInCommon = minWordsInCommon;
     }
-    public BigDecimal getWordsInCommonNumWords() {
+    public Long getWordsInCommonNumWords() {
         return this.wordsInCommonNumWords;
     }
     
-    public void setWordsInCommonNumWords(BigDecimal wordsInCommonNumWords) {
+    public void setWordsInCommonNumWords(Long wordsInCommonNumWords) {
         this.wordsInCommonNumWords = wordsInCommonNumWords;
     }
     public boolean isMatchFirstPlusOneInd() {

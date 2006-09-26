@@ -26,6 +26,25 @@ import ca.sqlpower.matchmaker.swingui.action.Refresh;
 public class MatchMakerTreeMouseListener implements MouseListener {
 
 	public void mouseClicked(MouseEvent e) {
+		if (e.getClickCount() ==2 && e.BUTTON1 == e.getButton()) {
+			JTree t = (JTree) e.getSource();
+			source = t;
+			int row = t.getRowForLocation(e.getX(),e.getY());
+			TreePath tp = t.getPathForRow(row);
+			if (tp != null) {
+				Object o = tp.getLastPathComponent();
+				if(o instanceof PlFolder){
+					
+				} else if (o instanceof PlMatch){
+					MatchEditor me = new MatchEditor((PlMatch)o,null);
+					me.pack();
+					me.setVisible(true);
+				} else if (o instanceof PlMatchGroup){
+					new EditMatchGroupAction((PlMatchGroup)o, getWindow()).actionPerformed(null);
+					
+				}
+			}
+		}
 		
 	}
 

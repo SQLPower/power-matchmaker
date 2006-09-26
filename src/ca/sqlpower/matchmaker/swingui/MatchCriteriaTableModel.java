@@ -34,6 +34,10 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
                 MatchCriteriaColumn.values()[columnIndex],(PlMatchCriteria) group.getChildren().get(rowIndex));
 	}
 	
+	public PlMatchCriteria getRow(int row){
+		return (PlMatchCriteria) group.getChildren().get(row);
+	}
+	
 	@Override
 	public String getColumnName(int column) {
 		return MatchCriteriaColumn.values()[column].getName();
@@ -46,6 +50,8 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 	
 	private static Object getFieldFromCriteria(MatchCriteriaColumn column, PlMatchCriteria criteria) {
 		switch (column) {	
+		case COLUMN:
+			return criteria.getId().getColumnName();
 		case ALLOW_NULL:             
 			return criteria.isAllowNullInd();
 		case CASE_SENSITIVE_IND:             

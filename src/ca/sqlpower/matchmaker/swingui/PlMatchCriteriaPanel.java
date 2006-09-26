@@ -1,6 +1,9 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Date;
@@ -19,6 +22,8 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 
@@ -30,7 +35,7 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 	private PlMatchGroup parent;
 
 
-	private JPanel groupEditPanel;
+	private JPanel criteriaEditPanel;
 	JLabel groupId;
 	JLabel matches;
 	JComboBox column;
@@ -63,17 +68,19 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 	 */
 	public PlMatchCriteriaPanel(PlMatchCriteria model) {
 		super();
-		this.model = model;
+		buildUI();
 		initialize();
-		
+		textBackground = replaceWithSpace.getBackground();
+		setModel(model);
 		
 	}
 
 	private void buildUI(){
-		FormLayout layout = new FormLayout("","");
+	
 		groupId = new JLabel();
 		matches = new JLabel();
 		column = new JComboBox();
+		translate = new JComboBox();
 		caseSensitive = new JCheckBox();
 		soundex = new JCheckBox();
 		matchStart = new JCheckBox();
@@ -92,17 +99,65 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 		lastUpdateUser= new JLabel();
 		lastUpdateOSUser= new JLabel();
 	}
+	
 	/**
 	 * This method initializes this
 	 * 
 	 * @return void
 	 */
 	private void initialize() {
-
-
+		FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, fill:200dlu:grow, 3dlu");
+		PanelBuilder pb = new PanelBuilder(formLayout);
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		CellConstraints cc = new CellConstraints();
+		CellConstraints cl= new CellConstraints();
+		pb.add(new JLabel("Column"), cl.xy(2,2),column, cc.xy(4,2));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.ALLOW_NULL.getName()), cl.xy(2,4),allowNull, cc.xy(4,4));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.CASE_SENSITIVE_IND.getName()), cl.xy(2,6),caseSensitive, cc.xy(4,6));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.REMOVE_SPECIAL_CHARS.getName()), cl.xy(2,8),getCheckedTextBox(removeSpecialChars,suppressChar), cc.xy(4,8));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.REPLACE_WITH_SPACE_IND.getName()), cl.xy(2,10),getCheckedTextBox(replaceWithSpaceInd,replaceWithSpace), cc.xy(4,10));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.TRANSLATE_GROUP_NAME.getName()), cl.xy(2,12),translate, cc.xy(4,12));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.REORDER_IND.getName()), cl.xy(2,14),reorder, cc.xy(4,14));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.FIRST_N_CHARS_BY_WORD.getName()), cl.xy(2,16),firstNCharsByWord, cc.xy(4,16));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.FIRST_N_CHAR.getName()), cl.xy(2,18),firstNChar, cc.xy(4,18));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.MATCH_FIRST_PLUS_ONE_IND.getName()), cl.xy(2,20),matchFirstPlusOneInd, cc.xy(4,20));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.MIN_WORDS_IN_COMMON.getName()), cl.xy(2,22),minWordsInCommon, cc.xy(4,22));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.MATCH_START.getName()), cl.xy(2,24),matchStart, cc.xy(4,24));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.SOUND_IND.getName()), cl.xy(2,26),soundex, cc.xy(4,26));
+		pb.appendRelatedComponentsGapRow();
+		pb.appendRow("pref");
+		pb.add(new JLabel(MatchCriteriaColumn.COUNT_WORDS_IND.getName()), cl.xy(2,28),countWords, cc.xy(4,28));
+		
+		criteriaEditPanel = pb.getPanel();
 		
 	}
 
+	
 	public PlMatchCriteria getModel() {
 		return model;
 	}
@@ -110,12 +165,12 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 	public void setModel(PlMatchCriteria model) {
 		this.model = model;
 		
-		loadMatches(model);
+		loadMatchCriteria(model);
 	}
 
-	private void loadMatches(PlMatchCriteria model) {
+	private void loadMatchCriteria(PlMatchCriteria model) {
 		// load the new model
-		KeyListener listener = new KeyListener(){
+		KeyListener l= new KeyListener(){
 			
 			public void keyPressed(KeyEvent e) {
 				// TODO Auto-generated method stub
@@ -132,10 +187,44 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 			}
 			
 		};
+		firstNChar.addKeyListener(l);
+		firstNCharsByWord.addKeyListener(l);
+		minWordsInCommon.addKeyListener(l);
+
+		
+		ActionListener al = new ActionListener(){
+
+			public void actionPerformed(ActionEvent e) {
+				validateForm();
+				
+			}
+			
+		};
+		
+		replaceWithSpaceInd.addActionListener(al);
+		removeSpecialChars.addActionListener(al);
+		
+		
+		
+		
 		groupId = new JLabel(model.getId().getGroupId());
 		matches = new JLabel(model.getId().getMatchId());
-
-
+		// TODO add column junk
+		allowNull.setSelected(model.isAllowNullInd());
+		caseSensitive.setSelected(model.isCaseSensitiveInd());
+		removeSpecialChars.setSelected(model.isRemoveSpecialChars());
+		suppressChar.setText(model.getSuppressChar() == null? "":model.getSuppressChar());
+		replaceWithSpaceInd.setSelected(model.isReplaceWithSpaceInd());
+		replaceWithSpace.setText(model.getReplaceWithSpace() == null ? "" : model.getReplaceWithSpace());
+		// TODO add translate
+		reorder.setSelected(model.isReorderInd());
+		firstNCharsByWord.setText(model.getFirstNCharByWord() == null? "0":model.getFirstNCharByWord().toString());
+		firstNChar.setText(model.getFirstNChar()== null? "0":model.getFirstNChar().toString());
+		matchFirstPlusOneInd.setSelected(model.isMatchFirstPlusOneInd());
+		minWordsInCommon.setText(model.getMinWordsInCommon() == null? "0":model.getMinWordsInCommon().toString());
+		matchStart.setSelected(model.isMatchStart());
+		soundex.setSelected(model.isSoundInd());
+		countWords.setSelected(model.isCountWordsInd());
 		Date updated = model.getLastUpdateDate();
 		
 		lastUpdateDate = new JLabel(updated == null? "N/A" :updated.toString());
@@ -145,7 +234,27 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 	
 	private boolean validateForm(){
 		Boolean valid = true;
-		
+		suppressChar.setEnabled(removeSpecialChars.isSelected());
+		replaceWithSpace.setEnabled(replaceWithSpaceInd.isSelected());
+
+		try {
+			new Long(firstNChar.getText());
+			firstNChar.setBackground(textBackground);
+		} catch (NumberFormatException e) {
+			firstNChar.setBackground(Color.red);
+		}
+		try {
+			new Long(firstNCharsByWord.getText());
+			firstNCharsByWord.setBackground(textBackground);
+		} catch (NumberFormatException e) {
+			firstNCharsByWord.setBackground(Color.red);
+		}
+		try {
+			new Long(minWordsInCommon.getText());
+			minWordsInCommon.setBackground(textBackground);
+		} catch (NumberFormatException e) {
+			minWordsInCommon.setBackground(Color.red);
+		}
 
 
 		return valid;
@@ -167,7 +276,13 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 		return validateForm();
 	}
 
-
+	private JPanel getCheckedTextBox(JCheckBox box, JTextField field) {
+		JPanel p = new JPanel(new BorderLayout());
+		p.add(box,BorderLayout.WEST);
+		p.add(field,BorderLayout.CENTER);
+		return p;
+		
+	}
 	
 
 
@@ -176,11 +291,11 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 	}
 
 	public void discardChanges() {
-		loadMatches(model);
+		
 	}
 
 	public JComponent getPanel() {
-		return this;
+		return  criteriaEditPanel;
 	}
 	
 } 
