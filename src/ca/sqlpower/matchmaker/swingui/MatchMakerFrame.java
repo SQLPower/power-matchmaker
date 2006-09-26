@@ -85,7 +85,7 @@ public class MatchMakerFrame extends JFrame {
 	protected JMenuBar menuBar = null;
 	protected JTree tree = null;
     private JMenu databaseMenu;
-
+    private String lastExportAccessPath = null;
 	protected AboutAction aboutAction;
  	protected  JComponent contentPane;
 
@@ -717,6 +717,17 @@ public class MatchMakerFrame extends JFrame {
 	public void setTree(JTree tree) {
 		if (this.tree != tree) {
 			this.tree = tree;
+			//TODO fire event
+		}
+	}
+
+	public String getLastExportAccessPath() {
+		return lastExportAccessPath;
+	}
+
+	public void setLastExportAccessPath(String lastExportAccessPath) {
+		if (this.lastExportAccessPath != lastExportAccessPath) {
+			this.lastExportAccessPath = lastExportAccessPath;
 			//TODO fire event
 		}
 	}
