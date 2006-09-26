@@ -21,6 +21,7 @@ import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.EditMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
+import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 
 public class MatchMakerTreeMouseListener implements MouseListener {
@@ -34,18 +35,18 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 			if (tp != null) {
 				Object o = tp.getLastPathComponent();
 				if(o instanceof PlFolder){
-					
+
 				} else if (o instanceof PlMatch){
 					MatchEditor me = new MatchEditor((PlMatch)o,null);
 					me.pack();
 					me.setVisible(true);
 				} else if (o instanceof PlMatchGroup){
 					new EditMatchGroupAction((PlMatchGroup)o, getWindow()).actionPerformed(null);
-					
+
 				}
 			}
 		}
-		
+
 	}
 
 	public void mouseEntered(MouseEvent e) {
@@ -60,6 +61,13 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 	Component source;
 	public void mousePressed(MouseEvent e) {
 		makePopup(e);
+
+		JTree t = (JTree) e.getSource();
+		int row = t.getRowForLocation(e.getX(),e.getY());
+		TreePath tp = t.getPathForRow(row);
+		if ( tp != null ) {
+			t.setSelectionPath(tp);
+		}
 	}
 
 	private void makePopup(MouseEvent e) {
@@ -102,7 +110,8 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 		m.add(new JMenuItem(new AbstractAction("Edit Match"){
 
 			public void actionPerformed(ActionEvent e) {
-				MatchEditor me = new MatchEditor(match,null);
+				MatchEditor me;
+				me = new MatchEditor(match,null);
 				me.pack();
 				me.setVisible(true);
 			}}));
@@ -115,8 +124,8 @@ public class MatchMakerTreeMouseListener implements MouseListener {
                 f.pack();
                 f.setVisible(true);
             }}));
-		
-		
+
+
 
 		m.addSeparator();
 		m.add(new JMenuItem(new AbstractAction("Audit Information"){
@@ -130,20 +139,22 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 			}}));
 		m.addSeparator();
 		m.add(new JMenuItem(new PlMatchExportAction(match)));
+		m.add(new JMenuItem(new PlMatchImportAction()));
 		m.addSeparator();
 		m.add(new JMenuItem(new NewMatchGroupAction(match, getWindow())));
-
 	}
 
 	private void createFolderMenu(final PlFolder folder) {
         m.add(new JMenuItem(new AbstractAction("New Match"){
 
             public void actionPerformed(ActionEvent e) {
-                MatchEditor me = new MatchEditor(null,folder);
-                me.pack();
-                me.setVisible(true);
+                MatchEditor me;
+				me = new MatchEditor(null,folder);
+				me.pack();
+				me.setVisible(true);
             }}));
 
+        m.add(new JMenuItem(new PlMatchImportAction()));
 	}
 
 	public void mouseReleased(MouseEvent e) {

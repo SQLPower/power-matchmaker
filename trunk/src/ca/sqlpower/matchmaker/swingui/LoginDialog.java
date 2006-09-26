@@ -171,6 +171,7 @@ public class LoginDialog extends JDialog {
 						"Datasource not configured (no JDBC Driver)",
 						"Database connection incomplete",
 						JOptionPane.ERROR_MESSAGE);
+				loginButton.setEnabled(true);
 				return;
 			}
 			try {

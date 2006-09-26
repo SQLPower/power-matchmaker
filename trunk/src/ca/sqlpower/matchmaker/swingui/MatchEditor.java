@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +25,12 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLCatalog;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLObject;
+import ca.sqlpower.architect.SQLSchema;
+import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.MatchType;
 import ca.sqlpower.matchmaker.MySimpleIndex;
@@ -41,6 +48,14 @@ import com.jgoodies.forms.layout.FormLayout;
 public class MatchEditor extends JFrame {
 
 	private static final Logger logger = Logger.getLogger(MatchEditor.class);
+
+
+	private JComboBox sourceCatalogComboBox;
+	private JComboBox sourceSchemaComboBox;
+	private JComboBox sourceTableComboBox;
+
+	private JLabel sourceCatalogLabel;
+	private JLabel sourceSchemaLabel;
 
     private JTextField matchId;
     private JComboBox folderList;
@@ -72,10 +87,9 @@ public class MatchEditor extends JFrame {
     private PlFolder plFolder;
 
 
-    public MatchEditor(PlMatch match) throws HeadlessException {
+    public MatchEditor(PlMatch match) throws HeadlessException, ArchitectException {
         this(match,null);
     }
-
 
     public MatchEditor(PlMatch match, PlFolder folder2) {
         super();
@@ -87,12 +101,14 @@ public class MatchEditor extends JFrame {
         this.plMatch = match;
         this.plFolder = folder2;
         buildUI();
+
     }
 
 
     private Action exitAction = new AbstractAction("Exit") {
 		public void actionPerformed(ActionEvent e) {
 			setVisible(false);
+			dispose();
 		}};
 
 
@@ -186,7 +202,6 @@ public class MatchEditor extends JFrame {
 			HibernateUtil.primarySession().flush();
 			tx.commit();
 
-/*            HibernateUtil.primarySession().save(plMatch);*/
             JOptionPane.showMessageDialog(MatchEditor.this,
                     "Match Interface Save Successfully",
                     "Saved",JOptionPane.INFORMATION_MESSAGE);
@@ -238,7 +253,14 @@ public class MatchEditor extends JFrame {
 			// TODO:
 		}};
 
+
+
+
+
+
     private void buildUI() {
+
+
 
         List <String>tablePath = MatchMakerFrame.getMainInstance().getTablePaths();
         List <MySimpleTable>tableName = MatchMakerFrame.getMainInstance().getTables();
@@ -391,7 +413,7 @@ public class MatchEditor extends JFrame {
 
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws HeadlessException, ArchitectException {
 
         MatchMakerFrame.getMainInstance();
         final JFrame f = new MatchEditor(null);
@@ -403,4 +425,156 @@ public class MatchEditor extends JFrame {
             }
         });
     }
+
+    /**
+	 * Finds all the children of a catalog and puts them in the GUI.
+	 */
+	public class CatalogPopulator implements ActionListener {
+
+		private JComboBox catalogComboBox;
+		private JComboBox schemaComboBox;
+		private JLabel schemaLabel;
+		private JLabel catalogLabel;
+		private JComboBox tableComboBox;
+
+		public CatalogPopulator(
+				JComboBox catalogComboBox,
+				JComboBox schemaComboBox,
+				JComboBox tableComboBox,
+				JLabel catalogLabel,
+				JLabel schemaLabel ) {
+			this.catalogComboBox = catalogComboBox;
+			this.schemaComboBox = schemaComboBox;
+			this.tableComboBox = tableComboBox;
+			this.catalogLabel = catalogLabel;
+			this.schemaLabel = schemaLabel;
+		}
+
+		/**
+		 * Clears the schema dropdown, and start to
+		 * repopulate it (if possible).
+		 */
+		public void actionPerformed(ActionEvent e) {
+			logger.debug("CATALOG POPULATOR IS ABOUT TO START...");
+			catalogComboBox.removeAllItems();
+			catalogComboBox.setEnabled(false);
+			catalogLabel.setText("");
+
+			final SQLDatabase db = MatchMakerFrame.getMainInstance().getDatabase();
+
+			try {
+				if (db.isCatalogContainer()) {
+					for (SQLObject item : (List<SQLObject>) db.getChildren()) {
+						catalogComboBox.addItem(item);
+					}
+					if ( catalogComboBox.getItemCount() > 0 &&
+							catalogComboBox.getSelectedIndex() < 0 ) {
+						catalogComboBox.setSelectedIndex(0);
+					}
+					// check if we need to do schemas
+					SQLCatalog cat = (SQLCatalog) catalogComboBox.getSelectedItem();
+					if ( cat != null && cat.getNativeTerm() !=null )
+						catalogLabel.setText(cat.getNativeTerm());
+					if (cat == null) {
+						// there are no catalogs (database is completely empty)
+						catalogComboBox.setEnabled(false);
+					}  else {
+						// there are catalogs, but they don't contain schemas
+						catalogComboBox.setEnabled(true);
+					}
+				} else if (db.isSchemaContainer()) {
+
+					catalogComboBox.setEnabled(false);
+					schemaComboBox.removeAllItems();
+					schemaLabel.setText("");
+
+					for (SQLObject item : (List<SQLObject>) db.getChildren()) {
+						schemaComboBox.addItem(item);
+					}
+					if ( schemaComboBox.getItemCount() > 0 &&
+							schemaComboBox.getSelectedIndex() < 0 ) {
+						schemaComboBox.setSelectedIndex(0);
+					}
+					SQLSchema sch = (SQLSchema) schemaComboBox.getSelectedItem();
+					if ( sch != null && sch.getNativeTerm() !=null )
+						schemaLabel.setText(sch.getNativeTerm());
+					if (sch == null) {
+						// there are no schema (database is completely empty)
+						schemaComboBox.setEnabled(false);
+					}  else {
+						// there are catalogs, but they don't contain schemas
+						schemaComboBox.setEnabled(true);
+					}
+				} else {
+					// database contains tables directly
+					catalogComboBox.setEnabled(false);
+					schemaComboBox.setEnabled(false);
+					tableComboBox.removeAllItems();
+
+					for (SQLObject item : (List<SQLObject>) db.getChildren()) {
+						tableComboBox.addItem(item);
+					}
+				}
+			} catch ( ArchitectException e1 ) {
+				ASUtils.showExceptionDialog(MatchEditor.this,
+						"Database Error", e1);
+			}
+		}
+	}
+
+
+    /**
+	 * Finds all the children of a catalog and puts them in the GUI.
+	 */
+	public class SchemaPopulator implements ActionListener {
+
+		private JComboBox catalogComboBox;
+		private JComboBox schemaComboBox;
+		private JLabel schemaLabel;
+
+		public SchemaPopulator(JComboBox catalogComboBox,
+				JComboBox schemaComboBox,
+				JLabel schemaLabel ) {
+			this.catalogComboBox = catalogComboBox;
+			this.schemaComboBox = schemaComboBox;
+			this.schemaLabel = schemaLabel;
+		}
+
+		/**
+		 * Clears the schema dropdown, and start to
+		 * repopulate it (if possible).
+		 */
+		public void actionPerformed(ActionEvent e) {
+			logger.debug("SCHEMA POPULATOR IS ABOUT TO START...");
+			schemaComboBox.removeAllItems();
+			schemaComboBox.setEnabled(false);
+			schemaLabel.setText("");
+
+			SQLCatalog catToPopulate = (SQLCatalog) catalogComboBox.getSelectedItem();
+			if (catToPopulate != null) {
+				logger.debug("SCHEMA POPULATOR IS STARTED...");
+				try {
+					// this might take a while
+					catToPopulate.getChildren();
+					if ( catToPopulate.isSchemaContainer() ) {
+						for (SQLObject item : (List<SQLObject>) catToPopulate
+								.getChildren()) {
+							schemaComboBox.addItem(item);
+						}
+						if (schemaComboBox.getItemCount() > 0) {
+							schemaComboBox.setEnabled(true);
+							if ( ((SQLSchema)(catToPopulate.getChild(0))).getNativeTerm() != null ) {
+								schemaLabel.setText(
+										((SQLSchema)(catToPopulate.getChild(0))).getNativeTerm());
+							}
+						}
+					}
+				} catch (ArchitectException e1) {
+					ASUtils.showExceptionDialog(MatchEditor.this,
+							"Database Error", e1);
+				}
+
+			}
+		}
+	}
 }

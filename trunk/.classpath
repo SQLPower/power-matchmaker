@@ -30,5 +30,6 @@
 	<classpathentry kind="lib" path="lib/msutil.jar"/>
 	<classpathentry kind="lib" path="lib/postgresql-8.1dev-401.jdbc3.jar"/>
 	<classpathentry kind="lib" path="lib/classes12.jar"/>
+	<classpathentry kind="lib" path="lib/commons-digester.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
