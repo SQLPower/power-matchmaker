@@ -33,13 +33,12 @@ public class PlMatchExportAction extends AbstractAction {
 	private PlMatch match;
 	private DateFormat df = new DateFormatAllowsNull();
 
-
 	public PlMatchExportAction(PlMatch match) {
 
 		super("Export",
 				ASUtils.createJLFIcon( "general/Export",
-                "Export",
-                ArchitectFrame.getMainInstance().getSprefs().getInt(SwingUserSettings.ICON_SIZE, 24)));
+						"Export",
+						ArchitectFrame.getMainInstance().getSprefs().getInt(SwingUserSettings.ICON_SIZE, 24)));
 		putValue(SHORT_DESCRIPTION, "Export Match");
 
 		this.match = match;
@@ -48,6 +47,14 @@ public class PlMatchExportAction extends AbstractAction {
 
 	public void actionPerformed(ActionEvent e) {
 
+		if ( match == null ) {
+			match = ArchitectUtils.getTreeObject(
+					MatchMakerFrame.getMainInstance().getTree(),
+					PlMatch.class );
+		}
+		if ( match == null ) {
+			return;
+		}
 		JFileChooser fc = new JFileChooser(
 				MatchMakerFrame.getMainInstance().getLastExportAccessPath());
 		fc.setFileFilter(ASUtils.XML_FILE_FILTER);

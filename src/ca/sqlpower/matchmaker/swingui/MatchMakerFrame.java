@@ -30,6 +30,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -58,6 +59,8 @@ import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
+import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
+import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 import com.darwinsys.util.PrefsUtils;
@@ -118,9 +121,24 @@ public class MatchMakerFrame extends JFrame {
 	protected Action newMatchAction = new AbstractAction("New") {
 
 		public void actionPerformed(ActionEvent e) {
-		    MatchEditor me = new MatchEditor(null,null);
-		    me.pack();
-		    me.setVisible(true);
+		    MatchEditor me;
+			me = new MatchEditor(null,null);
+			me.pack();
+			me.setVisible(true);
+		}
+
+	};
+
+	protected Action editMatchAction = new AbstractAction("Edit") {
+
+		public void actionPerformed(ActionEvent e) {
+			PlMatch match = ArchitectUtils.getTreeObject(getTree(),PlMatch.class);
+			if ( match == null )
+				return;
+		    MatchEditor me;
+			me = new MatchEditor(match,null);
+			me.pack();
+			me.setVisible(true);
 		}
 
 	};
@@ -323,9 +341,12 @@ public class MatchMakerFrame extends JFrame {
 		JMenu matchesMenu = new JMenu("Matches");
 		matchesMenu.setMnemonic('M');
 		matchesMenu.add(newMatchAction);
-		matchesMenu.add("Edit");
+		matchesMenu.add(editMatchAction);
 		matchesMenu.add("Delete");
 		matchesMenu.add(".....");
+		matchesMenu.addSeparator();
+		matchesMenu.add(new JMenuItem(new PlMatchImportAction()));
+		matchesMenu.add(new JMenuItem(new PlMatchExportAction(null)));
 		menuBar.add(matchesMenu);
 
 		JMenu mergeMenu = new JMenu("Merges");
