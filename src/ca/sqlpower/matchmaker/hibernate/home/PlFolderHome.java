@@ -107,7 +107,7 @@ public class PlFolderHome  extends DefaultHome{
     	   log.debug("finding PlFolders with Matches");
            try {
                List<PlFolder> results =getCurrentSession()
-                       .createCriteria("ca.sqlpower.matchmaker.hibernate.PlFolder")
+                       .createCriteria(getBusinessClass())
                        .list();               
               
                log.debug("find by Match Maker successful, result size: " + results.size());
@@ -123,7 +123,7 @@ public class PlFolderHome  extends DefaultHome{
         log.debug("finding PlFolder instance by example");
         try {
             List results =getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.hibernate.PlFolder")
+                    .createCriteria(getBusinessClass())
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());
@@ -134,5 +134,10 @@ public class PlFolderHome  extends DefaultHome{
             throw re;
         }
     } 
+    
+    @Override
+	public String getBusinessClass() {
+		return "ca.sqlpower.matchmaker.hibernate.PlFolder";
+	}
 }
 

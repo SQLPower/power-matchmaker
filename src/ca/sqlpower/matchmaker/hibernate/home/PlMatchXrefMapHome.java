@@ -86,7 +86,7 @@ public class PlMatchXrefMapHome extends DefaultHome {
         log.debug("getting PlMatchXrefMap instance with id: " + id);
         try {
             PlMatchXrefMap instance = (PlMatchXrefMap) getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.hibernate.PlMatchXrefMap", id);
+                    .get(getBusinessClass(), id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -105,7 +105,7 @@ public class PlMatchXrefMapHome extends DefaultHome {
         log.debug("finding PlMatchXrefMap instance by example");
         try {
             List results = getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.hibernate.PlMatchXrefMap")
+                    .createCriteria(getBusinessClass())
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());
@@ -116,5 +116,10 @@ public class PlMatchXrefMapHome extends DefaultHome {
             throw re;
         }
     } 
+    
+    @Override
+	public String getBusinessClass() {
+		return PlMatchXrefMap.class.toString();
+	}
 }
 

@@ -86,7 +86,7 @@ public class PlMatchCriteriaHome extends DefaultHome{
         log.debug("getting PlMatchCriteria instance with id: " + id);
         try {
             PlMatchCriteria instance = (PlMatchCriteria) getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.hibernate.PlMatchCriteria", id);
+                    .get(getBusinessClass(), id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -105,7 +105,7 @@ public class PlMatchCriteriaHome extends DefaultHome{
         log.debug("finding PlMatchCriteria instance by example");
         try {
             List results = getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.hibernate.PlMatchCriteria")
+                    .createCriteria(getBusinessClass())
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());
@@ -116,5 +116,11 @@ public class PlMatchCriteriaHome extends DefaultHome{
             throw re;
         }
     } 
+    
+    
+    @Override
+	public String getBusinessClass() {
+		return "ca.sqlpower.matchmaker.hibernate.PlMatchCriteria";
+	}
 }
 

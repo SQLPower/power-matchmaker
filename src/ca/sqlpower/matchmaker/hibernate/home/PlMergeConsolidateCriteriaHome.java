@@ -86,7 +86,7 @@ public class PlMergeConsolidateCriteriaHome extends DefaultHome {
         log.debug("getting PlMergeConsolidateCriteria instance with id: " + id);
         try {
             PlMergeConsolidateCriteria instance = (PlMergeConsolidateCriteria) getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria", id);
+                    .get(getBusinessClass(), id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -105,7 +105,7 @@ public class PlMergeConsolidateCriteriaHome extends DefaultHome {
         log.debug("finding PlMergeConsolidateCriteria instance by example");
         try {
             List results = getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria")
+                    .createCriteria(getBusinessClass())
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());
@@ -116,5 +116,10 @@ public class PlMergeConsolidateCriteriaHome extends DefaultHome {
             throw re;
         }
     } 
+    
+    @Override
+	public String getBusinessClass() {
+		return PlMergeConsolidateCriteria.class.toString();
+	}
 }
 

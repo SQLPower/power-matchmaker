@@ -1,14 +1,16 @@
 package ca.sqlpower.matchmaker.hibernate.home;
 
 import java.sql.Connection;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
+import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
-public class DefaultHome {
+public abstract class DefaultHome {
 	private static Logger logger = Logger.getLogger(DefaultHome.class);
 	private Connection con;
 	private SessionFactory sessionFactory;
@@ -38,5 +40,21 @@ public class DefaultHome {
 		} 
 		return null;
 	}
+	
+	public List<PlMatch> findAll() {
+		logger.debug("finding all for "+ getBusinessClass());
+        try {
+            List results = getCurrentSession()
+                    .createCriteria(getBusinessClass())
+                    .list();
+            logger.debug("find all successful, result size: " + results.size());
+            return results;
+        }
+        catch (RuntimeException re) {
+            logger.error("find all failed", re);
+            throw re;
+        }
+	} 
 
+	public abstract String getBusinessClass();
 }
