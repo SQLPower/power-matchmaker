@@ -41,16 +41,16 @@ public class FilterMakerFrame extends JFrame {
 	private JTextArea filterText;
 
 
-	public FilterMakerFrame(){
-		buildUI();
-		setTitle("Filter:");
+	public FilterMakerFrame(JPanel parent){		
+        buildUI();                
+		setTitle("Filter:");        
 	}
 
 	public void buildUI(){
 
 		FormLayout layout = new FormLayout(
-				"4dlu,fill:min(40dlu;default), 4dlu, fill:150dlu:grow,4dlu, min(60dlu;default),4dlu",
-				"10dlu,12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,20dlu,4dlu,fill:30dlu:grow,10dlu,30dlu,10dlu");
+				"4dlu,fill:min(70dlu;default), 4dlu, fill:150dlu:grow,4dlu, min(60dlu;default),4dlu",
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,20dlu,4dlu,fill:30dlu:grow,10dlu,pref,10dlu");
 
 		CellConstraints cc = new CellConstraints();
 
@@ -100,8 +100,7 @@ public class FilterMakerFrame extends JFrame {
 		ButtonBarBuilder bottomButtons = new ButtonBarBuilder();
 
 		bottomButtons.addGridded(testButton);
-		bottomButtons.addRelatedGap();
-		bottomButtons.addGlue();
+		bottomButtons.addRelatedGap();		
 		bottomButtons.addGridded(helpButton);
 		bottomButtons.addRelatedGap();
 		bottomButtons.addGlue();
@@ -113,14 +112,15 @@ public class FilterMakerFrame extends JFrame {
 		bottomButtons.addGlue();
 
 		pb.add(bottomButtons.getPanel(), cc.xyw(2,12,5,"f,f"));
-
-
+	
+		
+		setupOperatorDropdown();
 
 		getContentPane().add(pb.getPanel());
 	}
     public static void main(String[] args) {
 
-        final JFrame f = new FilterMakerFrame();
+        final JFrame f = new FilterMakerFrame(null);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -129,14 +129,22 @@ public class FilterMakerFrame extends JFrame {
             }
         });
     }
-
+    /*
+     * Adds the operators into the setupOperator Dropdown
+     */
+    private void setupOperatorDropdown(){
+        comparisonOperator.addItem(" = ");
+        comparisonOperator.addItem(" like ");
+        comparisonOperator.addItem(" in ");
+        comparisonOperator.addItem(" is null ");
+    }
+    
 
     ////////////// The Action Variables//////////////////
 
 	private Action pasteAction = new AbstractAction("Paste"){
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
 		}
 	};
 
@@ -152,8 +160,8 @@ public class FilterMakerFrame extends JFrame {
 	private Action andAction = new AbstractAction("AND"){
 
 		public void actionPerformed(ActionEvent e) {
+			filterText.append(" AND ");
 			// TODO Auto-generated method stub
-
 		}
 
 	};
@@ -161,15 +169,15 @@ public class FilterMakerFrame extends JFrame {
 	private Action notAction = new AbstractAction("NOT"){
 
 		public void actionPerformed(ActionEvent e) {
+            filterText.append(" NOT ");
 			// TODO Auto-generated method stub
-
 		}
-
 	};
 
 	private Action orAction = new AbstractAction("OR"){
 
 		public void actionPerformed(ActionEvent e) {
+		    filterText.append(" OR ");
 			// TODO Auto-generated method stub
 		}
 	};

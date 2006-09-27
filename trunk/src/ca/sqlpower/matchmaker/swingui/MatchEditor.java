@@ -65,11 +65,9 @@ public class MatchEditor extends JFrame {
     private JComboBox sourceTableName;
     private JComboBox uniqueIndex;
 
-    private JTextArea filter;
     private JComboBox resultTableOwner;
     private JTextField resultTableName;
     private JButton viewBuilder;
-    private JButton editFilter;
     private JButton createResultTable;
 
     private JButton saveMatch;
@@ -80,6 +78,7 @@ public class MatchEditor extends JFrame {
     private JButton validationStatus;
     private JButton validateMatch;
 
+    private FilterComponentsPanel filterPanel;
 	private JLabel matchSourceTableOwnerLabel;
 	private JLabel matchSourceTableNameLabel;
 
@@ -170,7 +169,7 @@ public class MatchEditor extends JFrame {
             if ( uniqueIndex.getSelectedItem() != null ) {
                 plMatch.setPkColumn(((MySimpleIndex)uniqueIndex.getSelectedItem()).getName());
             }
-            plMatch.setFilter(filter.getText());
+            plMatch.setFilter(filterPanel.getFilterTextField().getText());
             if ( resultTableOwner.getSelectedItem() == null ) {
                 resultTableOwner.setSelectedItem(sourceTableOwner.getSelectedItem());
             }
@@ -265,6 +264,8 @@ public class MatchEditor extends JFrame {
         List <String>tablePath = MatchMakerFrame.getMainInstance().getTablePaths();
         List <MySimpleTable>tableName = MatchMakerFrame.getMainInstance().getTables();
     	matchId = new JTextField();
+    	
+    	
     	folderList = new JComboBox(new FolderComboBoxModel<PlFolder>(MatchMakerFrame.getMainInstance().getFolders()));
     	desc = new JTextArea();
 
@@ -281,15 +282,14 @@ public class MatchEditor extends JFrame {
                         sourceTableOwner,
                         sourceTableName));
         uniqueIndex = new JComboBox();
-        filter = new JTextArea();
+        filterPanel = new FilterComponentsPanel();
         sourceTableName.addItemListener(new TableNameListChangeListener(
                 sourceTableName,
                 uniqueIndex,
-                filter ));
+                filterPanel.getFilterTextField() ));
     	resultTableOwner = new JComboBox(new DefaultComboBoxModel(tablePath.toArray()));
     	resultTableName = new JTextField();
-    	viewBuilder = new JButton(viewBuilderAction);
-    	editFilter = new JButton(editFilterAction);
+    	viewBuilder = new JButton(viewBuilderAction);    	
     	createResultTable = new JButton(createResultTableAction);
 
     	saveMatch = new JButton(saveAction);
@@ -319,7 +319,7 @@ public class MatchEditor extends JFrame {
 
             System.out.println("pk column:"+plMatch.getPkColumn());
 
-            filter.setText(plMatch.getFilter());
+            filterPanel.getFilterTextField().setText(plMatch.getFilter());
             resultTableOwner.setSelectedItem(plMatch.getResultsTableOwner());
             resultTableName.setText(plMatch.getResultsTable());
 
@@ -348,7 +348,7 @@ public class MatchEditor extends JFrame {
 
     	FormLayout layout = new FormLayout(
 				"4dlu,fill:min(70dlu;default),4dlu,fill:200dlu:grow, 4dlu,min(60dlu;default),10dlu, 66dlu,4dlu", // columns
-				"10dlu,12dlu,4dlu,12dlu,4dlu,24dlu,4dlu,12dlu,   16dlu,12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,24dlu,   16dlu,12dlu,4dlu,12dlu,10dlu"); // rows
+				"10dlu,12dlu,4dlu,12dlu,4dlu,24dlu,4dlu,12dlu,   16dlu,12dlu,4dlu,12dlu,4dlu,12dlu,6dlu,pref,   16dlu,12dlu,4dlu,12dlu,10dlu"); // rows
 
 		PanelBuilder pb;
 
@@ -369,12 +369,12 @@ public class MatchEditor extends JFrame {
 		pb.add(matchSourceTableOwnerLabel, cc.xy(2,10,"r,c"));
 		pb.add(matchSourceTableNameLabel, cc.xy(2,12,"r,c"));
 		pb.add(new JLabel("Unique Index:"), cc.xy(2,14,"r,t"));
-		pb.add(new JLabel("Filter:"), cc.xy(2,16,"r,t"));
+		
 
 		pb.add(sourceTableOwner, cc.xy(4,10));
 		pb.add(sourceTableName, cc.xy(4,12));
 		pb.add(uniqueIndex, cc.xy(4,14,"f,f"));
-		pb.add(new JScrollPane(filter), cc.xy(4,16,"f,f"));
+		pb.add(filterPanel, cc.xyw(2,16,5,"f,f"));
 
 		pb.add(new JLabel("Result Table Owner:"), cc.xy(2,18,"r,c"));
 		pb.add(new JLabel("Table Name:"), cc.xy(2,20,"r,c"));
@@ -382,8 +382,7 @@ public class MatchEditor extends JFrame {
 		pb.add(resultTableName, cc.xy(4,20));
 
 
-		pb.add(viewBuilder, cc.xy(6,10));
-		pb.add(editFilter, cc.xy(6,16));
+		pb.add(viewBuilder, cc.xy(6,10));		
 		pb.add(createResultTable, cc.xywh(6,18,1,3));
 
 		ButtonStackBuilder bb = new ButtonStackBuilder();
