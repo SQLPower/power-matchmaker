@@ -7,20 +7,19 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 
 
 public class FilterComponentsPanel extends JPanel {
-
-    JLabel filterLabel;
-    JTextArea filterTextField;
+    
+    JTextArea filterTextArea;
     JButton editButton;
     
     public FilterComponentsPanel(){
-        setLayout(new BorderLayout());
-        filterLabel = new JLabel("Filter");
-        filterTextField = new JTextArea();
+        setLayout(new BorderLayout());        
+        filterTextArea = new JTextArea();
         editButton = new JButton(new AbstractAction("Edit"){
 
             public void actionPerformed(ActionEvent e) {     
@@ -30,21 +29,15 @@ public class FilterComponentsPanel extends JPanel {
             }            
         });
  
-        JPanel westPanel = new JPanel(new BorderLayout());
-        westPanel.add(filterLabel, BorderLayout.CENTER);
-        westPanel.add(new JLabel ("  "), BorderLayout.EAST);
-        JPanel eastPanel = new JPanel(new BorderLayout());
-        eastPanel.add(editButton, BorderLayout.CENTER);
-        eastPanel.add(new JLabel ("  "), BorderLayout.WEST);
-        add(westPanel, BorderLayout.WEST);
-        add(filterTextField, BorderLayout.CENTER);
-        add(eastPanel, BorderLayout.EAST);
+        add(new JScrollPane(filterTextArea), BorderLayout.WEST);
+        add(new JLabel ("  "), BorderLayout.CENTER);
+        add(editButton, BorderLayout.EAST);
     }
     
     /*
      * Returns the text input in the filter textfield.
      */
-    public JTextArea getFilterTextField(){
-        return filterTextField;
+    public JTextArea getFilterTextArea(){
+        return filterTextArea;
     }
 }
