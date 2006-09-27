@@ -26,6 +26,12 @@
     >
 <column name="MATCH_DESC" length="2000" />
   	</property>
+  	    <property
+        name="tableCatalog"
+        type="string"
+    >
+<column name="TABLE_CATALOG" length="30" />
+  	</property>
     <property
         name="tableOwner"
         type="string"
