@@ -86,7 +86,7 @@ public class PlMatchPurgeHome extends DefaultHome {
         log.debug("getting PlMatchPurge instance with id: " + id);
         try {
             PlMatchPurge instance = (PlMatchPurge) getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.hibernate.PlMatchPurge", id);
+                    .get(getBusinessClass(), id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -105,7 +105,7 @@ public class PlMatchPurgeHome extends DefaultHome {
         log.debug("finding PlMatchPurge instance by example");
         try {
             List results = getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.hibernate.PlMatchPurge")
+                    .createCriteria(getBusinessClass())
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());
@@ -116,5 +116,10 @@ public class PlMatchPurgeHome extends DefaultHome {
             throw re;
         }
     } 
+    
+    @Override
+	public String getBusinessClass() {
+		return "ca.sqlpower.matchmaker.hibernate.PlMatchPurge";
+	}
 }
 

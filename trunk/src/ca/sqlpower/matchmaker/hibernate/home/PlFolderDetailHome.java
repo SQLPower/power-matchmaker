@@ -88,7 +88,7 @@ public class PlFolderDetailHome extends DefaultHome{
         log.debug("getting PlFolderDetail instance with id: " + id);
         try {
             PlFolderDetail instance = (PlFolderDetail)getCurrentSession()
-                    .get("PlFolderDetail", id);
+                    .get(getBusinessClass(), id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -107,7 +107,7 @@ public class PlFolderDetailHome extends DefaultHome{
         log.debug("finding PlFolderDetail instance by example");
         try {
             List results =getCurrentSession()
-                    .createCriteria("PlFolderDetail")
+                    .createCriteria(getBusinessClass())
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());
@@ -118,5 +118,9 @@ public class PlFolderDetailHome extends DefaultHome{
             throw re;
         }
     } 
+	@Override
+	public String getBusinessClass() {
+		return "ca.sqlpower.matchmaker.hibernate.PlFolderDetail";
+	}
 }
 

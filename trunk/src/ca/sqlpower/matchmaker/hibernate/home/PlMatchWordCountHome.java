@@ -86,7 +86,7 @@ public class PlMatchWordCountHome extends DefaultHome{
         log.debug("getting PlMatchWordCount instance with id: " + id);
         try {
             PlMatchWordCount instance = (PlMatchWordCount) getCurrentSession()
-                    .get("ca.sqlpower.matchmaker.hibernate.PlMatchWordCount", id);
+                    .get(getBusinessClass(), id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
             }
@@ -105,7 +105,7 @@ public class PlMatchWordCountHome extends DefaultHome{
         log.debug("finding PlMatchWordCount instance by example");
         try {
             List results = getCurrentSession()
-                    .createCriteria("ca.sqlpower.matchmaker.hibernate.PlMatchWordCount")
+                    .createCriteria(getBusinessClass())
                     .add(Example.create(instance))
             .list();
             log.debug("find by example successful, result size: " + results.size());
@@ -116,5 +116,9 @@ public class PlMatchWordCountHome extends DefaultHome{
             throw re;
         }
     } 
+    @Override
+	public String getBusinessClass() {
+		return "ca.sqlpower.matchmaker.hibernate.PlMatchWordCount";
+	}
 }
 
