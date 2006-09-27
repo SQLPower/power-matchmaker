@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
-<!DOCTYPE hibernate-mapping PUBLIC 
+<!DOCTYPE hibernate-mapping PUBLIC
 	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
 	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
 <hibernate-mapping>
 
-<class 
+<class
     name="ca.sqlpower.matchmaker.hibernate.PlMatch"
     table="PL_MATCH"
-   
+
 >
-	<id 
+	<id
         name="matchId"
         type="string"
     >
@@ -339,6 +339,12 @@
 <column name="WHERE_CLAUSE" length="2000" />
   	</property>
     <property
+        name="resultsTableCatalog"
+        type="string"
+    >
+<column name="RESULTS_TABLE_OWNER" length="30" />
+  	</property>
+    <property
         name="resultsTableOwner"
         type="string"
     >
@@ -520,6 +526,12 @@
 <column name="merge_send_email_ind" length="1" />
   	</property>
     <property
+        name="xrefCatalog"
+        type="string"
+    >
+<column name="xref_catalog" length="30" />
+  	</property>
+    <property
         name="xrefOwner"
         type="string"
     >
@@ -533,7 +545,7 @@
   	</property>
     <property
         name="autoMatchActiveInd"
-        type="ca.sqlpower.matchmaker.util.CustomBooleanType" 
+        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
     >
 <column name="auto_match_active_ind" length="1" />
   	</property>
@@ -543,13 +555,13 @@
 		lazy="true"
 		fetch="subselect"
 		>
-		<key> 
+		<key>
 <column name="MATCH_ID" length="80" not-null="true" />
         </key>
-		<one-to-many 
-		
+		<one-to-many
+
 			 class="ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria"
-			/>			
+			/>
 	</set>
 	<set
 		name="plMergeCriterias"
@@ -557,12 +569,12 @@
 		lazy="true"
 		fetch="subselect"
 		>
-		<key> 
+		<key>
 <column name="MATCH_ID" length="80" not-null="true" />
         </key>
-		<one-to-many 
+		<one-to-many
 			 class="ca.sqlpower.matchmaker.hibernate.PlMergeCriteria"
-			/>			
+			/>
 	</set>
 	<set
 		name="plMatchGroups"
@@ -570,12 +582,12 @@
 		inverse="true"
 		fetch="subselect"
 		>
-		<key> 
+		<key>
 <column name="MATCH_ID" length="80" not-null="true" />
         </key>
-		<one-to-many 
+		<one-to-many
 			 class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup"
-			/>			
+			/>
 	</set>
 	<set name="folders" fetch="subselect" table="PL_FOLDER_DETAIL">
            <key column="OBJECT_NAME"/>

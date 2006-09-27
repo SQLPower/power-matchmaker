@@ -75,6 +75,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
      private String selectClause;
      private String fromClause;
      private String whereClause;
+     private String resultsTableCatalog;
      private String resultsTableOwner;
      private boolean matchBreakInd;
      private String filterCriteria;
@@ -113,6 +114,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
      private boolean truncateCandDupInd;
      private boolean matchSendEmailInd;
      private boolean mergeSendEmailInd;
+     private String xrefCatalog;
      private String xrefOwner;
      private String xrefTableName;
      private boolean autoMatchActiveInd;
@@ -142,7 +144,56 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
         this.matchType = matchType;
     }
     /** full constructor */
-    public PlMatch(String matchId, String matchDesc, String tableCatalog,  String tableOwner, String matchTable, String pkColumn, String filter, String resultsTable, Date createDate, Date lastUpdateDate, String lastUpdateUser, String sequenceName, boolean compileFlag, String mergeScriptFileName, Short autoMatchThreshold, Date mergeCompletionDate, String mergeLastUser, String mergeRunStatus, String mergeDesc, String matchLogFileName, boolean matchAppendToLogInd, Long matchProcessCnt, Long matchShowProgressFreq, boolean matchDebugModeInd, String matchRollbackSegmentName, String mergeLogFileName, boolean mergeAppendToLogInd, BigDecimal mergeProcessCnt, BigDecimal mergeShowProgressFreq, boolean mergeDebugModeInd, String mergeRollbackSegmentName, boolean mergeAugmentNullInd, String matchRunStatus, String matchScriptFileName, BigDecimal matchTotalSteps, BigDecimal matchStepsCompleted, BigDecimal matchRowsInserted, Date matchLastRunDate, String matchLastRunUser, BigDecimal mergeTotalSteps, BigDecimal mergeStepsCompleted, Date mergeLastRunDate, String mergeLastRunUser, String matchPackageName, String matchProcedureNameAll, String matchProcedureNameOne, String mergePackageName, String mergeProcedureName, String matchTablePkColumnFormat, BigDecimal mergeRowsInserted, String batchFileName, String selectClause, String fromClause, String whereClause, String resultsTableOwner, boolean matchBreakInd, String filterCriteria, String matchType, String lastUpdateOsUser, String matchStepDesc, String mergeStepDesc, boolean mergeTablesBackupInd, String matchStatus, BigDecimal lastBackupNo, boolean checkedOutInd, Date checkedOutDate, String checkedOutUser, String checkedOutOsUser, String indexColumnName0, String indexColumnName1, String indexColumnName2, String indexColumnName3, String indexColumnName4, String indexColumnName5, String indexColumnName6, String indexColumnName7, String indexColumnName8, String indexColumnName9, String tempSourceTableName, String tempCandDupTableName, String fromClauseDb, String indexColumnType0, String indexColumnType1, String indexColumnType2, String indexColumnType3, String indexColumnType4, String indexColumnType5, String indexColumnType6, String indexColumnType7, String indexColumnType8, String indexColumnType9, boolean truncateCandDupInd, boolean matchSendEmailInd, boolean mergeSendEmailInd, String xrefOwner, String xrefTableName, boolean autoMatchActiveInd, Set<PlMergeConsolidateCriteria> plMergeConsolidateCriterias, Set<PlMatchXrefMap> plMatchXrefMaps, Set<PlMergeCriteria> plMergeCriterias, Set<PlMatchGroup> plMatchGroups, Set<PlFolder> folder) {
+    public PlMatch(String matchId, String matchDesc, String tableCatalog,
+    		String tableOwner, String matchTable, String pkColumn,
+    		String filter, String resultsTable, Date createDate,
+    		Date lastUpdateDate, String lastUpdateUser, String sequenceName,
+    		boolean compileFlag, String mergeScriptFileName,
+    		Short autoMatchThreshold, Date mergeCompletionDate,
+    		String mergeLastUser, String mergeRunStatus, String mergeDesc,
+    		String matchLogFileName, boolean matchAppendToLogInd,
+    		Long matchProcessCnt, Long matchShowProgressFreq,
+    		boolean matchDebugModeInd, String matchRollbackSegmentName,
+    		String mergeLogFileName, boolean mergeAppendToLogInd,
+    		BigDecimal mergeProcessCnt, BigDecimal mergeShowProgressFreq,
+    		boolean mergeDebugModeInd, String mergeRollbackSegmentName,
+    		boolean mergeAugmentNullInd, String matchRunStatus,
+    		String matchScriptFileName, BigDecimal matchTotalSteps,
+    		BigDecimal matchStepsCompleted, BigDecimal matchRowsInserted,
+    		Date matchLastRunDate, String matchLastRunUser,
+    		BigDecimal mergeTotalSteps, BigDecimal mergeStepsCompleted,
+    		Date mergeLastRunDate, String mergeLastRunUser,
+    		String matchPackageName, String matchProcedureNameAll,
+    		String matchProcedureNameOne, String mergePackageName,
+    		String mergeProcedureName, String matchTablePkColumnFormat,
+    		BigDecimal mergeRowsInserted, String batchFileName,
+    		String selectClause, String fromClause, String whereClause,
+    		String resultsTableCatalog, String resultsTableOwner,
+    		boolean matchBreakInd,
+    		String filterCriteria, String matchType, String lastUpdateOsUser,
+    		String matchStepDesc, String mergeStepDesc,
+    		boolean mergeTablesBackupInd, String matchStatus,
+    		BigDecimal lastBackupNo, boolean checkedOutInd,
+    		Date checkedOutDate, String checkedOutUser,
+    		String checkedOutOsUser, String indexColumnName0,
+    		String indexColumnName1, String indexColumnName2,
+    		String indexColumnName3, String indexColumnName4,
+    		String indexColumnName5, String indexColumnName6,
+    		String indexColumnName7, String indexColumnName8,
+    		String indexColumnName9, String tempSourceTableName,
+    		String tempCandDupTableName, String fromClauseDb,
+    		String indexColumnType0, String indexColumnType1,
+    		String indexColumnType2, String indexColumnType3,
+    		String indexColumnType4, String indexColumnType5,
+    		String indexColumnType6, String indexColumnType7,
+    		String indexColumnType8, String indexColumnType9,
+    		boolean truncateCandDupInd, boolean matchSendEmailInd,
+    		boolean mergeSendEmailInd, String xrefCatalog, String xrefOwner,
+    		String xrefTableName, boolean autoMatchActiveInd,
+    		Set<PlMergeConsolidateCriteria> plMergeConsolidateCriterias,
+    		Set<PlMatchXrefMap> plMatchXrefMaps,
+    		Set<PlMergeCriteria> plMergeCriterias,
+    		Set<PlMatchGroup> plMatchGroups, Set<PlFolder> folder) {
        this.matchId = matchId;
        this.matchDesc = matchDesc;
        this.tableCatalog = tableCatalog;
@@ -197,6 +248,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
        this.selectClause = selectClause;
        this.fromClause = fromClause;
        this.whereClause = whereClause;
+       this.resultsTableCatalog = resultsTableCatalog;
        this.resultsTableOwner = resultsTableOwner;
        this.matchBreakInd = matchBreakInd;
        this.filterCriteria = filterCriteria;
@@ -237,6 +289,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
        this.truncateCandDupInd = truncateCandDupInd;
        this.matchSendEmailInd = matchSendEmailInd;
        this.mergeSendEmailInd = mergeSendEmailInd;
+       this.xrefCatalog = xrefCatalog;
        this.xrefOwner = xrefOwner;
        this.xrefTableName = xrefTableName;
        this.autoMatchActiveInd = autoMatchActiveInd;
@@ -1020,6 +1073,28 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 	public void setObjectType(String objectType) {
 		if (this.objectType != objectType) {
 			this.objectType = objectType;
+			//TODO fire event
+		}
+	}
+
+	public String getResultsTableCatalog() {
+		return resultsTableCatalog;
+	}
+
+	public void setResultsTableCatalog(String resultsTableCatalog) {
+		if (this.resultsTableCatalog != resultsTableCatalog) {
+			this.resultsTableCatalog = resultsTableCatalog;
+			//TODO fire event
+		}
+	}
+
+	public String getXrefCatalog() {
+		return xrefCatalog;
+	}
+
+	public void setXrefCatalog(String xrefCatalog) {
+		if (this.xrefCatalog != xrefCatalog) {
+			this.xrefCatalog = xrefCatalog;
 			//TODO fire event
 		}
 	}
