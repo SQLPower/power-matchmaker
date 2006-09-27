@@ -8,8 +8,9 @@ package ca.sqlpower.matchmaker.hibernate;
  */
 public class PlMatchWordCountTempId  implements java.io.Serializable {
 
-    // Fields    
+    // Fields
 
+	private String catalog;
      private String owner;
      private String tableName;
      private String columnName;
@@ -22,39 +23,41 @@ public class PlMatchWordCountTempId  implements java.io.Serializable {
     }
 
     /** full constructor */
-    public PlMatchWordCountTempId(String owner, String tableName, String columnName, String columnWord) {
+    public PlMatchWordCountTempId(String catalog,
+    		String owner, String tableName, String columnName, String columnWord) {
+       this.catalog = catalog;
        this.owner = owner;
        this.tableName = tableName;
        this.columnName = columnName;
        this.columnWord = columnWord;
     }
-   
+
     // Property accessors
     public String getOwner() {
         return this.owner;
     }
-    
+
     public void setOwner(String owner) {
         this.owner = owner;
     }
     public String getTableName() {
         return this.tableName;
     }
-    
+
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
     public String getColumnName() {
         return this.columnName;
     }
-    
+
     public void setColumnName(String columnName) {
         this.columnName = columnName;
     }
     public String getColumnWord() {
         return this.columnWord;
     }
-    
+
     public void setColumnWord(String columnWord) {
         this.columnWord = columnWord;
     }
@@ -64,23 +67,36 @@ public class PlMatchWordCountTempId  implements java.io.Serializable {
          if ( (this == other ) ) return true;
 		 if ( (other == null ) ) return false;
 		 if ( !(other instanceof PlMatchWordCountTempId) ) return false;
-		 PlMatchWordCountTempId castOther = ( PlMatchWordCountTempId ) other; 
-         
-		 return ( (this.getOwner()==castOther.getOwner()) || ( this.getOwner()!=null && castOther.getOwner()!=null && this.getOwner().equals(castOther.getOwner()) ) )
+		 PlMatchWordCountTempId castOther = ( PlMatchWordCountTempId ) other;
+
+		 return ( (this.getCatalog()==castOther.getCatalog()) || ( this.getCatalog()!=null && castOther.getCatalog()!=null && this.getCatalog().equals(castOther.getCatalog()) ) )
+ && ( (this.getOwner()==castOther.getOwner()) || ( this.getOwner()!=null && castOther.getOwner()!=null && this.getOwner().equals(castOther.getOwner()) ) )
  && ( (this.getTableName()==castOther.getTableName()) || ( this.getTableName()!=null && castOther.getTableName()!=null && this.getTableName().equals(castOther.getTableName()) ) )
  && ( (this.getColumnName()==castOther.getColumnName()) || ( this.getColumnName()!=null && castOther.getColumnName()!=null && this.getColumnName().equals(castOther.getColumnName()) ) )
  && ( (this.getColumnWord()==castOther.getColumnWord()) || ( this.getColumnWord()!=null && castOther.getColumnWord()!=null && this.getColumnWord().equals(castOther.getColumnWord()) ) );
    }
-   
+
    public int hashCode() {
-         int result = 17;
-         
-         result = 37 * result + ( getOwner() == null ? 0 : this.getOwner().hashCode() );
-         result = 37 * result + ( getTableName() == null ? 0 : this.getTableName().hashCode() );
-         result = 37 * result + ( getColumnName() == null ? 0 : this.getColumnName().hashCode() );
-         result = 37 * result + ( getColumnWord() == null ? 0 : this.getColumnWord().hashCode() );
-         return result;
-   }   
+	   int result = 17;
+
+	   result = 37 * result + ( getCatalog() == null ? 0 : this.getCatalog().hashCode() );
+	   result = 37 * result + ( getOwner() == null ? 0 : this.getOwner().hashCode() );
+	   result = 37 * result + ( getTableName() == null ? 0 : this.getTableName().hashCode() );
+	   result = 37 * result + ( getColumnName() == null ? 0 : this.getColumnName().hashCode() );
+	   result = 37 * result + ( getColumnWord() == null ? 0 : this.getColumnWord().hashCode() );
+	   return result;
+   }
+
+   public String getCatalog() {
+	   return catalog;
+   }
+
+   public void setCatalog(String catalog) {
+	   if (this.catalog != catalog) {
+		   this.catalog = catalog;
+		   //TODO fire event
+	   }
+   }
 
 
 }

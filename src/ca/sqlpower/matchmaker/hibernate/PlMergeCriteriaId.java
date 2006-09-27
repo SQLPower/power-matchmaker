@@ -8,9 +8,10 @@ package ca.sqlpower.matchmaker.hibernate;
  */
 public class PlMergeCriteriaId  implements java.io.Serializable {
 
-    // Fields    
+    // Fields
 
      private String matchId;
+     private String catalog;
      private String owner;
      private String tableName;
      private String indexColumnName0;
@@ -22,39 +23,41 @@ public class PlMergeCriteriaId  implements java.io.Serializable {
     }
 
     /** full constructor */
-    public PlMergeCriteriaId(String matchId, String owner, String tableName, String indexColumnName0) {
+    public PlMergeCriteriaId(String matchId, String catalog, String owner,
+    		String tableName, String indexColumnName0) {
        this.matchId = matchId;
+       this.catalog = catalog;
        this.owner = owner;
        this.tableName = tableName;
        this.indexColumnName0 = indexColumnName0;
     }
-   
+
     // Property accessors
     public String getMatchId() {
         return this.matchId;
     }
-    
+
     public void setMatchId(String matchId) {
         this.matchId = matchId;
     }
     public String getOwner() {
         return this.owner;
     }
-    
+
     public void setOwner(String owner) {
         this.owner = owner;
     }
     public String getTableName() {
         return this.tableName;
     }
-    
+
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
     public String getIndexColumnName0() {
         return this.indexColumnName0;
     }
-    
+
     public void setIndexColumnName0(String indexColumnName0) {
         this.indexColumnName0 = indexColumnName0;
     }
@@ -64,23 +67,36 @@ public class PlMergeCriteriaId  implements java.io.Serializable {
          if ( (this == other ) ) return true;
 		 if ( (other == null ) ) return false;
 		 if ( !(other instanceof PlMergeCriteriaId) ) return false;
-		 PlMergeCriteriaId castOther = ( PlMergeCriteriaId ) other; 
-         
+		 PlMergeCriteriaId castOther = ( PlMergeCriteriaId ) other;
+
 		 return ( (this.getMatchId()==castOther.getMatchId()) || ( this.getMatchId()!=null && castOther.getMatchId()!=null && this.getMatchId().equals(castOther.getMatchId()) ) )
  && ( (this.getOwner()==castOther.getOwner()) || ( this.getOwner()!=null && castOther.getOwner()!=null && this.getOwner().equals(castOther.getOwner()) ) )
+ && ( (this.getCatalog()==castOther.getCatalog()) || ( this.getCatalog()!=null && castOther.getCatalog()!=null && this.getCatalog().equals(castOther.getCatalog()) ) )
  && ( (this.getTableName()==castOther.getTableName()) || ( this.getTableName()!=null && castOther.getTableName()!=null && this.getTableName().equals(castOther.getTableName()) ) )
  && ( (this.getIndexColumnName0()==castOther.getIndexColumnName0()) || ( this.getIndexColumnName0()!=null && castOther.getIndexColumnName0()!=null && this.getIndexColumnName0().equals(castOther.getIndexColumnName0()) ) );
    }
-   
+
    public int hashCode() {
          int result = 17;
-         
+
          result = 37 * result + ( getMatchId() == null ? 0 : this.getMatchId().hashCode() );
          result = 37 * result + ( getOwner() == null ? 0 : this.getOwner().hashCode() );
+         result = 37 * result + ( getCatalog() == null ? 0 : this.getCatalog().hashCode() );
          result = 37 * result + ( getTableName() == null ? 0 : this.getTableName().hashCode() );
          result = 37 * result + ( getIndexColumnName0() == null ? 0 : this.getIndexColumnName0().hashCode() );
          return result;
-   }   
+   }
+
+   public String getCatalog() {
+	   return catalog;
+   }
+
+   public void setCatalog(String catalog) {
+	   if (this.catalog != catalog) {
+		   this.catalog = catalog;
+		   //TODO fire event
+	   }
+   }
 
 
 }
