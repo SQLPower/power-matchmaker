@@ -340,7 +340,7 @@
         name="resultsTableCatalog"
         type="string"
     >
-<column name="RESULTS_TABLE_OWNER" length="30" />
+<column name="RESULTS_TABLE_CATALOG" length="30" />
   	</property>
     <property
         name="resultsTableOwner"
