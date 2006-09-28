@@ -44,6 +44,37 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
     /** default constructor */
     public PlMatchCriteria() {
     }
+    
+    public PlMatchCriteria(PlMatchCriteriaId id, PlMatchGroup plMatchGroup,PlMatchCriteria criteria) {
+    	this.id = id;
+        this.plMatchGroup = plMatchGroup;
+    	
+    	
+        this.caseSensitiveInd = criteria.caseSensitiveInd;
+        this.suppressChar = criteria.suppressChar;
+        this.soundInd = criteria.soundInd;
+        this.firstNChar = criteria.firstNChar;
+        this.lastUpdateDate = criteria.lastUpdateDate;
+        this.lastUpdateUser = criteria.lastUpdateUser;
+        this.seqNo = criteria.seqNo;
+        this.matchStart = criteria.matchStart;
+        this.matchEnd = criteria.matchEnd;
+        this.varianceAmt = criteria.varianceAmt;
+        this.varianceType = criteria.varianceType;
+        this.lastUpdateOsUser = criteria.lastUpdateOsUser;
+        this.allowNullInd = criteria.allowNullInd;
+        this.translateGroupName = criteria.translateGroupName;
+        this.removeSpecialChars = criteria.removeSpecialChars;
+        this.countWordsInd = criteria.countWordsInd;
+        this.replaceWithSpaceInd = criteria.replaceWithSpaceInd;
+        this.replaceWithSpace = criteria.replaceWithSpace;
+        this.reorderInd = criteria.reorderInd;
+        this.firstNCharByWordInd = criteria.firstNCharByWordInd;
+        this.firstNCharByWord = criteria.firstNCharByWord;
+        this.minWordsInCommon = criteria.minWordsInCommon;
+        this.wordsInCommonNumWords = criteria.wordsInCommonNumWords;
+        this.matchFirstPlusOneInd = criteria.matchFirstPlusOneInd;
+    }
 
 	/** minimal constructor */
     public PlMatchCriteria(PlMatchCriteriaId id, PlMatchGroup plMatchGroup) {

@@ -106,52 +106,32 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 	 * @return void
 	 */
 	private void initialize() {
-		FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, fill:200dlu:grow, 3dlu");
+		FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, pref, 5dlu, pref,5dlu, pref,  5dlu, pref,5dlu, pref,5dlu, pref,5dlu, pref, 3dlu");
 		PanelBuilder pb = new PanelBuilder(formLayout);
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("pref");
 		CellConstraints cc = new CellConstraints();
 		CellConstraints cl= new CellConstraints();
 		pb.add(new JLabel("Column"), cl.xy(2,2),column, cc.xy(4,2));
+		pb.add(new JLabel(MatchCriteriaColumn.ALLOW_NULL.getName()), cl.xy(6,2),allowNull, cc.xy(8,2));
+		pb.add(new JLabel(MatchCriteriaColumn.CASE_SENSITIVE_IND.getName()), cl.xy(10,2),caseSensitive, cc.xy(12,2));
+		pb.add(new JLabel(MatchCriteriaColumn.TRANSLATE_GROUP_NAME.getName()), cl.xy(14,2),translate, cc.xy(16,2));
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.ALLOW_NULL.getName()), cl.xy(2,4),allowNull, cc.xy(4,4));
+		pb.add(new JLabel(MatchCriteriaColumn.REMOVE_SPECIAL_CHARS.getName()), cl.xy(2,4),getCheckedTextBox(removeSpecialChars,suppressChar), cc.xyw(4,4,5));
+		pb.add(new JLabel(MatchCriteriaColumn.REPLACE_WITH_SPACE_IND.getName()), cl.xy(10,4),getCheckedTextBox(replaceWithSpaceInd,replaceWithSpace), cc.xyw(12,4,5));
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.CASE_SENSITIVE_IND.getName()), cl.xy(2,6),caseSensitive, cc.xy(4,6));
+		pb.add(new JLabel(MatchCriteriaColumn.REORDER_IND.getName()), cl.xy(2,6),reorder, cc.xy(4,6));
+		pb.add(new JLabel(MatchCriteriaColumn.FIRST_N_CHARS_BY_WORD.getName()), cl.xy(6,6),firstNCharsByWord, cc.xy(8,6));
+		pb.add(new JLabel(MatchCriteriaColumn.FIRST_N_CHAR.getName()), cl.xy(10,6),firstNChar, cc.xy(12,6));
+		pb.add(new JLabel(MatchCriteriaColumn.MATCH_FIRST_PLUS_ONE_IND.getName()), cl.xy(14,6),matchFirstPlusOneInd, cc.xy(16,6));
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.REMOVE_SPECIAL_CHARS.getName()), cl.xy(2,8),getCheckedTextBox(removeSpecialChars,suppressChar), cc.xy(4,8));
-		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.REPLACE_WITH_SPACE_IND.getName()), cl.xy(2,10),getCheckedTextBox(replaceWithSpaceInd,replaceWithSpace), cc.xy(4,10));
-		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.TRANSLATE_GROUP_NAME.getName()), cl.xy(2,12),translate, cc.xy(4,12));
-		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.REORDER_IND.getName()), cl.xy(2,14),reorder, cc.xy(4,14));
-		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.FIRST_N_CHARS_BY_WORD.getName()), cl.xy(2,16),firstNCharsByWord, cc.xy(4,16));
-		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.FIRST_N_CHAR.getName()), cl.xy(2,18),firstNChar, cc.xy(4,18));
-		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.MATCH_FIRST_PLUS_ONE_IND.getName()), cl.xy(2,20),matchFirstPlusOneInd, cc.xy(4,20));
-		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.MIN_WORDS_IN_COMMON.getName()), cl.xy(2,22),minWordsInCommon, cc.xy(4,22));
-		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.MATCH_START.getName()), cl.xy(2,24),matchStart, cc.xy(4,24));
-		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.SOUND_IND.getName()), cl.xy(2,26),soundex, cc.xy(4,26));
-		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel(MatchCriteriaColumn.COUNT_WORDS_IND.getName()), cl.xy(2,28),countWords, cc.xy(4,28));
+		pb.add(new JLabel(MatchCriteriaColumn.MIN_WORDS_IN_COMMON.getName()), cl.xy(2,8),minWordsInCommon, cc.xy(4,8));	
+		pb.add(new JLabel(MatchCriteriaColumn.MATCH_START.getName()), cl.xy(6,8),matchStart, cc.xy(8,8));
+		pb.add(new JLabel(MatchCriteriaColumn.SOUND_IND.getName()), cl.xy(10,8),soundex, cc.xy(12,8));
+		pb.add(new JLabel(MatchCriteriaColumn.COUNT_WORDS_IND.getName()), cl.xy(14,8),countWords, cc.xy(16,8));
 		
 		criteriaEditPanel = pb.getPanel();
 		

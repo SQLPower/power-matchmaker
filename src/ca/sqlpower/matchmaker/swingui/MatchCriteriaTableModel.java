@@ -34,6 +34,78 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
                 MatchCriteriaColumn.values()[columnIndex],(PlMatchCriteria) group.getChildren().get(rowIndex));
 	}
 	
+	@Override
+	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+		MatchCriteriaColumn column = MatchCriteriaColumn.values()[columnIndex];
+		PlMatchCriteria criteria = (PlMatchCriteria) group.getChildren().get(rowIndex);
+		
+		switch (column) {	
+		case COLUMN:
+			
+			
+			
+			break;
+		case ALLOW_NULL:             
+			criteria.setAllowNullInd((Boolean)aValue);
+			break;
+		case CASE_SENSITIVE_IND:             
+		    criteria.setCaseSensitiveInd((Boolean)aValue);
+		    break;
+		case SUPPRESS_CHAR:
+			criteria.setSuppressChar((String)aValue);
+			break;
+		case FIRST_N_CHAR:
+			criteria.setFirstNChar((Long) aValue);
+			break;
+		case MATCH_START:
+			if ((Boolean)aValue){
+				criteria.setReorderInd(true);
+			}
+			criteria.setMatchStart((Boolean)aValue);
+			break;
+		case SOUND_IND:
+
+			criteria.setSoundInd((Boolean)aValue);
+			break;
+		case TRANSLATE_GROUP_NAME:  
+			criteria.setTranslateGroupName((String) aValue);
+			break;
+		case REMOVE_SPECIAL_CHARS:  
+			criteria.setRemoveSpecialChars((Boolean)aValue);
+			break;
+		case COUNT_WORDS_IND:    
+			criteria.setCountWordsInd((Boolean)aValue);
+			break;
+		case REPLACE_WITH_SPACE_IND:      
+			criteria.setReplaceWithSpaceInd((Boolean)aValue);
+			break;
+		case REPLACE_WITH_SPACE:  
+			criteria.setReplaceWithSpace((String)aValue);
+			break;
+		case REORDER_IND: 
+			if (!(Boolean) aValue) {
+				criteria.setMatchStart(false);
+				criteria.setFirstNCharByWordInd(false);
+			}
+			criteria.setReorderInd((Boolean)aValue);
+			break;
+		case FIRST_N_CHARS_BY_WORD:     
+			criteria.setFirstNCharByWord((Long) aValue);
+			break;
+		case MIN_WORDS_IN_COMMON:
+			criteria.setMinWordsInCommon((Long) aValue);
+			break;
+		case MATCH_FIRST_PLUS_ONE_IND:
+			if ((Boolean)aValue){
+				criteria.setReorderInd(true);
+			}
+			criteria.setFirstNCharByWordInd((Boolean)aValue);
+			break;
+		default:
+			throw new IllegalArgumentException("Invalid column");
+		}
+	}
+	
 	public PlMatchCriteria getRow(int row){
 		return (PlMatchCriteria) group.getChildren().get(row);
 	}
@@ -46,6 +118,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
 		return MatchCriteriaColumn.values()[columnIndex].getColumnClass();
+		
 	}
 	
 	private static Object getFieldFromCriteria(MatchCriteriaColumn column, PlMatchCriteria criteria) {
@@ -76,24 +149,20 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 			return criteria.getReplaceWithSpace();			
 		case REORDER_IND:   
 			return criteria.isReorderInd();
-		case FIRST_N_CHARS_BY_WORD_IND:   
-			return criteria.isFirstNCharByWordInd();
 		case FIRST_N_CHARS_BY_WORD:     
 			return criteria.getFirstNCharByWord(); 
 		case MIN_WORDS_IN_COMMON:
 			return criteria.getMinWordsInCommon();
 		case MATCH_FIRST_PLUS_ONE_IND:
 			return criteria.isMatchFirstPlusOneInd();
-		case LAST_UPDATE_DATE:
-			return criteria.getLastUpdateDate();
-		case LAST_UPDATE_USER: 
-			return criteria.getLastUpdateUser();
-		case LAST_UPDATED_OS_USER:
-			return criteria.getLastUpdateOsUser();
 		default:
 			throw new IllegalArgumentException("Invalid column");
 		}
 	}
-
+	
+	@Override
+	public boolean isCellEditable(int rowIndex, int columnIndex) {
+		return true;
+	}
 
 }

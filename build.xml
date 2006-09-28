@@ -21,9 +21,7 @@
 	 <fileset dir="buildlib">
 		 <include name="**/*.jar"/>
 	 </fileset>
-		 <fileset dir="c:/jdbc">
-				 <include name="**/*.jar"/>
-			 </fileset>
+	
 	 <path location="${jdbc.driver.jar}" />
 	 <path location="bin"/>
 	</path>
@@ -41,21 +39,21 @@
 		<!-- Remove the fail line to regenerate the persistance classes -->
 
 		<hibernatetool
-	  destdir="src/generated" >
+	  destdir="tmp/gen" >
 
 	  <classpath refid="toolslib"/>
 	  <propertyset />
 
-		<jdbcconfiguration configurationfile="hibernate/hibernate.cfg.xml"
+		<jdbcconfiguration configurationfile="hibernate/hibernate.gen.cfg.xml"
 		  packagename="ca.sqlpower.matchmaker.generated"
 		  revengfile="hibernate/MatchMaker.reveng.xml"
 		  detectmanytomany="true"
 		>
 
 		</jdbcconfiguration>
-	  	<hbm2java destdir="src"/>
-		<hbm2dao destdir="src"/>
-		<hbm2hbmxml destdir="src"/>
+	  	<hbm2java destdir="tmp/gen"/>
+		<hbm2dao destdir="tmp/gen"/>
+		<hbm2hbmxml destdir="tmp/gen"/>
 	</hibernatetool> </target>
 
 	<condition property="isNotMac">

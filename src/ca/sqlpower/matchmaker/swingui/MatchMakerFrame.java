@@ -34,6 +34,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -57,8 +58,10 @@ import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.MySimpleTable;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
+import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
 import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
+import ca.sqlpower.matchmaker.hibernate.home.PlMatchTranslateHome;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
@@ -88,7 +91,8 @@ public class MatchMakerFrame extends JFrame {
 	protected JMenuBar menuBar = null;
 	protected JTree tree = null;
     private JMenu databaseMenu;
-    private String lastExportAccessPath = null;
+    private PlMatchGroupPanel plMatchGroupPanel = new PlMatchGroupPanel(null);
+	private String lastExportAccessPath = null;
 	protected AboutAction aboutAction;
  	protected  JComponent contentPane;
 
@@ -217,6 +221,7 @@ public class MatchMakerFrame extends JFrame {
 
 	private List<PlMatch> matches;
 	private List<PlFolder> folders;
+	private List<PlMatchTranslate> translations;
 	private List<MySimpleTable> tables;
 	private List<String> tablePaths;
 
@@ -409,8 +414,12 @@ public class MatchMakerFrame extends JFrame {
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel());
-		tree.addMouseListener(new MatchMakerTreeMouseListener());
-		cp.add(new JScrollPane(tree));
+		tree.addMouseListener(new MatchMakerTreeMouseListener(plMatchGroupPanel));
+		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		
+		split.setRightComponent(plMatchGroupPanel );
+		split.setLeftComponent(new JScrollPane(tree));
+		cp.add(split);
 
 		Rectangle bounds = new Rectangle();
 		bounds.x = prefs.getInt(SwingUserSettings.MAIN_FRAME_X, 40);
@@ -439,7 +448,10 @@ public class MatchMakerFrame extends JFrame {
 			}
 			matches = new ArrayList<PlMatch>(matchSet);
 			Collections.sort(matches);
-			Collections.sort(folders);
+			Collections.sort(folders); 
+			PlMatchTranslateHome translateHome = new PlMatchTranslateHome();
+			translations = new ArrayList<PlMatchTranslate>(translateHome.findAll());
+			System.out.println(translations);
 		}
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
 
@@ -454,6 +466,7 @@ public class MatchMakerFrame extends JFrame {
         Set <String> catalogSet  = new HashSet<String>();
         Set <String> schemaSet  = new HashSet<String>();
         try {
+        	logger.info("Getting Schema and Catalog Metadata");
             connection = db.getConnection();
             DatabaseMetaData dbMetaData = connection.getMetaData();
             rs = dbMetaData.getCatalogs();
@@ -474,7 +487,7 @@ public class MatchMakerFrame extends JFrame {
             if ( schemaSet.size() == 0 ) {
                 schemaSet.add(null);
             }
-
+            logger.info("Getting Table Metadata");
             boolean checkTable = dbMetaData.allTablesAreSelectable();
             for ( String cat : catalogSet ) {
                 for ( String sch : schemaSet ) {
@@ -515,7 +528,7 @@ public class MatchMakerFrame extends JFrame {
             }
             connection.close();
             connection = null;
-
+            logger.info("Done getting metadata");
             tablePaths = new ArrayList<String>();
             for ( MySimpleTable t : tables ) {
                 String location = t.getPath();
@@ -749,6 +762,17 @@ public class MatchMakerFrame extends JFrame {
 	public void setLastExportAccessPath(String lastExportAccessPath) {
 		if (this.lastExportAccessPath != lastExportAccessPath) {
 			this.lastExportAccessPath = lastExportAccessPath;
+			//TODO fire event
+		}
+	}
+
+	public List<PlMatchTranslate> getTranslations() {
+		return translations;
+	}
+
+	public void setTranslations(List<PlMatchTranslate> translations) {
+		if (this.translations != translations) {
+			this.translations = translations;
 			//TODO fire event
 		}
 	}

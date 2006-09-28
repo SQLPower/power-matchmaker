@@ -16,7 +16,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchXrefMap;
  * @see ca.sqlpower.matchmaker.hibernate.PlMatchXrefMap
  * @author Hibernate Tools
  */
-public class PlMatchXrefMapHome extends DefaultHome {
+public class PlMatchXrefMapHome extends DefaultHome<PlMatchXrefMap> {
 
     private static final Log log = LogFactory.getLog(PlMatchXrefMapHome.class);
 

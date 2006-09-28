@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -29,8 +28,7 @@ public class FilterComponentsPanel extends JPanel {
             }            
         });
  
-        add(new JScrollPane(filterTextArea), BorderLayout.WEST);
-        add(new JLabel ("  "), BorderLayout.CENTER);
+        add(new JScrollPane(filterTextArea), BorderLayout.CENTER);
         add(editButton, BorderLayout.EAST);
     }
     

@@ -6,7 +6,7 @@
 		<sql-type jdbc-type="VARCHAR" hibernate-type="string"></sql-type>
 		<sql-type jdbc-type="NUMERIC" hibernate-type="long"></sql-type>
 		<sql-type jdbc-type="VARCHAR" hibernate-type="boolean"
-			length="1" >
+			length="1">
 		</sql-type>
 		<sql-type jdbc-type="DATE" hibernate-type="date"></sql-type>
 	</type-mapping>
@@ -14,4 +14,5 @@
 	<table-filter match-name="PL_MERGE.*" />
 	<table-filter match-name="DEF_PARAM" />
 	<table-filter match-name="PL_FOLDER.*" />
+
 </hibernate-reverse-engineering>

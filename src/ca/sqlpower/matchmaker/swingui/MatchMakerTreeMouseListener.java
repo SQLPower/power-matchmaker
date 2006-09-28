@@ -18,7 +18,6 @@ import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
-import ca.sqlpower.matchmaker.swingui.action.EditMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
@@ -26,23 +25,20 @@ import ca.sqlpower.matchmaker.swingui.action.Refresh;
 
 public class MatchMakerTreeMouseListener implements MouseListener {
 
+	private PlMatchGroupPanel panel;
+	public MatchMakerTreeMouseListener(PlMatchGroupPanel panel) {
+		this.panel = panel;
+	}
 	public void mouseClicked(MouseEvent e) {
-		if (e.getClickCount() ==2 && e.BUTTON1 == e.getButton()) {
+		if ( e.BUTTON1 == e.getButton()) {
 			JTree t = (JTree) e.getSource();
 			source = t;
 			int row = t.getRowForLocation(e.getX(),e.getY());
 			TreePath tp = t.getPathForRow(row);
 			if (tp != null) {
 				Object o = tp.getLastPathComponent();
-				if(o instanceof PlFolder){
-
-				} else if (o instanceof PlMatch){
-					MatchEditor me = new MatchEditor((PlMatch)o,null);
-					me.pack();
-					me.setVisible(true);
-				} else if (o instanceof PlMatchGroup){
-					new EditMatchGroupAction((PlMatchGroup)o, getWindow()).actionPerformed(null);
-
+				if (o instanceof PlMatchGroup){
+					panel.setModel((PlMatchGroup) o );
 				}
 			}
 		}
@@ -94,8 +90,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 
 	private void createMatchGroupMenu(PlMatchGroup group) {
 		Window c = getWindow();
-		m.add(new JMenuItem(new EditMatchGroupAction(group, c)));
-		m.add(new JMenuItem(new DeleteMatchGroupAction(group)));
+		m.add(new JMenuItem(new DeleteMatchGroupAction(group,panel)));
 	}
 
 	private Window getWindow() {

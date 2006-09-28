@@ -169,7 +169,7 @@ public class MatchEditor extends JFrame {
             if ( uniqueIndex.getSelectedItem() != null ) {
                 plMatch.setPkColumn(((MySimpleIndex)uniqueIndex.getSelectedItem()).getName());
             }
-            plMatch.setFilter(filterPanel.getFilterTextField().getText());
+            plMatch.setFilter(filterPanel.getFilterTextArea().getText());
             if ( resultTableOwner.getSelectedItem() == null ) {
                 resultTableOwner.setSelectedItem(sourceTableOwner.getSelectedItem());
             }
@@ -286,7 +286,7 @@ public class MatchEditor extends JFrame {
         sourceTableName.addItemListener(new TableNameListChangeListener(
                 sourceTableName,
                 uniqueIndex,
-                filterPanel.getFilterTextField() ));
+                filterPanel.getFilterTextArea() ));
     	resultTableOwner = new JComboBox(new DefaultComboBoxModel(tablePath.toArray()));
     	resultTableName = new JTextField();
     	viewBuilder = new JButton(viewBuilderAction);    	
@@ -319,7 +319,7 @@ public class MatchEditor extends JFrame {
 
             System.out.println("pk column:"+plMatch.getPkColumn());
 
-            filterPanel.getFilterTextField().setText(plMatch.getFilter());
+            filterPanel.getFilterTextArea().setText(plMatch.getFilter());
             resultTableOwner.setSelectedItem(plMatch.getResultsTableOwner());
             resultTableName.setText(plMatch.getResultsTable());
 

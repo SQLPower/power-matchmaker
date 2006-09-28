@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- Generated Sep 28, 2006 12:53:42 PM by Hibernate Tools 3.2.0.beta7 -->
+<hibernate-mapping>
+
+<class 
+    name="ca.sqlpower.matchmaker.hibernate.PlMatchTranslate"
+    table="pl_match_translate"
+    catalog="pl"
+>
+    <composite-id
+		name="id"
+        class="ca.sqlpower.matchmaker.hibernate.PlMatchTranslateId"
+    >		
+	        <key-property name="groupName" type="string">
+<column name="group_name" length="35" />
+	        </key-property>
+	        <key-property name="seqNo" type="long">
+<column name="seq_no" precision="18" scale="0" />
+	        </key-property>
+    </composite-id>	
+
+
+    <property
+        name="fromWord"
+        type="string"
+    >
+<column name="from_word" length="80" />
+  	</property>
+    <property
+        name="toWord"
+        type="string"
+    >
+<column name="to_word" length="80" />
+  	</property>
+
+</class>
+</hibernate-mapping>

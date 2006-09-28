@@ -16,7 +16,7 @@ import ca.sqlpower.matchmaker.hibernate.DefParam;
  * @see ca.sqlpower.matchmaker.hibernate.DefParam
  * @author Hibernate Tools
  */
-public class DefParamHome extends DefaultHome {
+public class DefParamHome extends DefaultHome<DefParam> {
 
     private static final Log log = LogFactory.getLog(DefParamHome.class);
     

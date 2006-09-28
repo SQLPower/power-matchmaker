@@ -5,24 +5,23 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Date;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellRenderer;
 
 import org.hibernate.Transaction;
@@ -31,8 +30,10 @@ import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
+import ca.sqlpower.matchmaker.hibernate.PlMatchGroupId;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -56,7 +57,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 
 
 	private JPanel groupEditPanel;
-	JLabel groupId;
+	JTextField groupId;
 	JLabel matches;
 	JTextField description;
 	JTextField matchPercent;
@@ -66,6 +67,9 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	JLabel	lastUpdateUser;
 	JLabel	lastUpdateOSUser;
 	Color textBackground;
+
+
+	private boolean loading = false;
 
 
 	/**
@@ -85,10 +89,56 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	 * @return void
 	 */
 	private void initialize() {
-
-		this.setLayout(new BorderLayout());
+		// load the new model
+		clear();
+		textBackground = description.getBackground();
 		this.add(getJSplitPane(), BorderLayout.CENTER);
 		
+		ButtonBarBuilder bb = new ButtonBarBuilder();
+		
+		
+	}
+
+	public void clear() {
+		DocumentListener listener = new DocumentListener(){
+
+			public void changedUpdate(DocumentEvent e) {
+				saveMatches(model);
+				
+			}
+
+			public void insertUpdate(DocumentEvent e) {
+				saveMatches(model);
+				
+			}
+
+			public void removeUpdate(DocumentEvent e) {
+				saveMatches(model);
+				
+			}
+			
+
+			
+		};
+		this.setLayout(new BorderLayout());
+		groupId = new JTextField();
+		matches = new JLabel();
+
+		description = new JTextField();
+		matchPercent = new JTextField();
+		matchPercent.setColumns(3);
+		filterCriteria = new JTextField();
+		active = new JCheckBox();
+		active.setSelected(true);
+
+		
+		lastUpdateDate = new JLabel();
+		lastUpdateUser = new JLabel();
+		lastUpdateOSUser= new JLabel();
+		matchPercent.getDocument().addDocumentListener(listener);
+		groupId.getDocument().addDocumentListener(listener);
+		description.getDocument().addDocumentListener(listener);
+		filterCriteria.getDocument().addDocumentListener(listener);
 	}
 
 	public PlMatchGroup getModel() {
@@ -97,51 +147,51 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 
 	public void setModel(PlMatchGroup model) {
 		this.model = model;
-		matchCriteriaTable.setModel(new MatchCriteriaTableModel(model));
-	
-		
-		loadMatches(model);
+		if(model != null) {
+			matchCriteriaTable.setModel(new MatchCriteriaTableModel(model));
+			loadMatches(model);
+			int translateColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP_NAME);
+			matchCriteriaTable.getColumnModel().getColumn(translateColumn).setCellEditor(new DefaultCellEditor(new JComboBox(new TranslationComboBoxModel())));
+			
+		}
 	}
 
 	private void loadMatches(PlMatchGroup model) {
-		// load the new model
-		KeyListener listener = new KeyListener(){
-			
-			public void keyPressed(KeyEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
-				validateForm();	
-			}
-			
-			public void keyTyped(KeyEvent e) {
-				validateForm();				
-			}
-			
-		};
-		groupId = new JLabel(model.getId().getGroupId());
-		matches = new JLabel(model.getId().getMatchId());
+		loading = true;
+		groupId.setText(model.getId().getGroupId());
+		matches.setText(model.getId().getMatchId());
 
-		description = new JTextField(model.getDescription());
-		textBackground = description.getBackground();
-		matchPercent = new JTextField(model.getMatchPercent().toString());
-		matchPercent.addKeyListener(listener);
-		filterCriteria = new JTextField(model.getFilterCriteria());
-		active = new JCheckBox();
-		active.setSelected(model.isActiveInd());
+		description.setText(model.getDescription());
+		
+		matchPercent.setText(model.getMatchPercent().toString());
+
+		filterCriteria.setText(model.getFilterCriteria());
+
+		active.setSelected(!model.isActiveInd());
 		Date updated = model.getLastUpdateDate();
 		
-		lastUpdateDate = new JLabel(updated == null? "N/A" :updated.toString());
-		lastUpdateUser = new JLabel(model.getLastUpdateUser() == null? "N/A" :model.getLastUpdateUser());
-		lastUpdateOSUser= new JLabel(model.getLastUpdateOsUser()== null?"N/A":model.getLastUpdateOsUser());
+		lastUpdateDate.setText(updated == null? "N/A" :updated.toString());
+		lastUpdateUser.setText(model.getLastUpdateUser() == null? "N/A" :model.getLastUpdateUser());
+		lastUpdateOSUser.setText(model.getLastUpdateOsUser()== null?"N/A":model.getLastUpdateOsUser());
+		loading=false;
 	}
 	
 	private boolean validateForm(){
 		Boolean valid = true;
-		
+		if (groupId.getText().equals("")){
+			groupId.setBackground(Color.red);
+			valid=false;
+		} else {
+			groupId.setBackground(textBackground);
+		}
+		if (model.getPlMatch() != null) {
+			for( PlMatchGroup g : model.getPlMatch().getPlMatchGroups()) {
+				if (g.getId().getGroupId() == groupId.getText() && g != model){
+					groupId.setBackground(Color.red);
+					valid=false;
+				}
+			}
+		}
 		try {
 			Short d = Short.parseShort(matchPercent.getText());
 			
@@ -161,17 +211,30 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		
 	}
 	private boolean saveMatches(PlMatchGroup model) {
-		if ( validateForm()){
+		if ( validateForm() && !loading){
 			// load the new model
-			model.setDescription(description.getText());
-			model.setMatchPercent(Short.parseShort(matchPercent.getText()));
-			model.setFilterCriteria(filterCriteria.getText());
-			model.setActiveInd(active.isSelected());
+			PlMatchGroup saveGroup;
+			if ( !groupId.getText().equals(model.getId().getGroupId())) {
+	
+				saveGroup = new PlMatchGroup(new PlMatchGroupId(model.getId().getMatchId(),groupId.getText()),model.getPlMatch(),model);
+			} else {
+				saveGroup = model;
+			}
+			saveGroup.setDescription(description.getText());
+			saveGroup.setMatchPercent(Short.parseShort(matchPercent.getText()));
+			saveGroup.setFilterCriteria(filterCriteria.getText());
+			saveGroup.setActiveInd(!active.isSelected());
 	
 			try {
 				System.out.println("Saving "+model);
+				
 				Transaction tx = HibernateUtil.primarySession().beginTransaction();
-				HibernateUtil.primarySession().flush();
+				if (!model.equals(saveGroup)) {
+					HibernateUtil.primarySession().delete(model);
+					HibernateUtil.primarySession().persist(saveGroup);
+				} else {
+					HibernateUtil.primarySession().flush();
+				}
 				tx.commit();
 			
 			} catch (Exception e) {
@@ -183,37 +246,25 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 
 	private JPanel getGroupEditPanel(){
 		if (groupEditPanel == null){
-			FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, fill:200dlu:grow, 3dlu");
+			FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, fill:pref:grow, 10dlu, pref,5dlu,pref,3dlu");
 			PanelBuilder pb = new PanelBuilder(formLayout);
 			pb.appendRelatedComponentsGapRow();
 			pb.appendRow("pref");
 			CellConstraints cc = new CellConstraints();
 			CellConstraints cl= new CellConstraints();
 			pb.add(new JLabel("Match"), cl.xy(2,2),matches, cc.xy(4,2));
+			pb.add(new JLabel("Active"), cl.xy(6,2),active, cc.xy(8,2));
 			pb.appendRelatedComponentsGapRow();
 			pb.appendRow("pref");
 			pb.add(new JLabel("Match Group"), cl.xy(2,4), groupId, cc.xy(4,4));
+			pb.add(new JLabel("Match Percent"), cl.xy(6,4),matchPercent, cc.xy(8,4));
 			pb.appendRelatedComponentsGapRow();
 			pb.appendRow("pref");
-			pb.add(new JLabel("Description"), cl.xy(2,6),description , cc.xy(4,6));
+			pb.add(new JLabel("Description"), cl.xy(2,6),description , cc.xyw(4,6,5));
 			pb.appendRelatedComponentsGapRow();
 			pb.appendRow("pref");
-			pb.add(new JLabel("Match Percent"), cl.xy(2,8),matchPercent, cc.xy(4,8));
-			pb.appendRelatedComponentsGapRow();
-			pb.appendRow("pref");
-			pb.add(new JLabel("Filter Criteria"), cl.xy(2,10),filterCriteria, cc.xy(4,10));
-			pb.appendRelatedComponentsGapRow();
-			pb.appendRow("pref");
-			pb.add(new JLabel("Deactivate?"), cl.xy(2,12),active, cc.xy(4,12));
-			pb.appendRelatedComponentsGapRow();
-			pb.appendRow("pref");
-			pb.add(new JLabel("Last Updated"), cl.xy(2,14),lastUpdateDate, cc.xy(4,14));
-			pb.appendRelatedComponentsGapRow();
-			pb.appendRow("pref");
-			pb.add(new JLabel("Last Updated By"), cl.xy(2,16),lastUpdateUser, cc.xy(4,16));
-			pb.appendRelatedComponentsGapRow();
-			pb.appendRow("pref");
-			pb.add(new JLabel("Last Updated OS User"), cl.xy(2,18),lastUpdateOSUser, cc.xy(4,18));
+			pb.add(new JLabel("Filter Criteria"), cl.xy(2,8),filterCriteria, cc.xyw(4,8,5));
+
 			groupEditPanel = pb.getPanel();
 		}
 		return groupEditPanel;
@@ -259,65 +310,8 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			setModel(model);
 			
 			matchCriteriaTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
-			matchCriteriaTable.addMouseListener(new MouseListener(){
-
-				private Window getWindow() {
-					Component c = source;
-					while(!(c instanceof Window ) && c !=null){
-						c = c.getParent();
-					}
-					return (Window) c;
-				}
-				
-				public void mouseClicked(MouseEvent e) {
-					// TODO Auto-generated method stub
-					clickAction(e);
-					
-				}
-
-				public void mouseEntered(MouseEvent e) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				public void mouseExited(MouseEvent e) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				public void mousePressed(MouseEvent e) {
-
-				}
-
-				public void mouseReleased(MouseEvent e) {
-
-				}
-				JPopupMenu m;
-				Component source;
-				
-				private void clickAction(MouseEvent e) {
-					
-					if (e.getButton() == e.BUTTON1 && e.getClickCount() == 2) {
-						m = new JPopupMenu();
-						JTable t = (JTable) e.getSource();
-						source = t;
-						int row = t.rowAtPoint(e.getPoint());
-						MatchCriteriaTableModel tableModel = (MatchCriteriaTableModel) t.getModel();
-						if (row < 0) {
-							PlMatchCriteria newCriteria = new PlMatchCriteria();
-							newCriteria.setPlMatchGroup(model);
-							Action a = new EditMatchCriteriaAction(newCriteria,getWindow());
-							a.actionPerformed(new ActionEvent(this,0,""));;
-							
-						}else {
-							Action a = new EditMatchCriteriaAction(tableModel.getRow(row),getWindow());
-							a.actionPerformed(new ActionEvent(this,0,""));
-						}
-					}
-				}
-				
-			});
-			
+			matchCriteriaTable.putClientProperty("terminateEditOnFocusLost", true);
+		
 		}
 		return matchCriteriaTable;
 	}
@@ -356,6 +350,8 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		}
 	}
 
+
+	
 	class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
 
 		  CheckBoxRenderer() {

@@ -42,6 +42,29 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
         this.id = id;
         this.plMatch = plMatch;
     }
+    
+	/** copy constructor */
+    public PlMatchGroup(PlMatchGroupId id, PlMatch plMatch, PlMatchGroup group) {
+    	this();
+        this.id = id;
+        this.plMatch = plMatch;
+        plMatch.getPlMatchGroups().add(this);
+        this.description = group.description;
+        this.matchPercent = group.matchPercent;
+        this.lastUpdateDate = group.lastUpdateDate;
+        this.lastUpdateUser = group.lastUpdateUser;
+        this.filterCriteria = group.filterCriteria;
+        this.activeInd = group.activeInd;
+        this.lastUpdateOsUser = group.lastUpdateOsUser;
+        
+        
+        for (PlMatchCriteria criterion: group.plMatchCriterias) {
+        	this.plMatchCriterias.add(new PlMatchCriteria(new PlMatchCriteriaId(id.getMatchId(),id.getGroupId(),criterion.getId().getColumnName()),this,criterion));
+        }
+        System.out.println(plMatchCriterias);
+        
+    }
+    
     /** full constructor */
     public PlMatchGroup(PlMatchGroupId id, PlMatch plMatch, String description, Short matchPercent, Date lastUpdateDate, String lastUpdateUser, String filterCriteria, boolean activeInd, String lastUpdateOsUser, Set<PlMatchCriteria> plMatchCriterias) {
        this.id = id;

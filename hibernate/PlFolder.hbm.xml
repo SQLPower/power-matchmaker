@@ -39,7 +39,7 @@
 <column name="last_backup_no" precision="18" scale="0" />
   	</property>
 
-	<set name="matches" lazy="true"  table="PL_FOLDER_DETAIL">
+	<set name="matches" lazy="true" fetch="subselect" table="PL_FOLDER_DETAIL">
            <key column="folder_name"/>
            <many-to-many unique="true" not-found="ignore" class="ca.sqlpower.matchmaker.hibernate.PlMatch" column="object_name"/>
     </set>
