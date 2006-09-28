@@ -144,6 +144,7 @@ public class LoginDialog extends JDialog {
 				db.populate();
 				// Now let someone else know we did something
 		        MatchMakerFrame.getMainInstance().newLogin(dbSource);
+		        System.out.println("Hibernate logged In");
 				login = true;
 			} catch (ArchitectException e) {
 				e.printStackTrace();

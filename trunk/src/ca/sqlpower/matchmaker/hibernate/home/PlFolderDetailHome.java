@@ -16,7 +16,7 @@ import ca.sqlpower.matchmaker.hibernate.PlFolderDetail;
  * @see ca.sqlpower.matchmaker.hibernate.PlFolderDetail
  * @author Hibernate Tools
  */
-public class PlFolderDetailHome extends DefaultHome{
+public class PlFolderDetailHome extends DefaultHome<PlFolderDetail>{
 
     private static final Log log = LogFactory.getLog(PlFolderDetailHome.class);
 

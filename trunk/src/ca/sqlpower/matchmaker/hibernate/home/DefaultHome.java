@@ -7,10 +7,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
-public abstract class DefaultHome {
+public abstract class DefaultHome<t> {
 	private static Logger logger = Logger.getLogger(DefaultHome.class);
 	private Connection con;
 	private SessionFactory sessionFactory;
@@ -41,8 +40,8 @@ public abstract class DefaultHome {
 		return null;
 	}
 	
-	public List<PlMatch> findAll() {
-		logger.debug("finding all for "+ getBusinessClass());
+	public List<t> findAll() {
+		logger.info("finding all for "+ getBusinessClass());
         try {
             List results = getCurrentSession()
                     .createCriteria(getBusinessClass())
