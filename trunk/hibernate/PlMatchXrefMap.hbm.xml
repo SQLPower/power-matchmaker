@@ -8,8 +8,8 @@
 
 <class 
     name="ca.sqlpower.matchmaker.hibernate.PlMatchXrefMap"
-    table="pl_match_xref_map"
-    catalog="pl"
+    table="pl_match_xref_map" 
+    
 >
     <composite-id
 		name="id"

@@ -9,7 +9,7 @@
 <class 
     name="ca.sqlpower.matchmaker.hibernate.PlMatchTranslate"
     table="pl_match_translate"
-    catalog="pl"
+
 >
     <composite-id
 		name="id"
