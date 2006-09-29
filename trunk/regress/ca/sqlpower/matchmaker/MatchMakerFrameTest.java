@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
 
-public class TestMatchMakerFrame extends TestCase {
+public class MatchMakerFrameTest extends TestCase {
 
 	private MatchMakerFrame mf;
 
