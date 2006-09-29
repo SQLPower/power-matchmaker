@@ -143,8 +143,7 @@ public class LoginDialog extends JDialog {
 				new javax.swing.Timer(100, progressBarUpdater).start();
 				db.populate();
 				// Now let someone else know we did something
-		        MatchMakerFrame.getMainInstance().newLogin(dbSource);
-		        System.out.println("Hibernate logged In");
+		        MatchMakerFrame.getMainInstance().newLogin(db);
 				login = true;
 			} catch (ArchitectException e) {
 				e.printStackTrace();
@@ -167,19 +166,19 @@ public class LoginDialog extends JDialog {
                 loginButton.setEnabled(true);
 				return;
 			}
-            
+
             //We create a copy of the data source and change the userID and password
-            //and use that instead for the login.  We do not want to change the 
+            //and use that instead for the login.  We do not want to change the
             //default userID and password for the connection in here.
             ArchitectDataSource tempDbSource = new ArchitectDataSource();
             tempDbSource.setDisplayName(dbSource.getDisplayName());
             tempDbSource.setDriverClass(dbSource.getDriverClass());
             tempDbSource.setPlDbType(dbSource.getPlDbType());
-            tempDbSource.setUrl(dbSource.getUrl());            
-            tempDbSource.setPlSchema(dbSource.getPlSchema());            
-            tempDbSource.setUser(userID.getText());  
+            tempDbSource.setUrl(dbSource.getUrl());
+            tempDbSource.setPlSchema(dbSource.getPlSchema());
+            tempDbSource.setUser(userID.getText());
             tempDbSource.setPass(password.getText());
-            
+
 			db = new SQLDatabase(tempDbSource);
 			String driverClass = db.getDataSource().getDriverClass();
 			if (driverClass == null || driverClass.length() == 0) {

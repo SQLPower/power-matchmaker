@@ -11,10 +11,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,7 +30,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -55,13 +50,11 @@ import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.HelpAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
-import ca.sqlpower.matchmaker.MySimpleTable;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
+import ca.sqlpower.matchmaker.hibernate.home.DefParamHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
-import ca.sqlpower.matchmaker.hibernate.home.PlMatchTranslateHome;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
@@ -91,8 +84,7 @@ public class MatchMakerFrame extends JFrame {
 	protected JMenuBar menuBar = null;
 	protected JTree tree = null;
     private JMenu databaseMenu;
-    private PlMatchGroupPanel plMatchGroupPanel = new PlMatchGroupPanel(null);
-	private String lastExportAccessPath = null;
+    private String lastExportAccessPath = null;
 	protected AboutAction aboutAction;
  	protected  JComponent contentPane;
 
@@ -221,10 +213,6 @@ public class MatchMakerFrame extends JFrame {
 
 	private List<PlMatch> matches;
 	private List<PlFolder> folders;
-	private List<PlMatchTranslate> translations;
-	private List<MySimpleTable> tables;
-	private List<String> tablePaths;
-
     private SQLDatabase database;
 
 
@@ -243,7 +231,6 @@ public class MatchMakerFrame extends JFrame {
 	    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	    architectSession = ArchitectSession.getInstance();
 	    init();
-        this.tables = new ArrayList<MySimpleTable>();
 	}
 
 	private void init() throws ArchitectException {
@@ -260,6 +247,7 @@ public class MatchMakerFrame extends JFrame {
 
 		try {
 			ConfigFile cf = ConfigFile.getDefaultInstance();
+			cf.setPrefs(prefs);
 			us = cf.read(getArchitectSession());
 			architectSession.setUserSettings(us);
 			sprefs = architectSession.getUserSettings().getSwingSettings();
@@ -414,12 +402,8 @@ public class MatchMakerFrame extends JFrame {
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel());
-		tree.addMouseListener(new MatchMakerTreeMouseListener(plMatchGroupPanel));
-		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		
-		split.setRightComponent(plMatchGroupPanel );
-		split.setLeftComponent(new JScrollPane(tree));
-		cp.add(split);
+		tree.addMouseListener(new MatchMakerTreeMouseListener());
+		cp.add(new JScrollPane(tree));
 
 		Rectangle bounds = new Rectangle();
 		bounds.x = prefs.getInt(SwingUserSettings.MAIN_FRAME_X, 40);
@@ -430,8 +414,9 @@ public class MatchMakerFrame extends JFrame {
 		addWindowListener(new MatchMakerFrameWindowListener());
 	}
 
-	public void newLogin(ArchitectDataSource dbcs){
+	public void newLogin(SQLDatabase db){
 
+		ArchitectDataSource dbcs = db.getDataSource();
 		HibernateUtil.createSessionFactory(dbcs,HibernateUtil.primaryLogin);
 
 
@@ -448,112 +433,13 @@ public class MatchMakerFrame extends JFrame {
 			}
 			matches = new ArrayList<PlMatch>(matchSet);
 			Collections.sort(matches);
-			Collections.sort(folders); 
-			PlMatchTranslateHome translateHome = new PlMatchTranslateHome();
-			translations = new ArrayList<PlMatchTranslate>(translateHome.findAll());
-			System.out.println(translations);
+			Collections.sort(folders);
+
+			DefParamHome defHome = new DefParamHome();
+
 		}
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
-
-
-
-		SQLDatabase db = new SQLDatabase(dbcs);
         setDatabase(db);
-        ResultSet rs = null;
-        ResultSet rs2 = null;
-        Connection connection = null;
-        this.tables = new ArrayList<MySimpleTable>();
-        Set <String> catalogSet  = new HashSet<String>();
-        Set <String> schemaSet  = new HashSet<String>();
-        try {
-        	logger.info("Getting Schema and Catalog Metadata");
-            connection = db.getConnection();
-            DatabaseMetaData dbMetaData = connection.getMetaData();
-            rs = dbMetaData.getCatalogs();
-
-            while(rs.next()) {
-                catalogSet.add(rs.getString(1));
-            }
-            rs.close();
-            rs = dbMetaData.getSchemas();
-            while(rs.next()) {
-                schemaSet.add(rs.getString(1));
-            }
-            rs.close();
-
-            if ( catalogSet.size() == 0 ) {
-                catalogSet.add(null);
-            }
-            if ( schemaSet.size() == 0 ) {
-                schemaSet.add(null);
-            }
-            logger.info("Getting Table Metadata");
-            boolean checkTable = dbMetaData.allTablesAreSelectable();
-            for ( String cat : catalogSet ) {
-                for ( String sch : schemaSet ) {
-
-                    rs = connection.getMetaData().getTables(cat,sch,null,null);
-                    while (rs.next()) {
-
-                        boolean createTable = false;
-                        if ( checkTable ) {
-                            rs2 = dbMetaData.getTablePrivileges(
-                                    rs.getString(1),
-                                    rs.getString(2),
-                                    rs.getString(3) );
-
-                            while( rs2.next()) {
-                                if ( rs2.getString(6).equalsIgnoreCase("SELECT") ) {
-                                    rs2.close();
-                                    rs2 = null;
-                                    createTable = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if ( !checkTable || createTable ) {
-                            tables.add(new MySimpleTable(
-                                    rs.getString(1),
-                                    rs.getString(2),
-                                    rs.getString(3),
-                                    rs.getString(4),
-                                    rs.getString(5) ));
-                        }
-
-                    }
-                    rs.close();
-                    rs = null;
-                }
-            }
-            connection.close();
-            connection = null;
-            logger.info("Done getting metadata");
-            tablePaths = new ArrayList<String>();
-            for ( MySimpleTable t : tables ) {
-                String location = t.getPath();
-                if ( !tablePaths.contains(location))
-                    tablePaths.add(location);
-            }
-		} catch (ArchitectException e) {
-			ASUtils.showExceptionDialogNoReport(MatchMakerFrame.this,
-					"Unknown Database MetaData Error", e);
-		} catch (SQLException e) {
-			ASUtils.showExceptionDialogNoReport(MatchMakerFrame.this,
-					"Unknown Database MetaData Error", e);
-		} finally {
-        	try {
-        		if (rs != null)
-        			rs.close();
-                if (rs2 != null)
-                    rs2.close();
-        		if ( connection != null )
-        			connection.close();
-        	} catch (SQLException e2) {
-        		e2.printStackTrace();
-        	}
-
-        }
 	}
 
 
@@ -613,6 +499,11 @@ public class MatchMakerFrame extends JFrame {
 	 * JVM.
 	 */
 	public void exit() {
+		try {
+			saveSettings();
+		} catch (ArchitectException e) {
+			logger.error("Couldn't save settings: "+e);
+		}
 	    System.exit(0);
 	}
 
@@ -714,28 +605,10 @@ public class MatchMakerFrame extends JFrame {
 		return matches;
 	}
 
-    public List<String> getTablePaths() {
-        return tablePaths;
-    }
-
-    public List<MySimpleTable> getTables() {
-        return getTables(null);
-    }
-
-    public List<MySimpleTable> getTables(String path) {
-        List<MySimpleTable> tableList = new ArrayList<MySimpleTable>();
-        for ( MySimpleTable t : tables ) {
-            if ( path == null || t.getPath().equals(path) )
-                tableList.add(t);
-        }
-        return tableList;
-    }
-
-    public MySimpleTable getTable(String path, String name) {
-        for ( MySimpleTable t : tables ) {
-            if ( t.getName().equals(name) &&
-                    ( path == null || t.getPath().equals(path) ) )
-                return t;
+    public PlMatch getMatchByName(String name ) {
+        for ( PlMatch m : matches ) {
+            if ( m.getMatchId().equals(name) )
+                return m;
         }
         return null;
     }
@@ -762,17 +635,6 @@ public class MatchMakerFrame extends JFrame {
 	public void setLastExportAccessPath(String lastExportAccessPath) {
 		if (this.lastExportAccessPath != lastExportAccessPath) {
 			this.lastExportAccessPath = lastExportAccessPath;
-			//TODO fire event
-		}
-	}
-
-	public List<PlMatchTranslate> getTranslations() {
-		return translations;
-	}
-
-	public void setTranslations(List<PlMatchTranslate> translations) {
-		if (this.translations != translations) {
-			this.translations = translations;
 			//TODO fire event
 		}
 	}
