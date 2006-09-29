@@ -31,6 +31,7 @@ import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroupId;
+import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -305,12 +306,11 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	 */
 	private JTable getMatchCriteriaTable() {
 		if (matchCriteriaTable == null) {
-			matchCriteriaTable = new JTable();
+			matchCriteriaTable = new EditableJTable();
 			matchCriteriaTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 			setModel(model);
-			
 			matchCriteriaTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
-			matchCriteriaTable.putClientProperty("terminateEditOnFocusLost", true);
+			
 		
 		}
 		return matchCriteriaTable;

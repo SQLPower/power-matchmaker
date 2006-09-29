@@ -52,10 +52,10 @@ public class HibernateUtil {
         cfg.setProperty("hibernate.default_schema",ds.getPlSchema());
         String plDbType2Dialect = plDbType2Dialect(ds.getPlDbType());
 		cfg.setProperty("hibernate.dialect",plDbType2Dialect);
-        cfg.setProperty("hibernate.c3p0.min_size","5");
-        cfg.setProperty("hibernate.c3p0.max_size","20");
-        cfg.setProperty("hibernate.c3p0.timeout","1800");
-        cfg.setProperty("hibernate.c3p0.max_statements","50");
+        cfg.setProperty("hibernate.c3p0.min_size","1");
+        cfg.setProperty("hibernate.c3p0.max_size","1");
+        cfg.setProperty("hibernate.c3p0.timeout","0");
+        cfg.setProperty("hibernate.c3p0.max_statements","0");
 
         try {
 			// Create the SessionFactory from hibernate.cfg.xml

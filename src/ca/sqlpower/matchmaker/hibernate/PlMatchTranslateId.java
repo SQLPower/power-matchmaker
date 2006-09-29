@@ -1,4 +1,10 @@
 package ca.sqlpower.matchmaker.hibernate;
+
+import java.util.List;
+
+import org.hibernate.criterion.Projections;
+
+import ca.sqlpower.matchmaker.util.HibernateUtil;
 // Generated Sep 18, 2006 4:34:38 PM by Hibernate Tools 3.2.0.beta7
 
 
@@ -33,6 +39,21 @@ public class PlMatchTranslateId  implements java.io.Serializable {
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
+    
+    /** 
+     * return a number higher than the highest sequence number in the database
+     * 
+     * Note if using this for multiple inserts it will not update until new values
+     * have been added.
+     */
+    public Long getNextSeqNo() {
+    	List<PlMatchTranslate> l = HibernateUtil.primarySession()
+    		.createCriteria(PlMatchTranslate.class)
+    		.setProjection(Projections.max("SeqNo")).list();
+    	
+    	return l.get(0).getId().getSeqNo() +1;
+    }
+    
     public Long getSeqNo() {
         return this.seqNo;
     }
@@ -62,5 +83,4 @@ public class PlMatchTranslateId  implements java.io.Serializable {
 
 
 }
-
 
