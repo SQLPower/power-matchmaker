@@ -3,6 +3,8 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,16 +27,19 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 
+import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLSchema;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.MatchType;
-import ca.sqlpower.matchmaker.MySimpleIndex;
-import ca.sqlpower.matchmaker.MySimpleTable;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
@@ -49,25 +54,22 @@ public class MatchEditor extends JFrame {
 
 	private static final Logger logger = Logger.getLogger(MatchEditor.class);
 
+	private SQLObjectChooser sourceChooser;
+	private SQLObjectChooser xrefChooser;
+	private SQLObjectChooser resultChooser;
 
-	private JComboBox sourceCatalogComboBox;
-	private JComboBox sourceSchemaComboBox;
-	private JComboBox sourceTableComboBox;
 
-	private JLabel sourceCatalogLabel;
-	private JLabel sourceSchemaLabel;
+    private JTextField matchId = new JTextField();
+    private JComboBox folderComboBox = new JComboBox();
+    private JTextArea desc = new JTextArea();
+    private JComboBox type = new JComboBox();
 
-    private JTextField matchId;
-    private JComboBox folderList;
-    private JTextArea desc;
-    private JComboBox type;
-    private JComboBox sourceTableOwner;
-    private JComboBox sourceTableName;
-    private JComboBox uniqueIndex;
+    private JTextArea filter = new JTextArea();
 
-    private JComboBox resultTableOwner;
-    private JTextField resultTableName;
+    private JTextField resultTableName = new JTextField();
+
     private JButton viewBuilder;
+    private JButton editFilter;
     private JButton createResultTable;
 
     private JButton saveMatch;
@@ -78,10 +80,6 @@ public class MatchEditor extends JFrame {
     private JButton validationStatus;
     private JButton validateMatch;
 
-    private FilterComponentsPanel filterPanel;
-	private JLabel matchSourceTableOwnerLabel;
-	private JLabel matchSourceTableNameLabel;
-
 	private PlMatch plMatch;
     private PlFolder plFolder;
 
@@ -90,7 +88,7 @@ public class MatchEditor extends JFrame {
         this(match,null);
     }
 
-    public MatchEditor(PlMatch match, PlFolder folder2) {
+    public MatchEditor(PlMatch match, PlFolder folder) {
         super();
         if ( match == null ) {
             setTitle("Create new match interface");
@@ -98,9 +96,9 @@ public class MatchEditor extends JFrame {
             setTitle("Edit match interface: "+match.getMatchId());
         }
         this.plMatch = match;
-        this.plFolder = folder2;
-        buildUI();
+        this.plFolder = folder;
 
+        buildUI();
     }
 
 
@@ -142,39 +140,145 @@ public class MatchEditor extends JFrame {
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(ActionEvent e) {
 
+			if ( plMatch == null ) {
+
+				if ( matchId.getText() != null && matchId.getText().length() > 0 ) {
+					if ( MatchMakerFrame.getMainInstance().getMatchByName(matchId.getText()) != null ) {
+						JOptionPane.showMessageDialog(
+			                    MatchEditor.this,
+			                    "Match ["+matchId.getText()+"] Exists!",
+			                    "Match ["+matchId.getText()+"] Exists!",
+			                    JOptionPane.ERROR_MESSAGE );
+						return;
+					}
+				}
+				plMatch = new PlMatch();
+			}
+
+			if ( !checkObjectNullOrEmpty(
+					sourceChooser.getTableComboBox().getSelectedItem(),
+					"Source Table") )
+				return;
+			if ( !checkStringNullOrEmpty(
+					((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()).getName(),
+					"Source Table Name") )
+				return;
+
+			if ( sourceChooser.getCatalogComboBox().isEnabled() ) {
+            	if ( !checkObjectNullOrEmpty(
+            			sourceChooser.getCatalogComboBox().getSelectedItem(),
+            			"Source Catalog" ) )
+            		return;
+            	if ( !checkStringNullOrEmpty(
+            			((SQLCatalog)sourceChooser.getCatalogComboBox().getSelectedItem()).getName(),
+            			"Source Catalog Name" ) )
+            		return;
+            }
+
+            if ( sourceChooser.getSchemaComboBox().isEnabled() ) {
+            	if ( !checkObjectNullOrEmpty(
+            			sourceChooser.getSchemaComboBox().getSelectedItem(),
+            			"Source Schema"))
+            		return;
+            	if ( !checkStringNullOrEmpty(
+            			((SQLSchema)sourceChooser.getSchemaComboBox().getSelectedItem()).getName(),
+            			"Source Schema Name"))
+            		return;
+            }
+
+            if ( sourceChooser.getCatalogComboBox().isEnabled() &&
+            		sourceChooser.getCatalogComboBox().getSelectedItem() != null ) {
+            	plMatch.setTableCatalog(((SQLCatalog)sourceChooser.getCatalogComboBox().getSelectedItem()).getName());
+            }
+
+            if ( sourceChooser.getSchemaComboBox().isEnabled() &&
+            		sourceChooser.getSchemaComboBox().getSelectedItem() != null ) {
+            	plMatch.setTableOwner(((SQLSchema)sourceChooser.getSchemaComboBox().getSelectedItem()).getName());
+            }
+            plMatch.setMatchType(type.getSelectedItem().toString());
+            plMatch.setCreateDate(new Date(System.currentTimeMillis()));
+            plMatch.setMatchDesc(desc.getText());
+            plMatch.setMatchTable(
+            		((SQLTable) sourceChooser.getTableComboBox().
+            				getSelectedItem()).getName());
+
+			String id = matchId.getText().trim();
+			if ( id == null || id.length() == 0 ) {
+				StringBuffer s = new StringBuffer();
+				s.append("MATCH_");
+				if ( plMatch.getTableCatalog() != null &&
+						plMatch.getTableCatalog().length() > 0 ) {
+					s.append(plMatch.getTableCatalog()).append("_");
+				}
+				if ( plMatch.getTableOwner() != null &&
+						plMatch.getTableOwner().length() > 0 ) {
+					s.append(plMatch.getTableOwner()).append("_");
+				}
+				s.append(plMatch.getMatchTable());
+				id = s.toString();
+				if ( MatchMakerFrame.getMainInstance().getMatchByName(id) == null )
+					matchId.setText(id);
+			}
+
             if ( !checkStringNullOrEmpty(matchId.getText(),"Match ID") )
                 return;
-            if ( !checkObjectNullOrEmpty(sourceTableOwner.getSelectedItem(),"Source Table Owner") )
-                return;
-            if ( !checkStringNullOrEmpty((String) sourceTableOwner.getSelectedItem(),"Source Table Owner") )
-                return;
-            if ( !checkObjectNullOrEmpty(sourceTableName.getSelectedItem(),"Source Table Name") )
-                return;
-            if ( !checkStringNullOrEmpty(((MySimpleTable) sourceTableName.getSelectedItem()).getName(),"Source Table Name") )
-                return;
 
-
-
-            if ( plMatch == null ) {
-                plMatch = new PlMatch(
-                        matchId.getText(),
-                        type.getSelectedItem().toString() );
-                plMatch.setCreateDate(new Date(System.currentTimeMillis()));
-            }
+            plMatch.setMatchId(matchId.getText());
             logger.debug("Saving Match:" + plMatch.getMatchId());
 
-            plMatch.setMatchDesc(desc.getText());
-            plMatch.setTableOwner((String) sourceTableOwner.getSelectedItem());
-            plMatch.setMatchTable(((MySimpleTable) sourceTableName.getSelectedItem()).getName());
-            if ( uniqueIndex.getSelectedItem() != null ) {
-                plMatch.setPkColumn(((MySimpleIndex)uniqueIndex.getSelectedItem()).getName());
+
+            if ( sourceChooser.getUniqueKeyComboBox().getSelectedItem() != null ) {
+                plMatch.setPkColumn(
+                		((SQLIndex)sourceChooser.getUniqueKeyComboBox().getSelectedItem()).getName());
             }
-            plMatch.setFilter(filterPanel.getFilterTextArea().getText());
-            if ( resultTableOwner.getSelectedItem() == null ) {
-                resultTableOwner.setSelectedItem(sourceTableOwner.getSelectedItem());
+            plMatch.setFilter(filter.getText());
+
+            if ( resultChooser.getCatalogComboBox().isEnabled() &&
+            		resultChooser.getCatalogComboBox().getSelectedItem() == null ) {
+            	SQLDatabase db = resultChooser.getDb();
+            	try {
+					SQLCatalog cat = db.getCatalogByName(
+							((SQLCatalog)sourceChooser.getCatalogComboBox().
+									getSelectedItem()).getName());
+					resultChooser.getCatalogComboBox().setSelectedItem(cat);
+				} catch (ArchitectException e1) {
+					ASUtils.showExceptionDialogNoReport(MatchEditor.this,
+							"Unknown Database error", e1);
+				}
             }
-            if ( resultTableOwner.getSelectedItem() != null ) {
-                plMatch.setResultsTableOwner(resultTableOwner.getSelectedItem().toString());
+            if ( resultChooser.getCatalogComboBox().isEnabled() &&
+            		resultChooser.getCatalogComboBox().getSelectedItem() != null ) {
+                plMatch.setResultsTableCatalog(
+                		((SQLCatalog)resultChooser.getCatalogComboBox().getSelectedItem()).getName());
+            }
+
+            if ( resultChooser.getSchemaComboBox().isEnabled() &&
+            		resultChooser.getSchemaComboBox().getSelectedItem() == null ) {
+            	SQLSchema resultSchema = null;
+
+            	SQLDatabase db = resultChooser.getDb();
+            	SQLSchema sourceSchema =
+            		(SQLSchema) sourceChooser.getSchemaComboBox().getSelectedItem();
+            	SQLCatalog sourceCatalog =
+            		(SQLCatalog) sourceChooser.getCatalogComboBox().getSelectedItem();
+            	try {
+					if ( db.isSchemaContainer() ) {
+						resultSchema = db.getSchemaByName(sourceSchema.getName());
+					} else {
+						SQLCatalog cat = db.getCatalogByName(sourceCatalog.getName());
+						resultSchema = cat.getSchemaByName(sourceSchema.getName());
+					}
+				} catch (ArchitectException e1) {
+					ASUtils.showExceptionDialogNoReport(MatchEditor.this,
+							"Unknown Database error", e1);
+				}
+            	resultChooser.getSchemaComboBox().setSelectedItem(resultSchema);
+            }
+
+            if ( resultChooser.getSchemaComboBox().isEnabled() &&
+            		resultChooser.getSchemaComboBox().getSelectedItem() != null ) {
+                plMatch.setResultsTableOwner(
+                		((SQLSchema)resultChooser.getSchemaComboBox().getSelectedItem()).getName());
             }
 
             String trimedValue = null;
@@ -182,9 +286,7 @@ public class MatchEditor extends JFrame {
             if ( resultTable != null ) {
                 trimedValue = resultTable.trim();
             }
-            if ( resultTable == null ||
-                    trimedValue == null ||
-                    trimedValue.length() == 0 ) {
+            if ( trimedValue == null || trimedValue.length() == 0 ) {
                 resultTableName.setText("MM_"+plMatch.getMatchId());
             }
 
@@ -257,39 +359,43 @@ public class MatchEditor extends JFrame {
 
 
 
+
+
+
     private void buildUI() {
 
+    	sourceChooser = new SQLObjectChooser(MatchEditor.this,
+        		MatchMakerFrame.getMainInstance().getUserSettings().getConnections());
+        xrefChooser = new SQLObjectChooser(MatchEditor.this,
+        		MatchMakerFrame.getMainInstance().getUserSettings().getConnections());
+        resultChooser = new SQLObjectChooser(MatchEditor.this,
+        		MatchMakerFrame.getMainInstance().getUserSettings().getConnections());
 
-
-        List <String>tablePath = MatchMakerFrame.getMainInstance().getTablePaths();
-        List <MySimpleTable>tableName = MatchMakerFrame.getMainInstance().getTables();
-    	matchId = new JTextField();
-    	
-    	
-    	folderList = new JComboBox(new FolderComboBoxModel<PlFolder>(MatchMakerFrame.getMainInstance().getFolders()));
-    	desc = new JTextArea();
+        SQLDatabase loginDB = MatchMakerFrame.getMainInstance().getDatabase();
+        ArchitectDataSource ds;
+        if ( loginDB != null ) {
+        	PlDotIni ini = MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni();
+        	ds = ini.getDataSource(loginDB.getDataSource().getName());
+        	sourceChooser.getDataSourceComboBox().setSelectedItem(ds);
+        	resultChooser.getDataSourceComboBox().setSelectedItem(ds);
+        	// no connection no folders
+        	folderComboBox.setModel(
+        			new FolderComboBoxModel<PlFolder>(MatchMakerFrame.getMainInstance().getFolders()));
+        }
 
     	List<String> types = new ArrayList<String>();
     	for ( MatchType mt : MatchType.values() ) {
     		types.add(mt.getName());
     	}
-    	type = new JComboBox(new DefaultComboBoxModel(types.toArray()));
+    	type.setModel(new DefaultComboBoxModel(types.toArray()));
 
-    	sourceTableOwner = new JComboBox(new DefaultComboBoxModel(tablePath.toArray()));
-    	sourceTableName = new JComboBox(new DefaultComboBoxModel(tableName.toArray()));
-        sourceTableOwner.addItemListener(
-                new TableOwnerListChangeListener(
-                        sourceTableOwner,
-                        sourceTableName));
-        uniqueIndex = new JComboBox();
-        filterPanel = new FilterComponentsPanel();
-        sourceTableName.addItemListener(new TableNameListChangeListener(
-                sourceTableName,
-                uniqueIndex,
-                filterPanel.getFilterTextArea() ));
-    	resultTableOwner = new JComboBox(new DefaultComboBoxModel(tablePath.toArray()));
-    	resultTableName = new JTextField();
-    	viewBuilder = new JButton(viewBuilderAction);    	
+        sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e) {
+				filter.setText("");
+			}});
+
+    	viewBuilder = new JButton(viewBuilderAction);
+    	editFilter = new JButton(editFilterAction);
     	createResultTable = new JButton(createResultTableAction);
 
     	saveMatch = new JButton(saveAction);
@@ -300,55 +406,117 @@ public class MatchEditor extends JFrame {
     	validationStatus = new JButton(validationStatusAction);
     	validateMatch = new JButton(validateMatchAction);
 
-    	matchSourceTableOwnerLabel = new JLabel("Match Table Owner:");
-    	matchSourceTableNameLabel = new JLabel("Table:");
 
     	if ( plMatch != null ) {
     		matchId.setText(plMatch.getMatchId());
     		if ( plMatch.getFolders() != null && plMatch.getFolders().size() > 0 ) {
     			PlFolder f = (PlFolder) plMatch.getFolders().toArray()[0];
 	    		if ( f != null ) {
-	    			folderList.setSelectedItem(f);
+	    			folderComboBox.setSelectedItem(f);
 	    		}
     		}
     		desc.setText(plMatch.getMatchDesc());
     		type.setSelectedItem(plMatch.getMatchType());
-            sourceTableOwner.setSelectedItem(plMatch.getTableOwner());
-            MySimpleTable t = MatchMakerFrame.getMainInstance().getTable(plMatch.getTableOwner(),plMatch.getMatchTable());
-            sourceTableName.setSelectedItem(t);
 
-            System.out.println("pk column:"+plMatch.getPkColumn());
+    		SQLTable table = null;
+			try {
+				SQLDatabase db = sourceChooser.getDb();
+				if ( db != null ) {
+					table = db.getTableByName(
+							plMatch.getTableCatalog(),
+							plMatch.getTableOwner(),
+							plMatch.getMatchTable());
+				}
+			} catch (ArchitectException e2) {
+				ASUtils.showExceptionDialogNoReport(
+						MatchEditor.this,
+						"Unable to read Source Table"+
+						DDLUtils.toQualifiedName(
+								plMatch.getTableCatalog(),
+								plMatch.getTableOwner(),
+								plMatch.getMatchTable())+
+						" from Database!", e2 );
+			}
 
-            filterPanel.getFilterTextArea().setText(plMatch.getFilter());
-            resultTableOwner.setSelectedItem(plMatch.getResultsTableOwner());
+    		if ( table == null ) {
+    			JOptionPane.showMessageDialog(MatchEditor.this,
+    					"Table [" + DDLUtils.toQualifiedName(
+    							plMatch.getTableCatalog(),
+    		    				plMatch.getTableOwner(),
+    		    				plMatch.getMatchTable()) + "]" +
+    					" Has been removed.",
+    					"Source table not found!",
+    					JOptionPane.INFORMATION_MESSAGE );
+    		} else {
+	    		SQLCatalog cat = table.getCatalog();
+	    		SQLSchema sch = table.getSchema();
+	    		if ( cat != null ) {
+	    			sourceChooser.getCatalogComboBox().setSelectedItem(cat);
+	    		}
+	    		if ( sch != null ) {
+	    			sourceChooser.getSchemaComboBox().setSelectedItem(sch);
+	    		}
+	    		sourceChooser.getTableComboBox().setSelectedItem(table);
+
+	    		String pkName = plMatch.getPkColumn();
+	    		if (  pkName != null && pkName.length() > 0 ) {
+	    			SQLIndex pk = null;
+					try {
+						pk = table.getIndexByName(pkName);
+					} catch (ArchitectException e1) {
+						ASUtils.showExceptionDialogNoReport(
+								MatchEditor.this,
+								"Unable to get table unique indices!", e1 );
+					}
+	    			if ( pk != null ) {
+	    				sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
+	    			}
+	    		}
+    		}
+
+            filter.setText(plMatch.getFilter());
+
+            SQLTable resultTable = null;
+			try {
+				SQLDatabase db = resultChooser.getDb();
+				if ( db != null ) {
+					resultTable = db.getTableByName(
+							plMatch.getResultsTableCatalog(),
+							plMatch.getResultsTableOwner(),
+							plMatch.getResultsTable());
+				}
+			} catch (ArchitectException e1) {
+				ASUtils.showExceptionDialogNoReport(
+						MatchEditor.this,
+						"Unable to read Result Table"+
+						DDLUtils.toQualifiedName(
+								plMatch.getResultsTableCatalog(),
+								plMatch.getResultsTableOwner(),
+								plMatch.getResultsTable())+
+						" from Database!", e1 );
+			}
+
+			if ( resultTable != null ) {
+	            SQLCatalog cat = resultTable.getCatalog();
+	    		SQLSchema sch = resultTable.getSchema();
+	    		if ( cat != null ) {
+	    			resultChooser.getCatalogComboBox().setSelectedItem(cat);
+	    		}
+	    		if ( sch != null ) {
+	    			resultChooser.getSchemaComboBox().setSelectedItem(sch);
+	    		}
+			}
             resultTableName.setText(plMatch.getResultsTable());
 
-            if ( t == null ) {
-                JOptionPane.showMessageDialog(MatchEditor.this,
-                        "Table [" + plMatch.getTableOwner() + "]"+
-                        "[" + plMatch.getMatchTable() + "]" +
-                        " Has been removed.",
-                        "source table not found!",
-                        JOptionPane.INFORMATION_MESSAGE );
-            } else {
-                MySimpleIndex idx = t.getIndexByName(plMatch.getPkColumn());
-                if ( idx != null ) {
-                    uniqueIndex.setSelectedItem(idx);
-                }
-            }
     	} else if ( plFolder != null ) {
-                folderList.setSelectedItem(plFolder);
+                folderComboBox.setSelectedItem(plFolder);
         }
 
-        if ( plMatch == null ) {
-            sourceTableOwner.setSelectedItem(null);
-            sourceTableName.setSelectedItem(null);
-            resultTableOwner.setSelectedItem(null);
-        }
 
     	FormLayout layout = new FormLayout(
 				"4dlu,fill:min(70dlu;default),4dlu,fill:200dlu:grow, 4dlu,min(60dlu;default),10dlu, 66dlu,4dlu", // columns
-				"10dlu,12dlu,4dlu,12dlu,4dlu,24dlu,4dlu,12dlu,   16dlu,12dlu,4dlu,12dlu,4dlu,12dlu,6dlu,pref,   16dlu,12dlu,4dlu,12dlu,10dlu"); // rows
+				"10dlu,12dlu,4dlu,12dlu,4dlu,24dlu,4dlu,12dlu,   16dlu,12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,12dlu,   4dlu,24dlu,  16dlu,12dlu,4dlu,12dlu,4dlu,12dlu,10dlu"); // rows
+    	//		 1     2     3    4     5    6     7    8        9     10    11   12    13   14    15   16       17    18     19    20    21   22    23   24    25
 
 		PanelBuilder pb;
 
@@ -362,28 +530,35 @@ public class MatchEditor extends JFrame {
 		pb.add(new JLabel("Type:"), cc.xy(2,8,"r,c"));
 
 		pb.add(matchId, cc.xy(4,2));
-		pb.add(folderList, cc.xy(4,4));
+		pb.add(folderComboBox, cc.xy(4,4));
 		pb.add(new JScrollPane(desc), cc.xy(4,6,"f,f"));
 		pb.add(type, cc.xy(4,8));
 
-		pb.add(matchSourceTableOwnerLabel, cc.xy(2,10,"r,c"));
-		pb.add(matchSourceTableNameLabel, cc.xy(2,12,"r,c"));
-		pb.add(new JLabel("Unique Index:"), cc.xy(2,14,"r,t"));
-		
+		pb.add(sourceChooser.getCatalogTerm(), cc.xy(2,10,"r,c"));
+		pb.add(sourceChooser.getSchemaTerm(), cc.xy(2,12,"r,c"));
+		pb.add(new JLabel("Table Name:"), cc.xy(2,14,"r,c"));
+		pb.add(new JLabel("Unique Index:"), cc.xy(2,16,"r,t"));
+		pb.add(new JLabel("Filter:"), cc.xy(2,18,"r,t"));
 
-		pb.add(sourceTableOwner, cc.xy(4,10));
-		pb.add(sourceTableName, cc.xy(4,12));
-		pb.add(uniqueIndex, cc.xy(4,14,"f,f"));
-		pb.add(filterPanel, cc.xyw(2,16,5,"f,f"));
+		pb.add(sourceChooser.getCatalogComboBox(), cc.xy(4,10));
+		pb.add(sourceChooser.getSchemaComboBox(), cc.xy(4,12));
+		pb.add(sourceChooser.getTableComboBox(), cc.xy(4,14));
+		pb.add(sourceChooser.getUniqueKeyComboBox(), cc.xy(4,16,"f,f"));
+		pb.add(new JScrollPane(filter), cc.xy(4,18,"f,f"));
 
-		pb.add(new JLabel("Result Table Owner:"), cc.xy(2,18,"r,c"));
-		pb.add(new JLabel("Table Name:"), cc.xy(2,20,"r,c"));
-		pb.add(resultTableOwner, cc.xy(4,18));
-		pb.add(resultTableName, cc.xy(4,20));
+		pb.add(resultChooser.getCatalogTerm(), cc.xy(2,20,"r,c"));
+		pb.add(resultChooser.getSchemaTerm(), cc.xy(2,22,"r,c"));
+		pb.add(new JLabel("Table Name:"), cc.xy(2,24,"r,c"));
+
+		pb.add(resultChooser.getCatalogComboBox(), cc.xy(4,20));
+		pb.add(resultChooser.getSchemaComboBox(), cc.xy(4,22));
+		pb.add(resultTableName, cc.xy(4,24));
 
 
-		pb.add(viewBuilder, cc.xy(6,10));		
-		pb.add(createResultTable, cc.xywh(6,18,1,3));
+
+		pb.add(viewBuilder, cc.xy(6,10,"f,f"));
+		pb.add(editFilter, cc.xy(6,18,"f,f"));
+		pb.add(createResultTable, cc.xywh(6,20,1,3));
 
 		ButtonStackBuilder bb = new ButtonStackBuilder();
 		bb.addGridded(saveMatch);
