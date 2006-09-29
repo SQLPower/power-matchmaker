@@ -16,6 +16,10 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
 
      private PlMatchCriteriaId id;
      private PlMatchGroup plMatchGroup;
+     /**
+      * True if the search should be case insensitive
+      * False if the search should be case sensitive
+      */
      private boolean caseSensitiveInd;
      private String suppressChar;
      private boolean soundInd;
@@ -343,5 +347,4 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
 
 
 }
-
 

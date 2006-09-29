@@ -588,7 +588,8 @@
 			/>
 	</set>
 	<set name="folders" fetch="subselect" table="PL_FOLDER_DETAIL">
-           <key column="OBJECT_NAME"/>
+           <key> <column name="OBJECT_NAME"/>
+           </key>
            <many-to-many class="ca.sqlpower.matchmaker.hibernate.PlFolder" column="FOLDER_NAME"/>
     </set>
 

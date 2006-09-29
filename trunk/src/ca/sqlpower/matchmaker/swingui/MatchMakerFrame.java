@@ -30,6 +30,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -52,9 +53,12 @@ import ca.sqlpower.architect.swingui.action.HelpAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
+import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
 import ca.sqlpower.matchmaker.hibernate.home.DefParamHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
+import ca.sqlpower.matchmaker.hibernate.home.PlMatchTranslateHome;
+import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
@@ -84,7 +88,8 @@ public class MatchMakerFrame extends JFrame {
 	protected JMenuBar menuBar = null;
 	protected JTree tree = null;
     private JMenu databaseMenu;
-    private String lastExportAccessPath = null;
+    private PlMatchGroupPanel plMatchGroupPanel = new PlMatchGroupPanel(null);
+	private String lastExportAccessPath = null;
 	protected AboutAction aboutAction;
  	protected  JComponent contentPane;
 
@@ -200,6 +205,7 @@ public class MatchMakerFrame extends JFrame {
 			f.setVisible(true);
 		}
 	};
+	
 
 	private Action databaseConnectionAction = new AbstractAction("Database Connection...") {
 
@@ -210,9 +216,13 @@ public class MatchMakerFrame extends JFrame {
 			dm.setVisible(true);
 
 		}};
+		
 
 	private List<PlMatch> matches;
 	private List<PlFolder> folders;
+	private List<PlMatchTranslate> translations;
+	private List<String> tablePaths;
+
     private SQLDatabase database;
 
 
@@ -231,6 +241,7 @@ public class MatchMakerFrame extends JFrame {
 	    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	    architectSession = ArchitectSession.getInstance();
 	    init();
+
 	}
 
 	private void init() throws ArchitectException {
@@ -360,6 +371,7 @@ public class MatchMakerFrame extends JFrame {
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
 		toolsMenu.add(tableQueryAction);
+		toolsMenu.add(new EditTranslateAction(getMainInstance().getOwner()));
         toolsMenu.add(new SQLRunnerAction());
 		menuBar.add(toolsMenu);
 
@@ -402,8 +414,12 @@ public class MatchMakerFrame extends JFrame {
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel());
-		tree.addMouseListener(new MatchMakerTreeMouseListener());
-		cp.add(new JScrollPane(tree));
+		tree.addMouseListener(new MatchMakerTreeMouseListener(plMatchGroupPanel));
+		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		
+		split.setRightComponent(plMatchGroupPanel );
+		split.setLeftComponent(new JScrollPane(tree));
+		cp.add(split);
 
 		Rectangle bounds = new Rectangle();
 		bounds.x = prefs.getInt(SwingUserSettings.MAIN_FRAME_X, 40);
@@ -433,10 +449,11 @@ public class MatchMakerFrame extends JFrame {
 			}
 			matches = new ArrayList<PlMatch>(matchSet);
 			Collections.sort(matches);
-			Collections.sort(folders);
-
+			Collections.sort(folders); 
+			PlMatchTranslateHome translateHome = new PlMatchTranslateHome();
+			translations = new ArrayList<PlMatchTranslate>(translateHome.findAll());
+			System.out.println(translations);
 			DefParamHome defHome = new DefParamHome();
-
 		}
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
         setDatabase(db);
@@ -635,6 +652,17 @@ public class MatchMakerFrame extends JFrame {
 	public void setLastExportAccessPath(String lastExportAccessPath) {
 		if (this.lastExportAccessPath != lastExportAccessPath) {
 			this.lastExportAccessPath = lastExportAccessPath;
+			//TODO fire event
+		}
+	}
+
+	public List<PlMatchTranslate> getTranslations() {
+		return translations;
+	}
+
+	public void setTranslations(List<PlMatchTranslate> translations) {
+		if (this.translations != translations) {
+			this.translations = translations;
 			//TODO fire event
 		}
 	}

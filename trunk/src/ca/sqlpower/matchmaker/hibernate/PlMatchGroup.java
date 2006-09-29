@@ -27,6 +27,10 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
      private Date lastUpdateDate;
      private String lastUpdateUser;
      private String filterCriteria;
+     /**
+      * true if the match should be deactivated
+      * false if it should be active
+      */
      private boolean activeInd;
      private String lastUpdateOsUser;
      private Set<PlMatchCriteria> plMatchCriterias = new TreeSet<PlMatchCriteria>();
@@ -266,5 +270,4 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
 	}
 
 }
-
 
