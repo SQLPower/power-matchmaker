@@ -22,6 +22,9 @@
 	<classpathentry kind="lib" path="lib/jta.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/c3p0-0.9.0.jar"/>
+	<classpathentry kind="lib" path="buildlib/junit-addons-1.4.jar"/>
+	<classpathentry kind="lib" path="buildlib/gsbase-2.0.1.jar"/>
+	<classpathentry kind="lib" path="buildlib/diasparsoftToolkit-0.24.jar"/>
 	<classpathentry kind="src" path="regress"/>
 	<classpathentry sourcepath="ECLIPSE_HOME/plugins/org.eclipse.jdt.source_3.1.1/src/org.junit_3.8.1/junitsrc.zip" kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="src" path="testbed"/>
