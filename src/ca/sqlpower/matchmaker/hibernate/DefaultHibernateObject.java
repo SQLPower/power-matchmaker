@@ -40,7 +40,8 @@ public abstract class DefaultHibernateObject implements Comparable {
 	}
 
 	@Override
-	 public abstract int hashCode();
+	public abstract int hashCode();
+
 	@Override
 	public abstract boolean equals(Object obj);
 }
