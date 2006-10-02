@@ -54,7 +54,6 @@ import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
-import ca.sqlpower.matchmaker.hibernate.home.DefParamHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchTranslateHome;
@@ -225,9 +224,7 @@ public class MatchMakerFrame extends JFrame {
 	private List<PlMatch> matches;
 	private List<PlFolder> folders;
 	private List<PlMatchTranslate> translations;
-	private List<String> tablePaths;
-
-    private SQLDatabase database;
+	private SQLDatabase database;
 
 
 	/**
@@ -458,7 +455,6 @@ public class MatchMakerFrame extends JFrame {
 			PlMatchTranslateHome translateHome = new PlMatchTranslateHome();
 			translations = new ArrayList<PlMatchTranslate>(translateHome.findAll());
 			System.out.println(translations);
-			DefParamHome defHome = new DefParamHome();
 		}
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
         setDatabase(db);
