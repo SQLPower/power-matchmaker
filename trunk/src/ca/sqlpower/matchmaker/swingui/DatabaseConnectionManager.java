@@ -78,7 +78,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			if ( selectedRow == -1 ) {
 				return;
 			}
-			if (getNewConnectionDialog() != null) {
+			if (getNewConnectionDialog() != null && getNewConnectionDialog().isVisible()) {
 				getNewConnectionDialog().requestFocus();
 				return;
 			}
@@ -154,7 +154,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 	private Action cancelAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
-			if ( getNewConnectionDialog() != null )
+			if ( getNewConnectionDialog() != null && getNewConnectionDialog().isVisible() )
 				return;
 			DatabaseConnectionManager.this.setVisible(false);
 		}};
