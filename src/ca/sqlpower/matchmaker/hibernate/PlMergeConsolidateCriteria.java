@@ -48,16 +48,16 @@ public class PlMergeConsolidateCriteria  implements java.io.Serializable {
        this.lastUpdateOsUser = lastUpdateOsUser;
     }
 
-    public PlMergeConsolidateCriteria(PlMergeConsolidateCriteria orig) {
-    	// Copy all the "simple" properties first
+    public PlMergeConsolidateCriteria copyOf() {
     	try {
-			BeanUtils.copyProperties(orig, this);
-		} catch (Exception e) {
-			throw new RuntimeException("PlMatch Copy Constructor caught " + e, e);
-		}
-		// Now copy the non-trivial parts
-		id = new PlMergeConsolidateCriteriaId(orig.id);
-	    plMatch = new PlMatch(orig.plMatch);
+    		PlMergeConsolidateCriteria copy = (PlMergeConsolidateCriteria) BeanUtils.cloneBean(this);
+
+    		// Now copy the non-trivial parts
+    		copy.id = id.copyOf();
+    		return copy;
+    	} catch (Exception e) {
+    		throw new RuntimeException("Could not copy");
+    	}
 	}
 
 	// Property accessors

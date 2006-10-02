@@ -25,10 +25,9 @@ public class PlMatchGroupId  implements java.io.Serializable {
        this.groupId = groupId;
     }
 
-    /** full constructor */
-    public PlMatchGroupId(PlMatchGroupId orig) {
-       this.matchId = orig.matchId;
-       this.groupId = orig.groupId;
+    /** copy constructor */
+    public PlMatchGroupId copyOf() {
+    	return new PlMatchGroupId(matchId, groupId);
     }
 
     // Property accessors

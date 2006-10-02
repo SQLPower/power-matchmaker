@@ -8,7 +8,7 @@ package ca.sqlpower.matchmaker.hibernate;
  */
 public class PlMatchWordCount  implements java.io.Serializable {
 
-    // Fields    
+    // Fields
 
      private PlMatchWordCountId id;
 
@@ -22,12 +22,17 @@ public class PlMatchWordCount  implements java.io.Serializable {
     public PlMatchWordCount(PlMatchWordCountId id) {
        this.id = id;
     }
-   
+
+    /** Copy constructor */
+    public PlMatchWordCount copyOf() {
+    	return new PlMatchWordCount(id.copyOf());
+    }
+
     // Property accessors
     public PlMatchWordCountId getId() {
         return this.id;
     }
-    
+
     public void setId(PlMatchWordCountId id) {
         this.id = id;
     }

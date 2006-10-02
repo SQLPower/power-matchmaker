@@ -8,7 +8,7 @@ package ca.sqlpower.matchmaker.hibernate;
  */
 public class PlMatchPurge  implements java.io.Serializable {
 
-    // Fields    
+    // Fields
 
      private String purgeWord;
 
@@ -22,12 +22,17 @@ public class PlMatchPurge  implements java.io.Serializable {
     public PlMatchPurge(String purgeWord) {
        this.purgeWord = purgeWord;
     }
-   
+
+    /** Copy factory */
+    public PlMatchPurge copyOf() {
+    	return new PlMatchPurge(purgeWord);
+    }
+
     // Property accessors
     public String getPurgeWord() {
         return this.purgeWord;
     }
-    
+
     public void setPurgeWord(String purgeWord) {
         this.purgeWord = purgeWord;
     }

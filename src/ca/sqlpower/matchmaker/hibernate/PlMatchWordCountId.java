@@ -35,6 +35,10 @@ public class PlMatchWordCountId  implements java.io.Serializable {
        this.wordCount = wordCount;
     }
 
+    public PlMatchWordCountId copyOf() {
+    	return new PlMatchWordCountId(catalog, owner, tableName, columnName, columnWord, wordCount);
+    }
+
     // Property accessors
     public String getOwner() {
         return this.owner;

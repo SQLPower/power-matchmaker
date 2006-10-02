@@ -49,26 +49,28 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
         this.plMatch = plMatch;
     }
 
-	/** copy constructor */
-    public PlMatchGroup(PlMatchGroupId id, PlMatch plMatch, PlMatchGroup group) {
+    /** partial constructor */
+    public PlMatchGroup(PlMatchGroupId id, PlMatch plMatch, PlMatchGroup model) {
     	this();
-        this.id = new PlMatchGroupId(id);
+        this.id = id;
         this.plMatch = plMatch;
-        plMatch.getPlMatchGroups().add(this);
-        this.description = group.description;
-        this.matchPercent = group.matchPercent;
-        this.lastUpdateDate = group.lastUpdateDate;
-        this.lastUpdateUser = group.lastUpdateUser;
-        this.filterCriteria = group.filterCriteria;
-        this.activeInd = group.activeInd;
-        this.lastUpdateOsUser = group.lastUpdateOsUser;
+        plMatch.getPlMatchGroups().add(model);
+    }
 
+    /**
+     * Deep copy of this object
+     * @return A deep copy of the PlXXX object
+     */
+    public PlMatchGroup copyOf() {
+    	try {
+    		PlMatchGroup copy = (PlMatchGroup) BeanUtils.cloneBean(this);
 
-        for (PlMatchCriteria criterion: group.plMatchCriterias) {
-        	this.plMatchCriterias.add(new PlMatchCriteria(new PlMatchCriteriaId(id.getMatchId(),id.getGroupId(),criterion.getId().getColumnName()),this,criterion));
-        }
-        System.out.println(plMatchCriterias);
-
+        copy.id = id.copyOf();
+        copy.plMatch = plMatch.copyOf();
+    	return copy;
+    	} catch (Exception e) {
+    		throw new RuntimeException("Could not copy", e);
+    	}
     }
 
     /** full constructor */
@@ -85,6 +87,7 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
        this.plMatchCriterias = plMatchCriterias;
     }
 
+
     public PlMatchGroup(PlMatchGroup orig) {
     	// Copy all the "simple" properties first
     	try {
@@ -97,7 +100,7 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
 		// empty them, and re-populate using copy constructors for each object
 		plMatchCriterias.clear();
 		for (PlMatchCriteria p : orig.plMatchCriterias) {
-			plMatchCriterias.add(new PlMatchCriteria(p));
+			plMatchCriterias.add(p.copyOf());
 		}
 	}
 

@@ -16,7 +16,6 @@ public class PlFolderDetailId  implements java.io.Serializable {
      private String objectType;
      private String objectName;
 
-
      // Constructors
 
     /** default constructor */
@@ -31,7 +30,12 @@ public class PlFolderDetailId  implements java.io.Serializable {
        this.objectName = objectName;
     }
 
-    // Property accessors
+    /** copy constructor */
+    public PlFolderDetailId copyOf() {
+    	return new PlFolderDetailId(folderName, objectType, objectName);
+	}
+
+	// Property accessors
     public String getFolderName() {
         return this.folderName;
     }

@@ -29,6 +29,10 @@ public class PlFolderDetailIdTest extends ValueObjectEqualsTest {
 		assertEquals("someOjectName", targ.getObjectName());
 	}
 
+	public void testCopyConstructor() {
+		assertEquals("copy constructor test", targ, targ.copyOf());
+	}
+
 	public void testUsingEqualsTester() throws Throwable {
 
 		// With default values
