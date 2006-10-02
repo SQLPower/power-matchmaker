@@ -37,7 +37,7 @@ public class NewDatabaseConnectionAction extends AbstractAction {
 
 	public void actionPerformed(ActionEvent e) {
 		if ( uniDialogParent != null ) {
-			if (uniDialogParent.getNewConnectionDialog() != null) {
+			if (uniDialogParent.getNewConnectionDialog() != null && uniDialogParent.getNewConnectionDialog().isVisible()) {
 				uniDialogParent.getNewConnectionDialog().requestFocus();
 				return;
 			}
