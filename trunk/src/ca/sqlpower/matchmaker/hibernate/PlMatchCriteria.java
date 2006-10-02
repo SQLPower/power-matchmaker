@@ -126,6 +126,7 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
     		// Now copy the non-trivial parts
     		copy.id = id.copyOf();
     	    copy.plMatchGroup = plMatchGroup.copyOf();
+    	    copy.lastUpdateDate = new Date(System.currentTimeMillis());
     	    return copy;
 		} catch (Exception e) {
 			throw new RuntimeException("Could not Copy", e);

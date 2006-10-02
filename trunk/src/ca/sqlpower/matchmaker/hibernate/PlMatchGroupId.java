@@ -52,8 +52,13 @@ public class PlMatchGroupId  implements java.io.Serializable {
 		 if ( !(other instanceof PlMatchGroupId) ) return false;
 		 PlMatchGroupId castOther = ( PlMatchGroupId ) other;
 
-		 return ( (this.getMatchId()==castOther.getMatchId()) || ( this.getMatchId()!=null && castOther.getMatchId()!=null && this.getMatchId().equals(castOther.getMatchId()) ) )
- && ( (this.getGroupId()==castOther.getGroupId()) || ( this.getGroupId()!=null && castOther.getGroupId()!=null && this.getGroupId().equals(castOther.getGroupId()) ) );
+		 return ( 
+				 (this.getMatchId()==castOther.getMatchId()) 
+				 	|| ( this.getMatchId()!=null && castOther.getMatchId()!=null 
+				 			&& this.getMatchId().equals(castOther.getMatchId()) ) )
+				 && ( (this.getGroupId()==castOther.getGroupId()) 
+						 || ( this.getGroupId()!=null && castOther.getGroupId()!=null 
+								 && this.getGroupId().equals(castOther.getGroupId()) ) );
    }
 
    public int hashCode() {
@@ -67,5 +72,4 @@ public class PlMatchGroupId  implements java.io.Serializable {
 
 
 }
-
 
