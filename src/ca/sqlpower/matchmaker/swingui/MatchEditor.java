@@ -328,7 +328,9 @@ public class MatchEditor extends JFrame {
 
 	private Action runMatchAction = new AbstractAction("Run Match") {
 		public void actionPerformed(ActionEvent e) {
-			// TODO:
+			RunMatchPanel p = new RunMatchPanel(plMatch);
+			p.pack();
+			p.setVisible(true);
 		}};
 
 	private Action validationStatusAction = new AbstractAction("Validation Status") {
