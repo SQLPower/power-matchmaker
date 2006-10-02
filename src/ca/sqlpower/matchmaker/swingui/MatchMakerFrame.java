@@ -147,8 +147,12 @@ public class MatchMakerFrame extends JFrame {
 	protected Action runMatchAction = new AbstractAction("Run Match") {
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-
+			PlMatch match = ArchitectUtils.getTreeObject(getTree(),PlMatch.class);
+			if ( match == null )
+				return;
+		    RunMatchPanel r = new RunMatchPanel(match);
+			r.pack();
+			r.setVisible(true);
 		}
 
 	};
@@ -205,7 +209,7 @@ public class MatchMakerFrame extends JFrame {
 			f.setVisible(true);
 		}
 	};
-	
+
 
 	private Action databaseConnectionAction = new AbstractAction("Database Connection...") {
 
@@ -216,7 +220,7 @@ public class MatchMakerFrame extends JFrame {
 			dm.setVisible(true);
 
 		}};
-		
+
 
 	private List<PlMatch> matches;
 	private List<PlFolder> folders;
@@ -347,7 +351,8 @@ public class MatchMakerFrame extends JFrame {
 		matchesMenu.add(newMatchAction);
 		matchesMenu.add(editMatchAction);
 		matchesMenu.add("Delete");
-		matchesMenu.add(".....");
+		matchesMenu.addSeparator();
+		matchesMenu.add(runMatchAction);
 		matchesMenu.addSeparator();
 		matchesMenu.add(new JMenuItem(new PlMatchImportAction()));
 		matchesMenu.add(new JMenuItem(new PlMatchExportAction(null)));
@@ -416,7 +421,7 @@ public class MatchMakerFrame extends JFrame {
 		tree = new JTree(new MatchMakerTreeModel());
 		tree.addMouseListener(new MatchMakerTreeMouseListener(plMatchGroupPanel));
 		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		
+
 		split.setRightComponent(plMatchGroupPanel );
 		split.setLeftComponent(new JScrollPane(tree));
 		cp.add(split);
@@ -449,7 +454,7 @@ public class MatchMakerFrame extends JFrame {
 			}
 			matches = new ArrayList<PlMatch>(matchSet);
 			Collections.sort(matches);
-			Collections.sort(folders); 
+			Collections.sort(folders);
 			PlMatchTranslateHome translateHome = new PlMatchTranslateHome();
 			translations = new ArrayList<PlMatchTranslate>(translateHome.findAll());
 			System.out.println(translations);
