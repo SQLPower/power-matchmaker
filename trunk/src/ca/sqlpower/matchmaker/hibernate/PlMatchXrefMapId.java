@@ -27,9 +27,8 @@ public class PlMatchXrefMapId  implements java.io.Serializable {
     }
 
     /** copy constructor */
-    public PlMatchXrefMapId(PlMatchXrefMapId orig) {
-    	this.matchId = orig.matchId;
-        this.mappingSeqNo = orig.mappingSeqNo;
+    public PlMatchXrefMapId copyOf() {
+    	return new PlMatchXrefMapId(matchId, mappingSeqNo);
 	}
 
 	// Property accessors

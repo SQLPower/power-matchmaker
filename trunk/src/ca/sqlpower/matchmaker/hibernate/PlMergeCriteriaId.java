@@ -1,7 +1,5 @@
 package ca.sqlpower.matchmaker.hibernate;
 
-import org.apache.commons.beanutils.BeanUtils;
-// Generated Sep 18, 2006 4:34:38 PM by Hibernate Tools 3.2.0.beta7
 
 
 
@@ -35,13 +33,8 @@ public class PlMergeCriteriaId  implements java.io.Serializable {
     }
 
     /** copy constructor */
-    public PlMergeCriteriaId(PlMergeCriteriaId orig) {
-    	// Copy all the "simple" properties first
-    	try {
-			BeanUtils.copyProperties(orig, this);
-		} catch (Exception e) {
-			throw new RuntimeException("PlMatch Copy Constructor caught " + e, e);
-		}
+    public PlMergeCriteriaId copyOf() {
+    	return new PlMergeCriteriaId(matchId, catalog, owner, tableName, indexColumnName0);
 	}
 
 	// Property accessors

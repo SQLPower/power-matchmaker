@@ -8,7 +8,7 @@ package ca.sqlpower.matchmaker.hibernate;
  */
 public class PlMatchTranslate  implements java.io.Serializable {
 
-    // Fields    
+    // Fields
 
      private PlMatchTranslateId id;
      private String fromWord;
@@ -24,32 +24,38 @@ public class PlMatchTranslate  implements java.io.Serializable {
     public PlMatchTranslate(PlMatchTranslateId id) {
         this.id = id;
     }
+
     /** full constructor */
     public PlMatchTranslate(PlMatchTranslateId id, String fromWord, String toWord) {
        this.id = id;
        this.fromWord = fromWord;
        this.toWord = toWord;
     }
-   
+
+    /** copy factory */
+    public PlMatchTranslate copyOf() {
+    	return new PlMatchTranslate(id.copyOf(), fromWord, toWord);
+    }
+
     // Property accessors
     public PlMatchTranslateId getId() {
         return this.id;
     }
-    
+
     public void setId(PlMatchTranslateId id) {
         this.id = id;
     }
     public String getFromWord() {
         return this.fromWord;
     }
-    
+
     public void setFromWord(String fromWord) {
         this.fromWord = fromWord;
     }
     public String getToWord() {
         return this.toWord;
     }
-    
+
     public void setToWord(String toWord) {
         this.toWord = toWord;
     }

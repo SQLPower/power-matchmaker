@@ -50,7 +50,7 @@ public class PlFolder extends DefaultHibernateObject implements  java.io.Seriali
         this.folderStatus = orig.folderStatus;
         this.lastBackupNo = orig.lastBackupNo;
         for (PlMatch match : orig.matches) {
-        	matches.add(new PlMatch(match));
+        	matches.add(match.copyOf());
         }
     }
 

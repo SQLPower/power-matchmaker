@@ -34,14 +34,18 @@ public class PlMergeConsolidateCriteriaId  implements java.io.Serializable {
        this.columnName = columnName;
     }
 
-    /** copy constructor */
-    public PlMergeConsolidateCriteriaId(PlMergeConsolidateCriteriaId orig) {
+    /**
+     * Deep copy of this object
+     * @return A deep copy of the PlXXX object
+     */
+    public PlMergeConsolidateCriteriaId copyOf() {
     	try {
-			BeanUtils.copyProperties(orig, this);
-		} catch (Exception e) {
-			throw new RuntimeException("PlMatch Copy Constructor caught " + e, e);
-		}
-	}
+    		PlMergeConsolidateCriteriaId copy = (PlMergeConsolidateCriteriaId) BeanUtils.cloneBean(this);
+			return copy;
+    	} catch (Exception e) {
+    		throw new RuntimeException("Could not copy");
+    	}
+    }
 
 	// Property accessors
     public String getMatchId() {

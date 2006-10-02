@@ -67,16 +67,18 @@ public class PlMergeCriteria  implements java.io.Serializable {
     }
 
     /** copy constructor */
-    public PlMergeCriteria(PlMergeCriteria orig) {
-    	// Copy all the "simple" properties first
+    public PlMergeCriteria copyOf() {
     	try {
-			BeanUtils.copyProperties(orig, this);
-		} catch (Exception e) {
-			throw new RuntimeException("PlMatch Copy Constructor caught " + e, e);
-		}
-		// Now copy the non-trivial parts
-		id = new PlMergeCriteriaId(orig.id);
-	    plMatch = new PlMatch(orig.plMatch);
+    		PlMergeCriteria copy = (PlMergeCriteria) BeanUtils.cloneBean(this);
+
+    		// Now copy the non-trivial parts
+    		copy.id = id.copyOf();
+    		copy.plMatch = plMatch.copyOf();
+    		return copy;
+
+    	} catch (Exception e) {
+    		throw new RuntimeException("PlMatch Copy Constructor caught " + e, e);
+    	}
 	}
 
 	// Property accessors

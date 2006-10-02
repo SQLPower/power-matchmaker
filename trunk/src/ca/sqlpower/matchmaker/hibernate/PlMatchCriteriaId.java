@@ -28,10 +28,8 @@ public class PlMatchCriteriaId  implements java.io.Serializable {
     }
 
     /** copy constructor */
-    public PlMatchCriteriaId(PlMatchCriteriaId orig) {
-    	this.matchId = orig.matchId;
-    	this.groupId = orig.groupId;
-    	this.columnName = orig.columnName;
+    public PlMatchCriteriaId copyOf() {
+    	return new PlMatchCriteriaId(matchId, groupId, columnName);
 	}
 
 	// Property accessors

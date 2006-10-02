@@ -51,6 +51,7 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
     public PlMatchCriteria() {
     }
 
+    /** partial constructor */
     public PlMatchCriteria(PlMatchCriteriaId id, PlMatchGroup plMatchGroup,PlMatchCriteria criteria) {
     	this.id = id;
         this.plMatchGroup = plMatchGroup;
@@ -118,16 +119,17 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
     }
 
     /** Copy Constructor */
-    public PlMatchCriteria(PlMatchCriteria orig) {
+    public PlMatchCriteria copyOf() {
     	// Copy all the "simple" properties first
     	try {
-			BeanUtils.copyProperties(orig, this);
+    		PlMatchCriteria copy = (PlMatchCriteria) BeanUtils.cloneBean(this);
+    		// Now copy the non-trivial parts
+    		copy.id = id.copyOf();
+    	    copy.plMatchGroup = plMatchGroup.copyOf();
+    	    return copy;
 		} catch (Exception e) {
-			throw new RuntimeException("PlMatch Copy Constructor caught " + e, e);
+			throw new RuntimeException("Could not Copy", e);
 		}
-		// Now copy the non-trivial parts
-		id = new PlMatchCriteriaId(orig.id);
-	    plMatchGroup = new PlMatchGroup (orig.plMatchGroup);
 	}
 
 	// Property accessors

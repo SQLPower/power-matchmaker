@@ -32,6 +32,11 @@ public class PlMatchWordCountTempId  implements java.io.Serializable {
        this.columnWord = columnWord;
     }
 
+    /** copy constructor */
+    public PlMatchWordCountTempId copyOf() {
+    	return new PlMatchWordCountTempId(catalog, owner, tableName, columnName, columnWord);
+    }
+
     // Property accessors
     public String getOwner() {
         return this.owner;

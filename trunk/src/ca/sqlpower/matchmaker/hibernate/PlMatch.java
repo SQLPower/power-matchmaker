@@ -195,6 +195,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     		Set<PlMatchXrefMap> plMatchXrefMaps,
     		Set<PlMergeCriteria> plMergeCriterias,
     		Set<PlMatchGroup> plMatchGroups, Set<PlFolder> folder) {
+
        this.matchId = matchId;
        this.matchDesc = matchDesc;
        this.tableCatalog = tableCatalog;
@@ -301,37 +302,42 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
        this.folders = folder;
     }
 
-    public PlMatch(PlMatch orig) {
-
-    	// Copy all the "simple" properties first
+    /**
+     * Deep copy of this object
+     * @return A deep copy of the PlXXX object
+     */
+    public PlMatch copyOf() {
     	try {
-			BeanUtils.copyProperties(orig, this);
-		} catch (Exception e) {
-			throw new RuntimeException("PlMatch Copy Constructor caught " + e, e);
-		}
+			PlMatch copy = (PlMatch) BeanUtils.cloneBean(this);
 
-		// Unfortunately the above has compromised the Set properties, so we
-		// empty them, and re-populate using copy constructors for each object
-		plMergeConsolidateCriterias.clear();
-		for (PlMergeConsolidateCriteria p : orig.plMergeConsolidateCriterias) {
-			plMergeConsolidateCriterias.add(new PlMergeConsolidateCriteria(p));
+			// We need to re-create the Collections as well, with new instances and
+			// recursive deep clones of each object therein...
+
+			copy.plMergeConsolidateCriterias = new TreeSet<PlMergeConsolidateCriteria>();
+			for (PlMergeConsolidateCriteria p : this.plMergeConsolidateCriterias) {
+				plMergeConsolidateCriterias.add(p.copyOf());
+			}
+			copy.plMatchXrefMaps = new TreeSet<PlMatchXrefMap>();
+			for (PlMatchXrefMap p : this.plMatchXrefMaps) {
+				plMatchXrefMaps.add(p.copyOf());
+			}
+			copy.plMergeCriterias = new TreeSet<PlMergeCriteria>();;
+			for (PlMergeCriteria p : this.plMergeCriterias) {
+				plMergeCriterias.add(p.copyOf());
+			}
+			copy.plMatchGroups = new TreeSet<PlMatchGroup>();
+			for (PlMatchGroup p : this.plMatchGroups) {
+				plMatchGroups.add(new PlMatchGroup(p));
+			}
+			copy.folders = new TreeSet<PlFolder>();
+			for (PlFolder p : folders) {
+				folders.add(new PlFolder(p));
+			}
+			return copy;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException("Could not copy bean", e);
 		}
-	    plMatchXrefMaps.clear();
-	    for (PlMatchXrefMap p : orig.plMatchXrefMaps) {
-	    	plMatchXrefMaps.add(new PlMatchXrefMap(p));
-	    }
-	    plMergeCriterias.clear();
-	    for (PlMergeCriteria p : orig.plMergeCriterias) {
-	    	plMergeCriterias.add(new PlMergeCriteria(p));
-	    }
-	    plMatchGroups.clear();
-	    for (PlMatchGroup p : orig.plMatchGroups) {
-			plMatchGroups.add(new PlMatchGroup(p));
-		}
-	    folders = new TreeSet<PlFolder>();
-	    for (PlFolder p : folders) {
-	    	folders.add(new PlFolder(p));
-	    }
 	}
 
 	// Property accessors

@@ -14,7 +14,7 @@ import ca.sqlpower.matchmaker.util.HibernateUtil;
  */
 public class PlMatchTranslateId  implements java.io.Serializable {
 
-    // Fields    
+    // Fields
 
      private String groupName;
      private Long seqNo;
@@ -30,19 +30,24 @@ public class PlMatchTranslateId  implements java.io.Serializable {
        this.groupName = groupName;
        this.seqNo = seqNo;
     }
-   
+
+    /** Copy Factory */
+    public PlMatchTranslateId copyOf() {
+    	return new PlMatchTranslateId(groupName, seqNo);
+    }
+
     // Property accessors
     public String getGroupName() {
         return this.groupName;
     }
-    
+
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
-    
-    /** 
+
+    /**
      * return a number higher than the highest sequence number in the database
-     * 
+     *
      * Note if using this for multiple inserts it will not update until new values
      * have been added.
      */
@@ -50,14 +55,14 @@ public class PlMatchTranslateId  implements java.io.Serializable {
     	List<PlMatchTranslate> l = HibernateUtil.primarySession()
     		.createCriteria(PlMatchTranslate.class)
     		.setProjection(Projections.max("SeqNo")).list();
-    	
+
     	return l.get(0).getId().getSeqNo() +1;
     }
-    
+
     public Long getSeqNo() {
         return this.seqNo;
     }
-    
+
     public void setSeqNo(Long seqNo) {
         this.seqNo = seqNo;
     }
@@ -67,19 +72,19 @@ public class PlMatchTranslateId  implements java.io.Serializable {
          if ( (this == other ) ) return true;
 		 if ( (other == null ) ) return false;
 		 if ( !(other instanceof PlMatchTranslateId) ) return false;
-		 PlMatchTranslateId castOther = ( PlMatchTranslateId ) other; 
-         
+		 PlMatchTranslateId castOther = ( PlMatchTranslateId ) other;
+
 		 return ( (this.getGroupName()==castOther.getGroupName()) || ( this.getGroupName()!=null && castOther.getGroupName()!=null && this.getGroupName().equals(castOther.getGroupName()) ) )
  && ( (this.getSeqNo()==castOther.getSeqNo()) || ( this.getSeqNo()!=null && castOther.getSeqNo()!=null && this.getSeqNo().equals(castOther.getSeqNo()) ) );
    }
-   
+
    public int hashCode() {
          int result = 17;
-         
+
          result = 37 * result + ( getGroupName() == null ? 0 : this.getGroupName().hashCode() );
          result = 37 * result + ( getSeqNo() == null ? 0 : this.getSeqNo().hashCode() );
          return result;
-   }   
+   }
 
 
 }
