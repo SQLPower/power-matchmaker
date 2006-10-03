@@ -3,6 +3,9 @@ package ca.sqlpower.matchmaker.hibernate;
 
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -366,7 +369,6 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 	public void setTableCatalog(String tableCatalog) {
 		if (this.tableCatalog != tableCatalog) {
 			this.tableCatalog = tableCatalog;
-			//TODO fire event
 		}
 	}
 
@@ -408,6 +410,12 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
+    public void setCreateDate(String createDate) throws ParseException {
+    	if ( createDate != null && createDate.length() > 0 ) {
+    		DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    		setCreateDate(df.parse(createDate));
+    	}
+    }
     public Date getLastUpdateDate() {
         return this.lastUpdateDate;
     }
@@ -415,7 +423,15 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setLastUpdateDate(Date lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
     }
-    public String getLastUpdateUser() {
+
+    public void setLastUpdateDate(String lastUpdateDate) throws ParseException {
+    	if ( lastUpdateDate != null && lastUpdateDate.length() > 0 ) {
+    		DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    		setLastUpdateDate(df.parse(lastUpdateDate));
+    	}
+    }
+
+     public String getLastUpdateUser() {
         return this.lastUpdateUser;
     }
 
@@ -436,6 +452,13 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setCompileFlag(boolean compileFlag) {
         this.compileFlag = compileFlag;
     }
+
+    public void setCompileFlag(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setCompileFlag(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
+    }
+
     public String getMergeScriptFileName() {
         return this.mergeScriptFileName;
     }
@@ -450,6 +473,11 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setAutoMatchThreshold(Short autoMatchThreshold) {
         this.autoMatchThreshold = autoMatchThreshold;
     }
+    public void setAutoMatchThreshold(String val) {
+    	if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
+    		setAutoMatchThreshold(Short.valueOf(val));
+    	}
+    }
     public Date getMergeCompletionDate() {
         return this.mergeCompletionDate;
     }
@@ -457,6 +485,14 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMergeCompletionDate(Date mergeCompletionDate) {
         this.mergeCompletionDate = mergeCompletionDate;
     }
+
+    public void setMergeCompletionDate(String mergeCompletionDate) throws ParseException {
+    	if ( mergeCompletionDate != null && mergeCompletionDate.length() > 0 ) {
+	    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	    	setMergeCompletionDate(df.parse(mergeCompletionDate));
+    	}
+    }
+
     public String getMergeLastUser() {
         return this.mergeLastUser;
     }
@@ -492,6 +528,13 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMatchAppendToLogInd(boolean matchAppendToLogInd) {
         this.matchAppendToLogInd = matchAppendToLogInd;
     }
+
+    public void setMatchAppendToLogInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setMatchAppendToLogInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
+    }
+
     public Long getMatchProcessCnt() {
         return this.matchProcessCnt;
     }
@@ -499,6 +542,13 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMatchProcessCnt(Long matchProcessCnt) {
         this.matchProcessCnt = matchProcessCnt;
     }
+
+    public void setMatchProcessCnt(String val) {
+    	if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null")) {
+    		setMatchProcessCnt(Long.valueOf(val));
+    	}
+    }
+
     public Long getMatchShowProgressFreq() {
         return this.matchShowProgressFreq;
     }
@@ -506,12 +556,23 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMatchShowProgressFreq(Long matchShowProgressFreq) {
         this.matchShowProgressFreq = matchShowProgressFreq;
     }
+    public void setMatchShowProgressFreq(String val) {
+    	if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null")) {
+    		setMatchShowProgressFreq(Long.valueOf(val));
+    	}
+    }
+
     public boolean isMatchDebugModeInd() {
         return this.matchDebugModeInd;
     }
 
     public void setMatchDebugModeInd(boolean matchDebugModeInd) {
         this.matchDebugModeInd = matchDebugModeInd;
+    }
+    public void setMatchDebugModeInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setMatchDebugModeInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
     }
     public String getMatchRollbackSegmentName() {
         return this.matchRollbackSegmentName;
@@ -534,12 +595,22 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMergeAppendToLogInd(boolean mergeAppendToLogInd) {
         this.mergeAppendToLogInd = mergeAppendToLogInd;
     }
+    public void setMergeAppendToLogInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setMergeAppendToLogInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
+    }
     public BigDecimal getMergeProcessCnt() {
         return this.mergeProcessCnt;
     }
 
     public void setMergeProcessCnt(BigDecimal mergeProcessCnt) {
         this.mergeProcessCnt = mergeProcessCnt;
+    }
+    public void setMergeProcessCnt(String val) {
+        if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
+        	setMergeProcessCnt(BigDecimal.valueOf(Long.valueOf(val)));
+        }
     }
     public BigDecimal getMergeShowProgressFreq() {
         return this.mergeShowProgressFreq;
@@ -548,12 +619,24 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMergeShowProgressFreq(BigDecimal mergeShowProgressFreq) {
         this.mergeShowProgressFreq = mergeShowProgressFreq;
     }
+
+    public void setMergeShowProgressFreq(String val) {
+        if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
+        	setMergeShowProgressFreq(BigDecimal.valueOf(Long.valueOf(val)));
+        }
+    }
+
     public boolean isMergeDebugModeInd() {
         return this.mergeDebugModeInd;
     }
 
     public void setMergeDebugModeInd(boolean mergeDebugModeInd) {
         this.mergeDebugModeInd = mergeDebugModeInd;
+    }
+    public void setMergeDebugModeInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setMergeDebugModeInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
     }
     public String getMergeRollbackSegmentName() {
         return this.mergeRollbackSegmentName;
@@ -568,6 +651,11 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 
     public void setMergeAugmentNullInd(boolean mergeAugmentNullInd) {
         this.mergeAugmentNullInd = mergeAugmentNullInd;
+    }
+    public void setMergeAugmentNullInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setMergeAugmentNullInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
     }
     public String getMatchRunStatus() {
         return this.matchRunStatus;
@@ -590,12 +678,24 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMatchTotalSteps(BigDecimal matchTotalSteps) {
         this.matchTotalSteps = matchTotalSteps;
     }
+
+    public void setMatchTotalSteps(String val) {
+        if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
+        	setMatchTotalSteps(BigDecimal.valueOf(Long.valueOf(val)));
+        }
+    }
+
     public BigDecimal getMatchStepsCompleted() {
         return this.matchStepsCompleted;
     }
 
     public void setMatchStepsCompleted(BigDecimal matchStepsCompleted) {
         this.matchStepsCompleted = matchStepsCompleted;
+    }
+    public void setMatchStepsCompleted(String val) {
+        if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
+        	setMatchStepsCompleted(BigDecimal.valueOf(Long.valueOf(val)));
+        }
     }
     public BigDecimal getMatchRowsInserted() {
         return this.matchRowsInserted;
@@ -604,12 +704,25 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMatchRowsInserted(BigDecimal matchRowsInserted) {
         this.matchRowsInserted = matchRowsInserted;
     }
+    public void setMatchRowsInserted(String val) {
+        if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
+        	setMatchRowsInserted(BigDecimal.valueOf(Long.valueOf(val)));
+        }
+    }
+
     public Date getMatchLastRunDate() {
         return this.matchLastRunDate;
     }
 
     public void setMatchLastRunDate(Date matchLastRunDate) {
         this.matchLastRunDate = matchLastRunDate;
+    }
+
+    public void setMatchLastRunDate(String matchLastRunDate) throws ParseException {
+    	if ( matchLastRunDate != null && matchLastRunDate.length() > 0 ) {
+	    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	    	setMatchLastRunDate(df.parse(matchLastRunDate));
+    	}
     }
     public String getMatchLastRunUser() {
         return this.matchLastRunUser;
@@ -625,12 +738,22 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMergeTotalSteps(BigDecimal mergeTotalSteps) {
         this.mergeTotalSteps = mergeTotalSteps;
     }
+    public void setMergeTotalSteps(String val) {
+        if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
+        	setMergeTotalSteps(BigDecimal.valueOf(Long.valueOf(val)));
+        }
+    }
     public BigDecimal getMergeStepsCompleted() {
         return this.mergeStepsCompleted;
     }
 
     public void setMergeStepsCompleted(BigDecimal mergeStepsCompleted) {
         this.mergeStepsCompleted = mergeStepsCompleted;
+    }
+    public void setMergeStepsCompleted(String val) {
+        if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
+        	setMergeStepsCompleted(BigDecimal.valueOf(Long.valueOf(val)));
+        }
     }
     public Date getMergeLastRunDate() {
         return this.mergeLastRunDate;
@@ -639,6 +762,14 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMergeLastRunDate(Date mergeLastRunDate) {
         this.mergeLastRunDate = mergeLastRunDate;
     }
+
+    public void setMergeLastRunDate(String mergeLastRunDate) throws ParseException {
+    	if ( mergeLastRunDate != null && mergeLastRunDate.length() > 0 ) {
+	    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	    	setMergeLastRunDate(df.parse(mergeLastRunDate));
+    	}
+    }
+
     public String getMergeLastRunUser() {
         return this.mergeLastRunUser;
     }
@@ -695,6 +826,12 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMergeRowsInserted(BigDecimal mergeRowsInserted) {
         this.mergeRowsInserted = mergeRowsInserted;
     }
+    public void setMergeRowsInserted(String val) {
+        if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
+        	setMergeRowsInserted(BigDecimal.valueOf(Long.valueOf(val)));
+        }
+    }
+
     public String getBatchFileName() {
         return this.batchFileName;
     }
@@ -736,6 +873,11 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 
     public void setMatchBreakInd(boolean matchBreakInd) {
         this.matchBreakInd = matchBreakInd;
+    }
+    public void setMatchBreakInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setMatchBreakInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
     }
     public String getFilterCriteria() {
         return this.filterCriteria;
@@ -779,6 +921,11 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMergeTablesBackupInd(boolean mergeTablesBackupInd) {
         this.mergeTablesBackupInd = mergeTablesBackupInd;
     }
+    public void setMergeTablesBackupInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setMergeTablesBackupInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
+    }
     public String getMatchStatus() {
         return this.matchStatus;
     }
@@ -793,12 +940,22 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setLastBackupNo(BigDecimal lastBackupNo) {
         this.lastBackupNo = lastBackupNo;
     }
+    public void setLastBackupNo(String val) {
+        if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
+        	setLastBackupNo(BigDecimal.valueOf(Long.valueOf(val)));
+        }
+    }
     public boolean isCheckedOutInd() {
         return this.checkedOutInd;
     }
 
     public void setCheckedOutInd(boolean checkedOutInd) {
         this.checkedOutInd = checkedOutInd;
+    }
+    public void setCheckedOutInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setCheckedOutInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
     }
     public Date getCheckedOutDate() {
         return this.checkedOutDate;
@@ -807,6 +964,14 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setCheckedOutDate(Date checkedOutDate) {
         this.checkedOutDate = checkedOutDate;
     }
+
+    public void setCheckedOutDate(String checkedOutDate) throws ParseException {
+    	if ( checkedOutDate != null && checkedOutDate.length() > 0 ) {
+	    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	    	setCheckedOutDate(df.parse(checkedOutDate));
+    	}
+    }
+
     public String getCheckedOutUser() {
         return this.checkedOutUser;
     }
@@ -989,6 +1154,11 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setTruncateCandDupInd(boolean truncateCandDupInd) {
         this.truncateCandDupInd = truncateCandDupInd;
     }
+    public void setTruncateCandDupInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setTruncateCandDupInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
+    }
     public boolean isMatchSendEmailInd() {
         return this.matchSendEmailInd;
     }
@@ -996,12 +1166,22 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public void setMatchSendEmailInd(boolean matchSendEmailInd) {
         this.matchSendEmailInd = matchSendEmailInd;
     }
+    public void setMatchSendEmailInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setMatchSendEmailInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
+    }
     public boolean isMergeSendEmailInd() {
         return this.mergeSendEmailInd;
     }
 
     public void setMergeSendEmailInd(boolean mergeSendEmailInd) {
         this.mergeSendEmailInd = mergeSendEmailInd;
+    }
+    public void setMergeSendEmailInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setMergeSendEmailInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
     }
     public String getXrefOwner() {
         return this.xrefOwner;
@@ -1023,6 +1203,11 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 
     public void setAutoMatchActiveInd(boolean autoMatchActiveInd) {
         this.autoMatchActiveInd = autoMatchActiveInd;
+    }
+    public void setAutoMatchActiveInd(String val) {
+    	if ( val != null && val.length() > 0 ) {
+    		setAutoMatchActiveInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+    	}
     }
     public Set<PlMergeConsolidateCriteria> getPlMergeConsolidateCriterias() {
         return this.plMergeConsolidateCriterias;
@@ -1129,6 +1314,33 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 	}
 
 
+	/**
+	 * add for xml parser
+	 */
+	public void addMatchGroup(PlMatchGroup g) {
+		plMatchGroups.add(g);
+		g.setPlMatch(this);
+	}
+	public void addMatchCriteria(PlMatchCriteria c) {
+		for ( PlMatchGroup g : getPlMatchGroups() ) {
+			PlMatchGroupId id = new PlMatchGroupId(c.getId().getMatchId(),
+					c.getId().getGroupId());
+			if ( id.equals(g.getId()) ) {
+				g.getPlMatchCriterias().add(c);
+				c.setPlMatchGroup(g);
+				break;
+			}
+		}
+	}
+	public void addMergeCriteria(PlMergeCriteria c) {
+		plMergeCriterias.add(c);
+		c.setPlMatch(this);
+	}
+
+	public void addMergeConsolidateCriteria(PlMergeConsolidateCriteria c) {
+		plMergeConsolidateCriterias.add(c);
+		c.setPlMatch(this);
+	}
 
 }
 
