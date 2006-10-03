@@ -24,6 +24,7 @@ import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
+import ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
 import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
 
@@ -309,6 +310,7 @@ public class PlMatchExportAction extends AbstractAction {
 
             saveMatchGroup(ioo,out);
             saveMergeCriteria(ioo,out);
+            saveMergeConsolidateCriteria(ioo,out);
             saveFolder(ioo,out);
 
 
@@ -476,68 +478,128 @@ public class PlMatchExportAction extends AbstractAction {
 	}
 
 	private void saveMergeCriteria(IOUtils ioo, PrintWriter out) {
-System.out.println("merge criteria size="+match.getPlMergeCriterias().size());
-System.out.println("merge criteria size2="+match.getPlMergeConsolidateCriterias().size());
-		List <PlMergeCriteria> criterias = new ArrayList<PlMergeCriteria>(match.getPlMergeCriterias());
-		for ( PlMergeCriteria c : criterias ) {
+
+		for ( PlMergeCriteria c : match.getPlMergeCriterias() ) {
 
     		ioo.println(out, "<PL_MERGE_CRITERIA>");
     		ioo.indent++;
     		ioo.println(out, "<MATCH_ID>"+
             		ArchitectUtils.escapeXML(c.getId().getMatchId())+
             		"</MATCH_ID>");
+    		ioo.println(out, "<TABLE_CATALOG>"+
+    				ArchitectUtils.escapeXML(c.getId().getCatalog())+
+    				"</TABLE_CATALOG>");
+    		ioo.println(out, "<OWNER>"+
+    				ArchitectUtils.escapeXML(c.getId().getOwner())+
+    				"</OWNER>");
     		ioo.println(out, "<TABLE_NAME>"+
             		ArchitectUtils.escapeXML(c.getId().getTableName())+
             		"</TABLE_NAME>");
+    		ioo.println(out, "<INDEX_COLUMN_NAME0>"+
+    				ArchitectUtils.escapeXML(c.getId().getIndexColumnName0())+
+    				"</INDEX_COLUMN_NAME0>");
+    		ioo.println(out, "<COLUMN_NAME>"+
+    				ArchitectUtils.escapeXML(c.getColumnName())+
+    				"</COLUMN_NAME>");
+
     		ioo.println(out, "<DELETE_DUP_IND>"+
             		ArchitectUtils.escapeXML(c.isDeleteDupInd()?"Y":"N")+
             		"</DELETE_DUP_IND>");
     		ioo.println(out, "<SEQ_NO>"+
             		c.getSeqNo()+
             		"</SEQ_NO>");
-    		ioo.println(out, "<OWNER>"+
-            		ArchitectUtils.escapeXML(c.getId().getOwner())+
-            		"</OWNER>");
-    		ioo.println(out, "<LAST_UPDATE_OS_USER>"+
+    		ioo.println(out, "<LAST_UPDATE_DATE>"+
     				ArchitectUtils.escapeXML(df.format(c.getLastUpdateDate()))+
+            		"</LAST_UPDATE_DATE>");
+    		ioo.println(out, "<LAST_UPDATE_OS_USER>"+
+    				ArchitectUtils.escapeXML(c.getLastUpdateOsUser())+
             		"</LAST_UPDATE_OS_USER>");
+    		ioo.println(out, "<LAST_UPDATE_USER>"+
+    				ArchitectUtils.escapeXML(c.getLastUpdateUser())+
+            		"</LAST_UPDATE_USER>");
+
     		ioo.println(out, "<PRIMARY_KEY_INDEX>"+
             		ArchitectUtils.escapeXML(c.getPrimaryKeyIndex())+
             		"</PRIMARY_KEY_INDEX>");
-    		ioo.println(out, "<INDEX_COLUMN_NAME0>"+
-            		ArchitectUtils.escapeXML(c.getIndexColumnName1())+
-            		"</INDEX_COLUMN_NAME0>");
     		ioo.println(out, "<INDEX_COLUMN_NAME1>"+
-            		ArchitectUtils.escapeXML(c.getIndexColumnName2())+
+            		ArchitectUtils.escapeXML(c.getIndexColumnName1())+
             		"</INDEX_COLUMN_NAME1>");
     		ioo.println(out, "<INDEX_COLUMN_NAME2>"+
-            		ArchitectUtils.escapeXML(c.getIndexColumnName3())+
+            		ArchitectUtils.escapeXML(c.getIndexColumnName2())+
             		"</INDEX_COLUMN_NAME2>");
     		ioo.println(out, "<INDEX_COLUMN_NAME3>"+
-            		ArchitectUtils.escapeXML(c.getIndexColumnName4())+
+            		ArchitectUtils.escapeXML(c.getIndexColumnName3())+
             		"</INDEX_COLUMN_NAME3>");
     		ioo.println(out, "<INDEX_COLUMN_NAME4>"+
-            		ArchitectUtils.escapeXML(c.getIndexColumnName5())+
+            		ArchitectUtils.escapeXML(c.getIndexColumnName4())+
             		"</INDEX_COLUMN_NAME4>");
     		ioo.println(out, "<INDEX_COLUMN_NAME5>"+
-            		ArchitectUtils.escapeXML(c.getIndexColumnName6())+
+            		ArchitectUtils.escapeXML(c.getIndexColumnName5())+
             		"</INDEX_COLUMN_NAME5>");
     		ioo.println(out, "<INDEX_COLUMN_NAME6>"+
-            		ArchitectUtils.escapeXML(c.getIndexColumnName7())+
+            		ArchitectUtils.escapeXML(c.getIndexColumnName6())+
             		"</INDEX_COLUMN_NAME6>");
     		ioo.println(out, "<INDEX_COLUMN_NAME7>"+
-            		ArchitectUtils.escapeXML(c.getIndexColumnName8())+
+            		ArchitectUtils.escapeXML(c.getIndexColumnName7())+
             		"</INDEX_COLUMN_NAME7>");
     		ioo.println(out, "<INDEX_COLUMN_NAME8>"+
-            		ArchitectUtils.escapeXML(c.getIndexColumnName9())+
+            		ArchitectUtils.escapeXML(c.getIndexColumnName8())+
             		"</INDEX_COLUMN_NAME8>");
-    		ioo.println(out, "<COLUMN_NAME>"+
-    				ArchitectUtils.escapeXML(c.getColumnName())+
-    				"</COLUMN_NAME>");
+    		ioo.println(out, "<INDEX_COLUMN_NAME9>"+
+            		ArchitectUtils.escapeXML(c.getIndexColumnName9())+
+            		"</INDEX_COLUMN_NAME9>");
     		ioo.indent--;
     		ioo.println(out, "</PL_MERGE_CRITERIA>");
 		}
 	}
 
+	private void saveMergeConsolidateCriteria(IOUtils ioo, PrintWriter out) {
+
+		for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
+
+    		ioo.println(out, "<PL_MERGE_CONSOLIDATE_CRITERIA>");
+    		ioo.indent++;
+    		ioo.println(out, "<MATCH_ID>"+
+            		ArchitectUtils.escapeXML(c.getId().getMatchId())+
+            		"</MATCH_ID>");
+    		ioo.println(out, "<TABLE_CATALOG>"+
+    				ArchitectUtils.escapeXML(c.getId().getCatalog())+
+    				"</TABLE_CATALOG>");
+    		ioo.println(out, "<OWNER>"+
+    				ArchitectUtils.escapeXML(c.getId().getOwner())+
+    				"</OWNER>");
+    		ioo.println(out, "<TABLE_NAME>"+
+            		ArchitectUtils.escapeXML(c.getId().getTableName())+
+            		"</TABLE_NAME>");
+    		ioo.println(out, "<COLUMN_NAME>"+
+            		ArchitectUtils.escapeXML(c.getId().getColumnName())+
+            		"</COLUMN_NAME>");
+
+    		ioo.println(out, "<COLUMN_FORMAT>"+
+    				ArchitectUtils.escapeXML(c.getColumnFormat())+
+    				"</COLUMN_FORMAT>");
+    		ioo.println(out, "<ACTION_TYPE>"+
+    				ArchitectUtils.escapeXML(c.getActionType())+
+    				"</ACTION_TYPE>");
+    		ioo.println(out, "<LAST_UPDATE_USER>"+
+    				ArchitectUtils.escapeXML(c.getLastUpdateUser())+
+    				"</LAST_UPDATE_USER>");
+    		ioo.println(out, "<LAST_UPDATE_DATE>"+
+    				ArchitectUtils.escapeXML(df.format(c.getLastUpdateDate()))+
+            		"</LAST_UPDATE_DATE>");
+    		ioo.println(out, "<LAST_UPDATE_OS_USER>"+
+    				ArchitectUtils.escapeXML(c.getLastUpdateOsUser())+
+            		"</LAST_UPDATE_OS_USER>");
+
+    		ioo.println(out, "<CAN_UPDATE_ACTION_IND>"+
+            		ArchitectUtils.escapeXML(c.isCanUpdateActionInd()?"Y":"N")+
+            		"</CAN_UPDATE_ACTION_IND>");
+    		ioo.println(out, "<COLUMN_LENGTH>"+
+            		c.getColumnLength()+
+            		"</COLUMN_LENGTH>");
+    		ioo.indent--;
+    		ioo.println(out, "</PL_MERGE_CONSOLIDATE_CRITERIA>");
+		}
+	}
 
 }

@@ -16,9 +16,8 @@ import javax.swing.JOptionPane;
 
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
-import org.xml.sax.Attributes;
+import org.hibernate.Transaction;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.swingui.ASUtils;
@@ -30,6 +29,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
 import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
+import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class PlMatchImportAction extends AbstractAction {
 
@@ -85,6 +85,7 @@ public class PlMatchImportAction extends AbstractAction {
 						JOptionPane.ERROR_MESSAGE);
 				return;
 			} else {
+
 System.out.println("id:"+match.getMatchId());
 System.out.println("desc:"+match.getMatchDesc());
 System.out.println("table:"+match.getMatchTable());
@@ -105,7 +106,8 @@ for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
 	}
 
 
-				if ( MatchMakerFrame.getMainInstance().getMatchByName(match.getMatchId()) != null ) {
+				PlMatch match2 = MatchMakerFrame.getMainInstance().getMatchByName(match.getMatchId());
+				if ( match2 != null ) {
 					int option = JOptionPane.showConfirmDialog(
 							null,
 		                    "Match ["+match.getMatchId()+"] Exists! Do you want to overwrite it?",
@@ -113,32 +115,17 @@ for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
 		                    JOptionPane.OK_CANCEL_OPTION );
 					if ( option != JOptionPane.OK_OPTION ) {
 						return;
+					} else {
+						HibernateUtil.primarySession().delete(match2);
 					}
 				}
 			}
 
+			Transaction tx = HibernateUtil.primarySession().beginTransaction();
+            HibernateUtil.primarySession().save(match);
+			HibernateUtil.primarySession().flush();
+			tx.commit();
 
-			// convert xml into sql
-
-
-			/*try {
-
-				Connection conn = MatchMakerFrame.getMainInstance().getDatabase().getConnection();
-
-
-				MatchImportXMLHandler xmlHandler = new MatchImportXMLHandler();
-				SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-				parser.parse(importFile,xmlHandler);
-			} catch (ParserConfigurationException e1) {
-				ASUtils.showExceptionDialog("XML Parser Config Error",e1);
-			} catch (SAXException e1) {
-				ASUtils.showExceptionDialog("XML Parser Error",e1);
-			} catch (IOException e1) {
-				ASUtils.showExceptionDialog("XML Read Error",e1);
-			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialog("Unknown Database Error",e1);
-			}
-*/
 
 
 
@@ -372,114 +359,6 @@ for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
         return d;
     }
 
-    public class MatchImportXMLHandler extends DefaultHandler {
 
-    	List <StringBuffer> stmts;
-    	List <StringBuffer> insertItems;
-    	StringBuffer value = new StringBuffer();
 
-		@Override
-		public void startDocument() throws SAXException {
-			super.startDocument();
-			stmts = new ArrayList<StringBuffer>();
-			insertItems = new ArrayList<StringBuffer>();
-		}
-
-		@Override
-    	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-			super.startElement(uri, localName, qName, attributes);
-			if ( qName.equalsIgnoreCase("PL_MATCH") ||
-					qName.equalsIgnoreCase("PL_MATCH_GROUP") ||
-					qName.equalsIgnoreCase("PL_MERGE_CRITERIA") ||
-					qName.equalsIgnoreCase("PL_MATCH_CRITERIA") ) {
-				StringBuffer buf = new StringBuffer();
-				buf.append("INSERT INTO ").append(qName).append(" (");
-				stmts.add(buf);
-				buf = new StringBuffer();
-				buf.append("(");
-				insertItems.add(buf);
-			}
-			value = new StringBuffer();
-    	}
-
-		@Override
-		public void characters(char[] ch, int start, int length) throws SAXException {
-			super.characters(ch, start, length);
-			value.append(ch,start,length);
-		}
-
-    	@Override
-    	public void endElement(String uri, String localName, String qName) throws SAXException {
-
-    		super.endElement(uri, localName, qName);
-    		StringBuffer columnName = stmts.get(stmts.size()-1);
-			StringBuffer columnValue = insertItems.get(insertItems.size()-1);
-
-    		if ( qName.equalsIgnoreCase("PL_MATCH") ||
-					qName.equalsIgnoreCase("PL_MATCH_GROUP") ||
-					qName.equalsIgnoreCase("PL_MERGE_CRITERIA") ||
-					qName.equalsIgnoreCase("PL_MATCH_CRITERIA") ) {
-    			columnName.append(")");
-    			columnValue.append(")");
-    		} else {
-    			columnName.append(qName).append(",");
-    			columnValue.append("\"").append(value).append("\",");
-    		}
-    	}
-
-    	@Override
-    	public void endDocument() throws SAXException {
-    		super.endDocument();
-
-    		for ( int i=0; i<stmts.size(); i++ ) {
-    			stmts.get(i).append(" VALUES ").append(insertItems.get(i));
-    		}
-    		for ( int i=0; i<stmts.size(); i++ ) {
-    			System.out.println(stmts.get(i).toString());
-    		}
-    	}
-    }
-
-    /*
-     *
-        String status = "Unknown";
-        Statement stmt = null;
-        ResultSet rs = null;
-        try {
-            stmt = con.createStatement();
-            String folder_table = DDLUtils.toQualifiedName(repositoryCatalog, repositorySchema, "pl_folder");
-
-            rs = stmt.executeQuery("SELECT 1 FROM " + folder_table + " WHERE folder_name=" + SQL.quote(folderName));
-
-            if (!rs.next()) {
-                status = "OK";
-                StringBuffer sql = new StringBuffer("INSERT INTO ");
-                sql.append(folder_table);
-                sql.append(" (folder_name,folder_desc,folder_status,last_backup_no)");
-                sql.append(" VALUES (");
-
-                sql.append(SQL.quote(folderName)); // folder_name
-                sql.append(",").append(
-                        SQL.quote("This Folder contains jobs and transactions created by the Power*Architect")); // folder_desc
-                sql.append(",").append(SQL.quote(null)); // folder_status
-                sql.append(",").append(SQL.quote(null)); // last_backup_no
-                sql.append(")");
-                logWriter.info("Insert into " + folder_table + ", PK=" + folderName);
-                logger.debug("MAYBE INSERT SQL: " + sql.toString());
-                stmt.executeUpdate(sql.toString());
-            } else {
-                status = "Skipped, exist";
-            }
-        } catch (SQLException e) {
-            status = "Error";
-            throw e;
-        } finally {
-            if (rs != null)
-                rs.close();
-            if (stmt != null)
-                stmt.close();
-            exportResultList.add(new LabelValueBean("Create Folder:" + folderName, status));
-
-        }
-     */
 }
