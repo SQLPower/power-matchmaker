@@ -3,6 +3,9 @@ package ca.sqlpower.matchmaker.hibernate;
 
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -345,6 +348,123 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
 			return id.getColumnName().compareTo(other.getId().getColumnName());
 		}
 	}
+
+
+	/* for xml parser, overwrite all method that don't take String parameter,
+	 * also create id when set matchId or groupId
+	 *
+	 */
+	public void setMatchId(String id) {
+		if ( this.id == null ) {
+			this.id = new PlMatchCriteriaId();
+		}
+		this.id.setMatchId(id);
+	}
+	public void setGroupId(String id) {
+		if ( this.id == null ) {
+			this.id = new PlMatchCriteriaId();
+		}
+		this.id.setGroupId(id);
+	}
+	public void setColumnName(String id) {
+		if ( this.id == null ) {
+			this.id = new PlMatchCriteriaId();
+		}
+		this.id.setColumnName(id);
+	}
+
+	public void setCaseSensitiveInd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setCaseSensitiveInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+	public void setSoundInd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setSoundInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+	public void setMatchStart(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setMatchStart(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+	public void setMatchEnd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setMatchEnd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+	public void setAllowNullInd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setAllowNullInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+
+	public void setRemoveSpecialChars(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setRemoveSpecialChars(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+	public void setCountWordsInd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setCountWordsInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+	public void setReplaceWithSpaceInd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setReplaceWithSpaceInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+	public void setReorderInd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setReorderInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+	public void setFirstNCharByWordInd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setFirstNCharByWordInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+	public void setMatchFirstPlusOneInd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setMatchFirstPlusOneInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+    }
+	public void setFirstNChar(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setFirstNChar(Long.valueOf(val));
+		}
+    }
+	public void setFirstNCharByWord(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setFirstNCharByWord(Long.valueOf(val));
+		}
+    }
+	public void setMinWordsInCommon(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setMinWordsInCommon(Long.valueOf(val));
+		}
+    }
+	public void setWordsInCommonNumWords(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setWordsInCommonNumWords(Long.valueOf(val));
+		}
+    }
+	public void setLastUpdateDate(String val) throws ParseException {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			setLastUpdateDate(df.parse(val));
+		}
+    }
+	public void setSeqNo(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setSeqNo(BigDecimal.valueOf(Long.valueOf(val)));
+		}
+    }
+	public void setVarianceAmt(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setVarianceAmt(BigDecimal.valueOf(Long.valueOf(val)));
+		}
+    }
 
 
 

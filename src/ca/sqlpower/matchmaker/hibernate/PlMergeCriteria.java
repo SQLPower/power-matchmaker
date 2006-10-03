@@ -3,6 +3,9 @@ package ca.sqlpower.matchmaker.hibernate;
 
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -210,6 +213,57 @@ public class PlMergeCriteria  implements java.io.Serializable {
     }
 
 
+
+    /* for xml parser, overwrite all method that don't take String parameter,
+	 * also create id when set matchId or groupId
+	 *
+	 */
+	public void setMatchId(String id) {
+		if ( this.id == null ) {
+			this.id = new PlMergeCriteriaId();
+		}
+		this.id.setMatchId(id);
+	}
+	public void setTableCatalog(String id) {
+		if ( this.id == null ) {
+			this.id = new PlMergeCriteriaId();
+		}
+		this.id.setCatalog(id);
+	}
+	public void setTableOwner(String id) {
+		if ( this.id == null ) {
+			this.id = new PlMergeCriteriaId();
+		}
+		this.id.setOwner(id);
+	}
+	public void setTableName(String id) {
+		if ( this.id == null ) {
+			this.id = new PlMergeCriteriaId();
+		}
+		this.id.setTableName(id);
+	}
+	public void setIndexColumnName0(String id) {
+		if ( this.id == null ) {
+			this.id = new PlMergeCriteriaId();
+		}
+		this.id.setIndexColumnName0(id);
+	}
+	public void setLastUpdateDate(String val) throws ParseException {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			setLastUpdateDate(df.parse(val));
+		}
+	}
+	public void setDeleteDupInd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setDeleteDupInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+	}
+	public void setSeqNo(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setSeqNo(BigDecimal.valueOf(Long.valueOf(val)));
+		}
+	}
 
 
 }

@@ -125,6 +125,9 @@ public class PlMatchExportAction extends AbstractAction {
             ioo.println(out, "<MATCH_ID>"+
             		ArchitectUtils.escapeXML(match.getMatchId())+
             		"</MATCH_ID>");
+            ioo.println(out, "<MATCH_DESC>"+
+            		ArchitectUtils.escapeXML(match.getMatchDesc())+
+            		"</MATCH_DESC>");
             ioo.println(out, "<TABLE_OWNER>"+
             		ArchitectUtils.escapeXML(match.getTableOwner())+
             		"</TABLE_OWNER>");
@@ -473,7 +476,8 @@ public class PlMatchExportAction extends AbstractAction {
 	}
 
 	private void saveMergeCriteria(IOUtils ioo, PrintWriter out) {
-
+System.out.println("merge criteria size="+match.getPlMergeCriterias().size());
+System.out.println("merge criteria size2="+match.getPlMergeConsolidateCriterias().size());
 		List <PlMergeCriteria> criterias = new ArrayList<PlMergeCriteria>(match.getPlMergeCriterias());
 		for ( PlMergeCriteria c : criterias ) {
 

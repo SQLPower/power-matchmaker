@@ -2,6 +2,9 @@ package ca.sqlpower.matchmaker.hibernate;
 // Generated Sep 18, 2006 4:34:38 PM by Hibernate Tools 3.2.0.beta7
 
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -139,6 +142,7 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
     		fireChangeEvent(new ChangeEvent(this));
     	}
     }
+
     public String getDescription() {
         return this.description;
     }
@@ -271,6 +275,41 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
 			return id.getGroupId().compareTo(other.getId().getGroupId());
 		}
 	}
+
+
+	/* for xml parser, overwrite all method that don't take String parameter,
+	 * also create id when set matchId or groupId
+	 *
+	 */
+	public void setMatchId(String id) {
+		if ( this.id == null ) {
+			this.id = new PlMatchGroupId();
+		}
+		this.id.setMatchId(id);
+	}
+	public void setGroupId(String id) {
+		if ( this.id == null ) {
+			this.id = new PlMatchGroupId();
+		}
+		this.id.setGroupId(id);
+	}
+	public void setMatchPercent(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setMatchPercent(Short.valueOf(val));
+		}
+	}
+	public void setLastUpdateDate(String val) throws ParseException {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			setLastUpdateDate(df.parse(val));
+		}
+	}
+	public void setActiveInd(String val) {
+		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
+			setActiveInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
+		}
+	}
+
 
 }
 
