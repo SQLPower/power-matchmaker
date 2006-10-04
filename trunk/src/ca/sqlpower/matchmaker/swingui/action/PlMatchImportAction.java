@@ -125,7 +125,8 @@ for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
             HibernateUtil.primarySession().save(match);
 			HibernateUtil.primarySession().flush();
 			tx.commit();
-
+			HibernateUtil.primarySession().refresh(match);
+			HibernateUtil.primarySession().flush();
 
 
 

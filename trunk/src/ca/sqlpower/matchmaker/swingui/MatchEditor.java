@@ -304,6 +304,8 @@ public class MatchEditor extends JFrame {
             HibernateUtil.primarySession().save(plMatch);
 			HibernateUtil.primarySession().flush();
 			tx.commit();
+			HibernateUtil.primarySession().refresh(plMatch);
+			HibernateUtil.primarySession().flush();
 
             JOptionPane.showMessageDialog(MatchEditor.this,
                     "Match Interface Save Successfully",
