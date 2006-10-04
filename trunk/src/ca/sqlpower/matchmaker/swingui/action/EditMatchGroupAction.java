@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.swingui.PlMatchGroupPanel;
@@ -24,8 +26,13 @@ public class EditMatchGroupAction extends AbstractAction {
 	}
 
 
-	public void actionPerformed(ActionEvent e) {
-		JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(new PlMatchGroupPanel(matchGroup), window, "Edit Match Group", "Save Match Group");
+	public void actionPerformed(ActionEvent e)  {
+		JDialog d;
+		try {
+			d = ArchitectPanelBuilder.createArchitectPanelDialog(new PlMatchGroupPanel(matchGroup), window, "Edit Match Group", "Save Match Group");
+		} catch (ArchitectException e1) {
+			throw new ArchitectRuntimeException(e1);
+		}
 		d.setVisible(true);
 		
 	}

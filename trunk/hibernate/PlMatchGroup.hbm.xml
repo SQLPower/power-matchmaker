@@ -47,7 +47,7 @@
   	</property>
     <property
         name="lastUpdateDate"
-        type="timestamp"
+        type="date"
     >
 <column name="LAST_update_DATE" length="23" />
   	</property>

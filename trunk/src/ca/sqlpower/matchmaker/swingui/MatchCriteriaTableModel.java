@@ -1,5 +1,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.util.Date;
+
 import javax.swing.table.AbstractTableModel;
 
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
@@ -42,8 +44,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 		switch (column) {	
 		case COLUMN:
 			
-			
-			
+			criteria.getId().setColumnName((String)aValue);
 			break;
 		case ALLOW_NULL:             
 			criteria.setAllowNullInd((Boolean)aValue);
@@ -104,6 +105,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 		default:
 			throw new IllegalArgumentException("Invalid column");
 		}
+		criteria.setLastUpdateDate(new Date(System.currentTimeMillis()));
 	}
 	
 	public PlMatchCriteria getRow(int row){

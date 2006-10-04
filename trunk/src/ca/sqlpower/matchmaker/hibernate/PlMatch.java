@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.swing.event.ChangeEvent;
+
 import org.apache.commons.beanutils.BeanUtils;
 
 
@@ -348,16 +350,10 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
         return this.matchId;
     }
 
-    public void setMatchId(String matchId) {
-        this.matchId = matchId;
-    }
     public String getMatchDesc() {
         return this.matchDesc;
     }
 
-    public void setMatchDesc(String matchDesc) {
-        this.matchDesc = matchDesc;
-    }
     public String getTableOwner() {
         return this.tableOwner;
     }
@@ -369,47 +365,31 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 	public void setTableCatalog(String tableCatalog) {
 		if (this.tableCatalog != tableCatalog) {
 			this.tableCatalog = tableCatalog;
+			fireChangeEvent(new ChangeEvent(this));
 		}
 	}
 
-    public void setTableOwner(String tableOwner) {
-        this.tableOwner = tableOwner;
-    }
+
     public String getMatchTable() {
         return this.matchTable;
     }
 
-    public void setMatchTable(String matchTable) {
-        this.matchTable = matchTable;
-    }
     public String getPkColumn() {
         return this.pkColumn;
     }
 
-    public void setPkColumn(String pkColumn) {
-        this.pkColumn = pkColumn;
-    }
     public String getFilter() {
         return this.filter;
     }
 
-    public void setFilter(String filter) {
-        this.filter = filter;
-    }
     public String getResultsTable() {
         return this.resultsTable;
     }
 
-    public void setResultsTable(String resultsTable) {
-        this.resultsTable = resultsTable;
-    }
     public Date getCreateDate() {
         return this.createDate;
     }
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
     public void setCreateDate(String createDate) throws ParseException {
     	if ( createDate != null && createDate.length() > 0 ) {
     		DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -419,11 +399,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public Date getLastUpdateDate() {
         return this.lastUpdateDate;
     }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
-
+    
     public void setLastUpdateDate(String lastUpdateDate) throws ParseException {
     	if ( lastUpdateDate != null && lastUpdateDate.length() > 0 ) {
     		DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -431,29 +407,19 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     	}
     }
 
-     public String getLastUpdateUser() {
+    public String getLastUpdateUser() {
         return this.lastUpdateUser;
     }
 
-    public void setLastUpdateUser(String lastUpdateUser) {
-        this.lastUpdateUser = lastUpdateUser;
-    }
     public String getSequenceName() {
         return this.sequenceName;
     }
 
-    public void setSequenceName(String sequenceName) {
-        this.sequenceName = sequenceName;
-    }
     public boolean isCompileFlag() {
         return this.compileFlag;
     }
 
-    public void setCompileFlag(boolean compileFlag) {
-        this.compileFlag = compileFlag;
-    }
-
-    public void setCompileFlag(String val) {
+   public void setCompileFlag(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setCompileFlag(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
@@ -463,17 +429,11 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
         return this.mergeScriptFileName;
     }
 
-    public void setMergeScriptFileName(String mergeScriptFileName) {
-        this.mergeScriptFileName = mergeScriptFileName;
-    }
     public Short getAutoMatchThreshold() {
         return this.autoMatchThreshold;
     }
 
-    public void setAutoMatchThreshold(Short autoMatchThreshold) {
-        this.autoMatchThreshold = autoMatchThreshold;
-    }
-    public void setAutoMatchThreshold(String val) {
+	public void setAutoMatchThreshold(String val) {
     	if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
     		setAutoMatchThreshold(Short.valueOf(val));
     	}
@@ -482,145 +442,102 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
         return this.mergeCompletionDate;
     }
 
-    public void setMergeCompletionDate(Date mergeCompletionDate) {
-        this.mergeCompletionDate = mergeCompletionDate;
-    }
-
-    public void setMergeCompletionDate(String mergeCompletionDate) throws ParseException {
+	public void setMergeCompletionDate(String mergeCompletionDate) throws ParseException {
     	if ( mergeCompletionDate != null && mergeCompletionDate.length() > 0 ) {
 	    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 	    	setMergeCompletionDate(df.parse(mergeCompletionDate));
     	}
     }
-
     public String getMergeLastUser() {
         return this.mergeLastUser;
     }
 
-    public void setMergeLastUser(String mergeLastUser) {
-        this.mergeLastUser = mergeLastUser;
-    }
     public String getMergeRunStatus() {
         return this.mergeRunStatus;
     }
 
-    public void setMergeRunStatus(String mergeRunStatus) {
-        this.mergeRunStatus = mergeRunStatus;
-    }
     public String getMergeDesc() {
         return this.mergeDesc;
     }
 
-    public void setMergeDesc(String mergeDesc) {
-        this.mergeDesc = mergeDesc;
-    }
     public String getMatchLogFileName() {
         return this.matchLogFileName;
     }
 
-    public void setMatchLogFileName(String matchLogFileName) {
-        this.matchLogFileName = matchLogFileName;
-    }
+
     public boolean isMatchAppendToLogInd() {
         return this.matchAppendToLogInd;
     }
 
-    public void setMatchAppendToLogInd(boolean matchAppendToLogInd) {
-        this.matchAppendToLogInd = matchAppendToLogInd;
-    }
-
-    public void setMatchAppendToLogInd(String val) {
+	public void setMatchAppendToLogInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setMatchAppendToLogInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
     }
-
+    
     public Long getMatchProcessCnt() {
         return this.matchProcessCnt;
     }
 
-    public void setMatchProcessCnt(Long matchProcessCnt) {
-        this.matchProcessCnt = matchProcessCnt;
-    }
-
-    public void setMatchProcessCnt(String val) {
+	public void setMatchProcessCnt(String val) {
     	if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null")) {
     		setMatchProcessCnt(Long.valueOf(val));
     	}
     }
-
+    
     public Long getMatchShowProgressFreq() {
         return this.matchShowProgressFreq;
     }
 
-    public void setMatchShowProgressFreq(Long matchShowProgressFreq) {
-        this.matchShowProgressFreq = matchShowProgressFreq;
-    }
-    public void setMatchShowProgressFreq(String val) {
+	public void setMatchShowProgressFreq(String val) {
     	if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null")) {
     		setMatchShowProgressFreq(Long.valueOf(val));
     	}
     }
-
+    
     public boolean isMatchDebugModeInd() {
         return this.matchDebugModeInd;
     }
 
-    public void setMatchDebugModeInd(boolean matchDebugModeInd) {
-        this.matchDebugModeInd = matchDebugModeInd;
-    }
-    public void setMatchDebugModeInd(String val) {
+	public void setMatchDebugModeInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setMatchDebugModeInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
     }
+    
     public String getMatchRollbackSegmentName() {
         return this.matchRollbackSegmentName;
     }
 
-    public void setMatchRollbackSegmentName(String matchRollbackSegmentName) {
-        this.matchRollbackSegmentName = matchRollbackSegmentName;
-    }
     public String getMergeLogFileName() {
         return this.mergeLogFileName;
     }
 
-    public void setMergeLogFileName(String mergeLogFileName) {
-        this.mergeLogFileName = mergeLogFileName;
-    }
     public boolean isMergeAppendToLogInd() {
         return this.mergeAppendToLogInd;
     }
 
-    public void setMergeAppendToLogInd(boolean mergeAppendToLogInd) {
-        this.mergeAppendToLogInd = mergeAppendToLogInd;
-    }
-    public void setMergeAppendToLogInd(String val) {
+	public void setMergeAppendToLogInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setMergeAppendToLogInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
     }
+    
     public BigDecimal getMergeProcessCnt() {
         return this.mergeProcessCnt;
     }
-
-    public void setMergeProcessCnt(BigDecimal mergeProcessCnt) {
-        this.mergeProcessCnt = mergeProcessCnt;
-    }
+    
     public void setMergeProcessCnt(String val) {
         if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
         	setMergeProcessCnt(BigDecimal.valueOf(Long.valueOf(val)));
         }
     }
+
     public BigDecimal getMergeShowProgressFreq() {
         return this.mergeShowProgressFreq;
     }
 
-    public void setMergeShowProgressFreq(BigDecimal mergeShowProgressFreq) {
-        this.mergeShowProgressFreq = mergeShowProgressFreq;
-    }
-
-    public void setMergeShowProgressFreq(String val) {
+	public void setMergeShowProgressFreq(String val) {
         if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
         	setMergeShowProgressFreq(BigDecimal.valueOf(Long.valueOf(val)));
         }
@@ -629,11 +546,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public boolean isMergeDebugModeInd() {
         return this.mergeDebugModeInd;
     }
-
-    public void setMergeDebugModeInd(boolean mergeDebugModeInd) {
-        this.mergeDebugModeInd = mergeDebugModeInd;
-    }
-    public void setMergeDebugModeInd(String val) {
+	public void setMergeDebugModeInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setMergeDebugModeInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
@@ -641,18 +554,12 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
     public String getMergeRollbackSegmentName() {
         return this.mergeRollbackSegmentName;
     }
-
-    public void setMergeRollbackSegmentName(String mergeRollbackSegmentName) {
-        this.mergeRollbackSegmentName = mergeRollbackSegmentName;
-    }
+    
     public boolean isMergeAugmentNullInd() {
         return this.mergeAugmentNullInd;
     }
 
-    public void setMergeAugmentNullInd(boolean mergeAugmentNullInd) {
-        this.mergeAugmentNullInd = mergeAugmentNullInd;
-    }
-    public void setMergeAugmentNullInd(String val) {
+	public void setMergeAugmentNullInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setMergeAugmentNullInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
@@ -661,582 +568,419 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
         return this.matchRunStatus;
     }
 
-    public void setMatchRunStatus(String matchRunStatus) {
-        this.matchRunStatus = matchRunStatus;
-    }
     public String getMatchScriptFileName() {
         return this.matchScriptFileName;
     }
 
-    public void setMatchScriptFileName(String matchScriptFileName) {
-        this.matchScriptFileName = matchScriptFileName;
-    }
     public BigDecimal getMatchTotalSteps() {
         return this.matchTotalSteps;
     }
-
-    public void setMatchTotalSteps(BigDecimal matchTotalSteps) {
-        this.matchTotalSteps = matchTotalSteps;
-    }
-
-    public void setMatchTotalSteps(String val) {
+    
+	public void setMatchTotalSteps(String val) {
         if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
         	setMatchTotalSteps(BigDecimal.valueOf(Long.valueOf(val)));
         }
     }
-
+    
     public BigDecimal getMatchStepsCompleted() {
         return this.matchStepsCompleted;
     }
-
-    public void setMatchStepsCompleted(BigDecimal matchStepsCompleted) {
-        this.matchStepsCompleted = matchStepsCompleted;
-    }
-    public void setMatchStepsCompleted(String val) {
+	
+	public void setMatchStepsCompleted(String val) {
         if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
         	setMatchStepsCompleted(BigDecimal.valueOf(Long.valueOf(val)));
         }
     }
+    
     public BigDecimal getMatchRowsInserted() {
         return this.matchRowsInserted;
     }
-
-    public void setMatchRowsInserted(BigDecimal matchRowsInserted) {
-        this.matchRowsInserted = matchRowsInserted;
-    }
-    public void setMatchRowsInserted(String val) {
+	
+	public void setMatchRowsInserted(String val) {
         if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
         	setMatchRowsInserted(BigDecimal.valueOf(Long.valueOf(val)));
         }
     }
-
+	
     public Date getMatchLastRunDate() {
         return this.matchLastRunDate;
     }
-
-    public void setMatchLastRunDate(Date matchLastRunDate) {
-        this.matchLastRunDate = matchLastRunDate;
-    }
-
-    public void setMatchLastRunDate(String matchLastRunDate) throws ParseException {
+	
+	public void setMatchLastRunDate(String matchLastRunDate) throws ParseException {
     	if ( matchLastRunDate != null && matchLastRunDate.length() > 0 ) {
 	    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 	    	setMatchLastRunDate(df.parse(matchLastRunDate));
     	}
     }
+	
     public String getMatchLastRunUser() {
         return this.matchLastRunUser;
     }
 
-    public void setMatchLastRunUser(String matchLastRunUser) {
-        this.matchLastRunUser = matchLastRunUser;
-    }
     public BigDecimal getMergeTotalSteps() {
         return this.mergeTotalSteps;
     }
 
-    public void setMergeTotalSteps(BigDecimal mergeTotalSteps) {
-        this.mergeTotalSteps = mergeTotalSteps;
-    }
-    public void setMergeTotalSteps(String val) {
+	public void setMergeTotalSteps(String val) {
         if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
         	setMergeTotalSteps(BigDecimal.valueOf(Long.valueOf(val)));
         }
     }
+    
     public BigDecimal getMergeStepsCompleted() {
         return this.mergeStepsCompleted;
     }
-
-    public void setMergeStepsCompleted(BigDecimal mergeStepsCompleted) {
-        this.mergeStepsCompleted = mergeStepsCompleted;
-    }
-    public void setMergeStepsCompleted(String val) {
+	
+	public void setMergeStepsCompleted(String val) {
         if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
         	setMergeStepsCompleted(BigDecimal.valueOf(Long.valueOf(val)));
         }
     }
+    
     public Date getMergeLastRunDate() {
         return this.mergeLastRunDate;
     }
 
-    public void setMergeLastRunDate(Date mergeLastRunDate) {
-        this.mergeLastRunDate = mergeLastRunDate;
-    }
-
-    public void setMergeLastRunDate(String mergeLastRunDate) throws ParseException {
+	public void setMergeLastRunDate(String mergeLastRunDate) throws ParseException {
     	if ( mergeLastRunDate != null && mergeLastRunDate.length() > 0 ) {
 	    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 	    	setMergeLastRunDate(df.parse(mergeLastRunDate));
     	}
     }
-
+    
     public String getMergeLastRunUser() {
         return this.mergeLastRunUser;
     }
 
-    public void setMergeLastRunUser(String mergeLastRunUser) {
-        this.mergeLastRunUser = mergeLastRunUser;
-    }
     public String getMatchPackageName() {
         return this.matchPackageName;
     }
 
-    public void setMatchPackageName(String matchPackageName) {
-        this.matchPackageName = matchPackageName;
-    }
     public String getMatchProcedureNameAll() {
         return this.matchProcedureNameAll;
     }
 
-    public void setMatchProcedureNameAll(String matchProcedureNameAll) {
-        this.matchProcedureNameAll = matchProcedureNameAll;
-    }
     public String getMatchProcedureNameOne() {
         return this.matchProcedureNameOne;
     }
 
-    public void setMatchProcedureNameOne(String matchProcedureNameOne) {
-        this.matchProcedureNameOne = matchProcedureNameOne;
-    }
     public String getMergePackageName() {
         return this.mergePackageName;
     }
 
-    public void setMergePackageName(String mergePackageName) {
-        this.mergePackageName = mergePackageName;
-    }
     public String getMergeProcedureName() {
         return this.mergeProcedureName;
     }
 
-    public void setMergeProcedureName(String mergeProcedureName) {
-        this.mergeProcedureName = mergeProcedureName;
-    }
     public String getMatchTablePkColumnFormat() {
         return this.matchTablePkColumnFormat;
     }
 
-    public void setMatchTablePkColumnFormat(String matchTablePkColumnFormat) {
-        this.matchTablePkColumnFormat = matchTablePkColumnFormat;
-    }
+   
     public BigDecimal getMergeRowsInserted() {
         return this.mergeRowsInserted;
     }
 
-    public void setMergeRowsInserted(BigDecimal mergeRowsInserted) {
-        this.mergeRowsInserted = mergeRowsInserted;
-    }
-    public void setMergeRowsInserted(String val) {
+  	public void setMergeRowsInserted(String val) {
         if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
         	setMergeRowsInserted(BigDecimal.valueOf(Long.valueOf(val)));
         }
     }
-
+    
     public String getBatchFileName() {
         return this.batchFileName;
     }
 
-    public void setBatchFileName(String batchFileName) {
-        this.batchFileName = batchFileName;
-    }
+
     public String getSelectClause() {
         return this.selectClause;
     }
 
-    public void setSelectClause(String selectClause) {
-        this.selectClause = selectClause;
-    }
+   
     public String getFromClause() {
         return this.fromClause;
     }
 
-    public void setFromClause(String fromClause) {
-        this.fromClause = fromClause;
-    }
+  
     public String getWhereClause() {
         return this.whereClause;
     }
 
-    public void setWhereClause(String whereClause) {
-        this.whereClause = whereClause;
-    }
+
     public String getResultsTableOwner() {
         return this.resultsTableOwner;
     }
 
-    public void setResultsTableOwner(String resultsTableOwner) {
-        this.resultsTableOwner = resultsTableOwner;
-    }
+
     public boolean isMatchBreakInd() {
         return this.matchBreakInd;
     }
 
-    public void setMatchBreakInd(boolean matchBreakInd) {
-        this.matchBreakInd = matchBreakInd;
-    }
-    public void setMatchBreakInd(String val) {
+	public void setMatchBreakInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setMatchBreakInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
     }
+    
     public String getFilterCriteria() {
         return this.filterCriteria;
     }
 
-    public void setFilterCriteria(String filterCriteria) {
-        this.filterCriteria = filterCriteria;
-    }
+
     public String getMatchType() {
         return this.matchType;
     }
 
-    public void setMatchType(String matchType) {
-        this.matchType = matchType;
-    }
+
     public String getLastUpdateOsUser() {
         return this.lastUpdateOsUser;
     }
 
-    public void setLastUpdateOsUser(String lastUpdateOsUser) {
-        this.lastUpdateOsUser = lastUpdateOsUser;
-    }
+ 
     public String getMatchStepDesc() {
         return this.matchStepDesc;
     }
 
-    public void setMatchStepDesc(String matchStepDesc) {
-        this.matchStepDesc = matchStepDesc;
-    }
+
     public String getMergeStepDesc() {
         return this.mergeStepDesc;
     }
 
-    public void setMergeStepDesc(String mergeStepDesc) {
-        this.mergeStepDesc = mergeStepDesc;
-    }
+
     public boolean isMergeTablesBackupInd() {
         return this.mergeTablesBackupInd;
     }
 
-    public void setMergeTablesBackupInd(boolean mergeTablesBackupInd) {
-        this.mergeTablesBackupInd = mergeTablesBackupInd;
-    }
-    public void setMergeTablesBackupInd(String val) {
+	public void setMergeTablesBackupInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setMergeTablesBackupInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
     }
+    
     public String getMatchStatus() {
         return this.matchStatus;
     }
 
-    public void setMatchStatus(String matchStatus) {
-        this.matchStatus = matchStatus;
-    }
+ 
     public BigDecimal getLastBackupNo() {
         return this.lastBackupNo;
     }
 
-    public void setLastBackupNo(BigDecimal lastBackupNo) {
-        this.lastBackupNo = lastBackupNo;
-    }
-    public void setLastBackupNo(String val) {
+	public void setLastBackupNo(String val) {
         if ( val != null && val.length() > 0 && !val.equalsIgnoreCase("null") ) {
         	setLastBackupNo(BigDecimal.valueOf(Long.valueOf(val)));
         }
     }
+	
     public boolean isCheckedOutInd() {
         return this.checkedOutInd;
     }
 
-    public void setCheckedOutInd(boolean checkedOutInd) {
-        this.checkedOutInd = checkedOutInd;
-    }
-    public void setCheckedOutInd(String val) {
+	public void setCheckedOutInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setCheckedOutInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
     }
+    
     public Date getCheckedOutDate() {
         return this.checkedOutDate;
     }
 
-    public void setCheckedOutDate(Date checkedOutDate) {
-        this.checkedOutDate = checkedOutDate;
-    }
-
-    public void setCheckedOutDate(String checkedOutDate) throws ParseException {
+ 	public void setCheckedOutDate(String checkedOutDate) throws ParseException {
     	if ( checkedOutDate != null && checkedOutDate.length() > 0 ) {
 	    	DateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 	    	setCheckedOutDate(df.parse(checkedOutDate));
     	}
     }
-
+    
     public String getCheckedOutUser() {
         return this.checkedOutUser;
     }
 
-    public void setCheckedOutUser(String checkedOutUser) {
-        this.checkedOutUser = checkedOutUser;
-    }
+ 
     public String getCheckedOutOsUser() {
         return this.checkedOutOsUser;
     }
 
-    public void setCheckedOutOsUser(String checkedOutOsUser) {
-        this.checkedOutOsUser = checkedOutOsUser;
-    }
+
     public String getIndexColumnName0() {
         return this.indexColumnName0;
     }
 
-    public void setIndexColumnName0(String indexColumnName0) {
-        this.indexColumnName0 = indexColumnName0;
-    }
+
     public String getIndexColumnName1() {
         return this.indexColumnName1;
     }
 
-    public void setIndexColumnName1(String indexColumnName1) {
-        this.indexColumnName1 = indexColumnName1;
-    }
+
     public String getIndexColumnName2() {
         return this.indexColumnName2;
     }
 
-    public void setIndexColumnName2(String indexColumnName2) {
-        this.indexColumnName2 = indexColumnName2;
-    }
     public String getIndexColumnName3() {
         return this.indexColumnName3;
     }
 
-    public void setIndexColumnName3(String indexColumnName3) {
-        this.indexColumnName3 = indexColumnName3;
-    }
+  
     public String getIndexColumnName4() {
         return this.indexColumnName4;
     }
 
-    public void setIndexColumnName4(String indexColumnName4) {
-        this.indexColumnName4 = indexColumnName4;
-    }
+
     public String getIndexColumnName5() {
         return this.indexColumnName5;
     }
 
-    public void setIndexColumnName5(String indexColumnName5) {
-        this.indexColumnName5 = indexColumnName5;
-    }
+  
     public String getIndexColumnName6() {
         return this.indexColumnName6;
     }
 
-    public void setIndexColumnName6(String indexColumnName6) {
-        this.indexColumnName6 = indexColumnName6;
-    }
+  
     public String getIndexColumnName7() {
         return this.indexColumnName7;
     }
 
-    public void setIndexColumnName7(String indexColumnName7) {
-        this.indexColumnName7 = indexColumnName7;
-    }
+
     public String getIndexColumnName8() {
         return this.indexColumnName8;
     }
 
-    public void setIndexColumnName8(String indexColumnName8) {
-        this.indexColumnName8 = indexColumnName8;
-    }
+
     public String getIndexColumnName9() {
         return this.indexColumnName9;
     }
 
-    public void setIndexColumnName9(String indexColumnName9) {
-        this.indexColumnName9 = indexColumnName9;
-    }
+
     public String getTempSourceTableName() {
         return this.tempSourceTableName;
     }
 
-    public void setTempSourceTableName(String tempSourceTableName) {
-        this.tempSourceTableName = tempSourceTableName;
-    }
+
     public String getTempCandDupTableName() {
         return this.tempCandDupTableName;
     }
 
-    public void setTempCandDupTableName(String tempCandDupTableName) {
-        this.tempCandDupTableName = tempCandDupTableName;
-    }
+
     public String getFromClauseDb() {
         return this.fromClauseDb;
     }
 
-    public void setFromClauseDb(String fromClauseDb) {
-        this.fromClauseDb = fromClauseDb;
-    }
+
     public String getIndexColumnType0() {
         return this.indexColumnType0;
     }
 
-    public void setIndexColumnType0(String indexColumnType0) {
-        this.indexColumnType0 = indexColumnType0;
-    }
+
     public String getIndexColumnType1() {
         return this.indexColumnType1;
     }
 
-    public void setIndexColumnType1(String indexColumnType1) {
-        this.indexColumnType1 = indexColumnType1;
-    }
     public String getIndexColumnType2() {
         return this.indexColumnType2;
     }
 
-    public void setIndexColumnType2(String indexColumnType2) {
-        this.indexColumnType2 = indexColumnType2;
-    }
+
     public String getIndexColumnType3() {
         return this.indexColumnType3;
     }
 
-    public void setIndexColumnType3(String indexColumnType3) {
-        this.indexColumnType3 = indexColumnType3;
-    }
+
     public String getIndexColumnType4() {
         return this.indexColumnType4;
     }
 
-    public void setIndexColumnType4(String indexColumnType4) {
-        this.indexColumnType4 = indexColumnType4;
-    }
+ 
     public String getIndexColumnType5() {
         return this.indexColumnType5;
     }
 
-    public void setIndexColumnType5(String indexColumnType5) {
-        this.indexColumnType5 = indexColumnType5;
-    }
+ 
     public String getIndexColumnType6() {
         return this.indexColumnType6;
     }
 
-    public void setIndexColumnType6(String indexColumnType6) {
-        this.indexColumnType6 = indexColumnType6;
-    }
+
     public String getIndexColumnType7() {
         return this.indexColumnType7;
     }
 
-    public void setIndexColumnType7(String indexColumnType7) {
-        this.indexColumnType7 = indexColumnType7;
-    }
+
     public String getIndexColumnType8() {
         return this.indexColumnType8;
     }
 
-    public void setIndexColumnType8(String indexColumnType8) {
-        this.indexColumnType8 = indexColumnType8;
-    }
     public String getIndexColumnType9() {
         return this.indexColumnType9;
     }
 
-    public void setIndexColumnType9(String indexColumnType9) {
-        this.indexColumnType9 = indexColumnType9;
-    }
+
     public boolean isTruncateCandDupInd() {
         return this.truncateCandDupInd;
     }
-
-    public void setTruncateCandDupInd(boolean truncateCandDupInd) {
-        this.truncateCandDupInd = truncateCandDupInd;
-    }
-    public void setTruncateCandDupInd(String val) {
+	public void setTruncateCandDupInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setTruncateCandDupInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
     }
+    
     public boolean isMatchSendEmailInd() {
         return this.matchSendEmailInd;
     }
 
-    public void setMatchSendEmailInd(boolean matchSendEmailInd) {
-        this.matchSendEmailInd = matchSendEmailInd;
-    }
-    public void setMatchSendEmailInd(String val) {
+	public void setMatchSendEmailInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setMatchSendEmailInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
     }
+    
     public boolean isMergeSendEmailInd() {
         return this.mergeSendEmailInd;
     }
 
-    public void setMergeSendEmailInd(boolean mergeSendEmailInd) {
-        this.mergeSendEmailInd = mergeSendEmailInd;
-    }
-    public void setMergeSendEmailInd(String val) {
+ 	public void setMergeSendEmailInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setMergeSendEmailInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
     }
+    
     public String getXrefOwner() {
         return this.xrefOwner;
     }
 
-    public void setXrefOwner(String xrefOwner) {
-        this.xrefOwner = xrefOwner;
-    }
+
     public String getXrefTableName() {
         return this.xrefTableName;
     }
 
-    public void setXrefTableName(String xrefTableName) {
-        this.xrefTableName = xrefTableName;
-    }
+   
     public boolean isAutoMatchActiveInd() {
         return this.autoMatchActiveInd;
     }
 
-    public void setAutoMatchActiveInd(boolean autoMatchActiveInd) {
-        this.autoMatchActiveInd = autoMatchActiveInd;
-    }
     public void setAutoMatchActiveInd(String val) {
     	if ( val != null && val.length() > 0 ) {
     		setAutoMatchActiveInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
     	}
     }
+    
     public Set<PlMergeConsolidateCriteria> getPlMergeConsolidateCriterias() {
-        return this.plMergeConsolidateCriterias;
+        return Collections.unmodifiableSet(this.plMergeConsolidateCriterias);
     }
 
-    public void setPlMergeConsolidateCriterias(Set<PlMergeConsolidateCriteria> plMergeConsolidateCriterias) {
-        this.plMergeConsolidateCriterias = plMergeConsolidateCriterias;
-    }
     public Set<PlMatchXrefMap> getPlMatchXrefMaps() {
-        return this.plMatchXrefMaps;
+        return Collections.unmodifiableSet(this.plMatchXrefMaps);
     }
 
-    public void setPlMatchXrefMaps(Set<PlMatchXrefMap> plMatchXrefMaps) {
-        this.plMatchXrefMaps = plMatchXrefMaps;
-    }
     public Set<PlMergeCriteria> getPlMergeCriterias() {
-        return this.plMergeCriterias;
+        return Collections.unmodifiableSet(this.plMergeCriterias);
     }
 
-    public void setPlMergeCriterias(Set<PlMergeCriteria> plMergeCriterias) {
-        this.plMergeCriterias = plMergeCriterias;
-    }
+
     public Set<PlMatchGroup> getPlMatchGroups() {
-        return this.plMatchGroups;
+        return Collections.unmodifiableSet(this.plMatchGroups);
     }
 
-    public void setPlMatchGroups(Set<PlMatchGroup> plMatchGroups) {
-        this.plMatchGroups = plMatchGroups;
-    }
 
 
     @Override
@@ -1298,7 +1042,7 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 	public void setResultsTableCatalog(String resultsTableCatalog) {
 		if (this.resultsTableCatalog != resultsTableCatalog) {
 			this.resultsTableCatalog = resultsTableCatalog;
-			//TODO fire event
+			fireChangeEvent(new ChangeEvent(this));
 		}
 	}
 
@@ -1309,38 +1053,772 @@ public class PlMatch extends DefaultHibernateObject implements java.io.Serializa
 	public void setXrefCatalog(String xrefCatalog) {
 		if (this.xrefCatalog != xrefCatalog) {
 			this.xrefCatalog = xrefCatalog;
-			//TODO fire event
+			fireChangeEvent(new ChangeEvent(this));
 		}
 	}
-
-
+	
 	/**
 	 * add for xml parser
+	 * 
+	 * 
 	 */
-	public void addMatchGroup(PlMatchGroup g) {
-		plMatchGroups.add(g);
+	public void xmlAddMatchGroup(PlMatchGroup g) {
+		addPlMatchGroups(g);
 		g.setPlMatch(this);
 	}
-	public void addMatchCriteria(PlMatchCriteria c) {
+	public void xmlAddMatchCriteria(PlMatchCriteria c) {
 		for ( PlMatchGroup g : getPlMatchGroups() ) {
 			PlMatchGroupId id = new PlMatchGroupId(c.getId().getMatchId(),
 					c.getId().getGroupId());
 			if ( id.equals(g.getId()) ) {
-				g.getPlMatchCriterias().add(c);
+				g.addPlMatchCriteria(c);
 				c.setPlMatchGroup(g);
 				break;
 			}
 		}
 	}
-	public void addMergeCriteria(PlMergeCriteria c) {
+	public void xmlAddMergeCriteria(PlMergeCriteria c) {
 		plMergeCriterias.add(c);
 		c.setPlMatch(this);
 	}
 
-	public void addMergeConsolidateCriteria(PlMergeConsolidateCriteria c) {
+	public void xmlAddMergeConsolidateCriteria(PlMergeConsolidateCriteria c) {
 		plMergeConsolidateCriterias.add(c);
 		c.setPlMatch(this);
 	}
+
+	public void setAutoMatchActiveInd(boolean autoMatchActiveInd) {
+		if (this.autoMatchActiveInd != autoMatchActiveInd) {
+			this.autoMatchActiveInd = autoMatchActiveInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setAutoMatchThreshold(Short autoMatchThreshold) {
+		if (this.autoMatchThreshold != autoMatchThreshold) {
+			this.autoMatchThreshold = autoMatchThreshold;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setBatchFileName(String batchFileName) {
+		if (this.batchFileName != batchFileName) {
+			this.batchFileName = batchFileName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setCheckedOutDate(Date checkedOutDate) {
+		if (this.checkedOutDate != checkedOutDate) {
+			this.checkedOutDate = checkedOutDate;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setCheckedOutInd(boolean checkedOutInd) {
+		if (this.checkedOutInd != checkedOutInd) {
+			this.checkedOutInd = checkedOutInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setCheckedOutOsUser(String checkedOutOsUser) {
+		if (this.checkedOutOsUser != checkedOutOsUser) {
+			this.checkedOutOsUser = checkedOutOsUser;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setCheckedOutUser(String checkedOutUser) {
+		if (this.checkedOutUser != checkedOutUser) {
+			this.checkedOutUser = checkedOutUser;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setCompileFlag(boolean compileFlag) {
+		if (this.compileFlag != compileFlag) {
+			this.compileFlag = compileFlag;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setCreateDate(Date createDate) {
+		if (this.createDate != createDate) {
+			this.createDate = createDate;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setFilter(String filter) {
+		if (this.filter != filter) {
+			this.filter = filter;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setFilterCriteria(String filterCriteria) {
+		if (this.filterCriteria != filterCriteria) {
+			this.filterCriteria = filterCriteria;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setFromClause(String fromClause) {
+		if (this.fromClause != fromClause) {
+			this.fromClause = fromClause;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setFromClauseDb(String fromClauseDb) {
+		if (this.fromClauseDb != fromClauseDb) {
+			this.fromClauseDb = fromClauseDb;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnName0(String indexColumnName0) {
+		if (this.indexColumnName0 != indexColumnName0) {
+			this.indexColumnName0 = indexColumnName0;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnName1(String indexColumnName1) {
+		if (this.indexColumnName1 != indexColumnName1) {
+			this.indexColumnName1 = indexColumnName1;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnName2(String indexColumnName2) {
+		if (this.indexColumnName2 != indexColumnName2) {
+			this.indexColumnName2 = indexColumnName2;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnName3(String indexColumnName3) {
+		if (this.indexColumnName3 != indexColumnName3) {
+			this.indexColumnName3 = indexColumnName3;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnName4(String indexColumnName4) {
+		if (this.indexColumnName4 != indexColumnName4) {
+			this.indexColumnName4 = indexColumnName4;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnName5(String indexColumnName5) {
+		if (this.indexColumnName5 != indexColumnName5) {
+			this.indexColumnName5 = indexColumnName5;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnName6(String indexColumnName6) {
+		if (this.indexColumnName6 != indexColumnName6) {
+			this.indexColumnName6 = indexColumnName6;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnName7(String indexColumnName7) {
+		if (this.indexColumnName7 != indexColumnName7) {
+			this.indexColumnName7 = indexColumnName7;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnName8(String indexColumnName8) {
+		if (this.indexColumnName8 != indexColumnName8) {
+			this.indexColumnName8 = indexColumnName8;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnName9(String indexColumnName9) {
+		if (this.indexColumnName9 != indexColumnName9) {
+			this.indexColumnName9 = indexColumnName9;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnType0(String indexColumnType0) {
+		if (this.indexColumnType0 != indexColumnType0) {
+			this.indexColumnType0 = indexColumnType0;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnType1(String indexColumnType1) {
+		if (this.indexColumnType1 != indexColumnType1) {
+			this.indexColumnType1 = indexColumnType1;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnType2(String indexColumnType2) {
+		if (this.indexColumnType2 != indexColumnType2) {
+			this.indexColumnType2 = indexColumnType2;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnType3(String indexColumnType3) {
+		if (this.indexColumnType3 != indexColumnType3) {
+			this.indexColumnType3 = indexColumnType3;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnType4(String indexColumnType4) {
+		if (this.indexColumnType4 != indexColumnType4) {
+			this.indexColumnType4 = indexColumnType4;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnType5(String indexColumnType5) {
+		if (this.indexColumnType5 != indexColumnType5) {
+			this.indexColumnType5 = indexColumnType5;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnType6(String indexColumnType6) {
+		if (this.indexColumnType6 != indexColumnType6) {
+			this.indexColumnType6 = indexColumnType6;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnType7(String indexColumnType7) {
+		if (this.indexColumnType7 != indexColumnType7) {
+			this.indexColumnType7 = indexColumnType7;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnType8(String indexColumnType8) {
+		if (this.indexColumnType8 != indexColumnType8) {
+			this.indexColumnType8 = indexColumnType8;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setIndexColumnType9(String indexColumnType9) {
+		if (this.indexColumnType9 != indexColumnType9) {
+			this.indexColumnType9 = indexColumnType9;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setLastBackupNo(BigDecimal lastBackupNo) {
+		if (this.lastBackupNo != lastBackupNo) {
+			this.lastBackupNo = lastBackupNo;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setLastUpdateDate(Date lastUpdateDate) {
+		if (this.lastUpdateDate != lastUpdateDate) {
+			this.lastUpdateDate = lastUpdateDate;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setLastUpdateOsUser(String lastUpdateOsUser) {
+		if (this.lastUpdateOsUser != lastUpdateOsUser) {
+			this.lastUpdateOsUser = lastUpdateOsUser;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setLastUpdateUser(String lastUpdateUser) {
+		if (this.lastUpdateUser != lastUpdateUser) {
+			this.lastUpdateUser = lastUpdateUser;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchAppendToLogInd(boolean matchAppendToLogInd) {
+		if (this.matchAppendToLogInd != matchAppendToLogInd) {
+			this.matchAppendToLogInd = matchAppendToLogInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchBreakInd(boolean matchBreakInd) {
+		if (this.matchBreakInd != matchBreakInd) {
+			this.matchBreakInd = matchBreakInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchDebugModeInd(boolean matchDebugModeInd) {
+		if (this.matchDebugModeInd != matchDebugModeInd) {
+			this.matchDebugModeInd = matchDebugModeInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchDesc(String matchDesc) {
+		if (this.matchDesc != matchDesc) {
+			this.matchDesc = matchDesc;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchId(String matchId) {
+		if (this.matchId != matchId) {
+			this.matchId = matchId;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchLastRunDate(Date matchLastRunDate) {
+		if (this.matchLastRunDate != matchLastRunDate) {
+			this.matchLastRunDate = matchLastRunDate;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchLastRunUser(String matchLastRunUser) {
+		if (this.matchLastRunUser != matchLastRunUser) {
+			this.matchLastRunUser = matchLastRunUser;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchLogFileName(String matchLogFileName) {
+		if (this.matchLogFileName != matchLogFileName) {
+			this.matchLogFileName = matchLogFileName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchPackageName(String matchPackageName) {
+		if (this.matchPackageName != matchPackageName) {
+			this.matchPackageName = matchPackageName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchProcedureNameAll(String matchProcedureNameAll) {
+		if (this.matchProcedureNameAll != matchProcedureNameAll) {
+			this.matchProcedureNameAll = matchProcedureNameAll;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchProcedureNameOne(String matchProcedureNameOne) {
+		if (this.matchProcedureNameOne != matchProcedureNameOne) {
+			this.matchProcedureNameOne = matchProcedureNameOne;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchProcessCnt(Long matchProcessCnt) {
+		if (this.matchProcessCnt != matchProcessCnt) {
+			this.matchProcessCnt = matchProcessCnt;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchRollbackSegmentName(String matchRollbackSegmentName) {
+		if (this.matchRollbackSegmentName != matchRollbackSegmentName) {
+			this.matchRollbackSegmentName = matchRollbackSegmentName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchRowsInserted(BigDecimal matchRowsInserted) {
+		if (this.matchRowsInserted != matchRowsInserted) {
+			this.matchRowsInserted = matchRowsInserted;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchRunStatus(String matchRunStatus) {
+		if (this.matchRunStatus != matchRunStatus) {
+			this.matchRunStatus = matchRunStatus;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchScriptFileName(String matchScriptFileName) {
+		if (this.matchScriptFileName != matchScriptFileName) {
+			this.matchScriptFileName = matchScriptFileName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchSendEmailInd(boolean matchSendEmailInd) {
+		if (this.matchSendEmailInd != matchSendEmailInd) {
+			this.matchSendEmailInd = matchSendEmailInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchShowProgressFreq(Long matchShowProgressFreq) {
+		if (this.matchShowProgressFreq != matchShowProgressFreq) {
+			this.matchShowProgressFreq = matchShowProgressFreq;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchStatus(String matchStatus) {
+		if (this.matchStatus != matchStatus) {
+			this.matchStatus = matchStatus;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchStepDesc(String matchStepDesc) {
+		if (this.matchStepDesc != matchStepDesc) {
+			this.matchStepDesc = matchStepDesc;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchStepsCompleted(BigDecimal matchStepsCompleted) {
+		if (this.matchStepsCompleted != matchStepsCompleted) {
+			this.matchStepsCompleted = matchStepsCompleted;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchTable(String matchTable) {
+		if (this.matchTable != matchTable) {
+			this.matchTable = matchTable;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchTablePkColumnFormat(String matchTablePkColumnFormat) {
+		if (this.matchTablePkColumnFormat != matchTablePkColumnFormat) {
+			this.matchTablePkColumnFormat = matchTablePkColumnFormat;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchTotalSteps(BigDecimal matchTotalSteps) {
+		if (this.matchTotalSteps != matchTotalSteps) {
+			this.matchTotalSteps = matchTotalSteps;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchType(String matchType) {
+		if (this.matchType != matchType) {
+			this.matchType = matchType;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeAppendToLogInd(boolean mergeAppendToLogInd) {
+		if (this.mergeAppendToLogInd != mergeAppendToLogInd) {
+			this.mergeAppendToLogInd = mergeAppendToLogInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeAugmentNullInd(boolean mergeAugmentNullInd) {
+		if (this.mergeAugmentNullInd != mergeAugmentNullInd) {
+			this.mergeAugmentNullInd = mergeAugmentNullInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeCompletionDate(Date mergeCompletionDate) {
+		if (this.mergeCompletionDate != mergeCompletionDate) {
+			this.mergeCompletionDate = mergeCompletionDate;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeDebugModeInd(boolean mergeDebugModeInd) {
+		if (this.mergeDebugModeInd != mergeDebugModeInd) {
+			this.mergeDebugModeInd = mergeDebugModeInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeDesc(String mergeDesc) {
+		if (this.mergeDesc != mergeDesc) {
+			this.mergeDesc = mergeDesc;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeLastRunDate(Date mergeLastRunDate) {
+		if (this.mergeLastRunDate != mergeLastRunDate) {
+			this.mergeLastRunDate = mergeLastRunDate;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeLastRunUser(String mergeLastRunUser) {
+		if (this.mergeLastRunUser != mergeLastRunUser) {
+			this.mergeLastRunUser = mergeLastRunUser;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeLastUser(String mergeLastUser) {
+		if (this.mergeLastUser != mergeLastUser) {
+			this.mergeLastUser = mergeLastUser;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeLogFileName(String mergeLogFileName) {
+		if (this.mergeLogFileName != mergeLogFileName) {
+			this.mergeLogFileName = mergeLogFileName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergePackageName(String mergePackageName) {
+		if (this.mergePackageName != mergePackageName) {
+			this.mergePackageName = mergePackageName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeProcedureName(String mergeProcedureName) {
+		if (this.mergeProcedureName != mergeProcedureName) {
+			this.mergeProcedureName = mergeProcedureName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeProcessCnt(BigDecimal mergeProcessCnt) {
+		if (this.mergeProcessCnt != mergeProcessCnt) {
+			this.mergeProcessCnt = mergeProcessCnt;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeRollbackSegmentName(String mergeRollbackSegmentName) {
+		if (this.mergeRollbackSegmentName != mergeRollbackSegmentName) {
+			this.mergeRollbackSegmentName = mergeRollbackSegmentName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeRowsInserted(BigDecimal mergeRowsInserted) {
+		if (this.mergeRowsInserted != mergeRowsInserted) {
+			this.mergeRowsInserted = mergeRowsInserted;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeRunStatus(String mergeRunStatus) {
+		if (this.mergeRunStatus != mergeRunStatus) {
+			this.mergeRunStatus = mergeRunStatus;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeScriptFileName(String mergeScriptFileName) {
+		if (this.mergeScriptFileName != mergeScriptFileName) {
+			this.mergeScriptFileName = mergeScriptFileName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeSendEmailInd(boolean mergeSendEmailInd) {
+		if (this.mergeSendEmailInd != mergeSendEmailInd) {
+			this.mergeSendEmailInd = mergeSendEmailInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeShowProgressFreq(BigDecimal mergeShowProgressFreq) {
+		if (this.mergeShowProgressFreq != mergeShowProgressFreq) {
+			this.mergeShowProgressFreq = mergeShowProgressFreq;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeStepDesc(String mergeStepDesc) {
+		if (this.mergeStepDesc != mergeStepDesc) {
+			this.mergeStepDesc = mergeStepDesc;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeStepsCompleted(BigDecimal mergeStepsCompleted) {
+		if (this.mergeStepsCompleted != mergeStepsCompleted) {
+			this.mergeStepsCompleted = mergeStepsCompleted;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeTablesBackupInd(boolean mergeTablesBackupInd) {
+		if (this.mergeTablesBackupInd != mergeTablesBackupInd) {
+			this.mergeTablesBackupInd = mergeTablesBackupInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMergeTotalSteps(BigDecimal mergeTotalSteps) {
+		if (this.mergeTotalSteps != mergeTotalSteps) {
+			this.mergeTotalSteps = mergeTotalSteps;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setPkColumn(String pkColumn) {
+		if (this.pkColumn != pkColumn) {
+			this.pkColumn = pkColumn;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	private void setPlMatchGroups(Set<PlMatchGroup> plMatchGroups) {
+		if (this.plMatchGroups != plMatchGroups) {
+			this.plMatchGroups = plMatchGroups;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+	
+	public void addAllPlMatchGroups(Set<PlMatchGroup> groups){
+		for (PlMatchGroup pmg: groups){
+			plMatchGroups.add(pmg);
+	    	pmg.addAllHierachialChangeListener(getHierachialChangeListeners());
+		}
+		fireChangeEvent(new ChangeEvent(this));
+	}
+	
+    public boolean addPlMatchGroups(PlMatchGroup pmg) {
+    	boolean b = plMatchGroups.add(pmg);
+    	pmg.addAllHierachialChangeListener(getHierachialChangeListeners());
+    	fireChangeEvent(new ChangeEvent(this));
+    	return b;
+    }
+    
+    public boolean removePlMatchGroups(PlMatchGroup pmg) {
+    	boolean b = plMatchGroups.remove(pmg);
+    	pmg.removeAllHierachialChangeListener(getHierachialChangeListeners());
+    	fireChangeEvent(new ChangeEvent(this));
+    	return b;
+    }
+    
+    public void clearPlMatchGroups(){
+    	for(PlMatchGroup pmg:getPlMatchGroups()){
+    		plMatchGroups.remove(pmg);
+        	pmg.removeAllHierachialChangeListener(getHierachialChangeListeners());
+    	}
+    	fireChangeEvent(new ChangeEvent(this));
+ 
+    }
+
+	private void setPlMatchXrefMaps(Set<PlMatchXrefMap> plMatchXrefMaps) {
+		if (this.plMatchXrefMaps != plMatchXrefMaps) {
+			this.plMatchXrefMaps = plMatchXrefMaps;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	private void setPlMergeConsolidateCriterias(Set<PlMergeConsolidateCriteria> plMergeConsolidateCriterias) {
+		if (this.plMergeConsolidateCriterias != plMergeConsolidateCriterias) {
+			this.plMergeConsolidateCriterias = plMergeConsolidateCriterias;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	private void setPlMergeCriterias(Set<PlMergeCriteria> plMergeCriterias) {
+		if (this.plMergeCriterias != plMergeCriterias) {
+			this.plMergeCriterias = plMergeCriterias;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setResultsTable(String resultsTable) {
+		if (this.resultsTable != resultsTable) {
+			this.resultsTable = resultsTable;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setResultsTableOwner(String resultsTableOwner) {
+		if (this.resultsTableOwner != resultsTableOwner) {
+			this.resultsTableOwner = resultsTableOwner;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setSelectClause(String selectClause) {
+		if (this.selectClause != selectClause) {
+			this.selectClause = selectClause;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setSequenceName(String sequenceName) {
+		if (this.sequenceName != sequenceName) {
+			this.sequenceName = sequenceName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setTableOwner(String tableOwner) {
+		if (this.tableOwner != tableOwner) {
+			this.tableOwner = tableOwner;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setTempCandDupTableName(String tempCandDupTableName) {
+		if (this.tempCandDupTableName != tempCandDupTableName) {
+			this.tempCandDupTableName = tempCandDupTableName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setTempSourceTableName(String tempSourceTableName) {
+		if (this.tempSourceTableName != tempSourceTableName) {
+			this.tempSourceTableName = tempSourceTableName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setTruncateCandDupInd(boolean truncateCandDupInd) {
+		if (this.truncateCandDupInd != truncateCandDupInd) {
+			this.truncateCandDupInd = truncateCandDupInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setWhereClause(String whereClause) {
+		if (this.whereClause != whereClause) {
+			this.whereClause = whereClause;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setXrefOwner(String xrefOwner) {
+		if (this.xrefOwner != xrefOwner) {
+			this.xrefOwner = xrefOwner;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setXrefTableName(String xrefTableName) {
+		if (this.xrefTableName != xrefTableName) {
+			this.xrefTableName = xrefTableName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+
 
 }
 

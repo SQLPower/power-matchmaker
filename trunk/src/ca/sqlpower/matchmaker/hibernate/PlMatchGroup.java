@@ -177,9 +177,33 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
     }
 
     public Set<PlMatchCriteria> getPlMatchCriterias() {
-        return this.plMatchCriterias;
+        return Collections.unmodifiableSet(this.plMatchCriterias);
     }
-
+    
+    
+    
+    public boolean addPlMatchCriteria(PlMatchCriteria pmc) {
+    	boolean b = plMatchCriterias.add(pmc);
+    	pmc.addAllHierachialChangeListener(getHierachialChangeListeners());
+    	fireChangeEvent(new ChangeEvent(this));
+    	return b;
+    }
+    
+    public boolean removePlMatchCriteria(PlMatchCriteria pmc) {
+    	boolean b = plMatchCriterias.remove(pmc);
+    	pmc.removeAllHierachialChangeListener(getHierachialChangeListeners());
+    	fireChangeEvent(new ChangeEvent(this));
+    	return b;
+    }
+    
+    public void clearPlMatchCriteria(){
+    	for(PlMatchCriteria pmc:getPlMatchCriterias()){
+    		plMatchCriterias.remove(pmc);
+        	pmc.removeAllHierachialChangeListener(getHierachialChangeListeners());
+    	}
+    	fireChangeEvent(new ChangeEvent(this));
+ 
+    }
 
 
     public void setActiveInd(boolean activeInd) {
@@ -232,11 +256,12 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
 	}
 
 
-	public void setPlMatchCriterias(Set<PlMatchCriteria> plMatchCriterias) {
-	if (this.plMatchCriterias!= plMatchCriterias){
-		this.plMatchCriterias = plMatchCriterias;
-		fireChangeEvent(new ChangeEvent(this));
-	}}
+	private void setPlMatchCriterias(Set<PlMatchCriteria> plMatchCriterias) {
+		if (this.plMatchCriterias!= plMatchCriterias){
+			this.plMatchCriterias = plMatchCriterias;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
 
 
 	@Override
@@ -312,4 +337,3 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
 
 
 }
-

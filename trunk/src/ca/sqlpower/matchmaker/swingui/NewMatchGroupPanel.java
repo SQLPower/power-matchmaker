@@ -14,6 +14,8 @@ import javax.swing.JTextField;
 
 import org.hibernate.Transaction;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
@@ -62,7 +64,12 @@ public class NewMatchGroupPanel implements ArchitectPanel {
 			Transaction tx = HibernateUtil.primarySession().beginTransaction();
 			HibernateUtil.primarySession().save(matchGroup);
 			tx.commit();
-			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(new PlMatchGroupPanel(matchGroup), window, "Edit Match Group", "Save Match Group");
+			JDialog d;
+			try {
+				d = ArchitectPanelBuilder.createArchitectPanelDialog(new PlMatchGroupPanel(matchGroup), window, "Edit Match Group", "Save Match Group");
+			} catch (ArchitectException e) {
+				throw new ArchitectRuntimeException(e);
+			}
 			d.setVisible(true);
 			return true;
 		}

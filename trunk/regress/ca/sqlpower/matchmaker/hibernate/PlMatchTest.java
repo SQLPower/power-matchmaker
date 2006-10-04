@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import com.darwinsys.testing.TestUtils;
+
 import junit.framework.TestCase;
 
-import com.darwinsys.testing.TestUtils;
 
 //import com.diasparsoftware.util.junit.ValueObjectEqualsTest;
 
@@ -18,7 +19,7 @@ public class PlMatchTest extends /*ValueObjectEqualsTest*/TestCase {
 	public void testGetChildCount() {
 		Set<PlMatchGroup> plMatchGroups = new TreeSet<PlMatchGroup>();
 
-		target.setPlMatchGroups(plMatchGroups);
+		target.addAllPlMatchGroups(plMatchGroups);
 		assertEquals(0, target.getChildCount());
 		plMatchGroups.add(new PlMatchGroup());
 		assertEquals(1, target.getChildCount());

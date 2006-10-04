@@ -8,6 +8,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.swing.event.ChangeEvent;
+
 import org.apache.commons.beanutils.BeanUtils;
 
 /**
@@ -162,163 +164,116 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
         return this.suppressChar;
     }
 
-    public void setSuppressChar(String suppressChar) {
-        this.suppressChar = suppressChar;
-    }
+
     public boolean isSoundInd() {
         return this.soundInd;
     }
 
-    public void setSoundInd(boolean soundInd) {
-        this.soundInd = soundInd;
-    }
+
     public Long getFirstNChar() {
         return this.firstNChar;
     }
 
-    public void setFirstNChar(Long firstNChar) {
-        this.firstNChar = firstNChar;
-    }
+ 
     public Date getLastUpdateDate() {
         return this.lastUpdateDate;
     }
 
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
+
     public String getLastUpdateUser() {
         return this.lastUpdateUser;
     }
 
-    public void setLastUpdateUser(String lastUpdateUser) {
-        this.lastUpdateUser = lastUpdateUser;
-    }
+
     public BigDecimal getSeqNo() {
         return this.seqNo;
     }
 
-    public void setSeqNo(BigDecimal seqNo) {
-        this.seqNo = seqNo;
-    }
+
     public boolean isMatchStart() {
         return this.matchStart;
     }
 
-    public void setMatchStart(boolean matchStart) {
-        this.matchStart = matchStart;
-    }
+
     public boolean isMatchEnd() {
         return this.matchEnd;
     }
 
-    public void setMatchEnd(boolean matchEnd) {
-        this.matchEnd = matchEnd;
-    }
+
     public BigDecimal getVarianceAmt() {
         return this.varianceAmt;
     }
 
-    public void setVarianceAmt(BigDecimal varianceAmt) {
-        this.varianceAmt = varianceAmt;
-    }
+
     public String getVarianceType() {
         return this.varianceType;
     }
 
-    public void setVarianceType(String varianceType) {
-        this.varianceType = varianceType;
-    }
+ 
     public String getLastUpdateOsUser() {
         return this.lastUpdateOsUser;
     }
 
-    public void setLastUpdateOsUser(String lastUpdateOsUser) {
-        this.lastUpdateOsUser = lastUpdateOsUser;
-    }
     public boolean isAllowNullInd() {
         return this.allowNullInd;
     }
 
-    public void setAllowNullInd(boolean allowNullInd) {
-        this.allowNullInd = allowNullInd;
-    }
+
     public String getTranslateGroupName() {
         return this.translateGroupName;
     }
 
-    public void setTranslateGroupName(String translateGroupName) {
-        this.translateGroupName = translateGroupName;
-    }
+
     public boolean isRemoveSpecialChars() {
         return this.removeSpecialChars;
     }
 
-    public void setRemoveSpecialChars(boolean removeSpecialChars) {
-        this.removeSpecialChars = removeSpecialChars;
-    }
+
     public boolean isCountWordsInd() {
         return this.countWordsInd;
     }
 
-    public void setCountWordsInd(boolean countWordsInd) {
-        this.countWordsInd = countWordsInd;
-    }
+ 
     public boolean isReplaceWithSpaceInd() {
         return this.replaceWithSpaceInd;
     }
 
-    public void setReplaceWithSpaceInd(boolean replaceWithSpaceInd) {
-        this.replaceWithSpaceInd = replaceWithSpaceInd;
-    }
+
     public String getReplaceWithSpace() {
         return this.replaceWithSpace;
     }
 
-    public void setReplaceWithSpace(String replaceWithSpace) {
-        this.replaceWithSpace = replaceWithSpace;
-    }
+
     public boolean isReorderInd() {
         return this.reorderInd;
     }
 
-    public void setReorderInd(boolean reorderInd) {
-        this.reorderInd = reorderInd;
-    }
+
     public boolean isFirstNCharByWordInd() {
         return this.firstNCharByWordInd;
     }
 
-    public void setFirstNCharByWordInd(boolean firstNCharByWordInd) {
-        this.firstNCharByWordInd = firstNCharByWordInd;
-    }
+
     public Long getFirstNCharByWord() {
         return this.firstNCharByWord;
     }
 
-    public void setFirstNCharByWord(Long firstNCharByWord) {
-        this.firstNCharByWord = firstNCharByWord;
-    }
+
     public Long getMinWordsInCommon() {
         return this.minWordsInCommon;
     }
 
-    public void setMinWordsInCommon(Long minWordsInCommon) {
-        this.minWordsInCommon = minWordsInCommon;
-    }
+
     public Long getWordsInCommonNumWords() {
         return this.wordsInCommonNumWords;
     }
 
-    public void setWordsInCommonNumWords(Long wordsInCommonNumWords) {
-        this.wordsInCommonNumWords = wordsInCommonNumWords;
-    }
+
     public boolean isMatchFirstPlusOneInd() {
         return this.matchFirstPlusOneInd;
     }
 
-    public void setMatchFirstPlusOneInd(boolean matchFirstPlusOneInd) {
-        this.matchFirstPlusOneInd = matchFirstPlusOneInd;
-    }
+
 
 	@Override
 	public boolean equals(Object obj) {
@@ -349,8 +304,15 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
 		}
 	}
 
+	public void setAllowNullInd(boolean allowNullInd) {
+		if (this.allowNullInd != allowNullInd) {
+			this.allowNullInd = allowNullInd;
+			fireChangeEvent(new ChangeEvent(this));
+			
+		}
+	}
 
-	/* for xml parser, overwrite all method that don't take String parameter,
+		/* for xml parser, overwrite all method that don't take String parameter,
 	 * also create id when set matchId or groupId
 	 *
 	 */
@@ -371,6 +333,160 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
 			this.id = new PlMatchCriteriaId();
 		}
 		this.id.setColumnName(id);
+	}
+
+	public void setCountWordsInd(boolean countWordsInd) {
+		if (this.countWordsInd != countWordsInd) {
+			this.countWordsInd = countWordsInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setFirstNChar(Long firstNChar) {
+		if (this.firstNChar != firstNChar) {
+			this.firstNChar = firstNChar;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setFirstNCharByWord(Long firstNCharByWord) {
+		if (this.firstNCharByWord != firstNCharByWord) {
+			this.firstNCharByWord = firstNCharByWord;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setFirstNCharByWordInd(boolean firstNCharByWordInd) {
+		if (this.firstNCharByWordInd != firstNCharByWordInd) {
+			this.firstNCharByWordInd = firstNCharByWordInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setLastUpdateDate(Date lastUpdateDate) {
+		if (this.lastUpdateDate != lastUpdateDate) {
+			this.lastUpdateDate = lastUpdateDate;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setLastUpdateOsUser(String lastUpdateOsUser) {
+		if (this.lastUpdateOsUser != lastUpdateOsUser) {
+			this.lastUpdateOsUser = lastUpdateOsUser;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setLastUpdateUser(String lastUpdateUser) {
+		if (this.lastUpdateUser != lastUpdateUser) {
+			this.lastUpdateUser = lastUpdateUser;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchEnd(boolean matchEnd) {
+		if (this.matchEnd != matchEnd) {
+			this.matchEnd = matchEnd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchFirstPlusOneInd(boolean matchFirstPlusOneInd) {
+		if (this.matchFirstPlusOneInd != matchFirstPlusOneInd) {
+			this.matchFirstPlusOneInd = matchFirstPlusOneInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMatchStart(boolean matchStart) {
+		if (this.matchStart != matchStart) {
+			this.matchStart = matchStart;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setMinWordsInCommon(Long minWordsInCommon) {
+		if (this.minWordsInCommon != minWordsInCommon) {
+			this.minWordsInCommon = minWordsInCommon;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setRemoveSpecialChars(boolean removeSpecialChars) {
+		if (this.removeSpecialChars != removeSpecialChars) {
+			this.removeSpecialChars = removeSpecialChars;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setReorderInd(boolean reorderInd) {
+		if (this.reorderInd != reorderInd) {
+			this.reorderInd = reorderInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setReplaceWithSpace(String replaceWithSpace) {
+		if (this.replaceWithSpace != replaceWithSpace) {
+			this.replaceWithSpace = replaceWithSpace;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setReplaceWithSpaceInd(boolean replaceWithSpaceInd) {
+		if (this.replaceWithSpaceInd != replaceWithSpaceInd) {
+			this.replaceWithSpaceInd = replaceWithSpaceInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setSeqNo(BigDecimal seqNo) {
+		if (this.seqNo != seqNo) {
+			this.seqNo = seqNo;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setSoundInd(boolean soundInd) {
+		if (this.soundInd != soundInd) {
+			this.soundInd = soundInd;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setSuppressChar(String suppressChar) {
+		if (this.suppressChar != suppressChar) {
+			this.suppressChar = suppressChar;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setTranslateGroupName(String translateGroupName) {
+		if (this.translateGroupName != translateGroupName) {
+			this.translateGroupName = translateGroupName;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setVarianceAmt(BigDecimal varianceAmt) {
+		if (this.varianceAmt != varianceAmt) {
+			this.varianceAmt = varianceAmt;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setVarianceType(String varianceType) {
+		if (this.varianceType != varianceType) {
+			this.varianceType = varianceType;
+			fireChangeEvent(new ChangeEvent(this));
+		}
+	}
+
+	public void setWordsInCommonNumWords(Long wordsInCommonNumWords) {
+		if (this.wordsInCommonNumWords != wordsInCommonNumWords) {
+			this.wordsInCommonNumWords = wordsInCommonNumWords;
+			fireChangeEvent(new ChangeEvent(this));
+		}
 	}
 
 	public void setCaseSensitiveInd(String val) {
@@ -465,7 +581,6 @@ public class PlMatchCriteria extends DefaultHibernateObject implements java.io.S
 			setVarianceAmt(BigDecimal.valueOf(Long.valueOf(val)));
 		}
     }
-
 
 
 
