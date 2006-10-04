@@ -13,6 +13,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
@@ -38,7 +40,13 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 			if (tp != null) {
 				Object o = tp.getLastPathComponent();
 				if (o instanceof PlMatchGroup){
-					panel.setModel((PlMatchGroup) o );
+					try {
+						// save the old changes
+						panel.applyChanges();
+						panel.setModel((PlMatchGroup) o );
+					} catch (ArchitectException e1) {
+						throw new ArchitectRuntimeException(e1);
+					}
 				}
 			}
 		}

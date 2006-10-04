@@ -27,6 +27,7 @@ public class MatchMakerTreeModel implements TreeModel {
 		this();
 		this.folders = folders;
 		this.matches = matches;
+		
 	}
 
 
@@ -101,7 +102,7 @@ public class MatchMakerTreeModel implements TreeModel {
 
 
 	public void valueForPathChanged(TreePath path, Object newValue) {
-		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Value for path change unsupported in the match maker tree");
 
 	}
 
@@ -116,15 +117,21 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	protected void fireTreeNodesInserted(TreeModelEvent e) {
-
+		for (int i= treeModelListeners.size(); i >=0; i--){
+			treeModelListeners.get(i).treeStructureChanged(e);
+		}
 	}
 
 	protected void fireTreeNodesRemoved(TreeModelEvent e) {
-
+		for (int i= treeModelListeners.size(); i >=0; i--){
+			treeModelListeners.get(i).treeStructureChanged(e);
+		}
 	}
 
 	protected void fireTreeNodesChanged(TreeModelEvent e) {
-
+		for (int i= treeModelListeners.size(); i >=0; i--){
+			treeModelListeners.get(i).treeStructureChanged(e);
+		}
 
 	}
 

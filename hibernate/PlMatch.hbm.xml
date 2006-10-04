@@ -550,7 +550,7 @@
 	<set
 		name="plMergeConsolidateCriterias"
 		inverse="true"
-		lazy="true"
+		lazy="false"
 		fetch="subselect"
 		>
 		<key>
@@ -564,8 +564,8 @@
 	<set
 		name="plMergeCriterias"
 		inverse="true"
-		lazy="true"
-		fetch="subselect"
+		lazy="false"
+		fetch="select"
 		>
 		<key>
 <column name="MATCH_ID" length="80" not-null="true" />

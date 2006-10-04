@@ -24,10 +24,13 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellRenderer;
 
+import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
+import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroupId;
@@ -43,7 +46,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 
 	private static final long serialVersionUID = 1L;
-
+	private static final Logger logger = Logger.getLogger(PlMatchGroupPanel.class);
 	
 	private PlMatchGroup model;
 
@@ -75,8 +78,9 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 
 	/**
 	 * This is the default constructor
+	 * @throws ArchitectException 
 	 */
-	public PlMatchGroupPanel(PlMatchGroup model) {
+	public PlMatchGroupPanel(PlMatchGroup model) throws ArchitectException {
 		super();
 		this.model = model;
 		initialize();
@@ -88,8 +92,9 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	 * This method initializes this
 	 * 
 	 * @return void
+	 * @throws ArchitectException 
 	 */
-	private void initialize() {
+	private void initialize() throws ArchitectException {
 		// load the new model
 		clear();
 		textBackground = description.getBackground();
@@ -104,17 +109,17 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		DocumentListener listener = new DocumentListener(){
 
 			public void changedUpdate(DocumentEvent e) {
-				saveMatches(model);
+				saveMatches();
 				
 			}
 
 			public void insertUpdate(DocumentEvent e) {
-				saveMatches(model);
+				saveMatches();
 				
 			}
 
 			public void removeUpdate(DocumentEvent e) {
-				saveMatches(model);
+				saveMatches();
 				
 			}
 			
@@ -146,18 +151,21 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		return model;
 	}
 
-	public void setModel(PlMatchGroup model) {
+	public void setModel(PlMatchGroup model) throws ArchitectException {
 		this.model = model;
 		if(model != null) {
 			matchCriteriaTable.setModel(new MatchCriteriaTableModel(model));
-			loadMatches(model);
+			loadMatches();
 			int translateColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP_NAME);
 			matchCriteriaTable.getColumnModel().getColumn(translateColumn).setCellEditor(new DefaultCellEditor(new JComboBox(new TranslationComboBoxModel())));
+			int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
+			PlMatch plMatch = model.getPlMatch();
+			matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(new DefaultCellEditor(new JComboBox(new ColumnComboBoxModel(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable()))));
 			
 		}
 	}
 
-	private void loadMatches(PlMatchGroup model) {
+	private void loadMatches() {
 		loading = true;
 		groupId.setText(model.getId().getGroupId());
 		matches.setText(model.getId().getMatchId());
@@ -178,6 +186,10 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	}
 	
 	private boolean validateForm(){
+		if (model == null){
+			logger.debug("Trying to validate unloaded form");
+			return false;
+		}
 		Boolean valid = true;
 		if (groupId.getText().equals("")){
 			groupId.setBackground(Color.red);
@@ -187,7 +199,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		}
 		if (model.getPlMatch() != null) {
 			for( PlMatchGroup g : model.getPlMatch().getPlMatchGroups()) {
-				if (g.getId().getGroupId() == groupId.getText() && g != model){
+				if (g.getId().getGroupId().equals( groupId.getText() )&& g != model){
 					groupId.setBackground(Color.red);
 					valid=false;
 				}
@@ -211,7 +223,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		return valid;
 		
 	}
-	private boolean saveMatches(PlMatchGroup model) {
+	private boolean saveMatches() {
 		if ( validateForm() && !loading){
 			// load the new model
 			PlMatchGroup saveGroup;
@@ -226,19 +238,25 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			saveGroup.setFilterCriteria(filterCriteria.getText());
 			saveGroup.setActiveInd(!active.isSelected());
 	
+			Transaction tx = HibernateUtil.primarySession().beginTransaction();
 			try {
-				System.out.println("Saving "+model);
+				System.out.println("Replacing "+model + " with "+saveGroup);
 				
-				Transaction tx = HibernateUtil.primarySession().beginTransaction();
 				if (!model.equals(saveGroup)) {
-					HibernateUtil.primarySession().delete(model);
+					HibernateUtil.primarySession().delete(model);					
 					HibernateUtil.primarySession().persist(saveGroup);
+					PlMatch parent = model.getPlMatch();
+					parent.getPlMatchGroups().remove(model);
+					parent.getPlMatchGroups().add(saveGroup);
+					
+					model = saveGroup;
 				} else {
 					HibernateUtil.primarySession().flush();
 				}
 				tx.commit();
 			
 			} catch (Exception e) {
+				tx.rollback();
 				e.printStackTrace();
 			}
 		}
@@ -275,8 +293,9 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	 * This method initializes jSplitPane	
 	 * 	
 	 * @return javax.swing.JSplitPane	
+	 * @throws ArchitectException 
 	 */
-	private JSplitPane getJSplitPane() {
+	private JSplitPane getJSplitPane() throws ArchitectException {
 		if (jSplitPane == null) {
 			jSplitPane = new JSplitPane();
 			jSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
@@ -291,8 +310,9 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	 * This method initializes matchCriteriaScrollPane	
 	 * 	
 	 * @return javax.swing.JScrollPane	
+	 * @throws ArchitectException 
 	 */
-	private JScrollPane getMatchCriteriaScrollPane() {
+	private JScrollPane getMatchCriteriaScrollPane() throws ArchitectException {
 		if (matchCriteriaScrollPane == null) {
 			matchCriteriaScrollPane = new JScrollPane(getMatchCriteriaTable());
 		}
@@ -303,8 +323,9 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	 * This method initializes matchCriteriaTable	
 	 * 	
 	 * @return javax.swing.JTable	
+	 * @throws ArchitectException 
 	 */
-	private JTable getMatchCriteriaTable() {
+	private JTable getMatchCriteriaTable() throws ArchitectException {
 		if (matchCriteriaTable == null) {
 			matchCriteriaTable = new EditableJTable();
 			matchCriteriaTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -317,7 +338,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	}
 
 	public boolean applyChanges() {
-		return saveMatches(model);
+		return saveMatches();
 	}
 
 	public void discardChanges() {
