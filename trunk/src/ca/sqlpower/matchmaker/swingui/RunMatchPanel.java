@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -11,12 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Date;
 
 import javax.sql.RowSet;
 import javax.swing.AbstractAction;
@@ -30,14 +26,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -52,9 +43,6 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.SaveDocument;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
-import ca.sqlpower.architect.swingui.table.DateTableCellRenderer;
-import ca.sqlpower.architect.swingui.table.NumberAndIntegerTableCellRenderer;
-import ca.sqlpower.architect.swingui.table.TableModelColumnAutofit;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
@@ -64,7 +52,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-import com.sun.rowset.CachedRowSetImpl;
 
 public class RunMatchPanel extends JFrame{
 
@@ -250,86 +237,9 @@ public class RunMatchPanel extends JFrame{
 
 
 
-    public RowSet getMatchStats(PlMatch match) throws SQLException {
-    	Connection con = null;
-    	Statement stmt = null;
-    	ResultSet rs =  null;
-    	try {
-    		con = HibernateUtil.primarySession().connection();
-    		StringBuffer sql = new StringBuffer();
-    		sql.append("SELECT TRANS_RUN_NO,START_DATE_TIME,ELAPSED_TIME");
-    		sql.append(",RUN_STATUS,NO_OF_REC_READ,NO_OF_REC_ADDED");
-    		sql.append(",NO_OF_REC_UPDATED,NO_OF_REC_TOTAL,NO_OF_REC_PROCESSED");
-    		sql.append(",RUN_NO,ROLLBACK_SEGMENT_NAME");
-    		sql.append(" FROM PL_STATS WHERE OBJECT_TYPE=? ");
-    		sql.append(" AND OBJECT_NAME=? ");
-    		sql.append(" ORDER BY TRANS_RUN_NO DESC, START_DATE_TIME DESC");
-    		PreparedStatement pstmt = con.prepareStatement(sql.toString());
-    		pstmt.setString(1, "MATCH");
-    		pstmt.setString(2, match.getMatchId());
-    		rs = pstmt.executeQuery();
-
-    		CachedRowSetImpl crset = new CachedRowSetImpl();
-    		crset.setReadOnly(true);
-    		crset.populate(rs);
-    		return crset;
-    	} finally {
-    		if ( rs != null )
-    			rs.close();
-    		if ( stmt != null )
-    			stmt.close();
-    		if (con != null)
-    			con.close();
-    	}
-    }
-
-    public RowSet getMatchGroupStats(PlMatch match, int runNo) throws SQLException {
-    	Connection con = null;
-    	PreparedStatement pstmt = null;
-    	ResultSet rs =  null;
-    	try {
-    		con = HibernateUtil.primarySession().connection();
-
-    		StringBuffer sql = new StringBuffer();
-    		sql.append("SELECT OBJECT_NAME,NO_OF_REC_ADDED, NO_OF_REC_UPDATED");
-    		sql.append(",NO_OF_REC_TOTAL, NO_OF_REC_READ,NO_OF_REC_PROCESSED");
-    		sql.append(" FROM PL_STATS WHERE OBJECT_TYPE=? and TRANS_RUN_NO=?");
-    		pstmt = con.prepareStatement(sql.toString());
-    		pstmt.setString(1, "MATCHGROUP");
-    		pstmt.setInt(2, runNo);
-    		rs = pstmt.executeQuery();
-    		CachedRowSetImpl crset = new CachedRowSetImpl();
-    		crset.setReadOnly(true);
-    		crset.populate(rs);
-    		rs.close();
-    		pstmt.close();
-
-    		sql = new StringBuffer();
-    		sql.append("SELECT GROUP_ID,MATCH_PERCENT FROM PL_MATCH_GROUP WHERE MATCH_ID=?");
-    		pstmt = con.prepareStatement(sql.toString());
-    		pstmt.setString(1, match.getMatchId());
-    		rs = pstmt.executeQuery();
-    		CachedRowSetImpl crset2 = new CachedRowSetImpl();
-    		crset2.setReadOnly(true);
-    		crset2.populate(rs);
 
 
 
-    		rs.close();
-    		pstmt.close();
-    		rs = null;
-    		pstmt = null;
-
-    		return crset;
-    	} finally {
-    		if ( rs != null )
-    			rs.close();
-    		if ( pstmt != null )
-    			pstmt.close();
-    		if (con != null)
-    			con.close();
-    	}
-    }
 
     public class StatsTableMOdel extends RowSetModel {
 
@@ -348,51 +258,12 @@ public class RunMatchPanel extends JFrame{
 
 		public void actionPerformed(ActionEvent e) {
 			try {
-				RowSet rs = getMatchStats(match);
-				RowSetModel rsm = new RowSetModel(rs);
-
-
-
-				JTable table = new JTable(rsm);
-				JTableHeader header = table.getTableHeader();
-				header.getColumnModel().getColumn(0).setHeaderValue("Run #");
-				header.getColumnModel().getColumn(1).setHeaderValue("Start Time");
-				header.getColumnModel().getColumn(2).setHeaderValue("Elapsed(sec)");
-				header.getColumnModel().getColumn(3).setHeaderValue("Status");
-				header.getColumnModel().getColumn(4).setHeaderValue("Total Found");
-				header.getColumnModel().getColumn(5).setHeaderValue("Added");
-				header.getColumnModel().getColumn(6).setHeaderValue("Updated");
-				header.getColumnModel().getColumn(7).setHeaderValue("Total");
-				header.getColumnModel().getColumn(8).setHeaderValue("Overall(current)");
-				header.getColumnModel().getColumn(9).setHeaderValue("Job Run #");
-				header.getColumnModel().getColumn(10).setHeaderValue("Rollback Seg");
-
-				TableColumnModel cm = table.getColumnModel();
-		        for (int col = 0; col < cm.getColumnCount(); col++) {
-		            TableColumn tc = cm.getColumn(col);
-		            if ( Date.class.isAssignableFrom(table.getColumnClass(col)) ) {
-		            	tc.setCellRenderer(new DateTableCellRenderer());
-		            } else if ( Number.class.isAssignableFrom(table.getColumnClass(col)) ) {
-		            	tc.setCellRenderer(new NumberAndIntegerTableCellRenderer());
-		            }
-		        }
-		        TableModelColumnAutofit columnAutoFit =
-                    new TableModelColumnAutofit(rsm, table);
-                columnAutoFit.setTableHeader(header);
-                table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-
-				JScrollPane scroller = new JScrollPane(table);
-
-				JSplitPane splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-				splitter.setDividerLocation(.5);
-				splitter.setLeftComponent(scroller);
-
-
-
+				MatchStatisticsPanel panel = new MatchStatisticsPanel(match);
 
 				JDialog d = new JDialog();
-				d.add(splitter);
-//				d.setPreferredSize(new Dimension(800,600));
+				d.setTitle("Match Statistics");
+				d.add(panel);
+				d.setPreferredSize(new Dimension(800,600));
 				d.pack();
 				d.setVisible(true);
 			} catch (SQLException e1) {
@@ -430,14 +301,19 @@ public class RunMatchPanel extends JFrame{
     			String line=null;
     			while ( (line = br.readLine()) != null) {
     				logger.debug(type + ">" + line);
-    				synchronized (output) {
-    					output.insertString(output.getLength(),line+"\n",att);
-					}
+    				final String fLine = line;
+    				SwingUtilities.invokeLater(new Runnable() {
+    					public void run() {
+    						try {
+    							output.insertString(output.getLength(),fLine+"\n",att);
+    						} catch (BadLocationException e) {
+    							e.printStackTrace();
+    						}
+    					}
+    				});
     			}
     		} catch (IOException ioe) {
     			ioe.printStackTrace();
-    		} catch (BadLocationException e) {
-				e.printStackTrace();
 			}
     	}
     }
@@ -488,8 +364,13 @@ public class RunMatchPanel extends JFrame{
 
 			Action saveAsAction = new AbstractAction(){
 				public void actionPerformed(ActionEvent e) {
-					new SaveDocument(d,engineOutputDoc,
-							(FileExtensionFilter) ASUtils.TEXT_FILE_FILTER );
+
+					SwingUtilities.invokeLater(new Runnable(){
+						public void run() {
+							new SaveDocument(d,engineOutputDoc,
+									(FileExtensionFilter) ASUtils.TEXT_FILE_FILTER );
+
+						}});
 				}
 			};
 			JButton saveAsButton = new JButton(saveAsAction );
@@ -499,16 +380,19 @@ public class RunMatchPanel extends JFrame{
 
 			JButton copyButton = new JButton(new AbstractAction(){
 				public void actionPerformed(ActionEvent e) {
-					StringSelection selection = null;
-					try {
-						selection = new StringSelection(
-								engineOutputDoc.getText(0,engineOutputDoc.getLength()));
-					} catch (BadLocationException e1) {
-						ASUtils.showExceptionDialog(d,
-								"Document Copy Error", e1 );
-					}
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					clipboard.setContents( selection, selection );
+					SwingUtilities.invokeLater(new Runnable(){
+
+						public void run() {
+							try {
+								StringSelection selection = new StringSelection(
+										engineOutputDoc.getText(0,engineOutputDoc.getLength()));
+								Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+								clipboard.setContents( selection, selection );
+							} catch (BadLocationException e1) {
+								ASUtils.showExceptionDialog(d,
+										"Document Copy Error", e1 );
+							}
+						}});
 				}});
 			copyButton.setText("Copy to Clipboard");
 			bbBuilder.addGridded (copyButton);
@@ -558,18 +442,19 @@ public class RunMatchPanel extends JFrame{
 
 						// any error message?
 						// any error???
-						int exitVal = proc.waitFor();
+						final int exitVal = proc.waitFor();
 						logger.debug("ExitValue: " + exitVal);
-
-						try {
-							engineOutputDoc.insertString(engineOutputDoc.getLength(),
-									"\nExecutable Return Code: " + exitVal+"\n",
-									stderrAtt);
-
-						} catch (BadLocationException e1) {
-							ASUtils.showExceptionDialog(d,
-									"Document Display Error", e1 );
-						}
+						SwingUtilities.invokeLater(new Runnable(){
+							public void run() {
+								try {
+									engineOutputDoc.insertString(engineOutputDoc.getLength(),
+											"\nExecutable Return Code: " + exitVal+"\n",
+											stderrAtt);
+								} catch (BadLocationException e1) {
+									ASUtils.showExceptionDialog(d,
+											"Document Display Error", e1 );
+								}
+							}});
 
 					} catch (Throwable  e1) {
 						ASUtils.showExceptionDialog(parent,
