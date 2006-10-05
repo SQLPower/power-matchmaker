@@ -22,7 +22,7 @@ import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
-import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
+import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
@@ -401,8 +401,8 @@ public class PlMatchExportAction extends AbstractAction {
 
 	private void saveMatchCriteria(IOUtils ioo, PrintWriter out, PlMatchGroup g) {
 
-		List <PlMatchCriteria> criterias = new ArrayList<PlMatchCriteria>(g.getPlMatchCriterias());
-		for ( PlMatchCriteria c : criterias ) {
+		List <PlMatchCriterion> criterias = new ArrayList<PlMatchCriterion>(g.getPlMatchCriterias());
+		for ( PlMatchCriterion c : criterias ) {
 			ioo.println(out, "<PL_MATCH_CRITERIA>");
     		ioo.indent++;
     		ioo.println(out, "<MATCH_ID>"+
@@ -479,7 +479,7 @@ public class PlMatchExportAction extends AbstractAction {
 
 	private void saveMergeCriteria(IOUtils ioo, PrintWriter out) {
 
-		for ( PlMergeCriteria c : match.getPlMergeCriterias() ) {
+		for ( PlMergeCriteria c : match.getPlMergeCriteria() ) {
 
     		ioo.println(out, "<PL_MERGE_CRITERIA>");
     		ioo.indent++;

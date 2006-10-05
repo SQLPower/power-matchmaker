@@ -18,7 +18,7 @@ import javax.swing.JTextField;
 import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.swingui.ArchitectPanel;
-import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
+import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
@@ -31,7 +31,7 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private PlMatchCriteria model;
+	private PlMatchCriterion model;
 	private PlMatchGroup parent;
 
 
@@ -66,7 +66,7 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 	/**
 	 * This is the default constructor
 	 */
-	public PlMatchCriteriaPanel(PlMatchCriteria model) {
+	public PlMatchCriteriaPanel(PlMatchCriterion model) {
 		super();
 		buildUI();
 		initialize();
@@ -138,17 +138,17 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 	}
 
 	
-	public PlMatchCriteria getModel() {
+	public PlMatchCriterion getModel() {
 		return model;
 	}
 
-	public void setModel(PlMatchCriteria model) {
+	public void setModel(PlMatchCriterion model) {
 		this.model = model;
 		
 		loadMatchCriteria(model);
 	}
 
-	private void loadMatchCriteria(PlMatchCriteria model) {
+	private void loadMatchCriteria(PlMatchCriterion model) {
 		// load the new model
 		KeyListener l= new KeyListener(){
 			
@@ -240,11 +240,10 @@ public class PlMatchCriteriaPanel extends JPanel implements ArchitectPanel {
 		return valid;
 		
 	}
-	private boolean saveMatches(PlMatchCriteria model) {
+	private boolean saveMatches(PlMatchCriterion model) {
 		if ( validateForm()){
 	
 			try {
-				System.out.println("Saving "+model);
 				Transaction tx = HibernateUtil.primarySession().beginTransaction();
 				HibernateUtil.primarySession().flush();
 				tx.commit();

@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.swing.event.ChangeEvent;
-
 // Generated 19-Sep-2006 12:08:38 PM by Hibernate Tools 3.2.0.beta7
 
 
@@ -73,38 +71,60 @@ public class PlFolder extends DefaultHibernateObject implements  java.io.Seriali
         return this.folderName;
     }
 
-    public void setFolderName(String folderName) {
-        this.folderName = folderName;
-        fireChangeEvent(new ChangeEvent(this));
-    }
+    
     public String getFolderDesc() {
         return this.folderDesc;
     }
 
-    public void setFolderDesc(String folderDesc) {
-        this.folderDesc = folderDesc;
-    }
+ 
     public String getFolderStatus() {
         return this.folderStatus;
     }
 
-    public void setFolderStatus(String folderStatus) {
-        this.folderStatus = folderStatus;
-    }
+    
     public Long getLastBackupNo() {
         return this.lastBackupNo;
     }
 
-    public void setLastBackupNo(Long lastBackupNo) {
-        this.lastBackupNo = lastBackupNo;
-    }
 
 	public Set<PlMatch> getMatches() {
 		return matches;
 	}
 
+
+	public void setFolderDesc(String folderDesc) {
+		if (this.folderDesc != folderDesc) {
+			firePropertyChange("this.folderDesc", this.folderDesc, folderDesc);
+			this.folderDesc = folderDesc;
+		}
+	}
+
+	public void setFolderName(String folderName) {
+		if (this.folderName != folderName) {
+			firePropertyChange("this.folderName", this.folderName, folderName);
+			this.folderName = folderName;
+		}
+	}
+
+	public void setFolderStatus(String folderStatus) {
+		if (this.folderStatus != folderStatus) {
+			firePropertyChange("this.folderStatus", this.folderStatus, folderStatus);
+			this.folderStatus = folderStatus;
+		}
+	}
+
+	public void setLastBackupNo(Long lastBackupNo) {
+		if (this.lastBackupNo != lastBackupNo) {
+			firePropertyChange("this.lastBackupNo", this.lastBackupNo, lastBackupNo);
+			this.lastBackupNo = lastBackupNo;
+		}
+	}
+
 	public void setMatches(Set<PlMatch> matches) {
-		this.matches = matches;
+		if (this.matches != matches) {
+			firePropertyChange("this.matches", this.matches, matches);
+			this.matches = matches;
+		}
 	}
 
 	@Override

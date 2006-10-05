@@ -22,7 +22,7 @@ public class FilterComponentsPanel extends JPanel {
         editButton = new JButton(new AbstractAction("Edit"){
 
             public void actionPerformed(ActionEvent e) {     
-                FilterMakerFrame filterMaker = new FilterMakerFrame(FilterComponentsPanel.this);
+                FilterMakerFrame filterMaker = new FilterMakerFrame(FilterComponentsPanel.this, filterTextArea);
                 filterMaker.pack();
                 filterMaker.setVisible(true);
             }            

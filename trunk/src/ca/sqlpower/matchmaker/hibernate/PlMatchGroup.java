@@ -8,11 +8,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.swing.event.ChangeEvent;
 
 import org.apache.commons.beanutils.BeanUtils;
 
@@ -36,7 +35,8 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
       */
      private boolean activeInd;
      private String lastUpdateOsUser;
-     private Set<PlMatchCriteria> plMatchCriterias = new TreeSet<PlMatchCriteria>();
+     private Set<PlMatchCriterion> plMatchCriteria = new TreeSet<PlMatchCriterion>();
+     private List<String> usedColumnNames = new ArrayList<String>();
 
      // Constructors
 
@@ -57,7 +57,7 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
     	this();
         this.id = id;
         this.plMatch = plMatch;
-        plMatch.getPlMatchGroups().add(model);
+        plMatch.addPlMatchGroups(model);
     }
 
     /**
@@ -77,7 +77,7 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
     }
 
     /** full constructor */
-    public PlMatchGroup(PlMatchGroupId id, PlMatch plMatch, String description, Short matchPercent, Date lastUpdateDate, String lastUpdateUser, String filterCriteria, boolean activeInd, String lastUpdateOsUser, Set<PlMatchCriteria> plMatchCriterias) {
+    public PlMatchGroup(PlMatchGroupId id, PlMatch plMatch, String description, Short matchPercent, Date lastUpdateDate, String lastUpdateUser, String filterCriteria, boolean activeInd, String lastUpdateOsUser, Set<PlMatchCriterion> plMatchCriterions) {
        this.id = id;
        this.plMatch = plMatch;
        this.description = description;
@@ -87,7 +87,7 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
        this.filterCriteria = filterCriteria;
        this.activeInd = activeInd;
        this.lastUpdateOsUser = lastUpdateOsUser;
-       this.plMatchCriterias = plMatchCriterias;
+       this.plMatchCriteria = plMatchCriterions;
     }
 
 
@@ -101,21 +101,21 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
 
 		// Unfortunately the above has compromised the Set properties, so we
 		// empty them, and re-populate using copy constructors for each object
-		plMatchCriterias.clear();
-		for (PlMatchCriteria p : orig.plMatchCriterias) {
-			plMatchCriterias.add(p.copyOf());
+		plMatchCriteria.clear();
+		for (PlMatchCriterion p : orig.plMatchCriteria) {
+			plMatchCriteria.add(p.copyOf());
 		}
 	}
 
 	@Override
     public int getChildCount() {
-    	return plMatchCriterias.size();
+    	return plMatchCriteria.size();
     }
 
     @Override
     public List<DefaultHibernateObject> getChildren() {
     	List<DefaultHibernateObject> children = new ArrayList<DefaultHibernateObject>();
-    	for (PlMatchCriteria group : plMatchCriterias){
+    	for (PlMatchCriterion group : plMatchCriteria){
     		children.add(group);
     	}
     	Collections.sort(children);
@@ -128,8 +128,8 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
 
     public void setId(PlMatchGroupId id) {
     	if(id != this.id){
+    		firePropertyChange("id", this.id, id);
     		this.id = id;
-    		fireChangeEvent(new ChangeEvent(this));
     	}
     }
     public PlMatch getPlMatch() {
@@ -139,7 +139,7 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
     public void setPlMatch(PlMatch plMatch) {
     	if(plMatch!=this.plMatch){
     		this.plMatch = plMatch;
-    		fireChangeEvent(new ChangeEvent(this));
+    		firePropertyChange("plMatch", this.plMatch, plMatch);
     	}
     }
 
@@ -176,90 +176,109 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
         return this.lastUpdateOsUser;
     }
 
-    public Set<PlMatchCriteria> getPlMatchCriterias() {
-        return Collections.unmodifiableSet(this.plMatchCriterias);
+    public Set<PlMatchCriterion> getPlMatchCriterias() {
+        return Collections.unmodifiableSet(this.plMatchCriteria);
     }
     
     
     
-    public boolean addPlMatchCriteria(PlMatchCriteria pmc) {
-    	boolean b = plMatchCriterias.add(pmc);
+    public boolean addPlMatchCriteria(PlMatchCriterion pmc) {
+    	Set<PlMatchCriterion> oldCriteria=new HashSet<PlMatchCriterion>(getPlMatchCriterias());
+    	boolean b = plMatchCriteria.add(pmc);
+    	createUsedColumnList();
     	pmc.addAllHierachialChangeListener(getHierachialChangeListeners());
-    	fireChangeEvent(new ChangeEvent(this));
+    	firePropertyChange("plMatchCriterias", oldCriteria, getPlMatchCriterias());
     	return b;
     }
     
-    public boolean removePlMatchCriteria(PlMatchCriteria pmc) {
-    	boolean b = plMatchCriterias.remove(pmc);
+    private void createUsedColumnList() {
+    	usedColumnNames.clear();
+		for (PlMatchCriterion criterion: plMatchCriteria){
+			usedColumnNames.add(criterion.getId().getColumnName());
+		}
+	}
+
+	public boolean removePlMatchCriteria(PlMatchCriterion pmc) {
+		Set<PlMatchCriterion> oldCriteria=new HashSet<PlMatchCriterion>(getPlMatchCriterias());
+    	boolean b = plMatchCriteria.remove(pmc);
+    	createUsedColumnList();
     	pmc.removeAllHierachialChangeListener(getHierachialChangeListeners());
-    	fireChangeEvent(new ChangeEvent(this));
+    	firePropertyChange("plMatchCriterias", oldCriteria, getPlMatchCriterias());
     	return b;
     }
-    
+	
+	public boolean removePlMatchCriteria(int i) {
+		
+		PlMatchCriterion pmc = (PlMatchCriterion)getChildren().get(i);
+    	return removePlMatchCriteria(pmc);
+		
+	}
     public void clearPlMatchCriteria(){
-    	for(PlMatchCriteria pmc:getPlMatchCriterias()){
-    		plMatchCriterias.remove(pmc);
+    	Set<PlMatchCriterion> oldCriteria=new HashSet<PlMatchCriterion>(getPlMatchCriterias());
+    	usedColumnNames.clear();
+    	for(PlMatchCriterion pmc:getPlMatchCriterias()){
+    		plMatchCriteria.remove(pmc);
         	pmc.removeAllHierachialChangeListener(getHierachialChangeListeners());
     	}
-    	fireChangeEvent(new ChangeEvent(this));
+    	firePropertyChange("plMatchCriterias", oldCriteria, getPlMatchCriterias());
  
     }
 
 
     public void setActiveInd(boolean activeInd) {
 	if (this.activeInd!= activeInd){
+		firePropertyChange("activeInd", this.activeInd, activeInd);
 		this.activeInd = activeInd;
-		fireChangeEvent(new ChangeEvent(this));
 	}}
 
 
 	public void setDescription(String description) {
 	if (this.description!= description){
+		firePropertyChange("description", this.description, description);
 		this.description = description;
-		fireChangeEvent(new ChangeEvent(this));
 	}}
 
 
 	public void setFilterCriteria(String filterCriteria) {
 	if (this.filterCriteria!= filterCriteria){
+		firePropertyChange("filterCriteria", this.filterCriteria, filterCriteria);
 		this.filterCriteria = filterCriteria;
-		fireChangeEvent(new ChangeEvent(this));
 	}}
 
 
 	public void setLastUpdateDate(Date lastUpdateDate) {
 	if (this.lastUpdateDate!= lastUpdateDate){
+		firePropertyChange("lastUpdateDate", this.lastUpdateDate, lastUpdateDate);
 		this.lastUpdateDate = lastUpdateDate;
-		fireChangeEvent(new ChangeEvent(this));
 	}}
 
 
 	public void setLastUpdateOsUser(String lastUpdateOsUser) {
 	if (this.lastUpdateOsUser!= lastUpdateOsUser){
+		firePropertyChange("lastUpdateOsUser", this.lastUpdateOsUser, lastUpdateOsUser);
 		this.lastUpdateOsUser = lastUpdateOsUser;
-		fireChangeEvent(new ChangeEvent(this));
 	}}
 
 
 	public void setLastUpdateUser(String lastUpdateUser) {
 	if (this.lastUpdateUser!= lastUpdateUser){
+		firePropertyChange("lastUpdateUser", this.lastUpdateUser, lastUpdateUser);
 		this.lastUpdateUser = lastUpdateUser;
-		fireChangeEvent(new ChangeEvent(this));
 	}}
 
 
 	public void setMatchPercent(Short matchPercent) {
 	if (this.matchPercent != matchPercent){
+		firePropertyChange("matchPercent", this.matchPercent, matchPercent);
 		this.matchPercent = matchPercent;
-		fireChangeEvent(new ChangeEvent(this));
 	}
 	}
 
 
-	private void setPlMatchCriterias(Set<PlMatchCriteria> plMatchCriterias) {
-		if (this.plMatchCriterias!= plMatchCriterias){
-			this.plMatchCriterias = plMatchCriterias;
-			fireChangeEvent(new ChangeEvent(this));
+	private void setPlMatchCriterias(Set<PlMatchCriterion> plMatchCriterion) {
+		if (this.plMatchCriteria!= plMatchCriterion){
+			firePropertyChange("plMatchCriterias", this.plMatchCriteria, plMatchCriterion);
+			this.plMatchCriteria = plMatchCriterion;
 		}
 	}
 
@@ -290,9 +309,13 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
 	public int compareTo(Object o) {
 
 		PlMatchGroup other = (PlMatchGroup) o;
-		if (other.getMatchPercent().compareTo(getMatchPercent()) != 0){
+		if (other.getMatchPercent() == null && getMatchPercent() != null){
+			return getMatchPercent().compareTo(other.getMatchPercent());
+		}else if (other !=null && other.getMatchPercent().compareTo(getMatchPercent()) != 0){
 			return other.getMatchPercent().compareTo(getMatchPercent());
-		} else if (filterCriteria.compareTo(other.getFilterCriteria()) !=0) {
+		} else if (filterCriteria == null && other.getFilterCriteria() != null){
+			return other.getFilterCriteria().compareTo(filterCriteria);
+		}else if (filterCriteria!=null && filterCriteria.compareTo(other.getFilterCriteria()) !=0) {
 			return filterCriteria.compareTo(other.getFilterCriteria());
 		} else if (id.getMatchId().compareTo(other.getId().getMatchId())!=0 ) {
 			return id.getMatchId().compareTo(other.getId().getMatchId());
@@ -334,6 +357,13 @@ public class PlMatchGroup extends DefaultHibernateObject implements java.io.Seri
 			setActiveInd(val.charAt(0) == 'y' || val.charAt(0) == 'Y');
 		}
 	}
+
+	public List<String> getUsedColumnNames() {
+		createUsedColumnList();
+		return usedColumnNames;
+	}
+
+	
 
 
 }

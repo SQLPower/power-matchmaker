@@ -3,6 +3,7 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.table.TableModelSearchDecorator;
+import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
@@ -155,6 +157,7 @@ public class TranslatePanel implements ArchitectPanel {
 	Action deleteGroupAction = new AbstractAction("Delete Group"){
 
 		public void actionPerformed(ActionEvent e) {
+			List<PlMatchTranslate> translates = MatchMakerFrame.getMainInstance().getTranslations();
 			
 		}
 		
@@ -172,7 +175,8 @@ public class TranslatePanel implements ArchitectPanel {
 	Action addCommonWordsAction = new AbstractAction("Add Common Words"){
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
+			PlMatchTranslate currentSelected = MatchMakerFrame.getMainInstance().getTranslations().get(translateTable.getSelectedColumn());
+			PlMatchTranslate newTranslate = new PlMatchTranslate();
 			
 		}
 		
@@ -218,7 +222,6 @@ public class TranslatePanel implements ArchitectPanel {
 	private void scrollToSelected(int index){
 		Rectangle cellRect = translateTable.getCellRect(index,0, false);
 		if (!tableScrollPane.getVisibleRect().getBounds().contains(cellRect)){
-			System.out.println("got here");
 			tableScrollPane.scrollRectToVisible(cellRect);
 		}
 	}

@@ -60,7 +60,6 @@ public class HibernateUtil {
         try {
 			// Create the SessionFactory from hibernate.cfg.xml
 			sessionFactory = cfg.buildSessionFactory();
-			System.out.println("creating connection with dialect: "+plDbType2Dialect);
 			sessionFactories.put(key, sessionFactory);
 
 			primarySession=sessionFactory.openSession();
