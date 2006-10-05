@@ -1,21 +1,28 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 
 
 
 public class ColumnComboBoxModel implements ComboBoxModel {
 	private String tableName;
 	private SQLTable t;
+	private List<String> columnNames = new ArrayList<String>();
+	PlMatchGroup group;
 	private String selected;
 	
-	public ColumnComboBoxModel(String catalogName, String schemaName,String tableName) throws ArchitectException {
+	public ColumnComboBoxModel(String catalogName, String schemaName,String tableName, PlMatchGroup group) throws ArchitectException {
 		super();
+		this.group = group;
 		setTableName(catalogName, schemaName, tableName);
 		
 	}
@@ -28,23 +35,27 @@ public class ColumnComboBoxModel implements ComboBoxModel {
 		if (this.tableName != tableName) {
 			this.tableName = tableName;
 			t = MatchMakerFrame.getMainInstance().getDatabase().getTableByName(catalogName,schemaName,tableName);
+			if (t != null){
+				for (SQLColumn c : t.getColumns()){
+					columnNames.add(c.getName());
+				}
+			}
 		}
 	}
 
 	public Object getElementAt(int index)  {
-		try {
-			return t.getColumn(index).getName();
-		} catch (ArchitectException e) {
-			throw new ArchitectRuntimeException(e);
-		}
+		
+		List<String> curElements = new ArrayList<String>(columnNames);
+	
+		curElements.removeAll(group.getUsedColumnNames());
+		return curElements.get(index);
+		
 	}
 
 	public int getSize()  {
-		try {
-			return t.getColumns().size();
-		} catch (ArchitectException e) {
-			throw new ArchitectRuntimeException(e);
-		}
+		List<String> curElements = new ArrayList<String>(columnNames);
+		curElements.removeAll(group.getUsedColumnNames());
+		return curElements.size();
 	}
 
 	public Object getSelectedItem() {
@@ -53,7 +64,9 @@ public class ColumnComboBoxModel implements ComboBoxModel {
 	}
 
 	public void setSelectedItem(Object anItem) {
-		selected = (String) anItem;
+		if (anItem!=null){
+			selected = (String) anItem;
+		}
 		
 	}
 

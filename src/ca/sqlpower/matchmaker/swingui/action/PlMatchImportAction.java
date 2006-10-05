@@ -24,7 +24,7 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectFrame;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
-import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
+import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
@@ -94,11 +94,11 @@ System.out.println("group size:"+match.getPlMatchGroups().size());
 List<PlMatchGroup> l = new ArrayList<PlMatchGroup>(match.getPlMatchGroups());
 for ( PlMatchGroup g : l ) {
 	System.out.println("group id:"+g.getId().getGroupId());
-	for ( PlMatchCriteria c : g.getPlMatchCriterias() ) {
-		System.out.println("         PlMatchCriteria:"+c.getId().getColumnName());
+	for ( PlMatchCriterion c : g.getPlMatchCriterias() ) {
+		System.out.println("         PlMatchCriterion:"+c.getId().getColumnName());
 	}
 }
-for ( PlMergeCriteria c : match.getPlMergeCriterias() ) {
+for ( PlMergeCriteria c : match.getPlMergeCriteria() ) {
 System.out.println("merge crit="+c.getId().getTableName()+"."+c.getId().getIndexColumnName0());
 }
 for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
@@ -283,7 +283,7 @@ for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
 
 
 
-        d.addObjectCreate("EXPORT/PL_MATCH_CRITERIA", PlMatchCriteria.class);
+        d.addObjectCreate("EXPORT/PL_MATCH_CRITERIA", PlMatchCriterion.class);
         d.addSetProperties("EXPORT/PL_MATCH_CRITERIA");
         d.addSetNext("EXPORT/PL_MATCH_CRITERIA", "addMatchCriteria");
 

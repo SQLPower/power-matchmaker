@@ -9,19 +9,19 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
 import org.hibernate.criterion.Example;
 
-import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
+import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 
 /**
- * Home object for domain model class PlMatchCriteria.
- * @see ca.sqlpower.matchmaker.hibernate.PlMatchCriteria
+ * Home object for domain model class PlMatchCriterion.
+ * @see ca.sqlpower.matchmaker.hibernate.PlMatchCriterion
  * @author Hibernate Tools
  */
-public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriteria>{
+public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriterion>{
 
     private static final Log log = LogFactory.getLog(PlMatchCriteriaHome.class);
 
-    public void persist(PlMatchCriteria transientInstance) {
-        log.debug("persisting PlMatchCriteria instance");
+    public void persist(PlMatchCriterion transientInstance) {
+        log.debug("persisting PlMatchCriterion instance");
         try {
             getCurrentSession().persist(transientInstance);
             log.debug("persist successful");
@@ -32,8 +32,8 @@ public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriteria>{
         }
     }
     
-    public void attachDirty(PlMatchCriteria instance) {
-        log.debug("attaching dirty PlMatchCriteria instance");
+    public void attachDirty(PlMatchCriterion instance) {
+        log.debug("attaching dirty PlMatchCriterion instance");
         try {
             getCurrentSession().saveOrUpdate(instance);
             log.debug("attach successful");
@@ -44,8 +44,8 @@ public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriteria>{
         }
     }
     
-    public void attachClean(PlMatchCriteria instance) {
-        log.debug("attaching clean PlMatchCriteria instance");
+    public void attachClean(PlMatchCriterion instance) {
+        log.debug("attaching clean PlMatchCriterion instance");
         try {
             getCurrentSession().lock(instance, LockMode.NONE);
             log.debug("attach successful");
@@ -56,8 +56,8 @@ public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriteria>{
         }
     }
     
-    public void delete(PlMatchCriteria persistentInstance) {
-        log.debug("deleting PlMatchCriteria instance");
+    public void delete(PlMatchCriterion persistentInstance) {
+        log.debug("deleting PlMatchCriterion instance");
         try {
             getCurrentSession().delete(persistentInstance);
             log.debug("delete successful");
@@ -68,10 +68,10 @@ public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriteria>{
         }
     }
     
-    public PlMatchCriteria merge(PlMatchCriteria detachedInstance) {
-        log.debug("merging PlMatchCriteria instance");
+    public PlMatchCriterion merge(PlMatchCriterion detachedInstance) {
+        log.debug("merging PlMatchCriterion instance");
         try {
-            PlMatchCriteria result = (PlMatchCriteria) getCurrentSession()
+            PlMatchCriterion result = (PlMatchCriterion) getCurrentSession()
                     .merge(detachedInstance);
             log.debug("merge successful");
             return result;
@@ -82,10 +82,10 @@ public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriteria>{
         }
     }
     
-    public PlMatchCriteria findById( ca.sqlpower.matchmaker.hibernate.PlMatchCriteriaId id) {
-        log.debug("getting PlMatchCriteria instance with id: " + id);
+    public PlMatchCriterion findById( ca.sqlpower.matchmaker.hibernate.PlMatchCriterionId id) {
+        log.debug("getting PlMatchCriterion instance with id: " + id);
         try {
-            PlMatchCriteria instance = (PlMatchCriteria) getCurrentSession()
+            PlMatchCriterion instance = (PlMatchCriterion) getCurrentSession()
                     .get(getBusinessClass(), id);
             if (instance==null) {
                 log.debug("get successful, no instance found");
@@ -101,8 +101,8 @@ public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriteria>{
         }
     }
     
-    public List findByExample(PlMatchCriteria instance) {
-        log.debug("finding PlMatchCriteria instance by example");
+    public List findByExample(PlMatchCriterion instance) {
+        log.debug("finding PlMatchCriterion instance by example");
         try {
             List results = getCurrentSession()
                     .createCriteria(getBusinessClass())
@@ -120,7 +120,7 @@ public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriteria>{
     
     @Override
 	public String getBusinessClass() {
-		return "ca.sqlpower.matchmaker.hibernate.PlMatchCriteria";
+		return "ca.sqlpower.matchmaker.hibernate.PlMatchCriterion";
 	}
 }
 

@@ -49,7 +49,6 @@ import ca.sqlpower.architect.qfa.ExceptionHandler;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.action.AboutAction;
-import ca.sqlpower.architect.swingui.action.HelpAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
@@ -87,7 +86,8 @@ public class MatchMakerFrame extends JFrame {
 	protected JMenuBar menuBar = null;
 	protected JTree tree = null;
     private JMenu databaseMenu;
-    private PlMatchGroupPanel plMatchGroupPanel = new PlMatchGroupPanel(null);
+    private JSplitPane splitPane;
+    
 	private String lastExportAccessPath = null;
 	protected AboutAction aboutAction;
  	protected  JComponent contentPane;
@@ -122,7 +122,7 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 		    MatchEditor me;
-			me = new MatchEditor(null,null);
+			me = new MatchEditor(null,null,splitPane);
 			me.pack();
 			me.setVisible(true);
 		}
@@ -136,7 +136,7 @@ public class MatchMakerFrame extends JFrame {
 			if ( match == null )
 				return;
 		    MatchEditor me;
-			me = new MatchEditor(match,null);
+			me = new MatchEditor(match,null,splitPane);
 			me.pack();
 			me.setVisible(true);
 		}
@@ -315,8 +315,8 @@ public class MatchMakerFrame extends JFrame {
 		}
 
 		// Create actions
-		aboutAction = new AboutAction();
-        Action helpAction = new HelpAction();
+		// TODO aboutAction = new AboutAction();
+        //Action helpAction = new HelpAction();
 
 		menuBar = new JMenuBar();
 
@@ -379,8 +379,8 @@ public class MatchMakerFrame extends JFrame {
 
         JMenu windowMenu = new JMenu("Window");
         windowMenu.setMnemonic('w');
-        windowMenu.add(aboutAction);
-        windowMenu.add(aboutAction);
+        //TODO windowMenu.add(aboutAction);
+        //windowMenu.add(aboutAction);
         menuBar.add(windowMenu);
 
 		JMenu helpMenu = new JMenu("Help");
@@ -389,7 +389,7 @@ public class MatchMakerFrame extends JFrame {
             helpMenu.add(aboutAction);
             helpMenu.addSeparator();
         }
-        helpMenu.add(helpAction);
+        //helpMenu.add(helpAction);
 		menuBar.add(helpMenu);
 		setJMenuBar(menuBar);
 
@@ -416,12 +416,12 @@ public class MatchMakerFrame extends JFrame {
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel());
-		tree.addMouseListener(new MatchMakerTreeMouseListener(plMatchGroupPanel));
-		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		tree.addMouseListener(new MatchMakerTreeMouseListener(splitPane));
 
-		split.setRightComponent(plMatchGroupPanel );
-		split.setLeftComponent(new JScrollPane(tree));
-		cp.add(split);
+		splitPane.setRightComponent(null );
+		splitPane.setLeftComponent(new JScrollPane(tree));
+		cp.add(splitPane);
 
 		Rectangle bounds = new Rectangle();
 		bounds.x = prefs.getInt(SwingUserSettings.MAIN_FRAME_X, 40);
@@ -454,7 +454,6 @@ public class MatchMakerFrame extends JFrame {
 			Collections.sort(folders);
 			PlMatchTranslateHome translateHome = new PlMatchTranslateHome();
 			translations = new ArrayList<PlMatchTranslate>(translateHome.findAll());
-			System.out.println(translations);
 		}
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
         setDatabase(db);

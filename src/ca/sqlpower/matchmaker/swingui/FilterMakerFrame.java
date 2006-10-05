@@ -39,10 +39,23 @@ public class FilterMakerFrame extends JFrame {
 	private JButton okButton;
 	private JButton cancelButton;
 	private JTextArea filterText;
+	
+	private static final String EQUALS = "=";
+	private static final String LIKE = "like";
+    private static final String IN = "in";
+    private static final String ISNULL = "is null";
+    private static final String BRACKETS = "< >";
+    private static final String NOTLIKE = "not like";
+    private static final String LESSTHAN = "<";
+    private static final String GREATERTHAN = ">";
+    private static final String LESSTHANOREQUALTHAN = "<=";
+    private static final String GREATEROREQUALTHAN = ">=";
+    
+    private JTextArea filterToSet;
 
-
-	public FilterMakerFrame(JPanel parent){		
-        buildUI();                
+	public FilterMakerFrame(JPanel parent, JTextArea filterToSet){		
+        this.filterToSet = filterToSet;
+		buildUI();                
 		setTitle("Filter:");        
 	}
 
@@ -120,7 +133,7 @@ public class FilterMakerFrame extends JFrame {
 	}
     public static void main(String[] args) {
 
-        final JFrame f = new FilterMakerFrame(null);
+        final JFrame f = new FilterMakerFrame(null, null);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -133,10 +146,16 @@ public class FilterMakerFrame extends JFrame {
      * Adds the operators into the setupOperator Dropdown
      */
     private void setupOperatorDropdown(){
-        comparisonOperator.addItem(" = ");
-        comparisonOperator.addItem(" like ");
-        comparisonOperator.addItem(" in ");
-        comparisonOperator.addItem(" is null ");
+        comparisonOperator.addItem(EQUALS);
+        comparisonOperator.addItem(LIKE);
+        comparisonOperator.addItem(IN);
+        comparisonOperator.addItem(ISNULL);
+        comparisonOperator.addItem(BRACKETS);
+        comparisonOperator.addItem(NOTLIKE);
+        comparisonOperator.addItem(LESSTHAN);
+        comparisonOperator.addItem(GREATERTHAN);
+        comparisonOperator.addItem(LESSTHANOREQUALTHAN);
+        comparisonOperator.addItem(GREATEROREQUALTHAN);
     }
     
 
@@ -145,6 +164,10 @@ public class FilterMakerFrame extends JFrame {
 	private Action pasteAction = new AbstractAction("Paste"){
 
 		public void actionPerformed(ActionEvent e) {
+			if (duplicate1.getSelectedItem() != null && duplicate2.getSelectedItem()!=null &&
+					comparisonOperator!= null){
+				
+			}
 		}
 	};
 
@@ -161,7 +184,6 @@ public class FilterMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			filterText.append(" AND ");
-			// TODO Auto-generated method stub
 		}
 
 	};
@@ -170,7 +192,6 @@ public class FilterMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
             filterText.append(" NOT ");
-			// TODO Auto-generated method stub
 		}
 	};
 
@@ -178,7 +199,6 @@ public class FilterMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 		    filterText.append(" OR ");
-			// TODO Auto-generated method stub
 		}
 	};
 
@@ -199,9 +219,12 @@ public class FilterMakerFrame extends JFrame {
 	private Action okAction = new AbstractAction("OK"){
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
+			if (filterText.getText() != null){
+				filterToSet.setText(filterText.getText());
+			}
 		}
 	};
+	
 	private Action cancelAction = new AbstractAction("Cancel"){
 
 		public void actionPerformed(ActionEvent e) {

@@ -7,13 +7,13 @@
 <hibernate-mapping>
 
 <class 
-    name="ca.sqlpower.matchmaker.hibernate.PlMatchCriteria"
+    name="ca.sqlpower.matchmaker.hibernate.PlMatchCriterion"
     table="PL_MATCH_CRITERIA"
     
 >
     <composite-id
 		name="id"
-        class="ca.sqlpower.matchmaker.hibernate.PlMatchCriteriaId"
+        class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterionId"
     >		
 	        <key-property name="matchId" type="string">
 <column name="MATCH_ID" length="80" />
@@ -32,7 +32,7 @@
 	    class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup"
         update="false"
         insert="false"
-        fetch="select"
+        lazy="proxy"
     >
 <column name="MATCH_ID" length="80" not-null="true" />
 <column name="GROUP_ID" length="30" not-null="true" />

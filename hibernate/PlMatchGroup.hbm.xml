@@ -26,6 +26,7 @@
 
     <many-to-one
 	    name="plMatch"
+	    access="field"
 	    class="ca.sqlpower.matchmaker.hibernate.PlMatch"
         update="false"
         insert="false"
@@ -76,16 +77,18 @@
 <column name="LAST_update_OS_USER" length="30" />
   	</property>
 	<set
-		name="plMatchCriterias"
+		name="plMatchCriteria"
+		access="field"
 		inverse="true"
 		lazy="true" 
+		fetch="select"
 		>
 		<key> 
 <column name="MATCH_ID" length="80" not-null="true" />
 <column name="GROUP_ID" length="30" not-null="true" />
         </key>
 		<one-to-many 
-			 class="ca.sqlpower.matchmaker.hibernate.PlMatchCriteria"
+			 class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterion"
 			/>			
 	</set>
 

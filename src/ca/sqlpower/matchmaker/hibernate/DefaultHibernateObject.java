@@ -1,13 +1,13 @@
 package ca.sqlpower.matchmaker.hibernate;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 
 /**
@@ -16,59 +16,103 @@ import javax.swing.event.ChangeListener;
  */
 public abstract class DefaultHibernateObject implements Comparable {
 
-	List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-	Set<ChangeListener> hierachialListeners = new HashSet<ChangeListener>();
+	PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+	Set<PropertyChangeListener> hierachialListeners = new HashSet<PropertyChangeListener>();
 
-	public void addChangeListener(ChangeListener l) {
-		if (!listeners.contains(l)){
-			listeners.add(l);
-		}
+	
+
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(listener);
 	}
 
-	public void removeChangeListener(ChangeListener l) {
-		listeners.remove(l);
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(propertyName, listener);
 	}
 
-	protected void fireChangeEvent(ChangeEvent e){
-		for (int i = listeners.size()-1; i>=0;i--){
-			listeners.get(i).stateChanged(e);
-		}
+	public void fireIndexedPropertyChange(String propertyName, int index, boolean oldValue, boolean newValue) {
+		pcs.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
 	}
+
+	public void fireIndexedPropertyChange(String propertyName, int index, int oldValue, int newValue) {
+		pcs.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
+	}
+
+	public void fireIndexedPropertyChange(String propertyName, int index, Object oldValue, Object newValue) {
+		pcs.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
+	}
+
+	public void firePropertyChange(PropertyChangeEvent evt) {
+		pcs.firePropertyChange(evt);
+	}
+
+	public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
+		pcs.firePropertyChange(propertyName, oldValue, newValue);
+	}
+
+	public void firePropertyChange(String propertyName, int oldValue, int newValue) {
+		pcs.firePropertyChange(propertyName, oldValue, newValue);
+	}
+
+	public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+		pcs.firePropertyChange(propertyName, oldValue, newValue);
+	}
+
+	public PropertyChangeListener[] getPropertyChangeListeners() {
+		return pcs.getPropertyChangeListeners();
+	}
+
+	public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+		return pcs.getPropertyChangeListeners(propertyName);
+	}
+
+	public boolean hasListeners(String propertyName) {
+		return pcs.hasListeners(propertyName);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(listener);
+	}
+
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(propertyName, listener);
+	}
+
+	
 
 	public List<DefaultHibernateObject> getChildren(){
 		return Collections.EMPTY_LIST;
 	}
 	
-	public void addAllHierachialChangeListener(List<ChangeListener> listeners){
-		for (ChangeListener l: listeners){
+	public void addAllHierachialChangeListener(List<PropertyChangeListener> listeners){
+		for (PropertyChangeListener l: listeners){
 			addHierachialChangeListener(l);
 		}
 	}
 	
-	public void addHierachialChangeListener(ChangeListener l){
-		if (!listeners.contains(l)){
-			listeners.add(l);
-		}
+	public void addHierachialChangeListener(PropertyChangeListener l){
+		
+		pcs.addPropertyChangeListener(l);
+		
 		hierachialListeners.add(l);
 		for (DefaultHibernateObject obj: getChildren()){
 			obj.addHierachialChangeListener(l);
 		}
 	}
 	
-	public void removeAllHierachialChangeListener(List<ChangeListener> listeners){
+	public void removeAllHierachialChangeListener(List<PropertyChangeListener> listeners){
 		
-		for (ChangeListener l: listeners){
+		for (PropertyChangeListener l: listeners){
 			removeHierachialChangeListener(l);
 		}
 	}
 	
-	public List<ChangeListener> getHierachialChangeListeners(){
-		return Collections.unmodifiableList(new ArrayList<ChangeListener>(hierachialListeners));
+	public List<PropertyChangeListener> getHierachialChangeListeners(){
+		return Collections.unmodifiableList(new ArrayList<PropertyChangeListener>(hierachialListeners));
 	}
 	
-	public void removeHierachialChangeListener(ChangeListener l){
+	public void removeHierachialChangeListener(PropertyChangeListener l){
 		hierachialListeners.remove(l);
-		listeners.remove(l);
+		pcs.removePropertyChangeListener(l);
 		for (DefaultHibernateObject obj: getChildren()){
 			obj.removeHierachialChangeListener(l);
 		}

@@ -1,13 +1,36 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Date;
 
 import javax.swing.table.AbstractTableModel;
 
-import ca.sqlpower.matchmaker.hibernate.PlMatchCriteria;
+import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
+import ca.sqlpower.matchmaker.hibernate.PlMatchCriterionId;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
+import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class MatchCriteriaTableModel extends AbstractTableModel {
+
+	private final class MatchCriteriaPropertyListener implements PropertyChangeListener {
+		PlMatchGroup group;
+		public MatchCriteriaPropertyListener(PlMatchGroup group) {
+			this.group = group;
+		}
+
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getSource() instanceof PlMatchCriterion){
+				int index = group.getChildren().indexOf(evt.getSource());
+				fireTableRowsUpdated(index,index);
+			} else if (evt.getSource() instanceof PlMatchGroup){
+				// TODO a more efficient implementation
+				fireTableDataChanged();
+			} else {
+				throw new UnsupportedOperationException("Not implemented for class "+evt.getSource().getClass());
+			}
+		}
+	}
 
 	private PlMatchGroup group;
 
@@ -17,10 +40,13 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 
 	public void setGroup(PlMatchGroup group) {
 		this.group = group;
+		PropertyChangeListener pcl = new MatchCriteriaPropertyListener(group);
+		group.addHierachialChangeListener(pcl);
+		
 	}
 
 	public MatchCriteriaTableModel(PlMatchGroup matchGroup) {
-		this.group = matchGroup;
+		setGroup(matchGroup);
 	}
 
 	public int getColumnCount() {
@@ -33,18 +59,27 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		return getFieldFromCriteria(
-                MatchCriteriaColumn.values()[columnIndex],(PlMatchCriteria) group.getChildren().get(rowIndex));
+                MatchCriteriaColumn.values()[columnIndex],(PlMatchCriterion) group.getChildren().get(rowIndex));
 	}
 	
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		MatchCriteriaColumn column = MatchCriteriaColumn.values()[columnIndex];
-		PlMatchCriteria criteria = (PlMatchCriteria) group.getChildren().get(rowIndex);
+		PlMatchCriterion criteria = (PlMatchCriterion) group.getChildren().get(rowIndex);
 		
+		PlMatchCriterionId id = criteria.getId();
 		switch (column) {	
 		case COLUMN:
+			if (aValue == null) return;
+			PlMatchCriterion saveCriterion = new PlMatchCriterion(new PlMatchCriterionId(id.getMatchId(),id.getGroupId(),(String)aValue),group,criteria);
+			HibernateUtil.primarySession().delete(criteria);					
+			HibernateUtil.primarySession().persist(saveCriterion);
 			
-			criteria.getId().setColumnName((String)aValue);
+			group.removePlMatchCriteria(criteria);
+			group.addPlMatchCriteria(saveCriterion);
+			
+			criteria = saveCriterion;
+			
 			break;
 		case ALLOW_NULL:             
 			criteria.setAllowNullInd((Boolean)aValue);
@@ -108,8 +143,8 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 		criteria.setLastUpdateDate(new Date(System.currentTimeMillis()));
 	}
 	
-	public PlMatchCriteria getRow(int row){
-		return (PlMatchCriteria) group.getChildren().get(row);
+	public PlMatchCriterion getRow(int row){
+		return (PlMatchCriterion) group.getChildren().get(row);
 	}
 	
 	@Override
@@ -123,7 +158,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 		
 	}
 	
-	private static Object getFieldFromCriteria(MatchCriteriaColumn column, PlMatchCriteria criteria) {
+	private static Object getFieldFromCriteria(MatchCriteriaColumn column, PlMatchCriterion criteria) {
 		switch (column) {	
 		case COLUMN:
 			return criteria.getId().getColumnName();

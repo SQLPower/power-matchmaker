@@ -20,9 +20,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
@@ -42,6 +42,7 @@ import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.MatchType;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
+import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
@@ -58,7 +59,8 @@ public class MatchEditor extends JFrame {
 	private SQLObjectChooser xrefChooser;
 	private SQLObjectChooser resultChooser;
 
-
+	private JPanel panel;
+	
     private JTextField matchId = new JTextField();
     private JComboBox folderComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
@@ -74,7 +76,6 @@ public class MatchEditor extends JFrame {
 
     private JButton saveMatch;
     private JButton exitEditor;
-    private JButton matchCriteria;
     private JButton showAuditInfo;
     private JButton runMatch;
     private JButton validationStatus;
@@ -84,11 +85,11 @@ public class MatchEditor extends JFrame {
     private PlFolder plFolder;
 
 
-    public MatchEditor(PlMatch match) throws HeadlessException, ArchitectException {
-        this(match,null);
+    public MatchEditor(PlMatch match,JSplitPane splitPane) throws HeadlessException, ArchitectException {
+        this(match,null,splitPane);
     }
 
-    public MatchEditor(PlMatch match, PlFolder folder) {
+    public MatchEditor(PlMatch match, PlFolder folder,JSplitPane splitPane) {
         super();
         if ( match == null ) {
             setTitle("Create new match interface");
@@ -97,7 +98,7 @@ public class MatchEditor extends JFrame {
         }
         this.plMatch = match;
         this.plFolder = folder;
-
+        this.splitPane = splitPane;
         buildUI();
     }
 
@@ -360,6 +361,8 @@ public class MatchEditor extends JFrame {
 			// TODO:
 		}};
 
+	private JSplitPane splitPane;
+
 
 
 
@@ -406,7 +409,7 @@ public class MatchEditor extends JFrame {
 
     	saveMatch = new JButton(saveAction);
     	exitEditor = new JButton(exitAction);
-    	matchCriteria = new JButton(editMatchCriteria);
+    	
     	showAuditInfo = new JButton(showAuditInfoAction);
     	runMatch= new JButton(runMatchAction);
     	validationStatus = new JButton(validationStatusAction);
@@ -521,7 +524,7 @@ public class MatchEditor extends JFrame {
 
     	FormLayout layout = new FormLayout(
 				"4dlu,fill:min(70dlu;default),4dlu,fill:200dlu:grow, 4dlu,min(60dlu;default),10dlu, 66dlu,4dlu", // columns
-				"10dlu,12dlu,4dlu,12dlu,4dlu,24dlu,4dlu,12dlu,   16dlu,12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,12dlu,   4dlu,24dlu,  16dlu,12dlu,4dlu,12dlu,4dlu,12dlu,10dlu"); // rows
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   16dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   4dlu,min(32dlu;pref),  16dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
     	//		 1     2     3    4     5    6     7    8        9     10    11   12    13   14    15   16       17    18     19    20    21   22    23   24    25
 
 		PanelBuilder pb;
@@ -570,7 +573,7 @@ public class MatchEditor extends JFrame {
 		bb.addGridded(saveMatch);
 		bb.addRelatedGap();
 		bb.addRelatedGap();
-		bb.addGridded(matchCriteria);
+		bb.addGridded(new JButton(new NewMatchGroupAction(plMatch,splitPane)));
 		bb.addRelatedGap();
 		bb.addRelatedGap();
 		bb.addGridded(showAuditInfo);
@@ -588,23 +591,11 @@ public class MatchEditor extends JFrame {
 
 		pb.add(bb.getPanel(), cc.xywh(8,2,1,14,"f,f"));
 		pb.add(exitEditor,cc.xywh(8,18,1,2));
-
-		getContentPane().add(pb.getPanel());
+		panel = pb.getPanel();
+		getContentPane().add(panel);
 
     }
 
-    public static void main(String[] args) throws HeadlessException, ArchitectException {
-
-        MatchMakerFrame.getMainInstance();
-        final JFrame f = new MatchEditor(null);
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                f.pack();
-                f.setVisible(true);
-            }
-        });
-    }
 
     /**
 	 * Finds all the children of a catalog and puts them in the GUI.
@@ -755,6 +746,18 @@ public class MatchEditor extends JFrame {
 				}
 
 			}
+		}
+	}
+
+
+	public JPanel getPanel() {
+		return panel;
+	}
+
+	public void setPanel(JPanel panel) {
+		if (this.panel != panel) {
+			this.panel = panel;
+			//TODO fire event
 		}
 	}
 }
