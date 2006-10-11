@@ -32,12 +32,12 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 		this();
 		this.folders = folders;
 		this.matches = matches;
-		
+
 		for (PlMatch m: matches){
 			m.addHierachialChangeListener(this);
 		}
-		
-		
+
+
 	}
 
 
@@ -189,38 +189,49 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 		}else if (evt.getSource() instanceof PlMatchCriterion) {
 			return;
 		} else {
-			
+
 			throw new IllegalArgumentException("Invalid class "+evt.getSource().getClass());
 		}
-		
+
 		for (TreePath p: paths){
+			// XXX Extract these strings as Constants!
 			if (evt.getPropertyName().equals("plMatchGroups") || evt.getPropertyName().equals("plMatchCriterias") || evt.getPropertyName().equals("plMatchs")){
-				List<DefaultHibernateObject> oldList = new ArrayList((Set)evt.getOldValue());
-				List<DefaultHibernateObject> newList = new ArrayList((Set)evt.getNewValue());
-				Collections.sort(oldList);
-				Collections.sort(newList);
-				if (((Set)evt.getOldValue()).size() < ((Set)evt.getNewValue()).size()){	
+				List<? extends DefaultHibernateObject> oldList = new ArrayList<DefaultHibernateObject>((Set)evt.getOldValue());
+				List<? extends DefaultHibernateObject> newList = new ArrayList<DefaultHibernateObject>((Set)evt.getNewValue());
+
+			if (evt.getPropertyName().equals("plMatchGroups")) {
+				Collections.sort((List<PlMatchGroup>)oldList);
+				Collections.sort((List<PlMatchGroup>)newList);
+			} else if (evt.getPropertyName().equals("plMatchCriterias")) {
+				Collections.sort((List<PlMatchCriterion>)oldList);
+				Collections.sort((List<PlMatchCriterion>)newList);
+			} else if (evt.getPropertyName().equals("plMatchs")) {
+				Collections.sort((List<PlMatch>)oldList);
+				Collections.sort((List<PlMatch>)newList);
+			}
+
+				if (((Set)evt.getOldValue()).size() < ((Set)evt.getNewValue()).size()){
 					List<DefaultHibernateObject> deltaList = new ArrayList<DefaultHibernateObject>(newList);
 					deltaList.removeAll(oldList);
-					int[] indices = new int[deltaList.size()]; 
+					int[] indices = new int[deltaList.size()];
 					int i =0;
 					for (DefaultHibernateObject dho: deltaList){
 						indices[i] = newList.indexOf(dho);
 						i++;
 					}
-										
+
 					fireTreeNodesInserted(new TreeModelEvent(evt.getSource(),p,indices,deltaList.toArray()));
-					
+
 				} else if (((Set)evt.getOldValue()).size() > ((Set)evt.getNewValue()).size()) {
 					List<DefaultHibernateObject> deltaList = new ArrayList<DefaultHibernateObject>(oldList);
 					deltaList.removeAll(newList);
-					int[] indices = new int[deltaList.size()]; 
+					int[] indices = new int[deltaList.size()];
 					int i =0;
 					for (DefaultHibernateObject dho: deltaList){
 						indices[i] = oldList.indexOf(dho);
 						i++;
 					}
-										
+
 					fireTreeNodesRemoved(new TreeModelEvent(evt.getSource(),p,indices,deltaList.toArray()));
 				} else {
 					throw new IllegalArgumentException("You have added or removed 0 items.");
