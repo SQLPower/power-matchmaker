@@ -1,10 +1,12 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.SQLException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
@@ -16,6 +18,7 @@ import javax.swing.tree.TreePath;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
@@ -140,6 +143,21 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 						"Audit Information","OK");
 				d.pack();
 				d.setVisible(true);
+			}}));
+		m.add(new JMenuItem(new AbstractAction("statistics"){
+			public void actionPerformed(ActionEvent e) {
+				try {
+					MatchStatisticsPanel p = new MatchStatisticsPanel(match);
+					JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
+							p,MatchMakerFrame.getMainInstance(),
+							"Statistic Information","OK",null,null);
+					d.setPreferredSize(new Dimension(800,600));
+					d.pack();
+					d.setVisible(true);
+				} catch (SQLException e1) {
+					ASUtils.showExceptionDialog(MatchMakerFrame.getMainInstance(),
+							"Could not get match statistic information", e1);
+				}
 			}}));
 		m.addSeparator();
 		m.add(new JMenuItem(new PlMatchExportAction(match)));
