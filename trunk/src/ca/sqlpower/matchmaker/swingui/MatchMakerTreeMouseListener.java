@@ -1,12 +1,10 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.sql.SQLException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
@@ -18,7 +16,6 @@ import javax.swing.tree.TreePath;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
@@ -27,6 +24,7 @@ import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
+import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 
 public class MatchMakerTreeMouseListener implements MouseListener {
 
@@ -35,7 +33,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 		this.splitPane = splitPane;
 	}
 	public void mouseClicked(MouseEvent e) {
-		
+
 		if ( e.BUTTON1 == e.getButton()) {
 			JTree t = (JTree) e.getSource();
 			source = t;
@@ -47,9 +45,9 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 
 					MatchEditor me;
 					me = new MatchEditor((PlMatch) o,null,splitPane);
-					
+
 					splitPane.setRightComponent(me.getPanel());
-				
+
 				}else if (o instanceof PlMatchGroup){
 					try {
 						PlMatchGroupPanel panel = new PlMatchGroupPanel((PlMatchGroup) o);
@@ -108,7 +106,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 
 	private void createMatchGroupMenu(PlMatchGroup group) {
 		Window c = getWindow();
-		
+
 		m.add(new JMenuItem(new DeleteMatchGroupAction(group,splitPane)));
 	}
 
@@ -144,21 +142,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 				d.pack();
 				d.setVisible(true);
 			}}));
-		m.add(new JMenuItem(new AbstractAction("statistics"){
-			public void actionPerformed(ActionEvent e) {
-				try {
-					MatchStatisticsPanel p = new MatchStatisticsPanel(match);
-					JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
-							p,MatchMakerFrame.getMainInstance(),
-							"Statistic Information","OK",null,null);
-					d.setPreferredSize(new Dimension(800,600));
-					d.pack();
-					d.setVisible(true);
-				} catch (SQLException e1) {
-					ASUtils.showExceptionDialog(MatchMakerFrame.getMainInstance(),
-							"Could not get match statistic information", e1);
-				}
-			}}));
+		m.add(new JMenuItem(new ShowMatchStatisticInfoAction(match)));
 		m.addSeparator();
 		m.add(new JMenuItem(new PlMatchExportAction(match)));
 		m.add(new JMenuItem(new PlMatchImportAction()));
