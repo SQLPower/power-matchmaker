@@ -12,7 +12,6 @@ import java.util.Date;
 
 import javax.sql.RowSet;
 import javax.sql.rowset.JoinRowSet;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -21,15 +20,14 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.table.DateTableCellRenderer;
 import ca.sqlpower.architect.swingui.table.IndicatorCellRenderer;
 import ca.sqlpower.architect.swingui.table.NumberAndIntegerTableCellRenderer;
@@ -42,7 +40,7 @@ import ca.sqlpower.matchmaker.util.HibernateUtil;
 import com.sun.rowset.CachedRowSetImpl;
 import com.sun.rowset.JoinRowSetImpl;
 
-public class MatchStatisticsPanel extends JPanel implements ArchitectPanel {
+public class MatchStatisticsPanel extends JPanel {
 
 	private PlMatch match;
 
@@ -63,14 +61,16 @@ public class MatchStatisticsPanel extends JPanel implements ArchitectPanel {
 		JSplitPane splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		splitter.setLeftComponent(scroller);
 
+
 		JTable tableGroup = null;
 		if ( table.getRowCount() > 0 && table.getValueAt(0,0) != null ) {
 			table.setRowSelectionInterval(0,0);
 			RowSet rsGroup = getMatchGroupStats(table);
 			RowSetModel rsmGroup = new RowSetModel(rsGroup);
-			tableGroup = new MatchGroupStatisticTable(rsmGroup);
+			tableGroup = new JTable(new MatchGroupStatisticTableModel(rsmGroup));
+			setMatchGroupStatisticTableCellRenderer(tableGroup);
 		} else {
-			tableGroup = new MatchGroupStatisticTable(null);
+			tableGroup = new JTable();
 		}
 
 		JScrollPane scroller2 = new JScrollPane(tableGroup);
@@ -86,6 +86,7 @@ public class MatchStatisticsPanel extends JPanel implements ArchitectPanel {
 			table.getSelectionModel().setSelectionInterval(0,0);
 		}
 	}
+
 
 	public RowSet getMatchStats(PlMatch match) throws SQLException {
     	Connection con = null;
@@ -145,7 +146,7 @@ public class MatchStatisticsPanel extends JPanel implements ArchitectPanel {
 
     		sql = new StringBuffer();
     		sql.append("SELECT OBJECT_NAME, NO_OF_REC_READ");
-    		sql.append(",100*NO_OF_REC_READ/").append(total);
+    		sql.append(",NO_OF_REC_READ/").append(total);
     		sql.append(", NO_OF_REC_ADDED, NO_OF_REC_UPDATED");
     		sql.append(",NO_OF_REC_TOTAL, NO_OF_REC_PROCESSED");
     		sql.append(" FROM PL_STATS WHERE OBJECT_TYPE=? and TRANS_RUN_NO=?");
@@ -268,64 +269,68 @@ public class MatchStatisticsPanel extends JPanel implements ArchitectPanel {
 
 	}
 
-	private class MatchGroupStatisticTable extends JTable {
+	private class MatchGroupStatisticTableModel extends AbstractTableModel {
 
-		public MatchGroupStatisticTable(TableModel model) {
-			super(model);
-			JTableHeader header = getTableHeader();
-			if ( header == null )
-				System.out.println("header is null");
-			else {
+		private AbstractTableModel model;
 
-			}
-			header.getColumnModel().getColumn(0).setHeaderValue("Group");
-			header.getColumnModel().getColumn(1).setHeaderValue("Match Percent");
-			header.getColumnModel().getColumn(2).setHeaderValue("Total Found");
-			header.getColumnModel().getColumn(3).setHeaderValue("% of Total Found");
-			header.getColumnModel().getColumn(4).setHeaderValue("Added");
-			header.getColumnModel().getColumn(5).setHeaderValue("Updated");
-			header.getColumnModel().getColumn(6).setHeaderValue("Total");
-			header.getColumnModel().getColumn(7).setHeaderValue("Overall(current)");
+		public MatchGroupStatisticTableModel(AbstractTableModel model) {
+			this.model = model;
+		}
+		public int getRowCount() {
+			return model.getRowCount();
+		}
+
+		public int getColumnCount() {
+			return model.getColumnCount();
+		}
+
+		public Object getValueAt(int rowIndex, int columnIndex) {
+			return model.getValueAt(rowIndex,columnIndex);
 		}
 
 		@Override
-		public void setModel(TableModel dataModel) {
-			super.setModel(dataModel);
-			setupHeaderAndCellRenderer();
-		}
-
-		private void setupHeaderAndCellRenderer() {
-			/*JTableHeader header = getTableHeader();
-			header.getColumnModel().getColumn(0).setHeaderValue("Group");
-			header.getColumnModel().getColumn(1).setHeaderValue("Match Percent");
-			header.getColumnModel().getColumn(2).setHeaderValue("Total Found");
-			header.getColumnModel().getColumn(3).setHeaderValue("% of Total Found");
-			header.getColumnModel().getColumn(4).setHeaderValue("Added");
-			header.getColumnModel().getColumn(5).setHeaderValue("Updated");
-			header.getColumnModel().getColumn(6).setHeaderValue("Total");
-			header.getColumnModel().getColumn(7).setHeaderValue("Overall(current)");
-*/
-			TableColumnModel cm = getColumnModel();
-	        for (int col = 0; col < cm.getColumnCount(); col++) {
-	            TableColumn tc = cm.getColumn(col);
-	            if ( col == 3 ) {
-	            	tc.setCellRenderer(new PercentTableCellRenderer());
-	            } else if ( Date.class.isAssignableFrom(getColumnClass(col)) ) {
-	            	tc.setCellRenderer(new DateTableCellRenderer());
-	            } else if ( Number.class.isAssignableFrom(getColumnClass(col)) ) {
-	            	tc.setCellRenderer(new NumberAndIntegerTableCellRenderer());
-	            }
-	        }
-
-/*	        if ( getModel() != null ) {
-	        	TableModelColumnAutofit columnAutoFit =
-	        		new TableModelColumnAutofit(getModel(), this);
-	        	columnAutoFit.setTableHeader(header);
-	        	setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-	        }*/
+		public String getColumnName(int column) {
+			if ( column == 0 ) {
+				return "Group";
+			} else if ( column == 1 ) {
+				return "Match Percent";
+			} else if ( column == 2 ) {
+				return "Total Found";
+			} else if ( column == 3 ) {
+				return "% of Total Found";
+			} else if ( column == 4 ) {
+				return "Added";
+			} else if ( column == 5 ) {
+				return "Updated";
+			} else if ( column == 6 ) {
+				return "Total";
+			} else if ( column == 7 ) {
+				return "Overall(current)";
+			} else {
+				return "unknown column";
+			}
 		}
 	}
 
+	public void setMatchGroupStatisticTableCellRenderer(JTable table) {
+		TableColumnModel cm = table.getColumnModel();
+		for (int col = 0; col < cm.getColumnCount(); col++) {
+			TableColumn tc = cm.getColumn(col);
+			if ( col == 3 ) {
+				tc.setCellRenderer(new PercentTableCellRenderer());
+			} else if ( Date.class.isAssignableFrom(table.getColumnClass(col)) ) {
+				tc.setCellRenderer(new DateTableCellRenderer());
+			} else if ( Number.class.isAssignableFrom(table.getColumnClass(col)) ) {
+				tc.setCellRenderer(new NumberAndIntegerTableCellRenderer());
+			}
+		}
+		if ( table.getModel() != null ) {
+			TableModelColumnAutofit columnAutoFit =
+				new TableModelColumnAutofit(table.getModel(), table);
+			columnAutoFit.setTableHeader(table.getTableHeader());
+			table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		}
+	}
 
 	public class SelectionListener implements ListSelectionListener {
 		private JTable matchTable;
@@ -342,27 +347,35 @@ public class MatchStatisticsPanel extends JPanel implements ArchitectPanel {
 			try {
 				rsGroup = getMatchGroupStats(matchTable);
 				RowSetModel rsmGroup = new RowSetModel(rsGroup);
-				matchGroupTable.setModel(rsmGroup);
+				matchGroupTable.setModel(
+						new MatchGroupStatisticTableModel(rsmGroup));
+				setMatchGroupStatisticTableCellRenderer(matchGroupTable);
 			} catch (SQLException e1) {
 				ASUtils.showExceptionDialog(MatchStatisticsPanel.this,"SQL Error",e1);
 			}
         }
     }
 
+	public int deleteAllStatistics() throws SQLException {
+    	Connection con = null;
+    	PreparedStatement pstmt = null;
+    	try {
+    		con = HibernateUtil.primarySession().connection();
+    		StringBuffer sql = new StringBuffer();
+    		sql.append("DELETE FROM PL_STATS WHERE OBJECT_TYPE=? ");
+    		sql.append(" AND OBJECT_NAME=? ");
+    		pstmt = con.prepareStatement(sql.toString());
+    		pstmt.setString(1, "MATCH");
+    		pstmt.setString(2, match.getMatchId());
+    		return pstmt.executeUpdate();
 
+    	} finally {
+    		if ( pstmt != null )
+    			pstmt.close();
+    		if (con != null)
+    			con.close();
+    	}
+    }
 
-	public boolean applyChanges() {
-		System.out.println("apply changes!!!");
-		return false;
-	}
-
-	public void discardChanges() {
-		System.out.println("discard changes!!!");
-
-	}
-
-	public JComponent getPanel() {
-		return this;
-	}
 
 }

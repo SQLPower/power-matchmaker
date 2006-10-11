@@ -59,6 +59,7 @@ import ca.sqlpower.matchmaker.hibernate.home.PlMatchTranslateHome;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
+import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 import com.darwinsys.util.PrefsUtils;
@@ -87,7 +88,7 @@ public class MatchMakerFrame extends JFrame {
 	protected JTree tree = null;
     private JMenu databaseMenu;
     private JSplitPane splitPane;
-    
+
 	private String lastExportAccessPath = null;
 	protected AboutAction aboutAction;
  	protected  JComponent contentPane;
@@ -220,11 +221,22 @@ public class MatchMakerFrame extends JFrame {
 
 		}};
 
+	private Action showMatchStatisticInfoAction = new AbstractAction("Statistics") {
+
+		public void actionPerformed(ActionEvent e) {
+			PlMatch match = ArchitectUtils.getTreeObject(getTree(),PlMatch.class);
+			if ( match == null )
+				return;
+
+			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(match);
+			sm.actionPerformed(e);
+		}};
 
 	private List<PlMatch> matches;
 	private List<PlFolder> folders;
 	private List<PlMatchTranslate> translations;
 	private SQLDatabase database;
+
 
 
 	/**
@@ -316,7 +328,12 @@ public class MatchMakerFrame extends JFrame {
 
 		// Create actions
 		// TODO aboutAction = new AboutAction();
-        //Action helpAction = new HelpAction();
+        Action aboutAction = new AbstractAction(){
+
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+
+			}};
 
 		menuBar = new JMenuBar();
 
@@ -350,6 +367,7 @@ public class MatchMakerFrame extends JFrame {
 		matchesMenu.add("Delete");
 		matchesMenu.addSeparator();
 		matchesMenu.add(runMatchAction);
+		matchesMenu.add(showMatchStatisticInfoAction);
 		matchesMenu.addSeparator();
 		matchesMenu.add(new JMenuItem(new PlMatchImportAction()));
 		matchesMenu.add(new JMenuItem(new PlMatchExportAction(null)));

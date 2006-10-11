@@ -35,7 +35,7 @@ public class RowSetModel extends AbstractTableModel implements RowSetListener {
 	}
 
 	@Override
-	public Class getColumnClass(int column) {
+	public Class<?> getColumnClass(int column) {
 		String cname;
 		int type;
 
