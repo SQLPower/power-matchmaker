@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +31,7 @@ import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
@@ -66,20 +69,18 @@ public class MatchEditor extends JFrame {
     private JTextArea desc = new JTextArea();
     private JComboBox type = new JComboBox();
 
-    private JTextArea filter = new JTextArea();
-
     private JTextField resultTableName = new JTextField();
 
     private JButton viewBuilder;
-    private JButton editFilter;
     private JButton createResultTable;
 
     private JButton saveMatch;
-    private JButton exitEditor;
+    //private JButton exitEditor;
     private JButton showAuditInfo;
     private JButton runMatch;
     private JButton validationStatus;
     private JButton validateMatch;
+    private FilterComponentsPanel filterPanel;
 
 	private PlMatch plMatch;
     private PlFolder plFolder;
@@ -89,7 +90,7 @@ public class MatchEditor extends JFrame {
         this(match,null,splitPane);
     }
 
-    public MatchEditor(PlMatch match, PlFolder folder,JSplitPane splitPane) {
+    public MatchEditor(PlMatch match, PlFolder folder,JSplitPane splitPane) throws ArchitectException {
         super();
         if ( match == null ) {
             setTitle("Create new match interface");
@@ -232,7 +233,7 @@ public class MatchEditor extends JFrame {
                 plMatch.setPkColumn(
                 		((SQLIndex)sourceChooser.getUniqueKeyComboBox().getSelectedItem()).getName());
             }
-            plMatch.setFilter(filter.getText());
+            plMatch.setFilter(filterPanel.getFilterTextArea().getText());
 
             if ( resultChooser.getCatalogComboBox().isEnabled() &&
             		resultChooser.getCatalogComboBox().getSelectedItem() == null ) {
@@ -351,11 +352,6 @@ public class MatchEditor extends JFrame {
 			// TODO:
 		}};
 
-	private Action editFilterAction = new AbstractAction("Edit") {
-		public void actionPerformed(ActionEvent e) {
-			// TODO:
-		}};
-
 	private Action createResultTableAction = new AbstractAction("Create Table") {
 		public void actionPerformed(ActionEvent e) {
 			// TODO:
@@ -371,25 +367,44 @@ public class MatchEditor extends JFrame {
 
 
 
-    private void buildUI() {
+    private void buildUI() throws ArchitectException {
 
-    	sourceChooser = new SQLObjectChooser(MatchEditor.this,
-        		MatchMakerFrame.getMainInstance().getUserSettings().getConnections());
+    	final MatchMakerFrame mainFrame = MatchMakerFrame.getMainInstance();
+		sourceChooser = new SQLObjectChooser(MatchEditor.this,
+        		mainFrame.getUserSettings().getConnections());
         xrefChooser = new SQLObjectChooser(MatchEditor.this,
-        		MatchMakerFrame.getMainInstance().getUserSettings().getConnections());
+        		mainFrame.getUserSettings().getConnections());
         resultChooser = new SQLObjectChooser(MatchEditor.this,
-        		MatchMakerFrame.getMainInstance().getUserSettings().getConnections());
+        		mainFrame.getUserSettings().getConnections());
+        
+        final SQLDatabase loginDB = mainFrame.getDatabase();
+        
+        filterPanel = new FilterComponentsPanel(loginDB.getTableByName(plMatch.getTableCatalog(), plMatch.getTableOwner(), plMatch.getMatchTable()));
+    
+        PropertyChangeListener pcl = new PropertyChangeListener(){
 
-        SQLDatabase loginDB = MatchMakerFrame.getMainInstance().getDatabase();
+			public void propertyChange(PropertyChangeEvent evt) {
+				String property = evt.getPropertyName();
+				if (property.equals("tableCatalog") || property.equals("tableOwner") ||property.equals("matchTable") ){
+					try {
+						filterPanel.setTable(loginDB.getTableByName(plMatch.getTableCatalog(), plMatch.getTableOwner(), plMatch.getMatchTable()));
+					} catch (ArchitectException e) {
+						throw new ArchitectRuntimeException(e);
+					}
+				}
+				
+			}
+        	
+        };
         ArchitectDataSource ds;
         if ( loginDB != null ) {
-        	PlDotIni ini = MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni();
+        	PlDotIni ini = mainFrame.getUserSettings().getPlDotIni();
         	ds = ini.getDataSource(loginDB.getDataSource().getName());
         	sourceChooser.getDataSourceComboBox().setSelectedItem(ds);
         	resultChooser.getDataSourceComboBox().setSelectedItem(ds);
         	// no connection no folders
         	folderComboBox.setModel(
-        			new FolderComboBoxModel<PlFolder>(MatchMakerFrame.getMainInstance().getFolders()));
+        			new FolderComboBoxModel<PlFolder>(mainFrame.getFolders()));
         }
 
     	List<String> types = new ArrayList<String>();
@@ -400,15 +415,14 @@ public class MatchEditor extends JFrame {
 
         sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {
-				filter.setText("");
+				filterPanel.getFilterTextArea().setText("");
 			}});
 
     	viewBuilder = new JButton(viewBuilderAction);
-    	editFilter = new JButton(editFilterAction);
     	createResultTable = new JButton(createResultTableAction);
 
     	saveMatch = new JButton(saveAction);
-    	exitEditor = new JButton(exitAction);
+    	//exitEditor = new JButton(exitAction);
     	
     	showAuditInfo = new JButton(showAuditInfoAction);
     	runMatch= new JButton(runMatchAction);
@@ -483,7 +497,7 @@ public class MatchEditor extends JFrame {
 	    		}
     		}
 
-            filter.setText(plMatch.getFilter());
+            filterPanel.getFilterTextArea().setText(plMatch.getFilter());
 
             SQLTable resultTable = null;
 			try {
@@ -523,8 +537,8 @@ public class MatchEditor extends JFrame {
 
 
     	FormLayout layout = new FormLayout(
-				"4dlu,fill:min(70dlu;default),4dlu,fill:200dlu:grow, 4dlu,min(60dlu;default),10dlu, 66dlu,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   16dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   4dlu,min(32dlu;pref),  16dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
+				"4dlu,pref,4dlu,fill:200dlu:grow, 4dlu,pref,10dlu, pref,4dlu", // columns
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   16dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   4dlu,pref,  16dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
     	//		 1     2     3    4     5    6     7    8        9     10    11   12    13   14    15   16       17    18     19    20    21   22    23   24    25
 
 		PanelBuilder pb;
@@ -553,7 +567,7 @@ public class MatchEditor extends JFrame {
 		pb.add(sourceChooser.getSchemaComboBox(), cc.xy(4,12));
 		pb.add(sourceChooser.getTableComboBox(), cc.xy(4,14));
 		pb.add(sourceChooser.getUniqueKeyComboBox(), cc.xy(4,16,"f,f"));
-		pb.add(new JScrollPane(filter), cc.xy(4,18,"f,f"));
+		pb.add(filterPanel, cc.xyw(4,18,3,"f,f"));
 
 		pb.add(resultChooser.getCatalogTerm(), cc.xy(2,20,"r,c"));
 		pb.add(resultChooser.getSchemaTerm(), cc.xy(2,22,"r,c"));
@@ -566,7 +580,6 @@ public class MatchEditor extends JFrame {
 
 
 		pb.add(viewBuilder, cc.xy(6,10,"f,f"));
-		pb.add(editFilter, cc.xy(6,18,"f,f"));
 		pb.add(createResultTable, cc.xywh(6,20,1,3));
 
 		ButtonStackBuilder bb = new ButtonStackBuilder();
@@ -590,7 +603,7 @@ public class MatchEditor extends JFrame {
 
 
 		pb.add(bb.getPanel(), cc.xywh(8,2,1,14,"f,f"));
-		pb.add(exitEditor,cc.xywh(8,18,1,2));
+		//pb.add(exitEditor,cc.xywh(8,18,1,2));
 		panel = pb.getPanel();
 		getContentPane().add(panel);
 

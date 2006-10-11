@@ -33,7 +33,7 @@ public class DeleteMatchCriteria extends AbstractAction {
 		Transaction tx = HibernateUtil.primarySession().beginTransaction();
 		for(int i= selected.size()-1; i>=0;i--){
 			HibernateUtil.primarySession().delete(model.getChildren().get(i));
-			model.removePlMatchCriteria((PlMatchCriterion) model.getChildren());
+			model.removePlMatchCriteria((PlMatchCriterion) model.getChildren().get(i));
 		}
 		tx.commit();
 	}

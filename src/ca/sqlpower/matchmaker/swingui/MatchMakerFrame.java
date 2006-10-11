@@ -38,6 +38,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.ConfigFile;
@@ -122,7 +123,11 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 		    MatchEditor me;
-			me = new MatchEditor(null,null,splitPane);
+			try {
+				me = new MatchEditor(null,null,splitPane);
+			} catch (ArchitectException e1) {
+				throw new ArchitectRuntimeException(e1);
+			}
 			me.pack();
 			me.setVisible(true);
 		}
@@ -136,7 +141,11 @@ public class MatchMakerFrame extends JFrame {
 			if ( match == null )
 				return;
 		    MatchEditor me;
-			me = new MatchEditor(match,null,splitPane);
+			try {
+				me = new MatchEditor(match,null,splitPane);
+			} catch (ArchitectException e1) {
+				throw new ArchitectRuntimeException(e1);
+			}
 			me.pack();
 			me.setVisible(true);
 		}

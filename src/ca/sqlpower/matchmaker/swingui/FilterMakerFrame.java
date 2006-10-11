@@ -7,14 +7,17 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
+
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLTable;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -22,7 +25,7 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class FilterMakerFrame extends JFrame {
+public class FilterMakerFrame extends JDialog {
 
 	private static Logger logger = Logger.getLogger(FilterMakerFrame.class);
 
@@ -52,14 +55,26 @@ public class FilterMakerFrame extends JFrame {
     private static final String GREATEROREQUALTHAN = ">=";
     
     private JTextArea filterToSet;
+    
+    SQLTable t;
 
-	public FilterMakerFrame(JPanel parent, JTextArea filterToSet){		
+	public FilterMakerFrame(JDialog parent, JTextArea filterToSet, SQLTable t) throws ArchitectException{
+		super(parent);
         this.filterToSet = filterToSet;
+        this.t = t;
 		buildUI();                
-		setTitle("Filter:");        
+		setTitle("Filter:");     
+	}
+	
+	public FilterMakerFrame(JFrame parent, JTextArea filterToSet, SQLTable t) throws ArchitectException{
+		super(parent);
+        this.filterToSet = filterToSet;
+        this.t = t;
+		buildUI();                
+		setTitle("Filter:");
 	}
 
-	public void buildUI(){
+	public void buildUI() throws ArchitectException{
 
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:min(70dlu;default), 4dlu, fill:150dlu:grow,4dlu, min(60dlu;default),4dlu",
@@ -72,8 +87,8 @@ public class FilterMakerFrame extends JFrame {
 
 		pb = new PanelBuilder(layout,p);
 
-		duplicate1 = new JComboBox();
-		duplicate2 = new JComboBox();
+		duplicate1 = new JComboBox(new ColumnComboBoxModel(t));
+		duplicate2 = new JComboBox(new ColumnComboBoxModel(t));
 		comparisonOperator = new JComboBox();
 		pasteButton = new JButton(pasteAction);
 		undoButton = new JButton(undoAction);
@@ -128,20 +143,11 @@ public class FilterMakerFrame extends JFrame {
 	
 		
 		setupOperatorDropdown();
+		
 
 		getContentPane().add(pb.getPanel());
 	}
-    public static void main(String[] args) {
-
-        final JFrame f = new FilterMakerFrame(null, null);
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                f.pack();
-                f.setVisible(true);
-            }
-        });
-    }
+    
     /*
      * Adds the operators into the setupOperator Dropdown
      */
@@ -166,7 +172,18 @@ public class FilterMakerFrame extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			if (duplicate1.getSelectedItem() != null && duplicate2.getSelectedItem()!=null &&
 					comparisonOperator!= null){
-				
+				StringBuffer textBuffer = new StringBuffer();
+				String trimmedUpperCaseText = filterText.getText().trim().toUpperCase();
+				if (!filterText.getText().trim().equals("") 
+						&& !(trimmedUpperCaseText.endsWith(" AND") 
+								|| trimmedUpperCaseText.endsWith(" OR")
+								|| trimmedUpperCaseText.endsWith(" NOT"))) {
+					textBuffer.append(" AND ");
+				}
+				textBuffer.append("RecDup1."+ duplicate1.getSelectedItem().toString());
+				textBuffer.append(" " + comparisonOperator.getSelectedItem().toString()+ " ");
+				textBuffer.append("RecDup2."+ duplicate2.getSelectedItem().toString());
+				filterText.append(textBuffer.toString());
 			}
 		}
 	};
@@ -221,6 +238,7 @@ public class FilterMakerFrame extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			if (filterText.getText() != null){
 				filterToSet.setText(filterText.getText());
+				FilterMakerFrame.this.setVisible(false);
 			}
 		}
 	};

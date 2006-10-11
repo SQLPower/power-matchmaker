@@ -54,7 +54,9 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
         this.plMatch = plMatch;
     }
 
-    /** partial constructor */
+    /** FIXME this is not really a constructor should be removed when
+     *  refactoring of schema is complete
+     **/
     public PlMatchGroup(PlMatchGroupId id, PlMatch plMatch, PlMatchGroup model) {
     	this();
         this.id = id;
