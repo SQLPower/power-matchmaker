@@ -4,7 +4,6 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -79,7 +78,7 @@ public class MatchMakerFrame extends JFrame {
 
     public static final boolean MAC_OS_X = (System.getProperty("os.name").toLowerCase().startsWith("mac os x"));
 
-	protected Preferences prefs;
+	protected final Preferences prefs;
 	protected ArchitectSession architectSession = null;
 	protected ConfigFile configFile = null;
 	protected UserSettings sprefs = null;
@@ -254,13 +253,12 @@ public class MatchMakerFrame extends JFrame {
 	    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	    architectSession = ArchitectSession.getInstance();
 	    init();
+	    prefs = PrefsUtils.getUserPrefsNode(architectSession);
 
 	}
 
 	private void init() throws ArchitectException {
-		int accelMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 
-		prefs = PrefsUtils.getUserPrefsNode(architectSession);
 	    CoreUserSettings us;
 	    // must be done right away, because a static
 	    // initializer in this class effects BeanUtils
