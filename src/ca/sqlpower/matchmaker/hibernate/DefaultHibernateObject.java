@@ -14,12 +14,12 @@ import java.util.Set;
  * Hand-constructed base class for Hibernate-generated objects that
  * need to handle ChangeListeners.
  */
-public abstract class DefaultHibernateObject implements Comparable {
+public abstract class DefaultHibernateObject<C extends DefaultHibernateObject> {
 
 	PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 	Set<PropertyChangeListener> hierachialListeners = new HashSet<PropertyChangeListener>();
 
-	
+
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		pcs.addPropertyChangeListener(listener);
@@ -77,39 +77,40 @@ public abstract class DefaultHibernateObject implements Comparable {
 		pcs.removePropertyChangeListener(propertyName, listener);
 	}
 
-	
 
-	public List<DefaultHibernateObject> getChildren(){
-		return Collections.EMPTY_LIST;
+
+	public List<C> getChildren(){
+		List<C> emptyList = Collections.emptyList();
+		return emptyList;
 	}
-	
+
 	public void addAllHierachialChangeListener(List<PropertyChangeListener> listeners){
 		for (PropertyChangeListener l: listeners){
 			addHierachialChangeListener(l);
 		}
 	}
-	
+
 	public void addHierachialChangeListener(PropertyChangeListener l){
-		
+
 		pcs.addPropertyChangeListener(l);
-		
+
 		hierachialListeners.add(l);
 		for (DefaultHibernateObject obj: getChildren()){
 			obj.addHierachialChangeListener(l);
 		}
 	}
-	
+
 	public void removeAllHierachialChangeListener(List<PropertyChangeListener> listeners){
-		
+
 		for (PropertyChangeListener l: listeners){
 			removeHierachialChangeListener(l);
 		}
 	}
-	
+
 	public List<PropertyChangeListener> getHierachialChangeListeners(){
 		return Collections.unmodifiableList(new ArrayList<PropertyChangeListener>(hierachialListeners));
 	}
-	
+
 	public void removeHierachialChangeListener(PropertyChangeListener l){
 		hierachialListeners.remove(l);
 		pcs.removePropertyChangeListener(l);
@@ -117,7 +118,7 @@ public abstract class DefaultHibernateObject implements Comparable {
 			obj.removeHierachialChangeListener(l);
 		}
 	}
-	
+
 	public int getChildCount(){
 		return 0;
 	}
