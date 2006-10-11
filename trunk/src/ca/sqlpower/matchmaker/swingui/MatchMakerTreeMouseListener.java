@@ -44,8 +44,12 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 				if (o instanceof PlMatch) {
 
 					MatchEditor me;
-					me = new MatchEditor((PlMatch) o,null,splitPane);
-
+					try {
+						me = new MatchEditor((PlMatch) o,null,splitPane);
+					} catch (ArchitectException e1) {
+						throw new ArchitectRuntimeException(e1);
+					}
+					
 					splitPane.setRightComponent(me.getPanel());
 
 				}else if (o instanceof PlMatchGroup){
@@ -153,7 +157,11 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 
             public void actionPerformed(ActionEvent e) {
                 MatchEditor me;
-				me = new MatchEditor(null,folder,splitPane);
+				try {
+					me = new MatchEditor(null,folder,splitPane);
+				} catch (ArchitectException e1) {
+					throw new ArchitectRuntimeException(e1);
+				}
 				me.pack();
 				me.setVisible(true);
             }}));

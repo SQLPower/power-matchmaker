@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
@@ -195,8 +196,9 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			matchCriteriaTable.getColumnModel().getColumn(translateColumn).setCellEditor(new DefaultCellEditor(new JComboBox(new TranslationComboBoxModel())));
 			int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
 			PlMatch plMatch = model.getPlMatch();
+			SQLTable t = MatchMakerFrame.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
 			matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(new DefaultCellEditor(new JComboBox(
-						new ColumnComboBoxModel(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable(),model))));
+						new ColumnComboBoxModel(t,model))));
 			
 			
 		}
