@@ -7,6 +7,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -347,7 +348,15 @@ public class MatchEditor extends JFrame {
 		}};
 	private Action validateMatchAction = new AbstractAction("Validate Match") {
 		public void actionPerformed(ActionEvent e) {
-			// TODO:
+			try {
+				MatchValidation v = new MatchValidation(plMatch);
+				v.pack();
+				v.setVisible(true);
+			} catch (HeadlessException e1) {
+				ASUtils.showExceptionDialog(MatchEditor.this,"Unknown Error",e1);
+			} catch (SQLException e1) {
+				ASUtils.showExceptionDialog(MatchEditor.this,"Unknown SQL Error",e1);
+			}
 		}};
 	private Action viewBuilderAction = new AbstractAction("View Builder") {
 		public void actionPerformed(ActionEvent e) {
