@@ -83,7 +83,7 @@ public class TableQueryFrame extends JFrame {
 				}
 				ddlg.selectTable(table,null,null);
 				sqlStatement.setText(ddlg.getDdlStatements().get(0).getSQLText());
-				columnInformation.setName(table.getName());
+				columnInformation.setName(sqlStatement.getText());
 			}
 		}
 	}

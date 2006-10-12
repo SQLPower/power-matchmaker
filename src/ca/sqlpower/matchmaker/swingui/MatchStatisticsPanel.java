@@ -95,7 +95,7 @@ public class MatchStatisticsPanel extends JPanel {
 	}
 
 
-	public RowSet getMatchStats(PlMatch match) throws SQLException {
+	private RowSet getMatchStats(PlMatch match) throws SQLException {
     	Connection con = null;
     	Statement stmt = null;
     	ResultSet rs =  null;
@@ -128,7 +128,7 @@ public class MatchStatisticsPanel extends JPanel {
     	}
     }
 
-	public RowSet getMatchGroupStats(PlMatch match, int runNo, int total) throws SQLException {
+	private RowSet getMatchGroupStats(PlMatch match, int runNo, int total) throws SQLException {
     	Connection con = null;
     	PreparedStatement pstmt = null;
     	ResultSet rs =  null;
@@ -187,7 +187,7 @@ public class MatchStatisticsPanel extends JPanel {
     	}
     }
 
-	public RowSet getMatchGroupStats(JTable t) throws SQLException {
+	private RowSet getMatchGroupStats(JTable t) throws SQLException {
 
 		if ( t.getSelectedRow() == -1 )
 			return null;
@@ -365,7 +365,7 @@ public class MatchStatisticsPanel extends JPanel {
 		}
 	}
 
-	public void setMatchGroupStatisticTableCellRenderer(JTable table) {
+	private void setMatchGroupStatisticTableCellRenderer(JTable table) {
 		TableColumnModel cm = table.getColumnModel();
 		for (int col = 0; col < cm.getColumnCount(); col++) {
 			TableColumn tc = cm.getColumn(col);
@@ -385,7 +385,7 @@ public class MatchStatisticsPanel extends JPanel {
 		}
 	}
 
-	public class SelectionListener implements ListSelectionListener {
+	private class SelectionListener implements ListSelectionListener {
 		private JTable matchTable;
 		private JTable matchGroupTable;
 
@@ -480,11 +480,11 @@ public class MatchStatisticsPanel extends JPanel {
     	}
     }
 
-	public Timestamp getStartDateTime() {
+	private Timestamp getStartDateTime() {
 		return startDateTime;
 	}
 
-	public void setStartDateTime(Timestamp startDateTime) {
+	private void setStartDateTime(Timestamp startDateTime) {
 		if (this.startDateTime != startDateTime) {
 			firePropertyChange("this.startDateTime", this.startDateTime,
 					startDateTime);
