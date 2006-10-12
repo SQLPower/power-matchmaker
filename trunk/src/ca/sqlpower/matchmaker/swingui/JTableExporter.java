@@ -80,7 +80,7 @@ public class JTableExporter extends JFileChooser {
         ioo.indent++;
 
         for ( int row=0; row<table.getRowCount(); row++ ) {
-        	ioo.println(out,"<ROW NO=\"" + row + "\"/>");
+        	ioo.println(out,"<row rowid=\"" + row + "\">");
         	ioo.indent++;
         	for ( int column=0; column<table.getColumnCount(); column++ ) {
         		Object o = table.getValueAt(row,column);
@@ -93,6 +93,7 @@ public class JTableExporter extends JFileChooser {
         		ioo.niprintln(out,"</col" + column +">");
         	}
         	ioo.indent--;
+        	ioo.println(out,"</row>");
         }
         ioo.indent--;
         ioo.println(out, "</EXPORT>");
