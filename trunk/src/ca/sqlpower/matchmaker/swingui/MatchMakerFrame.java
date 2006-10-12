@@ -261,9 +261,8 @@ public class MatchMakerFrame extends JFrame {
 	    // close handled by window listener
 	    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	    architectSession = ArchitectSession.getInstance();
-	    init();
 	    prefs = PrefsUtils.getUserPrefsNode(architectSession);
-
+	    init();
 	}
 
 	private void init() throws ArchitectException {
