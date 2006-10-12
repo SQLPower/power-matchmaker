@@ -83,6 +83,7 @@ public class TableQueryFrame extends JFrame {
 				}
 				ddlg.selectTable(table,null,null);
 				sqlStatement.setText(ddlg.getDdlStatements().get(0).getSQLText());
+				columnInformation.setName(table.getName());
 			}
 		}
 	}
@@ -186,8 +187,7 @@ public class TableQueryFrame extends JFrame {
 	private Action exportAction = new AbstractAction() {
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-
+			new JTableExporter(TableQueryFrame.this,columnInformation);
 		}};
 
 
