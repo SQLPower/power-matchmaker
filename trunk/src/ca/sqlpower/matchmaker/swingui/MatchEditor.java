@@ -63,7 +63,7 @@ public class MatchEditor extends JFrame {
 	private SQLObjectChooser resultChooser;
 
 	private JPanel panel;
-	
+
     private JTextField matchId = new JTextField();
     private JComboBox folderComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
@@ -339,9 +339,11 @@ public class MatchEditor extends JFrame {
 			p.setVisible(true);
 		}};
 
-	private Action validationStatusAction = new AbstractAction("Validation Status") {
+	private Action validationStatusAction = new AbstractAction("View Validation Status") {
 		public void actionPerformed(ActionEvent e) {
-			// TODO:
+			MatchValidationStatus p = new MatchValidationStatus(plMatch,MatchEditor.this);
+			p.pack();
+			p.setVisible(true);
 		}};
 	private Action validateMatchAction = new AbstractAction("Validate Match") {
 		public void actionPerformed(ActionEvent e) {
@@ -376,11 +378,11 @@ public class MatchEditor extends JFrame {
         		mainFrame.getUserSettings().getConnections());
         resultChooser = new SQLObjectChooser(MatchEditor.this,
         		mainFrame.getUserSettings().getConnections());
-        
+
         final SQLDatabase loginDB = mainFrame.getDatabase();
-        
+
         filterPanel = new FilterComponentsPanel(loginDB.getTableByName(plMatch.getTableCatalog(), plMatch.getTableOwner(), plMatch.getMatchTable()));
-    
+
         PropertyChangeListener pcl = new PropertyChangeListener(){
 
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -392,9 +394,9 @@ public class MatchEditor extends JFrame {
 						throw new ArchitectRuntimeException(e);
 					}
 				}
-				
+
 			}
-        	
+
         };
         ArchitectDataSource ds;
         if ( loginDB != null ) {
@@ -423,7 +425,7 @@ public class MatchEditor extends JFrame {
 
     	saveMatch = new JButton(saveAction);
     	//exitEditor = new JButton(exitAction);
-    	
+
     	showAuditInfo = new JButton(showAuditInfoAction);
     	runMatch= new JButton(runMatchAction);
     	validationStatus = new JButton(validationStatusAction);
