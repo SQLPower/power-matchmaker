@@ -87,7 +87,7 @@ public class JTableExporter extends JFileChooser {
         		ioo.print(out,"<col" + column + "name=\"" +
         				ArchitectUtils.escapeXML(table.getColumnName(column))+
         				"\">");
-        		if ( o != null )
+        		if ( o != null ) {
         			ioo.niprint(out,ArchitectUtils.escapeXML(o.toString()));
         		}
         		ioo.niprintln(out,"</col" + column +">");
