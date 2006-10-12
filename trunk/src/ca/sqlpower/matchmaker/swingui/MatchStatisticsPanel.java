@@ -2,16 +2,21 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.Date;
 
 import javax.sql.RowSet;
 import javax.sql.rowset.JoinRowSet;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,12 +42,14 @@ import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.sun.rowset.CachedRowSetImpl;
 import com.sun.rowset.JoinRowSetImpl;
 
 public class MatchStatisticsPanel extends JPanel {
 
 	private PlMatch match;
+	private Timestamp startDateTime;
 
 	public MatchStatisticsPanel(PlMatch match) throws SQLException {
 		super(new BorderLayout());
@@ -212,11 +219,57 @@ public class MatchStatisticsPanel extends JPanel {
 		MatchMakerFrame.getMainInstance();
 		ArchitectDataSource ds = MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni().getDataSource("ARTHUR_TEST");
 		MatchMakerFrame.getMainInstance().newLogin(new SQLDatabase(ds));
-		final PlMatch match = MatchMakerFrame.getMainInstance().getMatchByName("MATCH_PT_COMPANY");
+		final PlMatch match = MatchMakerFrame.getMainInstance().getMatchByName("DEMO_MATCH_PEOPLE_MATCH_FIRST");
 
 		final MatchStatisticsPanel panel = new MatchStatisticsPanel(match);
 
-		f.getContentPane().add(panel);
+
+
+
+		JPanel p = new JPanel(new BorderLayout());
+		JButton deleteAllButton = new JButton(new AbstractAction("Delete All"){
+			public void actionPerformed(ActionEvent e) {
+				try {
+					panel.deleteAllStatistics();
+				} catch (SQLException e1) {
+					ASUtils.showExceptionDialog(MatchMakerFrame.getMainInstance(),
+							"Could not delete match statistic information", e1);
+				}
+			}});
+		JButton deleteBackwardButton = new JButton(new AbstractAction("Delete Backward"){
+			public void actionPerformed(ActionEvent e) {
+				try {
+					panel.deleteBackwardStatistics();
+				} catch (SQLException e1) {
+					ASUtils.showExceptionDialog(MatchMakerFrame.getMainInstance(),
+							"Could not delete match statistic information", e1);
+				}
+			}});
+
+		Action closeAction = new AbstractAction("Close"){
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}};
+		closeAction.putValue(Action.NAME, "Close");
+		JButton closeButton = new JButton(closeAction);
+
+		ButtonBarBuilder bbb = new ButtonBarBuilder();
+		bbb.addRelatedGap();
+		bbb.addGridded(deleteAllButton);
+		bbb.addRelatedGap();
+		bbb.addGridded(deleteBackwardButton);
+		bbb.addGlue();
+		bbb.addGridded(closeButton);
+		bbb.addRelatedGap();
+		p.add(bbb.getPanel(),BorderLayout.SOUTH);
+		p.add(panel,BorderLayout.CENTER);
+
+
+
+
+
+
+		f.getContentPane().add(p);
 		f.setPreferredSize(new Dimension(800,600));
 		f.setTitle("Match Statistics: "+match.getMatchId());
 
@@ -345,6 +398,22 @@ public class MatchStatisticsPanel extends JPanel {
         public void valueChanged(ListSelectionEvent e) {
         	RowSet rsGroup;
 			try {
+
+				Object startDateTime = matchTable.getValueAt(
+						matchTable.getSelectedRow(),
+						matchTable.convertColumnIndexToView(1));
+				if ( startDateTime == null ) {
+					MatchStatisticsPanel.this.setStartDateTime(null);
+				} else if ( startDateTime instanceof Timestamp ) {
+					MatchStatisticsPanel.this.setStartDateTime((Timestamp)startDateTime);
+				} else if ( startDateTime instanceof java.sql.Date ) {
+					MatchStatisticsPanel.this.setStartDateTime(new Timestamp( ((java.sql.Date)startDateTime).getTime()));
+				} else if ( startDateTime instanceof Date ) {
+					MatchStatisticsPanel.this.setStartDateTime(new Timestamp( ((Date)startDateTime).getTime()));
+				} else {
+					MatchStatisticsPanel.this.setStartDateTime(null);
+				}
+
 				rsGroup = getMatchGroupStats(matchTable);
 				RowSetModel rsmGroup = new RowSetModel(rsGroup);
 				matchGroupTable.setModel(
@@ -367,8 +436,14 @@ public class MatchStatisticsPanel extends JPanel {
     		pstmt = con.prepareStatement(sql.toString());
     		pstmt.setString(1, "MATCH");
     		pstmt.setString(2, match.getMatchId());
-    		return pstmt.executeUpdate();
+    		int rc = pstmt.executeUpdate();
+    		con.commit();
 
+    		removeAll();
+    		createUI();
+    		validate();
+    		repaint();
+    		return rc;
     	} finally {
     		if ( pstmt != null )
     			pstmt.close();
@@ -377,5 +452,44 @@ public class MatchStatisticsPanel extends JPanel {
     	}
     }
 
+	public int deleteBackwardStatistics() throws SQLException {
+    	Connection con = null;
+    	PreparedStatement pstmt = null;
+    	try {
+    		con = HibernateUtil.primarySession().connection();
+    		StringBuffer sql = new StringBuffer();
+    		sql.append("DELETE FROM PL_STATS WHERE OBJECT_TYPE=? ");
+    		sql.append(" AND OBJECT_NAME=? AND START_DATE_TIME<=?");
+    		pstmt = con.prepareStatement(sql.toString());
+    		pstmt.setString(1, "MATCH");
+    		pstmt.setString(2, match.getMatchId());
+    		pstmt.setTimestamp(3, getStartDateTime());
+    		int rc = pstmt.executeUpdate();
+    		con.commit();
+
+    		removeAll();
+    		createUI();
+    		validate();
+    		repaint();
+    		return rc;
+    	} finally {
+    		if ( pstmt != null )
+    			pstmt.close();
+    		if (con != null)
+    			con.close();
+    	}
+    }
+
+	public Timestamp getStartDateTime() {
+		return startDateTime;
+	}
+
+	public void setStartDateTime(Timestamp startDateTime) {
+		if (this.startDateTime != startDateTime) {
+			firePropertyChange("this.startDateTime", this.startDateTime,
+					startDateTime);
+			this.startDateTime = startDateTime;
+		}
+	}
 
 }

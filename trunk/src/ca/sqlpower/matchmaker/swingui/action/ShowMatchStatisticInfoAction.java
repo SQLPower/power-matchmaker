@@ -9,24 +9,26 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
-
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.CommonCloseAction;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
-import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
 import ca.sqlpower.matchmaker.swingui.MatchStatisticsPanel;
+
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 
 public class ShowMatchStatisticInfoAction extends AbstractAction {
 
 	private PlMatch match;
+	private JFrame parent;
 
-	public ShowMatchStatisticInfoAction(PlMatch match) {
+	public ShowMatchStatisticInfoAction(PlMatch match, JFrame parent) {
 		super("Statistics");
 		this.match = match;
+		this.parent = parent;
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -38,16 +40,34 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 		try {
 			p = new MatchStatisticsPanel(match);
 		} catch (SQLException e1) {
-			ASUtils.showExceptionDialog(MatchMakerFrame.getMainInstance(),
+			ASUtils.showExceptionDialog(parent,
 					"Could not get match statistic information", e1);
 		}
 		if ( p == null )
 			return;
 
-		JDialog d = new JDialog(MatchMakerFrame.getMainInstance());
+		JDialog d = new JDialog(parent);
 		JPanel panel = new JPanel(new BorderLayout());
+		final MatchStatisticsPanel p2 = p;
 
-		JButton deleteAllButton = new JButton("Delete All");
+		JButton deleteAllButton = new JButton(new AbstractAction("Delete All"){
+			public void actionPerformed(ActionEvent e) {
+				try {
+					p2.deleteAllStatistics();
+				} catch (SQLException e1) {
+					ASUtils.showExceptionDialog(parent,
+							"Could not delete match statistic information", e1);
+				}
+			}});
+		JButton deleteBackwardButton = new JButton(new AbstractAction("Delete Backward"){
+			public void actionPerformed(ActionEvent e) {
+				try {
+					p2.deleteBackwardStatistics();
+				} catch (SQLException e1) {
+					ASUtils.showExceptionDialog(parent,
+							"Could not delete match statistic information", e1);
+				}
+			}});
 		Action closeAction = new CommonCloseAction(d);
 		closeAction.putValue(Action.NAME, "Close");
 		JButton closeButton = new JButton(closeAction);
@@ -55,6 +75,8 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
 		bbb.addRelatedGap();
 		bbb.addGridded(deleteAllButton);
+		bbb.addRelatedGap();
+		bbb.addGridded(deleteBackwardButton);
 		bbb.addGlue();
 		bbb.addGridded(closeButton);
 		bbb.addRelatedGap();

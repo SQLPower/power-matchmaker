@@ -49,7 +49,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 					} catch (ArchitectException e1) {
 						throw new ArchitectRuntimeException(e1);
 					}
-					
+
 					splitPane.setRightComponent(me.getPanel());
 
 				}else if (o instanceof PlMatchGroup){
@@ -146,7 +146,8 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 				d.pack();
 				d.setVisible(true);
 			}}));
-		m.add(new JMenuItem(new ShowMatchStatisticInfoAction(match)));
+		m.add(new JMenuItem(new ShowMatchStatisticInfoAction(match,
+				MatchMakerFrame.getMainInstance())));
 		m.addSeparator();
 		m.add(new JMenuItem(new PlMatchExportAction(match)));
 		m.add(new JMenuItem(new PlMatchImportAction()));
