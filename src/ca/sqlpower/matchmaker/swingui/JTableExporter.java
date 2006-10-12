@@ -84,7 +84,7 @@ public class JTableExporter extends JFileChooser {
         	ioo.indent++;
         	for ( int column=0; column<table.getColumnCount(); column++ ) {
         		Object o = table.getValueAt(row,column);
-        		ioo.print(out,"<col" + column + "name=\"" +
+        		ioo.print(out,"<col" + column + " name=\"" +
         				ArchitectUtils.escapeXML(table.getColumnName(column))+
         				"\">");
         		if ( o != null ) {
