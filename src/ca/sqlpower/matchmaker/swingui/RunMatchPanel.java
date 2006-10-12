@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -12,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.SQLException;
 
 import javax.sql.RowSet;
 import javax.swing.AbstractAction;
@@ -38,6 +36,7 @@ import javax.swing.text.StyleConstants;
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 
+import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
@@ -45,6 +44,7 @@ import ca.sqlpower.architect.swingui.SaveDocument;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
+import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -123,7 +123,8 @@ public class RunMatchPanel extends JFrame{
         truncateCandDup = new JCheckBox();
         sendEmail = new JCheckBox();
         viewLogFile = new JButton(new ShowLogFileAction());
-        viewStats = new JButton(new ViewStats(plMatch));
+        viewStats = new JButton(new ShowMatchStatisticInfoAction(plMatch,RunMatchPanel.this));
+        viewStats.setText("Match Statistics");
         showCommand = new JButton(new ShowCommandAction(plMatch,RunMatchPanel.this));
         viewMatchResults = new JButton();
         startWordCount = new JButton();
@@ -247,34 +248,6 @@ public class RunMatchPanel extends JFrame{
 			super(set);
 		}
 
-    }
-    private class ViewStats extends AbstractAction {
-    	private PlMatch match;
-
-		public ViewStats(PlMatch match) {
-    		super("View Status");
-    		this.match = match;
-    	}
-
-		public void actionPerformed(ActionEvent e) {
-			try {
-				MatchStatisticsPanel panel = new MatchStatisticsPanel(match);
-
-				JDialog d = new JDialog();
-				d.setTitle("Match Statistics");
-				d.add(panel);
-				d.setPreferredSize(new Dimension(800,600));
-				d.pack();
-				d.setVisible(true);
-			} catch (SQLException e1) {
-				ASUtils.showExceptionDialog(
-						RunMatchPanel.this,
-						"SQL Error", e1);
-				e1.printStackTrace();
-			}
-
-
-		}
     }
 
     public class StreamGobbler extends Thread
@@ -615,7 +588,13 @@ public class RunMatchPanel extends JFrame{
 
     public static void main(String[] args) {
 
-        final JFrame f = new RunMatchPanel(new PlMatch("Test Match","FIND DUPLICATE"));
+    	MatchMakerFrame.getMainInstance();
+		ArchitectDataSource ds = MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni().getDataSource("ARTHUR_TEST");
+		MatchMakerFrame.getMainInstance().newLogin(new SQLDatabase(ds));
+		final PlMatch match = MatchMakerFrame.getMainInstance().getMatchByName("DEMO_MATCH_PEOPLE_MATCH_FIRST");
+
+
+        final JFrame f = new RunMatchPanel(match);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

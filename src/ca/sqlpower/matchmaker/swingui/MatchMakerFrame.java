@@ -236,7 +236,8 @@ public class MatchMakerFrame extends JFrame {
 			if ( match == null )
 				return;
 
-			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(match);
+			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(match,
+					MatchMakerFrame.getMainInstance());
 			sm.actionPerformed(e);
 		}};
 
