@@ -16,6 +16,13 @@ import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 
 public class JTableExporter extends JFileChooser {
 
+	/**
+	 * JTable Exporter, save the JTable content to a file
+	 * file types are: CSV,XML
+	 * @param owner  parent component
+	 * @param table  JTable, set the table name to something you want to save in the XML file,
+	 * like Database Table Name or SQL statement, it will be XML escaped
+	 */
 	public JTableExporter ( Component owner, JTable table ) {
 		super();
 		setFileFilter(ASUtils.CSV_FILE_FILTER);
