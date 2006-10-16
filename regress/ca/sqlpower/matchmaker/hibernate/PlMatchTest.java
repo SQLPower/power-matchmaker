@@ -14,6 +14,9 @@ import junit.framework.TestCase;
 
 public class PlMatchTest extends /*ValueObjectEqualsTest*/TestCase {
 
+	/** Since PlMatch,equals() ONLY looks at MatchID, not fields, we must use this... */
+	public static final String FAKE_MATCH_ID = "12345";
+
 	PlMatch target = new PlMatch();
 
 	public void testGetChildCount() {
@@ -22,6 +25,7 @@ public class PlMatchTest extends /*ValueObjectEqualsTest*/TestCase {
 		target.addAllPlMatchGroups(plMatchGroups);
 		assertEquals(0, target.getChildCount());
 		plMatchGroups.add(new PlMatchGroup());
+		target.addAllPlMatchGroups(plMatchGroups);
 		assertEquals(1, target.getChildCount());
 	}
 
@@ -39,18 +43,21 @@ public class PlMatchTest extends /*ValueObjectEqualsTest*/TestCase {
 
 	//@Override
 	protected Object createControlInstance() throws Exception {
+		target.setMatchId(FAKE_MATCH_ID);
 		return target;
 	}
 
 	//@Override
 	protected Object createInstanceDiffersIn(String arg0) throws Exception {
-		// TODO Auto-generated method stub
+		target.setMatchId(FAKE_MATCH_ID);
+		if ("matchId".equals(arg0)) {
+			target.setMatchId("foo");
+		}
 		return target;
 	}
 
 	//@Override
 	protected List keyPropertyNames() {
-		// TODO Auto-generated method stub
-		return Arrays.asList(new String[] { "foo", "bar"});
+		return Arrays.asList(new String[] { "matchId" });
 	}
 }
