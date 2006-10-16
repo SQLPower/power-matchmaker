@@ -177,7 +177,7 @@ public class LoginDialog extends JDialog {
             tempDbSource.setUrl(dbSource.getUrl());
             tempDbSource.setPlSchema(dbSource.getPlSchema());
             tempDbSource.setUser(userID.getText());
-            tempDbSource.setPass(password.getText());
+            tempDbSource.setPass(new String(password.getPassword()));
 
 			db = new SQLDatabase(tempDbSource);
 			String driverClass = db.getDataSource().getDriverClass();
