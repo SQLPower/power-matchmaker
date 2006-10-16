@@ -274,6 +274,9 @@ public class MatchMakerFrame extends JFrame {
 	    // behaviour which the XML Digester relies
 	    // upon heavily
 	    //TypeMap.getInstance();
+
+	    setTitle("MatchMaker");
+
 	    contentPane = (JComponent)getContentPane();
 
 		try {
