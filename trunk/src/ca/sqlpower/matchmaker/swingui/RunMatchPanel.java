@@ -47,6 +47,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
+import com.darwinsys.notepad.Notepad;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
@@ -235,12 +236,6 @@ public class RunMatchPanel extends JFrame{
     	plMatch.setMatchAppendToLogInd(append.isSelected());
     	plMatch.setMatchProcessCnt(Long.valueOf(recordsToProcess.getText()));
     }
-
-
-
-
-
-
 
     public class StatsTableMOdel extends RowSetModel {
 
@@ -444,33 +439,15 @@ public class RunMatchPanel extends JFrame{
     	}
 
     	public void actionPerformed(ActionEvent e) {
-
+    		String logFileName = logFilePath.getText();
     		try {
-    			// FIXME: should be user configable!
-    			String defaultEditor = "Notepad";
-    			String[] cmd = new String[2];
-   				cmd[0] = defaultEditor;
-   				cmd[1] = logFilePath.getText();
-
-    			Runtime rt = Runtime.getRuntime();
-    			System.out.println("Execing " + cmd[0] + " " + cmd[1]);
-    			final Process proc = rt.exec(cmd);
-    			new Thread(new Runnable(){
-					public void run() {
-						try {
-							proc.waitFor();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}}).start();
-    		} catch (Throwable t) {
-    			t.printStackTrace();
+    			new Notepad().doLoad(logFileName);
+    		} catch (IOException e1) {
+    			throw new RuntimeException("Unable to view log file " + logFileName, e1);
     		}
 
 		}
     }
-
-
 
     private class ShowCommandAction extends AbstractAction {
 
