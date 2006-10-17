@@ -356,6 +356,8 @@ public class MatchEditor extends JFrame {
 				ASUtils.showExceptionDialog(MatchEditor.this,"Unknown Error",e1);
 			} catch (SQLException e1) {
 				ASUtils.showExceptionDialog(MatchEditor.this,"Unknown SQL Error",e1);
+			} catch (ArchitectException e1) {
+				ASUtils.showExceptionDialog(MatchEditor.this,"Unknown Error",e1);
 			}
 		}};
 	private Action viewBuilderAction = new AbstractAction("View Builder") {
