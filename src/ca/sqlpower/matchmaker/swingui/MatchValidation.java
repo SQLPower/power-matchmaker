@@ -71,6 +71,7 @@ public class MatchValidation extends JFrame {
 
 	private JTable sourceJTable;
 	private JTable candidateJTable;
+	private JTable filterJTable;
 
 	private CachedRowSetImpl sourceTableRowSet;
 
@@ -431,15 +432,16 @@ public class MatchValidation extends JFrame {
 			pb.add(new JLabel("Match Status:"), cc.xy(2,18,"l,c"));
 			pb.add(filterMatchStatusComboBox,cc.xy(2,20,"f,f"));
 
+			filterJTable = new JTable(5,3);
 			ButtonBarBuilder bb1 = new ButtonBarBuilder();
-			bb1.addGridded(new JButton("Column Filters"));
+			bb1.addGridded(new JButton(columnFilterAction));
 			bb1.addRelatedGap();
 			searchAction = new SearchAction(match,filterMatchGrpComboBox,
 					filterMatchStatusComboBox,null,sourceJTable);
 			bb1.addGridded(new JButton(searchAction));
 			pb.add(bb1.getPanel(), cc.xy(2,22,"c,c"));
 
-			pb.add(new JScrollPane(new JTable(5,3)),cc.xy(2,24,"f,f"));
+			pb.add(new JScrollPane(filterJTable),cc.xy(2,24,"f,f"));
 
 			Action validationStatusAction = new AbstractAction("View Validation Status") {
 				public void actionPerformed(ActionEvent e) {
@@ -808,9 +810,15 @@ public class MatchValidation extends JFrame {
 					logger.debug("SQL ERROR: "+ e1.getStackTrace());
 				}
 			}
-
-
-
 		}
 	}
+
+	private Action columnFilterAction = new AbstractAction("Column Filter"){
+		public void actionPerformed(ActionEvent e) {
+			ColumnFilterPanel panel = new ColumnFilterPanel(MatchValidation.this,
+										filterJTable, matchSourceTable);
+			panel.pack();
+			panel.setVisible(true);
+		}
+	};
 }
