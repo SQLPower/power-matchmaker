@@ -25,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -71,7 +72,7 @@ public class MatchValidation extends JFrame {
 
 	private JTable sourceJTable;
 	private JTable candidateJTable;
-	private JTable filterJTable;
+	private JTextArea filterTextArea;
 
 	private CachedRowSetImpl sourceTableRowSet;
 
@@ -79,6 +80,7 @@ public class MatchValidation extends JFrame {
 	private SQLTable matchSourceTable;
 	private SQLIndex pk;
 	private ItemListener filterMatchGrpListener;
+	ColumnFilterPanel filterPanel;
 
 	/**
 	 * change the candidate JTable according to the selection of source table
@@ -254,7 +256,7 @@ public class MatchValidation extends JFrame {
 	 * get the source table content
 	 * @return
 	 */
-	private CachedRowSetImpl getMatchSourceTable() {
+	private CachedRowSetImpl getMatchSourceTable(String filter) {
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs =  null;
@@ -275,7 +277,9 @@ public class MatchValidation extends JFrame {
 			sql.append(DDLUtils.toQualifiedName(match.getTableCatalog(),
 					match.getTableOwner(),
 					match.getMatchTable()));
-
+			if ( filter != null && filter.length() > 0 ) {
+				sql.append(" WHERE ").append(filter);
+			}
 
 			pstmt = con.prepareStatement(sql.toString());
 			rs = pstmt.executeQuery();
@@ -283,9 +287,11 @@ public class MatchValidation extends JFrame {
 			crset.populate(rs);
 			return crset;
 		} catch (ArchitectException e1) {
+			crset = null;
 			ASUtils.showExceptionDialog(MatchValidation.this,
 					"Unknown SQL Error", e1);
 		} catch (SQLException e1) {
+			crset = null;
 			ASUtils.showExceptionDialog(MatchValidation.this,
 					"Unknown SQL Error", e1);
 		} finally {
@@ -300,7 +306,7 @@ public class MatchValidation extends JFrame {
 				logger.debug("SQL ERROR: "+ e1.getStackTrace());
 			}
 		}
-		return null;
+		return crset;
 	}
 
 
@@ -347,6 +353,7 @@ public class MatchValidation extends JFrame {
 				match.getTableOwner(),
 				match.getMatchTable());
 		pk = matchSourceTable.getIndexByName(match.getPkColumn(),true);
+
 	}
 
 	private void buildUI() {
@@ -432,16 +439,22 @@ public class MatchValidation extends JFrame {
 			pb.add(new JLabel("Match Status:"), cc.xy(2,18,"l,c"));
 			pb.add(filterMatchStatusComboBox,cc.xy(2,20,"f,f"));
 
-			filterJTable = new JTable(5,3);
+			filterTextArea = new JTextArea();
+			JScrollPane filterScrollPane = new JScrollPane(filterTextArea);
+			filterScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+			filterScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+			filterTextArea.setWrapStyleWord(true);
+			filterTextArea.setLineWrap(true);
+
 			ButtonBarBuilder bb1 = new ButtonBarBuilder();
 			bb1.addGridded(new JButton(columnFilterAction));
 			bb1.addRelatedGap();
 			searchAction = new SearchAction(match,filterMatchGrpComboBox,
-					filterMatchStatusComboBox,null,sourceJTable);
+					filterMatchStatusComboBox,filterTextArea,sourceJTable);
 			bb1.addGridded(new JButton(searchAction));
 			pb.add(bb1.getPanel(), cc.xy(2,22,"c,c"));
 
-			pb.add(new JScrollPane(filterJTable),cc.xy(2,24,"f,f"));
+			pb.add(filterScrollPane,cc.xy(2,24,"f,f"));
 
 			Action validationStatusAction = new AbstractAction("View Validation Status") {
 				public void actionPerformed(ActionEvent e) {
@@ -480,6 +493,8 @@ public class MatchValidation extends JFrame {
 
 					pb.add(rightPanel, cc.xywh(4,2,1,9,"f,f"));
 					getContentPane().add(pb.getPanel());
+		filterPanel = new ColumnFilterPanel(MatchValidation.this,
+				filterTextArea, matchSourceTable);
 	}
 
 
@@ -593,11 +608,11 @@ public class MatchValidation extends JFrame {
 		private PlMatch match;
 		private JComboBox groupCB;
 		private JComboBox matchStatusCB;
-		private JTable columnFilter;
+		private JTextArea columnFilter;
 		private JTable output;
 
 		public SearchAction(PlMatch match, JComboBox groupCB, JComboBox matchStatusCB,
-				JTable columnFilter, JTable output) {
+				JTextArea columnFilter, JTable output) {
 			super("Search");
 			this.match = match;
 			this.groupCB = groupCB;
@@ -606,8 +621,6 @@ public class MatchValidation extends JFrame {
 			this.output = output;
 		}
 		public void actionPerformed(ActionEvent e) {
-
-			sourceTableRowSet = getMatchSourceTable();
 
 			StringBuffer where = new StringBuffer();
 			String gid = (String)groupCB.getSelectedItem();
@@ -680,6 +693,11 @@ public class MatchValidation extends JFrame {
 				CachedRowSetImpl crset2 = new CachedRowSetImpl();
 				crset2.populate(rs);
 				JoinRowSet jrs = new JoinRowSetImpl();
+
+				CachedRowSetImpl newSourceRowSet = getMatchSourceTable(columnFilter.getText().trim());
+				if ( newSourceRowSet != null ) {
+					sourceTableRowSet = newSourceRowSet;
+				}
 
 				for ( i = 0; i<pk.getChildCount(); i++ ) {
 					SQLObject col = pk.getChild(i);
@@ -760,9 +778,6 @@ public class MatchValidation extends JFrame {
 					logger.debug("SQL ERROR: "+ e1.getStackTrace());
 				}
 			}
-
-
-
 		}
 	}
 
@@ -815,10 +830,31 @@ public class MatchValidation extends JFrame {
 
 	private Action columnFilterAction = new AbstractAction("Column Filter"){
 		public void actionPerformed(ActionEvent e) {
-			ColumnFilterPanel panel = new ColumnFilterPanel(MatchValidation.this,
-										filterJTable, matchSourceTable);
-			panel.pack();
-			panel.setVisible(true);
+			filterPanel.pack();
+			filterPanel.setVisible(true);
+			filterPanel.setFilterTextContent(filterTextArea);
+			filterTextArea.setEditable(false);
+
 		}
+	};
+
+	private Action noMatchAction = new AbstractAction("No Match") {
+
+		public void actionPerformed(ActionEvent e) {
+			final int selectedRow = sourceJTable.getSelectedRow();
+			if ( selectedRow == -1 )
+				return;
+
+			final int selectedRowCand = candidateJTable.getSelectedRow();
+			if ( selectedRowCand == -1 )
+				return;
+
+
+
+
+
+
+		}
+
 	};
 }
