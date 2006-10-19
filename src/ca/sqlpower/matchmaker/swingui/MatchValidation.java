@@ -80,7 +80,7 @@ public class MatchValidation extends JFrame {
 	private SQLTable matchSourceTable;
 	private SQLIndex pk;
 	private ItemListener filterMatchGrpListener;
-	ColumnFilterPanel filterPanel;
+	FilterMakerDialog filterPanel;
 
 	/**
 	 * change the candidate JTable according to the selection of source table
@@ -168,7 +168,8 @@ public class MatchValidation extends JFrame {
 			ResultSet rs =  null;
 			try {
 				con = HibernateUtil.primarySession().connection();
-				pstmt = con.prepareStatement(sql.toString());
+                logger.debug("About to execute SQL for result table: "+sql);
+                pstmt = con.prepareStatement(sql.toString());
 				int i = 1;
 				for ( Object p : params ) {
 					pstmt.setObject(i++,p);
@@ -493,8 +494,8 @@ public class MatchValidation extends JFrame {
 
 					pb.add(rightPanel, cc.xywh(4,2,1,9,"f,f"));
 					getContentPane().add(pb.getPanel());
-		filterPanel = new ColumnFilterPanel(MatchValidation.this,
-				filterTextArea, matchSourceTable);
+		filterPanel = new FilterMakerDialog(MatchValidation.this,
+				filterTextArea, matchSourceTable, true);
 	}
 
 
