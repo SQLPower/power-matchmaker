@@ -19,7 +19,7 @@ public class TranslationComboBoxModel implements ComboBoxModel {
 		Set<String> translationTopics = new TreeSet<String>();
 		translationTopics.add("");
 		for (PlMatchTranslate t : MatchMakerFrame.getMainInstance().getTranslations() ){
-			translationTopics.add(t.getId().getGroupName());
+			translationTopics.add(t.getGroupName());
 		}
 		translations = new ArrayList<String>(translationTopics);
 		Collections.sort(translations);

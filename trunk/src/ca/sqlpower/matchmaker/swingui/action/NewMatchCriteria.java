@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
-import ca.sqlpower.matchmaker.hibernate.PlMatchCriterionId;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 
 public class NewMatchCriteria extends AbstractAction {
@@ -18,7 +17,8 @@ public class NewMatchCriteria extends AbstractAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		PlMatchCriterion plMatchCriterion = new PlMatchCriterion(new PlMatchCriterionId(group.getId().getMatchId(),group.getId().getGroupId(),null),group);
+		PlMatchCriterion plMatchCriterion = new PlMatchCriterion();
+		plMatchCriterion.setPlMatchGroup(group);
 		group.addPlMatchCriteria(plMatchCriterion);
 
 	}

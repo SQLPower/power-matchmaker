@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.LockMode;
 import org.hibernate.criterion.Example;
 
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
@@ -19,36 +18,11 @@ import ca.sqlpower.matchmaker.hibernate.PlMatch;
 public class PlMatchHome extends DefaultHome<PlMatch> {
 
     private static final Log log = LogFactory.getLog(PlMatchHome.class);
-
-
-	public void persist(PlMatch transientInstance) {
-        log.debug("persisting PlMatch instance");
-        try {
-            getCurrentSession().persist(transientInstance);
-            log.debug("persist successful");
-        }
-        catch (RuntimeException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-    }
     
-    public void attachDirty(PlMatch instance) {
+    public void saveOrUpdate(PlMatch instance) {
         log.debug("attaching dirty PlMatch instance");
         try {
             getCurrentSession().saveOrUpdate(instance);
-            log.debug("attach successful");
-        }
-        catch (RuntimeException re) {
-            log.error("attach failed", re);
-            throw re;
-        }
-    }
-    
-    public void attachClean(PlMatch instance) {
-        log.debug("attaching clean PlMatch instance");
-        try {
-            getCurrentSession().lock(instance, LockMode.NONE);
             log.debug("attach successful");
         }
         catch (RuntimeException re) {
@@ -65,20 +39,6 @@ public class PlMatchHome extends DefaultHome<PlMatch> {
         }
         catch (RuntimeException re) {
             log.error("delete failed", re);
-            throw re;
-        }
-    }
-    
-    public PlMatch merge(PlMatch detachedInstance) {
-        log.debug("merging PlMatch instance");
-        try {
-            PlMatch result = (PlMatch) getCurrentSession()
-                    .merge(detachedInstance);
-            log.debug("merge successful");
-            return result;
-        }
-        catch (RuntimeException re) {
-            log.error("merge failed", re);
             throw re;
         }
     }
@@ -116,6 +76,10 @@ public class PlMatchHome extends DefaultHome<PlMatch> {
             log.error("find by example failed", re);
             throw re;
         }
+    }
+    
+    public void flush() {
+    	getCurrentSession().flush();
     }
 
 	@Override

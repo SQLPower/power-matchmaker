@@ -30,32 +30,6 @@ public class PlFolder extends DefaultHibernateObject<PlMatch>
     public PlFolder() {
     }
 
-	/** minimal constructor */
-    public PlFolder(String folderName) {
-        this.folderName = folderName;
-    }
-
-    /** full constructor */
-    public PlFolder(String folderName, String folderDesc, String folderStatus, long lastBackupNo) {
-       this.folderName = folderName;
-       this.folderDesc = folderDesc;
-       this.folderStatus = folderStatus;
-       this.lastBackupNo = lastBackupNo;
-    }
-
-    /** Copy Constructor */
-    public PlFolder(PlFolder orig) {
-    	this.folderName = orig.folderName;
-        this.folderDesc = orig.folderDesc;
-        this.folderStatus = orig.folderStatus;
-        this.lastBackupNo = orig.lastBackupNo;
-        for (PlMatch match : orig.matches) {
-        	matches.add(match.copyOf());
-        }
-    }
-
-
-
     @Override
     public int getChildCount() {
     	return matches.size();

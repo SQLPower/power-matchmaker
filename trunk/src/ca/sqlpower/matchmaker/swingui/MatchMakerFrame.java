@@ -463,10 +463,10 @@ public class MatchMakerFrame extends JFrame {
 	public void newLogin(SQLDatabase db){
 
 		ArchitectDataSource dbcs = db.getDataSource();
-		HibernateUtil.createSessionFactory(dbcs,HibernateUtil.primaryLogin);
+		HibernateUtil.createRepositorySessionFactory(dbcs);
 
 
-		if (HibernateUtil.getSessionFactory() != null){
+		if (HibernateUtil.getRepositorySessionFactory() != null){
 
 			PlFolderHome folderHome = new PlFolderHome();
 			PlMatchHome matchHome = new PlMatchHome();

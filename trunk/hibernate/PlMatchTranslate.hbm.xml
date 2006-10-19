@@ -11,17 +11,20 @@
     table="pl_match_translate"
 
 >
-    <composite-id
-		name="id"
-        class="ca.sqlpower.matchmaker.hibernate.PlMatchTranslateId"
-    >		
-	        <key-property name="groupName" type="string">
+    
+    <id name="id"
+    	type="long"
+    >
+		<column name="match_translate_oid"/>
+    </id>	
+    
+	        <property name="groupName" type="string">
 <column name="group_name" length="35" />
-	        </key-property>
-	        <key-property name="seqNo" type="long">
+	        </property>
+	        <property name="seqNo" type="long">
 <column name="seq_no" precision="18" scale="0" />
-	        </key-property>
-    </composite-id>	
+	        </property>
+ 
 
 
     <property

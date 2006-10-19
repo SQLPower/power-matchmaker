@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.darwinsys.testing.TestUtils;
-
 import junit.framework.TestCase;
 
 
@@ -33,14 +31,7 @@ public class PlMatchTest extends /*ValueObjectEqualsTest*/TestCase {
 		assertEquals(target, target);
 	}
 
-	public void testCopyOf() {
-		PlMatch target2 = target.copyOf();
-		assertNotNull(target2);
-		assertTrue(TestUtils.equals(target, target2));
-		target2.setBatchFileName("fred");
-		assertFalse(TestUtils.equals(target, target2));
-	}
-
+	
 	//@Override
 	protected Object createControlInstance() throws Exception {
 		target.setMatchId(FAKE_MATCH_ID);

@@ -69,13 +69,14 @@ public class LoginDialog extends JDialog {
 	private class LoginAction extends Populator implements ActionListener {
 
 		SQLDatabase db = null;
-		boolean login = false;
+		boolean loginWasSuccessful = false;
 
 		@Override
 		public void cleanup() {
 			progressBar.setVisible(false);
-			if ( db != null && db.isPopulated() && login ) {
-
+			if (getDoStuffException() != null) {
+				ASUtils.showExceptionDialog("Login failed", getDoStuffException());
+			} else if (db != null && db.isPopulated() && loginWasSuccessful) {
 				SQLTable defParam = null;
 				SQLColumn schemaVersionCol = null;
 				try {
@@ -121,30 +122,37 @@ public class LoginDialog extends JDialog {
 			        }
 
 
-
+			        // Now let someone else know we did something
+			        // XXX Change this to fire an event so we don't need to know who's interested.
+			        MatchMakerFrame.getMainInstance().newLogin(db);
 				} catch (ArchitectException e) {
 					ASUtils.showExceptionDialogNoReport(LoginDialog.this,
 							"Pl Schema Access Error", e );
 				} finally {
+					System.out.println("Set here 1!");
 					loginButton.setEnabled(true);
 				}
+			} else {
+				JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
 			}
+			System.out.println("Set here 2!");
 			loginButton.setEnabled(true);
+			
 		}
 
 		@Override
 		/** Called (once) by run() in superclass */
 		public void doStuff() throws Exception {
+			System.out.println("Set here disabled 1!");
 			loginButton.setEnabled(false);
-			login = false;
+			loginWasSuccessful = false;
 			try {
 				ListerProgressBarUpdater progressBarUpdater =
 					new ListerProgressBarUpdater(progressBar, this);
 				new javax.swing.Timer(100, progressBarUpdater).start();
 				db.populate();
-				// Now let someone else know we did something
-		        MatchMakerFrame.getMainInstance().newLogin(db);
-				login = true;
+				
+				loginWasSuccessful = true;
 			} catch (ArchitectException e) {
 				e.printStackTrace();
 				logger.debug(
@@ -152,23 +160,25 @@ public class LoginDialog extends JDialog {
 				ASUtils.showExceptionDialogNoReport(LoginDialog.this,
 						"Unexpected exception in ConnectionListener",
 						e );
-                login = false;
+                loginWasSuccessful = false;
 			}
 		}
 
 		public void actionPerformed(ActionEvent e) {
+			System.out.println("Set here disabled 2!");
 			loginButton.setEnabled(false);
 			if ( LoginDialog.this.dbSource == null ) {
 				JOptionPane.showMessageDialog(LoginDialog.this,
 						"Please select a database connection first!",
 						"Unknown database connection",
 						JOptionPane.ERROR_MESSAGE);
-                loginButton.setEnabled(true);
+				System.out.println("Set here 3!");
+				loginButton.setEnabled(true);
 				return;
 			}
 
             //We create a copy of the data source and change the userID and password
-            //and use that instead for the login.  We do not want to change the
+            //and use that instead for the loginWasSuccessful.  We do not want to change the
             //default userID and password for the connection in here.
             ArchitectDataSource tempDbSource = new ArchitectDataSource();
             tempDbSource.setDisplayName(dbSource.getDisplayName());
@@ -186,6 +196,7 @@ public class LoginDialog extends JDialog {
 						"Datasource not configured (no JDBC Driver)",
 						"Database connection incomplete",
 						JOptionPane.ERROR_MESSAGE);
+				System.out.println("Set here 4!");
 				loginButton.setEnabled(true);
 				return;
 			}
@@ -196,6 +207,7 @@ public class LoginDialog extends JDialog {
 				ASUtils.showExceptionDialogNoReport(LoginDialog.this,
 						"Connection Error", e1 );
 			} finally {
+				System.out.println("Set here 5!");
                 loginButton.setEnabled(true);
 			}
 
@@ -239,7 +251,7 @@ public class LoginDialog extends JDialog {
 		layout.setColumnGroups(new int [][] { {2,5},{4,7}});
 
 		CellConstraints cc = new CellConstraints();
-		JLabel line1 = new JLabel("Please choose one of the following databases for login:");
+		JLabel line1 = new JLabel("Please choose one of the following databases for loginWasSuccessful:");
 		connectionModel = new ConnectionComboBoxModel(MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
 		connectionModel.addListDataListener(connListener);
 		dbList = new JComboBox(connectionModel);

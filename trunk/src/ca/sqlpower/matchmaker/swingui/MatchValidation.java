@@ -377,7 +377,7 @@ public class MatchValidation extends JFrame {
 						filterMatchPctComboBox.setSelectedItem(ALL);
 					} else {
 						for ( PlMatchGroup g : match.getPlMatchGroups() ) {
-							if ( g.getId().getGroupId().equals(gid) ) {
+							if ( g.getGroupId().equals(gid) ) {
 								filterMatchPctComboBox.setSelectedItem(String.valueOf(g.getMatchPercent().intValue()));
 							}
 						}
@@ -398,7 +398,7 @@ public class MatchValidation extends JFrame {
 						int pct = Integer.valueOf(pctStr);
 						for ( PlMatchGroup g : match.getPlMatchGroups() ) {
 							if ( g.getMatchPercent() == pct ) {
-								filterMatchGrpComboBox.setSelectedItem(g.getId().getGroupId());
+								filterMatchGrpComboBox.setSelectedItem(g.getGroupId());
 							}
 						}
 					}

@@ -82,7 +82,7 @@ public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriterion>{
         }
     }
     
-    public PlMatchCriterion findById( ca.sqlpower.matchmaker.hibernate.PlMatchCriterionId id) {
+    public PlMatchCriterion findById(Long id) {
         log.debug("getting PlMatchCriterion instance with id: " + id);
         try {
             PlMatchCriterion instance = (PlMatchCriterion) getCurrentSession()

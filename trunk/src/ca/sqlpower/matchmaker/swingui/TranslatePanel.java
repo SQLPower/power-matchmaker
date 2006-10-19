@@ -42,8 +42,8 @@ public class TranslatePanel implements ArchitectPanel {
 	private JButton helpButton;
 	private JButton moveItemUp;
 	private JButton moveItemDown;
-	private JButton moveGroupUp;
-	private JButton moveGroupDown;
+	private JButton moveItemToTop;
+	private JButton moveItemToBottom;
 	private JScrollPane tableScrollPane;
 	private TableModelSearchDecorator tms;
 
@@ -54,8 +54,10 @@ public class TranslatePanel implements ArchitectPanel {
 	
 	private void buildUI(){
 		translateTable = new EditableJTable();
-		refreshTranslateTable();
-		
+		tms = new TableModelSearchDecorator(new MatchTranslateTableModel(MatchMakerFrame.getMainInstance().getTranslations()));
+		tms.setTableTextConverter((EditableJTable) translateTable);
+		translateTable.setModel(tms);
+
 		searchGroup = new JTextField();
 		tms.setDoc(searchGroup.getDocument());
 		createGroup = new JButton(createGroupAction);
@@ -64,6 +66,9 @@ public class TranslatePanel implements ArchitectPanel {
 		copyGroup = new JButton(copyGroupAction);
 		moveItemUp = new JButton(moveItemUpAction);
 		moveItemDown = new JButton(moveItemDownAction);
+		moveItemToTop = new JButton(moveItemTopAction);
+		moveItemToBottom = new JButton (moveItemBottomAction);
+		
 		tableScrollPane = new JScrollPane(translateTable);
 		
 		translateTable.setDragEnabled(true);
@@ -88,14 +93,20 @@ public class TranslatePanel implements ArchitectPanel {
 		pb.add(copyGroup, cc.xy(8,4));
 		pb.add(addCommonWords, cc.xy(10,4));
 		pb.appendRow("4dlu");
-		pb.appendRow("fill:60dlu:grow");
+		pb.appendRow("fill:80dlu:grow");
 		pb.add(tableScrollPane, cc.xyw(2,6,10,"f,f"));
 		
 		ButtonStackBuilder bsb = new ButtonStackBuilder();
+		bsb.addGridded(moveItemToTop);
+		bsb.addRelatedGap();
+		bsb.addGlue();
 		bsb.addGridded(moveItemUp);
 		bsb.addRelatedGap();
 		bsb.addGlue();
 		bsb.addGridded(moveItemDown);
+		bsb.addRelatedGap();
+		bsb.addGlue();
+		bsb.addGridded(moveItemToBottom);
 		bsb.addRelatedGap();
 		bsb.addGlue();
 		
@@ -111,8 +122,7 @@ public class TranslatePanel implements ArchitectPanel {
 	 */
 	private void refreshTranslateTable(){
 		translateTable.removeAll();
-		tms = new TableModelSearchDecorator(new MatchTranslateTableModel(MatchMakerFrame.getMainInstance().getTranslations()));
-		tms.setTableTextConverter((EditableJTable) translateTable);
+		tms.setTableModel(new MatchTranslateTableModel(MatchMakerFrame.getMainInstance().getTranslations()));
 		translateTable.setModel(tms);
 	}
 	
@@ -157,8 +167,11 @@ public class TranslatePanel implements ArchitectPanel {
 	Action deleteGroupAction = new AbstractAction("Delete Group"){
 
 		public void actionPerformed(ActionEvent e) {
-			List<PlMatchTranslate> translates = MatchMakerFrame.getMainInstance().getTranslations();
-			
+			//the index is one before the selectedcolumn integer
+			if (translateTable.getSelectedRow() >= 0){
+				MatchMakerFrame.getMainInstance().getTranslations().remove(translateTable.getSelectedRow());
+				refreshTranslateTable();
+			}
 		}
 		
 	};
@@ -172,12 +185,22 @@ public class TranslatePanel implements ArchitectPanel {
 		
 	};
 	
+	//TODO: should probably have a better implementation than this
 	Action addCommonWordsAction = new AbstractAction("Add Common Words"){
 
 		public void actionPerformed(ActionEvent e) {
-			PlMatchTranslate currentSelected = MatchMakerFrame.getMainInstance().getTranslations().get(translateTable.getSelectedColumn());
-			PlMatchTranslate newTranslate = new PlMatchTranslate();
-			
+			if (translateTable.getSelectedColumn() >= 0){
+				PlMatchTranslate currentSelected = MatchMakerFrame.getMainInstance().getTranslations().get(translateTable.getSelectedColumn());
+				PlMatchTranslate newTranslate = new PlMatchTranslate();
+				newTranslate.setId(currentSelected.getId());
+				newTranslate.setFromWord(" ");
+				newTranslate.setToWord("");
+				MatchMakerFrame.getMainInstance().getTranslations().add(newTranslate);
+				refreshTranslateTable();
+				int lastIndex = translateTable.getRowCount()-1;
+				translateTable.setRowSelectionInterval(lastIndex, lastIndex);
+				scrollToSelected(lastIndex);
+			}
 		}
 		
 	};
@@ -218,11 +241,51 @@ public class TranslatePanel implements ArchitectPanel {
 		}	
 	};
 	
-	//Doesn't work yet
+	Action moveItemTopAction = new AbstractAction("^^"){
+		public void actionPerformed(ActionEvent e){
+			final int index = getTranslateTable().getSelectedRow();
+			if (index >=0 && index < translateTable.getRowCount() ){
+				if (getTranslateTable().getSelectedRowCount() == 1 && index > 0){
+					List <PlMatchTranslate> translateList=  MatchMakerFrame.getMainInstance().getTranslations();
+					PlMatchTranslate selectedTranslate=translateList.get(index);
+					translateList.remove(index);
+					translateList.add(0, selectedTranslate);
+					refreshTranslateTable();
+					translateTable.setRowSelectionInterval(0,0);
+					scrollToSelected(0);
+				}
+			}
+		}
+	};
+	
+	Action moveItemBottomAction = new AbstractAction("vv"){
+		public void actionPerformed(ActionEvent e) {
+			final int index = getTranslateTable().getSelectedRow();
+			if (index >=0 && index < translateTable.getRowCount() ){
+				if (getTranslateTable().getSelectedRowCount() == 1 && index < (translateTable.getRowCount() -1) ){						
+					List <PlMatchTranslate> translateList=  MatchMakerFrame.getMainInstance().getTranslations();
+					PlMatchTranslate selectedTranslate=translateList.get(index);
+					translateList.remove(index);
+					translateList.add(translateList.size(), selectedTranslate);
+					refreshTranslateTable();
+					translateTable.setRowSelectionInterval(translateList.size()-1,translateList.size()-1);
+					scrollToSelected(translateList.size()-1);
+				}
+			}
+		}	
+	};
+	
+	
+	/**
+	 * By giving it the location of a certain column in the table, it scrolls through the  
+	 * translateTable to make sure that the column is visible.
+	 * 
+	 * @param index - the index location of the column you want to focus on in the translateTable
+	 */
 	private void scrollToSelected(int index){
 		Rectangle cellRect = translateTable.getCellRect(index,0, false);
-		if (!tableScrollPane.getVisibleRect().getBounds().contains(cellRect)){
-			tableScrollPane.scrollRectToVisible(cellRect);
+		if (!translateTable.getVisibleRect().getBounds().contains(cellRect)){	
+			translateTable.scrollRectToVisible(cellRect);
 		}
 	}
 	

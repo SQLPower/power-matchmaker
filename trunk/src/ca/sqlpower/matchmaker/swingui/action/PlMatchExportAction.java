@@ -180,12 +180,6 @@ public class PlMatchExportAction extends AbstractAction {
             ioo.println(out, "<TEMP_CAND_DUP_TABLE_NAME>"+
             		ArchitectUtils.escapeXML(match.getTempCandDupTableName())+
             		"</TEMP_CAND_DUP_TABLE_NAME>");
-            ioo.println(out, "<INDEX_COLUMN_NAME0>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName0())+
-            		"</INDEX_COLUMN_NAME0>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE0>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType0())+
-            		"</INDEX_COLUMN_TYPE0>");
             ioo.println(out, "<MATCH_SEND_EMAIL_IND>"+
             		ArchitectUtils.escapeXML(match.isMatchSendEmailInd()?"Y":"N")+
             		"</MATCH_SEND_EMAIL_IND>");
@@ -369,10 +363,10 @@ public class PlMatchExportAction extends AbstractAction {
     		ioo.indent++;
 
     		ioo.println(out, "<MATCH_ID>"+
-            		ArchitectUtils.escapeXML(g.getId().getMatchId())+
+            		ArchitectUtils.escapeXML(g.getPlMatch().getMatchId())+
             		"</MATCH_ID>");
     		ioo.println(out, "<GROUP_ID>"+
-            		ArchitectUtils.escapeXML(g.getId().getGroupId())+
+            		ArchitectUtils.escapeXML(g.getGroupId())+
             		"</GROUP_ID>");
     		ioo.println(out, "<MATCH_PERCENT>"+
             		g.getMatchPercent()+
@@ -406,13 +400,13 @@ public class PlMatchExportAction extends AbstractAction {
 			ioo.println(out, "<PL_MATCH_CRITERIA>");
     		ioo.indent++;
     		ioo.println(out, "<MATCH_ID>"+
-            		ArchitectUtils.escapeXML(g.getId().getMatchId())+
+            		ArchitectUtils.escapeXML(g.getPlMatch().getMatchId())+
             		"</MATCH_ID>");
     		ioo.println(out, "<GROUP_ID>"+
-            		ArchitectUtils.escapeXML(g.getId().getGroupId())+
+            		ArchitectUtils.escapeXML(g.getGroupId())+
             		"</GROUP_ID>");
     		ioo.println(out, "<COLUMN_NAME>"+
-            		ArchitectUtils.escapeXML(c.getId().getColumnName())+
+            		ArchitectUtils.escapeXML(c.getColumnName())+
             		"</COLUMN_NAME>");
     		ioo.println(out, "<CASE_SENSITIVE_IND>"+
             		ArchitectUtils.escapeXML(c.isCaseSensitiveInd()?"Y":"N")+
@@ -484,19 +478,19 @@ public class PlMatchExportAction extends AbstractAction {
     		ioo.println(out, "<PL_MERGE_CRITERIA>");
     		ioo.indent++;
     		ioo.println(out, "<MATCH_ID>"+
-            		ArchitectUtils.escapeXML(c.getId().getMatchId())+
+            		ArchitectUtils.escapeXML(c.getPlMatch().getMatchId())+
             		"</MATCH_ID>");
     		ioo.println(out, "<TABLE_CATALOG>"+
-    				ArchitectUtils.escapeXML(c.getId().getCatalog())+
+    				ArchitectUtils.escapeXML(c.getCatalog())+
     				"</TABLE_CATALOG>");
     		ioo.println(out, "<OWNER>"+
-    				ArchitectUtils.escapeXML(c.getId().getOwner())+
+    				ArchitectUtils.escapeXML(c.getOwner())+
     				"</OWNER>");
     		ioo.println(out, "<TABLE_NAME>"+
-            		ArchitectUtils.escapeXML(c.getId().getTableName())+
+            		ArchitectUtils.escapeXML(c.getTableName())+
             		"</TABLE_NAME>");
     		ioo.println(out, "<INDEX_COLUMN_NAME0>"+
-    				ArchitectUtils.escapeXML(c.getId().getIndexColumnName0())+
+    				ArchitectUtils.escapeXML(c.getIndexColumnName0())+
     				"</INDEX_COLUMN_NAME0>");
     		ioo.println(out, "<COLUMN_NAME>"+
     				ArchitectUtils.escapeXML(c.getColumnName())+
@@ -560,19 +554,19 @@ public class PlMatchExportAction extends AbstractAction {
     		ioo.println(out, "<PL_MERGE_CONSOLIDATE_CRITERIA>");
     		ioo.indent++;
     		ioo.println(out, "<MATCH_ID>"+
-            		ArchitectUtils.escapeXML(c.getId().getMatchId())+
+            		ArchitectUtils.escapeXML(c.getPlMatch().getMatchId())+
             		"</MATCH_ID>");
     		ioo.println(out, "<TABLE_CATALOG>"+
-    				ArchitectUtils.escapeXML(c.getId().getCatalog())+
+    				ArchitectUtils.escapeXML(c.getCatalog())+
     				"</TABLE_CATALOG>");
     		ioo.println(out, "<OWNER>"+
-    				ArchitectUtils.escapeXML(c.getId().getOwner())+
+    				ArchitectUtils.escapeXML(c.getOwner())+
     				"</OWNER>");
     		ioo.println(out, "<TABLE_NAME>"+
-            		ArchitectUtils.escapeXML(c.getId().getTableName())+
+            		ArchitectUtils.escapeXML(c.getTableName())+
             		"</TABLE_NAME>");
     		ioo.println(out, "<COLUMN_NAME>"+
-            		ArchitectUtils.escapeXML(c.getId().getColumnName())+
+            		ArchitectUtils.escapeXML(c.getColumnName())+
             		"</COLUMN_NAME>");
 
     		ioo.println(out, "<COLUMN_FORMAT>"+

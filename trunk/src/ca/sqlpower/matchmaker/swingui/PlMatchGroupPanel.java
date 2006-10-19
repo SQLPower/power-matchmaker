@@ -3,7 +3,6 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -16,7 +15,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -28,16 +26,13 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellRenderer;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
-import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
-import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
-import ca.sqlpower.matchmaker.hibernate.PlMatchGroupId;
+import ca.sqlpower.matchmaker.hibernate.home.PlMatchGroupHome;
 import ca.sqlpower.matchmaker.swingui.action.CopyMatchCriteria;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchCriteria;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchCriteria;
@@ -100,7 +95,9 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 
 	public PlMatchGroupPanel(PlMatch parent) throws ArchitectException {
 		super();
-		PlMatchGroupPanelImpl(new PlMatchGroup(new PlMatchGroupId(parent.getMatchId(),null),parent));
+		PlMatchGroupPanelImpl(new PlMatchGroup());
+		model = new PlMatchGroup();
+		model.setPlMatch(parent);
 		parent.addPlMatchGroups(model);
 	}
 	
@@ -187,6 +184,13 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		return model;
 	}
 
+	/**
+	 * Load the new model for the match group and pass it along to the criteria table.
+	 * 
+	 * 
+	 * @param model
+	 * @throws ArchitectException
+	 */
 	public void setModel(PlMatchGroup model) throws ArchitectException {
 		this.model = model;
 		if(model != null) {
@@ -196,10 +200,11 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			matchCriteriaTable.getColumnModel().getColumn(translateColumn).setCellEditor(new DefaultCellEditor(new JComboBox(new TranslationComboBoxModel())));
 			int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
 			PlMatch plMatch = model.getPlMatch();
-			SQLTable t = MatchMakerFrame.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
-			matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(new DefaultCellEditor(new JComboBox(
+			if (plMatch != null && plMatch.getMatchTable() != null){
+				SQLTable t = MatchMakerFrame.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
+				matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(new DefaultCellEditor(new JComboBox(
 						new ColumnComboBoxModel(t,model))));
-			
+			}
 			
 		}
 	}
@@ -210,9 +215,8 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		deleteMatchCriterion.setAction(new DeleteMatchCriteria(model,getMatchCriteriaTable().getSelectedRows()));
 		copyMatchCriterion.setAction(new CopyMatchCriteria(model,getMatchCriteriaTable().getSelectedRows()));
 		pasteMatchCriterion.setAction(new PasteMatchCriteria(model));
-		groupId.setText(model.getId().getGroupId());
-		matches.setText(model.getId().getMatchId());
-
+		groupId.setText(model.getGroupId());
+		
 		description.setText(model.getDescription());
 		
 		matchPercent.setText(model.getMatchPercent().toString());
@@ -243,7 +247,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		if (model.getPlMatch() != null) {
 			for( PlMatchGroup g : model.getPlMatch().getPlMatchGroups()) {
 				
-				if (g.getId().getGroupId() != null && (g.getId().getGroupId().equals( groupId.getText() )&& g != model)){
+				if (g.getGroupId() != null && (g.getGroupId().equals( groupId.getText() )&& g != model)){
 					groupId.setBackground(Color.red);
 					valid=false;
 				}
@@ -269,38 +273,21 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	}
 	private boolean saveMatches() {
 		if ( validateForm() ){
-			// load the new model
-			PlMatchGroup saveGroup;
-			if ( !groupId.getText().equals(model.getId().getGroupId())) {
 	
-				saveGroup = new PlMatchGroup(new PlMatchGroupId(model.getId().getMatchId(),groupId.getText()),model.getPlMatch(),model);
-			} else {
-				saveGroup = model;
-			}
-			saveGroup.setDescription(description.getText());
-			saveGroup.setMatchPercent(Short.parseShort(matchPercent.getText()));
-			saveGroup.setFilterCriteria(filterCriteria.getText());
-			saveGroup.setActiveInd(!active.isSelected());
+			model.setGroupId(groupId.getText());
+			model.setDescription(description.getText());
+			model.setMatchPercent(Short.parseShort(matchPercent.getText()));
+			model.setFilterCriteria(filterCriteria.getText());
+			model.setActiveInd(!active.isSelected());
 	
-			Transaction tx = HibernateUtil.primarySession().beginTransaction();
 			try {
-
-				
-				if (!model.equals(saveGroup)) {
-					HibernateUtil.primarySession().delete(model);					
-					PlMatch parent = model.getPlMatch();
-					parent.removePlMatchGroups(model);
-					
-					HibernateUtil.primarySession().persist(saveGroup);
-					parent.addPlMatchGroups(saveGroup);
-					model = saveGroup;
-				} else {
-					HibernateUtil.primarySession().flush();
-				}
-				tx.commit();
 			
+				PlMatchGroupHome home = new PlMatchGroupHome();
+				home.saveOrUpdate(model);
+				home.flush();
+
 			} catch (Exception e) {
-				tx.rollback();
+
 				e.printStackTrace();
 			}
 		}
@@ -418,28 +405,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	public JComponent getPanel() {
 		return this;
 	}
-	private class EditMatchCriteriaAction extends AbstractAction {
-		private EditMatchCriteriaAction(String name) {
-			super(name);
-		}
 
-		public EditMatchCriteriaAction(PlMatchCriterion criteria, Window w) {
-			
-			this("Edit Match Criterion");
-			window = w;
-			this.criteria = criteria;
-		}
-
-		private PlMatchCriterion criteria;
-		private Window window;
-	
-
-		public void actionPerformed(ActionEvent e) {
-			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(new PlMatchCriteriaPanel(criteria), window, "Edit Match Criterion", "Save Match Criterion");
-			d.setVisible(true);
-			
-		}
-	}
 
 
 	

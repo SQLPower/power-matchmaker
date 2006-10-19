@@ -96,7 +96,10 @@ public class MatchInfoPanel implements ArchitectPanel {
 
 	public static void main(String args[]) throws ArchitectException {
 
-		MatchInfoPanel p = new MatchInfoPanel(new PlMatch("TEST MATCH ID","Test Match type"));
+		PlMatch plMatch = new PlMatch();
+		plMatch.setMatchId("TEST MATCH ID");
+		plMatch.setMatchType("Test Match type");
+		MatchInfoPanel p = new MatchInfoPanel(plMatch);
 		MatchMakerFrame f = MatchMakerFrame.getMainInstance();
 		final JDialog d = ArchitectPanelBuilder.createSingleButtonArchitectPanelDialog(
 				p,f,"Audit Information","OK");

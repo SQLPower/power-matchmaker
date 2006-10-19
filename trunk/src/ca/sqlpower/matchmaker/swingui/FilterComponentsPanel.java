@@ -22,9 +22,18 @@ public class FilterComponentsPanel extends JPanel {
     JButton editButton;
     SQLTable table;
     
+      
+    public FilterComponentsPanel(){
+        buildUI();
+    }
+    
     public FilterComponentsPanel(SQLTable t){
     	table = t;
-        setLayout(new BorderLayout());
+        buildUI();
+    }
+
+	private void buildUI() {
+		setLayout(new BorderLayout());
         filterTextArea = new JTextArea();
         editButton = new JButton(new AbstractAction("Edit"){
 
@@ -63,7 +72,7 @@ public class FilterComponentsPanel extends JPanel {
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         add(scrollPane, BorderLayout.CENTER);
         add(editButton, BorderLayout.EAST);
-    }
+	}
     
     /*
      * Returns the text input in the filter textfield.

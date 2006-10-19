@@ -82,7 +82,7 @@ public class PlMatchXrefMapHome extends DefaultHome<PlMatchXrefMap> {
         }
     }
     
-    public PlMatchXrefMap findById( ca.sqlpower.matchmaker.hibernate.PlMatchXrefMapId id) {
+    public PlMatchXrefMap findById(Long id) {
         log.debug("getting PlMatchXrefMap instance with id: " + id);
         try {
             PlMatchXrefMap instance = (PlMatchXrefMap) getCurrentSession()

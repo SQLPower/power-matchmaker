@@ -7,7 +7,6 @@ import javax.swing.table.AbstractTableModel;
 import org.hibernate.Transaction;
 
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateId;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class MatchTranslateTableModel extends AbstractTableModel {
@@ -53,7 +52,7 @@ public class MatchTranslateTableModel extends AbstractTableModel {
 		PlMatchTranslate trans = translate.get(rowIndex);
 		switch(columnIndex) {
 		case 0:
-			return trans.getId().getGroupName();
+			return trans.getGroupName();
 			
 		case 1:
 			return trans.getFromWord();
@@ -70,16 +69,7 @@ public class MatchTranslateTableModel extends AbstractTableModel {
 		Transaction tx = HibernateUtil.primarySession().beginTransaction();
 		switch(columnIndex) {
 		case 0:
-			if (!trans.getId().getGroupName().equals(aValue)){
-				PlMatchTranslate t2 = new PlMatchTranslate(new PlMatchTranslateId((String)aValue,trans.getId().getSeqNo()));
-				t2.setFromWord(trans.getFromWord());
-				t2.setToWord(trans.getToWord());
-				HibernateUtil.primarySession().delete(trans);	
-				int index = translate.indexOf(trans);
-				translate.remove(index);
-				translate.add(index, t2);
-				HibernateUtil.primarySession().save(t2);
-			}
+			trans.setGroupName((String)aValue);
 			break;
 			
 		case 1:

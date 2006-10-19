@@ -93,16 +93,16 @@ System.out.println("table:"+match.getMatchTable());
 System.out.println("group size:"+match.getPlMatchGroups().size());
 List<PlMatchGroup> l = new ArrayList<PlMatchGroup>(match.getPlMatchGroups());
 for ( PlMatchGroup g : l ) {
-	System.out.println("group id:"+g.getId().getGroupId());
+	System.out.println("group id:"+g.getGroupId());
 	for ( PlMatchCriterion c : g.getPlMatchCriterias() ) {
-		System.out.println("         PlMatchCriterion:"+c.getId().getColumnName());
+		System.out.println("         PlMatchCriterion:"+c.getColumnName());
 	}
 }
 for ( PlMergeCriteria c : match.getPlMergeCriteria() ) {
-System.out.println("merge crit="+c.getId().getTableName()+"."+c.getId().getIndexColumnName0());
+System.out.println("merge crit="+c.getTableName()+"."+c.getIndexColumnName0());
 }
 for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
-	System.out.println("merge con crit="+c.getId().getTableName()+"."+c.getId().getColumnName());
+	System.out.println("merge con crit="+c.getTableName()+"."+c.getColumnName());
 	}
 
 

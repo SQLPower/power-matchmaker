@@ -15,7 +15,7 @@ public abstract class DefaultHome<t> {
 	private SessionFactory sessionFactory;
 	
 	public DefaultHome(){
-		sessionFactory = HibernateUtil.getSessionFactory();		
+		sessionFactory = HibernateUtil.getRepositorySessionFactory();		
 	}
 	
 	public DefaultHome(Connection con) {

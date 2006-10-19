@@ -102,6 +102,19 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 					createMatchMenu((PlMatch) o);
 				} else if (o instanceof PlMatchGroup){
 					createMatchGroupMenu((PlMatchGroup) o);
+				} else if (o instanceof String){
+					m.add(new JMenuItem(new AbstractAction("New Match"){
+
+			            public void actionPerformed(ActionEvent e) {
+			                MatchEditor me;
+							try {
+								me = new MatchEditor(null,null,splitPane);
+							} catch (ArchitectException e1) {
+								throw new ArchitectRuntimeException(e1);
+							}
+							me.pack();
+							me.setVisible(true);
+			            }}));
 				}
 			}
 			m.show(t, e.getX(), e.getY());

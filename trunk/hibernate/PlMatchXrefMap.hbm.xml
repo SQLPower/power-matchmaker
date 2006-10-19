@@ -11,12 +11,14 @@
     table="pl_match_xref_map" 
     
 >
+
+
     <composite-id
 		name="id"
         class="ca.sqlpower.matchmaker.hibernate.PlMatchXrefMapId"
     >		
-	        <key-property name="matchId" type="string">
-<column name="match_id" length="80" />
+	        <key-property name="matchOid" type="long">
+<column name="match_oid" length="80" />
 	        </key-property>
 	        <key-property name="mappingSeqNo" type="long">
 <column name="mapping_seq_no" precision="18" scale="0" />
@@ -31,7 +33,7 @@
         insert="false"
         fetch="select"
     >
-<column name="match_id" length="80" not-null="true" />
+<column name="match_oid" not-null="true" />
    </many-to-one>
     <property
         name="sourceColumnName"
