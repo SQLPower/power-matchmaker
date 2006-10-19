@@ -11,21 +11,18 @@
     table="PL_MATCH_CRITERIA"
     
 >
-    <composite-id
-		name="id"
-        class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterionId"
-    >		
-	        <key-property name="matchId" type="string">
-<column name="MATCH_ID" length="80" />
-	        </key-property>
-	        <key-property name="groupId" type="string">
-<column name="GROUP_ID" length="30" />
-	        </key-property>
-	        <key-property name="columnName" type="string">
-<column name="COLUMN_NAME" length="30" />
-	        </key-property>
-    </composite-id>	
+ 	<id name="id"
+        type="long"
+    >
+		<column name="MATCH_CRITERIA_OID"/>
+		<generator class="native">
+				<param name="sequence">match_criteria_oid_seq</param>
+		</generator>
+    </id>
 
+	<property name="columnName" type="string">
+		<column name="COLUMN_NAME" length="30" />
+	</property>
 
     <many-to-one
 	    name="plMatchGroup"
@@ -33,9 +30,8 @@
         update="false"
         insert="false"
         lazy="proxy"
-    >
-<column name="MATCH_ID" length="80" not-null="true" />
-<column name="GROUP_ID" length="30" not-null="true" />
+	>
+		<column name="GROUP_OID"  not-null="true" />
    </many-to-one>
     <property
         name="caseSensitiveInd"

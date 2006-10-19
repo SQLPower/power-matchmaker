@@ -10,7 +10,9 @@ public class PlMatchTranslate  implements java.io.Serializable {
 
     // Fields
 
-     private PlMatchTranslateId id;
+     private Long id;
+     private String groupName;
+     private Long seqNo;
      private String fromWord;
      private String toWord;
 
@@ -20,32 +22,37 @@ public class PlMatchTranslate  implements java.io.Serializable {
     public PlMatchTranslate() {
     }
 
-	/** minimal constructor */
-    public PlMatchTranslate(PlMatchTranslateId id) {
-        this.id = id;
-    }
+    public String getGroupName() {
+		return groupName;
+	}
 
-    /** full constructor */
-    public PlMatchTranslate(PlMatchTranslateId id, String fromWord, String toWord) {
-       this.id = id;
-       this.fromWord = fromWord;
-       this.toWord = toWord;
-    }
+	public void setGroupName(String groupName) {
+		if (this.groupName != groupName) {
+			this.groupName = groupName;
+		}
+	}
 
-    /** copy factory */
-    public PlMatchTranslate copyOf() {
-    	return new PlMatchTranslate(id.copyOf(), fromWord, toWord);
-    }
+	public Long getId() {
+		return id;
+	}
 
-    // Property accessors
-    public PlMatchTranslateId getId() {
-        return this.id;
-    }
+	public void setId(Long id) {
+		if (this.id != id) {
+			this.id = id;
+		}
+	}
 
-    public void setId(PlMatchTranslateId id) {
-        this.id = id;
-    }
-    public String getFromWord() {
+	public Long getSeqNo() {
+		return seqNo;
+	}
+
+	public void setSeqNo(Long seqNo) {
+		if (this.seqNo != seqNo) {
+			this.seqNo = seqNo;
+		}
+	}
+
+	public String getFromWord() {
         return this.fromWord;
     }
 

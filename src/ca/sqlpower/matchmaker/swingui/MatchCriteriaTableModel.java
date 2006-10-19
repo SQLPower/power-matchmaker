@@ -7,9 +7,7 @@ import java.util.Date;
 import javax.swing.table.AbstractTableModel;
 
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
-import ca.sqlpower.matchmaker.hibernate.PlMatchCriterionId;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class MatchCriteriaTableModel extends AbstractTableModel {
 
@@ -65,82 +63,72 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		MatchCriteriaColumn column = MatchCriteriaColumn.values()[columnIndex];
-		PlMatchCriterion criteria = (PlMatchCriterion) group.getChildren().get(rowIndex);
+		PlMatchCriterion criterion = (PlMatchCriterion) group.getChildren().get(rowIndex);
 		
-		PlMatchCriterionId id = criteria.getId();
 		switch (column) {	
 		case COLUMN:
-			if (aValue == null) return;
-			PlMatchCriterion saveCriterion = new PlMatchCriterion(new PlMatchCriterionId(id.getMatchId(),id.getGroupId(),(String)aValue),group,criteria);
-			HibernateUtil.primarySession().delete(criteria);					
-			HibernateUtil.primarySession().persist(saveCriterion);
-			
-			group.removePlMatchCriteria(criteria);
-			group.addPlMatchCriteria(saveCriterion);
-			
-			criteria = saveCriterion;
-			
+			criterion.setColumnName((String)aValue);
 			break;
 		case ALLOW_NULL:             
-			criteria.setAllowNullInd((Boolean)aValue);
+			criterion.setAllowNullInd((Boolean)aValue);
 			break;
 		case CASE_SENSITIVE_IND:             
-		    criteria.setCaseSensitiveInd((Boolean)aValue);
+		    criterion.setCaseSensitiveInd((Boolean)aValue);
 		    break;
 		case SUPPRESS_CHAR:
-			criteria.setSuppressChar((String)aValue);
+			criterion.setSuppressChar((String)aValue);
 			break;
 		case FIRST_N_CHAR:
-			criteria.setFirstNChar((Long) aValue);
+			criterion.setFirstNChar((Long) aValue);
 			break;
 		case MATCH_START:
 			if ((Boolean)aValue){
-				criteria.setReorderInd(true);
+				criterion.setReorderInd(true);
 			}
-			criteria.setMatchStart((Boolean)aValue);
+			criterion.setMatchStart((Boolean)aValue);
 			break;
 		case SOUND_IND:
 
-			criteria.setSoundInd((Boolean)aValue);
+			criterion.setSoundInd((Boolean)aValue);
 			break;
 		case TRANSLATE_GROUP_NAME:  
-			criteria.setTranslateGroupName((String) aValue);
+			criterion.setTranslateGroupName((String) aValue);
 			break;
 		case REMOVE_SPECIAL_CHARS:  
-			criteria.setRemoveSpecialChars((Boolean)aValue);
+			criterion.setRemoveSpecialChars((Boolean)aValue);
 			break;
 		case COUNT_WORDS_IND:    
-			criteria.setCountWordsInd((Boolean)aValue);
+			criterion.setCountWordsInd((Boolean)aValue);
 			break;
 		case REPLACE_WITH_SPACE_IND:      
-			criteria.setReplaceWithSpaceInd((Boolean)aValue);
+			criterion.setReplaceWithSpaceInd((Boolean)aValue);
 			break;
 		case REPLACE_WITH_SPACE:  
-			criteria.setReplaceWithSpace((String)aValue);
+			criterion.setReplaceWithSpace((String)aValue);
 			break;
 		case REORDER_IND: 
 			if (!(Boolean) aValue) {
-				criteria.setMatchStart(false);
-				criteria.setFirstNCharByWordInd(false);
+				criterion.setMatchStart(false);
+				criterion.setFirstNCharByWordInd(false);
 			}
-			criteria.setReorderInd((Boolean)aValue);
+			criterion.setReorderInd((Boolean)aValue);
 			break;
 		case FIRST_N_CHARS_BY_WORD:     
-			criteria.setFirstNCharByWord((Long) aValue);
+			criterion.setFirstNCharByWord((Long) aValue);
 			break;
 		case MIN_WORDS_IN_COMMON:
-			criteria.setMinWordsInCommon((Long) aValue);
+			criterion.setMinWordsInCommon((Long) aValue);
 			break;
 		case MATCH_FIRST_PLUS_ONE_IND:
 			if ((Boolean)aValue){
-				criteria.setReorderInd(true);
+				criterion.setReorderInd(true);
 			}
-			criteria.setFirstNCharByWordInd((Boolean)aValue);
+			criterion.setFirstNCharByWordInd((Boolean)aValue);
 			break;
 		default:
 			throw new IllegalArgumentException("Invalid column");
 		}
-		criteria.setLastUpdateDate(new Date(System.currentTimeMillis()));
+		criterion.setLastUpdateDate(new Date(System.currentTimeMillis()));
 	}
 	
 	public PlMatchCriterion getRow(int row){
@@ -161,7 +149,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 	private static Object getFieldFromCriteria(MatchCriteriaColumn column, PlMatchCriterion criteria) {
 		switch (column) {	
 		case COLUMN:
-			return criteria.getId().getColumnName();
+			return criteria.getColumnName();
 		case ALLOW_NULL:             
 			return criteria.isAllowNullInd();
 		case CASE_SENSITIVE_IND:             

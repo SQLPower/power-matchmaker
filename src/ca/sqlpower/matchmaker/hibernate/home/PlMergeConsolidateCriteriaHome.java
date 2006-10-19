@@ -82,7 +82,7 @@ public class PlMergeConsolidateCriteriaHome extends DefaultHome<PlMergeConsolida
         }
     }
     
-    public PlMergeConsolidateCriteria findById( ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteriaId id) {
+    public PlMergeConsolidateCriteria findById(Long id) {
         log.debug("getting PlMergeConsolidateCriteria instance with id: " + id);
         try {
             PlMergeConsolidateCriteria instance = (PlMergeConsolidateCriteria) getCurrentSession()

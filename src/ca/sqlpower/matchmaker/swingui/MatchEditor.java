@@ -140,6 +140,12 @@ public class MatchEditor extends JFrame {
         return true;
     }
 
+    /**
+     * Saves the current match (which is referenced in the plMatch member variable of this editor instance).
+     * If there is no current plMatch, a new one will be created and its properties will be set just like
+     * they would if one had existed.  In either case, this action will then use Hibernate to save the 
+     * match object back to the database (but it should use the MatchHome interface instead).
+     */
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(ActionEvent e) {
 
@@ -156,6 +162,7 @@ public class MatchEditor extends JFrame {
 					}
 				}
 				plMatch = new PlMatch();
+				plMatch.setCreateDate(new Date());
 			}
 
 			if ( !checkObjectNullOrEmpty(
@@ -199,7 +206,7 @@ public class MatchEditor extends JFrame {
             	plMatch.setTableOwner(((SQLSchema)sourceChooser.getSchemaComboBox().getSelectedItem()).getName());
             }
             plMatch.setMatchType(type.getSelectedItem().toString());
-            plMatch.setCreateDate(new Date(System.currentTimeMillis()));
+            
             plMatch.setMatchDesc(desc.getText());
             plMatch.setMatchTable(
             		((SQLTable) sourceChooser.getTableComboBox().
@@ -304,7 +311,7 @@ public class MatchEditor extends JFrame {
        //     plMatch.setFolders( f2);
 
             Transaction tx = HibernateUtil.primarySession().beginTransaction();
-            HibernateUtil.primarySession().save(plMatch);
+            HibernateUtil.primarySession().saveOrUpdate(plMatch);
 			HibernateUtil.primarySession().flush();
 			tx.commit();
 			HibernateUtil.primarySession().refresh(plMatch);
@@ -390,10 +397,21 @@ public class MatchEditor extends JFrame {
         resultChooser = new SQLObjectChooser(MatchEditor.this,
         		mainFrame.getUserSettings().getConnections());
 
+
         final SQLDatabase loginDB = mainFrame.getDatabase();
-
-        filterPanel = new FilterComponentsPanel(loginDB.getTableByName(plMatch.getTableCatalog(), plMatch.getTableOwner(), plMatch.getMatchTable()));
-
+        ArchitectDataSource ds;
+        if ( loginDB != null ) {
+        	PlDotIni ini = mainFrame.getUserSettings().getPlDotIni();
+        	ds = ini.getDataSource(loginDB.getDataSource().getName());
+        	sourceChooser.getDataSourceComboBox().setSelectedItem(ds);
+        	resultChooser.getDataSourceComboBox().setSelectedItem(ds);
+        	// no connection no folders
+        	folderComboBox.setModel(
+        			new FolderComboBoxModel<PlFolder>(mainFrame.getFolders()));
+        }
+        
+        filterPanel = new FilterComponentsPanel();
+        
         PropertyChangeListener pcl = new PropertyChangeListener(){
 
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -409,16 +427,6 @@ public class MatchEditor extends JFrame {
 			}
 
         };
-        ArchitectDataSource ds;
-        if ( loginDB != null ) {
-        	PlDotIni ini = mainFrame.getUserSettings().getPlDotIni();
-        	ds = ini.getDataSource(loginDB.getDataSource().getName());
-        	sourceChooser.getDataSourceComboBox().setSelectedItem(ds);
-        	resultChooser.getDataSourceComboBox().setSelectedItem(ds);
-        	// no connection no folders
-        	folderComboBox.setModel(
-        			new FolderComboBoxModel<PlFolder>(mainFrame.getFolders()));
-        }
 
     	List<String> types = new ArrayList<String>();
     	for ( MatchType mt : MatchType.values() ) {
@@ -444,6 +452,13 @@ public class MatchEditor extends JFrame {
 
 
     	if ( plMatch != null ) {
+            if (plMatch.getMatchTable() != null) {
+            	SQLTable tableByName = loginDB.getTableByName(plMatch.getTableCatalog(), plMatch.getTableOwner(), plMatch.getMatchTable());
+            	if (tableByName != null) {
+            		filterPanel.setTable(tableByName);
+            	}
+            }
+
     		matchId.setText(plMatch.getMatchId());
     		if ( plMatch.getFolders() != null && plMatch.getFolders().size() > 0 ) {
     			PlFolder f = (PlFolder) plMatch.getFolders().toArray()[0];
@@ -457,7 +472,7 @@ public class MatchEditor extends JFrame {
     		SQLTable table = null;
 			try {
 				SQLDatabase db = sourceChooser.getDb();
-				if ( db != null ) {
+				if ( db != null && plMatch.getMatchTable() != null) {
 					table = db.getTableByName(
 							plMatch.getTableCatalog(),
 							plMatch.getTableOwner(),
@@ -515,7 +530,7 @@ public class MatchEditor extends JFrame {
             SQLTable resultTable = null;
 			try {
 				SQLDatabase db = resultChooser.getDb();
-				if ( db != null ) {
+				if ( db != null && plMatch.getResultsTable() != null) {
 					resultTable = db.getTableByName(
 							plMatch.getResultsTableCatalog(),
 							plMatch.getResultsTableOwner(),
@@ -550,7 +565,7 @@ public class MatchEditor extends JFrame {
 
 
     	FormLayout layout = new FormLayout(
-				"4dlu,pref,4dlu,fill:200dlu:grow, 4dlu,pref,10dlu, pref,4dlu", // columns
+				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   16dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   4dlu,pref,  16dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
     	//		 1     2     3    4     5    6     7    8        9     10    11   12    13   14    15   16       17    18     19    20    21   22    23   24    25
 

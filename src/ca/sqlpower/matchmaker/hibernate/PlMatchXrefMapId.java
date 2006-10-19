@@ -11,7 +11,7 @@ public class PlMatchXrefMapId  implements java.io.Serializable {
 
     // Fields
 
-     private String matchId;
+     private Long matchOid;
      private BigDecimal mappingSeqNo;
 
      // Constructors
@@ -21,23 +21,23 @@ public class PlMatchXrefMapId  implements java.io.Serializable {
     }
 
     /** full constructor */
-    public PlMatchXrefMapId(String matchId, BigDecimal mappingSeqNo) {
-       this.matchId = matchId;
+    public PlMatchXrefMapId(Long matchOid, BigDecimal mappingSeqNo) {
+       this.matchOid = matchOid;
        this.mappingSeqNo = mappingSeqNo;
     }
 
     /** copy constructor */
     public PlMatchXrefMapId copyOf() {
-    	return new PlMatchXrefMapId(matchId, mappingSeqNo);
+    	return new PlMatchXrefMapId(matchOid, mappingSeqNo);
 	}
 
 	// Property accessors
-    public String getMatchId() {
-        return this.matchId;
+    public Long getMatchOid() {
+        return this.matchOid;
     }
 
-    public void setMatchId(String matchId) {
-        this.matchId = matchId;
+    public void setMatchOid(Long matchOid) {
+        this.matchOid = matchOid;
     }
     public BigDecimal getMappingSeqNo() {
         return this.mappingSeqNo;
@@ -54,14 +54,14 @@ public class PlMatchXrefMapId  implements java.io.Serializable {
 		 if ( !(other instanceof PlMatchXrefMapId) ) return false;
 		 PlMatchXrefMapId castOther = ( PlMatchXrefMapId ) other;
 
-		 return ( (this.getMatchId()==castOther.getMatchId()) || ( this.getMatchId()!=null && castOther.getMatchId()!=null && this.getMatchId().equals(castOther.getMatchId()) ) )
+		 return ( (this.getMatchOid()==castOther.getMatchOid()) || ( this.getMatchOid()!=null && castOther.getMatchOid()!=null && this.getMatchOid().equals(castOther.getMatchOid()) ) )
  && ( (this.getMappingSeqNo()==castOther.getMappingSeqNo()) || ( this.getMappingSeqNo()!=null && castOther.getMappingSeqNo()!=null && this.getMappingSeqNo().equals(castOther.getMappingSeqNo()) ) );
    }
 
    public int hashCode() {
          int result = 17;
 
-         result = 37 * result + ( getMatchId() == null ? 0 : this.getMatchId().hashCode() );
+         result = 37 * result + ( getMatchOid() == null ? 0 : this.getMatchOid().hashCode() );
          result = 37 * result + ( getMappingSeqNo() == null ? 0 : this.getMappingSeqNo().hashCode() );
          return result;
    }

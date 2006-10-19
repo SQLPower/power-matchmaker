@@ -6,91 +6,54 @@
 <!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
 <hibernate-mapping>
 
-<class 
-    name="ca.sqlpower.matchmaker.hibernate.PlMatchGroup"
-    table="PL_MATCH_GROUP"
-   
->
-    <composite-id
-		name="id"
-        class="ca.sqlpower.matchmaker.hibernate.PlMatchGroupId"
-    >		
-	        <key-property name="matchId" type="string">
-<column name="MATCH_ID" length="80" />
-	        </key-property>
-	        <key-property name="groupId" type="string">
-<column name="GROUP_ID" length="30" />
-	        </key-property>
-    </composite-id>	
+	<class name="ca.sqlpower.matchmaker.hibernate.PlMatchGroup"
+		table="PL_MATCH_GROUP">
+		<id name="id" type="long">
+			<column name="GROUP_OID" />
+			<generator class="native">
+				<param name="sequence">group_oid_seq</param>
+			</generator>
+		</id>
 
 
-    <many-to-one
-	    name="plMatch"
-	    access="field"
-	    class="ca.sqlpower.matchmaker.hibernate.PlMatch"
-        update="false"
-        insert="false"
-        fetch="select"
-    >
-<column name="MATCH_ID" length="80" not-null="true" />
-   </many-to-one>
-    <property
-        name="description"
-        type="string"
-    >
-<column name="DESCRIPTION" length="2000" />
-  	</property>
-    <property
-        name="matchPercent"
-        type="short"
-    >
-<column name="MATCH_PERCENT" precision="18" scale="0" />
-  	</property>
-    <property
-        name="lastUpdateDate"
-        type="date"
-    >
-<column name="LAST_update_DATE" length="23" />
-  	</property>
-    <property
-        name="lastUpdateUser"
-        type="string"
-    >
-<column name="LAST_update_USER" length="30" />
-  	</property>
-    <property
-        name="filterCriteria"
-        type="string"
-    >
-<column name="FILTER_CRITERIA" length="2000" />
-  	</property>
-    <property
-        name="activeInd"
-        type="ca.sqlpower.matchmaker.util.CustomBooleanType"
-    > 
-<column name="ACTIVE_IND" length="1" />
-  	</property>
-    <property
-        name="lastUpdateOsUser"
-        type="string"
-    >
-<column name="LAST_update_OS_USER" length="30" />
-  	</property>
-	<set
-		name="plMatchCriteria"
-		access="field"
-		inverse="true"
-		lazy="true" 
-		fetch="select"
-		>
-		<key> 
-<column name="MATCH_ID" length="80" not-null="true" />
-<column name="GROUP_ID" length="30" not-null="true" />
-        </key>
-		<one-to-many 
-			 class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterion"
-			/>			
-	</set>
+		<many-to-one name="plMatch" access="field"
+			class="ca.sqlpower.matchmaker.hibernate.PlMatch" update="false"
+			insert="false" fetch="select">
+			<column name="MATCH_OID" not-null="true" />
+		</many-to-one>
+		<property name="groupId" type="string">
+			<column name="GROUP_ID" length="80" />
+		</property>
+		<property name="description" type="string">
+			<column name="DESCRIPTION" length="2000" />
+		</property>
+		<property name="matchPercent" type="short">
+			<column name="MATCH_PERCENT" precision="18" scale="0" />
+		</property>
+		<property name="lastUpdateDate" type="date">
+			<column name="LAST_update_DATE" length="23" />
+		</property>
+		<property name="lastUpdateUser" type="string">
+			<column name="LAST_update_USER" length="30" />
+		</property>
+		<property name="filterCriteria" type="string">
+			<column name="FILTER_CRITERIA" length="2000" />
+		</property>
+		<property name="activeInd"
+			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
+			<column name="ACTIVE_IND" length="1" />
+		</property>
+		<property name="lastUpdateOsUser" type="string">
+			<column name="LAST_update_OS_USER" length="30" />
+		</property>
+		<set name="plMatchCriteria" access="field" inverse="true"
+			lazy="true" fetch="subselect">
+			<key>
+				<column name="GROUP_OID" length="30" not-null="true" />
+			</key>
+			<one-to-many
+				class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterion" />
+		</set>
 
-</class>
+	</class>
 </hibernate-mapping>

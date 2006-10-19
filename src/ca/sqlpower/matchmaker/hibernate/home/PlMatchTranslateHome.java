@@ -82,7 +82,7 @@ public class PlMatchTranslateHome extends DefaultHome<PlMatchTranslate> {
         }
     }
     
-    public PlMatchTranslate findById( ca.sqlpower.matchmaker.hibernate.PlMatchTranslateId id) {
+    public PlMatchTranslate findById(Long id) {
         log.debug("getting PlMatchTranslate instance with id: " + id);
         try {
             PlMatchTranslate instance = (PlMatchTranslate) getCurrentSession()

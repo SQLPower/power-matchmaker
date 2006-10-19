@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.LockMode;
 import org.hibernate.criterion.Example;
 
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
@@ -20,19 +19,7 @@ public class PlMatchGroupHome extends DefaultHome<PlMatchGroupHome>{
 
     private static final Log log = LogFactory.getLog(PlMatchGroupHome.class);
     
-    public void persist(PlMatchGroup transientInstance) {
-        log.debug("persisting PlMatchGroup instance");
-        try {
-            getCurrentSession().persist(transientInstance);
-            log.debug("persist successful");
-        }
-        catch (RuntimeException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-    }
-    
-    public void attachDirty(PlMatchGroup instance) {
+    public void saveOrUpdate(PlMatchGroup instance) {
         log.debug("attaching dirty PlMatchGroup instance");
         try {
             getCurrentSession().saveOrUpdate(instance);
@@ -44,18 +31,7 @@ public class PlMatchGroupHome extends DefaultHome<PlMatchGroupHome>{
         }
     }
     
-    public void attachClean(PlMatchGroup instance) {
-        log.debug("attaching clean PlMatchGroup instance");
-        try {
-            getCurrentSession().lock(instance, LockMode.NONE);
-            log.debug("attach successful");
-        }
-        catch (RuntimeException re) {
-            log.error("attach failed", re);
-            throw re;
-        }
-    }
-    
+   
     public void delete(PlMatchGroup persistentInstance) {
         log.debug("deleting PlMatchGroup instance");
         try {
@@ -68,21 +44,8 @@ public class PlMatchGroupHome extends DefaultHome<PlMatchGroupHome>{
         }
     }
     
-    public PlMatchGroup merge(PlMatchGroup detachedInstance) {
-        log.debug("merging PlMatchGroup instance");
-        try {
-            PlMatchGroup result = (PlMatchGroup) getCurrentSession()
-                    .merge(detachedInstance);
-            log.debug("merge successful");
-            return result;
-        }
-        catch (RuntimeException re) {
-            log.error("merge failed", re);
-            throw re;
-        }
-    }
-    
-    public PlMatchGroup findById( ca.sqlpower.matchmaker.hibernate.PlMatchGroupId id) {
+
+    public PlMatchGroup findById(Long id) {
         log.debug("getting PlMatchGroup instance with id: " + id);
         try {
             PlMatchGroup instance = (PlMatchGroup) getCurrentSession()
@@ -119,6 +82,10 @@ public class PlMatchGroupHome extends DefaultHome<PlMatchGroupHome>{
     @Override
 	public String getBusinessClass() {
 		return "ca.sqlpower.matchmaker.hibernate.PlMatchGroup";
+	}
+
+	public void flush() {
+		getCurrentSession().flush();
 	}
 }
 
