@@ -12,8 +12,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLTable;
 
 
@@ -32,20 +30,23 @@ public class FilterComponentsPanel extends JPanel {
 
             public void actionPerformed(ActionEvent e) {     
             	Container parent = FilterComponentsPanel.this;
-            	FilterMakerFrame filterMaker = null;
+            	FilterMakerDialog filterMaker = null;
             	while(parent != null  ){
             		parent = parent.getParent();
-            		try {
-            			if (parent instanceof JFrame){
-            				filterMaker = new FilterMakerFrame((JFrame)parent,getFilterTextArea(),getTable());
-            				break;
-            			} else if (parent instanceof JDialog) {
-            				filterMaker = new FilterMakerFrame((JDialog)parent,getFilterTextArea(),getTable());
-            				break;
-            			}
-            		} catch (ArchitectException ex) {
-						throw new ArchitectRuntimeException(ex);
-					}
+            		//We set the getfilterTextArea to be uneditable so we don't run
+                    //into conflicts with the filterMaker, the filterMaker will
+                    //reenable its editability automatically
+                    if (parent instanceof JFrame){
+                        //Last parameter is false because we want a JComboBox for the last input component
+                    	filterMaker = new FilterMakerDialog((JFrame)parent,getFilterTextArea(),getTable(),false);
+                        getFilterTextArea().setEditable(false);
+                    	break;
+                    } else if (parent instanceof JDialog) {
+                        //Last parameter is false because we want a JComboBox for the last input component
+                    	filterMaker = new FilterMakerDialog((JDialog)parent,getFilterTextArea(),getTable(), false);
+                        getFilterTextArea().setEditable(false);
+                    	break;
+                    }
             	}
             	if (filterMaker != null) {
             		filterMaker.pack();
@@ -57,7 +58,10 @@ public class FilterComponentsPanel extends JPanel {
             }            
         });
  
-        add(new JScrollPane(filterTextArea), BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(filterTextArea);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        add(scrollPane, BorderLayout.CENTER);
         add(editButton, BorderLayout.EAST);
     }
     
