@@ -319,11 +319,11 @@ public class PlMatchExportAction extends AbstractAction {
     private void saveFolder(IOUtils ioo, PrintWriter out) {
 
 
-    	if ( match.getFolders() == null || match.getFolders().size() == 0 ) {
+    	if ( match.getFolder() == null ) {
     		return;
     	}
 
-    	PlFolder folder = (PlFolder) match.getFolders().toArray()[0];
+    	PlFolder folder = (PlFolder) match.getFolder();
 
 		ioo.println(out, "<PL_FOLDER>");
 		ioo.indent++;

@@ -126,25 +126,26 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
      private Set<PlMatchXrefMap> plMatchXrefMaps = new TreeSet<PlMatchXrefMap>();
      private Set<PlMergeCriteria> plMergeCriteria = new TreeSet<PlMergeCriteria>();
      private Set<PlMatchGroup> plMatchGroups = new TreeSet<PlMatchGroup>();
-     private Set<PlFolder> folders = new TreeSet<PlFolder>();
-     // Constructors
-
-    public Set getFolders() {
-		return folders;
-	}
-
-	public void setFolders(Set<PlFolder> folders) {
-		this.folders = folders;
-	}
+     private PlFolder folder;
+     // Constructor
 
 	/** default constructor */
     public PlMatch() {
 
     }
-
-
-   
  
+	public PlFolder getFolder() {
+		return folder;
+	}
+
+	public void setFolder(PlFolder folder) {
+		if (this.folder != folder) {
+			firePropertyChange("folder", this.folder, folder);
+			this.folder = folder;
+		}
+	}
+
+
 	// Property accessors
     public String getMatchId() {
         return this.matchId;

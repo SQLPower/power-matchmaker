@@ -353,15 +353,12 @@
 			<one-to-many
 				class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup" />
 		</set>
-		<set name="folders" access="field" fetch="subselect"
-			table="PL_FOLDER_DETAIL">
-			<key>
-				<column name="OBJECT_NAME" />
-			</key>
-			<many-to-many
-				class="ca.sqlpower.matchmaker.hibernate.PlFolder"
-				column="FOLDER_NAME" />
-		</set>
+
+		<many-to-one name="folder" access="field"
+			class="ca.sqlpower.matchmaker.hibernate.PlFolder" update="false"
+			insert="false" fetch="select">
+			<column name="FOLDER_NAME" not-null="true" />
+		</many-to-one>
 
 	</class>
 </hibernate-mapping>

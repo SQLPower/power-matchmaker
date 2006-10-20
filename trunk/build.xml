@@ -17,9 +17,11 @@
 	<path id="toolslib">
 	 <fileset dir="lib">
 	 		<include name="**/*.jar"/>
+		 	<include name="**/*.zip"/>
 	 </fileset>
 	 <fileset dir="buildlib">
 		 <include name="**/*.jar"/>
+	 	 <include name="**/*.zip"/>
 	 </fileset>
 	
 	 <path location="${jdbc.driver.jar}" />
@@ -51,8 +53,6 @@
 		>
 
 		</jdbcconfiguration>
-	  	<hbm2java destdir="tmp/gen"/>
-		<hbm2dao destdir="tmp/gen"/>
 		<hbm2hbmxml destdir="tmp/gen"/>
 	</hibernatetool> </target>
 

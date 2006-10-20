@@ -10,9 +10,7 @@
 		</sql-type>
 		<sql-type jdbc-type="DATE" hibernate-type="date"></sql-type>
 	</type-mapping>
-	<table-filter match-name="PL_MATCH.*" />
-	<table-filter match-name="PL_MERGE.*" />
-	<table-filter match-name="DEF_PARAM" />
-	<table-filter match-name="PL_FOLDER.*" />
+	<table-filter match-name="*" />
+
 
 </hibernate-reverse-engineering>
