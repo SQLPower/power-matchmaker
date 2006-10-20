@@ -460,8 +460,8 @@ public class MatchEditor extends JFrame {
             }
 
     		matchId.setText(plMatch.getMatchId());
-    		if ( plMatch.getFolders() != null && plMatch.getFolders().size() > 0 ) {
-    			PlFolder f = (PlFolder) plMatch.getFolders().toArray()[0];
+    		if ( plMatch.getFolder() != null) {
+    			PlFolder f = (PlFolder) plMatch.getFolder();
 	    		if ( f != null ) {
 	    			folderComboBox.setSelectedItem(f);
 	    		}

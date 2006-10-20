@@ -39,10 +39,15 @@
 <column name="last_backup_no" precision="18" scale="0" />
   	</property>
 
-	<set name="matches" access="field" lazy="true" fetch="subselect" table="PL_FOLDER_DETAIL">
-           <key column="folder_name"/>
-           <many-to-many unique="true" not-found="ignore" class="ca.sqlpower.matchmaker.hibernate.PlMatch" column="object_name"/>
-    </set>
+	<set name="matches" access="field" lazy="true"
+			inverse="true" fetch="subselect" cascade="all">
+			<key>
+				<column name="folder_name" length="80" not-null="true" />
+			</key>
+			<one-to-many
+				class="ca.sqlpower.matchmaker.hibernate.PlMatch" />
+	</set>
+	
 </class>
 
 </hibernate-mapping>
