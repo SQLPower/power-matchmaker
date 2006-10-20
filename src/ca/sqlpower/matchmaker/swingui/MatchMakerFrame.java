@@ -243,7 +243,7 @@ public class MatchMakerFrame extends JFrame {
 
 	private List<PlMatch> matches;
 	private List<PlFolder> folders;
-	private List<PlMatchTranslate> translations;
+	private List<PlMatchTranslate> translations = new ArrayList<PlMatchTranslate>();
 	private SQLDatabase database;
 
 
@@ -481,7 +481,7 @@ public class MatchMakerFrame extends JFrame {
 			Collections.sort(matches);
 			Collections.sort(folders);
 			PlMatchTranslateHome translateHome = new PlMatchTranslateHome();
-			translations = new ArrayList<PlMatchTranslate>(translateHome.findAll());
+			//translations = new ArrayList<PlMatchTranslate>(translateHome.findAll());
 		}
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
         setDatabase(db);
