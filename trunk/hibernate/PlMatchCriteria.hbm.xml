@@ -33,6 +33,15 @@
 	>
 		<column name="GROUP_OID"  not-null="true" />
    </many-to-one>
+   <!--    <many-to-one
+	    name="plTranslateGroup"
+	    class="ca.sqlpower.matchmaker.hibernate.PlTranslateGroup"
+        update="false"
+        insert="false"
+        lazy="proxy"
+	>
+		<column name="translate_group_name" />
+   </many-to-one> -->
     <property
         name="caseSensitiveInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
@@ -87,12 +96,7 @@
     >
 <column name="ALLOW_NULL_IND" length="1" />
   	</property>
-    <property
-        name="translateGroupName"
-        type="string"
-    >
-<column name="TRANSLATE_GROUP_NAME" length="35" />
-  	</property>
+
     <property
         name="removeSpecialChars"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"
