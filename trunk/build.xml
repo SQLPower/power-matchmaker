@@ -37,24 +37,20 @@
 	</condition>
 
 	<target name="hibernate-generate">
+		
+		<hibernatetool	destdir="tmp/gen" >
 
-		<!-- Remove the fail line to regenerate the persistance classes -->
-
-		<hibernatetool
-	  destdir="tmp/gen" >
-
-	  <classpath refid="toolslib"/>
-	  <propertyset />
-
-		<jdbcconfiguration configurationfile="hibernate/hibernate.gen.cfg.xml"
-		  packagename="ca.sqlpower.matchmaker.generated"
-		  revengfile="hibernate/MatchMaker.reveng.xml"
-		  detectmanytomany="true"
-		>
-
-		</jdbcconfiguration>
-		<hbm2hbmxml destdir="tmp/gen"/>
-	</hibernatetool> </target>
+		  <classpath refid="toolslib"/>
+	  		<jdbcconfiguration configurationfile="hibernate/hibernate.gen.cfg.xml"
+			  packagename="ca.sqlpower.matchmaker.generated"
+			  detectmanytomany="true"
+			>
+			</jdbcconfiguration>
+			<hbm2hbmxml destdir="tmp/gen"/>
+			<hbm2java destdir="tmp/gen"	/>
+			<hbm2dao destdir="tmp/gen"	/>
+		</hibernatetool> 
+	</target>
 
 	<condition property="isNotMac">
 		<not>
