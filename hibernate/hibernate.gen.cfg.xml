@@ -9,7 +9,7 @@
         <property name="connection.password">newpl</property>
         <property name="connection.url">jdbc:oracle:thin:@arthur:1521:TEST</property>
         <property name="connection.username">newpl</property>
-        <property name="default_schema">newpl</property>
+        <property name="default_schema">NEWPL</property>
         <property name="dialect">org.hibernate.dialect.OracleDialect</property>
    <!-- JDBC connection pool (use the built-in) -->
         <property name="connection.pool_size">1</property>
