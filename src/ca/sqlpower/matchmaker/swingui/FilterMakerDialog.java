@@ -18,17 +18,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
 
 import org.apache.log4j.Logger;
 
@@ -51,8 +43,7 @@ public class FilterMakerDialog extends JDialog {
     private JTextField conditionTextField;
     private JComboBox comparisonOperator;
     private JComboBox columnName2;
-    private JButton pasteButton;
-    private JButton undoButton;
+    private JButton pasteButton;    
     private JButton andButton;
     private JButton orButton;
     private JButton notButton;
@@ -146,7 +137,7 @@ public class FilterMakerDialog extends JDialog {
 
         FormLayout layout = new FormLayout(
                 "4dlu,fill:min(70dlu;default), 4dlu, fill:150dlu:grow,4dlu, min(60dlu;default),4dlu",
-        "10dlu,pref,4dlu,pref,4dlu,pref,4dlu,20dlu,4dlu,fill:30dlu:grow,10dlu,pref,10dlu");
+        "10dlu,pref,4dlu,pref,4dlu,pref,4dlu,20dlu,4dlu,fill:60dlu:grow,10dlu,pref,10dlu");
 
         CellConstraints cc = new CellConstraints();
 
@@ -166,7 +157,6 @@ public class FilterMakerDialog extends JDialog {
 
         comparisonOperator = new JComboBox();
         pasteButton = new JButton(pasteAction);
-        undoButton = new JButton("Undo");
         andButton = new JButton(andAction);
         andButton.setSize(new Dimension(1,1));
         orButton = new JButton (orAction);
@@ -178,11 +168,6 @@ public class FilterMakerDialog extends JDialog {
         okButton = new JButton(okAction);
         cancelButton = new JButton(cancelAction);
         filterText = new JTextArea();
-        JScrollPane scrollPane = new JScrollPane(filterText);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        filterText.setWrapStyleWord(true);
-        filterText.setLineWrap(true);
         setFilterTextContent(returnText);
 
         pb.add(new JLabel("Duplicate1:"), cc.xy(2,2,"l,c"));
@@ -207,8 +192,7 @@ public class FilterMakerDialog extends JDialog {
             pb.add(columnName2, cc.xy(4,6));
         }
 
-        pb.add(pasteButton, cc.xy(6,2,"r,c"));
-        pb.add(undoButton, cc.xy(6,4,"r,c"));
+        pb.add(pasteButton, cc.xy(6,6,"r,c"));
 
         ButtonBarBuilder syntaxBar = new ButtonBarBuilder();
         syntaxBar.addGridded(andButton);
@@ -219,12 +203,13 @@ public class FilterMakerDialog extends JDialog {
         syntaxBar.addRelatedGap();
 
         pb.add(syntaxBar.getPanel(), cc.xyw(2,8,3));
-        pb.add(scrollPane, cc.xyw(2,10,5, "f,f"));
+        pb.add(new JTextAreaUndoWrapper(filterText), cc.xyw(2,10,5, "f,f"));
 
         ButtonBarBuilder bottomButtons = new ButtonBarBuilder();
 
         bottomButtons.addGridded(testButton);
         bottomButtons.addRelatedGap();
+        bottomButtons.addGlue();
         bottomButtons.addGridded(clearButton);
         bottomButtons.addRelatedGap();
         bottomButtons.addGlue();
@@ -239,7 +224,6 @@ public class FilterMakerDialog extends JDialog {
 
 
         setupOperatorDropdown();
-        setFilterTextUndo(filterText, undoButton, null);
 
         getContentPane().add(pb.getPanel());
 
@@ -250,49 +234,7 @@ public class FilterMakerDialog extends JDialog {
         filterText.setText(t.getText());
     }
 
-    private void setFilterTextUndo( JTextArea filterText, JButton undoButton, JButton redoButton) {
-        final UndoManager undo = new UndoManager();
-        Document doc = filterText.getDocument();
-        doc.addUndoableEditListener(
-                new UndoableEditListener() {
-                    public void undoableEditHappened(UndoableEditEvent evt) {
-                        undo.addEdit(evt.getEdit());
-                    }
-                });
-
-        final AbstractAction undoAction = new AbstractAction("Undo") {
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    if (undo.canUndo()) {
-                        undo.undo();
-                    }
-                } catch (CannotUndoException e) {
-                }
-            }
-        };
-        filterText.getActionMap().put("Undo", undoAction);
-        filterText.getInputMap().put(KeyStroke.getKeyStroke("control Z"), "Undo");
-
-        final AbstractAction redoAction = new AbstractAction("Redo") {
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    if (undo.canRedo()) {
-                        undo.redo();
-                    }
-                } catch (CannotRedoException e) {
-                }
-            }
-        };
-        filterText.getActionMap().put("Redo",redoAction);
-        filterText.getInputMap().put(KeyStroke.getKeyStroke("control Y"), "Redo");
-
-        if ( undoButton != null ) {
-            undoButton.addActionListener(undoAction);
-        }
-        if ( redoButton != null ) {
-            redoButton.addActionListener(redoAction);
-        }
-    }
+    
     /*
      * Adds the operators into the setupOperator Dropdown
      */
