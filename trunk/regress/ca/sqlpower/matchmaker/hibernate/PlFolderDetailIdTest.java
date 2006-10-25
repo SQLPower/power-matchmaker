@@ -31,6 +31,7 @@ public class PlFolderDetailIdTest extends ValueObjectEqualsTest {
 
 	public void testCopyConstructor() {
 		assertEquals("copy constructor test", targ, targ.copyOf());
+		assertNotSame(targ.copyOf(), targ.copyOf());
 	}
 
 	public void testUsingEqualsTester() throws Throwable {
