@@ -6,10 +6,6 @@ package ca.sqlpower.matchmaker.hibernate;
  */
 public class PlFolderTest extends AutoDifferentValueObjectTestCase {
 
-	public void setUp() {
-		target = new PlFolder();
-	}
-
 	static {
 		map.put("folderDesc", String.class);
 		map.put("folderName", String.class);
@@ -28,5 +24,8 @@ public class PlFolderTest extends AutoDifferentValueObjectTestCase {
 		return pf;
 	}
 
+	Object createInstance() {
+		return new PlFolder();
+	}
 
 }

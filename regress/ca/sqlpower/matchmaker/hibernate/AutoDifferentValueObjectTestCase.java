@@ -26,13 +26,11 @@ public abstract class AutoDifferentValueObjectTestCase
 		return n;
 	}
 
-	/** Must be set to an default instance */
-	Object target;
-
 	@Override
 	protected Object createInstanceDiffersIn(String fieldName) throws Exception {
 		Class c = map.get(fieldName);
 		Field f = getField(fieldName);
+		Object target = createInstance();
 		f.setAccessible(true);  // bye-bye "private"
 		if (c.equals(String.class)) {
 			f.set(target, "testme");
@@ -51,9 +49,12 @@ public abstract class AutoDifferentValueObjectTestCase
 		return target;
 	}
 
-	Field[] fields = DefParam.class.getDeclaredFields();
+	Field[] fields;
 
 	private Field getField(String name) {
+		if (fields == null) {
+			fields = createInstance().getClass().getDeclaredFields();
+		}
 		for (Field f : fields) {
 			if (f.getName().equals(name)) {
 				return f;
@@ -61,4 +62,6 @@ public abstract class AutoDifferentValueObjectTestCase
 		}
 		throw new IllegalArgumentException(name + " is not a field");
 	}
+
+	abstract Object createInstance();
 }
