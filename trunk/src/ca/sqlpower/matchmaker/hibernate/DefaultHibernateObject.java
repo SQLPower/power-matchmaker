@@ -84,38 +84,38 @@ public abstract class DefaultHibernateObject<C extends DefaultHibernateObject> {
 		return emptyList;
 	}
 
-	public void addAllHierachialChangeListener(List<PropertyChangeListener> listeners){
+	public void addAllHierarchicalChangeListeners(List<PropertyChangeListener> listeners){
 		for (PropertyChangeListener l: listeners){
-			addHierachialChangeListener(l);
+			addHierarchicalChangeListener(l);
 		}
 	}
 
-	public void addHierachialChangeListener(PropertyChangeListener l){
+	public void addHierarchicalChangeListener(PropertyChangeListener l){
 
 		pcs.addPropertyChangeListener(l);
 
 		hierachicalListeners.add(l);
 		for (DefaultHibernateObject obj: getChildren()){
-			obj.addHierachialChangeListener(l);
+			obj.addHierarchicalChangeListener(l);
 		}
 	}
 
-	public void removeAllHierachialChangeListener(List<PropertyChangeListener> listeners){
+	public void removeAllHierarchicalChangeListeners(List<PropertyChangeListener> listeners){
 
 		for (PropertyChangeListener l: listeners){
-			removeHierachialChangeListener(l);
+			removeHierarchicalChangeListener(l);
 		}
 	}
 
-	public List<PropertyChangeListener> getHierachialChangeListeners(){
+	public List<PropertyChangeListener> getHierarchicalChangeListeners(){
 		return Collections.unmodifiableList(new ArrayList<PropertyChangeListener>(hierachicalListeners));
 	}
 
-	public void removeHierachialChangeListener(PropertyChangeListener l){
+	public void removeHierarchicalChangeListener(PropertyChangeListener l){
 		hierachicalListeners.remove(l);
 		pcs.removePropertyChangeListener(l);
 		for (DefaultHibernateObject obj: getChildren()){
-			obj.removeHierachialChangeListener(l);
+			obj.removeHierarchicalChangeListener(l);
 		}
 	}
 
