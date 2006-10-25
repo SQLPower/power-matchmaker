@@ -10,6 +10,27 @@ import java.util.Map;
 
 import com.diasparsoftware.util.junit.ValueObjectEqualsTest;
 
+/**
+ * A framework for building ValueObjectEqualsTest objects
+ * semi-automatically; these still extend JUnit 3.8 TestCase
+ * so any other tests can be added. Assumes you haven't done
+ * anything fancy like have field names different from their
+ * getter/setter names, since it uses reflection on the
+ * fields directly.
+ * <p>
+ * To use this framework you must do the following:
+ * <ul>
+ * <li>Subclass this class;
+ * <li>In a static initializer, map.put(fieldName, fieldClass)
+ * for each field in the target
+ * <li>Keep the map up to date as your target class evolves!
+ * <li>Provide a createInstance() that returns a
+ * default instance;
+ * <li>Provide a createControlInstance that returns a
+ * non-default instance
+ * </ul>
+ * @author ian
+ */
 public abstract class AutoDifferentValueObjectTestCase
 	extends ValueObjectEqualsTest {
 
