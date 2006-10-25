@@ -17,7 +17,7 @@ import java.util.Set;
 public abstract class DefaultHibernateObject<C extends DefaultHibernateObject> {
 
 	PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-	Set<PropertyChangeListener> hierachialListeners = new HashSet<PropertyChangeListener>();
+	Set<PropertyChangeListener> hierachicalListeners = new HashSet<PropertyChangeListener>();
 
 
 
@@ -94,7 +94,7 @@ public abstract class DefaultHibernateObject<C extends DefaultHibernateObject> {
 
 		pcs.addPropertyChangeListener(l);
 
-		hierachialListeners.add(l);
+		hierachicalListeners.add(l);
 		for (DefaultHibernateObject obj: getChildren()){
 			obj.addHierachialChangeListener(l);
 		}
@@ -108,11 +108,11 @@ public abstract class DefaultHibernateObject<C extends DefaultHibernateObject> {
 	}
 
 	public List<PropertyChangeListener> getHierachialChangeListeners(){
-		return Collections.unmodifiableList(new ArrayList<PropertyChangeListener>(hierachialListeners));
+		return Collections.unmodifiableList(new ArrayList<PropertyChangeListener>(hierachicalListeners));
 	}
 
 	public void removeHierachialChangeListener(PropertyChangeListener l){
-		hierachialListeners.remove(l);
+		hierachicalListeners.remove(l);
 		pcs.removePropertyChangeListener(l);
 		for (DefaultHibernateObject obj: getChildren()){
 			obj.removeHierachialChangeListener(l);
