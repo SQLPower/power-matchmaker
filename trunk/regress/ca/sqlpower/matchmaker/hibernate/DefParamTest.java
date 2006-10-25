@@ -8,8 +8,8 @@ import java.util.Date;
  */
 public class DefParamTest extends AutoDifferentValueObjectTestCase {
 
-	public void setUp() {
-		target = new DefParam();
+	public Object createInstance() {
+		return new DefParam();
 	}
 
 	static {
@@ -77,6 +77,6 @@ public class DefParamTest extends AutoDifferentValueObjectTestCase {
 
 	@Override
 	protected Object createControlInstance() throws Exception {
-		return target;
+		return createInstance();
 	}
 }
