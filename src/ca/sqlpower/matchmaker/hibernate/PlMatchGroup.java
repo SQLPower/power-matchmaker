@@ -115,7 +115,7 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
     	Set<PlMatchCriterion> oldCriteria=new HashSet<PlMatchCriterion>(getPlMatchCriterias());
     	boolean b = plMatchCriteria.add(pmc);
     	createUsedColumnList();
-    	pmc.addAllHierachialChangeListener(getHierachialChangeListeners());
+    	pmc.addAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
     	firePropertyChange("plMatchCriterias", oldCriteria, getPlMatchCriterias());
     	return b;
     }
@@ -131,7 +131,7 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
 		Set<PlMatchCriterion> oldCriteria=new HashSet<PlMatchCriterion>(getPlMatchCriterias());
     	boolean b = plMatchCriteria.remove(pmc);
     	createUsedColumnList();
-    	pmc.removeAllHierachialChangeListener(getHierachialChangeListeners());
+    	pmc.removeAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
     	firePropertyChange("plMatchCriterias", oldCriteria, getPlMatchCriterias());
     	return b;
     }
@@ -147,7 +147,7 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
     	usedColumnNames.clear();
     	for(PlMatchCriterion pmc:getPlMatchCriterias()){
     		plMatchCriteria.remove(pmc);
-        	pmc.removeAllHierachialChangeListener(getHierachialChangeListeners());
+        	pmc.removeAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
     	}
     	firePropertyChange("plMatchCriterias", oldCriteria, getPlMatchCriterias());
 

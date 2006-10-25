@@ -781,7 +781,7 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
 		Set<PlMatchGroup> oldGroups = new HashSet<PlMatchGroup>(getPlMatchGroups());
 		for (PlMatchGroup pmg: groups){
 			plMatchGroups.add(pmg);
-	    	pmg.addAllHierachialChangeListener(getHierachialChangeListeners());
+	    	pmg.addAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
 		}
 		firePropertyChange("plMatchGroups",oldGroups,getPlMatchGroups());
 	}
@@ -789,7 +789,7 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
     public boolean addPlMatchGroups(PlMatchGroup pmg) {
     	Set<PlMatchGroup> oldGroups = new HashSet<PlMatchGroup>(getPlMatchGroups());
     	boolean b = plMatchGroups.add(pmg);
-    	pmg.addAllHierachialChangeListener(getHierachialChangeListeners());
+    	pmg.addAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
     	firePropertyChange("plMatchGroups",oldGroups,getPlMatchGroups());
     	return b;
     }
@@ -797,7 +797,7 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
     public boolean removePlMatchGroups(PlMatchGroup pmg) {
     	Set<PlMatchGroup> oldGroups = new HashSet<PlMatchGroup>(getPlMatchGroups());
     	boolean b = plMatchGroups.remove(pmg);
-    	pmg.removeAllHierachialChangeListener(getHierachialChangeListeners());
+    	pmg.removeAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
     	firePropertyChange("plMatchGroups",oldGroups,getPlMatchGroups());
     	return b;
     }
@@ -806,7 +806,7 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
     	Set<PlMatchGroup> oldGroups = new HashSet<PlMatchGroup>(getPlMatchGroups());
     	for(PlMatchGroup pmg:getPlMatchGroups()){
     		plMatchGroups.remove(pmg);
-        	pmg.removeAllHierachialChangeListener(getHierachialChangeListeners());
+        	pmg.removeAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
     	}
     	firePropertyChange("plMatchGroups",oldGroups,getPlMatchGroups());
 

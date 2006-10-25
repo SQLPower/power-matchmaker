@@ -34,7 +34,7 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 		this.matches = matches;
 
 		for (PlMatch m: matches){
-			m.addHierachialChangeListener(this);
+			m.addHierarchicalChangeListener(this);
 		}
 
 

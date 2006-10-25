@@ -39,7 +39,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 	public void setGroup(PlMatchGroup group) {
 		this.group = group;
 		PropertyChangeListener pcl = new MatchCriteriaPropertyListener(group);
-		group.addHierachialChangeListener(pcl);
+		group.addHierarchicalChangeListener(pcl);
 		
 	}
 
