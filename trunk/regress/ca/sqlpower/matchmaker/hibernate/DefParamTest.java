@@ -12,7 +12,8 @@ public class DefParamTest extends AutoDifferentValueObjectTestCase {
 		return new DefParam();
 	}
 
-	static {
+	public DefParamTest() {
+		map.clear();
 		map.put("companyName", String.class);
 		map.put("commitFreq", Integer.class);
 		map.put("processAddInd", boolean.class);

@@ -21,13 +21,11 @@ import com.diasparsoftware.util.junit.ValueObjectEqualsTest;
  * To use this framework you must do the following:
  * <ul>
  * <li>Subclass this class;
- * <li>In a static initializer, map.put(fieldName, fieldClass)
+ * <li>In your class' constructor(s), map.put(fieldName, fieldClass)
  * for each field in the target
  * <li>Keep the map up to date as your target class evolves!
- * <li>Provide a createInstance() that returns a
- * default instance;
  * <li>Provide a createControlInstance that returns a
- * non-default instance
+ * usable instance
  * </ul>
  * @author ian
  */
@@ -35,9 +33,9 @@ public abstract class AutoDifferentValueObjectTestCase
 	extends ValueObjectEqualsTest {
 
 	/** Map from field names to class types; you MUST
-	 * have a static initializer to fill in these values.
+	 *  fill in these values in your class' constructor(s).
 	 */
-	static Map<String, Class> map  = new HashMap<String, Class>();
+	Map<String, Class> map  = new HashMap<String, Class>();
 
 	@Override
 	protected List<String> keyPropertyNames() {
