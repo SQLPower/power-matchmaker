@@ -1,21 +1,16 @@
 package ca.sqlpower.matchmaker.hibernate;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.diasparsoftware.util.junit.ValueObjectEqualsTest;
 
 /**
  * Test DefParam, which is all about many fields
  */
-public class DefParamTest extends ValueObjectEqualsTest {
+public class DefParamTest extends AutoDifferentValueObjectTestCase {
 
-	static Map<String, Class> map  = new HashMap<String, Class>();
+	public void setUp() {
+		target = new DefParam();
+	}
 
 	static {
 		map.put("companyName", String.class);
@@ -82,48 +77,6 @@ public class DefParamTest extends ValueObjectEqualsTest {
 
 	@Override
 	protected Object createControlInstance() throws Exception {
-		return new DefParam();
+		return target;
 	}
-
-	@Override
-	protected Object createInstanceDiffersIn(String fieldName) throws Exception {
-		DefParam dp = new DefParam();
-		Class c = map.get(fieldName);
-		Field f = getField(fieldName);
-		f.setAccessible(true);  // bye-bye "private"
-		if (c.equals(String.class)) {
-			f.set(dp, "testme");
-		} else if (c.equals(BigDecimal.class)) {
-			f.set(dp, new BigDecimal(123));
-		} else if (c.equals(boolean.class)) {
-			f.set(dp, Boolean.TRUE);
-		} else if (c.equals(java.util.Date.class)) {
-			f.set(dp, new Date());
-		} else if (c.equals(Integer.class)) {
-			f.set(dp, new Integer(111));
-		} else throw new IllegalArgumentException(
-			"Unhandled type " + c);
-		return dp;
-	}
-
-	Field[] fields = DefParam.class.getDeclaredFields();
-
-	private Field getField(String name) {
-		for (Field f : fields) {
-			if (f.getName().equals(name)) {
-				return f;
-			}
-		}
-		throw new IllegalArgumentException(name + " is not a field");
-	}
-
-	@Override
-	protected List<String> keyPropertyNames() {
-		List<String> n = new ArrayList<String>();
-		for (String s : map.keySet())
-			n.add(s);
-		return n;
-	}
-
-
 }
