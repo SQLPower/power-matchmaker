@@ -123,9 +123,15 @@ public abstract class DefaultHibernateObject<C extends DefaultHibernateObject> {
 		return 0;
 	}
 
+	/** Canonical hashCode(), made abstract to require subclasses to implement.
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public abstract int hashCode();
 
+	/** Canonical equals(), made abstract to require subclasses to implement.
+	 * @see java.lang.Object#equals()
+	 */
 	@Override
 	public abstract boolean equals(Object obj);
 }
