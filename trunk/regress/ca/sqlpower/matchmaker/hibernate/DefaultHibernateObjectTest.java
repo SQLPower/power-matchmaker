@@ -19,12 +19,10 @@ import junit.framework.TestCase;
 public class DefaultHibernateObjectTest extends TestCase {
 
 	DefaultHibernateObject target = new DefaultHibernateObject() {
-
 		@Override
 		public boolean equals(Object obj) {
 			return this == obj;
 		}
-
 		@Override
 		public int hashCode() {
 			return pcs.hashCode() * 3;
@@ -36,20 +34,21 @@ public class DefaultHibernateObjectTest extends TestCase {
 		assertEquals(0, target.getChildCount());
 	}
 
+	boolean fired1 = false, fired2 = false;
 	public void testHierarchicals() {
 		PropertyChangeListener mock1 = new PropertyChangeListener() {
-
 			public void propertyChange(PropertyChangeEvent evt) {
-				System.out.println(evt);
+				System.out.println("Mock1: " + evt);
+				fired1 = true;
 			}
-
+			public String toString() { return "mock1"; }
 		};
 		PropertyChangeListener mock2 = new PropertyChangeListener() {
-
 			public void propertyChange(PropertyChangeEvent evt) {
-				System.out.println(evt);
+				System.out.println("Mock2: " + evt);
+				fired2 = true;
 			}
-
+			public String toString() { return "mock2"; }
 		};
 		target.addHierarchicalChangeListener(mock1);
 		assertEquals(1, target.hierachicalListeners.size());
@@ -58,15 +57,31 @@ public class DefaultHibernateObjectTest extends TestCase {
 		all.add(mock2);
 		target.addAllHierarchicalChangeListeners(all);
 		assertEquals(2, target.hierachicalListeners.size());
-//		int i = 0;
-//		for (PropertyChangeListener chl : all) {
-//			assertSame(chl, target.getHierarchicalChangeListeners().get(i++));
-//		}
+
+		System.out.println("List 1");
+		List<PropertyChangeListener> hchl = target.getHierarchicalChangeListeners();
+		for (PropertyChangeListener chl : hchl) {
+			System.out.println(chl);
+		}
 
 		target.removeHierarchicalChangeListener(mock1);
 		assertEquals(1, target.hierachicalListeners.size());
 
+		System.out.println("List 2");
+		List<PropertyChangeListener> hchl2 = target.getHierarchicalChangeListeners();
+		for (PropertyChangeListener chl : hchl2) {
+			System.out.println(chl);
+		}
+
+		target.firePropertyChange(new PropertyChangeEvent(this, "test", "old", "new"));
+		assertTrue(fired2);
+		assertFalse(fired1);
+
 		target.removeAllHierarchicalChangeListeners(all);
 		assertEquals(0, target.getHierarchicalChangeListeners().size());
+	}
+	@Override
+	public String toString() {
+		return "DefaultHibernateTest";
 	}
 }
