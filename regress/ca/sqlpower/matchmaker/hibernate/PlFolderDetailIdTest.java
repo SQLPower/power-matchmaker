@@ -67,10 +67,10 @@ public class PlFolderDetailIdTest extends ValueObjectEqualsTest {
 			differs.setFolderName("fish");
 			return differs;
 		} else if ("objectType".equals(ktv)) {
-			differs.setObjectType("fish");
+			differs.setObjectType("carp");
 			return differs;
 		} else if ("objectName".equals(ktv)) {
-			differs.setObjectName("fish");
+			differs.setObjectName("tuna");
 			return differs;
 		} else {
 			throw new IllegalArgumentException(ktv);
