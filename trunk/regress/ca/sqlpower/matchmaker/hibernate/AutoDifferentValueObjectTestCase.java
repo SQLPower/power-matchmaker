@@ -84,5 +84,9 @@ public abstract class AutoDifferentValueObjectTestCase
 		throw new IllegalArgumentException(name + " is not a field");
 	}
 
+	/** Template factory method: user must create a
+	 * (possibly null) instance.
+	 * @return
+	 */
 	abstract Object createInstance();
 }
