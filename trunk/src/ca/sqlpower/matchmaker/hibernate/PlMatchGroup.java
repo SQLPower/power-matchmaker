@@ -60,7 +60,7 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
     	Collections.sort(children);
     	return children;
     }
- 
+
     public PlMatch getPlMatch() {
         return this.plMatch;
     }
@@ -197,20 +197,11 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
 
 
 	public void setMatchPercent(Short matchPercent) {
-	if (this.matchPercent != matchPercent){
-		firePropertyChange("matchPercent", this.matchPercent, matchPercent);
-		this.matchPercent = matchPercent;
-	}
-	}
-
-
-	private void setPlMatchCriterias(Set<PlMatchCriterion> plMatchCriterion) {
-		if (this.plMatchCriteria!= plMatchCriterion){
-			firePropertyChange("plMatchCriterias", this.plMatchCriteria, plMatchCriterion);
-			this.plMatchCriteria = plMatchCriterion;
+		if (this.matchPercent != matchPercent){
+			firePropertyChange("matchPercent", this.matchPercent, matchPercent);
+			this.matchPercent = matchPercent;
 		}
 	}
-
 
 	@Override
     public String toString() {
@@ -252,7 +243,7 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
 		return true;
 	}
 
-	
+
 
 	public int compareTo(PlMatchGroup other) {
 
