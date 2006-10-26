@@ -347,9 +347,9 @@
 		</set>
 
 		<many-to-one name="folder" access="field"
-			class="ca.sqlpower.matchmaker.hibernate.PlFolder" update="false"
+			class="ca.sqlpower.matchmaker.hibernate.PlFolder" update="true"
 			insert="false" fetch="select">
-			<column name="FOLDER_NAME" not-null="true" />
+			<column name="FOLDER_NAME" />
 		</many-to-one>
 
 	</class>
