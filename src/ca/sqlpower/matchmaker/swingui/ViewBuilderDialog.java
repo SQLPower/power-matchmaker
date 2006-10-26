@@ -1,12 +1,14 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -15,6 +17,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLTable;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -49,13 +52,27 @@ public class ViewBuilderDialog extends JDialog {
     private JButton wherePasteButton;   
     private JTextArea whereTextArea;
 
+    private JButton testButton;
+    private JButton viewButton;
+    private JButton cancelButton;
+    private JButton okButton;
+    
     //TODO: the UI has been built but the functionality has not been 
     //done yet
-    public ViewBuilderDialog(SQLTable viewTable){
+    public ViewBuilderDialog(JFrame parent, SQLTable viewTable) throws ArchitectException{
+        super(parent);
         this.viewTable = viewTable;
         buildUI();
+        setup();
     }
+
     
+    public void setup() throws ArchitectException{
+        viewNameField.setText(viewTable.getName());
+        for (SQLTable t:(List<SQLTable>)(MatchMakerFrame.getMainInstance().getDatabase().getTables())){
+            fromClauseDropdown.addItem(t);
+        }
+    }
     public void buildUI(){
         
         FormLayout layout = new FormLayout(
@@ -97,7 +114,11 @@ public class ViewBuilderDialog extends JDialog {
         whereSecondTableDropdown = new JComboBox();
         whereSecondColumnDropdown = new JComboBox();
         whereTextArea = new JTextArea();
-        wherePasteButton = new JButton(wherePasteAction);        
+        wherePasteButton = new JButton(wherePasteAction);
+        testButton = new JButton(testAction);
+        viewButton = new JButton (viewAction);
+        cancelButton = new JButton (cancelAction);
+        okButton = new JButton (okAction);
 
         JLabel viewLabel = new JLabel("View Table:");        
         pb.add(viewLabel, cc.xy(2,2));
@@ -145,16 +166,27 @@ public class ViewBuilderDialog extends JDialog {
         pb.add(whereSecondColumnDropdown, cc.xy(8,22));
         pb.add(wherePasteButton, cc.xy(10,22));
         JTextAreaUndoWrapper whereUndoTextArea = new JTextAreaUndoWrapper(whereTextArea);
-        pb.add(whereUndoTextArea, cc.xywh(6,24,5,3,"f,f"));
+        pb.add(whereUndoTextArea, cc.xywh(6,24,5,2,"f,f"));
            
+        ButtonBarBuilder bb1 = new ButtonBarBuilder();
+        bb1.addGridded(testButton);
+        bb1.addUnrelatedGap();
+        bb1.addGridded(viewButton);
+        bb1.addUnrelatedGap();
+        bb1.addGlue();
+        bb1.addGridded(okButton);
+        bb1.addRelatedGap();
+        bb1.addGridded(cancelButton);
+        bb1.addRelatedGap();
+        pb.add(bb1.getPanel(), cc.xyw(2,28,10,"f,f"));
         getContentPane().add(pb.getPanel());        
     }
 
     
     
-    public static void main(String args[]) {
+    public static void main(String args[]) throws ArchitectException {
 
-        final JDialog d = new ViewBuilderDialog(new SQLTable());
+        final JDialog d = new ViewBuilderDialog(null,new SQLTable());
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 d.pack();
@@ -192,14 +224,37 @@ public class ViewBuilderDialog extends JDialog {
         }
         
     };
-    
     Action viewRemoveAction = new AbstractAction("Remove"){
+        public void actionPerformed(ActionEvent e) {    
+            viewTextArea.setText("");
+        }       
+    };
+    
+    Action viewAction = new AbstractAction("View"){
 
-        public void actionPerformed(ActionEvent e) {
-            viewTextArea.setText("");            
+        public void actionPerformed(ActionEvent e) {          
         }
         
     };
+    Action testAction = new AbstractAction("Test"){
+
+        public void actionPerformed(ActionEvent e) {          
+        }
+        
+    };
+    Action cancelAction = new AbstractAction("Cancel"){
+
+        public void actionPerformed(ActionEvent e) {
+        }
+        
+    };
+    Action okAction = new AbstractAction("OK"){
+
+        public void actionPerformed(ActionEvent e) {                  
+        }
+        
+    };
+
     
     
 }

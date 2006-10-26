@@ -67,10 +67,9 @@ public class FilterComponentsPanel extends JPanel {
             }            
         });
  
-        JScrollPane scrollPane = new JScrollPane(filterTextArea);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        add(scrollPane, BorderLayout.CENTER);
+        filterTextArea.setWrapStyleWord(true);
+        filterTextArea.setLineWrap(true);        
+        add(new JScrollPane(filterTextArea), BorderLayout.CENTER);
         add(editButton, BorderLayout.EAST);
 	}
     
