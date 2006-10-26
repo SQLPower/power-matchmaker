@@ -201,17 +201,29 @@ public class PlMatchCriterion extends DefaultHibernateObject<PlMatchCriterion> i
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
-			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		PlMatchCriterion other = (PlMatchCriterion) obj;
-		return id.equals(other.getId());
+		final PlMatchCriterion other = (PlMatchCriterion) obj;
+		if (columnName == null) {
+			if (other.columnName != null)
+				return false;
+		} else if (!columnName.equals(other.columnName))
+			return false;
+		if (plMatchGroup == null) {
+			if (other.plMatchGroup != null)
+				return false;
+		} else if (!plMatchGroup.equals(other.plMatchGroup))
+			return false;
+		return true;
 	}
 
 	@Override
 	public int hashCode() {
-		return id.hashCode();
+		final int PRIME = 31;
+		int result=17;
+		result = PRIME * result + ((columnName == null) ? 0 : columnName.hashCode());
+		result = PRIME * result + ((plMatchGroup == null) ? 0 : plMatchGroup.hashCode());
+		return result;
 	}
 
 	public int compareTo(PlMatchCriterion o) {
