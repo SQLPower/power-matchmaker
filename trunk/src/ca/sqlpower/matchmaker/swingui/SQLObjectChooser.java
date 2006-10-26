@@ -210,7 +210,7 @@ public class SQLObjectChooser {
 
 
 				table = (SQLTable) tableComboBox.getSelectedItem();
-
+				if (table != null ){
 				List <SQLColumn> columns = table.getColumns();
 				if ( columns != null && columns.size() > 0 ) {
 					columnComboBox.setEnabled(true);
@@ -226,6 +226,7 @@ public class SQLObjectChooser {
 					uniqueKeyComboBox.setModel(
 							new DefaultComboBoxModel(indices.toArray()));
 					uniqueKeyComboBox.setSelectedIndex(0);
+				}
 				}
 			}
 		}

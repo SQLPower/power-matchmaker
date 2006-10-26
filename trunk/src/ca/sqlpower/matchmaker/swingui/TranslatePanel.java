@@ -2,12 +2,14 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -20,6 +22,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.table.TableModelSearchDecorator;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
+import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
@@ -34,6 +37,7 @@ public class TranslatePanel implements ArchitectPanel {
 	
 	private JTable translateTable;
 	private JPanel translatePanel;
+	private JComboBox translationGroup;
 	private JTextField searchGroup;
 	private JButton createGroup;
 	private JButton deleteGroup;
@@ -54,10 +58,21 @@ public class TranslatePanel implements ArchitectPanel {
 	
 	private void buildUI(){
 		translateTable = new EditableJTable();
-		tms = new TableModelSearchDecorator(new MatchTranslateTableModel(MatchMakerFrame.getMainInstance().getTranslations()));
+		tms = new TableModelSearchDecorator(new MatchTranslateTableModel(MatchMakerFrame.getMainInstance().getTranslations().get(0)));
 		tms.setTableTextConverter((EditableJTable) translateTable);
 		translateTable.setModel(tms);
-
+		translationGroup = new JComboBox();
+		translationGroup.setModel(new TranslationComboBoxModel());
+		if (translationGroup.getModel().getSize() > 0) {
+			translationGroup.setSelectedIndex(0);
+		}
+		translationGroup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				tms.setTableModel(new MatchTranslateTableModel((PlMatchTranslateGroup) ((JComboBox)e.getSource()).getSelectedItem()));
+				tms.fireTableStructureChanged();
+			}
+		});
 		searchGroup = new JTextField();
 		tms.setDoc(searchGroup.getDocument());
 		createGroup = new JButton(createGroupAction);
@@ -91,7 +106,7 @@ public class TranslatePanel implements ArchitectPanel {
 		pb.appendRow("4dlu");
 		pb.appendRow("pref");
 		pb.add(copyGroup, cc.xy(8,4));
-		pb.add(addCommonWords, cc.xy(10,4));
+		pb.add(translationGroup, cc.xy(4,4));
 		pb.appendRow("4dlu");
 		pb.appendRow("fill:80dlu:grow");
 		pb.add(tableScrollPane, cc.xyw(2,6,10,"f,f"));
@@ -116,20 +131,10 @@ public class TranslatePanel implements ArchitectPanel {
 		translatePanel = pb.getPanel();
 	}
 	
-	/**
-	 * This method removes all the contents within translate table and recompiles the translate
-	 * data from the translateList from the main instance and sets up the table models again
-	 */
-	private void refreshTranslateTable(){
-		translateTable.removeAll();
-		tms.setTableModel(new MatchTranslateTableModel(MatchMakerFrame.getMainInstance().getTranslations()));
-		translateTable.setModel(tms);
-	}
 	
 	
 	public boolean applyChanges() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	public void discardChanges() {
@@ -170,7 +175,6 @@ public class TranslatePanel implements ArchitectPanel {
 			//the index is one before the selectedcolumn integer
 			if (translateTable.getSelectedRow() >= 0){
 				MatchMakerFrame.getMainInstance().getTranslations().remove(translateTable.getSelectedRow());
-				refreshTranslateTable();
 			}
 		}
 		
@@ -189,9 +193,9 @@ public class TranslatePanel implements ArchitectPanel {
 	Action addCommonWordsAction = new AbstractAction("Add Common Words"){
 
 		public void actionPerformed(ActionEvent e) {
-			if (translateTable.getSelectedColumn() >= 0){
-				PlMatchTranslate currentSelected = MatchMakerFrame.getMainInstance().getTranslations().get(translateTable.getSelectedColumn());
-				PlMatchTranslate newTranslate = new PlMatchTranslate();
+/*			if (translateTable.getSelectedColumn() >= 0){
+				PlMatchTranslateGroup currentSelected = MatchMakerFrame.getMainInstance().getTranslations().get(translateTable.getSelectedColumn());
+				PlMatchTranslateGroup newTranslate = new PlMatchTranslate();
 				newTranslate.setId(currentSelected.getId());
 				newTranslate.setFromWord(" ");
 				newTranslate.setToWord("");
@@ -200,7 +204,7 @@ public class TranslatePanel implements ArchitectPanel {
 				int lastIndex = translateTable.getRowCount()-1;
 				translateTable.setRowSelectionInterval(lastIndex, lastIndex);
 				scrollToSelected(lastIndex);
-			}
+			}*/
 		}
 		
 	};
@@ -216,9 +220,8 @@ public class TranslatePanel implements ArchitectPanel {
 			final int index = getTranslateTable().getSelectedRow();
 			if (index >=0 && index < translateTable.getRowCount() ){
 				if (getTranslateTable().getSelectedRowCount() == 1 && index > 0){						
-					Collections.swap(MatchMakerFrame.getMainInstance().getTranslations()
+					Collections.swap(getTranslations()
 									, (index - 1), index);
-					refreshTranslateTable();
 					translateTable.setRowSelectionInterval(index-1, index-1);
 					scrollToSelected(index-1);
 				}
@@ -231,9 +234,9 @@ public class TranslatePanel implements ArchitectPanel {
 			final int index = getTranslateTable().getSelectedRow();
 			if (index >=0 && index < translateTable.getRowCount() ){
 				if (getTranslateTable().getSelectedRowCount() == 1 && index < (translateTable.getRowCount() -1) ){						
-					Collections.swap(MatchMakerFrame.getMainInstance().getTranslations()
+					Collections.swap( getTranslations()
 									, (index + 1), index);
-					refreshTranslateTable();
+
 				 	translateTable.setRowSelectionInterval(index+1, index+1);
 				 	scrollToSelected(index+1);
 				}
@@ -246,11 +249,10 @@ public class TranslatePanel implements ArchitectPanel {
 			final int index = getTranslateTable().getSelectedRow();
 			if (index >=0 && index < translateTable.getRowCount() ){
 				if (getTranslateTable().getSelectedRowCount() == 1 && index > 0){
-					List <PlMatchTranslate> translateList=  MatchMakerFrame.getMainInstance().getTranslations();
+					List<PlMatchTranslate> translateList= getTranslations();
 					PlMatchTranslate selectedTranslate=translateList.get(index);
 					translateList.remove(index);
 					translateList.add(0, selectedTranslate);
-					refreshTranslateTable();
 					translateTable.setRowSelectionInterval(0,0);
 					scrollToSelected(0);
 				}
@@ -263,18 +265,21 @@ public class TranslatePanel implements ArchitectPanel {
 			final int index = getTranslateTable().getSelectedRow();
 			if (index >=0 && index < translateTable.getRowCount() ){
 				if (getTranslateTable().getSelectedRowCount() == 1 && index < (translateTable.getRowCount() -1) ){						
-					List <PlMatchTranslate> translateList=  MatchMakerFrame.getMainInstance().getTranslations();
+					List <PlMatchTranslate> translateList=  getTranslations();
 					PlMatchTranslate selectedTranslate=translateList.get(index);
 					translateList.remove(index);
 					translateList.add(translateList.size(), selectedTranslate);
-					refreshTranslateTable();
 					translateTable.setRowSelectionInterval(translateList.size()-1,translateList.size()-1);
 					scrollToSelected(translateList.size()-1);
 				}
 			}
-		}	
+		}
+
+			
 	};
-	
+	private List<PlMatchTranslate> getTranslations() {
+		return ((PlMatchTranslateGroup)translationGroup.getSelectedItem()).getPlMatchTranslations();
+	}
 	
 	/**
 	 * By giving it the location of a certain column in the table, it scrolls through the  

@@ -11,7 +11,7 @@ public class PlMatchTranslate  implements java.io.Serializable {
     // Fields
 
      private Long id;
-     private String groupName;
+     private PlMatchTranslateGroup plMatchTranslateGroup;
      private Long seqNo;
      private String fromWord;
      private String toWord;
@@ -22,15 +22,6 @@ public class PlMatchTranslate  implements java.io.Serializable {
     public PlMatchTranslate() {
     }
 
-    public String getGroupName() {
-		return groupName;
-	}
-
-	public void setGroupName(String groupName) {
-		if (this.groupName != groupName) {
-			this.groupName = groupName;
-		}
-	}
 
 	public Long getId() {
 		return id;
@@ -66,6 +57,18 @@ public class PlMatchTranslate  implements java.io.Serializable {
     public void setToWord(String toWord) {
         this.toWord = toWord;
     }
+
+
+	public PlMatchTranslateGroup getPlMatchTranslateGroup() {
+		return plMatchTranslateGroup;
+	}
+
+
+	public void setPlMatchTranslateGroup(PlMatchTranslateGroup plMatchTranslateGroup) {
+		if (this.plMatchTranslateGroup != plMatchTranslateGroup) {
+			this.plMatchTranslateGroup = plMatchTranslateGroup;
+		}
+	}
 
 
 

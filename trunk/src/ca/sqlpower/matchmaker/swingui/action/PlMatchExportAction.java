@@ -460,7 +460,7 @@ public class PlMatchExportAction extends AbstractAction {
     				ArchitectUtils.escapeXML(c.isMatchFirstPlusOneInd()?"Y":"N")+
             		"</MATCH_FIRST_PLUS_ONE_IND>");
     		ioo.println(out, "<TRANSLATE_GROUP_NAME>"+
-    				ArchitectUtils.escapeXML(c.getTranslateGroupName())+
+    				ArchitectUtils.escapeXML(c.getTranslateGroup().getTranslateGroupName())+
             		"</TRANSLATE_GROUP_NAME>");
     		ioo.println(out, "<SEQ_NO>"+
     				c.getSeqNo()+
@@ -554,7 +554,7 @@ public class PlMatchExportAction extends AbstractAction {
     		ioo.println(out, "<PL_MERGE_CONSOLIDATE_CRITERIA>");
     		ioo.indent++;
     		ioo.println(out, "<MATCH_ID>"+
-            		ArchitectUtils.escapeXML(c.getPlMatch().getMatchId())+
+            		ArchitectUtils.escapeXML(c.getPlMergeCriteria().getPlMatch().getMatchId())+
             		"</MATCH_ID>");
     		ioo.println(out, "<TABLE_CATALOG>"+
     				ArchitectUtils.escapeXML(c.getCatalog())+

@@ -1,28 +1,19 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
+import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 
 public class TranslationComboBoxModel implements ComboBoxModel {
-	List<String> translations;
-	String selectedItem;
+	List<PlMatchTranslateGroup> translations;
+	PlMatchTranslateGroup selectedItem;
 	
 	public TranslationComboBoxModel() {
-		Set<String> translationTopics = new TreeSet<String>();
-		translationTopics.add("");
-		for (PlMatchTranslate t : MatchMakerFrame.getMainInstance().getTranslations() ){
-			translationTopics.add(t.getGroupName());
-		}
-		translations = new ArrayList<String>(translationTopics);
-		Collections.sort(translations);
+		
+		translations = MatchMakerFrame.getMainInstance().getTranslations();
 	}
 	
 	public Object getElementAt(int index) {
@@ -39,7 +30,7 @@ public class TranslationComboBoxModel implements ComboBoxModel {
 
 	public void setSelectedItem(Object anItem) {
 		
-		selectedItem = (String)anItem;
+		selectedItem = (PlMatchTranslateGroup) anItem;
 		
 	}
 

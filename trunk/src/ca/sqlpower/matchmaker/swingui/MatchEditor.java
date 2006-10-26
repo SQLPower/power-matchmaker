@@ -304,11 +304,9 @@ public class MatchEditor extends JFrame {
             plMatch.setResultsTable(resultTableName.getText());
             plMatch.setLastUpdateDate(new Date(System.currentTimeMillis()));
 
-       //FIXME get around the foldersaving problem
-       //     PlFolder f = (PlFolder)folderList.getSelectedItem();
-       //     Set<PlFolder> f2 = new TreeSet<PlFolder>();
-       //     f2.add(f);
-       //     plMatch.setFolders( f2);
+
+            PlFolder f = (PlFolder)folderComboBox.getSelectedItem();           
+            plMatch.setFolder( f);
 
             Transaction tx = HibernateUtil.primarySession().beginTransaction();
             HibernateUtil.primarySession().saveOrUpdate(plMatch);
