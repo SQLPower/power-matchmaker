@@ -33,15 +33,13 @@
 	>
 		<column name="GROUP_OID"  not-null="true" />
    </many-to-one>
-   <!--    <many-to-one
-	    name="plTranslateGroup"
-	    class="ca.sqlpower.matchmaker.hibernate.PlTranslateGroup"
-        update="false"
-        insert="false"
-        lazy="proxy"
-	>
-		<column name="translate_group_name" />
-   </many-to-one> -->
+     <many-to-one
+	    name="translateGroup"
+	    class="ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup"
+        fetch="select"
+    >
+		<column name="TRANSLATE_GROUP_OID" precision="22" scale="0" />
+   </many-to-one>
     <property
         name="caseSensitiveInd"
         type="ca.sqlpower.matchmaker.util.CustomBooleanType"

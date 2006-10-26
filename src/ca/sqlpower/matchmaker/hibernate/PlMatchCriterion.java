@@ -53,7 +53,7 @@ public class PlMatchCriterion extends DefaultHibernateObject<PlMatchCriterion> i
 
 	private boolean allowNullInd;
 
-	private String translateGroupName;
+	private PlMatchTranslateGroup translateGroup;
 
 	private boolean removeSpecialChars;
 
@@ -145,8 +145,16 @@ public class PlMatchCriterion extends DefaultHibernateObject<PlMatchCriterion> i
 		return this.allowNullInd;
 	}
 
-	public String getTranslateGroupName() {
-		return this.translateGroupName;
+
+	public PlMatchTranslateGroup getTranslateGroup() {
+		return translateGroup;
+	}
+
+	public void setTranslateGroup(PlMatchTranslateGroup translateGroup) {
+		if (this.translateGroup != translateGroup) {
+			firePropertyChange("translateGroup", this.translateGroup, translateGroup);
+			this.translateGroup = translateGroup;
+		}
 	}
 
 	public boolean isRemoveSpecialChars() {
@@ -346,12 +354,7 @@ public class PlMatchCriterion extends DefaultHibernateObject<PlMatchCriterion> i
 		}
 	}
 
-	public void setTranslateGroupName(String translateGroupName) {
-		if (this.translateGroupName != translateGroupName) {
-			firePropertyChange("this.translateGroupName", this.translateGroupName, translateGroupName);
-			this.translateGroupName = translateGroupName;
-		}
-	}
+
 
 	public void setVarianceAmt(BigDecimal varianceAmt) {
 		if (this.varianceAmt != varianceAmt) {

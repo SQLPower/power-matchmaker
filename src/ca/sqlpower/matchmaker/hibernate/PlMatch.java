@@ -770,12 +770,6 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
 		c.setPlMatch(this);
 	}
 
-	public void xmlAddMergeConsolidateCriteria(PlMergeConsolidateCriteria c) {
-		plMergeConsolidateCriterias.add(c);
-		c.setPlMatch(this);
-	}
-
-
 
 	public void addAllPlMatchGroups(Set<PlMatchGroup> groups){
 		Set<PlMatchGroup> oldGroups = new HashSet<PlMatchGroup>(getPlMatchGroups());
@@ -797,7 +791,7 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
     public boolean removePlMatchGroups(PlMatchGroup pmg) {
     	Set<PlMatchGroup> oldGroups = new HashSet<PlMatchGroup>(getPlMatchGroups());
     	boolean b = plMatchGroups.remove(pmg);
-    	pmg.removeAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
+    	pmg.addAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
     	firePropertyChange("plMatchGroups",oldGroups,getPlMatchGroups());
     	return b;
     }
@@ -806,7 +800,7 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
     	Set<PlMatchGroup> oldGroups = new HashSet<PlMatchGroup>(getPlMatchGroups());
     	for(PlMatchGroup pmg:getPlMatchGroups()){
     		plMatchGroups.remove(pmg);
-        	pmg.removeAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
+        	pmg.addAllHierarchicalChangeListeners(getHierarchicalChangeListeners());
     	}
     	firePropertyChange("plMatchGroups",oldGroups,getPlMatchGroups());
 

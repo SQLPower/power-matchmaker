@@ -52,10 +52,10 @@ import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
+import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
-import ca.sqlpower.matchmaker.hibernate.home.PlMatchTranslateHome;
+import ca.sqlpower.matchmaker.hibernate.home.PlMatchTranslateGroupHome;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
@@ -243,7 +243,7 @@ public class MatchMakerFrame extends JFrame {
 
 	private List<PlMatch> matches;
 	private List<PlFolder> folders;
-	private List<PlMatchTranslate> translations = new ArrayList<PlMatchTranslate>();
+	private List<PlMatchTranslateGroup> translations = new ArrayList<PlMatchTranslateGroup>();
 	private SQLDatabase database;
 
 
@@ -480,8 +480,14 @@ public class MatchMakerFrame extends JFrame {
 			matches = new ArrayList<PlMatch>(matchSet);
 			Collections.sort(matches);
 			Collections.sort(folders);
-			PlMatchTranslateHome translateHome = new PlMatchTranslateHome();
-			//translations = new ArrayList<PlMatchTranslate>(translateHome.findAll());
+			PlMatchTranslateGroupHome translateHome = new PlMatchTranslateGroupHome();
+			translations = new ArrayList<PlMatchTranslateGroup>(translateHome.findAll());
+			List<PlMatchTranslateGroup> nullList = new ArrayList<PlMatchTranslateGroup>();
+			nullList.add(null);
+			for (PlMatchTranslateGroup group: translations){
+				
+				group.getPlMatchTranslations().removeAll(nullList);
+			}
 		}
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
         setDatabase(db);
@@ -684,11 +690,11 @@ public class MatchMakerFrame extends JFrame {
 		}
 	}
 
-	public List<PlMatchTranslate> getTranslations() {
+	public List<PlMatchTranslateGroup> getTranslations() {
 		return translations;
 	}
 
-	public void setTranslations(List<PlMatchTranslate> translations) {
+	public void setTranslations(List<PlMatchTranslateGroup> translations) {
 		if (this.translations != translations) {
 			this.translations = translations;
 			//TODO fire event

@@ -329,14 +329,6 @@
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="auto_match_active_ind" length="1" />
 		</property>
-		<set name="plMergeConsolidateCriterias" access="field"
-			inverse="true" lazy="true" fetch="subselect" cascade="all">
-			<key>
-				<column name="MATCH_OID" length="80" not-null="true" />
-			</key>
-			<one-to-many
-				class="ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria" />
-		</set>
 		<set name="plMergeCriteria" access="field" inverse="true"
 			lazy="true" fetch="subselect" cascade="all">
 			<key>

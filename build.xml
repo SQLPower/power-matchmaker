@@ -46,9 +46,9 @@
 			  detectmanytomany="true"
 			>
 			</jdbcconfiguration>
+			<hbm2dao destdir="tmp/gen"	/>
 			<hbm2hbmxml destdir="tmp/gen"/>
 			<hbm2java destdir="tmp/gen"	/>
-			<hbm2dao destdir="tmp/gen"	/>
 		</hibernatetool> 
 	</target>
 

@@ -196,7 +196,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		if(model != null) {
 			matchCriteriaTable.setModel(new MatchCriteriaTableModel(model));
 			loadMatches();
-			int translateColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP_NAME);
+			int translateColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
 			matchCriteriaTable.getColumnModel().getColumn(translateColumn).setCellEditor(new DefaultCellEditor(new JComboBox(new TranslationComboBoxModel())));
 			int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
 			PlMatch plMatch = model.getPlMatch();

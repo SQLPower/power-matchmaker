@@ -8,6 +8,7 @@ import javax.swing.table.AbstractTableModel;
 
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
+import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 
 public class MatchCriteriaTableModel extends AbstractTableModel {
 
@@ -91,8 +92,8 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 
 			criterion.setSoundInd((Boolean)aValue);
 			break;
-		case TRANSLATE_GROUP_NAME:  
-			criterion.setTranslateGroupName((String) aValue);
+		case TRANSLATE_GROUP:  
+			criterion.setTranslateGroup((PlMatchTranslateGroup) aValue);
 			break;
 		case REMOVE_SPECIAL_CHARS:  
 			criterion.setRemoveSpecialChars((Boolean)aValue);
@@ -162,8 +163,13 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 			return criteria.isMatchStart();
 		case SOUND_IND:          
 			return criteria.isSoundInd();
-		case TRANSLATE_GROUP_NAME:           
-			return criteria.getTranslateGroupName();
+		case TRANSLATE_GROUP:        
+			if ( criteria.getTranslateGroup() != null) {
+				return criteria.getTranslateGroup();
+			} else {
+				return "";
+			}
+			
 		case REMOVE_SPECIAL_CHARS:        
 			return criteria.isRemoveSpecialChars();
 		case COUNT_WORDS_IND:         

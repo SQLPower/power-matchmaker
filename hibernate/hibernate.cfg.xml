@@ -15,6 +15,7 @@
         <mapping file="./hibernate/PlFolderDetail.hbm.xml"/>
         <mapping file="./hibernate/PlMatch.hbm.xml"/>
         <mapping file="./hibernate/PlMatchTranslate.hbm.xml"/>
+        <mapping file="./hibernate/PlMatchTranslateGroup.hbm.xml"/>
         <mapping file="./hibernate/PlMatchXrefMap.hbm.xml"/>
         <mapping file="./hibernate/PlMatchCriteria.hbm.xml"/>
         <mapping file="./hibernate/PlMatchGroup.hbm.xml"/>

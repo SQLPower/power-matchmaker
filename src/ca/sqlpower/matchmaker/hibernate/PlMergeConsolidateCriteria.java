@@ -16,7 +16,7 @@ public class PlMergeConsolidateCriteria  implements java.io.Serializable {
     // Fields
 
      private Long id;
-     private PlMatch plMatch;
+     private PlMergeCriteria plMergeCriteria;
      private String columnFormat;
      private BigDecimal columnLength;
      private boolean canUpdateActionInd;
@@ -36,14 +36,17 @@ public class PlMergeConsolidateCriteria  implements java.io.Serializable {
     public PlMergeConsolidateCriteria() {
     }
 
-    public PlMatch getPlMatch() {
-        return this.plMatch;
-    }
+    public PlMergeCriteria getPlMergeCriteria() {
+		return plMergeCriteria;
+	}
 
-    public void setPlMatch(PlMatch plMatch) {
-        this.plMatch = plMatch;
-    }
-    public String getColumnFormat() {
+	public void setPlMergeCriteria(PlMergeCriteria plMergeCriteria) {
+		if (this.plMergeCriteria != plMergeCriteria) {
+			this.plMergeCriteria = plMergeCriteria;
+		}
+	}
+
+	public String getColumnFormat() {
         return this.columnFormat;
     }
 
