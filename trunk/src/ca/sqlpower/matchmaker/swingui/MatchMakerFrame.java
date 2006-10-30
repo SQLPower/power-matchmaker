@@ -1,6 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Rectangle;
@@ -10,6 +9,8 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,6 +63,10 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SchemaVersion;
+import ca.sqlpower.sql.SchemaVersionFormatException;
+import ca.sqlpower.util.Version;
 
 import com.darwinsys.util.PrefsUtils;
 
@@ -72,6 +77,11 @@ import com.darwinsys.util.PrefsUtils;
 public class MatchMakerFrame extends JFrame {
 
 	private static Logger logger = Logger.getLogger(MatchMakerFrame.class);
+
+    /**
+     * The minimum PL schema version that the MatchMaker works with.
+     */
+    private static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,26);
 
 	/**
 	 * The MatchMakerFrame is a singleton; this is the main instance.
@@ -430,8 +440,33 @@ public class MatchMakerFrame extends JFrame {
 		lastImportExportAccessPath = prefs.get(SwingUserSettings.LAST_IMPORT_EXPORT_PATH,null);
 	}
 
-	public void newLogin(SQLDatabase db){
+    /**
+     * Sets up this frame for use with a new PL Respsitory connection.
+     * This method has to be called on the Swing EDT, because it interacts
+     * with the Hibernate session as well as the GUI.
+     * 
+     * <p>This method will check the PL Schema version in DEF_PARAM
+     * to ensure it is a new enough version before attempting to log in.
+     * 
+     * @param db the database connection to the PL repository.
+     */
+	public void newLogin(final SQLDatabase db){
 
+        try {
+            checkSchema(db);
+        } catch (Exception e) {
+            final Exception fexp = e;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ASUtils.showExceptionDialog(
+                            MatchMakerFrame.this,
+                            "Respository connection not valid",
+                            fexp);
+                }
+            });
+            return;
+        }
+        
 		ArchitectDataSource dbcs = db.getDataSource();
 		HibernateUtil.createRepositorySessionFactory(dbcs);
 
@@ -459,11 +494,48 @@ public class MatchMakerFrame extends JFrame {
 				group.getPlMatchTranslations().removeAll(nullList);
 			}
 		}
+        
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
-        setDatabase(db);
+		setDatabase(db);
 	}
 
-
+    /**
+     * Checks the PL Schema version in the given database.
+     * 
+     * @param db the database to check
+     * @throws PLSchemaException if the schema in db is older than
+     * {@link #MIN_PL_SCHEMA_VERSION}.
+     * @throws ArchitectException if it is not possible to get a JDBC connection for db.
+     * @throws SQLException if there is a miscellaneous database error (including missing
+     * DEF_PARAM table). 
+     * @throws SchemaVersionFormatException if the schema version in DEF_PARAM is not formatted
+     * as a dotted triple.
+     */
+    private void checkSchema(SQLDatabase db) throws PLSchemaException, ArchitectException, SchemaVersionFormatException, SQLException {
+        Version ver = null;
+        Connection con = null;
+        try {
+            con = db.getConnection();
+            ver = SchemaVersion.makeFromDatabase(con);
+            logger.info(
+                    "checkSchema(): connected to "+db.getName()+
+                    " schema version: " + ver );
+            if (ver.compareTo(MIN_PL_SCHEMA_VERSION) < 0) {
+                throw new PLSchemaException(
+                        "The MatchMaker requires PL Schema version "+
+                        MIN_PL_SCHEMA_VERSION+" or newer.  This database " +
+                        "is at version "+ver, ver.toString(),
+                        MIN_PL_SCHEMA_VERSION.toString());
+            }
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                logger.error("Couldn't close connection", e);
+            }
+        }
+    }
+    
 	private void setDatabase(SQLDatabase db) {
 	    database = db;
     }
