@@ -68,6 +68,8 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 		
 		switch (column) {	
 		case COLUMN:
+			// Don't allow us to put a null value the DB don't like it.
+			if (aValue == null) return;
 			criterion.setColumnName((String)aValue);
 			break;
 		case ALLOW_NULL:             

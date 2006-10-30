@@ -532,4 +532,9 @@ public class PlMatchCriterion extends DefaultHibernateObject<PlMatchCriterion> i
 		}
 	}
 
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return super.toString() + " " + columnName;
+	}
 }

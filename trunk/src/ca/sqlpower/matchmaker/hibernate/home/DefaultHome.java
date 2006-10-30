@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
@@ -58,6 +59,10 @@ public abstract class DefaultHome<t> {
 	public abstract String getBusinessClass();
 	
 	public void flush(){
+		Transaction tx = getCurrentSession().beginTransaction();
+		
 		getCurrentSession().flush();
+		tx.commit();
+		
 	}
 }

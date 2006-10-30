@@ -26,6 +26,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellRenderer;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLTable;
@@ -207,8 +208,11 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	}
 
 	private void loadMatches() throws ArchitectException {
-
-	    newMatchCriterion.setAction(new NewMatchCriteria(model));
+		PlMatch plMatch = model.getPlMatch();
+		if (plMatch != null && plMatch.getMatchTable() != null){
+			SQLTable t = MatchMakerFrame.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
+			newMatchCriterion.setAction(new NewMatchCriteria(model,t));
+		}
 		deleteMatchCriterion.setAction(new DeleteMatchCriteria(model,getMatchCriteriaTable()));
 		copyMatchCriterion.setAction(new CopyMatchCriteria(model,getMatchCriteriaTable().getSelectedRows()));
 		pasteMatchCriterion.setAction(new PasteMatchCriteria(model));
@@ -379,8 +383,10 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 				}
 
 				public void focusLost(FocusEvent e) {
+					Transaction tx = HibernateUtil.primarySession().beginTransaction();
 					// TODO Auto-generated method stub
 					HibernateUtil.primarySession().flush();
+					tx.commit();
 				}
 				
 			};
