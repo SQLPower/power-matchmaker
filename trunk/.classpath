@@ -6,7 +6,7 @@
 	<classpathentry kind="lib" path="lib/log4j.jar"/>
 	<classpathentry kind="lib" path="buildlib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/forms-1.0.6.jar"/>
-	<classpathentry kind="lib" path="lib/sqlpower.jar"/>
+	<classpathentry sourcepath="/web-development/classes" kind="lib" path="lib/sqlpower.jar"/>
 	<classpathentry kind="lib" path="lib/darwinsys.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils.jar"/>
 	<classpathentry sourcepath="libsrc/hibernate3_src.jar" kind="lib" path="lib/hibernate3.jar"/>
