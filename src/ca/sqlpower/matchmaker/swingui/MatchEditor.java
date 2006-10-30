@@ -15,6 +15,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -93,6 +94,7 @@ public class MatchEditor extends JFrame {
 
     public MatchEditor(PlMatch match, PlFolder folder,JSplitPane splitPane) throws ArchitectException {
         super();
+        setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
         if ( match == null ) {
             setTitle("Create new match interface");
         } else {
@@ -147,7 +149,7 @@ public class MatchEditor extends JFrame {
     /**
      * Saves the current match (which is referenced in the plMatch member variable of this editor instance).
      * If there is no current plMatch, a new one will be created and its properties will be set just like
-     * they would if one had existed.  In either case, this action will then use Hibernate to save the 
+     * they would if one had existed.  In either case, this action will then use Hibernate to save the
      * match object back to the database (but it should use the MatchHome interface instead).
      */
 	private Action saveAction = new AbstractAction("Save") {
@@ -210,7 +212,7 @@ public class MatchEditor extends JFrame {
             	plMatch.setTableOwner(((SQLSchema)sourceChooser.getSchemaComboBox().getSelectedItem()).getName());
             }
             plMatch.setMatchType(type.getSelectedItem().toString());
-            
+
             plMatch.setMatchDesc(desc.getText());
             plMatch.setMatchTable(
             		((SQLTable) sourceChooser.getTableComboBox().
@@ -309,7 +311,7 @@ public class MatchEditor extends JFrame {
             plMatch.setLastUpdateDate(new Date(System.currentTimeMillis()));
 
 
-            PlFolder f = (PlFolder)folderComboBox.getSelectedItem();           
+            PlFolder f = (PlFolder)folderComboBox.getSelectedItem();
             plMatch.setFolder( f);
 
             Transaction tx = HibernateUtil.primarySession().beginTransaction();
@@ -338,6 +340,7 @@ public class MatchEditor extends JFrame {
 			JDialog d = ArchitectPanelBuilder.createSingleButtonArchitectPanelDialog(
 					p,MatchEditor.this,
 					"Audit Information","OK");
+
 			d.pack();
 			d.setVisible(true);
 		}};
@@ -411,9 +414,9 @@ public class MatchEditor extends JFrame {
         	folderComboBox.setModel(
         			new FolderComboBoxModel<PlFolder>(mainFrame.getFolders()));
         }
-        
+
         filterPanel = new FilterComponentsPanel();
-        
+
         PropertyChangeListener pcl = new PropertyChangeListener(){
 
 			public void propertyChange(PropertyChangeEvent evt) {

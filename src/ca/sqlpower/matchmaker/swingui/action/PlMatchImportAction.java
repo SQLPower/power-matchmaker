@@ -51,7 +51,7 @@ public class PlMatchImportAction extends AbstractAction {
 
 	public void actionPerformed(ActionEvent e) {
 		JFileChooser fc = new JFileChooser(
-				MatchMakerFrame.getMainInstance().getLastExportAccessPath());
+				MatchMakerFrame.getMainInstance().getLastImportExportAccessPath());
 		fc.setFileFilter(ASUtils.XML_FILE_FILTER);
 		fc.setDialogTitle("Import Match");
 
@@ -60,7 +60,7 @@ public class PlMatchImportAction extends AbstractAction {
 
 		if (fcChoice == JFileChooser.APPROVE_OPTION) {
 			importFile = fc.getSelectedFile();
-			MatchMakerFrame.getMainInstance().setLastExportAccessPath(
+			MatchMakerFrame.getMainInstance().setLastImportExportAccessPath(
 					importFile.getAbsolutePath());
 
 			BufferedInputStream in = null;

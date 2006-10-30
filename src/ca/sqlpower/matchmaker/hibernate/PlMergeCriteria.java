@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker.hibernate;
 // Generated Sep 18, 2006 4:34:38 PM by Hibernate Tools 3.2.0.beta7
 
 
-import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,7 +24,7 @@ public class PlMergeCriteria  implements java.io.Serializable {
      private Date lastUpdateDate;
      private String lastUpdateUser;
      private boolean deleteDupInd;
-     private BigDecimal seqNo;
+     private Long seqNo;
      private String lastUpdateOsUser;
      private String primaryKeyIndex;
      private String indexColumnName1;
@@ -79,11 +78,11 @@ public class PlMergeCriteria  implements java.io.Serializable {
     public void setDeleteDupInd(boolean deleteDupInd) {
         this.deleteDupInd = deleteDupInd;
     }
-    public BigDecimal getSeqNo() {
+    public Long getSeqNo() {
         return this.seqNo;
     }
 
-    public void setSeqNo(BigDecimal seqNo) {
+    public void setSeqNo(Long seqNo) {
         this.seqNo = seqNo;
     }
     public String getLastUpdateOsUser() {
@@ -179,7 +178,7 @@ public class PlMergeCriteria  implements java.io.Serializable {
 	}
 	public void setSeqNo(String val) {
 		if ( val != null && val.length()>0 && !val.equalsIgnoreCase("null")) {
-			setSeqNo(BigDecimal.valueOf(Long.valueOf(val)));
+			setSeqNo(new Long(val));
 		}
 	}
 
@@ -189,7 +188,7 @@ public class PlMergeCriteria  implements java.io.Serializable {
 
 	public void setCatalog(String catalog) {
 		if (this.catalog != catalog) {
-			
+
 			this.catalog = catalog;
 		}
 	}
@@ -200,7 +199,7 @@ public class PlMergeCriteria  implements java.io.Serializable {
 
 	public void setOwner(String owner) {
 		if (this.owner != owner) {
-			
+
 			this.owner = owner;
 		}
 	}

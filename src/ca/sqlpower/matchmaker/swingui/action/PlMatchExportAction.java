@@ -57,7 +57,7 @@ public class PlMatchExportAction extends AbstractAction {
 			return;
 		}
 		JFileChooser fc = new JFileChooser(
-				MatchMakerFrame.getMainInstance().getLastExportAccessPath());
+				MatchMakerFrame.getMainInstance().getLastImportExportAccessPath());
 		fc.setFileFilter(ASUtils.XML_FILE_FILTER);
 		fc.setDialogTitle("Export Match");
 		fc.setSelectedFile(
@@ -71,7 +71,7 @@ public class PlMatchExportAction extends AbstractAction {
 			int fcChoice = fc.showOpenDialog(null);
 			if (fcChoice == JFileChooser.APPROVE_OPTION) {
 				export = fc.getSelectedFile();
-				MatchMakerFrame.getMainInstance().setLastExportAccessPath(
+				MatchMakerFrame.getMainInstance().setLastImportExportAccessPath(
 						export.getAbsolutePath());
 
 				if ( export.exists()) {

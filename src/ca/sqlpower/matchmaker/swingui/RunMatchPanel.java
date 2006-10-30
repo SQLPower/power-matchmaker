@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import javax.sql.RowSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -83,7 +84,8 @@ public class RunMatchPanel extends JFrame{
     private PlMatch plMatch;
 
     public RunMatchPanel(PlMatch plMatch){
-        super();
+        super("Run Match:["+plMatch.getMatchId()+"]");
+        setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
         this.plMatch = plMatch;
         buildUI();
     }
