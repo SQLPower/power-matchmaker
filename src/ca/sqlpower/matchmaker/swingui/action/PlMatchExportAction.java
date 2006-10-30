@@ -65,10 +65,11 @@ public class PlMatchExportAction extends AbstractAction {
 						((FileExtensionFilter) ASUtils.XML_FILE_FILTER).getFilterExtension(0)));
 		fc.setApproveButtonText("Save");
 
+
 		File export = null;
 
 		while (true) {
-			int fcChoice = fc.showOpenDialog(null);
+			int fcChoice = fc.showOpenDialog(MatchMakerFrame.getMainInstance());
 			if (fcChoice == JFileChooser.APPROVE_OPTION) {
 				export = fc.getSelectedFile();
 				MatchMakerFrame.getMainInstance().setLastImportExportAccessPath(

@@ -56,7 +56,7 @@ public class PlMatchImportAction extends AbstractAction {
 		fc.setDialogTitle("Import Match");
 
 		File importFile = null;
-		int fcChoice = fc.showOpenDialog(null);
+		int fcChoice = fc.showOpenDialog(MatchMakerFrame.getMainInstance());
 
 		if (fcChoice == JFileChooser.APPROVE_OPTION) {
 			importFile = fc.getSelectedFile();

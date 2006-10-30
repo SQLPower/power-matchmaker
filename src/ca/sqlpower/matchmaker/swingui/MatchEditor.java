@@ -102,9 +102,11 @@ public class MatchEditor extends JFrame {
         }
         this.plMatch = match;
         if (folder == null) {
-        	this.plFolder = match.getFolder();
+        	if ( match != null ) {
+        		this.plFolder = match.getFolder();
+        	}
         } else {
-        	this.plFolder = folder; 
+        	this.plFolder = folder;
         }
         this.splitPane = splitPane;
         buildUI();
