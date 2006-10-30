@@ -12,21 +12,25 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.architect.SQLTable;
 
 
 
 public class FilterComponentsPanel extends JPanel {
-    
+
+	private static Logger logger = Logger.getLogger(FilterComponentsPanel.class);
+
     JTextArea filterTextArea;
     JButton editButton;
     SQLTable table;
-    
-      
+
+
     public FilterComponentsPanel(){
         buildUI();
     }
-    
+
     public FilterComponentsPanel(SQLTable t){
     	table = t;
         buildUI();
@@ -37,7 +41,7 @@ public class FilterComponentsPanel extends JPanel {
         filterTextArea = new JTextArea();
         editButton = new JButton(new AbstractAction("Edit"){
 
-            public void actionPerformed(ActionEvent e) {     
+            public void actionPerformed(ActionEvent e) {
             	Container parent = FilterComponentsPanel.this;
             	FilterMakerDialog filterMaker = null;
             	while(parent != null  ){
@@ -61,18 +65,19 @@ public class FilterComponentsPanel extends JPanel {
             		filterMaker.pack();
             		filterMaker.setVisible(true);
             	} else {
+            		logger.info("Warning: parent neither JFrame nor JDialog");
             		throw new IllegalStateException("This panel is not in a window");
             	}
-            	
-            }            
+
+            }
         });
- 
+
         filterTextArea.setWrapStyleWord(true);
-        filterTextArea.setLineWrap(true);        
+        filterTextArea.setLineWrap(true);
         add(new JScrollPane(filterTextArea), BorderLayout.CENTER);
         add(editButton, BorderLayout.EAST);
 	}
-    
+
     /*
      * Returns the text input in the filter textfield.
      */
