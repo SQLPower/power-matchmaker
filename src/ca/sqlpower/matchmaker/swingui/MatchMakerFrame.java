@@ -149,7 +149,8 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-
+			JOptionPane.showMessageDialog(null,
+				"This action is not yet available. We apologize for the inconvenience");
 		}
 
 	};
@@ -158,27 +159,20 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-
+			JOptionPane.showMessageDialog(null,
+				"This action is not yet available. We apologize for the inconvenience");
 		}
-
 	};
 
-	protected Action helpAction = new AbstractAction("Help") {
-
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-
-		}
-
-	};
+	protected Action helpAction = new HelpAction();
 
 	protected Action databasePreferenceAction = new AbstractAction("Database Preference") {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-
+			JOptionPane.showMessageDialog(null,
+			"This action is not yet available. We apologize for the inconvenience");
 		}
-
 	};
 
 	protected Action tableQueryAction = new AbstractAction("Table Explorer") {
@@ -316,7 +310,7 @@ public class MatchMakerFrame extends JFrame {
 				// TODO Auto-generated method stub
 
 			}};
-			
+
 		newMatchAction = new NewMatchAction("New Match",null,splitPane);
 		menuBar = new JMenuBar();
 
@@ -503,14 +497,14 @@ public class MatchMakerFrame extends JFrame {
 			PlMatch match = ArchitectUtils.getTreeObject(getTree(),PlMatch.class);
 			if ( match == null )
 				return;
-		
+
 			MatchEditor me;
 			try {
 				me = new MatchEditor((PlMatch) match,splitPane);
 			} catch (ArchitectException e1) {
 				throw new ArchitectRuntimeException(e1);
 			}
-		
+
 			splitPane.setRightComponent(me.getPanel());
 		}
 	}
