@@ -84,8 +84,7 @@ public class PlMatchGroupHome extends DefaultHome<PlMatchGroupHome>{
 		return "ca.sqlpower.matchmaker.hibernate.PlMatchGroup";
 	}
 
-	public void flush() {
-		getCurrentSession().flush();
-	}
+    
+
 }
 
