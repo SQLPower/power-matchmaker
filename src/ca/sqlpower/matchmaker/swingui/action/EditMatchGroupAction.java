@@ -14,10 +14,10 @@ import ca.sqlpower.matchmaker.swingui.PlMatchGroupPanel;
 
 
 public class EditMatchGroupAction extends AbstractAction {
-	
+
 	PlMatchGroup matchGroup;
 	private Window window;
-	
+
 
 	public EditMatchGroupAction(PlMatchGroup matchGroup, Window parentWindow) {
 		super("Edit Match Group");
@@ -25,16 +25,16 @@ public class EditMatchGroupAction extends AbstractAction {
 		this.window = parentWindow;
 	}
 
-
+	/**
+	 * Create and show the dialog
+	 */
 	public void actionPerformed(ActionEvent e)  {
-		JDialog d;
 		try {
-			d = ArchitectPanelBuilder.createArchitectPanelDialog(new PlMatchGroupPanel(matchGroup), window, "Edit Match Group", "Save Match Group");
+			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(new PlMatchGroupPanel(matchGroup), window, "Edit Match Group", "Save Match Group");
+			d.setVisible(true);
 		} catch (ArchitectException e1) {
 			throw new ArchitectRuntimeException(e1);
 		}
-		d.setVisible(true);
-		
 	}
 
 }
