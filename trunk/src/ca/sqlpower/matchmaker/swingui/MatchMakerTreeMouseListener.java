@@ -46,7 +46,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 
 					MatchEditor me;
 					try {
-						me = new MatchEditor((PlMatch) o,null,splitPane);
+						me = new MatchEditor((PlMatch) o,splitPane);
 					} catch (ArchitectException e1) {
 						throw new ArchitectRuntimeException(e1);
 					}

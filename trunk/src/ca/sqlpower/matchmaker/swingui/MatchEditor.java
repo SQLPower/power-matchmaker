@@ -99,7 +99,11 @@ public class MatchEditor extends JFrame {
             setTitle("Edit match interface: "+match.getMatchId());
         }
         this.plMatch = match;
-        this.plFolder = folder;
+        if (folder == null) {
+        	this.plFolder = match.getFolder();
+        } else {
+        	this.plFolder = folder; 
+        }
         this.splitPane = splitPane;
         buildUI();
     }
