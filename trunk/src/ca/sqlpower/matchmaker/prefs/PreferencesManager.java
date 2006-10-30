@@ -45,6 +45,10 @@ public class PreferencesManager {
 		listeners.add(listener);
 	}
 
+	public Preferences getRootNode() {
+		return prefs;
+	}
+
 	// -------------------- Loading the preferences --------------------------
 
 	public void load(JarFileListMaintainer session) {
