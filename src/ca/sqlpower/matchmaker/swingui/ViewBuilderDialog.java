@@ -61,6 +61,7 @@ public class ViewBuilderDialog extends JDialog {
     //done yet
     public ViewBuilderDialog(JFrame parent, SQLTable viewTable) throws ArchitectException{
         super(parent);
+        setTitle("View Builder");
         this.viewTable = viewTable;
         buildUI();
         setup();
