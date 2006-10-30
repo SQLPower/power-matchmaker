@@ -534,9 +534,11 @@ public class MatchMakerFrame extends JFrame {
 		prefs.putInt(SwingUserSettings.MAIN_FRAME_Y, getLocation().y);
 		prefs.putInt(SwingUserSettings.MAIN_FRAME_WIDTH, getWidth());
 		prefs.putInt(SwingUserSettings.MAIN_FRAME_HEIGHT, getHeight());
-		prefs.put(SwingUserSettings.LAST_LOGIN_DATA_SOURCE,getDatabase().getDataSource().getName());
+		if ( getDatabase() != null && getDatabase().getDataSource() != null ) {
+			prefs.put(SwingUserSettings.LAST_LOGIN_DATA_SOURCE,
+					getDatabase().getDataSource().getName());
+		}
 		configFile.write(getArchitectSession());
-
 		CoreUserSettings us = getUserSettings();
 		try {
             us.getPlDotIni().write(new File(us.getPlDotIniPath()));
