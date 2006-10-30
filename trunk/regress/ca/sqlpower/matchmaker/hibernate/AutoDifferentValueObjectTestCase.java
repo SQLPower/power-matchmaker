@@ -32,11 +32,21 @@ import com.diasparsoftware.util.junit.ValueObjectEqualsTest;
 public abstract class AutoDifferentValueObjectTestCase
 	extends ValueObjectEqualsTest {
 
+	/** List of declared fields in the target class. */
+	Field[] fields;
+
 	/** Map from field names to class types; you MUST
 	 *  fill in these values in your class' constructor(s).
 	 */
 	Map<String, Class> map  = new HashMap<String, Class>();
 
+	public AutoDifferentValueObjectTestCase() {
+		Class c = createInstance().getClass();
+		fields = c.getDeclaredFields();
+		for (Field f : fields) {
+			map.put(f.getName(), f.getType());
+		}
+	}
 	@Override
 	protected List<String> keyPropertyNames() {
 		List<String> n = new ArrayList<String>();
@@ -63,17 +73,11 @@ public abstract class AutoDifferentValueObjectTestCase
 			f.set(target, new Integer(111));
 		} else if (c.equals(Long.class)) {
 			f.set(target, new Long(111));
-		} else throw new IllegalArgumentException(
-			"Unhandled type " + c);
+		} else f.set(target, c.newInstance());
 		return target;
 	}
 
-	Field[] fields;
-
 	private Field getField(String name) {
-		if (fields == null) {
-			fields = createInstance().getClass().getDeclaredFields();
-		}
 		for (Field f : fields) {
 			if (f.getName().equals(name)) {
 				return f;
