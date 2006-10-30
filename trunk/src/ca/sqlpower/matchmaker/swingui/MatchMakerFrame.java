@@ -448,10 +448,10 @@ public class MatchMakerFrame extends JFrame {
      * Sets up this frame for use with a new PL Respsitory connection.
      * This method has to be called on the Swing EDT, because it interacts
      * with the Hibernate session as well as the GUI.
-     * 
+     *
      * <p>This method will check the PL Schema version in DEF_PARAM
      * to ensure it is a new enough version before attempting to log in.
-     * 
+     *
      * @param db the database connection to the PL repository.
      */
 	public void newLogin(final SQLDatabase db){
@@ -470,7 +470,7 @@ public class MatchMakerFrame extends JFrame {
             });
             return;
         }
-        
+
 		ArchitectDataSource dbcs = db.getDataSource();
 		HibernateUtil.createRepositorySessionFactory(dbcs);
 
@@ -498,20 +498,20 @@ public class MatchMakerFrame extends JFrame {
 				group.getPlMatchTranslations().removeAll(nullList);
 			}
 		}
-        
+
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
 		setDatabase(db);
 	}
 
     /**
      * Checks the PL Schema version in the given database.
-     * 
+     *
      * @param db the database to check
      * @throws PLSchemaException if the schema in db is older than
      * {@link #MIN_PL_SCHEMA_VERSION}.
      * @throws ArchitectException if it is not possible to get a JDBC connection for db.
      * @throws SQLException if there is a miscellaneous database error (including missing
-     * DEF_PARAM table). 
+     * DEF_PARAM table).
      * @throws SchemaVersionFormatException if the schema version in DEF_PARAM is not formatted
      * as a dotted triple.
      */
@@ -539,10 +539,16 @@ public class MatchMakerFrame extends JFrame {
             }
         }
     }
-    
+
 	private void setDatabase(SQLDatabase db) {
 	    database = db;
     }
+
+	static {
+		// Call this in a static initialier to force the
+		// lazy evaluation to happen non-lazily. :-)
+		MatchMakerFrame.getMainInstance();
+	}
 
     public static synchronized MatchMakerFrame getMainInstance() {
 		if (mainInstance == null) {
