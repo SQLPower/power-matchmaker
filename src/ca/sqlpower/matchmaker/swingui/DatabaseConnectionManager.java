@@ -100,16 +100,19 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			};
 
 			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
-					dbcsPanel, SwingUtilities.getWindowAncestor(
+					dbcsPanel,
+						// XXX Should pass parentFrame as a
+						// Constructor arg to DatabaseConnectionManager constructor
+						SwingUtilities.getWindowAncestor(
 							DatabaseConnectionManager.this),
-							"Edit Database Connection",
-							ArchitectPanelBuilder.OK_BUTTON_LABEL,
-							okAction, cancelAction);
+						"Edit Database Connection",
+						ArchitectPanelBuilder.OK_BUTTON_LABEL,
+						okAction, cancelAction);
 
 			okAction.setConnectionDialog(d);
 			setNewConnectionDialog(d);
 
-/*			d.pack();*/
+			/* d.pack();*/
 			d.setLocationRelativeTo(MatchMakerFrame.getMainInstance());
 			d.setVisible(true);
 			logger.debug("Editting existing DBCS on panel: "+dbcs);
