@@ -121,23 +121,7 @@ public class MatchMakerFrame extends JFrame {
 	};
 
 	protected Action newMatchAction = null;
-	protected Action editMatchAction = new AbstractAction("Edit") {
-
-		public void actionPerformed(ActionEvent e) {
-			PlMatch match = ArchitectUtils.getTreeObject(getTree(),PlMatch.class);
-			if ( match == null )
-				return;
-		    MatchEditor me;
-			try {
-				me = new MatchEditor(match,null,splitPane);
-			} catch (ArchitectException e1) {
-				throw new ArchitectRuntimeException(e1);
-			}
-			me.pack();
-			me.setVisible(true);
-		}
-
-	};
+	protected Action editMatchAction = new EditMatchAction("Edit");
 
 	protected Action runMatchAction = new AbstractAction("Run Match") {
 
@@ -506,6 +490,27 @@ public class MatchMakerFrame extends JFrame {
 
 	public ArchitectSession getArchitectSession() {
 		return architectSession;
+	}
+
+	private final class EditMatchAction extends AbstractAction {
+		private EditMatchAction(String name) {
+			super(name);
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			PlMatch match = ArchitectUtils.getTreeObject(getTree(),PlMatch.class);
+			if ( match == null )
+				return;
+		
+			MatchEditor me;
+			try {
+				me = new MatchEditor((PlMatch) match,splitPane);
+			} catch (ArchitectException e1) {
+				throw new ArchitectRuntimeException(e1);
+			}
+		
+			splitPane.setRightComponent(me.getPanel());
+		}
 	}
 
 	class MatchMakerFrameWindowListener extends WindowAdapter {
