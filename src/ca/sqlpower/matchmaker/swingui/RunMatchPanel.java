@@ -105,9 +105,10 @@ public class RunMatchPanel extends JFrame{
 
     public void buildUI(){
         FormLayout layout = new FormLayout(
-                "4dlu,fill:min(70dlu;default),4dlu,fill:200dlu:grow, 7dlu,4dlu,10dlu,45dlu,10dlu,10dlu,10dlu",
-                "10dlu,12dlu,10dlu,10dlu,3dlu,10dlu,3dlu,10dlu,30dlu,16dlu,4dlu,16dlu,4dlu");
-        //		 1     2     3     4     5    6     7    8     9     10    11    12   13
+                "4dlu,fill:min(70dlu;pref),4dlu,fill:200dlu:grow, 7dlu,20dlu,pref,4dlu,pref,4dlu",
+              // 1    2                    3    4                 5    6     7    8    9    10
+                "10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,30dlu,pref,4dlu,pref,4dlu");
+        //		 1     2    3     4    5    6    7    8    9     10   11   12   13
         PanelBuilder pb;
         JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout) : new JPanel(layout);
         pb = new PanelBuilder(layout, p);
@@ -181,14 +182,14 @@ public class RunMatchPanel extends JFrame{
         pb.add(new JLabel("Log File:"), cc.xy(2,2,"r,f"));
         pb.add(logFilePath, cc.xy(4,2,"f,f"));
         pb.add(browse, cc.xy(5,2,"r,f"));
-        pb.add(append, cc.xy(7,2,"r,f"));
-        pb.add(new JLabel("Append?"), cc.xy(8,2,"r,f"));
-        pb.add(new JLabel("Debug Mode?"), cc.xyw(6,4,3,"l,c"));
-        pb.add(debugMode, cc.xy(10,4,"r,c"));
-        pb.add(new JLabel("Truncate Cand Dup?"), cc.xyw(6,6,3,"l,c"));
-        pb.add(truncateCandDup, cc.xy(10,6,"r,c"));
-        pb.add(new JLabel("Send E-mails"), cc.xyw(6,8,3,"l,c"));
-        pb.add(sendEmail, cc.xy(10,8,"r,c"));
+        pb.add(new JLabel("Append?"), cc.xy(7,2,"r,f"));
+        pb.add(append, cc.xy(9,2,"r,f"));
+        pb.add(new JLabel("Debug Mode?"), cc.xy(7,4,"r,c"));
+        pb.add(debugMode, cc.xy(9,4,"r,c"));
+        pb.add(new JLabel("Truncate Cand Dup?"), cc.xy(7,6,"r,c"));
+        pb.add(truncateCandDup, cc.xy(9,6,"r,c"));
+        pb.add(new JLabel("Send E-mails?"), cc.xy(7,8,"r,c"));
+        pb.add(sendEmail, cc.xy(9,8,"r,c"));
 
         pb.add(new JLabel("Rollback Segment:"), cc.xy(2,4,"r,c"));
         pb.add(rollbackSegment, cc.xy(4,4));
@@ -210,7 +211,7 @@ public class RunMatchPanel extends JFrame{
         bb1.addGridded(viewMatchResults);
         bb1.addRelatedGap();
         bb1.addGlue();
-        pb.add(bb1.getPanel(), cc.xyw(2,10,10));
+        pb.add(bb1.getPanel(), cc.xyw(2,10,9));
 
 
         ButtonBarBuilder bb2 = new ButtonBarBuilder();
@@ -223,7 +224,7 @@ public class RunMatchPanel extends JFrame{
         bb2.addGridded(exit);
         bb2.addRelatedGap();
         bb2.addGlue();
-        pb.add(bb2.getPanel(), cc.xyw(2,12,10));
+        pb.add(bb2.getPanel(), cc.xyw(2,12,9));
 
         getContentPane().add(pb.getPanel());
     }
