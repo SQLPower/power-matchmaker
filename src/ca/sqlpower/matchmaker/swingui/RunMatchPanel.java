@@ -289,8 +289,8 @@ public class RunMatchPanel extends JFrame{
 
     private class RunEngineAction extends AbstractAction {
 
-    	private PlMatch match;
-		private Component parent;
+    	private final PlMatch match;
+		private final Component parent;
 		DefaultStyledDocument engineOutputDoc = new DefaultStyledDocument();
 		SimpleAttributeSet stdoutAtt = new SimpleAttributeSet();
 		SimpleAttributeSet stderrAtt = new SimpleAttributeSet();
@@ -308,7 +308,7 @@ public class RunMatchPanel extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			applyChange();
 			final String cmd = createCommand(match) + " USER_PROMPT=N";
-			final JDialog d = new JDialog();
+			final JDialog d = new JDialog(MatchMakerFrame.getMainInstance());
 			d.setTitle("MatchMaker engine output:");
 
 			FormLayout layout = new FormLayout(
