@@ -92,29 +92,11 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
      private Date checkedOutDate;
      private String checkedOutUser;
      private String checkedOutOsUser;
-     private String indexColumnName0;
-     private String indexColumnName1;
-     private String indexColumnName2;
-     private String indexColumnName3;
-     private String indexColumnName4;
-     private String indexColumnName5;
-     private String indexColumnName6;
-     private String indexColumnName7;
-     private String indexColumnName8;
-     private String indexColumnName9;
+     private List<String> indexColumnNames;
      private String tempSourceTableName;
      private String tempCandDupTableName;
      private String fromClauseDb;
-     private String indexColumnType0;
-     private String indexColumnType1;
-     private String indexColumnType2;
-     private String indexColumnType3;
-     private String indexColumnType4;
-     private String indexColumnType5;
-     private String indexColumnType6;
-     private String indexColumnType7;
-     private String indexColumnType8;
-     private String indexColumnType9;
+     private List<String> indexColumnTypes;
      private boolean truncateCandDupInd;
      private boolean matchSendEmailInd;
      private boolean mergeSendEmailInd;
@@ -1399,229 +1381,26 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
 		}
 	}
 
-	public String getIndexColumnName0() {
-		return indexColumnName0;
+	public List<String> getIndexColumnNames() {
+		return indexColumnNames;
 	}
 
-	public void setIndexColumnName0(String indexColumnName0) {
-		if (this.indexColumnName0 != indexColumnName0) {
-			firePropertyChange("indexColumnName0", this.indexColumnName0, indexColumnName0);
-			this.indexColumnName0 = indexColumnName0;
+	public void setIndexColumnNames(List<String> indexColumnNames) {
+        if (indexColumnNames != this.indexColumnNames) {
+            this.indexColumnNames = indexColumnNames;
+            firePropertyChange("indexColumnNames", null, null); // XXX not ideal
+        }
+	}
+
+	public List<String> getIndexColumnTypes() {
+		return indexColumnTypes;
+	}
+
+	public void setIndexColumnTypes(List<String> indexColumnTypes) {
+		if (this.indexColumnTypes != indexColumnTypes) {
+			this.indexColumnTypes = indexColumnTypes;
+			firePropertyChange("indexColumnTypes", null, null); // XXX not ideal
 		}
 	}
-
-	public String getIndexColumnName1() {
-		return indexColumnName1;
-	}
-
-	public void setIndexColumnName1(String indexColumnName1) {
-		if (this.indexColumnName1 != indexColumnName1) {
-			firePropertyChange("indexColumnName1", this.indexColumnName1, indexColumnName1);
-			this.indexColumnName1 = indexColumnName1;
-		}
-	}
-
-	public String getIndexColumnName2() {
-		return indexColumnName2;
-	}
-
-	public void setIndexColumnName2(String indexColumnName2) {
-		if (this.indexColumnName2 != indexColumnName2) {
-			firePropertyChange("indexColumnName2", this.indexColumnName2, indexColumnName2);
-			this.indexColumnName2 = indexColumnName2;
-		}
-	}
-
-	public String getIndexColumnName3() {
-		return indexColumnName3;
-	}
-
-	public void setIndexColumnName3(String indexColumnName3) {
-		if (this.indexColumnName3 != indexColumnName3) {
-			firePropertyChange("indexColumnName3", this.indexColumnName3, indexColumnName3);
-			this.indexColumnName3 = indexColumnName3;
-		}
-	}
-
-	public String getIndexColumnName4() {
-		return indexColumnName4;
-	}
-
-	public void setIndexColumnName4(String indexColumnName4) {
-		if (this.indexColumnName4 != indexColumnName4) {
-			firePropertyChange("indexColumnName4", this.indexColumnName4, indexColumnName4);
-			this.indexColumnName4 = indexColumnName4;
-		}
-	}
-
-	public String getIndexColumnName5() {
-		return indexColumnName5;
-	}
-
-	public void setIndexColumnName5(String indexColumnName5) {
-		if (this.indexColumnName5 != indexColumnName5) {
-			firePropertyChange("indexColumnName5", this.indexColumnName5, indexColumnName5);
-			this.indexColumnName5 = indexColumnName5;
-		}
-	}
-
-	public String getIndexColumnName6() {
-		return indexColumnName6;
-	}
-
-	public void setIndexColumnName6(String indexColumnName6) {
-		if (this.indexColumnName6 != indexColumnName6) {
-			firePropertyChange("indexColumnName6", this.indexColumnName6, indexColumnName6);
-			this.indexColumnName6 = indexColumnName6;
-		}
-	}
-
-	public String getIndexColumnName7() {
-		return indexColumnName7;
-	}
-
-	public void setIndexColumnName7(String indexColumnName7) {
-		if (this.indexColumnName7 != indexColumnName7) {
-			firePropertyChange("indexColumnName7", this.indexColumnName7, indexColumnName7);
-			this.indexColumnName7 = indexColumnName7;
-		}
-	}
-
-	public String getIndexColumnName8() {
-		return indexColumnName8;
-	}
-
-	public void setIndexColumnName8(String indexColumnName8) {
-		if (this.indexColumnName8 != indexColumnName8) {
-			firePropertyChange("indexColumnName8", this.indexColumnName8, indexColumnName8);
-			this.indexColumnName8 = indexColumnName8;
-		}
-	}
-
-	public String getIndexColumnName9() {
-		return indexColumnName9;
-	}
-
-	public void setIndexColumnName9(String indexColumnName9) {
-		if (this.indexColumnName9 != indexColumnName9) {
-			firePropertyChange("indexColumnName9", this.indexColumnName9, indexColumnName9);
-			this.indexColumnName9 = indexColumnName9;
-		}
-	}
-
-	public String getIndexColumnType0() {
-		return indexColumnType0;
-	}
-
-	public void setIndexColumnType0(String indexColumnType0) {
-		if (this.indexColumnType0 != indexColumnType0) {
-			firePropertyChange("indexColumnType0", this.indexColumnType0, indexColumnType0);
-			this.indexColumnType0 = indexColumnType0;
-		}
-	}
-
-	public String getIndexColumnType1() {
-		return indexColumnType1;
-	}
-
-	public void setIndexColumnType1(String indexColumnType1) {
-		if (this.indexColumnType1 != indexColumnType1) {
-			firePropertyChange("indexColumnType1", this.indexColumnType1, indexColumnType1);
-			this.indexColumnType1 = indexColumnType1;
-		}
-	}
-
-	public String getIndexColumnType2() {
-		return indexColumnType2;
-	}
-
-	public void setIndexColumnType2(String indexColumnType2) {
-		if (this.indexColumnType2 != indexColumnType2) {
-			firePropertyChange("indexColumnType2", this.indexColumnType2, indexColumnType2);
-			this.indexColumnType2 = indexColumnType2;
-		}
-	}
-
-	public String getIndexColumnType3() {
-		return indexColumnType3;
-	}
-
-	public void setIndexColumnType3(String indexColumnType3) {
-		if (this.indexColumnType3 != indexColumnType3) {
-			firePropertyChange("indexColumnType3", this.indexColumnType3, indexColumnType3);
-			this.indexColumnType3 = indexColumnType3;
-		}
-	}
-
-	public String getIndexColumnType4() {
-		return indexColumnType4;
-	}
-
-	public void setIndexColumnType4(String indexColumnType4) {
-		if (this.indexColumnType4 != indexColumnType4) {
-			firePropertyChange("indexColumnType4", this.indexColumnType4, indexColumnType4);
-			this.indexColumnType4 = indexColumnType4;
-		}
-	}
-
-	public String getIndexColumnType5() {
-		return indexColumnType5;
-	}
-
-	public void setIndexColumnType5(String indexColumnType5) {
-		if (this.indexColumnType5 != indexColumnType5) {
-			firePropertyChange("indexColumnType5", this.indexColumnType5, indexColumnType5);
-			this.indexColumnType5 = indexColumnType5;
-		}
-	}
-
-	public String getIndexColumnType6() {
-		return indexColumnType6;
-	}
-
-	public void setIndexColumnType6(String indexColumnType6) {
-		if (this.indexColumnType6 != indexColumnType6) {
-			firePropertyChange("indexColumnType6", this.indexColumnType6, indexColumnType6);
-			this.indexColumnType6 = indexColumnType6;
-		}
-	}
-
-	public String getIndexColumnType7() {
-		return indexColumnType7;
-	}
-
-	public void setIndexColumnType7(String indexColumnType7) {
-		if (this.indexColumnType7 != indexColumnType7) {
-			firePropertyChange("indexColumnType7", this.indexColumnType7, indexColumnType7);
-			this.indexColumnType7 = indexColumnType7;
-		}
-	}
-
-	public String getIndexColumnType8() {
-		return indexColumnType8;
-	}
-
-	public void setIndexColumnType8(String indexColumnType8) {
-		if (this.indexColumnType8 != indexColumnType8) {
-			firePropertyChange("indexColumnType8", this.indexColumnType8, indexColumnType8);
-			this.indexColumnType8 = indexColumnType8;
-		}
-	}
-
-	public String getIndexColumnType9() {
-		return indexColumnType9;
-	}
-
-	public void setIndexColumnType9(String indexColumnType9) {
-		if (this.indexColumnType9 != indexColumnType9) {
-			firePropertyChange("indexColumnType9", this.indexColumnType9, indexColumnType9);
-			this.indexColumnType9 = indexColumnType9;
-		}
-	}
-
-
-
 
 }
-
-
