@@ -137,7 +137,7 @@ public class LoginDialog extends JDialog {
 			}
 			System.out.println("Set here 2!");
 			loginButton.setEnabled(true);
-			
+
 		}
 
 		@Override
@@ -151,7 +151,7 @@ public class LoginDialog extends JDialog {
 					new ListerProgressBarUpdater(progressBar, this);
 				new javax.swing.Timer(100, progressBarUpdater).start();
 				db.populate();
-				
+
 				loginWasSuccessful = true;
 			} catch (ArchitectException e) {
 				e.printStackTrace();
@@ -251,7 +251,7 @@ public class LoginDialog extends JDialog {
 		layout.setColumnGroups(new int [][] { {2,5},{4,7}});
 
 		CellConstraints cc = new CellConstraints();
-		JLabel line1 = new JLabel("Please choose one of the following databases for loginWasSuccessful:");
+		JLabel line1 = new JLabel("Please choose one of the following databases for login:");
 		connectionModel = new ConnectionComboBoxModel(MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
 		connectionModel.addListDataListener(connListener);
 		dbList = new JComboBox(connectionModel);
