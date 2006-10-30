@@ -60,6 +60,7 @@ public class MatchTranslateTableModel extends AbstractTableModel {
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		PlMatchTranslate trans = getRow(rowIndex);
 		Transaction tx = HibernateUtil.primarySession().beginTransaction();
+		try {
 		switch(columnIndex) {
 		case 0:
 			for (PlMatchTranslate t: translate.getPlMatchTranslations()){
@@ -88,6 +89,9 @@ public class MatchTranslateTableModel extends AbstractTableModel {
 			throw new IndexOutOfBoundsException("Invalid column index");
 		}
 		tx.commit();
+		} finally {
+			tx.rollback();
+		}
 	}
 	
 	public PlMatchTranslate getRow(int rowIndex) {

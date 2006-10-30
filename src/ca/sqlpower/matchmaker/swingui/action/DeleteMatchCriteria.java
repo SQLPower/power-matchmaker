@@ -30,11 +30,16 @@ public class DeleteMatchCriteria extends AbstractAction {
 		}
 		Collections.sort(selected);
 		PlMatchCriteriaHome home = new PlMatchCriteriaHome();
+		System.out.println("BEGIND ELETE \n"+model.getChildren());
+		System.out.println(selected);
 		for(int i= selected.size()-1; i>=0;i--){
 			PlMatchCriterion plMatchCriterion = (PlMatchCriterion) model.getChildren().get(i);
-			model.removePlMatchCriteria(plMatchCriterion);
-			plMatchCriterion.setPlMatchGroup(null);
+			if ( !model.removePlMatchCriteria(plMatchCriterion)) {
+				System.out.println(" DELETE FAILED");;
+			}
+			home.delete(plMatchCriterion);
 		}
+		System.out.println(model.getChildren() + "\nEND DELETE");
 		home.flush();		
 	}
 
