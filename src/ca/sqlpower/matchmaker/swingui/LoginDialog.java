@@ -2,11 +2,14 @@ package ca.sqlpower.matchmaker.swingui;
 
 
 
+
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -36,6 +39,8 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
+import ca.sqlpower.architect.swingui.SwingUserSettings;
+import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -44,6 +49,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 public class LoginDialog extends JDialog {
+
 
 	private static Logger logger = Logger.getLogger(LoginDialog.class);
 	private JComboBox dbList;
@@ -249,14 +255,7 @@ public class LoginDialog extends JDialog {
 				" 10dlu,pref,4dlu,pref,10dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,10dlu,pref,10dlu,pref,10dlu"); // rows
 
 		layout.setColumnGroups(new int [][] { {2,5},{4,7}});
-
 		CellConstraints cc = new CellConstraints();
-		JLabel line1 = new JLabel("Please choose one of the following databases for login:");
-		connectionModel = new ConnectionComboBoxModel(MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
-		connectionModel.addListDataListener(connListener);
-		dbList = new JComboBox(connectionModel);
-		JLabel dbSourceName1 = new JLabel("Database source name:");
-
 
 		JLabel userIDLabel = new JLabel("User ID:");
 		JLabel passwordLabel = new JLabel("Password:");
@@ -265,7 +264,17 @@ public class LoginDialog extends JDialog {
 		password = new JPasswordField(20);
 		dbSourceName = new JLabel();
 
+		JLabel line1 = new JLabel("Please choose one of the following databases for login:");
+		connectionModel = new ConnectionComboBoxModel(MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
+		connectionModel.addListDataListener(connListener);
+		dbList = new JComboBox(connectionModel);
+		JLabel dbSourceName1 = new JLabel("Database source name:");
 
+		Preferences pref = PreferencesManager.getDefaultInstance().getRootNode();
+		String lastLogin = pref.get(SwingUserSettings.LAST_LOGIN_DATA_SOURCE,null);
+		if ( lastLogin != null ) {
+			connectionModel.setSelectedItem(lastLogin);
+		}
 		ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
 		JButton helpLoginButton = new JButton(helpLoginAction );
 		helpLoginButton.setText("Help");

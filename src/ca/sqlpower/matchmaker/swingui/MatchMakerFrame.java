@@ -485,7 +485,7 @@ public class MatchMakerFrame extends JFrame {
 			List<PlMatchTranslateGroup> nullList = new ArrayList<PlMatchTranslateGroup>();
 			nullList.add(null);
 			for (PlMatchTranslateGroup group: translations){
-				
+
 				group.getPlMatchTranslations().removeAll(nullList);
 			}
 		}
@@ -534,7 +534,7 @@ public class MatchMakerFrame extends JFrame {
 		prefs.putInt(SwingUserSettings.MAIN_FRAME_Y, getLocation().y);
 		prefs.putInt(SwingUserSettings.MAIN_FRAME_WIDTH, getWidth());
 		prefs.putInt(SwingUserSettings.MAIN_FRAME_HEIGHT, getHeight());
-
+		prefs.put(SwingUserSettings.LAST_LOGIN_DATA_SOURCE,getDatabase().getDataSource().getName());
 		configFile.write(getArchitectSession());
 
 		CoreUserSettings us = getUserSettings();
