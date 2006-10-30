@@ -1,14 +1,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
-
-
-
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -31,10 +24,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
@@ -49,8 +39,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 public class LoginDialog extends JDialog {
-
-
+    
 	private static Logger logger = Logger.getLogger(LoginDialog.class);
 	private JComboBox dbList;
 	private JTextField userID;
@@ -77,148 +66,74 @@ public class LoginDialog extends JDialog {
 		SQLDatabase db = null;
 		boolean loginWasSuccessful = false;
 
-		@Override
-		public void cleanup() {
-			progressBar.setVisible(false);
-			if (getDoStuffException() != null) {
-				ASUtils.showExceptionDialog("Login failed", getDoStuffException());
-			} else if (db != null && db.isPopulated() && loginWasSuccessful) {
-				SQLTable defParam = null;
-				SQLColumn schemaVersionCol = null;
-				try {
-
-					defParam = db.getTableByName("DEF_PARAM");
-					schemaVersionCol = defParam.getColumnByName("SCHEMA_VERSION");
-
-					String ver = null;
-			        Statement stmt = null;
-			        ResultSet rs = null;
-			        try {
-			            stmt = db.getConnection().createStatement();
-			            String defParamTableName = DDLUtils.toQualifiedName(
-			            		defParam.getCatalogName(),
-			            		defParam.getSchemaName(),
-			            		defParam.getName());
-			            StringBuffer sql = new StringBuffer();
-			            sql.append("SELECT ");
-			            sql.append(schemaVersionCol.getName());
-			            sql.append(" FROM ");
-			            sql.append(defParamTableName);
-			            rs = stmt.executeQuery(sql.toString());
-
-			            if (rs.next()) {
-			            	 ver = rs.getString(1);
-			            }
-
-			            logger.debug("connected to "+db.getName()+
-			            		"  schema version: " + ver );
-			            LoginDialog.this.setVisible(false);
-			        } catch (SQLException e) {
-			            throw new ArchitectException("could not read def_param",e);
-			        } finally {
-			        	try {
-			        		if (rs != null)
-			        			rs.close();
-			        		if (stmt != null)
-			        			stmt.close();
-			        	} catch (SQLException e) {
-			        		e.printStackTrace();
-			        	}
-
-			        }
-
-
-			        // Now let someone else know we did something
-			        // XXX Change this to fire an event so we don't need to know who's interested.
-			        MatchMakerFrame.getMainInstance().newLogin(db);
-				} catch (ArchitectException e) {
-					ASUtils.showExceptionDialogNoReport(LoginDialog.this,
-							"Pl Schema Access Error", e );
-				} finally {
-					System.out.println("Set here 1!");
-					loginButton.setEnabled(true);
-				}
-			} else {
-				JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
-			}
-			System.out.println("Set here 2!");
-			loginButton.setEnabled(true);
-
-		}
-
-		@Override
-		/** Called (once) by run() in superclass */
-		public void doStuff() throws Exception {
-			System.out.println("Set here disabled 1!");
-			loginButton.setEnabled(false);
-			loginWasSuccessful = false;
-			try {
-				ListerProgressBarUpdater progressBarUpdater =
-					new ListerProgressBarUpdater(progressBar, this);
-				new javax.swing.Timer(100, progressBarUpdater).start();
-				db.populate();
-
-				loginWasSuccessful = true;
-			} catch (ArchitectException e) {
-				e.printStackTrace();
-				logger.debug(
-					"Unexpected exception in ConnectionListener",	e);
-				ASUtils.showExceptionDialogNoReport(LoginDialog.this,
-						"Unexpected exception in ConnectionListener",
-						e );
-                loginWasSuccessful = false;
-			}
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			System.out.println("Set here disabled 2!");
-			loginButton.setEnabled(false);
-			if ( LoginDialog.this.dbSource == null ) {
-				JOptionPane.showMessageDialog(LoginDialog.this,
-						"Please select a database connection first!",
-						"Unknown database connection",
-						JOptionPane.ERROR_MESSAGE);
-				System.out.println("Set here 3!");
-				loginButton.setEnabled(true);
-				return;
-			}
+        public void actionPerformed(ActionEvent e) {
+            logger.debug("LoginAction.actionPerformed(): disabling login button");
+            loginButton.setEnabled(false);
+            if ( LoginDialog.this.dbSource == null ) {
+                JOptionPane.showMessageDialog(LoginDialog.this,
+                        "Please select a database connection first!",
+                        "Unknown database connection",
+                        JOptionPane.ERROR_MESSAGE);
+                logger.debug("LoginAction.actionPerformed(): enabling login button (connection not specified)");
+                loginButton.setEnabled(true);
+                return;
+            }
 
             //We create a copy of the data source and change the userID and password
             //and use that instead for the loginWasSuccessful.  We do not want to change the
             //default userID and password for the connection in here.
-            ArchitectDataSource tempDbSource = new ArchitectDataSource();
-            tempDbSource.setDisplayName(dbSource.getDisplayName());
-            tempDbSource.setDriverClass(dbSource.getDriverClass());
-            tempDbSource.setPlDbType(dbSource.getPlDbType());
-            tempDbSource.setUrl(dbSource.getUrl());
-            tempDbSource.setPlSchema(dbSource.getPlSchema());
+            ArchitectDataSource tempDbSource = new ArchitectDataSource(dbSource);
             tempDbSource.setUser(userID.getText());
             tempDbSource.setPass(new String(password.getPassword()));
 
-			db = new SQLDatabase(tempDbSource);
-			String driverClass = db.getDataSource().getDriverClass();
-			if (driverClass == null || driverClass.length() == 0) {
-				JOptionPane.showMessageDialog(LoginDialog.this,
-						"Datasource not configured (no JDBC Driver)",
-						"Database connection incomplete",
-						JOptionPane.ERROR_MESSAGE);
-				System.out.println("Set here 4!");
-				loginButton.setEnabled(true);
-				return;
-			}
-			try {
-				progressMonitor = db.getProgressMonitor();
-				new Thread(this).start();
-			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialogNoReport(LoginDialog.this,
-						"Connection Error", e1 );
-			} finally {
-				System.out.println("Set here 5!");
+            db = new SQLDatabase(tempDbSource);
+            String driverClass = db.getDataSource().getDriverClass();
+            if (driverClass == null || driverClass.length() == 0) {
+                JOptionPane.showMessageDialog(LoginDialog.this,
+                        "Datasource not configured (no JDBC Driver)",
+                        "Database connection incomplete",
+                        JOptionPane.ERROR_MESSAGE);
+                logger.debug("LoginAction.actionPerformed(): enabling login button (connection has no driver class");
                 loginButton.setEnabled(true);
+                return;
+            }
+            try {
+                ListerProgressBarUpdater progressBarUpdater =
+                    new ListerProgressBarUpdater(progressBar, this);
+                new javax.swing.Timer(100, progressBarUpdater).start();
+
+                progressMonitor = db.getProgressMonitor();
+                new Thread(this).start();
+                // doStuff() will get invoked soon on the new thread
+            } catch (ArchitectException e1) {
+                ASUtils.showExceptionDialogNoReport(LoginDialog.this,
+                        "Connection Error", e1 );
+            }
+        }
+
+        @Override
+        /** Called (once) by run() in superclass */
+        public void doStuff() throws Exception {
+            loginWasSuccessful = false;
+            db.populate();
+            loginWasSuccessful = true;
+        }
+
+		@Override
+		public void cleanup() {
+			if (getDoStuffException() != null) {
+				ASUtils.showExceptionDialog("Login failed", getDoStuffException());
+			} else if (db != null && db.isPopulated() && loginWasSuccessful) {
+                // XXX Change this to fire an event so we don't need to know who's interested.
+                // XXX this takes a while (~10 seconds) and during that time, the UI is frozen.
+                MatchMakerFrame.getMainInstance().newLogin(db);
+			    LoginDialog.this.setVisible(false);
+			} else {
+				JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
 			}
-
+            logger.debug("LoginAction.actionPerformed(): enabling login button (login has either failed or not; dialog might still be showing)");
+			loginButton.setEnabled(true);
 		}
-
 	}
 
 	private ListDataListener connListener = new ListDataListener(){
@@ -276,7 +191,7 @@ public class LoginDialog extends JDialog {
 			connectionModel.setSelectedItem(lastLogin);
 		}
 		ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
-		JButton helpLoginButton = new JButton(helpLoginAction );
+		JButton helpLoginButton = new JButton(helpLoginAction);
 		helpLoginButton.setText("Help");
 		bbBuilder.addGridded (helpLoginButton);
 		bbBuilder.addRelatedGap();
