@@ -323,8 +323,9 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			bbb.addUnrelatedGap();
 			bbb.addGridded(deleteMatchCriterion);
 			bbb.addUnrelatedGap();
-			bbb.addGridded(copyMatchCriterion);
-			bbb.addGridded(pasteMatchCriterion);
+			// TODO Add Copy and Paste
+			//bbb.addGridded(copyMatchCriterion);
+			//bbb.addGridded(pasteMatchCriterion);
 			bbb.addGlue();
 			pb.add(bbb.getPanel(),cl.xyw(2, 10, 7));
 			
