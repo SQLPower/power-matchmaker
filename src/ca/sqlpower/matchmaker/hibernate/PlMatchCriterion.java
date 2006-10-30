@@ -196,6 +196,11 @@ public class PlMatchCriterion extends DefaultHibernateObject<PlMatchCriterion> i
 	public boolean isMatchFirstPlusOneInd() {
 		return this.matchFirstPlusOneInd;
 	}
+	
+	public PlMatch getMatch(){
+		if (plMatchGroup == null) return null;
+		return plMatchGroup.getPlMatch();
+	}
 
 	@Override
 	public boolean equals(Object obj) {

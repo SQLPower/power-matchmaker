@@ -46,10 +46,10 @@
 		<property name="lastUpdateOsUser" type="string">
 			<column name="LAST_update_OS_USER" length="30" />
 		</property>
-		<set name="plMatchCriteria" access="field" inverse="true"
+		<set name="plMatchCriteria" access="field" cascade="all" inverse="true"
 			lazy="true" fetch="subselect">
 			<key>
-				<column name="GROUP_OID" length="30" not-null="true" />
+				<column name="GROUP_OID" not-null="true" />
 			</key>
 			<one-to-many
 				class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterion" />
