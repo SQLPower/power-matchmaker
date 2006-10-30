@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
@@ -162,16 +163,16 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			DatabaseConnectionManager.this.setVisible(false);
 		}};
 
-	private DatabaseConnectionManager() throws HeadlessException {
-		super();
+
+	private DatabaseConnectionManager(Frame owner) throws HeadlessException {
+		super(owner);
 		newDatabaseConnectionAction.setCallBack(this);
 		newDatabaseConnectionAction.setComponentParent(this);
 		newDatabaseConnectionAction.setParent(this);
 	}
 
-
-	public DatabaseConnectionManager(PlDotIni plDotIni) {
-		this();
+	public DatabaseConnectionManager(Frame owner, PlDotIni plDotIni) {
+		this(owner);
 		this.plDotIni = plDotIni;
 		setTitle("Database Connection Manager");
 		panel = createPanel();
@@ -304,6 +305,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	public static void main(String args[]) throws ArchitectException {
 
 		final JDialog d = new DatabaseConnectionManager(
+				MatchMakerFrame.getMainInstance(),
 				MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
 
 		SwingUtilities.invokeLater(new Runnable() {

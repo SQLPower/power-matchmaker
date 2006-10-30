@@ -178,6 +178,7 @@ public class MatchMakerFrame extends JFrame {
 	protected Action tableQueryAction = new AbstractAction("Table Explorer") {
 		public void actionPerformed(ActionEvent e) {
 			TableQueryFrame f = new TableQueryFrame();
+			f.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
 			f.pack();
 			f.setVisible(true);
 		}
@@ -188,6 +189,7 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			DatabaseConnectionManager dm = new DatabaseConnectionManager(
+					MatchMakerFrame.getMainInstance(),
 					MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni()); // XXX
 			dm.pack();
 			dm.setVisible(true);
@@ -368,8 +370,8 @@ public class MatchMakerFrame extends JFrame {
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
 		toolsMenu.add(tableQueryAction);
-		toolsMenu.add(new EditTranslateAction(getMainInstance().getOwner()));
-        toolsMenu.add(new SQLRunnerAction());
+		toolsMenu.add(new EditTranslateAction(getMainInstance()));
+        toolsMenu.add(new SQLRunnerAction(this.getMainInstance()));
 		menuBar.add(toolsMenu);
 
         JMenu windowMenu = new JMenu("Window");
