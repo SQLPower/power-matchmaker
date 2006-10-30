@@ -58,6 +58,9 @@ public abstract class DefaultHome<t> {
 
 	public abstract String getBusinessClass();
 	
+	/**
+     * run the sql and commit all changes
+     */
 	public void flush(){
 		Transaction tx = getCurrentSession().beginTransaction();
 		

@@ -77,10 +77,6 @@ public class PlMatchHome extends DefaultHome<PlMatch> {
             throw re;
         }
     }
-    
-    public void flush() {
-    	getCurrentSession().flush();
-    }
 
 	@Override
 	public String getBusinessClass() {
