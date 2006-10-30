@@ -147,7 +147,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 				return;
 			}
 			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
-			cancelAction.actionPerformed(null);
+			closeAction.actionPerformed(null);
 			LoginDialog l = new LoginDialog();
 			l.setDbSource(dbcs);
 			l.pack();
@@ -155,7 +155,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		}
 	};
 
-	private Action cancelAction = new AbstractAction(){
+	private Action closeAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			if ( getNewConnectionDialog() != null && getNewConnectionDialog().isVisible() )
 				return;
@@ -237,8 +237,8 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		bsb.addRelatedGap();
 
 
-		JButton cancelButton = new JButton(cancelAction);
-		cancelButton.setText("Exit");
+		JButton cancelButton = new JButton(closeAction);
+		cancelButton.setText("Close");
 		bsb.addGridded(cancelButton);
 
 
@@ -247,7 +247,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		ActionMap actionMap = c.getActionMap();
 
 		inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "cancel");
-		actionMap.put("cancel", cancelAction);
+		actionMap.put("cancel", closeAction);
 
 
 		pb.add(bsb.getPanel(), cc.xy(4,4));
