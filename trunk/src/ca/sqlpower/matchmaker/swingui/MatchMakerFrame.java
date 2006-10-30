@@ -90,7 +90,7 @@ public class MatchMakerFrame extends JFrame {
     private JMenu databaseMenu;
     private JSplitPane splitPane;
 
-	private String lastExportAccessPath = null;
+	private String lastImportExportAccessPath = null;
 	protected AboutAction aboutAction;
  	protected  JComponent contentPane;
 
@@ -229,7 +229,7 @@ public class MatchMakerFrame extends JFrame {
 		synchronized (MatchMakerFrame.class) {
 			mainInstance = this;
 		}
-        setIconImage(new ImageIcon(getClass().getResource("/icons/Architect16.png")).getImage());
+		setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
 	    // close handled by window listener
 	    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	    architectSession = ArchitectSession.getInstance();
@@ -430,6 +430,8 @@ public class MatchMakerFrame extends JFrame {
 		bounds.height = prefs.getInt(SwingUserSettings.MAIN_FRAME_HEIGHT, 440);
 		setBounds(bounds);
 		addWindowListener(new MatchMakerFrameWindowListener());
+
+		lastImportExportAccessPath = prefs.get(SwingUserSettings.LAST_IMPORT_EXPORT_PATH,null);
 	}
 
 	public void newLogin(SQLDatabase db){
@@ -530,6 +532,10 @@ public class MatchMakerFrame extends JFrame {
 		if ( getDatabase() != null && getDatabase().getDataSource() != null ) {
 			prefs.put(SwingUserSettings.LAST_LOGIN_DATA_SOURCE,
 					getDatabase().getDataSource().getName());
+		}
+		if ( lastImportExportAccessPath != null ) {
+			prefs.put(SwingUserSettings.LAST_IMPORT_EXPORT_PATH,
+					lastImportExportAccessPath);
 		}
 		configFile.write(getArchitectSession());
 		CoreUserSettings us = getUserSettings();
@@ -674,13 +680,13 @@ public class MatchMakerFrame extends JFrame {
 		}
 	}
 
-	public String getLastExportAccessPath() {
-		return lastExportAccessPath;
+	public String getLastImportExportAccessPath() {
+		return lastImportExportAccessPath;
 	}
 
-	public void setLastExportAccessPath(String lastExportAccessPath) {
-		if (this.lastExportAccessPath != lastExportAccessPath) {
-			this.lastExportAccessPath = lastExportAccessPath;
+	public void setLastImportExportAccessPath(String lastExportAccessPath) {
+		if (this.lastImportExportAccessPath != lastExportAccessPath) {
+			this.lastImportExportAccessPath = lastExportAccessPath;
 			//TODO fire event
 		}
 	}
