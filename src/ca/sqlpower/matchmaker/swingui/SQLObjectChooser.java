@@ -1,12 +1,12 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
@@ -42,7 +42,17 @@ public class SQLObjectChooser {
 	private SQLDatabase db;
 
 
-	public SQLObjectChooser(final JFrame parent, List<ArchitectDataSource> dataSources) {
+    /**
+     * Creates a set of Swing components that allow the user to select a particular
+     * database object, up to and including children of SQLTable.
+     * 
+     * @param owningComponent the component that will house the sqlobject chooser
+     * components of this instance.  This is used only to attach error report dialogs
+     * to the correct parent component.
+     * @param dataSources The list of data sources that the datasource chooser will
+     * contain.
+     */
+	public SQLObjectChooser(final Component owningComponent, List<ArchitectDataSource> dataSources) {
 
 		dataSourceComboBox.setModel(new DefaultComboBoxModel(dataSources.toArray()));
 		dataSourceComboBox.setSelectedItem(null);
@@ -52,7 +62,7 @@ public class SQLObjectChooser {
 				try {
 					validate();
 				} catch (ArchitectException e1) {
-					ASUtils.showExceptionDialogNoReport(parent,
+					ASUtils.showExceptionDialogNoReport(owningComponent,
 							"Database SQL error",e1);
 				}
 			}};

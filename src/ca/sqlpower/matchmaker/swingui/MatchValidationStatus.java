@@ -1,6 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.Dialog;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -48,12 +47,6 @@ public class MatchValidationStatus extends JDialog {
 
 	public MatchValidationStatus(PlMatch match, JFrame frameParent) throws HeadlessException {
 		super(frameParent,"View Match Validation Status");
-		setMatch(match);
-		createUI();
-	}
-
-	public MatchValidationStatus(PlMatch match, Dialog owner) throws HeadlessException {
-		super(owner,"View Match Validation Status");
 		setMatch(match);
 		createUI();
 	}

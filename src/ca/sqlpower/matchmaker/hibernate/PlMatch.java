@@ -92,11 +92,11 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
      private Date checkedOutDate;
      private String checkedOutUser;
      private String checkedOutOsUser;
-     private List<String> indexColumnNames;
+     private List<String> indexColumnNames = new ArrayList<String>();
      private String tempSourceTableName;
      private String tempCandDupTableName;
      private String fromClauseDb;
-     private List<String> indexColumnTypes;
+     private List<String> indexColumnTypes = new ArrayList<String>();
      private boolean truncateCandDupInd;
      private boolean matchSendEmailInd;
      private boolean mergeSendEmailInd;

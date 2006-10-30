@@ -11,6 +11,7 @@ import javax.swing.JSplitPane;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.swingui.MatchEditor;
 
 public final class NewMatchAction extends AbstractAction {
@@ -26,7 +27,7 @@ public final class NewMatchAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 	    MatchEditor me;
 		try {
-			me = new MatchEditor(null,folder,splitPane);
+			me = new MatchEditor(new PlMatch(), folder, splitPane);
 		} catch (ArchitectException e1) {
 			throw new ArchitectRuntimeException(e1);
 		}
