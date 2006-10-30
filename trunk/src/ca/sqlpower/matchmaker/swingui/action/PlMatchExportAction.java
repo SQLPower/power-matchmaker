@@ -234,66 +234,22 @@ public class PlMatchExportAction extends AbstractAction {
             		ArchitectUtils.escapeXML(match.getTempCandDupTableName())+
             		"</TEMP_CAN_DUP_TABLE_NAME>");
 
-            ioo.println(out, "<INDEX_COLUMN_NAME0>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName0())+
-            		"</INDEX_COLUMN_NAME0>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE0>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType0())+
-            		"</INDEX_COLUMN_TYPE0>");
-            ioo.println(out, "<INDEX_COLUMN_NAME1>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName1())+
-            		"</INDEX_COLUMN_NAME1>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE1>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType1())+
-            		"</INDEX_COLUMN_TYPE1>");
-            ioo.println(out, "<INDEX_COLUMN_NAME2>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName2())+
-            		"</INDEX_COLUMN_NAME2>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE2>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType2())+
-            		"</INDEX_COLUMN_TYPE2>");
-            ioo.println(out, "<INDEX_COLUMN_NAME3>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName3())+
-            		"</INDEX_COLUMN_NAME3>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE3>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType3())+
-            		"</INDEX_COLUMN_TYPE3>");
-            ioo.println(out, "<INDEX_COLUMN_NAME4>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName4())+
-            		"</INDEX_COLUMN_NAME4>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE4>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType4())+
-            		"</INDEX_COLUMN_TYPE4>");
-            ioo.println(out, "<INDEX_COLUMN_NAME5>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName5())+
-            		"</INDEX_COLUMN_NAME5>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE5>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType5())+
-            		"</INDEX_COLUMN_TYPE5>");
-            ioo.println(out, "<INDEX_COLUMN_NAME6>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName6())+
-            		"</INDEX_COLUMN_NAME6>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE6>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType6())+
-            		"</INDEX_COLUMN_TYPE6>");
-            ioo.println(out, "<INDEX_COLUMN_NAME7>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName7())+
-            		"</INDEX_COLUMN_NAME7>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE7>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType7())+
-            		"</INDEX_COLUMN_TYPE7>");
-            ioo.println(out, "<INDEX_COLUMN_NAME8>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName8())+
-            		"</INDEX_COLUMN_NAME8>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE8>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType8())+
-            		"</INDEX_COLUMN_TYPE8>");
-            ioo.println(out, "<INDEX_COLUMN_NAME9>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnName9())+
-            		"</INDEX_COLUMN_NAME9>");
-            ioo.println(out, "<INDEX_COLUMN_TYPE9>"+
-            		ArchitectUtils.escapeXML(match.getIndexColumnType9())+
-            		"</INDEX_COLUMN_TYPE9>");
+            List<String> indexColNames = match.getIndexColumnNames();
+            List<String> indexColTypes = match.getIndexColumnTypes();
+            if (indexColNames.size() != indexColTypes.size()) {
+                throw new IllegalStateException(
+                        "IndexColNames has "+indexColNames.size()+
+                        " items, but indexColTypes has "+indexColTypes.size()+
+                        " items!  They have to be the same!");
+            }
+            for (int i = 0, n = indexColNames.size(); i < n; i++) {
+                ioo.println(out, "<INDEX_COLUMN_NAME"+i+">"+
+                        ArchitectUtils.escapeXML(indexColNames.get(i))+
+                        "</INDEX_COLUMN_NAME"+i+">");
+                ioo.println(out, "<INDEX_COLUMN_TYPE"+i+">"+
+                        ArchitectUtils.escapeXML(indexColTypes.get(i))+
+                        "</INDEX_COLUMN_TYPE"+i+">");
+            }
 
             ioo.println(out, "<MERGE_SEND_EMAIL_IND>"+
             		ArchitectUtils.escapeXML(match.isMergeSendEmailInd()?"Y":"N")+
