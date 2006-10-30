@@ -234,65 +234,35 @@
 		<property name="checkedOutOsUser" type="string">
 			<column name="checked_out_os_user" length="30" />
 		</property>
-		<property name="indexColumnName0" type="string">
-			<column name="index_column_name0" length="50" />
+		<property name="indexColumnNames">
+		    <column name="index_column_name0" length="50" />
+		    <column name="index_column_name1" length="50" />
+		    <column name="index_column_name2" length="50" />
+		    <column name="index_column_name3" length="50" />
+		    <column name="index_column_name4" length="50" />
+		    <column name="index_column_name5" length="50" />
+		    <column name="index_column_name6" length="50" />
+		    <column name="index_column_name7" length="50" />
+		    <column name="index_column_name8" length="50" />
+		    <column name="index_column_name9" length="50" />
+	    	<type name="ca.sqlpower.matchmaker.util.ListToMultiColumns">
+    			<param name="columnCount">10</param>
+    		</type>
 		</property>
-		<property name="indexColumnName1" type="string">
-			<column name="index_column_name1" length="50" />
-		</property>
-		<property name="indexColumnName2" type="string">
-			<column name="index_column_name2" length="50" />
-		</property>
-		<property name="indexColumnName3" type="string">
-			<column name="index_column_name3" length="50" />
-		</property>
-		<property name="indexColumnName4" type="string">
-			<column name="index_column_name4" length="50" />
-		</property>
-		<property name="indexColumnName5" type="string">
-			<column name="index_column_name5" length="50" />
-		</property>
-		<property name="indexColumnName6" type="string">
-			<column name="index_column_name6" length="50" />
-		</property>
-		<property name="indexColumnName7" type="string">
-			<column name="index_column_name7" length="50" />
-		</property>
-		<property name="indexColumnName8" type="string">
-			<column name="index_column_name8" length="50" />
-		</property>
-		<property name="indexColumnName9" type="string">
-			<column name="index_column_name9" length="50" />
-		</property>
-		<property name="indexColumnType0" type="string">
+		<property name="indexColumnTypes">
 			<column name="index_column_type0" length="30" />
-		</property>
-		<property name="indexColumnType1" type="string">
 			<column name="index_column_type1" length="30" />
-		</property>
-		<property name="indexColumnType2" type="string">
 			<column name="index_column_type2" length="30" />
-		</property>
-		<property name="indexColumnType3" type="string">
 			<column name="index_column_type3" length="30" />
-		</property>
-		<property name="indexColumnType4" type="string">
 			<column name="index_column_type4" length="30" />
-		</property>
-		<property name="indexColumnType5" type="string">
 			<column name="index_column_type5" length="30" />
-		</property>
-		<property name="indexColumnType6" type="string">
 			<column name="index_column_type6" length="30" />
-		</property>
-		<property name="indexColumnType7" type="string">
 			<column name="index_column_type7" length="30" />
-		</property>
-		<property name="indexColumnType8" type="string">
 			<column name="index_column_type8" length="30" />
-		</property>
-		<property name="indexColumnType9" type="string">
 			<column name="index_column_type9" length="30" />
+	    	<type name="ca.sqlpower.matchmaker.util.ListToMultiColumns">
+    			<param name="columnCount">10</param>
+    		</type>
 		</property>
 		<property name="tempSourceTableName" type="string">
 			<column name="temp_source_table_name" length="30" />
