@@ -125,6 +125,8 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
+			JOptionPane.showMessageDialog(mainInstance,
+			"This action is not yet available. We apologize for the inconvenience");
 
 		}
 
@@ -150,7 +152,8 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-
+			JOptionPane.showMessageDialog(mainInstance,
+			"This action is not yet available. We apologize for the inconvenience");
 		}
 
 	};
@@ -159,7 +162,7 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(null,
+			JOptionPane.showMessageDialog(mainInstance,
 				"This action is not yet available. We apologize for the inconvenience");
 		}
 
@@ -169,18 +172,18 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(null,
+			JOptionPane.showMessageDialog(mainInstance,
 				"This action is not yet available. We apologize for the inconvenience");
 		}
 	};
 
-	protected Action helpAction = new HelpAction();
+	protected Action helpAction;
 
 	protected Action databasePreferenceAction = new AbstractAction("Database Preference") {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(null,
+			JOptionPane.showMessageDialog(mainInstance,
 			"This action is not yet available. We apologize for the inconvenience");
 		}
 	};
@@ -314,13 +317,14 @@ public class MatchMakerFrame extends JFrame {
 		}
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+
 		// Create actions
-		// TODO aboutAction = new AboutAction();
-        Action aboutAction = new AbstractAction(){
+		Action aboutAction = new AbstractAction("About"){
 
 			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-
+				JOptionPane.showMessageDialog(mainInstance,
+					"MatchMaker 0.1", "About MatchMaker",
+					JOptionPane.INFORMATION_MESSAGE);
 			}};
 
 		newMatchAction = new NewMatchAction("New Match",null,splitPane);
@@ -381,14 +385,14 @@ public class MatchMakerFrame extends JFrame {
 		toolsMenu.setMnemonic('t');
 		toolsMenu.add(tableQueryAction);
 		toolsMenu.add(new EditTranslateAction(getMainInstance()));
-        toolsMenu.add(new SQLRunnerAction(this.getMainInstance()));
+        toolsMenu.add(new SQLRunnerAction(mainInstance));
 		menuBar.add(toolsMenu);
 
         JMenu windowMenu = new JMenu("Window");
         windowMenu.setMnemonic('w');
-        //TODO windowMenu.add(aboutAction);
-        //windowMenu.add(aboutAction);
         menuBar.add(windowMenu);
+
+        helpAction = new HelpAction(mainInstance);
 
 		JMenu helpMenu = new JMenu("Help");
 		helpMenu.setMnemonic('h');
@@ -396,7 +400,7 @@ public class MatchMakerFrame extends JFrame {
             helpMenu.add(aboutAction);
             helpMenu.addSeparator();
         }
-        //helpMenu.add(helpAction);
+        helpMenu.add(helpAction);
 		menuBar.add(helpMenu);
 		setJMenuBar(menuBar);
 
