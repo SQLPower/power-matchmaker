@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
@@ -42,33 +43,29 @@ public class FilterComponentsPanel extends JPanel {
         editButton = new JButton(new AbstractAction("Edit"){
 
             public void actionPerformed(ActionEvent e) {
-            	Container parent = FilterComponentsPanel.this;
+            	Container parent = SwingUtilities.getWindowAncestor(FilterComponentsPanel.this);
             	FilterMakerDialog filterMaker = null;
-            	while(parent != null  ){
-            		parent = parent.getParent();
-            		//We set the getfilterTextArea to be uneditable so we don't run
-                    //into conflicts with the filterMaker, the filterMaker will
-                    //reenable its editability automatically
-                    if (parent instanceof JFrame){
-                        //Last parameter is false because we want a JComboBox for the last input component
-                    	filterMaker = new FilterMakerDialog((JFrame)parent,getFilterTextArea(),getTable(),false);
-                        getFilterTextArea().setEditable(false);
-                    	break;
-                    } else if (parent instanceof JDialog) {
-                        //Last parameter is false because we want a JComboBox for the last input component
-                    	filterMaker = new FilterMakerDialog((JDialog)parent,getFilterTextArea(),getTable(), false);
-                        getFilterTextArea().setEditable(false);
-                    	break;
-                    }
+
+            	// We set the getfilterTextArea to be uneditable so we don't run
+            	// into conflicts with the filterMaker, the filterMaker will
+            	// reenable its editability automatically
+            	if (parent instanceof JFrame){
+            		//Last parameter is false because we want a JComboBox for the last input component
+            		filterMaker = new FilterMakerDialog((JFrame)parent,getFilterTextArea(),getTable(),false);
+            		getFilterTextArea().setEditable(false);
+
+            	} else if (parent instanceof JDialog) {
+            		//Last parameter is false because we want a JComboBox for the last input component
+            		filterMaker = new FilterMakerDialog((JDialog)parent,getFilterTextArea(),getTable(), false);
+            		getFilterTextArea().setEditable(false);
             	}
-            	if (filterMaker != null) {
-            		filterMaker.pack();
-            		filterMaker.setVisible(true);
-            	} else {
+
+            	if (filterMaker == null) {
             		logger.info("Warning: parent neither JFrame nor JDialog");
             		throw new IllegalStateException("This panel is not in a window");
             	}
-
+            	filterMaker.pack();
+            	filterMaker.setVisible(true);
             }
         });
 
