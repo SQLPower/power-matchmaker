@@ -20,6 +20,7 @@
 		</generator>
     </id>
 
+
 	<property name="columnName" type="string">
 		<column name="COLUMN_NAME" length="30" />
 	</property>
@@ -27,8 +28,6 @@
     <many-to-one
 	    name="plMatchGroup"
 	    class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup"
-        update="false"
-        insert="false"
         lazy="proxy"
 	>
 		<column name="GROUP_OID"  not-null="true" />

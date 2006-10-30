@@ -56,4 +56,8 @@ public abstract class DefaultHome<t> {
 	} 
 
 	public abstract String getBusinessClass();
+	
+	public void flush(){
+		getCurrentSession().flush();
+	}
 }

@@ -6,36 +6,36 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-
-import org.hibernate.Transaction;
+import javax.swing.JTable;
 
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.matchmaker.hibernate.home.PlMatchCriteriaHome;
 
 public class DeleteMatchCriteria extends AbstractAction {
 	PlMatchGroup model;
-	int[] selectedRows;
+	JTable matchTable;
 	
 	
-	public DeleteMatchCriteria(PlMatchGroup model, int[] selectedRows) {
+	public DeleteMatchCriteria(PlMatchGroup model, JTable matchTable) {
 		super("Delete Criteria");
 		this.model = model;
-		this.selectedRows = selectedRows;
+		this.matchTable = matchTable;
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		List<Integer> selected = new ArrayList<Integer>();
-		for (int i:selectedRows){
+		for (int i:matchTable.getSelectedRows()){
 			selected.add(i);
 		}
 		Collections.sort(selected);
-		Transaction tx = HibernateUtil.primarySession().beginTransaction();
+		PlMatchCriteriaHome home = new PlMatchCriteriaHome();
 		for(int i= selected.size()-1; i>=0;i--){
-			HibernateUtil.primarySession().delete(model.getChildren().get(i));
-			model.removePlMatchCriteria((PlMatchCriterion) model.getChildren().get(i));
+			PlMatchCriterion plMatchCriterion = (PlMatchCriterion) model.getChildren().get(i);
+			model.removePlMatchCriteria(plMatchCriterion);
+			plMatchCriterion.setPlMatchGroup(null);
 		}
-		tx.commit();
+		home.flush();		
 	}
 
 }

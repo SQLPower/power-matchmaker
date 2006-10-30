@@ -21,6 +21,7 @@ import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
@@ -103,18 +104,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 				} else if (o instanceof PlMatchGroup){
 					createMatchGroupMenu((PlMatchGroup) o);
 				} else if (o instanceof String){
-					m.add(new JMenuItem(new AbstractAction("New Match"){
-
-			            public void actionPerformed(ActionEvent e) {
-			                MatchEditor me;
-							try {
-								me = new MatchEditor(null,null,splitPane);
-							} catch (ArchitectException e1) {
-								throw new ArchitectRuntimeException(e1);
-							}
-							me.pack();
-							me.setVisible(true);
-			            }}));
+					m.add(new JMenuItem(new NewMatchAction("New Match",null,splitPane)));
 				}
 			}
 			m.show(t, e.getX(), e.getY());
@@ -167,18 +157,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 	}
 
 	private void createFolderMenu(final PlFolder folder) {
-        m.add(new JMenuItem(new AbstractAction("New Match"){
-
-            public void actionPerformed(ActionEvent e) {
-                MatchEditor me;
-				try {
-					me = new MatchEditor(null,folder,splitPane);
-				} catch (ArchitectException e1) {
-					throw new ArchitectRuntimeException(e1);
-				}
-				me.pack();
-				me.setVisible(true);
-            }}));
+        m.add(new JMenuItem(new NewMatchAction("New Match", folder,splitPane)));
 
         m.add(new JMenuItem(new PlMatchImportAction()));
 	}

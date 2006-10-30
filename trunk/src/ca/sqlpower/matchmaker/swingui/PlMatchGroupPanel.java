@@ -80,9 +80,6 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	JButton copyMatchCriterion;
 	JButton pasteMatchCriterion;
 
-	private boolean loading = false;
-
-
 	/**
 	 * This is the default constructor
 	 * @throws ArchitectException 
@@ -210,9 +207,9 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	}
 
 	private void loadMatches() throws ArchitectException {
-		loading = true;
+
 	    newMatchCriterion.setAction(new NewMatchCriteria(model));
-		deleteMatchCriterion.setAction(new DeleteMatchCriteria(model,getMatchCriteriaTable().getSelectedRows()));
+		deleteMatchCriterion.setAction(new DeleteMatchCriteria(model,getMatchCriteriaTable()));
 		copyMatchCriterion.setAction(new CopyMatchCriteria(model,getMatchCriteriaTable().getSelectedRows()));
 		pasteMatchCriterion.setAction(new PasteMatchCriteria(model));
 		groupId.setText(model.getGroupId());
@@ -229,7 +226,6 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		lastUpdateDate.setText(updated == null? "N/A" :updated.toString());
 		lastUpdateUser.setText(model.getLastUpdateUser() == null? "N/A" :model.getLastUpdateUser());
 		lastUpdateOSUser.setText(model.getLastUpdateOsUser()== null?"N/A":model.getLastUpdateOsUser());
-		loading=false;
 	}
 	
 	private boolean validateForm(){

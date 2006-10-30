@@ -57,6 +57,7 @@ import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchTranslateGroupHome;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
+import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
@@ -119,21 +120,7 @@ public class MatchMakerFrame extends JFrame {
 
 	};
 
-	protected Action newMatchAction = new AbstractAction("New") {
-
-		public void actionPerformed(ActionEvent e) {
-		    MatchEditor me;
-			try {
-				me = new MatchEditor(null,null,splitPane);
-			} catch (ArchitectException e1) {
-				throw new ArchitectRuntimeException(e1);
-			}
-			me.pack();
-			me.setVisible(true);
-		}
-
-	};
-
+	protected Action newMatchAction = null;
 	protected Action editMatchAction = new AbstractAction("Edit") {
 
 		public void actionPerformed(ActionEvent e) {
@@ -336,6 +323,7 @@ public class MatchMakerFrame extends JFrame {
 		    }
 		}
 
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		// Create actions
 		// TODO aboutAction = new AboutAction();
         Action aboutAction = new AbstractAction(){
@@ -344,7 +332,8 @@ public class MatchMakerFrame extends JFrame {
 				// TODO Auto-generated method stub
 
 			}};
-
+			
+		newMatchAction = new NewMatchAction("New Match",null,splitPane);
 		menuBar = new JMenuBar();
 
 		//Settingup
@@ -444,7 +433,6 @@ public class MatchMakerFrame extends JFrame {
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel());
-		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		tree.addMouseListener(new MatchMakerTreeMouseListener(splitPane));
 
 		splitPane.setRightComponent(null );
