@@ -223,7 +223,7 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			DatabaseConnectionManager dm = new DatabaseConnectionManager(
-					MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
+					MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni()); // XXX
 			dm.pack();
 			dm.setVisible(true);
 
@@ -249,8 +249,8 @@ public class MatchMakerFrame extends JFrame {
 
 
 	/**
-	 * You can't create an architect frame using this constructor.  You have to
-	 * call {@link #getMainInstance()}.
+	 * You can't create an architect frame using this constructor;
+	 * you have to call {@link #getMainInstance()}.
 	 *
 	 * @throws ArchitectException
 	 */
