@@ -1,7 +1,9 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -292,13 +294,13 @@ public class RunMatchPanel extends JFrame{
     private class RunEngineAction extends AbstractAction {
 
     	private final PlMatch match;
-		private final Component parent;
-		DefaultStyledDocument engineOutputDoc = new DefaultStyledDocument();
+		private final Frame parent;
+
 		SimpleAttributeSet stdoutAtt = new SimpleAttributeSet();
 		SimpleAttributeSet stderrAtt = new SimpleAttributeSet();
 
 
-    	public RunEngineAction(PlMatch match, Component parent) {
+    	public RunEngineAction(PlMatch match, Frame parent) {
     		super("Run Match Engine");
     		this.parent = parent;
     		this.match = match;
@@ -310,91 +312,107 @@ public class RunMatchPanel extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			applyChange();
 			final String cmd = createCommand(match) + " USER_PROMPT=N";
-			final JDialog d = new JDialog(MatchMakerFrame.getMainInstance());
-			d.setTitle("MatchMaker engine output:");
 
-			FormLayout layout = new FormLayout(
-					"4dlu,fill:400dlu:grow,4dlu", // columns
-					"4dlu,fill:400dlu:grow,4dlu,16dlu,4dlu"); // rows
-	    	//		 1    2                        3    4     5
-
-			PanelBuilder pb;
-			JPanel p = logger.isDebugEnabled() ?
-					new FormDebugPanel(layout) : new JPanel(layout);
-			pb = new PanelBuilder(layout, p);
-			CellConstraints cc = new CellConstraints();
-
-			JTextArea cmdText = new JTextArea(engineOutputDoc);
-			cmdText.setEditable(false);
-			cmdText.setWrapStyleWord(true);
-			cmdText.setLineWrap(true);
-			cmdText.setAutoscrolls(true);
-			pb.add(new JScrollPane(cmdText), cc.xy(2,2,"f,f"));
-
-			ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
-
-			Action saveAsAction = new AbstractAction(){
-				public void actionPerformed(ActionEvent e) {
-
-					SwingUtilities.invokeLater(new Runnable(){
-						public void run() {
-							new SaveDocument(d,engineOutputDoc,
-									(FileExtensionFilter) ASUtils.TEXT_FILE_FILTER );
-
-						}});
+			GraphicsEnvironment ge = GraphicsEnvironment.
+            	getLocalGraphicsEnvironment();
+			Font[] fonts = ge.getAllFonts();
+			boolean courierNewExist = false;
+			for ( int i=0; i<fonts.length; i++ ) {
+				if ( fonts[i].getFamily().equalsIgnoreCase("Courier New")) {
+					courierNewExist = true;
+					break;
 				}
-			};
-			JButton saveAsButton = new JButton(saveAsAction );
-			saveAsButton.setText("Save As...");
-			bbBuilder.addGridded (saveAsButton);
-			bbBuilder.addRelatedGap();
-
-			JButton copyButton = new JButton(new AbstractAction(){
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable(){
-
-						public void run() {
-							try {
-								StringSelection selection = new StringSelection(
-										engineOutputDoc.getText(0,engineOutputDoc.getLength()));
-								Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-								clipboard.setContents( selection, selection );
-							} catch (BadLocationException e1) {
-								ASUtils.showExceptionDialog(d,
-										"Document Copy Error", e1 );
-							}
-						}});
-				}});
-			copyButton.setText("Copy to Clipboard");
-			bbBuilder.addGridded (copyButton);
-			bbBuilder.addRelatedGap();
-			bbBuilder.addGlue();
-
-			JButton cancelButton = new JButton(new AbstractAction(){
-				public void actionPerformed(ActionEvent e) {
-					d.setVisible(false);
-					d.dispose();
-				}});
-			cancelButton.setText("Close");
-			bbBuilder.addGridded(cancelButton);
-
-			pb.add(bbBuilder.getPanel(), cc.xy(2,4));
-			d.add(pb.getPanel());
-			d.pack();
-			d.setVisible(true);
-
-			try {
-				engineOutputDoc.remove(0,engineOutputDoc.getLength());
-			} catch (BadLocationException e1) {
-				ASUtils.showExceptionDialog(d,
-						"Document Display Error", e1 );
 			}
+			final boolean courierNewExist2 = courierNewExist;
+
 
 			new Thread(new Runnable(){
 
 				public void run() {
+
+					final DefaultStyledDocument engineOutputDoc = new DefaultStyledDocument();
+					final JDialog d = new JDialog(parent);
+					d.setTitle("MatchMaker engine output:");
+
+					FormLayout layout = new FormLayout(
+							"4dlu,fill:400dlu:grow,4dlu", // columns
+							"4dlu,fill:400dlu:grow,4dlu,16dlu,4dlu"); // rows
+			    	//		 1    2                        3    4     5
+
+					PanelBuilder pb;
+					JPanel p = logger.isDebugEnabled() ?
+							new FormDebugPanel(layout) : new JPanel(layout);
+					pb = new PanelBuilder(layout, p);
+					CellConstraints cc = new CellConstraints();
+
+					JTextArea cmdText = new JTextArea(engineOutputDoc);
+					cmdText.setEditable(false);
+					cmdText.setWrapStyleWord(true);
+					cmdText.setLineWrap(true);
+					cmdText.setAutoscrolls(true);
+
+					if ( courierNewExist2 ) {
+						Font oldFont = cmdText.getFont();
+						Font f = new Font("Courier New",oldFont.getStyle(),oldFont.getSize());
+						cmdText.setFont(f);
+
+					}
+
+					pb.add(new JScrollPane(cmdText), cc.xy(2,2,"f,f"));
+
+					ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
+
+					Action saveAsAction = new AbstractAction(){
+						public void actionPerformed(ActionEvent e) {
+							SwingUtilities.invokeLater(new Runnable(){
+								public void run() {
+									new SaveDocument(d,engineOutputDoc,
+											(FileExtensionFilter) ASUtils.TEXT_FILE_FILTER );
+								}});
+						}
+					};
+					JButton saveAsButton = new JButton(saveAsAction );
+					saveAsButton.setText("Save As...");
+					bbBuilder.addGridded (saveAsButton);
+					bbBuilder.addRelatedGap();
+
+					JButton copyButton = new JButton(new AbstractAction(){
+						public void actionPerformed(ActionEvent e) {
+							SwingUtilities.invokeLater(new Runnable(){
+
+								public void run() {
+									try {
+										StringSelection selection = new StringSelection(
+												engineOutputDoc.getText(0,engineOutputDoc.getLength()));
+										Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+										clipboard.setContents( selection, selection );
+									} catch (BadLocationException e1) {
+										ASUtils.showExceptionDialog(d,
+												"Document Copy Error", e1 );
+									}
+								}});
+						}});
+					copyButton.setText("Copy to Clipboard");
+					bbBuilder.addGridded (copyButton);
+					bbBuilder.addRelatedGap();
+					bbBuilder.addGlue();
+
+					JButton cancelButton = new JButton(new AbstractAction(){
+						public void actionPerformed(ActionEvent e) {
+							d.setVisible(false);
+							d.dispose();
+						}});
+					cancelButton.setText("Close");
+					bbBuilder.addGridded(cancelButton);
+
+					pb.add(bbBuilder.getPanel(), cc.xy(2,4));
+					d.add(pb.getPanel());
+					// don't display dialog until the process started
+
+
+
 					Runtime rt = Runtime.getRuntime();
-					logger.debug("Execing " + cmd);
+					logger.debug("Executing " + cmd);
 					Process proc;
 					try {
 						proc = rt.exec(cmd);
@@ -410,6 +428,9 @@ public class RunMatchPanel extends JFrame{
 						// kick them off
 						errorGobbler.start();
 						outputGobbler.start();
+
+						d.pack();
+						d.setVisible(true);
 
 						// any error message?
 						// any error???
@@ -455,9 +476,9 @@ public class RunMatchPanel extends JFrame{
     private class ShowCommandAction extends AbstractAction {
 
     	private PlMatch match;
-		private Component parent;
+		private Frame parent;
 
-		public ShowCommandAction(PlMatch match, Component parent) {
+		public ShowCommandAction(PlMatch match, Frame parent) {
     		super("Show Command");
     		this.match = match;
     		this.parent = parent;
@@ -466,7 +487,7 @@ public class RunMatchPanel extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			applyChange();
 			final String cmd = createCommand(match);
-			final JDialog d = new JDialog();
+			final JDialog d = new JDialog(parent);
 			d.setTitle("MatchMaker Engine Command Line:");
 
 			final DefaultStyledDocument cmdDoc = new DefaultStyledDocument();
