@@ -43,6 +43,8 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.SaveDocument;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
+import ca.sqlpower.matchmaker.EnginePath;
+import ca.sqlpower.matchmaker.ExternalEngineUtils;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
@@ -88,7 +90,7 @@ public class RunMatchDialog extends JDialog{
         super(parentFrame,"Run Match:["+plMatch.getMatchId()+"]");
         //We store the parentFrame because ShowMatchStatics require a JFrame to
         //be its parent
-        this.parentFrame = parentFrame;        
+        this.parentFrame = parentFrame;
         this.plMatch = plMatch;
         buildUI();
     }
@@ -492,9 +494,9 @@ public class RunMatchDialog extends JDialog{
 		public void actionPerformed(ActionEvent e) {
 			applyChange();
 			final String cmd = createCommand(match);
-			final JDialog d= new JDialog (parent, 
+			final JDialog d= new JDialog (parent,
                         "MatchMaker Engine Command Line:");
-           			
+
 			final DefaultStyledDocument cmdDoc = new DefaultStyledDocument();
 			SimpleAttributeSet att = new SimpleAttributeSet();
 			StyleConstants.setForeground(att, Color.black);
@@ -556,7 +558,7 @@ public class RunMatchDialog extends JDialog{
 			pb.add(bbBuilder.getPanel(), cc.xy(2,4));
 			d.add(pb.getPanel());
 			ArchitectPanelBuilder.makeJDialogCancellable(d,null);
-			d.pack();            
+			d.pack();
 			d.setVisible(true);
 		}
 
@@ -573,8 +575,11 @@ public class RunMatchDialog extends JDialog{
 		 */
 		StringBuffer command = new StringBuffer();
 		SQLDatabase db = MatchMakerFrame.getMainInstance().getDatabase();
-		// FIXME: replace executable to user config
-		command.append("\"M:\\Program Files\\Power Loader Suite\\Match_ODBC.exe\"");
+		String programPath = null;
+		programPath = ExternalEngineUtils.getProgramPath(EnginePath.MATCHMAKER);
+		// FIXME: comment following line to use executable from user pl.ini config
+		programPath = "\"M:\\Program Files\\Power Loader Suite\\Match_ODBC.exe\"";
+		command.append(programPath);
 		command.append(" MATCH=\"").append(match.getMatchId()).append("\"");
 		if ( db != null ) {
 			command.append(" USER=");
