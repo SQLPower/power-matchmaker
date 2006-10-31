@@ -324,7 +324,10 @@ public class MatchMakerFrame extends JFrame {
 
 			public void actionPerformed(ActionEvent e) {
 				JOptionPane.showMessageDialog(mainInstance,
-					"MatchMaker " + MatchMakerVersion.APP_VERSION,
+						"<html>Power*MatchMaker "+
+						MatchMakerVersion.APP_VERSION + "<br><br>" +
+						"Copyright 2003-2006 SQL Power Group Inc.<br>" +
+						"</html>",
 					"About MatchMaker",
 					JOptionPane.INFORMATION_MESSAGE);
 			}};
