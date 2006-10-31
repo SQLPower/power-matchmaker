@@ -15,6 +15,7 @@ public enum EnginePath {
 	}
 
 	public String getProgName() {
-		return progName;
+		boolean isWindows = System.getProperty("os.name").indexOf("windows")>0;
+		return isWindows ? progName + ".exe" : progName;
 	}
 }
