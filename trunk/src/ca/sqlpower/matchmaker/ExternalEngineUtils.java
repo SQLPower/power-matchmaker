@@ -16,7 +16,7 @@ public class ExternalEngineUtils {
 		String plDotIni = us.getPlDotIniPath();
 		File plDotIniFile = new File(plDotIni);
 		File programDir = plDotIniFile.getParentFile();
-		File programPath = new File(programDir, p.toString());
+		File programPath = new File(programDir, p.getProgName());
 		return programPath.toString();
 	}
 }
