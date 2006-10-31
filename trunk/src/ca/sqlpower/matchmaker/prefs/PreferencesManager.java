@@ -53,10 +53,11 @@ public class PreferencesManager {
 
 	// -------------------- Loading the preferences --------------------------
 
-	public void load(JarFileListMaintainer session) {
+	public void load(JarFileListMaintainer manager) {
 		logger.debug("loading UserSettings from java.util.prefs.");
 
 		Preferences jarNode = prefs.node(JAR_FILE_NODE_NAME);
+		manager.removeAllDriverJars();
 		logger.debug("PreferencesManager.load(): jarNode " + jarNode);
 		for (int i = 0; i <= MAX_DRIVER_JAR_FILE_NAMES; i++) {
 			String jarName = jarNode.get(jarFilePrefName(i), null);
@@ -66,7 +67,7 @@ public class PreferencesManager {
 			}
 
 			logger.debug("Adding JarName: " + jarName);
-			session.addDriverJar(jarName);
+			manager.addDriverJar(jarName);
 		}
 
 		for (PreferencesUser listener : listeners) {
@@ -78,7 +79,7 @@ public class PreferencesManager {
 
 	// -------------------- "WRITING THE FILE" --------------------------
 
-	public void store(JarFileListMaintainer session) {
+	public void store(JarFileListMaintainer manager) {
 
 		logger.debug("Saving prefs to java.util.prefs");
 
@@ -95,20 +96,19 @@ public class PreferencesManager {
 		}
 
 		Preferences jarNode = prefs.node(JAR_FILE_NODE_NAME);	// (re)-create
-		List<String> driverJarList = session.getDriverJarList();
+		List<String> driverJarList = manager.getDriverJarList();
+		System.out.println("PreferencesManager.store(): size=" + driverJarList.size());
 		Iterator<String> it = driverJarList.iterator();
-		for (int i = 0 ; i <= MAX_DRIVER_JAR_FILE_NAMES; i++) {
-			if (it.hasNext()) {
-				String name = it.next();
-				logger.debug("Putting JAR " + i + " " + name);
-				jarNode.put(jarFilePrefName(i), name);
-			}
+		for (int i = 0; it.hasNext() && i <= MAX_DRIVER_JAR_FILE_NAMES; i++) {
+			String name = it.next();
+			logger.debug("Putting JAR " + i + " " + name);
+			jarNode.put(jarFilePrefName(i), name);
 		}
 
 		try {
 			prefs.flush();
 		} catch (BackingStoreException e) {
-			throw new RuntimeException("Unable to flush Java preferences", e);
+			logger.warn("Unable to flush Java preferences", e);
 		}
 	}
 
