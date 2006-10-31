@@ -25,12 +25,14 @@ public class PreferencesManager {
 
 	private static final PreferencesManager singleton;
     private static final Preferences prefs =
+    	// ArchitectSession is NOT a copy-and-paste error here:
     	Preferences.userNodeForPackage(ca.sqlpower.architect.ArchitectSession.class);
 
     private List<PreferencesUser> listeners = new ArrayList<PreferencesUser>();
 
 	private PreferencesManager() {
 		// private constructor, is a singleton
+		logger.info("Create PreferencesManager singleton");
 	}
 
 	static {
@@ -84,8 +86,12 @@ public class PreferencesManager {
 		try {
 			prefs.node(JAR_FILE_NODE_NAME).removeNode();
 			prefs.flush();
+			if (prefs.nodeExists(JAR_FILE_NODE_NAME)) {
+				System.err.println("Warning: Jar Node Still Exists!!");
+			}
 		} catch (BackingStoreException e) {
 			// Do nothing, this is OK
+			logger.warn("Error: BackingStoreException while removing or testing previous Jar Node!!");
 		}
 
 		Preferences jarNode = prefs.node(JAR_FILE_NODE_NAME);	// (re)-create
