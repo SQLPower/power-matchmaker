@@ -27,7 +27,7 @@ public class PreferencesManagerTest extends TestCase {
 	boolean consumerWasCalled;
 
 	List<String> driverJars = new ArrayList<String>();
-	JarFileListMaintainer session = new JarFileListMaintainer() {
+	JarFileListMaintainer mockMaintainer = new JarFileListMaintainer() {
 		public void addDriverJar(String jarName) {
 			driverJars.add(jarName);
 		}
@@ -54,27 +54,29 @@ public class PreferencesManagerTest extends TestCase {
 
 		pm.addPreferencesListener(mockListener);
 
-		session.addDriverJar(DRIVER_ONE);
-		session.addDriverJar(DRIVER_TWO);
-		pm.load(session);
+		mockMaintainer.addDriverJar(DRIVER_ONE);
+		mockMaintainer.addDriverJar(DRIVER_TWO);
+		pm.load(mockMaintainer);
 		assertTrue(consumerWasCalled);
-		assertEquals(DRIVER_ONE, session.getDriverJarList().get(0));
-		assertEquals(DRIVER_TWO, session.getDriverJarList().get(1));
+		assertEquals(DRIVER_ONE, mockMaintainer.getDriverJarList().get(0));
+		assertEquals(DRIVER_TWO, mockMaintainer.getDriverJarList().get(1));
 
-		List<String> newDrivers = Arrays.asList(new String[] { "x.y.Driver", "z.z.Driver" });
-		driverJars  = newDrivers;
-		pm.store(session);
+		List<String> newDrivers =
+			Arrays.asList(new String[] { "x.y.Driver", "z.z.Driver" });
+		driverJars.addAll(newDrivers);
+		pm.store(mockMaintainer);
 
 		// Backdoor verify that it updated Preferences correctly
 		Preferences p = Preferences.userNodeForPackage(ca.sqlpower.architect.ArchitectSession.class);
 		Preferences q = p.node(PreferencesManager.JAR_FILE_NODE_NAME);
 		System.out.println("PreferencesManagerTest.testOne(): jarNode " + q);
 		for (String n : q.keys()) {
-			System.out.println("q child " + n);
+			System.out.println("q child " + n + " " + q.get(n, null));
 		}
-		assertEquals(newDrivers.get(1), q.get(
+		assertEquals(DRIVER_TWO, q.get(
 				PreferencesManager.PREFS_JARFILE_PREFIX + "01", null));
+		// This will fail if the save method is not clearing out
+		// properly before it starts.
+		assertEquals(newDrivers.size(), driverJars.size());
 	}
-
-
 }
