@@ -51,6 +51,7 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
+import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
@@ -323,7 +324,8 @@ public class MatchMakerFrame extends JFrame {
 
 			public void actionPerformed(ActionEvent e) {
 				JOptionPane.showMessageDialog(mainInstance,
-					"MatchMaker 0.1", "About MatchMaker",
+					"MatchMaker " + MatchMakerVersion.APP_VERSION,
+					"About MatchMaker",
 					JOptionPane.INFORMATION_MESSAGE);
 			}};
 
