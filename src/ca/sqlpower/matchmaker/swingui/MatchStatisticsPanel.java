@@ -1,8 +1,6 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,15 +12,10 @@ import java.util.Date;
 
 import javax.sql.RowSet;
 import javax.sql.rowset.JoinRowSet;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -30,8 +23,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.table.DateTableCellRenderer;
 import ca.sqlpower.architect.swingui.table.IndicatorCellRenderer;
@@ -42,7 +33,6 @@ import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.sun.rowset.CachedRowSetImpl;
 import com.sun.rowset.JoinRowSetImpl;
 
@@ -140,9 +130,9 @@ public class MatchStatisticsPanel extends JPanel {
     		}
     		StringBuffer sql = new StringBuffer();
 
-    		sql.append("SELECT GROUP_ID,MATCH_PERCENT FROM PL_MATCH_GROUP WHERE MATCH_ID=? ORDER BY MATCH_PERCENT DESC");
+    		sql.append("SELECT GROUP_ID,MATCH_PERCENT FROM PL_MATCH_GROUP WHERE MATCH_OID=? ORDER BY MATCH_PERCENT DESC");
     		pstmt = con.prepareStatement(sql.toString());
-    		pstmt.setString(1, match.getMatchId());
+    		pstmt.setLong(1, match.getId());
     		rs = pstmt.executeQuery();
     		CachedRowSetImpl matchGroupSet = new CachedRowSetImpl();
     		matchGroupSet.setReadOnly(true);
@@ -211,78 +201,7 @@ public class MatchStatisticsPanel extends JPanel {
 	}
 
 
-	public static void main(String[] args) throws SQLException {
 
-		final JFrame f = new JFrame();
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		MatchMakerFrame.getMainInstance();
-		ArchitectDataSource ds = MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni().getDataSource("ARTHUR_TEST");
-		MatchMakerFrame.getMainInstance().newLogin(new SQLDatabase(ds));
-		final PlMatch match = MatchMakerFrame.getMainInstance().getMatchByName("DEMO_MATCH_PEOPLE_MATCH_FIRST");
-
-		final MatchStatisticsPanel panel = new MatchStatisticsPanel(match);
-
-
-
-
-		JPanel p = new JPanel(new BorderLayout());
-		JButton deleteAllButton = new JButton(new AbstractAction("Delete All"){
-			public void actionPerformed(ActionEvent e) {
-				try {
-					panel.deleteAllStatistics();
-				} catch (SQLException e1) {
-					ASUtils.showExceptionDialog(MatchMakerFrame.getMainInstance(),
-							"Could not delete match statistic information", e1);
-				}
-			}});
-		JButton deleteBackwardButton = new JButton(new AbstractAction("Delete Backward"){
-			public void actionPerformed(ActionEvent e) {
-				try {
-					panel.deleteBackwardStatistics();
-				} catch (SQLException e1) {
-					ASUtils.showExceptionDialog(MatchMakerFrame.getMainInstance(),
-							"Could not delete match statistic information", e1);
-				}
-			}});
-
-		Action closeAction = new AbstractAction("Close"){
-			public void actionPerformed(ActionEvent e) {
-				System.exit(0);
-			}};
-		closeAction.putValue(Action.NAME, "Close");
-		JButton closeButton = new JButton(closeAction);
-
-		ButtonBarBuilder bbb = new ButtonBarBuilder();
-		bbb.addRelatedGap();
-		bbb.addGridded(deleteAllButton);
-		bbb.addRelatedGap();
-		bbb.addGridded(deleteBackwardButton);
-		bbb.addGlue();
-		bbb.addGridded(closeButton);
-		bbb.addRelatedGap();
-		p.add(bbb.getPanel(),BorderLayout.SOUTH);
-		p.add(panel,BorderLayout.CENTER);
-
-
-
-
-
-
-		f.getContentPane().add(p);
-		f.setPreferredSize(new Dimension(800,600));
-		f.setTitle("Match Statistics: "+match.getMatchId());
-
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-
-                f.pack();
-                f.setVisible(true);
-            }
-        });
-
-    }
 
 
 	private class MatchStatisticTable extends JTable {
