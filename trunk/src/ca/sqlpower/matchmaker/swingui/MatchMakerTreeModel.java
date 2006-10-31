@@ -13,6 +13,8 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.hibernate.DefaultHibernateObject;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
@@ -21,6 +23,8 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 
 public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 
+    private static final Logger logger = Logger.getLogger(MatchMakerTreeModel.class);
+    
 	public static final String root="All Match/Merge Information";
 	public static final String current="Current Match/Merge Information";
 	public static final String allCurrent="All Current Match/Merge Information";
@@ -39,17 +43,11 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 		for (PlMatch m: matches){
 			m.addHierarchicalChangeListener(this);
 		}
-
-
 	}
-
-
 
 	public MatchMakerTreeModel() {
 		super();
 	}
-
-
 
 	public Object getChild(Object parent, int index) {
 		if(parent == root ){
@@ -71,7 +69,6 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 			return ((DefaultHibernateObject) parent).getChildren().get(index);
 		}
 		return null;
-
 	}
 
 	public int getChildCount(Object parent) {
@@ -116,7 +113,6 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 
 	public void valueForPathChanged(TreePath path, Object newValue) {
 		throw new UnsupportedOperationException("Value for path change unsupported in the match maker tree");
-
 	}
 
 	protected LinkedList<TreeModelListener> treeModelListeners = new LinkedList<TreeModelListener>();
@@ -130,29 +126,35 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 	}
 
 	protected void fireTreeNodesInserted(TreeModelEvent e) {
+        logger.debug("Firing treeNodesInserted event "+e+" to "+treeModelListeners.size()+" listeners...");
 		for (int i= treeModelListeners.size()-1; i >=0; i--){
 			treeModelListeners.get(i).treeNodesInserted(e);
 		}
+        logger.debug("done");
 	}
 
 	protected void fireTreeNodesRemoved(TreeModelEvent e) {
+        logger.debug("Firing treeNodesRemoved event "+e+" to "+treeModelListeners.size()+" listeners...");
 		for (int i= treeModelListeners.size()-1; i >=0; i--){
 			treeModelListeners.get(i).treeNodesRemoved(e);
 		}
+        logger.debug("done");
 	}
 
 	protected void fireTreeNodesChanged(TreeModelEvent e) {
+        logger.debug("Firing treeNodesChanged event "+e+" to "+treeModelListeners.size()+" listeners...");
 		for (int i= treeModelListeners.size()-1; i >=0; i--){
 			treeModelListeners.get(i).treeNodesChanged(e);
 		}
-
+        logger.debug("done");
 	}
 
 	protected void fireTreeStructureChanged(TreeModelEvent e) {
+        logger.debug("Firing treeStructureChanged event "+e+" to "+treeModelListeners.size()+" listeners...");
 		for (int i= treeModelListeners.size()-1; i >=0; i--){
 			treeModelListeners.get(i).treeStructureChanged(e);
 		}
-
+        logger.debug("done");
 	}
 
 	public void refresh() {
@@ -177,8 +179,6 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 		return paths;
 	}
 
-
-
 	public void propertyChange(PropertyChangeEvent evt) {
 		List<TreePath> paths =new ArrayList<TreePath>();
 		if (evt.getSource() instanceof PlMatch){
@@ -197,54 +197,54 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 		}
 
 		for (TreePath p: paths){
-			// XXX Extract these strings as Constants!
-			if (evt.getPropertyName().equals("plMatchGroups") || evt.getPropertyName().equals("plMatchCriterias") || evt.getPropertyName().equals("plMatchs")){
-				List<? extends DefaultHibernateObject> oldList = new ArrayList<DefaultHibernateObject>((Set)evt.getOldValue());
-				List<? extends DefaultHibernateObject> newList = new ArrayList<DefaultHibernateObject>((Set)evt.getNewValue());
+		    // XXX Extract these strings as Constants!
+		    if (evt.getPropertyName().equals("plMatchGroups") || evt.getPropertyName().equals("plMatchCriterias") || evt.getPropertyName().equals("plMatchs")){
+		        List<? extends DefaultHibernateObject> oldList = new ArrayList<DefaultHibernateObject>((Set)evt.getOldValue());
+		        List<? extends DefaultHibernateObject> newList = new ArrayList<DefaultHibernateObject>((Set)evt.getNewValue());
 
-			if (evt.getPropertyName().equals("plMatchGroups")) {
-				Collections.sort((List<PlMatchGroup>)oldList);
-				Collections.sort((List<PlMatchGroup>)newList);
-			} else if (evt.getPropertyName().equals("plMatchCriterias")) {
-				Collections.sort((List<PlMatchCriterion>)oldList);
-				Collections.sort((List<PlMatchCriterion>)newList);
-			} else if (evt.getPropertyName().equals("plMatchs")) {
-				Collections.sort((List<PlMatch>)oldList);
-				Collections.sort((List<PlMatch>)newList);
-			}
+		        if (evt.getPropertyName().equals("plMatchGroups")) {
+		            Collections.sort((List<PlMatchGroup>)oldList);
+		            Collections.sort((List<PlMatchGroup>)newList);
+		        } else if (evt.getPropertyName().equals("plMatchCriterias")) {
+		            Collections.sort((List<PlMatchCriterion>)oldList);
+		            Collections.sort((List<PlMatchCriterion>)newList);
+		        } else if (evt.getPropertyName().equals("plMatchs")) {
+		            Collections.sort((List<PlMatch>)oldList);
+		            Collections.sort((List<PlMatch>)newList);
+		        }
 
-				if (((Set)evt.getOldValue()).size() < ((Set)evt.getNewValue()).size()){
-					List<DefaultHibernateObject> deltaList = new ArrayList<DefaultHibernateObject>(newList);
-					deltaList.removeAll(oldList);
-					int[] indices = new int[deltaList.size()];
-					int i =0;
-					for (DefaultHibernateObject dho: deltaList){
-						indices[i] = newList.indexOf(dho);
-						i++;
-					}
+		        if (((Set)evt.getOldValue()).size() < ((Set)evt.getNewValue()).size()){
+		            List<DefaultHibernateObject> deltaList = new ArrayList<DefaultHibernateObject>(newList);
+		            deltaList.removeAll(oldList);
+		            int[] indices = new int[deltaList.size()];
+		            int i =0;
+		            for (DefaultHibernateObject dho: deltaList){
+		                indices[i] = newList.indexOf(dho);
+		                i++;
+		            }
 
-					fireTreeNodesInserted(new TreeModelEvent(evt.getSource(),p,indices,deltaList.toArray()));
+		            fireTreeNodesInserted(
+                            new TreeModelEvent(
+                                    evt.getSource(), p, indices,
+                                    deltaList.toArray()));
 
-				} else if (((Set)evt.getOldValue()).size() > ((Set)evt.getNewValue()).size()) {
-					List<DefaultHibernateObject> deltaList = new ArrayList<DefaultHibernateObject>(oldList);
-					deltaList.removeAll(newList);
-					int[] indices = new int[deltaList.size()];
-					int i =0;
-					for (DefaultHibernateObject dho: deltaList){
-						indices[i] = oldList.indexOf(dho);
-						i++;
-					}
+		        } else if (((Set)evt.getOldValue()).size() > ((Set)evt.getNewValue()).size()) {
+		            List<DefaultHibernateObject> deltaList = new ArrayList<DefaultHibernateObject>(oldList);
+		            deltaList.removeAll(newList);
+		            int[] indices = new int[deltaList.size()];
+		            int i =0;
+		            for (DefaultHibernateObject dho: deltaList){
+		                indices[i] = oldList.indexOf(dho);
+		                i++;
+		            }
 
-					fireTreeNodesRemoved(new TreeModelEvent(evt.getSource(),p,indices,deltaList.toArray()));
-				} else {
-					throw new IllegalArgumentException("You have added or removed 0 items.");
-				}
-			} else {
-				fireTreeNodesChanged(new TreeModelEvent(evt.getSource(),p));
-			}
+		            fireTreeNodesRemoved(new TreeModelEvent(evt.getSource(),p,indices,deltaList.toArray()));
+		        } else {
+		            throw new IllegalArgumentException("You have added or removed 0 items.");
+		        }
+		    } else {
+		        fireTreeNodesChanged(new TreeModelEvent(evt.getSource(),p));
+		    }
 		}
 	}
-
-
-
 }
