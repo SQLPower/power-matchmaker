@@ -192,14 +192,15 @@ public class MatchEditor {
 
 	private Action runMatchAction = new AbstractAction("Run Match") {
 		public void actionPerformed(ActionEvent e) {
-			RunMatchPanel p = new RunMatchPanel(plMatch);
+			RunMatchDialog p = new RunMatchDialog(plMatch, getParentFrame());
 			p.pack();
 			p.setVisible(true);
 		}};
 
 	private Action validationStatusAction = new AbstractAction("View Validation Status") {
 		public void actionPerformed(ActionEvent e) {
-			MatchValidationStatus p = new MatchValidationStatus(plMatch, getParentFrame());
+			MatchValidationStatus p = new MatchValidationStatus(plMatch, 
+                    ArchitectPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation Status"));
 			p.pack();
 			p.setVisible(true);
 		}};
