@@ -141,7 +141,7 @@ public class MatchMakerFrame extends JFrame {
 			PlMatch match = ArchitectUtils.getTreeObject(getTree(),PlMatch.class);
 			if ( match == null )
 				return;
-		    RunMatchPanel r = new RunMatchPanel(match);
+		    RunMatchDialog r = new RunMatchDialog(match, MatchMakerFrame.this);
 			r.pack();
 			r.setVisible(true);
 		}

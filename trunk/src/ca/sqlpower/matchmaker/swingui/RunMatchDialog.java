@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -17,7 +16,6 @@ import java.io.InputStreamReader;
 import javax.sql.RowSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -57,9 +55,9 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class RunMatchPanel extends JFrame{
+public class RunMatchDialog extends JDialog{
 
-    private static final Logger logger = Logger.getLogger(RunMatchPanel.class);
+    private static final Logger logger = Logger.getLogger(RunMatchDialog.class);
     private JTextField logFilePath;
     String lastAccessPath;
 
@@ -82,12 +80,15 @@ public class RunMatchPanel extends JFrame{
     private JButton runMatchEngine;
     private JButton exit;
     private JComboBox rollbackSegment;
+    private JFrame parentFrame;
 
     private PlMatch plMatch;
 
-    public RunMatchPanel(PlMatch plMatch){
-        super("Run Match:["+plMatch.getMatchId()+"]");
-        setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
+    public RunMatchDialog(PlMatch plMatch, JFrame parentFrame){
+        super(parentFrame,"Run Match:["+plMatch.getMatchId()+"]");
+        //We store the parentFrame because ShowMatchStatics require a JFrame to
+        //be its parent
+        this.parentFrame = parentFrame;        
         this.plMatch = plMatch;
         buildUI();
     }
@@ -98,7 +99,7 @@ public class RunMatchPanel extends JFrame{
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setCurrentDirectory(new File(lastAccessPath));
             fileChooser.setSelectedFile(new File(lastAccessPath));
-           int returnVal = fileChooser.showOpenDialog(RunMatchPanel.this);
+           int returnVal = fileChooser.showOpenDialog(RunMatchDialog.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     final File file = fileChooser.getSelectedFile();
                     logFilePath.setText(file.getPath());
@@ -129,9 +130,9 @@ public class RunMatchPanel extends JFrame{
         truncateCandDup = new JCheckBox();
         sendEmail = new JCheckBox();
         viewLogFile = new JButton(new ShowLogFileAction());
-        viewStats = new JButton(new ShowMatchStatisticInfoAction(plMatch,RunMatchPanel.this));
+        viewStats = new JButton(new ShowMatchStatisticInfoAction(plMatch,getParentFrame()));
         viewStats.setText("Match Statistics");
-        showCommand = new JButton(new ShowCommandAction(plMatch,RunMatchPanel.this));
+        showCommand = new JButton(new ShowCommandAction(plMatch,RunMatchDialog.this));
         viewMatchResults = new JButton();
         startWordCount = new JButton();
         wordCountResults = new JButton();
@@ -146,11 +147,11 @@ public class RunMatchPanel extends JFrame{
 			}});
         save.setText("Save");
 
-        runMatchEngine = new JButton(new RunEngineAction(plMatch,RunMatchPanel.this));
+        runMatchEngine = new JButton(new RunEngineAction(plMatch,RunMatchDialog.this));
         exit = new JButton(new AbstractAction(){
 			public void actionPerformed(ActionEvent e) {
-				RunMatchPanel.this.setVisible(false);
-				RunMatchPanel.this.dispose();
+				RunMatchDialog.this.setVisible(false);
+				RunMatchDialog.this.dispose();
 			}});
         exit.setText("Exit");
 
@@ -294,13 +295,13 @@ public class RunMatchPanel extends JFrame{
     private class RunEngineAction extends AbstractAction {
 
     	private final PlMatch match;
-		private final Frame parent;
+		private final JDialog parent;
 
 		SimpleAttributeSet stdoutAtt = new SimpleAttributeSet();
 		SimpleAttributeSet stderrAtt = new SimpleAttributeSet();
 
 
-    	public RunEngineAction(PlMatch match, Frame parent) {
+    	public RunEngineAction(PlMatch match, JDialog parent) {
     		super("Run Match Engine");
     		this.parent = parent;
     		this.match = match;
@@ -465,6 +466,10 @@ public class RunMatchPanel extends JFrame{
     	public void actionPerformed(ActionEvent e) {
     		String logFileName = logFilePath.getText();
     		try {
+                /**
+                 * Notepad has its own frame and should be modified to allow
+                 * an icon argument in the constructor
+                 */
     			new Notepad().doLoad(logFileName);
     		} catch (IOException e1) {
     			throw new RuntimeException("Unable to view log file " + logFileName, e1);
@@ -476,9 +481,9 @@ public class RunMatchPanel extends JFrame{
     private class ShowCommandAction extends AbstractAction {
 
     	private PlMatch match;
-		private Frame parent;
+		private JDialog parent;
 
-		public ShowCommandAction(PlMatch match, Frame parent) {
+		public ShowCommandAction(PlMatch match, JDialog parent) {
     		super("Show Command");
     		this.match = match;
     		this.parent = parent;
@@ -487,9 +492,9 @@ public class RunMatchPanel extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			applyChange();
 			final String cmd = createCommand(match);
-			final JDialog d = new JDialog(parent);
-			d.setTitle("MatchMaker Engine Command Line:");
-
+			final JDialog d= new JDialog (parent, 
+                        "MatchMaker Engine Command Line:");
+           			
 			final DefaultStyledDocument cmdDoc = new DefaultStyledDocument();
 			SimpleAttributeSet att = new SimpleAttributeSet();
 			StyleConstants.setForeground(att, Color.black);
@@ -551,7 +556,7 @@ public class RunMatchPanel extends JFrame{
 			pb.add(bbBuilder.getPanel(), cc.xy(2,4));
 			d.add(pb.getPanel());
 			ArchitectPanelBuilder.makeJDialogCancellable(d,null);
-			d.pack();
+			d.pack();            
 			d.setVisible(true);
 		}
 
@@ -587,6 +592,9 @@ public class RunMatchPanel extends JFrame{
 		return command.toString();
 	}
 
+    public JFrame getParentFrame(){
+        return parentFrame;
+    }
     public static void main(String[] args) {
 
     	MatchMakerFrame.getMainInstance();
@@ -595,7 +603,7 @@ public class RunMatchPanel extends JFrame{
 		final PlMatch match = MatchMakerFrame.getMainInstance().getMatchByName("DEMO_MATCH_PEOPLE_MATCH_FIRST");
 
 
-        final JFrame f = new RunMatchPanel(match);
+        final JDialog f = new RunMatchDialog(match,null);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

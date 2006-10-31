@@ -132,7 +132,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 		m.add(new JMenuItem(new AbstractAction("Run Match"){
 
             public void actionPerformed(ActionEvent e) {
-                RunMatchPanel f = new RunMatchPanel(match);
+                RunMatchDialog f = new RunMatchDialog(match, MatchMakerFrame.getMainInstance());
                 f.pack();
                 f.setVisible(true);
             }}));

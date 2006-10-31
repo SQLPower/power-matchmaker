@@ -50,6 +50,12 @@ public class MatchValidationStatus extends JDialog {
 		setMatch(match);
 		createUI();
 	}
+    
+    public MatchValidationStatus(PlMatch match, JDialog dialogParent) throws HeadlessException {
+        super(dialogParent,"View Match Validation Status");
+        setMatch(match);
+        createUI();
+    }
 
 	public PlMatch getMatch() {
 		return match;

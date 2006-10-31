@@ -83,6 +83,7 @@ public class FilterMakerDialog extends JDialog {
             SQLTable matchSourceTable, boolean trueForTextField) {
 
         super(parent, "Column Filter");
+        setModal(true);
         this.returnText = returnText;
         this.matchSourceTable =  matchSourceTable;
         this.trueForTextField = trueForTextField;
