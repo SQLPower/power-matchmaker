@@ -433,6 +433,7 @@ public class MatchMakerFrame extends JFrame {
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel());
 		tree.addMouseListener(new MatchMakerTreeMouseListener(splitPane));
+		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
 
 		splitPane.setRightComponent(null );
 		splitPane.setLeftComponent(new JScrollPane(tree));

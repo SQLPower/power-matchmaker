@@ -28,6 +28,9 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 	public List<PlFolder> folders = new ArrayList<PlFolder>();
 	public List<PlMatch>  matches = new ArrayList<PlMatch>();
 
+
+
+
 	public MatchMakerTreeModel(List<PlFolder> folders, List<PlMatch> matches) {
 		this();
 		this.folders = folders;
