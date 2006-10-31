@@ -15,4 +15,6 @@ public interface JarFileListMaintainer {
 	public void removeDriverJar(String jarName);
 
 	public List<String> getDriverJarList();
+
+	public void removeAllDriverJars();
 }
