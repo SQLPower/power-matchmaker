@@ -13,6 +13,8 @@ import junit.framework.TestCase;
  */
 public class PreferencesManagerTest extends TestCase {
 
+	private static final String DRIVER_FOUR = "z.z.Driver";
+	private static final String DRIVER_THREE = "x.y.Driver";
 	private static final String DRIVER_TWO = "c.d.e.f.g.Driver";
 	private static final String DRIVER_ONE = "a.b.c.d.e.Driver";
 	private PreferencesManager pm;
@@ -24,7 +26,7 @@ public class PreferencesManagerTest extends TestCase {
 		assertSame(pm, pm2);
 	}
 
-	boolean consumerWasCalled;
+	boolean consumerWasNotified;
 
 	List<String> driverJars = new ArrayList<String>();
 	JarFileListMaintainer mockMaintainer = new JarFileListMaintainer() {
@@ -39,30 +41,35 @@ public class PreferencesManagerTest extends TestCase {
 		public void removeDriverJar(String jarName) {
 			driverJars.remove(jarName);
 		}
+
+		public void removeAllDriverJars() {
+			driverJars.clear();
+		}
 	};
 
 	PreferencesUser mockListener = new PreferencesUser() {
 
 		public void setPreferencesRootNode(Preferences data) {
 			System.out.println("PreferencesManagerTest.push()");
-			consumerWasCalled = true;
+			consumerWasNotified = true;
 		}
 	};
 
 	public void testMega() throws Exception {
-		consumerWasCalled = false;
+		consumerWasNotified = false;
 
 		pm.addPreferencesListener(mockListener);
 
 		mockMaintainer.addDriverJar(DRIVER_ONE);
 		mockMaintainer.addDriverJar(DRIVER_TWO);
 		pm.load(mockMaintainer);
-		assertTrue(consumerWasCalled);
+		assertTrue(consumerWasNotified);
 		assertEquals(DRIVER_ONE, mockMaintainer.getDriverJarList().get(0));
 		assertEquals(DRIVER_TWO, mockMaintainer.getDriverJarList().get(1));
 
 		List<String> newDrivers =
-			Arrays.asList(new String[] { "x.y.Driver", "z.z.Driver" });
+			Arrays.asList(new String[] { DRIVER_THREE, DRIVER_FOUR });
+
 		driverJars.addAll(newDrivers);
 		pm.store(mockMaintainer);
 
@@ -73,7 +80,7 @@ public class PreferencesManagerTest extends TestCase {
 		for (String n : q.keys()) {
 			System.out.println("q child " + n + " " + q.get(n, null));
 		}
-		assertEquals(DRIVER_TWO, q.get(
+		assertEquals(DRIVER_FOUR, q.get(
 				PreferencesManager.PREFS_JARFILE_PREFIX + "01", null));
 		// This will fail if the save method is not clearing out
 		// properly before it starts.
