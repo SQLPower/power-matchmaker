@@ -340,8 +340,8 @@ public class MatchMakerFrame extends JFrame {
 
 		JMenu explorerMenu = new JMenu("Explorers");
 		explorerMenu.setMnemonic('x');
-		explorerMenu.add("Match Maker");
-		explorerMenu.add("Adminstration");
+		explorerMenu.add(new DummyAction(mainInstance, "Match Maker"));
+		explorerMenu.add(new DummyAction(mainInstance, "Adminstration"));
 		menuBar.add(explorerMenu);
 
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
@@ -357,7 +357,7 @@ public class MatchMakerFrame extends JFrame {
 		matchesMenu.setMnemonic('M');
 		matchesMenu.add(newMatchAction);
 		matchesMenu.add(editMatchAction);
-		matchesMenu.add("Delete");
+		matchesMenu.add(new DummyAction(mainInstance, "Delete"));
 		matchesMenu.addSeparator();
 		matchesMenu.add(runMatchAction);
 		matchesMenu.add(showMatchStatisticInfoAction);
@@ -368,16 +368,16 @@ public class MatchMakerFrame extends JFrame {
 
 		JMenu mergeMenu = new JMenu("Merges");
 		mergeMenu.add(newMatchAction);
-		mergeMenu.add("Edit");
-		mergeMenu.add("Delete");
+		mergeMenu.add(new DummyAction(mainInstance, "Edit"));
+		mergeMenu.add(new DummyAction(mainInstance, "Delete"));
 		mergeMenu.add(".....");
 		menuBar.add(mergeMenu);
 
 		JMenu folderMenu = new JMenu("Folders");
 		folderMenu.setMnemonic('F');
 		folderMenu.add(newMatchAction);
-		folderMenu.add("Edit");
-		folderMenu.add("Delete");
+		folderMenu.add(new DummyAction(mainInstance, "Edit"));
+		folderMenu.add(new DummyAction(mainInstance, "Delete"));
 		folderMenu.add(".....");
 		menuBar.add(folderMenu);
 

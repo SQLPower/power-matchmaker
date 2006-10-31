@@ -10,6 +10,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import ca.sqlpower.architect.swingui.ASUtils;
@@ -33,8 +34,13 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 
 	public void actionPerformed(ActionEvent e) {
 
-		if ( match == null )
+		if (match == null) {
+			JOptionPane.showMessageDialog(parent,
+					"No match selected",
+					"Error",
+					JOptionPane.ERROR_MESSAGE);
 			return;
+		}
 
 		MatchStatisticsPanel p = null;
 		try {
@@ -42,9 +48,15 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 		} catch (SQLException e1) {
 			ASUtils.showExceptionDialog(parent,
 					"Could not get match statistic information", e1);
-		}
-		if ( p == null )
 			return;
+		}
+		if ( p == null ) {
+			JOptionPane.showMessageDialog(parent,
+					"No match statistics available",
+					"Error",
+					JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 
 		JDialog d = new JDialog(parent);
 		JPanel panel = new JPanel(new BorderLayout());
