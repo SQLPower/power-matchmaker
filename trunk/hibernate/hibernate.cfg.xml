@@ -12,7 +12,6 @@
         <!-- Disable the second-level cache  -->
         <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
         <mapping file="./hibernate/PlFolder.hbm.xml"/>
-        <mapping file="./hibernate/PlFolderDetail.hbm.xml"/>
         <mapping file="./hibernate/PlMatch.hbm.xml"/>
         <mapping file="./hibernate/PlMatchTranslate.hbm.xml"/>
         <mapping file="./hibernate/PlMatchTranslateGroup.hbm.xml"/>

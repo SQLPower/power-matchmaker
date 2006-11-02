@@ -790,456 +790,456 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
 
 	public void setAutoMatchActiveInd(boolean autoMatchActiveInd) {
 		if (this.autoMatchActiveInd != autoMatchActiveInd) {
-			firePropertyChange("autoMatchActiveInd", this.autoMatchActiveInd, autoMatchActiveInd);
 			this.autoMatchActiveInd = autoMatchActiveInd;
+			firePropertyChange("autoMatchActiveInd", this.autoMatchActiveInd, autoMatchActiveInd);
 		}
 	}
 
 	public void setAutoMatchThreshold(Short autoMatchThreshold) {
 		if (this.autoMatchThreshold != autoMatchThreshold) {
-			firePropertyChange("autoMatchThreshold", this.autoMatchThreshold, autoMatchThreshold);
 			this.autoMatchThreshold = autoMatchThreshold;
+			firePropertyChange("autoMatchThreshold", this.autoMatchThreshold, autoMatchThreshold);
 		}
 	}
 
 	public void setBatchFileName(String batchFileName) {
 		if (this.batchFileName != batchFileName) {
-			firePropertyChange("batchFileName", this.batchFileName, batchFileName);
 			this.batchFileName = batchFileName;
+			firePropertyChange("batchFileName", this.batchFileName, batchFileName);
 		}
 	}
 
 	public void setCheckedOutDate(Date checkedOutDate) {
 		if (this.checkedOutDate != checkedOutDate) {
-			firePropertyChange("checkedOutDate", this.checkedOutDate, checkedOutDate);
 			this.checkedOutDate = checkedOutDate;
+			firePropertyChange("checkedOutDate", this.checkedOutDate, checkedOutDate);
 		}
 	}
 
 	public void setCheckedOutInd(boolean checkedOutInd) {
 		if (this.checkedOutInd != checkedOutInd) {
-			firePropertyChange("checkedOutInd", this.checkedOutInd, checkedOutInd);
 			this.checkedOutInd = checkedOutInd;
+			firePropertyChange("checkedOutInd", this.checkedOutInd, checkedOutInd);
 		}
 	}
 
 	public void setCheckedOutOsUser(String checkedOutOsUser) {
 		if (this.checkedOutOsUser != checkedOutOsUser) {
-			firePropertyChange("checkedOutOsUser", this.checkedOutOsUser, checkedOutOsUser);
 			this.checkedOutOsUser = checkedOutOsUser;
+			firePropertyChange("checkedOutOsUser", this.checkedOutOsUser, checkedOutOsUser);
 		}
 	}
 
 	public void setCheckedOutUser(String checkedOutUser) {
 		if (this.checkedOutUser != checkedOutUser) {
-			firePropertyChange("checkedOutUser", this.checkedOutUser, checkedOutUser);
 			this.checkedOutUser = checkedOutUser;
+			firePropertyChange("checkedOutUser", this.checkedOutUser, checkedOutUser);
 		}
 	}
 
 	public void setCompileFlag(boolean compileFlag) {
 		if (this.compileFlag != compileFlag) {
-			firePropertyChange("compileFlag", this.compileFlag, compileFlag);
 			this.compileFlag = compileFlag;
+			firePropertyChange("compileFlag", this.compileFlag, compileFlag);
 		}
 	}
 
 	public void setCreateDate(Date createDate) {
 		if (this.createDate != createDate) {
-			firePropertyChange("createDate", this.createDate, createDate);
 			this.createDate = createDate;
+			firePropertyChange("createDate", this.createDate, createDate);
 		}
 	}
 
 	public void setFilter(String filter) {
 		if (this.filter != filter) {
-			firePropertyChange("filter", this.filter, filter);
 			this.filter = filter;
+			firePropertyChange("filter", this.filter, filter);
 		}
 	}
 
 	public void setFilterCriteria(String filterCriteria) {
 		if (this.filterCriteria != filterCriteria) {
-			firePropertyChange("filterCriteria", this.filterCriteria, filterCriteria);
 			this.filterCriteria = filterCriteria;
+			firePropertyChange("filterCriteria", this.filterCriteria, filterCriteria);
 		}
 	}
 
 	public void setFromClause(String fromClause) {
 		if (this.fromClause != fromClause) {
-			firePropertyChange("fromClause", this.fromClause, fromClause);
 			this.fromClause = fromClause;
+			firePropertyChange("fromClause", this.fromClause, fromClause);
 		}
 	}
 
 	public void setFromClauseDb(String fromClauseDb) {
 		if (this.fromClauseDb != fromClauseDb) {
-			firePropertyChange("fromClauseDb", this.fromClauseDb, fromClauseDb);
 			this.fromClauseDb = fromClauseDb;
+			firePropertyChange("fromClauseDb", this.fromClauseDb, fromClauseDb);
 		}
 	}
 
 	public void setLastBackupNo(BigDecimal lastBackupNo) {
 		if (this.lastBackupNo != lastBackupNo) {
-			firePropertyChange("lastBackupNo", this.lastBackupNo, lastBackupNo);
 			this.lastBackupNo = lastBackupNo;
+			firePropertyChange("lastBackupNo", this.lastBackupNo, lastBackupNo);
 		}
 	}
 
 	public void setLastUpdateDate(Date lastUpdateDate) {
 		if (this.lastUpdateDate != lastUpdateDate) {
-			firePropertyChange("lastUpdateDate", this.lastUpdateDate, lastUpdateDate);
 			this.lastUpdateDate = lastUpdateDate;
+			firePropertyChange("lastUpdateDate", this.lastUpdateDate, lastUpdateDate);
 		}
 	}
 
 	public void setLastUpdateOsUser(String lastUpdateOsUser) {
 		if (this.lastUpdateOsUser != lastUpdateOsUser) {
-			firePropertyChange("lastUpdateOsUser", this.lastUpdateOsUser, lastUpdateOsUser);
 			this.lastUpdateOsUser = lastUpdateOsUser;
+			firePropertyChange("lastUpdateOsUser", this.lastUpdateOsUser, lastUpdateOsUser);
 		}
 	}
 
 	public void setLastUpdateUser(String lastUpdateUser) {
 		if (this.lastUpdateUser != lastUpdateUser) {
-			firePropertyChange("lastUpdateUser", this.lastUpdateUser, lastUpdateUser);
 			this.lastUpdateUser = lastUpdateUser;
+			firePropertyChange("lastUpdateUser", this.lastUpdateUser, lastUpdateUser);
 		}
 	}
 
 	public void setMatchAppendToLogInd(boolean matchAppendToLogInd) {
 		if (this.matchAppendToLogInd != matchAppendToLogInd) {
-			firePropertyChange("matchAppendToLogInd", this.matchAppendToLogInd, matchAppendToLogInd);
 			this.matchAppendToLogInd = matchAppendToLogInd;
+			firePropertyChange("matchAppendToLogInd", this.matchAppendToLogInd, matchAppendToLogInd);
 		}
 	}
 
 	public void setMatchBreakInd(boolean matchBreakInd) {
 		if (this.matchBreakInd != matchBreakInd) {
-			firePropertyChange("matchBreakInd", this.matchBreakInd, matchBreakInd);
 			this.matchBreakInd = matchBreakInd;
+			firePropertyChange("matchBreakInd", this.matchBreakInd, matchBreakInd);
 		}
 	}
 
 	public void setMatchDebugModeInd(boolean matchDebugModeInd) {
 		if (this.matchDebugModeInd != matchDebugModeInd) {
-			firePropertyChange("matchDebugModeInd", this.matchDebugModeInd, matchDebugModeInd);
 			this.matchDebugModeInd = matchDebugModeInd;
+			firePropertyChange("matchDebugModeInd", this.matchDebugModeInd, matchDebugModeInd);
 		}
 	}
 
 	public void setMatchDesc(String matchDesc) {
 		if (this.matchDesc != matchDesc) {
-			firePropertyChange("matchDesc", this.matchDesc, matchDesc);
 			this.matchDesc = matchDesc;
+			firePropertyChange("matchDesc", this.matchDesc, matchDesc);
 		}
 	}
 
 	public void setMatchId(String matchId) {
 		if (this.matchId != matchId) {
-			firePropertyChange("matchId", this.matchId, matchId);
 			this.matchId = matchId;
+			firePropertyChange("matchId", this.matchId, matchId);
 		}
 	}
 
 	public void setMatchLastRunDate(Date matchLastRunDate) {
 		if (this.matchLastRunDate != matchLastRunDate) {
-			firePropertyChange("matchLastRunDate", this.matchLastRunDate, matchLastRunDate);
 			this.matchLastRunDate = matchLastRunDate;
+			firePropertyChange("matchLastRunDate", this.matchLastRunDate, matchLastRunDate);
 		}
 	}
 
 	public void setMatchLastRunUser(String matchLastRunUser) {
 		if (this.matchLastRunUser != matchLastRunUser) {
-			firePropertyChange("matchLastRunUser", this.matchLastRunUser, matchLastRunUser);
 			this.matchLastRunUser = matchLastRunUser;
+			firePropertyChange("matchLastRunUser", this.matchLastRunUser, matchLastRunUser);
 		}
 	}
 
 	public void setMatchLogFileName(String matchLogFileName) {
 		if (this.matchLogFileName != matchLogFileName) {
-			firePropertyChange("matchLogFileName", this.matchLogFileName, matchLogFileName);
 			this.matchLogFileName = matchLogFileName;
+			firePropertyChange("matchLogFileName", this.matchLogFileName, matchLogFileName);
 		}
 	}
 
 	public void setMatchPackageName(String matchPackageName) {
 		if (this.matchPackageName != matchPackageName) {
-			firePropertyChange("matchPackageName", this.matchPackageName, matchPackageName);
 			this.matchPackageName = matchPackageName;
+			firePropertyChange("matchPackageName", this.matchPackageName, matchPackageName);
 		}
 	}
 
 	public void setMatchProcedureNameAll(String matchProcedureNameAll) {
 		if (this.matchProcedureNameAll != matchProcedureNameAll) {
-			firePropertyChange("matchProcedureNameAll", this.matchProcedureNameAll, matchProcedureNameAll);
 			this.matchProcedureNameAll = matchProcedureNameAll;
+			firePropertyChange("matchProcedureNameAll", this.matchProcedureNameAll, matchProcedureNameAll);
 		}
 	}
 
 	public void setMatchProcedureNameOne(String matchProcedureNameOne) {
 		if (this.matchProcedureNameOne != matchProcedureNameOne) {
-			firePropertyChange("matchProcedureNameOne", this.matchProcedureNameOne, matchProcedureNameOne);
 			this.matchProcedureNameOne = matchProcedureNameOne;
+			firePropertyChange("matchProcedureNameOne", this.matchProcedureNameOne, matchProcedureNameOne);
 		}
 	}
 
 	public void setMatchProcessCnt(Long matchProcessCnt) {
 		if (this.matchProcessCnt != matchProcessCnt) {
-			firePropertyChange("matchProcessCnt", this.matchProcessCnt, matchProcessCnt);
 			this.matchProcessCnt = matchProcessCnt;
+			firePropertyChange("matchProcessCnt", this.matchProcessCnt, matchProcessCnt);
 		}
 	}
 
 	public void setMatchRollbackSegmentName(String matchRollbackSegmentName) {
 		if (this.matchRollbackSegmentName != matchRollbackSegmentName) {
-			firePropertyChange("matchRollbackSegmentName", this.matchRollbackSegmentName, matchRollbackSegmentName);
 			this.matchRollbackSegmentName = matchRollbackSegmentName;
+			firePropertyChange("matchRollbackSegmentName", this.matchRollbackSegmentName, matchRollbackSegmentName);
 		}
 	}
 
 	public void setMatchRowsInserted(BigDecimal matchRowsInserted) {
 		if (this.matchRowsInserted != matchRowsInserted) {
-			firePropertyChange("matchRowsInserted", this.matchRowsInserted, matchRowsInserted);
 			this.matchRowsInserted = matchRowsInserted;
+			firePropertyChange("matchRowsInserted", this.matchRowsInserted, matchRowsInserted);
 		}
 	}
 
 	public void setMatchRunStatus(String matchRunStatus) {
 		if (this.matchRunStatus != matchRunStatus) {
-			firePropertyChange("matchRunStatus", this.matchRunStatus, matchRunStatus);
 			this.matchRunStatus = matchRunStatus;
+			firePropertyChange("matchRunStatus", this.matchRunStatus, matchRunStatus);
 		}
 	}
 
 	public void setMatchScriptFileName(String matchScriptFileName) {
 		if (this.matchScriptFileName != matchScriptFileName) {
-			firePropertyChange("matchScriptFileName", this.matchScriptFileName, matchScriptFileName);
 			this.matchScriptFileName = matchScriptFileName;
+			firePropertyChange("matchScriptFileName", this.matchScriptFileName, matchScriptFileName);
 		}
 	}
 
 	public void setMatchSendEmailInd(boolean matchSendEmailInd) {
 		if (this.matchSendEmailInd != matchSendEmailInd) {
-			firePropertyChange("matchSendEmailInd", this.matchSendEmailInd, matchSendEmailInd);
 			this.matchSendEmailInd = matchSendEmailInd;
+			firePropertyChange("matchSendEmailInd", this.matchSendEmailInd, matchSendEmailInd);
 		}
 	}
 
 	public void setMatchShowProgressFreq(Long matchShowProgressFreq) {
 		if (this.matchShowProgressFreq != matchShowProgressFreq) {
-			firePropertyChange("matchShowProgressFreq", this.matchShowProgressFreq, matchShowProgressFreq);
 			this.matchShowProgressFreq = matchShowProgressFreq;
+			firePropertyChange("matchShowProgressFreq", this.matchShowProgressFreq, matchShowProgressFreq);
 		}
 	}
 
 	public void setMatchStatus(String matchStatus) {
 		if (this.matchStatus != matchStatus) {
-			firePropertyChange("matchStatus", this.matchStatus, matchStatus);
 			this.matchStatus = matchStatus;
+			firePropertyChange("matchStatus", this.matchStatus, matchStatus);
 		}
 	}
 
 	public void setMatchStepDesc(String matchStepDesc) {
 		if (this.matchStepDesc != matchStepDesc) {
-			firePropertyChange("matchStepDesc", this.matchStepDesc, matchStepDesc);
 			this.matchStepDesc = matchStepDesc;
+			firePropertyChange("matchStepDesc", this.matchStepDesc, matchStepDesc);
 		}
 	}
 
 	public void setMatchStepsCompleted(BigDecimal matchStepsCompleted) {
 		if (this.matchStepsCompleted != matchStepsCompleted) {
-			firePropertyChange("matchStepsCompleted", this.matchStepsCompleted, matchStepsCompleted);
 			this.matchStepsCompleted = matchStepsCompleted;
+			firePropertyChange("matchStepsCompleted", this.matchStepsCompleted, matchStepsCompleted);
 		}
 	}
 
 	public void setMatchTable(String matchTable) {
 		if (this.matchTable != matchTable) {
-			firePropertyChange("matchTable", this.matchTable, matchTable);
 			this.matchTable = matchTable;
+			firePropertyChange("matchTable", this.matchTable, matchTable);
 		}
 	}
 
 	public void setMatchTablePkColumnFormat(String matchTablePkColumnFormat) {
 		if (this.matchTablePkColumnFormat != matchTablePkColumnFormat) {
-			firePropertyChange("matchTablePkColumnFormat", this.matchTablePkColumnFormat, matchTablePkColumnFormat);
 			this.matchTablePkColumnFormat = matchTablePkColumnFormat;
+			firePropertyChange("matchTablePkColumnFormat", this.matchTablePkColumnFormat, matchTablePkColumnFormat);
 		}
 	}
 
 	public void setMatchTotalSteps(BigDecimal matchTotalSteps) {
 		if (this.matchTotalSteps != matchTotalSteps) {
-			firePropertyChange("matchTotalSteps", this.matchTotalSteps, matchTotalSteps);
 			this.matchTotalSteps = matchTotalSteps;
+			firePropertyChange("matchTotalSteps", this.matchTotalSteps, matchTotalSteps);
 		}
 	}
 
 	public void setMatchType(String matchType) {
 		if (this.matchType != matchType) {
-			firePropertyChange("matchType", this.matchType, matchType);
 			this.matchType = matchType;
+			firePropertyChange("matchType", this.matchType, matchType);
 		}
 	}
 
 	public void setMergeAppendToLogInd(boolean mergeAppendToLogInd) {
 		if (this.mergeAppendToLogInd != mergeAppendToLogInd) {
-			firePropertyChange("mergeAppendToLogInd", this.mergeAppendToLogInd, mergeAppendToLogInd);
 			this.mergeAppendToLogInd = mergeAppendToLogInd;
+			firePropertyChange("mergeAppendToLogInd", this.mergeAppendToLogInd, mergeAppendToLogInd);
 		}
 	}
 
 	public void setMergeAugmentNullInd(boolean mergeAugmentNullInd) {
 		if (this.mergeAugmentNullInd != mergeAugmentNullInd) {
-			firePropertyChange("mergeAugmentNullInd", this.mergeAugmentNullInd, mergeAugmentNullInd);
 			this.mergeAugmentNullInd = mergeAugmentNullInd;
+			firePropertyChange("mergeAugmentNullInd", this.mergeAugmentNullInd, mergeAugmentNullInd);
 		}
 	}
 
 	public void setMergeCompletionDate(Date mergeCompletionDate) {
 		if (this.mergeCompletionDate != mergeCompletionDate) {
-			firePropertyChange("mergeCompletionDate", this.mergeCompletionDate, mergeCompletionDate);
 			this.mergeCompletionDate = mergeCompletionDate;
+			firePropertyChange("mergeCompletionDate", this.mergeCompletionDate, mergeCompletionDate);
 		}
 	}
 
 	public void setMergeDebugModeInd(boolean mergeDebugModeInd) {
 		if (this.mergeDebugModeInd != mergeDebugModeInd) {
-			firePropertyChange("mergeDebugModeInd", this.mergeDebugModeInd, mergeDebugModeInd);
 			this.mergeDebugModeInd = mergeDebugModeInd;
+			firePropertyChange("mergeDebugModeInd", this.mergeDebugModeInd, mergeDebugModeInd);
 		}
 	}
 
 	public void setMergeDesc(String mergeDesc) {
 		if (this.mergeDesc != mergeDesc) {
-			firePropertyChange("mergeDesc", this.mergeDesc, mergeDesc);
 			this.mergeDesc = mergeDesc;
+			firePropertyChange("mergeDesc", this.mergeDesc, mergeDesc);
 		}
 	}
 
 	public void setMergeLastRunDate(Date mergeLastRunDate) {
 		if (this.mergeLastRunDate != mergeLastRunDate) {
-			firePropertyChange("mergeLastRunDate", this.mergeLastRunDate, mergeLastRunDate);
 			this.mergeLastRunDate = mergeLastRunDate;
+			firePropertyChange("mergeLastRunDate", this.mergeLastRunDate, mergeLastRunDate);
 		}
 	}
 
 	public void setMergeLastRunUser(String mergeLastRunUser) {
 		if (this.mergeLastRunUser != mergeLastRunUser) {
-			firePropertyChange("mergeLastRunUser", this.mergeLastRunUser, mergeLastRunUser);
 			this.mergeLastRunUser = mergeLastRunUser;
+			firePropertyChange("mergeLastRunUser", this.mergeLastRunUser, mergeLastRunUser);
 		}
 	}
 
 	public void setMergeLastUser(String mergeLastUser) {
 		if (this.mergeLastUser != mergeLastUser) {
-			firePropertyChange("mergeLastUser", this.mergeLastUser, mergeLastUser);
 			this.mergeLastUser = mergeLastUser;
+			firePropertyChange("mergeLastUser", this.mergeLastUser, mergeLastUser);
 		}
 	}
 
 	public void setMergeLogFileName(String mergeLogFileName) {
 		if (this.mergeLogFileName != mergeLogFileName) {
-			firePropertyChange("mergeLogFileName", this.mergeLogFileName, mergeLogFileName);
 			this.mergeLogFileName = mergeLogFileName;
+			firePropertyChange("mergeLogFileName", this.mergeLogFileName, mergeLogFileName);
 		}
 	}
 
 	public void setMergePackageName(String mergePackageName) {
 		if (this.mergePackageName != mergePackageName) {
-			firePropertyChange("mergePackageName", this.mergePackageName, mergePackageName);
 			this.mergePackageName = mergePackageName;
+			firePropertyChange("mergePackageName", this.mergePackageName, mergePackageName);
 		}
 	}
 
 	public void setMergeProcedureName(String mergeProcedureName) {
 		if (this.mergeProcedureName != mergeProcedureName) {
-			firePropertyChange("mergeProcedureName", this.mergeProcedureName, mergeProcedureName);
 			this.mergeProcedureName = mergeProcedureName;
+			firePropertyChange("mergeProcedureName", this.mergeProcedureName, mergeProcedureName);
 		}
 	}
 
 	public void setMergeProcessCnt(BigDecimal mergeProcessCnt) {
 		if (this.mergeProcessCnt != mergeProcessCnt) {
-			firePropertyChange("mergeProcessCnt", this.mergeProcessCnt, mergeProcessCnt);
 			this.mergeProcessCnt = mergeProcessCnt;
+			firePropertyChange("mergeProcessCnt", this.mergeProcessCnt, mergeProcessCnt);
 		}
 	}
 
 	public void setMergeRollbackSegmentName(String mergeRollbackSegmentName) {
 		if (this.mergeRollbackSegmentName != mergeRollbackSegmentName) {
-			firePropertyChange("mergeRollbackSegmentName", this.mergeRollbackSegmentName, mergeRollbackSegmentName);
 			this.mergeRollbackSegmentName = mergeRollbackSegmentName;
+			firePropertyChange("mergeRollbackSegmentName", this.mergeRollbackSegmentName, mergeRollbackSegmentName);
 		}
 	}
 
 	public void setMergeRowsInserted(BigDecimal mergeRowsInserted) {
 		if (this.mergeRowsInserted != mergeRowsInserted) {
-			firePropertyChange("mergeRowsInserted", this.mergeRowsInserted, mergeRowsInserted);
 			this.mergeRowsInserted = mergeRowsInserted;
+			firePropertyChange("mergeRowsInserted", this.mergeRowsInserted, mergeRowsInserted);
 		}
 	}
 
 	public void setMergeRunStatus(String mergeRunStatus) {
 		if (this.mergeRunStatus != mergeRunStatus) {
-			firePropertyChange("mergeRunStatus", this.mergeRunStatus, mergeRunStatus);
 			this.mergeRunStatus = mergeRunStatus;
+			firePropertyChange("mergeRunStatus", this.mergeRunStatus, mergeRunStatus);
 		}
 	}
 
 	public void setMergeScriptFileName(String mergeScriptFileName) {
 		if (this.mergeScriptFileName != mergeScriptFileName) {
-			firePropertyChange("mergeScriptFileName", this.mergeScriptFileName, mergeScriptFileName);
 			this.mergeScriptFileName = mergeScriptFileName;
+			firePropertyChange("mergeScriptFileName", this.mergeScriptFileName, mergeScriptFileName);
 		}
 	}
 
 	public void setMergeSendEmailInd(boolean mergeSendEmailInd) {
 		if (this.mergeSendEmailInd != mergeSendEmailInd) {
-			firePropertyChange("mergeSendEmailInd", this.mergeSendEmailInd, mergeSendEmailInd);
 			this.mergeSendEmailInd = mergeSendEmailInd;
+			firePropertyChange("mergeSendEmailInd", this.mergeSendEmailInd, mergeSendEmailInd);
 		}
 	}
 
 	public void setMergeShowProgressFreq(BigDecimal mergeShowProgressFreq) {
 		if (this.mergeShowProgressFreq != mergeShowProgressFreq) {
-			firePropertyChange("mergeShowProgressFreq", this.mergeShowProgressFreq, mergeShowProgressFreq);
 			this.mergeShowProgressFreq = mergeShowProgressFreq;
+			firePropertyChange("mergeShowProgressFreq", this.mergeShowProgressFreq, mergeShowProgressFreq);
 		}
 	}
 
 	public void setMergeStepDesc(String mergeStepDesc) {
 		if (this.mergeStepDesc != mergeStepDesc) {
-			firePropertyChange("mergeStepDesc", this.mergeStepDesc, mergeStepDesc);
 			this.mergeStepDesc = mergeStepDesc;
+			firePropertyChange("mergeStepDesc", this.mergeStepDesc, mergeStepDesc);
 		}
 	}
 
 	public void setMergeStepsCompleted(BigDecimal mergeStepsCompleted) {
 		if (this.mergeStepsCompleted != mergeStepsCompleted) {
-			firePropertyChange("mergeStepsCompleted", this.mergeStepsCompleted, mergeStepsCompleted);
 			this.mergeStepsCompleted = mergeStepsCompleted;
+			firePropertyChange("mergeStepsCompleted", this.mergeStepsCompleted, mergeStepsCompleted);
 		}
 	}
 
 	public void setMergeTablesBackupInd(boolean mergeTablesBackupInd) {
 		if (this.mergeTablesBackupInd != mergeTablesBackupInd) {
-			firePropertyChange("mergeTablesBackupInd", this.mergeTablesBackupInd, mergeTablesBackupInd);
 			this.mergeTablesBackupInd = mergeTablesBackupInd;
+			firePropertyChange("mergeTablesBackupInd", this.mergeTablesBackupInd, mergeTablesBackupInd);
 		}
 	}
 
 	public void setMergeTotalSteps(BigDecimal mergeTotalSteps) {
 		if (this.mergeTotalSteps != mergeTotalSteps) {
-			firePropertyChange("mergeTotalSteps", this.mergeTotalSteps, mergeTotalSteps);
 			this.mergeTotalSteps = mergeTotalSteps;
+			firePropertyChange("mergeTotalSteps", this.mergeTotalSteps, mergeTotalSteps);
 		}
 	}
 
 	public void setPkColumn(String pkColumn) {
 		if (this.pkColumn != pkColumn) {
-			firePropertyChange("pkColumn", this.pkColumn, pkColumn);
 			this.pkColumn = pkColumn;
+			firePropertyChange("pkColumn", this.pkColumn, pkColumn);
 		}
 	}
 

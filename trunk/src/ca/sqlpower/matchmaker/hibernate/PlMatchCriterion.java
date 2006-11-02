@@ -247,127 +247,127 @@ public class PlMatchCriterion extends DefaultHibernateObject<PlMatchCriterion> i
 
 	public void setCountWordsInd(boolean countWordsInd) {
 		if (this.countWordsInd != countWordsInd) {
-			firePropertyChange("this.countWordsInd", this.countWordsInd, countWordsInd);
 			this.countWordsInd = countWordsInd;
+			firePropertyChange("this.countWordsInd", this.countWordsInd, countWordsInd);
 		}
 	}
 
 	public void setFirstNChar(Long firstNChar) {
 		if (this.firstNChar != firstNChar) {
-			firePropertyChange("this.firstNChar", this.firstNChar, firstNChar);
 			this.firstNChar = firstNChar;
+			firePropertyChange("this.firstNChar", this.firstNChar, firstNChar);
 		}
 	}
 
 	public void setFirstNCharByWord(Long firstNCharByWord) {
 		if (this.firstNCharByWord != firstNCharByWord) {
-			firePropertyChange("this.firstNCharByWord", this.firstNCharByWord, firstNCharByWord);
 			this.firstNCharByWord = firstNCharByWord;
+			firePropertyChange("this.firstNCharByWord", this.firstNCharByWord, firstNCharByWord);
 		}
 	}
 
 	public void setFirstNCharByWordInd(boolean firstNCharByWordInd) {
 		if (this.firstNCharByWordInd != firstNCharByWordInd) {
-			firePropertyChange("this.firstNCharByWordInd", this.firstNCharByWordInd, firstNCharByWordInd);
 			this.firstNCharByWordInd = firstNCharByWordInd;
+			firePropertyChange("this.firstNCharByWordInd", this.firstNCharByWordInd, firstNCharByWordInd);
 		}
 	}
 
 	public void setLastUpdateDate(Date lastUpdateDate) {
 		if (this.lastUpdateDate != lastUpdateDate) {
-			firePropertyChange("this.lastUpdateDate", this.lastUpdateDate, lastUpdateDate);
 			this.lastUpdateDate = lastUpdateDate;
+			firePropertyChange("this.lastUpdateDate", this.lastUpdateDate, lastUpdateDate);
 		}
 	}
 
 	public void setLastUpdateOsUser(String lastUpdateOsUser) {
 		if (this.lastUpdateOsUser != lastUpdateOsUser) {
-			firePropertyChange("this.lastUpdateOsUser", this.lastUpdateOsUser, lastUpdateOsUser);
 			this.lastUpdateOsUser = lastUpdateOsUser;
+			firePropertyChange("this.lastUpdateOsUser", this.lastUpdateOsUser, lastUpdateOsUser);
 		}
 	}
 
 	public void setLastUpdateUser(String lastUpdateUser) {
 		if (this.lastUpdateUser != lastUpdateUser) {
-			firePropertyChange("this.lastUpdateUser", this.lastUpdateUser, lastUpdateUser);
 			this.lastUpdateUser = lastUpdateUser;
+			firePropertyChange("this.lastUpdateUser", this.lastUpdateUser, lastUpdateUser);
 		}
 	}
 
 	public void setMatchEnd(boolean matchEnd) {
 		if (this.matchEnd != matchEnd) {
-			firePropertyChange("this.matchEnd", this.matchEnd, matchEnd);
 			this.matchEnd = matchEnd;
+			firePropertyChange("this.matchEnd", this.matchEnd, matchEnd);
 		}
 	}
 
 	public void setMatchFirstPlusOneInd(boolean matchFirstPlusOneInd) {
 		if (this.matchFirstPlusOneInd != matchFirstPlusOneInd) {
-			firePropertyChange("this.matchFirstPlusOneInd", this.matchFirstPlusOneInd, matchFirstPlusOneInd);
 			this.matchFirstPlusOneInd = matchFirstPlusOneInd;
+			firePropertyChange("this.matchFirstPlusOneInd", this.matchFirstPlusOneInd, matchFirstPlusOneInd);
 		}
 	}
 
 	public void setMatchStart(boolean matchStart) {
 		if (this.matchStart != matchStart) {
-			firePropertyChange("this.matchStart", this.matchStart, matchStart);
 			this.matchStart = matchStart;
+			firePropertyChange("this.matchStart", this.matchStart, matchStart);
 		}
 	}
 
 	public void setMinWordsInCommon(Long minWordsInCommon) {
 		if (this.minWordsInCommon != minWordsInCommon) {
-			firePropertyChange("this.minWordsInCommon", this.minWordsInCommon, minWordsInCommon);
 			this.minWordsInCommon = minWordsInCommon;
+			firePropertyChange("this.minWordsInCommon", this.minWordsInCommon, minWordsInCommon);
 		}
 	}
 
 	public void setRemoveSpecialChars(boolean removeSpecialChars) {
 		if (this.removeSpecialChars != removeSpecialChars) {
-			firePropertyChange("this.removeSpecialChars", this.removeSpecialChars, removeSpecialChars);
 			this.removeSpecialChars = removeSpecialChars;
+			firePropertyChange("this.removeSpecialChars", this.removeSpecialChars, removeSpecialChars);
 		}
 	}
 
 	public void setReorderInd(boolean reorderInd) {
 		if (this.reorderInd != reorderInd) {
-			firePropertyChange("this.reorderInd", this.reorderInd, reorderInd);
 			this.reorderInd = reorderInd;
+			firePropertyChange("this.reorderInd", this.reorderInd, reorderInd);
 		}
 	}
 
 	public void setReplaceWithSpace(String replaceWithSpace) {
 		if (this.replaceWithSpace != replaceWithSpace) {
-			firePropertyChange("this.replaceWithSpace", this.replaceWithSpace, replaceWithSpace);
 			this.replaceWithSpace = replaceWithSpace;
+			firePropertyChange("this.replaceWithSpace", this.replaceWithSpace, replaceWithSpace);
 		}
 	}
 
 	public void setReplaceWithSpaceInd(boolean replaceWithSpaceInd) {
 		if (this.replaceWithSpaceInd != replaceWithSpaceInd) {
-			firePropertyChange("this.replaceWithSpaceInd", this.replaceWithSpaceInd, replaceWithSpaceInd);
 			this.replaceWithSpaceInd = replaceWithSpaceInd;
+			firePropertyChange("this.replaceWithSpaceInd", this.replaceWithSpaceInd, replaceWithSpaceInd);
 		}
 	}
 
 	public void setSeqNo(BigDecimal seqNo) {
 		if (this.seqNo != seqNo) {
-			firePropertyChange("this.seqNo", this.seqNo, seqNo);
 			this.seqNo = seqNo;
+			firePropertyChange("this.seqNo", this.seqNo, seqNo);
 		}
 	}
 
 	public void setSoundInd(boolean soundInd) {
 		if (this.soundInd != soundInd) {
-			firePropertyChange("this.soundInd", this.soundInd, soundInd);
 			this.soundInd = soundInd;
+			firePropertyChange("this.soundInd", this.soundInd, soundInd);
 		}
 	}
 
 	public void setSuppressChar(String suppressChar) {
 		if (this.suppressChar != suppressChar) {
-			firePropertyChange("this.suppressChar", this.suppressChar, suppressChar);
 			this.suppressChar = suppressChar;
+			firePropertyChange("this.suppressChar", this.suppressChar, suppressChar);
 		}
 	}
 
@@ -375,29 +375,29 @@ public class PlMatchCriterion extends DefaultHibernateObject<PlMatchCriterion> i
 
 	public void setVarianceAmt(BigDecimal varianceAmt) {
 		if (this.varianceAmt != varianceAmt) {
-			firePropertyChange("this.varianceAmt", this.varianceAmt, varianceAmt);
 			this.varianceAmt = varianceAmt;
+			firePropertyChange("this.varianceAmt", this.varianceAmt, varianceAmt);
 		}
 	}
 
 	public void setVarianceType(String varianceType) {
 		if (this.varianceType != varianceType) {
-			firePropertyChange("this.varianceType", this.varianceType, varianceType);
 			this.varianceType = varianceType;
+			firePropertyChange("this.varianceType", this.varianceType, varianceType);
 		}
 	}
 
 	public void setWordsInCommonNumWords(Long wordsInCommonNumWords) {
 		if (this.wordsInCommonNumWords != wordsInCommonNumWords) {
-			firePropertyChange("this.wordsInCommonNumWords", this.wordsInCommonNumWords, wordsInCommonNumWords);
 			this.wordsInCommonNumWords = wordsInCommonNumWords;
+			firePropertyChange("this.wordsInCommonNumWords", this.wordsInCommonNumWords, wordsInCommonNumWords);
 		}
 	}
 
 	public void setAllowNullInd(boolean allowNullInd) {
 		if (this.allowNullInd != allowNullInd) {
-			firePropertyChange("this.allowNullInd", this.allowNullInd, allowNullInd);
 			this.allowNullInd = allowNullInd;
+			firePropertyChange("this.allowNullInd", this.allowNullInd, allowNullInd);
 		}
 	}
 
@@ -512,8 +512,8 @@ public class PlMatchCriterion extends DefaultHibernateObject<PlMatchCriterion> i
 
 	public void setId(Long id) {
 		if (this.id != id) {
-			firePropertyChange("id", this.id, id);
 			this.id = id;
+			firePropertyChange("id", this.id, id);
 		}
 	}
 
@@ -527,8 +527,8 @@ public class PlMatchCriterion extends DefaultHibernateObject<PlMatchCriterion> i
 
 	public void setColumnName(String columnName) {
 		if (this.columnName != columnName) {
-			firePropertyChange("columnName", this.columnName, columnName);
 			this.columnName = columnName;
+			firePropertyChange("columnName", this.columnName, columnName);
 		}
 	}
 
