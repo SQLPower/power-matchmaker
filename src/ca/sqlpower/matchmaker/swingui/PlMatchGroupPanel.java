@@ -91,13 +91,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		
 	}
 
-	public PlMatchGroupPanel(PlMatch parent) throws ArchitectException {
-		super();
-		PlMatchGroupPanelImpl(new PlMatchGroup());
-		model = new PlMatchGroup();
-		model.setPlMatch(parent);
-		parent.addPlMatchGroups(model);
-	}
+	
 	
 	public void PlMatchGroupPanelImpl(PlMatchGroup model) throws ArchitectException{
 		this.model = model;
@@ -212,7 +206,20 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		if (plMatch != null && plMatch.getMatchTable() != null){
 			SQLTable t = MatchMakerFrame.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
 			newMatchCriterion.setAction(new NewMatchCriteria(model,t));
-		}
+            newMatchCriterion.setToolTipText(null);
+            newMatchCriterion.setEnabled(true);
+		} else {
+            newMatchCriterion.setAction(new AbstractAction("New Criterion"){
+
+                public void actionPerformed(ActionEvent e) {
+                    // TODO Auto-generated method stub
+                    
+                }
+                
+            });
+            newMatchCriterion.setEnabled(false);
+            newMatchCriterion.setToolTipText("You need to have selected a table you can access to add match criteria");
+        }
 		deleteMatchCriterion.setAction(new DeleteMatchCriteria(model,getMatchCriteriaTable()));
 		copyMatchCriterion.setAction(new CopyMatchCriteria(model,getMatchCriteriaTable().getSelectedRows()));
 		pasteMatchCriterion.setAction(new PasteMatchCriteria(model));
@@ -272,9 +279,11 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		
 	}
 	private boolean saveMatches() {
-		if ( validateForm() ){
-	
-			model.setGroupId(groupId.getText());
+		if ( validateForm() && model.getPlMatch() != null && model.getPlMatch().getMatchId() != null ){
+            model.setGroupId(groupId.getText());
+            // if this hasn't been added yet add it.
+            if (!model.getPlMatch().getChildren().contains(model)) 
+                model.getPlMatch().addPlMatchGroups(model);
 			model.setDescription(description.getText());
 			model.setMatchPercent(Short.parseShort(matchPercent.getText()));
 			model.setFilterCriteria(filterCriteria.getText());
