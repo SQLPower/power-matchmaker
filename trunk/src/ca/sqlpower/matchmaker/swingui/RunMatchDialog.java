@@ -112,7 +112,7 @@ public class RunMatchDialog extends JDialog{
 
     public void buildUI(){
         FormLayout layout = new FormLayout(
-                "4dlu,fill:min(70dlu;pref),4dlu,fill:200dlu:grow, 7dlu,20dlu,pref,4dlu,pref,4dlu",
+                "4dlu,fill:min(70dlu;pref),4dlu,fill:200dlu:grow, pref,20dlu,pref,4dlu,pref,4dlu",
               // 1    2                    3    4                 5    6     7    8    9    10
                 "10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,30dlu,pref,4dlu,pref,4dlu");
         //		 1     2    3     4    5    6    7    8    9     10   11   12   13
