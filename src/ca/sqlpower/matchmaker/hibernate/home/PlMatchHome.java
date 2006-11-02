@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.criterion.Example;
+import org.hibernate.criterion.Expression;
 
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 
@@ -62,6 +63,20 @@ public class PlMatchHome extends DefaultHome<PlMatch> {
         }
     }
     
+    public List<PlMatch> findAllWithoutFolder() {
+        log.info("finding all for "+ getBusinessClass());
+        try {
+            List<PlMatch> results = getCurrentSession()
+                    .createCriteria(getBusinessClass()).add(Expression.isNull("folder"))
+                    .list();
+            log.debug("find all successful, result size: " + results.size());
+            return results;
+        }
+        catch (RuntimeException re) {
+            log.error("find all failed", re);
+            throw re;
+        }
+    } 
     public List findByExample(PlMatch instance) {
         log.debug("finding PlMatch instance by example");
         try {

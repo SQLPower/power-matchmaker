@@ -488,10 +488,8 @@ public class MatchMakerFrame extends JFrame {
 			folders = new ArrayList<PlFolder>(folderHome.findMatchMakerFolders());
 			// Need to make sure the orphaned matches have been added.  But that we don't add two of the same
 			// object in the hierachy.
-			Set<PlMatch> matchSet = new HashSet<PlMatch>(matchHome.findAll());
-			for (PlFolder folder: folders){
-				matchSet.addAll(folder.getMatches());
-			}
+			Set<PlMatch> matchSet = new HashSet<PlMatch>(matchHome.findAllWithoutFolder());
+
 			matches = new ArrayList<PlMatch>(matchSet);
 			Collections.sort(matches);
 			Collections.sort(folders);

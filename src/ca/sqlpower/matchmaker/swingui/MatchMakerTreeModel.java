@@ -27,7 +27,7 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
     
 	public static final String root="All Match/Merge Information";
 	public static final String current="Current Match/Merge Information";
-	public static final String allCurrent="All Current Match/Merge Information";
+	public static final String allCurrent="Unclassified Match/Merge Information";
 	public static final String backup="Backup Match/Merge Information";
 	public List<PlFolder> folders = new ArrayList<PlFolder>();
 	public List<PlMatch>  matches = new ArrayList<PlMatch>();
@@ -43,6 +43,9 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 		for (PlMatch m: matches){
 			m.addHierarchicalChangeListener(this);
 		}
+        for (PlFolder p: folders){
+            p.addHierarchicalChangeListener(this);
+        }
 	}
 
 	public MatchMakerTreeModel() {
@@ -144,6 +147,7 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 	protected void fireTreeNodesChanged(TreeModelEvent e) {
         logger.debug("Firing treeNodesChanged event "+e+" to "+treeModelListeners.size()+" listeners...");
 		for (int i= treeModelListeners.size()-1; i >=0; i--){
+            logger.debug("Notifing "+treeModelListeners.get(i));
 			treeModelListeners.get(i).treeNodesChanged(e);
 		}
         logger.debug("done");
@@ -161,21 +165,26 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 		fireTreeNodesChanged(new TreeModelEvent(root,new TreePath(root)));
 	}
 
+    /**
+     * Gets the unique path to the match object
+     * 
+     * @param match
+     * @return a list of size 1
+     */
 	private List<TreePath> getPathFromPlMatch(PlMatch match) {
 		ArrayList<TreePath> paths = new ArrayList<TreePath>();
 		Object[] allPrefix = {root,current,allCurrent};
-		TreePath path = new TreePath(allPrefix);
-		path = path.pathByAddingChild(match);
-		paths.add(path);
-		for (PlFolder folder: folders){
-			if (folder.getChildren().contains(match)){
-				TreePath p = new TreePath(root);
-				p=p.pathByAddingChild(current);
-				p=p.pathByAddingChild(folder);
-				p=p.pathByAddingChild(match);
-				paths.add(p);
-			}
-		}
+        if (match.getFolder() == null) {
+    		TreePath path = new TreePath(allPrefix);
+    		path = path.pathByAddingChild(match);
+    		paths.add(path);
+        } else {
+            TreePath p = new TreePath(root);
+            p=p.pathByAddingChild(current);
+            p=p.pathByAddingChild(match.getFolder());
+            p=p.pathByAddingChild(match);
+            paths.add(p);
+        }
 		return paths;
 	}
 
@@ -218,11 +227,13 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 		            deltaList.removeAll(oldList);
 		            int[] indices = new int[deltaList.size()];
 		            int i =0;
+		            logger.debug("Adding "+indices.length+" Nodes ("+ deltaList +") in positions: ");
 		            for (DefaultHibernateObject dho: deltaList){
 		                indices[i] = newList.indexOf(dho);
+                        logger.debug(indices[i]);
 		                i++;
 		            }
-
+                    
 		            fireTreeNodesInserted(
                             new TreeModelEvent(
                                     evt.getSource(), p, indices,
