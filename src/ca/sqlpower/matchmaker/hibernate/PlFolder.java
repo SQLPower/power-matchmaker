@@ -71,36 +71,36 @@ public class PlFolder extends DefaultHibernateObject<PlMatch>
 
 	public void setFolderDesc(String folderDesc) {
 		if (this.folderDesc != folderDesc) {
-			firePropertyChange("this.folderDesc", this.folderDesc, folderDesc);
 			this.folderDesc = folderDesc;
+			firePropertyChange("this.folderDesc", this.folderDesc, folderDesc);
 		}
 	}
 
 	public void setFolderName(String folderName) {
 		if (this.folderName != folderName) {
-			firePropertyChange("this.folderName", this.folderName, folderName);
 			this.folderName = folderName;
+			firePropertyChange("this.folderName", this.folderName, folderName);
 		}
 	}
 
 	public void setFolderStatus(String folderStatus) {
 		if (this.folderStatus != folderStatus) {
-			firePropertyChange("this.folderStatus", this.folderStatus, folderStatus);
 			this.folderStatus = folderStatus;
+			firePropertyChange("this.folderStatus", this.folderStatus, folderStatus);
 		}
 	}
 
 	public void setLastBackupNo(Long lastBackupNo) {
 		if (this.lastBackupNo != lastBackupNo) {
-			firePropertyChange("this.lastBackupNo", this.lastBackupNo, lastBackupNo);
 			this.lastBackupNo = lastBackupNo;
+			firePropertyChange("this.lastBackupNo", this.lastBackupNo, lastBackupNo);
 		}
 	}
 
 	public void setMatches(Set<PlMatch> matches) {
 		if (this.matches != matches) {
-			firePropertyChange("this.matches", this.matches, matches);
 			this.matches = matches;
+			firePropertyChange("this.matches", this.matches, matches);
 		}
 	}
 
