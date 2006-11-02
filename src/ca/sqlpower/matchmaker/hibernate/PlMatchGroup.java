@@ -156,50 +156,50 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
 
     public void setActiveInd(boolean activeInd) {
 	if (this.activeInd!= activeInd){
-		firePropertyChange("activeInd", this.activeInd, activeInd);
 		this.activeInd = activeInd;
+		firePropertyChange("activeInd", this.activeInd, activeInd);
 	}}
 
 
 	public void setDescription(String description) {
 	if (this.description!= description){
-		firePropertyChange("description", this.description, description);
 		this.description = description;
+		firePropertyChange("description", this.description, description);
 	}}
 
 
 	public void setFilterCriteria(String filterCriteria) {
 	if (this.filterCriteria!= filterCriteria){
-		firePropertyChange("filterCriteria", this.filterCriteria, filterCriteria);
 		this.filterCriteria = filterCriteria;
+		firePropertyChange("filterCriteria", this.filterCriteria, filterCriteria);
 	}}
 
 
 	public void setLastUpdateDate(Date lastUpdateDate) {
 	if (this.lastUpdateDate!= lastUpdateDate){
-		firePropertyChange("lastUpdateDate", this.lastUpdateDate, lastUpdateDate);
 		this.lastUpdateDate = lastUpdateDate;
+		firePropertyChange("lastUpdateDate", this.lastUpdateDate, lastUpdateDate);
 	}}
 
 
 	public void setLastUpdateOsUser(String lastUpdateOsUser) {
 	if (this.lastUpdateOsUser!= lastUpdateOsUser){
-		firePropertyChange("lastUpdateOsUser", this.lastUpdateOsUser, lastUpdateOsUser);
 		this.lastUpdateOsUser = lastUpdateOsUser;
+		firePropertyChange("lastUpdateOsUser", this.lastUpdateOsUser, lastUpdateOsUser);
 	}}
 
 
 	public void setLastUpdateUser(String lastUpdateUser) {
 	if (this.lastUpdateUser!= lastUpdateUser){
-		firePropertyChange("lastUpdateUser", this.lastUpdateUser, lastUpdateUser);
 		this.lastUpdateUser = lastUpdateUser;
+		firePropertyChange("lastUpdateUser", this.lastUpdateUser, lastUpdateUser);
 	}}
 
 
 	public void setMatchPercent(Short matchPercent) {
 		if (this.matchPercent != matchPercent){
-			firePropertyChange("matchPercent", this.matchPercent, matchPercent);
 			this.matchPercent = matchPercent;
+			firePropertyChange("matchPercent", this.matchPercent, matchPercent);
 		}
 	}
 
@@ -246,20 +246,30 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
 
 
 	public int compareTo(PlMatchGroup other) {
-
+	    
 		if (other.getMatchPercent() == null && getMatchPercent() != null){
-			return getMatchPercent().compareTo(other.getMatchPercent());
-		}else if (other !=null && other.getMatchPercent().compareTo(getMatchPercent()) != 0){
+			return 1;
+		}else if (other.getMatchPercent() != null && getMatchPercent() == null){
+            return -1;
+        }else if (other !=null && other.getMatchPercent().compareTo(getMatchPercent()) != 0){
 			return other.getMatchPercent().compareTo(getMatchPercent());
 		} else if (filterCriteria == null && other.getFilterCriteria() != null){
-			return other.getFilterCriteria().compareTo(filterCriteria);
-		}else if (filterCriteria!=null && filterCriteria.compareTo(other.getFilterCriteria()) !=0) {
+			return -1;
+		} else if (filterCriteria != null && other.getFilterCriteria() == null){
+            return 1;
+        }else if (filterCriteria!=null && filterCriteria.compareTo(other.getFilterCriteria()) !=0) {
 			return filterCriteria.compareTo(other.getFilterCriteria());
 		} else if (getPlMatch().compareTo(getPlMatch()) !=0 ) {
 			return getPlMatch().compareTo(other.getPlMatch());
-		} else {
-			return getGroupId().compareTo(other.getGroupId());
-		}
+		} else if (getGroupId() != null && other.getGroupId() != null) {
+                return getGroupId().compareTo(other.getGroupId());
+		} else if (other.getGroupId() != null && getGroupId() == null){
+		    return -1;
+        }else if (other.getGroupId() == null && getGroupId() != null){
+            return 1;
+        } else {
+            return 0;
+        }
 	}
 
 
@@ -291,8 +301,8 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
 
 	public void setId(Long id) {
 		if (this.id != id) {
-			firePropertyChange("id", this.id, id);
 			this.id = id;
+			firePropertyChange("id", this.id, id);
 		}
 	}
 
@@ -302,10 +312,14 @@ public class PlMatchGroup extends DefaultHibernateObject<PlMatchCriterion>
 
 	public void setGroupId(String groupId) {
 		if (this.groupId != groupId) {
-			firePropertyChange("groupId", this.groupId, groupId);
 			this.groupId = groupId;
+			firePropertyChange("groupId", this.groupId, groupId);
 		}
 	}
+
+    public int compareTo(String anotherString) {
+        return description.compareTo(anotherString);
+    }
 
 
 
