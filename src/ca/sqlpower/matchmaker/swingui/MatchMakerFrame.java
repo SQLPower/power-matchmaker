@@ -46,7 +46,6 @@ import ca.sqlpower.architect.ConfigFile;
 import ca.sqlpower.architect.CoreUserSettings;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.UserSettings;
-import ca.sqlpower.architect.qfa.ExceptionHandler;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.action.AboutAction;
@@ -494,13 +493,13 @@ public class MatchMakerFrame extends JFrame {
 			Collections.sort(matches);
 			Collections.sort(folders);
 			PlMatchTranslateGroupHome translateHome = new PlMatchTranslateGroupHome();
-			translations = new ArrayList<PlMatchTranslateGroup>(translateHome.findAll());
-			List<PlMatchTranslateGroup> nullList = new ArrayList<PlMatchTranslateGroup>();
-			nullList.add(null);
-			for (PlMatchTranslateGroup group: translations){
-
-				group.getPlMatchTranslations().removeAll(nullList);
-			}
+//			translations = new ArrayList<PlMatchTranslateGroup>(translateHome.findAll());
+//			List<PlMatchTranslateGroup> nullList = new ArrayList<PlMatchTranslateGroup>();
+//			nullList.add(null);
+//			for (PlMatchTranslateGroup group: translations){
+//
+//				group.getPlMatchTranslations().removeAll(nullList);
+//			}
 		}
 
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
@@ -656,12 +655,13 @@ public class MatchMakerFrame extends JFrame {
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 
-		        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
 		        // this doesn't appear to have any effect on the motion threshold
 		        // in the Playpen, but it does seem to work on the DBTree...
 		        logger.debug("current motion threshold is: " + System.getProperty("awt.dnd.drag.threshold"));
 		        System.setProperty("awt.dnd.drag.threshold","10");
 		        logger.debug("new motion threshold is: " + System.getProperty("awt.dnd.drag.threshold"));
+
+		        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(getMainInstance()));
 
 		        getMainInstance().macOSXRegistration();
 		        getMainInstance().setVisible(true);
