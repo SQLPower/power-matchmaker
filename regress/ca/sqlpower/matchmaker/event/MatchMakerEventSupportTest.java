@@ -26,6 +26,10 @@ public class MatchMakerEventSupportTest extends TestCase {
 		assertTrue("Failed to get the proper source when structure change event thrown",lastEvt.getSource()== mmo);
 		assertEquals("Fired the wrong number of events",1, mmec.getStructureChangedCount());
 		assertEquals("Fired other events",1, mmec.getAllEventCounts());
+		support.removeMatchMakerListener(mmec);
+		support.fireStructureChanged();
+		assertEquals("Fired extra events",1, mmec.getStructureChangedCount());
+		assertEquals("Fired other events",1, mmec.getAllEventCounts());
 	}
 	public void testChildrenInsertedSource() {
 		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
@@ -40,6 +44,12 @@ public class MatchMakerEventSupportTest extends TestCase {
 		assertEquals("Fired other events",1, mmec.getAllEventCounts());
 		assertEquals("Wrong index",index,lastEvt.getChangeIndices());
 		assertEquals("Wrong child", mmoChildren,lastEvt.getChildren());
+		
+		support.removeMatchMakerListener(mmec);
+		support.fireChildrenInserted("InChild",index,mmoChildren);
+		assertEquals("Fired extra events",1, mmec.getChildrenInsertedCount());
+		assertEquals("Fired other events",1, mmec.getAllEventCounts());
+		
 	}
 	public void testChildrenRemovedSource() {
 		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
@@ -55,7 +65,10 @@ public class MatchMakerEventSupportTest extends TestCase {
 		assertEquals("Wrong property","OutChild",lastEvt.getPropertyName());
 		assertEquals("Wrong index",index,lastEvt.getChangeIndices());
 		assertEquals("Wrong child", mmoChildren,lastEvt.getChildren());
-		
+		support.removeMatchMakerListener(mmec);
+		support.fireChildrenRemoved("InChild",index,mmoChildren);
+		assertEquals("Fired extra events",1, mmec.getChildrenRemovedCount());
+		assertEquals("Fired other events",1, mmec.getAllEventCounts());
 	}
 	public void testPropertyChangeSource() {
 		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
@@ -69,6 +82,10 @@ public class MatchMakerEventSupportTest extends TestCase {
 		assertEquals("Wrong property","ppt1",lastEvt.getPropertyName());
 		assertEquals("Wrong old value", "a",lastEvt.getOldValue());
 		assertEquals("Wrong new value", "b",lastEvt.getNewValue());
+		support.removeMatchMakerListener(mmec);
+		support.firePropertyChange("ppt1","a","b");
+		assertEquals("Fired extra events",1, mmec.getPropertyChangedCount());
+		assertEquals("Fired other events",1, mmec.getAllEventCounts());
 		
 	}
 
