@@ -1,20 +1,64 @@
 package ca.sqlpower.matchmaker.event;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.TestCase;
+import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 
 public class MatchMakerEventSupportTest extends TestCase {
 
-	MatchMakerEventSupport support;
-	MatchMakerObject mmo;
+	MatchMakerEventSupport<MatchMakerObject<MatchMakerObject>,MatchMakerObject> support;
+	MatchMakerObject<MatchMakerObject> mmo;
 	
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		mmo =new MatchMakerObject(){
+		mmo =new AbstractMatchMakerObject<MatchMakerObject>(){
 			
 		};
-		support= new MatchMakerEventSupport(mmo);
+		support= new MatchMakerEventSupport<MatchMakerObject<MatchMakerObject>, MatchMakerObject>(mmo);
+	}
+	
+	public void testListenerRemovesSelf(){
+		MatchMakerEventCounter mmec1 = new MatchMakerEventCounter();
+		MatchMakerEventCounter mmec2 = new MatchMakerEventCounter();
+		MatchMakerEventCounter mmec3 = new MatchMakerEventCounter();
+		MatchMakerEventCounter mmec4 = new MatchMakerEventCounter();
+		MatchMakerEventCounter mmecRS = new MatchMakerEventCounter(){
+
+			@Override
+			public void mmStructureChanged(MatchMakerEvent evt) {
+				super.mmStructureChanged(evt);
+				support.removeMatchMakerListener(this);
+			}
+			
+
+	
+			
+		};
+		
+		support.addMatchMakerListener(mmec1);
+		support.addMatchMakerListener(mmec2);
+		support.addMatchMakerListener(mmecRS);
+		support.addMatchMakerListener(mmec3);
+		support.addMatchMakerListener(mmec4);
+		
+		support.fireStructureChanged();
+		assertEquals("Got One event",1,mmec1.getStructureChangedCount());
+		assertEquals("Got One event",1,mmec2.getStructureChangedCount());
+		assertEquals("Got One event",1,mmec3.getStructureChangedCount());
+		assertEquals("Got One event",1,mmec4.getStructureChangedCount());
+		assertEquals("Got One event",1,mmecRS.getStructureChangedCount());
+		
+		support.fireStructureChanged();
+		assertEquals("Got two events",2,mmec1.getStructureChangedCount());
+		assertEquals("Got two events",2,mmec2.getStructureChangedCount());
+		assertEquals("Got two events",2,mmec3.getStructureChangedCount());
+		assertEquals("Got two events",2,mmec4.getStructureChangedCount());
+		assertEquals("Got One event",1,mmecRS.getStructureChangedCount());
+		
 	}
 	
 	public void testStructureChangedSource() {
@@ -35,7 +79,8 @@ public class MatchMakerEventSupportTest extends TestCase {
 		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
 		support.addMatchMakerListener(mmec);
 		int[] index = {0};
-		MatchMakerObject[] mmoChildren = {new MatchMakerObject(){}};
+		List<MatchMakerObject> mmoChildren = new ArrayList<MatchMakerObject>();
+		mmoChildren.add(new AbstractMatchMakerObject<MatchMakerObject>(){});
 		support.fireChildrenInserted("InChild",index,mmoChildren);
 		MatchMakerEvent lastEvt = mmec.getLastEvt();
 		assertNotNull("No event fired",lastEvt);
@@ -55,7 +100,8 @@ public class MatchMakerEventSupportTest extends TestCase {
 		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
 		support.addMatchMakerListener(mmec);
 		int[] index = {1};
-		MatchMakerObject[] mmoChildren = {new MatchMakerObject(){}};
+		List<MatchMakerObject> mmoChildren = new ArrayList<MatchMakerObject>();
+		mmoChildren.add(new AbstractMatchMakerObject<MatchMakerObject>(){});
 		support.fireChildrenRemoved("OutChild",index,mmoChildren);
 		MatchMakerEvent lastEvt = mmec.getLastEvt();
 		assertNotNull("No event fired",lastEvt);
