@@ -9,25 +9,25 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
  * about matchMakerEvents
  * 
  */
-public class MatchMakerEventSupport {
-	private MatchMakerObject source;
-	private List<MatchMakerListener> listeners = new ArrayList<MatchMakerListener>();
+public class MatchMakerEventSupport<T extends MatchMakerObject<C>,C extends MatchMakerObject> {
+	private T source;
+	private List<MatchMakerListener<T,C>> listeners = new ArrayList<MatchMakerListener<T,C>>();
 	
-	public MatchMakerEventSupport(MatchMakerObject source) {
+	public MatchMakerEventSupport(T source) {
 		this.source = source;
 	}
 	
-	public void addMatchMakerListener(MatchMakerListener l){
+	public void addMatchMakerListener(MatchMakerListener<T,C> l){
 		listeners.add(l);
 	}
 	
-	public void removeMatchMakerListener(MatchMakerListener l){
+	public void removeMatchMakerListener(MatchMakerListener<T,C> l){
 		listeners.remove(l);
 	}
 	
 	public void firePropertyChange(String propertyName,Object oldValue, Object newValue){
 		for (int i = listeners.size()-1;i>=0;i--){
-			MatchMakerEvent evt = new MatchMakerEvent();
+			MatchMakerEvent<T,C> evt = new MatchMakerEvent<T,C>();
 			evt.setSource(source);
 			evt.setOldValue(oldValue);
 			evt.setNewValue(newValue);
@@ -36,9 +36,9 @@ public class MatchMakerEventSupport {
 		}
 	}
 	
-	public void fireChildrenInserted(String childPropertyName, int[] insertedIndices, MatchMakerObject[] insertedChildren){
+	public void fireChildrenInserted(String childPropertyName, int[] insertedIndices, List<C> insertedChildren){
 		for (int i = listeners.size()-1;i>=0;i--){
-			MatchMakerEvent evt = new MatchMakerEvent();
+			MatchMakerEvent<T,C> evt = new MatchMakerEvent<T,C>();
 			evt.setSource(source);
 			evt.setChangeIndices(insertedIndices);
 			evt.setPropertyName(childPropertyName);
@@ -47,9 +47,9 @@ public class MatchMakerEventSupport {
 		}
 	}
 	
-	public void fireChildrenRemoved(String childPropertyName, int[] removedIndices, MatchMakerObject[] removedChildren){
+	public void fireChildrenRemoved(String childPropertyName, int[] removedIndices, List<C> removedChildren){
 		for (int i = listeners.size()-1;i>=0;i--){
-			MatchMakerEvent evt = new MatchMakerEvent();
+			MatchMakerEvent<T,C> evt = new MatchMakerEvent<T,C>();
 			evt.setSource(source);
 			evt.setChangeIndices(removedIndices);
 			evt.setPropertyName(childPropertyName);
@@ -60,7 +60,7 @@ public class MatchMakerEventSupport {
 
 	public void fireStructureChanged(){
 		for (int i = listeners.size()-1;i>=0;i--){
-			MatchMakerEvent evt = new MatchMakerEvent();
+			MatchMakerEvent<T,C> evt = new MatchMakerEvent<T,C>();
 			evt.setSource(source);
 			listeners.get(i).mmStructureChanged(evt);
 		}
