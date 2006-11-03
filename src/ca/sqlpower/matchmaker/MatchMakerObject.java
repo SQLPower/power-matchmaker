@@ -13,12 +13,12 @@ public interface MatchMakerObject<T extends MatchMakerObject> extends Auditable 
 	/**
 	 * Support for adding match maker event listeners
 	 */
-	void addMatchMakerListener(MatchMakerListener l);
+	void addMatchMakerListener(MatchMakerListener<MatchMakerObject<T>,T> l);
 	
 	/**
 	 * Support for adding match maker event listeners
 	 */
-	void removeMatchMakerListener(MatchMakerListener l);
+	void removeMatchMakerListener(MatchMakerListener<MatchMakerObject<T>,T> l);
 	
 	/**
 	 * Returns the object's primary children
