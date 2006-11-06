@@ -5,7 +5,7 @@ package ca.sqlpower.matchmaker;
  *	
  * FIXME implement class
  */
-public class MatchMakerFolder extends AbstractMatchMakerObject {
+public class MatchMakerFolder extends AbstractMatchMakerObject<MatchMakerObject> {
 
 	public MatchMakerFolder(String appUserName) {
 		super(appUserName);

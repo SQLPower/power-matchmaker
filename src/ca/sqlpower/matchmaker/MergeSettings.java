@@ -1,8 +1,8 @@
 package ca.sqlpower.matchmaker;
 
 /**
- *	Settings specific to the merge engine
- *
+ * Settings specific to the merge engine
+ * 
  */
 public class MergeSettings extends MatchMakerSettings {
 	public MergeSettings(String appUserName) {
@@ -19,10 +19,8 @@ public class MergeSettings extends MatchMakerSettings {
 	}
 
 	public void setBackUp(boolean backUp) {
-		if (this.backUp != backUp) {
-			boolean oldValue = this.backUp;
-			this.backUp = backUp;
-			getEventSupport().firePropertyChange("backUp", oldValue, backUp);
-		}
+		boolean oldValue = this.backUp;
+		this.backUp = backUp;
+		getEventSupport().firePropertyChange("backUp", oldValue, backUp);
 	}
 }
