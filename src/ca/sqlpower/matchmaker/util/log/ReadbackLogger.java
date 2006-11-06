@@ -40,6 +40,10 @@ public class ReadbackLogger implements Log {
 		canRead = true;
 	}
 
+	public Object getConstraint() {
+		return fileName;
+	}
+
 	public boolean isReadable() {
 		return canRead;
 	}
@@ -52,10 +56,6 @@ public class ReadbackLogger implements Log {
 				mapException(e);
 			}
 		}
-	}
-
-	public void open(Object destination) {
-		// This method does not make sense.
 	}
 
 	private void mapException(Exception e) {
