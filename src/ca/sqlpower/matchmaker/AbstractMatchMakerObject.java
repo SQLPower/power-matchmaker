@@ -16,7 +16,7 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject> imple
 	private String lastUpdateOsUser;
 	private Date lastUpdateDate;
 
-
+	
 	public AbstractMatchMakerObject(String appUserName) {
 		lastUpdateAppUser = appUserName;
 	}
@@ -28,6 +28,10 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject> imple
 	public void addMatchMakerListener(MatchMakerListener<MatchMakerObject<C>,C> l) {
 		eventSupport.addMatchMakerListener(l);
 
+	}
+	
+	protected MatchMakerEventSupport<MatchMakerObject<C>,C> getEventSupport() {
+		return eventSupport;
 	}
 
 	public int getChildCount() {
