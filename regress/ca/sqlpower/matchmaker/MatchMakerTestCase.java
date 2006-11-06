@@ -17,10 +17,18 @@ import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
-
+/**
+ * A base test that all test cases of MatchMakerObject implementations should extend.
+ *
+ * @param <C> The class under test
+ * @version $Id$
+ */
 public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends TestCase {
 
-	MatchMakerObject<C> target;
+	/**
+	 * The object under test.
+	 */
+	C target;
 
     Set<String>propertiesToIgnoreForEventGeneration = new HashSet<String>();
 
@@ -33,7 +41,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		super.tearDown();
 	}
 	
-	protected abstract MatchMakerObject<C> getTarget();
+	protected abstract C getTarget();
 	
 	public void testAllSettersGenerateEvents()
 	throws IllegalArgumentException, IllegalAccessException, 
@@ -116,9 +124,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			}
 		}
 	}
-
-	
-	
     
     /**
      * The child list should never be null for any Match Maker Object, even if
