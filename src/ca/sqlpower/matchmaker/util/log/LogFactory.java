@@ -1,7 +1,6 @@
 package ca.sqlpower.matchmaker.util.log;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * LogFactory gets access to a Log implementation, using
@@ -10,59 +9,25 @@ import java.util.List;
  */
 public class LogFactory {
 
-	private static class DefaultLogger implements Log {
+	private static class DefaultLogger extends BaseLogger implements Log {
 		Date date = new Date();
 		Level level;
 
 		private DefaultLogger(Level level, Object constraint) {
+			super(level, constraint);
 			this.level = level;
+		}
+
+		public void print(String message) {
+			System.out.print(message);
+		}
+
+		public void println(String message) {
+			System.out.println(message);
 		}
 
 		public void close() {
 			// nothing to do
-		}
-
-		public boolean isReadable() {
-			return false;
-		}
-
-		public boolean isWritable() {
-			return true;
-		}
-
-		public void log(Level level, Object message) {
-			if (shouldLog(level)) {
-				date.setTime(System.currentTimeMillis());
-				System.out.print(date);
-				System.out.print(' ');
-				System.out.println(message);
-			}
-		}
-
-		public void log(Level level, Object message, Throwable t) {
-			if (shouldLog(level)) {
-				date.setTime(System.currentTimeMillis());
-				System.out.print(date);
-				System.out.print(' ');
-				System.out.println(message);
-				t.printStackTrace();
-			}
-		}
-
-		private boolean shouldLog(Level messageLevel) {
-			return messageLevel.ordinal() >= this.level.ordinal();
-		}
-
-		public void open(Object destination) {
-			// nothing to do
-		}
-
-		public String read() {
-			throw new UnsupportedOperationException("can not read back this log");
-		}
-
-		public List<String> readAsList() {
-			throw new UnsupportedOperationException("can not read back this log");
 		}
 
 		public long size() {
