@@ -136,5 +136,99 @@ public class MatchMakerEventSupportTest extends TestCase {
 		assertEquals("Fired extra events", 1, mmec.getPropertyChangedCount());
 		assertEquals("Fired other events", 1, mmec.getAllEventCounts());
 	}
+	
+	public void testNoEventWhenNoPropertyChange() {
+		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		support.addMatchMakerListener(mmec);
+		support.firePropertyChange("cowmoo", "a", "a");
+		assertEquals(0, mmec.propertyChangedCount);
+	}
+
+	public void testNoEventWhenNoPropertyChangeNullNull() {
+		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		support.addMatchMakerListener(mmec);
+		support.firePropertyChange("cowmoo", null, null);
+		assertEquals(0, mmec.propertyChangedCount);
+	}
+
+	public void testEventWhenNoPropertyChangesNullToNotNull() {
+		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		support.addMatchMakerListener(mmec);
+		support.firePropertyChange("cowmoo", null, "moo!");
+		assertEquals(1, mmec.propertyChangedCount);
+	}
+
+	public void testEventWhenNoPropertyChangesNotNullToNull() {
+		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		support.addMatchMakerListener(mmec);
+		support.firePropertyChange("cowmoo", "moo!", null);
+		assertEquals(1, mmec.propertyChangedCount);
+	}
+	
+	public void testNullPropertyNameDisallowedForPropertyChange() {
+		try {
+			support.firePropertyChange(null, "cow", "moo");
+			fail("MatchMakerEventSupport allowed a null property name");
+		} catch (NullPointerException e) {
+			// yay
+		}
+	}
+
+	public void testNullPropertyNameDisallowedForChildrenInserted() {
+		try {
+			List<MatchMakerObject> myList = new ArrayList<MatchMakerObject>();
+			myList.add(new AbstractMatchMakerObject<MatchMakerObject<?>>("fake test child") {});
+			support.fireChildrenInserted(null, new int[] { 0 }, myList);
+			fail("MatchMakerEventSupport allowed a null property name");
+		} catch (NullPointerException e) {
+			// yay
+		}
+	}
+
+	public void testNullPropertyNameDisallowedForChildrenRemoved() {
+		try {
+			List<MatchMakerObject> myList = new ArrayList<MatchMakerObject>();
+			myList.add(new AbstractMatchMakerObject<MatchMakerObject<?>>("fake test child") {});
+			support.fireChildrenRemoved(null, new int[] { 0 }, myList);
+			fail("MatchMakerEventSupport allowed a null property name");
+		} catch (NullPointerException e) {
+			// yay
+		}
+	}
+
+	public void testAddNullListenerDisallowed() {
+		try {
+			support.addMatchMakerListener(null);
+			fail("MatchMakerEventSupport allowed a null listener");
+		} catch (NullPointerException e) {
+			// yee-haw
+		}
+	}
+	
+	public void testIndexArrayAndObjectListWithDifferentLengthsOnChildrenInsertedFails() {
+		try {
+			List<MatchMakerObject> myList = new ArrayList<MatchMakerObject>();
+			myList.add(new AbstractMatchMakerObject<MatchMakerObject<?>>("fake test child") {});
+			support.fireChildrenInserted("test", new int[] { 0, 1 }, myList);
+			fail("MatchMakerEventSupport allowed index and child lists of different sizes");
+		} catch (IllegalArgumentException e) {
+			// yay
+		} catch (Throwable e) {
+			fail("Wrong exception type was thrown: "+e.getClass().getName());
+		}
+	}
+	
+	public void testIndexArrayAndObjectListWithDifferentLengthsOnChildrenRemovedFails() {
+		try {
+			List<MatchMakerObject> myList = new ArrayList<MatchMakerObject>();
+			myList.add(new AbstractMatchMakerObject<MatchMakerObject<?>>("fake test child") {});
+			support.fireChildrenRemoved("test", new int[] { 0, 1 }, myList);
+			fail("MatchMakerEventSupport allowed index and child lists of different sizes");
+		} catch (IllegalArgumentException e) {
+			// yay
+		} catch (Throwable e) {
+			fail("Wrong exception type was thrown: "+e.getClass().getName());
+		}
+	}
 
 }
