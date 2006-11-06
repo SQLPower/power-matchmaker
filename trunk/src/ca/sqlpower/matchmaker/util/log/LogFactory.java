@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.util.log;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -10,6 +11,7 @@ import java.util.List;
 public class LogFactory {
 
 	private static class DefaultLogger implements Log {
+		Date date = new Date();
 		Level level;
 
 		private DefaultLogger(Level level, Object constraint) {
@@ -30,19 +32,25 @@ public class LogFactory {
 
 		public void log(Level level, Object message) {
 			if (shouldLog(level)) {
-				System.out.println(message);				
+				date.setTime(System.currentTimeMillis());
+				System.out.print(date);
+				System.out.print(' ');
+				System.out.println(message);
+			}
+		}
+
+		public void log(Level level, Object message, Throwable t) {
+			if (shouldLog(level)) {
+				date.setTime(System.currentTimeMillis());
+				System.out.print(date);
+				System.out.print(' ');
+				System.out.println(message);
+				t.printStackTrace();
 			}
 		}
 
 		private boolean shouldLog(Level messageLevel) {
 			return messageLevel.ordinal() >= this.level.ordinal();
-		}
-
-		public void log(Level level, Object message, Throwable t) {
-			if (shouldLog(level)) {
-				System.out.println(message);
-				t.printStackTrace();
-			}
 		}
 
 		public void open(Object destination) {
@@ -63,6 +71,10 @@ public class LogFactory {
 
 		public void truncate() {
 			// nothing to do
+		}
+
+		public Object getConstraint() {
+			return "System.out";
 		}
 
 	}

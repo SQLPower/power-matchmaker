@@ -4,6 +4,14 @@ import java.util.List;
 
 public interface Log {
 	/**
+	 * Return the persistence associated with this log;
+	 * the object may be a String (filename), or it may be
+	 * something quite different in future
+	 * (it will always implement a user-meaningful toString()).
+	 */
+	public Object getConstraint();
+
+	/**
 	 *  True if the log contents can be read back
 	 */
 	public boolean isReadable();
@@ -31,8 +39,6 @@ public interface Log {
 	/** truncate the log */
 	public void truncate();
 
-	/** if readable, return the entire log (up to Integer.MAX_VALUE chars). */
-	public String read();
 	/** if readable, return the log broken up by messages */
 	public List<String> readAsList();
 
