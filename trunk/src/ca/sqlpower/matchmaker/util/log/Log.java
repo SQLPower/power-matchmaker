@@ -4,17 +4,19 @@ import java.util.List;
 
 public interface Log {
 	/**
-	 * True if you can write to the log
-	 */
-	public boolean isWritable();
-	/**
-	 * The size of the log contents
-	 */
-	public long size();
-	/**
 	 *  True if the log contents can be read back
 	 */
 	public boolean isReadable();
+	/**
+	 * True if you can write to the log via the log() methods
+	 */
+	public boolean isWritable();
+
+	/**
+	 * The size of the log contents, if known.
+	 */
+	public long size();
+
 	/**
 	 * log the message
 	 * @param level the severity of the message
@@ -25,19 +27,17 @@ public interface Log {
 	 *  Log a message with an exception
 	 */
 	public void log(Level level,Object message, Throwable t);
-	/** Open the log file 
-	 * 
-	 * @param destination 
-	 */
-	public void open(Object destination);
-	/** close the log file */
-	public void close();
+
 	/** truncate the log */
 	public void truncate();
-	/** get the entire log */
+
+	/** if readable, return the entire log (up to Integer.MAX_VALUE chars). */
 	public String read();
-	/** Get the log broken up by messages */
-	public List<String> readStructure();
-	
+	/** if readable, return the log broken up by messages */
+	public List<String> readAsList();
+
+	/** close the log file */
+	public void close();
+
 
 }
