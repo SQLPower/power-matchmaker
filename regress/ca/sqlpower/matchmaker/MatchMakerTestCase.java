@@ -12,13 +12,15 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
+import ca.sqlpower.matchmaker.util.SourceTable;
+import ca.sqlpower.matchmaker.util.ViewSpec;
 
 
-public abstract class MatchMakerTestCase extends TestCase {
+public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends TestCase {
 
-	MatchMakerObject<MatchMakerObject> target;
+	MatchMakerObject<C> target;
 
     Set<String>propertiesToIgnoreForEventGeneration = new HashSet<String>();
 
@@ -31,7 +33,7 @@ public abstract class MatchMakerTestCase extends TestCase {
 		super.tearDown();
 	}
 	
-	protected abstract MatchMakerObject<MatchMakerObject> getTarget();
+	protected abstract MatchMakerObject<C> getTarget();
 	
 	public void testAllSettersGenerateEvents()
 	throws IllegalArgumentException, IllegalAccessException, 
@@ -71,7 +73,23 @@ public abstract class MatchMakerTestCase extends TestCase {
 				
 			} else if (property.getPropertyType() == Boolean.TYPE){
 				newVal = new Boolean(! ((Boolean) oldVal).booleanValue());
-            } else {
+            } else if (property.getPropertyType() == SourceTable.class) {
+            	newVal = new SourceTable();
+			} else if (property.getPropertyType() == MatchSettings.class) {
+            	newVal = new MatchSettings("new user");
+			} else if (property.getPropertyType() == MergeSettings.class) {
+            	newVal = new MergeSettings("new user");
+			} else if (property.getPropertyType() == SQLTable.class) {
+            	newVal = new SQLTable();
+			} else if (property.getPropertyType() == ViewSpec.class) {
+            	newVal = new ViewSpec();
+			} else if (property.getPropertyType() == Match.MatchType.class) {
+            	if (oldVal ==Match.MatchType.BUILD_XREF){
+            		newVal = Match.MatchType.FIND_DUPES;
+            	} else {
+            		newVal =Match.MatchType.BUILD_XREF;
+            	}
+			} else {
 				throw new RuntimeException("This test case lacks a value for "+
 						property.getName()+
 						" (type "+property.getPropertyType().getName()+") from "+mmo.getClass());
