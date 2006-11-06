@@ -3,15 +3,22 @@ package ca.sqlpower.matchmaker.util.log;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 
 /**
  * An output-only logger writing to a file on disk.
  */
 public class FileLogger extends BaseLogger implements Log {
 
+	/**
+	 * The Writer that gets stuff into the file.
+	 */
 	private PrintWriter out;
 
+	/**
+	 * Construct this Log objet
+	 * @param level The level at or above which this Logger will log
+	 * @param fileName The filename to write to.
+	 */
 	FileLogger(Level level, String fileName) {
 		super(level, fileName);
 		try {
@@ -25,16 +32,16 @@ public class FileLogger extends BaseLogger implements Log {
 		out.close();
 	}
 
+	/** Return false, since this logger is write-only
+	 * @see ca.sqlpower.matchmaker.util.log.BaseLogger#isReadable()
+	 */
 	public boolean isReadable() {
 		return false;
 	}
 
+	/** Return true iff this logger's writer opened successfully. */
 	public boolean isWritable() {
 		return out != null;
-	}
-
-	public List<String> readAsList() {
-		throw new UnsupportedOperationException("Write-only logger");
 	}
 
 	@Override
@@ -47,5 +54,4 @@ public class FileLogger extends BaseLogger implements Log {
 		out.println(mesg);
 		out.flush();
 	}
-
 }

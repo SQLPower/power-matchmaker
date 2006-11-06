@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker.util.log;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * An abstract base class for a series of output Log implementations.
@@ -73,5 +74,14 @@ public abstract class BaseLogger implements Log {
 
 	public void truncate() {
 		// nothing to do
+	}
+
+	/**
+	 * Throw an UnsupportedOperationException since this is
+	 * a write-only logger.
+	 * @see ca.sqlpower.matchmaker.util.log.Log#readAsList()
+	 */
+	public List<String> readAsList() {
+		throw new UnsupportedOperationException("Write-only logger");
 	}
 }
