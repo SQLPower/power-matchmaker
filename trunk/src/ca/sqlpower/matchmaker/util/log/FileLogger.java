@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
+/**
+ * An output-only logger writing to a file on disk.
+ */
 public class FileLogger extends BaseLogger implements Log {
 
-	String fileName;
-	PrintWriter out;
+	private PrintWriter out;
 
 	FileLogger(Level level, String fileName) {
 		super(level, fileName);
@@ -20,12 +22,10 @@ public class FileLogger extends BaseLogger implements Log {
 	}
 
 	public void close() {
-		// TODO Auto-generated method stub
-
+		out.close();
 	}
 
 	public boolean isReadable() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -34,8 +34,7 @@ public class FileLogger extends BaseLogger implements Log {
 	}
 
 	public List<String> readAsList() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("Write-only logger");
 	}
 
 	@Override
