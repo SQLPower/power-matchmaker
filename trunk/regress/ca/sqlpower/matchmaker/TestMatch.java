@@ -1,6 +1,6 @@
 package ca.sqlpower.matchmaker;
 
-public class TestMatch extends MatchMakerTestCase<MatchMakerFolder> {
+public class TestMatch extends MatchMakerTestCase<Match> {
 
 	Match match;
 	protected void setUp() throws Exception {
@@ -8,10 +8,8 @@ public class TestMatch extends MatchMakerTestCase<MatchMakerFolder> {
 		match = new Match("Test User");
 	}
 	@Override
-	protected MatchMakerObject<MatchMakerFolder> getTarget() {
+	protected Match getTarget() {
 		return match;
 	}
-
-
 
 }
