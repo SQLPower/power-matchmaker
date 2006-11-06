@@ -15,8 +15,12 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject> imple
 	private String lastUpdateAppUser;
 	private String lastUpdateOsUser;
 	private Date lastUpdateDate;
-	
-	
+
+
+	public AbstractMatchMakerObject(String appUserName) {
+		lastUpdateAppUser = appUserName;
+	}
+
 	public void addChild(C child) {
 		children.add(child);
 	}
@@ -53,6 +57,7 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject> imple
 	}
 	public void registerUpdate() {
 		lastUpdateDate = new Date(System.currentTimeMillis());
-		// TODO: update the os user and app user
+		lastUpdateOsUser = System.getProperty("user.name");
+		// TODO: update app user
 	}
 }

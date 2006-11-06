@@ -8,12 +8,12 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 	MatchMakerObject<MatchMakerObject> test;
 	protected void setUp() throws Exception {
 		super.setUp();
-		test = new AbstractMatchMakerObject<MatchMakerObject>(){};
+		test = new AbstractMatchMakerObject<MatchMakerObject>("a"){};
 	}
-	
+
 	public void testChildren(){
-		MatchMakerObject mmo1 = new AbstractMatchMakerObject<MatchMakerObject>(){};
-		MatchMakerObject mmo2 = new AbstractMatchMakerObject<MatchMakerObject>(){};
+		MatchMakerObject mmo1 = new AbstractMatchMakerObject<MatchMakerObject>("a"){};
+		MatchMakerObject mmo2 = new AbstractMatchMakerObject<MatchMakerObject>("a"){};
 		assertEquals("Started out with the wrong number of children",0,test.getChildCount());
 		test.addChild(mmo1);
 		assertEquals("faild to add the correct number of children",1,test.getChildCount());
@@ -22,18 +22,18 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 		assertEquals("Incorrect child in position 0",mmo1,test.getChildren().get(0));
 		assertEquals("Incorrect child in position 1",mmo2,test.getChildren().get(1));
 	}
-	
+
 	public void testMatchMakerEventListener(){
 		MatchMakerEventCounter mml = new MatchMakerEventCounter();
 		test.addMatchMakerListener(mml);
-		test.addChild(new AbstractMatchMakerObject<MatchMakerObject>(){});
+		test.addChild(new AbstractMatchMakerObject<MatchMakerObject>("a"){});
 		assertEquals("Did not get any events",1,mml.getAllEventCounts());
 		test.removeMatchMakerListener(mml);
-		test.addChild(new AbstractMatchMakerObject<MatchMakerObject>(){});
+		test.addChild(new AbstractMatchMakerObject<MatchMakerObject>("a"){});
 		assertEquals("Got extra events",1,mml.getAllEventCounts());
-		
+
 	}
-	
-	
+
+
 
 }

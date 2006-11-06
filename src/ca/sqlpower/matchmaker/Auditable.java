@@ -2,6 +2,10 @@ package ca.sqlpower.matchmaker;
 
 import java.util.Date;
 
+/**
+ * an interface provides basic auditing information
+ * call registerUpdate to populate auditing information
+ */
 public interface Auditable {
 
 	public String getLastUpdateOSUser();
