@@ -2,6 +2,9 @@
  * 
  */
 package ca.sqlpower.matchmaker;
+
+import ca.sqlpower.matchmaker.util.log.Log;
+
 /**
  * The Match (Object) settings that are common to both
  * the match and the merge engines
@@ -19,7 +22,8 @@ public abstract class MatchMakerSettings extends AbstractMatchMakerObject<MatchM
 	private boolean debug;
 	/** specify append rather than overwrite */
 	private boolean appendToLog;
-	// FIXME add log
+	/** Log for the engine using this setting */
+	private Log log;
 	/** Send an email when the job is done */
 	private boolean sendEmail;
 	
