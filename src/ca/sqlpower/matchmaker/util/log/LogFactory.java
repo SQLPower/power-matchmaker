@@ -85,7 +85,10 @@ public class LogFactory {
 	 * @return Currently only returns a default logger that writes to stdout.
 	 */
 	public static Log getLogger(Level level, Object constraint) {
-		return new DefaultLogger(level, constraint);
+		if (constraint == null) {
+			return new DefaultLogger(level, constraint);
+		}
+		return new FileLogger(level, (String)constraint);
 	}
 
 	/**

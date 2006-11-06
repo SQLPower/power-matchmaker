@@ -11,7 +11,7 @@ import java.util.List;
  * A read-only logger that only reads entries from an existing
  * Match or Merge log on disk.
  */
-public class ReadbackLogger implements Log {
+public class ReadbackLogger extends BaseLogger implements Log {
 
 	/** The name of the file we should try to read from */
 	String fileName;
@@ -28,7 +28,7 @@ public class ReadbackLogger implements Log {
 	 * @param fileName
 	 */
 	ReadbackLogger(String fileName) {
-		super();
+		super(Level.INFO, fileName);
 		this.fileName = fileName;
 		this.file = new File(fileName);
 		if (!file.exists()) {
@@ -56,15 +56,6 @@ public class ReadbackLogger implements Log {
 				mapException(e);
 			}
 		}
-	}
-
-	private void mapException(Exception e) {
-		throw new RuntimeException("Error", e);
-	}
-
-	public String read() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	public List<String> readAsList() {
@@ -102,6 +93,16 @@ public class ReadbackLogger implements Log {
 		throw new UnsupportedOperationException("Read-only logger");
 	}
 	public void truncate() {
+		throw new UnsupportedOperationException("Read-only logger");
+	}
+
+	@Override
+	void print(String mesg) {
+		throw new UnsupportedOperationException("Read-only logger");
+	}
+
+	@Override
+	void println(String mesg) {
 		throw new UnsupportedOperationException("Read-only logger");
 	}
 
