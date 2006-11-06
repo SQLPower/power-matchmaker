@@ -7,11 +7,14 @@ import java.util.Date;
  */
 public abstract class BaseLogger implements Log {
 
-	Object constraint;
+	/** The constraint (most likely a filename) */
+	final Object constraint;
 
-	Date date = new Date();
+	/** The date, for timestamping the log */
+	final Date date = new Date();
 
-	Level level;
+	/** The level at (or above) which this logger will log */
+	final Level level;
 
 	BaseLogger(Level level, Object constraint) {
 		this.level = level;
@@ -30,9 +33,6 @@ public abstract class BaseLogger implements Log {
 		throw new RuntimeException("Error", e);
 	}
 
-	public void close() {
-	}
-
 	public boolean isReadable() {
 		return false;
 	}
@@ -41,6 +41,11 @@ public abstract class BaseLogger implements Log {
 		return true;
 	}
 
+	/**
+	 * Do the logging to the file, using print()/println();
+	 * this is the heart of this logger.
+	 * @see ca.sqlpower.matchmaker.util.log.Log#log(ca.sqlpower.matchmaker.util.log.Level, java.lang.Object)
+	 */
 	public void log(Level level, Object message) {
 		if (shouldLog(level)) {
 			date.setTime(System.currentTimeMillis());
@@ -50,6 +55,7 @@ public abstract class BaseLogger implements Log {
 		}
 	}
 
+	/** Delegate to log() method, then format the Throwable */
 	public void log(Level level, Object message, Throwable t) {
 		if (shouldLog(level)) {
 			log(level, message);
@@ -57,7 +63,7 @@ public abstract class BaseLogger implements Log {
 		}
 	}
 
-	private boolean shouldLog(Level messageLevel) {
+	boolean shouldLog(Level messageLevel) {
 		return messageLevel.ordinal() >= this.level.ordinal();
 	}
 
