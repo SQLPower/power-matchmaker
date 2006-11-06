@@ -9,6 +9,10 @@ import java.util.Date;
  */
 public class LogFactory {
 
+	/**
+	 * Private default logger class, just BaseLogger with System.out
+	 * instead of a PrintWriter(FileWriter).
+	 */
 	private static class DefaultLogger extends BaseLogger implements Log {
 		Date date = new Date();
 		Level level;
@@ -46,8 +50,10 @@ public class LogFactory {
 
 	/**
 	 * The log factory returns a logger appropriate for the given constraint.
-	 * @param constraint XXX to be defined.
-	 * @return Currently only returns a default logger that writes to stdout.
+	 * @param constraint See below.
+	 * @return Currently returns a default logger that writes to stdout.
+	 * if the constraint is null, else the constraint is interpreted
+	 * as a file name, and a FileLogger is created.
 	 */
 	public static Log getLogger(Level level, Object constraint) {
 		if (constraint == null) {
