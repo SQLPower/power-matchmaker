@@ -83,6 +83,14 @@ public abstract class MatchMakerSettings extends AbstractMatchMakerObject<MatchM
 			getEventSupport().firePropertyChange("showProgressFreq", oldValue, showProgressFreq);
 		}
 	}
+	public Log getLog() {
+		return log;
+	}
+	public void setLog(Log log) {
+		if (this.log != log) {
+			this.log = log;
+		}
+	}
 	
 
 }
