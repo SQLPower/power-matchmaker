@@ -2,20 +2,31 @@
  * 
  */
 package ca.sqlpower.matchmaker;
-
+/**
+ * The Match (Object) settings that are common to both
+ * the match and the merge engines
+ *
+ */
 public abstract class MatchMakerSettings extends AbstractMatchMakerObject<MatchMakerObject> {
 	
 	public MatchMakerSettings(String appUserName) {
 		super(appUserName);		
 	}
 
+	/**
+	 * Enable the debug mode of the engine
+	 */
 	private boolean debug;
+	/** specify append rather than overwrite */
 	private boolean appendToLog;
 	// FIXME add log
-	private int processCount;
+	/** Send an email when the job is done */
 	private boolean sendEmail;
-	private boolean showProgressFreq;
 	
+	/** show the progress every so often */
+	private boolean showProgressFreq;
+	/** if showProgressFreq is true, process processCount records before a progress message is printed */
+	private int processCount;
 	
 	
 	public boolean isAppendToLog() {
