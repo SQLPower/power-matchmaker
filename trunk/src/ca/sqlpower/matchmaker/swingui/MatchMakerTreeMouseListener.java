@@ -18,7 +18,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;

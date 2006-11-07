@@ -17,7 +17,7 @@ import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.PlFolder;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
