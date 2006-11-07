@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 
-public class MatchmakerCriteria extends AbstractMatchMakerObject<MatchmakerCriteria> {
+public class MatchmakerCriteria<C extends MatchmakerCriteria> extends AbstractMatchMakerObject<C> {
 
 	private SQLColumn column;
 
@@ -54,16 +54,277 @@ public class MatchmakerCriteria extends AbstractMatchMakerObject<MatchmakerCrite
 	private Long wordsInCommonNumWords;
 
 	private boolean matchFirstPlusOneInd;
-	
-	
+
+
 	public MatchmakerCriteria(String appUserName) {
 		super(appUserName);
 	}
 
-	@Override
-	public void addChild(MatchmakerCriteria child) {
-		throw new IllegalStateException("MatchMaker Criteria does NOT allow child!");
+
+	public boolean isAllowNullInd() {
+		return allowNullInd;
 	}
-	
-	
+
+
+	public boolean isCaseSensitiveInd() {
+		return caseSensitiveInd;
+	}
+
+
+	public SQLColumn getColumn() {
+		return column;
+	}
+
+
+	public boolean isCountWordsInd() {
+		return countWordsInd;
+	}
+
+
+	public Long getFirstNChar() {
+		return firstNChar;
+	}
+
+
+	public Long getFirstNCharByWord() {
+		return firstNCharByWord;
+	}
+
+
+	public boolean isFirstNCharByWordInd() {
+		return firstNCharByWordInd;
+	}
+
+
+	public boolean isMatchEnd() {
+		return matchEnd;
+	}
+
+
+	public boolean isMatchFirstPlusOneInd() {
+		return matchFirstPlusOneInd;
+	}
+
+
+	public boolean isMatchStart() {
+		return matchStart;
+	}
+
+
+	public Long getMinWordsInCommon() {
+		return minWordsInCommon;
+	}
+
+
+	public boolean isRemoveSpecialChars() {
+		return removeSpecialChars;
+	}
+
+
+	public boolean isReorderInd() {
+		return reorderInd;
+	}
+
+
+	public String getReplaceWithSpace() {
+		return replaceWithSpace;
+	}
+
+
+	public boolean isReplaceWithSpaceInd() {
+		return replaceWithSpaceInd;
+	}
+
+
+	public BigDecimal getSeqNo() {
+		return seqNo;
+	}
+
+
+	public boolean isSoundInd() {
+		return soundInd;
+	}
+
+
+	public String getSuppressChar() {
+		return suppressChar;
+	}
+
+
+	public PlMatchTranslateGroup getTranslateGroup() {
+		return translateGroup;
+	}
+
+
+	public BigDecimal getVarianceAmt() {
+		return varianceAmt;
+	}
+
+
+	public String getVarianceType() {
+		return varianceType;
+	}
+
+
+	public Long getWordsInCommonNumWords() {
+		return wordsInCommonNumWords;
+	}
+
+	public void setAllowNullInd(boolean allowNullInd) {
+		boolean oldVal = this.allowNullInd;
+		this.allowNullInd = allowNullInd;
+		getEventSupport().firePropertyChange("allowNullInd", oldVal, allowNullInd);
+	}
+
+
+	public void setColumn(SQLColumn column) {
+		SQLColumn oldVal = this.column;
+		this.column = column;
+		getEventSupport().firePropertyChange("column", oldVal, column);
+	}
+
+
+	public void setCountWordsInd(boolean countWordsInd) {
+		boolean oldVal = this.countWordsInd;
+		this.countWordsInd = countWordsInd;
+		getEventSupport().firePropertyChange("countWordsInd", oldVal, countWordsInd);
+	}
+
+
+	public void setFirstNChar(Long firstNChar) {
+		Long oldVal = this.firstNChar;
+		this.firstNChar = firstNChar;
+		getEventSupport().firePropertyChange("firstNChar", oldVal, firstNChar);
+	}
+
+
+	public void setFirstNCharByWord(Long firstNCharByWord) {
+		Long oldVal = this.firstNCharByWord;
+		this.firstNCharByWord = firstNCharByWord;
+		getEventSupport().firePropertyChange("firstNCharByWord", oldVal, firstNCharByWord);
+	}
+
+
+	public void setFirstNCharByWordInd(boolean firstNCharByWordInd) {
+		boolean oldVal = this.firstNCharByWordInd;
+		this.firstNCharByWordInd = firstNCharByWordInd;
+		getEventSupport().firePropertyChange("firstNCharByWordInd", oldVal, firstNCharByWordInd);
+	}
+
+
+	public void setMatchEnd(boolean matchEnd) {
+		boolean oldVal = this.matchEnd;
+		this.matchEnd = matchEnd;
+		getEventSupport().firePropertyChange("matchEnd", oldVal, matchEnd);
+	}
+
+
+	public void setMatchFirstPlusOneInd(boolean matchFirstPlusOneInd) {
+		boolean oldVal = this.matchFirstPlusOneInd;
+		this.matchFirstPlusOneInd = matchFirstPlusOneInd;
+		getEventSupport().firePropertyChange("matchFirstPlusOneInd", oldVal, matchFirstPlusOneInd);
+	}
+
+
+	public void setMatchStart(boolean matchStart) {
+		boolean oldVal = this.matchStart;
+		this.matchStart = matchStart;
+		getEventSupport().firePropertyChange("matchStart", oldVal, matchStart);
+	}
+
+
+	public void setMinWordsInCommon(Long minWordsInCommon) {
+		Long oldVal = this.minWordsInCommon;
+		this.minWordsInCommon = minWordsInCommon;
+		getEventSupport().firePropertyChange("minWordsInCommon", oldVal, minWordsInCommon);
+	}
+
+
+	public void setRemoveSpecialChars(boolean removeSpecialChars) {
+		boolean oldVal = this.removeSpecialChars;
+		this.removeSpecialChars = removeSpecialChars;
+		getEventSupport().firePropertyChange("removeSpecialChars", oldVal, removeSpecialChars);
+	}
+
+
+	public void setReorderInd(boolean reorderInd) {
+		boolean oldVal = this.reorderInd;
+		this.reorderInd = reorderInd;
+		getEventSupport().firePropertyChange("reorderInd", oldVal, reorderInd);
+	}
+
+
+	public void setReplaceWithSpace(String replaceWithSpace) {
+		String oldVal = this.replaceWithSpace;
+		this.replaceWithSpace = replaceWithSpace;
+		getEventSupport().firePropertyChange("replaceWithSpace", oldVal, replaceWithSpace);
+	}
+
+
+	public void setReplaceWithSpaceInd(boolean replaceWithSpaceInd) {
+		boolean oldVal = this.replaceWithSpaceInd;
+		this.replaceWithSpaceInd = replaceWithSpaceInd;
+		getEventSupport().firePropertyChange("replaceWithSpaceInd", oldVal, replaceWithSpaceInd);
+	}
+
+
+	public void setSeqNo(BigDecimal seqNo) {
+		BigDecimal oldVal = this.seqNo;
+		this.seqNo = seqNo;
+		getEventSupport().firePropertyChange("seqNo", oldVal, seqNo);
+	}
+
+
+	public void setSoundInd(boolean soundInd) {
+		boolean oldVal = this.soundInd;
+		this.soundInd = soundInd;
+		getEventSupport().firePropertyChange("soundInd", oldVal, soundInd);
+	}
+
+
+	public void setSuppressChar(String suppressChar) {
+		String oldVal = this.suppressChar;
+		this.suppressChar = suppressChar;
+		getEventSupport().firePropertyChange("suppressChar", oldVal, suppressChar);
+	}
+
+
+	public void setTranslateGroup(PlMatchTranslateGroup translateGroup) {
+		PlMatchTranslateGroup oldVal = this.translateGroup;
+		this.translateGroup = translateGroup;
+		getEventSupport().firePropertyChange("translateGroup", oldVal, translateGroup);
+	}
+
+
+	public void setVarianceAmt(BigDecimal varianceAmt) {
+		BigDecimal oldVal = this.varianceAmt;
+		this.varianceAmt = varianceAmt;
+		getEventSupport().firePropertyChange("varianceAmt", oldVal, varianceAmt);
+	}
+
+
+	public void setVarianceType(String varianceType) {
+		String oldVal = this.varianceType;
+		this.varianceType = varianceType;
+		getEventSupport().firePropertyChange("varianceType", oldVal, varianceType);
+	}
+
+
+	public void setWordsInCommonNumWords(Long wordsInCommonNumWords) {
+		Long oldVal = this.wordsInCommonNumWords;
+		this.wordsInCommonNumWords = wordsInCommonNumWords;
+		getEventSupport().firePropertyChange("wordsInCommonNumWords", oldVal, wordsInCommonNumWords);
+	}
+
+
+	public void setCaseSensitiveInd(boolean caseSensitiveInd) {
+		boolean oldVal = this.caseSensitiveInd;
+		this.caseSensitiveInd = caseSensitiveInd;
+		getEventSupport().firePropertyChange("caseSensitiveInd", oldVal, caseSensitiveInd);
+	}
+
+	@Override
+	public void addChild(C child) {
+		throw new IllegalStateException("MatchMakerCriteria class does NOT allow child!");
+	}
 }
