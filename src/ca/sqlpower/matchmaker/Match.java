@@ -1,6 +1,11 @@
 package ca.sqlpower.matchmaker;
 
+import java.util.List;
+
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
@@ -52,14 +57,49 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 	/** FIXME can't remember what the view does */
 	ViewSpec view;
 
+	/** the folder containing this match.  
+	 * Null if no folder containing this match
+	 */
+	PlFolder folder;
+	
 	/** The point above which matches are done automatically */
 	int autoMatchThreshold;
 
 	public Match(String appUserName) {
 		super(appUserName);
-
+	}
+	/**
+	 * FIXME Implement me
+	 *
+	 */
+	public void execute() {
+		throw new NotImplementedException();
 	}
 
+	/**
+	 * FIXME Implement me
+	 *
+	 */
+	public boolean checkValid() {
+		throw new NotImplementedException();
+	}
+	
+	/**
+	 * FIXME Implement me
+	 *
+	 */
+	public void createResultTable() {
+		throw new NotImplementedException();
+	}
+	
+	/**
+	 * FIXME Implement me
+	 *
+	 */
+	public void createViewTable() {
+		throw new NotImplementedException();
+	}
+	
 	public int getAutoMatchThreshold() {
 		return autoMatchThreshold;
 	}
@@ -164,6 +204,23 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 		ViewSpec oldValue = this.view;
 		this.view = view;
 		getEventSupport().firePropertyChange("view", oldValue, this.view);
+	}
+	public PlFolder getFolder() {
+		return folder;
+	}
+	public void setFolder(PlFolder folder) {
+		this.folder = folder;
+	}
+	
+	/**
+	 * Preconditions 
+	 * 
+	 * FIXME write this method
+	 * @return
+	 */
+	public List<PlMatchGroup> getMatchGroups() {
+		// TODO Auto-generated method stub
+		throw new NotImplementedException();
 	}
 
 }

@@ -29,8 +29,8 @@ import ca.sqlpower.architect.swingui.table.IndicatorCellRenderer;
 import ca.sqlpower.architect.swingui.table.NumberAndIntegerTableCellRenderer;
 import ca.sqlpower.architect.swingui.table.PercentTableCellRenderer;
 import ca.sqlpower.architect.swingui.table.TableModelColumnAutofit;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.RowSetModel;
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 import com.sun.rowset.CachedRowSetImpl;
@@ -38,10 +38,10 @@ import com.sun.rowset.JoinRowSetImpl;
 
 public class MatchStatisticsPanel extends JPanel {
 
-	private PlMatch match;
+	private Match match;
 	private Timestamp startDateTime;
 
-	public MatchStatisticsPanel(PlMatch match) throws SQLException {
+	public MatchStatisticsPanel(Match match) throws SQLException {
 		super(new BorderLayout());
 		this.match = match;
 		createUI();
@@ -85,7 +85,7 @@ public class MatchStatisticsPanel extends JPanel {
 	}
 
 
-	private RowSet getMatchStats(PlMatch match) throws SQLException {
+	private RowSet getMatchStats(Match match) throws SQLException {
     	Connection con = null;
     	Statement stmt = null;
     	ResultSet rs =  null;
@@ -101,7 +101,7 @@ public class MatchStatisticsPanel extends JPanel {
     		sql.append(" ORDER BY TRANS_RUN_NO DESC, START_DATE_TIME DESC");
     		PreparedStatement pstmt = con.prepareStatement(sql.toString());
     		pstmt.setString(1, "MATCH");
-    		pstmt.setString(2, match.getMatchId());
+    		pstmt.setString(2, match.getName());
     		rs = pstmt.executeQuery();
 
     		CachedRowSetImpl crset = new CachedRowSetImpl();
@@ -118,7 +118,7 @@ public class MatchStatisticsPanel extends JPanel {
     	}
     }
 
-	private RowSet getMatchGroupStats(PlMatch match, int runNo, int total) throws SQLException {
+	private RowSet getMatchGroupStats(Match match, int runNo, int total) throws SQLException {
     	Connection con = null;
     	PreparedStatement pstmt = null;
     	ResultSet rs =  null;
@@ -130,9 +130,9 @@ public class MatchStatisticsPanel extends JPanel {
     		}
     		StringBuffer sql = new StringBuffer();
 
-    		sql.append("SELECT GROUP_ID,MATCH_PERCENT FROM PL_MATCH_GROUP WHERE MATCH_OID=? ORDER BY MATCH_PERCENT DESC");
+    		sql.append("SELECT GROUP_ID,MATCH_PERCENT FROM PL_MATCH_GROUP WHERE MATCH_ID=? ORDER BY MATCH_PERCENT DESC");
     		pstmt = con.prepareStatement(sql.toString());
-    		pstmt.setLong(1, match.getId());
+    		pstmt.setString(1, match.getName());
     		rs = pstmt.executeQuery();
     		CachedRowSetImpl matchGroupSet = new CachedRowSetImpl();
     		matchGroupSet.setReadOnly(true);
@@ -354,7 +354,7 @@ public class MatchStatisticsPanel extends JPanel {
     		sql.append(" AND OBJECT_NAME=? ");
     		pstmt = con.prepareStatement(sql.toString());
     		pstmt.setString(1, "MATCH");
-    		pstmt.setString(2, match.getMatchId());
+    		pstmt.setString(2, match.getName());
     		int rc = pstmt.executeUpdate();
     		con.commit();
 
@@ -381,7 +381,7 @@ public class MatchStatisticsPanel extends JPanel {
     		sql.append(" AND OBJECT_NAME=? AND START_DATE_TIME<=?");
     		pstmt = con.prepareStatement(sql.toString());
     		pstmt.setString(1, "MATCH");
-    		pstmt.setString(2, match.getMatchId());
+    		pstmt.setString(2, match.getName());
     		pstmt.setTimestamp(3, getStartDateTime());
     		int rc = pstmt.executeUpdate();
     		con.commit();

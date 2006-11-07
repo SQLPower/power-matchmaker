@@ -1,6 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.Dimension;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -27,7 +26,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -35,7 +33,6 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -43,8 +40,8 @@ import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.RowSetModel;
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
@@ -60,7 +57,7 @@ public class MatchValidation extends JFrame {
 
     private static final Logger logger = Logger.getLogger(MatchValidation.class);
 
-    private PlMatch match;
+    private Match match;
     private RowSet fullResult;
     private List<String> allMatchGroup;
     private List<String> allMatchPct;
@@ -154,9 +151,10 @@ public class MatchValidation extends JFrame {
 
             StringBuffer sql = new StringBuffer();
             sql.append("SELECT ").append(dupCandItems).append(" FROM ");
-            sql.append(DDLUtils.toQualifiedName(match.getResultsTableCatalog(),
-                    match.getResultsTableOwner(),
-                    match.getResultsTable()));
+            SQLTable resultTable = match.getResultTable();
+			sql.append(DDLUtils.toQualifiedName(resultTable.getCatalogName(),
+					resultTable.getSchemaName(),
+					resultTable.getName()));
             sql.append(" WHERE ").append(where);
             if ( where != null && where.length() > 0 ) {
                 sql.append(" AND ");
@@ -212,8 +210,8 @@ public class MatchValidation extends JFrame {
         }
     };
 
-    public MatchValidation(PlMatch match) throws HeadlessException, SQLException, ArchitectException {
-        super("Validate Matches: ["+match.getMatchId()+"]");
+    public MatchValidation(Match match) throws HeadlessException, SQLException, ArchitectException {
+        super("Validate Matches: ["+match.getName()+"]");
         this.match = match;
         setup();
         buildUI();
@@ -225,7 +223,7 @@ public class MatchValidation extends JFrame {
      * @return
      * @throws SQLException
      */
-    private RowSet getMatchResult(PlMatch match ) throws SQLException {
+    private RowSet getMatchResult(Match match ) throws SQLException {
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs =  null;
@@ -233,10 +231,10 @@ public class MatchValidation extends JFrame {
             con = HibernateUtil.primarySession().connection();
             StringBuffer sql = new StringBuffer();
             sql.append("SELECT * FROM ");
-            sql.append(DDLUtils.toQualifiedName(
-                    match.getResultsTableCatalog(),
-                    match.getResultsTableOwner(),
-                    match.getResultsTable()));
+            SQLTable resultTable = match.getResultTable();
+            sql.append(DDLUtils.toQualifiedName(resultTable.getCatalogName(),
+					resultTable.getSchemaName(),
+					resultTable.getName()));
             sql.append(" ORDER BY MATCH_PERCENT DESC");
             pstmt = con.prepareStatement(sql.toString());
             rs = pstmt.executeQuery();
@@ -275,9 +273,10 @@ public class MatchValidation extends JFrame {
                 sql.append(matchSourceTable.getColumn(i).getName());
             }
             sql.append(" FROM ");
-            sql.append(DDLUtils.toQualifiedName(match.getTableCatalog(),
-                    match.getTableOwner(),
-                    match.getMatchTable()));
+            SQLTable resultTable = match.getResultTable();
+            sql.append(DDLUtils.toQualifiedName(resultTable.getCatalogName(),
+					resultTable.getSchemaName(),
+					resultTable.getName()));
             if ( filter != null && filter.length() > 0 ) {
                 sql.append(" WHERE ").append(filter);
             }
@@ -350,10 +349,12 @@ public class MatchValidation extends JFrame {
         candidateJTable = new JTable();
         sourceJTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         db = MatchMakerFrame.getMainInstance().getDatabase();
-        matchSourceTable = db.getTableByName(match.getTableCatalog(),
-                match.getTableOwner(),
-                match.getMatchTable());
-        pk = matchSourceTable.getIndexByName(match.getPkColumn(),true);
+        SQLTable sourceTable = match.getSourceTable().getTable();
+        
+        matchSourceTable = db.getTableByName(sourceTable.getCatalogName(),
+				sourceTable.getSchemaName(),
+				sourceTable.getName());
+        pk = match.getSourceTable().getUniqueIndex();
     }
 
     private void buildUI() {
@@ -375,7 +376,7 @@ public class MatchValidation extends JFrame {
                     if ( gid.equalsIgnoreCase(ALL) ) {
                         filterMatchPctComboBox.setSelectedItem(ALL);
                     } else {
-                        for ( PlMatchGroup g : match.getPlMatchGroups() ) {
+                        for ( PlMatchGroup g : match.getMatchGroups() ) {
                             if ( g.getGroupId().equals(gid) ) {
                                 filterMatchPctComboBox.setSelectedItem(String.valueOf(g.getMatchPercent().intValue()));
                             }
@@ -395,7 +396,7 @@ public class MatchValidation extends JFrame {
                         filterMatchGrpComboBox.setSelectedItem(ALL);
                     } else {
                         int pct = Integer.valueOf(pctStr);
-                        for ( PlMatchGroup g : match.getPlMatchGroups() ) {
+                        for ( PlMatchGroup g : match.getMatchGroups() ) {
                             if ( g.getMatchPercent() == pct ) {
                                 filterMatchGrpComboBox.setSelectedItem(g.getGroupId());
                             }
@@ -497,28 +498,6 @@ public class MatchValidation extends JFrame {
                 filterTextArea, matchSourceTable, true);
     }
 
-
-    public static void main(String[] args) throws HeadlessException, SQLException, ArchitectException {
-
-        MatchMakerFrame.getMainInstance();
-        ArchitectDataSource ds = MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni().getDataSource("ARTHUR_TEST");
-        MatchMakerFrame.getMainInstance().newLogin(new SQLDatabase(ds));
-        final PlMatch match = MatchMakerFrame.getMainInstance().getMatchByName("MATCH_ADMIN_EMPLOYEE");
-
-        final JFrame f = new MatchValidation(match);
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setPreferredSize(new Dimension(1200,800));
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-
-                f.pack();
-                f.setVisible(true);
-            }
-        });
-
-    }
-
     private class SourceTableModel extends AbstractTableModel {
 
         TableModel model;
@@ -605,13 +584,13 @@ public class MatchValidation extends JFrame {
     }
 
     private class SearchAction extends AbstractAction {
-        private PlMatch match;
+        private Match match;
         private JComboBox groupCB;
         private JComboBox matchStatusCB;
         private JTextArea columnFilter;
         private JTable output;
 
-        public SearchAction(PlMatch match, JComboBox groupCB, JComboBox matchStatusCB,
+        public SearchAction(Match match, JComboBox groupCB, JComboBox matchStatusCB,
                 JTextArea columnFilter, JTable output) {
             super("Search");
             this.match = match;
@@ -674,9 +653,10 @@ public class MatchValidation extends JFrame {
 
                 sql.append("SELECT DISTINCT ").append(dupCandItems);
                 sql.append(" FROM ");
-                sql.append(DDLUtils.toQualifiedName(match.getResultsTableCatalog(),
-                        match.getResultsTableOwner(),
-                        match.getResultsTable()));
+                SQLTable resultTable = match.getResultTable();
+                sql.append(DDLUtils.toQualifiedName(resultTable.getCatalogName(),
+    					resultTable.getSchemaName(),
+    					resultTable.getName()));
                 sql.append(" WHERE ").append(where);
                 if ( where != null && where.length() > 0 ) {
                     sql.append(" AND ");
@@ -753,9 +733,10 @@ public class MatchValidation extends JFrame {
                 StringBuffer sql = new StringBuffer();
 
                 sql.append("UPDATE ");
-                sql.append(DDLUtils.toQualifiedName(match.getResultsTableCatalog(),
-                        match.getResultsTableOwner(),
-                        match.getResultsTable()));
+                SQLTable resultTable = match.getResultTable();
+                sql.append(DDLUtils.toQualifiedName(resultTable.getCatalogName(),
+    					resultTable.getSchemaName(),
+    					resultTable.getName()));
                 sql.append(" SET MATCH_STATUS='AUTO-MATCH' WHERE MATCH_PERCENT>= ?");
                 pstmt = con.prepareStatement(sql.toString());
                 pstmt.setBigDecimal(1,pct);
@@ -800,9 +781,10 @@ public class MatchValidation extends JFrame {
                 StringBuffer sql = new StringBuffer();
 
                 sql.append("UPDATE ");
-                sql.append(DDLUtils.toQualifiedName(match.getResultsTableCatalog(),
-                        match.getResultsTableOwner(),
-                        match.getResultsTable()));
+                SQLTable resultTable = match.getResultTable();
+                sql.append(DDLUtils.toQualifiedName(resultTable.getCatalogName(),
+                		resultTable.getSchemaName(),
+                		resultTable.getName()));
                 sql.append(" SET MATCH_STATUS=NULL WHERE MATCH_PERCENT>= ?");
                 pstmt = con.prepareStatement(sql.toString());
                 pstmt.setBigDecimal(1,pct);

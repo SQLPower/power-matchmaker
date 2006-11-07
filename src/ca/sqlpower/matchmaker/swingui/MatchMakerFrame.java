@@ -50,6 +50,7 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
@@ -138,7 +139,7 @@ public class MatchMakerFrame extends JFrame {
 	protected Action runMatchAction = new AbstractAction("Run Match") {
 
 		public void actionPerformed(ActionEvent e) {
-			PlMatch match = ArchitectUtils.getTreeObject(getTree(),PlMatch.class);
+			Match match = ArchitectUtils.getTreeObject(getTree(),Match.class);
 			if ( match == null )
 				return;
 		    RunMatchDialog r = new RunMatchDialog(match, MatchMakerFrame.this);
@@ -212,7 +213,7 @@ public class MatchMakerFrame extends JFrame {
 	private Action showMatchStatisticInfoAction = new AbstractAction("Statistics") {
 
 		public void actionPerformed(ActionEvent e) {
-			PlMatch match = ArchitectUtils.getTreeObject(getTree(),PlMatch.class);
+			Match match = ArchitectUtils.getTreeObject(getTree(),Match.class);
 			if ( match == null )
 				return;
 
@@ -581,13 +582,13 @@ public class MatchMakerFrame extends JFrame {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			PlMatch match = ArchitectUtils.getTreeObject(getTree(),PlMatch.class);
+			Match match = ArchitectUtils.getTreeObject(getTree(),Match.class);
 			if ( match == null )
 				return;
 
 			MatchEditor me;
 			try {
-				me = new MatchEditor((PlMatch) match,splitPane);
+				me = new MatchEditor((Match) match,splitPane);
 			} catch (ArchitectException e1) {
 				throw new ArchitectRuntimeException(e1);
 			}

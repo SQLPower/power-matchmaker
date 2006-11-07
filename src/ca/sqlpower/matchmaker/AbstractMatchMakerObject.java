@@ -9,8 +9,8 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
 public abstract class AbstractMatchMakerObject<C extends MatchMakerObject> implements MatchMakerObject<C> {
 
-	private MatchMakerEventSupport<MatchMakerObject<C>,C> eventSupport =
-		new MatchMakerEventSupport<MatchMakerObject<C>,C>(this);
+	private MatchMakerEventSupport<MatchMakerObject,C> eventSupport =
+		new MatchMakerEventSupport<MatchMakerObject,C>(this);
 	private List<C> children = new ArrayList<C>();
 	private String lastUpdateAppUser;
 	private String lastUpdateOsUser;
@@ -25,12 +25,12 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject> imple
 		children.add(child);
 	}
 
-	public void addMatchMakerListener(MatchMakerListener<MatchMakerObject<C>,C> l) {
+	public void addMatchMakerListener(MatchMakerListener<MatchMakerObject ,C> l) {
 		eventSupport.addMatchMakerListener(l);
 
 	}
 	
-	protected MatchMakerEventSupport<MatchMakerObject<C>,C> getEventSupport() {
+	protected MatchMakerEventSupport<MatchMakerObject,C> getEventSupport() {
 		return eventSupport;
 	}
 
@@ -46,7 +46,7 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject> imple
 		children.remove(child);
 	}
 
-	public void removeMatchMakerListener(MatchMakerListener<MatchMakerObject<C>,C> l) {
+	public void removeMatchMakerListener(MatchMakerListener<MatchMakerObject ,C> l) {
 		eventSupport.removeMatchMakerListener(l);
 	}
 

@@ -25,11 +25,12 @@ import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.CommonCloseAction;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.RowSetModel;
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -42,34 +43,31 @@ import com.sun.rowset.CachedRowSetImpl;
 public class MatchValidationStatus extends JDialog {
 
 	private static final Logger logger = Logger.getLogger(MatchValidationStatus.class);
-	private PlMatch match;
+	private Match match;
 	private final JTable status = new JTable();
 
-	public MatchValidationStatus(PlMatch match, JFrame frameParent) throws HeadlessException {
+	public MatchValidationStatus(Match match, JFrame frameParent) throws HeadlessException {
 		super(frameParent,"View Match Validation Status");
 		setMatch(match);
 		createUI();
 	}
     
-    public MatchValidationStatus(PlMatch match, JDialog dialogParent) throws HeadlessException {
+    public MatchValidationStatus(Match match, JDialog dialogParent) throws HeadlessException {
         super(dialogParent,"View Match Validation Status");
         setMatch(match);
         createUI();
     }
 
-	public PlMatch getMatch() {
+	public Match getMatch() {
 		return match;
 	}
 
-	public void setMatch(PlMatch match) {
-		if (this.match != match) {
-			firePropertyChange("this.match", this.match, match);
-			this.match = match;
-		}
+	public void setMatch(Match match) {
+		this.match = match;
 	}
 
 
-	private RowSet getMatchStats(PlMatch match) throws SQLException {
+	private RowSet getMatchStats(Match match) throws SQLException {
     	Connection con = null;
     	Statement stmt = null;
     	ResultSet rs =  null;
@@ -80,9 +78,10 @@ public class MatchValidationStatus extends JDialog {
     		sql.append("SELECT GROUP_ID,MATCH_PERCENT,MATCH_STATUS");
     		sql.append(",COUNT(*)/2");
     		sql.append(" FROM  ");
-    		sql.append(DDLUtils.toQualifiedName(match.getResultsTableCatalog(),
-    				match.getResultsTableOwner(),
-    				match.getResultsTable()));
+    		SQLTable resultTable = match.getResultTable();
+			sql.append(DDLUtils.toQualifiedName(resultTable.getCatalogName(),
+					resultTable.getSchemaName(),
+					resultTable.getName()));
     		sql.append(" GROUP BY GROUP_ID,MATCH_PERCENT,MATCH_STATUS");
     		sql.append(" ORDER BY MATCH_PERCENT DESC,MATCH_STATUS");
 
@@ -145,14 +144,15 @@ public class MatchValidationStatus extends JDialog {
 			public void itemStateChanged(ItemEvent e) {
 				RowSetModel rsm = null;
 				try {
-					PlMatch selectedMatch = (PlMatch) matchComboBox.getSelectedItem();
+					Match selectedMatch = (Match) matchComboBox.getSelectedItem();
 					rsm = new RowSetModel(getMatchStats(selectedMatch));
 					MatchStatsTableModel model = new MatchStatsTableModel(rsm);
 					status.setModel(model);
+					SQLTable resultTable = selectedMatch.getResultTable();
 					status.setName(DDLUtils.toQualifiedName(
-							selectedMatch.getResultsTableCatalog(),
-							selectedMatch.getResultsTableOwner(),
-							selectedMatch.getResultsTable()));
+							resultTable.getCatalogName(),
+							resultTable.getSchemaName(),
+							resultTable.getName()));
 				} catch (SQLException e1) {
 					ASUtils.showExceptionDialog(MatchValidationStatus.this,
 							"Unknown SQL Error", e1);

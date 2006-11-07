@@ -24,7 +24,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
  * 
  * @version $Id$
  */
-public class MatchMakerEventSupport<T extends MatchMakerObject<C>, C extends MatchMakerObject> {
+public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchMakerObject> {
 	
 	/**
 	 * The object that this support class is delivering events for.  This will be the source
@@ -46,8 +46,8 @@ public class MatchMakerEventSupport<T extends MatchMakerObject<C>, C extends Mat
 	public MatchMakerEventSupport(T source) {
 		this.source = source;
 	}
-
-	/**
+	
+/**
 	 * Adds the given listener to the listener list.  The listener will continue to receive
 	 * MatchMakerEvent notifications every time this object fires one, until it is removed.
 	 * If you add the same listener <tt>n</tt> times, it will receive <tt>n</tt> notifications
@@ -59,7 +59,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject<C>, C extends Mat
 		if (l == null) throw new NullPointerException("Null listener is not allowed");
 		listeners.add(l);
 	}
-
+	
 	/**
 	 * Removes the given listener from the list.  The listener, once removed, will no
 	 * longer get notified of MatchMakerEvents from this object, unless it was added more

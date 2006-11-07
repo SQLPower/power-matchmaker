@@ -16,8 +16,8 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
@@ -27,10 +27,10 @@ import com.jgoodies.forms.layout.FormLayout;
 public class MatchInfoPanel implements ArchitectPanel {
 
 	private static final Logger logger = Logger.getLogger(MatchInfoPanel.class);
-	private PlMatch match;
+	private Match match;
 	private JPanel panel;
 
-	public MatchInfoPanel(PlMatch match) throws HeadlessException {
+	public MatchInfoPanel(Match match) throws HeadlessException {
 		this.match = match;
 		buildUI();
 	}
@@ -55,29 +55,28 @@ public class MatchInfoPanel implements ArchitectPanel {
 		pb.add(new JLabel("Type:"), cc.xy(2,8,"r,c"));
 
 		String folderName = null;
-		if ( match.getFolder() != null) {
+		
+		 if ( match.getFolder() != null) {
 			PlFolder f = (PlFolder) match.getFolder();
     		if ( f != null ) {
     			folderName = f.getFolderName();
     		}
-		}
+		} 
 
-		pb.add(new JLabel(match.getMatchId()), cc.xy(4,2));
+		pb.add(new JLabel(match.getName()), cc.xy(4,2));
 		pb.add(new JLabel(folderName), cc.xy(4,4));
-		pb.add(new JLabel(match.getMatchDesc()), cc.xy(4,6,"f,f"));
-		pb.add(new JLabel(match.getMatchType()), cc.xy(4,8));
+		pb.add(new JLabel(match.getDescription()), cc.xy(4,6,"f,f"));
+		pb.add(new JLabel(match.getType().toString()), cc.xy(4,8));
 
 		pb.add(new JLabel("Logged on As:"), cc.xy(2,10,"r,c"));
-		pb.add(new JLabel("Created:"), cc.xy(2,12,"r,c"));
-		pb.add(new JLabel("Last Updated Date:"), cc.xy(2,14,"r,c"));
-		pb.add(new JLabel("Last Updated User:"), cc.xy(2,16,"r,c"));
-		pb.add(new JLabel("Last Run Date:"), cc.xy(2,18,"r,c"));
-
-		pb.add(new JLabel(match.getMatchId()), cc.xy(4,10));
-		pb.add(new JLabel(df.format(match.getCreateDate())), cc.xy(4,12));
-		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,14,"f,f"));
-		pb.add(new JLabel(match.getLastUpdateUser()), cc.xy(4,16));
-		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,18,"f,f"));
+		pb.add(new JLabel("Last Updated Date:"), cc.xy(2,12,"r,c"));
+		pb.add(new JLabel("Last Updated User:"), cc.xy(2,14,"r,c"));
+		pb.add(new JLabel("Last Run Date:"), cc.xy(2,16,"r,c"));
+		
+		pb.add(new JLabel(match.getName()), cc.xy(4,10));
+		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,12,"f,f"));
+		pb.add(new JLabel(match.getLastUpdateAppUser()), cc.xy(4,14));
+		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,15,"f,f"));
 
 		JLabel checkout = new JLabel("Checkout Information");
 		Font f = checkout.getFont();
@@ -89,17 +88,15 @@ public class MatchInfoPanel implements ArchitectPanel {
 		pb.add(new JLabel("Checked out user:"), cc.xy(2,24,"r,c"));
 		pb.add(new JLabel("Checked out osuser:"), cc.xy(2,26,"r,c"));
 
-		pb.add(new JLabel(df.format(match.getCheckedOutDate())), cc.xy(4,22));
-		pb.add(new JLabel(match.getCheckedOutUser()), cc.xy(4,24));
-		pb.add(new JLabel(match.getCheckedOutOsUser()), cc.xy(4,26,"f,f"));
+		
 	}
 
 	public static void main(String args[]) throws ArchitectException {
 
-		PlMatch plMatch = new PlMatch();
-		plMatch.setMatchId("TEST MATCH ID");
-		plMatch.setMatchType("Test Match type");
-		MatchInfoPanel p = new MatchInfoPanel(plMatch);
+		Match match = new Match("Test User");
+		match.setName("TEST MATCH ID");
+		match.setType(Match.MatchType.FIND_DUPES);
+		MatchInfoPanel p = new MatchInfoPanel(match);
 		MatchMakerFrame f = MatchMakerFrame.getMainInstance();
 		final JDialog d = ArchitectPanelBuilder.createSingleButtonArchitectPanelDialog(
 				p,f,"Audit Information","OK");

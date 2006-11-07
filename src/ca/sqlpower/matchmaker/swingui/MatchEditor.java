@@ -6,11 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -34,7 +31,6 @@ import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
@@ -45,9 +41,9 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchType;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
@@ -77,7 +73,6 @@ public class MatchEditor {
     private JButton createResultTable;
 
     private JButton saveMatch;
-    //private JButton exitEditor;
     private JButton showAuditInfo;
     private JButton runMatch;
     private JButton validationStatus;
@@ -88,20 +83,20 @@ public class MatchEditor {
      * The match that this editor is editing.  If you want to edit a different match,
      * create a new MatchEditor.
      */
-	private final PlMatch plMatch;
+	private final Match match;
     
     private PlFolder plFolder;
 
 
-    public MatchEditor(PlMatch match,JSplitPane splitPane) throws HeadlessException, ArchitectException {
+    public MatchEditor(Match match,JSplitPane splitPane) throws HeadlessException, ArchitectException {
         this(match, null, splitPane);
     }
 
-    public MatchEditor(PlMatch match, PlFolder folder,JSplitPane splitPane) throws ArchitectException {
+    public MatchEditor(Match match, PlFolder folder,JSplitPane splitPane) throws ArchitectException {
         super();
         
         if (match == null) throw new NullPointerException("You can't edit a null plmatch");
-        this.plMatch = match;
+        this.match = match;
         if (folder == null) {
         	if ( match != null ) {
         		this.plFolder = match.getFolder();
@@ -182,7 +177,7 @@ public class MatchEditor {
 	private Action showAuditInfoAction = new AbstractAction("Show Audit Info") {
 		public void actionPerformed(ActionEvent e) {
 
-			MatchInfoPanel p = new MatchInfoPanel(plMatch);
+			MatchInfoPanel p = new MatchInfoPanel(match);
 			JDialog d = ArchitectPanelBuilder.createSingleButtonArchitectPanelDialog(
 					p, getParentWindow(),
 					"Audit Information", "OK");
@@ -192,14 +187,14 @@ public class MatchEditor {
 
 	private Action runMatchAction = new AbstractAction("Run Match") {
 		public void actionPerformed(ActionEvent e) {
-			RunMatchDialog p = new RunMatchDialog(plMatch, getParentFrame());
+			RunMatchDialog p = new RunMatchDialog(match, getParentFrame());
 			p.pack();
 			p.setVisible(true);
 		}};
 
 	private Action validationStatusAction = new AbstractAction("View Validation Status") {
 		public void actionPerformed(ActionEvent e) {
-			MatchValidationStatus p = new MatchValidationStatus(plMatch, 
+			MatchValidationStatus p = new MatchValidationStatus(match, 
                     ArchitectPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation Status"));
 			p.pack();
 			p.setVisible(true);
@@ -207,7 +202,7 @@ public class MatchEditor {
 	private Action validateMatchAction = new AbstractAction("Validate Match") {
 		public void actionPerformed(ActionEvent e) {
 			try {
-				MatchValidation v = new MatchValidation(plMatch);
+				MatchValidation v = new MatchValidation(match);
 				v.pack();
 				v.setVisible(true);
 			} catch (HeadlessException e1) {
@@ -264,25 +259,7 @@ public class MatchEditor {
 
         filterPanel = new FilterComponentsPanel();
 
-        plMatch.addPropertyChangeListener(new PropertyChangeListener() {
-			public void propertyChange(PropertyChangeEvent evt) {
-				String property = evt.getPropertyName();
-				if ( (property.equals("tableCatalog") ||
-                        property.equals("tableOwner") ||
-                        property.equals("matchTable")) &&
-                        (plMatch.getMatchTable() != null)) {
-					try {
-						filterPanel.setTable(
-                                loginDB.getTableByName(
-                                        plMatch.getTableCatalog(),
-                                        plMatch.getTableOwner(),
-                                        plMatch.getMatchTable()));
-					} catch (ArchitectException e) {
-						throw new ArchitectRuntimeException(e);
-					}
-				}
-			}
-        });
+        // TODO add table change listener
         
     	List<String> types = new ArrayList<String>();
     	for ( MatchType mt : MatchType.values() ) {
@@ -307,50 +284,32 @@ public class MatchEditor {
     	validateMatch = new JButton(validateMatchAction);
 
 
-    	if ( plMatch.getMatchTable() != null ) {
-            if (plMatch.getMatchTable() != null) {
-            	SQLTable tableByName = loginDB.getTableByName(plMatch.getTableCatalog(), plMatch.getTableOwner(), plMatch.getMatchTable());
-            	if (tableByName != null) {
-            		filterPanel.setTable(tableByName);
-            	}
-            }
+    	if ( match.getSourceTable().getTable() != null ) {
+            
+        	SQLTable tableByName = match.getSourceTable().getTable();
+        	if (tableByName != null) {
+        		filterPanel.setTable(tableByName);
+        	}
+            
 
-    		matchId.setText(plMatch.getMatchId());
-    		if ( plMatch.getFolder() != null) {
-    			PlFolder f = (PlFolder) plMatch.getFolder();
+    		matchId.setText(match.getName());
+    		if ( match.getFolder() != null) {
+    			PlFolder f = (PlFolder) match.getFolder();
 	    		if ( f != null ) {
 	    			folderComboBox.setSelectedItem(f);
 	    		}
     		}
-    		desc.setText(plMatch.getMatchDesc());
-    		type.setSelectedItem(plMatch.getMatchType());
+    		desc.setText(match.getDescription());
+    		type.setSelectedItem(match.getType());
 
-    		SQLTable table = null;
-			try {
-				SQLDatabase db = sourceChooser.getDb();
-				if ( db != null && plMatch.getMatchTable() != null) {
-					table = db.getTableByName(
-							plMatch.getTableCatalog(),
-							plMatch.getTableOwner(),
-							plMatch.getMatchTable());
-				}
-			} catch (ArchitectException e2) {
-				ASUtils.showExceptionDialogNoReport(
-						panel,
-						"Unable to read Source Table"+
-						DDLUtils.toQualifiedName(
-								plMatch.getTableCatalog(),
-								plMatch.getTableOwner(),
-								plMatch.getMatchTable())+
-						" from Database!", e2 );
-			}
-
+    		SQLTable table = tableByName;
+		
     		if ( table == null ) {
     			JOptionPane.showMessageDialog(panel,
     					"Table [" + DDLUtils.toQualifiedName(
-    							plMatch.getTableCatalog(),
-    		    				plMatch.getTableOwner(),
-    		    				plMatch.getMatchTable()) + "]" +
+    							match.getSourceTable().getTable().getCatalogName(),
+    		    				match.getSourceTable().getTable().getSchemaName(),
+    		    				match.getSourceTable().getTable().getName()) + "]" +
     					" Has been removed.",
     					"Source table not found!",
     					JOptionPane.INFORMATION_MESSAGE );
@@ -365,44 +324,21 @@ public class MatchEditor {
 	    		}
 	    		sourceChooser.getTableComboBox().setSelectedItem(table);
 
-	    		String pkName = plMatch.getPkColumn();
-	    		if (  pkName != null && pkName.length() > 0 ) {
-	    			SQLIndex pk = null;
-					try {
-						pk = table.getIndexByName(pkName);
-					} catch (ArchitectException e1) {
-						ASUtils.showExceptionDialogNoReport(
-								panel,
-								"Unable to get table unique indices!", e1 );
-					}
-	    			if ( pk != null ) {
-	    				sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
-	    			}
-	    		}
+    			SQLIndex pk = null;
+				pk = match.getSourceTable().getUniqueIndex();			
+    			if ( pk != null ) {
+    				sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
+    			}
     		}
-
-            filterPanel.getFilterTextArea().setText(plMatch.getFilter());
+            filterPanel.getFilterTextArea().setText(match.getFilter());
 
             SQLTable resultTable = null;
-			try {
-				SQLDatabase db = resultChooser.getDb();
-				if ( db != null && plMatch.getResultsTable() != null) {
-					resultTable = db.getTableByName(
-							plMatch.getResultsTableCatalog(),
-							plMatch.getResultsTableOwner(),
-							plMatch.getResultsTable());
-				}
-			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialogNoReport(
-						panel,
-						"Unable to read Result Table"+
-						DDLUtils.toQualifiedName(
-								plMatch.getResultsTableCatalog(),
-								plMatch.getResultsTableOwner(),
-								plMatch.getResultsTable())+
-						" from Database!", e1 );
+			
+            SQLDatabase db = resultChooser.getDb();
+            if ( db != null && match.getResultTable() != null) {
+            	resultTable = match.getResultTable();
 			}
-
+			
 			if ( resultTable != null ) {
 	            SQLCatalog cat = resultTable.getCatalog();
 	    		SQLSchema sch = resultTable.getSchema();
@@ -413,7 +349,7 @@ public class MatchEditor {
 	    			resultChooser.getSchemaComboBox().setSelectedItem(sch);
 	    		}
 			}
-            resultTableName.setText(plMatch.getResultsTable());
+            resultTableName.setText(match.getResultTable().getName());
 
     	} 
         
@@ -471,7 +407,7 @@ public class MatchEditor {
 		bb.addGridded(saveMatch);
 		bb.addRelatedGap();
 		bb.addRelatedGap();
-		bb.addGridded(new JButton(new NewMatchGroupAction(plMatch,splitPane)));
+		bb.addGridded(new JButton(new NewMatchGroupAction(match,splitPane)));
 		bb.addRelatedGap();
 		bb.addRelatedGap();
 		bb.addGridded(showAuditInfo);
@@ -692,35 +628,27 @@ public class MatchEditor {
         		return;
         }
 
-        if ( sourceChooser.getCatalogComboBox().isEnabled() &&
-        		sourceChooser.getCatalogComboBox().getSelectedItem() != null ) {
-        	plMatch.setTableCatalog(((SQLCatalog)sourceChooser.getCatalogComboBox().getSelectedItem()).getName());
-        }
+        match.setType((Match.MatchType)type.getSelectedItem());
 
-        if ( sourceChooser.getSchemaComboBox().isEnabled() &&
-        		sourceChooser.getSchemaComboBox().getSelectedItem() != null ) {
-        	plMatch.setTableOwner(((SQLSchema)sourceChooser.getSchemaComboBox().getSelectedItem()).getName());
-        }
-        plMatch.setMatchType(type.getSelectedItem().toString());
-
-        plMatch.setMatchDesc(desc.getText());
-        plMatch.setMatchTable(
+        match.setDescription(desc.getText());
+        match.getSourceTable().setTable(
         		((SQLTable) sourceChooser.getTableComboBox().
-        				getSelectedItem()).getName());
+        				getSelectedItem()));
 
         String id = matchId.getText().trim();
         if ( id == null || id.length() == 0 ) {
         	StringBuffer s = new StringBuffer();
         	s.append("MATCH_");
-        	if ( plMatch.getTableCatalog() != null &&
-        			plMatch.getTableCatalog().length() > 0 ) {
-        		s.append(plMatch.getTableCatalog()).append("_");
+        	SQLTable table = match.getSourceTable().getTable();
+			if ( table.getCatalogName() != null &&
+        			table.getCatalogName().length() > 0 ) {
+        		s.append(table.getCatalogName()).append("_");
         	}
-        	if ( plMatch.getTableOwner() != null &&
-        			plMatch.getTableOwner().length() > 0 ) {
-        		s.append(plMatch.getTableOwner()).append("_");
+        	if ( table.getSchemaName() != null &&
+        			table.getSchemaName().length() > 0 ) {
+        		s.append(table.getSchemaName()).append("_");
         	}
-        	s.append(plMatch.getMatchTable());
+        	s.append(table.getName());
         	id = s.toString();
         	if ( MatchMakerFrame.getMainInstance().getMatchByName(id) == null )
         		matchId.setText(id);
@@ -729,15 +657,15 @@ public class MatchEditor {
         if ( !checkStringNullOrEmpty(matchId.getText(),"Match ID") )
             return;
 
-        plMatch.setMatchId(matchId.getText());
-        logger.debug("Saving Match:" + plMatch.getMatchId());
+        match.setName(matchId.getText());
+        logger.debug("Saving Match:" + match.getName());
 
 
         if ( sourceChooser.getUniqueKeyComboBox().getSelectedItem() != null ) {
-            plMatch.setPkColumn(
-            		((SQLIndex)sourceChooser.getUniqueKeyComboBox().getSelectedItem()).getName());
+            match.getSourceTable().setUniqueIndex(
+            		((SQLIndex)sourceChooser.getUniqueKeyComboBox().getSelectedItem()));
         }
-        plMatch.setFilter(filterPanel.getFilterTextArea().getText());
+        match.setFilter(filterPanel.getFilterTextArea().getText());
 
         if ( resultChooser.getCatalogComboBox().isEnabled() &&
         		resultChooser.getCatalogComboBox().getSelectedItem() == null ) {
@@ -752,63 +680,29 @@ public class MatchEditor {
         				"Unknown Database error", e1);
         	}
         }
-        if ( resultChooser.getCatalogComboBox().isEnabled() &&
-        		resultChooser.getCatalogComboBox().getSelectedItem() != null ) {
-            plMatch.setResultsTableCatalog(
-            		((SQLCatalog)resultChooser.getCatalogComboBox().getSelectedItem()).getName());
-        }
-
-        if ( resultChooser.getSchemaComboBox().isEnabled() &&
-        		resultChooser.getSchemaComboBox().getSelectedItem() == null ) {
-        	SQLSchema resultSchema = null;
-
-        	SQLDatabase db = resultChooser.getDb();
-        	SQLSchema sourceSchema =
-        		(SQLSchema) sourceChooser.getSchemaComboBox().getSelectedItem();
-        	SQLCatalog sourceCatalog =
-        		(SQLCatalog) sourceChooser.getCatalogComboBox().getSelectedItem();
-        	try {
-        		if ( db.isSchemaContainer() ) {
-        			resultSchema = db.getSchemaByName(sourceSchema.getName());
-        		} else {
-        			SQLCatalog cat = db.getCatalogByName(sourceCatalog.getName());
-        			resultSchema = cat.getSchemaByName(sourceSchema.getName());
-        		}
-        	} catch (ArchitectException e1) {
-        		ASUtils.showExceptionDialogNoReport(panel,
-        				"Unknown Database error", e1);
-        	}
-        	resultChooser.getSchemaComboBox().setSelectedItem(resultSchema);
-        }
-
-        if ( resultChooser.getSchemaComboBox().isEnabled() &&
-        		resultChooser.getSchemaComboBox().getSelectedItem() != null ) {
-            plMatch.setResultsTableOwner(
-            		((SQLSchema)resultChooser.getSchemaComboBox().getSelectedItem()).getName());
-        }
-
+        
+        
+       
         String trimedValue = null;
         String resultTable = resultTableName.getText();
         if ( resultTable != null ) {
             trimedValue = resultTable.trim();
         }
         if ( trimedValue == null || trimedValue.length() == 0 ) {
-            resultTableName.setText("MM_"+plMatch.getMatchId());
+            resultTableName.setText("MM_"+match.getName());
         }
 
-
-        plMatch.setResultsTable(resultTableName.getText());
-        plMatch.setLastUpdateDate(new Date(System.currentTimeMillis()));
-
-
+        
+        match.setResultTable(new SQLTable());
+        
         PlFolder f = (PlFolder)folderComboBox.getSelectedItem();
-        plMatch.setFolder( f);
+        match.setFolder( f);
 
         Transaction tx = HibernateUtil.primarySession().beginTransaction();
-        HibernateUtil.primarySession().saveOrUpdate(plMatch);
+        HibernateUtil.primarySession().saveOrUpdate(match);
         HibernateUtil.primarySession().flush();
         tx.commit();
-        HibernateUtil.primarySession().refresh(plMatch);
+        HibernateUtil.primarySession().refresh(match);
         HibernateUtil.primarySession().flush();
     }
 }
