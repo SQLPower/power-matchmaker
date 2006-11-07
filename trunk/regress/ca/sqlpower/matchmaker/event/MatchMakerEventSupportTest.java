@@ -9,8 +9,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 
 public class MatchMakerEventSupportTest extends TestCase {
 
-	MatchMakerEventSupport<MatchMakerObject<MatchMakerObject>, MatchMakerObject> support;
-
+	MatchMakerEventSupport<MatchMakerObject,MatchMakerObject> support;
 	MatchMakerObject<MatchMakerObject> mmo;
 
 	@Override
@@ -19,7 +18,7 @@ public class MatchMakerEventSupportTest extends TestCase {
 		mmo = new AbstractMatchMakerObject<MatchMakerObject>("a") {
 
 		};
-		support = new MatchMakerEventSupport<MatchMakerObject<MatchMakerObject>, MatchMakerObject>(mmo);
+		support= new MatchMakerEventSupport<MatchMakerObject, MatchMakerObject>(mmo);
 	}
 
 	public void testListenerRemovesSelf() {

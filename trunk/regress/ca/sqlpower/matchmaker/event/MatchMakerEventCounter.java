@@ -5,7 +5,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 /**
  *	Get counts of the various match maker event types 
  */
-public class MatchMakerEventCounter implements MatchMakerListener<MatchMakerObject<MatchMakerObject>, MatchMakerObject> {
+public class MatchMakerEventCounter implements MatchMakerListener<MatchMakerObject, MatchMakerObject> {
 
 	int childrenInsertedCount;
 	int childrenRemovedCount;
