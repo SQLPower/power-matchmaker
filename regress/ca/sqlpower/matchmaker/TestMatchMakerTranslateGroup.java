@@ -1,7 +1,8 @@
 package ca.sqlpower.matchmaker;
 
 
-public class TestMatchMakerTranslateGroup<C extends MatchMakerTranslateWord> extends MatchMakerTestCase<MatchMakerTranslateGroup> {
+public class TestMatchMakerTranslateGroup<C extends MatchMakerTranslateWord> 
+	extends MatchMakerTestCase<MatchMakerTranslateGroup> {
 
 	final String appUserName = "test_user";
 	MatchMakerTranslateGroup<C> target;
