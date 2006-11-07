@@ -16,6 +16,9 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.matchmaker.util.ViewSpec;
+import ca.sqlpower.matchmaker.util.log.Level;
+import ca.sqlpower.matchmaker.util.log.Log;
+import ca.sqlpower.matchmaker.util.log.LogFactory;
 
 /**
  * A base test that all test cases of MatchMakerObject implementations should extend.
@@ -81,7 +84,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				
 			} else if (property.getPropertyType() == Boolean.TYPE){
 				newVal = new Boolean(! ((Boolean) oldVal).booleanValue());
-            } else if (property.getPropertyType() == SourceTable.class) {
+            } else if (property.getPropertyType() == Long.class){
+				newVal = ((Long) oldVal)+1;
+            }else if (property.getPropertyType() == SourceTable.class) {
             	newVal = new SourceTable();
 			} else if (property.getPropertyType() == MatchSettings.class) {
             	newVal = new MatchSettings("new user");
@@ -91,7 +96,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
             	newVal = new SQLTable();
 			} else if (property.getPropertyType() == ViewSpec.class) {
             	newVal = new ViewSpec();
-			} else if (property.getPropertyType() == Match.MatchType.class) {
+			} else if (property.getPropertyType() == Log.class) {
+            	newVal = LogFactory.getLogger(Level.DEBUG, "TestMatchMaker.log");        	
+			}else if (property.getPropertyType() == PlFolder.class) {
+            	newVal = new PlFolder<Match>("Test User");        	
+			}  else if (property.getPropertyType() == Match.MatchType.class) {
             	if (oldVal ==Match.MatchType.BUILD_XREF){
             		newVal = Match.MatchType.FIND_DUPES;
             	} else {
