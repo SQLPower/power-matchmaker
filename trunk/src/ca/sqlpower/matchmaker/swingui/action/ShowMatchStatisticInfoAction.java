@@ -16,17 +16,17 @@ import javax.swing.JPanel;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.CommonCloseAction;
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.swingui.MatchStatisticsPanel;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 
 public class ShowMatchStatisticInfoAction extends AbstractAction {
 
-	private PlMatch match;
+	private Match match;
 	private JFrame parent;
 
-	public ShowMatchStatisticInfoAction(PlMatch match, JFrame parent) {
+	public ShowMatchStatisticInfoAction(Match match, JFrame parent) {
 		super("Statistics");
 		this.match = match;
 		this.parent = parent;

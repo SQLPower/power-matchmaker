@@ -13,6 +13,10 @@ public class MatchSettings extends MatchMakerSettings {
 	 * Breakup the match after each criteria group
 	 */
 	boolean breakUpMatch;
+	/**
+	 * Truncate the candidate duplicate table
+	 */
+	boolean truncateCandDupe;
 
 	public boolean isBreakUpMatch() {
 		return breakUpMatch;
@@ -23,5 +27,16 @@ public class MatchSettings extends MatchMakerSettings {
 		this.breakUpMatch = breakUpMatch;
 		getEventSupport().firePropertyChange("breakUpMatch", oldValue,
 				breakUpMatch);
+	}
+
+	public boolean isTruncateCandDupe() {
+		return truncateCandDupe;
+	}
+
+	public void setTruncateCandDupe(boolean truncateCandDupe) {
+		boolean oldValue = this.truncateCandDupe;
+		this.truncateCandDupe = truncateCandDupe;
+		getEventSupport().firePropertyChange("truncateCandDupe", oldValue,
+				truncateCandDupe);
 	}
 }

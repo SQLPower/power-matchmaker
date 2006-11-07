@@ -37,7 +37,6 @@ import javax.swing.text.StyleConstants;
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 
-import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
@@ -45,10 +44,13 @@ import ca.sqlpower.architect.swingui.SaveDocument;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.ExternalEngineUtils;
+import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.RowSetModel;
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.matchmaker.util.log.Level;
+import ca.sqlpower.matchmaker.util.log.LogFactory;
 
 import com.darwinsys.notepad.Notepad;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -84,14 +86,14 @@ public class RunMatchDialog extends JDialog{
     private JComboBox rollbackSegment;
     private JFrame parentFrame;
 
-    private PlMatch plMatch;
+    private Match match;
 
-    public RunMatchDialog(PlMatch plMatch, JFrame parentFrame){
-        super(parentFrame,"Run Match:["+plMatch.getMatchId()+"]");
+    public RunMatchDialog(Match match, JFrame parentFrame){
+        super(parentFrame,"Run Match:["+match.getName()+"]");
         //We store the parentFrame because ShowMatchStatics require a JFrame to
         //be its parent
         this.parentFrame = parentFrame;
-        this.plMatch = plMatch;
+        this.match = match;
         buildUI();
     }
 
@@ -132,9 +134,9 @@ public class RunMatchDialog extends JDialog{
         truncateCandDup = new JCheckBox();
         sendEmail = new JCheckBox();
         viewLogFile = new JButton(new ShowLogFileAction());
-        viewStats = new JButton(new ShowMatchStatisticInfoAction(plMatch,getParentFrame()));
+        viewStats = new JButton(new ShowMatchStatisticInfoAction(match,getParentFrame()));
         viewStats.setText("Match Statistics");
-        showCommand = new JButton(new ShowCommandAction(plMatch,RunMatchDialog.this));
+        showCommand = new JButton(new ShowCommandAction(match,RunMatchDialog.this));
         viewMatchResults = new JButton();
         startWordCount = new JButton();
         wordCountResults = new JButton();
@@ -149,7 +151,7 @@ public class RunMatchDialog extends JDialog{
 			}});
         save.setText("Save");
 
-        runMatchEngine = new JButton(new RunEngineAction(plMatch,RunMatchDialog.this));
+        runMatchEngine = new JButton(new RunEngineAction(match,RunMatchDialog.this));
         exit = new JButton(new AbstractAction(){
 			public void actionPerformed(ActionEvent e) {
 				RunMatchDialog.this.setVisible(false);
@@ -160,27 +162,25 @@ public class RunMatchDialog extends JDialog{
         rollbackSegment = new JComboBox();
 
 
-        if ( plMatch != null ) {
-            String logFileName = plMatch.getMatchLogFileName();
+        if ( match != null ) {
+        	MatchSettings settings = match.getMatchSettings();
+            String logFileName =(settings.getLog().getConstraint()).toString();
             File file;
             if ( logFileName == null || logFileName.length() == 0 ) {
-                logFileName = plMatch.getMatchId() + ".log";
+                logFileName = match.getName() + ".log";
                 file = new File(lastAccessPath,logFileName);
             } else {
                  file = new File(logFileName);
             }
             lastAccessPath = file.getAbsolutePath();
             logFilePath.setText(logFileName);
-            append.setSelected(plMatch.isMatchAppendToLogInd());
-            if ( plMatch.getMatchProcessCnt() != null ) {
-            	recordsToProcess.setText(String.valueOf(plMatch.getMatchProcessCnt()));
-            } else {
-            	recordsToProcess.setText("0");
-            }
-            debugMode.setSelected(plMatch.isMatchDebugModeInd());
-            truncateCandDup.setSelected(plMatch.isTruncateCandDupInd());
-            sendEmail.setSelected(plMatch.isMatchSendEmailInd());
-            rollbackSegment.setSelectedItem(plMatch.getMatchRollbackSegmentName());
+            append.setSelected(settings.isAppendToLog());
+            recordsToProcess.setText(String.valueOf(settings.getProcessCount()));      
+            debugMode.setSelected(settings.isDebug());
+            truncateCandDup.setSelected(settings.isTruncateCandDupe());
+            sendEmail.setSelected(settings.isSendEmail());
+            //TODO add roll back segment
+            //rollbackSegment.setSelectedItem(settings.getMatchRollbackSegmentName());
         } else {
             recordsToProcess.setText("0");
         }
@@ -237,12 +237,14 @@ public class RunMatchDialog extends JDialog{
     }
 
     private void applyChange() {
-    	plMatch.setMatchDebugModeInd(debugMode.isSelected());
-    	plMatch.setTruncateCandDupInd(truncateCandDup.isSelected());
-    	plMatch.setMatchSendEmailInd(sendEmail.isSelected());
-    	plMatch.setMatchLogFileName(logFilePath.getText());
-    	plMatch.setMatchAppendToLogInd(append.isSelected());
-    	plMatch.setMatchProcessCnt(Long.valueOf(recordsToProcess.getText()));
+    	
+    	MatchSettings settings = match.getMatchSettings();
+    	settings.setDebug(debugMode.isSelected());
+    	settings.setTruncateCandDupe(truncateCandDup.isSelected());
+    	settings.setSendEmail(sendEmail.isSelected());
+    	settings.setLog(LogFactory.getLogger(Level.INFO ,logFilePath.getText()));
+    	settings.setAppendToLog(append.isSelected());
+    	settings.setProcessCount(Integer.valueOf(recordsToProcess.getText()));
     }
 
     public class StatsTableMOdel extends RowSetModel {
@@ -296,14 +298,14 @@ public class RunMatchDialog extends JDialog{
 
     private class RunEngineAction extends AbstractAction {
 
-    	private final PlMatch match;
+    	private final Match match;
 		private final JDialog parent;
 
 		SimpleAttributeSet stdoutAtt = new SimpleAttributeSet();
 		SimpleAttributeSet stderrAtt = new SimpleAttributeSet();
 
 
-    	public RunEngineAction(PlMatch match, JDialog parent) {
+    	public RunEngineAction(Match match, JDialog parent) {
     		super("Run Match Engine");
     		this.parent = parent;
     		this.match = match;
@@ -482,10 +484,10 @@ public class RunMatchDialog extends JDialog{
 
     private class ShowCommandAction extends AbstractAction {
 
-    	private PlMatch match;
+    	private Match match;
 		private JDialog parent;
 
-		public ShowCommandAction(PlMatch match, JDialog parent) {
+		public ShowCommandAction(Match match, JDialog parent) {
     		super("Show Command");
     		this.match = match;
     		this.parent = parent;
@@ -564,7 +566,13 @@ public class RunMatchDialog extends JDialog{
 
     }
 
-    protected String createCommand(PlMatch match) {
+    /**
+     * Create a command to run the match engine on the match passed in
+     * 
+     * @param match
+     * @return the run command for the match
+     */
+    protected String createCommand(Match match) {
     	/*
 		 * command sample:
 		 * "M:\Program Files\Power Loader Suite\Match_Oracle.exe"
@@ -580,41 +588,26 @@ public class RunMatchDialog extends JDialog{
 		// FIXME: comment following line to use executable from user pl.ini config
 		programPath = "\"M:\\Program Files\\Power Loader Suite\\Match_ODBC.exe\"";
 		command.append(programPath);
-		command.append(" MATCH=\"").append(match.getMatchId()).append("\"");
+		command.append(" MATCH=\"").append(match.getName()).append("\"");
 		if ( db != null ) {
 			command.append(" USER=");
 			command.append(db.getDataSource().getUser());
 			command.append("/").append(db.getDataSource().getPass());
 			command.append("@").append(db.getDataSource().getName());
 		}
-		command.append(" DEBUG=").append(match.isMatchDebugModeInd()?"Y":"N");
-		command.append(" TRUNCATE_CAND_DUP=").append(match.isTruncateCandDupInd()?"Y":"N");
-		command.append(" SEND_EMAIL=").append(match.isMatchSendEmailInd()?"Y":"N");
-		command.append(" APPEND_TO_LOG_IND=").append(match.isMatchAppendToLogInd()?"Y":"N");
-		command.append(" LOG_FILE=\"").append(match.getMatchLogFileName()).append("\"");
-		command.append(" SHOW_PROGRESS=").append(match.getMatchShowProgressFreq());
-		command.append(" PROCESS_CNT=").append(match.getMatchProcessCnt());
+		MatchSettings settings = match.getMatchSettings();
+		command.append(" DEBUG=").append(settings.isDebug()?"Y":"N");
+		command.append(" TRUNCATE_CAND_DUP=").append(settings.isTruncateCandDupe()?"Y":"N");
+		command.append(" SEND_EMAIL=").append(settings.isSendEmail()?"Y":"N");
+		command.append(" APPEND_TO_LOG_IND=").append(settings.isAppendToLog()?"Y":"N");
+		command.append(" LOG_FILE=\"").append(settings.getLog().getConstraint().toString()).append("\"");
+		command.append(" SHOW_PROGRESS=").append(settings.isShowProgressFreq());
+		command.append(" PROCESS_CNT=").append(settings.getProcessCount());
 		return command.toString();
 	}
 
     public JFrame getParentFrame(){
         return parentFrame;
     }
-    public static void main(String[] args) {
 
-    	MatchMakerFrame.getMainInstance();
-		ArchitectDataSource ds = MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni().getDataSource("ARTHUR_TEST");
-		MatchMakerFrame.getMainInstance().newLogin(new SQLDatabase(ds));
-		final PlMatch match = MatchMakerFrame.getMainInstance().getMatchByName("DEMO_MATCH_PEOPLE_MATCH_FIRST");
-
-
-        final JDialog f = new RunMatchDialog(match,null);
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                f.pack();
-                f.setVisible(true);
-            }
-        });
-    }
 }

@@ -17,12 +17,11 @@ import javax.swing.tree.TreePath;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.hibernate.PlFolder;
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
-import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
@@ -42,11 +41,11 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 			TreePath tp = t.getPathForRow(row);
 			if (tp != null) {
 				Object o = tp.getLastPathComponent();
-				if (o instanceof PlMatch) {
+				if (o instanceof Match) {
 
 					MatchEditor me;
 					try {
-						me = new MatchEditor((PlMatch) o,splitPane);
+						me = new MatchEditor((Match) o,splitPane);
 					} catch (ArchitectException e1) {
 						throw new ArchitectRuntimeException(e1);
 					}
@@ -99,8 +98,8 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 				Object o = tp.getLastPathComponent();
 				if(o instanceof PlFolder){
 					createFolderMenu((PlFolder) o);
-				} else if (o instanceof PlMatch){
-					createMatchMenu((PlMatch) o);
+				} else if (o instanceof Match){
+					createMatchMenu((Match) o);
 				} else if (o instanceof PlMatchGroup){
 					createMatchGroupMenu((PlMatchGroup) o);
 				} else if (o instanceof String){
@@ -125,7 +124,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 		return (Window) c;
 	}
 
-	private void createMatchMenu(final PlMatch match) {
+	private void createMatchMenu(final Match match) {
 
 
 
@@ -152,7 +151,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 		m.add(new JMenuItem(new ShowMatchStatisticInfoAction(match,
 				MatchMakerFrame.getMainInstance())));
 		m.addSeparator();
-		m.add(new JMenuItem(new PlMatchExportAction(match)));
+		// TODO add this back in m.add(new JMenuItem(new PlMatchExportAction(match)));
 		m.add(new JMenuItem(new PlMatchImportAction()));
 	}
 
