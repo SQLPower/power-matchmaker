@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -12,8 +13,10 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
+import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.matchmaker.util.log.Level;
@@ -37,32 +40,32 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		
+
 	}
-	
+
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
-	
+
 	protected abstract C getTarget();
-	
+
 	public void testAllSettersGenerateEvents()
-	throws IllegalArgumentException, IllegalAccessException, 
+	throws IllegalArgumentException, IllegalAccessException,
 	InvocationTargetException, NoSuchMethodException, ArchitectException {
-		
+
 		MatchMakerObject mmo = getTarget();
 
 		MatchMakerEventCounter listener = new MatchMakerEventCounter();
 		mmo.addMatchMakerListener(listener);
 
 		List<PropertyDescriptor> settableProperties;
-		
+
 		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
-		
+
 		for (PropertyDescriptor property : settableProperties) {
 			Object oldVal;
 			if (propertiesToIgnoreForEventGeneration.contains(property.getName())) continue;
-			
+
 			try {
 				oldVal = PropertyUtils.getSimpleProperty(mmo, property.getName());
 				// check for a setter
@@ -70,53 +73,71 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				{
 					continue;
 				}
-				
+
 			} catch (NoSuchMethodException e) {
 				System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());
 				continue;
 			}
-			Object newVal;  // don't init here so compiler can warn if the following code doesn't always give it a value
-			if (property.getPropertyType() == Integer.TYPE ||property.getPropertyType() == Integer.class ) {
-				newVal = ((Integer)oldVal)+1;
+			Object newVal; // don't init here so compiler can warn if the
+							// following code doesn't always give it a value
+			if (property.getPropertyType() == Integer.TYPE
+					|| property.getPropertyType() == Integer.class) {
+				newVal = ((Integer) oldVal) + 1;
 			} else if (property.getPropertyType() == String.class) {
 				// make sure it's unique
-				newVal ="new " + oldVal;
-				
-			} else if (property.getPropertyType() == Boolean.TYPE){
-				newVal = new Boolean(! ((Boolean) oldVal).booleanValue());
-			} else if (property.getPropertyType() == Long.class){
-				newVal = new Long(((Long) oldVal).longValue() + 1L);
-            } else if (property.getPropertyType() == SourceTable.class) {
-            	newVal = new SourceTable();
+				newVal = "new " + oldVal;
+
+			} else if (property.getPropertyType() == Boolean.TYPE) {
+				newVal = new Boolean(!((Boolean) oldVal).booleanValue());
+			} else if (property.getPropertyType() == Long.class) {
+				if (oldVal == null) {
+					newVal = new Long(0L);
+				} else {
+					newVal = new Long(((Long) oldVal).longValue() + 1L);
+				}
+			} else if (property.getPropertyType() == BigDecimal.class) {
+				if (oldVal == null) {
+					newVal = new BigDecimal(0);
+				} else {
+					newVal = new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
+				}
+			} else if (property.getPropertyType() == SourceTable.class) {
+				newVal = new SourceTable();
 			} else if (property.getPropertyType() == MatchSettings.class) {
-            	newVal = new MatchSettings("new user");
+				newVal = new MatchSettings("new user");
 			} else if (property.getPropertyType() == MergeSettings.class) {
-            	newVal = new MergeSettings("new user");
+				newVal = new MergeSettings("new user");
 			} else if (property.getPropertyType() == SQLTable.class) {
-            	newVal = new SQLTable();
+				newVal = new SQLTable();
 			} else if (property.getPropertyType() == ViewSpec.class) {
-            	newVal = new ViewSpec();
+				newVal = new ViewSpec();
 			} else if (property.getPropertyType() == Log.class) {
-            	newVal = LogFactory.getLogger(Level.DEBUG, "TestMatchMaker.log");        	
-			}else if (property.getPropertyType() == PlFolder.class) {
-            	newVal = new PlFolder<Match>("Test User");        	
-			}  else if (property.getPropertyType() == Match.MatchType.class) {
-            	if (oldVal ==Match.MatchType.BUILD_XREF){
-            		newVal = Match.MatchType.FIND_DUPES;
-            	} else {
-            		newVal =Match.MatchType.BUILD_XREF;
-            	}
+				newVal = LogFactory
+						.getLogger(Level.DEBUG, "TestMatchMaker.log");
+			} else if (property.getPropertyType() == PlFolder.class) {
+				newVal = new PlFolder<Match>("Test User");
+			} else if (property.getPropertyType() == Match.MatchType.class) {
+				if (oldVal == Match.MatchType.BUILD_XREF) {
+					newVal = Match.MatchType.FIND_DUPES;
+				} else {
+					newVal = Match.MatchType.BUILD_XREF;
+				}
+			} else if (property.getPropertyType() == PlMatchTranslateGroup.class) {
+				newVal = new PlMatchTranslateGroup();
+			} else if (property.getPropertyType() == SQLColumn.class) {
+				newVal = new SQLColumn();
 			} else {
-				throw new RuntimeException("This test case lacks a value for "+
-						property.getName()+
-						" (type "+property.getPropertyType().getName()+") from "+mmo.getClass());
+				throw new RuntimeException("This test case lacks a value for "
+						+ property.getName() + " (type "
+						+ property.getPropertyType().getName() + ") from "
+						+ mmo.getClass());
 			}
-			
+
 			int oldChangeCount = listener.getAllEventCounts();
-			
+
 			try {
 				BeanUtils.copyProperty(mmo, property.getName(), newVal);
-				
+
 				// some setters fire multiple events (they change more than one property)
 				assertTrue("Event for set "+property.getName()+" on "+mmo.getClass().getName()+" didn't fire!",
 						listener.getAllEventCounts() > oldChangeCount);
@@ -133,7 +154,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			}
 		}
 	}
-    
+
     /**
      * The child list should never be null for any Match Maker Object, even if
      * that object's type is childless.

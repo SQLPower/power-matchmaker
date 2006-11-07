@@ -1,14 +1,14 @@
 package ca.sqlpower.matchmaker;
 
 
-public class MatchMakerCriteriaGroup extends AbstractMatchMakerObject<MatchmakerCriteria> {
+public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria> extends AbstractMatchMakerObject<C> {
 
 	private String name;
 	private String desc;
-	private long matchPercent;
+	private Long matchPercent;
 	private String filter;
 	private boolean active;
-	
+
 	public MatchMakerCriteriaGroup(String appUserName) {
 		super(appUserName);
 	}
@@ -23,12 +23,12 @@ public class MatchMakerCriteriaGroup extends AbstractMatchMakerObject<Matchmaker
 		getEventSupport().firePropertyChange("desc", oldDesc, desc);
 	}
 
-	public long getMatchPercent() {
+	public Long getMatchPercent() {
 		return matchPercent;
 	}
 
-	public void setMatchPercent(long matchPercent) {
-		long oldValue = this.matchPercent;
+	public void setMatchPercent(Long matchPercent) {
+		Long oldValue = this.matchPercent;
 		this.matchPercent = matchPercent;
 		getEventSupport().firePropertyChange("matchPercent", oldValue, matchPercent);
 	}
