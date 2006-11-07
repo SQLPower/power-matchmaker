@@ -84,9 +84,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				
 			} else if (property.getPropertyType() == Boolean.TYPE){
 				newVal = new Boolean(! ((Boolean) oldVal).booleanValue());
-            } else if (property.getPropertyType() == Long.class){
-				newVal = ((Long) oldVal)+1;
-            }else if (property.getPropertyType() == SourceTable.class) {
+			} else if (property.getPropertyType() == Long.class){
+				newVal = new Long(((Long) oldVal).longValue() + 1L);
+            } else if (property.getPropertyType() == SourceTable.class) {
             	newVal = new SourceTable();
 			} else if (property.getPropertyType() == MatchSettings.class) {
             	newVal = new MatchSettings("new user");
