@@ -3,9 +3,8 @@ package ca.sqlpower.matchmaker;
 import java.math.BigDecimal;
 
 import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 
-public class MatchmakerCriteria<C extends MatchmakerCriteria> extends AbstractMatchMakerObject<C> {
+public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatchMakerObject<C> {
 
 	private SQLColumn column;
 
@@ -33,7 +32,7 @@ public class MatchmakerCriteria<C extends MatchmakerCriteria> extends AbstractMa
 
 	private boolean allowNullInd;
 
-	private PlMatchTranslateGroup translateGroup;
+	private MatchMakerTranslateGroup translateGroup;
 
 	private boolean removeSpecialChars;
 
@@ -151,7 +150,7 @@ public class MatchmakerCriteria<C extends MatchmakerCriteria> extends AbstractMa
 	}
 
 
-	public PlMatchTranslateGroup getTranslateGroup() {
+	public MatchMakerTranslateGroup getTranslateGroup() {
 		return translateGroup;
 	}
 
@@ -289,8 +288,8 @@ public class MatchmakerCriteria<C extends MatchmakerCriteria> extends AbstractMa
 	}
 
 
-	public void setTranslateGroup(PlMatchTranslateGroup translateGroup) {
-		PlMatchTranslateGroup oldVal = this.translateGroup;
+	public void setTranslateGroup(MatchMakerTranslateGroup translateGroup) {
+		MatchMakerTranslateGroup oldVal = this.translateGroup;
 		this.translateGroup = translateGroup;
 		getEventSupport().firePropertyChange("translateGroup", oldVal, translateGroup);
 	}

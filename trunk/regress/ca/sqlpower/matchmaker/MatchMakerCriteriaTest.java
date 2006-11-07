@@ -3,16 +3,16 @@ package ca.sqlpower.matchmaker;
 import java.math.BigDecimal;
 
 import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 
-public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchmakerCriteria> {
+public class MatchMakerCriteriaTest<C extends MatchMakerObject> extends MatchMakerTestCase<MatchmakerCriteria> {
 
-	private MatchmakerCriteria target;
+	private MatchmakerCriteria<C> target;
 	final String appUserName = "Test User";
+	private C child;
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchmakerCriteria(appUserName);
+		target = new MatchmakerCriteria<C>(appUserName);
 	}
 
 	@Override
@@ -141,7 +141,7 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchmakerCriteri
 
 	public void testSetTranslateGroup() {
 		checkNull();
-		target.setTranslateGroup(new PlMatchTranslateGroup());
+		target.setTranslateGroup(new MatchMakerTranslateGroup("test"));
 		checkAppUserName();
 	}
 
@@ -165,10 +165,10 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchmakerCriteri
 
 	public void testAddChild() {
 		try {
-			target.addChild(new MatchmakerCriteria(appUserName));
+			target.addChild(child);
 			fail("MatchMakerCriteria class does not allow child!");
 		} catch ( IllegalStateException e ) {
-			// this is what we want
+			// this is what we excepted
 		}
 	}
 

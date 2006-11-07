@@ -2,18 +2,18 @@ package ca.sqlpower.matchmaker;
 
 
 
-public class TestMatchMakerFolder extends MatchMakerTestCase<MatchMakerFolder> {
+public class TestMatchMakerFolder<C extends MatchMakerObject> extends MatchMakerTestCase<MatchMakerFolder> {
 
-	private MatchMakerFolder folder;
+	private MatchMakerFolder<C> folder;
 	final String appUserName = "THE_USER";
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		folder = new MatchMakerFolder<MatchMakerObject>(appUserName);
+		folder = new MatchMakerFolder<C>(appUserName);
 	}
 
 	@Override
-	protected MatchMakerFolder<MatchMakerObject> getTarget() {
+	protected MatchMakerFolder<C> getTarget() {
 		return folder;
 	}
 
