@@ -16,7 +16,7 @@ import javax.swing.tree.TreePath;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.hibernate.DefaultHibernateObject;
-import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
@@ -43,9 +43,7 @@ public class MatchMakerTreeModel implements TreeModel, PropertyChangeListener {
 		for (PlMatch m: matches){
 			m.addHierarchicalChangeListener(this);
 		}
-        for (PlFolder p: folders){
-            p.addHierarchicalChangeListener(this);
-        }
+        //TODO plfolders Need to add listeners for the 
 	}
 
 	public MatchMakerTreeModel() {

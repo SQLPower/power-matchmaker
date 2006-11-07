@@ -4,7 +4,7 @@ import java.util.List;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.matchmaker.util.ViewSpec;
@@ -209,7 +209,9 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 		return folder;
 	}
 	public void setFolder(PlFolder folder) {
+		PlFolder oldValue = this.folder;
 		this.folder = folder;
+		getEventSupport().firePropertyChange("folder", oldValue, this.folder);
 	}
 	
 	/**
@@ -220,7 +222,7 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 	 */
 	public List<PlMatchGroup> getMatchGroups() {
 		// TODO Auto-generated method stub
-		throw new NotImplementedException();
+		return null;
 	}
 
 }

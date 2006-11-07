@@ -7,9 +7,10 @@ import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.hibernate.DefaultHibernateObject;
 
-public class FolderComboBoxModel <t extends DefaultHibernateObject>
+public class FolderComboBoxModel <t extends MatchMakerObject>
 	implements ComboBoxModel, FolderListChangeListener {
 
 	List<ListDataListener> listenerList;

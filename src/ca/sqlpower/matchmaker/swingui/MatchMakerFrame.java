@@ -52,7 +52,7 @@ import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
-import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
@@ -485,15 +485,16 @@ public class MatchMakerFrame extends JFrame {
 
 			PlFolderHome folderHome = new PlFolderHome();
 			PlMatchHome matchHome = new PlMatchHome();
-			folders = new ArrayList<PlFolder>(folderHome.findMatchMakerFolders());
+			folders = new ArrayList<PlFolder>();
 			// Need to make sure the orphaned matches have been added.  But that we don't add two of the same
 			// object in the hierachy.
 			Set<PlMatch> matchSet = new HashSet<PlMatch>(matchHome.findAllWithoutFolder());
 
 			matches = new ArrayList<PlMatch>(matchSet);
 			Collections.sort(matches);
-			Collections.sort(folders);
+			
 			PlMatchTranslateGroupHome translateHome = new PlMatchTranslateGroupHome();
+
 //			translations = new ArrayList<PlMatchTranslateGroup>(translateHome.findAll());
 //			List<PlMatchTranslateGroup> nullList = new ArrayList<PlMatchTranslateGroup>();
 //			nullList.add(null);

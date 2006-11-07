@@ -43,7 +43,7 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchType;
-import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
