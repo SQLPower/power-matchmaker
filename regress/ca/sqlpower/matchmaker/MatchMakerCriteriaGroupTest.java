@@ -2,14 +2,14 @@ package ca.sqlpower.matchmaker;
 
 
 
-public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchMakerCriteriaGroup> {
+public class MatchMakerCriteriaGroupTest<C extends MatchmakerCriteria> extends MatchMakerTestCase<MatchMakerCriteriaGroup> {
 
-	MatchMakerCriteriaGroup target;
+	MatchMakerCriteriaGroup<C> target;
 	final String appUserName = "test user";
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchMakerCriteriaGroup<MatchmakerCriteria>(appUserName);
+		target = new MatchMakerCriteriaGroup<C>(appUserName);
 	}
 
 	@Override

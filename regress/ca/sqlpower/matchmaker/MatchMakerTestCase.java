@@ -16,7 +16,6 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.matchmaker.util.log.Level;
@@ -122,8 +121,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				} else {
 					newVal = Match.MatchType.BUILD_XREF;
 				}
-			} else if (property.getPropertyType() == PlMatchTranslateGroup.class) {
-				newVal = new PlMatchTranslateGroup();
+			} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
+				newVal = new MatchMakerTranslateGroup("testx1");
 			} else if (property.getPropertyType() == SQLColumn.class) {
 				newVal = new SQLColumn();
 			} else {
