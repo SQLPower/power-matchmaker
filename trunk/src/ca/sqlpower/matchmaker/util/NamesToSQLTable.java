@@ -11,10 +11,30 @@ import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLTable;
 
 public class NamesToSQLTable implements UserType {
+	/**
+	 * Stub class to let us get a table from a connection
+	 * rather than a ArchitectDataSource
+	 *
+	 *	You must call set connection with a valid connection before
+	 *  you call get connection.
+	 */
+	private class ConnectionSQLDatabase extends SQLDatabase {
+		Connection connection;
+
+		public Connection getConnection() {
+			return connection;
+		}
+
+		public void setConnection(Connection connection) {
+			this.connection = connection;
+		}
+		
+	}
 
 	public Serializable disassemble(Object value) throws HibernateException {
 		return (Serializable) deepCopy(value);
@@ -25,6 +45,15 @@ public class NamesToSQLTable implements UserType {
 		return deepCopy(cached);
 	}
 
+	/**
+	 * Deep copy seems to be a misnomer.  The deep copy stops at any collections.
+	 * For now, it only accepts SQLTable as the parameter or throws HibernateException other wise
+	 * It creates a new SQLTable and puts in the same property as the incoming SQLTable
+	 * and references it to the same parent object.
+	 * 
+	 * @param value the SQLTable to be copied
+	 * @throws HibernateException if the value is not a SQLTable
+	 */
 	public Object deepCopy(Object value) throws HibernateException {
 		if (value == null)
 			return null;
@@ -51,7 +80,6 @@ public class NamesToSQLTable implements UserType {
 				while( t.getChildCount() >0){
 					t.removeChild(0);
 				}
-				System.out.println(t.getChildCount());
 				for(Object o:oldTable.getChildren()){
 					t.addChild((SQLObject)o);
 				}
@@ -68,13 +96,20 @@ public class NamesToSQLTable implements UserType {
 	}
 
 	public boolean equals(Object x, Object y) throws HibernateException {
-		// TODO Auto-generated method stub
-		return false;
+		if (x == null && y == null) return true;
+		if (y != null && x!= null && x.getClass() == y.getClass()) {
+			return x.equals(y);
+		} else {
+			return false;
+		}
 	}
 
 	public int hashCode(Object x) throws HibernateException {
-		// TODO Auto-generated method stub
-		return 0;
+		if ( !(x instanceof SQLTable)) {
+			return 0;
+		} else {
+			return x.hashCode();
+		}
 	}
 
 	/**
@@ -85,10 +120,13 @@ public class NamesToSQLTable implements UserType {
 	}
 
 	/**
+	 * Return a new sql table.  The table is loaded from the same source as the result set.
 	 * 
+	 * @param rs a JDBC Resultset
 	 * @param names
 	 *            an array of 1st Catalog column name, 2nd schema column Name
 	 *            and 3rd table column name
+	 * @param owner not used by this class
 	 */
 	public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
 			throws HibernateException, SQLException {
@@ -96,13 +134,23 @@ public class NamesToSQLTable implements UserType {
 		if (names.length != 3) {
 			throw new HibernateException("Invalid number of names should be 3");
 		}
+		
 		String catalogName = rs.getString(rs.findColumn(names[0]));
 		String schemaName = rs.getString(rs.findColumn(names[1]));
 		String tableName = rs.getString(rs.findColumn(names[2]));
-		//XXX 
-		Connection con = rs.getStatement().getConnection();
-
-		return null;
+		/* XXX Gets the table from the connection passed in by the 
+		 * Result set.  This is highly unefficient and should be fixed 
+		 */
+		Connection con = rs.getStatement().getConnection();		
+		ConnectionSQLDatabase db = new ConnectionSQLDatabase();
+		db.setPopulated(false);
+		db.setConnection(con);
+		try {
+			db.populate();
+			return db.getTableByName(catalogName,schemaName,tableName);
+		} catch (ArchitectException e){
+			throw new HibernateException(e);
+		}
 	}
 
 	/**
