@@ -1,16 +1,19 @@
 package ca.sqlpower.util;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 
 import junit.framework.TestCase;
 
 import org.hibernate.HibernateException;
 
+import ca.sqlpower.architect.ArchitectConnectionFactory;
+import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.MockJDBCConnection;
+import ca.sqlpower.architect.MockJDBCDriver;
 import ca.sqlpower.architect.MockJDBCResultSet;
-import ca.sqlpower.architect.MockJDBCStatement;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
@@ -84,11 +87,20 @@ public class NamesToSQLTableTest extends TestCase {
 		// Creates a mock JDBC Connection with a simple setup that has
 		// a catalog name "PL" that has one schema name "PlSchema" with one
 		// one table name "PlTable"
-		MockJDBCConnection con = new MockJDBCConnection(
-				"jdbc:mock:dbmd.catlogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=PL&schemas.PL=PlSchema&tables.PL.PlSchema=PlTable",
-				null);
-		MockJDBCStatement statements = (MockJDBCStatement) con
-				.createStatement();
+		
+		MockJDBCDriver driver = new MockJDBCDriver();
+		ArchitectDataSource ds = new ArchitectDataSource();
+		String URL = "jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm,yard,zoo&schemas.farm=cow,pig&schemas.yard=cat,robin&schemas.zoo=lion,giraffe&tables.farm.cow=moo&tables.farm.pig=oink&tables.yard.cat=meow&tables.yard.robin=tweet&tables.zoo.lion=roar&tables.zoo.giraffe=***,^%%";
+		ds.setDriverClass(MockJDBCDriver.class.getCanonicalName());
+		ds.setName("a");
+		ds.setPass("a");
+		ds.setUrl(URL);
+		ds.setDisplayName("a");
+		ds.setUser("a");
+		ArchitectConnectionFactory factory = new ArchitectConnectionFactory(ds);
+		
+		Connection con = factory.createConnection();
+		Statement statements = con.createStatement();
 		MockJDBCResultSet rs = (MockJDBCResultSet) statements.getResultSet();
 
 		// setup the result set
@@ -96,17 +108,17 @@ public class NamesToSQLTableTest extends TestCase {
 		rs.setColumnName(1, "table_catalog");
 		rs.setColumnName(2, "table_owner");
 		rs.setColumnName(3, "match_table");
-		Object[] row = { "PL", "PlSchema", "PlTable" };
+		Object[] row = { "zoo", "lion", "roar" };
 		rs.addRow(row);
 
 		String[] names = { "table_catalog", "table_owner", "match_table" };
 		SQLTable table = (SQLTable) userType.nullSafeGet(rs, names, null);
 		assertNotNull("The table should not be null", table);
-		assertEquals("The table name is wrong", table.getName(), "PlTable");
+		assertEquals("The table name is wrong", table.getName(), "roar");
 		assertEquals("The table is in the wrong schema", table.getSchemaName(),
-				"PlSchema");
+				"lion");
 		assertEquals("The table is in the wrong catalog", table
-				.getCatalogName(), "PL");
+				.getCatalogName(), "zoo");
 	}
 
 	/**
