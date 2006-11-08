@@ -1,6 +1,6 @@
 package ca.sqlpower.matchmaker;
 
-public class TestMatchMakerTranslateWord<C extends MatchMakerTranslateWord>
+public class MatchMakerTranslateWordTest<C extends MatchMakerTranslateWord>
 	extends MatchMakerTestCase<MatchMakerTranslateWord> {
 
 	final String appUserName = "test_user";
@@ -46,7 +46,7 @@ public class TestMatchMakerTranslateWord<C extends MatchMakerTranslateWord>
 			target.addChild(child);
 			fail("Translate word does not allow child!");
 		} catch ( IllegalStateException e ) {
-
+			// what we excepted
 		}
 	}
 
