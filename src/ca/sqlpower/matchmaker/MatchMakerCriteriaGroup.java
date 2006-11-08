@@ -1,14 +1,20 @@
 package ca.sqlpower.matchmaker;
 
-
+/**
+ * group of matchmaker criteria, the child type is MatchmakerCriteria
+ * matchPercent can be NULL, and it's NULL when the object just create(default constructor)
+ *
+ * @param <C>
+ */
 public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria> extends AbstractMatchMakerObject<C> {
 
 	private String name;
 	private String desc;
-	private Long matchPercent;
-	private String filter;
-	private boolean active;
+	private Long matchPercent;		// NULL or something from 0-100, but not guaranteed
+	private String filter;			// SQL filter for process match criteria group
+	private boolean active;			// enable or disable a group for the engine
 
+	// default constructor
 	public MatchMakerCriteriaGroup(String appUserName) {
 		super(appUserName);
 	}
