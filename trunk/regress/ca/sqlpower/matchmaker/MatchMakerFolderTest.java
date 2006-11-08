@@ -2,7 +2,7 @@ package ca.sqlpower.matchmaker;
 
 
 
-public class TestMatchMakerFolder<C extends MatchMakerObject> extends MatchMakerTestCase<MatchMakerFolder> {
+public class MatchMakerFolderTest<C extends MatchMakerObject> extends MatchMakerTestCase<MatchMakerFolder> {
 
 	private MatchMakerFolder<C> folder;
 	final String appUserName = "THE_USER";
