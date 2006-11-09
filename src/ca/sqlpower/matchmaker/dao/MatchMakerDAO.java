@@ -13,7 +13,7 @@ public interface MatchMakerDAO<T> {
 	 * 
 	 * @return the class of the objects that are returned
 	 */
-	public Class getBusinessClass();
+	public Class<T> getBusinessClass();
 	
 	/**
 	 * Find all objects of type T in the database
