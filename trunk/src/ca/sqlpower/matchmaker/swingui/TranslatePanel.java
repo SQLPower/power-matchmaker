@@ -58,7 +58,7 @@ public class TranslatePanel implements ArchitectPanel {
 	
 	private void buildUI(){
 		translateTable = new EditableJTable();
-		tms = new TableModelSearchDecorator(new MatchTranslateTableModel(MatchMakerFrame.getMainInstance().getTranslations().get(0)));
+		tms = new TableModelSearchDecorator(new MatchTranslateTableModel(MatchMakerMain.getMainInstance().getTranslations().get(0)));
 		tms.setTableTextConverter((EditableJTable) translateTable);
 		translateTable.setModel(tms);
 		translationGroup = new JComboBox();
@@ -174,7 +174,7 @@ public class TranslatePanel implements ArchitectPanel {
 		public void actionPerformed(ActionEvent e) {
 			//the index is one before the selectedcolumn integer
 			if (translateTable.getSelectedRow() >= 0){
-				MatchMakerFrame.getMainInstance().getTranslations().remove(translateTable.getSelectedRow());
+				MatchMakerMain.getMainInstance().getTranslations().remove(translateTable.getSelectedRow());
 			}
 		}
 		
@@ -194,12 +194,12 @@ public class TranslatePanel implements ArchitectPanel {
 
 		public void actionPerformed(ActionEvent e) {
 /*			if (translateTable.getSelectedColumn() >= 0){
-				PlMatchTranslateGroup currentSelected = MatchMakerFrame.getMainInstance().getTranslations().get(translateTable.getSelectedColumn());
+				PlMatchTranslateGroup currentSelected = MatchMakerMain.getMainInstance().getTranslations().get(translateTable.getSelectedColumn());
 				PlMatchTranslateGroup newTranslate = new PlMatchTranslate();
 				newTranslate.setId(currentSelected.getId());
 				newTranslate.setFromWord(" ");
 				newTranslate.setToWord("");
-				MatchMakerFrame.getMainInstance().getTranslations().add(newTranslate);
+				MatchMakerMain.getMainInstance().getTranslations().add(newTranslate);
 				refreshTranslateTable();
 				int lastIndex = translateTable.getRowCount()-1;
 				translateTable.setRowSelectionInterval(lastIndex, lastIndex);

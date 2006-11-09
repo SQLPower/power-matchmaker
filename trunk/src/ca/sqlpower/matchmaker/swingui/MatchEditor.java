@@ -238,7 +238,7 @@ public class MatchEditor {
 
     private void buildUI() throws ArchitectException {
 
-    	final MatchMakerFrame mainFrame = MatchMakerFrame.getMainInstance();
+    	final MatchMakerMain mainFrame = MatchMakerMain.getMainInstance();
 		sourceChooser = new SQLObjectChooser(panel,
         		mainFrame.getUserSettings().getConnections());
         resultChooser = new SQLObjectChooser(panel,
@@ -463,7 +463,7 @@ public class MatchEditor {
 			catalogComboBox.setEnabled(false);
 			catalogLabel.setText("");
 
-			final SQLDatabase db = MatchMakerFrame.getMainInstance().getDatabase();
+			final SQLDatabase db = MatchMakerMain.getMainInstance().getDatabase();
 
 			try {
 				if (db.isCatalogContainer()) {
@@ -650,7 +650,7 @@ public class MatchEditor {
         	}
         	s.append(table.getName());
         	id = s.toString();
-        	if ( MatchMakerFrame.getMainInstance().getMatchByName(id) == null )
+        	if ( MatchMakerMain.getMainInstance().getMatchByName(id) == null )
         		matchId.setText(id);
         }
 

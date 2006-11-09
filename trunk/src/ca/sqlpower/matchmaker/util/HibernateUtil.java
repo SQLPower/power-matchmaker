@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -47,30 +48,35 @@ public class HibernateUtil {
 		return sessionFactories.get(KEY_REPOSITORY_SESSION_FACTORY);
 	}
 
-	public static SessionFactory createRepositorySessionFactory(ArchitectDataSource ds) {
+	public static SessionFactory createRepositorySessionFactory(
+			ArchitectDataSource ds)
+			throws HibernateException {
 		repositorySession = createSessionFactory(ds, KEY_REPOSITORY_SESSION_FACTORY).openSession();
 		return sessionFactories.get(KEY_REPOSITORY_SESSION_FACTORY);
 	}
-	
+
 	/**
 	 * Creates a Hibernate session factory with our configuration defaults
 	 * from hibernate.cfg.xml and stores it in a static map in this class using
 	 * the given key.
-	 * 
+	 *
 	 * <p>If you are trying to create a session factory for the metadata (PL Schema)
 	 * repository, use {@link #createRepositorySessionFactory(ArchitectDataSource)}
 	 * instead.
-	 * 
+	 *
 	 * @param ds
 	 * @param key
 	 * @return The session factory just created.  The return value is never null.
+	 * @throws HibernateException if there is a problem creating the session factory
 	 */
-	public static SessionFactory createSessionFactory(ArchitectDataSource ds, String key) {
+	public static SessionFactory createSessionFactory(
+			ArchitectDataSource ds, String key)
+			throws HibernateException {
 		Configuration cfg = new Configuration();
 		SessionFactory sessionFactory = null;
 
 		cfg.configure(new File("./hibernate/hibernate.cfg.xml")); // FIXME doesn't work in a JAR
-		
+
 		// last-minute configuration overrides for stuff that can only be known at runtime
 		cfg.setProperty("hibernate.connection.driver_class", ds.getDriverClass());
 		cfg.setProperty("hibernate.connection.password", ds.getPass());
@@ -91,7 +97,7 @@ public class HibernateUtil {
         // Create the SessionFactory from hibernate.cfg.xml
         sessionFactory = cfg.buildSessionFactory();
         sessionFactories.put(key, sessionFactory);
-        
+
 		return sessionFactory;
 	}
 

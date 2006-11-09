@@ -70,7 +70,7 @@ public class ViewBuilderDialog extends JDialog {
     
     public void setup() throws ArchitectException{
         viewNameField.setText(viewTable.getName());
-        for (SQLTable t:(List<SQLTable>)(MatchMakerFrame.getMainInstance().getDatabase().getTables())){
+        for (SQLTable t:(List<SQLTable>)(MatchMakerMain.getMainInstance().getDatabase().getTables())){
             fromClauseDropdown.addItem(t);
         }
     }

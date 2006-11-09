@@ -5,17 +5,13 @@ import java.awt.HeadlessException;
 import java.text.DateFormat;
 
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
-import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
 
@@ -55,13 +51,13 @@ public class MatchInfoPanel implements ArchitectPanel {
 		pb.add(new JLabel("Type:"), cc.xy(2,8,"r,c"));
 
 		String folderName = null;
-		
+
 		 if ( match.getFolder() != null) {
 			PlFolder f = (PlFolder) match.getFolder();
     		if ( f != null ) {
     			folderName = f.getFolderName();
     		}
-		} 
+		}
 
 		pb.add(new JLabel(match.getName()), cc.xy(4,2));
 		pb.add(new JLabel(folderName), cc.xy(4,4));
@@ -72,7 +68,7 @@ public class MatchInfoPanel implements ArchitectPanel {
 		pb.add(new JLabel("Last Updated Date:"), cc.xy(2,12,"r,c"));
 		pb.add(new JLabel("Last Updated User:"), cc.xy(2,14,"r,c"));
 		pb.add(new JLabel("Last Run Date:"), cc.xy(2,16,"r,c"));
-		
+
 		pb.add(new JLabel(match.getName()), cc.xy(4,10));
 		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,12,"f,f"));
 		pb.add(new JLabel(match.getLastUpdateAppUser()), cc.xy(4,14));
@@ -88,25 +84,7 @@ public class MatchInfoPanel implements ArchitectPanel {
 		pb.add(new JLabel("Checked out user:"), cc.xy(2,24,"r,c"));
 		pb.add(new JLabel("Checked out osuser:"), cc.xy(2,26,"r,c"));
 
-		
-	}
 
-	public static void main(String args[]) throws ArchitectException {
-
-		Match match = new Match("Test User");
-		match.setName("TEST MATCH ID");
-		match.setType(Match.MatchType.FIND_DUPES);
-		MatchInfoPanel p = new MatchInfoPanel(match);
-		MatchMakerFrame f = MatchMakerFrame.getMainInstance();
-		final JDialog d = ArchitectPanelBuilder.createSingleButtonArchitectPanelDialog(
-				p,f,"Audit Information","OK");
-
-		SwingUtilities.invokeLater(new Runnable() {
-		    public void run() {
-		    	d.pack();
-		    	d.setVisible(true);
-		    }
-		});
 	}
 
 	public boolean applyChanges() {

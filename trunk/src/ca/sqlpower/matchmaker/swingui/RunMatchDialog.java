@@ -582,7 +582,7 @@ public class RunMatchDialog extends JDialog{
 		 * SHOW_PROGRESS=10 PROCESS_CNT=1
 		 */
 		StringBuffer command = new StringBuffer();
-		SQLDatabase db = MatchMakerFrame.getMainInstance().getDatabase();
+		SQLDatabase db = MatchMakerMain.getMainInstance().getDatabase();
 		String programPath = null;
 		programPath = ExternalEngineUtils.getProgramPath(EnginePath.MATCHMAKER);
 		// FIXME: comment following line to use executable from user pl.ini config

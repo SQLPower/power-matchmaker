@@ -1,16 +1,16 @@
 package ca.sqlpower.matchmaker;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
+import ca.sqlpower.matchmaker.swingui.MatchMakerMain;
 
 public class MatchMakerFrameTest extends TestCase {
 
-	private MatchMakerFrame mf;
+	private MatchMakerMain mf;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		mf = MatchMakerFrame.getMainInstance();
+		mf = MatchMakerMain.getMainInstance();
 	}
 
 	public void testMatchMakerFrame() {

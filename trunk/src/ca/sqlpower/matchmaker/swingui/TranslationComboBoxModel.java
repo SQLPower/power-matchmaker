@@ -13,7 +13,7 @@ public class TranslationComboBoxModel implements ComboBoxModel {
 	
 	public TranslationComboBoxModel() {
 		
-		translations = MatchMakerFrame.getMainInstance().getTranslations();
+		translations = MatchMakerMain.getMainInstance().getTranslations();
 	}
 	
 	public Object getElementAt(int index) {

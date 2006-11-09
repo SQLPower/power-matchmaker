@@ -138,7 +138,7 @@ public class MatchValidationStatus extends JDialog {
 
 	private void createUI() {
 
-		DefaultComboBoxModel model = new DefaultComboBoxModel(MatchMakerFrame.getMainInstance().getMatches().toArray());
+		DefaultComboBoxModel model = new DefaultComboBoxModel(MatchMakerMain.getMainInstance().getMatches().toArray());
 		final JComboBox matchComboBox = new JComboBox(model);
 		matchComboBox.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {

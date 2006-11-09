@@ -193,7 +193,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
 			PlMatch plMatch = model.getPlMatch();
 			if (plMatch != null && plMatch.getMatchTable() != null){
-				SQLTable t = MatchMakerFrame.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
+				SQLTable t = MatchMakerMain.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
 				matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(new DefaultCellEditor(new JComboBox(
 						new ColumnComboBoxModel(t,model))));
 			}
@@ -204,7 +204,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	private void loadMatches() throws ArchitectException {
 		PlMatch plMatch = model.getPlMatch();
 		if (plMatch != null && plMatch.getMatchTable() != null){
-			SQLTable t = MatchMakerFrame.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
+			SQLTable t = MatchMakerMain.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
 			newMatchCriterion.setAction(new NewMatchCriteria(model,t));
             newMatchCriterion.setToolTipText(null);
             newMatchCriterion.setEnabled(true);

@@ -7,20 +7,25 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
+import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
 
-import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.PlFolder;
 
 /**
  * Home object for domain model class PlFolder.
  * @see ca.sqlpower.matchmaker.hibernate.PlFolder
  * @author Hibernate Tools
  */
-public class PlFolderHome  extends DefaultHome<PlFolder>{
+public class PlFolderHome extends BaseHibernateHome<PlFolder>{
 
-    private static final Log log = LogFactory.getLog(PlFolderHome.class);
+    public PlFolderHome(SessionFactory hibernateSessionFactory) {
+		super(hibernateSessionFactory);
+	}
 
-    
+	private static final Log log = LogFactory.getLog(PlFolderHome.class);
+
+
     public void persist(PlFolder transientInstance) {
         log.debug("persisting PlFolder instance");
         try {
@@ -32,7 +37,7 @@ public class PlFolderHome  extends DefaultHome<PlFolder>{
             throw re;
         }
     }
-    
+
     public void attachDirty(PlFolder instance) {
         log.debug("attaching dirty PlFolder instance");
         try {
@@ -44,7 +49,7 @@ public class PlFolderHome  extends DefaultHome<PlFolder>{
             throw re;
         }
     }
-    
+
     public void attachClean(PlFolder instance) {
         log.debug("attaching clean PlFolder instance");
         try {
@@ -56,7 +61,7 @@ public class PlFolderHome  extends DefaultHome<PlFolder>{
             throw re;
         }
     }
-    
+
     public void delete(PlFolder persistentInstance) {
         log.debug("deleting PlFolder instance");
         try {
@@ -68,7 +73,7 @@ public class PlFolderHome  extends DefaultHome<PlFolder>{
             throw re;
         }
     }
-    
+
     public PlFolder merge(PlFolder detachedInstance) {
         log.debug("merging PlFolder instance");
         try {
@@ -83,7 +88,7 @@ public class PlFolderHome  extends DefaultHome<PlFolder>{
         }
     }
 
-    
+
     public PlFolder findById( java.lang.String id) {
         log.debug("getting PlFolder instance with id: " + id);
         try {
@@ -102,14 +107,14 @@ public class PlFolderHome  extends DefaultHome<PlFolder>{
             throw re;
         }
     }
-    
+
     public List<PlFolder> findMatchMakerFolders(){
     	   log.debug("finding PlFolders with Matches");
            try {
                List<PlFolder> results =getCurrentSession()
                        .createCriteria(getBusinessClass())
-                       .list();               
-              
+                       .list();
+
                log.debug("find by Match Maker successful, result size: " + results.size());
                return results;
            }
@@ -118,7 +123,7 @@ public class PlFolderHome  extends DefaultHome<PlFolder>{
                throw re;
            }
     }
-    
+
     public List findByExample(PlFolder instance) {
         log.debug("finding PlFolder instance by example");
         try {
@@ -133,8 +138,8 @@ public class PlFolderHome  extends DefaultHome<PlFolder>{
             log.error("find by example failed", re);
             throw re;
         }
-    } 
-    
+    }
+
     @Override
 	public String getBusinessClass() {
 		return "ca.sqlpower.matchmaker.hibernate.PlFolder";

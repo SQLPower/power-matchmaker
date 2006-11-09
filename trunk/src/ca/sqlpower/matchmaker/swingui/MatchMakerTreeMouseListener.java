@@ -1,13 +1,13 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Component;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
@@ -29,12 +29,15 @@ import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 public class MatchMakerTreeMouseListener implements MouseListener {
 
 	private JSplitPane splitPane;
-	public MatchMakerTreeMouseListener(JSplitPane splitPane) {
+	private JFrame owningFrame;
+
+	public MatchMakerTreeMouseListener(JFrame owningFrame, JSplitPane splitPane) {
 		this.splitPane = splitPane;
+		this.owningFrame = owningFrame;
 	}
 	public void mouseClicked(MouseEvent e) {
 
-		if ( e.BUTTON1 == e.getButton()) {
+		if ( MouseEvent.BUTTON1 == e.getButton()) {
 			JTree t = (JTree) e.getSource();
 			source = t;
 			int row = t.getRowForLocation(e.getX(),e.getY());
@@ -111,17 +114,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 	}
 
 	private void createMatchGroupMenu(PlMatchGroup group) {
-		Window c = getWindow();
-
 		m.add(new JMenuItem(new DeleteMatchGroupAction(group,splitPane)));
-	}
-
-	private Window getWindow() {
-		Component c = source;
-		while(!(c instanceof Window ) && c !=null){
-			c = c.getParent();
-		}
-		return (Window) c;
 	}
 
 	private void createMatchMenu(final Match match) {
@@ -131,7 +124,7 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 		m.add(new JMenuItem(new AbstractAction("Run Match"){
 
             public void actionPerformed(ActionEvent e) {
-                RunMatchDialog f = new RunMatchDialog(match, MatchMakerFrame.getMainInstance());
+                RunMatchDialog f = new RunMatchDialog(match, owningFrame);
                 f.pack();
                 f.setVisible(true);
             }}));
@@ -143,22 +136,21 @@ public class MatchMakerTreeMouseListener implements MouseListener {
 			public void actionPerformed(ActionEvent e) {
 				MatchInfoPanel p = new MatchInfoPanel(match);
 				JDialog d = ArchitectPanelBuilder.createSingleButtonArchitectPanelDialog(
-						p,MatchMakerFrame.getMainInstance(),
+						p,owningFrame,
 						"Audit Information","OK");
 				d.pack();
 				d.setVisible(true);
 			}}));
-		m.add(new JMenuItem(new ShowMatchStatisticInfoAction(match,
-				MatchMakerFrame.getMainInstance())));
+		m.add(new JMenuItem(new ShowMatchStatisticInfoAction(match,owningFrame)));
 		m.addSeparator();
 		// TODO add this back in m.add(new JMenuItem(new PlMatchExportAction(match)));
-		m.add(new JMenuItem(new PlMatchImportAction()));
+		m.add(new JMenuItem(new PlMatchImportAction(owningFrame)));
 	}
 
 	private void createFolderMenu(final PlFolder folder) {
         m.add(new JMenuItem(new NewMatchAction("New Match", folder,splitPane)));
 
-        m.add(new JMenuItem(new PlMatchImportAction()));
+        m.add(new JMenuItem(new PlMatchImportAction(owningFrame)));
 	}
 
 	public void mouseReleased(MouseEvent e) {
