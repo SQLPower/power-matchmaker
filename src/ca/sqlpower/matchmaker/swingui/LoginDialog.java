@@ -16,20 +16,19 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
+import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -39,8 +38,20 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 public class LoginDialog extends JDialog {
-    
+
 	private static Logger logger = Logger.getLogger(LoginDialog.class);
+
+	/**
+	 * The session context for this application.  The list of available
+	 * databases lives here, and login attempts will happen via this object.
+	 */
+	private MatchMakerSessionContext sessionContext;
+
+	/**
+	 * The session that we will create upon successful login.
+	 */
+	private MatchMakerSession session;
+
 	private JComboBox dbList;
 	private JTextField userID;
 	private JPasswordField password;
@@ -63,13 +74,12 @@ public class LoginDialog extends JDialog {
 
 	private class LoginAction extends Populator implements ActionListener {
 
-		SQLDatabase db = null;
 		boolean loginWasSuccessful = false;
 
         public void actionPerformed(ActionEvent e) {
             logger.debug("LoginAction.actionPerformed(): disabling login button");
             loginButton.setEnabled(false);
-            if ( LoginDialog.this.dbSource == null ) {
+            if (dbSource == null) {
                 JOptionPane.showMessageDialog(LoginDialog.this,
                         "Please select a database connection first!",
                         "Unknown database connection",
@@ -79,15 +89,7 @@ public class LoginDialog extends JDialog {
                 return;
             }
 
-            //We create a copy of the data source and change the userID and password
-            //and use that instead for the loginWasSuccessful.  We do not want to change the
-            //default userID and password for the connection in here.
-            ArchitectDataSource tempDbSource = new ArchitectDataSource(dbSource);
-            tempDbSource.setUser(userID.getText());
-            tempDbSource.setPass(new String(password.getPassword()));
-
-            db = new SQLDatabase(tempDbSource);
-            String driverClass = db.getDataSource().getDriverClass();
+            String driverClass = dbSource.getDriverClass();
             if (driverClass == null || driverClass.length() == 0) {
                 JOptionPane.showMessageDialog(LoginDialog.this,
                         "Datasource not configured (no JDBC Driver)",
@@ -97,25 +99,28 @@ public class LoginDialog extends JDialog {
                 loginButton.setEnabled(true);
                 return;
             }
+
             try {
+            	MatchMakerSession session = sessionContext.createSession(dbSource,
+            			userID.getText(), new String(password.getPassword()));
                 ListerProgressBarUpdater progressBarUpdater =
                     new ListerProgressBarUpdater(progressBar, this);
                 new javax.swing.Timer(100, progressBarUpdater).start();
 
-                progressMonitor = db.getProgressMonitor();
+                progressMonitor = session.getDatabase().getProgressMonitor();
                 new Thread(this).start();
                 // doStuff() will get invoked soon on the new thread
-            } catch (ArchitectException e1) {
+            } catch (Exception ex) {
                 ASUtils.showExceptionDialogNoReport(LoginDialog.this,
-                        "Connection Error", e1 );
-            }
+                        "Connection Error", ex );
+			}
         }
 
         @Override
         /** Called (once) by run() in superclass */
         public void doStuff() throws Exception {
             loginWasSuccessful = false;
-            db.populate();
+            session.getDatabase().populate();
             loginWasSuccessful = true;
         }
 
@@ -123,10 +128,14 @@ public class LoginDialog extends JDialog {
 		public void cleanup() {
 			if (getDoStuffException() != null) {
 				ASUtils.showExceptionDialog("Login failed", getDoStuffException());
-			} else if (db != null && db.isPopulated() && loginWasSuccessful) {
+			} else if (
+					session != null &&
+					session.getDatabase() != null &&
+					session.getDatabase().isPopulated() &&
+					loginWasSuccessful) {
                 // XXX Change this to fire an event so we don't need to know who's interested.
                 // XXX this takes a while (~10 seconds) and during that time, the UI is frozen.
-                MatchMakerFrame.getMainInstance().newLogin(db);
+                swingMain.newLogin(session.getDatabase());
 			    LoginDialog.this.setVisible(false);
 			} else {
 				JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
@@ -136,7 +145,7 @@ public class LoginDialog extends JDialog {
 		}
 	}
 
-	private ListDataListener connListener = new ListDataListener(){
+	private ListDataListener connListener = new ListDataListener() {
 
 		public void intervalAdded(ListDataEvent e) {
 		}
@@ -154,9 +163,14 @@ public class LoginDialog extends JDialog {
             }
 		}};
 
-	public LoginDialog()
-	{
-		super(MatchMakerFrame.getMainInstance());
+	/**
+	 * The SwingUI session instance we're creating a login for.
+	 */
+	private MatchMakerMain swingMain;
+
+	public LoginDialog(MatchMakerMain swingMain) {
+		super(swingMain.getFrame());
+		this.swingMain = swingMain;
 		setTitle("Database Connections");
 		panel = createPanel();
 		getContentPane().add(panel);
@@ -180,7 +194,7 @@ public class LoginDialog extends JDialog {
 		dbSourceName = new JLabel();
 
 		JLabel line1 = new JLabel("Please choose one of the following databases for login:");
-		connectionModel = new ConnectionComboBoxModel(MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
+		connectionModel = new ConnectionComboBoxModel(MatchMakerMain.getMainInstance().getUserSettings().getPlDotIni());
 		connectionModel.addListDataListener(connListener);
 		dbList = new JComboBox(connectionModel);
 		JLabel dbSourceName1 = new JLabel("Database source name:");
@@ -238,22 +252,6 @@ public class LoginDialog extends JDialog {
 
 	public void setPanel(JPanel panel) {
 		this.panel = panel;
-	}
-
-
-	/**
-	 * This is just for testing; the real main class is in MatchMakerFrame.
-	 */
-	public static void main(String args[]) throws ArchitectException {
-
-		final JDialog d = new LoginDialog();
-
-		SwingUtilities.invokeLater(new Runnable() {
-		    public void run() {
-		    	d.pack();
-		    	d.setVisible(true);
-		    }
-		});
 	}
 
 	public ArchitectDataSource getDbSource() {

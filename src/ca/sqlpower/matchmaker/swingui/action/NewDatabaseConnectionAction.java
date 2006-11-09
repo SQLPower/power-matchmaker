@@ -15,7 +15,7 @@ import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
 import ca.sqlpower.architect.swingui.action.DBCS_OkAction;
 import ca.sqlpower.matchmaker.swingui.DBConnectionUniDialog;
-import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
+import ca.sqlpower.matchmaker.swingui.MatchMakerMain;
 
 public class NewDatabaseConnectionAction extends AbstractAction {
 
@@ -47,7 +47,7 @@ public class NewDatabaseConnectionAction extends AbstractAction {
 
 		DBCS_OkAction okAction = new DBCS_OkAction(dbcsPanel,
 				true,
-				MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
+				MatchMakerMain.getMainInstance().getUserSettings().getPlDotIni());
 		if ( callBackParent != null ) {
 			okAction.setConnectionSelectionCallBack(callBackParent);
 		}

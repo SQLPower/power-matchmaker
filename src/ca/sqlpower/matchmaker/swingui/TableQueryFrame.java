@@ -278,7 +278,7 @@ public class TableQueryFrame extends JFrame {
 
 		tableDropdown = new JComboBox();
 		tableDropdown.addActionListener(new SqlAreaPopulator());
-		ConnectionComboBoxModel connectionModel = new ConnectionComboBoxModel(MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni());
+		ConnectionComboBoxModel connectionModel = new ConnectionComboBoxModel(MatchMakerMain.getMainInstance().getUserSettings().getPlDotIni());
 		dbDropdown = new JComboBox(connectionModel);
 		dbDropdown.addActionListener(new TablePopulator());
 

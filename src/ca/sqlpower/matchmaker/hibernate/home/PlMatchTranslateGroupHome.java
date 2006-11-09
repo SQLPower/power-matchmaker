@@ -15,7 +15,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
  * @see ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup
  * @author Hibernate Tools
  */
-public class PlMatchTranslateGroupHome extends DefaultHome<PlMatchTranslateGroup> {
+public class PlMatchTranslateGroupHome extends BaseHibernateHome<PlMatchTranslateGroup> {
 
     private static final String CLASS_NAME = "ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup";
 

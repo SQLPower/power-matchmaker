@@ -16,7 +16,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
  * @see ca.sqlpower.matchmaker.hibernate.PlMatchTranslate
  * @author Hibernate Tools
  */
-public class PlMatchTranslateHome extends DefaultHome<PlMatchTranslate> {
+public class PlMatchTranslateHome extends BaseHibernateHome<PlMatchTranslate> {
 
     private static final Log log = LogFactory.getLog(PlMatchTranslateHome.class);
 

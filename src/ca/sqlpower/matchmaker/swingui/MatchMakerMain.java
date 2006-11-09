@@ -1,5 +1,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
+
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Rectangle;
@@ -55,9 +57,7 @@ import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
-import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
-import ca.sqlpower.matchmaker.hibernate.home.PlMatchTranslateGroupHome;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
@@ -75,9 +75,14 @@ import com.darwinsys.util.PrefsUtils;
  * The Main Window for the Architect Application; contains a main() method that is
  * the conventional way to start the application running.
  */
-public class MatchMakerFrame extends JFrame {
+public class MatchMakerMain {
 
-	private static Logger logger = Logger.getLogger(MatchMakerFrame.class);
+	private static Logger logger = Logger.getLogger(MatchMakerMain.class);
+
+	/**
+	 * This is the top level application frame
+	 */
+	private JFrame frame;
 
     /**
      * The minimum PL schema version that the MatchMaker works with.
@@ -85,9 +90,9 @@ public class MatchMakerFrame extends JFrame {
     private static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,26);
 
 	/**
-	 * The MatchMakerFrame is a singleton; this is the main instance.
+	 * The MatchMakerMain is a singleton; this is the main instance.
 	 */
-	protected static MatchMakerFrame mainInstance;
+	protected static MatchMakerMain mainInstance;
 
     public static final boolean MAC_OS_X = (System.getProperty("os.name").toLowerCase().startsWith("mac os x"));
 
@@ -113,11 +118,11 @@ public class MatchMakerFrame extends JFrame {
 	    }
 	};
 
-	protected static Action loginAction = new AbstractAction("Login") {
+	protected Action loginAction = new AbstractAction("Login") {
 		public void actionPerformed(ActionEvent e) {
-			LoginDialog l = new LoginDialog();
+			LoginDialog l = new LoginDialog(MatchMakerMain.this);
 			l.pack();
-			l.setLocationRelativeTo(MatchMakerFrame.mainInstance);
+			l.setLocationRelativeTo(frame);
 	    	l.setVisible(true);
 		}
 	};
@@ -126,7 +131,7 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(mainInstance,
+			JOptionPane.showMessageDialog(frame,
 			"This action is not yet available. We apologize for the inconvenience");
 
 		}
@@ -142,7 +147,7 @@ public class MatchMakerFrame extends JFrame {
 			Match match = ArchitectUtils.getTreeObject(getTree(),Match.class);
 			if ( match == null )
 				return;
-		    RunMatchDialog r = new RunMatchDialog(match, MatchMakerFrame.this);
+		    RunMatchDialog r = new RunMatchDialog(match, frame);
 			r.pack();
 			r.setVisible(true);
 		}
@@ -153,7 +158,7 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(mainInstance,
+			JOptionPane.showMessageDialog(frame,
 			"This action is not yet available. We apologize for the inconvenience");
 		}
 
@@ -163,7 +168,7 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(mainInstance,
+			JOptionPane.showMessageDialog(frame,
 				"This action is not yet available. We apologize for the inconvenience");
 		}
 
@@ -173,7 +178,7 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(mainInstance,
+			JOptionPane.showMessageDialog(frame,
 				"This action is not yet available. We apologize for the inconvenience");
 		}
 	};
@@ -184,7 +189,7 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(mainInstance,
+			JOptionPane.showMessageDialog(frame,
 			"This action is not yet available. We apologize for the inconvenience");
 		}
 	};
@@ -203,8 +208,8 @@ public class MatchMakerFrame extends JFrame {
 
 		public void actionPerformed(ActionEvent e) {
 			DatabaseConnectionManager dm = new DatabaseConnectionManager(
-					MatchMakerFrame.getMainInstance(),
-					MatchMakerFrame.getMainInstance().getUserSettings().getPlDotIni()); // XXX
+					MatchMakerMain.this,
+					getUserSettings().getPlDotIni()); // XXX
 			dm.pack();
 			dm.setVisible(true);
 
@@ -218,7 +223,7 @@ public class MatchMakerFrame extends JFrame {
 				return;
 
 			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(match,
-					MatchMakerFrame.getMainInstance());
+					frame);
 			sm.actionPerformed(e);
 		}};
 
@@ -227,7 +232,12 @@ public class MatchMakerFrame extends JFrame {
 	private List<PlMatchTranslateGroup> translations = new ArrayList<PlMatchTranslateGroup>();
 	private SQLDatabase database;
 
-
+	/**
+	 * Returns the frame for this Swing session.
+	 */
+	JFrame getFrame() {
+		return frame;
+	}
 
 	/**
 	 * You can't create an architect frame using this constructor;
@@ -235,13 +245,12 @@ public class MatchMakerFrame extends JFrame {
 	 *
 	 * @throws ArchitectException
 	 */
-	private MatchMakerFrame() throws ArchitectException {
-		synchronized (MatchMakerFrame.class) {
-			mainInstance = this;
-		}
-		setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
+	private MatchMakerMain() throws ArchitectException {
+
+		frame = new JFrame("MatchMaker");
+		frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
 	    // close handled by window listener
-	    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 	    architectSession = ArchitectSession.getInstance();
 	    prefs = PrefsUtils.getUserPrefsNode(architectSession);
 	    init();
@@ -256,9 +265,7 @@ public class MatchMakerFrame extends JFrame {
 	    // upon heavily
 	    //TypeMap.getInstance();
 
-	    setTitle("MatchMaker");
-
-	    contentPane = (JComponent)getContentPane();
+	    contentPane = (JComponent)frame.getContentPane();
 
 		try {
 			ConfigFile cf = ConfigFile.getDefaultInstance();
@@ -323,7 +330,7 @@ public class MatchMakerFrame extends JFrame {
 		Action aboutAction = new AbstractAction("About"){
 
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(mainInstance,
+				JOptionPane.showMessageDialog(frame,
 						"<html>Power*MatchMaker "+
 						MatchMakerVersion.APP_VERSION + "<br><br>" +
 						"Copyright 2003-2006 SQL Power Group Inc.<br>" +
@@ -345,8 +352,8 @@ public class MatchMakerFrame extends JFrame {
 
 		JMenu explorerMenu = new JMenu("Explorers");
 		explorerMenu.setMnemonic('x');
-		explorerMenu.add(new DummyAction(mainInstance, "Match Maker"));
-		explorerMenu.add(new DummyAction(mainInstance, "Adminstration"));
+		explorerMenu.add(new DummyAction(frame, "Match Maker"));
+		explorerMenu.add(new DummyAction(frame, "Adminstration"));
 		menuBar.add(explorerMenu);
 
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
@@ -362,42 +369,42 @@ public class MatchMakerFrame extends JFrame {
 		matchesMenu.setMnemonic('M');
 		matchesMenu.add(newMatchAction);
 		matchesMenu.add(editMatchAction);
-		matchesMenu.add(new DummyAction(mainInstance, "Delete"));
+		matchesMenu.add(new DummyAction(frame, "Delete"));
 		matchesMenu.addSeparator();
 		matchesMenu.add(runMatchAction);
 		matchesMenu.add(showMatchStatisticInfoAction);
 		matchesMenu.addSeparator();
-		matchesMenu.add(new JMenuItem(new PlMatchImportAction()));
-		matchesMenu.add(new JMenuItem(new PlMatchExportAction(null)));
+		matchesMenu.add(new JMenuItem(new PlMatchImportAction(frame)));
+		matchesMenu.add(new JMenuItem(new PlMatchExportAction(frame, null)));
 		menuBar.add(matchesMenu);
 
 		JMenu mergeMenu = new JMenu("Merges");
 		mergeMenu.add(newMatchAction);
-		mergeMenu.add(new DummyAction(mainInstance, "Edit"));
-		mergeMenu.add(new DummyAction(mainInstance, "Delete"));
+		mergeMenu.add(new DummyAction(frame, "Edit"));
+		mergeMenu.add(new DummyAction(frame, "Delete"));
 		mergeMenu.add(".....");
 		menuBar.add(mergeMenu);
 
 		JMenu folderMenu = new JMenu("Folders");
 		folderMenu.setMnemonic('F');
 		folderMenu.add(newMatchAction);
-		folderMenu.add(new DummyAction(mainInstance, "Edit"));
-		folderMenu.add(new DummyAction(mainInstance, "Delete"));
+		folderMenu.add(new DummyAction(frame, "Edit"));
+		folderMenu.add(new DummyAction(frame, "Delete"));
 		folderMenu.add(".....");
 		menuBar.add(folderMenu);
 
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
 		toolsMenu.add(tableQueryAction);
-		toolsMenu.add(new EditTranslateAction(getMainInstance()));
-        toolsMenu.add(new SQLRunnerAction(mainInstance));
+		toolsMenu.add(new EditTranslateAction(frame));
+        toolsMenu.add(new SQLRunnerAction(frame));
 		menuBar.add(toolsMenu);
 
         JMenu windowMenu = new JMenu("Window");
         windowMenu.setMnemonic('w');
         menuBar.add(windowMenu);
 
-        helpAction = new HelpAction(mainInstance);
+        helpAction = new HelpAction(frame);
 
 		JMenu helpMenu = new JMenu("Help");
 		helpMenu.setMnemonic('h');
@@ -407,7 +414,7 @@ public class MatchMakerFrame extends JFrame {
         }
         helpMenu.add(helpAction);
 		menuBar.add(helpMenu);
-		setJMenuBar(menuBar);
+		frame.setJMenuBar(menuBar);
 
 		toolBar = new JToolBar(JToolBar.HORIZONTAL);
 
@@ -425,14 +432,14 @@ public class MatchMakerFrame extends JFrame {
 		toolBar.setToolTipText("MatchMaker Toolbar");
 		toolBar.setName("MatchMaker Toolbar");
 
-		Container projectBarPane = getContentPane();
+		Container projectBarPane = frame.getContentPane();
 		projectBarPane.setLayout(new BorderLayout());
 		projectBarPane.add(toolBar, BorderLayout.NORTH);
 
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel());
-		tree.addMouseListener(new MatchMakerTreeMouseListener(splitPane));
+		tree.addMouseListener(new MatchMakerTreeMouseListener(frame, splitPane));
 		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
 
 		splitPane.setRightComponent(null );
@@ -444,8 +451,8 @@ public class MatchMakerFrame extends JFrame {
 		bounds.y = prefs.getInt(SwingUserSettings.MAIN_FRAME_Y, 40);
 		bounds.width = prefs.getInt(SwingUserSettings.MAIN_FRAME_WIDTH, 600);
 		bounds.height = prefs.getInt(SwingUserSettings.MAIN_FRAME_HEIGHT, 440);
-		setBounds(bounds);
-		addWindowListener(new MatchMakerFrameWindowListener());
+		frame.setBounds(bounds);
+		frame.addWindowListener(new MatchMakerFrameWindowListener());
 
 		lastImportExportAccessPath = prefs.get(SwingUserSettings.LAST_IMPORT_EXPORT_PATH,null);
 	}
@@ -458,6 +465,8 @@ public class MatchMakerFrame extends JFrame {
      * <p>This method will check the PL Schema version in DEF_PARAM
      * to ensure it is a new enough version before attempting to log in.
      *
+     *FIXME: this method is in the middle of refactoring.
+     *
      * @param db the database connection to the PL repository.
      */
 	public void newLogin(final SQLDatabase db){
@@ -469,7 +478,7 @@ public class MatchMakerFrame extends JFrame {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     ASUtils.showExceptionDialog(
-                            MatchMakerFrame.this,
+                    		frame,
                             "Respository connection not valid",
                             fexp);
                 }
@@ -483,7 +492,7 @@ public class MatchMakerFrame extends JFrame {
 
 		if (HibernateUtil.getRepositorySessionFactory() != null){
 
-			PlFolderHome folderHome = new PlFolderHome();
+//			PlFolderHome folderHome = new PlFolderHome();
 			PlMatchHome matchHome = new PlMatchHome();
 			folders = new ArrayList<PlFolder>();
 			// Need to make sure the orphaned matches have been added.  But that we don't add two of the same
@@ -492,8 +501,8 @@ public class MatchMakerFrame extends JFrame {
 
 			matches = new ArrayList<PlMatch>(matchSet);
 			Collections.sort(matches);
-			
-			PlMatchTranslateGroupHome translateHome = new PlMatchTranslateGroupHome();
+
+//			PlMatchTranslateGroupHome translateHome = new PlMatchTranslateGroupHome();
 
 //			translations = new ArrayList<PlMatchTranslateGroup>(translateHome.findAll());
 //			List<PlMatchTranslateGroup> nullList = new ArrayList<PlMatchTranslateGroup>();
@@ -552,15 +561,15 @@ public class MatchMakerFrame extends JFrame {
 	static {
 		// Call this in a static initialier to force the
 		// lazy evaluation to happen non-lazily. :-)
-		MatchMakerFrame.getMainInstance();
+		MatchMakerMain.getMainInstance();
 	}
 
-    public static synchronized MatchMakerFrame getMainInstance() {
+    public static synchronized MatchMakerMain getMainInstance() {
 		if (mainInstance == null) {
 			try {
-				new MatchMakerFrame();
+				new MatchMakerMain();
 			} catch (ArchitectException e) {
-				throw new RuntimeException("Couldn't create MatchMakerFrame instance!");
+				throw new RuntimeException("Couldn't create MatchMakerMain instance!");
 			}
 		}
 		return mainInstance;
@@ -608,10 +617,10 @@ public class MatchMakerFrame extends JFrame {
 	public void saveSettings() throws ArchitectException {
 		if (configFile == null) configFile = ConfigFile.getDefaultInstance();
 
-		prefs.putInt(SwingUserSettings.MAIN_FRAME_X, getLocation().x);
-		prefs.putInt(SwingUserSettings.MAIN_FRAME_Y, getLocation().y);
-		prefs.putInt(SwingUserSettings.MAIN_FRAME_WIDTH, getWidth());
-		prefs.putInt(SwingUserSettings.MAIN_FRAME_HEIGHT, getHeight());
+		prefs.putInt(SwingUserSettings.MAIN_FRAME_X, frame.getLocation().x);
+		prefs.putInt(SwingUserSettings.MAIN_FRAME_Y, frame.getLocation().y);
+		prefs.putInt(SwingUserSettings.MAIN_FRAME_WIDTH, frame.getWidth());
+		prefs.putInt(SwingUserSettings.MAIN_FRAME_HEIGHT, frame.getHeight());
 		if ( getDatabase() != null && getDatabase().getDataSource() != null ) {
 			prefs.put(SwingUserSettings.LAST_LOGIN_DATA_SOURCE,
 					getDatabase().getDataSource().getName());
@@ -643,7 +652,7 @@ public class MatchMakerFrame extends JFrame {
 	}
 
 	/**
-	 * Creates an MatchMakerFrame and sets it visible.  This method is
+	 * Creates an MatchMakerMain and sets it visible.  This method is
 	 * an acceptable way to launch the Architect application.
 	 */
 	public static void main(String args[]) throws ArchitectException {
@@ -652,23 +661,25 @@ public class MatchMakerFrame extends JFrame {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 		ArchitectUtils.configureLog4j();
 
-		getMainInstance();
+
 
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 
-		        // this doesn't appear to have any effect on the motion threshold
-		        // in the Playpen, but it does seem to work on the DBTree...
-		        logger.debug("current motion threshold is: " + System.getProperty("awt.dnd.drag.threshold"));
-		        System.setProperty("awt.dnd.drag.threshold","10");
-		        logger.debug("new motion threshold is: " + System.getProperty("awt.dnd.drag.threshold"));
+		    	try {
+		    		MatchMakerMain f = new MatchMakerMain();
 
-		        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(getMainInstance()));
+		    		Thread.setDefaultUncaughtExceptionHandler(
+		    				new ExceptionHandler(f.frame));
 
-		        getMainInstance().macOSXRegistration();
-		        getMainInstance().setVisible(true);
+		    		f.macOSXRegistration();
+		    		f.frame.setVisible(true);
 
-		        loginAction.actionPerformed(null);
+		    		// XXX: there should be a promptForLogin() method that we use here and in the action.
+		    		f.loginAction.actionPerformed(null);
+		    	} catch (Exception ex) {
+		    		ASUtils.showExceptionDialog("Couldn't start application!", ex);
+		    	}
 		    }
 		});
 	}
@@ -683,7 +694,7 @@ public class MatchMakerFrame extends JFrame {
             try {
                 Class osxAdapter = ClassLoader.getSystemClassLoader().loadClass("ca.sqlpower.architect.swingui.OSXAdapter");
 
-                Class[] defArgs = {MatchMakerFrame.class};
+                Class[] defArgs = {MatchMakerMain.class};
                 Method registerMethod = osxAdapter.getDeclaredMethod("registerMacOSXApplication", defArgs);
                 if (registerMethod != null) {
                     Object[] args = { this };
@@ -785,5 +796,7 @@ public class MatchMakerFrame extends JFrame {
 			//TODO fire event
 		}
 	}
+
+
 
 }

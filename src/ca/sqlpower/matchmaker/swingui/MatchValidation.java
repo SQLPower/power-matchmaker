@@ -348,7 +348,7 @@ public class MatchValidation extends JFrame {
         sourceJTable = new JTable();
         candidateJTable = new JTable();
         sourceJTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        db = MatchMakerFrame.getMainInstance().getDatabase();
+        db = MatchMakerMain.getMainInstance().getDatabase();
         SQLTable sourceTable = match.getSourceTable().getTable();
         
         matchSourceTable = db.getTableByName(sourceTable.getCatalogName(),

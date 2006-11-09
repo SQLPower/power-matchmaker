@@ -15,7 +15,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
  * @see ca.sqlpower.matchmaker.hibernate.PlMatchGroup
  * @author Hibernate Tools
  */
-public class PlMatchGroupHome extends DefaultHome<PlMatchGroupHome>{
+public class PlMatchGroupHome extends BaseHibernateHome<PlMatchGroupHome>{
 
     private static final Log log = LogFactory.getLog(PlMatchGroupHome.class);
     

@@ -16,7 +16,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatch;
  * @see ca.sqlpower.matchmaker.hibernate.PlMatch
  * @author Hibernate Tools
  */
-public class PlMatchHome extends DefaultHome<PlMatch> {
+public class PlMatchHome extends BaseHibernateHome<PlMatch> {
 
     private static final Log log = LogFactory.getLog(PlMatchHome.class);
     

@@ -16,7 +16,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchWordCount;
  * @see ca.sqlpower.matchmaker.hibernate.PlMatchWordCount
  * @author Hibernate Tools
  */
-public class PlMatchWordCountHome extends DefaultHome<PlMatchWordCount>{
+public class PlMatchWordCountHome extends BaseHibernateHome<PlMatchWordCount>{
 
     private static final Log log = LogFactory.getLog(PlMatchWordCountHome.class);
 

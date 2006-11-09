@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -26,22 +27,22 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
-import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
+import ca.sqlpower.matchmaker.swingui.MatchMakerMain;
 
 public class PlMatchExportAction extends AbstractAction {
 
-
+	private JFrame owningFrame;
 	private PlMatch match;
 	private DateFormat df = new DateFormatAllowsNull();
 
-	public PlMatchExportAction(PlMatch match) {
+	public PlMatchExportAction(JFrame owningFrame, PlMatch match) {
 
 		super("Export",
 				ASUtils.createJLFIcon( "general/Export",
 						"Export",
 						ArchitectFrame.getMainInstance().getSprefs().getInt(SwingUserSettings.ICON_SIZE, 24)));
 		putValue(SHORT_DESCRIPTION, "Export Match");
-
+		this.owningFrame = owningFrame;
 		this.match = match;
 	}
 
@@ -50,14 +51,14 @@ public class PlMatchExportAction extends AbstractAction {
 
 		if ( match == null ) {
 			match = ArchitectUtils.getTreeObject(
-					MatchMakerFrame.getMainInstance().getTree(),
+					MatchMakerMain.getMainInstance().getTree(),
 					PlMatch.class );
 		}
 		if ( match == null ) {
 			return;
 		}
 		JFileChooser fc = new JFileChooser(
-				MatchMakerFrame.getMainInstance().getLastImportExportAccessPath());
+				MatchMakerMain.getMainInstance().getLastImportExportAccessPath());
 		fc.setFileFilter(ASUtils.XML_FILE_FILTER);
 		fc.setDialogTitle("Export Match");
 		fc.setSelectedFile(
@@ -69,15 +70,15 @@ public class PlMatchExportAction extends AbstractAction {
 		File export = null;
 
 		while (true) {
-			int fcChoice = fc.showOpenDialog(MatchMakerFrame.getMainInstance());
+			int fcChoice = fc.showOpenDialog(owningFrame);
 			if (fcChoice == JFileChooser.APPROVE_OPTION) {
 				export = fc.getSelectedFile();
-				MatchMakerFrame.getMainInstance().setLastImportExportAccessPath(
+				MatchMakerMain.getMainInstance().setLastImportExportAccessPath(
 						export.getAbsolutePath());
 
 				if ( export.exists()) {
 					int response = JOptionPane.showConfirmDialog(
-							MatchMakerFrame.getMainInstance(),
+							owningFrame,
 							"The file\n\n"+export.getPath()+
 							"\n\nalready exists. Do you want to overwrite it?",
 							"File Exists", JOptionPane.YES_NO_OPTION);

@@ -16,7 +16,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
  * @see ca.sqlpower.matchmaker.hibernate.PlMergeCriteria
  * @author Hibernate Tools
  */
-public class PlMergeCriteriaHome extends DefaultHome<PlMergeCriteria> {
+public class PlMergeCriteriaHome extends BaseHibernateHome<PlMergeCriteria> {
 
     private static final Log log = LogFactory.getLog(PlMergeCriteriaHome.class);
 

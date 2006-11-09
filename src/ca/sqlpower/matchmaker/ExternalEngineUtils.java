@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 import java.io.File;
 
 import ca.sqlpower.architect.CoreUserSettings;
-import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
+import ca.sqlpower.matchmaker.swingui.MatchMakerMain;
 
 public class ExternalEngineUtils {
 
@@ -11,7 +11,7 @@ public class ExternalEngineUtils {
 
 	public static String getProgramPath(EnginePath p) {
 		if (us == null) {
-			us = MatchMakerFrame.getMainInstance().getUserSettings();
+			us = MatchMakerMain.getMainInstance().getUserSettings();
 		}
 		String plDotIni = us.getPlDotIniPath();
 		File plDotIniFile = new File(plDotIni);

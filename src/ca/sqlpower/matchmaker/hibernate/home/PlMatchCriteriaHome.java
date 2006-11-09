@@ -16,7 +16,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
  * @see ca.sqlpower.matchmaker.hibernate.PlMatchCriterion
  * @author Hibernate Tools
  */
-public class PlMatchCriteriaHome extends DefaultHome<PlMatchCriterion>{
+public class PlMatchCriteriaHome extends BaseHibernateHome<PlMatchCriterion>{
 
     private static final Log log = LogFactory.getLog(PlMatchCriteriaHome.class);
 

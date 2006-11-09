@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.apache.commons.digester.Digester;
@@ -28,7 +29,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
-import ca.sqlpower.matchmaker.swingui.MatchMakerFrame;
+import ca.sqlpower.matchmaker.swingui.MatchMakerMain;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class PlMatchImportAction extends AbstractAction {
@@ -36,14 +37,15 @@ public class PlMatchImportAction extends AbstractAction {
 
 	private static final Logger logger = Logger.getLogger(PlMatchImportAction.class);
 	private PlMatch match;
+	private JFrame owningFrame;
 
-	public PlMatchImportAction() {
-
+	public PlMatchImportAction(JFrame owningFrame) {
 		super("Import",
 				ASUtils.createJLFIcon( "general/Import",
                 "Import",
                 ArchitectFrame.getMainInstance().getSprefs().getInt(SwingUserSettings.ICON_SIZE, 24)));
 		putValue(SHORT_DESCRIPTION, "Import Match");
+		this.owningFrame = owningFrame;
 	}
 
 
@@ -51,16 +53,16 @@ public class PlMatchImportAction extends AbstractAction {
 
 	public void actionPerformed(ActionEvent e) {
 		JFileChooser fc = new JFileChooser(
-				MatchMakerFrame.getMainInstance().getLastImportExportAccessPath());
+				MatchMakerMain.getMainInstance().getLastImportExportAccessPath());
 		fc.setFileFilter(ASUtils.XML_FILE_FILTER);
 		fc.setDialogTitle("Import Match");
 
 		File importFile = null;
-		int fcChoice = fc.showOpenDialog(MatchMakerFrame.getMainInstance());
+		int fcChoice = fc.showOpenDialog(owningFrame);
 
 		if (fcChoice == JFileChooser.APPROVE_OPTION) {
 			importFile = fc.getSelectedFile();
-			MatchMakerFrame.getMainInstance().setLastImportExportAccessPath(
+			MatchMakerMain.getMainInstance().setLastImportExportAccessPath(
 					importFile.getAbsolutePath());
 
 			BufferedInputStream in = null;
@@ -106,7 +108,7 @@ for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
 	}
 
 
-				PlMatch match2 = MatchMakerFrame.getMainInstance().getMatchByName(match.getMatchId());
+				PlMatch match2 = MatchMakerMain.getMainInstance().getMatchByName(match.getMatchId());
 				if ( match2 != null ) {
 					int option = JOptionPane.showConfirmDialog(
 							null,
