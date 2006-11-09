@@ -316,11 +316,11 @@
 				class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup" />
 		</set>
 
-		<many-to-one name="folder" access="field"
+		<!-- many-to-one name="folder" access="field"
 			class="ca.sqlpower.matchmaker.hibernate.PlFolder" update="true"
 			insert="false" fetch="select">
 			<column name="FOLDER_NAME" />
-		</many-to-one>
+		</many-to-one-->
 
 	</class>
 </hibernate-mapping>
