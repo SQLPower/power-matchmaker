@@ -1,4 +1,8 @@
 package ca.sqlpower.matchmaker.dao;
+
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+
 /**
  * The Data access interface for match maker translate group objects
  *
@@ -7,6 +11,6 @@ package ca.sqlpower.matchmaker.dao;
  *
  * Remember to program to this interface rather than an implemenation
  */
-public interface MatchMakerTranslateGroupDAO extends MatchMakerDAO {
+public interface MatchMakerTranslateGroupDAO extends MatchMakerDAO<MatchMakerTranslateGroup<MatchMakerTranslateWord>> {
 
 }
