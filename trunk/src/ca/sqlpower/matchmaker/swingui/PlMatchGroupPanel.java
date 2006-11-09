@@ -213,7 +213,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
                     .getIndex(MatchCriteriaColumn.COLUMN);
             PlMatch plMatch = model.getPlMatch();
             if (plMatch != null && plMatch.getMatchTable() != null) {
-                SQLTable t = swingSession.getDatabase().getTableByName(
+                SQLTable t = swingSession.getPlRepositoryDatabase().getTableByName(
                         plMatch.getTableCatalog(), plMatch.getTableOwner(),
                         plMatch.getMatchTable());
                 matchCriteriaTable.getColumnModel().getColumn(columnColumn)
@@ -227,7 +227,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	private void loadMatches() throws ArchitectException {
         PlMatch plMatch = model.getPlMatch();
         if (plMatch != null && plMatch.getMatchTable() != null) {
-            SQLTable t = swingSession.getDatabase().getTableByName(
+            SQLTable t = swingSession.getPlRepositoryDatabase().getTableByName(
                     plMatch.getTableCatalog(), plMatch.getTableOwner(),
                     plMatch.getMatchTable());
             newMatchCriterion.setAction(new NewMatchCriteria(model, t));

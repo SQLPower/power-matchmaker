@@ -247,15 +247,15 @@ public class MatchEditor {
     private void buildUI() throws ArchitectException {
 
 		sourceChooser = new SQLObjectChooser(panel,
-        		swingSession.getUserSettings().getConnections());
+        		swingSession.getContext().getDataSources());
         resultChooser = new SQLObjectChooser(panel,
-        		swingSession.getUserSettings().getConnections());
+        		swingSession.getContext().getDataSources());
 
 
-        final SQLDatabase loginDB = swingSession.getDatabase();
+        final SQLDatabase loginDB = swingSession.getPlRepositoryDatabase();
         ArchitectDataSource ds;
         if ( loginDB != null ) {
-        	PlDotIni ini = swingSession.getUserSettings().getPlDotIni();
+        	PlDotIni ini = swingSession.getContext().getPlDotIni();
         	ds = ini.getDataSource(loginDB.getDataSource().getName());
         	sourceChooser.getDataSourceComboBox().setSelectedItem(ds);
         	resultChooser.getDataSourceComboBox().setSelectedItem(ds);
@@ -470,7 +470,7 @@ public class MatchEditor {
 			catalogComboBox.setEnabled(false);
 			catalogLabel.setText("");
 
-			final SQLDatabase db = swingSession.getDatabase();
+			final SQLDatabase db = swingSession.getPlRepositoryDatabase();
 
 			try {
 				if (db.isCatalogContainer()) {

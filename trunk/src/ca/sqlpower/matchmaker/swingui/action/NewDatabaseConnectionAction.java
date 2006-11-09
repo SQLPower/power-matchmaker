@@ -12,7 +12,7 @@ import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
-import ca.sqlpower.architect.swingui.action.DBCS_OkAction;
+import ca.sqlpower.architect.swingui.action.DBCSOkAction;
 import ca.sqlpower.matchmaker.swingui.DBConnectionUniDialog;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
@@ -38,9 +38,9 @@ public class NewDatabaseConnectionAction extends AbstractAction {
 		final DBCSPanel dbcsPanel = new DBCSPanel();
 		dbcsPanel.setDbcs(new ArchitectDataSource());
 
-		DBCS_OkAction okAction = new DBCS_OkAction(dbcsPanel,
+		DBCSOkAction okAction = new DBCSOkAction(dbcsPanel,
 				true,
-				swingSession.getUserSettings().getPlDotIni());
+				swingSession.getContext().getPlDotIni());
 		if ( callBackParent != null ) {
 			okAction.setConnectionSelectionCallBack(callBackParent);
 		}

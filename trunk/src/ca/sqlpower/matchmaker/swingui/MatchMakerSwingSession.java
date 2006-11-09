@@ -2,11 +2,9 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -16,13 +14,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -40,17 +36,13 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.architect.ConfigFile;
-import ca.sqlpower.architect.CoreUserSettings;
 import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.UserSettings;
 import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
@@ -67,8 +59,6 @@ import ca.sqlpower.sql.SchemaVersion;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.util.Version;
 
-import com.darwinsys.util.PrefsUtils;
-
 /**
  * The Main Window for the Architect Application; contains a main() method that is
  * the conventional way to start the application running.
@@ -78,67 +68,68 @@ public class MatchMakerSwingSession {
 	private static Logger logger = Logger.getLogger(MatchMakerSwingSession.class);
 
 	/**
-	 * This is the top level application frame
+	 * The minimum PL schema version that the MatchMaker works with.
 	 */
-	private JFrame frame;
+	private static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,26);
 
     /**
-     * The minimum PL schema version that the MatchMaker works with.
+     * Controls a few GUI tweaks that we do on OS X, such as moving menu items around.
      */
-    private static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,26);
+	public static final boolean MAC_OS_X = 
+        System.getProperty("os.name").toLowerCase().startsWith("mac os x");
 
-    public static final boolean MAC_OS_X = (System.getProperty("os.name").toLowerCase().startsWith("mac os x"));
-
-	protected final Preferences prefs;
-	protected ArchitectSession architectSession = null;
-	protected ConfigFile configFile = null;
-	protected UserSettings sprefs = null;
-	protected JToolBar toolBar = null;
-	protected JMenuBar menuBar = null;
-	protected JTree tree = null;
-    private JMenu databaseMenu;
+    /**
+     * The context that created this session.  Holds all of the static preferences.
+     */
+    private final SwingSessionContext sessionContext;
     
     /**
-     * XXX don't let others use this directly anymore.
+	 * This is the top level application frame
+	 */
+	private final JFrame frame;
+
+	/**
+	 * XXX don't let others use this directly anymore.
+	 */
+	JSplitPane splitPane;
+    
+    /**
+     * The tree that lets users browse the business objects.
      */
-    JSplitPane splitPane;
+	private JTree tree;
 
-	private String lastImportExportAccessPath = null;
-	protected AboutAction aboutAction;
- 	protected  JComponent contentPane;
+	private AboutAction aboutAction;
+ 	private JComponent contentPane;
 
-    protected ArchitectDataSource dataSource;
+    private ArchitectDataSource dataSource;
 
-	protected Action exitAction = new AbstractAction("Exit") {
+	private Action exitAction = new AbstractAction("Exit") {
 	    public void actionPerformed(ActionEvent e) {
 	        exit();
 	    }
 	};
 
-	protected Action loginAction = new AbstractAction("Login") {
+	private Action loginAction = new AbstractAction("Login") {
 		public void actionPerformed(ActionEvent e) {
-			LoginDialog l = new LoginDialog(MatchMakerSwingSession.this);
-			l.pack();
-			l.setLocationRelativeTo(frame);
-	    	l.setVisible(true);
+			showLoginDialog();
 		}
+
 	};
 
-	protected Action logoutAction = new AbstractAction("Logout") {
+	private Action logoutAction = new AbstractAction("Logout") {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
 			JOptionPane.showMessageDialog(frame,
 			"This action is not yet available. We apologize for the inconvenience");
-
 		}
 
 	};
 
-	protected Action newMatchAction = null;
-	protected Action editMatchAction = new EditMatchAction("Edit");
+	private Action newMatchAction = null;
+	private Action editMatchAction = new EditMatchAction("Edit");
 
-	protected Action runMatchAction = new AbstractAction("Run Match") {
+	private Action runMatchAction = new AbstractAction("Run Match") {
 
 		public void actionPerformed(ActionEvent e) {
 			Match match = ArchitectUtils.getTreeObject(getTree(),Match.class);
@@ -151,7 +142,7 @@ public class MatchMakerSwingSession {
 
 	};
 
-	protected Action runMergeAction = new AbstractAction("Run Merge") {
+	private Action runMergeAction = new AbstractAction("Run Merge") {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
@@ -161,7 +152,7 @@ public class MatchMakerSwingSession {
 
 	};
 
-	protected Action dbBrowseAction = new AbstractAction("Database Browser") {
+	private Action dbBrowseAction = new AbstractAction("Database Browser") {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
@@ -171,7 +162,7 @@ public class MatchMakerSwingSession {
 
 	};
 
-	protected Action configAction = new AbstractAction("Config") {
+	private Action configAction = new AbstractAction("Config") {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
@@ -180,9 +171,9 @@ public class MatchMakerSwingSession {
 		}
 	};
 
-	protected Action helpAction;
+	private Action helpAction;
 
-	protected Action databasePreferenceAction = new AbstractAction("Database Preference") {
+	private Action databasePreferenceAction = new AbstractAction("Database Preference") {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
@@ -191,7 +182,7 @@ public class MatchMakerSwingSession {
 		}
 	};
 
-	protected Action tableQueryAction = new AbstractAction("Table Explorer") {
+	private Action tableQueryAction = new AbstractAction("Table Explorer") {
 		public void actionPerformed(ActionEvent e) {
 			TableQueryFrame f = new TableQueryFrame(MatchMakerSwingSession.this);
 			f.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
@@ -206,11 +197,12 @@ public class MatchMakerSwingSession {
 		public void actionPerformed(ActionEvent e) {
 			DatabaseConnectionManager dm = new DatabaseConnectionManager(
 					MatchMakerSwingSession.this,
-					getUserSettings().getPlDotIni()); // XXX
+                    getContext().getPlDotIni());
 			dm.pack();
 			dm.setVisible(true);
 
-		}};
+		}
+	};
 
 	private Action showMatchStatisticInfoAction = new AbstractAction("Statistics") {
 
@@ -222,12 +214,13 @@ public class MatchMakerSwingSession {
 			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(match,
 					frame);
 			sm.actionPerformed(e);
-		}};
+		}
+	};
 
 	private List<PlMatch> matches;
 	private List<PlFolder> folders;
 	private List<PlMatchTranslateGroup> translations = new ArrayList<PlMatchTranslateGroup>();
-	private SQLDatabase database;
+	private SQLDatabase plRepositoryDatabase;
 
 
 	/**
@@ -236,90 +229,27 @@ public class MatchMakerSwingSession {
 	 *
 	 * @throws ArchitectException
 	 */
-	private MatchMakerSwingSession() throws ArchitectException {
-
+	private MatchMakerSwingSession() throws IOException, ArchitectException {
+        macOSXRegistration();
 		frame = new JFrame("MatchMaker");
+		Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(frame));
+		contentPane = (JComponent) frame.getContentPane();
 		frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
-	    // close handled by window listener
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-	    architectSession = ArchitectSession.getInstance();
-	    prefs = PrefsUtils.getUserPrefsNode(architectSession);
-	    init();
+        sessionContext = new SwingSessionContext();
+	    buildGUI();
+	    frame.setVisible(true);
+        showLoginDialog();
 	}
 
-	private void init() throws ArchitectException {
 
-	    CoreUserSettings us;
-	    // must be done right away, because a static
-	    // initializer in this class effects BeanUtils
-	    // behaviour which the XML Digester relies
-	    // upon heavily
-	    //TypeMap.getInstance();
-
-	    contentPane = (JComponent)frame.getContentPane();
-
-		try {
-			ConfigFile cf = ConfigFile.getDefaultInstance();
-			cf.setPrefs(prefs);
-			us = cf.read(getArchitectSession());
-			architectSession.setUserSettings(us);
-			sprefs = architectSession.getUserSettings().getSwingSettings();
-		} catch (IOException e) {
-			throw new ArchitectException("prefs.read", e);
-		}
-
-		while (!us.isPlDotIniPathValid()) {
-		    String message;
-		    String[] options = new String[] {"Browse", "Create"};
-		    if (us.getPlDotIniPath() == null) {
-		        message = "location is not set";
-		    } else if (new File(us.getPlDotIniPath()).isFile()) {
-		        message = "file \n\n\""+us.getPlDotIniPath()+"\"\n\n could not be read";
-		    } else {
-		        message = "file \n\n\""+us.getPlDotIniPath()+"\"\n\n does not exist";
-		    }
-		    int choice = JOptionPane.showOptionDialog(null,   // blocking wait
-		            "The Architect keeps its list of database connections" +
-		            "\nin a file called PL.INI.  Your PL.INI "+message+"." +
-		            "\n\nYou can browse for an existing PL.INI file on your system" +
-		            "\nor allow the Architect to create a new one in your home directory." +
-		            "\n\nHint: If you are a Power*Loader Suite user, you should browse for" +
-		            "\nan existing PL.INI in your Power*Loader installation directory.",
-		            "Missing PL.INI", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
-		    File newPlIniFile;
-            if (choice == JOptionPane.CLOSED_OPTION) {
-                throw new ArchitectException("Can't start without a pl.ini file");
-            } else if (choice == 0) {
-		        JFileChooser fc = new JFileChooser();
-		        fc.setFileFilter(ASUtils.INI_FILE_FILTER);
-		        fc.setDialogTitle("Locate your PL.INI file");
-		        int fcChoice = fc.showOpenDialog(null);       // blocking wait
-		        if (fcChoice == JFileChooser.APPROVE_OPTION) {
-		            newPlIniFile = fc.getSelectedFile();
-		        } else {
-		            newPlIniFile = null;
-		        }
-		    } else if (choice == 1) {
-		        newPlIniFile = new File(System.getProperty("user.home"), "pl.ini");
-		    } else
-                throw new ArchitectException("Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
-
-		    if (newPlIniFile != null) try {
-		        newPlIniFile.createNewFile();
-		        us.setPlDotIniPath(newPlIniFile.getPath());
-		    } catch (IOException e1) {
-		        logger.error("Caught IO exception while creating empty PL.INI at \""
-		                +newPlIniFile.getPath()+"\"", e1);
-		        JOptionPane.showMessageDialog(null, "Failed to create file \""+newPlIniFile.getPath()+"\":\n"+e1.getMessage(),
-		                "Error", JOptionPane.ERROR_MESSAGE);
-		    }
-		}
+    
+    private void buildGUI() {
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
 		// Create actions
 		Action aboutAction = new AbstractAction("About"){
-
 			public void actionPerformed(ActionEvent e) {
 				JOptionPane.showMessageDialog(frame,
 						"<html>Power*MatchMaker "+
@@ -331,7 +261,7 @@ public class MatchMakerSwingSession {
 			}};
 
 		newMatchAction = new NewMatchAction(this, "New Match",null,splitPane);
-		menuBar = new JMenuBar();
+        JMenuBar menuBar = new JMenuBar();
 
 		//Settingup
 		JMenu fileMenu = new JMenu("File");
@@ -348,7 +278,7 @@ public class MatchMakerSwingSession {
 		menuBar.add(explorerMenu);
 
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
-		databaseMenu = new JMenu("Database");
+		JMenu databaseMenu = new JMenu("Database");
 		databaseMenu.setMnemonic('D');
 		databaseMenu.add(loginAction);
 		databaseMenu.add(logoutAction);
@@ -407,7 +337,7 @@ public class MatchMakerSwingSession {
 		menuBar.add(helpMenu);
 		frame.setJMenuBar(menuBar);
 
-		toolBar = new JToolBar(JToolBar.HORIZONTAL);
+		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
 
 		toolBar.add(loginAction);
 		toolBar.add(newMatchAction);
@@ -437,16 +367,20 @@ public class MatchMakerSwingSession {
 		splitPane.setLeftComponent(new JScrollPane(tree));
 		cp.add(splitPane);
 
-		Rectangle bounds = new Rectangle();
-		bounds.x = prefs.getInt(SwingUserSettings.MAIN_FRAME_X, 40);
-		bounds.y = prefs.getInt(SwingUserSettings.MAIN_FRAME_Y, 40);
-		bounds.width = prefs.getInt(SwingUserSettings.MAIN_FRAME_WIDTH, 600);
-		bounds.height = prefs.getInt(SwingUserSettings.MAIN_FRAME_HEIGHT, 440);
-		frame.setBounds(bounds);
+		frame.setBounds(sessionContext.getFrameBounds());
 		frame.addWindowListener(new MatchMakerFrameWindowListener());
-
-		lastImportExportAccessPath = prefs.get(SwingUserSettings.LAST_IMPORT_EXPORT_PATH,null);
 	}
+
+    /**
+     * Creates and shows the login dialog, which prompts the user to select a database connection,
+     * username and password.  Upon successful login (via that dialog), things really get going.
+     */
+    private void showLoginDialog() {
+        LoginDialog l = new LoginDialog(MatchMakerSwingSession.this);
+        l.pack();
+        l.setLocationRelativeTo(frame);
+        l.setVisible(true);
+    }
 
     /**
      * Sets up this frame for use with a new PL Respsitory connection.
@@ -482,30 +416,18 @@ public class MatchMakerSwingSession {
 
 
 		if (HibernateUtil.getRepositorySessionFactory() != null){
-
-//			PlFolderHome folderHome = new PlFolderHome();
 			PlMatchHome matchHome = new PlMatchHome();
 			folders = new ArrayList<PlFolder>();
+            
 			// Need to make sure the orphaned matches have been added.  But that we don't add two of the same
-			// object in the hierachy.
+			// object in the hierachy.  XXX: this is the wrong place for this operation
 			Set<PlMatch> matchSet = new HashSet<PlMatch>(matchHome.findAllWithoutFolder());
-
 			matches = new ArrayList<PlMatch>(matchSet);
 			Collections.sort(matches);
-
-//			PlMatchTranslateGroupHome translateHome = new PlMatchTranslateGroupHome();
-
-//			translations = new ArrayList<PlMatchTranslateGroup>(translateHome.findAll());
-//			List<PlMatchTranslateGroup> nullList = new ArrayList<PlMatchTranslateGroup>();
-//			nullList.add(null);
-//			for (PlMatchTranslateGroup group: translations){
-//
-//				group.getPlMatchTranslations().removeAll(nullList);
-//			}
 		}
 
 		tree.setModel(new MatchMakerTreeModel(folders,matches));
-		setDatabase(db);
+		setPlRepositoryDatabase(db);
 	}
 
     /**
@@ -545,8 +467,8 @@ public class MatchMakerSwingSession {
         }
     }
 
-	private void setDatabase(SQLDatabase db) {
-	    database = db;
+	private void setPlRepositoryDatabase(SQLDatabase db) {
+	    plRepositoryDatabase = db;
     }
 
     /**
@@ -556,16 +478,9 @@ public class MatchMakerSwingSession {
         return frame;
     }
 
-	/**
-	 * Convenience method for getArchitectSession().getUserSettings().
-	 */
-	public CoreUserSettings getUserSettings() {
-		return architectSession.getUserSettings();
-	}
-
-	public ArchitectSession getArchitectSession() {
-		return architectSession;
-	}
+    public MatchMakerSessionContext getContext() {
+        return sessionContext;
+    }
 
 	private final class EditMatchAction extends AbstractAction {
 		private EditMatchAction(String name) {
@@ -593,30 +508,15 @@ public class MatchMakerSwingSession {
 		public void windowClosing(WindowEvent e) {
 			exit();
 		}
+        
 	}
 
 	public void saveSettings() throws ArchitectException {
-		if (configFile == null) configFile = ConfigFile.getDefaultInstance();
-
-		prefs.putInt(SwingUserSettings.MAIN_FRAME_X, frame.getLocation().x);
-		prefs.putInt(SwingUserSettings.MAIN_FRAME_Y, frame.getLocation().y);
-		prefs.putInt(SwingUserSettings.MAIN_FRAME_WIDTH, frame.getWidth());
-		prefs.putInt(SwingUserSettings.MAIN_FRAME_HEIGHT, frame.getHeight());
-		if ( getDatabase() != null && getDatabase().getDataSource() != null ) {
-			prefs.put(SwingUserSettings.LAST_LOGIN_DATA_SOURCE,
-					getDatabase().getDataSource().getName());
+		sessionContext.setFrameBounds(frame.getBounds());  // XXX we should do this in a component listener
+		if ( getPlRepositoryDatabase() != null && getPlRepositoryDatabase().getDataSource() != null ) {
+			sessionContext.setLastLoginDataSource(getPlRepositoryDatabase().getDataSource());
 		}
-		if ( lastImportExportAccessPath != null ) {
-			prefs.put(SwingUserSettings.LAST_IMPORT_EXPORT_PATH,
-					lastImportExportAccessPath);
-		}
-		configFile.write(getArchitectSession());
-		CoreUserSettings us = getUserSettings();
-		try {
-            us.getPlDotIni().write(new File(us.getPlDotIniPath()));
-        } catch (IOException e) {
-            logger.error("Couldn't save PL.INI file!", e);
-        }
+        //sessionContext.store();
 	}
 
 	/**
@@ -633,8 +533,8 @@ public class MatchMakerSwingSession {
 	}
 
 	/**
-	 * Creates an MatchMakerMain and sets it visible.  This method is
-	 * an acceptable way to launch the Architect application.
+	 * Creates a MatchMakerSwingSession and shows the login prompt.  This method is
+	 * an acceptable way to launch the Swing GUI of the MatchMaker application.
 	 */
 	public static void main(String args[]) throws ArchitectException {
 
@@ -642,22 +542,10 @@ public class MatchMakerSwingSession {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 		ArchitectUtils.configureLog4j();
 
-
-
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
-
 		    	try {
-		    		MatchMakerSwingSession f = new MatchMakerSwingSession();
-
-		    		Thread.setDefaultUncaughtExceptionHandler(
-		    				new ExceptionHandler(f.frame));
-
-		    		f.macOSXRegistration();
-		    		f.frame.setVisible(true);
-
-		    		// XXX: there should be a promptForLogin() method that we use here and in the action.
-		    		f.loginAction.actionPerformed(null);
+		    		MatchMakerSwingSession swingSession = new MatchMakerSwingSession();
 		    	} catch (Exception ex) {
 		    		ASUtils.showExceptionDialog("Couldn't start application!", ex);
 		    	}
@@ -705,26 +593,6 @@ public class MatchMakerSwingSession {
         }
     }
 
-
-	public JToolBar getProjectToolBar() {
-		return toolBar;
-	}
-	public UserSettings getSwingUserSettings() {
-		return sprefs;
-	}
-
-	public UserSettings getSprefs() {
-		return sprefs;
-	}
-
-	public void setSprefs(UserSettings sprefs) {
-		this.sprefs = sprefs;
-	}
-
-	public Preferences getPrefs() {
-		return prefs;
-	}
-
 	public List<PlFolder> getFolders() {
 		return folders;
 	}
@@ -733,16 +601,21 @@ public class MatchMakerSwingSession {
 		return matches;
 	}
 
-    public PlMatch getMatchByName(String name ) {
-        for ( PlMatch m : matches ) {
-            if ( m.getMatchId().equals(name) )
+    /**
+     * Finds a Match object in the current session by name.
+     * 
+     * XXX (implementation problem) this is a MatchDAO thing, so we should delegate to that here.
+     */
+    public PlMatch getMatchByName(String name) {
+        for (PlMatch m : matches) {
+            if (m.getMatchId().equals(name))
                 return m;
         }
         return null;
     }
 
-    public SQLDatabase getDatabase() {
-        return database;
+    public SQLDatabase getPlRepositoryDatabase() {
+        return plRepositoryDatabase;
     }
 
 	public JTree getTree() {
@@ -752,17 +625,6 @@ public class MatchMakerSwingSession {
 	public void setTree(JTree tree) {
 		if (this.tree != tree) {
 			this.tree = tree;
-			//TODO fire event
-		}
-	}
-
-	public String getLastImportExportAccessPath() {
-		return lastImportExportAccessPath;
-	}
-
-	public void setLastImportExportAccessPath(String lastExportAccessPath) {
-		if (this.lastImportExportAccessPath != lastExportAccessPath) {
-			this.lastImportExportAccessPath = lastExportAccessPath;
 			//TODO fire event
 		}
 	}
@@ -778,6 +640,12 @@ public class MatchMakerSwingSession {
 		}
 	}
 
-
+	public String getLastImportExportAccessPath() {
+        return sessionContext.getLastImportExportAccessPath();
+    }
+    
+    public void setLastImportExportAccessPath(String path) {
+        sessionContext.setLastImportExportAccessPath(path);
+    }
 
 }

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 
 /**
  * The MatchMakerSession interface represents one person's login to
@@ -11,7 +12,7 @@ import ca.sqlpower.architect.SQLDatabase;
  * throughout the MatchMaker business model.
  *
  * <p>To make one of these, use the
- * {@link MatchMakerSessionContext#createSession(ArchitectDataSource, String, String)}
+ * {@link MatchMakerHibernateSessionContext#createSession(ArchitectDataSource, String, String)}
  * method.
  *
  * <p>This interface makes a strong committment to keeping the MatchMaker

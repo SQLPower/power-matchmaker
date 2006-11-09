@@ -280,7 +280,7 @@ public class TableQueryFrame extends JFrame {
 		tableDropdown = new JComboBox();
 		tableDropdown.addActionListener(new SqlAreaPopulator());
 		ConnectionComboBoxModel connectionModel = 
-            new ConnectionComboBoxModel(swingSession.getUserSettings().getPlDotIni());
+            new ConnectionComboBoxModel(swingSession.getContext().getPlDotIni());
 		dbDropdown = new JComboBox(connectionModel);
 		dbDropdown.addActionListener(new TablePopulator());
 

@@ -579,7 +579,7 @@ public class RunMatchDialog extends JDialog{
 		 * SHOW_PROGRESS=10 PROCESS_CNT=1
 		 */
 		StringBuffer command = new StringBuffer();
-		SQLDatabase db = swingSession.getDatabase();
+		SQLDatabase db = swingSession.getPlRepositoryDatabase();
 		String programPath = null;
 		programPath = ExternalEngineUtils.getProgramPath(EnginePath.MATCHMAKER);
 		// FIXME: comment following line to use executable from user pl.ini config
