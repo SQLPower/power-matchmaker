@@ -135,7 +135,7 @@ public class LoginDialog extends JDialog {
 					loginWasSuccessful) {
                 // XXX Change this to fire an event so we don't need to know who's interested.
                 // XXX this takes a while (~10 seconds) and during that time, the UI is frozen.
-                swingMain.newLogin(session.getDatabase());
+                swingSession.newLogin(session.getDatabase());
 			    LoginDialog.this.setVisible(false);
 			} else {
 				JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
@@ -166,11 +166,11 @@ public class LoginDialog extends JDialog {
 	/**
 	 * The SwingUI session instance we're creating a login for.
 	 */
-	private MatchMakerMain swingMain;
+	private MatchMakerSwingSession swingSession;
 
-	public LoginDialog(MatchMakerMain swingMain) {
+	public LoginDialog(MatchMakerSwingSession swingMain) {
 		super(swingMain.getFrame());
-		this.swingMain = swingMain;
+		this.swingSession = swingMain;
 		setTitle("Database Connections");
 		panel = createPanel();
 		getContentPane().add(panel);
@@ -194,7 +194,7 @@ public class LoginDialog extends JDialog {
 		dbSourceName = new JLabel();
 
 		JLabel line1 = new JLabel("Please choose one of the following databases for login:");
-		connectionModel = new ConnectionComboBoxModel(MatchMakerMain.getMainInstance().getUserSettings().getPlDotIni());
+		connectionModel = new ConnectionComboBoxModel(swingSession.getUserSettings().getPlDotIni());
 		connectionModel.addListDataListener(connListener);
 		dbList = new JComboBox(connectionModel);
 		JLabel dbSourceName1 = new JLabel("Database source name:");

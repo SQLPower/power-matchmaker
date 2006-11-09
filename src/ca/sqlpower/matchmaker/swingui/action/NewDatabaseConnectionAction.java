@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
@@ -15,24 +14,18 @@ import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
 import ca.sqlpower.architect.swingui.action.DBCS_OkAction;
 import ca.sqlpower.matchmaker.swingui.DBConnectionUniDialog;
-import ca.sqlpower.matchmaker.swingui.MatchMakerMain;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 public class NewDatabaseConnectionAction extends AbstractAction {
 
+    private final MatchMakerSwingSession swingSession;
 	private DBConnectionUniDialog uniDialogParent = null;
 	private Component componentParent = null;
 	private DBConnectionCallBack callBackParent = null;
 
-	public NewDatabaseConnectionAction() {
-		super();
-	}
-
-	public NewDatabaseConnectionAction(String name) {
+	public NewDatabaseConnectionAction(MatchMakerSwingSession swingSession, String name) {
 		super(name);
-	}
-
-	public NewDatabaseConnectionAction(String name, Icon icon) {
-		super(name, icon);
+		this.swingSession = swingSession;
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -47,7 +40,7 @@ public class NewDatabaseConnectionAction extends AbstractAction {
 
 		DBCS_OkAction okAction = new DBCS_OkAction(dbcsPanel,
 				true,
-				MatchMakerMain.getMainInstance().getUserSettings().getPlDotIni());
+				swingSession.getUserSettings().getPlDotIni());
 		if ( callBackParent != null ) {
 			okAction.setConnectionSelectionCallBack(callBackParent);
 		}

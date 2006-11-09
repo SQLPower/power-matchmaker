@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -35,7 +36,9 @@ public class TranslatePanel implements ArchitectPanel {
 	
 	private static final Logger logger = Logger.getLogger(TranslatePanel.class);
 	
-	private JTable translateTable;
+    private final MatchMakerSwingSession swingSession;
+
+    private JTable translateTable;
 	private JPanel translatePanel;
 	private JComboBox translationGroup;
 	private JTextField searchGroup;
@@ -52,32 +55,34 @@ public class TranslatePanel implements ArchitectPanel {
 	private TableModelSearchDecorator tms;
 
 	
-	public TranslatePanel() {
+	public TranslatePanel(MatchMakerSwingSession swingSession) {
+        this.swingSession = swingSession;
 		buildUI();
 	}
 	
 	private void buildUI(){
 		translateTable = new EditableJTable();
-		tms = new TableModelSearchDecorator(new MatchTranslateTableModel(MatchMakerMain.getMainInstance().getTranslations().get(0)));
+		tms = new TableModelSearchDecorator(
+                new MatchTranslateTableModel(swingSession.getTranslations().get(0)));
 		tms.setTableTextConverter((EditableJTable) translateTable);
 		translateTable.setModel(tms);
 		translationGroup = new JComboBox();
-		translationGroup.setModel(new TranslationComboBoxModel());
+		translationGroup.setModel(new TranslationComboBoxModel(swingSession));
 		if (translationGroup.getModel().getSize() > 0) {
 			translationGroup.setSelectedIndex(0);
 		}
 		translationGroup.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				tms.setTableModel(new MatchTranslateTableModel((PlMatchTranslateGroup) ((JComboBox)e.getSource()).getSelectedItem()));
-				tms.fireTableStructureChanged();
-			}
-		});
+            public void actionPerformed(ActionEvent e) {
+                tms.setTableModel(new MatchTranslateTableModel(
+                        (PlMatchTranslateGroup) translationGroup.getSelectedItem()));
+                tms.fireTableStructureChanged();
+            }
+        });
 		searchGroup = new JTextField();
 		tms.setDoc(searchGroup.getDocument());
 		createGroup = new JButton(createGroupAction);
 		deleteGroup = new JButton(deleteGroupAction);
-		addCommonWords = new JButton(addCommonWordsAction);
+		addCommonWords = new JButton(addCommonWordsAction);  // FIXME not in layout
 		copyGroup = new JButton(copyGroupAction);
 		moveItemUp = new JButton(moveItemUpAction);
 		moveItemDown = new JButton(moveItemDownAction);
@@ -88,7 +93,7 @@ public class TranslatePanel implements ArchitectPanel {
 		
 		translateTable.setDragEnabled(true);
 		
-		helpButton = new JButton(helpAction);
+		helpButton = new JButton(helpAction); // FIXME not in layout
 			
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:120dlu:grow,4dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu,pref,4dlu");				
@@ -138,43 +143,34 @@ public class TranslatePanel implements ArchitectPanel {
 	}
 
 	public void discardChanges() {
-		// TODO Auto-generated method stub
-
+        // not necessary
 	}
 
 	public JComponent getPanel() {
 		return translatePanel;
 	}
 	
-	public void updateTable(){
-		
-		
-		
-
-	}
-
-	
 	public JTable getTranslateTable() {
 		return translateTable;
 	}
+    
+    
 	////////////Action variables///////////////////////
-	
 	
 	Action createGroupAction = new AbstractAction("Create Group"){
 
 		public void actionPerformed(ActionEvent e) {
 			//	TODO Auto-generated method stub
-
+            JOptionPane.showMessageDialog(translatePanel, "Not implemented yet.");
 		}		
 	};
-	
 	
 	Action deleteGroupAction = new AbstractAction("Delete Group"){
 
 		public void actionPerformed(ActionEvent e) {
 			//the index is one before the selectedcolumn integer
 			if (translateTable.getSelectedRow() >= 0){
-				MatchMakerMain.getMainInstance().getTranslations().remove(translateTable.getSelectedRow());
+				swingSession.getTranslations().remove(translateTable.getSelectedRow());
 			}
 		}
 		
@@ -184,34 +180,24 @@ public class TranslatePanel implements ArchitectPanel {
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-			
+            JOptionPane.showMessageDialog(translatePanel, "Not implemented yet.");
 		}
 		
 	};
 	
-	//TODO: should probably have a better implementation than this
 	Action addCommonWordsAction = new AbstractAction("Add Common Words"){
 
 		public void actionPerformed(ActionEvent e) {
-/*			if (translateTable.getSelectedColumn() >= 0){
-				PlMatchTranslateGroup currentSelected = MatchMakerMain.getMainInstance().getTranslations().get(translateTable.getSelectedColumn());
-				PlMatchTranslateGroup newTranslate = new PlMatchTranslate();
-				newTranslate.setId(currentSelected.getId());
-				newTranslate.setFromWord(" ");
-				newTranslate.setToWord("");
-				MatchMakerMain.getMainInstance().getTranslations().add(newTranslate);
-				refreshTranslateTable();
-				int lastIndex = translateTable.getRowCount()-1;
-				translateTable.setRowSelectionInterval(lastIndex, lastIndex);
-				scrollToSelected(lastIndex);
-			}*/
+		    //TODO: should probably have a better implementation than this
+		    JOptionPane.showMessageDialog(translatePanel, "Not implemented yet.");
 		}
 		
 	};
 	
 	Action helpAction = new AbstractAction("Help"){
 		public void actionPerformed(ActionEvent e){
-			
+            //TODO
+            JOptionPane.showMessageDialog(translatePanel, "Not implemented yet.");
 		}
 	};
 	

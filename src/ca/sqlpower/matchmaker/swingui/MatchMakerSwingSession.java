@@ -1,7 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-
-
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Rectangle;
@@ -75,9 +73,9 @@ import com.darwinsys.util.PrefsUtils;
  * The Main Window for the Architect Application; contains a main() method that is
  * the conventional way to start the application running.
  */
-public class MatchMakerMain {
+public class MatchMakerSwingSession {
 
-	private static Logger logger = Logger.getLogger(MatchMakerMain.class);
+	private static Logger logger = Logger.getLogger(MatchMakerSwingSession.class);
 
 	/**
 	 * This is the top level application frame
@@ -89,11 +87,6 @@ public class MatchMakerMain {
      */
     private static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,26);
 
-	/**
-	 * The MatchMakerMain is a singleton; this is the main instance.
-	 */
-	protected static MatchMakerMain mainInstance;
-
     public static final boolean MAC_OS_X = (System.getProperty("os.name").toLowerCase().startsWith("mac os x"));
 
 	protected final Preferences prefs;
@@ -104,7 +97,11 @@ public class MatchMakerMain {
 	protected JMenuBar menuBar = null;
 	protected JTree tree = null;
     private JMenu databaseMenu;
-    private JSplitPane splitPane;
+    
+    /**
+     * XXX don't let others use this directly anymore.
+     */
+    JSplitPane splitPane;
 
 	private String lastImportExportAccessPath = null;
 	protected AboutAction aboutAction;
@@ -120,7 +117,7 @@ public class MatchMakerMain {
 
 	protected Action loginAction = new AbstractAction("Login") {
 		public void actionPerformed(ActionEvent e) {
-			LoginDialog l = new LoginDialog(MatchMakerMain.this);
+			LoginDialog l = new LoginDialog(MatchMakerSwingSession.this);
 			l.pack();
 			l.setLocationRelativeTo(frame);
 	    	l.setVisible(true);
@@ -147,7 +144,7 @@ public class MatchMakerMain {
 			Match match = ArchitectUtils.getTreeObject(getTree(),Match.class);
 			if ( match == null )
 				return;
-		    RunMatchDialog r = new RunMatchDialog(match, frame);
+		    RunMatchDialog r = new RunMatchDialog(MatchMakerSwingSession.this, match, frame);
 			r.pack();
 			r.setVisible(true);
 		}
@@ -196,7 +193,7 @@ public class MatchMakerMain {
 
 	protected Action tableQueryAction = new AbstractAction("Table Explorer") {
 		public void actionPerformed(ActionEvent e) {
-			TableQueryFrame f = new TableQueryFrame();
+			TableQueryFrame f = new TableQueryFrame(MatchMakerSwingSession.this);
 			f.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
 			f.pack();
 			f.setVisible(true);
@@ -208,7 +205,7 @@ public class MatchMakerMain {
 
 		public void actionPerformed(ActionEvent e) {
 			DatabaseConnectionManager dm = new DatabaseConnectionManager(
-					MatchMakerMain.this,
+					MatchMakerSwingSession.this,
 					getUserSettings().getPlDotIni()); // XXX
 			dm.pack();
 			dm.setVisible(true);
@@ -232,12 +229,6 @@ public class MatchMakerMain {
 	private List<PlMatchTranslateGroup> translations = new ArrayList<PlMatchTranslateGroup>();
 	private SQLDatabase database;
 
-	/**
-	 * Returns the frame for this Swing session.
-	 */
-	JFrame getFrame() {
-		return frame;
-	}
 
 	/**
 	 * You can't create an architect frame using this constructor;
@@ -245,7 +236,7 @@ public class MatchMakerMain {
 	 *
 	 * @throws ArchitectException
 	 */
-	private MatchMakerMain() throws ArchitectException {
+	private MatchMakerSwingSession() throws ArchitectException {
 
 		frame = new JFrame("MatchMaker");
 		frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
@@ -339,7 +330,7 @@ public class MatchMakerMain {
 					JOptionPane.INFORMATION_MESSAGE);
 			}};
 
-		newMatchAction = new NewMatchAction("New Match",null,splitPane);
+		newMatchAction = new NewMatchAction(this, "New Match",null,splitPane);
 		menuBar = new JMenuBar();
 
 		//Settingup
@@ -374,8 +365,8 @@ public class MatchMakerMain {
 		matchesMenu.add(runMatchAction);
 		matchesMenu.add(showMatchStatisticInfoAction);
 		matchesMenu.addSeparator();
-		matchesMenu.add(new JMenuItem(new PlMatchImportAction(frame)));
-		matchesMenu.add(new JMenuItem(new PlMatchExportAction(frame, null)));
+		matchesMenu.add(new JMenuItem(new PlMatchImportAction(this, frame)));
+		matchesMenu.add(new JMenuItem(new PlMatchExportAction(this, frame)));
 		menuBar.add(matchesMenu);
 
 		JMenu mergeMenu = new JMenu("Merges");
@@ -396,7 +387,7 @@ public class MatchMakerMain {
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
 		toolsMenu.add(tableQueryAction);
-		toolsMenu.add(new EditTranslateAction(frame));
+		toolsMenu.add(new EditTranslateAction(this, frame));
         toolsMenu.add(new SQLRunnerAction(frame));
 		menuBar.add(toolsMenu);
 
@@ -439,7 +430,7 @@ public class MatchMakerMain {
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel());
-		tree.addMouseListener(new MatchMakerTreeMouseListener(frame, splitPane));
+		tree.addMouseListener(new MatchMakerTreeMouseListener(this));
 		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
 
 		splitPane.setRightComponent(null );
@@ -558,22 +549,12 @@ public class MatchMakerMain {
 	    database = db;
     }
 
-	static {
-		// Call this in a static initialier to force the
-		// lazy evaluation to happen non-lazily. :-)
-		MatchMakerMain.getMainInstance();
-	}
-
-    public static synchronized MatchMakerMain getMainInstance() {
-		if (mainInstance == null) {
-			try {
-				new MatchMakerMain();
-			} catch (ArchitectException e) {
-				throw new RuntimeException("Couldn't create MatchMakerMain instance!");
-			}
-		}
-		return mainInstance;
-	}
+    /**
+     * Returns the frame for this Swing session.
+     */
+    JFrame getFrame() {
+        return frame;
+    }
 
 	/**
 	 * Convenience method for getArchitectSession().getUserSettings().
@@ -598,7 +579,7 @@ public class MatchMakerMain {
 
 			MatchEditor me;
 			try {
-				me = new MatchEditor((Match) match,splitPane);
+				me = new MatchEditor(MatchMakerSwingSession.this, match, splitPane);
 			} catch (ArchitectException e1) {
 				throw new ArchitectRuntimeException(e1);
 			}
@@ -667,7 +648,7 @@ public class MatchMakerMain {
 		    public void run() {
 
 		    	try {
-		    		MatchMakerMain f = new MatchMakerMain();
+		    		MatchMakerSwingSession f = new MatchMakerSwingSession();
 
 		    		Thread.setDefaultUncaughtExceptionHandler(
 		    				new ExceptionHandler(f.frame));
@@ -694,7 +675,7 @@ public class MatchMakerMain {
             try {
                 Class osxAdapter = ClassLoader.getSystemClassLoader().loadClass("ca.sqlpower.architect.swingui.OSXAdapter");
 
-                Class[] defArgs = {MatchMakerMain.class};
+                Class[] defArgs = {MatchMakerSwingSession.class};
                 Method registerMethod = osxAdapter.getDeclaredMethod("registerMacOSXApplication", defArgs);
                 if (registerMethod != null) {
                     Object[] args = { this };

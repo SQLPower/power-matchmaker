@@ -29,31 +29,31 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
-import ca.sqlpower.matchmaker.swingui.MatchMakerMain;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class PlMatchImportAction extends AbstractAction {
 
-
 	private static final Logger logger = Logger.getLogger(PlMatchImportAction.class);
+    private final MatchMakerSwingSession swingSession;
+    
 	private PlMatch match;
 	private JFrame owningFrame;
 
-	public PlMatchImportAction(JFrame owningFrame) {
+	public PlMatchImportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
 		super("Import",
 				ASUtils.createJLFIcon( "general/Import",
                 "Import",
                 ArchitectFrame.getMainInstance().getSprefs().getInt(SwingUserSettings.ICON_SIZE, 24)));
 		putValue(SHORT_DESCRIPTION, "Import Match");
+        this.swingSession = swingSession;
 		this.owningFrame = owningFrame;
 	}
 
 
-
-
 	public void actionPerformed(ActionEvent e) {
 		JFileChooser fc = new JFileChooser(
-				MatchMakerMain.getMainInstance().getLastImportExportAccessPath());
+				swingSession.getLastImportExportAccessPath());
 		fc.setFileFilter(ASUtils.XML_FILE_FILTER);
 		fc.setDialogTitle("Import Match");
 
@@ -62,7 +62,7 @@ public class PlMatchImportAction extends AbstractAction {
 
 		if (fcChoice == JFileChooser.APPROVE_OPTION) {
 			importFile = fc.getSelectedFile();
-			MatchMakerMain.getMainInstance().setLastImportExportAccessPath(
+			swingSession.setLastImportExportAccessPath(
 					importFile.getAbsolutePath());
 
 			BufferedInputStream in = null;
@@ -88,27 +88,32 @@ public class PlMatchImportAction extends AbstractAction {
 				return;
 			} else {
 
-System.out.println("id:"+match.getMatchId());
-System.out.println("desc:"+match.getMatchDesc());
-System.out.println("table:"+match.getMatchTable());
+			    System.out.println("id:" + match.getMatchId());
+                System.out.println("desc:" + match.getMatchDesc());
+                System.out.println("table:" + match.getMatchTable());
 
-System.out.println("group size:"+match.getPlMatchGroups().size());
-List<PlMatchGroup> l = new ArrayList<PlMatchGroup>(match.getPlMatchGroups());
-for ( PlMatchGroup g : l ) {
-	System.out.println("group id:"+g.getGroupId());
-	for ( PlMatchCriterion c : g.getPlMatchCriterias() ) {
-		System.out.println("         PlMatchCriterion:"+c.getColumnName());
-	}
-}
-for ( PlMergeCriteria c : match.getPlMergeCriteria() ) {
-System.out.println("merge crit="+c.getTableName()+"."+c.getIndexColumnName0());
-}
-for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
-	System.out.println("merge con crit="+c.getTableName()+"."+c.getColumnName());
-	}
+                System.out.println("group size:"
+                        + match.getPlMatchGroups().size());
+                List<PlMatchGroup> l = new ArrayList<PlMatchGroup>(match
+                        .getPlMatchGroups());
+                for (PlMatchGroup g : l) {
+                    System.out.println("group id:" + g.getGroupId());
+                    for (PlMatchCriterion c : g.getPlMatchCriterias()) {
+                        System.out.println("         PlMatchCriterion:"
+                                + c.getColumnName());
+                    }
+                }
+                for (PlMergeCriteria c : match.getPlMergeCriteria()) {
+                    System.out.println("merge crit=" + c.getTableName() + "."
+                            + c.getIndexColumnName0());
+                }
+                for (PlMergeConsolidateCriteria c : match
+                        .getPlMergeConsolidateCriterias()) {
+                    System.out.println("merge con crit=" + c.getTableName()
+                            + "." + c.getColumnName());
+                }
 
-
-				PlMatch match2 = MatchMakerMain.getMainInstance().getMatchByName(match.getMatchId());
+				PlMatch match2 = swingSession.getMatchByName(match.getMatchId());
 				if ( match2 != null ) {
 					int option = JOptionPane.showConfirmDialog(
 							null,

@@ -9,13 +9,13 @@ import java.awt.event.FocusListener;
 import java.util.Date;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -52,46 +52,37 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(PlMatchGroupPanel.class);
 	
+    private final MatchMakerSwingSession swingSession;
 	private PlMatchGroup model;
 
-
-	private JSplitPane jSplitPane = null;
-
-
-	private JScrollPane matchCriteriaScrollPane = null;
-
-
-	private JTable matchCriteriaTable = null;
-
-
+    private JSplitPane jSplitPane;
+	private JTable matchCriteriaTable;
 	private JPanel groupEditPanel;
-	JTextField groupId;
-	JLabel matches;
-	JTextField description;
-	JTextField matchPercent;
-	JTextField filterCriteria;
-	JCheckBox active;
-	JLabel	lastUpdateDate;
-	JLabel	lastUpdateUser;
-	JLabel	lastUpdateOSUser;
-	Color textBackground;
+    private JTextField groupId;
+    private JLabel matches;
+    private JTextField description;
+    private JTextField matchPercent;
+    private JTextField filterCriteria;
+    private JCheckBox active;
+    private JLabel lastUpdateDate;
+    private JLabel lastUpdateUser;
+    private JLabel lastUpdateOSUser;
+    private Color textBackground;
 
-	JButton newMatchCriterion;
-	JButton deleteMatchCriterion;
-	JButton copyMatchCriterion;
-	JButton pasteMatchCriterion;
+    private JButton newMatchCriterion;
+    private JButton deleteMatchCriterion;
+    private JButton copyMatchCriterion;
+    private JButton pasteMatchCriterion;
 
 	/**
 	 * This is the default constructor
 	 * @throws ArchitectException 
 	 */
-	public PlMatchGroupPanel(PlMatchGroup model) throws ArchitectException {
+	public PlMatchGroupPanel(MatchMakerSwingSession swingSession, PlMatchGroup model) throws ArchitectException {
 		super();
+        this.swingSession = swingSession;
 		PlMatchGroupPanelImpl(model);
-		
 	}
-
-	
 	
 	public void PlMatchGroupPanelImpl(PlMatchGroup model) throws ArchitectException{
 		this.model = model;
@@ -99,147 +90,182 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 	}
 
 	/**
-	 * This method initializes this
-	 * 
-	 * @return void
-	 * @throws ArchitectException 
+	 * Creates the GUI components and lays them out.
 	 */
 	private void initialize() throws ArchitectException {
-		// load the new model
-		clear();
+		DocumentListener listener = new DocumentListener() {
+        
+        	public void changedUpdate(DocumentEvent e) {
+        		validateForm();
+        	}
+        
+        	public void insertUpdate(DocumentEvent e) {
+        		validateForm();
+        	}
+        
+        	public void removeUpdate(DocumentEvent e) {
+        		validateForm();
+        	}		
+        };
+        
+        FocusListener fl = new FocusListener() {
+        
+        	public void focusGained(FocusEvent e) {
+                // don't care
+        	}
+        
+        	public void focusLost(FocusEvent e) {
+        		saveMatches();
+        	}
+        	
+        };
+        
+        this.setLayout(new BorderLayout());
+        groupId = new JTextField();
+        matches = new JLabel();
+        
+        description = new JTextField();
+        matchPercent = new JTextField();
+        matchPercent.setColumns(3);
+        filterCriteria = new JTextField();
+        active = new JCheckBox();
+        active.setSelected(true);
+        
+        newMatchCriterion = new JButton();
+        deleteMatchCriterion = new JButton();
+        copyMatchCriterion = new JButton();
+        pasteMatchCriterion = new JButton();
+        lastUpdateDate = new JLabel();
+        lastUpdateUser = new JLabel();
+        lastUpdateOSUser= new JLabel();
+        matchPercent.addFocusListener(fl);
+        matchPercent.getDocument().addDocumentListener(listener);
+        groupId.addFocusListener(fl);
+        groupId.getDocument().addDocumentListener(listener);
+        description.addFocusListener(fl);
+        description.getDocument().addDocumentListener(listener);
+        filterCriteria.addFocusListener(fl);
+        filterCriteria.getDocument().addDocumentListener(listener);
 		textBackground = description.getBackground();
-		this.add(getJSplitPane(), BorderLayout.CENTER);
+        
+        jSplitPane = new JSplitPane();
+        jSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        jSplitPane.setBottomComponent(new JScrollPane(getMatchCriteriaTable()));
+        jSplitPane.setTopComponent(createGroupEditPanel());
+
+		add(jSplitPane, BorderLayout.CENTER);
 		
 	}
 
-	public void clear() {
-		DocumentListener listener = new DocumentListener(){
+    /**
+     * Initializes matchCriteriaTable, or returns the existing one if it's already created. 
+     */
+    private JTable getMatchCriteriaTable() throws ArchitectException {
+        if (matchCriteriaTable == null) {
+            matchCriteriaTable = new EditableJTable();
+            matchCriteriaTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            setModel(model);
+            matchCriteriaTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
 
-			public void changedUpdate(DocumentEvent e) {
-				validateForm();
-				
-			}
+            FocusListener tfl = new FocusListener(){
 
-			public void insertUpdate(DocumentEvent e) {
-				validateForm();
-				
-			}
+                public void focusGained(FocusEvent e) {
+                    // don't care
+                }
 
-			public void removeUpdate(DocumentEvent e) {
-				validateForm();
-				
-			}		
-		};
-		
-		FocusListener fl = new FocusListener(){
+                public void focusLost(FocusEvent e) {
+                    Transaction tx = HibernateUtil.primarySession().beginTransaction();
+                    HibernateUtil.primarySession().flush();
+                    tx.commit();
+                }
+                
+            };
+            matchCriteriaTable.addFocusListener(tfl);
+        
+        }
+        return matchCriteriaTable;
+    }
 
-			public void focusGained(FocusEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			public void focusLost(FocusEvent e) {
-				saveMatches();
-			}
-			
-		};
-		
-		this.setLayout(new BorderLayout());
-		groupId = new JTextField();
-		matches = new JLabel();
-
-		description = new JTextField();
-		matchPercent = new JTextField();
-		matchPercent.setColumns(3);
-		filterCriteria = new JTextField();
-		active = new JCheckBox();
-		active.setSelected(true);
-
-		 newMatchCriterion = new JButton();
-		 deleteMatchCriterion = new JButton();
-		 copyMatchCriterion = new JButton();
-		 pasteMatchCriterion = new JButton();
-		lastUpdateDate = new JLabel();
-		lastUpdateUser = new JLabel();
-		lastUpdateOSUser= new JLabel();
-		matchPercent.addFocusListener(fl);
-		matchPercent.getDocument().addDocumentListener(listener);
-		groupId.addFocusListener(fl);
-		groupId.getDocument().addDocumentListener(listener);
-		description.addFocusListener(fl);
-		description.getDocument().addDocumentListener(listener);
-		filterCriteria.addFocusListener(fl);
-		filterCriteria.getDocument().addDocumentListener(listener);
-	}
-
+    /**
+     * Returns the match group this component is editing now.
+     */
 	public PlMatchGroup getModel() {
 		return model;
 	}
 
 	/**
-	 * Load the new model for the match group and pass it along to the criteria table.
+	 * Switches this component to edit a different match group.
 	 * 
-	 * 
-	 * @param model
-	 * @throws ArchitectException
+	 * @param model the new MatchGroup to edit.
 	 */
 	public void setModel(PlMatchGroup model) throws ArchitectException {
-		this.model = model;
-		if(model != null) {
-			matchCriteriaTable.setModel(new MatchCriteriaTableModel(model));
-			loadMatches();
-			int translateColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
-			matchCriteriaTable.getColumnModel().getColumn(translateColumn).setCellEditor(new DefaultCellEditor(new JComboBox(new TranslationComboBoxModel())));
-			int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
-			PlMatch plMatch = model.getPlMatch();
-			if (plMatch != null && plMatch.getMatchTable() != null){
-				SQLTable t = MatchMakerMain.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
-				matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(new DefaultCellEditor(new JComboBox(
-						new ColumnComboBoxModel(t,model))));
-			}
-			
-		}
-	}
+        this.model = model;
+        if (model != null) {
+            matchCriteriaTable.setModel(new MatchCriteriaTableModel(model));
+            loadMatches();
+            int translateColumn = MatchCriteriaColumn
+                    .getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
+            matchCriteriaTable.getColumnModel().getColumn(translateColumn)
+                    .setCellEditor(
+                            new DefaultCellEditor(new JComboBox(
+                                    new TranslationComboBoxModel(swingSession))));
+            int columnColumn = MatchCriteriaColumn
+                    .getIndex(MatchCriteriaColumn.COLUMN);
+            PlMatch plMatch = model.getPlMatch();
+            if (plMatch != null && plMatch.getMatchTable() != null) {
+                SQLTable t = swingSession.getDatabase().getTableByName(
+                        plMatch.getTableCatalog(), plMatch.getTableOwner(),
+                        plMatch.getMatchTable());
+                matchCriteriaTable.getColumnModel().getColumn(columnColumn)
+                        .setCellEditor(
+                                new DefaultCellEditor(new JComboBox(
+                                        new ColumnComboBoxModel(t, model))));
+            }
+        }
+    }
 
 	private void loadMatches() throws ArchitectException {
-		PlMatch plMatch = model.getPlMatch();
-		if (plMatch != null && plMatch.getMatchTable() != null){
-			SQLTable t = MatchMakerMain.getMainInstance().getDatabase().getTableByName(plMatch.getTableCatalog(),plMatch.getTableOwner(),plMatch.getMatchTable());
-			newMatchCriterion.setAction(new NewMatchCriteria(model,t));
+        PlMatch plMatch = model.getPlMatch();
+        if (plMatch != null && plMatch.getMatchTable() != null) {
+            SQLTable t = swingSession.getDatabase().getTableByName(
+                    plMatch.getTableCatalog(), plMatch.getTableOwner(),
+                    plMatch.getMatchTable());
+            newMatchCriterion.setAction(new NewMatchCriteria(model, t));
             newMatchCriterion.setToolTipText(null);
             newMatchCriterion.setEnabled(true);
-		} else {
-            newMatchCriterion.setAction(new AbstractAction("New Criterion"){
+        } else {
+            newMatchCriterion.setAction(new AbstractAction("New Criterion") {
 
                 public void actionPerformed(ActionEvent e) {
-                    // TODO Auto-generated method stub
-                    
+                    // TODO
+                    JOptionPane.showMessageDialog(PlMatchGroupPanel.this, "Not implemented yet");
                 }
-                
+
             });
             newMatchCriterion.setEnabled(false);
-            newMatchCriterion.setToolTipText("You need to have selected a table you can access to add match criteria");
+            newMatchCriterion.setToolTipText(
+                    "You need to have selected a table you can access to add match criteria");
         }
-		deleteMatchCriterion.setAction(new DeleteMatchCriteria(model,getMatchCriteriaTable()));
-		copyMatchCriterion.setAction(new CopyMatchCriteria(model,getMatchCriteriaTable().getSelectedRows()));
-		pasteMatchCriterion.setAction(new PasteMatchCriteria(model));
-		groupId.setText(model.getGroupId());
-		
-		description.setText(model.getDescription());
-		
-		matchPercent.setText(model.getMatchPercent().toString());
+        deleteMatchCriterion.setAction(new DeleteMatchCriteria(model,
+                getMatchCriteriaTable()));
+        copyMatchCriterion.setAction(new CopyMatchCriteria(model,
+                getMatchCriteriaTable().getSelectedRows()));
+        pasteMatchCriterion.setAction(new PasteMatchCriteria(model));
+        groupId.setText(model.getGroupId());
+        description.setText(model.getDescription());
+        matchPercent.setText(model.getMatchPercent().toString());
+        filterCriteria.setText(model.getFilterCriteria());
+        active.setSelected(!model.isActiveInd());
 
-		filterCriteria.setText(model.getFilterCriteria());
-
-		active.setSelected(!model.isActiveInd());
-		Date updated = model.getLastUpdateDate();
-		
-		lastUpdateDate.setText(updated == null? "N/A" :updated.toString());
-		lastUpdateUser.setText(model.getLastUpdateUser() == null? "N/A" :model.getLastUpdateUser());
-		lastUpdateOSUser.setText(model.getLastUpdateOsUser()== null?"N/A":model.getLastUpdateOsUser());
-	}
+        Date updated = model.getLastUpdateDate();
+        lastUpdateDate.setText(updated == null ? "N/A" : updated.toString());
+        lastUpdateUser.setText(model.getLastUpdateUser() == null ? "N/A"
+                : model.getLastUpdateUser());
+        lastUpdateOSUser.setText(model.getLastUpdateOsUser() == null ? "N/A"
+                : model.getLastUpdateOsUser());
+    }
 	
-	private boolean validateForm(){
+	private boolean validateForm() {
 		if (model == null){
 			logger.debug("Trying to validate unloaded form");
 			return false;
@@ -303,7 +329,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		return validateForm();
 	}
 
-	private JPanel getGroupEditPanel() throws ArchitectException{
+	private JPanel createGroupEditPanel() throws ArchitectException{
 		if (groupEditPanel == null){
 			FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, fill:pref:grow, 10dlu, pref,5dlu,pref,3dlu");
 			PanelBuilder pb = new PanelBuilder(formLayout);
@@ -332,7 +358,7 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			bbb.addUnrelatedGap();
 			bbb.addGridded(deleteMatchCriterion);
 			bbb.addUnrelatedGap();
-			// TODO Add Copy and Paste
+			// TODO Add Copy and Paste buttons
 			//bbb.addGridded(copyMatchCriterion);
 			//bbb.addGridded(pasteMatchCriterion);
 			bbb.addGlue();
@@ -340,70 +366,6 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 			
 		}
 		return groupEditPanel;
-	}
-	
-	/**
-	 * This method initializes jSplitPane	
-	 * 	
-	 * @return javax.swing.JSplitPane	
-	 * @throws ArchitectException 
-	 */
-	private JSplitPane getJSplitPane() throws ArchitectException {
-		if (jSplitPane == null) {
-			jSplitPane = new JSplitPane();
-			jSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-			jSplitPane.setBottomComponent(getMatchCriteriaScrollPane());
-			jSplitPane.setTopComponent(getGroupEditPanel());
-			
-		}
-		return jSplitPane;
-	}
-
-	/**
-	 * This method initializes matchCriteriaScrollPane	
-	 * 	
-	 * @return javax.swing.JScrollPane	
-	 * @throws ArchitectException 
-	 */
-	private JScrollPane getMatchCriteriaScrollPane() throws ArchitectException {
-		if (matchCriteriaScrollPane == null) {
-			matchCriteriaScrollPane = new JScrollPane(getMatchCriteriaTable());
-		}
-		return matchCriteriaScrollPane;
-	}
-
-	/**
-	 * This method initializes matchCriteriaTable	
-	 * 	
-	 * @return javax.swing.JTable	
-	 * @throws ArchitectException 
-	 */
-	private JTable getMatchCriteriaTable() throws ArchitectException {
-		if (matchCriteriaTable == null) {
-			matchCriteriaTable = new EditableJTable();
-			matchCriteriaTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			setModel(model);
-			matchCriteriaTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
-
-			FocusListener tfl = new FocusListener(){
-
-				public void focusGained(FocusEvent e) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				public void focusLost(FocusEvent e) {
-					Transaction tx = HibernateUtil.primarySession().beginTransaction();
-					// TODO Auto-generated method stub
-					HibernateUtil.primarySession().flush();
-					tx.commit();
-				}
-				
-			};
-			matchCriteriaTable.addFocusListener(tfl);
-		
-		}
-		return matchCriteriaTable;
 	}
 
 	public boolean applyChanges() {
@@ -418,41 +380,27 @@ public class PlMatchGroupPanel extends JPanel implements ArchitectPanel {
 		return this;
 	}
 
+    /**
+     * A renderer for presenting a JCheckBox in a JTable cell.  It makes sure the check box
+     * looks right (correct foreground and background colour depending on the cell's selection
+     * state) in the table.
+     */
+	private class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
 
+	    CheckBoxRenderer() {
+	        setHorizontalAlignment(JLabel.CENTER);
+	    }
 
-	
-	class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
-
-		  CheckBoxRenderer() {
-		    setHorizontalAlignment(JLabel.CENTER);
-		  }
-
-		  public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-		    if (isSelected) {
-		      setForeground(table.getSelectionForeground());
-		      setBackground(table.getSelectionBackground());
-		    } else {
-		      setForeground(table.getForeground());
-		      setBackground(table.getBackground());
-		    }
-		    setSelected((value != null && ((Boolean) value).booleanValue()));
-		    return this;
-		  }
-		}
-
-		Action action = new AbstractAction("CheckBox") {
-		    
-		    public void actionPerformed(ActionEvent evt) {
-		        
-		        JCheckBox cb = (JCheckBox)evt.getSource();
-
-		        boolean isSel = cb.isSelected();
-		        if (isSel) {
-		            System.out.println("true");
-		        } else {
-		            System.out.println("false");
-		        }
-		    }
-		};
-
+	    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+	        if (isSelected) {
+	            setForeground(table.getSelectionForeground());
+	            setBackground(table.getSelectionBackground());
+	        } else {
+	            setForeground(table.getForeground());
+	            setBackground(table.getBackground());
+	        }
+	        setSelected((value != null && ((Boolean) value).booleanValue()));
+	        return this;
+	    }
+	}
 } 

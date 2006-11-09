@@ -27,38 +27,49 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria;
 import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
-import ca.sqlpower.matchmaker.swingui.MatchMakerMain;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 public class PlMatchExportAction extends AbstractAction {
 
-	private JFrame owningFrame;
-	private PlMatch match;
-	private DateFormat df = new DateFormatAllowsNull();
+    private final DateFormat df = new DateFormatAllowsNull();
+    
+    private final MatchMakerSwingSession swingSession;
+	private final JFrame owningFrame;
 
-	public PlMatchExportAction(JFrame owningFrame, PlMatch match) {
+    /**
+     * Creates a new instance of this action which is parented by the given frame and will export the
+     * given match object when invoked.
+     * 
+     * @param swingSession The GUI session this action lives in.
+     * @param owningFrame The frame that should own any dialogs this action creates.
+     * @param match The match to export.  If you specify null, the match to export will be
+     * determined by the current selection in the Swing Session's tree.
+     */
+	public PlMatchExportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
 
 		super("Export",
 				ASUtils.createJLFIcon( "general/Export",
 						"Export",
 						ArchitectFrame.getMainInstance().getSprefs().getInt(SwingUserSettings.ICON_SIZE, 24)));
 		putValue(SHORT_DESCRIPTION, "Export Match");
+        this.swingSession = swingSession;
 		this.owningFrame = owningFrame;
-		this.match = match;
 	}
 
 
 	public void actionPerformed(ActionEvent e) {
 
-		if ( match == null ) {
-			match = ArchitectUtils.getTreeObject(
-					MatchMakerMain.getMainInstance().getTree(),
-					PlMatch.class );
-		}
-		if ( match == null ) {
+	    PlMatch match;  // the match we're exporting
+	    match = ArchitectUtils.getTreeObject(
+	            swingSession.getTree(),
+	            PlMatch.class );
+
+        if (match == null) {
+            JOptionPane.showMessageDialog(owningFrame, "Please select a match to export.");
 			return;
 		}
-		JFileChooser fc = new JFileChooser(
-				MatchMakerMain.getMainInstance().getLastImportExportAccessPath());
+        
+		JFileChooser fc = new JFileChooser(swingSession.getLastImportExportAccessPath());
 		fc.setFileFilter(ASUtils.XML_FILE_FILTER);
 		fc.setDialogTitle("Export Match");
 		fc.setSelectedFile(
@@ -73,10 +84,9 @@ public class PlMatchExportAction extends AbstractAction {
 			int fcChoice = fc.showOpenDialog(owningFrame);
 			if (fcChoice == JFileChooser.APPROVE_OPTION) {
 				export = fc.getSelectedFile();
-				MatchMakerMain.getMainInstance().setLastImportExportAccessPath(
-						export.getAbsolutePath());
+				swingSession.setLastImportExportAccessPath(export.getAbsolutePath());
 
-				if ( export.exists()) {
+				if (export.exists()) {
 					int response = JOptionPane.showConfirmDialog(
 							owningFrame,
 							"The file\n\n"+export.getPath()+
@@ -97,7 +107,7 @@ public class PlMatchExportAction extends AbstractAction {
         	PrintWriter out;
         	try {
         		out = new PrintWriter(export);
-        		save(out,"UTF-8");
+        		save(out, "UTF-8", match);
         	} catch (IOException e1) {
         		throw new RuntimeException("IO Error during save", e1);
         	}
@@ -112,7 +122,7 @@ public class PlMatchExportAction extends AbstractAction {
      * @throws IOException
      * @throws ArchitectException
      */
-    public void save(PrintWriter out, String encoding) throws IOException {
+    public void save(PrintWriter out, String encoding, PlMatch match) throws IOException {
 
         IOUtils ioo = new IOUtils();
         ioo.indent = 0;
@@ -260,12 +270,10 @@ public class PlMatchExportAction extends AbstractAction {
             ioo.indent--;
             ioo.println(out, "</PL_MATCH>");
 
-            saveMatchGroup(ioo,out);
-            saveMergeCriteria(ioo,out);
-            saveMergeConsolidateCriteria(ioo,out);
-            saveFolder(ioo,out);
-
-
+            saveMatchGroup(ioo, out, match);
+            saveMergeCriteria(ioo, out, match);
+            saveMergeConsolidateCriteria(ioo, out, match);
+            saveFolder(ioo, out, match);
 
             ioo.indent--;
             ioo.println(out, "</EXPORT>");
@@ -274,7 +282,7 @@ public class PlMatchExportAction extends AbstractAction {
         }
     }
 
-    private void saveFolder(IOUtils ioo, PrintWriter out) {
+    private void saveFolder(IOUtils ioo, PrintWriter out, PlMatch match) {
 
 
     	if ( match.getFolder() == null ) {
@@ -312,7 +320,7 @@ public class PlMatchExportAction extends AbstractAction {
 	}
 
 
-	public void saveMatchGroup(IOUtils ioo, PrintWriter out ) throws IOException {
+	public void saveMatchGroup(IOUtils ioo, PrintWriter out, PlMatch match) throws IOException {
 
     	List <PlMatchGroup> groups = new ArrayList<PlMatchGroup>(match.getPlMatchGroups());
 
@@ -429,7 +437,7 @@ public class PlMatchExportAction extends AbstractAction {
 		}
 	}
 
-	private void saveMergeCriteria(IOUtils ioo, PrintWriter out) {
+	private void saveMergeCriteria(IOUtils ioo, PrintWriter out, PlMatch match) {
 
 		for ( PlMergeCriteria c : match.getPlMergeCriteria() ) {
 
@@ -505,7 +513,7 @@ public class PlMatchExportAction extends AbstractAction {
 		}
 	}
 
-	private void saveMergeConsolidateCriteria(IOUtils ioo, PrintWriter out) {
+	private void saveMergeConsolidateCriteria(IOUtils ioo, PrintWriter out, PlMatch match) {
 
 		for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
 

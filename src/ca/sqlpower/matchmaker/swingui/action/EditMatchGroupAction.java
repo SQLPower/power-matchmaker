@@ -10,27 +10,36 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.PlMatchGroupPanel;
 
-
+/**
+ * This action creates a PLMatchGroupPanel and puts it in a popup dialog.
+ */
 public class EditMatchGroupAction extends AbstractAction {
 
-	PlMatchGroup matchGroup;
-	private Window window;
+    private final MatchMakerSwingSession swingSession;
+    private final PlMatchGroup matchGroup;
+	private final Window window;
 
-
-	public EditMatchGroupAction(PlMatchGroup matchGroup, Window parentWindow) {
+	public EditMatchGroupAction(
+            MatchMakerSwingSession swingSession,
+            PlMatchGroup matchGroup,
+            Window parentWindow) {
 		super("Edit Match Group");
+        this.swingSession = swingSession;
 		this.matchGroup = matchGroup;
 		this.window = parentWindow;
 	}
 
 	/**
-	 * Create and show the dialog
+	 * Creates and shows the dialog
 	 */
 	public void actionPerformed(ActionEvent e)  {
 		try {
-			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(new PlMatchGroupPanel(matchGroup), window, "Edit Match Group", "Save Match Group");
+			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
+                    new PlMatchGroupPanel(swingSession, matchGroup),
+                    window, "Edit Match Group", "Save Match Group");
 			d.setVisible(true);
 		} catch (ArchitectException e1) {
 			throw new ArchitectRuntimeException(e1);

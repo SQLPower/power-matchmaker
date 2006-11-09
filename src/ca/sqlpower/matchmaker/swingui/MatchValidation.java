@@ -21,6 +21,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -57,7 +58,9 @@ public class MatchValidation extends JFrame {
 
     private static final Logger logger = Logger.getLogger(MatchValidation.class);
 
+    private MatchMakerSwingSession swingSession;
     private Match match;
+    
     private RowSet fullResult;
     private List<String> allMatchGroup;
     private List<String> allMatchPct;
@@ -77,7 +80,7 @@ public class MatchValidation extends JFrame {
     private SQLTable matchSourceTable;
     private SQLIndex pk;
     private ItemListener filterMatchGrpListener;
-    FilterMakerDialog filterPanel;
+    private FilterMakerDialog filterPanel;
 
     /**
      * change the candidate JTable according to the selection of source table
@@ -210,8 +213,9 @@ public class MatchValidation extends JFrame {
         }
     };
 
-    public MatchValidation(Match match) throws HeadlessException, SQLException, ArchitectException {
+    public MatchValidation(MatchMakerSwingSession swingSession, Match match) throws HeadlessException, SQLException, ArchitectException {
         super("Validate Matches: ["+match.getName()+"]");
+        this.swingSession = swingSession;
         this.match = match;
         setup();
         buildUI();
@@ -348,7 +352,7 @@ public class MatchValidation extends JFrame {
         sourceJTable = new JTable();
         candidateJTable = new JTable();
         sourceJTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        db = MatchMakerMain.getMainInstance().getDatabase();
+        db = swingSession.getDatabase();
         SQLTable sourceTable = match.getSourceTable().getTable();
         
         matchSourceTable = db.getTableByName(sourceTable.getCatalogName(),
@@ -459,7 +463,7 @@ public class MatchValidation extends JFrame {
 
             Action validationStatusAction = new AbstractAction("View Validation Status") {
                 public void actionPerformed(ActionEvent e) {
-                    MatchValidationStatus p = new MatchValidationStatus(match,MatchValidation.this);
+                    MatchValidationStatus p = new MatchValidationStatus(swingSession, match, MatchValidation.this);
                     p.pack();
                     p.setVisible(true);
                 }};
@@ -488,9 +492,9 @@ public class MatchValidation extends JFrame {
                     pb.add(new JScrollPane(sourceJTable), cc.xy(2,4,"f,f"));
                     pb.add(new JScrollPane(candidateJTable), cc.xy(2,8,"f,f"));
 
-                    pb.add(new JButton("Master"), cc.xy(2,2,"r,c"));
-                    pb.add(new JButton("No Match"), cc.xy(2,6,"r,c"));
-                    pb.add(new JButton("Master"), cc.xy(2,10,"r,c"));
+                    pb.add(new JButton(upperMasterAction), cc.xy(2,2,"r,c"));
+                    pb.add(new JButton(noMatchAction), cc.xy(2,6,"r,c"));
+                    pb.add(new JButton(lowerMasterAction), cc.xy(2,10,"r,c"));
 
                     pb.add(rightPanel, cc.xywh(4,2,1,9,"f,f"));
                     getContentPane().add(pb.getPanel());
@@ -818,7 +822,39 @@ public class MatchValidation extends JFrame {
 
         }
     };
+    
+    /**
+     * Marks the upper selected row as definitely matching the lower selected rows, and as the master
+     * (canonical) version of that record.
+     */
+    private Action upperMasterAction = new AbstractAction("Master") {
 
+        public void actionPerformed(ActionEvent e) {
+            JOptionPane.showMessageDialog(MatchValidation.this, 
+                    "We cant do that yet, Dave");
+        }
+        
+    };
+    
+    /**
+     * Marks the lower selected row as definitely matching the upper selected row, and as the master
+     * (canonical) version of that record.
+     * 
+     * <p>If there is more than one record selected in the lower table, this action will
+     * disable itself. (not implemented yet)
+     */
+    private Action lowerMasterAction = new AbstractAction("Master") {
+
+        public void actionPerformed(ActionEvent e) {
+            JOptionPane.showMessageDialog(MatchValidation.this, 
+                    "We cant do that yet, Dave");
+        }
+        
+    };
+
+    /**
+     * Marks the pair of selected rows as definitely not matching.
+     */
     private Action noMatchAction = new AbstractAction("No Match") {
 
         public void actionPerformed(ActionEvent e) {

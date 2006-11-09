@@ -8,12 +8,12 @@ import javax.swing.event.ListDataListener;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 
 public class TranslationComboBoxModel implements ComboBoxModel {
+
 	List<PlMatchTranslateGroup> translations;
 	PlMatchTranslateGroup selectedItem;
 	
-	public TranslationComboBoxModel() {
-		
-		translations = MatchMakerMain.getMainInstance().getTranslations();
+	public TranslationComboBoxModel(MatchMakerSwingSession swingSession) {
+		translations = swingSession.getTranslations();
 	}
 	
 	public Object getElementAt(int index) {
