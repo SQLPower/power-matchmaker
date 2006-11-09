@@ -15,7 +15,7 @@ import ca.sqlpower.architect.MockJDBCDriver;
 import ca.sqlpower.architect.MockJDBCResultSet;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLIndex.Column;
-import ca.sqlpower.matchmaker.util.ListToSQLIndex;
+import ca.sqlpower.architect.jdbc.MockJDBCPreparedStatement;
 
 public class ListToSQLIndexTest extends TestCase {
 
@@ -38,6 +38,7 @@ public class ListToSQLIndexTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		index = new SQLIndex();
+		index.setName("TestIndex");
 		c0 = index.new Column("Test0", false, false);
 		c1 = index.new Column("Test1", false, false);
 		c2 = index.new Column("Test2", false, false);
@@ -114,11 +115,11 @@ public class ListToSQLIndexTest extends TestCase {
 		
 		SQLIndex ind = (SQLIndex)userType.nullSafeGet(rs, names, null);
 		assertNotNull("We should not be getting a null value when we don't pass one in",ind);
-		assertEquals("The primary key is not correct", ind.getName(), "pkName");
+		assertEquals("The primary key is not correct",  "pkName", ind.getName());
 	
 		for (int j=1; j>11; j++){
 			assertEquals("The child does not have the right name", 
-					ind.getChild(j).getName(), "index_column_name"+j); 
+					"index_column_name"+j,ind.getChild(j).getName()); 
 		}
 	}
 	
@@ -144,16 +145,37 @@ public class ListToSQLIndexTest extends TestCase {
 			try {
 				if (j < 6){
 					assertEquals("The child does not have the right name", 
-							ind.getChild(j).getName(), "index_column_name"+j);
+							"index_column_name"+j, ind.getChild(j).getName() );
 				}else {
 					assertEquals("The child does not have the right name", 
-							ind.getChild(j).getName(), "index_column_name"+(j+1));
+							 "index_column_name"+(j+1),ind.getChild(j).getName());
 				}
 			} catch (ArchitectException e) {
 				throw new HibernateException(e);
 			} 
 		}
 	}
-		
+	
+	public void testNullSafeSetAtFirstIndex() throws SQLException{
+		MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
+		userType.nullSafeSet(statements, index, 0);
+		Object[] values = statements.getParameters();
+		assertEquals("The index has the wrong name","TestIndex", (String)values[0]);
+		for (int i=1; i < 11; i++){
+			assertEquals("The columns have the wrong name","Test"+(i-1), 
+					(String)values[i]);			
+		}		
+	}
+	
+	public void testNullSafeSetAtIndexOtherThanFirst() throws SQLException{
+		MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(18);
+		userType.nullSafeSet(statements, index, 5);
+		Object[] values = statements.getParameters();
+		assertEquals("The index has the wrong name","TestIndex", (String)values[5]);
+		for (int i=6; i < 16; i++){
+			assertEquals("The columns have the wrong name","Test"+(i-6), 
+					(String)values[i]);			
+		}		
+	}
 		
 }
