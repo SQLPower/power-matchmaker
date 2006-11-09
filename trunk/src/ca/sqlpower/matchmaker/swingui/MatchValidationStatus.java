@@ -1,6 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -40,32 +39,34 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.sun.rowset.CachedRowSetImpl;
 
+/**
+ * A dialog box that shows a table of status information about one Match object.
+ * If you want to see a status table for a different match, create a new one of these. 
+ */
 public class MatchValidationStatus extends JDialog {
 
 	private static final Logger logger = Logger.getLogger(MatchValidationStatus.class);
-	private Match match;
+	private final Match match;
 	private final JTable status = new JTable();
+    private final MatchMakerSwingSession swingSession;
 
-	public MatchValidationStatus(Match match, JFrame frameParent) throws HeadlessException {
+	public MatchValidationStatus(MatchMakerSwingSession swingSession, Match match, JFrame frameParent) {
 		super(frameParent,"View Match Validation Status");
-		setMatch(match);
+        this.swingSession = swingSession;
+		this.match = match;
 		createUI();
 	}
     
-    public MatchValidationStatus(Match match, JDialog dialogParent) throws HeadlessException {
+    public MatchValidationStatus(MatchMakerSwingSession swingSession, Match match, JDialog dialogParent) {
         super(dialogParent,"View Match Validation Status");
-        setMatch(match);
+        this.swingSession = swingSession;
+        this.match = match;
         createUI();
     }
 
 	public Match getMatch() {
 		return match;
 	}
-
-	public void setMatch(Match match) {
-		this.match = match;
-	}
-
 
 	private RowSet getMatchStats(Match match) throws SQLException {
     	Connection con = null;
@@ -138,7 +139,7 @@ public class MatchValidationStatus extends JDialog {
 
 	private void createUI() {
 
-		DefaultComboBoxModel model = new DefaultComboBoxModel(MatchMakerMain.getMainInstance().getMatches().toArray());
+		DefaultComboBoxModel model = new DefaultComboBoxModel(swingSession.getMatches().toArray());
 		final JComboBox matchComboBox = new JComboBox(model);
 		matchComboBox.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {

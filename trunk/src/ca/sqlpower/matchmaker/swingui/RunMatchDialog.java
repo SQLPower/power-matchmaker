@@ -62,8 +62,11 @@ import com.jgoodies.forms.layout.FormLayout;
 public class RunMatchDialog extends JDialog{
 
     private static final Logger logger = Logger.getLogger(RunMatchDialog.class);
+    
+    private final MatchMakerSwingSession swingSession;
+
     private JTextField logFilePath;
-    String lastAccessPath;
+    private String lastAccessPath;
 
     private JButton browse;
     private JCheckBox append;
@@ -76,10 +79,6 @@ public class RunMatchDialog extends JDialog{
     private JButton viewStats;
     private JButton showCommand;
     private JButton viewMatchResults;
-    private JButton startWordCount;
-    private JButton wordCountResults;
-    private JButton maintainTranslateWords;
-    private JButton validateMatches;
     private JButton save;
     private JButton runMatchEngine;
     private JButton exit;
@@ -88,10 +87,11 @@ public class RunMatchDialog extends JDialog{
 
     private Match match;
 
-    public RunMatchDialog(Match match, JFrame parentFrame){
+    public RunMatchDialog(MatchMakerSwingSession swingSession, Match match, JFrame parentFrame){
         super(parentFrame,"Run Match:["+match.getName()+"]");
         //We store the parentFrame because ShowMatchStatics require a JFrame to
         //be its parent
+        this.swingSession = swingSession;
         this.parentFrame = parentFrame;
         this.match = match;
         buildUI();
@@ -138,10 +138,7 @@ public class RunMatchDialog extends JDialog{
         viewStats.setText("Match Statistics");
         showCommand = new JButton(new ShowCommandAction(match,RunMatchDialog.this));
         viewMatchResults = new JButton();
-        startWordCount = new JButton();
-        wordCountResults = new JButton();
-        maintainTranslateWords = new JButton();
-        validateMatches = new JButton();
+        // might need more buttons here... (check VB app)
         save = new JButton(new AbstractAction(){
 			public void actionPerformed(ActionEvent e) {
 				applyChange();
@@ -582,7 +579,7 @@ public class RunMatchDialog extends JDialog{
 		 * SHOW_PROGRESS=10 PROCESS_CNT=1
 		 */
 		StringBuffer command = new StringBuffer();
-		SQLDatabase db = MatchMakerMain.getMainInstance().getDatabase();
+		SQLDatabase db = swingSession.getDatabase();
 		String programPath = null;
 		programPath = ExternalEngineUtils.getProgramPath(EnginePath.MATCHMAKER);
 		// FIXME: comment following line to use executable from user pl.ini config

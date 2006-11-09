@@ -47,12 +47,12 @@ import com.jgoodies.forms.layout.FormLayout;
 
 public class TableQueryFrame extends JFrame {
 
-
 	private static final Logger logger = Logger.getLogger(TableQueryFrame.class);
 	public static final String DBCS_DIALOG_TITLE = "New Database Connection";
 
+    private final MatchMakerSwingSession swingSession;
+    
 	private JProgressBar progressBar;
-
 	private JPanel buttonPanel;
 	private JComboBox dbDropdown;
 	private JComboBox tableDropdown;
@@ -266,8 +266,9 @@ public class TableQueryFrame extends JFrame {
 		return buttonPanel;
 	}
 
-	public TableQueryFrame() {
+	public TableQueryFrame(MatchMakerSwingSession swingSession) {
 		super();
+        this.swingSession = swingSession;
 		setTitle("Display Database Tables");
 		tableData = new ArrayList<List>();
         tableColumn = new ArrayList<String>();
@@ -278,7 +279,8 @@ public class TableQueryFrame extends JFrame {
 
 		tableDropdown = new JComboBox();
 		tableDropdown.addActionListener(new SqlAreaPopulator());
-		ConnectionComboBoxModel connectionModel = new ConnectionComboBoxModel(MatchMakerMain.getMainInstance().getUserSettings().getPlDotIni());
+		ConnectionComboBoxModel connectionModel = 
+            new ConnectionComboBoxModel(swingSession.getUserSettings().getPlDotIni());
 		dbDropdown = new JComboBox(connectionModel);
 		dbDropdown.addActionListener(new TablePopulator());
 
@@ -350,27 +352,6 @@ public class TableQueryFrame extends JFrame {
 
 		return pb.getPanel();
 
-	}
-
-
-
-	/**
-	 * Just for testing the form layout without running the whole Architect.
-	 *
-	 * <p>
-	 * The frame it makes is EXIT_ON_CLOSE, so you should never use this in a
-	 * real app.
-	 */
-	public static void main(String[] args) {
-
-		final JFrame f = new TableQueryFrame();
-		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				f.pack();
-				f.setVisible(true);
-			}
-		});
 	}
 
 	private class ResultTableModel extends AbstractTableModel {

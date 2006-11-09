@@ -79,6 +79,8 @@ public class MatchEditor {
     private JButton validateMatch;
     private FilterComponentsPanel filterPanel;
 
+    private final MatchMakerSwingSession swingSession;
+
     /**
      * The match that this editor is editing.  If you want to edit a different match,
      * create a new MatchEditor.
@@ -88,13 +90,13 @@ public class MatchEditor {
     private PlFolder plFolder;
 
 
-    public MatchEditor(Match match,JSplitPane splitPane) throws HeadlessException, ArchitectException {
-        this(match, null, splitPane);
+    public MatchEditor(MatchMakerSwingSession swingSession, Match match, JSplitPane splitPane) throws HeadlessException, ArchitectException {
+        this(swingSession, match, null, splitPane);
     }
 
-    public MatchEditor(Match match, PlFolder folder,JSplitPane splitPane) throws ArchitectException {
+    public MatchEditor(MatchMakerSwingSession swingSession, Match match, PlFolder folder, JSplitPane splitPane) throws ArchitectException {
         super();
-        
+        this.swingSession = swingSession;
         if (match == null) throw new NullPointerException("You can't edit a null plmatch");
         this.match = match;
         if (folder == null) {
@@ -187,14 +189,14 @@ public class MatchEditor {
 
 	private Action runMatchAction = new AbstractAction("Run Match") {
 		public void actionPerformed(ActionEvent e) {
-			RunMatchDialog p = new RunMatchDialog(match, getParentFrame());
+			RunMatchDialog p = new RunMatchDialog(swingSession, match, getParentFrame());
 			p.pack();
 			p.setVisible(true);
 		}};
 
 	private Action validationStatusAction = new AbstractAction("View Validation Status") {
 		public void actionPerformed(ActionEvent e) {
-			MatchValidationStatus p = new MatchValidationStatus(match, 
+			MatchValidationStatus p = new MatchValidationStatus(swingSession, match, 
                     ArchitectPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation Status"));
 			p.pack();
 			p.setVisible(true);
@@ -202,7 +204,7 @@ public class MatchEditor {
 	private Action validateMatchAction = new AbstractAction("Validate Match") {
 		public void actionPerformed(ActionEvent e) {
 			try {
-				MatchValidation v = new MatchValidation(match);
+				MatchValidation v = new MatchValidation(swingSession, match);
 				v.pack();
 				v.setVisible(true);
 			} catch (HeadlessException e1) {
@@ -219,7 +221,7 @@ public class MatchEditor {
             JDialog d;
 			if (t !=null){
                 try {
-                    d = new ViewBuilderDialog(getParentFrame(), t);
+                    d = new ViewBuilderDialog(swingSession, getParentFrame(), t);
                     d.pack();
                     d.setSize(800, d.getPreferredSize().height);
                     d.setVisible(true);
@@ -231,30 +233,35 @@ public class MatchEditor {
 
 	private Action createResultTableAction = new AbstractAction("Create Table") {
 		public void actionPerformed(ActionEvent e) {
-			// TODO:
-		}};
+            // TODO
+            JOptionPane.showMessageDialog(panel, "We can't create tables yet, sorry.");
+		}
+	};
 
+    /**
+     * XXX This is a bit suspect.. what do we need it for, and what happens if the MatchMakerSwingSession
+     * stops using s JSplitPane?
+     */    
 	private JSplitPane splitPane;
 
     private void buildUI() throws ArchitectException {
 
-    	final MatchMakerMain mainFrame = MatchMakerMain.getMainInstance();
 		sourceChooser = new SQLObjectChooser(panel,
-        		mainFrame.getUserSettings().getConnections());
+        		swingSession.getUserSettings().getConnections());
         resultChooser = new SQLObjectChooser(panel,
-        		mainFrame.getUserSettings().getConnections());
+        		swingSession.getUserSettings().getConnections());
 
 
-        final SQLDatabase loginDB = mainFrame.getDatabase();
+        final SQLDatabase loginDB = swingSession.getDatabase();
         ArchitectDataSource ds;
         if ( loginDB != null ) {
-        	PlDotIni ini = mainFrame.getUserSettings().getPlDotIni();
+        	PlDotIni ini = swingSession.getUserSettings().getPlDotIni();
         	ds = ini.getDataSource(loginDB.getDataSource().getName());
         	sourceChooser.getDataSourceComboBox().setSelectedItem(ds);
         	resultChooser.getDataSourceComboBox().setSelectedItem(ds);
         	// no connection no folders
         	folderComboBox.setModel(
-        			new FolderComboBoxModel<PlFolder>(mainFrame.getFolders()));
+        			new FolderComboBoxModel<PlFolder>(swingSession.getFolders()));
         }
 
         filterPanel = new FilterComponentsPanel();
@@ -463,7 +470,7 @@ public class MatchEditor {
 			catalogComboBox.setEnabled(false);
 			catalogLabel.setText("");
 
-			final SQLDatabase db = MatchMakerMain.getMainInstance().getDatabase();
+			final SQLDatabase db = swingSession.getDatabase();
 
 			try {
 				if (db.isCatalogContainer()) {
@@ -650,8 +657,9 @@ public class MatchEditor {
         	}
         	s.append(table.getName());
         	id = s.toString();
-        	if ( MatchMakerMain.getMainInstance().getMatchByName(id) == null )
+        	if ( swingSession.getMatchByName(id) == null ) {
         		matchId.setText(id);
+            }
         }
 
         if ( !checkStringNullOrEmpty(matchId.getText(),"Match ID") )
@@ -698,6 +706,7 @@ public class MatchEditor {
         PlFolder f = (PlFolder)folderComboBox.getSelectedItem();
         match.setFolder( f);
 
+        // XXX don't use hibernate directly; use the DAOs
         Transaction tx = HibernateUtil.primarySession().beginTransaction();
         HibernateUtil.primarySession().saveOrUpdate(match);
         HibernateUtil.primarySession().flush();

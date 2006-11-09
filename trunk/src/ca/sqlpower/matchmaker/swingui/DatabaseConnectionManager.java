@@ -51,7 +51,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	/**
 	 * The Swing GUI session that owns this dialog.
 	 */
-	private MatchMakerMain swingMain;
+	private MatchMakerSwingSession swingSession;
 
 	private JDialog newConnectionDialog;
 	private JTable dsTable;
@@ -72,7 +72,8 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	public synchronized void setNewConnectionDialog(JDialog d) {
 		newConnectionDialog = d;
 	}
-	private NewDatabaseConnectionAction newDatabaseConnectionAction = new NewDatabaseConnectionAction("Add");
+	private NewDatabaseConnectionAction newDatabaseConnectionAction = 
+        new NewDatabaseConnectionAction(swingSession, "Add");
 
 
 	private Action editDatabaseConnectionAction = new AbstractAction("Edit") {
@@ -93,7 +94,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 			DBCS_OkAction okAction = new DBCS_OkAction(dbcsPanel,
 					false,
-					MatchMakerMain.getMainInstance().getUserSettings().getPlDotIni());
+					swingSession.getUserSettings().getPlDotIni());
 			okAction.setConnectionSelectionCallBack(DatabaseConnectionManager.this);
 
 			Action cancelAction = new AbstractAction() {
@@ -117,7 +118,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			setNewConnectionDialog(d);
 
 			/* d.pack();*/
-			d.setLocationRelativeTo(swingMain.getFrame());
+			d.setLocationRelativeTo(swingSession.getFrame());
 			d.setVisible(true);
 			logger.debug("Editting existing DBCS on panel: "+dbcs);
 		}
@@ -152,7 +153,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			}
 			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
 			closeAction.actionPerformed(null);
-			LoginDialog l = new LoginDialog(swingMain);
+			LoginDialog l = new LoginDialog(swingSession);
 			l.setDbSource(dbcs);
 			l.pack();
 	    	l.setVisible(true);
@@ -167,15 +168,15 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		}};
 
 
-	private DatabaseConnectionManager(MatchMakerMain swingSession) throws HeadlessException {
+	private DatabaseConnectionManager(MatchMakerSwingSession swingSession) throws HeadlessException {
 		super(swingSession.getFrame());
-		this.swingMain = swingSession;
+		this.swingSession = swingSession;
 		newDatabaseConnectionAction.setCallBack(this);
 		newDatabaseConnectionAction.setComponentParent(this);
 		newDatabaseConnectionAction.setParent(this);
 	}
 
-	public DatabaseConnectionManager(MatchMakerMain swingSession, PlDotIni plDotIni) {
+	public DatabaseConnectionManager(MatchMakerSwingSession swingSession, PlDotIni plDotIni) {
 		this(swingSession);
 		this.plDotIni = plDotIni;
 		setTitle("Database Connection Manager");

@@ -13,7 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
@@ -30,8 +29,9 @@ import com.jgoodies.forms.layout.FormLayout;
 public class ViewBuilderDialog extends JDialog {
     
     private static Logger logger = Logger.getLogger(ViewBuilderDialog.class);
-    
-    SQLTable viewTable;
+
+    private final MatchMakerSwingSession swingSession;
+    private SQLTable viewTable;
     
     private JTextField viewNameField;
     private JComboBox fromClauseDropdown;
@@ -44,7 +44,6 @@ public class ViewBuilderDialog extends JDialog {
     private JButton selectPasteButton;
     private JTextArea selectTextArea;
     
-    
     private JComboBox whereFirstTableDropdown;
     private JComboBox whereFirstColumnDropdown;
     private JComboBox whereSecondTableDropdown;
@@ -56,25 +55,21 @@ public class ViewBuilderDialog extends JDialog {
     private JButton viewButton;
     private JButton cancelButton;
     private JButton okButton;
-    
-    //TODO: the UI has been built but the functionality has not been 
-    //done yet
-    public ViewBuilderDialog(JFrame parent, SQLTable viewTable) throws ArchitectException{
-        super(parent);
-        setTitle("View Builder");
-        this.viewTable = viewTable;
-        buildUI();
-        setup();
-    }
 
-    
-    public void setup() throws ArchitectException{
+    //TODO: the UI has been built but the functionality has not been done yet
+    public ViewBuilderDialog(MatchMakerSwingSession swingSession, JFrame parent, SQLTable viewTable) throws ArchitectException{
+        super(parent);
+        this.swingSession = swingSession;
+        this.viewTable = viewTable;
+        setTitle("View Builder");
+        buildUI();
         viewNameField.setText(viewTable.getName());
-        for (SQLTable t:(List<SQLTable>)(MatchMakerMain.getMainInstance().getDatabase().getTables())){
+        for (SQLTable t : (List<SQLTable>) (swingSession.getDatabase().getTables())) {
             fromClauseDropdown.addItem(t);
         }
     }
-    public void buildUI(){
+    
+    public void buildUI() {
         
         FormLayout layout = new FormLayout(
                 "4dlu,pref,4dlu,pref,8dlu,fill:min(170dlu;default):grow," +
@@ -183,21 +178,7 @@ public class ViewBuilderDialog extends JDialog {
         getContentPane().add(pb.getPanel());        
     }
 
-    
-    
-    public static void main(String args[]) throws ArchitectException {
 
-        final JDialog d = new ViewBuilderDialog(null,new SQLTable());
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                d.pack();
-                d.setVisible(true);
-            }
-        });
-    }
-    
-    
-    
     ////////////////Button Actions////////////
     
     Action viewPasteAction = new AbstractAction("Paste"){
