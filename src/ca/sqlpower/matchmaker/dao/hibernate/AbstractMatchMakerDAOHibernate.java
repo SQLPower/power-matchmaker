@@ -38,7 +38,7 @@ public abstract class AbstractMatchMakerDAOHibernate<T> implements
 	}
 
 	protected Session getCurrentSession() {
-		return sessionFactory.getCurrentSession();
+		return sessionFactory.openSession();
 
 	}
 
@@ -52,8 +52,6 @@ public abstract class AbstractMatchMakerDAOHibernate<T> implements
 			throw re;
 		}
 	}
-
-	public abstract Class getBusinessClass();
 
 	public void save(T saveMe) {
 		try {

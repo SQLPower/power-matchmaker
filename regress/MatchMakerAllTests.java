@@ -24,6 +24,7 @@ public class MatchMakerAllTests {
 				return !Modifier.isAbstract(modifiers);
 			}
 		};
-		return new RecursiveTestSuite(file, filt);
+		return new RecursiveTestSuite(file, filt);	
 	}
+	
 }
