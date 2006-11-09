@@ -41,40 +41,9 @@ public class LoginDialog extends JDialog {
 
 	private static Logger logger = Logger.getLogger(LoginDialog.class);
 
-	/**
-	 * The session context for this application.  The list of available
-	 * databases lives here, and login attempts will happen via this object.
-	 */
-	private MatchMakerSessionContext sessionContext;
+    private class LoginAction extends Populator implements ActionListener {
 
-	/**
-	 * The session that we will create upon successful login.
-	 */
-	private MatchMakerSession session;
-
-	private JComboBox dbList;
-	private JTextField userID;
-	private JPasswordField password;
-	private JLabel dbSourceName;
-	protected JButton loginButton = new JButton();
-	protected JProgressBar progressBar = new JProgressBar();
-	protected ArchitectDataSource dbSource;
-	private ConnectionComboBoxModel connectionModel;
-
-	private JComponent panel;
-	private Action helpLoginAction = new AbstractAction(){
-
-		public void actionPerformed(ActionEvent e) {
-			// XXX Hook up real help someday.
-			JOptionPane.showMessageDialog(LoginDialog.this,
-					"Help is not yet available. We apologize for the inconvenience");
-		}};
-
-	private ActionListener loginAction = new LoginAction();
-
-	private class LoginAction extends Populator implements ActionListener {
-
-		boolean loginWasSuccessful = false;
+        boolean loginWasSuccessful = false;
 
         public void actionPerformed(ActionEvent e) {
             logger.debug("LoginAction.actionPerformed(): disabling login button");
@@ -101,8 +70,8 @@ public class LoginDialog extends JDialog {
             }
 
             try {
-            	MatchMakerSession session = sessionContext.createSession(dbSource,
-            			userID.getText(), new String(password.getPassword()));
+                MatchMakerSession session = sessionContext.createSession(dbSource,
+                        userID.getText(), new String(password.getPassword()));
                 ListerProgressBarUpdater progressBarUpdater =
                     new ListerProgressBarUpdater(progressBar, this);
                 new javax.swing.Timer(100, progressBarUpdater).start();
@@ -113,7 +82,7 @@ public class LoginDialog extends JDialog {
             } catch (Exception ex) {
                 ASUtils.showExceptionDialogNoReport(LoginDialog.this,
                         "Connection Error", ex );
-			}
+            }
         }
 
         @Override
@@ -124,26 +93,57 @@ public class LoginDialog extends JDialog {
             loginWasSuccessful = true;
         }
 
-		@Override
-		public void cleanup() {
-			if (getDoStuffException() != null) {
-				ASUtils.showExceptionDialog("Login failed", getDoStuffException());
-			} else if (
-					session != null &&
-					session.getDatabase() != null &&
-					session.getDatabase().isPopulated() &&
-					loginWasSuccessful) {
+        @Override
+        public void cleanup() {
+            if (getDoStuffException() != null) {
+                ASUtils.showExceptionDialog("Login failed", getDoStuffException());
+            } else if (
+                    session != null &&
+                    session.getDatabase() != null &&
+                    session.getDatabase().isPopulated() &&
+                    loginWasSuccessful) {
                 // XXX Change this to fire an event so we don't need to know who's interested.
                 // XXX this takes a while (~10 seconds) and during that time, the UI is frozen.
                 swingSession.newLogin(session.getDatabase());
-			    LoginDialog.this.setVisible(false);
-			} else {
-				JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
-			}
+                LoginDialog.this.setVisible(false);
+            } else {
+                JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
+            }
             logger.debug("LoginAction.actionPerformed(): enabling login button (login has either failed or not; dialog might still be showing)");
-			loginButton.setEnabled(true);
+            loginButton.setEnabled(true);
+        }
+    }
+    
+	/**
+	 * The session context for this application.  The list of available
+	 * databases lives here, and login attempts will happen via this object.
+	 */
+	private MatchMakerSessionContext sessionContext;
+
+	/**
+	 * The session that we will create upon successful login.
+	 */
+	private MatchMakerSession session;
+
+	private JComboBox dbList;
+	private JTextField userID;
+	private JPasswordField password;
+	private JLabel dbSourceName;
+	protected JButton loginButton = new JButton();
+	protected JProgressBar progressBar = new JProgressBar();
+	protected ArchitectDataSource dbSource;
+	private ConnectionComboBoxModel connectionModel;
+	private JComponent panel;
+    
+    private ActionListener loginAction = new LoginAction();
+
+	private Action helpLoginAction = new AbstractAction(){
+		public void actionPerformed(ActionEvent e) {
+			// XXX Hook up real help someday.
+			JOptionPane.showMessageDialog(LoginDialog.this,
+					"Help is not yet available. We apologize for the inconvenience");
 		}
-	}
+	};
 
 	private ListDataListener connListener = new ListDataListener() {
 
@@ -168,9 +168,18 @@ public class LoginDialog extends JDialog {
 	 */
 	private MatchMakerSwingSession swingSession;
 
-	public LoginDialog(MatchMakerSwingSession swingMain) {
-		super(swingMain.getFrame());
-		this.swingSession = swingMain;
+    
+    /**
+     * Creates a new login dialog, but does not display it.
+     * 
+     * FIXME the login dialog is supposed to be creating (or at least setting up) a MatchMakerSwingSession,
+     * but it's getting one here in the constructor.  We should get a session context as the constructor
+     * object, and then use it to build a SwingSession once the user picks a database to log into.
+     */
+	public LoginDialog(MatchMakerSwingSession swingSession) {
+		super(swingSession.getFrame());
+        this.sessionContext = swingSession.getContext();
+		this.swingSession = swingSession;
 		setTitle("Database Connections");
 		panel = createPanel();
 		getContentPane().add(panel);
@@ -194,7 +203,7 @@ public class LoginDialog extends JDialog {
 		dbSourceName = new JLabel();
 
 		JLabel line1 = new JLabel("Please choose one of the following databases for login:");
-		connectionModel = new ConnectionComboBoxModel(swingSession.getUserSettings().getPlDotIni());
+		connectionModel = new ConnectionComboBoxModel(swingSession.getContext().getPlDotIni());
 		connectionModel.addListDataListener(connListener);
 		dbList = new JComboBox(connectionModel);
 		JLabel dbSourceName1 = new JLabel("Database source name:");

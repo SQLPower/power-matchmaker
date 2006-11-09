@@ -32,7 +32,7 @@ import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
-import ca.sqlpower.architect.swingui.action.DBCS_OkAction;
+import ca.sqlpower.architect.swingui.action.DBCSOkAction;
 import ca.sqlpower.matchmaker.swingui.action.NewDatabaseConnectionAction;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
@@ -92,9 +92,9 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			final DBCSPanel dbcsPanel = new DBCSPanel();
 			dbcsPanel.setDbcs(dbcs);
 
-			DBCS_OkAction okAction = new DBCS_OkAction(dbcsPanel,
+			DBCSOkAction okAction = new DBCSOkAction(dbcsPanel,
 					false,
-					swingSession.getUserSettings().getPlDotIni());
+					swingSession.getContext().getPlDotIni());
 			okAction.setConnectionSelectionCallBack(DatabaseConnectionManager.this);
 
 			Action cancelAction = new AbstractAction() {

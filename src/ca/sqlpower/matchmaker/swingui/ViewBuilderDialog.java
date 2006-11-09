@@ -64,7 +64,7 @@ public class ViewBuilderDialog extends JDialog {
         setTitle("View Builder");
         buildUI();
         viewNameField.setText(viewTable.getName());
-        for (SQLTable t : (List<SQLTable>) (swingSession.getDatabase().getTables())) {
+        for (SQLTable t : (List<SQLTable>) (swingSession.getPlRepositoryDatabase().getTables())) {
             fromClauseDropdown.addItem(t);
         }
     }
