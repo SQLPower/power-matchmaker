@@ -106,7 +106,7 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject>
 		return lastUpdateDate;
 	}
 	public void registerUpdate() {
-		lastUpdateDate = new Date(System.currentTimeMillis());
+		lastUpdateDate = new Date();
 		lastUpdateOsUser = System.getProperty("user.name");
 		lastUpdateAppUser = appUserName;
 	}
