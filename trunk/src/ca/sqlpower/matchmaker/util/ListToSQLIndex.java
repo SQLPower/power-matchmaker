@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
@@ -94,8 +95,25 @@ public class ListToSQLIndex implements UserType  {
 		return index;
 	}
 
-	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException, SQLException {
-		// TODO Auto-generated method stub
+	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException, SQLException {	
+		if (value instanceof SQLIndex){
+			SQLIndex ind = (SQLIndex)value;
+			st.setString(index, ind.getName());
+			try {
+				//It is require to increment the index by 1 since the initla
+				//index is for the SQLIndex name.  The index needs to increase
+				//to synchronize with setting the values of the columns
+				for (SQLIndex.Column c : (List<SQLIndex.Column>)ind.getChildren()){
+					index++;
+					st.setString(index, c.getName());
+					
+				}
+			} catch (ArchitectException e) {
+				throw new HibernateException(e);
+			}
+		}else{
+			throw new HibernateException("Invalid object type, it must be a SQLIndex");
+		}
 
 	}
 
