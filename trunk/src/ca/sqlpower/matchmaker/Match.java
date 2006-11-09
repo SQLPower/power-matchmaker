@@ -26,7 +26,10 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 		}
 	}
 
-	/** The id of this object. It must be unique across all match objects */
+	/** the oid for the match */
+	Long oid;
+	
+	/** The name of this object. It must be unique across all match objects */
 	String name;
 
 	/** The type of match */
@@ -223,6 +226,29 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 	public List<PlMatchGroup> getMatchGroups() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	@Override
+	public int hashCode() {
+		final int PRIME = 31;
+		int result = 1;
+		result = PRIME * result + ((oid == null) ? 0 : oid.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final Match other = (Match) obj;
+		if (oid == null) {
+			if (other.oid != null)
+				return false;
+		} else if (!oid.equals(other.oid))
+			return false;
+		return true;
 	}
 
 }

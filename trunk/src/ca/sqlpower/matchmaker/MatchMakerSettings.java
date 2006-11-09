@@ -13,6 +13,46 @@ import ca.sqlpower.matchmaker.util.log.Log;
 public abstract class MatchMakerSettings extends
 		AbstractMatchMakerObject<MatchMakerObject> {
 
+	@Override
+	public int hashCode() {
+		final int PRIME = 31;
+		int result = 1;
+		result = PRIME * result + (appendToLog ? 1231 : 1237);
+		result = PRIME * result + (debug ? 1231 : 1237);
+		result = PRIME * result + ((log == null) ? 0 : log.hashCode());
+		result = PRIME * result + processCount;
+		result = PRIME * result + (sendEmail ? 1231 : 1237);
+		result = PRIME * result + (showProgressFreq ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final MatchMakerSettings other = (MatchMakerSettings) obj;
+		if (appendToLog != other.appendToLog)
+			return false;
+		if (debug != other.debug)
+			return false;
+		if (log == null) {
+			if (other.log != null)
+				return false;
+		} else if (!log.equals(other.log))
+			return false;
+		if (processCount != other.processCount)
+			return false;
+		if (sendEmail != other.sendEmail)
+			return false;
+		if (showProgressFreq != other.showProgressFreq)
+			return false;
+		return true;
+	}
+
 	public MatchMakerSettings(String appUserName) {
 		super(appUserName);
 	}

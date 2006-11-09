@@ -5,6 +5,28 @@ package ca.sqlpower.matchmaker;
  * 
  */
 public class MergeSettings extends MatchMakerSettings {
+	@Override
+	public int hashCode() {
+		final int PRIME = 31;
+		int result = super.hashCode();
+		result = PRIME * result + (backUp ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final MergeSettings other = (MergeSettings) obj;
+		if (backUp != other.backUp)
+			return false;
+		return true;
+	}
+
 	public MergeSettings(String appUserName) {
 		super(appUserName);
 	}

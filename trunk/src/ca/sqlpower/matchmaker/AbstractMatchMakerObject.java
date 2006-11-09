@@ -18,6 +18,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 public abstract class AbstractMatchMakerObject<C extends MatchMakerObject>
 	implements MatchMakerObject<C> {
 
+	private MatchMakerObject parent;
 	private MatchMakerEventSupport<MatchMakerObject,C> eventSupport =
 		new MatchMakerEventSupport<MatchMakerObject,C>(this);
 	private List<C> children = new ArrayList<C>();
@@ -109,5 +110,17 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject>
 		lastUpdateDate = new Date();
 		lastUpdateOsUser = System.getProperty("user.name");
 		lastUpdateAppUser = appUserName;
+	}
+	
+	public abstract boolean equals(Object obj);
+	
+	public abstract int hashCode();
+
+	public MatchMakerObject getParent() {
+		return parent;
+	}
+
+	public void setParent(MatchMakerObject parent) {
+		this.parent = parent;
 	}
 }

@@ -21,6 +21,11 @@ public interface MatchMakerObject<T extends MatchMakerObject> extends Auditable 
 	void removeMatchMakerListener(MatchMakerListener<MatchMakerObject,T> l);
 	
 	/**
+	 * get the parent of this object
+	 */
+	MatchMakerObject getParent();
+	
+	/**
 	 * Returns the object's primary children
 	 */
 	List<T> getChildren();
@@ -39,4 +44,8 @@ public interface MatchMakerObject<T extends MatchMakerObject> extends Auditable 
 	 * remove a child from this object
 	 */
 	void removeChild(T child);
+	
+	public int hashCode();
+	
+	public boolean equals(Object obj);
 }

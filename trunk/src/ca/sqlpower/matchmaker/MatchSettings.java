@@ -5,6 +5,31 @@ package ca.sqlpower.matchmaker;
  */
 public class MatchSettings extends MatchMakerSettings {
 
+	@Override
+	public int hashCode() {
+		final int PRIME = 31;
+		int result = super.hashCode();
+		result = PRIME * result + (breakUpMatch ? 1231 : 1237);
+		result = PRIME * result + (truncateCandDupe ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final MatchSettings other = (MatchSettings) obj;
+		if (breakUpMatch != other.breakUpMatch)
+			return false;
+		if (truncateCandDupe != other.truncateCandDupe)
+			return false;
+		return true;
+	}
+
 	public MatchSettings(String appUserName) {
 		super(appUserName);
 	}
