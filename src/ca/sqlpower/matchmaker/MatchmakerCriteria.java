@@ -6,6 +6,8 @@ import ca.sqlpower.architect.SQLColumn;
 
 public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatchMakerObject<C> {
 
+	Long oid;
+	
 	private SQLColumn column;
 
 	/**
@@ -325,5 +327,29 @@ public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatc
 	@Override
 	public void addChild(C child) {
 		throw new IllegalStateException("MatchMakerCriteria class does NOT allow child!");
+	}
+
+
+	@Override
+	public int hashCode() {
+		return oid.hashCode();
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final MatchmakerCriteria other = (MatchmakerCriteria) obj;
+		if (oid == null) {
+			if (other.oid != null)
+				return false;
+		} else if (!oid.equals(other.oid))
+			return false;
+		return true;
 	}
 }

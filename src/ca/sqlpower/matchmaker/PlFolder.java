@@ -83,4 +83,27 @@ public class PlFolder<C extends MatchMakerObject> extends AbstractMatchMakerObje
 		getEventSupport().firePropertyChange("lastBackupNo", oldValue, lastBackupNo);
 	}
 
+
+	public int hashCode() {
+		return folderName.hashCode();
+	}
+
+	
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final PlFolder other = (PlFolder) obj;
+		if (folderName == null) {
+			if (other.folderName != null)
+				return false;
+		} else if (!folderName.equals(other.folderName))
+			return false;
+		return true;
+	}
+
+	
 }

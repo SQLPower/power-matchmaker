@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 
 public class MatchMakerEventSupportTest extends TestCase {
 
@@ -15,9 +15,7 @@ public class MatchMakerEventSupportTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		mmo = new AbstractMatchMakerObject<MatchMakerObject>("a") {
-
-		};
+		mmo = new TestingAbstractMatchMakerObject("a") {};
 		support= new MatchMakerEventSupport<MatchMakerObject, MatchMakerObject>(mmo);
 	}
 
@@ -78,7 +76,7 @@ public class MatchMakerEventSupportTest extends TestCase {
 		support.addMatchMakerListener(mmec);
 		int[] index = { 0 };
 		List<MatchMakerObject> mmoChildren = new ArrayList<MatchMakerObject>();
-		mmoChildren.add(new AbstractMatchMakerObject<MatchMakerObject>("a") {
+		mmoChildren.add(new TestingAbstractMatchMakerObject("a") {
 		});
 		support.fireChildrenInserted("InChild", index, mmoChildren);
 		MatchMakerEvent lastEvt = mmec.getLastEvt();
@@ -101,7 +99,7 @@ public class MatchMakerEventSupportTest extends TestCase {
 		support.addMatchMakerListener(mmec);
 		int[] index = { 1 };
 		List<MatchMakerObject> mmoChildren = new ArrayList<MatchMakerObject>();
-		mmoChildren.add(new AbstractMatchMakerObject<MatchMakerObject>("a") {
+		mmoChildren.add(new TestingAbstractMatchMakerObject("a") {
 		});
 		support.fireChildrenRemoved("OutChild", index, mmoChildren);
 		MatchMakerEvent lastEvt = mmec.getLastEvt();
@@ -176,7 +174,7 @@ public class MatchMakerEventSupportTest extends TestCase {
 	public void testNullPropertyNameDisallowedForChildrenInserted() {
 		try {
 			List<MatchMakerObject> myList = new ArrayList<MatchMakerObject>();
-			myList.add(new AbstractMatchMakerObject<MatchMakerObject<?>>("fake test child") {});
+			myList.add(new TestingAbstractMatchMakerObject("fake test child") {});
 			support.fireChildrenInserted(null, new int[] { 0 }, myList);
 			fail("MatchMakerEventSupport allowed a null property name");
 		} catch (NullPointerException e) {
@@ -187,7 +185,7 @@ public class MatchMakerEventSupportTest extends TestCase {
 	public void testNullPropertyNameDisallowedForChildrenRemoved() {
 		try {
 			List<MatchMakerObject> myList = new ArrayList<MatchMakerObject>();
-			myList.add(new AbstractMatchMakerObject<MatchMakerObject<?>>("fake test child") {});
+			myList.add(new TestingAbstractMatchMakerObject("fake test child") {});
 			support.fireChildrenRemoved(null, new int[] { 0 }, myList);
 			fail("MatchMakerEventSupport allowed a null property name");
 		} catch (NullPointerException e) {
@@ -207,7 +205,7 @@ public class MatchMakerEventSupportTest extends TestCase {
 	public void testIndexArrayAndObjectListWithDifferentLengthsOnChildrenInsertedFails() {
 		try {
 			List<MatchMakerObject> myList = new ArrayList<MatchMakerObject>();
-			myList.add(new AbstractMatchMakerObject<MatchMakerObject<?>>("fake test child") {});
+			myList.add(new TestingAbstractMatchMakerObject("fake test child") {});
 			support.fireChildrenInserted("test", new int[] { 0, 1 }, myList);
 			fail("MatchMakerEventSupport allowed index and child lists of different sizes");
 		} catch (IllegalArgumentException e) {
@@ -220,7 +218,7 @@ public class MatchMakerEventSupportTest extends TestCase {
 	public void testIndexArrayAndObjectListWithDifferentLengthsOnChildrenRemovedFails() {
 		try {
 			List<MatchMakerObject> myList = new ArrayList<MatchMakerObject>();
-			myList.add(new AbstractMatchMakerObject<MatchMakerObject<?>>("fake test child") {});
+			myList.add(new TestingAbstractMatchMakerObject("fake test child") {});
 			support.fireChildrenRemoved("test", new int[] { 0, 1 }, myList);
 			fail("MatchMakerEventSupport allowed index and child lists of different sizes");
 		} catch (IllegalArgumentException e) {

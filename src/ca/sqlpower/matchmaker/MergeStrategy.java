@@ -8,9 +8,36 @@ package ca.sqlpower.matchmaker;
  */
 public class MergeStrategy extends AbstractMatchMakerObject {
 
+	private Long oid;
+	
 	public MergeStrategy(String appUserName) {
 		super(appUserName);
 		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public int hashCode() {
+		final int PRIME = 31;
+		int result = 1;
+		result = PRIME * result + ((oid == null) ? 0 : oid.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final MergeStrategy other = (MergeStrategy) obj;
+		if (oid == null) {
+			if (other.oid != null)
+				return false;
+		} else if (!oid.equals(other.oid))
+			return false;
+		return true;
 	}
 
 }

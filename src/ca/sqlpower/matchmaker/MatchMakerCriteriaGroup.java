@@ -8,6 +8,7 @@ package ca.sqlpower.matchmaker;
  */
 public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria> extends AbstractMatchMakerObject<C> {
 
+	private Long oid;
 	private String name;
 	private String desc;
 	private Long matchPercent;		// NULL or something from 0-100, but not guaranteed
@@ -69,4 +70,26 @@ public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria> extends Abstr
 		getEventSupport().firePropertyChange("filter", oldValue, filter);
 	}
 
+	@Override
+	public int hashCode() {
+		return oid.hashCode();
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final MatchmakerCriteria other = (MatchmakerCriteria) obj;
+		if (oid == null) {
+			if (other.oid != null)
+				return false;
+		} else if (!oid.equals(other.oid))
+			return false;
+		return true;
+	}
 }
