@@ -47,9 +47,6 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 		assertEquals("The last_update_user should be [" +
 				appUserName +"], because user1 has changed this match object",
 				appUserName, test.getLastUpdateAppUser());
-		assertNull("The default last_update_user in match object should be null," +
-				" because we have never change it",
-				mmo1.getLastUpdateAppUser());
 	}
 
 	public void testAuditingInfoRemoveChild() {

@@ -122,6 +122,8 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject>
 	}
 
 	public void setParent(MatchMakerObject parent) {
+		MatchMakerObject oldValue = this.parent;
 		this.parent = parent;
+		eventSupport.firePropertyChange("parent", oldValue, this.parent);
 	}
 }
