@@ -25,7 +25,7 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject>
 	private String lastUpdateAppUser;
 	private String lastUpdateOsUser;
 	private Date lastUpdateDate;
-	private String appUserName;
+	private MatchMakerSession matchMakerSession;
 
 
 	public AbstractMatchMakerObject() {
@@ -106,10 +106,15 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject>
 	public Date getLastUpdateDate() {
 		return lastUpdateDate;
 	}
+	/** 
+	 * Register an update if the object is participating in a session
+	 */
 	public void registerUpdate() {
-		lastUpdateDate = new Date();
-		lastUpdateOsUser = System.getProperty("user.name");
-		lastUpdateAppUser = appUserName;
+		if (matchMakerSession != null){
+			lastUpdateDate = new Date();
+			lastUpdateOsUser = System.getProperty("user.name");
+			lastUpdateAppUser = matchMakerSession.getAppUser();
+		}
 	}
 	
 	public abstract boolean equals(Object obj);
@@ -126,7 +131,7 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject>
 		eventSupport.firePropertyChange("parent", oldValue, this.parent);
 	}
 
-	public void setAppUserName(String appUserName) {
-		this.appUserName = appUserName;
+	public void setSession(MatchMakerSession matchMakerSession) {
+		this.matchMakerSession = matchMakerSession;
 	}
 }

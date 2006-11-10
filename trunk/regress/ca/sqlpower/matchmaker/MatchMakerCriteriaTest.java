@@ -13,7 +13,9 @@ public class MatchMakerCriteriaTest<C extends MatchMakerObject> extends MatchMak
 	protected void setUp() throws Exception {
 		super.setUp();
 		target = new MatchmakerCriteria<C>();
-		target.setAppUserName(appUserName);
+		MatchMakerSession session = new TestingMatchMakerSession();
+		((TestingMatchMakerSession)session).setAppUser(appUserName);
+		target.setSession(session);
 	}
 
 	@Override

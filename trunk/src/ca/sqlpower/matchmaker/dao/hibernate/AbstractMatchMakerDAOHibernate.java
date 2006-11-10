@@ -7,6 +7,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 
 /**
@@ -21,13 +22,13 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
  */
 public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject> implements
 		MatchMakerDAO<T> {
-	SessionFactory sessionFactory;
-	String appUserName;
+	private MatchMakerSession matchMakerSession;
+	private SessionFactory sessionFactory;
+	
 
-	public AbstractMatchMakerDAOHibernate(SessionFactory sessionFactory,String appUserName) {
-		super();
+	public AbstractMatchMakerDAOHibernate(SessionFactory sessionFactory,MatchMakerSession matchMakerSession) {
+		this.matchMakerSession = matchMakerSession;
 		this.sessionFactory = sessionFactory;
-		this.appUserName = appUserName;
 	}
 
 	public void delete(T deleteMe) {
@@ -55,7 +56,7 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 			Transaction t = s.beginTransaction();
 			List<T> results = s.createCriteria(getBusinessClass()).list();
 			for (T item: results){
-				item.setAppUserName(appUserName);
+				item.setSession(matchMakerSession);
 			}
 			t.commit();
 			return results;

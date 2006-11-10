@@ -69,7 +69,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	}
 
 	public List<PlFolder> getFolders() {
-		PlFolderDAO folderDAO = new PlFolderDAOHibernate(hibernateSessionFactory,getAppUser());
+		PlFolderDAO folderDAO = new PlFolderDAOHibernate(hibernateSessionFactory,this);
 		return folderDAO.findAll();
 	}
 

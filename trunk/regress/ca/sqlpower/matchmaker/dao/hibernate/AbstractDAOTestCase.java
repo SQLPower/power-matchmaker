@@ -4,10 +4,14 @@ import java.util.List;
 
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 
 public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends MatchMakerDAO> extends TestCase {
 
+	public MatchMakerSession session = new TestingMatchMakerSession();
+	
 	public void testFindAll(){
 		D dao = getDataAccessObject();
 		List<T> all = dao.findAll();

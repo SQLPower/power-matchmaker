@@ -9,7 +9,9 @@ public class PlFolderTest extends MatchMakerTestCase<PlFolder> {
 	protected void setUp() throws Exception {
 		super.setUp();
 		plFolder = new PlFolder<Match>();
-		plFolder.setAppUserName(appUserName);
+		MatchMakerSession session = new TestingMatchMakerSession();
+		((TestingMatchMakerSession)session).setAppUser(appUserName);
+		plFolder.setSession(session);
 	}
 
 	@Override

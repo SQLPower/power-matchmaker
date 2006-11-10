@@ -12,7 +12,9 @@ public class MatchMakerTranslateWordTest<C extends MatchMakerTranslateWord>
 	protected void setUp() throws Exception {
 		super.setUp();
 		target = new MatchMakerTranslateWord<C>();
-		target.setAppUserName("test_user");
+		MatchMakerSession session = new TestingMatchMakerSession();
+		((TestingMatchMakerSession)session).setAppUser(appUserName);
+		target.setSession(session);
 	}
 
 	@Override

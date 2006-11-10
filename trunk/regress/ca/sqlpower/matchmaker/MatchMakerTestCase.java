@@ -36,6 +36,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	C target;
 
     Set<String>propertiesToIgnoreForEventGeneration = new HashSet<String>();
+    public MatchMakerSession session = new TestingMatchMakerSession();
 
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -135,7 +136,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			}
 			
 			if (newVal instanceof MatchMakerObject){
-				((MatchMakerObject)newVal).setAppUserName("Test User");
+				((MatchMakerObject)newVal).setSession(session);
 			}
 
 			int oldChangeCount = listener.getAllEventCounts();

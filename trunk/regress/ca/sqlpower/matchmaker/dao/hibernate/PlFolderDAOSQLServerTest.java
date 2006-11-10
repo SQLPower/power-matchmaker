@@ -10,14 +10,14 @@ public class PlFolderDAOSQLServerTest extends AbstractDAOTestCase<PlFolder<Match
 	
 	@Override
 	public PlFolderDAO getDataAccessObject() {
-		return new PlFolderDAOHibernate(HibernateTestUtil.getSqlServerSessionFactory(),"Test User");
+		return new PlFolderDAOHibernate(HibernateTestUtil.getSqlServerSessionFactory(),session);
 	}
 
 	@Override
 	public PlFolder<MatchMakerObject> getNewObjectUnderTest() {
 		count++;
 		PlFolder<MatchMakerObject> plFolder = new PlFolder<MatchMakerObject>();
-		plFolder.setAppUserName("test user");
+		plFolder.setSession(this.session);
 		plFolder.setFolderName("test "+count);
 		return plFolder;
 	}
