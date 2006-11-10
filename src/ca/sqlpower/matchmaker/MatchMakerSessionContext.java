@@ -9,10 +9,39 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.security.PLSecurityException;
 
+/**
+ * A MatchMakerSessionContext holds global (well, systemwide) configuration and
+ * preferences information, and when properly configured, is used for creating
+ * MatchMaker sessions, which are a basic requirement for using the rest of the
+ * MatchMaker API. If you were looking for the starting point, you've found it!
+ * 
+ * <p>The normal implementation of this interface is 
+ * {@link ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext},
+ * so you probably want to create and configure one of those to get started.
+ * 
+ * @version $Id$
+ */
 public interface MatchMakerSessionContext {
 
     public List<ArchitectDataSource> getDataSources();
 
+    /**
+     * Creates a MatchMaker session object, which entails logging into a database
+     * with a current PL Schema.  A MatchMaker session is the core object of the
+     * MatchMaker application, so you will want to call this method early in your
+     * usage of the MatchMaker API.
+     * 
+     * @param ds The data source that contains the PL Schema you want to connect to.
+     * @param username The database user name to connect as.
+     * @param password The database password for the given username.
+     * @return A new MatchMaker session which is connected to the given database.
+     * @throws PLSecurityException If there is no PL_USER entry for your database user, or
+     * that user doesn't have permission to use the MatchMaker.
+     * @throws SQLException If there are general database errors (can't connect, database
+     * permission denied, the PL Schema is missing, etc).
+     * @throws ArchitectException Because of cut and paste.
+     * @throws IOException If any bootstrap init files are missing or unreadable.
+     */
     public MatchMakerSession createSession(ArchitectDataSource ds,
             String username, String password) throws PLSecurityException,
             SQLException, ArchitectException, IOException;
