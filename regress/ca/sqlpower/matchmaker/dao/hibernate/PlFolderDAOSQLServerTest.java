@@ -5,7 +5,7 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 
 
-public class OfPlFolderDAOSQLServerTest extends AbstractDAOTestCase<PlFolder<MatchMakerObject>,PlFolderDAO> {
+public class PlFolderDAOSQLServerTest extends AbstractDAOTestCase<PlFolder<MatchMakerObject>,PlFolderDAO> {
 	int count=0;
 	
 	@Override
