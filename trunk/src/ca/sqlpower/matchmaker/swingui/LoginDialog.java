@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -26,8 +25,6 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
-import ca.sqlpower.architect.swingui.SwingUserSettings;
-import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -101,6 +98,7 @@ public class LoginDialog extends JDialog {
                     session.getDatabase() != null &&
                     session.getDatabase().isPopulated() &&
                     loginWasSuccessful) {
+                sessionContext.setLastLoginDataSource(dbSource);
                 session.showGUI();
                 LoginDialog.this.setVisible(false);
             } else {
@@ -111,10 +109,14 @@ public class LoginDialog extends JDialog {
         }
     }
     
-    private final Action cancelAction = new AbstractAction(){
+    private final Action cancelAction = new AbstractAction("Cancel") {
         public void actionPerformed(ActionEvent e) {
             LoginDialog.this.dispose();
         }
+    };
+    
+    private final Action connectionManagerAction = new AbstractAction("Manage Connections...") {
+        public void actionPerformed(ActionEvent e) { sessionContext.showDatabaseConnectionManager(); };
     };
     
 	/**
@@ -140,14 +142,6 @@ public class LoginDialog extends JDialog {
     
     private ActionListener loginAction = new LoginAction();
 
-	private Action helpLoginAction = new AbstractAction(){
-		public void actionPerformed(ActionEvent e) {
-			// XXX Hook up real help someday.
-			JOptionPane.showMessageDialog(LoginDialog.this,
-					"Help is not yet available. We apologize for the inconvenience");
-		}
-	};
-
 	private ListDataListener connListener = new ListDataListener() {
 
 		public void intervalAdded(ListDataEvent e) {
@@ -167,7 +161,9 @@ public class LoginDialog extends JDialog {
 		}};
     
     /**
-     * Creates a new login dialog, but does not display it.
+     * Creates a new login dialog, but does not display it.  Normally you should use
+     * {@link SwingSessionContext#showLoginDialog()} and not create new login dialogs
+     * yourself.
      */
 	public LoginDialog(SwingSessionContext sessionContext) {
 		super();
@@ -175,7 +171,6 @@ public class LoginDialog extends JDialog {
 		setTitle("Power*MatchMaker Login");
 		panel = createPanel();
 		getContentPane().add(panel);
-		setModal(true);
         ASUtils.makeJDialogCancellable(this, cancelAction);
 	}
 
@@ -201,25 +196,18 @@ public class LoginDialog extends JDialog {
 		dbList = new JComboBox(connectionModel);
 		JLabel dbSourceName1 = new JLabel("Database source name:");
 
-		Preferences pref = PreferencesManager.getDefaultInstance().getRootNode();
-		String lastLogin = pref.get(SwingUserSettings.LAST_LOGIN_DATA_SOURCE,null);
-		if ( lastLogin != null ) {
-			connectionModel.setSelectedItem(lastLogin);
-		}
-		ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
-		JButton helpLoginButton = new JButton(helpLoginAction);
-		helpLoginButton.setText("Help");
-		bbBuilder.addGridded (helpLoginButton);
-		bbBuilder.addRelatedGap();
-		bbBuilder.addGlue();
+		connectionModel.setSelectedItem(sessionContext.getLastLoginDataSource());
 
-
+		JButton connectionManagerButton = new JButton(connectionManagerAction);
 		loginButton.addActionListener(loginAction);
 		loginButton.setText("Login");
 		JButton cancelButton = new JButton(cancelAction);
-		cancelButton.setText("Cancel");
+
+		ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
+        bbBuilder.addGridded(connectionManagerButton);
+        bbBuilder.addUnrelatedGap();
 		bbBuilder.addGridded(loginButton);
-		bbBuilder.addUnrelatedGap();
+		bbBuilder.addRelatedGap();
 		bbBuilder.addGridded(cancelButton);
 
 		PanelBuilder pb;
@@ -227,7 +215,6 @@ public class LoginDialog extends JDialog {
 
 		pb = new PanelBuilder(layout,p);
 		pb.setDefaultDialogBorder();
-
 
 		pb.add(line1, cc.xyw(2, 2, 6));
         pb.add(dbList,cc.xyw(2, 4, 6));

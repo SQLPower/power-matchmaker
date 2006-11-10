@@ -19,7 +19,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
@@ -42,7 +41,12 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 
-/** XXX: should use JDialog instead of extending it */
+/**
+ * You won't need to create one of these on your own.
+ * Use {@link SwingSessionContext#showDatabaseConnectionManager()}.
+ * 
+ * XXX: This class should use JDialog instead of extending it.
+ */
 public class DatabaseConnectionManager extends JDialog
 implements DBConnectionCallBack, DBConnectionUniDialog {
 
@@ -94,13 +98,10 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
 					dbcsPanel,
-						// XXX Should pass parentFrame as a
-						// Constructor arg to DatabaseConnectionManager constructor
-						SwingUtilities.getWindowAncestor(
-							DatabaseConnectionManager.this),
-						"Edit Database Connection",
-						ArchitectPanelBuilder.OK_BUTTON_LABEL,
-						okAction, cancelAction);
+					DatabaseConnectionManager.this,
+					"Edit Database Connection",
+					ArchitectPanelBuilder.OK_BUTTON_LABEL,
+					okAction, cancelAction);
 
 			okAction.setConnectionDialog(d);
 			setNewConnectionDialog(d);
@@ -141,10 +142,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			}
 			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
 			closeAction.actionPerformed(null);
-			LoginDialog l = new LoginDialog(sessionContext);
-			l.setDbSource(dbcs);
-			l.pack();
-	    	l.setVisible(true);
+            sessionContext.showLoginDialog(dbcs);
 		}
 	};
 
