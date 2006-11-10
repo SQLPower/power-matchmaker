@@ -1,16 +1,14 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
@@ -26,138 +24,130 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 
-public class MatchMakerTreeMouseListener implements MouseListener {
+public class MatchMakerTreeMouseListener extends MouseAdapter {
 
-    private MatchMakerSwingSession swingSession;
-	private JSplitPane splitPane;
-	private JFrame owningFrame;
+    private final MatchMakerSwingSession swingSession;
 
-	public MatchMakerTreeMouseListener(MatchMakerSwingSession swingSession) {
+    private final JFrame owningFrame;
+
+    private JPopupMenu m;
+
+    public MatchMakerTreeMouseListener(MatchMakerSwingSession swingSession) {
         this.swingSession = swingSession;
-		this.splitPane = swingSession.splitPane;
-		this.owningFrame = swingSession.getFrame();
-	}
-	public void mouseClicked(MouseEvent e) {
+        this.owningFrame = swingSession.getFrame();
+    }
 
-		if ( MouseEvent.BUTTON1 == e.getButton()) {
-			JTree t = (JTree) e.getSource();
-			source = t;
-			int row = t.getRowForLocation(e.getX(),e.getY());
-			TreePath tp = t.getPathForRow(row);
-			if (tp != null) {
-				Object o = tp.getLastPathComponent();
-				if (o instanceof Match) {
+    @Override
+    public void mouseClicked(MouseEvent e) {
 
-					MatchEditor me;
-					try {
-						me = new MatchEditor(swingSession, (Match) o, splitPane);
-					} catch (ArchitectException e1) {
-						throw new ArchitectRuntimeException(e1);
-					}
+        if (MouseEvent.BUTTON1 == e.getButton()) {
+            JTree t = (JTree) e.getSource();
+            int row = t.getRowForLocation(e.getX(), e.getY());
+            TreePath tp = t.getPathForRow(row);
+            if (tp != null) {
+                Object o = tp.getLastPathComponent();
+                if (o instanceof Match) {
 
-					splitPane.setRightComponent(me.getPanel());
+                    MatchEditor me;
+                    try {
+                        me = new MatchEditor(swingSession, (Match) o);
+                    } catch (ArchitectException e1) {
+                        throw new ArchitectRuntimeException(e1);
+                    }
 
-				} else if (o instanceof PlMatchGroup) {
-					try {
-						PlMatchGroupPanel panel = new PlMatchGroupPanel(swingSession, (PlMatchGroup) o);
-						splitPane.setRightComponent(panel);
-					} catch (ArchitectException e1) {
-						throw new ArchitectRuntimeException(e1);
-					}
-				}
-			}
-		}
+                    swingSession.setCurrentEditorComponent(me.getPanel());
 
-	}
+                } else if (o instanceof PlMatchGroup) {
+                    try {
+                        PlMatchGroupPanel panel = new PlMatchGroupPanel(
+                                swingSession, (PlMatchGroup) o);
+                        swingSession.setCurrentEditorComponent(panel);
+                    } catch (ArchitectException e1) {
+                        throw new ArchitectRuntimeException(e1);
+                    }
+                }
+            }
+        }
 
-	public void mouseEntered(MouseEvent e) {
+    }
 
-	}
+    @Override
+    public void mousePressed(MouseEvent e) {
+        makePopup(e);
 
-	public void mouseExited(MouseEvent e) {
-
-	}
+        JTree t = (JTree) e.getSource();
+        int row = t.getRowForLocation(e.getX(), e.getY());
+        TreePath tp = t.getPathForRow(row);
+        if (tp != null) {
+            t.setSelectionPath(tp);
+        }
+    }
     
-	JPopupMenu m;
-	Component source;
-	public void mousePressed(MouseEvent e) {
-		makePopup(e);
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        makePopup(e);
+    }
 
-		JTree t = (JTree) e.getSource();
-		int row = t.getRowForLocation(e.getX(),e.getY());
-		TreePath tp = t.getPathForRow(row);
-		if ( tp != null ) {
-			t.setSelectionPath(tp);
-		}
-	}
+    private void makePopup(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            m = new JPopupMenu();
+            JTree t = (JTree) e.getSource();
+            int row = t.getRowForLocation(e.getX(), e.getY());
+            TreePath tp = t.getPathForRow(row);
+            m.add(new JMenuItem(new Refresh(swingSession)));
+            if (tp != null) {
+                Object o = tp.getLastPathComponent();
+                if (o instanceof PlFolder) {
+                    createFolderMenu((PlFolder) o);
+                } else if (o instanceof Match) {
+                    createMatchMenu((Match) o);
+                } else if (o instanceof PlMatchGroup) {
+                    createMatchGroupMenu((PlMatchGroup) o);
+                } else if (o instanceof String) {
+                    m.add(new JMenuItem(new NewMatchAction(swingSession,
+                            "New Match", null)));
+                }
+            }
+            m.show(t, e.getX(), e.getY());
+        }
+    }
 
-	private void makePopup(MouseEvent e) {
-		if (e.isPopupTrigger()) {
-			m = new JPopupMenu();
-			JTree t = (JTree) e.getSource();
-			source = t;
-			int row = t.getRowForLocation(e.getX(),e.getY());
-			TreePath tp = t.getPathForRow(row);
-			m.add(new JMenuItem(new Refresh(swingSession)));
-			if (tp != null) {
-				Object o = tp.getLastPathComponent();
-				if(o instanceof PlFolder){
-					createFolderMenu((PlFolder) o);
-				} else if (o instanceof Match){
-					createMatchMenu((Match) o);
-				} else if (o instanceof PlMatchGroup){
-					createMatchGroupMenu((PlMatchGroup) o);
-				} else if (o instanceof String){
-					m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match", null, splitPane)));
-				}
-			}
-			m.show(t, e.getX(), e.getY());
-		}
-	}
+    private void createMatchGroupMenu(PlMatchGroup group) {
+        m.add(new JMenuItem(new DeleteMatchGroupAction(swingSession, group)));
+    }
 
-	private void createMatchGroupMenu(PlMatchGroup group) {
-		m.add(new JMenuItem(new DeleteMatchGroupAction(group,splitPane)));
-	}
+    private void createMatchMenu(final Match match) {
 
-	private void createMatchMenu(final Match match) {
-
-
-
-		m.add(new JMenuItem(new AbstractAction("Run Match"){
+        m.add(new JMenuItem(new AbstractAction("Run Match") {
 
             public void actionPerformed(ActionEvent e) {
-                RunMatchDialog f = new RunMatchDialog(swingSession, match, owningFrame);
+                RunMatchDialog f = new RunMatchDialog(swingSession, match,
+                        owningFrame);
                 f.pack();
                 f.setVisible(true);
-            }}));
+            }
+        }));
 
-
-
-		m.addSeparator();
-		m.add(new JMenuItem(new AbstractAction("Audit Information"){
-			public void actionPerformed(ActionEvent e) {
-				MatchInfoPanel p = new MatchInfoPanel(match);
-				JDialog d = ArchitectPanelBuilder.createSingleButtonArchitectPanelDialog(
-						p,owningFrame,
-						"Audit Information","OK");
-				d.pack();
-				d.setVisible(true);
-			}}));
-		m.add(new JMenuItem(new ShowMatchStatisticInfoAction(match,owningFrame)));
-		m.addSeparator();
-		// TODO add this back in m.add(new JMenuItem(new PlMatchExportAction(match)));
-		m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
-	}
-
-	private void createFolderMenu(final PlFolder folder) {
-        m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match", folder, splitPane)));
-
+        m.addSeparator();
+        m.add(new JMenuItem(new AbstractAction("Audit Information") {
+            public void actionPerformed(ActionEvent e) {
+                MatchInfoPanel p = new MatchInfoPanel(match);
+                JDialog d = ArchitectPanelBuilder
+                        .createSingleButtonArchitectPanelDialog(p, owningFrame,
+                                "Audit Information", "OK");
+                d.pack();
+                d.setVisible(true);
+            }
+        }));
+        m.add(new JMenuItem(new ShowMatchStatisticInfoAction(match, owningFrame)));
+        m.addSeparator();
+        // TODO add this back in m.add(new JMenuItem(new PlMatchExportAction(match)));
         m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
-	}
+    }
 
-	public void mouseReleased(MouseEvent e) {
-		makePopup(e);
-
-	}
+    private void createFolderMenu(final PlFolder folder) {
+        m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match", folder)));
+        m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
+    }
 
 }

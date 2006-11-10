@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -96,9 +97,11 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	private final JFrame frame;
 
 	/**
-	 * XXX don't let others use this directly anymore.
+	 * The main part of the UI; the tree lives on the left and the current editor lives on the right.
+     * 
+     * @see setCurrentEditComponent()
 	 */
-	JSplitPane splitPane;
+	private JSplitPane splitPane;
     
     /**
      * The tree that lets users browse the business objects.
@@ -283,7 +286,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 					JOptionPane.INFORMATION_MESSAGE);
 			}};
 
-		newMatchAction = new NewMatchAction(this, "New Match",null,splitPane);
+		newMatchAction = new NewMatchAction(this, "New Match",null);
         JMenuBar menuBar = new JMenuBar();
 
 		//Settingup
@@ -386,8 +389,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		tree.addMouseListener(new MatchMakerTreeMouseListener(this));
 		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
 
-		splitPane.setRightComponent(null );
 		splitPane.setLeftComponent(new JScrollPane(tree));
+        setCurrentEditorComponent(null);
 		cp.add(splitPane);
 
 		frame.setBounds(sessionContext.getFrameBounds());
@@ -517,12 +520,12 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 			MatchEditor me;
 			try {
-				me = new MatchEditor(MatchMakerSwingSession.this, match, splitPane);
+				me = new MatchEditor(MatchMakerSwingSession.this, match);
 			} catch (ArchitectException e1) {
 				throw new ArchitectRuntimeException(e1);
 			}
 
-			splitPane.setRightComponent(me.getPanel());
+			setCurrentEditorComponent(me.getPanel());
 		}
 	}
 
@@ -554,6 +557,16 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		}
 	    System.exit(0);
 	}
+    
+    /**
+     * Shows the given component in the main part of the frame's UI.
+     * 
+     * @param editor The editor component to display in the UI.  If you pass
+     * in null, then no editor will be showing.
+     */
+    public void setCurrentEditorComponent(JComponent editor) {
+        splitPane.setRightComponent(editor);
+    }
 
 	/**
 	 * Creates a MatchMakerSwingSession and shows the login prompt.  This method is
