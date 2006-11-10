@@ -20,7 +20,7 @@ public class HibernateTestUtil {
 		 */
 		final String ssUserName = "plautotest";
 		final String ssPassword = "TIhR2Es0";
-		final String ssUrl ="jdbc:microsoft:sqlserver://deepthought:1433;SelectMethod=cursor";
+		final String ssUrl ="jdbc:microsoft:sqlserver://deepthought:1433;SelectMethod=cursor;DatabaseName=plautotest";
 		
 		ArchitectDataSource sqlServerDS = new ArchitectDataSource();
 		sqlServerDS.setDriverClass("com.microsoft.jdbc.sqlserver.SQLServerDriver");
@@ -28,7 +28,7 @@ public class HibernateTestUtil {
 		sqlServerDS.setUser(ssUserName);
 		sqlServerDS.setPass(ssPassword);
 		sqlServerDS.setPlDbType("sql server");
-		sqlServerDS.setPlSchema("PL");
+		sqlServerDS.setPlSchema("plautotest");
 		sqlServerDS.setUrl(ssUrl);
 		return sqlServerDS;
 	}
@@ -73,6 +73,7 @@ public class HibernateTestUtil {
 		cfg.setProperty("hibernate.connection.url", ds.getUrl());
 		cfg.setProperty("hibernate.connection.username", ds.getUser());
 		cfg.setProperty("hibernate.default_schema", ds.getPlSchema());
+
 		String plDbType2Dialect = HibernateUtil.plDbType2Dialect(ds.getPlDbType());
 		cfg.setProperty("hibernate.show_sql", "true");
 		cfg.setProperty("hibernate.jdbc.batch_size", "0");
