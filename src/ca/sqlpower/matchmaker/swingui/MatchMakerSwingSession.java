@@ -60,8 +60,6 @@ import ca.sqlpower.sql.SchemaVersion;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.util.Version;
 
-import com.darwinsys.swingui.UtilGUI;
-
 /**
  * The Main Window for the Architect Application; contains a main() method that is
  * the conventional way to start the application running.
@@ -132,7 +130,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 	private Action loginAction = new AbstractAction("Login") {
 		public void actionPerformed(ActionEvent e) {
-			showLoginDialog();
+			sessionContext.showLoginDialog(null);
 		}
 
 	};
@@ -216,12 +214,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	private Action databaseConnectionAction = new AbstractAction("Database Connection...") {
 
 		public void actionPerformed(ActionEvent e) {
-			DatabaseConnectionManager dm = new DatabaseConnectionManager(
-                    frame,
-                    sessionContext);
-			dm.pack();
-			dm.setVisible(true);
-
+            sessionContext.showDatabaseConnectionManager();
 		}
 	};
 
@@ -398,17 +391,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	}
 
     /**
-     * Creates and shows the login dialog, which prompts the user to select a database connection,
-     * username and password.  Upon successful login (via that dialog), things really get going.
-     */
-    private void showLoginDialog() {
-        LoginDialog l = new LoginDialog(sessionContext);
-        l.pack();
-        l.setLocationRelativeTo(frame);
-        l.setVisible(true);
-    }
-
-    /**
      * Sets up this frame for use with a new PL Respsitory connection.
      * This method has to be called on the Swing EDT, because it interacts
      * with the Hibernate session as well as the GUI.
@@ -537,12 +519,14 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         
 	}
 
+    /**
+     * This method should become unnecessary soon, since the app will just continually keep
+     * the user settings up-to-date...
+     * 
+     * @throws ArchitectException
+     */
 	public void saveSettings() throws ArchitectException {
 		sessionContext.setFrameBounds(frame.getBounds());  // XXX we should do this in a component listener
-		if ( getPlRepositoryDatabase() != null && getPlRepositoryDatabase().getDataSource() != null ) {
-			sessionContext.setLastLoginDataSource(getPlRepositoryDatabase().getDataSource());
-		}
-        //sessionContext.store();
 	}
 
 	/**
@@ -584,10 +568,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		    public void run() {
 		    	try {
 		    		SwingSessionContext context = new SwingSessionContext();
-                    LoginDialog d = new LoginDialog(context);
-                    d.pack();
-                    UtilGUI.centre(d);
-                    d.setVisible(true);
+                    context.showLoginDialog(null);
 		    	} catch (Exception ex) {
 		    		ASUtils.showExceptionDialog("Couldn't start application!", ex);
 		    	}
