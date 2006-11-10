@@ -51,9 +51,9 @@ public interface MatchMakerObject<T extends MatchMakerObject> extends Auditable 
 	void removeChild(T child);
 	
 	/**
-	 * makes this object aware of the session's application user name
+	 * add this object into the session
 	 */
-	public void setAppUserName(String appUserName);
+	public void setSession(MatchMakerSession matchMakerSession);
 	
 	public int hashCode();
 	

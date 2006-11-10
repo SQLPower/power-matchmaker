@@ -10,7 +10,9 @@ public class MatchMakerFolderTest<C extends MatchMakerObject> extends MatchMaker
 	protected void setUp() throws Exception {
 		super.setUp();
 		folder = new MatchMakerFolder<C>();
-		folder.setAppUserName(appUserName);
+		MatchMakerSession session = new TestingMatchMakerSession();
+		((TestingMatchMakerSession)session).setAppUser(appUserName);
+		folder.setSession(session);
 	}
 
 	@Override

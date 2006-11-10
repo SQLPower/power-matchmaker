@@ -7,11 +7,13 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 
 	MatchMakerObject<MatchMakerObject> test;
 	final String appUserName = "user1";
+	MatchMakerSession session = new TestingMatchMakerSession();
 
 	protected void setUp() throws Exception {
 		super.setUp();
 		test = new TestingAbstractMatchMakerObject(){};
-		test.setAppUserName(appUserName);
+		((TestingMatchMakerSession)session).setAppUser(appUserName);
+		test.setSession(session);
 	}
 
 	public void testChildren() {

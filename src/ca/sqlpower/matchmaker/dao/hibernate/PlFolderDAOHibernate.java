@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 
 import org.hibernate.SessionFactory;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 
@@ -9,11 +10,12 @@ public class PlFolderDAOHibernate extends AbstractMatchMakerDAOHibernate<PlFolde
 		implements PlFolderDAO {
 
 	
-	public PlFolderDAOHibernate(SessionFactory factory, String appUserName) {
-		super(factory,appUserName);
+		
+	public PlFolderDAOHibernate(SessionFactory sessionFactory, MatchMakerSession matchMakerSession) {
+		super(sessionFactory,matchMakerSession);
 	}
 
-	
+
 	public PlFolder findByName(String name) {
 		// TODO Auto-generated method stub
 		return null;

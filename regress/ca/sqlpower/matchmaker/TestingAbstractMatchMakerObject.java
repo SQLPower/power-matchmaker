@@ -9,7 +9,9 @@ public class TestingAbstractMatchMakerObject extends AbstractMatchMakerObject {
 	public TestingAbstractMatchMakerObject( ) {
 		Random rand  = new Random();
 		i = rand.nextInt();
-		this.setAppUserName("Test User");
+		MatchMakerSession session = new TestingMatchMakerSession();
+		((TestingMatchMakerSession)session).setAppUser("app user name");
+		this.setSession(session);
 	}
 
 	@Override

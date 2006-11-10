@@ -9,7 +9,9 @@ public class MatchMakerTranslateGroupTest<C extends MatchMakerTranslateWord>
 	protected void setUp() throws Exception {
 		super.setUp();
 		target = new MatchMakerTranslateGroup<C>();
-		target.setAppUserName(appUserName);
+		MatchMakerSession session = new TestingMatchMakerSession();
+		((TestingMatchMakerSession)session).setAppUser(appUserName);
+		target.setSession(session);
 	}
 
 	@Override
