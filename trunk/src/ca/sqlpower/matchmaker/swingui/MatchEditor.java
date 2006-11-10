@@ -21,7 +21,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -90,11 +89,11 @@ public class MatchEditor {
     private PlFolder plFolder;
 
 
-    public MatchEditor(MatchMakerSwingSession swingSession, Match match, JSplitPane splitPane) throws HeadlessException, ArchitectException {
-        this(swingSession, match, null, splitPane);
+    public MatchEditor(MatchMakerSwingSession swingSession, Match match) throws HeadlessException, ArchitectException {
+        this(swingSession, match, null);
     }
 
-    public MatchEditor(MatchMakerSwingSession swingSession, Match match, PlFolder folder, JSplitPane splitPane) throws ArchitectException {
+    public MatchEditor(MatchMakerSwingSession swingSession, Match match, PlFolder folder) throws ArchitectException {
         super();
         this.swingSession = swingSession;
         if (match == null) throw new NullPointerException("You can't edit a null plmatch");
@@ -106,7 +105,6 @@ public class MatchEditor {
         } else {
         	this.plFolder = folder;
         }
-        this.splitPane = splitPane;
         buildUI();
     }
 
@@ -237,12 +235,6 @@ public class MatchEditor {
             JOptionPane.showMessageDialog(panel, "We can't create tables yet, sorry.");
 		}
 	};
-
-    /**
-     * XXX This is a bit suspect.. what do we need it for, and what happens if the MatchMakerSwingSession
-     * stops using s JSplitPane?
-     */    
-	private JSplitPane splitPane;
 
     private void buildUI() throws ArchitectException {
 
@@ -414,7 +406,7 @@ public class MatchEditor {
 		bb.addGridded(saveMatch);
 		bb.addRelatedGap();
 		bb.addRelatedGap();
-		bb.addGridded(new JButton(new NewMatchGroupAction(match,splitPane)));
+		bb.addGridded(new JButton(new NewMatchGroupAction(swingSession, match)));
 		bb.addRelatedGap();
 		bb.addRelatedGap();
 		bb.addGridded(showAuditInfo);
