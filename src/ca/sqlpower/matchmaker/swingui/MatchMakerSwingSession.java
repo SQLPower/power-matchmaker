@@ -19,7 +19,6 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -40,7 +39,6 @@ import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -60,6 +58,8 @@ import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersion;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.util.Version;
+
+import com.darwinsys.swingui.UtilGUI;
 
 /**
  * The Main Window for the Architect Application; contains a main() method that is
@@ -105,10 +105,21 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      */
 	private JTree tree;
 
-	private AboutAction aboutAction;
- 	private JComponent contentPane;
-
-    private ArchitectDataSource dataSource;
+	private Action aboutAction = new AbstractAction("About MatchMaker...") {
+        public void actionPerformed(ActionEvent e) {
+            String message =
+                "<html>" +
+                "<h1>Power*MatchMaker</h1>" +
+                "<p>Version x.y</p>" +
+                "<p>Copyright 2006 SQL Power Group Inc.</p>" +
+                "</html>";
+            ImageIcon icon = new ImageIcon(getClass().getResource("/icons/matchmaker_128.png"));
+            JOptionPane.showOptionDialog(
+                    frame, message, "About Power*MatchMaker",
+                    JOptionPane.YES_OPTION, JOptionPane.INFORMATION_MESSAGE,
+                    icon, new String[] { "Ok" }, "Ok");
+        }
+    };
 
 	private Action exitAction = new AbstractAction("Exit") {
 	    public void actionPerformed(ActionEvent e) {
@@ -192,7 +203,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	private Action tableQueryAction = new AbstractAction("Table Explorer") {
 		public void actionPerformed(ActionEvent e) {
 			TableQueryFrame f = new TableQueryFrame(MatchMakerSwingSession.this);
-			f.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
+			f.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
 			f.pack();
 			f.setVisible(true);
 		}
@@ -231,18 +242,19 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 
 	/**
-	 * You can't create an architect frame using this constructor;
-	 * you have to call {@link #getMainInstance()}.
-	 *
-     * @param context the Swing-specific session context
-     * @param sessionImpl The session that actually does the dirty work (ORM and stuff like
-     * that).
-	 * @throws ArchitectException
-	 */
-	MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, ArchitectException {
+     * Creates a new MatchMaker session, complete with Swing GUI. Normally you
+     * would use a LoginDialog instead of calling this constructor directly.
+     * 
+     * @param context
+     *            the Swing-specific session context
+     * @param sessionImpl
+     *            The session that actually does the dirty work (ORM and stuff
+     *            like that).
+     */
+	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, ArchitectException {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
-        frame = new JFrame("MatchMaker");
+        frame = new JFrame("MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
 	}
 
 	void showGUI() {
@@ -254,8 +266,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
         macOSXRegistration();
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(frame));
-        contentPane = (JComponent) frame.getContentPane();
-        frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
+        frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -560,7 +571,10 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		    public void run() {
 		    	try {
 		    		SwingSessionContext context = new SwingSessionContext();
-                    new LoginDialog(context).setVisible(true);
+                    LoginDialog d = new LoginDialog(context);
+                    d.pack();
+                    UtilGUI.centre(d);
+                    d.setVisible(true);
 		    	} catch (Exception ex) {
 		    		ASUtils.showExceptionDialog("Couldn't start application!", ex);
 		    	}
@@ -578,16 +592,16 @@ public class MatchMakerSwingSession implements MatchMakerSession {
             try {
                 Class osxAdapter = ClassLoader.getSystemClassLoader().loadClass("ca.sqlpower.architect.swingui.OSXAdapter");
 
-                Class[] defArgs = {MatchMakerSwingSession.class};
+                // The main registration method.  Takes quitAction, prefsAction, aboutAction.
+                Class[] defArgs = { Action.class, Action.class, Action.class };
                 Method registerMethod = osxAdapter.getDeclaredMethod("registerMacOSXApplication", defArgs);
                 if (registerMethod != null) {
-                    Object[] args = { this };
+                    Object[] args = { exitAction, databasePreferenceAction, aboutAction };  // XXX databasePreferenceAction might not be appropriate here.
                     registerMethod.invoke(osxAdapter, args);
                 }
-                // This is slightly gross.  to reflectively access methods with boolean args,
-                // use "boolean.class", then pass a Boolean object in as the arg, which apparently
-                // gets converted for you by the reflection system.
-                defArgs[0] = boolean.class;
+
+                // The enable prefs method.  Takes a boolean.
+                defArgs = new Class[] { boolean.class };
                 Method prefsEnableMethod =  osxAdapter.getDeclaredMethod("enablePrefs", defArgs);
                 if (prefsEnableMethod != null) {
                     Object args[] = {Boolean.TRUE};
@@ -607,6 +621,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
             }
         }
     }
+
 
 	public List<PlFolder> getFolders() {
 		return folders;

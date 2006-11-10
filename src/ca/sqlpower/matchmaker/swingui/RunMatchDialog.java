@@ -39,7 +39,6 @@ import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.SaveDocument;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 import ca.sqlpower.matchmaker.EnginePath;
@@ -556,7 +555,7 @@ public class RunMatchDialog extends JDialog{
 
 			pb.add(bbBuilder.getPanel(), cc.xy(2,4));
 			d.add(pb.getPanel());
-			ArchitectPanelBuilder.makeJDialogCancellable(d,null);
+			ASUtils.makeJDialogCancellable(d,null);
 			d.pack();
 			d.setVisible(true);
 		}
