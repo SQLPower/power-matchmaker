@@ -1,4 +1,6 @@
 package ca.sqlpower.matchmaker.util;
+
+
 /**
  * A SQL Query
  * 
@@ -67,6 +69,42 @@ public class SQLQuery {
 			this.where = where;
 		}
 	}
-	
+
+	@Override
+	public int hashCode() {
+		final int PRIME = 31;
+		int result = 1;
+		result = PRIME * result + ((from == null) ? 0 : from.hashCode());
+		result = PRIME * result + ((select == null) ? 0 : select.hashCode());
+		result = PRIME * result + ((where == null) ? 0 : where.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final SQLQuery other = (SQLQuery) obj;
+		if (from == null) {
+			if (other.from != null)
+				return false;
+		} else if (!from.equals(other.from))
+			return false;
+		if (select == null) {
+			if (other.select != null)
+				return false;
+		} else if (!select.equals(other.select))
+			return false;
+		if (where == null) {
+			if (other.where != null)
+				return false;
+		} else if (!where.equals(other.where))
+			return false;
+		return true;
+	}
 	
 }

@@ -24,6 +24,23 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 		public String toString() {
 			return displayName;
 		}
+		
+		/**
+		 * Get the MatchType that corrisponds to the type string.
+		 * 
+		 * @param type a string detailing the type you want to get
+		 * @return the match type that has type as its toString
+		 */
+		public static MatchType getTypeByString(String type){
+			MatchType[] types= MatchType.values();
+			
+			for(MatchType matchType: types){
+				if( matchType.toString().equals(type)){
+					return matchType;
+				}
+			}
+			throw new IllegalArgumentException("There is no match type with a string "+type);
+		}
 	}
 
 	/** the oid for the match */
