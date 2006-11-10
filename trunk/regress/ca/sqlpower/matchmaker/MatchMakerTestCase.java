@@ -123,7 +123,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				}
 			} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
 				newVal = new MatchMakerTranslateGroup("testx1");
-			} else if (property.getPropertyType() == SQLColumn.class) {
+			} else if (property.getPropertyType() == MatchMakerObject.class) {
+				newVal = new TestingAbstractMatchMakerObject("Test User");
+			}else if (property.getPropertyType() == SQLColumn.class) {
 				newVal = new SQLColumn();
 			} else {
 				throw new RuntimeException("This test case lacks a value for "
