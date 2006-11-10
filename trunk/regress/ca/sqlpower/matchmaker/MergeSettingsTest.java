@@ -6,7 +6,7 @@ public class MergeSettingsTest extends MatchMakerTestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		ms = new MergeSettings("Test user");
+		ms = new MergeSettings();
 	}
 
 	@Override

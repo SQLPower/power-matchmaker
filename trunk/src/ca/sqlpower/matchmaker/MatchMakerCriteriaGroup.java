@@ -16,8 +16,7 @@ public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria> extends Abstr
 	private boolean active;			// enable or disable a group for the engine
 
 	// default constructor
-	public MatchMakerCriteriaGroup(String appUserName) {
-		super(appUserName);
+	public MatchMakerCriteriaGroup( ) {
 	}
 
 	public String getDesc() {

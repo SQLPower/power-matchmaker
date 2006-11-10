@@ -31,8 +31,7 @@ public class MatchMakerTranslateGroup<C extends MatchMakerTranslateWord> extends
 		return true;
 	}
 
-	public MatchMakerTranslateGroup(String appUserName) {
-		super(appUserName);
+	public MatchMakerTranslateGroup() {
 	}
 
 	public String getName() {

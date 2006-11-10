@@ -10,12 +10,13 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		test = new TestingAbstractMatchMakerObject(appUserName){};
+		test = new TestingAbstractMatchMakerObject(){};
+		test.setAppUserName(appUserName);
 	}
 
 	public void testChildren() {
-		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject("a"){};
-		MatchMakerObject mmo2 = new TestingAbstractMatchMakerObject("a"){};
+		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject(){};
+		MatchMakerObject mmo2 = new TestingAbstractMatchMakerObject(){};
 		assertEquals("Started out with the wrong number of children",0,test.getChildCount());
 		test.addChild(mmo1);
 		assertEquals("faild to add the correct number of children",1,test.getChildCount());
@@ -28,17 +29,17 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 	public void testMatchMakerEventListener() {
 		MatchMakerEventCounter mml = new MatchMakerEventCounter();
 		test.addMatchMakerListener(mml);
-		test.addChild(new TestingAbstractMatchMakerObject("a"){});
+		test.addChild(new TestingAbstractMatchMakerObject(){});
 		assertEquals("Did not get any events",1,mml.getAllEventCounts());
 		test.removeMatchMakerListener(mml);
-		test.addChild(new TestingAbstractMatchMakerObject("a"){});
+		test.addChild(new TestingAbstractMatchMakerObject(){});
 		assertEquals("Got extra events",1,mml.getAllEventCounts());
 
 	}
 
 
 	public void testAuditingInfoAddChild() {
-		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject("user2"){};
+		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject(){};
 		assertNull("The default last_update_user in match object should be null",
 				test.getLastUpdateAppUser());
 		assertNull("The default last_update_user in match object should be null",
@@ -50,7 +51,7 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 	}
 
 	public void testAuditingInfoRemoveChild() {
-		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject("user2"){};
+		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject(){};
 		assertNull("The default last_update_user in match object should be null",
 				test.getLastUpdateAppUser());
 		assertNull("The default last_update_user in match object should be null",
@@ -65,9 +66,11 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 	}
 
 	public void testParentSetCorrectly() {
-		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject("user1"){};
-		MatchMakerObject mmo2 = new TestingAbstractMatchMakerObject("user2"){};
+		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject(){};
+		MatchMakerObject mmo2 = new TestingAbstractMatchMakerObject(){};
 		mmo2.addChild(mmo1);
 		assertEquals("mmo2 is not the parent of mmo1",mmo2,mmo1.getParent());
 	}
+	
+	
 }

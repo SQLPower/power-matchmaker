@@ -9,8 +9,8 @@ public class PlFolderDAOHibernate extends AbstractMatchMakerDAOHibernate<PlFolde
 		implements PlFolderDAO {
 
 	
-	public PlFolderDAOHibernate(SessionFactory factory) {
-		super(factory);
+	public PlFolderDAOHibernate(SessionFactory factory, String appUserName) {
+		super(factory,appUserName);
 	}
 
 	

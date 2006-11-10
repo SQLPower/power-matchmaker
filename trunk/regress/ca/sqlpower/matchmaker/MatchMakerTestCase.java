@@ -103,9 +103,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			} else if (property.getPropertyType() == SourceTable.class) {
 				newVal = new SourceTable();
 			} else if (property.getPropertyType() == MatchSettings.class) {
-				newVal = new MatchSettings("new user");
+				newVal = new MatchSettings();
 			} else if (property.getPropertyType() == MergeSettings.class) {
-				newVal = new MergeSettings("new user");
+				newVal = new MergeSettings();
 			} else if (property.getPropertyType() == SQLTable.class) {
 				newVal = new SQLTable();
 			} else if (property.getPropertyType() == ViewSpec.class) {
@@ -114,7 +114,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				newVal = LogFactory
 						.getLogger(Level.DEBUG, "TestMatchMaker.log");
 			} else if (property.getPropertyType() == PlFolder.class) {
-				newVal = new PlFolder<Match>("Test User");
+				newVal = new PlFolder<Match>();
 			} else if (property.getPropertyType() == Match.MatchType.class) {
 				if (oldVal == Match.MatchType.BUILD_XREF) {
 					newVal = Match.MatchType.FIND_DUPES;
@@ -122,9 +122,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 					newVal = Match.MatchType.BUILD_XREF;
 				}
 			} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
-				newVal = new MatchMakerTranslateGroup("testx1");
+				newVal = new MatchMakerTranslateGroup();
 			} else if (property.getPropertyType() == MatchMakerObject.class) {
-				newVal = new TestingAbstractMatchMakerObject("Test User");
+				newVal = new TestingAbstractMatchMakerObject();
 			}else if (property.getPropertyType() == SQLColumn.class) {
 				newVal = new SQLColumn();
 			} else {
@@ -132,6 +132,10 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 						+ property.getName() + " (type "
 						+ property.getPropertyType().getName() + ") from "
 						+ mmo.getClass());
+			}
+			
+			if (newVal instanceof MatchMakerObject){
+				((MatchMakerObject)newVal).setAppUserName("Test User");
 			}
 
 			int oldChangeCount = listener.getAllEventCounts();

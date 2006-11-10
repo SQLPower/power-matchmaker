@@ -10,9 +10,8 @@ public class MergeStrategy extends AbstractMatchMakerObject {
 
 	private Long oid;
 	
-	public MergeStrategy(String appUserName) {
-		super(appUserName);
-		// TODO Auto-generated constructor stub
+	public MergeStrategy() {
+	
 	}
 
 	@Override

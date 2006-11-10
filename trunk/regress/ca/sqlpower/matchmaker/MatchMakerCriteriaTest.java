@@ -12,7 +12,8 @@ public class MatchMakerCriteriaTest<C extends MatchMakerObject> extends MatchMak
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchmakerCriteria<C>(appUserName);
+		target = new MatchmakerCriteria<C>();
+		target.setAppUserName(appUserName);
 	}
 
 	@Override
@@ -141,7 +142,7 @@ public class MatchMakerCriteriaTest<C extends MatchMakerObject> extends MatchMak
 
 	public void testSetTranslateGroup() {
 		checkNull();
-		target.setTranslateGroup(new MatchMakerTranslateGroup("test"));
+		target.setTranslateGroup(new MatchMakerTranslateGroup());
 		checkAppUserName();
 	}
 

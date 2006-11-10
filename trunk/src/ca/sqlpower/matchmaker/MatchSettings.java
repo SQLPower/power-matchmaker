@@ -30,8 +30,7 @@ public class MatchSettings extends MatchMakerSettings {
 		return true;
 	}
 
-	public MatchSettings(String appUserName) {
-		super(appUserName);
+	public MatchSettings( ) {
 	}
 
 	/**

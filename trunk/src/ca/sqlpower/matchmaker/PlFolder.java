@@ -39,8 +39,7 @@ public class PlFolder<C extends MatchMakerObject> extends AbstractMatchMakerObje
      * 
      * @param appUserName The login name of the current user.
      */
-	public PlFolder(String appUserName) {
-		super(appUserName);
+	public PlFolder() {
 	}
 	
 	public String getFolderDesc() {

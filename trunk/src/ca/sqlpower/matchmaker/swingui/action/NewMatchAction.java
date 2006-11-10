@@ -36,7 +36,7 @@ public final class NewMatchAction extends AbstractAction {
 	    MatchEditor me;
 		try {
 			// FIXME no user 
-			me = new MatchEditor(swingSession, new Match(""), folder, splitPane);
+			me = new MatchEditor(swingSession, new Match(), folder, splitPane);
 		} catch (ArchitectException e1) {
 			throw new ArchitectRuntimeException(e1);
 		}

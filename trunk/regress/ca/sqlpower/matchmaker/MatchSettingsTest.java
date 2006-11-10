@@ -5,7 +5,7 @@ public class MatchSettingsTest extends MatchMakerTestCase {
 	MatchSettings ms;
 	protected void setUp() throws Exception {
 		super.setUp();
-		ms = new MatchSettings("Test User");
+		ms = new MatchSettings();
 	}
 
 	@Override

@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 
 /**
@@ -17,23 +19,28 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
  * 
  * @param <T> The type of object the DAO accesses
  */
-public abstract class AbstractMatchMakerDAOHibernate<T> implements
+public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject> implements
 		MatchMakerDAO<T> {
 	SessionFactory sessionFactory;
+	String appUserName;
 
-	public AbstractMatchMakerDAOHibernate(SessionFactory sessionFactory) {
+	public AbstractMatchMakerDAOHibernate(SessionFactory sessionFactory,String appUserName) {
 		super();
 		this.sessionFactory = sessionFactory;
+		this.appUserName = appUserName;
 	}
 
 	public void delete(T deleteMe) {
+		Session s = getCurrentSession();
 		try {
-			Session s = getCurrentSession();
+			Transaction t = s.beginTransaction();
 			s.delete(deleteMe);
+			t.commit();
 			s.flush();
-			s.close();
 		} catch (RuntimeException re) {
 			throw re;
+		} finally {
+			s.close();
 		}
 	}
 
@@ -43,24 +50,33 @@ public abstract class AbstractMatchMakerDAOHibernate<T> implements
 	}
 
 	public List<T> findAll() {
+		Session s = getCurrentSession();
 		try {
-			Session s = getCurrentSession();
-			List results = s.createCriteria(getBusinessClass()).list();
-			s.close();
+			Transaction t = s.beginTransaction();
+			List<T> results = s.createCriteria(getBusinessClass()).list();
+			for (T item: results){
+				item.setAppUserName(appUserName);
+			}
+			t.commit();
 			return results;
 		} catch (RuntimeException re) {
 			throw re;
+		} finally {
+			s.close();
 		}
 	}
 
 	public void save(T saveMe) {
+		Session s = getCurrentSession();
 		try {
-			Session s = getCurrentSession();
+			Transaction t = s.beginTransaction();
 			s.saveOrUpdate(saveMe);
+			t.commit();
 			s.flush();
-			s.close();
 		} catch (RuntimeException re) {
 			throw re;
+		} finally {
+			s.close();			
 		}
 	}
 

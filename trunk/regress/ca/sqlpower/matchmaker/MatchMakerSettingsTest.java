@@ -8,7 +8,8 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		mms = new MatchMakerSettings("User") {};
+		mms = new MatchMakerSettings() {};
+		mms.setAppUserName("user name");
 		
 		
 	}

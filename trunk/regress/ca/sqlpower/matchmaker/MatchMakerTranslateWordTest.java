@@ -11,7 +11,8 @@ public class MatchMakerTranslateWordTest<C extends MatchMakerTranslateWord>
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchMakerTranslateWord<C>(appUserName);
+		target = new MatchMakerTranslateWord<C>();
+		target.setAppUserName("test_user");
 	}
 
 	@Override

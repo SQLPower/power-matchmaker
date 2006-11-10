@@ -6,8 +6,7 @@ public class MatchMakerTranslateWord<C extends MatchMakerTranslateWord> extends 
 	private String from;
 	private String to;
 
-	public MatchMakerTranslateWord(String appUserName) {
-		super(appUserName);
+	public MatchMakerTranslateWord() {
 	}
 
 	public String getFrom() {

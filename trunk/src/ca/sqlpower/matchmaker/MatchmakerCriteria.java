@@ -57,8 +57,7 @@ public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatc
 	private boolean matchFirstPlusOneInd;
 
 
-	public MatchmakerCriteria(String appUserName) {
-		super(appUserName);
+	public MatchmakerCriteria( ) {
 	}
 
 

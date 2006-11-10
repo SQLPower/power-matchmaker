@@ -9,7 +9,8 @@ public class MatchMakerFolderTest<C extends MatchMakerObject> extends MatchMaker
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		folder = new MatchMakerFolder<C>(appUserName);
+		folder = new MatchMakerFolder<C>();
+		folder.setAppUserName(appUserName);
 	}
 
 	@Override
