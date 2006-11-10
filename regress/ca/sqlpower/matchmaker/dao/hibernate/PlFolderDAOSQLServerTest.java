@@ -1,27 +1,14 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.dao.AbstractPlFolderDAOTestCase;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 
 
-public class PlFolderDAOSQLServerTest extends AbstractDAOTestCase<PlFolder<MatchMakerObject>,PlFolderDAO> {
-	int count=0;
+public class PlFolderDAOSQLServerTest extends AbstractPlFolderDAOTestCase {
 	
 	@Override
 	public PlFolderDAO getDataAccessObject() {
 		return new PlFolderDAOHibernate(HibernateTestUtil.getSqlServerSessionFactory(),session);
 	}
 
-	@Override
-	public PlFolder<MatchMakerObject> getNewObjectUnderTest() {
-		count++;
-		PlFolder<MatchMakerObject> plFolder = new PlFolder<MatchMakerObject>();
-		plFolder.setSession(this.session);
-		plFolder.setFolderName("test "+count);
-		return plFolder;
-	}
-
-	
-	
 }

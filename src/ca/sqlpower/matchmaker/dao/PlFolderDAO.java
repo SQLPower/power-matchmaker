@@ -8,13 +8,4 @@ import ca.sqlpower.matchmaker.PlFolder;
  */
 public interface PlFolderDAO extends MatchMakerDAO<PlFolder> {
 	
-	/** 
-	 * Find the PlFolder that has the PlFolder name name 
-	 * 
-	 * @param name The name of the PlFolder we want to find
-	 * @return the PlFolder with the id name or null if there
-	 * 				is no match with that name.
-	 */
-	public PlFolder findByName(String name);
-
 }
