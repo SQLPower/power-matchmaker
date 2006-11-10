@@ -14,18 +14,18 @@ import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
 import ca.sqlpower.architect.swingui.action.DBCSOkAction;
 import ca.sqlpower.matchmaker.swingui.DBConnectionUniDialog;
-import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 
 public class NewDatabaseConnectionAction extends AbstractAction {
 
-    private final MatchMakerSwingSession swingSession;
 	private DBConnectionUniDialog uniDialogParent = null;
 	private Component componentParent = null;
 	private DBConnectionCallBack callBackParent = null;
+    private SwingSessionContext context;
 
-	public NewDatabaseConnectionAction(MatchMakerSwingSession swingSession, String name) {
+	public NewDatabaseConnectionAction(SwingSessionContext context, String name) {
 		super(name);
-		this.swingSession = swingSession;
+		this.context = context;
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -40,7 +40,7 @@ public class NewDatabaseConnectionAction extends AbstractAction {
 
 		DBCSOkAction okAction = new DBCSOkAction(dbcsPanel,
 				true,
-				swingSession.getContext().getPlDotIni());
+				context.getPlDotIni());
 		if ( callBackParent != null ) {
 			okAction.setConnectionSelectionCallBack(callBackParent);
 		}

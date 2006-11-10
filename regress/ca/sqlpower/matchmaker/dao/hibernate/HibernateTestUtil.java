@@ -14,7 +14,7 @@ public class HibernateTestUtil {
 	//The password for test database(oracle) mm_test: cowmoo
 
 	
-	private static ArchitectDataSource getSqlServerDS() { 
+	static ArchitectDataSource getSqlServerDS() { 
 		/*
 		 * Setup information for SQL Server
 		 */
@@ -33,7 +33,7 @@ public class HibernateTestUtil {
 		return sqlServerDS;
 	}
 
-	private static ArchitectDataSource getOracleDS() { 
+	static ArchitectDataSource getOracleDS() { 
 		/*
 		 * Setup information for SQL Server
 		 */
@@ -87,6 +87,7 @@ public class HibernateTestUtil {
 		sessionFactory = cfg.buildSessionFactory();
 		return sessionFactory;
 	}
+    
 	/**
 	 * Get a new oracle session factory
 	 * 
