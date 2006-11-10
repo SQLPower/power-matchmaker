@@ -9,7 +9,8 @@ import org.hibernate.SessionFactory;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.matchmaker.hibernate.home.PlFolderHome;
+import ca.sqlpower.matchmaker.dao.PlFolderDAO;
+import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
@@ -60,8 +61,8 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	}
 
 	public List<PlFolder> getFolders() {
-		PlFolderHome folderHome = new PlFolderHome(hibernateSessionFactory);
-		return folderHome.findAll();
+		PlFolderDAO folderDAO = new PlFolderDAOHibernate(hibernateSessionFactory,getAppUser());
+		return folderDAO.findAll();
 	}
 
 }
