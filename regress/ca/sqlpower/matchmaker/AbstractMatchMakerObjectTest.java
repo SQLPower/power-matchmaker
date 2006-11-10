@@ -67,4 +67,10 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 				mmo1.getLastUpdateAppUser());
 	}
 
+	public void testParentSetCorrectly() {
+		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject("user1"){};
+		MatchMakerObject mmo2 = new TestingAbstractMatchMakerObject("user2"){};
+		mmo2.addChild(mmo1);
+		assertEquals("mmo2 is not the parent of mmo1",mmo2,mmo1.getParent());
+	}
 }

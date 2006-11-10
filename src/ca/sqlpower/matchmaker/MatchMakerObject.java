@@ -26,6 +26,11 @@ public interface MatchMakerObject<T extends MatchMakerObject> extends Auditable 
 	MatchMakerObject getParent();
 	
 	/**
+	 * Set the parent (ie. the object that holds this one as a child)
+	 */
+	 void setParent(MatchMakerObject parent);
+	
+	/**
 	 * Returns the object's primary children
 	 */
 	List<T> getChildren();

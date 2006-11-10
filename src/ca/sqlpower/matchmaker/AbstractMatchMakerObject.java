@@ -59,6 +59,7 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject>
 		int [] insertedIndices = {children.size()};
 		List<C> insertedChildren = new ArrayList<C>();
 		insertedChildren.add(child);
+		child.setParent(this);
 		eventSupport.fireChildrenInserted("children",insertedIndices,insertedChildren);
 	}
 
