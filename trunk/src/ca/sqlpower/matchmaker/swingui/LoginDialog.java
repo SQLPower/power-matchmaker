@@ -80,6 +80,7 @@ public class LoginDialog extends JDialog {
             } catch (Exception ex) {
                 ASUtils.showExceptionDialogNoReport(LoginDialog.this,
                         "Connection Error", ex );
+                loginButton.setEnabled(true);
             }
         }
 
@@ -109,6 +110,12 @@ public class LoginDialog extends JDialog {
             loginButton.setEnabled(true);
         }
     }
+    
+    private final Action cancelAction = new AbstractAction(){
+        public void actionPerformed(ActionEvent e) {
+            LoginDialog.this.dispose();
+        }
+    };
     
 	/**
 	 * The session context for this application.  The list of available
@@ -165,16 +172,17 @@ public class LoginDialog extends JDialog {
 	public LoginDialog(SwingSessionContext sessionContext) {
 		super();
         this.sessionContext = sessionContext;
-		setTitle("Database Connections");
+		setTitle("Power*MatchMaker Login");
 		panel = createPanel();
 		getContentPane().add(panel);
 		setModal(true);
+        ASUtils.makeJDialogCancellable(this, cancelAction);
 	}
 
 	public JComponent createPanel() {
 
 		FormLayout layout = new FormLayout(
-				"4dlu,fill:min(70dlu;default), 4dlu, fill:min(50dlu;default):grow, min(20dlu;default), 4dlu, min(15dlu;default), fill:min, 4dlu", // columns
+				"4dlu, pref, 4dlu, fill:min(50dlu;pref):grow, min(20dlu;pref), 4dlu, min(15dlu;pref), fill:min, 4dlu", // columns
 				" 10dlu,pref,4dlu,pref,10dlu,pref,4dlu,pref,4dlu,pref,10dlu,pref,10dlu,pref,10dlu,pref,10dlu"); // rows
 
 		layout.setColumnGroups(new int [][] { {2,5},{4,7}});
@@ -208,10 +216,7 @@ public class LoginDialog extends JDialog {
 
 		loginButton.addActionListener(loginAction);
 		loginButton.setText("Login");
-		JButton cancelButton = new JButton(new AbstractAction(){
-			public void actionPerformed(ActionEvent e) {
-				LoginDialog.this.setVisible(false);
-			}});
+		JButton cancelButton = new JButton(cancelAction);
 		cancelButton.setText("Cancel");
 		bbBuilder.addGridded(loginButton);
 		bbBuilder.addUnrelatedGap();

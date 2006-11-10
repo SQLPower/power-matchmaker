@@ -14,7 +14,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.CommonCloseAction;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.swingui.MatchStatisticsPanel;
@@ -93,7 +92,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 		bbb.addGridded(closeButton);
 		bbb.addRelatedGap();
 		panel.add(bbb.getPanel(),BorderLayout.SOUTH);
-		ArchitectPanelBuilder.makeJDialogCancellable(d,closeAction);
+		ASUtils.makeJDialogCancellable(d,closeAction);
 
 		panel.add(p,BorderLayout.CENTER);
 		d.add(panel);
