@@ -8,7 +8,8 @@ public class MatchMakerTranslateGroupTest<C extends MatchMakerTranslateWord>
 	MatchMakerTranslateGroup<C> target;
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchMakerTranslateGroup<C>(appUserName);
+		target = new MatchMakerTranslateGroup<C>();
+		target.setAppUserName(appUserName);
 	}
 
 	@Override

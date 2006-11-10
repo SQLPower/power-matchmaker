@@ -12,8 +12,7 @@ public class MatchMakerFolder<C extends MatchMakerObject> extends AbstractMatchM
 	private String folderName;
     private String folderDesc;
     
-	public MatchMakerFolder(String appUserName) {
-		super(appUserName);
+	public MatchMakerFolder( ) {
 	}
 
 	public String getFolderDesc() {

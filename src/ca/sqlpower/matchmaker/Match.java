@@ -68,8 +68,7 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 	/** The point above which matches are done automatically */
 	int autoMatchThreshold;
 
-	public Match(String appUserName) {
-		super(appUserName);
+	public Match( ) {
 	}
 	/**
 	 * FIXME Implement me

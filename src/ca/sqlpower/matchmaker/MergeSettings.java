@@ -27,8 +27,7 @@ public class MergeSettings extends MatchMakerSettings {
 		return true;
 	}
 
-	public MergeSettings(String appUserName) {
-		super(appUserName);
+	public MergeSettings( ) {
 	}
 
 	/**

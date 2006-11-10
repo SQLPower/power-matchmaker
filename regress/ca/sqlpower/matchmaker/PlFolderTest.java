@@ -8,7 +8,8 @@ public class PlFolderTest extends MatchMakerTestCase<PlFolder> {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		plFolder = new PlFolder<Match>(appUserName);
+		plFolder = new PlFolder<Match>();
+		plFolder.setAppUserName(appUserName);
 	}
 
 	@Override

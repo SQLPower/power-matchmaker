@@ -9,7 +9,8 @@ public class MatchMakerCriteriaGroupTest<C extends MatchmakerCriteria> extends M
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchMakerCriteriaGroup<C>(appUserName);
+		target = new MatchMakerCriteriaGroup<C>();
+		target.setAppUserName(appUserName);
 	}
 
 	@Override

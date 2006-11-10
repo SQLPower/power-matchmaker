@@ -28,8 +28,7 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject>
 	private String appUserName;
 
 
-	public AbstractMatchMakerObject(String appUserName) {
-		this.appUserName = appUserName;
+	public AbstractMatchMakerObject() {
 		eventSupport.addMatchMakerListener(new MatchMakerListener<MatchMakerObject,C>(){
 
 			public void mmPropertyChanged(MatchMakerEvent<MatchMakerObject, C> evt) {
@@ -125,5 +124,9 @@ public abstract class AbstractMatchMakerObject<C extends MatchMakerObject>
 		MatchMakerObject oldValue = this.parent;
 		this.parent = parent;
 		eventSupport.firePropertyChange("parent", oldValue, this.parent);
+	}
+
+	public void setAppUserName(String appUserName) {
+		this.appUserName = appUserName;
 	}
 }

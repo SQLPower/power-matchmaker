@@ -6,10 +6,10 @@ public class TestingAbstractMatchMakerObject extends AbstractMatchMakerObject {
 
 	int i;
 	
-	public TestingAbstractMatchMakerObject(String appUserName) {
-		super(appUserName);
+	public TestingAbstractMatchMakerObject( ) {
 		Random rand  = new Random();
 		i = rand.nextInt();
+		this.setAppUserName("Test User");
 	}
 
 	@Override

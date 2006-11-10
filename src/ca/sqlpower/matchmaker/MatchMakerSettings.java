@@ -53,8 +53,7 @@ public abstract class MatchMakerSettings extends
 		return true;
 	}
 
-	public MatchMakerSettings(String appUserName) {
-		super(appUserName);
+	public MatchMakerSettings( ) {
 	}
 
 	/**

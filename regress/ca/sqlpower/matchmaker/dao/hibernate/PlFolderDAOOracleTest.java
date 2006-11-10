@@ -10,13 +10,14 @@ public class PlFolderDAOOracleTest extends AbstractDAOTestCase<PlFolder<MatchMak
 	
 	@Override
 	public PlFolderDAO getDataAccessObject() {
-		return new PlFolderDAOHibernate(HibernateTestUtil.getOracleSessionFactory());
+		return new PlFolderDAOHibernate(HibernateTestUtil.getOracleSessionFactory(),"Test User");
 	}
 
 	@Override
 	public PlFolder<MatchMakerObject> getNewObjectUnderTest() {
 		count++;
-		PlFolder<MatchMakerObject> plFolder = new PlFolder<MatchMakerObject>("TestUser");
+		PlFolder<MatchMakerObject> plFolder = new PlFolder<MatchMakerObject>();
+		plFolder.setAppUserName("test user");
 		plFolder.setFolderName("test "+count);
 		return plFolder;
 	}
