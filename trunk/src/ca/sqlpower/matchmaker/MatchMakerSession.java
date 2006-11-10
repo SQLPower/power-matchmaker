@@ -3,6 +3,7 @@ package ca.sqlpower.matchmaker;
 import java.util.Date;
 import java.util.List;
 
+import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 
@@ -21,6 +22,11 @@ import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
  * @version $Id$
  */
 public interface MatchMakerSession {
+
+    /**
+     * The session context that created this session.
+     */
+    public MatchMakerSessionContext getContext();
 
 	/**
 	 * The database connection to the PL Schema for this session.

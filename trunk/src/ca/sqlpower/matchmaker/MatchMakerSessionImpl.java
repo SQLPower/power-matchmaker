@@ -22,28 +22,36 @@ import ca.sqlpower.util.UnknownFreqCodeException;
  */
 public class MatchMakerSessionImpl implements MatchMakerSession {
 
+    private final MatchMakerSessionContext context;
+    private final SessionFactory hibernateSessionFactory;
+	private final SQLDatabase database;
 	private PLSecurityManager sm;
-	private SQLDatabase database;
 	private PLUser appUser;
 	private String dbUser;
 	private Date sessionStartTime;
-	private SessionFactory hibernateSessionFactory;
 
 	public MatchMakerSessionImpl(
+            MatchMakerSessionContext context,
 			ArchitectDataSource ds,
 			SessionFactory hibernateSessionFactory)
 		throws PLSecurityException, UnknownFreqCodeException,
 				SQLException, ArchitectException {
+        this.context = context;
 		database = new SQLDatabase(ds);
 		dbUser = ds.getUser();
 		sm = new PLSecurityManager(database.getConnection(),
-				 					dbUser,
-				 					ds.getPass());
+				 					dbUser.toUpperCase(),
+				 					ds.getPass(),
+                                    false);  // since this is a database login, we don't require correct app-level password
 		appUser = sm.getPrincipal();
 		sessionStartTime = new Date();
 		this.hibernateSessionFactory = hibernateSessionFactory;
 	}
 
+    public MatchMakerSessionContext getContext() {
+        return context;
+    }
+    
 	public SQLDatabase getDatabase() {
 		return database;
 	}

@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface MatchMakerSessionContext {
 
     public MatchMakerSession createSession(ArchitectDataSource ds,
             String username, String password) throws PLSecurityException,
-            SQLException, ArchitectException;
+            SQLException, ArchitectException, IOException;
 
     /**
      * Returns the PlDotIni object that manages this context's list of data sources.

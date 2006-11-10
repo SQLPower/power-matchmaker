@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,7 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.AboutAction;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -63,7 +65,7 @@ import ca.sqlpower.util.Version;
  * The Main Window for the Architect Application; contains a main() method that is
  * the conventional way to start the application running.
  */
-public class MatchMakerSwingSession {
+public class MatchMakerSwingSession implements MatchMakerSession {
 
 	private static Logger logger = Logger.getLogger(MatchMakerSwingSession.class);
 
@@ -82,6 +84,11 @@ public class MatchMakerSwingSession {
      * The context that created this session.  Holds all of the static preferences.
      */
     private final SwingSessionContext sessionContext;
+
+    /**
+     * The session implementation that we delegate MatchMakerSession requests to.
+     */
+    private final MatchMakerSession sessionImpl;
     
     /**
 	 * This is the top level application frame
@@ -196,8 +203,8 @@ public class MatchMakerSwingSession {
 
 		public void actionPerformed(ActionEvent e) {
 			DatabaseConnectionManager dm = new DatabaseConnectionManager(
-					MatchMakerSwingSession.this,
-                    getContext().getPlDotIni());
+                    frame,
+                    sessionContext);
 			dm.pack();
 			dm.setVisible(true);
 
@@ -227,24 +234,29 @@ public class MatchMakerSwingSession {
 	 * You can't create an architect frame using this constructor;
 	 * you have to call {@link #getMainInstance()}.
 	 *
+     * @param context the Swing-specific session context
+     * @param sessionImpl The session that actually does the dirty work (ORM and stuff like
+     * that).
 	 * @throws ArchitectException
 	 */
-	private MatchMakerSwingSession() throws IOException, ArchitectException {
-        macOSXRegistration();
-		frame = new JFrame("MatchMaker");
-		Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(frame));
-		contentPane = (JComponent) frame.getContentPane();
-		frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
-		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        sessionContext = new SwingSessionContext();
-	    buildGUI();
-	    frame.setVisible(true);
-        showLoginDialog();
+	MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, ArchitectException {
+        this.sessionImpl = sessionImpl;
+        this.sessionContext = context;
+        frame = new JFrame("MatchMaker");
 	}
 
-
+	void showGUI() {
+	    buildGUI();
+        frame.setVisible(true);
+    }
     
     private void buildGUI() {
+
+        macOSXRegistration();
+        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(frame));
+        contentPane = (JComponent) frame.getContentPane();
+        frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_final.png")).getImage());
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
@@ -376,7 +388,7 @@ public class MatchMakerSwingSession {
      * username and password.  Upon successful login (via that dialog), things really get going.
      */
     private void showLoginDialog() {
-        LoginDialog l = new LoginDialog(MatchMakerSwingSession.this);
+        LoginDialog l = new LoginDialog(sessionContext);
         l.pack();
         l.setLocationRelativeTo(frame);
         l.setVisible(true);
@@ -535,6 +547,8 @@ public class MatchMakerSwingSession {
 	/**
 	 * Creates a MatchMakerSwingSession and shows the login prompt.  This method is
 	 * an acceptable way to launch the Swing GUI of the MatchMaker application.
+     * 
+     * XXX should move to LoginDialog or its own class, I think
 	 */
 	public static void main(String args[]) throws ArchitectException {
 
@@ -545,7 +559,8 @@ public class MatchMakerSwingSession {
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 		    	try {
-		    		MatchMakerSwingSession swingSession = new MatchMakerSwingSession();
+		    		SwingSessionContext context = new SwingSessionContext();
+                    new LoginDialog(context).setVisible(true);
 		    	} catch (Exception ex) {
 		    		ASUtils.showExceptionDialog("Couldn't start application!", ex);
 		    	}
@@ -646,6 +661,24 @@ public class MatchMakerSwingSession {
     
     public void setLastImportExportAccessPath(String path) {
         sessionContext.setLastImportExportAccessPath(path);
+    }
+
+    ///// MatchMakerSession Implementation //////
+    
+    public String getAppUser() {
+        return sessionImpl.getAppUser();
+    }
+
+    public String getDBUser() {
+        return sessionImpl.getDBUser();
+    }
+
+    public SQLDatabase getDatabase() {
+        return sessionImpl.getDatabase();
+    }
+
+    public Date getSessionStartTime() {
+        return sessionImpl.getSessionStartTime();
     }
 
 }

@@ -60,7 +60,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         tempDbSource.setPass(password);
 
         try {
-        	return new MatchMakerSessionImpl(tempDbSource, getHibernateSessionFactory(tempDbSource));
+        	return new MatchMakerSessionImpl(this, tempDbSource, getHibernateSessionFactory(tempDbSource));
         } catch (UnknownFreqCodeException ex) {
         	throw new RuntimeException("This user doesn't have a valid default Dashboard date frequency, so you can't log in?!", ex);
         }

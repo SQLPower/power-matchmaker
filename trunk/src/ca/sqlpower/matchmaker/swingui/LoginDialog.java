@@ -27,8 +27,6 @@ import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
-import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -70,7 +68,7 @@ public class LoginDialog extends JDialog {
             }
 
             try {
-                MatchMakerSession session = sessionContext.createSession(dbSource,
+                session = sessionContext.createSession(dbSource,
                         userID.getText(), new String(password.getPassword()));
                 ListerProgressBarUpdater progressBarUpdater =
                     new ListerProgressBarUpdater(progressBar, this);
@@ -102,9 +100,7 @@ public class LoginDialog extends JDialog {
                     session.getDatabase() != null &&
                     session.getDatabase().isPopulated() &&
                     loginWasSuccessful) {
-                // XXX Change this to fire an event so we don't need to know who's interested.
-                // XXX this takes a while (~10 seconds) and during that time, the UI is frozen.
-                swingSession.newLogin(session.getDatabase());
+                session.showGUI();
                 LoginDialog.this.setVisible(false);
             } else {
                 JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
@@ -118,12 +114,12 @@ public class LoginDialog extends JDialog {
 	 * The session context for this application.  The list of available
 	 * databases lives here, and login attempts will happen via this object.
 	 */
-	private MatchMakerSessionContext sessionContext;
+	private SwingSessionContext sessionContext;
 
 	/**
 	 * The session that we will create upon successful login.
 	 */
-	private MatchMakerSession session;
+	private MatchMakerSwingSession session;
 
 	private JComboBox dbList;
 	private JTextField userID;
@@ -162,24 +158,13 @@ public class LoginDialog extends JDialog {
 		        LoginDialog.this.dbSource = dbSource;
             }
 		}};
-
-	/**
-	 * The SwingUI session instance we're creating a login for.
-	 */
-	private MatchMakerSwingSession swingSession;
-
     
     /**
      * Creates a new login dialog, but does not display it.
-     * 
-     * FIXME the login dialog is supposed to be creating (or at least setting up) a MatchMakerSwingSession,
-     * but it's getting one here in the constructor.  We should get a session context as the constructor
-     * object, and then use it to build a SwingSession once the user picks a database to log into.
      */
-	public LoginDialog(MatchMakerSwingSession swingSession) {
-		super(swingSession.getFrame());
-        this.sessionContext = swingSession.getContext();
-		this.swingSession = swingSession;
+	public LoginDialog(SwingSessionContext sessionContext) {
+		super();
+        this.sessionContext = sessionContext;
 		setTitle("Database Connections");
 		panel = createPanel();
 		getContentPane().add(panel);
@@ -203,7 +188,7 @@ public class LoginDialog extends JDialog {
 		dbSourceName = new JLabel();
 
 		JLabel line1 = new JLabel("Please choose one of the following databases for login:");
-		connectionModel = new ConnectionComboBoxModel(swingSession.getContext().getPlDotIni());
+		connectionModel = new ConnectionComboBoxModel(sessionContext.getPlDotIni());
 		connectionModel.addListDataListener(connListener);
 		dbList = new JComboBox(connectionModel);
 		JLabel dbSourceName1 = new JLabel("Database source name:");

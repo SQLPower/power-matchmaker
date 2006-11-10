@@ -1,6 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -12,6 +11,7 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -49,34 +49,22 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	private static Logger logger = Logger.getLogger(DatabaseConnectionManager.class);
 
 	/**
-	 * The Swing GUI session that owns this dialog.
+	 * The session context that this dialog is managing connection properties for.
 	 */
-	private MatchMakerSwingSession swingSession;
+	private final SwingSessionContext sessionContext;
+    private final JFrame owningFrame;
+	private final NewDatabaseConnectionAction newDatabaseConnectionAction;
+    private final JPanel panel;
 
-	private JDialog newConnectionDialog;
-	private JTable dsTable;
-	private JPanel panel;
-	private PlDotIni plDotIni;
-
-	private Action helpAction = new AbstractAction(){
+	private final Action helpAction = new AbstractAction(){
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-		}};
+            JOptionPane.showMessageDialog(DatabaseConnectionManager.this, "Help is not available yet.");
+		}
+	};
 
-
-	public synchronized JDialog getNewConnectionDialog() {
-		return newConnectionDialog;
-	}
-
-	public synchronized void setNewConnectionDialog(JDialog d) {
-		newConnectionDialog = d;
-	}
-	private NewDatabaseConnectionAction newDatabaseConnectionAction = 
-        new NewDatabaseConnectionAction(swingSession, "Add");
-
-
-	private Action editDatabaseConnectionAction = new AbstractAction("Edit") {
+	private final Action editDatabaseConnectionAction = new AbstractAction("Edit") {
 
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = dsTable.getSelectedRow();
@@ -94,7 +82,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 			DBCSOkAction okAction = new DBCSOkAction(dbcsPanel,
 					false,
-					swingSession.getContext().getPlDotIni());
+					sessionContext.getPlDotIni());
 			okAction.setConnectionSelectionCallBack(DatabaseConnectionManager.this);
 
 			Action cancelAction = new AbstractAction() {
@@ -118,13 +106,13 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			setNewConnectionDialog(d);
 
 			/* d.pack();*/
-			d.setLocationRelativeTo(swingSession.getFrame());
+			d.setLocationRelativeTo(owningFrame);
 			d.setVisible(true);
 			logger.debug("Editting existing DBCS on panel: "+dbcs);
 		}
 	};
 
-	private Action removeDatabaseConnectionAction = new AbstractAction("Remove") {
+	private final Action removeDatabaseConnectionAction = new AbstractAction("Remove") {
 
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = dsTable.getSelectedRow();
@@ -144,7 +132,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		}
 	};
 
-	private Action loginDatabaseConnectionAction = new AbstractAction("Login") {
+	private final Action loginDatabaseConnectionAction = new AbstractAction("Login") {
 
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = dsTable.getSelectedRow();
@@ -153,39 +141,40 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			}
 			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
 			closeAction.actionPerformed(null);
-			LoginDialog l = new LoginDialog(swingSession);
+			LoginDialog l = new LoginDialog(sessionContext);
 			l.setDbSource(dbcs);
 			l.pack();
 	    	l.setVisible(true);
 		}
 	};
 
-	private Action closeAction = new AbstractAction(){
+	private final Action closeAction = new AbstractAction(){
 		public void actionPerformed(ActionEvent e) {
 			if ( getNewConnectionDialog() != null && getNewConnectionDialog().isVisible() )
 				return;
 			DatabaseConnectionManager.this.setVisible(false);
-		}};
+		}
+	};
 
+	private JDialog newConnectionDialog;
+	private JTable dsTable;
+	private PlDotIni plDotIni;
 
-	private DatabaseConnectionManager(MatchMakerSwingSession swingSession) throws HeadlessException {
-		super(swingSession.getFrame());
-		this.swingSession = swingSession;
-		newDatabaseConnectionAction.setCallBack(this);
-		newDatabaseConnectionAction.setComponentParent(this);
-		newDatabaseConnectionAction.setParent(this);
-	}
-
-	public DatabaseConnectionManager(MatchMakerSwingSession swingSession, PlDotIni plDotIni) {
-		this(swingSession);
-		this.plDotIni = plDotIni;
-		setTitle("Database Connection Manager");
+	public DatabaseConnectionManager(JFrame owningFrame, SwingSessionContext context) {
+        super(owningFrame);
+        setTitle("Database Connection Manager");
+        this.owningFrame = owningFrame;
+        this.sessionContext = context;
+        this.plDotIni = context.getPlDotIni();
+        newDatabaseConnectionAction = new NewDatabaseConnectionAction(sessionContext, "Add");
+        newDatabaseConnectionAction.setCallBack(this);
+        newDatabaseConnectionAction.setComponentParent(this);
+        newDatabaseConnectionAction.setParent(this);
 		panel = createPanel();
 		getContentPane().add(panel);
 	}
 
 	private JPanel createPanel() {
-
 
 		FormLayout layout = new FormLayout(
 				"6dlu, fill:min(160dlu;default):grow, 6dlu, fill:min(50dlu;default), 6dlu", // columns
@@ -317,6 +306,14 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		}
 	}
 
+    public synchronized JDialog getNewConnectionDialog() {
+        return newConnectionDialog;
+    }
+
+    public synchronized void setNewConnectionDialog(JDialog d) {
+        newConnectionDialog = d;
+    }
+    
 	public PlDotIni getPlDotIni() {
 		return plDotIni;
 	}

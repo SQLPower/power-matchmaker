@@ -18,7 +18,6 @@ import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.security.PLSecurityException;
@@ -123,10 +122,10 @@ public class SwingSessionContext implements MatchMakerSessionContext {
         }
     }
 
-    public MatchMakerSession createSession(
+    public MatchMakerSwingSession createSession(
             ArchitectDataSource ds, String username, String password)
-    throws PLSecurityException, SQLException, ArchitectException {
-        return context.createSession(ds, username, password);
+    throws PLSecurityException, SQLException, ArchitectException, IOException {
+        return new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     }
 
     public List<ArchitectDataSource> getDataSources() {
