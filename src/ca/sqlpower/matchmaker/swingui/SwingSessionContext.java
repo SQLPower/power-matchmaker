@@ -78,8 +78,7 @@ public class SwingSessionContext implements MatchMakerSessionContext {
         fakeParentFrame = new JFrame("Never Visible");
         fakeParentFrame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
         
-        dbConnectionManager = new DatabaseConnectionManager(fakeParentFrame, this);
-        dbConnectionManager.pack();
+        dbConnectionManager = new DatabaseConnectionManager(fakeParentFrame, this);       
         
         loginDialog = new LoginDialog(this);
         loginDialog.pack();
@@ -168,8 +167,7 @@ public class SwingSessionContext implements MatchMakerSessionContext {
      * no matter how many times you call this method.
      */
     public void showDatabaseConnectionManager() {
-        dbConnectionManager.setVisible(true);
-        dbConnectionManager.requestFocus();
+        dbConnectionManager.showDialog();
     }
  
     /**

@@ -45,9 +45,8 @@ import com.jgoodies.forms.layout.FormLayout;
  * You won't need to create one of these on your own.
  * Use {@link SwingSessionContext#showDatabaseConnectionManager()}.
  * 
- * XXX: This class should use JDialog instead of extending it.
  */
-public class DatabaseConnectionManager extends JDialog
+public class DatabaseConnectionManager
 implements DBConnectionCallBack, DBConnectionUniDialog {
 
 	private static Logger logger = Logger.getLogger(DatabaseConnectionManager.class);
@@ -59,12 +58,17 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
     private final JFrame owningFrame;
 	private final NewDatabaseConnectionAction newDatabaseConnectionAction;
     private final JPanel panel;
+    
+    /**
+     * The Dialog that contains all the GUI;
+     */
+    private final JDialog d;
 
 	private final Action helpAction = new AbstractAction(){
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-            JOptionPane.showMessageDialog(DatabaseConnectionManager.this, "Help is not available yet.");
+            JOptionPane.showMessageDialog(d, "Help is not available yet.");
 		}
 	};
 
@@ -96,9 +100,9 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 				}
 			};
 
-			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
+			JDialog dialog = ArchitectPanelBuilder.createArchitectPanelDialog(
 					dbcsPanel,
-					DatabaseConnectionManager.this,
+					d,
 					"Edit Database Connection",
 					ArchitectPanelBuilder.OK_BUTTON_LABEL,
 					okAction, cancelAction);
@@ -106,9 +110,9 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			okAction.setConnectionDialog(d);
 			setNewConnectionDialog(d);
 
-			/* d.pack();*/
-			d.setLocationRelativeTo(owningFrame);
-			d.setVisible(true);
+            dialog.pack();
+			dialog.setLocationRelativeTo(owningFrame);
+			dialog.setVisible(true);
 			logger.debug("Editting existing DBCS on panel: "+dbcs);
 		}
 	};
@@ -122,7 +126,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			}
 			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
 			int option = JOptionPane.showConfirmDialog(
-					DatabaseConnectionManager.this,
+					d,
 					"Do you want to delete this database connection? ["+dbcs.getName()+"]",
 					"Remove",
 					JOptionPane.YES_NO_OPTION);
@@ -150,7 +154,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		public void actionPerformed(ActionEvent e) {
 			if ( getNewConnectionDialog() != null && getNewConnectionDialog().isVisible() )
 				return;
-			DatabaseConnectionManager.this.setVisible(false);
+			d.setVisible(false);
 		}
 	};
 
@@ -159,19 +163,30 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	private PlDotIni plDotIni;
 
 	public DatabaseConnectionManager(JFrame owningFrame, SwingSessionContext context) {
-        super(owningFrame);
-        setTitle("Database Connection Manager");
+        d = new JDialog(owningFrame);
+        d.setTitle("Database Connection Manager");
         this.owningFrame = owningFrame;
         this.sessionContext = context;
         this.plDotIni = context.getPlDotIni();
         newDatabaseConnectionAction = new NewDatabaseConnectionAction(sessionContext, "Add");
         newDatabaseConnectionAction.setCallBack(this);
-        newDatabaseConnectionAction.setComponentParent(this);
+        newDatabaseConnectionAction.setComponentParent(d);
         newDatabaseConnectionAction.setParent(this);
 		panel = createPanel();
-		getContentPane().add(panel);
+		d.getContentPane().add(panel);  
 	}
 
+    
+    /**
+     * Packs and shows the user interface
+     *
+     */
+    public void showDialog(){
+        d.pack();
+        d.setVisible(true);
+        d.requestFocus();
+    }
+    
 	private JPanel createPanel() {
 
 		FormLayout layout = new FormLayout(
@@ -235,7 +250,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		bsb.addGridded(cancelButton);
 
 
-		JComponent c = (JComponent) getRootPane();
+		JComponent c = (JComponent) d.getRootPane();
 		InputMap inputMap = c.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		ActionMap actionMap = c.getActionMap();
 
