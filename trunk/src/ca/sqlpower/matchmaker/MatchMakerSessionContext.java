@@ -55,4 +55,16 @@ public interface MatchMakerSessionContext {
      * as well as a JNDI implementation.
      */
     public PlDotIni getPlDotIni();
+    
+    /**
+     * The location of the engine
+     * @return the path to the engine
+     */
+    public String getEngineLocation();
+    
+    /**
+     * Sets the location of the engine path
+     * @param engineLocation speciy the location of the engine
+     */
+    public void setEngineLocation(String engineLocation);
 }

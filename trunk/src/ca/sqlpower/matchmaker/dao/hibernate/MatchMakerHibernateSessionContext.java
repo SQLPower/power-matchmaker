@@ -31,29 +31,30 @@ import ca.sqlpower.util.UnknownFreqCodeException;
  */
 public class MatchMakerHibernateSessionContext implements MatchMakerSessionContext {
 
-	private final PlDotIni plDotIni;
-	private final Map<ArchitectDataSource, SessionFactory> hibernateSessionFactories =
-	    new HashMap<ArchitectDataSource, SessionFactory>();
+    private final PlDotIni plDotIni;
+    private final Map<ArchitectDataSource, SessionFactory> hibernateSessionFactories =
+        new HashMap<ArchitectDataSource, SessionFactory>();
+    private String engineLocation;
 
-	public MatchMakerHibernateSessionContext(PlDotIni plIni) throws IOException {
+    public MatchMakerHibernateSessionContext(PlDotIni plIni) throws IOException {
         plDotIni = plIni;
-	}
+    }
 
-	/* (non-Javadoc)
+    /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#getDataSources()
      */
-	public List<ArchitectDataSource> getDataSources() {
-		return plDotIni.getConnections();
-	}
+    public List<ArchitectDataSource> getDataSources() {
+        return plDotIni.getConnections();
+    }
 
-	/* (non-Javadoc)
+    /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#createSession(ca.sqlpower.architect.ArchitectDataSource, java.lang.String, java.lang.String)
      */
-	public MatchMakerSession createSession(
-			ArchitectDataSource ds, String username, String password)
+    public MatchMakerSession createSession(
+            ArchitectDataSource ds, String username, String password)
     throws PLSecurityException, SQLException, ArchitectException {
 
-		// We create a copy of the data source and change the userID and password
+        // We create a copy of the data source and change the userID and password
         //and use that instead for the loginWasSuccessful.  We do not want to change the
         //default userID and password for the connection in here.
         ArchitectDataSource tempDbSource = new ArchitectDataSource(ds);
@@ -61,30 +62,40 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         tempDbSource.setPass(password);
 
         try {
-        	return new MatchMakerSessionImpl(this, tempDbSource, getHibernateSessionFactory(tempDbSource));
+            return new MatchMakerSessionImpl(this, tempDbSource, getHibernateSessionFactory(tempDbSource));
         } catch (UnknownFreqCodeException ex) {
-        	throw new RuntimeException("This user doesn't have a valid default Dashboard date frequency, so you can't log in?!", ex);
+            throw new RuntimeException("This user doesn't have a valid default Dashboard date frequency, so you can't log in?!", ex);
         }
-	}
+    }
 
-	/**
-	 * Creates or retrieves a Hibernate SessionFactory object for the
-	 * given database.  Never creates two SessionFactory objects for
-	 * the same jdbcurl+user+password combination.
-	 *
-	 * @param ds The connection specification for the session factory you want.
-	 * @return A Hibernate SessionFactory for the given data source.
-	 */
-	private synchronized SessionFactory getHibernateSessionFactory(ArchitectDataSource ds) {
-		SessionFactory factory = hibernateSessionFactories.get(ds);
-		if (factory == null) {
-			factory = HibernateUtil.createRepositorySessionFactory(ds);
-			hibernateSessionFactories.put(ds, factory);
-		}
-		return factory;
-	}
+    /**
+     * Creates or retrieves a Hibernate SessionFactory object for the
+     * given database.  Never creates two SessionFactory objects for
+     * the same jdbcurl+user+password combination.
+     *
+     * @param ds The connection specification for the session factory you want.
+     * @return A Hibernate SessionFactory for the given data source.
+     */
+    private synchronized SessionFactory getHibernateSessionFactory(ArchitectDataSource ds) {
+        SessionFactory factory = hibernateSessionFactories.get(ds);
+        if (factory == null) {
+            factory = HibernateUtil.createRepositorySessionFactory(ds);
+            hibernateSessionFactories.put(ds, factory);
+        }
+        return factory;
+    }
 
     public PlDotIni getPlDotIni() {
         return plDotIni;
     }
+
+    public String getEngineLocation() {       
+        return engineLocation;
+    }
+
+
+    public void setEngineLocation(String engineLocation) {
+        this.engineLocation = engineLocation;
+    }
+
 }
