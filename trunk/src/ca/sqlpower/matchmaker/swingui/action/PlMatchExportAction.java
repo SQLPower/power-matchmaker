@@ -21,7 +21,7 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectFrame;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
-import ca.sqlpower.matchmaker.hibernate.PlFolder;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
@@ -32,14 +32,14 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 public class PlMatchExportAction extends AbstractAction {
 
     private final DateFormat df = new DateFormatAllowsNull();
-    
+
     private final MatchMakerSwingSession swingSession;
 	private final JFrame owningFrame;
 
     /**
      * Creates a new instance of this action which is parented by the given frame and will export the
      * given match object when invoked.
-     * 
+     *
      * @param swingSession The GUI session this action lives in.
      * @param owningFrame The frame that should own any dialogs this action creates.
      * @param match The match to export.  If you specify null, the match to export will be
@@ -68,7 +68,7 @@ public class PlMatchExportAction extends AbstractAction {
             JOptionPane.showMessageDialog(owningFrame, "Please select a match to export.");
 			return;
 		}
-        
+
 		JFileChooser fc = new JFileChooser(swingSession.getLastImportExportAccessPath());
 		fc.setFileFilter(ASUtils.XML_FILE_FILTER);
 		fc.setDialogTitle("Export Match");
@@ -294,7 +294,7 @@ public class PlMatchExportAction extends AbstractAction {
 		ioo.println(out, "<PL_FOLDER>");
 		ioo.indent++;
 		ioo.println(out, "<FOLDER_NAME>"+
-        		ArchitectUtils.escapeXML(folder.getFolderName())+
+        		ArchitectUtils.escapeXML(folder.getName())+
         		"</FOLDER_NAME>");
 		ioo.println(out, "<FOLDER_DESC>"+
         		ArchitectUtils.escapeXML(folder.getFolderDesc())+
@@ -306,7 +306,7 @@ public class PlMatchExportAction extends AbstractAction {
         ioo.println(out, "<PL_FOLDER_DETAIL>");
 		ioo.indent++;
 		ioo.println(out, "<FOLDER_NAME>"+
-        		ArchitectUtils.escapeXML(folder.getFolderName())+
+        		ArchitectUtils.escapeXML(folder.getName())+
         		"</FOLDER_NAME>");
 		ioo.println(out, "<OBJECT_TYPE>"+
         		ArchitectUtils.escapeXML("MATCH")+

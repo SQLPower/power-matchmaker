@@ -1,17 +1,13 @@
 package ca.sqlpower.matchmaker;
 
-
-
-/** 
+/**
  * A container class desigend to hold match maker objects
- *	
- * FIXME implement class
  */
-public class MatchMakerFolder<C extends MatchMakerObject> extends AbstractMatchMakerObject<C> {
+public class MatchMakerFolder<C extends MatchMakerObject>
+	extends AbstractMatchMakerObject<MatchMakerFolder, C> {
 
-	private String folderName;
     private String folderDesc;
-    
+
 	public MatchMakerFolder( ) {
 	}
 
@@ -25,21 +21,11 @@ public class MatchMakerFolder<C extends MatchMakerObject> extends AbstractMatchM
 		getEventSupport().firePropertyChange("folderDesc", oldValue, folderDesc);
 	}
 
-	public String getFolderName() {
-		return folderName;
-	}
-
-	public void setFolderName(String folderName) {
-		String oldValue = this.folderName;
-		this.folderName = folderName;
-		getEventSupport().firePropertyChange("folderName", oldValue, folderName);
-	}
-
 	@Override
 	public int hashCode() {
 		final int PRIME = 31;
 		int result = 0;
-		result = PRIME * result + ((folderName == null) ? 0 : folderName.hashCode());
+		result = PRIME * result + ((getName() == null) ? 0 : getName().hashCode());
 		result = PRIME * result + ((getParent() == null) ? 0 : getParent().hashCode());
 		return result;
 	}
@@ -58,15 +44,15 @@ public class MatchMakerFolder<C extends MatchMakerObject> extends AbstractMatchM
 				return false;
 		} else if (!getParent().equals(other.getParent()))
 			return false;
-		if (folderName == null) {
-			if (other.folderName != null)
+		if (getName() == null) {
+			if (other.getName() != null)
 				return false;
-		} else if (!folderName.equals(other.folderName))
+		} else if (!getName().equals(other.getName()))
 			return false;
 		return true;
 	}
 
 
 
-	
+
 }

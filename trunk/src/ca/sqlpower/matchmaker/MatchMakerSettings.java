@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package ca.sqlpower.matchmaker;
 
@@ -8,10 +8,10 @@ import ca.sqlpower.matchmaker.util.log.Log;
 /**
  * The Match (Object) settings that are common to both the match and the merge
  * engines
- * 
+ *
  */
-public abstract class MatchMakerSettings extends
-		AbstractMatchMakerObject<MatchMakerObject> {
+public abstract class MatchMakerSettings<T extends MatchMakerSettings> extends
+		AbstractMatchMakerObject<T, MatchMakerObject> {
 
 	@Override
 	public int hashCode() {

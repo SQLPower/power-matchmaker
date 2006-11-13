@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 /**
  * Settings that are specific to the Match engine
  */
-public class MatchSettings extends MatchMakerSettings {
+public class MatchSettings extends MatchMakerSettings<MatchSettings> {
 
 	@Override
 	public int hashCode() {

@@ -10,7 +10,7 @@ import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 public class MatchMakerEventSupportTest extends TestCase {
 
 	MatchMakerEventSupport<MatchMakerObject,MatchMakerObject> support;
-	MatchMakerObject<MatchMakerObject> mmo;
+	MatchMakerObject<TestingAbstractMatchMakerObject, MatchMakerObject> mmo;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -20,11 +20,11 @@ public class MatchMakerEventSupportTest extends TestCase {
 	}
 
 	public void testListenerRemovesSelf() {
-		MatchMakerEventCounter mmec1 = new MatchMakerEventCounter();
-		MatchMakerEventCounter mmec2 = new MatchMakerEventCounter();
-		MatchMakerEventCounter mmec3 = new MatchMakerEventCounter();
-		MatchMakerEventCounter mmec4 = new MatchMakerEventCounter();
-		MatchMakerEventCounter mmecRS = new MatchMakerEventCounter() {
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec1 = new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec2 = new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec3 = new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec4 = new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmecRS = new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>() {
 
 			@Override
 			public void mmStructureChanged(MatchMakerEvent evt) {
@@ -57,10 +57,12 @@ public class MatchMakerEventSupportTest extends TestCase {
 	}
 
 	public void testStructureChangedSource() {
-		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec =
+			new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
 		support.addMatchMakerListener(mmec);
 		support.fireStructureChanged();
-		MatchMakerEvent lastEvt = mmec.getLastEvt();
+		MatchMakerEvent<MatchMakerObject,MatchMakerObject> lastEvt =
+			mmec.getLastEvt();
 		assertNotNull("No event fired", lastEvt);
 		assertTrue("Failed to get the proper source when structure change event thrown", lastEvt.getSource() == mmo);
 		assertEquals("Fired the wrong number of events", 1, mmec.getStructureChangedCount());
@@ -72,14 +74,16 @@ public class MatchMakerEventSupportTest extends TestCase {
 	}
 
 	public void testChildrenInsertedSource() {
-		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec =
+			new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
 		support.addMatchMakerListener(mmec);
 		int[] index = { 0 };
 		List<MatchMakerObject> mmoChildren = new ArrayList<MatchMakerObject>();
 		mmoChildren.add(new TestingAbstractMatchMakerObject() {
 		});
 		support.fireChildrenInserted("InChild", index, mmoChildren);
-		MatchMakerEvent lastEvt = mmec.getLastEvt();
+		MatchMakerEvent<MatchMakerObject,MatchMakerObject> lastEvt =
+			mmec.getLastEvt();
 		assertNotNull("No event fired", lastEvt);
 		assertTrue("Failed to get the proper source when children inserted event thrown", lastEvt.getSource() == mmo);
 		assertEquals("Fired the wrong number of events", 1, mmec.getChildrenInsertedCount());
@@ -95,14 +99,16 @@ public class MatchMakerEventSupportTest extends TestCase {
 	}
 
 	public void testChildrenRemovedSource() {
-		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec =
+			new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
 		support.addMatchMakerListener(mmec);
 		int[] index = { 1 };
 		List<MatchMakerObject> mmoChildren = new ArrayList<MatchMakerObject>();
 		mmoChildren.add(new TestingAbstractMatchMakerObject() {
 		});
 		support.fireChildrenRemoved("OutChild", index, mmoChildren);
-		MatchMakerEvent lastEvt = mmec.getLastEvt();
+		MatchMakerEvent<MatchMakerObject,MatchMakerObject> lastEvt =
+			mmec.getLastEvt();
 		assertNotNull("No event fired", lastEvt);
 		assertTrue("Failed to get the proper source when children removed event thrown", lastEvt.getSource() == mmo);
 		assertEquals("Fired the wrong number of events", 1, mmec.getChildrenRemovedCount());
@@ -117,10 +123,12 @@ public class MatchMakerEventSupportTest extends TestCase {
 	}
 
 	public void testPropertyChangeSource() {
-		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec =
+			new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
 		support.addMatchMakerListener(mmec);
 		support.firePropertyChange("ppt1", "a", "b");
-		MatchMakerEvent lastEvt = mmec.getLastEvt();
+		MatchMakerEvent<MatchMakerObject,MatchMakerObject> lastEvt =
+			mmec.getLastEvt();
 		assertNotNull("No event fired", lastEvt);
 		assertTrue("Failed to get the proper source when property change event thrown", lastEvt.getSource() == mmo);
 		assertEquals("Fired the wrong number of events", 1, mmec.getPropertyChangedCount());
@@ -133,35 +141,39 @@ public class MatchMakerEventSupportTest extends TestCase {
 		assertEquals("Fired extra events", 1, mmec.getPropertyChangedCount());
 		assertEquals("Fired other events", 1, mmec.getAllEventCounts());
 	}
-	
+
 	public void testNoEventWhenNoPropertyChange() {
-		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec =
+			new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
 		support.addMatchMakerListener(mmec);
 		support.firePropertyChange("cowmoo", "a", "a");
-		assertEquals(0, mmec.propertyChangedCount);
+		assertEquals(0, mmec.getPropertyChangedCount());
 	}
 
 	public void testNoEventWhenNoPropertyChangeNullNull() {
-		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec =
+			new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
 		support.addMatchMakerListener(mmec);
 		support.firePropertyChange("cowmoo", null, null);
-		assertEquals(0, mmec.propertyChangedCount);
+		assertEquals(0, mmec.getPropertyChangedCount());
 	}
 
 	public void testEventWhenNoPropertyChangesNullToNotNull() {
-		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec =
+			new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
 		support.addMatchMakerListener(mmec);
 		support.firePropertyChange("cowmoo", null, "moo!");
-		assertEquals(1, mmec.propertyChangedCount);
+		assertEquals(1, mmec.getPropertyChangedCount());
 	}
 
 	public void testEventWhenNoPropertyChangesNotNullToNull() {
-		MatchMakerEventCounter mmec = new MatchMakerEventCounter();
+		MatchMakerEventCounter<MatchMakerObject,MatchMakerObject> mmec =
+			new MatchMakerEventCounter<MatchMakerObject,MatchMakerObject>();
 		support.addMatchMakerListener(mmec);
 		support.firePropertyChange("cowmoo", "moo!", null);
-		assertEquals(1, mmec.propertyChangedCount);
+		assertEquals(1, mmec.getPropertyChangedCount());
 	}
-	
+
 	public void testNullPropertyNameDisallowedForPropertyChange() {
 		try {
 			support.firePropertyChange(null, "cow", "moo");
@@ -201,7 +213,7 @@ public class MatchMakerEventSupportTest extends TestCase {
 			// yee-haw
 		}
 	}
-	
+
 	public void testIndexArrayAndObjectListWithDifferentLengthsOnChildrenInsertedFails() {
 		try {
 			List<MatchMakerObject> myList = new ArrayList<MatchMakerObject>();
@@ -214,7 +226,7 @@ public class MatchMakerEventSupportTest extends TestCase {
 			fail("Wrong exception type was thrown: "+e.getClass().getName());
 		}
 	}
-	
+
 	public void testIndexArrayAndObjectListWithDifferentLengthsOnChildrenRemovedFails() {
 		try {
 			List<MatchMakerObject> myList = new ArrayList<MatchMakerObject>();

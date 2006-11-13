@@ -5,7 +5,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 public class AbstractMatchMakerObjectTest extends TestCase {
 
-	MatchMakerObject<MatchMakerObject> test;
+	MatchMakerObject<TestingAbstractMatchMakerObject,MatchMakerObject> test;
 	final String appUserName = "user1";
 	MatchMakerSession session = new TestingMatchMakerSession();
 
@@ -29,7 +29,8 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 	}
 
 	public void testMatchMakerEventListener() {
-		MatchMakerEventCounter mml = new MatchMakerEventCounter();
+		MatchMakerEventCounter<TestingAbstractMatchMakerObject, MatchMakerObject> mml =
+			new MatchMakerEventCounter<TestingAbstractMatchMakerObject, MatchMakerObject>();
 		test.addMatchMakerListener(mml);
 		test.addChild(new TestingAbstractMatchMakerObject(){});
 		assertEquals("Did not get any events",1,mml.getAllEventCounts());
@@ -68,11 +69,9 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 	}
 
 	public void testParentSetCorrectly() {
-		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject(){};
-		MatchMakerObject mmo2 = new TestingAbstractMatchMakerObject(){};
+		TestingAbstractMatchMakerObject mmo1 = new TestingAbstractMatchMakerObject(){};
+		TestingAbstractMatchMakerObject mmo2 = new TestingAbstractMatchMakerObject(){};
 		mmo2.addChild(mmo1);
 		assertEquals("mmo2 is not the parent of mmo1",mmo2,mmo1.getParent());
 	}
-	
-	
 }

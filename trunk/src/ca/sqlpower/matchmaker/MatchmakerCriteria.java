@@ -4,10 +4,10 @@ import java.math.BigDecimal;
 
 import ca.sqlpower.architect.SQLColumn;
 
-public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatchMakerObject<C> {
+public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatchMakerObject<MatchmakerCriteria, C> {
 
 	Long oid;
-	
+
 	private SQLColumn column;
 
 	/**
@@ -321,6 +321,11 @@ public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatc
 		boolean oldVal = this.caseSensitiveInd;
 		this.caseSensitiveInd = caseSensitiveInd;
 		getEventSupport().firePropertyChange("caseSensitiveInd", oldVal, caseSensitiveInd);
+	}
+
+	@Override
+	public boolean allowsChildren() {
+		return false;
 	}
 
 	@Override

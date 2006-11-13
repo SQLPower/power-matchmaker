@@ -8,7 +8,7 @@ public class PlFolderTest extends MatchMakerTestCase<PlFolder> {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		plFolder = new PlFolder<Match>();
+		plFolder = new PlFolder<Match>("Test Folder");
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		plFolder.setSession(session);
@@ -22,7 +22,7 @@ public class PlFolderTest extends MatchMakerTestCase<PlFolder> {
 	public void testPropertyChangesName() {
 		assertNull("The default last_update_user in match object should be null",
 				plFolder.getLastUpdateAppUser());
-		plFolder.setFolderName("xxx");
+		plFolder.setName("xxx");
 		assertEquals("The last_update_user should be [" +
 				appUserName +"], because user1 has changed this match object",
 				appUserName, plFolder.getLastUpdateAppUser());

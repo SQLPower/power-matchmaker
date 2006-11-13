@@ -3,16 +3,17 @@ package ca.sqlpower.matchmaker.event;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 
 /**
- *	Get counts of the various match maker event types 
+ *	Get counts of the various match maker event types
  */
-public class MatchMakerEventCounter implements MatchMakerListener<MatchMakerObject, MatchMakerObject> {
+public class MatchMakerEventCounter<T extends MatchMakerObject, C extends MatchMakerObject>
+	implements MatchMakerListener<T, C> {
 
-	int childrenInsertedCount;
-	int childrenRemovedCount;
-	int propertyChangedCount;
-	int structureChangedCount;
-	MatchMakerEvent lastEvt;
-	
+	private int childrenInsertedCount;
+	private int childrenRemovedCount;
+	private int propertyChangedCount;
+	private int structureChangedCount;
+	private MatchMakerEvent<T, C> lastEvt;
+
 	public void mmChildrenInserted(MatchMakerEvent evt) {
 		childrenInsertedCount++;
 		lastEvt = evt;
@@ -49,12 +50,12 @@ public class MatchMakerEventCounter implements MatchMakerListener<MatchMakerObje
 	public int getStructureChangedCount() {
 		return structureChangedCount;
 	}
-	
+
 	public int getAllEventCounts(){
 		return structureChangedCount + propertyChangedCount + childrenInsertedCount + childrenRemovedCount;
 	}
 
-	public MatchMakerEvent getLastEvt() {
+	public MatchMakerEvent<T, C> getLastEvt() {
 		return lastEvt;
 	}
 

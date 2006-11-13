@@ -76,7 +76,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     /**
      * Controls a few GUI tweaks that we do on OS X, such as moving menu items around.
      */
-	public static final boolean MAC_OS_X = 
+	public static final boolean MAC_OS_X =
         System.getProperty("os.name").toLowerCase().startsWith("mac os x");
 
     /**
@@ -88,7 +88,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      * The session implementation that we delegate MatchMakerSession requests to.
      */
     private final MatchMakerSession sessionImpl;
-    
+
     /**
 	 * This is the top level application frame
 	 */
@@ -96,11 +96,11 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 	/**
 	 * The main part of the UI; the tree lives on the left and the current editor lives on the right.
-     * 
+     *
      * @see setCurrentEditComponent()
 	 */
 	private JSplitPane splitPane;
-    
+
     /**
      * The tree that lets users browse the business objects.
      */
@@ -240,7 +240,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
      * would use a LoginDialog instead of calling this constructor directly.
-     * 
+     *
      * @param context
      *            the Swing-specific session context
      * @param sessionImpl
@@ -257,7 +257,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	    buildGUI();
         frame.setVisible(true);
     }
-    
+
     private void buildGUI() {
 
         macOSXRegistration();
@@ -378,7 +378,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
-		tree = new JTree(new MatchMakerTreeModel());
+		tree = new JTree(new MatchMakerTreeModel(new ArrayList<PlFolder>()));
 		tree.addMouseListener(new MatchMakerTreeMouseListener(this));
 		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
 
@@ -426,7 +426,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		if (HibernateUtil.getRepositorySessionFactory() != null){
 			PlMatchHome matchHome = new PlMatchHome();
 			folders = new ArrayList<PlFolder>();
-            
+
 			// Need to make sure the orphaned matches have been added.  But that we don't add two of the same
 			// object in the hierachy.  XXX: this is the wrong place for this operation
 			Set<PlMatch> matchSet = new HashSet<PlMatch>(matchHome.findAllWithoutFolder());
@@ -434,7 +434,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			Collections.sort(matches);
 		}
 
-		tree.setModel(new MatchMakerTreeModel(folders,matches));
+		tree.setModel(new MatchMakerTreeModel(folders));
 		setPlRepositoryDatabase(db);
 	}
 
@@ -516,13 +516,13 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		public void windowClosing(WindowEvent e) {
 			exit();
 		}
-        
+
 	}
 
     /**
      * This method should become unnecessary soon, since the app will just continually keep
      * the user settings up-to-date...
-     * 
+     *
      * @throws ArchitectException
      */
 	public void saveSettings() throws ArchitectException {
@@ -541,10 +541,10 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		}
 	    System.exit(0);
 	}
-    
+
     /**
      * Shows the given component in the main part of the frame's UI.
-     * 
+     *
      * @param editor The editor component to display in the UI.  If you pass
      * in null, then no editor will be showing.
      */
@@ -555,7 +555,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	/**
 	 * Creates a MatchMakerSwingSession and shows the login prompt.  This method is
 	 * an acceptable way to launch the Swing GUI of the MatchMaker application.
-     * 
+     *
      * XXX should move to LoginDialog or its own class, I think
 	 */
 	public static void main(String args[]) throws ArchitectException {
@@ -627,7 +627,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
     /**
      * Finds a Match object in the current session by name.
-     * 
+     *
      * XXX (implementation problem) this is a MatchDAO thing, so we should delegate to that here.
      */
     public PlMatch getMatchByName(String name) {
@@ -667,13 +667,13 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	public String getLastImportExportAccessPath() {
         return sessionContext.getLastImportExportAccessPath();
     }
-    
+
     public void setLastImportExportAccessPath(String path) {
         sessionContext.setLastImportExportAccessPath(path);
     }
 
     ///// MatchMakerSession Implementation //////
-    
+
     public String getAppUser() {
         return sessionImpl.getAppUser();
     }

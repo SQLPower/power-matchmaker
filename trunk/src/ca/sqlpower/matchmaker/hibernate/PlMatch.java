@@ -108,23 +108,19 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
      private Set<PlMatchXrefMap> plMatchXrefMaps = new TreeSet<PlMatchXrefMap>();
      private Set<PlMergeCriteria> plMergeCriteria = new TreeSet<PlMergeCriteria>();
      private Set<PlMatchGroup> plMatchGroups = new TreeSet<PlMatchGroup>();
-     private PlFolder folder;
+     //private PlFolder folder; Gone!
      // Constructor
 
 	/** default constructor */
     public PlMatch() {
 
     }
- 
-	public PlFolder getFolder() {
-		return folder;
+
+	public Object getFolder() {
+		return null;
 	}
 
-	public void setFolder(PlFolder folder) {
-		if (this.folder != folder) {
-			firePropertyChange("folder", this.folder, folder);
-			this.folder = folder;
-		}
+	public void setFolder(Object folder) {
 	}
 
 
@@ -579,7 +575,7 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
     public String getCheckedOutOsUser() {
         return this.checkedOutOsUser;
     }
- 
+
 
     public String getTempSourceTableName() {
         return this.tempSourceTableName;
