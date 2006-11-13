@@ -8,8 +8,13 @@ import java.util.prefs.Preferences;
 import org.apache.log4j.Logger;
 
 /**
- * Do some little dance for handling a list of
+ * Do a little dance for handling a list of
  * JDBC Driver jar file names.
+ * <p>
+ * XXX Refactor into and implementation of JarFileListManager
+ * so that user code can just and/remove entries anytime.
+ * <p>
+ * XXX make methods non-static, then extend PropertyChangeSupport
  */
 public class JarFileManager {
 
