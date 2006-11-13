@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.ArchitectSessionImpl;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
@@ -567,7 +568,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 		    	try {
-		    		SwingSessionContext context = new SwingSessionContext();
+		    		SwingSessionContext context = new SwingSessionContext(ArchitectSessionImpl.getInstance());
                     context.showLoginDialog(null);
 		    	} catch (Exception ex) {
 		    		ASUtils.showExceptionDialog("Couldn't start application!", ex);

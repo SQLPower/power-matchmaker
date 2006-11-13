@@ -41,8 +41,6 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SaveDocument;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
-import ca.sqlpower.matchmaker.EnginePath;
-import ca.sqlpower.matchmaker.ExternalEngineUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.RowSetModel;
@@ -580,7 +578,7 @@ public class RunMatchDialog extends JDialog{
 		StringBuffer command = new StringBuffer();
 		SQLDatabase db = swingSession.getPlRepositoryDatabase();
 		String programPath = null;
-		programPath = ExternalEngineUtils.getProgramPath(EnginePath.MATCHMAKER);
+		programPath = ((SwingSessionContext)swingSession.getContext()).getEngineLocation();           
 		// FIXME: comment following line to use executable from user pl.ini config
 		programPath = "\"M:\\Program Files\\Power Loader Suite\\Match_ODBC.exe\"";
 		command.append(programPath);

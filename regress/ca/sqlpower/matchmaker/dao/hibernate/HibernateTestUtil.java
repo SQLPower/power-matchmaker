@@ -14,7 +14,7 @@ public class HibernateTestUtil {
 	//The password for test database(oracle) mm_test: cowmoo
 
 	
-	static ArchitectDataSource getSqlServerDS() { 
+	public static ArchitectDataSource getSqlServerDS() { 
 		/*
 		 * Setup information for SQL Server
 		 */
@@ -33,7 +33,7 @@ public class HibernateTestUtil {
 		return sqlServerDS;
 	}
 
-	static ArchitectDataSource getOracleDS() { 
+	public static ArchitectDataSource getOracleDS() { 
 		/*
 		 * Setup information for SQL Server
 		 */
@@ -44,13 +44,15 @@ public class HibernateTestUtil {
 		ArchitectDataSource oracleDataSource = new ArchitectDataSource();
 		oracleDataSource.setDriverClass("oracle.jdbc.driver.OracleDriver");
 		oracleDataSource.setName("Test Oracle");
+      
 		oracleDataSource.setUser(oracleUserName);
 		oracleDataSource.setPass(oraclePassword);
-		oracleDataSource.setPlDbType("oracle");
+		oracleDataSource.setPlDbType("ORACLE");
 		oracleDataSource.setPlSchema("mm_test");
 		oracleDataSource.setUrl(oracleUrl);
 		return oracleDataSource;
 	}
+    
 	/**
 	 * Get a session factory from a datasource
 	 * @param ds an architect datasource with the following fields filled in:

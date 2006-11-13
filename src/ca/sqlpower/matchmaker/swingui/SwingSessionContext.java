@@ -17,20 +17,23 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
+import ca.sqlpower.architect.CoreUserSettings;
 import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
+import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.security.PLSecurityException;
 
 import com.darwinsys.swingui.UtilGUI;
-import com.darwinsys.util.PrefsUtils;
+
 
 public class SwingSessionContext implements MatchMakerSessionContext {
-    
+
     private static final Logger logger = Logger.getLogger(SwingSessionContext.class);
-    
+
     /**
      * The underlying context that will deal with Hibernate for us. 
      */
@@ -40,52 +43,53 @@ public class SwingSessionContext implements MatchMakerSessionContext {
      * We'd rather not have one of these, but it's got something to do with prefs.
      */
     private final ArchitectSession architectSession;
-    
+
     /**
      * The prefs node that we use for persisting all the basic user settings that are
      * the same for all MatchMaker sessions.
      */
     private final Preferences prefs;
-    
+
     /**
      * A frame that is not visible which can own application-wide dialogs made by this
      * class.  Note that any dialogs with this frame as their parent should not be modal
      * unless they are also always-on-top, since this frame itself isn't visible.
      */
     private final JFrame fakeParentFrame;
-    
+
     /**
      * The database connection manager GUI for this session context (because all sessions
      * share the same set of database connections).
      */
     private final DatabaseConnectionManager dbConnectionManager;
-    
+
     /**
      * The login dialog for this app.  The session context will only create one login
      * dialog.
      */
     private final LoginDialog loginDialog;
-    
+
     /**
      * Creates a new Swing session context, which is a holding place for all the basic
      * settings in the MatchMaker GUI application.
      */
-    public SwingSessionContext() throws ArchitectException, IOException {
-        architectSession = ArchitectSession.getInstance();
-        prefs = PrefsUtils.getUserPrefsNode(architectSession);
+    public SwingSessionContext(ArchitectSession architectSession) throws ArchitectException, IOException {
+        this.architectSession = architectSession;
+        //FIXME: this should be coming from the constructor
+        prefs = PreferencesManager.getRootNode();
         context = createDelegateContext();
-        
+
         fakeParentFrame = new JFrame("Never Visible");
         fakeParentFrame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
-        
+
         dbConnectionManager = new DatabaseConnectionManager(fakeParentFrame, this);       
-        
+
         loginDialog = new LoginDialog(this);
         loginDialog.pack();
         UtilGUI.centre(loginDialog);
     }
-    
-    
+
+
     //////// MaatchMakerSessionContext implementation //////////
     public MatchMakerSwingSession createSession(
             ArchitectDataSource ds, String username, String password)
@@ -96,14 +100,14 @@ public class SwingSessionContext implements MatchMakerSessionContext {
     public List<ArchitectDataSource> getDataSources() {
         return context.getDataSources();
     }
-    
+
     public PlDotIni getPlDotIni() {
         return context.getPlDotIni();
     }
-    
-    
+
+
     //////// Persistent Prefs Support /////////
-    
+
     public String getLastImportExportAccessPath() {
         return prefs.get(SwingUserSettings.LAST_IMPORT_EXPORT_PATH, null);
     }
@@ -111,7 +115,7 @@ public class SwingSessionContext implements MatchMakerSessionContext {
     public void setLastImportExportAccessPath(String lastExportAccessPath) {
         prefs.put(SwingUserSettings.LAST_IMPORT_EXPORT_PATH, lastExportAccessPath);
     }
-    
+
     /**
      * Returns the previous location for the MatchMaker frame, or some reasonable default
      * if the previous bounds are unknown.
@@ -145,6 +149,7 @@ public class SwingSessionContext implements MatchMakerSessionContext {
      */
     public void setLastLoginDataSource(ArchitectDataSource dataSource) {
         prefs.put(SwingUserSettings.LAST_LOGIN_DATA_SOURCE, dataSource.getName());
+        System.out.println("Right after set: "+prefs.get(SwingUserSettings.LAST_LOGIN_DATA_SOURCE, null));
     }
 
     /**
@@ -153,15 +158,19 @@ public class SwingSessionContext implements MatchMakerSessionContext {
      */
     public ArchitectDataSource getLastLoginDataSource() {
         String lastDSName = prefs.get(SwingUserSettings.LAST_LOGIN_DATA_SOURCE, null);
+        System.out.println("lastDSName:" + lastDSName);
         if (lastDSName == null) return null;
+        System.out.println("Data Source size: " + getDataSources().size());
+        System.out.println("46 " + getDataSources().get(0).getName());
         for (ArchitectDataSource ds : getDataSources()) {
+            System.out.println("48 " + ds);
             if (ds.getName().equals(lastDSName)) return ds;
-        }
+        }        
         return null;
     }
 
     ///////// Global GUI Stuff //////////
-    
+
     /**
      * Shows the database connection manager.  There will only ever be one created
      * no matter how many times you call this method.
@@ -169,7 +178,7 @@ public class SwingSessionContext implements MatchMakerSessionContext {
     public void showDatabaseConnectionManager() {
         dbConnectionManager.showDialog();
     }
- 
+
     /**
      * Shows the login dialog.
      * 
@@ -181,10 +190,10 @@ public class SwingSessionContext implements MatchMakerSessionContext {
         loginDialog.setVisible(true);
         loginDialog.requestFocus();
     }
-    
-    
+
+
     ///////// Private implementation details ///////////
-    
+
     /**
      * Creates the delegate context, prompting the user (GUI) for any missing information.
      * @throws IOException 
@@ -228,10 +237,10 @@ public class SwingSessionContext implements MatchMakerSessionContext {
                 plDotIniPath = System.getProperty("user.home", "pl.ini");
             } else {
                 throw new ArchitectException(
-                        "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
+                "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
             }
         }
-        prefs.put(ArchitectSession.PREFS_PL_INI_PATH, plDotIniPath);
+        prefs.put(ArchitectSession.PREFS_PL_INI_PATH, plDotIniPath);       
         return new MatchMakerHibernateSessionContext(plDotIni);
     }
 
@@ -243,7 +252,7 @@ public class SwingSessionContext implements MatchMakerSessionContext {
         if (!pf.exists() || !pf.canRead()) {
             return null;
         }
-        
+
         PlDotIni pld = new PlDotIni();
         try {
             pld.read(pf);
@@ -253,6 +262,36 @@ public class SwingSessionContext implements MatchMakerSessionContext {
             return null;
         }
     }
+
+    /**
+     * Gets the path of where the engine is located base on CoreUserSettings
+     * @return a string of the path of where the engine is located, if not found, returns null 
+     */
+    public String getEngineLocation() {
+        EnginePath p = EnginePath.MATCHMAKER;
+        if (p == null) return null;
+        CoreUserSettings settings = architectSession.getUserSettings();
+        if (settings != null){
+            String plDotIni = settings.getPlDotIniPath();
+                if (plDotIni == null) {
+                    return null;
+                }
+            File plDotIniFile = new File(plDotIni);
+            File programDir = plDotIniFile.getParentFile();
+            File programPath = new File(programDir, p.getProgName());
+            return programPath.toString();
+        } else {
+            return null;
+        }
+        
+    }
+
+    
+    public void setEngineLocation(String engineLocation){              
+          
+    }
+
+
 
 
 }
