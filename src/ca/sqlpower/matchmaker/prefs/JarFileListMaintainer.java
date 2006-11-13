@@ -3,10 +3,12 @@ package ca.sqlpower.matchmaker.prefs;
 import java.util.List;
 
 /**
- * A JarFileListMaintainer deals with the user to let them add
+ * A JarFileListMaintainer is a UI that lets the user add
  * or move/remove driver jars, e.g., the ArchitectSession; the interface
  * was extracted to let the PreferencesManager not have to know about
  * particular classes such as the ArchitectSession.
+ * <p>
+ * A JarFileListMaintainer will likely use the JarFileManager.
  */
 public interface JarFileListMaintainer {
 
