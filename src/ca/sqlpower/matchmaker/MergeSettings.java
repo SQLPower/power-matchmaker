@@ -2,9 +2,10 @@ package ca.sqlpower.matchmaker;
 
 /**
  * Settings specific to the merge engine
- * 
+ *
  */
-public class MergeSettings extends MatchMakerSettings {
+public class MergeSettings extends MatchMakerSettings<MergeSettings> {
+
 	@Override
 	public int hashCode() {
 		final int PRIME = 31;

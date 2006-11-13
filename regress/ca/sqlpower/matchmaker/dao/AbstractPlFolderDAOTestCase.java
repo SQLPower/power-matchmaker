@@ -12,9 +12,10 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 	@Override
 	public PlFolder<MatchMakerObject> getNewObjectUnderTest() {
 		count++;
-		PlFolder<MatchMakerObject> plFolder = new PlFolder<MatchMakerObject>();
+		PlFolder<MatchMakerObject> plFolder =
+			new PlFolder<MatchMakerObject>("Test Folder");
 		plFolder.setSession(this.session);
-		plFolder.setFolderName("test "+count);
+		plFolder.setName("test "+count);
 		plFolder.setFolderDesc("My Desc");
 		plFolder.setFolderStatus("Open");
 		plFolder.setLastBackupNo(1234L);
@@ -29,5 +30,5 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 		nonPersistingProperties.add("lastUpdateAppUser");
 		return nonPersistingProperties;
 	}
-	
+
 }

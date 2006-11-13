@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker;
 
-public class MatchMakerTranslateWord<C extends MatchMakerTranslateWord> extends AbstractMatchMakerObject<C> {
+public class MatchMakerTranslateWord<C extends MatchMakerTranslateWord>
+	extends AbstractMatchMakerObject<MatchMakerTranslateWord, C> {
 
 	private Long oid;
 	private String from;

@@ -55,7 +55,7 @@ public class MatchInfoPanel implements ArchitectPanel {
 		 if ( match.getFolder() != null) {
 			PlFolder f = (PlFolder) match.getFolder();
     		if ( f != null ) {
-    			folderName = f.getFolderName();
+    			folderName = f.getName();
     		}
 		}
 

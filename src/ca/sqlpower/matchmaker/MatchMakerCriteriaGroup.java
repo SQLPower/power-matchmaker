@@ -6,10 +6,10 @@ package ca.sqlpower.matchmaker;
  *
  * @param <C>
  */
-public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria> extends AbstractMatchMakerObject<C> {
+public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria>
+	extends AbstractMatchMakerObject<MatchMakerCriteriaGroup, C> {
 
 	private Long oid;
-	private String name;
 	private String desc;
 	private Long matchPercent;		// NULL or something from 0-100, but not guaranteed
 	private String filter;			// SQL filter for process match criteria group
@@ -37,16 +37,6 @@ public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria> extends Abstr
 		Long oldValue = this.matchPercent;
 		this.matchPercent = matchPercent;
 		getEventSupport().firePropertyChange("matchPercent", oldValue, matchPercent);
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		String oldValue = this.name;
-		this.name = name;
-		getEventSupport().firePropertyChange("name", oldValue, name);
 	}
 
 	public boolean isActive() {

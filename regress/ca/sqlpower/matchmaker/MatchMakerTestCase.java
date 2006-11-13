@@ -115,7 +115,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				newVal = LogFactory
 						.getLogger(Level.DEBUG, "TestMatchMaker.log");
 			} else if (property.getPropertyType() == PlFolder.class) {
-				newVal = new PlFolder<Match>();
+				newVal = new PlFolder<Match>("Test Folder");
 			} else if (property.getPropertyType() == Match.MatchType.class) {
 				if (oldVal == Match.MatchType.BUILD_XREF) {
 					newVal = Match.MatchType.FIND_DUPES;
@@ -134,7 +134,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 						+ property.getPropertyType().getName() + ") from "
 						+ mmo.getClass());
 			}
-			
+
 			if (newVal instanceof MatchMakerObject){
 				((MatchMakerObject)newVal).setSession(session);
 			}

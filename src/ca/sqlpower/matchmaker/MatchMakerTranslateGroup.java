@@ -1,9 +1,9 @@
 package ca.sqlpower.matchmaker;
 
 
-public class MatchMakerTranslateGroup<C extends MatchMakerTranslateWord> extends AbstractMatchMakerObject<C> {
+public class MatchMakerTranslateGroup<C extends MatchMakerTranslateWord>
+	extends AbstractMatchMakerObject<MatchMakerTranslateGroup, C> {
 
-	private String name;
 	private Long oid;
 
 	@Override
@@ -33,16 +33,5 @@ public class MatchMakerTranslateGroup<C extends MatchMakerTranslateWord> extends
 
 	public MatchMakerTranslateGroup() {
 	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		String oldValue = this.name;
-		this.name = name;
-		getEventSupport().firePropertyChange("name", oldValue, this.name);
-	}
-
 
 }

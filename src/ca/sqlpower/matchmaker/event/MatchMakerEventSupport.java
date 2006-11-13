@@ -8,24 +8,24 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 /**
  * Support object to handle the notification of matchmakerlisteners about
  * matchMakerEvents.
- * 
+ *
  * <p>To use this class, create an instance of it inside your class, delegate
  * the addMatchMakerListener() and removeMatchMakerListener() methods to it, then
  * call this instance's fireXXX methods.  They will create the appropriate
  * event object and deliver it to all of previously-registered listeners in
  * turn (the order of event delivery is the reverse of the order the listeners
  * were added in, but don't count on this for correct client code behaviour!).
- * 
+ *
  * <p>Comment A (implementation note): Listeners have to be able to remove themselves
  * from the listener list in the course of handling an event.  In order for this to work
  * properly, all fireXXX methods iterate backward through the listener list when firing the
  * events.  Using the Java 5 "enhanced for loop" feature for firing events is therefore not
  * appropriate.
- * 
+ *
  * @version $Id$
  */
 public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchMakerObject> {
-	
+
 	/**
 	 * The object that this support class is delivering events for.  This will be the source
 	 * of all fired events.
@@ -40,31 +40,31 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 	/**
 	 * Creates a new MatchMakerEventSupport object which fires events having <tt>source</tt> as
 	 * their source.
-	 * 
+	 *
 	 * @param source The object that will be using this instance to fire the MatchMaker events.
 	 */
 	public MatchMakerEventSupport(T source) {
 		this.source = source;
 	}
-	
-/**
+
+	/**
 	 * Adds the given listener to the listener list.  The listener will continue to receive
 	 * MatchMakerEvent notifications every time this object fires one, until it is removed.
 	 * If you add the same listener <tt>n</tt> times, it will receive <tt>n</tt> notifications
 	 * each time an event is fired.
-	 * 
+	 *
 	 * @param l The listener to add.  <tt>null</tt> is not allowed.
 	 */
 	public void addMatchMakerListener(MatchMakerListener<T, C> l) {
 		if (l == null) throw new NullPointerException("Null listener is not allowed");
 		listeners.add(l);
 	}
-	
+
 	/**
 	 * Removes the given listener from the list.  The listener, once removed, will no
 	 * longer get notified of MatchMakerEvents from this object, unless it was added more
 	 * than once.
-	 * 
+	 *
 	 * @param l The listener to remove.  If the listener wasn't already registered, this
 	 * remove operation will do nothing.
 	 */
@@ -73,9 +73,17 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 	}
 
 	/**
+	 * This method exists to make better unit tests.  Users of the API should
+	 * never need it.
+	 */
+	public List<MatchMakerListener<T, C>> getListeners() {
+		return listeners;
+	}
+
+	/**
 	 * Fires a mmPropertyChanged event to all listeners unless the oldValue and newValue are
 	 * the same.
-	 * 
+	 *
 	 * @param propertyName The JavaBeans name of the property that might have changed.
 	 * @param oldValue The value before the property change.  Can be null.
 	 * @param newValue The value after the change. Can be null.
@@ -91,7 +99,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 		evt.setOldValue(oldValue);
 		evt.setNewValue(newValue);
 		evt.setPropertyName(propertyName);
-		
+
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
 			listeners.get(i).mmPropertyChanged(evt);
@@ -100,7 +108,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 
 	/**
 	 * Fires a mmChildrenInserted event to all listeners.
-	 * 
+	 *
 	 * @param childPropertyName The name of the list property that has one or more new entries.
 	 * @param insertedIndices The indices of the new list entries
 	 * @param insertedChildren The actual items inserted into the list (the position of the objects
@@ -115,13 +123,13 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 					"insertetdIndices (length="+insertedIndices.length+") must be same " +
 					"length as insertedChildren (size="+insertedChildren.size()+")");
 		}
-		
+
 		MatchMakerEvent<T, C> evt = new MatchMakerEvent<T, C>();
 		evt.setSource(source);
 		evt.setChangeIndices(insertedIndices);
 		evt.setPropertyName(childPropertyName);
 		evt.setChildren(insertedChildren);
-		
+
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
 			listeners.get(i).mmChildrenInserted(evt);
@@ -130,7 +138,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 
 	/**
 	 * Fires a mmChildrenRemoved event to all listeners.
-	 * 
+	 *
 	 * @param childPropertyName The name of the list property that has had one or more entries removed.
 	 * @param removedIndices The indices of the removed list entries
 	 * @param removedChildren The actual items removed from the list (the position of the objects
@@ -151,7 +159,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 		evt.setChangeIndices(removedIndices);
 		evt.setPropertyName(childPropertyName);
 		evt.setChildren(removedChildren);
-		
+
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
 			listeners.get(i).mmChildrenRemoved(evt);
@@ -164,7 +172,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 	public void fireStructureChanged() {
 		MatchMakerEvent<T, C> evt = new MatchMakerEvent<T, C>();
 		evt.setSource(source);
-		
+
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
 			listeners.get(i).mmStructureChanged(evt);

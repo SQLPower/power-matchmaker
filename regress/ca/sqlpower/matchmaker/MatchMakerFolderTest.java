@@ -23,7 +23,7 @@ public class MatchMakerFolderTest<C extends MatchMakerObject> extends MatchMaker
 	public void testPropertyChangesName() {
 		assertNull("The default last_update_user in match object should be null",
 				folder.getLastUpdateAppUser());
-		folder.setFolderName("xxx");
+		folder.setName("xxx");
 		assertEquals("The last_update_user should be [" +
 				appUserName +"], because user1 has changed this match object",
 				appUserName, folder.getLastUpdateAppUser());

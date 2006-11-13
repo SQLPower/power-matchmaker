@@ -9,7 +9,7 @@ import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
-public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
+public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 
 	public enum MatchType {
 		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference");
@@ -24,16 +24,16 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 		public String toString() {
 			return displayName;
 		}
-		
+
 		/**
 		 * Get the MatchType that corrisponds to the type string.
-		 * 
+		 *
 		 * @param type a string detailing the type you want to get
 		 * @return the match type that has type as its toString
 		 */
 		public static MatchType getTypeByString(String type){
 			MatchType[] types= MatchType.values();
-			
+
 			for(MatchType matchType: types){
 				if( matchType.toString().equals(type)){
 					return matchType;
@@ -45,9 +45,6 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 
 	/** the oid for the match */
 	Long oid;
-	
-	/** The name of this object. It must be unique across all match objects */
-	String name;
 
 	/** The type of match */
 	MatchType type;
@@ -77,11 +74,11 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 	/** FIXME can't remember what the view does */
 	ViewSpec view;
 
-	/** the folder containing this match.  
+	/** the folder containing this match.
 	 * Null if no folder containing this match
 	 */
 	PlFolder folder;
-	
+
 	/** The point above which matches are done automatically */
 	int autoMatchThreshold;
 
@@ -102,7 +99,7 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 	public boolean checkValid() {
 		throw new NotImplementedException();
 	}
-	
+
 	/**
 	 * FIXME Implement me
 	 *
@@ -110,7 +107,7 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 	public void createResultTable() {
 		throw new NotImplementedException();
 	}
-	
+
 	/**
 	 * FIXME Implement me
 	 *
@@ -118,7 +115,7 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 	public void createViewTable() {
 		throw new NotImplementedException();
 	}
-	
+
 	public int getAutoMatchThreshold() {
 		return autoMatchThreshold;
 	}
@@ -173,15 +170,7 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 				this.mergeSettings);
 	}
 
-	public String getName() {
-		return name;
-	}
 
-	public void setName(String name) {
-		String oldValue = this.name;
-		this.name = name;
-		getEventSupport().firePropertyChange("name", oldValue, this.name);
-	}
 
 	public SQLTable getResultTable() {
 		return resultTable;
@@ -232,10 +221,10 @@ public class Match extends AbstractMatchMakerObject<MatchMakerFolder> {
 		this.folder = folder;
 		getEventSupport().firePropertyChange("folder", oldValue, this.folder);
 	}
-	
+
 	/**
-	 * Preconditions 
-	 * 
+	 * Preconditions
+	 *
 	 * FIXME write this method
 	 * @return
 	 */

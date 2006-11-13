@@ -2,10 +2,14 @@ package ca.sqlpower.matchmaker;
 
 import java.util.Random;
 
-public class TestingAbstractMatchMakerObject extends AbstractMatchMakerObject {
+import ca.sqlpower.matchmaker.event.MatchMakerEventSupport;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
+
+public class TestingAbstractMatchMakerObject
+				extends AbstractMatchMakerObject<TestingAbstractMatchMakerObject, MatchMakerObject> {
 
 	int i;
-	
+
 	public TestingAbstractMatchMakerObject( ) {
 		Random rand  = new Random();
 		i = rand.nextInt();
@@ -24,4 +28,16 @@ public class TestingAbstractMatchMakerObject extends AbstractMatchMakerObject {
 		return i;
 	}
 
+	/**
+	 * Made public so test cases can fire specific events on demand.
+	 */
+	@Override
+	public MatchMakerEventSupport
+		<TestingAbstractMatchMakerObject, MatchMakerObject> getEventSupport() {
+		return super.getEventSupport();
+	}
+
+	public boolean hasListener(MatchMakerListener<?,?> listener) {
+		return getEventSupport().getListeners().contains(listener);
+	}
 }
