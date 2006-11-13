@@ -9,8 +9,9 @@ import java.util.prefs.Preferences;
 import org.apache.log4j.Logger;
 
 /**
- * Locate the User Preferences Node for the Architect package, and pass it around to people
- * that want it via load-time injection; also do some little dance for handling a list of
+ * Locate the User Preferences Node for the Architect package, and
+ * pass it around to people that want it via load-time injection;
+ * also do some little dance for handling a list of
  * JDBC Driver jar file names.
  */
 public class PreferencesManager {
@@ -24,9 +25,16 @@ public class PreferencesManager {
 	private static final Logger logger = Logger.getLogger(PreferencesManager.class);
 
 	private static final PreferencesManager singleton;
-    private static final Preferences prefs =
+    private static Preferences prefs =
     	// ArchitectSession is NOT a copy-and-paste error here:
     	Preferences.userNodeForPackage(ca.sqlpower.architect.ArchitectSession.class);
+
+    /** This is "package private" for use by regression tests only! */
+    static void setPreferences(Preferences p) {
+    	System.out.printf(
+    			"PreferencesManager.setPreferences(%s): was %s", p, prefs);
+    	prefs = p;
+    }
 
     private List<PreferencesUser> listeners = new ArrayList<PreferencesUser>();
 
@@ -73,9 +81,7 @@ public class PreferencesManager {
 		for (PreferencesUser listener : listeners) {
 			listener.setPreferencesRootNode(prefs);
 		}
-
 	}
-
 
 	// -------------------- "WRITING THE FILE" --------------------------
 
