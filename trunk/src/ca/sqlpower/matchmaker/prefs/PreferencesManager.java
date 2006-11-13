@@ -1,44 +1,24 @@
 package ca.sqlpower.matchmaker.prefs;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
 
 /**
  * Locate the User Preferences Node for the Architect package, and
- * pass it around to people that want it via load-time injection;
- * also do some little dance for handling a list of
- * JDBC Driver jar file names.
+ * pass it around to people that want it via load-time injection.
  */
 public class PreferencesManager {
-
-	private static final int MAX_DRIVER_JAR_FILE_NAMES = 99;
-
-	protected static final String JAR_FILE_NODE_NAME = "jarfiles";
-
-	protected static final String PREFS_JARFILE_PREFIX = "JDBCJarFile.";
 
 	private static final Logger logger = Logger.getLogger(PreferencesManager.class);
 
 	private static final PreferencesManager singleton;
-    private static Preferences prefs =
-    	// ArchitectSession is NOT a copy-and-paste error here:
+
+    private final static Preferences prefs =
+    	// ArchitectSession is not a copy-and-paste error here:
     	Preferences.userNodeForPackage(ca.sqlpower.architect.ArchitectSession.class);
 
-    /** This is "package private" for use by regression tests only! */
-    static void setPreferences(Preferences p) {
-    	System.out.printf(
-    			"PreferencesManager.setPreferences(%s): was %s", p, prefs);
-    	prefs = p;
-    }
-
-    private List<PreferencesUser> listeners = new ArrayList<PreferencesUser>();
-
-	private PreferencesManager() {
+    private PreferencesManager() {
 		// private constructor, is a singleton
 		logger.info("Create PreferencesManager singleton");
 	}
@@ -51,78 +31,8 @@ public class PreferencesManager {
 		return singleton;
 	}
 
-	public void addPreferencesListener(PreferencesUser listener) {
-		listeners.add(listener);
-	}
-
-	public Preferences getRootNode() {
+	public static Preferences getRootNode() {
 		return prefs;
-	}
-
-	// -------------------- Loading the preferences --------------------------
-
-	public void load(JarFileListMaintainer manager) {
-		logger.debug("loading UserSettings from java.util.prefs.");
-
-		Preferences jarNode = prefs.node(JAR_FILE_NODE_NAME);
-		manager.removeAllDriverJars();
-		logger.debug("PreferencesManager.load(): jarNode " + jarNode);
-		for (int i = 0; i <= MAX_DRIVER_JAR_FILE_NAMES; i++) {
-			String jarName = jarNode.get(jarFilePrefName(i), null);
-			logger.debug("read Jar File entry: " + jarName);
-			if (jarName == null) {
-				break;
-			}
-
-			logger.debug("Adding JarName: " + jarName);
-			manager.addDriverJar(jarName);
-		}
-
-		for (PreferencesUser listener : listeners) {
-			listener.setPreferencesRootNode(prefs);
-		}
-	}
-
-	// -------------------- "WRITING THE FILE" --------------------------
-
-	public void store(JarFileListMaintainer manager) {
-
-		logger.debug("Saving prefs to java.util.prefs");
-
-		// Delete and re-create jar file sub-node
-		try {
-			prefs.node(JAR_FILE_NODE_NAME).removeNode();
-			prefs.flush();
-			if (prefs.nodeExists(JAR_FILE_NODE_NAME)) {
-				System.err.println("Warning: Jar Node Still Exists!!");
-			}
-		} catch (BackingStoreException e) {
-			// Do nothing, this is OK
-			logger.warn("Error: BackingStoreException while removing or testing previous Jar Node!!");
-		}
-
-		Preferences jarNode = prefs.node(JAR_FILE_NODE_NAME);	// (re)-create
-		List<String> driverJarList = manager.getDriverJarList();
-		System.out.println("PreferencesManager.store(): size=" + driverJarList.size());
-		Iterator<String> it = driverJarList.iterator();
-		for (int i = 0; it.hasNext() && i <= MAX_DRIVER_JAR_FILE_NAMES; i++) {
-			String name = it.next();
-			logger.debug("Putting JAR " + i + " " + name);
-			jarNode.put(jarFilePrefName(i), name);
-		}
-
-		try {
-			prefs.flush();
-		} catch (BackingStoreException e) {
-			logger.warn("Unable to flush Java preferences", e);
-		}
-	}
-
-	/**
-	 * Make up a prefs name for a given number
-	 */
-	private String jarFilePrefName(int i) {
-		return  String.format("%s%02d", PREFS_JARFILE_PREFIX, i);
 	}
 
 }
