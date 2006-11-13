@@ -8,7 +8,8 @@ import java.util.List;
  * was extracted to let the PreferencesManager not have to know about
  * particular classes such as the ArchitectSession.
  * <p>
- * A JarFileListMaintainer will likely use the JarFileManager.
+ * A JarFileListMaintainer will likely use the JarFileManager,
+ * by passing itself as the callback argument to load()/store().
  */
 public interface JarFileListMaintainer {
 
