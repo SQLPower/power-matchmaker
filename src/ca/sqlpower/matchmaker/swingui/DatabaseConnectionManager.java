@@ -43,7 +43,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * You won't need to create one of these on your own.
- * Use {@link SwingSessionContext#showDatabaseConnectionManager()}.
+ * Use {@link SwingSessionContextImpl#showDatabaseConnectionManager()}.
  * 
  */
 public class DatabaseConnectionManager
@@ -54,7 +54,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	/**
 	 * The session context that this dialog is managing connection properties for.
 	 */
-	private final SwingSessionContext sessionContext;
+	private final SwingSessionContextImpl sessionContext;
     private final JFrame owningFrame;
 	private final NewDatabaseConnectionAction newDatabaseConnectionAction;
     private final JPanel panel;
@@ -162,7 +162,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	private JTable dsTable;
 	private DataSourceCollection plDotIni;
 
-	public DatabaseConnectionManager(JFrame owningFrame, SwingSessionContext context) {
+	public DatabaseConnectionManager(JFrame owningFrame, SwingSessionContextImpl context) {
         d = new JDialog(owningFrame);
         d.setTitle("Database Connection Manager");
         this.owningFrame = owningFrame;

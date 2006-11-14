@@ -32,10 +32,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		 * @return the match type that has type as its toString
 		 */
 		public static MatchType getTypeByString(String type){
-			MatchType[] types= MatchType.values();
+			MatchType[] types = MatchType.values();
 
-			for(MatchType matchType: types){
-				if( matchType.toString().equals(type)){
+			for (MatchType matchType: types) {
+				if (matchType.toString().toLowerCase().equals(type.toLowerCase())) {
 					return matchType;
 				}
 			}

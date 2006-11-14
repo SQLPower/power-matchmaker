@@ -10,11 +10,8 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -34,7 +31,6 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectSessionImpl;
@@ -43,20 +39,20 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
-import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersion;
 import ca.sqlpower.sql.SchemaVersionFormatException;
@@ -73,7 +69,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	/**
 	 * The minimum PL schema version that the MatchMaker works with.
 	 */
-	private static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,26);
+	private static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,27);
 
     /**
      * Controls a few GUI tweaks that we do on OS X, such as moving menu items around.
@@ -234,7 +230,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	};
 
 	private List<PlMatch> matches;
-	private List<PlFolder> folders;
 	private List<PlMatchTranslateGroup> translations = new ArrayList<PlMatchTranslateGroup>();
 	private SQLDatabase plRepositoryDatabase;
 
@@ -248,10 +243,14 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      * @param sessionImpl
      *            The session that actually does the dirty work (ORM and stuff
      *            like that).
+	 * @throws SQLException 
+	 * @throws PLSchemaException 
+	 * @throws SchemaVersionFormatException 
      */
-	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, ArchitectException {
+	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, ArchitectException, SchemaVersionFormatException, PLSchemaException, SQLException {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
+        checkSchema(sessionImpl.getDatabase());
         frame = new JFrame("MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
 	}
 
@@ -380,64 +379,18 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
-		tree = new JTree(new MatchMakerTreeModel(new ArrayList<PlFolder>()));
+		tree = new JTree(new MatchMakerTreeModel(getFolders()));
 		tree.addMouseListener(new MatchMakerTreeMouseListener(this));
 		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
-
+		tree.setRootVisible(false);
+        tree.setShowsRootHandles(true);
+        
 		splitPane.setLeftComponent(new JScrollPane(tree));
         setCurrentEditorComponent(null);
 		cp.add(splitPane);
 
 		frame.setBounds(sessionContext.getFrameBounds());
 		frame.addWindowListener(new MatchMakerFrameWindowListener());
-	}
-
-    /**
-     * Sets up this frame for use with a new PL Respsitory connection.
-     * This method has to be called on the Swing EDT, because it interacts
-     * with the Hibernate session as well as the GUI.
-     *
-     * <p>This method will check the PL Schema version in DEF_PARAM
-     * to ensure it is a new enough version before attempting to log in.
-     *
-     *FIXME: this method is in the middle of refactoring.
-     *
-     * @param db the database connection to the PL repository.
-     */
-	public void newLogin(final SQLDatabase db){
-
-        try {
-            checkSchema(db);
-        } catch (Exception e) {
-            final Exception fexp = e;
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    ASUtils.showExceptionDialog(
-                    		frame,
-                            "Respository connection not valid",
-                            fexp);
-                }
-            });
-            return;
-        }
-
-		ArchitectDataSource dbcs = db.getDataSource();
-		HibernateUtil.createRepositorySessionFactory(dbcs);
-
-
-		if (HibernateUtil.getRepositorySessionFactory() != null){
-			PlMatchHome matchHome = new PlMatchHome();
-			folders = new ArrayList<PlFolder>();
-
-			// Need to make sure the orphaned matches have been added.  But that we don't add two of the same
-			// object in the hierachy.  XXX: this is the wrong place for this operation
-			Set<PlMatch> matchSet = new HashSet<PlMatch>(matchHome.findAllWithoutFolder());
-			matches = new ArrayList<PlMatch>(matchSet);
-			Collections.sort(matches);
-		}
-
-		tree.setModel(new MatchMakerTreeModel(folders));
-		setPlRepositoryDatabase(db);
 	}
 
     /**
@@ -569,7 +522,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 		    	try {
-		    		SwingSessionContext context = new SwingSessionContext(ArchitectSessionImpl.getInstance(),
+		    		SwingSessionContext context = new SwingSessionContextImpl(ArchitectSessionImpl.getInstance(),
                                                             PreferencesManager.getRootNode());
                     context.showLoginDialog(null);
 		    	} catch (Exception ex) {
@@ -621,7 +574,9 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 
 	public List<PlFolder> getFolders() {
-		return folders;
+		List<PlFolder> folders = sessionImpl.getFolders();
+        logger.debug("getFolders(): Found folder list: "+folders);
+        return folders;
 	}
 
 	public List<PlMatch> getMatches() {
@@ -691,6 +646,14 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
     public Date getSessionStartTime() {
         return sessionImpl.getSessionStartTime();
+    }
+
+    public PlFolder findFolder(String foldername) {
+        return sessionImpl.findFolder(foldername);
+    }
+
+    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
+        return sessionImpl.getDAO(businessClass);
     }
 
 }

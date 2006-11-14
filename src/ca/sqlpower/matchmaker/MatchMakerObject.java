@@ -27,6 +27,11 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
 	 */
 	MatchMakerObject getParent();
 
+    /**
+     * Returns the user-visible name of this object.
+     */
+    String getName();
+    
 	/**
 	 * Set the parent (ie. the object that holds this one as a child)
 	 */

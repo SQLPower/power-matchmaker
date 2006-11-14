@@ -578,7 +578,7 @@ public class RunMatchDialog extends JDialog{
 		StringBuffer command = new StringBuffer();
 		SQLDatabase db = swingSession.getPlRepositoryDatabase();
 		String programPath = null;
-		programPath = ((SwingSessionContext)swingSession.getContext()).getEngineLocation();           
+		programPath = ((SwingSessionContextImpl)swingSession.getContext()).getEngineLocation();           
 		// FIXME: comment following line to use executable from user pl.ini config
 		programPath = "\"M:\\Program Files\\Power Loader Suite\\Match_ODBC.exe\"";
 		command.append(programPath);

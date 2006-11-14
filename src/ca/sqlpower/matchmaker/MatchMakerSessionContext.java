@@ -8,6 +8,8 @@ import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
+import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SchemaVersionFormatException;
 
 /**
  * A MatchMakerSessionContext holds global (well, systemwide) configuration and
@@ -41,10 +43,12 @@ public interface MatchMakerSessionContext {
      * permission denied, the PL Schema is missing, etc).
      * @throws ArchitectException Because of cut and paste.
      * @throws IOException If any bootstrap init files are missing or unreadable.
+     * @throws PLSchemaException If the version of the schema is not up to date or is missing
+     * @throws SchemaVersionFormatException If the format of the version number is not in the form x.y.z
      */
     public MatchMakerSession createSession(ArchitectDataSource ds,
             String username, String password) throws PLSecurityException,
-            SQLException, ArchitectException, IOException;
+            SQLException, ArchitectException, IOException, SchemaVersionFormatException, PLSchemaException;
 
     /**
      * Returns the PlDotIni object that manages this context's list of data sources.

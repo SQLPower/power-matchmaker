@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 
 public class TestingMatchMakerSession implements MatchMakerSession {
 	Date date = new Date();
@@ -63,5 +64,17 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		// TODO add the context to the test session 
 		return null;
 	}
+
+    public PlFolder findFolder(String foldername) {
+        for (PlFolder folder : folders){
+            if (folder.getName().equals(foldername)) return folder;
+        }
+        return null;
+    }
+
+    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

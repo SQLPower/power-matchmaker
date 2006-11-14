@@ -5,6 +5,7 @@ import java.util.List;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 
 /**
@@ -53,4 +54,18 @@ public interface MatchMakerSession {
 	 * All of the Match folders that the current user can see.
 	 */
 	public List<PlFolder> getFolders();
+    
+    /**
+     * Returns the folder that matches with the name
+     * @param foldername the name of the folder that is desired
+     * @return the folder with that matches with the foldername, returns null if no results are avaiable
+     */
+    public PlFolder findFolder(String foldername);
+    
+    /**
+     * Returns the DAO Object for the given business class
+     * @param <T> the business class of the DAO Object
+     * @return the object that is of the business class
+     */
+    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass); 
 }
