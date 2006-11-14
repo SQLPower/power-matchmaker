@@ -16,12 +16,6 @@ public class PlFolderDAOHibernate extends AbstractMatchMakerDAOHibernate<PlFolde
 	}
 
 
-	public PlFolder findByName(String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
 	public Class<PlFolder> getBusinessClass() {
 		return PlFolder.class;
 	}

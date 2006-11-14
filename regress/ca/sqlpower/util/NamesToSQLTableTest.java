@@ -102,7 +102,7 @@ public class NamesToSQLTableTest extends TestCase {
 		Connection con = factory.createConnection();
 		Statement statements = con.createStatement();
 		MockJDBCResultSet rs = (MockJDBCResultSet) statements.getResultSet();
-
+		
 		// setup the result set
 		rs.setColumnCount(3);
 		rs.setColumnName(1, "table_catalog");
@@ -110,7 +110,7 @@ public class NamesToSQLTableTest extends TestCase {
 		rs.setColumnName(3, "match_table");
 		Object[] row = { "zoo", "lion", "roar" };
 		rs.addRow(row);
-
+		rs.next();
 		String[] names = { "table_catalog", "table_owner", "match_table" };
 		SQLTable table = (SQLTable) userType.nullSafeGet(rs, names, null);
 		assertNotNull("The table should not be null", table);

@@ -16,11 +16,11 @@
 		</id>
 
 
-		<many-to-one name="plMatch" access="field"
+		<!-- many-to-one name="plMatch" access="field"
 			class="ca.sqlpower.matchmaker.hibernate.PlMatch" 
 			fetch="select">
 			<column name="MATCH_OID" not-null="true" />
-		</many-to-one>
+		</many-to-one -->
 		<property name="groupId" type="string">
 			<column name="GROUP_ID" length="80" />
 		</property>

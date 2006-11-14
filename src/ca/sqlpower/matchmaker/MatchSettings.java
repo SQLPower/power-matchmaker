@@ -9,7 +9,9 @@ public class MatchSettings extends MatchMakerSettings<MatchSettings> {
 	public int hashCode() {
 		final int PRIME = 31;
 		int result = super.hashCode();
+		result = PRIME * result + ((autoMatchThreshold == null) ? 0 : autoMatchThreshold.hashCode());
 		result = PRIME * result + (breakUpMatch ? 1231 : 1237);
+		result = PRIME * result + ((lastBackupNo == null) ? 0 : lastBackupNo.hashCode());
 		result = PRIME * result + (truncateCandDupe ? 1231 : 1237);
 		return result;
 	}
@@ -23,7 +25,17 @@ public class MatchSettings extends MatchMakerSettings<MatchSettings> {
 		if (getClass() != obj.getClass())
 			return false;
 		final MatchSettings other = (MatchSettings) obj;
+		if (autoMatchThreshold == null) {
+			if (other.autoMatchThreshold != null)
+				return false;
+		} else if (!autoMatchThreshold.equals(other.autoMatchThreshold))
+			return false;
 		if (breakUpMatch != other.breakUpMatch)
+			return false;
+		if (lastBackupNo == null) {
+			if (other.lastBackupNo != null)
+				return false;
+		} else if (!lastBackupNo.equals(other.lastBackupNo))
 			return false;
 		if (truncateCandDupe != other.truncateCandDupe)
 			return false;
@@ -34,33 +46,65 @@ public class MatchSettings extends MatchMakerSettings<MatchSettings> {
 	}
 
 	/**
+	 * The threshold above which matches are automatically resolved
+	 */
+	private Short autoMatchThreshold;
+	
+	/**
+	 * The number of the last backup
+	 */
+	private Long lastBackupNo;
+	
+	/**
 	 * Breakup the match after each criteria group
 	 */
-	boolean breakUpMatch;
+	Boolean breakUpMatch;
 	/**
 	 * Truncate the candidate duplicate table
 	 */
-	boolean truncateCandDupe;
+	Boolean truncateCandDupe;
 
-	public boolean isBreakUpMatch() {
+	public Boolean isBreakUpMatch() {
 		return breakUpMatch;
 	}
 
-	public void setBreakUpMatch(boolean breakUpMatch) {
-		boolean oldValue = this.breakUpMatch;
+	public void setBreakUpMatch(Boolean breakUpMatch) {
+		Boolean oldValue = this.breakUpMatch;
 		this.breakUpMatch = breakUpMatch;
 		getEventSupport().firePropertyChange("breakUpMatch", oldValue,
-				breakUpMatch);
+				this.breakUpMatch);
 	}
 
-	public boolean isTruncateCandDupe() {
+	public Boolean isTruncateCandDupe() {
 		return truncateCandDupe;
 	}
 
-	public void setTruncateCandDupe(boolean truncateCandDupe) {
-		boolean oldValue = this.truncateCandDupe;
+	public void setTruncateCandDupe(Boolean truncateCandDupe) {
+		Boolean oldValue = this.truncateCandDupe;
 		this.truncateCandDupe = truncateCandDupe;
 		getEventSupport().firePropertyChange("truncateCandDupe", oldValue,
-				truncateCandDupe);
+				this.truncateCandDupe);
+	}
+
+	public Short getAutoMatchThreshold() {
+		return autoMatchThreshold;
+	}
+
+	public void setAutoMatchThreshold(Short autoMatchThreshold) {
+		Short oldValue = this.autoMatchThreshold;
+		this.autoMatchThreshold = autoMatchThreshold;
+		getEventSupport().firePropertyChange("autoMatchThreshold", oldValue,
+				this.autoMatchThreshold);
+	}
+
+	public Long getLastBackupNo() {
+		return lastBackupNo;
+	}
+
+	public void setLastBackupNo(Long lastBackupNo) {
+		Long oldValue = this.lastBackupNo;
+		this.lastBackupNo = lastBackupNo;
+		getEventSupport().firePropertyChange("lastBackupNo", oldValue,
+				this.lastBackupNo);
 	}
 }

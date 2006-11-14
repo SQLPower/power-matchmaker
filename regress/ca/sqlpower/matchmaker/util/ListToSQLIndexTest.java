@@ -112,7 +112,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}
 		
 		rs.addRow(data);
-		
+		rs.next();
 		SQLIndex ind = (SQLIndex)userType.nullSafeGet(rs, names, null);
 		assertNotNull("We should not be getting a null value when we don't pass one in",ind);
 		assertEquals("The primary key is not correct",  "pkName", ind.getName());
@@ -131,7 +131,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}
 		data[6] = null;
 		rs.addRow(data);
-		
+		rs.next();
 		SQLIndex ind = (SQLIndex)userType.nullSafeGet(rs, names, null);
 		assertNotNull("We should not be getting a null value when we don't pass one in",ind);
 		assertEquals("The primary key is not correct", ind.getName(), "pkName");

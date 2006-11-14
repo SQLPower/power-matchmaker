@@ -28,11 +28,11 @@
 
 
 
-		<many-to-one name="plMatch"
+		<!-- many-to-one name="plMatch"
 			class="ca.sqlpower.matchmaker.hibernate.PlMatch" update="false"
 			insert="false" fetch="select">
 			<column name="MATCH_OID" not-null="true" />
-		</many-to-one>
+		</many-to-one-->
 		<property name="columnName" type="string">
 			<column name="COLUMN_NAME" length="30" />
 		</property>

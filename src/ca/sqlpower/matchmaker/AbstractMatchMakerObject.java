@@ -29,6 +29,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	private String lastUpdateAppUser;
 	private String lastUpdateOsUser;
 	private Date lastUpdateDate;
+	private Date createDate;
 	private MatchMakerSession matchMakerSession;
 	private String name;
 
@@ -120,6 +121,10 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 
 	public void setSession(MatchMakerSession matchMakerSession) {
 		this.matchMakerSession = matchMakerSession;
+	}
+
+	public Date getCreateDate() {
+		return createDate;
 	}
 
 	public boolean allowsChildren() {
