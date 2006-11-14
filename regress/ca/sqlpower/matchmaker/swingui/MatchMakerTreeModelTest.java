@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
@@ -26,6 +27,10 @@ public class MatchMakerTreeModelTest extends TestCase {
 		currentFoldersNode.addChild(folder);
 	}
 
+	/**
+	 * test insert children event
+	 *
+	 */
 	public void testTreeNodeInsertEvent() {
 
 		treeModel.addTreeModelListener(counter);
@@ -36,10 +41,32 @@ public class MatchMakerTreeModelTest extends TestCase {
 				1, counter.getAllEventCounts());
 		assertEquals("Last event source should be folder",
 				folder,counter.getLastEvt().getSource());
-
-
 	}
 
+	/**
+	 * all tree node on the tree should listen to the tree event,
+	 * this test is for the new children just added to the tree,
+	 * they should listen to the tree too.
+	 * mmo is the new child, and it should have the tree listener automaticly
+	 */
+	public void testTreeNodeInsertToChildEvent() {
+
+		folder.addChild(mmo);
+		treeModel.addTreeModelListener(counter);
+		mmo.addChild(new Match());
+
+		assertEquals("insert event count should be 1",
+				1, counter.getChildrenInsertedCount());
+		assertEquals("total event count should be 1",
+				1, counter.getAllEventCounts());
+		assertEquals("Last event source should be folder",
+				mmo,counter.getLastEvt().getSource());
+	}
+
+	/**
+	 * test remove children event
+	 *
+	 */
 	public void testTreeNodeRemoveEvent() {
 
 		folder.addChild(mmo);
@@ -53,6 +80,26 @@ public class MatchMakerTreeModelTest extends TestCase {
 				1, counter.getAllEventCounts());
 		assertEquals("Last event source should be mmo",
 				mmo,counter.getLastEvt().getSource());
+	}
+
+	/**
+	 * remove children on tree should also remove the listener on the children
+	 * so this is for that.
+	 */
+	public void testTreeNodeRemoveChildEvent() {
+
+		folder.addChild(mmo);
+		folder.removeChild(mmo);
+		treeModel.addTreeModelListener(counter);
+
+		mmo.getEventSupport().fireChildrenRemoved("property name",
+				new int[]{0}, Arrays.asList(new MatchMakerObject[] {mmo}));
+		assertEquals("remove event count should be 0",
+				0, counter.getChildrenRemovedCount());
+		assertEquals("total event count should be 0",
+				0, counter.getAllEventCounts());
+		assertEquals("Last event source should be mmo",
+				null,counter.getLastEvt());
 	}
 
 	public void testTreeNodeChangeEvent() {

@@ -151,10 +151,6 @@ public class MatchMakerTreeModel implements TreeModel {
 			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths, evt
 					.getChangeIndices(), evt.getChildren().toArray());
 			fireTreeNodesInserted(e);
-			/*
-			 * not sure where to put these code, but we need to add listener to the
-			 * new children on the tree
-			 */
 			for ( MatchMakerObject o : evt.getChildren() ) {
 				MatchMakerUtils.listenToHierarchy(listener,o);
 			}
@@ -165,6 +161,9 @@ public class MatchMakerTreeModel implements TreeModel {
 			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths, evt
 					.getChangeIndices(), evt.getChildren().toArray());
 			fireTreeNodesRemoved(e);
+			for ( MatchMakerObject o : evt.getChildren() ) {
+				MatchMakerUtils.unlistenToHierarchy(listener,o);
+			}
 		}
 
 		public void mmStructureChanged(MatchMakerEvent<T, C> evt) {
