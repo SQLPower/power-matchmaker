@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -10,7 +11,8 @@ import org.hibernate.SessionFactory;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.PlDotIni;
+import ca.sqlpower.architect.DataSourceCollection;
+import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSessionImpl;
@@ -31,13 +33,14 @@ import ca.sqlpower.util.UnknownFreqCodeException;
  */
 public class MatchMakerHibernateSessionContext implements MatchMakerSessionContext {
 
-    private final PlDotIni plDotIni;
+    private final DataSourceCollection plDotIni;
+    private final String plIniPath;
     private final Map<ArchitectDataSource, SessionFactory> hibernateSessionFactories =
         new HashMap<ArchitectDataSource, SessionFactory>();
-    private String engineLocation;
 
-    public MatchMakerHibernateSessionContext(PlDotIni plIni) throws IOException {
-        plDotIni = plIni;
+    public MatchMakerHibernateSessionContext(DataSourceCollection plIni, String plIniPath) throws IOException {
+        this.plDotIni = plIni;
+        this.plIniPath = plIniPath;
     }
 
     /* (non-Javadoc)
@@ -85,17 +88,19 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         return factory;
     }
 
-    public PlDotIni getPlDotIni() {
+    public DataSourceCollection getPlDotIni() {
         return plDotIni;
     }
 
-    public String getEngineLocation() {       
-        return engineLocation;
+    public String getEngineLocation() {
+        EnginePath p = EnginePath.MATCHMAKER;
+        String plDotIni = plIniPath;
+        if (plDotIni == null) {
+            return null;
+        }
+        File plDotIniFile = new File(plDotIni);
+        File programDir = plDotIniFile.getParentFile();
+        File programPath = new File(programDir, p.getProgName());
+        return programPath.toString();
     }
-
-
-    public void setEngineLocation(String engineLocation) {
-        this.engineLocation = engineLocation;
-    }
-
 }

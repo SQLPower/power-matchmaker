@@ -50,6 +50,7 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 import ca.sqlpower.matchmaker.hibernate.home.PlMatchHome;
+import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
@@ -568,7 +569,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 		    	try {
-		    		SwingSessionContext context = new SwingSessionContext(ArchitectSessionImpl.getInstance());
+		    		SwingSessionContext context = new SwingSessionContext(ArchitectSessionImpl.getInstance(),
+                                                            PreferencesManager.getRootNode());
                     context.showLoginDialog(null);
 		    	} catch (Exception ex) {
 		    		ASUtils.showExceptionDialog("Couldn't start application!", ex);

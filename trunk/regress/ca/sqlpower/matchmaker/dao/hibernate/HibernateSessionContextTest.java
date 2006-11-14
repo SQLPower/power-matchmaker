@@ -5,6 +5,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -25,10 +26,10 @@ public class HibernateSessionContextTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        PlDotIni ini = new PlDotIni();
+        DataSourceCollection ini = new PlDotIni();
         ds = HibernateTestUtil.getOracleDS();
         ini.addDataSource(ds);
-        ctx = new MatchMakerHibernateSessionContext(ini);
+        ctx = new MatchMakerHibernateSessionContext(ini, null);
     }
     
     public void testGetDataSources() {
@@ -60,5 +61,9 @@ public class HibernateSessionContextTest extends TestCase {
         //we're testing this since the purpose of the getHibernateSessionFactory is to
         //initialize the PlFolder
         assertNotNull(mmSession.getFolders());
+    }
+    
+    public void testGetEngineLocation() {
+        fail("test not implemented yet");
     }
 }
