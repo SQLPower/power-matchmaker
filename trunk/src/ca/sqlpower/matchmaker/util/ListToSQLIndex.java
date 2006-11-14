@@ -22,6 +22,8 @@ import ca.sqlpower.architect.SQLObject;
 public class ListToSQLIndex implements UserType  {
 
 
+	private static final int columns = 11;
+
 	public Object assemble(Serializable cached, Object owner) throws HibernateException {
 		return deepCopy(cached);
 	}
@@ -77,8 +79,7 @@ public class ListToSQLIndex implements UserType  {
 
 	public Object nullSafeGet(ResultSet rs, String[] names, Object owner) throws HibernateException, SQLException {
 		SQLIndex index = new SQLIndex();
-		rs.next();
-		index.setName(rs.getString(1));		
+		index.setName(rs.getString(names[0]));		
 		for (int i=2; i < 12; i++){
 			if (names[i-1] != null) {
 				if (rs.getString(rs.findColumn(names[i-1])) != null){
@@ -92,7 +93,7 @@ public class ListToSQLIndex implements UserType  {
 				}
 			}
 		}
-		return index;
+		return null;
 	}
 
 	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException, SQLException {	
@@ -111,7 +112,11 @@ public class ListToSQLIndex implements UserType  {
 			} catch (ArchitectException e) {
 				throw new HibernateException(e);
 			}
-		}else{
+		} else if (value == null) {
+			for (int i=index; i < columns +index; i++) {
+				st.setNull(i, Types.VARCHAR);
+			}
+		} else {
 			throw new HibernateException("Invalid object type, it must be a SQLIndex");
 		}
 
@@ -126,8 +131,8 @@ public class ListToSQLIndex implements UserType  {
 	}
 
 	public int[] sqlTypes() {
-		int[] types = new int[10];
-		for(int i=0; i <10; i++){
+		int[] types = new int[11];
+		for(int i=0; i <columns; i++){
 			types[i]=Types.VARCHAR;
 		}
 		return types;

@@ -12,14 +12,6 @@ import ca.sqlpower.matchmaker.Match;
 
 public interface MatchDAO extends MatchMakerDAO<Match> {
 
-	/** 
-	 * Find the match that has the match name name 
-	 * 
-	 * @param name The name of the match we want to find
-	 * @return the match with the id name or null if there
-	 * 				is no match with that name.
-	 */
-	public Match findByName(String name);
 	
 	/**
 	 * Finds all the matches that don't have a specified folder

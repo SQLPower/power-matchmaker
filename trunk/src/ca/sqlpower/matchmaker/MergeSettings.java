@@ -10,6 +10,7 @@ public class MergeSettings extends MatchMakerSettings<MergeSettings> {
 	public int hashCode() {
 		final int PRIME = 31;
 		int result = super.hashCode();
+		result = PRIME * result + (augmentNull ? 1231 : 1237);
 		result = PRIME * result + (backUp ? 1231 : 1237);
 		return result;
 	}
@@ -23,6 +24,8 @@ public class MergeSettings extends MatchMakerSettings<MergeSettings> {
 		if (getClass() != obj.getClass())
 			return false;
 		final MergeSettings other = (MergeSettings) obj;
+		if (augmentNull != other.augmentNull)
+			return false;
 		if (backUp != other.backUp)
 			return false;
 		return true;
@@ -34,15 +37,31 @@ public class MergeSettings extends MatchMakerSettings<MergeSettings> {
 	/**
 	 * Backup the data that is going to be merged
 	 */
-	boolean backUp;
+	Boolean backUp;
+	/**
+	 * Augments null (an engine parameter)
+	 * TODO figure out what this means
+	 */
+	Boolean augmentNull;
 
-	public boolean isBackUp() {
+	public Boolean isBackUp() {
 		return backUp;
 	}
 
-	public void setBackUp(boolean backUp) {
-		boolean oldValue = this.backUp;
+	public void setBackUp(Boolean backUp) {
+		Boolean oldValue = this.backUp;
 		this.backUp = backUp;
 		getEventSupport().firePropertyChange("backUp", oldValue, backUp);
+	}
+
+	public Boolean isAugmentNull() {
+		return augmentNull;
+	}
+
+	public void setAugmentNull(Boolean augmentNull) {
+		Boolean oldValue = this.augmentNull;
+		this.augmentNull = augmentNull;
+		getEventSupport().firePropertyChange("augmentNull", oldValue,
+				this.augmentNull);
 	}
 }

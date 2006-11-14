@@ -7,6 +7,7 @@ import java.util.Date;
  * call registerUpdate to populate auditing information
  */
 public interface Auditable {
+	public Date getCreateDate();
 	public String getLastUpdateOSUser();
 	public String getLastUpdateAppUser();
 	public Date getLastUpdateDate();

@@ -33,12 +33,13 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 
 	public void delete(T deleteMe) {
 		Session s = getCurrentSession();
+		Transaction t = s.beginTransaction();
 		try {
-			Transaction t = s.beginTransaction();
 			s.delete(deleteMe);
-			t.commit();
 			s.flush();
+			t.commit();
 		} catch (RuntimeException re) {
+			t.rollback();
 			throw re;
 		} finally {
 			s.close();
@@ -47,18 +48,15 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 
 	protected Session getCurrentSession() {
 		return sessionFactory.openSession();
-
 	}
 
 	public List<T> findAll() {
 		Session s = getCurrentSession();
 		try {
-			Transaction t = s.beginTransaction();
 			List<T> results = s.createCriteria(getBusinessClass()).list();
 			for (T item: results){
 				item.setSession(matchMakerSession);
 			}
-			t.commit();
 			return results;
 		} catch (RuntimeException re) {
 			throw re;
@@ -69,15 +67,16 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 
 	public void save(T saveMe) {
 		Session s = getCurrentSession();
+		Transaction t = s.beginTransaction();
 		try {
-			Transaction t = s.beginTransaction();
 			s.saveOrUpdate(saveMe);
-			t.commit();
 			s.flush();
+			t.commit();
 		} catch (RuntimeException re) {
+			t.rollback();
 			throw re;
 		} finally {
-			s.close();			
+			s.close();
 		}
 	}
 

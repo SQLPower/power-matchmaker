@@ -130,7 +130,6 @@ public class NamesToSQLTable implements UserType {
 	 */
 	public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
 			throws HibernateException, SQLException {
-		rs.next();
 		if (names.length != 3) {
 			throw new HibernateException("Invalid number of names should be 3");
 		}
@@ -141,16 +140,21 @@ public class NamesToSQLTable implements UserType {
 		/* XXX Gets the table from the connection passed in by the 
 		 * Result set.  This is highly unefficient and should be fixed 
 		 */
-		Connection con = rs.getStatement().getConnection();		
+		/*Connection con = rs.getStatement().getConnection();		
 		ConnectionSQLDatabase db = new ConnectionSQLDatabase();
 		db.setPopulated(false);
 		db.setConnection(con);
 		try {
 			db.populate();
-			return db.getTableByName(catalogName,schemaName,tableName);
+			if (tableName == null) {
+				return null;
+			} else {
+				return db.getTableByName(catalogName,schemaName,tableName);
+			}
 		} catch (ArchitectException e){
 			throw new HibernateException(e);
-		}
+		} */
+		return null;
 	}
 
 	/**

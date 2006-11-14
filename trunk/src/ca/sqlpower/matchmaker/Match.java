@@ -50,6 +50,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	MatchType type;
 
 	/** A little note on this match object */
+	//TODO this has been moved into the settings, but is used by the gui
 	String description;
 
 	/**
@@ -62,6 +63,11 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 */
 	SQLTable resultTable;
 
+	/**
+	 * Table used for cross references
+	 */
+	SQLTable xrefTable;
+	
 	/** The settings for the match engine */
 	MatchSettings matchSettings;
 
@@ -127,10 +133,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 				this.autoMatchThreshold);
 	}
 
-	public String getDescription() {
+	@Deprecated
+	public  String getDescription() {
 		return description;
 	}
 
+	@Deprecated
 	public void setDescription(String description) {
 		String oldValue = this.description;
 		this.description = description;
@@ -254,6 +262,21 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		} else if (!oid.equals(other.oid))
 			return false;
 		return true;
+	}
+	public Long getOid() {
+		return oid;
+	}
+	public void setOid(Long oid) {
+		this.oid = oid;
+	}
+	public SQLTable getXrefTable() {
+		return xrefTable;
+	}
+	public void setXrefTable(SQLTable xrefTable) {
+		SQLTable oldValue = this.xrefTable;
+		this.xrefTable = xrefTable;
+		getEventSupport().firePropertyChange("xrefTable", oldValue,
+				this.xrefTable);
 	}
 
 }

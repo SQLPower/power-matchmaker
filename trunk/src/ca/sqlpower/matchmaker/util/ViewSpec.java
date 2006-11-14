@@ -12,7 +12,14 @@ public class ViewSpec extends SQLQuery {
 	/** the jdbc schema containing the view */
 	private String schema;
 	
+	public ViewSpec(){
+		
+	}
 	
+	public ViewSpec(String select, String from, String where) {
+		super(select,from,where);
+	}
+
 	private void create(){
 		
 	}

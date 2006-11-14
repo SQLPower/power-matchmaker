@@ -15,7 +15,7 @@ import org.hibernate.usertype.UserType;
  * note this is a really dumb bean.
  *
  */
-public class StringsToSQLQuery implements UserType {
+public class StringsToViewSpec implements UserType {
 
 
 	
@@ -24,11 +24,11 @@ public class StringsToSQLQuery implements UserType {
 	}
 
 	public Object deepCopy(Object value) throws HibernateException {
-		if ( !( value instanceof SQLQuery) ) {
+		if ( !( value instanceof ViewSpec) ) {
 			return null;
 		}
-		SQLQuery oldValue = (SQLQuery)value;
-		return new SQLQuery(oldValue.getSelect(),
+		ViewSpec oldValue = (ViewSpec)value;
+		return new ViewSpec(oldValue.getSelect(),
 				oldValue.getFrom(),oldValue.getWhere());
 	}
 
@@ -60,12 +60,11 @@ public class StringsToSQLQuery implements UserType {
 		if (names.length != sqlTypes().length ) {
             throw new HibernateException(
                     "The column name list for this user type is not" +
-                    " the same length as the sqlquery properties setting.  " +
+                    " the same length as the ViewSpec properties setting.  " +
                     "(names.length="+names.length+"; number of properties="
                     +sqlTypes().length+")");
         }
-		rs.next();
-		return new SQLQuery(rs.getString(names[0]),
+		return new ViewSpec(rs.getString(names[0]),
 							rs.getString(names[1]),
 							rs.getString(names[2]));
 	}
@@ -76,9 +75,9 @@ public class StringsToSQLQuery implements UserType {
 			st.setString(index+1,null);
 			st.setString(index+2,null);
 		} else {
-			st.setString(index,((SQLQuery)value).getSelect());
-			st.setString(index+1,((SQLQuery)value).getFrom());
-			st.setString(index+2,((SQLQuery)value).getWhere());
+			st.setString(index,((ViewSpec)value).getSelect());
+			st.setString(index+1,((ViewSpec)value).getFrom());
+			st.setString(index+2,((ViewSpec)value).getWhere());
 		}
 		
 	}
@@ -88,7 +87,7 @@ public class StringsToSQLQuery implements UserType {
 	}
 
 	public Class returnedClass() {
-		return SQLQuery.class;
+		return ViewSpec.class;
 	}
 
 	public int[] sqlTypes() {

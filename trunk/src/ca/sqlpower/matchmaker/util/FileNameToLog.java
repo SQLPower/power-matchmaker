@@ -9,10 +9,11 @@ import java.sql.Types;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
-import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.Match.MatchType;
+import ca.sqlpower.matchmaker.util.log.Level;
+import ca.sqlpower.matchmaker.util.log.Log;
+import ca.sqlpower.matchmaker.util.log.LogFactory;
 
-public class TypeStringToMatchTypeEnum implements UserType {
+public class FileNameToLog implements UserType {
 
 	public Object assemble(Serializable cached, Object owner)
 			throws HibernateException {
@@ -20,7 +21,8 @@ public class TypeStringToMatchTypeEnum implements UserType {
 	}
 
 	public Object deepCopy(Object value) throws HibernateException {
-		return value;
+		if (value == null) return null;
+		return LogFactory.getLogger(Level.DEBUG,((Log)value).getConstraint());
 	}
 
 	public Serializable disassemble(Object value) throws HibernateException {
@@ -37,24 +39,22 @@ public class TypeStringToMatchTypeEnum implements UserType {
 	}
 
 	public int hashCode(Object x) throws HibernateException {
-		if ( !(x instanceof Match.MatchType)) {
+		if ( !(x instanceof Log)) {
 			return 0;
 		} else {
 			return x.hashCode();
 		}
 	}
-	/**
-	 * Enums are not mutable
-	 */
+	
 	public boolean isMutable() {
-		return false;
+		return true;
 	}
 
 	public Object nullSafeGet(ResultSet rs, String[] names, Object owner)
 			throws HibernateException, SQLException {
-		String typeString = rs.getString(names[0]);
-		if (typeString != null) {
-			return MatchType.getTypeByString(typeString);
+		String fileName = rs.getString(names[0]);
+		if (fileName != null) {
+			return LogFactory.getLogger(Level.DEBUG,fileName);
 		} else {
 			return null;
 		}
@@ -63,7 +63,7 @@ public class TypeStringToMatchTypeEnum implements UserType {
 	public void nullSafeSet(PreparedStatement st, Object value, int index)
 			throws HibernateException, SQLException {
 		if (value != null) {
-			st.setString(index, ((MatchType) value).toString());
+			st.setString(index, (String) ((Log) value).getConstraint());
 		} else {
 			st.setString(index, null);
 		}
@@ -75,7 +75,7 @@ public class TypeStringToMatchTypeEnum implements UserType {
 	}
 
 	public Class returnedClass() {
-		return Match.MatchType.class;
+		return Log.class;
 	}
 
 	public int[] sqlTypes() {

@@ -13,11 +13,11 @@ import ca.sqlpower.architect.MockJDBCResultSet;
 import ca.sqlpower.architect.jdbc.MockJDBCPreparedStatement;
 import ca.sqlpower.matchmaker.Match;
 
-public class StringsToSQLQueryTest extends TestCase {
+public class StringsToViewSpecTest extends TestCase {
 
-	SQLQuery[] testQuery;
+	ViewSpec[] testQuery;
 
-	StringsToSQLQuery userType;
+	StringsToViewSpec userType;
 	private MockJDBCResultSet rs;
 	private String[] names;
 	String[][] data;
@@ -25,7 +25,7 @@ public class StringsToSQLQueryTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 			
-		userType = new StringsToSQLQuery();
+		userType = new StringsToViewSpec();
 		ArchitectDataSource ds = new ArchitectDataSource();
 		String URL = "jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm,yard,zoo&schemas.farm=cow,pig&schemas.yard=cat,robin&schemas.zoo=lion,giraffe&tables.farm.cow=moo&tables.farm.pig=oink&tables.yard.cat=meow&tables.yard.robin=tweet&tables.zoo.lion=roar&tables.zoo.giraffe=***,^%%";
 		ds.setDriverClass(MockJDBCDriver.class.getCanonicalName());
@@ -48,10 +48,10 @@ public class StringsToSQLQueryTest extends TestCase {
 		rs.setColumnName(3,"where");
 		names[2]="where";
 		data = new String[Match.MatchType.values().length+1][3];
-		testQuery = new SQLQuery[3];
-		testQuery[0] = new SQLQuery("Select *","from","where");
-		testQuery[1] = new SQLQuery("Select 1","from 1","where 1");
-		testQuery[2] = new SQLQuery("Select 2","from 2","where 2");
+		testQuery = new ViewSpec[3];
+		testQuery[0] = new ViewSpec("Select *","from","where");
+		testQuery[1] = new ViewSpec("Select 1","from 1","where 1");
+		testQuery[2] = new ViewSpec("Select 2","from 2","where 2");
 		
 		for (int i=0; i< testQuery.length; i++) {
 			data[i][0] = testQuery[i].getSelect();
@@ -61,8 +61,8 @@ public class StringsToSQLQueryTest extends TestCase {
 	}
 
 	public void testDeepCopy() throws ArchitectException{
-		for (SQLQuery query: testQuery) {
-			SQLQuery testCopy = (SQLQuery) userType.deepCopy(query);
+		for (ViewSpec query: testQuery) {
+			ViewSpec testCopy = (ViewSpec) userType.deepCopy(query);
 			assertEquals("Invalid query",query,testCopy);
 				
 		}
@@ -72,7 +72,8 @@ public class StringsToSQLQueryTest extends TestCase {
 		for	(int i = 0;i < data.length; i++){	
 			Object[] row = data[i];
 			rs.addRow(row);
-			SQLQuery get = (SQLQuery)userType.nullSafeGet(rs, names, null);
+			rs.next();
+			ViewSpec get = (ViewSpec)userType.nullSafeGet(rs, names, null);
 			if (i < testQuery.length) {
 				assertEquals("The query is not correct", testQuery[i], get);
 			} else {
