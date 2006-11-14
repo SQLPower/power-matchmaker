@@ -25,9 +25,9 @@ import javax.swing.table.TableModel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.DatabaseListChangeEvent;
 import ca.sqlpower.architect.DatabaseListChangeListener;
-import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
@@ -160,7 +160,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 	private JDialog newConnectionDialog;
 	private JTable dsTable;
-	private PlDotIni plDotIni;
+	private DataSourceCollection plDotIni;
 
 	public DatabaseConnectionManager(JFrame owningFrame, SwingSessionContext context) {
         d = new JDialog(owningFrame);
@@ -265,7 +265,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 	private class ConnectionTableModel extends AbstractTableModel {
 
-		public ConnectionTableModel(PlDotIni ini) {
+		public ConnectionTableModel(DataSourceCollection ini) {
 			super();
 			if ( ini != null ) {
 				ini.addDatabaseListChangeListener(new DatabaseListChangeListener(){
@@ -327,11 +327,11 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
         newConnectionDialog = d;
     }
     
-	public PlDotIni getPlDotIni() {
+	public DataSourceCollection getPlDotIni() {
 		return plDotIni;
 	}
 
-	public void setPlDotIni(PlDotIni plDotIni) {
+	public void setPlDotIni(DataSourceCollection plDotIni) {
 		this.plDotIni = plDotIni;
 	}
 

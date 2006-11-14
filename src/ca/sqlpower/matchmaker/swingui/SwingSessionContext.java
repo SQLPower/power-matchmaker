@@ -17,14 +17,12 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
-import ca.sqlpower.architect.CoreUserSettings;
+import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
-import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
-import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.security.PLSecurityException;
 
 import com.darwinsys.swingui.UtilGUI;
@@ -71,22 +69,32 @@ public class SwingSessionContext implements MatchMakerSessionContext {
 
     /**
      * Creates a new Swing session context, which is a holding place for all the basic
-     * settings in the MatchMaker GUI application.
+     * settings in the MatchMaker GUI application.  This constructor creates its own delegate
+     * session context object based on information in the given prefs node, or failing that,
+     * by prompting the user with a GUI.
      */
-    public SwingSessionContext(ArchitectSession architectSession) throws ArchitectException, IOException {
+    public SwingSessionContext(ArchitectSession architectSession, Preferences prefsRootNode) throws ArchitectException, IOException {
+        this(architectSession, prefsRootNode, createDelegateContext(prefsRootNode));
+    }
+    
+    /**
+     * Creates a new Swing session context, which is a holding place for all the basic
+     * settings in the MatchMaker GUI application.  This implementation uses the delegate
+     * context given as an argument.  It is intended for facilitating proper unit tests, and
+     * you will most likely prefer using the other constructor in real life.
+     */
+    public SwingSessionContext(
+            ArchitectSession architectSession,
+            Preferences prefsRootNode,
+            MatchMakerSessionContext delegateContext) throws ArchitectException, IOException {
         this.architectSession = architectSession;
-        //FIXME: this should be coming from the constructor
-        prefs = PreferencesManager.getRootNode();
-        context = createDelegateContext();
-
+        this.prefs = prefsRootNode;
+        this.context = delegateContext;
+        
         fakeParentFrame = new JFrame("Never Visible");
         fakeParentFrame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
-
         dbConnectionManager = new DatabaseConnectionManager(fakeParentFrame, this);       
-
         loginDialog = new LoginDialog(this);
-        loginDialog.pack();
-        UtilGUI.centre(loginDialog);
     }
 
 
@@ -101,7 +109,7 @@ public class SwingSessionContext implements MatchMakerSessionContext {
         return context.getDataSources();
     }
 
-    public PlDotIni getPlDotIni() {
+    public DataSourceCollection getPlDotIni() {
         return context.getPlDotIni();
     }
 
@@ -160,10 +168,7 @@ public class SwingSessionContext implements MatchMakerSessionContext {
         String lastDSName = prefs.get(SwingUserSettings.LAST_LOGIN_DATA_SOURCE, null);
         System.out.println("lastDSName:" + lastDSName);
         if (lastDSName == null) return null;
-        System.out.println("Data Source size: " + getDataSources().size());
-        System.out.println("46 " + getDataSources().get(0).getName());
         for (ArchitectDataSource ds : getDataSources()) {
-            System.out.println("48 " + ds);
             if (ds.getName().equals(lastDSName)) return ds;
         }        
         return null;
@@ -187,6 +192,8 @@ public class SwingSessionContext implements MatchMakerSessionContext {
      */
     public void showLoginDialog(ArchitectDataSource selectedDataSource) {
         loginDialog.setDbSource(selectedDataSource);
+        loginDialog.pack();
+        UtilGUI.centre(loginDialog);
         loginDialog.setVisible(true);
         loginDialog.requestFocus();
     }
@@ -198,8 +205,8 @@ public class SwingSessionContext implements MatchMakerSessionContext {
      * Creates the delegate context, prompting the user (GUI) for any missing information.
      * @throws IOException 
      */
-    private MatchMakerSessionContext createDelegateContext() throws ArchitectException, IOException {
-        PlDotIni plDotIni = null;
+    private static MatchMakerSessionContext createDelegateContext(Preferences prefs) throws ArchitectException, IOException {
+        DataSourceCollection plDotIni = null;
         String plDotIniPath = prefs.get(ArchitectSession.PREFS_PL_INI_PATH, null);
         while ((plDotIni = readPlDotIni(plDotIniPath)) == null) {
             logger.debug("readPlDotIni returns null, trying again...");
@@ -213,7 +220,7 @@ public class SwingSessionContext implements MatchMakerSessionContext {
                 message = "file \n\n\""+plDotIniPath+"\"\n\n does not exist";
             }
             int choice = JOptionPane.showOptionDialog(null,   // blocking wait
-                    "The Architect keeps its list of database connections" +
+                    "The MatchMaker keeps its list of database connections" +
                     "\nin a file called PL.INI.  Your PL.INI "+message+"." +
                     "\n\nYou can browse for an existing PL.INI file on your system" +
                     "\nor allow the Architect to create a new one in your home directory." +
@@ -241,10 +248,10 @@ public class SwingSessionContext implements MatchMakerSessionContext {
             }
         }
         prefs.put(ArchitectSession.PREFS_PL_INI_PATH, plDotIniPath);       
-        return new MatchMakerHibernateSessionContext(plDotIni);
+        return new MatchMakerHibernateSessionContext(plDotIni, plDotIniPath);
     }
 
-    private PlDotIni readPlDotIni(String plDotIniPath) {
+    private static DataSourceCollection readPlDotIni(String plDotIniPath) {
         if (plDotIniPath == null) {
             return null;
         }
@@ -253,7 +260,7 @@ public class SwingSessionContext implements MatchMakerSessionContext {
             return null;
         }
 
-        PlDotIni pld = new PlDotIni();
+        DataSourceCollection pld = new PlDotIni();
         try {
             pld.read(pf);
             return pld;
@@ -268,30 +275,6 @@ public class SwingSessionContext implements MatchMakerSessionContext {
      * @return a string of the path of where the engine is located, if not found, returns null 
      */
     public String getEngineLocation() {
-        EnginePath p = EnginePath.MATCHMAKER;
-        if (p == null) return null;
-        CoreUserSettings settings = architectSession.getUserSettings();
-        if (settings != null){
-            String plDotIni = settings.getPlDotIniPath();
-                if (plDotIni == null) {
-                    return null;
-                }
-            File plDotIniFile = new File(plDotIni);
-            File programDir = plDotIniFile.getParentFile();
-            File programPath = new File(programDir, p.getProgName());
-            return programPath.toString();
-        } else {
-            return null;
-        }
-        
+        return context.getEngineLocation();
     }
-
-    
-    public void setEngineLocation(String engineLocation){              
-          
-    }
-
-
-
-
 }

@@ -30,7 +30,7 @@ import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.PlDotIni;
+import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -247,7 +247,7 @@ public class MatchEditor {
         final SQLDatabase loginDB = swingSession.getPlRepositoryDatabase();
         ArchitectDataSource ds;
         if ( loginDB != null ) {
-        	PlDotIni ini = swingSession.getContext().getPlDotIni();
+        	DataSourceCollection ini = swingSession.getContext().getPlDotIni();
         	ds = ini.getDataSource(loginDB.getDataSource().getName());
         	sourceChooser.getDataSourceComboBox().setSelectedItem(ds);
         	resultChooser.getDataSourceComboBox().setSelectedItem(ds);
