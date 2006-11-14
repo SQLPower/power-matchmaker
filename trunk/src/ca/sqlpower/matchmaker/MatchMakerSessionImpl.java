@@ -9,6 +9,7 @@ import org.hibernate.SessionFactory;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.security.PLSecurityException;
@@ -69,8 +70,23 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	}
 
 	public List<PlFolder> getFolders() {
-		PlFolderDAO folderDAO = new PlFolderDAOHibernate(hibernateSessionFactory,this);
+		PlFolderDAO folderDAO = (PlFolderDAO)getDAO(PlFolder.class);
 		return folderDAO.findAll();
 	}
+
+    public PlFolder findFolder(String foldername) {        
+        for (PlFolder folder : getFolders()){
+            if (folder.getName().equals(foldername)) return folder;
+        }
+        return null;
+    }
+
+    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
+        if (businessClass == PlFolder.class) {
+            return (MatchMakerDAO<T>) new PlFolderDAOHibernate(hibernateSessionFactory,this);
+        } else {
+            throw new IllegalArgumentException("I don't know how to create a DAO for "+businessClass.getName());
+        }
+    }
 
 }

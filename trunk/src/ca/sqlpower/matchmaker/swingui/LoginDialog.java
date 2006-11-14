@@ -123,7 +123,7 @@ public class LoginDialog extends JDialog {
 	 * The session context for this application.  The list of available
 	 * databases lives here, and login attempts will happen via this object.
 	 */
-	private SwingSessionContext sessionContext;
+	private SwingSessionContextImpl sessionContext;
 
 	/**
 	 * The session that we will create upon successful login.
@@ -162,10 +162,10 @@ public class LoginDialog extends JDialog {
     
     /**
      * Creates a new login dialog, but does not display it.  Normally you should use
-     * {@link SwingSessionContext#showLoginDialog()} and not create new login dialogs
+     * {@link SwingSessionContextImpl#showLoginDialog()} and not create new login dialogs
      * yourself.
      */
-	public LoginDialog(SwingSessionContext sessionContext) {
+	public LoginDialog(SwingSessionContextImpl sessionContext) {
 		super();
         this.sessionContext = sessionContext;
 		setTitle("Power*MatchMaker Login");

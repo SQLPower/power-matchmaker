@@ -24,7 +24,7 @@ import ca.sqlpower.security.PLSecurityException;
 public class SwingSessionContextTest extends TestCase {
 
     private static final String FAKE_ENGINE_LOCATION = "you found the delegate's engine location!";
-    SwingSessionContext context;
+    SwingSessionContextImpl context;
     
     protected void setUp() throws Exception {
         super.setUp();
@@ -139,7 +139,7 @@ public class SwingSessionContextTest extends TestCase {
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
         PreferencesFactory stubPrefsFactory = new PreferencesFactory();
         Preferences memoryPrefs = stubPrefsFactory.userRoot();
-        context = new SwingSessionContext(archSession, memoryPrefs, stubContext);
+        context = new SwingSessionContextImpl(archSession, memoryPrefs, stubContext);
     }
     
     public void testGetLastLogin(){                
@@ -153,8 +153,10 @@ public class SwingSessionContextTest extends TestCase {
         assertEquals(FAKE_ENGINE_LOCATION, context.getEngineLocation());        
     }
     
-    
-
-    
+    public void testGetLastImportExportAccessPath(){
+        context.setLastImportExportAccessPath("/thisisatestpath");
+        assertEquals ("Last import/export access path is incorrect", "/thisisatestpath",
+                            context.getLastImportExportAccessPath());
+    }
     
 }

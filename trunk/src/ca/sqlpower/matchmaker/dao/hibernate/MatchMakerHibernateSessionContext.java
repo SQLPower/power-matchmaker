@@ -16,7 +16,7 @@ import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSessionImpl;
-import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
+import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.util.UnknownFreqCodeException;
@@ -27,9 +27,9 @@ import ca.sqlpower.util.UnknownFreqCodeException;
  * ask it to make sessions for you!
  * 
  * <p>There's another version of this which is also tied into the Swing GUI.  In a GUI app,
- * that's the one you'll want: {@link SwingSessionContext}.
+ * that's the one you'll want: {@link SwingSessionContextImpl}.
  * 
- * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext
+ * @see ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl
  */
 public class MatchMakerHibernateSessionContext implements MatchMakerSessionContext {
 

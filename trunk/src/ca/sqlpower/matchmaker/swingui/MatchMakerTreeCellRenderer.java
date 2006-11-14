@@ -7,8 +7,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
-import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
+import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
@@ -21,16 +22,12 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
 		super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 
-		if ( value instanceof MatchMakerTreeModel.MMTreeNode ) {
-			if ( ((MatchMakerTreeModel.MMTreeNode)value).isRoot() ) {
-				setText("");
-			} else {
-				setText(((MatchMakerTreeModel.MMTreeNode)value).getName());
-			}
+		if (value instanceof MatchMakerObject) {
+		    setText(((MatchMakerObject) value).getName());
 		}
-		if (value instanceof PlMatch) {
+		if (value instanceof Match) {
 			setIcon(matchIcon);
-		} else if (value instanceof PlMatchGroup) {
+		} else if (value instanceof MatchMakerCriteriaGroup) {
 			setIcon(groupIcon);
 		}
 		return this;
