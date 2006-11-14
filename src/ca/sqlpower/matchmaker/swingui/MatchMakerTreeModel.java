@@ -22,11 +22,21 @@ public class MatchMakerTreeModel implements TreeModel {
 	private static final Logger logger = Logger
 			.getLogger(MatchMakerTreeModel.class);
 
-	private static class MMTreeNode<C extends MatchMakerObject> extends
+	protected static class MMTreeNode<C extends MatchMakerObject> extends
 			AbstractMatchMakerObject<MMTreeNode, C> {
 
-		public MMTreeNode(String name) {
+		private boolean root;
+		public boolean isRoot() {
+			return root;
+		}
+
+		public void setRoot(boolean root) {
+			this.root = root;
+		}
+
+		public MMTreeNode(String name, boolean root) {
 			setName(name);
+			setRoot(root);
 		}
 
 		@Override
@@ -42,13 +52,13 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	private final MMTreeNode<MMTreeNode> root = new MMTreeNode<MMTreeNode>(
-			"root");
+			"root",true);
 
 	private final MMTreeNode<PlFolder> current = new MMTreeNode<PlFolder>(
-			"Current Match/Merge Information");
+			"Current Match/Merge Information",false);
 
 	private final MMTreeNode<PlFolder> backup = new MMTreeNode<PlFolder>(
-			"Backup Match/Merge Information");
+			"Backup Match/Merge Information",false);
 
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
 

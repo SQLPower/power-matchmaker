@@ -21,6 +21,13 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
 		super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 
+		if ( value instanceof MatchMakerTreeModel.MMTreeNode ) {
+			if ( ((MatchMakerTreeModel.MMTreeNode)value).isRoot() ) {
+				setText("");
+			} else {
+				setText(((MatchMakerTreeModel.MMTreeNode)value).getName());
+			}
+		}
 		if (value instanceof PlMatch) {
 			setIcon(matchIcon);
 		} else if (value instanceof PlMatchGroup) {
