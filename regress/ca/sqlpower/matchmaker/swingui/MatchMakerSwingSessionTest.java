@@ -50,6 +50,15 @@ public class MatchMakerSwingSessionTest extends TestCase {
             public SQLDatabase getDatabase() {
                 return new SQLDatabase(ds);
             }
+           
+            @Override
+            public PlFolder findFolder(String foldername) {
+                for (PlFolder folder : getFolders()){
+                    if (folder.getName().equals(foldername)) return folder;
+                }
+                return null;
+            }
+            
         };
         
         session = new MatchMakerSwingSession(stubContext, stubSessionImp);
@@ -66,7 +75,5 @@ public class MatchMakerSwingSessionTest extends TestCase {
         assertNull("There is at least one folder that should not exist", session.findFolder("Randomness"));
         assertEquals("Got the wrong folder", folder1, session.findFolder("Test Folder"));
         assertEquals("Got the wrong folder", folder2, session.findFolder("Test Folder2"));
-    }
-      
-    
+    }          
 }
