@@ -22,8 +22,8 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
  */
 public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject> implements
 		MatchMakerDAO<T> {
-	private MatchMakerSession matchMakerSession;
-	private SessionFactory sessionFactory;
+	MatchMakerSession matchMakerSession;
+	SessionFactory sessionFactory;
 	
 
 	public AbstractMatchMakerDAOHibernate(SessionFactory sessionFactory,MatchMakerSession matchMakerSession) {
