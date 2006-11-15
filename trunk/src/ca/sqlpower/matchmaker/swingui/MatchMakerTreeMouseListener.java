@@ -82,7 +82,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
             t.setSelectionPath(tp);
         }
     }
-    
+
     @Override
     public void mouseReleased(MouseEvent e) {
         makePopup(e);
@@ -103,9 +103,6 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                     createMatchMenu((Match) o);
                 } else if (o instanceof PlMatchGroup) {
                     createMatchGroupMenu((PlMatchGroup) o);
-                } else if (o instanceof String) {
-                    m.add(new JMenuItem(new NewMatchAction(swingSession,
-                            "New Match", null)));
                 }
             }
             m.show(t, e.getX(), e.getY());
