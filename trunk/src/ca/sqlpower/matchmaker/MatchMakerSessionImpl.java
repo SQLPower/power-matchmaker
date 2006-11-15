@@ -11,6 +11,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
@@ -52,7 +53,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
     public MatchMakerSessionContext getContext() {
         return context;
     }
-    
+
 	public SQLDatabase getDatabase() {
 		return database;
 	}
@@ -74,7 +75,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 		return folderDAO.findAll();
 	}
 
-    public PlFolder findFolder(String foldername) {        
+    public PlFolder findFolder(String foldername) {
         for (PlFolder folder : getFolders()){
             if (folder.getName().equals(foldername)) return folder;
         }
@@ -84,9 +85,24 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
         if (businessClass == PlFolder.class) {
             return (MatchMakerDAO<T>) new PlFolderDAOHibernate(hibernateSessionFactory,this);
+        } else if (businessClass == Match.class) {
+            return (MatchMakerDAO<T>) new MatchDAOHibernate(hibernateSessionFactory,this);
         } else {
             throw new IllegalArgumentException("I don't know how to create a DAO for "+businessClass.getName());
         }
     }
+
+    public Match getMatchByName(String name) {
+    	List <Match> matches = getDAO(Match.class).findAll();
+    	for ( Match m : matches ) {
+    		if ( m.getName().equals(name) )
+    			return m;
+    	}
+    	return null;
+    }
+
+	public boolean isThisMatchNameAcceptable(String name) {
+		return getMatchByName(name) == null;
+	}
 
 }

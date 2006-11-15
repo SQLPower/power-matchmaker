@@ -14,8 +14,8 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	SQLDatabase db = new SQLDatabase();
 	List<PlFolder> folders;
 	MatchMakerSessionContext context;
-	
-	
+
+
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
 	}
@@ -61,7 +61,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	}
 
 	public MatchMakerSessionContext getContext() {
-		// TODO add the context to the test session 
+		// TODO add the context to the test session
 		return null;
 	}
 
@@ -76,5 +76,13 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         // TODO Auto-generated method stub
         return null;
     }
+
+	public boolean isThisMatchNameAcceptable(String name) {
+		return false;
+	}
+
+	public Match getMatchByName(String name) {
+		return null;
+	}
 
 }

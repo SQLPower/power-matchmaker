@@ -41,7 +41,7 @@ import com.sun.rowset.CachedRowSetImpl;
 
 /**
  * A dialog box that shows a table of status information about one Match object.
- * If you want to see a status table for a different match, create a new one of these. 
+ * If you want to see a status table for a different match, create a new one of these.
  */
 public class MatchValidationStatus extends JDialog {
 
@@ -56,7 +56,7 @@ public class MatchValidationStatus extends JDialog {
 		this.match = match;
 		createUI();
 	}
-    
+
     public MatchValidationStatus(MatchMakerSwingSession swingSession, Match match, JDialog dialogParent) {
         super(dialogParent,"View Match Validation Status");
         this.swingSession = swingSession;
@@ -139,7 +139,8 @@ public class MatchValidationStatus extends JDialog {
 
 	private void createUI() {
 
-		DefaultComboBoxModel model = new DefaultComboBoxModel(swingSession.getMatches().toArray());
+		// TODO: add folder combo box
+		DefaultComboBoxModel model = new DefaultComboBoxModel(); //get matches from the selected folder
 		final JComboBox matchComboBox = new JComboBox(model);
 		matchComboBox.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {

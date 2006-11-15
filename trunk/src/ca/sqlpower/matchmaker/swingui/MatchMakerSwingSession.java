@@ -45,7 +45,6 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
@@ -229,7 +228,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		}
 	};
 
-	private List<PlMatch> matches;
 	private List<PlMatchTranslateGroup> translations = new ArrayList<PlMatchTranslateGroup>();
 
 	/**
@@ -575,23 +573,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return folders;
 	}
 
-	public List<PlMatch> getMatches() {
-		return matches;
-	}
-
-    /**
-     * Finds a Match object in the current session by name.
-     *
-     * XXX (implementation problem) this is a MatchDAO thing, so we should delegate to that here.
-     */
-    public PlMatch getMatchByName(String name) {
-        for (PlMatch m : matches) {
-            if (m.getMatchId().equals(name))
-                return m;
-        }
-        return null;
-    }
-
 	public JTree getTree() {
 		return tree;
 	}
@@ -647,5 +628,13 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
         return sessionImpl.getDAO(businessClass);
     }
+
+	public Match getMatchByName(String name) {
+		return sessionImpl.getMatchByName(name);
+	}
+
+	public boolean isThisMatchNameAcceptable(String name) {
+		return sessionImpl.isThisMatchNameAcceptable(name);
+	}
 
 }

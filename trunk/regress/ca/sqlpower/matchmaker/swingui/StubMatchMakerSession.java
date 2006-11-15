@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -15,7 +16,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 public class StubMatchMakerSession implements MatchMakerSession{
 
     private static final Logger logger = Logger.getLogger(StubMatchMakerSession.class);
-    
+
     public PlFolder findFolder(String foldername) {
         logger.debug("Stub call: StubMatchMakerSession.findFolder()");
         return null;
@@ -55,5 +56,17 @@ public class StubMatchMakerSession implements MatchMakerSession{
         logger.debug("Stub call: StubMatchMakerSession.getSessionStartTime()");
         return null;
     }
+
+	public boolean isThisMatchNameAcceptable(String name) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerSession.isThisMatchNameAcceptable()");
+		return false;
+	}
+
+	public Match getMatchByName(String name) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerSession.getMatchByName()");
+		return null;
+	}
 
 }

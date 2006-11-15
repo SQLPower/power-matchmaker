@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.PlFolder;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
@@ -52,11 +51,8 @@ public class MatchInfoPanel implements ArchitectPanel {
 
 		String folderName = null;
 
-		 if ( match.getFolder() != null) {
-			PlFolder f = (PlFolder) match.getFolder();
-    		if ( f != null ) {
-    			folderName = f.getName();
-    		}
+		 if ( match.getParent() != null) {
+   			folderName = match.getParent().getName();
 		}
 
 		pb.add(new JLabel(match.getName()), cc.xy(4,2));

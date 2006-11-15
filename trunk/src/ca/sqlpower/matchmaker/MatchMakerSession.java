@@ -54,18 +54,31 @@ public interface MatchMakerSession {
 	 * All of the Match folders that the current user can see.
 	 */
 	public List<PlFolder> getFolders();
-    
+
     /**
      * Returns the folder that matches with the name
      * @param foldername the name of the folder that is desired
      * @return the folder with that matches with the foldername, returns null if no results are avaiable
      */
     public PlFolder findFolder(String foldername);
-    
+
     /**
      * Returns the DAO Object for the given business class
      * @param <T> the business class of the DAO Object
      * @return the object that is of the business class
      */
-    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass); 
+    public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass);
+
+    /**
+     * search the match by name via DAO
+     * @param name
+     * @return true if the name is not taken, false if the name exists
+     */
+    public boolean isThisMatchNameAcceptable(String name);
+    /**
+     * find the Match Object by name, search by the DAO
+     * @param name
+     * @return match object or null if not found
+     */
+    public Match getMatchByName(String name);
 }

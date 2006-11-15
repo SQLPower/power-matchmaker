@@ -36,7 +36,7 @@ public class PlMatchImportAction extends AbstractAction {
 
 	private static final Logger logger = Logger.getLogger(PlMatchImportAction.class);
     private final MatchMakerSwingSession swingSession;
-    
+
 	private PlMatch match;
 	private JFrame owningFrame;
 
@@ -113,7 +113,8 @@ public class PlMatchImportAction extends AbstractAction {
                             + "." + c.getColumnName());
                 }
 
-				PlMatch match2 = swingSession.getMatchByName(match.getMatchId());
+                // XXX: check for duplication
+				/*Match match2 = swingSession.getMatchByName(match.getMatchId());
 				if ( match2 != null ) {
 					int option = JOptionPane.showConfirmDialog(
 							null,
@@ -125,7 +126,7 @@ public class PlMatchImportAction extends AbstractAction {
 					} else {
 						HibernateUtil.primarySession().delete(match2);
 					}
-				}
+				}*/
 			}
 
 			Transaction tx = HibernateUtil.primarySession().beginTransaction();
