@@ -23,7 +23,7 @@
 		<property name="filter" type="string">
 			<column name="FILTER" length="2000" />
 		</property>
-		
+
 		<component name="sourceTable" class="ca.sqlpower.matchmaker.util.SourceTable">
 			<property name="table" type="ca.sqlpower.matchmaker.util.NamesToSQLTable">
 				<column name="TABLE_CATALOG" length="30" />
@@ -44,7 +44,7 @@
 			    <column name="index_column_name9" length="50" />
 			</property>
 		</component>
-		
+
 		<property name="resultTable" type="ca.sqlpower.matchmaker.util.NamesToSQLTable">
 			<column name="RESULTS_TABLE_CATALOG" length="30" />
 			<column name="RESULTS_TABLE_OWNER" length="30" />
@@ -68,7 +68,7 @@
 		<property name="lastUpdateOsUser" type="string" access="field">
 			<column name="LAST_update_OS_USER" length="30" />
 		</property>
-		
+
 		<component name="matchSettings" class="ca.sqlpower.matchmaker.MatchSettings">
 			<property name="autoMatchThreshold" type="short">
 				<column name="AUTO_MATCH_THRESHOLD" precision="3" scale="0" />
@@ -176,14 +176,14 @@
 		<property name="checkedOutOsUser" type="string">
 			<column name="checked_out_os_user" length="30" />
 		</property>
-		
+
 		<property name="tempSourceTableName" type="string">
 			<column name="temp_source_table_name" length="30" />
 		</property>
 		<property name="tempCandDupTableName" type="string">
 			<column name="temp_cand_dup_table_name" length="30" />
 		</property>
-		
+
 		<property name="fromClauseDb" type="string">
 			<column name="from_clause_db" length="800" />
 		</property>
@@ -206,10 +206,10 @@
 				class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup" />
 		</set> -->
 
-		<many-to-one name="folder" access="field"
+		<many-to-one name="parent"
 			class="ca.sqlpower.matchmaker.PlFolder" fetch="select">
 			<column name="FOLDER_NAME" />
-		</many-to-one> 
+		</many-to-one>
 
 	</class>
 </hibernate-mapping>

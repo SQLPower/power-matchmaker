@@ -31,8 +31,10 @@ public final class NewMatchAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 	    MatchEditor me;
 		try {
-			// FIXME no user 
-			me = new MatchEditor(swingSession, new Match(), folder);
+			// FIXME no user
+			final Match match = new Match();
+			folder.addChild(match);
+			me = new MatchEditor(swingSession, match);
 		} catch (ArchitectException e1) {
 			throw new ArchitectRuntimeException(e1);
 		}

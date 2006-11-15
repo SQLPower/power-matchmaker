@@ -23,49 +23,64 @@ import ca.sqlpower.architect.swingui.ASUtils;
 public class SQLObjectChooser {
 
 	private JComboBox dataSourceComboBox = new JComboBox();
+
 	private JComboBox catalogComboBox = new JComboBox();
+
 	private JComboBox schemaComboBox = new JComboBox();
+
 	private JComboBox tableComboBox = new JComboBox();
+
 	private JComboBox columnComboBox = new JComboBox();
+
 	private JComboBox uniqueKeyComboBox = new JComboBox();
 
 	private JLabel catalogTerm = new JLabel("Catalog");
+
 	private JLabel schemaTerm = new JLabel("Schema");
 
 	private JProgressBar progressBar = new JProgressBar();
+
 	private JLabel status = new JLabel();
 
 	private ArchitectDataSource dataSource;
+
 	private SQLCatalog catalog;
+
 	private SQLSchema schema;
+
 	private SQLTable table;
+
 	private SQLDatabase db;
 
+	/**
+	 * Creates a set of Swing components that allow the user to select a
+	 * particular database object, up to and including children of SQLTable.
+	 *
+	 * @param owningComponent
+	 *            the component that will house the sqlobject chooser components
+	 *            of this instance. This is used only to attach error report
+	 *            dialogs to the correct parent component.
+	 * @param dataSources
+	 *            The list of data sources that the datasource chooser will
+	 *            contain.
+	 */
+	public SQLObjectChooser(final Component owningComponent,
+			List<ArchitectDataSource> dataSources) {
 
-    /**
-     * Creates a set of Swing components that allow the user to select a particular
-     * database object, up to and including children of SQLTable.
-     * 
-     * @param owningComponent the component that will house the sqlobject chooser
-     * components of this instance.  This is used only to attach error report dialogs
-     * to the correct parent component.
-     * @param dataSources The list of data sources that the datasource chooser will
-     * contain.
-     */
-	public SQLObjectChooser(final Component owningComponent, List<ArchitectDataSource> dataSources) {
-
-		dataSourceComboBox.setModel(new DefaultComboBoxModel(dataSources.toArray()));
+		dataSourceComboBox.setModel(new DefaultComboBoxModel(dataSources
+				.toArray()));
 		dataSourceComboBox.setSelectedItem(null);
 
-		ItemListener itemListener = new ItemListener(){
+		ItemListener itemListener = new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				try {
 					validate();
 				} catch (ArchitectException e1) {
 					ASUtils.showExceptionDialogNoReport(owningComponent,
-							"Database SQL error",e1);
+							"Database SQL error", e1);
 				}
-			}};
+			}
+		};
 		dataSourceComboBox.addItemListener(itemListener);
 		catalogComboBox.addItemListener(itemListener);
 		schemaComboBox.addItemListener(itemListener);
@@ -74,7 +89,7 @@ public class SQLObjectChooser {
 
 	private void validate() throws ArchitectException {
 
-		if ( dataSourceComboBox.getSelectedItem() == null ) {
+		if (dataSourceComboBox.getSelectedItem() == null) {
 			dataSource = null;
 			catalog = null;
 			schema = null;
@@ -97,7 +112,7 @@ public class SQLObjectChooser {
 			schemaTerm.setEnabled(false);
 
 		} else {
-			if ( dataSource != dataSourceComboBox.getSelectedItem() ) {
+			if (dataSource != dataSourceComboBox.getSelectedItem()) {
 
 				catalogComboBox.removeAllItems();
 				schemaComboBox.removeAllItems();
@@ -114,44 +129,43 @@ public class SQLObjectChooser {
 				schemaTerm.setText("Schema");
 				schemaTerm.setEnabled(false);
 
-				dataSource = (ArchitectDataSource)dataSourceComboBox.getSelectedItem();
+				dataSource = (ArchitectDataSource) dataSourceComboBox
+						.getSelectedItem();
 				db = new SQLDatabase(dataSource);
 				db.populate();
 
-				if ( db.isCatalogContainer() ) {
-					List <SQLCatalog> catalogs = db.getChildren();
-					if ( catalogs != null && catalogs.size() > 0 ) {
+				if (db.isCatalogContainer()) {
+					List<SQLCatalog> catalogs = db.getChildren();
+					if (catalogs != null && catalogs.size() > 0) {
 						catalogComboBox.setEnabled(true);
-						catalogComboBox.setModel(
-								new DefaultComboBoxModel(
-										catalogs.toArray()));
+						catalogComboBox.setModel(new DefaultComboBoxModel(
+								catalogs.toArray()));
 						catalogComboBox.setSelectedItem(null);
 						catalogTerm.setText(catalogs.get(0).getNativeTerm());
 						catalogTerm.setEnabled(true);
 					}
-				} else if ( db.isSchemaContainer() ) {
+				} else if (db.isSchemaContainer()) {
 
-					List <SQLSchema> schemas = db.getChildren();
-					if ( schemas != null && schemas.size() > 0 ) {
+					List<SQLSchema> schemas = db.getChildren();
+					if (schemas != null && schemas.size() > 0) {
 						schemaComboBox.setEnabled(true);
 						DefaultComboBoxModel schemaComboBoxModel = new DefaultComboBoxModel(
-										schemas.toArray());
+								schemas.toArray());
 						schemaComboBox.setModel(schemaComboBoxModel);
 						schemaComboBox.setSelectedItem(null);
 						schemaTerm.setText(schemas.get(0).getNativeTerm());
 						schemaTerm.setEnabled(true);
 					}
 				} else {
-					List <SQLTable> tables = db.getChildren();
-					if ( tables != null && tables.size() > 0 ) {
+					List<SQLTable> tables = db.getChildren();
+					if (tables != null && tables.size() > 0) {
 						tableComboBox.setEnabled(true);
-						tableComboBox.setModel(
-								new DefaultComboBoxModel(
-										tables.toArray()));
+						tableComboBox.setModel(new DefaultComboBoxModel(tables
+								.toArray()));
 						tableComboBox.setSelectedItem(null);
 					}
 				}
-			} else if ( catalog != catalogComboBox.getSelectedItem() ) {
+			} else if (catalog != catalogComboBox.getSelectedItem()) {
 
 				schemaComboBox.removeAllItems();
 				tableComboBox.removeAllItems();
@@ -167,30 +181,32 @@ public class SQLObjectChooser {
 				schemaTerm.setEnabled(false);
 
 				catalog = (SQLCatalog) catalogComboBox.getSelectedItem();
-				catalogTerm.setText(catalog.getNativeTerm());
-				catalogTerm.setEnabled(true);
-				if ( catalog.isSchemaContainer() ) {
-					List <SQLSchema> schemas = catalog.getChildren();
-					if ( schemas != null && schemas.size() > 0 ) {
-						schemaComboBox.setEnabled(true);
-						schemaComboBox.setModel(
-								new DefaultComboBoxModel(
-										schemas.toArray()));
-						schemaComboBox.setSelectedItem(null);
-						schemaTerm.setText(schemas.get(0).getNativeTerm());
-						schemaTerm.setEnabled(true);
-					}
+				if (catalog == null) {
+					catalogTerm.setText("N/A");
 				} else {
-					List <SQLTable> tables = catalog.getChildren();
-					if ( tables != null && tables.size() > 0 ) {
-						tableComboBox.setEnabled(true);
-						tableComboBox.setModel(
-								new DefaultComboBoxModel(
-										tables.toArray()));
-						tableComboBox.setSelectedItem(null);
+					catalogTerm.setText(catalog.getNativeTerm());
+					catalogTerm.setEnabled(true);
+					if (catalog.isSchemaContainer()) {
+						List<SQLSchema> schemas = catalog.getChildren();
+						if (schemas != null && schemas.size() > 0) {
+							schemaComboBox.setEnabled(true);
+							schemaComboBox.setModel(new DefaultComboBoxModel(
+									schemas.toArray()));
+							schemaComboBox.setSelectedItem(null);
+							schemaTerm.setText(schemas.get(0).getNativeTerm());
+							schemaTerm.setEnabled(true);
+						}
+					} else {
+						List<SQLTable> tables = catalog.getChildren();
+						if (tables != null && tables.size() > 0) {
+							tableComboBox.setEnabled(true);
+							tableComboBox.setModel(new DefaultComboBoxModel(
+									tables.toArray()));
+							tableComboBox.setSelectedItem(null);
+						}
 					}
 				}
-			} else if ( schema != schemaComboBox.getSelectedItem() ) {
+			} else if (schema != schemaComboBox.getSelectedItem()) {
 
 				tableComboBox.removeAllItems();
 				columnComboBox.removeAllItems();
@@ -201,42 +217,43 @@ public class SQLObjectChooser {
 				schemaTerm.setText("Schema");
 
 				schema = (SQLSchema) schemaComboBox.getSelectedItem();
-				schemaTerm.setText(schema.getNativeTerm());
-				schemaTerm.setEnabled(true);
-				List <SQLTable> tables = schema.getChildren();
-				if ( tables != null && tables.size() > 0 ) {
-					tableComboBox.setEnabled(true);
-					tableComboBox.setModel(
-							new DefaultComboBoxModel(
-									tables.toArray()));
-					tableComboBox.setSelectedItem(null);
+				if (schema == null) {
+					schemaTerm.setText("N/A");
+				} else {
+					schemaTerm.setText(schema.getNativeTerm());
+					schemaTerm.setEnabled(true);
+					List<SQLTable> tables = schema.getChildren();
+					if (tables != null && tables.size() > 0) {
+						tableComboBox.setEnabled(true);
+						tableComboBox.setModel(new DefaultComboBoxModel(tables
+								.toArray()));
+						tableComboBox.setSelectedItem(null);
+					}
 				}
-			} else if ( table != tableComboBox.getSelectedItem() ) {
+			} else if (table != tableComboBox.getSelectedItem()) {
 
 				columnComboBox.removeAllItems();
 				uniqueKeyComboBox.removeAllItems();
 				columnComboBox.setEnabled(false);
 				uniqueKeyComboBox.setEnabled(false);
 
-
 				table = (SQLTable) tableComboBox.getSelectedItem();
-				if (table != null ){
-				List <SQLColumn> columns = table.getColumns();
-				if ( columns != null && columns.size() > 0 ) {
-					columnComboBox.setEnabled(true);
-					columnComboBox.setModel(
-							new DefaultComboBoxModel(
-									columns.toArray()));
-					columnComboBox.setSelectedItem(null);
-				}
+				if (table != null) {
+					List<SQLColumn> columns = table.getColumns();
+					if (columns != null && columns.size() > 0) {
+						columnComboBox.setEnabled(true);
+						columnComboBox.setModel(new DefaultComboBoxModel(
+								columns.toArray()));
+						columnComboBox.setSelectedItem(null);
+					}
 
-				List <SQLIndex> indices = table.getUniqueIndex();
-				if ( indices != null && indices.size() > 0 ) {
-					uniqueKeyComboBox.setEnabled(true);
-					uniqueKeyComboBox.setModel(
-							new DefaultComboBoxModel(indices.toArray()));
-					uniqueKeyComboBox.setSelectedIndex(0);
-				}
+					List<SQLIndex> indices = table.getUniqueIndex();
+					if (indices != null && indices.size() > 0) {
+						uniqueKeyComboBox.setEnabled(true);
+						uniqueKeyComboBox.setModel(new DefaultComboBoxModel(
+								indices.toArray()));
+						uniqueKeyComboBox.setSelectedIndex(0);
+					}
 				}
 			}
 		}
@@ -286,4 +303,3 @@ public class SQLObjectChooser {
 		return db;
 	}
 }
-

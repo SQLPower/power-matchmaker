@@ -40,6 +40,7 @@ import ca.sqlpower.matchmaker.MatchType;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.matchmaker.util.SourceTable;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -60,7 +61,7 @@ public class MatchEditor {
     private JTextField matchId = new JTextField();
     private JComboBox folderComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
-    private JComboBox type = new JComboBox();
+    private JComboBox matchType = new JComboBox();
 
     private JTextField resultTableName = new JTextField();
 
@@ -82,29 +83,16 @@ public class MatchEditor {
      */
 	private final Match match;
 
-    private PlFolder plFolder;
-
-
     public MatchEditor(MatchMakerSwingSession swingSession, Match match) throws HeadlessException, ArchitectException {
-        this(swingSession, match, null);
-    }
-
-    public MatchEditor(MatchMakerSwingSession swingSession, Match match, PlFolder folder) throws ArchitectException {
-        super();
+    	super();
         this.swingSession = swingSession;
         if (match == null) throw new NullPointerException("You can't edit a null plmatch");
         this.match = match;
-        if (folder == null) {
-        	if ( match != null ) {
-        		this.plFolder = match.getFolder();
-        	}
-        } else {
-        	this.plFolder = folder;
-        }
         buildUI();
     }
 
-    // TODO: remove
+
+    // TODO: remove, use the new validtion API instead
     private boolean checkStringNullOrEmpty (String value, String name) {
         String trimedValue = null;
         if ( value != null ) {
@@ -121,7 +109,7 @@ public class MatchEditor {
         return true;
     }
 
-    // TODO: remove
+    // TODO: remove, use the new validtion API instead
     private boolean checkObjectNullOrEmpty (Object value, String name) {
         if ( value == null ) {
             JOptionPane.showMessageDialog(
@@ -247,7 +235,8 @@ public class MatchEditor {
         for ( MatchType mt : MatchType.values() ) {
         	types.add(mt.getName());
         }
-        type.setModel(new DefaultComboBoxModel(types.toArray()));
+
+        matchType.setModel(new DefaultComboBoxModel(Match.MatchType.values()));
 
         sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent e) {
@@ -281,7 +270,7 @@ public class MatchEditor {
 		pb.add(matchId, cc.xy(4,2));
 		pb.add(folderComboBox, cc.xy(4,4));
 		pb.add(new JScrollPane(desc), cc.xy(4,6,"f,f"));
-		pb.add(type, cc.xy(4,8));
+		pb.add(matchType, cc.xy(4,8));
 
 		pb.add(sourceChooser.getCatalogTerm(), cc.xy(2,10,"r,c"));
 		pb.add(sourceChooser.getSchemaTerm(), cc.xy(2,12,"r,c"));
@@ -341,21 +330,23 @@ public class MatchEditor {
     	final SQLDatabase loginDB = swingSession.getDatabase();
         sourceChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
         resultChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
+
+        sourceChooser.getCatalogComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
+        sourceChooser.getSchemaComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
+        sourceChooser.getTableComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
+        resultChooser.getCatalogComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
+        resultChooser.getSchemaComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
+
         folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
         folderComboBox.setRenderer(new FolderComboBoxCellRenderer());
 
-        if ( plFolder != null ) {
-        	folderComboBox.setSelectedItem(plFolder);
-        } else if ( match.getFolder() != null) {
-        	PlFolder f = (PlFolder) match.getFolder();
-        	if ( f != null ) {
-        		folderComboBox.setSelectedItem(f);
-        	}
+        if ( match.getParent() != null) {
+       		folderComboBox.setSelectedItem(match.getParent());
         }
 
         matchId.setText(match.getName());
-        desc.setText(match.getDescription());
-        type.setSelectedItem(match.getType());
+        desc.setText(match.getMatchSettings().getDescription());
+        matchType.setSelectedItem(match.getType());
         filterPanel.getFilterTextArea().setText(match.getFilter());
 
         if ( match.getSourceTable() != null ) {
@@ -445,11 +436,17 @@ public class MatchEditor {
         		return;
         }
 
-        match.setType((Match.MatchType)type.getSelectedItem());
+        match.setType((Match.MatchType)matchType.getSelectedItem());
+        match.getMatchSettings().setDescription(desc.getText());
 
-        match.setDescription(desc.getText());
+        if ( match.getSourceTable() == null ) {
+        	match.setSourceTable(new SourceTable());
+        }
         match.getSourceTable().setTable(
         		((SQLTable) sourceChooser.getTableComboBox().
+        				getSelectedItem()));
+        match.getSourceTable().setUniqueIndex(
+        		((SQLIndex) sourceChooser.getUniqueKeyComboBox().
         				getSelectedItem()));
 
         String id = matchId.getText().trim();
@@ -467,8 +464,12 @@ public class MatchEditor {
         	}
         	s.append(table.getName());
         	id = s.toString();
-        	if ( swingSession.getMatchByName(id) == null ) {
+
+
+        	if ( swingSession.isThisMatchNameAcceptable(id) ) {
         		matchId.setText(id);
+            } else {
+            	// TODO: prompt the user name duplicated
             }
         }
 
@@ -509,12 +510,7 @@ public class MatchEditor {
         if ( trimedValue == null || trimedValue.length() == 0 ) {
             resultTableName.setText("MM_"+match.getName());
         }
-
-
         match.setResultTable(new SQLTable());
-
-        PlFolder f = (PlFolder)folderComboBox.getSelectedItem();
-        match.setFolder( f);
 
         // XXX don't use hibernate directly; use the DAOs
         Transaction tx = HibernateUtil.primarySession().beginTransaction();
@@ -523,5 +519,6 @@ public class MatchEditor {
         tx.commit();
         HibernateUtil.primarySession().refresh(match);
         HibernateUtil.primarySession().flush();
+
     }
 }
