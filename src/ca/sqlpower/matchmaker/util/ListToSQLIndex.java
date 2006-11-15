@@ -12,7 +12,6 @@ import org.hibernate.usertype.UserType;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLObject;
 
 /**
  * This is a class that implements UserType and is used for
@@ -31,24 +30,22 @@ public class ListToSQLIndex implements UserType  {
 
 	public Object deepCopy(Object value) throws HibernateException {
 		if (!(value instanceof SQLIndex))return null;
-		SQLIndex old = (SQLIndex) value;
-		SQLIndex copyOf = new SQLIndex(old.getName(), old.isUnique(), 
-				old.getQualifier(), old.getType(), old.getFilterCondition());
+		SQLIndex oldIndex = (SQLIndex) value;
+		SQLIndex newIndex = new SQLIndex(oldIndex.getName(), oldIndex.isUnique(),
+				oldIndex.getQualifier(), oldIndex.getType(), oldIndex.getFilterCondition());
 		try {
-			for (Object child : old.getChildren()){
-				SQLIndex.Column tempChild = (SQLIndex.Column)child;
-				SQLIndex.Column c = copyOf.new Column(tempChild.getName(),
-						tempChild.isAscending(), 
-						tempChild.isDescending());
-				if (((SQLObject)(child)).getChildCount() > 0){
-					c.addChild(((SQLObject)child).getChild(0));
-				}
-				copyOf.addChild(c);
+			for (Object child : oldIndex.getChildren()){
+				SQLIndex.Column oldIndexColumn = (SQLIndex.Column) child;
+				SQLIndex.Column c = newIndex.new Column(
+						oldIndexColumn.getName(),
+						oldIndexColumn.isAscending(),
+						oldIndexColumn.isDescending());
+				newIndex.addChild(c);
 			}
 		} catch (ArchitectException e){
 			throw new HibernateException(e);
 		}
-		return copyOf;
+		return newIndex;
 	}
 
 	public Serializable disassemble(Object value) throws HibernateException {
@@ -57,7 +54,7 @@ public class ListToSQLIndex implements UserType  {
 
 	public boolean equals(Object x, Object y) throws HibernateException {
 		if (x == null && y==null) return true;
-		if (x!= null && y!=null && (x instanceof SQLIndex)&& 
+		if (x!= null && y!=null && (x instanceof SQLIndex)&&
 				(y instanceof SQLIndex)){
 			return x.equals(y);
 		} else{
@@ -81,12 +78,13 @@ public class ListToSQLIndex implements UserType  {
 		SQLIndex index = new SQLIndex();
         String pkName = rs.getString(names[0]);
         if (pkName != null ){
-    		index.setName(pkName);		
+    		index.setName(pkName);
     		for (int i=1; i < names.length; i++){
     			if (names[i] != null) {
-    				if (rs.getString(rs.findColumn(names[i])) != null){
+    				final String columnName = rs.getString(rs.findColumn(names[i]));
+					if (columnName != null){
     					SQLIndex.Column c = index.new Column();
-    					c.setName(rs.getString(rs.findColumn(names[i])));
+    					c.setName(columnName);
     					try {
     						index.addChild(c);
     					} catch (ArchitectException e) {
@@ -101,7 +99,7 @@ public class ListToSQLIndex implements UserType  {
         }
 	}
 
-	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException, SQLException {	
+	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException, SQLException {
 		if (value instanceof SQLIndex){
 			SQLIndex ind = (SQLIndex)value;
 			st.setString(index, ind.getName());
@@ -112,7 +110,7 @@ public class ListToSQLIndex implements UserType  {
 				for (SQLIndex.Column c : (List<SQLIndex.Column>)ind.getChildren()){
 					index++;
 					st.setString(index, c.getName());
-					
+
 				}
                 // Make room for the index name
                 for (int i=ind.getChildCount()+1; i < columns; i++){
@@ -131,7 +129,7 @@ public class ListToSQLIndex implements UserType  {
 
 	}
 
-	public Object replace(Object original, Object target, Object owner) throws HibernateException {		// 
+	public Object replace(Object original, Object target, Object owner) throws HibernateException {		//
 		return deepCopy(original);
 	}
 

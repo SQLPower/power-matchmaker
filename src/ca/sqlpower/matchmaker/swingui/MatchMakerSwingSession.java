@@ -231,8 +231,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 	private List<PlMatch> matches;
 	private List<PlMatchTranslateGroup> translations = new ArrayList<PlMatchTranslateGroup>();
-	private SQLDatabase plRepositoryDatabase;
-
 
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
@@ -243,9 +241,9 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      * @param sessionImpl
      *            The session that actually does the dirty work (ORM and stuff
      *            like that).
-	 * @throws SQLException 
-	 * @throws PLSchemaException 
-	 * @throws SchemaVersionFormatException 
+	 * @throws SQLException
+	 * @throws PLSchemaException
+	 * @throws SchemaVersionFormatException
      */
 	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, ArchitectException, SchemaVersionFormatException, PLSchemaException, SQLException {
         this.sessionImpl = sessionImpl;
@@ -384,7 +382,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
 		tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
-        
+
 		splitPane.setLeftComponent(new JScrollPane(tree));
         setCurrentEditorComponent(null);
 		cp.add(splitPane);
@@ -430,9 +428,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         }
     }
 
-	private void setPlRepositoryDatabase(SQLDatabase db) {
-	    plRepositoryDatabase = db;
-    }
+
 
     /**
      * Returns the frame for this Swing session.
@@ -594,10 +590,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
                 return m;
         }
         return null;
-    }
-
-    public SQLDatabase getPlRepositoryDatabase() {
-        return plRepositoryDatabase;
     }
 
 	public JTree getTree() {
