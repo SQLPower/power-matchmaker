@@ -91,21 +91,24 @@ public class LoginDialog extends JDialog {
 
         @Override
         public void cleanup() {
-            if (getDoStuffException() != null) {
-                ASUtils.showExceptionDialog("Login failed", getDoStuffException());
-            } else if (
-                    session != null &&
-                    session.getDatabase() != null &&
-                    session.getDatabase().isPopulated() &&
-                    loginWasSuccessful) {
-                sessionContext.setLastLoginDataSource(dbSource);
-                session.showGUI();
-                LoginDialog.this.setVisible(false);
-            } else {
-                JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
+            try {
+                if (getDoStuffException() != null) {
+                    ASUtils.showExceptionDialog("Login failed", getDoStuffException());
+                } else if (
+                        session != null &&
+                        session.getDatabase() != null &&
+                        session.getDatabase().isPopulated() &&
+                        loginWasSuccessful) {
+                    sessionContext.setLastLoginDataSource(dbSource);
+                    session.showGUI();
+                    LoginDialog.this.setVisible(false);
+                } else {
+                    JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
+                }
+            } finally {
+                logger.debug("LoginAction.actionPerformed(): enabling login button (login has either failed or not; dialog might still be showing)");
+                loginButton.setEnabled(true);
             }
-            logger.debug("LoginAction.actionPerformed(): enabling login button (login has either failed or not; dialog might still be showing)");
-            loginButton.setEnabled(true);
         }
     }
     
