@@ -79,21 +79,26 @@ public class ListToSQLIndex implements UserType  {
 
 	public Object nullSafeGet(ResultSet rs, String[] names, Object owner) throws HibernateException, SQLException {
 		SQLIndex index = new SQLIndex();
-		index.setName(rs.getString(names[0]));		
-		for (int i=2; i < 12; i++){
-			if (names[i-1] != null) {
-				if (rs.getString(rs.findColumn(names[i-1])) != null){
-					SQLIndex.Column c = index.new Column();
-					c.setName(rs.getString(rs.findColumn(names[i-1])));
-					try {
-						index.addChild(c);
-					} catch (ArchitectException e) {
-						throw new HibernateException(e);
-					}
-				}
-			}
-		}
-		return null;
+        String pkName = rs.getString(names[0]);
+        if (pkName != null ){
+    		index.setName(pkName);		
+    		for (int i=1; i < names.length; i++){
+    			if (names[i] != null) {
+    				if (rs.getString(rs.findColumn(names[i])) != null){
+    					SQLIndex.Column c = index.new Column();
+    					c.setName(rs.getString(rs.findColumn(names[i])));
+    					try {
+    						index.addChild(c);
+    					} catch (ArchitectException e) {
+    						throw new HibernateException(e);
+    					}
+    				}
+    			}
+    		}
+    		return index;
+        } else {
+            return null;
+        }
 	}
 
 	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException, SQLException {	
@@ -109,6 +114,10 @@ public class ListToSQLIndex implements UserType  {
 					st.setString(index, c.getName());
 					
 				}
+                // Make room for the index name
+                for (int i=ind.getChildCount()+1; i < columns; i++){
+                    st.setNull(index+i, Types.VARCHAR);
+                }
 			} catch (ArchitectException e) {
 				throw new HibernateException(e);
 			}
