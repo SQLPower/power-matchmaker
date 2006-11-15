@@ -10,7 +10,9 @@ import java.io.PrintWriter;
 public class FileLogger extends BaseLogger implements Log {
 
 	/**
-	 * The Writer that gets stuff into the file.
+	 * The Writer that gets stuff into the file.  It is initialized
+	 * lazily, so you should only access
+	 * this member via the {@link #getOut(String)} method.
 	 */
 	private PrintWriter out;
 
@@ -21,15 +23,22 @@ public class FileLogger extends BaseLogger implements Log {
 	 */
 	FileLogger(Level level, String fileName) {
 		super(level, fileName);
-		try {
-			out = new PrintWriter(new FileWriter(fileName));
-		} catch (IOException e) {
-			mapException(e);
+	}
+
+	private PrintWriter getOut() {
+		if (out == null) {
+			try {
+				String fileName = (String) getConstraint();
+				out = new PrintWriter(new FileWriter(fileName));
+			} catch (IOException e) {
+				mapException(e);
+			}
 		}
+		return out;
 	}
 
 	public void close() {
-		out.close();
+		getOut().close();
 	}
 
 	/** Return false, since this logger is write-only
@@ -41,17 +50,17 @@ public class FileLogger extends BaseLogger implements Log {
 
 	/** Return true iff this logger's writer opened successfully. */
 	public boolean isWritable() {
-		return out != null;
+		return getOut() != null;
 	}
 
 	@Override
 	void print(String mesg) {
-		out.print(mesg);
+		getOut().print(mesg);
 	}
 
 	@Override
 	void println(String mesg) {
-		out.println(mesg);
-		out.flush();
+		getOut().println(mesg);
+		getOut().flush();
 	}
 }
