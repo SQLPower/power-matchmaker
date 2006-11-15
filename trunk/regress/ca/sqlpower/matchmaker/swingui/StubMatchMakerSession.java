@@ -69,4 +69,10 @@ public class StubMatchMakerSession implements MatchMakerSession{
 		return null;
 	}
 
+    public String createNewUniqueName() {
+        // TODO Auto-generated method stub
+        logger.debug("Stub call: StubMatchMakerSession.getNewUniqueName()");
+        return null;
+    }
+
 }

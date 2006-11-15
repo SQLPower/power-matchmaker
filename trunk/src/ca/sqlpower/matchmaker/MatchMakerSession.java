@@ -81,4 +81,13 @@ public interface MatchMakerSession {
      * @return match object or null if not found
      */
     public Match getMatchByName(String name);
+    
+    /**
+     * This method creates an unique name for the match such that it does not
+     * conflict with existing match names.  The foromat of the name should be
+     * New_Match#
+     * @return an unique non-conflicting name in New_Match# form (unless New_Match
+     *          is already an acceptable name)
+     */
+    public String createNewUniqueName();        
 }

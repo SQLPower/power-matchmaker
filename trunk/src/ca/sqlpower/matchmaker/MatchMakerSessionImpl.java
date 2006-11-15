@@ -105,4 +105,21 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 		return getMatchByName(name) == null;
 	}
 
+    public String createNewUniqueName() {
+        String name = "New Match";
+        if (isThisMatchNameAcceptable(name)){
+            return name;
+        } else{
+            int num=1;
+            //Iterates until it finds a name that does not conflict with
+            //existing match names
+            while(!isThisMatchNameAcceptable(name+num)){
+                num++;
+                name = "New Match" + num;
+            }
+            return name;
+        }
+        
+    }
+
 }
