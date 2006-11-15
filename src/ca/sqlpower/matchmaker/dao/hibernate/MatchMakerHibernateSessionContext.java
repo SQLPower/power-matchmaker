@@ -16,7 +16,6 @@ import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSessionImpl;
-import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.util.UnknownFreqCodeException;

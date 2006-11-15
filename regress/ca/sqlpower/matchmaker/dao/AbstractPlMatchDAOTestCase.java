@@ -17,6 +17,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		try {
 			setAllSetters(match, getNonPersitingProperties());
 			match.setName("Match "+count);
+			match.setFolder(null);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
@@ -34,5 +35,5 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		nonPersistingProperties.add("session");
 		return nonPersistingProperties;
 	}
-	
+		
 }

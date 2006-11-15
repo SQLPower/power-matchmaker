@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.dao;
 
 import java.util.List;
 
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
 
@@ -29,6 +30,22 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 		nonPersistingProperties.add("lastUpdateDate");
 		nonPersistingProperties.add("lastUpdateAppUser");
 		return nonPersistingProperties;
+	}
+	
+	public void testMatchesPersist(){
+		PlFolder f = getNewObjectUnderTest();
+		Match match = new Match();
+		match.setName("child");
+		match.setType(Match.MatchType.FIND_DUPES);
+		
+		PlFolderDAO dao = getDataAccessObject();
+		
+		dao.save(f);
+		f.addChild(match);
+		List<PlFolder> folders = dao.findAll();
+		PlFolder fAgain = folders.get(folders.indexOf(f));
+		assertEquals("Wrong number of children", 1,fAgain.getChildCount());
+		assertEquals("Wrong child",match, fAgain.getChildren().get(0));
 	}
 
 }

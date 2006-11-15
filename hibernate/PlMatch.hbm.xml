@@ -162,7 +162,7 @@
 			<column name="FROM_CLAUSE" length="2000" />
 			<column name="WHERE_CLAUSE" length="2000" />
 		</property>
-		<!--Removed the locking properties
+		<!-- Removed the locking properties
 		<property name="checkedOutInd"
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="checked_out_ind" length="1" />
@@ -206,11 +206,10 @@
 				class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup" />
 		</set> -->
 
-		<!--many-to-one name="folder" access="field"
-			class="ca.sqlpower.matchmaker.PlFolder" update="true"
-			insert="false" fetch="select">
+		<many-to-one name="folder" access="field"
+			class="ca.sqlpower.matchmaker.PlFolder" fetch="select">
 			<column name="FOLDER_NAME" />
-		</many-to-one--> 
+		</many-to-one> 
 
 	</class>
 </hibernate-mapping>
