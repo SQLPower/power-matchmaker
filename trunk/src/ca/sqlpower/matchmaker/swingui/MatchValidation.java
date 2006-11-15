@@ -60,7 +60,7 @@ public class MatchValidation extends JFrame {
 
     private MatchMakerSwingSession swingSession;
     private Match match;
-    
+
     private RowSet fullResult;
     private List<String> allMatchGroup;
     private List<String> allMatchPct;
@@ -352,9 +352,9 @@ public class MatchValidation extends JFrame {
         sourceJTable = new JTable();
         candidateJTable = new JTable();
         sourceJTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        db = swingSession.getPlRepositoryDatabase();
+        db = swingSession.getDatabase();
         SQLTable sourceTable = match.getSourceTable().getTable();
-        
+
         matchSourceTable = db.getTableByName(sourceTable.getCatalogName(),
 				sourceTable.getSchemaName(),
 				sourceTable.getName());
@@ -822,7 +822,7 @@ public class MatchValidation extends JFrame {
 
         }
     };
-    
+
     /**
      * Marks the upper selected row as definitely matching the lower selected rows, and as the master
      * (canonical) version of that record.
@@ -830,26 +830,26 @@ public class MatchValidation extends JFrame {
     private Action upperMasterAction = new AbstractAction("Master") {
 
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(MatchValidation.this, 
+            JOptionPane.showMessageDialog(MatchValidation.this,
                     "We cant do that yet, Dave");
         }
-        
+
     };
-    
+
     /**
      * Marks the lower selected row as definitely matching the upper selected row, and as the master
      * (canonical) version of that record.
-     * 
+     *
      * <p>If there is more than one record selected in the lower table, this action will
      * disable itself. (not implemented yet)
      */
     private Action lowerMasterAction = new AbstractAction("Master") {
 
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(MatchValidation.this, 
+            JOptionPane.showMessageDialog(MatchValidation.this,
                     "We cant do that yet, Dave");
         }
-        
+
     };
 
     /**

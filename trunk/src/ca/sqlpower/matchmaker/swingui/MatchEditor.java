@@ -3,7 +3,6 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.HeadlessException;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.SQLException;
@@ -28,16 +27,12 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 
-import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
@@ -61,6 +56,7 @@ public class MatchEditor {
 
 	private JPanel panel;
 
+	private JLabel message = new JLabel();
     private JTextField matchId = new JTextField();
     private JComboBox folderComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
@@ -85,7 +81,7 @@ public class MatchEditor {
      * create a new MatchEditor.
      */
 	private final Match match;
-    
+
     private PlFolder plFolder;
 
 
@@ -108,6 +104,7 @@ public class MatchEditor {
         buildUI();
     }
 
+    // TODO: remove
     private boolean checkStringNullOrEmpty (String value, String name) {
         String trimedValue = null;
         if ( value != null ) {
@@ -124,6 +121,7 @@ public class MatchEditor {
         return true;
     }
 
+    // TODO: remove
     private boolean checkObjectNullOrEmpty (Object value, String name) {
         if ( value == null ) {
             JOptionPane.showMessageDialog(
@@ -158,13 +156,13 @@ public class MatchEditor {
 	private Window getParentWindow() {
 	    return SwingUtilities.getWindowAncestor(panel);
 	}
-    
+
     /**
      * Returns the parent (owning) frame of this match editor.  If the owner
      * isn't a frame (it might be a dialog or AWT Window) then null is returned.
      * You should always use {@link #getParentWindow()} in preference to
      * this method unless you really really need a JFrame.
-     * 
+     *
      * @return the parent JFrame of this match editor's panel, or null if
      * the owner is not a JFrame.
      */
@@ -173,7 +171,7 @@ public class MatchEditor {
         if (owner instanceof JFrame) return (JFrame) owner;
         else return null;
     }
-    
+
 	private Action showAuditInfoAction = new AbstractAction("Show Audit Info") {
 		public void actionPerformed(ActionEvent e) {
 
@@ -194,7 +192,7 @@ public class MatchEditor {
 
 	private Action validationStatusAction = new AbstractAction("View Validation Status") {
 		public void actionPerformed(ActionEvent e) {
-			MatchValidationStatus p = new MatchValidationStatus(swingSession, match, 
+			MatchValidationStatus p = new MatchValidationStatus(swingSession, match,
                     ArchitectPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation Status"));
 			p.pack();
 			p.setVisible(true);
@@ -215,7 +213,7 @@ public class MatchEditor {
 		}};
 	private Action viewBuilderAction = new AbstractAction("View Builder") {
 		public void actionPerformed(ActionEvent e) {
-            SQLTable t = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem(); 
+            SQLTable t = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
             JDialog d;
 			if (t !=null){
                 try {
@@ -243,118 +241,26 @@ public class MatchEditor {
         resultChooser = new SQLObjectChooser(panel,
         		swingSession.getContext().getDataSources());
 
-
-        final SQLDatabase loginDB = swingSession.getPlRepositoryDatabase();
-        ArchitectDataSource ds;
-        if ( loginDB != null ) {
-        	DataSourceCollection ini = swingSession.getContext().getPlDotIni();
-        	ds = ini.getDataSource(loginDB.getDataSource().getName());
-        	sourceChooser.getDataSourceComboBox().setSelectedItem(ds);
-        	resultChooser.getDataSourceComboBox().setSelectedItem(ds);
-        	// no connection no folders
-        	folderComboBox.setModel(
-        			new FolderComboBoxModel<PlFolder>(swingSession.getFolders()));
-        }
-
         filterPanel = new FilterComponentsPanel();
 
-        // TODO add table change listener
-        
-    	List<String> types = new ArrayList<String>();
-    	for ( MatchType mt : MatchType.values() ) {
-    		types.add(mt.getName());
-    	}
-    	type.setModel(new DefaultComboBoxModel(types.toArray()));
+        List<String> types = new ArrayList<String>();
+        for ( MatchType mt : MatchType.values() ) {
+        	types.add(mt.getName());
+        }
+        type.setModel(new DefaultComboBoxModel(types.toArray()));
 
         sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
-			public void itemStateChanged(ItemEvent e) {
-				filterPanel.getFilterTextArea().setText("");
-			}});
+        	public void itemStateChanged(ItemEvent e) {
+        		filterPanel.getFilterTextArea().setText("");
+        	}});
 
     	viewBuilder = new JButton(viewBuilderAction);
     	createResultTable = new JButton(createResultTableAction);
-
     	saveMatch = new JButton(saveAction);
-    	//exitEditor = new JButton(exitAction);
-
     	showAuditInfo = new JButton(showAuditInfoAction);
     	runMatch= new JButton(runMatchAction);
     	validationStatus = new JButton(validationStatusAction);
     	validateMatch = new JButton(validateMatchAction);
-
-
-    	if ( match.getSourceTable().getTable() != null ) {
-            
-        	SQLTable tableByName = match.getSourceTable().getTable();
-        	if (tableByName != null) {
-        		filterPanel.setTable(tableByName);
-        	}
-            
-
-    		matchId.setText(match.getName());
-    		if ( match.getFolder() != null) {
-    			PlFolder f = (PlFolder) match.getFolder();
-	    		if ( f != null ) {
-	    			folderComboBox.setSelectedItem(f);
-	    		}
-    		}
-    		desc.setText(match.getDescription());
-    		type.setSelectedItem(match.getType());
-
-    		SQLTable table = tableByName;
-		
-    		if ( table == null ) {
-    			JOptionPane.showMessageDialog(panel,
-    					"Table [" + DDLUtils.toQualifiedName(
-    							match.getSourceTable().getTable().getCatalogName(),
-    		    				match.getSourceTable().getTable().getSchemaName(),
-    		    				match.getSourceTable().getTable().getName()) + "]" +
-    					" Has been removed.",
-    					"Source table not found!",
-    					JOptionPane.INFORMATION_MESSAGE );
-    		} else {
-	    		SQLCatalog cat = table.getCatalog();
-	    		SQLSchema sch = table.getSchema();
-	    		if ( cat != null ) {
-	    			sourceChooser.getCatalogComboBox().setSelectedItem(cat);
-	    		}
-	    		if ( sch != null ) {
-	    			sourceChooser.getSchemaComboBox().setSelectedItem(sch);
-	    		}
-	    		sourceChooser.getTableComboBox().setSelectedItem(table);
-
-    			SQLIndex pk = null;
-				pk = match.getSourceTable().getUniqueIndex();			
-    			if ( pk != null ) {
-    				sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
-    			}
-    		}
-            filterPanel.getFilterTextArea().setText(match.getFilter());
-
-            SQLTable resultTable = null;
-			
-            SQLDatabase db = resultChooser.getDb();
-            if ( db != null && match.getResultTable() != null) {
-            	resultTable = match.getResultTable();
-			}
-			
-			if ( resultTable != null ) {
-	            SQLCatalog cat = resultTable.getCatalog();
-	    		SQLSchema sch = resultTable.getSchema();
-	    		if ( cat != null ) {
-	    			resultChooser.getCatalogComboBox().setSelectedItem(cat);
-	    		}
-	    		if ( sch != null ) {
-	    			resultChooser.getSchemaComboBox().setSelectedItem(sch);
-	    		}
-			}
-            resultTableName.setText(match.getResultTable().getName());
-
-    	} 
-        
-        if ( plFolder != null ) {
-                folderComboBox.setSelectedItem(plFolder);
-        }
 
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
@@ -387,7 +293,7 @@ public class MatchEditor {
 		pb.add(sourceChooser.getSchemaComboBox(), cc.xy(4,12));
 		pb.add(sourceChooser.getTableComboBox(), cc.xy(4,14));
 		pb.add(sourceChooser.getUniqueKeyComboBox(), cc.xy(4,16,"f,f"));
-		pb.add(filterPanel, cc.xyw(4,18,3,"f,f"));
+		pb.add(filterPanel, cc.xy(4,18,"f,f"));
 
 		pb.add(resultChooser.getCatalogTerm(), cc.xy(2,20,"r,c"));
 		pb.add(resultChooser.getSchemaTerm(), cc.xy(2,22,"r,c"));
@@ -423,162 +329,74 @@ public class MatchEditor {
 
 
 		pb.add(bb.getPanel(), cc.xywh(8,2,1,14,"f,f"));
-		//pb.add(exitEditor,cc.xywh(8,18,1,2));
 		panel = pb.getPanel();
+
+		setDefaultSelections();
     }
 
 
-    /**
-	 * Finds all the children of a catalog and puts them in the GUI.
-	 */
-	public class CatalogPopulator implements ActionListener {
+    private void setDefaultSelections() {
 
-		private JComboBox catalogComboBox;
-		private JComboBox schemaComboBox;
-		private JLabel schemaLabel;
-		private JLabel catalogLabel;
-		private JComboBox tableComboBox;
+    	final List<PlFolder> folders = swingSession.getFolders();
+    	final SQLDatabase loginDB = swingSession.getDatabase();
+        sourceChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
+        resultChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
+        folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
+        folderComboBox.setRenderer(new FolderComboBoxCellRenderer());
 
-		public CatalogPopulator(
-				JComboBox catalogComboBox,
-				JComboBox schemaComboBox,
-				JComboBox tableComboBox,
-				JLabel catalogLabel,
-				JLabel schemaLabel ) {
-			this.catalogComboBox = catalogComboBox;
-			this.schemaComboBox = schemaComboBox;
-			this.tableComboBox = tableComboBox;
-			this.catalogLabel = catalogLabel;
-			this.schemaLabel = schemaLabel;
-		}
+        if ( plFolder != null ) {
+        	folderComboBox.setSelectedItem(plFolder);
+        } else if ( match.getFolder() != null) {
+        	PlFolder f = (PlFolder) match.getFolder();
+        	if ( f != null ) {
+        		folderComboBox.setSelectedItem(f);
+        	}
+        }
 
-		/**
-		 * Clears the schema dropdown, and start to
-		 * repopulate it (if possible).
-		 */
-		public void actionPerformed(ActionEvent e) {
-			logger.debug("CATALOG POPULATOR IS ABOUT TO START...");
-			catalogComboBox.removeAllItems();
-			catalogComboBox.setEnabled(false);
-			catalogLabel.setText("");
+        matchId.setText(match.getName());
+        desc.setText(match.getDescription());
+        type.setSelectedItem(match.getType());
+        filterPanel.getFilterTextArea().setText(match.getFilter());
 
-			final SQLDatabase db = swingSession.getPlRepositoryDatabase();
+        if ( match.getSourceTable() != null ) {
 
-			try {
-				if (db.isCatalogContainer()) {
-					for (SQLObject item : (List<SQLObject>) db.getChildren()) {
-						catalogComboBox.addItem(item);
-					}
-					if ( catalogComboBox.getItemCount() > 0 &&
-							catalogComboBox.getSelectedIndex() < 0 ) {
-						catalogComboBox.setSelectedIndex(0);
-					}
-					// check if we need to do schemas
-					SQLCatalog cat = (SQLCatalog) catalogComboBox.getSelectedItem();
-					if ( cat != null && cat.getNativeTerm() !=null )
-						catalogLabel.setText(cat.getNativeTerm());
-					if (cat == null) {
-						// there are no catalogs (database is completely empty)
-						catalogComboBox.setEnabled(false);
-					}  else {
-						// there are catalogs, but they don't contain schemas
-						catalogComboBox.setEnabled(true);
-					}
-				} else if (db.isSchemaContainer()) {
+        	SQLTable tableByName = match.getSourceTable().getTable();
+        	if (tableByName == null) {
+        	} else {
+        		filterPanel.setTable(tableByName);
+        		SQLCatalog cat = tableByName.getCatalog();
+	    		SQLSchema sch = tableByName.getSchema();
+	    		if ( cat != null ) {
+	    			sourceChooser.getCatalogComboBox().setSelectedItem(cat);
+	    		}
+	    		if ( sch != null ) {
+	    			sourceChooser.getSchemaComboBox().setSelectedItem(sch);
+	    		}
+	    		sourceChooser.getTableComboBox().setSelectedItem(tableByName);
 
-					catalogComboBox.setEnabled(false);
-					schemaComboBox.removeAllItems();
-					schemaLabel.setText("");
+    			SQLIndex pk = null;
+				pk = match.getSourceTable().getUniqueIndex();
+    			if ( pk != null ) {
+    				sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
+    			}
+        	}
+    	}
 
-					for (SQLObject item : (List<SQLObject>) db.getChildren()) {
-						schemaComboBox.addItem(item);
-					}
-					if ( schemaComboBox.getItemCount() > 0 &&
-							schemaComboBox.getSelectedIndex() < 0 ) {
-						schemaComboBox.setSelectedIndex(0);
-					}
-					SQLSchema sch = (SQLSchema) schemaComboBox.getSelectedItem();
-					if ( sch != null && sch.getNativeTerm() !=null )
-						schemaLabel.setText(sch.getNativeTerm());
-					if (sch == null) {
-						// there are no schema (database is completely empty)
-						schemaComboBox.setEnabled(false);
-					}  else {
-						// there are catalogs, but they don't contain schemas
-						schemaComboBox.setEnabled(true);
-					}
-				} else {
-					// database contains tables directly
-					catalogComboBox.setEnabled(false);
-					schemaComboBox.setEnabled(false);
-					tableComboBox.removeAllItems();
-
-					for (SQLObject item : (List<SQLObject>) db.getChildren()) {
-						tableComboBox.addItem(item);
-					}
-				}
-			} catch ( ArchitectException e1 ) {
-				ASUtils.showExceptionDialog(panel, "Database Error", e1);
-			}
-		}
-	}
+    	SQLTable resultTable = match.getResultTable();
+    	if ( resultTable != null ) {
+    		SQLCatalog cat = resultTable.getCatalog();
+    		SQLSchema sch = resultTable.getSchema();
+    		if ( cat != null ) {
+    			resultChooser.getCatalogComboBox().setSelectedItem(cat);
+    		}
+    		if ( sch != null ) {
+    			resultChooser.getSchemaComboBox().setSelectedItem(sch);
+    		}
+    		resultTableName.setText(match.getResultTable().getName());
+    	}
 
 
-    /**
-	 * Finds all the children of a catalog and puts them in the GUI.
-	 */
-	public class SchemaPopulator implements ActionListener {
-
-		private JComboBox catalogComboBox;
-		private JComboBox schemaComboBox;
-		private JLabel schemaLabel;
-
-		public SchemaPopulator(JComboBox catalogComboBox,
-				JComboBox schemaComboBox,
-				JLabel schemaLabel ) {
-			this.catalogComboBox = catalogComboBox;
-			this.schemaComboBox = schemaComboBox;
-			this.schemaLabel = schemaLabel;
-		}
-
-		/**
-		 * Clears the schema dropdown, and start to
-		 * repopulate it (if possible).
-		 */
-		public void actionPerformed(ActionEvent e) {
-			logger.debug("SCHEMA POPULATOR IS ABOUT TO START...");
-			schemaComboBox.removeAllItems();
-			schemaComboBox.setEnabled(false);
-			schemaLabel.setText("");
-
-			SQLCatalog catToPopulate = (SQLCatalog) catalogComboBox.getSelectedItem();
-			if (catToPopulate != null) {
-				logger.debug("SCHEMA POPULATOR IS STARTED...");
-				try {
-					// this might take a while
-					catToPopulate.getChildren();
-					if ( catToPopulate.isSchemaContainer() ) {
-						for (SQLObject item : (List<SQLObject>) catToPopulate
-								.getChildren()) {
-							schemaComboBox.addItem(item);
-						}
-						if (schemaComboBox.getItemCount() > 0) {
-							schemaComboBox.setEnabled(true);
-							if ( ((SQLSchema)(catToPopulate.getChild(0))).getNativeTerm() != null ) {
-								schemaLabel.setText(
-										((SQLSchema)(catToPopulate.getChild(0))).getNativeTerm());
-							}
-						}
-					}
-				} catch (ArchitectException e1) {
-					ASUtils.showExceptionDialog(panel,
-							"Database Error", e1);
-				}
-
-			}
-		}
-	}
-
+    }
 
 	public JPanel getPanel() {
 		return panel;
@@ -680,9 +498,9 @@ public class MatchEditor {
         				"Unknown Database error", e1);
         	}
         }
-        
-        
-       
+
+
+
         String trimedValue = null;
         String resultTable = resultTableName.getText();
         if ( resultTable != null ) {
@@ -692,9 +510,9 @@ public class MatchEditor {
             resultTableName.setText("MM_"+match.getName());
         }
 
-        
+
         match.setResultTable(new SQLTable());
-        
+
         PlFolder f = (PlFolder)folderComboBox.getSelectedItem();
         match.setFolder( f);
 

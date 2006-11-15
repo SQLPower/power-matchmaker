@@ -59,7 +59,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class RunMatchDialog extends JDialog{
 
     private static final Logger logger = Logger.getLogger(RunMatchDialog.class);
-    
+
     private final MatchMakerSwingSession swingSession;
 
     private JTextField logFilePath;
@@ -169,7 +169,7 @@ public class RunMatchDialog extends JDialog{
             lastAccessPath = file.getAbsolutePath();
             logFilePath.setText(logFileName);
             append.setSelected(settings.isAppendToLog());
-            recordsToProcess.setText(String.valueOf(settings.getProcessCount()));      
+            recordsToProcess.setText(String.valueOf(settings.getProcessCount()));
             debugMode.setSelected(settings.isDebug());
             truncateCandDup.setSelected(settings.isTruncateCandDupe());
             sendEmail.setSelected(settings.isSendEmail());
@@ -231,7 +231,7 @@ public class RunMatchDialog extends JDialog{
     }
 
     private void applyChange() {
-    	
+
     	MatchSettings settings = match.getMatchSettings();
     	settings.setDebug(debugMode.isSelected());
     	settings.setTruncateCandDupe(truncateCandDup.isSelected());
@@ -562,7 +562,7 @@ public class RunMatchDialog extends JDialog{
 
     /**
      * Create a command to run the match engine on the match passed in
-     * 
+     *
      * @param match
      * @return the run command for the match
      */
@@ -576,9 +576,9 @@ public class RunMatchDialog extends JDialog{
 		 * SHOW_PROGRESS=10 PROCESS_CNT=1
 		 */
 		StringBuffer command = new StringBuffer();
-		SQLDatabase db = swingSession.getPlRepositoryDatabase();
+		SQLDatabase db = swingSession.getDatabase();
 		String programPath = null;
-		programPath = ((SwingSessionContextImpl)swingSession.getContext()).getEngineLocation();           
+		programPath = ((SwingSessionContextImpl)swingSession.getContext()).getEngineLocation();
 		// FIXME: comment following line to use executable from user pl.ini config
 		programPath = "\"M:\\Program Files\\Power Loader Suite\\Match_ODBC.exe\"";
 		command.append(programPath);
