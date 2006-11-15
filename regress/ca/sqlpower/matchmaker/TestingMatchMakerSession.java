@@ -85,4 +85,9 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		return null;
 	}
 
+    public String createNewUniqueName() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
