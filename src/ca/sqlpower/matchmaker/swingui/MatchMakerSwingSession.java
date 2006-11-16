@@ -637,8 +637,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		return sessionImpl.getMatchByName(name);
 	}
 
-	public boolean isThisMatchNameAcceptable(Match match, String name) {
-		return sessionImpl.isThisMatchNameAcceptable(match,name);
+	public boolean isThisMatchNameAcceptable(String name) {
+		return sessionImpl.isThisMatchNameAcceptable(name);
 	}
 
     public String createNewUniqueName() {

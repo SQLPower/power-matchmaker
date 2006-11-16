@@ -55,14 +55,14 @@ public interface MatchMakerSession {
 	 * All of the Match folders that the current user can see.
 	 */
 	public List<PlFolder> getFolders();
-    
+
     /**
      * Returns the folder that matches with the name
      * @param foldername the name of the folder that is desired
      * @return the folder with that matches with the foldername, returns null if no results are avaiable
      */
     public PlFolder findFolder(String foldername);
-    
+
     /**
      * Returns the DAO Object for the given business class
      * @param <T> the business class of the DAO Object
@@ -73,19 +73,14 @@ public interface MatchMakerSession {
     /**
      * Get a connection to the current database
      */
-    public Connection getConnection(); 
+    public Connection getConnection();
 
     /**
-     * search the match by name via DAO
-     * @param name
-     * This method is used to check if a match is valid for updating or not.  
-	 * A match is not valid for updating if an existing match already has the
-	 * same name.
-     * @param match the match to ignore in checking the validation
-     * @param name the name the match want to change to
-     * @return true if the name is not taken, false if the name exists
-     */
-    public boolean isThisMatchNameAcceptable(Match match, String name);
+	 * check to see if there is any match under given name
+	 * @param name
+	 * @return true if no match found under given name, false otherwise
+	 */
+    public boolean isThisMatchNameAcceptable(String name);
     /**
      * find the Match Object by name, search by the DAO
      * @param name the name of the match desired

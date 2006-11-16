@@ -27,7 +27,6 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
 import org.apache.log4j.Logger;
-import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
@@ -41,9 +40,13 @@ import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchType;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.matchmaker.util.SourceTable;
+import ca.sqlpower.validation.Status;
+import ca.sqlpower.validation.Validator;
+import ca.sqlpower.validation.swingui.StatusComponent;
+import ca.sqlpower.validation.swingui.TextComponentValidationHandler;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -60,7 +63,7 @@ public class MatchEditor {
 
 	private JPanel panel;
 
-	private JLabel message = new JLabel();
+	StatusComponent status = new StatusComponent();
     private JTextField matchId = new JTextField();
     private JComboBox folderComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
@@ -203,6 +206,11 @@ public class MatchEditor {
 			public void caretUpdate(CaretEvent e) {
 				match.setName(matchId.getText());
 			}});
+
+        Validator v = new MatchNameValidator(match,swingSession);
+        new TextComponentValidationHandler(v, status, matchId);
+
+
 		sourceChooser = new SQLObjectChooser(panel,
         		swingSession.getContext().getDataSources());
         resultChooser = new SQLObjectChooser(panel,
@@ -246,6 +254,7 @@ public class MatchEditor {
 		pb.add(new JLabel("Description:"), cc.xy(2,8,"r,t"));
 		pb.add(new JLabel("Type:"), cc.xy(2,10,"r,c"));
 
+		pb.add(status, cc.xy(4,2));
 		pb.add(matchId, cc.xy(4,4));
 		pb.add(folderComboBox, cc.xy(4,6));
 		pb.add(new JScrollPane(desc), cc.xy(4,8,"f,f"));
@@ -298,7 +307,6 @@ public class MatchEditor {
 
 		pb.add(bb.getPanel(), cc.xywh(8,4,1,14,"f,f"));
 		panel = pb.getPanel();
-
 		setDefaultSelections();
     }
 
@@ -318,7 +326,6 @@ public class MatchEditor {
 
         folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
         folderComboBox.setRenderer(new FolderComboBoxCellRenderer());
-
         if ( match.getParent() != null) {
        		folderComboBox.setSelectedItem(match.getParent());
         }
@@ -351,7 +358,6 @@ public class MatchEditor {
     			}
         	}
     	}
-
     	SQLTable resultTable = match.getResultTable();
     	if ( resultTable != null ) {
     		SQLCatalog cat = resultTable.getCatalog();
@@ -364,8 +370,6 @@ public class MatchEditor {
     		}
     		resultTableName.setText(match.getResultTable().getName());
     	}
-
-
     }
 
 	public JPanel getPanel() {
@@ -432,18 +436,15 @@ public class MatchEditor {
         	matchId.setText(id);
         }
 
-        if ( swingSession.isThisMatchNameAcceptable(match,id) ) {
-        } else {
-        	int respond = JOptionPane.showConfirmDialog(getPanel(),
-        			"Match name exist or invalid, Do you want to overwrite the exist match?",
-        			"Match name invalid",
-        			JOptionPane.YES_NO_OPTION);
-        	if ( respond != JOptionPane.YES_OPTION )
-        		return false;
-        }
-
-
         match.setName(matchId.getText());
+        if ( !swingSession.isThisMatchNameAcceptable(match.getName()) ) {
+        	JOptionPane.showMessageDialog(getPanel(),
+        			"Match name \""+match.getName()+
+        			"\" exist or invalid. The match has not been saved",
+        			"Match name invalid",
+        			JOptionPane.ERROR_MESSAGE);
+       		return false;
+        }
         match.setFilter(filterPanel.getFilterTextArea().getText());
         logger.debug("Saving Match:" + match.getName());
 
@@ -471,14 +472,39 @@ public class MatchEditor {
         		"MatchMaker result table",
         		"TABLE", true));
 
-        // XXX don't use hibernate directly; use the DAOs
-        Transaction tx = HibernateUtil.primarySession().beginTransaction();
-        HibernateUtil.primarySession().saveOrUpdate(match);
-        HibernateUtil.primarySession().flush();
-        tx.commit();
-        HibernateUtil.primarySession().refresh(match);
-        HibernateUtil.primarySession().flush();
+        MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
+        dao.save(match);
 		return true;
+
+    }
+
+    private class MatchNameValidator implements Validator {
+
+    	private Match match;
+    	private String message;
+		private MatchMakerSwingSession session;
+
+		public MatchNameValidator(Match match, MatchMakerSwingSession session) {
+    		this.match = match;
+    		this.session = session;
+		}
+		public Status validate(Object contents) {
+			message = "";
+			String value = (String)contents;
+			if ( value == null || value.length() == 0 ) {
+				message = "Match name can not be null";
+				return Status.FAIL;
+			}
+	        final boolean status = session.isThisMatchNameAcceptable(value);
+	        if ( status == false ) {
+	        	message = "Match name is invalid or already existed.";
+	        }
+			return status? Status.OK : Status.FAIL;
+		}
+
+		public String getMessage() {
+			return message;
+		}
 
     }
 }
