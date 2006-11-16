@@ -10,13 +10,14 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 	Long count=0L;
 
 	@Override
-	public Match getNewObjectUnderTest() {
+	public Match getNewObjectUnderTest() throws Exception {
 		count++;
 		Match match = new Match();
-		match.setSession(this.session);
+		match.setSession(getSession());
 		try {
 			setAllSetters(match, getNonPersitingProperties());
 			match.setName("Match "+count);
+            match.setParent(null);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {

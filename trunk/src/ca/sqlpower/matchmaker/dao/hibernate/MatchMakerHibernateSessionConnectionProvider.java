@@ -8,7 +8,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.connection.ConnectionProvider;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.MatchMakerSessionImpl;
 
 /**
  * Provides connections to Hibernate by asking the session for connections.
@@ -42,7 +41,7 @@ public class MatchMakerHibernateSessionConnectionProvider
         if (mmSessionId == null) {
             throw new IllegalStateException("You have to provide the MatchMakerSession ID in the "+PROP_SESSION_ID+" property.");
         }
-        session = MatchMakerSessionImpl.getSpecificInstance(mmSessionId);
+        session = MatchMakerHibernateSessionImpl.getSpecificInstance(mmSessionId);
         if (session == null) {
             throw new IllegalStateException("Couldn't find session with ID \""+mmSessionId+"\"");
         }

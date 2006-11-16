@@ -3,11 +3,9 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 import java.util.List;
 
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 
 /**
@@ -22,17 +20,15 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
  */
 public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject> implements
 		MatchMakerDAO<T> {
-	MatchMakerSession matchMakerSession;
-	SessionFactory sessionFactory;
-	
+    
+	MatchMakerHibernateSession matchMakerSession;
 
-	public AbstractMatchMakerDAOHibernate(SessionFactory sessionFactory,MatchMakerSession matchMakerSession) {
+	public AbstractMatchMakerDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
 		this.matchMakerSession = matchMakerSession;
-		this.sessionFactory = sessionFactory;
 	}
 	
 	protected Session getCurrentSession() {
-	    return sessionFactory.openSession();
+	    return matchMakerSession.openSession();
 	}
 
 	public void delete(T deleteMe) {

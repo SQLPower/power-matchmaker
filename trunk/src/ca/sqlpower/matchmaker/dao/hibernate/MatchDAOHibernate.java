@@ -5,18 +5,16 @@ import java.util.List;
 import org.hibernate.Hibernate;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Expression;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
 
 public class MatchDAOHibernate extends AbstractMatchMakerDAOHibernate<Match> implements
 		MatchDAO {
 
-	public MatchDAOHibernate(SessionFactory sessionFactory, MatchMakerSession matchMakerSession) {
-		super(sessionFactory, matchMakerSession);
+	public MatchDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
+		super(matchMakerSession);
 	}
 
 	public List<Match> findAllMatchesWithoutFolders() {

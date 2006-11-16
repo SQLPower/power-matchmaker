@@ -7,15 +7,13 @@ import ca.sqlpower.matchmaker.dao.MatchDAO;
 public class MatchDAOSQLServerTest extends AbstractPlMatchDAOTestCase {
     
     @Override
-    protected void setUp() throws Exception {
-//        Connection connection = HibernateTestUtil.getSqlServerSessionFactory().openSession().connection();
-//        if (connection == null) throw new NullPointerException("Connection shouldn't be null");
-//        ((TestingMatchMakerSession) session).setConnection(connection);
-//        super.setUp();
+    public MatchDAO getDataAccessObject() throws Exception {
+        return new MatchDAOHibernate(getSession());
     }
     
-	@Override
-	public MatchDAO getDataAccessObject() {
-		return new MatchDAOHibernate(HibernateTestUtil.getSqlServerSessionFactory(),session);
-	}
+    @Override
+    public MatchMakerHibernateSession getSession() throws Exception {
+        return HibernateTestUtil.getSqlServerHibernateSession();
+    }
+
 }

@@ -1,8 +1,5 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import org.hibernate.SessionFactory;
-
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 
@@ -11,8 +8,8 @@ public class PlFolderDAOHibernate extends AbstractMatchMakerDAOHibernate<PlFolde
 
 	
 		
-	public PlFolderDAOHibernate(SessionFactory sessionFactory, MatchMakerSession matchMakerSession) {
-		super(sessionFactory,matchMakerSession);
+	public PlFolderDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
+		super(matchMakerSession);
 	}
 
 

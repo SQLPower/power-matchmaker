@@ -12,8 +12,8 @@ import ca.sqlpower.matchmaker.util.log.Log;
  * engines
  *
  */
-public abstract class MatchMakerSettings<T extends MatchMakerSettings> extends
-		AbstractMatchMakerObject<T, MatchMakerObject> {
+public abstract class MatchMakerSettings extends
+		AbstractMatchMakerObject<MatchMakerSettings, MatchMakerObject> {
 
 	@Override
     public int hashCode() {

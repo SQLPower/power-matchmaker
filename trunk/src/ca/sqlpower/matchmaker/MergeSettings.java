@@ -4,7 +4,7 @@ package ca.sqlpower.matchmaker;
  * Settings specific to the merge engine
  *
  */
-public class MergeSettings extends MatchMakerSettings<MergeSettings> {
+public class MergeSettings extends MatchMakerSettings {
 
 	@Override
 	public int hashCode() {

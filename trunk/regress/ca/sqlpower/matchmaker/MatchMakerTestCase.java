@@ -109,8 +109,22 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 						newVal = new SourceTable();
 					} else if (property.getPropertyType() == MatchSettings.class) {
 						newVal = new MatchSettings();
+                        Integer processCount = ((MatchMakerSettings) newVal).getProcessCount();
+                        if (processCount == null) {
+                            processCount = new Integer(0);
+                        } else {
+                            processCount = new Integer(processCount +1);
+                        }
+                        ((MatchMakerSettings) newVal).setProcessCount(processCount);
 					} else if (property.getPropertyType() == MergeSettings.class) {
 						newVal = new MergeSettings();
+                        Integer processCount = ((MatchMakerSettings) newVal).getProcessCount();
+                        if (processCount == null) {
+                            processCount = new Integer(0);
+                        } else {
+                            processCount = new Integer(processCount +1);
+                        }
+                        ((MatchMakerSettings) newVal).setProcessCount(processCount);
 					} else if (property.getPropertyType() == SQLTable.class) {
 						newVal = new SQLTable();
 					} else if (property.getPropertyType() == ViewSpec.class) {
@@ -145,9 +159,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 						((MatchMakerObject)newVal).setSession(session);
 					}
 				
+                    assertFalse("Old value and new value are equivalent for class "+property.getPropertyType(),
+                            oldVal == null? oldVal == newVal:oldVal.equals(newVal));
 					int oldChangeCount = listener.getAllEventCounts();
 				
 					try {
+                        
 						BeanUtils.copyProperty(mmo, property.getName(), newVal);
 				
 						// some setters fire multiple events (they change more than one property)

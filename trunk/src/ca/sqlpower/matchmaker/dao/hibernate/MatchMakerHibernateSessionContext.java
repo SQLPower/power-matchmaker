@@ -12,7 +12,6 @@ import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.MatchMakerSessionImpl;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.util.UnknownFreqCodeException;
@@ -76,7 +75,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         tempDbSource.setPass(password);
 
         try {
-            return new MatchMakerSessionImpl(this, tempDbSource);
+            return new MatchMakerHibernateSessionImpl(this, tempDbSource);
         } catch (UnknownFreqCodeException ex) {
             throw new RuntimeException("This user doesn't have a valid default Dashboard date frequency, so you can't log in?!", ex);
         }
