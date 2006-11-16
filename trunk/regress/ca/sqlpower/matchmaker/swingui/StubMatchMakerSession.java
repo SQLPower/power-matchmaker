@@ -57,7 +57,7 @@ public class StubMatchMakerSession implements MatchMakerSession{
         return null;
     }
 
-	public boolean isThisMatchNameAcceptable(String name) {
+	public boolean isThisMatchNameAcceptable(Match match, String name) {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.isThisMatchNameAcceptable()");
 		return false;

@@ -77,7 +77,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         return null;
     }
 
-	public boolean isThisMatchNameAcceptable(String name) {
+	public boolean isThisMatchNameAcceptable(Match match,String name) {
 		return false;
 	}
 

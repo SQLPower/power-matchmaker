@@ -70,18 +70,21 @@ public interface MatchMakerSession {
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass);
 
     /**
-     * search the match by name via DAO
-     * @param name
+     * This method is used to check if a match is valid for updating or not.  
+	 * A match is not valid for updating if an existing match already has the
+	 * same name.
+     * @param match the match to ignore in checking the validation
+     * @param name the name the match want to change to
      * @return true if the name is not taken, false if the name exists
      */
-    public boolean isThisMatchNameAcceptable(String name);
+    public boolean isThisMatchNameAcceptable(Match match, String name);
     /**
      * find the Match Object by name, search by the DAO
-     * @param name
+     * @param name the name of the match desired
      * @return match object or null if not found
      */
     public Match getMatchByName(String name);
-    
+
     /**
      * This method creates an unique name for the match such that it does not
      * conflict with existing match names.  The foromat of the name should be
@@ -89,5 +92,5 @@ public interface MatchMakerSession {
      * @return an unique non-conflicting name in New_Match# form (unless New_Match
      *          is already an acceptable name)
      */
-    public String createNewUniqueName();        
+    public String createNewUniqueName();
 }
