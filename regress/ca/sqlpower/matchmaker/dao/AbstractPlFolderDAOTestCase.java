@@ -11,11 +11,11 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 	int count=0;
 
 	@Override
-	public PlFolder<MatchMakerObject> getNewObjectUnderTest() {
+	public PlFolder<MatchMakerObject> getNewObjectUnderTest() throws Exception {
 		count++;
 		PlFolder<MatchMakerObject> plFolder =
 			new PlFolder<MatchMakerObject>("Test Folder");
-		plFolder.setSession(this.session);
+		plFolder.setSession(getSession());
 		plFolder.setName("test "+count);
 		plFolder.setFolderDesc("My Desc");
 		plFolder.setFolderStatus("Open");
@@ -32,7 +32,7 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 		return nonPersistingProperties;
 	}
 	
-	public void testMatchesPersist(){
+	public void testMatchesPersist() throws Exception {
 		PlFolder f = getNewObjectUnderTest();
 		Match match = new Match();
 		match.setName("child");

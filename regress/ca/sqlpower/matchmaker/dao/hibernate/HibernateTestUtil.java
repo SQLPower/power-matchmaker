@@ -1,7 +1,5 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import java.io.File;
-
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
@@ -14,11 +12,9 @@ public class HibernateTestUtil {
 	//The password for test database(oracle) mm_test: cowmoo
 
 	
-	private static final SessionFactory SQLSERVER_SESSION_FACTORY =
-        buildHibernateSessionFactory(getSqlServerDS());
-    
-    private static final SessionFactory ORACLE_SESSION_FACTORY =
-        buildHibernateSessionFactory(getOracleDS());;
+	private static TestingMatchMakerHibernateSession TESTING_MATCH_MAKER_SQL_SERVER_HIBERNATE_SESSION = new TestingMatchMakerHibernateSession(HibernateTestUtil.getSqlServerDS());
+
+    private static TestingMatchMakerHibernateSession TESTING_MATCH_MAKER_ORACLE_HIBERNATE_SESSION = new TestingMatchMakerHibernateSession(HibernateTestUtil.getOracleDS());
 
     public static ArchitectDataSource getSqlServerDS() { 
 		/*
@@ -60,28 +56,22 @@ public class HibernateTestUtil {
 	}
     
 	/**
-	 * Builds a session factory from a datasource
-	 * @param ds an architect datasource with the following fields filled in:
-	 * 			driverClass, pass,Url,userName,plSchema and plDbType
+	 * Builds a session factory for the given data source, but this session factory will
+     * not be able to connect to the database on its own.  All calls to openSession() will
+     * have to include a Connection argument.
+     * 
+	 * @param ds an architect datasource with at least the following fields filled in:
+	 * 			plSchema and plDbType
 	 * @return a new hibernate session
 	 */	
-	private static SessionFactory buildHibernateSessionFactory(ArchitectDataSource ds) {
+	static SessionFactory buildHibernateSessionFactory(ArchitectDataSource ds) {
 		Configuration cfg = new Configuration();
 		SessionFactory sessionFactory = null;
-		cfg.configure(new File("./hibernate/hibernate.cfg.xml")); // FIXME
-		// doesn't
-		// work in a
-		// JAR
-		
+        cfg.configure(ClassLoader.getSystemResource("ca/sqlpower/matchmaker/dao/hibernate/hibernate.cfg.xml"));
+         
 		// last-minute configuration overrides for stuff that can only be known
 		// at runtime
-//		cfg.setProperty("hibernate.connection.driver_class", ds
-//				.getDriverClass());
-//		cfg.setProperty("hibernate.connection.password", ds.getPass());
-//		cfg.setProperty("hibernate.connection.url", ds.getUrl());
-//		cfg.setProperty("hibernate.connection.username", ds.getUser());
 		cfg.setProperty("hibernate.default_schema", ds.getPlSchema());
-
 		cfg.setProperty("hibernate.show_sql", "true");
 		cfg.setProperty("hibernate.jdbc.batch_size", "0");
 		cfg.setProperty("hibernate.dialect", HibernateUtil.plDbType2Dialect(ds.getPlDbType()));
@@ -93,20 +83,20 @@ public class HibernateTestUtil {
 	}
     
 	/**
-	 * Get a new oracle session factory
+	 * Get the singleton oracle hibernate match maker session
 	 * 
 	 * @return a session to an oracle database
 	 */
-	public static SessionFactory getOracleSessionFactory(){
-		return ORACLE_SESSION_FACTORY;
+	public static TestingMatchMakerHibernateSession getOracleHibernateSession() throws Exception {
+		return TESTING_MATCH_MAKER_ORACLE_HIBERNATE_SESSION;
 	}
 	
 	/**
-	 * Get a new sqlserver session factory
+	 * Get the singleton sqlserver hibernate match maker session
 	 * 
-	 * @return a session to an oracle database
-	 */
-	public static SessionFactory getSqlServerSessionFactory(){
-		return SQLSERVER_SESSION_FACTORY;
+	 * @return a session to an sql server database
+	 * @throws Exception 
+	 */	public static TestingMatchMakerHibernateSession getSqlServerHibernateSession() throws Exception{
+		return TESTING_MATCH_MAKER_SQL_SERVER_HIBERNATE_SESSION;
 	}
 }

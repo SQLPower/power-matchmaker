@@ -25,7 +25,6 @@ import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.matchmaker.util.ViewSpec;
@@ -35,12 +34,12 @@ import ca.sqlpower.matchmaker.util.log.LogFactory;
 
 public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends MatchMakerDAO> extends TestCase {
 
-	public MatchMakerSession session = new TestingMatchMakerSession();
+	    
 	@Override
 	protected void setUp() throws Exception {
         Connection con = null;
         try {
-            con = session.getConnection();
+            con = getSession().getConnection();
             // You forgot to set the session's connection didn't you?
             DatabaseCleanup.clearDatabase(con);
         } catch (SQLException e) {
@@ -49,36 +48,24 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 	}
 	
     // Test and see if find all throws an exception
-	public void testFindAll() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException{
+	public void testFindAll() throws Exception {
 		D dao = getDataAccessObject();
 		List<T> all = dao.findAll();
 	}
 	
-	public void testSave() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException{
-		// This may fail, but it has to be done
-		// make sure there are no objects of this type in the test data
+	public void testSave() throws Exception {
 		D dao = getDataAccessObject();
-		List<T> all = dao.findAll();
-		for (T item: all) {
-			dao.delete(item);
-		}
 		T item1 = getNewObjectUnderTest();
 		dao = getDataAccessObject();
 		dao.save(item1);
 	}
-	public void testDeleteExisting(){
+	public void testDeleteExisting() throws Exception {
 		T item1 = getNewObjectUnderTest();
 		T item2 = getNewObjectUnderTest();
 		D dao = getDataAccessObject();
-		List<T> all = dao.findAll();
-		assertNotNull("dao returning null list, it should be empty instead",dao.findAll());
-		for (T item: all) {
-			dao.delete(item);
-		}
-		assertEquals("There are still some objects of type "+item1.getClass()+" left",0,dao.findAll().size());
 		dao.save(item1);
 		dao.save(item2);
-		all = dao.findAll();
+		List<T> all = dao.findAll();
 		assertNotNull("dao returning null list, it should be empty instead",dao.findAll());
 		for (T item: all) {
 			dao.delete(item);
@@ -86,7 +73,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		assertEquals("There are still some objects of type "+item1.getClass()+" left",0,dao.findAll().size());
 	}
 	
-	public void testSaveAndLoadInOneSession() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException{
+	public void testSaveAndLoadInOneSession() throws Exception {
 		// This may fail, but it has to be done
 		// make sure there are no objects of this type in the test data
 		D dao = getDataAccessObject();
@@ -131,14 +118,21 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 	 * created objects.  Every gettable property must be set to a non-default value
 	 * 
 	 * @return a new test object 
+	 * @throws Exception 
 	 */
-	public abstract T getNewObjectUnderTest();
+	public abstract T getNewObjectUnderTest() throws Exception;
 	
 	/**
 	 * This should return the data access object that is being tested
+	 * @throws Exception 
 	 */
-	public abstract D getDataAccessObject();
+	public abstract D getDataAccessObject() throws Exception;
 	
+    /**
+     * Get the current match maker sesssion from the concrete dao objects
+     */
+    public abstract MatchMakerSession getSession() throws Exception;
+    
 	/**
 	 * gets a list of strings that this object dosn't persist
 	 */
@@ -156,7 +150,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 	 * @throws IllegalAccessException
 	 * @throws InvocationTargetException
 	 */
-	public void setAllSetters(MatchMakerObject object,List<String> propertiesThatAreNotPersisted) throws IllegalAccessException, InvocationTargetException{
+	public void setAllSetters(MatchMakerObject object,List<String> propertiesThatAreNotPersisted) throws Exception {
 		MatchMakerObject mmo = object;
 
 		MatchMakerEventCounter listener = new MatchMakerEventCounter();
@@ -245,7 +239,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 					}
 					
 					if (newVal instanceof MatchMakerObject){
-						((MatchMakerObject)newVal).setSession(session);
+						((MatchMakerObject)newVal).setSession(getSession());
 					}
 				
 					int oldChangeCount = listener.getAllEventCounts();

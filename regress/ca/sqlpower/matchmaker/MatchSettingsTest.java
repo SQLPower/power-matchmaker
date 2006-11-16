@@ -9,7 +9,7 @@ public class MatchSettingsTest extends MatchMakerTestCase {
 	}
 
 	@Override
-	protected MatchMakerObject<MatchSettings, MatchMakerObject> getTarget() {
+	protected MatchMakerObject getTarget() {
 		return ms;
 	}
 

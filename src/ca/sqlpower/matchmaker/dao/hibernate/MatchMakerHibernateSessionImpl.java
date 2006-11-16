@@ -1,4 +1,4 @@
-package ca.sqlpower.matchmaker;
+package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
@@ -15,12 +16,14 @@ import org.hibernate.cfg.Environment;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionConnectionProvider;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
-import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
@@ -31,15 +34,15 @@ import ca.sqlpower.util.UnknownFreqCodeException;
  * An implementation of MatchMakerSession that uses Hibernate to
  * look up and store the business objects.
  */
-public class MatchMakerSessionImpl implements MatchMakerSession {
-
-    private static final Logger logger = Logger.getLogger(MatchMakerSessionImpl.class);
-
+public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSession {
+    
+    private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionImpl.class);
+    
     /**
      * The ID of the next instance we will create.  Used for Hibernate integration (ugh?)
      */
     private static long nextInstanceID = 0L;
-
+    
     /**
      * The map used by {@link #getSpecificInstance(String)}.
      */
@@ -60,7 +63,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
      * The ID of this instance. A string version of this value is the key in the {@link #sessions} map.
      */
     private final long instanceID;
-
+    
     private final MatchMakerSessionContext context;
     private final SessionFactory hibernateSessionFactory;
 	private final SQLDatabase database;
@@ -68,18 +71,18 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	private PLUser appUser;
 	private String dbUser;
 	private Date sessionStartTime;
-
+    
     private PlFolderDAO folderDAO;
     private MatchDAO matchDAO;
 
-	public MatchMakerSessionImpl(
+	public MatchMakerHibernateSessionImpl(
             MatchMakerSessionContext context,
 			ArchitectDataSource ds)
 		throws PLSecurityException, UnknownFreqCodeException,
 				SQLException, ArchitectException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
-
+        
         this.context = context;
 		database = new SQLDatabase(ds);
 		dbUser = ds.getUser();
@@ -90,9 +93,9 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 		appUser = sm.getPrincipal();
 		sessionStartTime = new Date();
 		this.hibernateSessionFactory = buildHibernateSessionFactory(ds);
-
-        folderDAO = new PlFolderDAOHibernate(hibernateSessionFactory, this);
-        matchDAO = new MatchDAOHibernate(hibernateSessionFactory, this);
+        
+        folderDAO = new PlFolderDAOHibernate(this);
+        matchDAO = new MatchDAOHibernate(this);
 	}
 
     public MatchMakerSessionContext getContext() {
@@ -144,6 +147,15 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
             throw new RuntimeException("Couldn't acquire connection to PL Schema Database", ex);
         }
     }
+
+    /**
+     * Creates a session from the hibernate session factory, allowing the factory
+     * to get its database connection using our &uuml;ber-cool connection provider. 
+     */
+    public Session openSession() {
+        return hibernateSessionFactory.openSession();
+    }
+
 
     /**
      * Creates or retrieves a Hibernate SessionFactory object for the

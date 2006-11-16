@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 /**
  * Settings that are specific to the Match engine
  */
-public class MatchSettings extends MatchMakerSettings<MatchSettings> {
+public class MatchSettings extends MatchMakerSettings {
 
 	@Override
     public int hashCode() {
@@ -64,11 +64,11 @@ public class MatchSettings extends MatchMakerSettings<MatchSettings> {
 	/**
 	 * Breakup the match after each criteria group
 	 */
-	Boolean breakUpMatch;
+	private Boolean breakUpMatch;
 	/**
 	 * Truncate the candidate duplicate table
 	 */
-	Boolean truncateCandDupe;
+	private Boolean truncateCandDupe;
 
 	public Boolean isBreakUpMatch() {
 		return breakUpMatch;

@@ -10,7 +10,7 @@ public class MergeSettingsTest extends MatchMakerTestCase {
 	}
 
 	@Override
-	protected MatchMakerObject<MergeSettings, MatchMakerObject> getTarget() {
+	protected MatchMakerObject getTarget() {
 		return ms;
 	}
 
