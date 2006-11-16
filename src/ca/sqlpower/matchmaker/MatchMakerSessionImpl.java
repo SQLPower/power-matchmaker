@@ -1,18 +1,27 @@
 package ca.sqlpower.matchmaker;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionConnectionProvider;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
+import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
@@ -23,7 +32,35 @@ import ca.sqlpower.util.UnknownFreqCodeException;
  * look up and store the business objects.
  */
 public class MatchMakerSessionImpl implements MatchMakerSession {
+    
+    private static final Logger logger = Logger.getLogger(MatchMakerSessionImpl.class);
+    
+    /**
+     * The ID of the next instance we will create.  Used for Hibernate integration (ugh?)
+     */
+    private static long nextInstanceID = 0L;
+    
+    /**
+     * The map used by {@link #getSpecificInstance(String)}.
+     */
+    private static final Map<String, MatchMakerSession> sessions = new HashMap<String, MatchMakerSession>();
 
+    /**
+     * A stupid hook to de-staticify the creation of a MatchMakerSessionConnectionProvider
+     * instance that has to be associated with a particular session.
+     * @param mmSessionId The ID that was generated in createSession().
+     * @return The MatchMakerSession instance with the given ID, or null if there is no such session.
+     */
+    // FIXME make package private and move this class to hibernate dao package
+    public static MatchMakerSession getSpecificInstance(String mmSessionId) {
+        return sessions.get(mmSessionId);
+    }
+
+    /**
+     * The ID of this instance. A string version of this value is the key in the {@link #sessions} map.
+     */
+    private final long instanceID;
+    
     private final MatchMakerSessionContext context;
     private final SessionFactory hibernateSessionFactory;
 	private final SQLDatabase database;
@@ -31,13 +68,18 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	private PLUser appUser;
 	private String dbUser;
 	private Date sessionStartTime;
+    
+    private PlFolderDAO folderDAO;
+    private MatchDAO matchDAO;
 
 	public MatchMakerSessionImpl(
             MatchMakerSessionContext context,
-			ArchitectDataSource ds,
-			SessionFactory hibernateSessionFactory)
+			ArchitectDataSource ds)
 		throws PLSecurityException, UnknownFreqCodeException,
 				SQLException, ArchitectException {
+        this.instanceID = nextInstanceID++;
+        sessions.put(String.valueOf(instanceID), this);
+        
         this.context = context;
 		database = new SQLDatabase(ds);
 		dbUser = ds.getUser();
@@ -47,7 +89,10 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
                                     false);  // since this is a database login, we don't require correct app-level password
 		appUser = sm.getPrincipal();
 		sessionStartTime = new Date();
-		this.hibernateSessionFactory = hibernateSessionFactory;
+		this.hibernateSessionFactory = buildHibernateSessionFactory(ds);
+        
+        folderDAO = new PlFolderDAOHibernate(hibernateSessionFactory, this);
+        matchDAO = new MatchDAOHibernate(hibernateSessionFactory, this);
 	}
 
     public MatchMakerSessionContext getContext() {
@@ -71,7 +116,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	}
 
 	public List<PlFolder> getFolders() {
-		PlFolderDAO folderDAO = (PlFolderDAO)getDAO(PlFolder.class);
+		PlFolderDAO folderDAO = (PlFolderDAO) getDAO(PlFolder.class);
 		return folderDAO.findAll();
 	}
 
@@ -84,12 +129,52 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
         if (businessClass == PlFolder.class) {
-            return (MatchMakerDAO<T>) new PlFolderDAOHibernate(hibernateSessionFactory,this);
+            return (MatchMakerDAO<T>) folderDAO;
         } else if (businessClass == Match.class) {
-            return (MatchMakerDAO<T>) new MatchDAOHibernate(hibernateSessionFactory,this);
+            return (MatchMakerDAO<T>) matchDAO;
         } else {
             throw new IllegalArgumentException("I don't know how to create a DAO for "+businessClass.getName());
         }
+    }
+
+    public Connection getConnection() {
+        try {
+            return database.getConnection();
+        } catch (ArchitectException ex) {
+            throw new RuntimeException("Couldn't acquire connection to PL Schema Database", ex);
+        }
+    }
+
+    /**
+     * Creates or retrieves a Hibernate SessionFactory object for the
+     * given database.  Never creates two SessionFactory objects for
+     * the same jdbcurl+user+password combination.
+     *
+     * @param ds The connection specification for the session factory you want.
+     * @return A Hibernate SessionFactory for the given data source.
+     */
+    private SessionFactory buildHibernateSessionFactory(ArchitectDataSource ds) {
+        SessionFactory factory;
+        Configuration cfg = new Configuration();
+
+        cfg.configure(getClass().getResource("/ca/sqlpower/matchmaker/dao/hibernate/hibernate.cfg.xml"));
+
+        // last-minute configuration overrides for stuff that can only be known at runtime
+        cfg.setProperty("hibernate.default_schema",ds.getPlSchema());
+        cfg.setProperty("hibernate.dialect", HibernateUtil.plDbType2Dialect(ds.getPlDbType()));
+        cfg.setProperty(
+                Environment.CONNECTION_PROVIDER,
+                MatchMakerHibernateSessionConnectionProvider.class.getName());
+        cfg.setProperty(
+                MatchMakerHibernateSessionConnectionProvider.PROP_SESSION_ID,
+                String.valueOf(instanceID));
+        if (logger.isDebugEnabled()) {
+            cfg.setProperty("hibernate.show_sql", "true");
+            cfg.setProperty("hibernate.jdbc.batch_size", "0");
+        }
+        // Create the SessionFactory from hibernate.cfg.xml
+        factory = cfg.buildSessionFactory();
+        return factory;
     }
 
     public Match getMatchByName(String name) {

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerEventSupport;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -19,6 +21,8 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C extends MatchMakerObject>
 	implements MatchMakerObject<T, C> {
 
+    private static final Logger logger = Logger.getLogger(AbstractMatchMakerObject.class);
+    
 	private MatchMakerObject parent;
 
 	@SuppressWarnings("unchecked")
@@ -60,6 +64,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	 * @param child
 	 */
 	public void addChild(C child) {
+        logger.debug("addChild: children collection is a "+children.getClass().getName());
 		children.add(child);
 		child.setParent(this);
 		List<C> insertedChildren = new ArrayList<C>();
@@ -130,11 +135,11 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		return true;
 	}
 
-	public final String getName() {
+	public String getName() {
 		return name;
 	}
 
-	public final void setName(String name) {
+	public void setName(String name) {
 		String oldValue = this.name;
 		this.name = name;
 		eventSupport.firePropertyChange("name", oldValue, this.name);

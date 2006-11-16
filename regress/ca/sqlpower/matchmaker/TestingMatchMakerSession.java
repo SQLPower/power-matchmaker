@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,8 +15,8 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	SQLDatabase db = new SQLDatabase();
 	List<PlFolder> folders;
 	MatchMakerSessionContext context;
-
-
+	Connection con;
+	
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
 	}
@@ -75,6 +76,14 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public Connection getConnection() {
+        return con;
+    }
+
+    public void setConnection(Connection con) {
+        this.con = con;
     }
 
 	public boolean isThisMatchNameAcceptable(Match match,String name) {

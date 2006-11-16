@@ -1,13 +1,10 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.hibernate.SessionFactory;
+import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
@@ -16,7 +13,7 @@ import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSessionImpl;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.util.UnknownFreqCodeException;
 
@@ -32,12 +29,27 @@ import ca.sqlpower.util.UnknownFreqCodeException;
  */
 public class MatchMakerHibernateSessionContext implements MatchMakerSessionContext {
 
-    private final DataSourceCollection plDotIni;
-    private final String plIniPath;
-    private final Map<ArchitectDataSource, SessionFactory> hibernateSessionFactories =
-        new HashMap<ArchitectDataSource, SessionFactory>();
+    private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionContext.class);
 
-    public MatchMakerHibernateSessionContext(DataSourceCollection plIni, String plIniPath) throws IOException {
+    /**
+     * The list of database connections that this session context knows about.  This
+     * implementation uses the <blink><marquee>AWESOME</marquee></blink> pl.ini file
+     * format for storing its connection infos.
+     */
+    private final DataSourceCollection plDotIni;
+    
+    /**
+     * The location of the PL.INI file that populated the {@link #plDotIni} collection.
+     */
+    private final String plIniPath;
+    
+    /**
+     * Creates a new session context that uses the Hibernate DAO's to interact with the PL Schema.
+     * 
+     * @param plIni The data source collection that this context will use.
+     * @param plIniPath The file system location of the pl.ini file that plIni came from.
+     */
+    public MatchMakerHibernateSessionContext(DataSourceCollection plIni, String plIniPath) {
         this.plDotIni = plIni;
         this.plIniPath = plIniPath;
     }
@@ -57,34 +69,17 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     throws PLSecurityException, SQLException, ArchitectException {
 
         // We create a copy of the data source and change the userID and password
-        //and use that instead for the loginWasSuccessful.  We do not want to change the
+        //and use that for the login attempt.  We do not want to change the
         //default userID and password for the connection in here.
         ArchitectDataSource tempDbSource = new ArchitectDataSource(ds);
         tempDbSource.setUser(username);
         tempDbSource.setPass(password);
 
         try {
-            return new MatchMakerSessionImpl(this, tempDbSource, getHibernateSessionFactory(tempDbSource));
+            return new MatchMakerSessionImpl(this, tempDbSource);
         } catch (UnknownFreqCodeException ex) {
             throw new RuntimeException("This user doesn't have a valid default Dashboard date frequency, so you can't log in?!", ex);
         }
-    }
-
-    /**
-     * Creates or retrieves a Hibernate SessionFactory object for the
-     * given database.  Never creates two SessionFactory objects for
-     * the same jdbcurl+user+password combination.
-     *
-     * @param ds The connection specification for the session factory you want.
-     * @return A Hibernate SessionFactory for the given data source.
-     */
-    private synchronized SessionFactory getHibernateSessionFactory(ArchitectDataSource ds) {
-        SessionFactory factory = hibernateSessionFactories.get(ds);
-        if (factory == null) {
-            factory = HibernateUtil.createRepositorySessionFactory(ds);
-            hibernateSessionFactories.put(ds, factory);
-        }
-        return factory;
     }
 
     public DataSourceCollection getPlDotIni() {

@@ -30,6 +30,10 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 		this.matchMakerSession = matchMakerSession;
 		this.sessionFactory = sessionFactory;
 	}
+	
+	protected Session getCurrentSession() {
+	    return sessionFactory.openSession();
+	}
 
 	public void delete(T deleteMe) {
 		Session s = getCurrentSession();
@@ -44,10 +48,6 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 		} finally {
 			s.close();
 		}
-	}
-
-	protected Session getCurrentSession() {
-		return sessionFactory.openSession();
 	}
 
 	public List<T> findAll() {

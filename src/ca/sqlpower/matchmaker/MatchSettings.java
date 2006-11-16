@@ -6,41 +6,47 @@ package ca.sqlpower.matchmaker;
 public class MatchSettings extends MatchMakerSettings<MatchSettings> {
 
 	@Override
-	public int hashCode() {
-		final int PRIME = 31;
-		int result = super.hashCode();
-		result = PRIME * result + ((autoMatchThreshold == null) ? 0 : autoMatchThreshold.hashCode());
-		result = PRIME * result + (breakUpMatch ? 1231 : 1237);
-		result = PRIME * result + ((lastBackupNo == null) ? 0 : lastBackupNo.hashCode());
-		result = PRIME * result + (truncateCandDupe ? 1231 : 1237);
-		return result;
-	}
+    public int hashCode() {
+        final int PRIME = 31;
+        int result = super.hashCode();
+        result = PRIME * result + ((autoMatchThreshold == null) ? 0 : autoMatchThreshold.hashCode());
+        result = PRIME * result + ((breakUpMatch == null) ? 0 : breakUpMatch.hashCode());
+        result = PRIME * result + ((lastBackupNo == null) ? 0 : lastBackupNo.hashCode());
+        result = PRIME * result + ((truncateCandDupe == null) ? 0 : truncateCandDupe.hashCode());
+        return result;
+    }
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final MatchSettings other = (MatchSettings) obj;
-		if (autoMatchThreshold == null) {
-			if (other.autoMatchThreshold != null)
-				return false;
-		} else if (!autoMatchThreshold.equals(other.autoMatchThreshold))
-			return false;
-		if (breakUpMatch != other.breakUpMatch)
-			return false;
-		if (lastBackupNo == null) {
-			if (other.lastBackupNo != null)
-				return false;
-		} else if (!lastBackupNo.equals(other.lastBackupNo))
-			return false;
-		if (truncateCandDupe != other.truncateCandDupe)
-			return false;
-		return true;
-	}
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final MatchSettings other = (MatchSettings) obj;
+        if (autoMatchThreshold == null) {
+            if (other.autoMatchThreshold != null)
+                return false;
+        } else if (!autoMatchThreshold.equals(other.autoMatchThreshold))
+            return false;
+        if (breakUpMatch == null) {
+            if (other.breakUpMatch != null)
+                return false;
+        } else if (!breakUpMatch.equals(other.breakUpMatch))
+            return false;
+        if (lastBackupNo == null) {
+            if (other.lastBackupNo != null)
+                return false;
+        } else if (!lastBackupNo.equals(other.lastBackupNo))
+            return false;
+        if (truncateCandDupe == null) {
+            if (other.truncateCandDupe != null)
+                return false;
+        } else if (!truncateCandDupe.equals(other.truncateCandDupe))
+            return false;
+        return true;
+    }
 
 	public MatchSettings( ) {
 	}

@@ -16,60 +16,75 @@ public abstract class MatchMakerSettings<T extends MatchMakerSettings> extends
 		AbstractMatchMakerObject<T, MatchMakerObject> {
 
 	@Override
-	public int hashCode() {
-		final int PRIME = 31;
-		int result = 0;
-		result = PRIME * result + (appendToLog ? 1231 : 1237);
-		result = PRIME * result + (debug ? 1231 : 1237);
-		result = PRIME * result + ((description == null) ? 0 : description.hashCode());
-		result = PRIME * result + ((lastRunDate == null) ? 0 : lastRunDate.hashCode());
-		result = PRIME * result + ((log == null) ? 0 : log.hashCode());
-		result = PRIME * result + processCount;
-		result = PRIME * result + ((rollbackSegmentName == null) ? 0 : rollbackSegmentName.hashCode());
-		result = PRIME * result + (sendEmail ? 1231 : 1237);
-		result = PRIME * result + (showProgressFreq.intValue());
-		return result;
-	}
+    public int hashCode() {
+        final int PRIME = 31;
+        int result = 0;
+        result = PRIME * result + ((appendToLog == null) ? 0 : appendToLog.hashCode());
+        result = PRIME * result + ((debug == null) ? 0 : debug.hashCode());
+        result = PRIME * result + ((description == null) ? 0 : description.hashCode());
+        result = PRIME * result + ((lastRunDate == null) ? 0 : lastRunDate.hashCode());
+        result = PRIME * result + ((log == null) ? 0 : log.hashCode());
+        result = PRIME * result + ((processCount == null) ? 0 : processCount.hashCode());
+        result = PRIME * result + ((rollbackSegmentName == null) ? 0 : rollbackSegmentName.hashCode());
+        result = PRIME * result + ((sendEmail == null) ? 0 : sendEmail.hashCode());
+        result = PRIME * result + ((showProgressFreq == null) ? 0 : showProgressFreq.hashCode());
+        return result;
+    }
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (getClass() != obj.getClass())
-			return false;
-		final MatchMakerSettings other = (MatchMakerSettings) obj;
-		if (appendToLog != other.appendToLog)
-			return false;
-		if (debug != other.debug)
-			return false;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (lastRunDate == null) {
-			if (other.lastRunDate != null)
-				return false;
-		} else if (!lastRunDate.equals(other.lastRunDate))
-			return false;
-		if (log == null) {
-			if (other.log != null)
-				return false;
-		} else if (!log.equals(other.log))
-			return false;
-		if (processCount != other.processCount)
-			return false;
-		if (rollbackSegmentName == null) {
-			if (other.rollbackSegmentName != null)
-				return false;
-		} else if (!rollbackSegmentName.equals(other.rollbackSegmentName))
-			return false;
-		if (sendEmail != other.sendEmail)
-			return false;
-		if (showProgressFreq != other.showProgressFreq)
-			return false;
-		return true;
-	}
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (getClass() != obj.getClass())
+            return false;
+        final MatchMakerSettings other = (MatchMakerSettings) obj;
+        if (appendToLog == null) {
+            if (other.appendToLog != null)
+                return false;
+        } else if (!appendToLog.equals(other.appendToLog))
+            return false;
+        if (debug == null) {
+            if (other.debug != null)
+                return false;
+        } else if (!debug.equals(other.debug))
+            return false;
+        if (description == null) {
+            if (other.description != null)
+                return false;
+        } else if (!description.equals(other.description))
+            return false;
+        if (lastRunDate == null) {
+            if (other.lastRunDate != null)
+                return false;
+        } else if (!lastRunDate.equals(other.lastRunDate))
+            return false;
+        if (log == null) {
+            if (other.log != null)
+                return false;
+        } else if (!log.equals(other.log))
+            return false;
+        if (processCount == null) {
+            if (other.processCount != null)
+                return false;
+        } else if (!processCount.equals(other.processCount))
+            return false;
+        if (rollbackSegmentName == null) {
+            if (other.rollbackSegmentName != null)
+                return false;
+        } else if (!rollbackSegmentName.equals(other.rollbackSegmentName))
+            return false;
+        if (sendEmail == null) {
+            if (other.sendEmail != null)
+                return false;
+        } else if (!sendEmail.equals(other.sendEmail))
+            return false;
+        if (showProgressFreq == null) {
+            if (other.showProgressFreq != null)
+                return false;
+        } else if (!showProgressFreq.equals(other.showProgressFreq))
+            return false;
+        return true;
+    }
 
 	public MatchMakerSettings( ) {
 	}

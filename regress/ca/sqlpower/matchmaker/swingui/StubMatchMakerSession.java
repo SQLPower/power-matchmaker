@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
 
@@ -54,6 +55,11 @@ public class StubMatchMakerSession implements MatchMakerSession{
 
     public Date getSessionStartTime() {
         logger.debug("Stub call: StubMatchMakerSession.getSessionStartTime()");
+        return null;
+    }
+
+    public Connection getConnection() {
+        logger.debug("Stub call: StubMatchMakerSession.getConnection()");
         return null;
     }
 

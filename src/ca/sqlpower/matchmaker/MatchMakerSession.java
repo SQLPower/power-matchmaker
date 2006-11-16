@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker;
 
+import java.sql.Connection;
 import java.util.Date;
 import java.util.List;
 
@@ -54,14 +55,14 @@ public interface MatchMakerSession {
 	 * All of the Match folders that the current user can see.
 	 */
 	public List<PlFolder> getFolders();
-
+    
     /**
      * Returns the folder that matches with the name
      * @param foldername the name of the folder that is desired
      * @return the folder with that matches with the foldername, returns null if no results are avaiable
      */
     public PlFolder findFolder(String foldername);
-
+    
     /**
      * Returns the DAO Object for the given business class
      * @param <T> the business class of the DAO Object
@@ -70,6 +71,13 @@ public interface MatchMakerSession {
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass);
 
     /**
+     * Get a connection to the current database
+     */
+    public Connection getConnection(); 
+
+    /**
+     * search the match by name via DAO
+     * @param name
      * This method is used to check if a match is valid for updating or not.  
 	 * A match is not valid for updating if an existing match already has the
 	 * same name.
