@@ -111,17 +111,17 @@ public class LoginDialog extends JDialog {
             }
         }
     }
-    
+
     private final Action cancelAction = new AbstractAction("Cancel") {
         public void actionPerformed(ActionEvent e) {
             LoginDialog.this.dispose();
         }
     };
-    
+
     private final Action connectionManagerAction = new AbstractAction("Manage Connections...") {
         public void actionPerformed(ActionEvent e) { sessionContext.showDatabaseConnectionManager(); };
     };
-    
+
 	/**
 	 * The session context for this application.  The list of available
 	 * databases lives here, and login attempts will happen via this object.
@@ -142,7 +142,7 @@ public class LoginDialog extends JDialog {
 	protected ArchitectDataSource dbSource;
 	private ConnectionComboBoxModel connectionModel;
 	private JComponent panel;
-    
+
     private ActionListener loginAction = new LoginAction();
 
 	private ListDataListener connListener = new ListDataListener() {
@@ -162,7 +162,7 @@ public class LoginDialog extends JDialog {
 		        LoginDialog.this.dbSource = dbSource;
             }
 		}};
-    
+
     /**
      * Creates a new login dialog, but does not display it.  Normally you should use
      * {@link SwingSessionContextImpl#showLoginDialog()} and not create new login dialogs
@@ -213,6 +213,7 @@ public class LoginDialog extends JDialog {
 		bbBuilder.addRelatedGap();
 		bbBuilder.addGridded(cancelButton);
 
+
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled()  ? new FormDebugPanel(layout) : new JPanel(layout);
 
@@ -232,6 +233,7 @@ public class LoginDialog extends JDialog {
 		pb.add(progressBar,cc.xyw(2,12,6));
 		pb.add(bbBuilder.getPanel(), cc.xyw(2,16,7));
 
+		getRootPane().setDefaultButton(loginButton);
 		return pb.getPanel();
 	}
 
