@@ -16,7 +16,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	List<PlFolder> folders;
 	MatchMakerSessionContext context;
 	Connection con;
-	
+
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
 	}
@@ -86,11 +86,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         this.con = con;
     }
 
-	public boolean isThisMatchNameAcceptable(Match match,String name) {
-		return false;
-	}
-
-	public Match getMatchByName(String name) {
+    public Match getMatchByName(String name) {
 		return null;
 	}
 
@@ -98,5 +94,10 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         // TODO Auto-generated method stub
         return null;
     }
+
+	public boolean isThisMatchNameAcceptable(String name) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }

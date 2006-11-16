@@ -32,14 +32,14 @@ import ca.sqlpower.util.UnknownFreqCodeException;
  * look up and store the business objects.
  */
 public class MatchMakerSessionImpl implements MatchMakerSession {
-    
+
     private static final Logger logger = Logger.getLogger(MatchMakerSessionImpl.class);
-    
+
     /**
      * The ID of the next instance we will create.  Used for Hibernate integration (ugh?)
      */
     private static long nextInstanceID = 0L;
-    
+
     /**
      * The map used by {@link #getSpecificInstance(String)}.
      */
@@ -60,7 +60,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
      * The ID of this instance. A string version of this value is the key in the {@link #sessions} map.
      */
     private final long instanceID;
-    
+
     private final MatchMakerSessionContext context;
     private final SessionFactory hibernateSessionFactory;
 	private final SQLDatabase database;
@@ -68,7 +68,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 	private PLUser appUser;
 	private String dbUser;
 	private Date sessionStartTime;
-    
+
     private PlFolderDAO folderDAO;
     private MatchDAO matchDAO;
 
@@ -79,7 +79,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 				SQLException, ArchitectException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
-        
+
         this.context = context;
 		database = new SQLDatabase(ds);
 		dbUser = ds.getUser();
@@ -90,7 +90,7 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
 		appUser = sm.getPrincipal();
 		sessionStartTime = new Date();
 		this.hibernateSessionFactory = buildHibernateSessionFactory(ds);
-        
+
         folderDAO = new PlFolderDAOHibernate(hibernateSessionFactory, this);
         matchDAO = new MatchDAOHibernate(hibernateSessionFactory, this);
 	}
@@ -178,21 +178,11 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
     }
 
     public Match getMatchByName(String name) {
-    	List <Match> matches = getDAO(Match.class).findAll();
-    	for ( Match m : matches ) {
-    		if ( m.getName().equals(name) )
-    			return m;
-    	}
-    	return null;
+    	return matchDAO.findByName(name);
     }
 
-	public boolean isThisMatchNameAcceptable(Match match, String name) {
-		List <Match> matches = getDAO(Match.class).findAll();
-    	for ( Match m : matches ) {
-    		if ( !m.equals(match) && m.getName().equals(name) )
-    			return false;
-    	}
-    	return true;
+	public boolean isThisMatchNameAcceptable(String name) {
+		return matchDAO.isThisMatchNameAcceptable(name);
 	}
 
     public String createNewUniqueName() {
