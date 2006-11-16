@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import javax.sql.RowSet;
 import javax.swing.AbstractAction;
@@ -29,6 +30,7 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.CommonCloseAction;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
@@ -139,14 +141,30 @@ public class MatchValidationStatus extends JDialog {
 
 	private void createUI() {
 
-		// TODO: add folder combo box
-		DefaultComboBoxModel model = new DefaultComboBoxModel(); //get matches from the selected folder
+		final JComboBox folderComboBox = new JComboBox(swingSession.getFolders().toArray());
+		folderComboBox.setSelectedItem(match.getParent());
+		folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
+		List <Match> matches = ((PlFolder)match.getParent()).getChildren();
+		DefaultComboBoxModel model = new DefaultComboBoxModel(matches.toArray());
 		final JComboBox matchComboBox = new JComboBox(model);
+		matchComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
+
+		folderComboBox.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e) {
+				List <Match> matches = ((PlFolder)match.getParent()).getChildren();
+				matchComboBox.removeAllItems();
+				for ( Match m : matches ) {
+					matchComboBox.addItem(m);
+				}
+				matchComboBox.setSelectedItem(null);
+			}});
+
 		matchComboBox.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {
+				Match selectedMatch = (Match) matchComboBox.getSelectedItem();
+				if ( selectedMatch == null ) return;
 				RowSetModel rsm = null;
 				try {
-					Match selectedMatch = (Match) matchComboBox.getSelectedItem();
 					rsm = new RowSetModel(getMatchStats(selectedMatch));
 					MatchStatsTableModel model = new MatchStatsTableModel(rsm);
 					status.setModel(model);
@@ -162,20 +180,22 @@ public class MatchValidationStatus extends JDialog {
 			}});
 
 		FormLayout layout = new FormLayout(
-                "10dlu,fill:400dlu:grow, 10dlu",
+                "10dlu,fill:pref:grow, 10dlu",
          //		 1    2                  3    4                 5     6     7    8     9     10    11    12   13
-                "10dlu,12dlu,4dlu,20dlu,10dlu,fill:250dlu:grow,4dlu,20dlu,4dlu");
-        //		 1     2     3    4     5     6                7    8     9     10    11    12   13
+                "10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu,fill:pref:grow,4dlu,pref,4dlu");
+        //		 1     2    3    4    5    6    7    8    9     10             11   12   13
         PanelBuilder pb;
         JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout) : new JPanel(layout);
         pb = new PanelBuilder(layout, p);
 
         CellConstraints cc = new CellConstraints();
 
-        pb.add(new JLabel("Match:"), cc.xy(2,2,"l,c"));
-		pb.add(matchComboBox, cc.xy(2,4,"l,c"));
+        pb.add(new JLabel("Folder:"), cc.xy(2,2,"l,c"));
+		pb.add(folderComboBox, cc.xy(2,4,"l,c"));
+        pb.add(new JLabel("Match:"), cc.xy(2,6,"l,c"));
+		pb.add(matchComboBox, cc.xy(2,8,"l,c"));
 
-		pb.add(new JScrollPane(status), cc.xy(2,6,"f,f"));
+		pb.add(new JScrollPane(status), cc.xy(2,10,"f,f"));
 
         JButton save = new JButton(new AbstractAction("Save"){
 			public void actionPerformed(ActionEvent e) {
@@ -191,7 +211,7 @@ public class MatchValidationStatus extends JDialog {
         bb1.addGlue();
         bb1.addGridded(close);
         bb1.addRelatedGap();
-        pb.add(bb1.getPanel(), cc.xy(2,8));
+        pb.add(bb1.getPanel(), cc.xy(2,12));
 
         getContentPane().add(pb.getPanel());
         if ( match != null ) {

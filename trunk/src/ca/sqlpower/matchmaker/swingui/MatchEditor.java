@@ -325,7 +325,7 @@ public class MatchEditor {
         resultChooser.getSchemaComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
 
         folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
-        folderComboBox.setRenderer(new FolderComboBoxCellRenderer());
+        folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
         if ( match.getParent() != null) {
        		folderComboBox.setSelectedItem(match.getParent());
         }
