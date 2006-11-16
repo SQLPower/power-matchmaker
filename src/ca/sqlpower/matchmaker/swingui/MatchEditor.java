@@ -23,11 +23,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -83,43 +86,13 @@ public class MatchEditor {
      */
 	private final Match match;
 
-    public MatchEditor(MatchMakerSwingSession swingSession, Match match) throws HeadlessException, ArchitectException {
+    public MatchEditor(MatchMakerSwingSession swingSession, Match match)
+    	throws HeadlessException, ArchitectException {
     	super();
         this.swingSession = swingSession;
         if (match == null) throw new NullPointerException("You can't edit a null plmatch");
         this.match = match;
         buildUI();
-    }
-
-
-    // TODO: remove, use the new validtion API instead
-    private boolean checkStringNullOrEmpty (String value, String name) {
-        String trimedValue = null;
-        if ( value != null ) {
-            trimedValue = value.trim();
-        }
-        if ( value == null || trimedValue == null || trimedValue.length() == 0 ) {
-            JOptionPane.showMessageDialog(
-                    panel,
-                    name + " is required",
-                    name + " is required",
-                    JOptionPane.ERROR_MESSAGE );
-            return false;
-        }
-        return true;
-    }
-
-    // TODO: remove, use the new validtion API instead
-    private boolean checkObjectNullOrEmpty (Object value, String name) {
-        if ( value == null ) {
-            JOptionPane.showMessageDialog(
-                    panel,
-                    name + " is required",
-                    name + " is required",
-                    JOptionPane.ERROR_MESSAGE );
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -131,10 +104,12 @@ public class MatchEditor {
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(ActionEvent e) {
             try {
-                saveMatch();
-                JOptionPane.showMessageDialog(panel,
-                        "Match Interface Save Successfully",
-                        "Saved",JOptionPane.INFORMATION_MESSAGE);
+                boolean ok = saveMatch();
+                if ( ok ) {
+                	JOptionPane.showMessageDialog(panel,
+                			"Match Interface Save Successfully",
+                			"Saved",JOptionPane.INFORMATION_MESSAGE);
+                }
             } catch (Exception ex) {
                 ASUtils.showExceptionDialog(panel, "Match Interface Not Saved", ex);
             }
@@ -224,6 +199,10 @@ public class MatchEditor {
 
     private void buildUI() throws ArchitectException {
 
+    	matchId.addCaretListener(new CaretListener(){
+			public void caretUpdate(CaretEvent e) {
+				match.setName(matchId.getText());
+			}});
 		sourceChooser = new SQLObjectChooser(panel,
         		swingSession.getContext().getDataSources());
         resultChooser = new SQLObjectChooser(panel,
@@ -403,39 +382,12 @@ public class MatchEditor {
     /**
      * Copies all the values from the GUI components into the PlMatch
      * object this component is editing, then persists it to the database.
+     * @throws ArchitectException
+     * @return true if save OK
      */
-    private void saveMatch() {
-        if ( !checkObjectNullOrEmpty(
-        		sourceChooser.getTableComboBox().getSelectedItem(),
-        		"Source Table") )
-        	return;
-        if ( !checkStringNullOrEmpty(
-        		((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()).getName(),
-        		"Source Table Name") )
-        	return;
+    private boolean saveMatch() throws ArchitectException {
 
-        if ( sourceChooser.getCatalogComboBox().isEnabled() ) {
-        	if ( !checkObjectNullOrEmpty(
-        			sourceChooser.getCatalogComboBox().getSelectedItem(),
-        			"Source Catalog" ) )
-        		return;
-        	if ( !checkStringNullOrEmpty(
-        			((SQLCatalog)sourceChooser.getCatalogComboBox().getSelectedItem()).getName(),
-        			"Source Catalog Name" ) )
-        		return;
-        }
-
-        if ( sourceChooser.getSchemaComboBox().isEnabled() ) {
-        	if ( !checkObjectNullOrEmpty(
-        			sourceChooser.getSchemaComboBox().getSelectedItem(),
-        			"Source Schema"))
-        		return;
-        	if ( !checkStringNullOrEmpty(
-        			((SQLSchema)sourceChooser.getSchemaComboBox().getSelectedItem()).getName(),
-        			"Source Schema Name"))
-        		return;
-        }
-
+    	final String matchName = matchId.getText().trim();
         match.setType((Match.MatchType)matchType.getSelectedItem());
         match.getMatchSettings().setDescription(desc.getText());
 
@@ -449,68 +401,75 @@ public class MatchEditor {
         		((SQLIndex) sourceChooser.getUniqueKeyComboBox().
         				getSelectedItem()));
 
-        String id = matchId.getText().trim();
+        if ((matchName == null || matchName.length() == 0) &&
+        		match.getSourceTable().getTable() == null ) {
+        	JOptionPane.showMessageDialog(getPanel(),
+        			"Match Name can not be empty",
+        			"Error",
+        			JOptionPane.ERROR_MESSAGE);
+        	return false;
+        }
+
+        String id = matchName;
         if ( id == null || id.length() == 0 ) {
         	StringBuffer s = new StringBuffer();
         	s.append("MATCH_");
         	SQLTable table = match.getSourceTable().getTable();
-			if ( table.getCatalogName() != null &&
+			if ( table != null &&
+					table.getCatalogName() != null &&
         			table.getCatalogName().length() > 0 ) {
         		s.append(table.getCatalogName()).append("_");
         	}
-        	if ( table.getSchemaName() != null &&
+			if ( table != null &&
+					table.getSchemaName() != null &&
         			table.getSchemaName().length() > 0 ) {
         		s.append(table.getSchemaName()).append("_");
         	}
-        	s.append(table.getName());
+			if ( table != null ) {
+				s.append(table.getName());
+			}
         	id = s.toString();
-
-
-        	if ( swingSession.isThisMatchNameAcceptable(id) ) {
-        		matchId.setText(id);
-            } else {
-            	// TODO: prompt the user name duplicated
-            }
+        	matchId.setText(id);
         }
 
-        if ( !checkStringNullOrEmpty(matchId.getText(),"Match ID") )
-            return;
+        if ( swingSession.isThisMatchNameAcceptable(id) ) {
+        } else {
+        	int respond = JOptionPane.showConfirmDialog(getPanel(),
+        			"Match name exist or invalid, Do you want to overwrite the exist match?",
+        			"Match name invalid",
+        			JOptionPane.YES_NO_OPTION);
+        	if ( respond != JOptionPane.YES_OPTION )
+        		return false;
+        }
+
 
         match.setName(matchId.getText());
+        match.setFilter(filterPanel.getFilterTextArea().getText());
         logger.debug("Saving Match:" + match.getName());
 
 
-        if ( sourceChooser.getUniqueKeyComboBox().getSelectedItem() != null ) {
-            match.getSourceTable().setUniqueIndex(
-            		((SQLIndex)sourceChooser.getUniqueKeyComboBox().getSelectedItem()));
-        }
-        match.setFilter(filterPanel.getFilterTextArea().getText());
-
+        SQLDatabase resultTableParentDB = null;
         if ( resultChooser.getCatalogComboBox().isEnabled() &&
-        		resultChooser.getCatalogComboBox().getSelectedItem() == null ) {
-        	SQLDatabase db = resultChooser.getDb();
-        	try {
-        		SQLCatalog cat = db.getCatalogByName(
-        				((SQLCatalog)sourceChooser.getCatalogComboBox().
-        						getSelectedItem()).getName());
-        		resultChooser.getCatalogComboBox().setSelectedItem(cat);
-        	} catch (ArchitectException e1) {
-        		ASUtils.showExceptionDialogNoReport(panel,
-        				"Unknown Database error", e1);
-        	}
+        		resultChooser.getCatalogComboBox().getSelectedItem() != null ) {
+        	resultTableParentDB = ((SQLCatalog)resultChooser.getCatalogComboBox().
+        			getSelectedItem()).getParentDatabase();
+        } else if ( resultChooser.getSchemaComboBox().isEnabled() &&
+        		resultChooser.getSchemaComboBox().getSelectedItem() != null ) {
+        	resultTableParentDB = ArchitectUtils.getAncestor(
+        			(SQLSchema)resultChooser.getSchemaComboBox().getSelectedItem(),
+        			SQLDatabase.class );
+        } else {
+        	resultTableParentDB = (SQLDatabase)resultChooser.getDb();
         }
 
-
-
-        String trimedValue = null;
-        String resultTable = resultTableName.getText();
-        if ( resultTable != null ) {
-            trimedValue = resultTable.trim();
+        String trimedresultTableName = resultTableName.getText().trim();
+        if ( trimedresultTableName == null || trimedresultTableName.length() == 0 ) {
+        	trimedresultTableName = "MM_"+match.getName();
         }
-        if ( trimedValue == null || trimedValue.length() == 0 ) {
-            resultTableName.setText("MM_"+match.getName());
-        }
-        match.setResultTable(new SQLTable());
+        match.setResultTable(new SQLTable(resultTableParentDB,
+        		trimedresultTableName,
+        		"MatchMaker result table",
+        		"TABLE", true));
 
         // XXX don't use hibernate directly; use the DAOs
         Transaction tx = HibernateUtil.primarySession().beginTransaction();
@@ -519,6 +478,7 @@ public class MatchEditor {
         tx.commit();
         HibernateUtil.primarySession().refresh(match);
         HibernateUtil.primarySession().flush();
+		return true;
 
     }
 }
