@@ -431,7 +431,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     /**
      * Returns the frame for this Swing session.
      */
-    JFrame getFrame() {
+    public JFrame getFrame() {
         return frame;
     }
 

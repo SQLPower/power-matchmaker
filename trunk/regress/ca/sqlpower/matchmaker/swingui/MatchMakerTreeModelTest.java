@@ -3,6 +3,8 @@ package ca.sqlpower.matchmaker.swingui;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.swing.event.TreeModelEvent;
+
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -41,6 +43,11 @@ public class MatchMakerTreeModelTest extends TestCase {
 				1, counter.getAllEventCounts());
 		assertEquals("Last event source should be folder",
 				folder,counter.getLastEvt().getSource());
+		TreeModelEvent evt = counter.getLastEvt();
+		assertEquals(1, evt.getChildIndices().length);
+		assertEquals(1, evt.getChildren().length);
+		assertEquals(folder.getChildren().indexOf(mmo), evt.getChildIndices()[0]);
+		assertSame(mmo, evt.getChildren()[0]);
 	}
 
 	/**
@@ -80,6 +87,12 @@ public class MatchMakerTreeModelTest extends TestCase {
 				1, counter.getAllEventCounts());
 		assertEquals("Last event source should be mmo",
 				mmo,counter.getLastEvt().getSource());
+
+		TreeModelEvent evt = counter.getLastEvt();
+		assertEquals(1, evt.getChildIndices().length);
+		assertEquals(1, evt.getChildren().length);
+		assertEquals(0, evt.getChildIndices()[0]);
+		assertSame(mmo, evt.getChildren()[0]);
 	}
 
 	/**

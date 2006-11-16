@@ -3,9 +3,11 @@ package ca.sqlpower.matchmaker.swingui.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MatchEditor;
@@ -17,7 +19,7 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 public final class NewMatchAction extends AbstractAction {
 
     private final MatchMakerSwingSession swingSession;
-	private final PlFolder folder;
+	private PlFolder folder;
 
 	public NewMatchAction(
             MatchMakerSwingSession swingSession,
@@ -31,8 +33,21 @@ public final class NewMatchAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 	    MatchEditor me;
 		try {
-			// FIXME no user
 			final Match match = new Match();
+			match.setSession(swingSession);
+			match.setType(Match.MatchType.FIND_DUPES);
+
+			if ( folder == null ) {
+				folder = ArchitectUtils.getTreeObject(swingSession.getTree(),PlFolder.class);
+			}
+			if ( folder == null ) {
+				JOptionPane.showMessageDialog(swingSession.getFrame(),
+						"Please select a folder first",
+						"Warning",
+						JOptionPane.INFORMATION_MESSAGE);
+				return;
+			}
+
 			folder.addChild(match);
 			me = new MatchEditor(swingSession, match);
 		} catch (ArchitectException e1) {
