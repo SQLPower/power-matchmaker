@@ -101,25 +101,30 @@ public class MatchMakerSessionImpl implements MatchMakerSession {
     	return null;
     }
 
-	public boolean isThisMatchNameAcceptable(String name) {
-		return getMatchByName(name) == null;
+	public boolean isThisMatchNameAcceptable(Match match, String name) {
+		List <Match> matches = getDAO(Match.class).findAll();
+    	for ( Match m : matches ) {
+    		if ( !m.equals(match) && m.getName().equals(name) )
+    			return false;
+    	}
+    	return true;
 	}
 
     public String createNewUniqueName() {
         String name = "New Match";
-        if (isThisMatchNameAcceptable(name)){
+        if (getMatchByName(name) == null) {
             return name;
         } else{
             int num=1;
             //Iterates until it finds a name that does not conflict with
             //existing match names
-            while(!isThisMatchNameAcceptable(name+num)){
+            while(getMatchByName(name+num) != null) {
                 num++;
                 name = "New Match" + num;
             }
             return name;
         }
-        
+
     }
 
 }

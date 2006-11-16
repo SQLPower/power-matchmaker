@@ -232,8 +232,8 @@ public class MatchEditor {
 
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   16dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   4dlu,32dlu,  16dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
-    	//		 1     2     3    4     5    6     7    8        9 10    11   12    13   14  15   16       17    18     19  20    21   22    23   24    25
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   16dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   4dlu,32dlu,  16dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
+    	//		 1     2    3    4    5    6    7    8    9    10      11    12   13   14  15   16       17    18     19  20    21   22    23   24    25
 
 		PanelBuilder pb;
 
@@ -241,40 +241,40 @@ public class MatchEditor {
 		pb = new PanelBuilder(layout, p);
 		CellConstraints cc = new CellConstraints();
 
-		pb.add(new JLabel("Match ID:"), cc.xy(2,2,"r,c"));
-		pb.add(new JLabel("Folder:"), cc.xy(2,4,"r,c"));
-		pb.add(new JLabel("Description:"), cc.xy(2,6,"r,t"));
-		pb.add(new JLabel("Type:"), cc.xy(2,8,"r,c"));
+		pb.add(new JLabel("Match ID:"), cc.xy(2,4,"r,c"));
+		pb.add(new JLabel("Folder:"), cc.xy(2,6,"r,c"));
+		pb.add(new JLabel("Description:"), cc.xy(2,8,"r,t"));
+		pb.add(new JLabel("Type:"), cc.xy(2,10,"r,c"));
 
-		pb.add(matchId, cc.xy(4,2));
-		pb.add(folderComboBox, cc.xy(4,4));
-		pb.add(new JScrollPane(desc), cc.xy(4,6,"f,f"));
-		pb.add(matchType, cc.xy(4,8));
+		pb.add(matchId, cc.xy(4,4));
+		pb.add(folderComboBox, cc.xy(4,6));
+		pb.add(new JScrollPane(desc), cc.xy(4,8,"f,f"));
+		pb.add(matchType, cc.xy(4,10));
 
-		pb.add(sourceChooser.getCatalogTerm(), cc.xy(2,10,"r,c"));
-		pb.add(sourceChooser.getSchemaTerm(), cc.xy(2,12,"r,c"));
-		pb.add(new JLabel("Table Name:"), cc.xy(2,14,"r,c"));
-		pb.add(new JLabel("Unique Index:"), cc.xy(2,16,"r,t"));
-		pb.add(new JLabel("Filter:"), cc.xy(2,18,"r,t"));
+		pb.add(sourceChooser.getCatalogTerm(), cc.xy(2,12,"r,c"));
+		pb.add(sourceChooser.getSchemaTerm(), cc.xy(2,14,"r,c"));
+		pb.add(new JLabel("Table Name:"), cc.xy(2,16,"r,c"));
+		pb.add(new JLabel("Unique Index:"), cc.xy(2,18,"r,t"));
+		pb.add(new JLabel("Filter:"), cc.xy(2,20,"r,t"));
 
-		pb.add(sourceChooser.getCatalogComboBox(), cc.xy(4,10));
-		pb.add(sourceChooser.getSchemaComboBox(), cc.xy(4,12));
-		pb.add(sourceChooser.getTableComboBox(), cc.xy(4,14));
-		pb.add(sourceChooser.getUniqueKeyComboBox(), cc.xy(4,16,"f,f"));
-		pb.add(filterPanel, cc.xy(4,18,"f,f"));
+		pb.add(sourceChooser.getCatalogComboBox(), cc.xy(4,12));
+		pb.add(sourceChooser.getSchemaComboBox(), cc.xy(4,14));
+		pb.add(sourceChooser.getTableComboBox(), cc.xy(4,16));
+		pb.add(sourceChooser.getUniqueKeyComboBox(), cc.xy(4,18,"f,f"));
+		pb.add(filterPanel, cc.xy(4,20,"f,f"));
 
-		pb.add(resultChooser.getCatalogTerm(), cc.xy(2,20,"r,c"));
-		pb.add(resultChooser.getSchemaTerm(), cc.xy(2,22,"r,c"));
-		pb.add(new JLabel("Table Name:"), cc.xy(2,24,"r,c"));
+		pb.add(resultChooser.getCatalogTerm(), cc.xy(2,22,"r,c"));
+		pb.add(resultChooser.getSchemaTerm(), cc.xy(2,24,"r,c"));
+		pb.add(new JLabel("Table Name:"), cc.xy(2,26,"r,c"));
 
-		pb.add(resultChooser.getCatalogComboBox(), cc.xy(4,20));
-		pb.add(resultChooser.getSchemaComboBox(), cc.xy(4,22));
-		pb.add(resultTableName, cc.xy(4,24));
+		pb.add(resultChooser.getCatalogComboBox(), cc.xy(4,22));
+		pb.add(resultChooser.getSchemaComboBox(), cc.xy(4,24));
+		pb.add(resultTableName, cc.xy(4,26));
 
 
 
-		pb.add(viewBuilder, cc.xy(6,10,"f,f"));
-		pb.add(createResultTable, cc.xywh(6,20,1,3));
+		pb.add(viewBuilder, cc.xy(6,12,"f,f"));
+		pb.add(createResultTable, cc.xywh(6,22,1,3));
 
 		ButtonStackBuilder bb = new ButtonStackBuilder();
 		bb.addGridded(saveMatch);
@@ -296,7 +296,7 @@ public class MatchEditor {
 
 
 
-		pb.add(bb.getPanel(), cc.xywh(8,2,1,14,"f,f"));
+		pb.add(bb.getPanel(), cc.xywh(8,4,1,14,"f,f"));
 		panel = pb.getPanel();
 
 		setDefaultSelections();
@@ -432,7 +432,7 @@ public class MatchEditor {
         	matchId.setText(id);
         }
 
-        if ( swingSession.isThisMatchNameAcceptable(id) ) {
+        if ( swingSession.isThisMatchNameAcceptable(match,id) ) {
         } else {
         	int respond = JOptionPane.showConfirmDialog(getPanel(),
         			"Match name exist or invalid, Do you want to overwrite the exist match?",
