@@ -35,8 +35,8 @@ public class MatchInfoPanel implements ArchitectPanel {
 		DateFormat df = new DateFormatAllowsNull();
 
 		FormLayout layout = new FormLayout(
-				"4dlu,80dlu,4dlu,fill:200dlu:grow, 4dlu ", // columns
-				"10dlu,  12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,12dlu, 12dlu,   12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,12dlu, 12dlu,    12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,10dlu"); // rows
+				"4dlu,pref,4dlu,fill:pref:grow, 4dlu ", // columns
+				"10dlu,  pref,4dlu,pref,4dlu,pref,4dlu,pref, 12dlu,   pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 12dlu,    pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,10dlu"); // rows
 
 		PanelBuilder pb;
 
@@ -68,7 +68,7 @@ public class MatchInfoPanel implements ArchitectPanel {
 		pb.add(new JLabel(match.getName()), cc.xy(4,10));
 		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,12,"f,f"));
 		pb.add(new JLabel(match.getLastUpdateAppUser()), cc.xy(4,14));
-		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,15,"f,f"));
+		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,16,"f,f"));
 
 		JLabel checkout = new JLabel("Checkout Information");
 		Font f = checkout.getFont();
