@@ -61,11 +61,10 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	 */
 	public void addChild(C child) {
 		children.add(child);
-		int [] insertedIndices = {children.size()};
+		child.setParent(this);
 		List<C> insertedChildren = new ArrayList<C>();
 		insertedChildren.add(child);
-		child.setParent(this);
-		eventSupport.fireChildrenInserted("children",insertedIndices,insertedChildren);
+		eventSupport.fireChildrenInserted("children",new int[] {children.size()-1},insertedChildren);
 	}
 
 	public int getChildCount() {
