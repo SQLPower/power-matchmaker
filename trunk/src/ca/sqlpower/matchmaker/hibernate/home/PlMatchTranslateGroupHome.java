@@ -21,6 +21,31 @@ public class PlMatchTranslateGroupHome extends BaseHibernateHome<PlMatchTranslat
 
 	private static final Log log = LogFactory.getLog(PlMatchTranslateGroupHome.class);
 
+//    @Override
+//    public List<PlMatchTranslateGroup> findAll() {
+//        Statement stmt = null;
+//        ResultSet rs = null;
+//        try {
+//            List<PlMatchTranslateGroup> groups = new ArrayList<PlMatchTranslateGroup>();
+//            stmt = getCon().createStatement();
+//            rs = stmt.executeQuery("SELECT * FROM pl_match_translate_group");
+//            while (rs.next()) {
+//                
+//            }
+//        } finally {
+//            try {
+//                if (rs != null) rs.close();
+//            } catch (SQLException ex) {
+//                log.error(ex)
+//            }
+//            try {
+//                if (stmt != null) stmt.close();
+//            } catch (SQLException ex) {
+//                log.error(ex)
+//            }
+//        }
+//        return super.findAll();
+//    }
         
     public void saveOrUpdate(PlMatchTranslateGroup instance) {
         log.debug("attaching dirty PlMatchTranslateGroup instance");
@@ -89,4 +114,3 @@ public class PlMatchTranslateGroupHome extends BaseHibernateHome<PlMatchTranslat
 		return CLASS_NAME;
 	} 
 }
-
