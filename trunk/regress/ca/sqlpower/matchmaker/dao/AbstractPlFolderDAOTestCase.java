@@ -42,6 +42,7 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 		
 		dao.save(f);
 		f.addChild(match);
+        dao.save(f);
 		List<PlFolder> folders = dao.findAll();
 		PlFolder fAgain = folders.get(folders.indexOf(f));
 		assertEquals("Wrong number of children", 1,fAgain.getChildCount());

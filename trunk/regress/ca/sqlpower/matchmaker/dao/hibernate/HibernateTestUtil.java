@@ -14,7 +14,13 @@ public class HibernateTestUtil {
 	//The password for test database(oracle) mm_test: cowmoo
 
 	
-	public static ArchitectDataSource getSqlServerDS() { 
+	private static final SessionFactory SQLSERVER_SESSION_FACTORY =
+        buildHibernateSessionFactory(getSqlServerDS());
+    
+    private static final SessionFactory ORACLE_SESSION_FACTORY =
+        buildHibernateSessionFactory(getOracleDS());;
+
+    public static ArchitectDataSource getSqlServerDS() { 
 		/*
 		 * Setup information for SQL Server
 		 */
@@ -35,7 +41,7 @@ public class HibernateTestUtil {
 
 	public static ArchitectDataSource getOracleDS() { 
 		/*
-		 * Setup information for SQL Server
+		 * Setup information for Oracle
 		 */
 		final String oracleUserName = "mm_test";
 		final String oraclePassword = "cowmoo";
@@ -54,12 +60,12 @@ public class HibernateTestUtil {
 	}
     
 	/**
-	 * Get a session factory from a datasource
+	 * Builds a session factory from a datasource
 	 * @param ds an architect datasource with the following fields filled in:
 	 * 			driverClass, pass,Url,userName,plSchema and plDbType
 	 * @return a new hibernate session
 	 */	
-	private static SessionFactory getHibernateSessionFactory(ArchitectDataSource ds) {
+	private static SessionFactory buildHibernateSessionFactory(ArchitectDataSource ds) {
 		Configuration cfg = new Configuration();
 		SessionFactory sessionFactory = null;
 		cfg.configure(new File("./hibernate/hibernate.cfg.xml")); // FIXME
@@ -69,23 +75,19 @@ public class HibernateTestUtil {
 		
 		// last-minute configuration overrides for stuff that can only be known
 		// at runtime
-		cfg.setProperty("hibernate.connection.driver_class", ds
-				.getDriverClass());
-		cfg.setProperty("hibernate.connection.password", ds.getPass());
-		cfg.setProperty("hibernate.connection.url", ds.getUrl());
-		cfg.setProperty("hibernate.connection.username", ds.getUser());
+//		cfg.setProperty("hibernate.connection.driver_class", ds
+//				.getDriverClass());
+//		cfg.setProperty("hibernate.connection.password", ds.getPass());
+//		cfg.setProperty("hibernate.connection.url", ds.getUrl());
+//		cfg.setProperty("hibernate.connection.username", ds.getUser());
 		cfg.setProperty("hibernate.default_schema", ds.getPlSchema());
 
-		String plDbType2Dialect = HibernateUtil.plDbType2Dialect(ds.getPlDbType());
 		cfg.setProperty("hibernate.show_sql", "true");
 		cfg.setProperty("hibernate.jdbc.batch_size", "0");
-		cfg.setProperty("hibernate.dialect", plDbType2Dialect);
-		cfg.setProperty("hibernate.c3p0.min_size", "1");
-		cfg.setProperty("hibernate.c3p0.max_size", "1");
-		cfg.setProperty("hibernate.c3p0.timeout", "0");
-		cfg.setProperty("hibernate.c3p0.max_statements", "0");
+		cfg.setProperty("hibernate.dialect", HibernateUtil.plDbType2Dialect(ds.getPlDbType()));
 		
 		// Create the SessionFactory from hibernate.cfg.xml
+        System.err.println("Creating a new Hibernate SessionFactory!");
 		sessionFactory = cfg.buildSessionFactory();
 		return sessionFactory;
 	}
@@ -96,7 +98,7 @@ public class HibernateTestUtil {
 	 * @return a session to an oracle database
 	 */
 	public static SessionFactory getOracleSessionFactory(){
-		return getHibernateSessionFactory(getOracleDS());
+		return ORACLE_SESSION_FACTORY;
 	}
 	
 	/**
@@ -105,6 +107,6 @@ public class HibernateTestUtil {
 	 * @return a session to an oracle database
 	 */
 	public static SessionFactory getSqlServerSessionFactory(){
-		return getHibernateSessionFactory(getSqlServerDS());
+		return SQLSERVER_SESSION_FACTORY;
 	}
 }

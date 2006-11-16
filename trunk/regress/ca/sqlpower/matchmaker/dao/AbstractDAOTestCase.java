@@ -3,6 +3,8 @@ package ca.sqlpower.matchmaker.dao;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,10 +37,18 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 
 	public MatchMakerSession session = new TestingMatchMakerSession();
 	@Override
-	protected void setUp() throws Exception {}{
-	
+	protected void setUp() throws Exception {
+        Connection con = null;
+        try {
+            con = session.getConnection();
+            // You forgot to set the session's connection didn't you?
+            DatabaseCleanup.clearDatabase(con);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }  
 	}
 	
+    // Test and see if find all throws an exception
 	public void testFindAll() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException{
 		D dao = getDataAccessObject();
 		List<T> all = dao.findAll();
@@ -93,26 +103,26 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		assertTrue("All should  be larger than 1",all.size()>1);
 		assertTrue("The "+item1.getClass() + " item1 was not in the list",all.contains(item1));
 		assertTrue("The "+item2.getClass() + " item2 was not in the list",all.contains(item2));
-		
 		T savedItem1 = all.get(all.indexOf(item1));
 		List<PropertyDescriptor> properties;
 		properties = Arrays.asList(PropertyUtils.getPropertyDescriptors(item1.getClass()));
 		
 		List<PropertyDescriptor> gettableProperties = new ArrayList<PropertyDescriptor>();
 		for (PropertyDescriptor d: properties){
-			if( d.getReadMethod() != null ) {
-				gettableProperties.add(d);
-			}
+		    if( d.getReadMethod() != null ) {
+		        gettableProperties.add(d);
+		    }
 		}
 		
 		List<String> nonPersistingProperties = getNonPersitingProperties();
 		for (PropertyDescriptor d: gettableProperties){
-			if (!nonPersistingProperties.contains(d.getName())) {
-				 Object old = BeanUtils.getSimpleProperty(item1, d.getName());
-				 Object newItem = BeanUtils.getSimpleProperty(savedItem1, d.getName());
-				 assertEquals("The property "+d.getName() +" was not persisted for object "+this.getClass(),old,newItem);
-			}
+		    if (!nonPersistingProperties.contains(d.getName())) {
+		        Object old = BeanUtils.getSimpleProperty(item1, d.getName());
+		        Object newItem = BeanUtils.getSimpleProperty(savedItem1, d.getName());
+		        assertEquals("The property "+d.getName() +" was not persisted for object "+this.getClass(),old,newItem);
+		    }
 		}
+		
 	}
 	
 	/**

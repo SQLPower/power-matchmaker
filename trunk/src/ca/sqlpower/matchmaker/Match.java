@@ -51,10 +51,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	/** The type of match */
 	MatchType type;
 
-	/** A little note on this match object */
-	//TODO this has been moved into the settings, but is used by the gui
-	String description;
-
 	/**
 	 * The table where we get the match data.
 	 */
@@ -82,9 +78,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	/** FIXME can't remember what the view does */
 	ViewSpec view;
 
-
-	/** The point above which matches are done automatically */
-	int autoMatchThreshold;
 
 	public Match( ) {
 		matchSettings = new MatchSettings();
@@ -121,31 +114,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	public void createViewTable() {
 		throw new NotImplementedException();
 	}
-
-	public int getAutoMatchThreshold() {
-		return autoMatchThreshold;
-	}
-
-	public void setAutoMatchThreshold(int autoMatchThreshold) {
-		int oldValue = this.autoMatchThreshold;
-		this.autoMatchThreshold = autoMatchThreshold;
-		getEventSupport().firePropertyChange("autoMatchThreshold", oldValue,
-				this.autoMatchThreshold);
-	}
-
-	@Deprecated
-	public  String getDescription() {
-		return description;
-	}
-
-	@Deprecated
-	public void setDescription(String description) {
-		String oldValue = this.description;
-		this.description = description;
-		getEventSupport().firePropertyChange("description", oldValue,
-				this.description);
-	}
-
+	
 	public String getFilter() {
 		return filter;
 	}
@@ -233,28 +202,26 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		return null;
 	}
 	@Override
-	public int hashCode() {
-		final int PRIME = 31;
-		int result = 1;
-		result = PRIME * result + ((oid == null) ? 0 : oid.hashCode());
-		return result;
-	}
+    public int hashCode() {
+        final int PRIME = 31;
+        int result = 0;
+        result = PRIME * result + ((getName() == null) ? 0 : getName().hashCode());
+        return result;
+    }
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final Match other = (Match) obj;
-		if (oid == null) {
-			if (other.oid != null)
-				return false;
-		} else if (!oid.equals(other.oid))
-			return false;
-		return true;
-	}
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (getClass() != obj.getClass())
+            return false;
+        final Match other = (Match) obj;
+        if (getName() == null) {
+            if (other.getName() != null)
+                return false;
+        } else if (!getName().equals(other.getName()))
+            return false;
+        return true;
+    }
 	public Long getOid() {
 		return oid;
 	}

@@ -629,6 +629,10 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return sessionImpl.getDAO(businessClass);
     }
 
+    public Connection getConnection() {
+        return sessionImpl.getConnection();
+    }
+
 	public Match getMatchByName(String name) {
 		return sessionImpl.getMatchByName(name);
 	}

@@ -57,7 +57,7 @@ public class MatchInfoPanel implements ArchitectPanel {
 
 		pb.add(new JLabel(match.getName()), cc.xy(4,2));
 		pb.add(new JLabel(folderName), cc.xy(4,4));
-		pb.add(new JLabel(match.getDescription()), cc.xy(4,6,"f,f"));
+		pb.add(new JLabel(match.getMatchSettings().getDescription()), cc.xy(4,6,"f,f"));
 		pb.add(new JLabel(match.getType().toString()), cc.xy(4,8));
 
 		pb.add(new JLabel("Logged on As:"), cc.xy(2,10,"r,c"));
