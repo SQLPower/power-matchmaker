@@ -114,7 +114,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	public void createViewTable() {
 		throw new NotImplementedException();
 	}
-	
+
 	public String getFilter() {
 		return filter;
 	}
@@ -210,10 +210,13 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     }
 	@Override
     public boolean equals(Object obj) {
-        if (this == obj)
+		if ( !(obj instanceof Match) ) {
+			return false;
+		}
+        if (this == obj) {
             return true;
-        if (getClass() != obj.getClass())
-            return false;
+        }
+
         final Match other = (Match) obj;
         if (getName() == null) {
             if (other.getName() != null)
