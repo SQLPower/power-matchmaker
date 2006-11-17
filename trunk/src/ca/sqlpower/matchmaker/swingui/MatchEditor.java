@@ -159,7 +159,7 @@ public class MatchEditor {
 	private Action validationStatusAction = new AbstractAction("View Validation ValidateResult") {
 		public void actionPerformed(ActionEvent e) {
 			MatchValidationStatus p = new MatchValidationStatus(swingSession, match,
-                    ArchitectPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation ValidateResult"));
+                    ArchitectPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation Status"));
 			p.pack();
 			p.setVisible(true);
 		}};
