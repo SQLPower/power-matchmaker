@@ -213,7 +213,7 @@ public class MatchStatisticsPanel extends JPanel {
 			header.getColumnModel().getColumn(0).setHeaderValue("Run #");
 			header.getColumnModel().getColumn(1).setHeaderValue("Start Time");
 			header.getColumnModel().getColumn(2).setHeaderValue("Elapsed(sec)");
-			header.getColumnModel().getColumn(3).setHeaderValue("Status");
+			header.getColumnModel().getColumn(3).setHeaderValue("ValidateResult");
 			header.getColumnModel().getColumn(4).setHeaderValue("Total Found");
 			header.getColumnModel().getColumn(5).setHeaderValue("Added");
 			header.getColumnModel().getColumn(6).setHeaderValue("Updated");
