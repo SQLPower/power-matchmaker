@@ -81,4 +81,10 @@ public class StubMatchMakerSession implements MatchMakerSession{
         return null;
     }
 
+    public long countMatchByName(String name) {
+        // TODO Auto-generated method stub
+        logger.debug("Stub call: StubMatchMakerSession.countMatchByName()");
+        return 0;
+    }
+
 }

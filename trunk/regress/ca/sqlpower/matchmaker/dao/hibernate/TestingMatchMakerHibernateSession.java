@@ -144,4 +144,10 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         return false;
     }
 
+    public long countMatchByName(String name) {
+        // TODO Auto-generated method stub
+        logger.debug("Stub call: TestingMatchMakerHibernateSession.countMatchByName()");
+        return 0;
+    }
+
 }
