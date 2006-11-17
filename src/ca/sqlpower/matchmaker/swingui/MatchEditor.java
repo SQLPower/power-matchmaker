@@ -371,6 +371,14 @@ public class MatchEditor {
     		}
     		resultTableName.setText(match.getResultTable().getName());
     	}
+        
+        //This listener is put here to update the SQLTable in FilterPanel so the 
+        //FilterMakerDialog two dropdown boxes can work properly
+        sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
+            public void itemStateChanged(ItemEvent e) {
+                filterPanel.setTable((SQLTable)(sourceChooser.getTableComboBox().getSelectedItem()));                
+            }
+         });
     }
 
 	public JPanel getPanel() {
