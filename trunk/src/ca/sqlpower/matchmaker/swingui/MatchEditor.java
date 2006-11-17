@@ -43,10 +43,10 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.util.SourceTable;
-import ca.sqlpower.validation.Status;
+import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
-import ca.sqlpower.validation.swingui.TextComponentValidationHandler;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -156,10 +156,10 @@ public class MatchEditor {
 			p.setVisible(true);
 		}};
 
-	private Action validationStatusAction = new AbstractAction("View Validation Status") {
+	private Action validationStatusAction = new AbstractAction("View Validation ValidateResult") {
 		public void actionPerformed(ActionEvent e) {
 			MatchValidationStatus p = new MatchValidationStatus(swingSession, match,
-                    ArchitectPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation Status"));
+                    ArchitectPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation ValidateResult"));
 			p.pack();
 			p.setVisible(true);
 		}};
@@ -207,8 +207,9 @@ public class MatchEditor {
 				match.setName(matchId.getText());
 			}});
 
-        Validator v = new MatchNameValidator(match,swingSession);
-        new TextComponentValidationHandler(v, status, matchId);
+        Validator v = new MatchNameValidator(swingSession);
+        FormValidationHandler handler = new FormValidationHandler(status);
+        handler.addValidateObject(matchId,v);
 
 
 		sourceChooser = new SQLObjectChooser(panel,
@@ -480,31 +481,25 @@ public class MatchEditor {
 
     private class MatchNameValidator implements Validator {
 
-    	private Match match;
-    	private String message;
 		private MatchMakerSwingSession session;
 
-		public MatchNameValidator(Match match, MatchMakerSwingSession session) {
-    		this.match = match;
+		public MatchNameValidator(MatchMakerSwingSession session) {
     		this.session = session;
 		}
-		public Status validate(Object contents) {
-			message = "";
+		public ValidateResult validate(Object contents) {
+
+			ValidateResult result = new ValidateResult();
+			result.setMessage("");
+
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
-				message = "Match name can not be null";
-				return Status.FAIL;
+				result.setMessage("Match name can not be null");
+				result.setStatus(ValidateResult.Status.WARN);
+			} else if ( !session.isThisMatchNameAcceptable(value) ) {
+				result.setMessage("Match name is invalid or already existed.");
+				result.setStatus(ValidateResult.Status.FAIL);
 			}
-	        final boolean status = session.isThisMatchNameAcceptable(value);
-	        if ( status == false ) {
-	        	message = "Match name is invalid or already existed.";
-	        }
-			return status? Status.OK : Status.FAIL;
+			return result;
 		}
-
-		public String getMessage() {
-			return message;
-		}
-
     }
 }
