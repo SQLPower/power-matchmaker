@@ -645,4 +645,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return sessionImpl.createNewUniqueName();
     }
 
+	public long countMatchByName(String name) {
+		return sessionImpl.countMatchByName(name);
+	}
+
 }

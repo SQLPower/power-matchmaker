@@ -81,6 +81,14 @@ public interface MatchMakerSession {
 	 * @return true if no match found under given name, false otherwise
 	 */
     public boolean isThisMatchNameAcceptable(String name);
+
+    /**
+	 * count match entity by given name
+	 * @param name
+	 * @return number of match entity
+	 */
+    public long countMatchByName(String name);
+
     /**
      * find the Match Object by name, search by the DAO
      * @param name the name of the match desired
