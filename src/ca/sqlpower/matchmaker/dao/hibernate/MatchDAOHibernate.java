@@ -48,10 +48,15 @@ public class MatchDAOHibernate extends AbstractMatchMakerDAOHibernate<Match> imp
 	}
 
 	public boolean isThisMatchNameAcceptable(String name) {
+		Long count = countMatchByName(name);
+		return (count == 0);
+	}
+
+	public long countMatchByName(String name) {
 		Session session = getCurrentSession();
 		Query query = session.createQuery("select count(*) from Match m where m.name = :name");
 		query.setParameter("name", name, Hibernate.STRING);
 		Long count = (Long)query.uniqueResult();
-		return (count == 0);
+		return count;
 	}
 }

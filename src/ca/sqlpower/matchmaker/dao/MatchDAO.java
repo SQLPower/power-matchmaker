@@ -36,4 +36,11 @@ public interface MatchDAO extends MatchMakerDAO<Match> {
 	 * @return true if no match found under given name, false otherwise
 	 */
 	public boolean isThisMatchNameAcceptable(String name);
+
+	/**
+	 * count match entity by given name
+	 * @param name
+	 * @return number of match entity by given name
+	 */
+	public long countMatchByName(String name);
 }
