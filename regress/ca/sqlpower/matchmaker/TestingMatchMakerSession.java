@@ -100,4 +100,8 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		return false;
 	}
 
+    public long countMatchByName(String name) {    
+        return 0;
+    }
+
 }
