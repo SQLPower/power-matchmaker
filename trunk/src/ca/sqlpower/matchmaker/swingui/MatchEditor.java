@@ -23,8 +23,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 
 import org.apache.log4j.Logger;
 
@@ -89,13 +87,28 @@ public class MatchEditor {
      * create a new MatchEditor.
      */
 	private final Match match;
+	private final PlFolder<Match> folder;
+	private FormValidationHandler handler;
 
-    public MatchEditor(MatchMakerSwingSession swingSession, Match match)
-    	throws HeadlessException, ArchitectException {
+	/**
+	 * the constructor, for a match that is not new, we create a backup for it,
+	 * and give it the name of the old one, when we save it, we will remove the
+	 * the backup from the folder, and insert the new one.
+	 * @param swingSession  -- a MatchMakerSession
+	 * @param match			-- a Match Object to be edited
+	 * @param folder		-- where the match is
+	 * @param newMatch		-- a flag indicates it's a new match or not
+	 * @throws HeadlessException
+	 * @throws ArchitectException
+	 */
+    public MatchEditor(MatchMakerSwingSession swingSession, Match match,
+    		PlFolder<Match> folder) throws HeadlessException, ArchitectException {
     	super();
         this.swingSession = swingSession;
         if (match == null) throw new NullPointerException("You can't edit a null plmatch");
         this.match = match;
+        this.folder = folder;
+        handler = new FormValidationHandler(status);
         buildUI();
     }
 
@@ -110,12 +123,13 @@ public class MatchEditor {
             try {
                 boolean ok = saveMatch();
                 if ( ok ) {
-                	JOptionPane.showMessageDialog(panel,
+                	JOptionPane.showMessageDialog(swingSession.getFrame(),
                 			"Match Interface Save Successfully",
                 			"Saved",JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (Exception ex) {
-                ASUtils.showExceptionDialog(panel, "Match Interface Not Saved", ex);
+                ASUtils.showExceptionDialog(swingSession.getFrame(),
+                		"Match Interface Not Saved", ex);
             }
 		}
 	};
@@ -171,11 +185,14 @@ public class MatchEditor {
 				v.pack();
 				v.setVisible(true);
 			} catch (HeadlessException e1) {
-				ASUtils.showExceptionDialog(panel, "Unknown Error",e1);
+				ASUtils.showExceptionDialog(swingSession.getFrame(),
+						"Unknown Error",e1);
 			} catch (SQLException e1) {
-				ASUtils.showExceptionDialog(panel, "Unknown SQL Error",e1);
+				ASUtils.showExceptionDialog(swingSession.getFrame(),
+						"Unknown SQL Error",e1);
 			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialog(panel, "Unknown Error",e1);
+				ASUtils.showExceptionDialog(swingSession.getFrame(),
+						"Unknown Error",e1);
 			}
 		}};
 	private Action viewBuilderAction = new AbstractAction("View Builder") {
@@ -189,7 +206,8 @@ public class MatchEditor {
                     d.setSize(800, d.getPreferredSize().height);
                     d.setVisible(true);
                 } catch (ArchitectException ex) {
-                    ASUtils.showExceptionDialog(panel, "Couldn't create view builder", ex);
+                    ASUtils.showExceptionDialog(swingSession.getFrame(),
+                    		"Couldn't create view builder", ex);
                 }
             }
 		}};
@@ -197,25 +215,19 @@ public class MatchEditor {
 	private Action createResultTableAction = new AbstractAction("Create Table") {
 		public void actionPerformed(ActionEvent e) {
             // TODO
-            JOptionPane.showMessageDialog(panel, "We can't create tables yet, sorry.");
+            JOptionPane.showMessageDialog(swingSession.getFrame(),
+            		"We can't create tables yet, sorry.");
 		}
 	};
 
+
+
     private void buildUI() throws ArchitectException {
 
-    	matchId.addCaretListener(new CaretListener(){
-			public void caretUpdate(CaretEvent e) {
-				match.setName(matchId.getText());
-			}});
-
-        Validator v = new MatchNameValidator(swingSession);
-        FormValidationHandler handler = new FormValidationHandler(status);
-        handler.addValidateObject(matchId,v);
-
-
-		sourceChooser = new SQLObjectChooser(panel,
+    	matchId.setName("Match ID");
+		sourceChooser = new SQLObjectChooser(swingSession.getFrame(),
         		swingSession.getContext().getDataSources());
-        resultChooser = new SQLObjectChooser(panel,
+        resultChooser = new SQLObjectChooser(swingSession.getFrame(),
         		swingSession.getContext().getDataSources());
 
         filterPanel = new FilterComponentsPanel();
@@ -337,6 +349,9 @@ public class MatchEditor {
         matchType.setSelectedItem(match.getType());
         filterPanel.getFilterTextArea().setText(match.getFilter());
 
+        Validator v = new MatchNameValidator(swingSession);
+        handler.addValidateObject(matchId,v);
+
         if ( match.getSourceTable() != null ) {
 
         	SQLTable tableByName = match.getSourceTable().getTable();
@@ -373,8 +388,8 @@ public class MatchEditor {
     		resultTableName.setText(match.getResultTable().getName());
     	}
 
-        // This listener is put here to update the SQLTable in FilterPanel so the
-        // FilterMakerDialog two dropdown boxes can work properly
+        //This listener is put here to update the SQLTable in FilterPanel so the
+        //FilterMakerDialog two dropdown boxes can work properly
         sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
             public void itemStateChanged(ItemEvent e) {
                 filterPanel.setTable((SQLTable)(sourceChooser.getTableComboBox().getSelectedItem()));
@@ -386,12 +401,7 @@ public class MatchEditor {
 		return panel;
 	}
 
-	public void setPanel(JPanel panel) {
-		if (this.panel != panel) {
-			this.panel = panel;
-			//TODO fire event
-		}
-	}
+
 
     /**
      * Copies all the values from the GUI components into the PlMatch
@@ -400,6 +410,30 @@ public class MatchEditor {
      * @return true if save OK
      */
     private boolean saveMatch() throws ArchitectException {
+
+    	List<String> fail = handler.getFailResults();
+    	List<String> warn = handler.getWarnResults();
+
+    	if ( fail.size() > 0 ) {
+    		StringBuffer failMessage = new StringBuffer();
+    		for ( String f : fail ) {
+    			failMessage.append(f).append("\n");
+    		}
+    		JOptionPane.showMessageDialog(swingSession.getFrame(),
+    				"You have to fix these errors before saving:\n"+failMessage.toString(),
+    				"Match error",
+    				JOptionPane.ERROR_MESSAGE);
+    		return false;
+    	} else if ( warn.size() > 0 ) {
+    		StringBuffer warnMessage = new StringBuffer();
+    		for ( String w : warn ) {
+    			warnMessage.append(w).append("\n");
+    		}
+    		JOptionPane.showMessageDialog(swingSession.getFrame(),
+    				"Warning: match will be saved, but you may not be able to run it, because of these wanings:\n"+warnMessage.toString(),
+    				"Match warning",
+    				JOptionPane.INFORMATION_MESSAGE);
+    	}
 
     	final String matchName = matchId.getText().trim();
         match.setType((Match.MatchType)matchType.getSelectedItem());
@@ -446,19 +480,6 @@ public class MatchEditor {
         	matchId.setText(id);
         }
 
-        match.setName(matchId.getText());
-        if ( !swingSession.isThisMatchNameAcceptable(match.getName()) ) {
-        	JOptionPane.showMessageDialog(getPanel(),
-        			"Match name \""+match.getName()+
-        			"\" exist or invalid. The match has not been saved",
-        			"Match name invalid",
-        			JOptionPane.ERROR_MESSAGE);
-       		return false;
-        }
-        match.setFilter(filterPanel.getFilterTextArea().getText());
-        logger.debug("Saving Match:" + match.getName());
-
-
         SQLDatabase resultTableParentDB = null;
         if ( resultChooser.getCatalogComboBox().isEnabled() &&
         		resultChooser.getCatalogComboBox().getSelectedItem() != null ) {
@@ -482,6 +503,26 @@ public class MatchEditor {
         		"MatchMaker result table",
         		"TABLE", true));
 
+        match.setFilter(filterPanel.getFilterTextArea().getText());
+
+        if ( !matchId.getText().equals(match.getName()) ) {
+        	if ( !swingSession.isThisMatchNameAcceptable(matchId.getText()) ) {
+        		JOptionPane.showMessageDialog(getPanel(),
+        				"Match name \""+matchId.getText()+
+        				"\" exist or invalid. The match has not been saved",
+        				"Match name invalid",
+        				JOptionPane.ERROR_MESSAGE);
+        		return false;
+        	}
+        	match.setName(matchId.getText());
+        }
+
+        logger.debug("Saving Match:" + match.getName());
+
+        if ( !folder.getChildren().contains(match)) {
+        	folder.addChild(match);
+        }
+
         MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
         dao.save(match);
 		return true;
@@ -499,12 +540,13 @@ public class MatchEditor {
 		public ValidateResult validate(Object contents) {
 
 			String value = (String)contents;
-			if (value == null || value.length() == 0) {
+			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.WARN,
-					"Match name is required");
-			} else if (!session.isThisMatchNameAcceptable(value)) {
+						"Match name is required");
+			} else if ( !value.equals(match.getName()) &&
+						!session.isThisMatchNameAcceptable(value) ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-					"Match name is invalid or already exists.");
+						"Match name is invalid or already exists.");
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}

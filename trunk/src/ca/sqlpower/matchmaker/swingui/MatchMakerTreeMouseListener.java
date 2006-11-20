@@ -50,7 +50,8 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
 
                     MatchEditor me;
                     try {
-                        me = new MatchEditor(swingSession, (Match) o);
+                        me = new MatchEditor(swingSession,(Match) o,
+                        		(PlFolder<Match>)((Match) o).getParent());
                     } catch (ArchitectException e1) {
                         throw new ArchitectRuntimeException(e1);
                     }
