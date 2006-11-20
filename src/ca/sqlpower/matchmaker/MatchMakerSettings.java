@@ -5,6 +5,8 @@ package ca.sqlpower.matchmaker;
 
 import java.util.Date;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.util.log.Log;
 
 /**
@@ -15,6 +17,8 @@ import ca.sqlpower.matchmaker.util.log.Log;
 public abstract class MatchMakerSettings extends
 		AbstractMatchMakerObject<MatchMakerSettings, MatchMakerObject> {
 
+    private static final Logger logger = Logger.getLogger(MatchMakerSettings.class);
+    
 	@Override
     public int hashCode() {
         final int PRIME = 31;
@@ -33,56 +37,75 @@ public abstract class MatchMakerSettings extends
 
 	@Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (!(obj instanceof MatchMakerSettings)){
+            return false;
+        }
+        if (this == obj) {
             return true;
-        if (getClass() != obj.getClass())
-            return false;
+        }
         final MatchMakerSettings other = (MatchMakerSettings) obj;
+        
+        logger.debug("MMSettings.equals(): this date="+this.getLastRunDate()+"; other date="+other.getLastRunDate()+
+                "\n this="+this+
+                "\nother="+other);
+        
+        logger.debug("comparing appendToLog");
         if (appendToLog == null) {
-            if (other.appendToLog != null)
-                return false;
-        } else if (!appendToLog.equals(other.appendToLog))
+            if (other.appendToLog != null) return false;
+        } else if (!appendToLog.equals(other.appendToLog)) {
             return false;
+        }
+        
+        logger.debug("comparing debug");
         if (debug == null) {
-            if (other.debug != null)
-                return false;
-        } else if (!debug.equals(other.debug))
+            if (other.debug != null) return false;
+        } else if (!debug.equals(other.debug)) {
             return false;
+        }
+        logger.debug("comparing description");
         if (description == null) {
-            if (other.description != null)
-                return false;
-        } else if (!description.equals(other.description))
+            if (other.description != null) return false;
+        } else if (!description.equals(other.description)) {
             return false;
+        }
+        
+        logger.debug("Ok, actually comparing lastRunDate now");
         if (lastRunDate == null) {
-            if (other.lastRunDate != null)
-                return false;
-        } else if (!lastRunDate.equals(other.lastRunDate))
+            if (other.lastRunDate != null) return false;
+        } else if (!lastRunDate.equals(other.lastRunDate)) {
             return false;
+        }
+        
         if (log == null) {
-            if (other.log != null)
-                return false;
-        } else if (!log.equals(other.log))
+            if (other.log != null) return false;
+        } else if (!log.equals(other.log)) {
             return false;
+        }
+        
         if (processCount == null) {
-            if (other.processCount != null)
-                return false;
-        } else if (!processCount.equals(other.processCount))
+            if (other.processCount != null) return false;
+        } else if (!processCount.equals(other.processCount)) {
             return false;
+        }
+        
         if (rollbackSegmentName == null) {
-            if (other.rollbackSegmentName != null)
-                return false;
-        } else if (!rollbackSegmentName.equals(other.rollbackSegmentName))
+            if (other.rollbackSegmentName != null) return false;
+        } else if (!rollbackSegmentName.equals(other.rollbackSegmentName)) {
             return false;
+        }
+        
         if (sendEmail == null) {
-            if (other.sendEmail != null)
-                return false;
-        } else if (!sendEmail.equals(other.sendEmail))
+            if (other.sendEmail != null) return false;
+        } else if (!sendEmail.equals(other.sendEmail)) {
             return false;
+        }
+        
         if (showProgressFreq == null) {
-            if (other.showProgressFreq != null)
-                return false;
-        } else if (!showProgressFreq.equals(other.showProgressFreq))
+            if (other.showProgressFreq != null) return false;
+        } else if (!showProgressFreq.equals(other.showProgressFreq)) {
             return false;
+        }
+        
         return true;
     }
 
@@ -125,7 +148,7 @@ public abstract class MatchMakerSettings extends
 	 */
 	private Date lastRunDate;
 	
-	public Boolean isAppendToLog() {
+	public Boolean getAppendToLog() {
 		return appendToLog;
 	}
 
@@ -136,7 +159,7 @@ public abstract class MatchMakerSettings extends
 				appendToLog);
 	}
 
-	public Boolean isDebug() {
+	public Boolean getDebug() {
 		return debug;
 	}
 
@@ -157,7 +180,7 @@ public abstract class MatchMakerSettings extends
 				processCount);
 	}
 
-	public Boolean isSendEmail() {
+	public Boolean getSendEmail() {
 		return sendEmail;
 	}
 
@@ -167,7 +190,7 @@ public abstract class MatchMakerSettings extends
 		getEventSupport().firePropertyChange("sendEmail", oldValue, sendEMail);
 	}
 
-	public Long isShowProgressFreq() {
+	public Long getShowProgressFreq() {
 		return showProgressFreq;
 	}
 
@@ -212,10 +235,31 @@ public abstract class MatchMakerSettings extends
 		return lastRunDate;
 	}
 
+    /**
+     * Stores a defensive copy of the given date.
+     * 
+     * @param lastRunDate The last time the match or merge was run, it can be null.
+     */
 	public void setLastRunDate(Date lastRunDate) {
 		Date oldValue = this.lastRunDate;
-		this.lastRunDate = lastRunDate;
+		this.lastRunDate = lastRunDate == null ? null : new Date(lastRunDate.getTime());
 		getEventSupport().firePropertyChange("lastRunDate", oldValue, this.lastRunDate);
 	}
+    
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("MatchMakerSetting [");
+        buf.append("appendToLog->"+appendToLog+", ");
+        buf.append("debug->"+debug+", ");
+        buf.append("description->"+description+", ");
+        buf.append("lastRunDate->"+lastRunDate +", ");
+        buf.append("log->"+log+", ");
+        buf.append("processCount->"+processCount+", ");
+        buf.append("rollbackSegmentName->"+rollbackSegmentName+", ");
+        buf.append("sendEmail->"+sendEmail+", ");
+        buf.append("showProgressFreq->"+showProgressFreq +"]");
+        return buf.toString();
+    }
 
 }

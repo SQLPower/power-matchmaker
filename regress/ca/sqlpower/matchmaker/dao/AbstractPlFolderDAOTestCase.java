@@ -11,7 +11,7 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 	int count=0;
 
 	@Override
-	public PlFolder<MatchMakerObject> getNewObjectUnderTest() throws Exception {
+	public PlFolder<MatchMakerObject> createNewObjectUnderTest() throws Exception {
 		count++;
 		PlFolder<MatchMakerObject> plFolder =
 			new PlFolder<MatchMakerObject>("Test Folder");
@@ -33,7 +33,7 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 	}
 	
 	public void testMatchesPersist() throws Exception {
-		PlFolder f = getNewObjectUnderTest();
+		PlFolder f = createNewObjectUnderTest();
 		Match match = new Match();
 		match.setName("child");
 		match.setType(Match.MatchType.FIND_DUPES);

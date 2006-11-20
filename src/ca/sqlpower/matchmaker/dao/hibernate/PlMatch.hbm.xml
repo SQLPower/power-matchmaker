@@ -8,8 +8,8 @@
 
 	<class name="ca.sqlpower.matchmaker.Match"
 		table="PL_MATCH">
-		<id name="oid" type="long">
-			<column name="MATCH_OID" sql-type="integer"/>
+		<id name="oid" type="long" access="field">
+			<column name="MATCH_OID" />
 			<generator class="native">
 				<param name="sequence">pl_match_match_oid_seq</param>
 			</generator>
@@ -56,10 +56,10 @@
 			<column name="xref_table_name" length="30" />
 		</property>
 
-		<property name="createDate" type="date" access="field">
+		<property name="createDate" type="timestamp" access="field">
 			<column name="CREATE_DATE" length="23" />
 		</property>
-		<property name="lastUpdateDate" type="date" access="field">
+		<property name="lastUpdateDate" type="timestamp" access="field">
 			<column name="LAST_update_DATE" length="23" />
 		</property>
 		<property name="lastUpdateAppUser" type="string" access="field">
@@ -97,8 +97,8 @@
 				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="MATCH_APPEND_TO_LOG_IND" length="1" />
 			</property>
-			<property name="lastRunDate" type="date">
-				<column name="MATCH_LAST_RUN_DATE" length="23" />
+			<property name="lastRunDate" type="timestamp">
+				<column name="MATCH_LAST_RUN_DATE" />
 			</property>
 			<property name="breakUpMatch"
 				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
@@ -145,7 +145,7 @@
 				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="MERGE_APPEND_TO_LOG_IND" length="1" />
 			</property>
-			<property name="lastRunDate" type="date">
+			<property name="lastRunDate" type="timestamp">
 				<column name="MERGE_LAST_RUN_DATE" length="23" />
 			</property>
 			<property name="backUp"
@@ -167,7 +167,7 @@
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="checked_out_ind" length="1" />
 		</property>
-		<property name="checkedOutDate" type="date">
+		<property name="checkedOutDate" type="timestamp">
 			<column name="checked_out_date" length="23" />
 		</property>
 		<property name="checkedOutUser" type="string">
@@ -196,15 +196,14 @@
 			</key>
 			<one-to-many
 				class="ca.sqlpower.matchmaker.hibernate.PlMergeCriteria" />
-		</set>
-		<set name="plMatchGroups" access="field" lazy="true"
-			inverse="true" fetch="subselect" cascade="all">
+		</set-->
+		<bag name="matchCriteriaGroups" inverse="true" fetch="subselect" cascade="all">
 			<key>
 				<column name="MATCH_OID" length="80" not-null="true" />
 			</key>
 			<one-to-many
-				class="ca.sqlpower.matchmaker.hibernate.PlMatchGroup" />
-		</set> -->
+				class="ca.sqlpower.matchmaker.MatchMakerCriteriaGroup" />
+		</bag>
 
 		<many-to-one name="parent"
 			class="ca.sqlpower.matchmaker.PlFolder" fetch="select">

@@ -55,13 +55,13 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 	
 	public void testSave() throws Exception {
 		D dao = getDataAccessObject();
-		T item1 = getNewObjectUnderTest();
+		T item1 = createNewObjectUnderTest();
 		dao = getDataAccessObject();
 		dao.save(item1);
 	}
 	public void testDeleteExisting() throws Exception {
-		T item1 = getNewObjectUnderTest();
-		T item2 = getNewObjectUnderTest();
+		T item1 = createNewObjectUnderTest();
+		T item2 = createNewObjectUnderTest();
 		D dao = getDataAccessObject();
 		dao.save(item1);
 		dao.save(item2);
@@ -77,23 +77,16 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		// This may fail, but it has to be done
 		// make sure there are no objects of this type in the test data
 		D dao = getDataAccessObject();
-		List<T> all = dao.findAll();
-		for (T item: all) {
-			dao.delete(item);
-		}
-		T item1 = getNewObjectUnderTest();
-		T item2 = getNewObjectUnderTest();
-		dao = getDataAccessObject();
+		List<T> all;
+		T item1 = createNewObjectUnderTest();
 		dao.save(item1);
-		dao.save(item2);
 		all = dao.findAll();
-		assertTrue("All should  be larger than 1",all.size()>1);
-		assertTrue("The "+item1.getClass() + " item1 was not in the list",all.contains(item1));
-		assertTrue("The "+item2.getClass() + " item2 was not in the list",all.contains(item2));
-		T savedItem1 = all.get(all.indexOf(item1));
+        assertEquals("We only persisted one item", 1, all.size());
+		T savedItem1 = all.get(0);
 		List<PropertyDescriptor> properties;
 		properties = Arrays.asList(PropertyUtils.getPropertyDescriptors(item1.getClass()));
 		
+        // list all the readable properties
 		List<PropertyDescriptor> gettableProperties = new ArrayList<PropertyDescriptor>();
 		for (PropertyDescriptor d: properties){
 		    if( d.getReadMethod() != null ) {
@@ -101,12 +94,19 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		    }
 		}
 		
+        System.err.println("     item1="+item1);
+        System.err.println("savedItem1="+savedItem1);
+        
+        // compare the values of each readable property
 		List<String> nonPersistingProperties = getNonPersitingProperties();
 		for (PropertyDescriptor d: gettableProperties){
 		    if (!nonPersistingProperties.contains(d.getName())) {
 		        Object old = BeanUtils.getSimpleProperty(item1, d.getName());
 		        Object newItem = BeanUtils.getSimpleProperty(savedItem1, d.getName());
-		        assertEquals("The property "+d.getName() +" was not persisted for object "+this.getClass(),old,newItem);
+		        assertEquals(
+                        "The property "+d.getName() +" was not persisted for object "+this.getClass(),
+                        String.valueOf(old),
+                        String.valueOf(newItem));
 		    }
 		}
 		
@@ -120,7 +120,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 	 * @return a new test object 
 	 * @throws Exception 
 	 */
-	public abstract T getNewObjectUnderTest() throws Exception;
+	public abstract T createNewObjectUnderTest() throws Exception;
 	
 	/**
 	 * This should return the data access object that is being tested
@@ -178,10 +178,17 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						}
 					} else if (property.getPropertyType() == String.class) {
 						// make sure it's unique
-						newVal = "new " + oldVal;
-				
-					} else if (property.getPropertyType() == Boolean.TYPE) {
-						newVal = new Boolean(!((Boolean) oldVal).booleanValue());
+                        if (oldVal == null) {
+                            newVal = "string";
+                        } else {
+                            newVal = "new " + oldVal;
+                        }
+					} else if (property.getPropertyType() == Boolean.class) {
+                        if(oldVal == null){
+                            newVal = new Boolean(false);
+                        } else {
+                            newVal = new Boolean(!((Boolean) oldVal).booleanValue());
+                        }
 					} else if (property.getPropertyType() == Long.class) {
 						if (oldVal == null) {
 							newVal = new Long(0L);
@@ -207,6 +214,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 							newVal = mergeSettings;
 						} else if (property.getPropertyType() == SQLTable.class) {
 							newVal = new SQLTable();
+                            ((SQLTable)newVal).setName("Fake Table");
 						} else if (property.getPropertyType() == ViewSpec.class) {
 							newVal = new ViewSpec();
 						} else if (property.getPropertyType() == Log.class) {
@@ -242,6 +250,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						((MatchMakerObject)newVal).setSession(getSession());
 					}
 				
+                    assertNotNull("Ooops we should have set "+property.getName() + " to a value in "+mmo.getClass().getName(),newVal);
 					int oldChangeCount = listener.getAllEventCounts();
 				
 					try {

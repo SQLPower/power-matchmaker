@@ -11,14 +11,47 @@ public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria>
 
 	private Long oid;
 	private String desc;
-	private Long matchPercent;		// NULL or something from 0-100, but not guaranteed
+	private Short matchPercent;		// NULL or something from 0-100, but not guaranteed
 	private String filter;			// SQL filter for process match criteria group
-	private boolean active;			// enable or disable a group for the engine
+	private Boolean active;			// enable or disable a group for the engine
 
 	// default constructor
 	public MatchMakerCriteriaGroup( ) {
 	}
 
+    public Long getOid() {
+        return oid;
+    }
+    public void setOid(Long oid) {
+        this.oid = oid;
+    }
+    
+    /**
+     * Gets the grandparent of this object in the MatchMaker object tree.  If the parent
+     * (a folder) is null, returns null.
+     */
+    public Match getParentMatch() {
+        MatchMakerObject parentFolder = getParent();
+        if (parentFolder == null) {
+            return null;
+        } else {
+            return (Match) parentFolder.getParent();
+        }
+    }
+    
+    /**
+     * Sets the parent of this object to be the matach criteria group folder of the given match object
+     * 
+     * this will fire a <b>parent</b> changed event not a parent match event
+     */
+    public void setParentMatch(Match grandparent) {
+        if (grandparent == null) {
+            setParent(null);
+        } else {
+            setParent(grandparent.getMatchCriteriaGroupFolder());
+        }
+    }
+    
 	public String getDesc() {
 		return desc;
 	}
@@ -29,22 +62,22 @@ public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria>
 		getEventSupport().firePropertyChange("desc", oldDesc, desc);
 	}
 
-	public Long getMatchPercent() {
+	public Short getMatchPercent() {
 		return matchPercent;
 	}
 
-	public void setMatchPercent(Long matchPercent) {
-		Long oldValue = this.matchPercent;
+	public void setMatchPercent(Short matchPercent) {
+        Short oldValue = this.matchPercent;
 		this.matchPercent = matchPercent;
 		getEventSupport().firePropertyChange("matchPercent", oldValue, matchPercent);
 	}
 
-	public boolean isActive() {
+	public Boolean getActive() {
 		return active;
 	}
 
-	public void setActive(boolean active) {
-		boolean oldValue = this.active;
+	public void setActive(Boolean active) {
+		Boolean oldValue = this.active;
 		this.active = active;
 		getEventSupport().firePropertyChange("active", oldValue, active);
 	}
@@ -61,7 +94,8 @@ public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria>
 
 	@Override
 	public int hashCode() {
-		return oid.hashCode();
+        int result = ((getName() == null) ? 0 : getName().hashCode());
+        return result;
 	}
 
 
@@ -74,10 +108,10 @@ public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria>
 		if (getClass() != obj.getClass())
 			return false;
 		final MatchmakerCriteria other = (MatchmakerCriteria) obj;
-		if (oid == null) {
-			if (other.oid != null)
+		if (getName() == null) {
+			if (other.getName() != null)
 				return false;
-		} else if (!oid.equals(other.oid))
+		} else if (!getName().equals(other.getName()))
 			return false;
 		return true;
 	}

@@ -84,4 +84,38 @@ public abstract class BaseLogger implements Log {
 	public List<String> readAsList() {
 		throw new UnsupportedOperationException("Write-only logger");
 	}
+
+    @Override
+    public int hashCode() {
+        final int PRIME = 31;
+        int result = 1;
+        result = PRIME * result + ((constraint == null) ? 0 : constraint.hashCode());
+        result = PRIME * result + ((level == null) ? 0 : level.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final BaseLogger other = (BaseLogger) obj;
+        if (constraint == null) {
+            if (other.constraint != null)
+                return false;
+        } else if (!constraint.equals(other.constraint))
+            return false;
+        if (level == null) {
+            if (other.level != null)
+                return false;
+        } else if (!level.equals(other.level))
+            return false;
+        return true;
+    }
+    
+    
+    
 }

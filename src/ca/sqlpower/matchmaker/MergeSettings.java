@@ -44,7 +44,7 @@ public class MergeSettings extends MatchMakerSettings {
 	 */
 	Boolean augmentNull;
 
-	public Boolean isBackUp() {
+	public Boolean getBackUp() {
 		return backUp;
 	}
 
@@ -54,7 +54,7 @@ public class MergeSettings extends MatchMakerSettings {
 		getEventSupport().firePropertyChange("backUp", oldValue, backUp);
 	}
 
-	public Boolean isAugmentNull() {
+	public Boolean getAugmentNull() {
 		return augmentNull;
 	}
 

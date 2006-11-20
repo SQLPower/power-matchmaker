@@ -17,10 +17,12 @@ import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
@@ -54,8 +56,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * @param mmSessionId The ID that was generated in createSession().
      * @return The MatchMakerSession instance with the given ID, or null if there is no such session.
      */
-    // FIXME make package private and move this class to hibernate dao package
-    public static MatchMakerSession getSpecificInstance(String mmSessionId) {
+    static MatchMakerSession getSpecificInstance(String mmSessionId) {
         return sessions.get(mmSessionId);
     }
 
@@ -74,6 +75,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     private PlFolderDAO folderDAO;
     private MatchDAO matchDAO;
+    private MatchCriteriaGroupDAO matchMakerCriteriaGroupDAO;
 
 	public MatchMakerHibernateSessionImpl(
             MatchMakerSessionContext context,
@@ -96,6 +98,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
         folderDAO = new PlFolderDAOHibernate(this);
         matchDAO = new MatchDAOHibernate(this);
+        matchMakerCriteriaGroupDAO = new MatchMakerCriteriaGroupDAOHibernate(this);
 	}
 
     public MatchMakerSessionContext getContext() {
@@ -135,6 +138,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             return (MatchMakerDAO<T>) folderDAO;
         } else if (businessClass == Match.class) {
             return (MatchMakerDAO<T>) matchDAO;
+        } else if (businessClass == MatchMakerCriteriaGroup.class){
+            return (MatchMakerDAO<T>) matchMakerCriteriaGroupDAO;
         } else {
             throw new IllegalArgumentException("I don't know how to create a DAO for "+businessClass.getName());
         }

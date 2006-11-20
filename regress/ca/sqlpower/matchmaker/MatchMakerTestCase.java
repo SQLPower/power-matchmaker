@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -91,8 +92,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 						// make sure it's unique
 						newVal = "new " + oldVal;
 				
-					} else if (property.getPropertyType() == Boolean.TYPE) {
-						newVal = new Boolean(!((Boolean) oldVal).booleanValue());
+					} else if (property.getPropertyType() == Boolean.class || property.getPropertyType() == Boolean.TYPE ) {
+                        if(oldVal == null){
+                            newVal = new Boolean(false);
+                        } else {
+                            newVal = new Boolean(!((Boolean) oldVal).booleanValue());
+                        }
 					} else if (property.getPropertyType() == Long.class) {
 						if (oldVal == null) {
 							newVal = new Long(0L);
@@ -148,7 +153,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 						newVal = new SQLColumn();
 					} else if (property.getPropertyType() == Date.class) {
 						newVal = new Date();
-					} else {
+					} else if (property.getPropertyType() == List.class) {
+                        newVal = new ArrayList();
+                    } else if (property.getPropertyType() == Match.class) {
+                        newVal = new Match();
+                        ((Match) newVal).setName("Fake_Match_"+System.currentTimeMillis());
+                    } else {
 						throw new RuntimeException("This test case lacks a value for "
 								+ property.getName() + " (type "
 								+ property.getPropertyType().getName() + ") from "
@@ -159,7 +169,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 						((MatchMakerObject)newVal).setSession(session);
 					}
 				
-                    assertFalse("Old value and new value are equivalent for class "+property.getPropertyType(),
+                    assertFalse("Old value and new value are equivalent for class "+property.getPropertyType()+" of property "+property.getName(),
                             oldVal == null? oldVal == newVal:oldVal.equals(newVal));
 					int oldChangeCount = listener.getAllEventCounts();
 				
@@ -195,6 +205,13 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
      */
     public void testChildrenNotNull() {
         assertNotNull(getTarget().getChildren());
+    }
+    
+    /**
+     * All objects should return false for .equals(null), not true or throw an exception.
+     */
+    public void testNullEquality(){
+        assertFalse("equals(null) has to work, and return false",getTarget().equals(null));
     }
 
 }

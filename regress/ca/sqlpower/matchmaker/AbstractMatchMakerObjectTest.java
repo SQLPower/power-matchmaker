@@ -74,4 +74,4 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 		mmo2.addChild(mmo1);
 		assertEquals("mmo2 is not the parent of mmo1",mmo2,mmo1.getParent());
 	}
-}
+}    

@@ -46,42 +46,46 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	}
 
 	/** the oid for the match */
-	Long oid;
+	private Long oid;
 
 	/** The type of match */
-	MatchType type;
+    private MatchType type;
 
 	/**
 	 * The table where we get the match data.
 	 */
-	SourceTable sourceTable;
+    private SourceTable sourceTable;
 
 	/**
 	 * The table where the engine stores the results of a match
 	 */
-	SQLTable resultTable;
+    private SQLTable resultTable;
 
 	/**
 	 * Table used for cross references
 	 */
-	SQLTable xrefTable;
+    private SQLTable xrefTable;
 
 	/** The settings for the match engine */
-	MatchSettings matchSettings;
+    private MatchSettings matchSettings = new MatchSettings();;
 
 	/** the settings for the merge engine */
-	MergeSettings mergeSettings;
+    private MergeSettings mergeSettings = new MergeSettings();;
 
 	/** a filter for the tables that are matched */
-	String filter;
+    private String filter;
 
-	/** FIXME can't remember what the view does */
-	ViewSpec view;
+	/** an optional source for the match created from a view */
+    private ViewSpec view;
 
+    /**
+     * Contains the match criteria and the match critera groups
+     */
+    private MatchMakerFolder<MatchMakerCriteriaGroup> matchCriteriaGroupFolder = new MatchMakerFolder<MatchMakerCriteriaGroup>();
 
 	public Match( ) {
-		matchSettings = new MatchSettings();
-		mergeSettings = new MergeSettings();
+        matchCriteriaGroupFolder.setName("Match Criteria Groups");
+        this.addChild(matchCriteriaGroupFolder);        
 	}
 	/**
 	 * FIXME Implement me
@@ -201,6 +205,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		// TODO Auto-generated method stub
 		return null;
 	}
+    
 	@Override
     public int hashCode() {
         final int PRIME = 31;
@@ -208,6 +213,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         result = PRIME * result + ((getName() == null) ? 0 : getName().hashCode());
         return result;
     }
+    
 	@Override
     public boolean equals(Object obj) {
 		if ( !(obj instanceof Match) ) {
@@ -216,7 +222,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         if (this == obj) {
             return true;
         }
-
         final Match other = (Match) obj;
         if (getName() == null) {
             if (other.getName() != null)
@@ -241,4 +246,51 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 				this.xrefTable);
 	}
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Match@").append(System.identityHashCode(this));
+        sb.append(": oid=").append(oid);
+        sb.append("; type=").append(type);
+        sb.append("; sourceTable=").append(sourceTable);
+        sb.append("; resultTable=").append(resultTable);
+        sb.append("; xrefTable=").append(xrefTable);
+        sb.append("; matchSettings=").append(matchSettings);
+        sb.append("; mergeSettings=").append(mergeSettings);
+        sb.append("; filter=").append(filter);
+        sb.append("; view=").append(view);
+        return sb.toString();
+    }
+    
+    /**
+     * Adds a match criteria group to the criteria group folder of this match
+     * 
+     * @param criteriaGroup
+     */
+    public void addMatchCriteriaGroup(MatchMakerCriteriaGroup<MatchmakerCriteria> criteriaGroup) {
+        // The folder will fire the child inserted event
+        matchCriteriaGroupFolder.addChild(criteriaGroup);
+    }
+    
+    /**
+     * Removes the match criteria group from the criteria group folder of this match
+     * 
+     * @param criteriaGroup 
+     */
+    public void removeMatchCriteriaGroup(MatchMakerCriteriaGroup<MatchmakerCriteria> criteriaGroup) {
+        // The folder will fire the child removed event   
+        matchCriteriaGroupFolder.removeChild(criteriaGroup);
+    }
+    
+    public List<MatchMakerCriteriaGroup> getMatchCriteriaGroups(){
+        return matchCriteriaGroupFolder.getChildren();
+    }
+    
+    public void setMatchCriteriaGroups(List<MatchMakerCriteriaGroup> groups){
+        matchCriteriaGroupFolder.setChildren(groups);
+    }
+    
+    public MatchMakerFolder<MatchMakerCriteriaGroup> getMatchCriteriaGroupFolder() {
+        return matchCriteriaGroupFolder;
+    }
 }

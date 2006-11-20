@@ -18,6 +18,9 @@ public class MatchSettings extends MatchMakerSettings {
 
 	@Override
     public boolean equals(Object obj) {
+        if(!(obj instanceof MatchSettings)){
+            return false;
+        }
         if (this == obj)
             return true;
         if (!super.equals(obj))
@@ -70,7 +73,7 @@ public class MatchSettings extends MatchMakerSettings {
 	 */
 	private Boolean truncateCandDupe;
 
-	public Boolean isBreakUpMatch() {
+	public Boolean getBreakUpMatch() {
 		return breakUpMatch;
 	}
 
@@ -81,7 +84,7 @@ public class MatchSettings extends MatchMakerSettings {
 				this.breakUpMatch);
 	}
 
-	public Boolean isTruncateCandDupe() {
+	public Boolean getTruncateCandDupe() {
 		return truncateCandDupe;
 	}
 
@@ -113,4 +116,16 @@ public class MatchSettings extends MatchMakerSettings {
 		getEventSupport().firePropertyChange("lastBackupNo", oldValue,
 				this.lastBackupNo);
 	}
+    @Override
+    public String toString() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("MatchSettings [");
+        buf.append("autoMatchThreshold->"+autoMatchThreshold+", ");
+        buf.append("breakUpMatch->"+breakUpMatch+", ");
+        buf.append("lastBackupNo->"+lastBackupNo+", ");
+        buf.append("truncateCandDupe->"+truncateCandDupe+", ");
+        buf.append(super.toString());
+        buf.append("]");
+        return buf.toString();
+    }
 }

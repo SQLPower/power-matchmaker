@@ -168,11 +168,11 @@ public class RunMatchDialog extends JDialog{
             }
             lastAccessPath = file.getAbsolutePath();
             logFilePath.setText(logFileName);
-            append.setSelected(settings.isAppendToLog());
+            append.setSelected(settings.getAppendToLog());
             recordsToProcess.setText(String.valueOf(settings.getProcessCount()));
-            debugMode.setSelected(settings.isDebug());
-            truncateCandDup.setSelected(settings.isTruncateCandDupe());
-            sendEmail.setSelected(settings.isSendEmail());
+            debugMode.setSelected(settings.getDebug());
+            truncateCandDup.setSelected(settings.getTruncateCandDupe());
+            sendEmail.setSelected(settings.getSendEmail());
             //TODO add roll back segment
             //rollbackSegment.setSelectedItem(settings.getMatchRollbackSegmentName());
         } else {
@@ -590,12 +590,12 @@ public class RunMatchDialog extends JDialog{
 			command.append("@").append(db.getDataSource().getName());
 		}
 		MatchSettings settings = match.getMatchSettings();
-		command.append(" DEBUG=").append(settings.isDebug()?"Y":"N");
-		command.append(" TRUNCATE_CAND_DUP=").append(settings.isTruncateCandDupe()?"Y":"N");
-		command.append(" SEND_EMAIL=").append(settings.isSendEmail()?"Y":"N");
-		command.append(" APPEND_TO_LOG_IND=").append(settings.isAppendToLog()?"Y":"N");
+		command.append(" DEBUG=").append(settings.getDebug()?"Y":"N");
+		command.append(" TRUNCATE_CAND_DUP=").append(settings.getTruncateCandDupe()?"Y":"N");
+		command.append(" SEND_EMAIL=").append(settings.getSendEmail()?"Y":"N");
+		command.append(" APPEND_TO_LOG_IND=").append(settings.getAppendToLog()?"Y":"N");
 		command.append(" LOG_FILE=\"").append(settings.getLog().getConstraint().toString()).append("\"");
-		command.append(" SHOW_PROGRESS=").append(settings.isShowProgressFreq());
+		command.append(" SHOW_PROGRESS=").append(settings.getShowProgressFreq());
 		command.append(" PROCESS_CNT=").append(settings.getProcessCount());
 		return command.toString();
 	}
