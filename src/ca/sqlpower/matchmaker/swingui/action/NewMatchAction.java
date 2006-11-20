@@ -19,7 +19,7 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 public final class NewMatchAction extends AbstractAction {
 
     private final MatchMakerSwingSession swingSession;
-	private PlFolder folder;
+	private PlFolder<Match> folder;
 
 	public NewMatchAction(
             MatchMakerSwingSession swingSession,
@@ -48,8 +48,7 @@ public final class NewMatchAction extends AbstractAction {
 				return;
 			}
 
-			folder.addChild(match);
-			me = new MatchEditor(swingSession, match);
+			me = new MatchEditor(swingSession,match,folder);
 		} catch (ArchitectException e1) {
 			throw new ArchitectRuntimeException(e1);
 		}
