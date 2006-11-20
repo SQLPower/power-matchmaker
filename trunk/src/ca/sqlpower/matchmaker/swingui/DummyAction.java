@@ -6,6 +6,11 @@ import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+/**
+ * This is for actions that aren't written yet.
+ * It will be removed when the application is completed;
+ * only used in about half a dozen places now...
+ */
 public class DummyAction extends AbstractAction {
 
 	private String label;
