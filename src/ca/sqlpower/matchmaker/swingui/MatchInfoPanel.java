@@ -68,7 +68,7 @@ public class MatchInfoPanel implements ArchitectPanel {
 		pb.add(new JLabel(match.getName()), cc.xy(4,10));
 		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,12,"f,f"));
 		pb.add(new JLabel(match.getLastUpdateAppUser()), cc.xy(4,14));
-		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,16,"f,f"));
+		pb.add(new JLabel(df.format(match.getMatchSettings().getLastRunDate())), cc.xy(4,16,"f,f"));
 
 		JLabel checkout = new JLabel("Checkout Information");
 		Font f = checkout.getFont();
