@@ -77,7 +77,6 @@ public class HibernateTestUtil {
 		cfg.setProperty("hibernate.dialect", HibernateUtil.plDbType2Dialect(ds.getPlDbType()));
 		
 		// Create the SessionFactory from hibernate.cfg.xml
-        System.err.println("Creating a new Hibernate SessionFactory!");
 		sessionFactory = cfg.buildSessionFactory();
 		return sessionFactory;
 	}

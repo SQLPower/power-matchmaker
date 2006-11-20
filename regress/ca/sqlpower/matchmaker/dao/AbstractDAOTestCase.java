@@ -94,9 +94,6 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		    }
 		}
 		
-        System.err.println("     item1="+item1);
-        System.err.println("savedItem1="+savedItem1);
-        
         // compare the values of each readable property
 		List<String> nonPersistingProperties = getNonPersitingProperties();
 		for (PropertyDescriptor d: gettableProperties){
