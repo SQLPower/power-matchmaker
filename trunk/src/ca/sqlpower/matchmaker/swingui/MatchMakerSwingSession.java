@@ -451,7 +451,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 			MatchEditor me;
 			try {
-				me = new MatchEditor(MatchMakerSwingSession.this, match);
+				me = new MatchEditor(MatchMakerSwingSession.this,
+						match,(PlFolder<Match>)match.getParent());
 			} catch (ArchitectException e1) {
 				throw new ArchitectRuntimeException(e1);
 			}
