@@ -364,6 +364,13 @@ public class MatchEditor {
         Validator v = new MatchNameValidator(swingSession);
         handler.addValidateObject(matchId,v);
 
+        Validator v2 = new MatchSourceTableValidator(swingSession);
+        handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
+
+        Validator v3 = new MatchResultTableNameValidator(swingSession);
+        handler.addValidateObject(resultTableName,v3);
+
+
         if ( match.getSourceTable() != null ) {
 
         	SQLTable tableByName = match.getSourceTable().getTable();
@@ -574,6 +581,51 @@ public class MatchEditor {
 						!session.isThisMatchNameAcceptable(value) ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
 						"Match name is invalid or already exists.");
+			}
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+    }
+
+    private class MatchSourceTableValidator implements Validator {
+
+		private MatchMakerSwingSession session;
+
+		public MatchSourceTableValidator(MatchMakerSwingSession session) {
+    		this.session = session;
+		}
+
+		public ValidateResult validate(Object contents) {
+
+			SQLTable value = (SQLTable)contents;
+			if ( value == null ) {
+				return ValidateResult.createValidateResult(Status.WARN,
+						"Match source table is required");
+			} else {
+				// TODO: check the table existence here, if does not exist, set
+				// warning as well.
+
+			}
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+    }
+
+    private class MatchResultTableNameValidator implements Validator {
+
+		private MatchMakerSwingSession session;
+
+		public MatchResultTableNameValidator(MatchMakerSwingSession session) {
+    		this.session = session;
+		}
+
+		public ValidateResult validate(Object contents) {
+
+			String value = (String)contents;
+			if ( value == null || value.length() == 0 ) {
+				return ValidateResult.createValidateResult(Status.WARN,
+						"Match result table name is required");
+			} else {
+				// TODO: check the table existence here, if does not exist, set
+				// warning as well.
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
