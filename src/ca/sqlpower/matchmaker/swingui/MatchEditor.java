@@ -5,6 +5,8 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -109,7 +111,13 @@ public class MatchEditor {
         this.match = match;
         this.folder = folder;
         handler = new FormValidationHandler(status);
+        newMatchGroupAction = new NewMatchGroupAction(swingSession, match);
         buildUI();
+        handler.addPropertyChangeListener(new PropertyChangeListener(){
+			public void propertyChange(PropertyChangeEvent evt) {
+				refershButtons();
+			}
+        });
     }
 
     /**
@@ -222,6 +230,10 @@ public class MatchEditor {
 
 
 
+	private NewMatchGroupAction newMatchGroupAction;
+
+
+
     private void buildUI() throws ArchitectException {
 
     	matchId.setName("Match ID");
@@ -303,7 +315,7 @@ public class MatchEditor {
 		bb.addGridded(saveMatch);
 		bb.addRelatedGap();
 		bb.addRelatedGap();
-		bb.addGridded(new JButton(new NewMatchGroupAction(swingSession, match)));
+		bb.addGridded(new JButton(newMatchGroupAction));
 		bb.addRelatedGap();
 		bb.addRelatedGap();
 		bb.addGridded(showAuditInfo);
@@ -527,6 +539,21 @@ public class MatchEditor {
         dao.save(match);
 		return true;
 
+    }
+
+    private void refershButtons() {
+    	ValidateResult worst = handler.getWorstValidationStatus();
+    	saveAction.setEnabled(true);
+		newMatchGroupAction.setEnabled(true);
+		runMatchAction.setEnabled(true);
+
+    	if ( worst.getStatus() == Status.FAIL ) {
+    		saveAction.setEnabled(false);
+    		newMatchGroupAction.setEnabled(false);
+    		runMatchAction.setEnabled(false);
+    	} else if ( worst.getStatus() == Status.WARN ) {
+    		runMatchAction.setEnabled(false);
+    	}
     }
 
     private class MatchNameValidator implements Validator {
