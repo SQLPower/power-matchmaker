@@ -132,15 +132,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 	};
 
-	private Action logoutAction = new AbstractAction("Logout") {
-
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(frame,
-			"This action is not yet available. We apologize for the inconvenience");
-		}
-
-	};
+	private Action logoutAction = new DummyAction("Logout");
 
 	private Action newMatchAction = null;
 	private Action editMatchAction = new EditMatchAction("Edit");
@@ -158,45 +150,16 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 	};
 
-	private Action runMergeAction = new AbstractAction("Run Merge") {
+	private Action runMergeAction = new DummyAction(null, "Run Merge");
 
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(frame,
-			"This action is not yet available. We apologize for the inconvenience");
-		}
+	private Action dbBrowseAction =
+		new DummyAction(null, "Database Browser");
 
-	};
-
-	private Action dbBrowseAction = new AbstractAction("Database Browser") {
-
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(frame,
-				"This action is not yet available. We apologize for the inconvenience");
-		}
-
-	};
-
-	private Action configAction = new AbstractAction("Config") {
-
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(frame,
-				"This action is not yet available. We apologize for the inconvenience");
-		}
-	};
-
+	private Action configAction = new DummyAction(null, "Config");
 	private Action helpAction;
 
-	private Action databasePreferenceAction = new AbstractAction("Database Preference") {
-
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			JOptionPane.showMessageDialog(frame,
-			"This action is not yet available. We apologize for the inconvenience");
-		}
-	};
+	private Action databasePreferenceAction =
+		new DummyAction("Database Preference");
 
 	private Action tableQueryAction = new AbstractAction("Table Explorer") {
 		public void actionPerformed(ActionEvent e) {
@@ -671,6 +634,10 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			super(label);
 			this.label = label;
 			this.parent = parent;
+		}
+
+		DummyAction(String label) {
+			this(frame != null ? frame : null, label);
 		}
 
 	}
