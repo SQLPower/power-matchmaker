@@ -34,7 +34,6 @@ public class DatabaseCleanup {
         try {
             for (String table: tablesToDelete) {
                 logger.debug(table);
-                System.err.println(table);
                 stmt.execute("delete from "+table);
             }            
         } finally {
