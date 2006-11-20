@@ -43,6 +43,7 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.util.SourceTable;
+import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -371,12 +372,12 @@ public class MatchEditor {
     		}
     		resultTableName.setText(match.getResultTable().getName());
     	}
-        
-        //This listener is put here to update the SQLTable in FilterPanel so the 
-        //FilterMakerDialog two dropdown boxes can work properly
+
+        // This listener is put here to update the SQLTable in FilterPanel so the
+        // FilterMakerDialog two dropdown boxes can work properly
         sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
             public void itemStateChanged(ItemEvent e) {
-                filterPanel.setTable((SQLTable)(sourceChooser.getTableComboBox().getSelectedItem()));                
+                filterPanel.setTable((SQLTable)(sourceChooser.getTableComboBox().getSelectedItem()));
             }
          });
     }
@@ -494,20 +495,18 @@ public class MatchEditor {
 		public MatchNameValidator(MatchMakerSwingSession session) {
     		this.session = session;
 		}
+
 		public ValidateResult validate(Object contents) {
 
-			ValidateResult result = new ValidateResult();
-			result.setMessage("");
-
 			String value = (String)contents;
-			if ( value == null || value.length() == 0 ) {
-				result.setMessage("Match name can not be null");
-				result.setStatus(ValidateResult.Status.WARN);
-			} else if ( !session.isThisMatchNameAcceptable(value) ) {
-				result.setMessage("Match name is invalid or already existed.");
-				result.setStatus(ValidateResult.Status.FAIL);
+			if (value == null || value.length() == 0) {
+				return ValidateResult.createValidateResult(Status.WARN,
+					"Match name is required");
+			} else if (!session.isThisMatchNameAcceptable(value)) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+					"Match name is invalid or already exists.");
 			}
-			return result;
+			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
 }
