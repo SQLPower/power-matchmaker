@@ -22,7 +22,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	implements MatchMakerObject<T, C> {
 
     private static final Logger logger = Logger.getLogger(AbstractMatchMakerObject.class);
-    
+
 	private MatchMakerObject parent;
 
 	@SuppressWarnings("unchecked")
@@ -81,10 +81,10 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	}
     /**
      * Replaces the list of children with the passed in list.
-     * 
-     * This is intentionaly package private because it is only supposed to be used in methods that 
+     *
+     * This is intentionaly package private because it is only supposed to be used in methods that
      * support the ORM.
-     * 
+     *
      * @param children
      */
     void setChildren(List<C> children){
