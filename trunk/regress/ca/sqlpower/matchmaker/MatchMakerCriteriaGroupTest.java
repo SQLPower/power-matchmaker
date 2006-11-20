@@ -1,12 +1,18 @@
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
+
 
 
 public class MatchMakerCriteriaGroupTest<C extends MatchmakerCriteria> extends MatchMakerTestCase<MatchMakerCriteriaGroup> {
-
+    
 	MatchMakerCriteriaGroup<C> target;
 	final String appUserName = "test user";
 
+    public MatchMakerCriteriaGroupTest() {
+        super();
+        propertiesToIgnoreForEventGeneration.add("parentMatch");
+    }
 	protected void setUp() throws Exception {
 		super.setUp();
 		target = new MatchMakerCriteriaGroup<C>();
@@ -38,7 +44,7 @@ public class MatchMakerCriteriaGroupTest<C extends MatchmakerCriteria> extends M
 	public void testSetMatchPercent() {
 		assertNull("The default last_update_user in match object should be null",
 				target.getLastUpdateAppUser());
-		target.setMatchPercent(new Long(100L));
+		target.setMatchPercent(new Short("100"));
 		assertEquals("The last_update_user should be [" +
 				appUserName +"], because user1 has changed this match object",
 				appUserName, target.getLastUpdateAppUser());
@@ -80,5 +86,15 @@ public class MatchMakerCriteriaGroupTest<C extends MatchmakerCriteria> extends M
 				appUserName, target.getLastUpdateAppUser());
 	}
 
+    public void testSetParentMatch(){
+        Match match = new Match();
+        MatchMakerEventCounter listener = new MatchMakerEventCounter();
+        MatchMakerCriteriaGroup group = new MatchMakerCriteriaGroup();
+        
+        group.addMatchMakerListener(listener);
+        group.setParentMatch(match);
+        assertEquals("Incorrect number of events fired",1,listener.getAllEventCounts());
+        assertEquals("Wrong property fired in the event","parent",listener.getLastEvt().getPropertyName());
+    }
 
 }

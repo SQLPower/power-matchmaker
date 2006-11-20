@@ -140,6 +140,7 @@ public class NamesToSQLTable implements UserType {
 		/* XXX Gets the table from the connection passed in by the 
 		 * Result set.  This is highly unefficient and should be fixed 
 		 */
+        System.err.println("Owner:"+owner);
 		/*Connection con = rs.getStatement().getConnection();		
 		ConnectionSQLDatabase db = new ConnectionSQLDatabase();
 		db.setPopulated(false);

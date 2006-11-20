@@ -100,8 +100,8 @@ public class NamesToSQLTableTest extends TestCase {
 		ArchitectConnectionFactory factory = new ArchitectConnectionFactory(ds);
 		
 		Connection con = factory.createConnection();
-		Statement statements = con.createStatement();
-		MockJDBCResultSet rs = (MockJDBCResultSet) statements.getResultSet();
+		Statement stmt = con.createStatement();
+		MockJDBCResultSet rs = (MockJDBCResultSet) stmt.getResultSet();
 		
 		// setup the result set
 		rs.setColumnCount(3);

@@ -79,6 +79,19 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	public List<C> getChildren() {
 		return children;
 	}
+    /**
+     * Replaces the list of children with the passed in list.
+     * 
+     * This is intentionaly package private because it is only supposed to be used in methods that 
+     * support the ORM.
+     * 
+     * @param children
+     */
+    void setChildren(List<C> children){
+        List<C> oldVal = this.children;
+        this.children = children;
+        eventSupport.fireStructureChanged();
+    }
 
 	/**
 	 * anyone who going to overwrite this method should fire the ChildrenRemoved
