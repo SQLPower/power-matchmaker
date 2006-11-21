@@ -33,6 +33,7 @@ import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ASUtils;
@@ -241,6 +242,12 @@ public class MatchEditor {
         		swingSession.getContext().getDataSources());
         resultChooser = new SQLObjectChooser(swingSession.getFrame(),
         		swingSession.getContext().getDataSources());
+        sourceChooser.getTableComboBox().setName("Source Table");
+        resultChooser.getCatalogComboBox().setName("Result "+
+        		resultChooser.getCatalogTerm().getText());
+        resultChooser.getSchemaComboBox().setName("Result "+
+        		resultChooser.getSchemaTerm().getText());
+        resultTableName.setName("Result Table");
 
         filterPanel = new FilterComponentsPanel();
 
@@ -367,8 +374,20 @@ public class MatchEditor {
         Validator v2 = new MatchSourceTableValidator(swingSession);
         handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
 
-        Validator v3 = new MatchResultTableNameValidator(swingSession);
-        handler.addValidateObject(resultTableName,v3);
+        if ( resultChooser.getCatalogComboBox().isEnabled() ) {
+        	Validator v3 = new MatchResultCatalogSchemaValidator("Result "+
+        			resultChooser.getCatalogTerm().getText());
+        	handler.addValidateObject(resultChooser.getCatalogComboBox(),v3);
+        }
+
+        if ( resultChooser.getSchemaComboBox().isEnabled() ) {
+        	Validator v4 = new MatchResultCatalogSchemaValidator("Result "+
+        			resultChooser.getSchemaTerm().getText());
+        	handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
+        }
+
+        Validator v5 = new MatchResultTableNameValidator(swingSession);
+        handler.addValidateObject(resultTableName,v5);
 
 
         if ( match.getSourceTable() != null ) {
@@ -575,7 +594,7 @@ public class MatchEditor {
 
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
-				return ValidateResult.createValidateResult(Status.WARN,
+				return ValidateResult.createValidateResult(Status.FAIL,
 						"Match name is required");
 			} else if ( !value.equals(match.getName()) &&
 						!session.isThisMatchNameAcceptable(value) ) {
@@ -601,9 +620,28 @@ public class MatchEditor {
 				return ValidateResult.createValidateResult(Status.WARN,
 						"Match source table is required");
 			} else {
-				// TODO: check the table existence here, if does not exist, set
-				// warning as well.
+				try {
+					value.populate();
+				} catch (ArchitectException e) {
+					return ValidateResult.createValidateResult(Status.WARN,
+						"Match source table has error:"+e.getMessage());
+				}
+			}
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+    }
 
+    private class MatchResultCatalogSchemaValidator implements Validator {
+
+    	private String componentName;
+    	public MatchResultCatalogSchemaValidator(String componentName) {
+    		this.componentName = componentName;
+		}
+		public ValidateResult validate(Object contents) {
+			SQLObject value = (SQLObject)contents;
+			if ( value == null ) {
+				return ValidateResult.createValidateResult(Status.WARN,
+						componentName + " is required");
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
