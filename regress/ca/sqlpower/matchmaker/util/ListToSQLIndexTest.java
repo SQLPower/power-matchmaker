@@ -158,7 +158,8 @@ public class ListToSQLIndexTest extends TestCase {
 	
 	public void testNullSafeSetAtFirstIndex() throws SQLException{
 		MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
-		userType.nullSafeSet(statements, index, 0);
+		userType.nullSafeSet(statements, index, 1);
+        statements.checkAllParametersSet();
 		Object[] values = statements.getParameters();
 		assertEquals("The index has the wrong name","TestIndex", (String)values[0]);
 		for (int i=1; i < 11; i++){
@@ -169,11 +170,13 @@ public class ListToSQLIndexTest extends TestCase {
 	
 	public void testNullSafeSetAtIndexOtherThanFirst() throws SQLException{
 		MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(18);
-		userType.nullSafeSet(statements, index, 5);
+		final int startPosition = 5;
+        userType.nullSafeSet(statements, index, startPosition);
+        statements.checkParametersSet(startPosition, 11);
 		Object[] values = statements.getParameters();
-		assertEquals("The index has the wrong name","TestIndex", (String)values[5]);
-		for (int i=6; i < 16; i++){
-			assertEquals("The columns have the wrong name","Test"+(i-6), 
+		assertEquals("The index has the wrong name","TestIndex", (String) values[startPosition-1]);
+		for (int i=startPosition; i < startPosition+10; i++){
+			assertEquals("The columns have the wrong name","Test"+(i-startPosition), 
 					(String)values[i]);			
 		}		
 	}
