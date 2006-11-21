@@ -33,7 +33,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     
     private final ArchitectDataSource dataSource;
     private final SessionFactory hibernateSessionFactory;
-    private final Connection con;
+    private final TestingConnection con;
     
     public TestingMatchMakerHibernateSession(ArchitectDataSource dataSource) throws RuntimeException {
         super();
@@ -58,7 +58,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
                 }
                 connections.put(dataSource, mycon);
             }
-            con = connections.get(dataSource);
+            con = new TestingConnection(connections.get(dataSource));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -68,6 +68,23 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         return hibernateSessionFactory.openSession(getConnection());
     }
 
+    /**
+     * Enables or disables the connection associated with this session.  This is useful for
+     * testing that Hibernate is correctly configured to eagerly fetch the data we expect it to.
+     * 
+     * @param disabled
+     */
+    public void setConnectionDisabled(boolean disabled) {
+        con.setDisabled(disabled);
+    }
+    
+    public Connection getConnection() {
+        return con;
+    }
+
+
+    ///////// Unimplemented MatchMakerHibernateSession methods are below this line //////////
+    
     public String createNewUniqueName() {
         // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.createNewUniqueName()");
@@ -84,10 +101,6 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.getAppUser()");
         return null;
-    }
-
-    public Connection getConnection() {
-        return con;
     }
 
     public MatchMakerSessionContext getContext() {

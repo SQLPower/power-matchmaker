@@ -103,11 +103,9 @@ public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria>
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!(obj instanceof MatchMakerCriteriaGroup))
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final MatchmakerCriteria other = (MatchmakerCriteria) obj;
+		final MatchMakerCriteriaGroup other = (MatchMakerCriteriaGroup) obj;
 		if (getName() == null) {
 			if (other.getName() != null)
 				return false;

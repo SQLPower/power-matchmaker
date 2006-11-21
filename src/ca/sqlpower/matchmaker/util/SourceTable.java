@@ -3,9 +3,8 @@ package ca.sqlpower.matchmaker.util;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 /**
- * The source table represents the table from which the matches are being obtained.
- *
- *FIXME write me
+ * The source table represents the table in which we're looking for matching records,
+ * and the unique index that we are using on that table.  
  */
 public class SourceTable {
 	/** The source table */
