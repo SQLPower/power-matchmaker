@@ -135,7 +135,7 @@ public class NamesToSQLTableTest extends TestCase {
 		SQLSchema s = new SQLSchema(c, "saveSchema", true);
 		SQLTable t = new SQLTable(s, "saveTable", "", "TABLE", true);
 		MockJDBCPreparedStatement st = new MockJDBCPreparedStatement(5);
-		userType.nullSafeSet(st, t, 2);
+		userType.nullSafeSet(st, t, 3);
 		Object[] preparedValues = st.getParameters();
 		assertEquals("Value missmatch for the catalog", "saveCatalog",
 				preparedValues[2]);
@@ -153,7 +153,7 @@ public class NamesToSQLTableTest extends TestCase {
 		SQLSchema s = new SQLSchema(c, "saveSchema", true);
 		SQLTable t = new SQLTable(s, "saveTable", "", "TABLE", true);
 		MockJDBCPreparedStatement st = new MockJDBCPreparedStatement(5);
-		userType.nullSafeSet(st, t, 0);
+		userType.nullSafeSet(st, t, 1);
 		Object[] preparedValues = st.getParameters();
 		assertEquals("Value missmatch for the catalog", "saveCatalog",
 				preparedValues[0]);
@@ -170,7 +170,7 @@ public class NamesToSQLTableTest extends TestCase {
 		c.setName("saveCatalog");
 		SQLTable t = new SQLTable(c, "saveTable", "", "TABLE", true);
 		MockJDBCPreparedStatement st = new MockJDBCPreparedStatement(5);
-		userType.nullSafeSet(st, t, 0);
+		userType.nullSafeSet(st, t, 1);
 		Object[] preparedValues = st.getParameters();
 		assertEquals("Value missmatch for the catalog", "saveCatalog",
 				preparedValues[0]);
@@ -184,7 +184,7 @@ public class NamesToSQLTableTest extends TestCase {
 		SQLTable t = new SQLTable();
 		t.setName("saveTable");
 		MockJDBCPreparedStatement st = new MockJDBCPreparedStatement(5);
-		userType.nullSafeSet(st, t, 0);
+		userType.nullSafeSet(st, t, 1);
 		Object[] preparedValues = st.getParameters();
 		assertEquals("Value missmatch for the catalog", null, preparedValues[0]);
 		assertEquals("Value missmatch for the schema", null, preparedValues[1]);
@@ -195,7 +195,7 @@ public class NamesToSQLTableTest extends TestCase {
 	public void testNullSafeSetNullValue() throws ArchitectException,
 			HibernateException, SQLException {
 		MockJDBCPreparedStatement st = new MockJDBCPreparedStatement(5);
-		userType.nullSafeSet(st, null, 0);
+		userType.nullSafeSet(st, null, 1);
 		Object[] preparedValues = st.getParameters();
 		assertEquals("Value missmatch for the catalog", null, preparedValues[0]);
 		assertEquals("Value missmatch for the schema", null, preparedValues[1]);

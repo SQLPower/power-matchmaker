@@ -7,7 +7,7 @@
 <hibernate-mapping>
 
 	<class name="ca.sqlpower.matchmaker.Match"
-		table="PL_MATCH">
+		table="PL_MATCH" >
 		<id name="oid" type="long" access="field">
 			<column name="MATCH_OID" />
 			<generator class="native">
@@ -23,27 +23,29 @@
 		<property name="filter" type="string">
 			<column name="FILTER" length="2000" />
 		</property>
-
-		<component name="sourceTable" class="ca.sqlpower.matchmaker.util.SourceTable">
-			<property name="table" type="ca.sqlpower.matchmaker.util.NamesToSQLTable">
-				<column name="TABLE_CATALOG" length="30" />
-				<column name="TABLE_OWNER" length="30" />
-				<column name="MATCH_TABLE" length="30" />
-			</property>
-			<property name="uniqueIndex" type="ca.sqlpower.matchmaker.util.ListToSQLIndex">
-				<column name="PK_COLUMN" length="30" />
-			    <column name="index_column_name0" length="50" />
-			    <column name="index_column_name1" length="50" />
-			    <column name="index_column_name2" length="50" />
-			    <column name="index_column_name3" length="50" />
-			    <column name="index_column_name4" length="50" />
-			    <column name="index_column_name5" length="50" />
-			    <column name="index_column_name6" length="50" />
-			    <column name="index_column_name7" length="50" />
-			    <column name="index_column_name8" length="50" />
-			    <column name="index_column_name9" length="50" />
-			</property>
-		</component>
+		
+		<property name="sourceTableCatalog" type="string">	
+			<column name="TABLE_CATALOG" length="30" />
+		</property>
+		<property name="sourceTableSchema" type="string">
+			<column name="TABLE_OWNER" length="30" />
+		</property>
+		<property name="sourceTableName" type="string">
+			<column name="MATCH_TABLE" length="30" />
+		</property>
+		<property name="sourceTableIndex" type="ca.sqlpower.matchmaker.util.ListToSQLIndex">
+			<column name="PK_COLUMN" length="30" />
+		    <column name="index_column_name0" length="50" />
+		    <column name="index_column_name1" length="50" />
+		    <column name="index_column_name2" length="50" />
+		    <column name="index_column_name3" length="50" />
+		    <column name="index_column_name4" length="50" />
+		    <column name="index_column_name5" length="50" />
+		    <column name="index_column_name6" length="50" />
+		    <column name="index_column_name7" length="50" />
+		    <column name="index_column_name8" length="50" />
+		    <column name="index_column_name9" length="50" />
+		</property>
 
 		<property name="resultTable" type="ca.sqlpower.matchmaker.util.NamesToSQLTable">
 			<column name="RESULTS_TABLE_CATALOG" length="30" />

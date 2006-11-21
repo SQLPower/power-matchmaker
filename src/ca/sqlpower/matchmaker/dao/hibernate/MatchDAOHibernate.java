@@ -8,100 +8,14 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Expression;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
-import ca.sqlpower.matchmaker.util.SourceTable;
 
 public class MatchDAOHibernate extends AbstractMatchMakerDAOHibernate<Match> implements
 		MatchDAO {
-    private static final Logger logger = Logger.getLogger(MatchDAOHibernate.class);
+    static final Logger logger = Logger.getLogger(MatchDAOHibernate.class);
     
-    private static class MatchWithSQLTableHelper extends Match {
-        private String sourceTableCatalog;
-        private String sourceTableSchema;
-        private String sourceTableName;
-        private SQLIndex index;
-        private SourceTable cachedSourceTable;
-        
-        
-        public String getSourceTableCatalog() {
-            if (cachedSourceTable != null) {
-                return cachedSourceTable.getTable().getCatalogName();
-            } else {
-                return sourceTableCatalog;
-            }
-        }
-        
-        public void setSourceTableCatalog(String sourceTableCatalog) {
-            cachedSourceTable = null;
-            this.sourceTableCatalog = sourceTableCatalog;
-        }
-        
-        public String getSourceTableName() {
-            if (cachedSourceTable != null) {
-                return cachedSourceTable.getTable().getName();
-            } else {
-                return sourceTableName;
-            }
-        }
-        
-        public void setSourceTableName(String sourceTableName) {
-            cachedSourceTable = null;
-            this.sourceTableName = sourceTableName;
-        }
-        
-        public String getSourceTableSchema() {
-            if (cachedSourceTable != null) {
-                return cachedSourceTable.getTable().getSchemaName();
-            } else {
-                return sourceTableSchema;
-            }
-        }
-        
-        public void setSourceTableSchema(String sourceTableSchema) {
-            cachedSourceTable = null;
-            this.sourceTableSchema = sourceTableSchema;
-        }
-        
-        @Override
-        public SourceTable getSourceTable() {
-            if (cachedSourceTable != null) return cachedSourceTable;
-            try {
-                logger.debug("MatchWithSQLTableHelper.getSourceTable()");
-                MatchMakerHibernateSession session = (MatchMakerHibernateSession) getSession();
-                SQLDatabase db = session.getDatabase();
-                SQLTable table;
-                table = db.getTableByName(sourceTableCatalog, sourceTableSchema, sourceTableName);
-                SourceTable sourceTable = new SourceTable();
-                sourceTable.setTable(table);
-                sourceTable.setUniqueIndex(index);
-                cachedSourceTable = sourceTable;
-                return sourceTable;
-            } catch (ArchitectException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        
-        @Override
-        public void setSourceTable(SourceTable sourceTable) {
-            final SourceTable oldSourceTable = this.cachedSourceTable;
-            cachedSourceTable = sourceTable;
-            getEventSupport().firePropertyChange("sourceTable", oldSourceTable, sourceTable);
-        }
-        
-        public SQLIndex getIndex() {
-            return index;
-        }
-        public void setIndex(SQLIndex index) {
-            this.index = index;
-        }
-    }
-    
-	public MatchDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
+    public MatchDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
 		super(matchMakerSession);
 	}
 

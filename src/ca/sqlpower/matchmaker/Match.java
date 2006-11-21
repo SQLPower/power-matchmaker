@@ -2,9 +2,14 @@ package ca.sqlpower.matchmaker;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
@@ -13,6 +18,8 @@ import ca.sqlpower.matchmaker.util.ViewSpec;
  */
 public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 
+    private static final Logger logger = Logger.getLogger(Match.class);
+    
 	public enum MatchType {
 		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference");
 
@@ -164,17 +171,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 				this.resultTable);
 	}
 
-	public SourceTable getSourceTable() {
-		return sourceTable;
-	}
-
-	public void setSourceTable(SourceTable sourceTable) {
-		SourceTable oldValue = this.sourceTable;
-		this.sourceTable = sourceTable;
-		getEventSupport().firePropertyChange("sourceTable", oldValue,
-				this.sourceTable);
-	}
-
 	public MatchType getType() {
 		return type;
 	}
@@ -194,18 +190,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		this.view = view;
 		getEventSupport().firePropertyChange("view", oldValue, this.view);
 	}
-
-	/**
-	 * Preconditions
-	 *
-	 * FIXME write this method
-	 * @return
-	 */
-	public List<PlMatchGroup> getMatchGroups() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-    
+   
 	@Override
     public int hashCode() {
         final int PRIME = 31;
@@ -292,5 +277,127 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     
     public MatchMakerFolder<MatchMakerCriteriaGroup> getMatchCriteriaGroupFolder() {
         return matchCriteriaGroupFolder;
+    }
+    
+    
+    //////  Support for adding sqltables without having a session ////
+    /*
+     * All this behaviour would be better off in a Hibernate user type, but we
+     * couldn't get that working, so we moved the logic into the business model.
+     * Note that it doesn't depend on Hibernate in any way; it's just that the
+     * Hibernate mappings are the only part of the application that use this
+     * functionality.
+     */
+    
+    private String sourceTableCatalog;
+    private String sourceTableSchema;
+    private String sourceTableName;
+    private SQLIndex sourceTableIndex;
+    private SourceTable cachedSourceTable;
+    
+    public String getSourceTableCatalog() {
+        if (cachedSourceTable != null) {
+            String catalogName = cachedSourceTable.getTable().getCatalogName();
+            if (catalogName == null || catalogName.length() == 0) {
+                return null;
+            } else {
+                return catalogName;
+            }
+        } else {
+            return sourceTableCatalog;
+        }
+    }
+    
+    public void setSourceTableCatalog(String sourceTableCatalog) {
+        cachedSourceTable = null;
+        this.sourceTableCatalog = sourceTableCatalog;
+    }
+    
+    public String getSourceTableName() {
+        if (cachedSourceTable != null) {
+            return cachedSourceTable.getTable().getName();
+        } else {
+            return sourceTableName;
+        }
+    }
+    
+    public void setSourceTableName(String sourceTableName) {
+        cachedSourceTable = null;
+        this.sourceTableName = sourceTableName;
+    }
+    
+    public String getSourceTableSchema() {
+        if (cachedSourceTable != null) {
+            String schemaName = cachedSourceTable.getTable().getSchemaName();
+            if (schemaName == null || schemaName.length() == 0) {
+                return null;
+            } else {
+                return schemaName;
+            }
+        } else {
+            return sourceTableSchema;
+        }
+    }
+    
+    public void setSourceTableSchema(String sourceTableSchema) {
+        cachedSourceTable = null;
+        this.sourceTableSchema = sourceTableSchema;
+    }
+    
+    /**
+     * Performs some magic to synchronize the sourceTableCatalog,
+     * sourceTableSchema, and sourceTableName properties with the sourceTable
+     * property. Calling this getter may result in a SQLDatabase lookup of the
+     * table specified by the combination of the sourceTableXXX properties.
+     * 
+     * @return The most recently-returned SQLTable instance (the "cached
+     *         sourceTable") unless one of the setSourceTableXXX methods has
+     *         been called since the last call to this method.
+     *         <p>
+     *         Returns null if the sourceTableName property is null and there is
+     *         no cached sourceTable.
+     *         <p>
+     *         If there is no cached sourceTable and the sourceTableName is not
+     *         null, this method returns a new SQLTable which is either looked
+     *         up in the session's SQLDatabase, or created in the session's
+     *         SQLDatabase if the lookup failed.
+     */
+    public SourceTable getSourceTable() {
+        if (cachedSourceTable != null) {
+            return cachedSourceTable;
+        }
+        if (sourceTableName == null) {
+            return null;
+        }
+        
+        try {
+            logger.debug("MatchWithSQLTableHelper.getSourceTable()");
+            MatchMakerSession session = getSession();
+            SQLDatabase db = session.getDatabase();
+            SQLTable table = db.getTableByName(sourceTableCatalog, sourceTableSchema, sourceTableName);
+            if (table == null) {
+                table = ArchitectUtils.addSimulatedTable(db, sourceTableCatalog, sourceTableSchema, sourceTableName);
+            }
+            SourceTable sourceTable = new SourceTable();
+            sourceTable.setTable(table);
+            sourceTable.setUniqueIndex(sourceTableIndex);
+            cachedSourceTable = sourceTable;
+            return sourceTable;
+        } catch (ArchitectException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public void setSourceTable(SourceTable sourceTable) {
+        final SourceTable oldSourceTable = this.cachedSourceTable;
+        cachedSourceTable = sourceTable;
+        getEventSupport().firePropertyChange("sourceTable", oldSourceTable, sourceTable);
+    }
+    
+    public SQLIndex getSourceTableIndex() {
+        return sourceTableIndex;
+    }
+    public void setSourceTableIndex(SQLIndex index) {
+        this.sourceTableIndex = index;
     }
 }

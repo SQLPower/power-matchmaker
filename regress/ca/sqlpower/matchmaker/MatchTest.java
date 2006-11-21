@@ -3,6 +3,7 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 public class MatchTest extends MatchMakerTestCase<Match> {
@@ -11,8 +12,15 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 
     protected void setUp() throws Exception {
         propertiesToIgnoreForEventGeneration.add("matchCriteriaGroups");
+        propertiesToIgnoreForEventGeneration.add("sourceTableCatalog");
+        propertiesToIgnoreForEventGeneration.add("sourceTableSchema");
+        propertiesToIgnoreForEventGeneration.add("sourceTableIndex");
+        propertiesToIgnoreForEventGeneration.add("sourceTableName");
         super.setUp();
         match = new Match();
+        TestingMatchMakerSession session = new TestingMatchMakerSession();
+        session.setDatabase(new SQLDatabase());
+        match.setSession(session);
     }
     @Override
     protected Match getTarget() {
@@ -41,5 +49,4 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
         assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
     }
-
 }
