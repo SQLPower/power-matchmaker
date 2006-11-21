@@ -139,6 +139,10 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	public void setSession(MatchMakerSession matchMakerSession) {
 		this.matchMakerSession = matchMakerSession;
 	}
+    
+    protected MatchMakerSession getSession() {
+        return matchMakerSession;
+    }
 
 	public Date getCreateDate() {
 		return createDate;

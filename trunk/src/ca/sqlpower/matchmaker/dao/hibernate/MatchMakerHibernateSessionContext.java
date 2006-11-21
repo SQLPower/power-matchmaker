@@ -87,11 +87,10 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 
     public String getEngineLocation() {
         EnginePath p = EnginePath.MATCHMAKER;
-        String plDotIni = plIniPath;
-        if (plDotIni == null) {
+        if (plIniPath == null) {
             return null;
         }
-        File plDotIniFile = new File(plDotIni);
+        File plDotIniFile = new File(plIniPath);
         File programDir = plDotIniFile.getParentFile();
         File programPath = new File(programDir, p.getProgName());
         return programPath.toString();
