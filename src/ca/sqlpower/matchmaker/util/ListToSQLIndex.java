@@ -102,19 +102,20 @@ public class ListToSQLIndex implements UserType  {
 	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException, SQLException {
 		if (value instanceof SQLIndex){
 			SQLIndex ind = (SQLIndex)value;
-			st.setString(index, ind.getName());
+			int indexItemPos = index;
+			st.setString(indexItemPos, ind.getName());
 			try {
 				//It is require to increment the index by 1 since the initla
 				//index is for the SQLIndex name.  The index needs to increase
 				//to synchronize with setting the values of the columns
 				for (SQLIndex.Column c : (List<SQLIndex.Column>)ind.getChildren()){
-					index++;
-					st.setString(index, c.getName());
+					indexItemPos++;
+					st.setString(indexItemPos, c.getName());
 
 				}
                 // Make room for the index name
-                for (int i=ind.getChildCount()+1; i < columns; i++){
-                    st.setNull(index+i, Types.VARCHAR);
+                for (int i=ind.getChildCount(); i < columns; i++){
+                    st.setNull(indexItemPos+i, Types.VARCHAR);
                 }
 			} catch (ArchitectException e) {
 				throw new HibernateException(e);
