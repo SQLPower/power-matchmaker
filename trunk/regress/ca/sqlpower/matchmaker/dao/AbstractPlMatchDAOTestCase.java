@@ -37,10 +37,16 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		nonPersistingProperties.add("session");
         nonPersistingProperties.add("matchCriteriaGroups");
         
+        // tested explicitly elsewhere
+        nonPersistingProperties.add("sourceTable");
+        nonPersistingProperties.add("sourceTableCatalog");
+        nonPersistingProperties.add("sourceTableSchema");
+        nonPersistingProperties.add("sourceTableName");
+        nonPersistingProperties.add("sourceTableIndex");
+
         //FIXME REMOVE THESE 
         nonPersistingProperties.add("resultTable");
         nonPersistingProperties.add("xrefTable");
-        nonPersistingProperties.add("sourceTable");
 		return nonPersistingProperties;
 	}
 

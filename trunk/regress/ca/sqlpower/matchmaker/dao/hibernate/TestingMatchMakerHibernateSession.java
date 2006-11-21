@@ -34,10 +34,19 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     private final ArchitectDataSource dataSource;
     private final SessionFactory hibernateSessionFactory;
     private final TestingConnection con;
+    private final SQLDatabase db;
     
+    /**
+     * Creates a new session that is really connected to a datasource.  
+     * This session does not create a SQLDatabase
+     * 
+     * @param dataSource an architect data source describing the connection
+     * @throws RuntimeException
+     */
     public TestingMatchMakerHibernateSession(ArchitectDataSource dataSource) throws RuntimeException {
         super();
         try {
+            this.db = null;
             this.dataSource = dataSource;
             this.hibernateSessionFactory = HibernateTestUtil.buildHibernateSessionFactory(this.dataSource);
             if (connections.get(dataSource) == null) {
@@ -62,6 +71,16 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    /**
+     * Provides a disconnected SQLDatabase, but is not really connected to a datasource
+     */
+    public TestingMatchMakerHibernateSession() {
+        db = new SQLDatabase();
+        con = null;
+        dataSource = null;
+        hibernateSessionFactory = null;
     }
 
     public Session openSession() {
@@ -122,9 +141,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     }
 
     public SQLDatabase getDatabase() {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: TestingMatchMakerHibernateSession.getDatabase()");
-        return null;
+        return db;
     }
 
     public List<PlFolder> getFolders() {

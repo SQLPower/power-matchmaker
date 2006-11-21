@@ -83,9 +83,9 @@ public class FileNameToLogTest extends TestCase {
 		MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
 		for	(int i = 0;i < data.length; i++){	
 			if (i < allLogs.length) {
-				userType.nullSafeSet(statements, allLogs[i], 0);
+				userType.nullSafeSet(statements, allLogs[i], 1);
 			} else {
-				userType.nullSafeSet(statements, null, 0);
+				userType.nullSafeSet(statements, null, 1);
 			}
 			Object[] values = statements.getParameters();
 			assertEquals("The Log is not correct", data[i], (String)values[0]);
@@ -96,9 +96,9 @@ public class FileNameToLogTest extends TestCase {
 	MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
 		for	(int i = 0;i < data.length; i++){	
 			if (i < allLogs.length) {
-				userType.nullSafeSet(statements, allLogs[i], 5);
+				userType.nullSafeSet(statements, allLogs[i], 6);
 			} else {
-				userType.nullSafeSet(statements, null, 5);
+				userType.nullSafeSet(statements, null, 6);
 			}
 			Object[] values = statements.getParameters();
 			assertEquals("The match string is not correct", data[i], (String)values[5]);

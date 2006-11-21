@@ -15,6 +15,12 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 public class SelfContainedTests {
 
     public static void main(String[] args) throws Exception {
+        Class myclass = HibernateTestUtil.class;
+        System.out.println("Class initialized");
+        ArchitectDataSource oracleDS = HibernateTestUtil.getOracleDS();
+    }
+    
+    private static void testIfLazyLoadingWorksWhenSessionClosed() throws Exception{
         BasicConfigurator.configure();
         Match match = new Match();
         //match.setOid(12345678910L);  // XXX is this the access code to the air shield on druidia?
@@ -36,8 +42,6 @@ public class SelfContainedTests {
         cg.setSession(s);
         match.addMatchCriteriaGroup(cg);
         s.getDAO(MatchMakerCriteriaGroup.class).save(cg);
-        
-        
     }
 
     private static void testJUnitTest() throws Exception {

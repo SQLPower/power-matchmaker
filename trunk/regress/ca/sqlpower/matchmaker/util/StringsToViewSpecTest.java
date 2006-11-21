@@ -88,9 +88,9 @@ public class StringsToViewSpecTest extends TestCase {
 		MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
 		for	(int i = 0;i < data.length; i++){	
 			if (i < testQuery.length) {
-				userType.nullSafeSet(statements, testQuery[i], 0);
+				userType.nullSafeSet(statements, testQuery[i], 1);
 			} else {
-				userType.nullSafeSet(statements, null, 0);
+				userType.nullSafeSet(statements, null, 1);
 			}
 			Object[] values = statements.getParameters();
 			assertEquals("The select string is not correct", data[i][0], (String)values[0]);
@@ -103,9 +103,9 @@ public class StringsToViewSpecTest extends TestCase {
 	MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
 		for	(int i = 0;i < data.length; i++){	
 			if (i < testQuery.length) {
-				userType.nullSafeSet(statements, testQuery[i], 5);
+				userType.nullSafeSet(statements, testQuery[i], 6);
 			} else {
-				userType.nullSafeSet(statements, null, 5);
+				userType.nullSafeSet(statements, null, 6);
 			}
 			Object[] values = statements.getParameters();
 			assertEquals("The select string is not correct for dataset "+i, data[i][0], (String)values[5]);
