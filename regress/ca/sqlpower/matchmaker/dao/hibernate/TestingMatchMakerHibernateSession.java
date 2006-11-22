@@ -34,7 +34,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     private final ArchitectDataSource dataSource;
     private final SessionFactory hibernateSessionFactory;
     private final TestingConnection con;
-    private final SQLDatabase db;
+    private SQLDatabase db;
     
     /**
      * Creates a new session that is really connected to a datasource.  
@@ -46,7 +46,6 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     public TestingMatchMakerHibernateSession(ArchitectDataSource dataSource) throws RuntimeException {
         super();
         try {
-            this.db = null;
             this.dataSource = dataSource;
             this.hibernateSessionFactory = HibernateTestUtil.buildHibernateSessionFactory(this.dataSource);
             if (connections.get(dataSource) == null) {
@@ -142,6 +141,10 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
     public SQLDatabase getDatabase() {
         return db;
+    }
+    
+    public void setDatabase(SQLDatabase db) {
+        this.db = db;
     }
 
     public List<PlFolder> getFolders() {

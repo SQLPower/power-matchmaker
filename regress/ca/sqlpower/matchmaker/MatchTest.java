@@ -16,6 +16,12 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         propertiesToIgnoreForEventGeneration.add("sourceTableSchema");
         propertiesToIgnoreForEventGeneration.add("sourceTableIndex");
         propertiesToIgnoreForEventGeneration.add("sourceTableName");
+        propertiesToIgnoreForEventGeneration.add("resultTableCatalog");
+        propertiesToIgnoreForEventGeneration.add("resultTableSchema");
+        propertiesToIgnoreForEventGeneration.add("resultTableName");
+        propertiesToIgnoreForEventGeneration.add("xrefTableCatalog");
+        propertiesToIgnoreForEventGeneration.add("xrefTableSchema");
+        propertiesToIgnoreForEventGeneration.add("xrefTableName");
         super.setUp();
         match = new Match();
         TestingMatchMakerSession session = new TestingMatchMakerSession();

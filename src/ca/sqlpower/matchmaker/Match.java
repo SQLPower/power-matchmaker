@@ -58,21 +58,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	/** The type of match */
     private MatchType type;
 
-	/**
-	 * The table where we get the match data.
-	 */
-    private SourceTable sourceTable;
-
-	/**
-	 * The table where the engine stores the results of a match
-	 */
-    private SQLTable resultTable;
-
-	/**
-	 * Table used for cross references
-	 */
-    private SQLTable xrefTable;
-
 	/** The settings for the match engine */
     private MatchSettings matchSettings = new MatchSettings();;
 
@@ -91,6 +76,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     private MatchMakerFolder<MatchMakerCriteriaGroup> matchCriteriaGroupFolder = 
     	new MatchMakerFolder<MatchMakerCriteriaGroup>();
 
+    private CachableTable sourceTablePropertiesDelegate = new CachableTable("sourceTable");
+    private CachableTable resultTablePropertiesDelegate = new CachableTable("resultTable");
+    private CachableTable xrefTablePropertiesDelegate = new CachableTable("xrefTable");
+    
 	public Match( ) {
         matchCriteriaGroupFolder.setName("Match Criteria Groups");
         this.addChild(matchCriteriaGroupFolder);        
@@ -161,16 +150,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 
 
 
-	public SQLTable getResultTable() {
-		return resultTable;
-	}
-
-	public void setResultTable(SQLTable resultTable) {
-		SQLTable oldValue = this.resultTable;
-		this.resultTable = resultTable;
-		getEventSupport().firePropertyChange("resultTable", oldValue,
-				this.resultTable);
-	}
 
 	public MatchType getType() {
 		return type;
@@ -237,15 +216,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	public void setOid(Long oid) {
 		this.oid = oid;
 	}
-	public SQLTable getXrefTable() {
-		return xrefTable;
-	}
-	public void setXrefTable(SQLTable xrefTable) {
-		SQLTable oldValue = this.xrefTable;
-		this.xrefTable = xrefTable;
-		getEventSupport().firePropertyChange("xrefTable", oldValue,
-				this.xrefTable);
-	}
 
     @Override
     public String toString() {
@@ -253,9 +223,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         sb.append("Match@").append(System.identityHashCode(this));
         sb.append(": oid=").append(oid);
         sb.append("; type=").append(type);
-        sb.append("; sourceTable=").append(sourceTable);
-        sb.append("; resultTable=").append(resultTable);
-        sb.append("; xrefTable=").append(xrefTable);
+        sb.append("; sourceTable=").append(getSourceTable());
+        sb.append("; resultTable=").append(getResultTable());
+        sb.append("; xrefTable=").append(getXrefTable());
         sb.append("; matchSettings=").append(matchSettings);
         sb.append("; mergeSettings=").append(mergeSettings);
         sb.append("; filter=").append(filter);
@@ -296,124 +266,239 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     }
     
     
-    //////  Support for adding sqltables without having a session ////
-    /*
+    /**
+     * Provides the ability to maintain the SQLTable properties of the Match via
+     * simple String properties.
+     * <p>
      * All this behaviour would be better off in a Hibernate user type, but we
      * couldn't get that working, so we moved the logic into the business model.
      * Note that it doesn't depend on Hibernate in any way; it's just that the
      * Hibernate mappings are the only part of the application that use this
      * functionality.
      */
-    
-    private String sourceTableCatalog;
-    private String sourceTableSchema;
-    private String sourceTableName;
-    private SQLIndex sourceTableIndex;
-    private SourceTable cachedSourceTable;
-    
-    public String getSourceTableCatalog() {
-        if (cachedSourceTable != null) {
-            String catalogName = cachedSourceTable.getTable().getCatalogName();
-            if (catalogName == null || catalogName.length() == 0) {
-                return null;
+    private class CachableTable {
+        
+        /**
+         * The name of the Match property we're maintaining (for example, 
+         * sourceTable, xrefTable, or resultTable).
+         */
+        private final String propertyName;
+        
+        private String catalogName;
+        private String schemaName;
+        private String tableName;
+        private SQLIndex index;
+        private SourceTable cachedTable;
+        
+        CachableTable(String propertyName) {
+            this.propertyName = propertyName;
+        }
+        
+        public String getCatalogName() {
+            if (cachedTable != null) {
+                if (cachedTable.getTable() == null) return null;
+                String catalogName = cachedTable.getTable().getCatalogName();
+                if (catalogName == null || catalogName.length() == 0) {
+                    return null;
+                } else {
+                    return catalogName;
+                }
             } else {
                 return catalogName;
             }
-        } else {
-            return sourceTableCatalog;
         }
-    }
-    
-    public void setSourceTableCatalog(String sourceTableCatalog) {
-        cachedSourceTable = null;
-        this.sourceTableCatalog = sourceTableCatalog;
-    }
-    
-    public String getSourceTableName() {
-        if (cachedSourceTable != null) {
-            return cachedSourceTable.getTable().getName();
-        } else {
-            return sourceTableName;
+        
+        public void setCatalogName(String sourceTableCatalog) {
+            cachedTable = null;
+            this.catalogName = sourceTableCatalog;
         }
-    }
-    
-    public void setSourceTableName(String sourceTableName) {
-        cachedSourceTable = null;
-        this.sourceTableName = sourceTableName;
-    }
-    
-    public String getSourceTableSchema() {
-        if (cachedSourceTable != null) {
-            String schemaName = cachedSourceTable.getTable().getSchemaName();
-            if (schemaName == null || schemaName.length() == 0) {
-                return null;
+        
+        public String getTableName() {
+            if (cachedTable != null) {
+                return cachedTable.getTable().getName();
+            } else {
+                return tableName;
+            }
+        }
+        
+        public void setTableName(String sourceTableName) {
+            cachedTable = null;
+            this.tableName = sourceTableName;
+        }
+        
+        public String getSchemaName() {
+            if (cachedTable != null) {
+                if (cachedTable.getTable() == null) return null;
+                String schemaName = cachedTable.getTable().getSchemaName();
+                if (schemaName == null || schemaName.length() == 0) {
+                    return null;
+                } else {
+                    return schemaName;
+                }
             } else {
                 return schemaName;
             }
-        } else {
-            return sourceTableSchema;
-        }
-    }
-    
-    public void setSourceTableSchema(String sourceTableSchema) {
-        cachedSourceTable = null;
-        this.sourceTableSchema = sourceTableSchema;
-    }
-    
-    /**
-     * Performs some magic to synchronize the sourceTableCatalog,
-     * sourceTableSchema, and sourceTableName properties with the sourceTable
-     * property. Calling this getter may result in a SQLDatabase lookup of the
-     * table specified by the combination of the sourceTableXXX properties.
-     * 
-     * @return The most recently-returned SQLTable instance (the "cached
-     *         sourceTable") unless one of the setSourceTableXXX methods has
-     *         been called since the last call to this method.
-     *         <p>
-     *         Returns null if the sourceTableName property is null and there is
-     *         no cached sourceTable.
-     *         <p>
-     *         If there is no cached sourceTable and the sourceTableName is not
-     *         null, this method returns a new SQLTable which is either looked
-     *         up in the session's SQLDatabase, or created in the session's
-     *         SQLDatabase if the lookup failed.
-     */
-    public SourceTable getSourceTable() {
-        if (cachedSourceTable != null) {
-            return cachedSourceTable;
-        }
-        if (sourceTableName == null) {
-            return null;
         }
         
-        try {
-            logger.debug("MatchWithSQLTableHelper.getSourceTable()");
-            MatchMakerSession session = getSession();
-            SQLDatabase db = session.getDatabase();
-            SQLTable table = db.getTableByName(sourceTableCatalog, sourceTableSchema, sourceTableName);
-            if (table == null) {
-                table = ArchitectUtils.addSimulatedTable(db, sourceTableCatalog, sourceTableSchema, sourceTableName);
+        public void setSchemaName(String sourceTableSchema) {
+            cachedTable = null;
+            this.schemaName = sourceTableSchema;
+        }
+        
+        /**
+         * Performs some magic to synchronize the sourceTableCatalog,
+         * sourceTableSchema, and sourceTableName properties with the sourceTable
+         * property. Calling this getter may result in a SQLDatabase lookup of the
+         * table specified by the combination of the sourceTableXXX properties.
+         * 
+         * @return The most recently-returned SQLTable instance (the "cached
+         *         sourceTable") unless one of the setSourceTableXXX methods has
+         *         been called since the last call to this method.
+         *         <p>
+         *         Returns null if the sourceTableName property is null and there is
+         *         no cached sourceTable.
+         *         <p>
+         *         If there is no cached sourceTable and the sourceTableName is not
+         *         null, this method returns a new SQLTable which is either looked
+         *         up in the session's SQLDatabase, or created in the session's
+         *         SQLDatabase if the lookup failed.
+         */
+        public SourceTable getSourceTable() {
+            if (cachedTable != null) {
+                return cachedTable;
             }
-            SourceTable sourceTable = new SourceTable();
-            sourceTable.setTable(table);
-            sourceTable.setUniqueIndex(sourceTableIndex);
-            cachedSourceTable = sourceTable;
-            return sourceTable;
-        } catch (ArchitectException e) {
-            throw new RuntimeException(e);
+            if (tableName == null) {
+                return new SourceTable();  // this has a null table and index
+            }
+            
+            try {
+                logger.debug("MatchWithSQLTableHelper.getSourceTable()");
+                MatchMakerSession session = getSession();
+                SQLDatabase db = session.getDatabase();
+                SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
+                if (table == null) {
+                    table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
+                }
+                SourceTable sourceTable = new SourceTable();
+                sourceTable.setTable(table);
+                sourceTable.setUniqueIndex(index);
+                cachedTable = sourceTable;
+                return sourceTable;
+            } catch (ArchitectException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        public void setSourceTable(SourceTable sourceTable) {
+            final SourceTable oldSourceTable = this.cachedTable;
+            cachedTable = sourceTable;
+            getEventSupport().firePropertyChange(propertyName, oldSourceTable, sourceTable);
+        }
+
+        /**
+         * Sets the table of the cached SourceTable, and fires an event.
+         * @param table
+         */
+        public void setTable(SQLTable table) {
+            final SQLTable oldValue = cachedTable == null ? null : cachedTable.getTable();
+            final SQLTable newValue = table;
+            cachedTable = new SourceTable();
+            cachedTable.setTable(newValue);
+            getEventSupport().firePropertyChange(propertyName, oldValue, newValue);
+        }
+        
+        public SQLIndex getIndex() {
+            return index;
+        }
+        public void setIndex(SQLIndex index) {
+            this.index = index;
         }
     }
-    
-    public void setSourceTable(SourceTable sourceTable) {
-        final SourceTable oldSourceTable = this.cachedSourceTable;
-        cachedSourceTable = sourceTable;
-        getEventSupport().firePropertyChange("sourceTable", oldSourceTable, sourceTable);
+
+
+    /////// The source table delegate methods //////
+    public SourceTable getSourceTable() {
+        return sourceTablePropertiesDelegate.getSourceTable();
     }
-    
+    public String getSourceTableCatalog() {
+        return sourceTablePropertiesDelegate.getCatalogName();
+    }
     public SQLIndex getSourceTableIndex() {
-        return sourceTableIndex;
+        return sourceTablePropertiesDelegate.getIndex();
+    }
+    public String getSourceTableName() {
+        return sourceTablePropertiesDelegate.getTableName();
+    }
+    public String getSourceTableSchema() {
+        return sourceTablePropertiesDelegate.getSchemaName();
+    }
+    public void setSourceTable(SourceTable sourceTable) {
+        sourceTablePropertiesDelegate.setSourceTable(sourceTable);
+    }
+    public void setSourceTableCatalog(String sourceTableCatalog) {
+        sourceTablePropertiesDelegate.setCatalogName(sourceTableCatalog);
     }
     public void setSourceTableIndex(SQLIndex index) {
-        this.sourceTableIndex = index;
+        sourceTablePropertiesDelegate.setIndex(index);
+    }
+    public void setSourceTableName(String sourceTableName) {
+        sourceTablePropertiesDelegate.setTableName(sourceTableName);
+    }
+    public void setSourceTableSchema(String sourceTableSchema) {
+        sourceTablePropertiesDelegate.setSchemaName(sourceTableSchema);
+    }
+    
+
+    /////// The result table delegate methods //////
+    public SQLTable getResultTable() {
+        return resultTablePropertiesDelegate.getSourceTable().getTable();
+    }
+    public String getResultTableCatalog() {
+        return resultTablePropertiesDelegate.getCatalogName();
+    }
+    public String getResultTableName() {
+        return resultTablePropertiesDelegate.getTableName();
+    }
+    public String getResultTableSchema() {
+        return resultTablePropertiesDelegate.getSchemaName();
+    }
+    public void setResultTable(SQLTable resultTable) {
+        resultTablePropertiesDelegate.setTable(resultTable);
+    }
+    public void setResultTableCatalog(String resultTableCatalog) {
+        resultTablePropertiesDelegate.setCatalogName(resultTableCatalog);
+    }
+    public void setResultTableName(String resultTableName) {
+        resultTablePropertiesDelegate.setTableName(resultTableName);
+    }
+    public void setResultTableSchema(String resultTableSchema) {
+        resultTablePropertiesDelegate.setSchemaName(resultTableSchema);
+    }
+
+    
+    /////// The xref table delegate methods //////
+    public SQLTable getXrefTable() {
+        return xrefTablePropertiesDelegate.getSourceTable().getTable();
+    }
+    public String getXrefTableCatalog() {
+        return xrefTablePropertiesDelegate.getCatalogName();
+    }
+    public String getXrefTableName() {
+        return xrefTablePropertiesDelegate.getTableName();
+    }
+    public String getXrefTableSchema() {
+        return xrefTablePropertiesDelegate.getSchemaName();
+    }
+    public void setXrefTable(SQLTable xrefTable) {
+        xrefTablePropertiesDelegate.setTable(xrefTable);
+    }
+    public void setXrefTableCatalog(String xrefTableCatalog) {
+        xrefTablePropertiesDelegate.setCatalogName(xrefTableCatalog);
+    }
+    public void setXrefTableName(String xrefTableName) {
+        xrefTablePropertiesDelegate.setTableName(xrefTableName);
+    }
+    public void setXrefTableSchema(String xrefTableSchema) {
+        xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
 }
