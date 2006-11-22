@@ -4,6 +4,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 public class HibernateTestUtil {
@@ -83,19 +84,27 @@ public class HibernateTestUtil {
     
 	/**
 	 * Get the singleton oracle hibernate match maker session
-	 * 
+	 * <p>
+     * WARNING: this method replaces the SQLDatabase on the session.  Therefore
+     * it is not thread safe.
+     * 
 	 * @return a session to an oracle database
 	 */
 	public static TestingMatchMakerHibernateSession getOracleHibernateSession() throws Exception {
+        TESTING_MATCH_MAKER_ORACLE_HIBERNATE_SESSION.setDatabase(new SQLDatabase());
 		return TESTING_MATCH_MAKER_ORACLE_HIBERNATE_SESSION;
 	}
 	
 	/**
 	 * Get the singleton sqlserver hibernate match maker session
+     * <p>
+     * WARNING: this method replaces the SQLDatabase on the session.  Therefore
+     * it is not thread safe.
 	 * 
 	 * @return a session to an sql server database
 	 * @throws Exception 
 	 */	public static TestingMatchMakerHibernateSession getSqlServerHibernateSession() throws Exception{
-		return TESTING_MATCH_MAKER_SQL_SERVER_HIBERNATE_SESSION;
+	     TESTING_MATCH_MAKER_SQL_SERVER_HIBERNATE_SESSION.setDatabase(new SQLDatabase());
+	     return TESTING_MATCH_MAKER_SQL_SERVER_HIBERNATE_SESSION;
 	}
 }
