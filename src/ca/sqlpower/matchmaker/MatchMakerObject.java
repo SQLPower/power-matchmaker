@@ -62,8 +62,14 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
 	 */
 	void removeChild(C child);
 
+    /**
+     * Returns the current session that this object is associated with.
+     */
+    public MatchMakerSession getSession();
+    
 	/**
-	 * add this object into the session
+	 * Associates the given session with this object.  All ensuing database and
+     * DAO access will be done via this session.
 	 */
 	public void setSession(MatchMakerSession matchMakerSession);
 }
