@@ -4,14 +4,10 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.JDialog;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
-import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchmakerCriteria;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.PlMatchGroupPanel;
 
 /**
  * This action creates a PLMatchGroupPanel and puts it in a popup dialog.
@@ -19,12 +15,12 @@ import ca.sqlpower.matchmaker.swingui.PlMatchGroupPanel;
 public class EditMatchGroupAction extends AbstractAction {
 
     private final MatchMakerSwingSession swingSession;
-    private final PlMatchGroup matchGroup;
+    private final MatchMakerCriteriaGroup<MatchmakerCriteria> matchGroup;
 	private final Window window;
 
 	public EditMatchGroupAction(
             MatchMakerSwingSession swingSession,
-            PlMatchGroup matchGroup,
+            MatchMakerCriteriaGroup<MatchmakerCriteria> matchGroup,
             Window parentWindow) {
 		super("Edit Match Group");
         this.swingSession = swingSession;
@@ -36,14 +32,16 @@ public class EditMatchGroupAction extends AbstractAction {
 	 * Creates and shows the dialog
 	 */
 	public void actionPerformed(ActionEvent e)  {
-		try {
+		throw new UnsupportedOperationException("need code");
+		/*try {
 			JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
-                    new PlMatchGroupPanel(swingSession, matchGroup),
+                    new MatchMakerCriteriaGroupEditor(swingSession, 
+                    		matchGroup.getParentMatch(),matchGroup),
                     window, "Edit Match Group", "Save Match Group");
 			d.setVisible(true);
 		} catch (ArchitectException e1) {
 			throw new ArchitectRuntimeException(e1);
-		}
+		}*/
 	}
 
 }

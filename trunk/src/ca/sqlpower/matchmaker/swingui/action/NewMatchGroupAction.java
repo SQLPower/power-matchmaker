@@ -4,8 +4,9 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchmakerCriteria;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 public class NewMatchGroupAction extends AbstractAction {
@@ -21,7 +22,8 @@ public class NewMatchGroupAction extends AbstractAction {
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-	    throw new NotImplementedException();
+		MatchMakerCriteriaGroup<MatchmakerCriteria> g = new MatchMakerCriteriaGroup<MatchmakerCriteria>();
+		parent.getMatchCriteriaGroupFolder().addChild(g);
 	}
 
 }

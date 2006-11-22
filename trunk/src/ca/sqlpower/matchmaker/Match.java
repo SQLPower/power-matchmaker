@@ -88,7 +88,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     /**
      * Contains the match criteria and the match critera groups
      */
-    private MatchMakerFolder<MatchMakerCriteriaGroup> matchCriteriaGroupFolder = new MatchMakerFolder<MatchMakerCriteriaGroup>();
+    private MatchMakerFolder<MatchMakerCriteriaGroup> matchCriteriaGroupFolder = 
+    	new MatchMakerFolder<MatchMakerCriteriaGroup>();
 
 	public Match( ) {
         matchCriteriaGroupFolder.setName("Match Criteria Groups");
@@ -190,7 +191,22 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		this.view = view;
 		getEventSupport().firePropertyChange("view", oldValue, this.view);
 	}
-   
+
+
+	public List<MatchMakerCriteriaGroup> getMatchGroups() {
+		return getMatchCriteriaGroupFolder().getChildren();
+	}
+
+	public MatchMakerCriteriaGroup getMatchCriteriaGroupByName(String name) {
+		List <MatchMakerCriteriaGroup> groups = getMatchCriteriaGroups();
+		for ( MatchMakerCriteriaGroup g : groups) {
+			if ( g.getName() != null && g.getName().equals(name)) {
+				return g;				
+			}
+		}
+		return null;
+	}
+	
 	@Override
     public int hashCode() {
         final int PRIME = 31;

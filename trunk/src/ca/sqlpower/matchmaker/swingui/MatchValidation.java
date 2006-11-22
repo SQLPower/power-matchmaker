@@ -42,6 +42,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
@@ -379,12 +380,11 @@ public class MatchValidation extends JFrame {
                     if ( gid.equalsIgnoreCase(ALL) ) {
                         filterMatchPctComboBox.setSelectedItem(ALL);
                     } else {
-                        // FIXME depends on removed PlMatchGroup class
-//                        for ( PlMatchGroup g : match.getMatchGroups() ) {
-//                            if ( g.getGroupId().equals(gid) ) {
-//                                filterMatchPctComboBox.setSelectedItem(String.valueOf(g.getMatchPercent().intValue()));
-//                            }
-//                        }
+                        for ( MatchMakerCriteriaGroup g : match.getMatchGroups() ) {
+                            if ( g.getName().equals(gid) ) {
+                                filterMatchPctComboBox.setSelectedItem(String.valueOf(g.getMatchPercent().intValue()));
+                            }
+                        }
                     }
                     for ( ItemListener i : itemListeners ) {
                         filterMatchPctComboBox.addItemListener(i);
@@ -400,12 +400,11 @@ public class MatchValidation extends JFrame {
                         filterMatchGrpComboBox.setSelectedItem(ALL);
                     } else {
                         int pct = Integer.valueOf(pctStr);
-//                      FIXME depends on removed PlMatchGroup class
-//                        for ( PlMatchGroup g : match.getMatchGroups() ) {
-//                            if ( g.getMatchPercent() == pct ) {
-//                                filterMatchGrpComboBox.setSelectedItem(g.getGroupId());
-//                            }
-//                        }
+                        for ( MatchMakerCriteriaGroup g : match.getMatchGroups() ) {
+                            if ( g.getMatchPercent() == pct ) {
+                                filterMatchGrpComboBox.setSelectedItem(g.getName());
+                            }
+                        }
                     }
                     for ( ItemListener i : itemListeners ) {
                         filterMatchGrpComboBox.addItemListener(i);

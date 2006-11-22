@@ -336,7 +336,12 @@ public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatc
 
 	@Override
 	public int hashCode() {
-		return oid.hashCode();
+		final int PRIME = 31;
+		int result = 0;
+		result = PRIME * result + ((column == null) ? 0 : column.hashCode());
+		result = PRIME * result + ((getParent() == null) ? 0 : getParent().hashCode());
+		
+		return result;
 	}
 
 
@@ -344,15 +349,20 @@ public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatc
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if(!(obj instanceof MatchmakerCriteria)) 
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		final MatchmakerCriteria other = (MatchmakerCriteria) obj;
-		if (oid == null) {
-			if (other.oid != null)
+		if (column == null) {
+			if (other.column != null)
 				return false;
-		} else if (!oid.equals(other.oid))
+		} else if (!column.equals(other.column))
+			return false;
+		if (getParent() == null) {
+			if (other.getParent() != null)
+				return false;
+		} else if (!getParent().equals(other.getParent()))
 			return false;
 		return true;
 	}
