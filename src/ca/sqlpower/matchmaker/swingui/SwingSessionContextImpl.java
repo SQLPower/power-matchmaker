@@ -35,7 +35,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     private static final Logger logger = Logger.getLogger(SwingSessionContextImpl.class);
 
     /**
-     * The underlying context that will deal with Hibernate for us. 
+     * The underlying context that will deal with Hibernate for us.
      */
     private final MatchMakerSessionContext context;
 
@@ -78,7 +78,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     public SwingSessionContextImpl(ArchitectSession architectSession, Preferences prefsRootNode) throws ArchitectException, IOException {
         this(architectSession, prefsRootNode, createDelegateContext(prefsRootNode));
     }
-    
+
     /**
      * Creates a new Swing session context, which is a holding place for all the basic
      * settings in the MatchMaker GUI application.  This implementation uses the delegate
@@ -92,10 +92,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         this.architectSession = architectSession;
         this.prefs = prefsRootNode;
         this.context = delegateContext;
-        
+
         fakeParentFrame = new JFrame("Never Visible");
         fakeParentFrame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
-        dbConnectionManager = new DatabaseConnectionManager(fakeParentFrame, this);       
+        dbConnectionManager = new DatabaseConnectionManager(fakeParentFrame, this);
         loginDialog = new LoginDialog(this);
     }
 
@@ -178,7 +178,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         if (lastDSName == null) return null;
         for (ArchitectDataSource ds : getDataSources()) {
             if (ds.getName().equals(lastDSName)) return ds;
-        }        
+        }
         return null;
     }
 
@@ -207,7 +207,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 
     /**
      * Creates the delegate context, prompting the user (GUI) for any missing information.
-     * @throws IOException 
+     * @throws IOException
      */
     private static MatchMakerSessionContext createDelegateContext(Preferences prefs) throws ArchitectException, IOException {
         DataSourceCollection plDotIni = null;
@@ -216,6 +216,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             logger.debug("readPlDotIni returns null, trying again...");
             String message;
             String[] options = new String[] {"Browse", "Create"};
+            final int BROWSE = 0; // indices into above array
+            final int CREATE = 1;
             if (plDotIniPath == null) {
                 message = "location is not set";
             } else if (new File(plDotIniPath).isFile()) {
@@ -234,7 +236,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 
             if (choice == JOptionPane.CLOSED_OPTION) {
                 throw new ArchitectException("Can't start without a pl.ini file");
-            } else if (choice == 0) {
+            } else if (choice == BROWSE) {
                 JFileChooser fc = new JFileChooser();
                 fc.setFileFilter(ASUtils.INI_FILE_FILTER);
                 fc.setDialogTitle("Locate your PL.INI file");
@@ -244,14 +246,20 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 } else {
                     plDotIniPath = null;
                 }
-            } else if (choice == 1) {
-                plDotIniPath = System.getProperty("user.home", "pl.ini");
+            } else if (choice == CREATE) {
+                String userHome = System.getProperty("user.home");
+                if (userHome == null) {
+                	throw new IllegalStateException("user.home property is null!");
+                }
+				plDotIniPath = userHome + File.separator + "pl.ini";
+				// Create and empty file so the read won't throw an IOE
+				new File(plDotIniPath).createNewFile();
             } else {
                 throw new ArchitectException(
                 "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
             }
         }
-        prefs.put(ArchitectSession.PREFS_PL_INI_PATH, plDotIniPath);       
+        prefs.put(ArchitectSession.PREFS_PL_INI_PATH, plDotIniPath);
         return new MatchMakerHibernateSessionContext(plDotIni, plDotIniPath);
     }
 
