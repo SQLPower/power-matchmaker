@@ -24,7 +24,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 		}
 
 		public void mmPropertyChanged(MatchMakerEvent evt) {
-			// nothing
+System.out.println("PropertyChanged:"+evt.getPropertyName()+"  "+evt.getSource().getName()+"  "+evt.getNewValue().toString());
 		}
 
 		public void mmStructureChanged(MatchMakerEvent evt) {
@@ -157,9 +157,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 			MatchmakerCriteria criteria) {
 		switch (column) {	
 		case COLUMN:
-			if ( criteria.getColumn() == null )
-				return null;
-			return criteria.getColumn().getName();
+			return criteria.getColumn();
 		case ALLOW_NULL:             
 			return criteria.isAllowNullInd();
 		case CASE_SENSITIVE_IND:             

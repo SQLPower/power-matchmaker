@@ -21,9 +21,12 @@ public class MatchDAOHibernate extends AbstractMatchMakerDAOHibernate<Match> imp
 
 	public List<Match> findAllMatchesWithoutFolders() {
 	        try {
-	            List<Match> results = getCurrentSession()
+	            List<Match> results = getHibernateSession()
 	                    .createCriteria(getBusinessClass()).add(Expression.isNull("folder"))
 	                    .list();
+	            for ( Match m : results ) {
+	            	m.setSession(getMatchMakerSession());
+	            }
 	            return results;
 	        }
 	        catch (RuntimeException re) {
@@ -36,14 +39,16 @@ public class MatchDAOHibernate extends AbstractMatchMakerDAOHibernate<Match> imp
 	}
 
 	public Match findByName(String name) {
-		Session session = getCurrentSession();
+		Session session = getHibernateSession();
 		Query query = session.createQuery("from Match m where m.name = :name");
 		query.setParameter("name", name);
 		List matches = query.list();
 		if (matches.size() == 0) {
 			return null;
 		} else if (matches.size() == 1) {
-			return (Match) matches.get(0);
+			Match match = (Match) matches.get(0);
+			match.setSession(getMatchMakerSession());
+			return match;
 		} else {
 			throw new IllegalStateException("More than one match with name \""+name+"\"");
 		}
@@ -55,7 +60,7 @@ public class MatchDAOHibernate extends AbstractMatchMakerDAOHibernate<Match> imp
 	}
 
 	public long countMatchByName(String name) {
-		Session session = getCurrentSession();
+		Session session = getHibernateSession();
 		Query query = session.createQuery("select count(*) from Match m where m.name = :name");
 		query.setParameter("name", name, Hibernate.STRING);
 		Long count = (Long)query.uniqueResult();
