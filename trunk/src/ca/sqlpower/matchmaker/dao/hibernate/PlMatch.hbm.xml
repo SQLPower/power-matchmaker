@@ -47,17 +47,26 @@
 		    <column name="index_column_name9" length="50" />
 		</property>
 
-		<property name="resultTable" type="ca.sqlpower.matchmaker.util.NamesToSQLTable">
+		<property name="resultTableCatalog" type="string">	
 			<column name="RESULTS_TABLE_CATALOG" length="30" />
+		</property>
+		<property name="resultTableSchema" type="string">
 			<column name="RESULTS_TABLE_OWNER" length="30" />
+		</property>
+		<property name="resultTableName" type="string">
 			<column name="RESULTS_TABLE" length="30" />
 		</property>
-		<property name="xrefTable" type="ca.sqlpower.matchmaker.util.NamesToSQLTable">
+		
+		<property name="xrefTableCatalog" type="string">	
 			<column name="xref_catalog" length="30" />
+		</property>
+		<property name="xrefTableSchema" type="string">
 			<column name="xref_owner" length="30" />
+		</property>
+		<property name="xrefTableName" type="string">
 			<column name="xref_table_name" length="30" />
 		</property>
-
+	
 		<property name="createDate" type="timestamp" access="field">
 			<column name="CREATE_DATE" length="23" />
 		</property>

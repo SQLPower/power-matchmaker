@@ -31,9 +31,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 	@Override
 	public List<String> getNonPersitingProperties() {
 		List<String> nonPersistingProperties = super.getNonPersitingProperties();
-		nonPersistingProperties.add("lastUpdateOSUser");
 		nonPersistingProperties.add("lastUpdateDate");
-		nonPersistingProperties.add("lastUpdateAppUser");
 		nonPersistingProperties.add("session");
         nonPersistingProperties.add("matchCriteriaGroups");
         
@@ -44,12 +42,10 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         nonPersistingProperties.add("sourceTableName");
         nonPersistingProperties.add("sourceTableIndex");
         
-        nonPersistingProperties.add("resultTable");
         nonPersistingProperties.add("resultTableCatalog");
         nonPersistingProperties.add("resultTableSchema");
         nonPersistingProperties.add("resultTableName");
         
-        nonPersistingProperties.add("xrefTable");
         nonPersistingProperties.add("xrefTableCatalog");
         nonPersistingProperties.add("xrefTableSchema");
         nonPersistingProperties.add("xrefTableName");
