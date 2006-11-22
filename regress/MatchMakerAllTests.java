@@ -14,6 +14,13 @@ import com.gargoylesoftware.base.testing.TestFilter;
  */
 public class MatchMakerAllTests {
 
+	/**
+	 *  TRY to load system prefs factory before anybody else uses prefs.
+	 */
+	static {
+		System.getProperties().setProperty(
+			"java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
+	}
 	public static Test suite() throws IOException {
 		// Point this at the top-level of the output folder
 		File file = new File("bin");
