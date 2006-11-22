@@ -9,78 +9,83 @@ import javax.swing.event.ListDataListener;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
-
-
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchmakerCriteria;
 
 public class ColumnComboBoxModel implements ComboBoxModel {
-	private String tableName;
 	private SQLTable table;
-	private List<String> columnNames = new ArrayList<String>();
-	PlMatchGroup group;
-	private String selected;
-	
-	public ColumnComboBoxModel(SQLTable table, PlMatchGroup group) throws ArchitectException {
+
+	private List<SQLColumn> columnNames = new ArrayList<SQLColumn>();
+
+	private MatchMakerCriteriaGroup<MatchmakerCriteria> group;
+
+	private SQLColumn selected;
+
+	public ColumnComboBoxModel(SQLTable table,
+			MatchMakerCriteriaGroup<MatchmakerCriteria> group)
+			throws ArchitectException {
 		super();
 		ColumnComboBoxModelImpl(table, group);
-		
+
 	}
-	
+
 	public ColumnComboBoxModel(SQLTable table) throws ArchitectException {
 		super();
 		ColumnComboBoxModelImpl(table, null);
-		
+
 	}
-	
-	private void ColumnComboBoxModelImpl(SQLTable table, PlMatchGroup group) throws ArchitectException{
+
+	private void ColumnComboBoxModelImpl(SQLTable table,
+			MatchMakerCriteriaGroup<MatchmakerCriteria> group)
+			throws ArchitectException {
 		this.group = group;
 		setTable(table);
 	}
 
 	public String getTableName() {
-		return tableName;
+		return table.getName();
 	}
 
-
-
-	public Object getElementAt(int index)  {
-		
-		List<String> curElements = new ArrayList<String>(columnNames);
-		if ( group != null){
-			curElements.removeAll(group.getUsedColumnNames());
-		}
+	public Object getElementAt(int index) {
+		List<SQLColumn> curElements = getAllUsableElement();
 		return curElements.get(index);
-		
+
 	}
 
-	public int getSize()  {
-		List<String> curElements = new ArrayList<String>(columnNames);
-		if(group != null){
-			curElements.removeAll(group.getUsedColumnNames());
-		}
+	public int getSize() {
+		List<SQLColumn> curElements = getAllUsableElement();
 		return curElements.size();
+	}
+	private List<SQLColumn> getAllUsableElement() {
+		List<SQLColumn> curElements = new ArrayList<SQLColumn>(columnNames);
+		if ( group != null ) {
+			for ( MatchmakerCriteria c : group.getChildren() ) {
+				if ( c.getColumn() != null ) {
+					curElements.remove(c.getColumn());
+				}
+			}
+		}
+		return curElements;
 	}
 
 	public Object getSelectedItem() {
-		// TODO Auto-generated method stub
 		return selected;
 	}
 
 	public void setSelectedItem(Object anItem) {
-		if (anItem!=null){
-			selected = (String) anItem;
+		if (anItem != null) {
+			selected = (SQLColumn) anItem;
 		}
-		
 	}
 
 	public void addListDataListener(ListDataListener l) {
-		// TODO Auto-generated method stub
-		
+		// nothing for now
+
 	}
 
 	public void removeListDataListener(ListDataListener l) {
-		// TODO Auto-generated method stub
-		
+		// nothing for now
+
 	}
 
 	public SQLTable getTable() {
@@ -90,10 +95,10 @@ public class ColumnComboBoxModel implements ComboBoxModel {
 	public void setTable(SQLTable table) throws ArchitectException {
 		if (this.table != table) {
 			this.table = table;
-			if (table != null){
+			if (table != null) {
 				columnNames.clear();
-				for (SQLColumn c : table.getColumns()){
-					columnNames.add(c.getName());
+				for (SQLColumn c : table.getColumns()) {
+					columnNames.add(c);
 				}
 			}
 		}

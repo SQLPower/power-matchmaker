@@ -1,6 +1,6 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 
 
 public enum MatchCriteriaColumn {
@@ -11,7 +11,7 @@ public enum MatchCriteriaColumn {
     SUPPRESS_CHAR("Suppress Chars", String.class),
     REPLACE_WITH_SPACE_IND("Replace With Space", Boolean.class),
     REPLACE_WITH_SPACE("To Be Replaced With Space", String.class),  
-    TRANSLATE_GROUP("Translate Words", PlMatchTranslateGroup.class),
+    TRANSLATE_GROUP("Translate Words", MatchMakerTranslateGroup.class),
     REORDER_IND("Reorder", Boolean.class),
     FIRST_N_CHARS_BY_WORD("First N Chars By Word",Long.class),
     FIRST_N_CHAR("First N Chars",Long.class),

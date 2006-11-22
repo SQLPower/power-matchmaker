@@ -1,50 +1,51 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Date;
-
 import javax.swing.table.AbstractTableModel;
 
-import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
-import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.MatchmakerCriteria;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
 public class MatchCriteriaTableModel extends AbstractTableModel {
 
-	private final class MatchCriteriaPropertyListener implements PropertyChangeListener {
-		PlMatchGroup group;
-		public MatchCriteriaPropertyListener(PlMatchGroup group) {
-			this.group = group;
+	private final class TableModelEventAdapter<T extends MatchMakerObject, C extends MatchMakerObject>
+		implements MatchMakerListener<T, C> {
+
+		public void mmChildrenInserted(MatchMakerEvent evt) {
+			fireTableRowsInserted(evt.getChangeIndices()[0], evt.getChangeIndices()[0]);
 		}
 
-		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getSource() instanceof PlMatchCriterion){
-				int index = group.getChildren().indexOf(evt.getSource());
-				fireTableRowsUpdated(index,index);
-			} else if (evt.getSource() instanceof PlMatchGroup){
-				// TODO a more efficient implementation
-				fireTableDataChanged();
-			} else {
-				throw new UnsupportedOperationException("Not implemented for class "+evt.getSource().getClass());
-			}
+		public void mmChildrenRemoved(MatchMakerEvent evt) {
+			fireTableRowsDeleted(evt.getChangeIndices()[0], evt.getChangeIndices()[0]);
+		}
+
+		public void mmPropertyChanged(MatchMakerEvent evt) {
+			// nothing
+		}
+
+		public void mmStructureChanged(MatchMakerEvent evt) {
+			// nothing
 		}
 	}
+	
 
-	private PlMatchGroup group;
+	private MatchMakerCriteriaGroup group;
 
-	public PlMatchGroup getGroup() {
+	public MatchMakerCriteriaGroup getGroup() {
 		return group;
 	}
 
-	public void setGroup(PlMatchGroup group) {
+	public void setGroup(MatchMakerCriteriaGroup group) {
 		this.group = group;
-		PropertyChangeListener pcl = new MatchCriteriaPropertyListener(group);
-		group.addHierarchicalChangeListener(pcl);
-		
+		group.addMatchMakerListener(
+				new TableModelEventAdapter<MatchMakerObject, MatchMakerObject>());
 	}
 
-	public MatchCriteriaTableModel(PlMatchGroup matchGroup) {
+	public MatchCriteriaTableModel(MatchMakerCriteriaGroup matchGroup) {
 		setGroup(matchGroup);
 	}
 
@@ -58,19 +59,23 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		return getFieldFromCriteria(
-                MatchCriteriaColumn.values()[columnIndex],(PlMatchCriterion) group.getChildren().get(rowIndex));
+                MatchCriteriaColumn.values()[columnIndex],
+                (MatchmakerCriteria)group.getChildren().get(rowIndex));
 	}
 	
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		MatchCriteriaColumn column = MatchCriteriaColumn.values()[columnIndex];
-		PlMatchCriterion criterion = (PlMatchCriterion) group.getChildren().get(rowIndex);
+		MatchmakerCriteria criterion = 
+			(MatchmakerCriteria) group.getChildren().get(rowIndex);
 		
 		switch (column) {	
 		case COLUMN:
 			// Don't allow us to put a null value the DB don't like it.
 			if (aValue == null) return;
-			criterion.setColumnName((String)aValue);
+			if (criterion.getColumn() == null) {
+				criterion.setColumn((SQLColumn)aValue);
+			}
 			break;
 		case ALLOW_NULL:             
 			criterion.setAllowNullInd((Boolean)aValue);
@@ -95,7 +100,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 			criterion.setSoundInd((Boolean)aValue);
 			break;
 		case TRANSLATE_GROUP:  
-			criterion.setTranslateGroup((PlMatchTranslateGroup) aValue);
+			criterion.setTranslateGroup((MatchMakerTranslateGroup) aValue);
 			break;
 		case REMOVE_SPECIAL_CHARS:  
 			criterion.setRemoveSpecialChars((Boolean)aValue);
@@ -131,11 +136,10 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 		default:
 			throw new IllegalArgumentException("Invalid column");
 		}
-		criterion.setLastUpdateDate(new Date(System.currentTimeMillis()));
 	}
 	
-	public PlMatchCriterion getRow(int row){
-		return (PlMatchCriterion) group.getChildren().get(row);
+	public MatchmakerCriteria getRow(int row){
+		return (MatchmakerCriteria) group.getChildren().get(row);
 	}
 	
 	@Override
@@ -149,10 +153,13 @@ public class MatchCriteriaTableModel extends AbstractTableModel {
 		
 	}
 	
-	private static Object getFieldFromCriteria(MatchCriteriaColumn column, PlMatchCriterion criteria) {
+	private static Object getFieldFromCriteria(MatchCriteriaColumn column,
+			MatchmakerCriteria criteria) {
 		switch (column) {	
 		case COLUMN:
-			return criteria.getColumnName();
+			if ( criteria.getColumn() == null )
+				return null;
+			return criteria.getColumn().getName();
 		case ALLOW_NULL:             
 			return criteria.isAllowNullInd();
 		case CASE_SENSITIVE_IND:             

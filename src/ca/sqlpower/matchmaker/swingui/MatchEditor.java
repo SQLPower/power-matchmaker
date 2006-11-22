@@ -39,10 +39,11 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchType;
+import ca.sqlpower.matchmaker.MatchmakerCriteria;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -112,11 +113,10 @@ public class MatchEditor {
         this.match = match;
         this.folder = folder;
         handler = new FormValidationHandler(status);
-        newMatchGroupAction = new NewMatchGroupAction(swingSession, match);
         buildUI();
         handler.addPropertyChangeListener(new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
-				refershButtons();
+				refreshActionStatus();
 			}
         });
     }
@@ -143,6 +143,21 @@ public class MatchEditor {
 		}
 	};
 
+	private Action newMatchGroupAction = new AbstractAction("New Match Group") {
+		public void actionPerformed(ActionEvent arg0) {
+			MatchMakerCriteriaGroupEditor editor = null;
+			try {
+				editor = new MatchMakerCriteriaGroupEditor(swingSession,
+						match,
+						new MatchMakerCriteriaGroup<MatchmakerCriteria>());
+			} catch (ArchitectException e) {
+				JOptionPane.showMessageDialog(swingSession.getFrame(), 
+						"Populate Error", "Error", JOptionPane.ERROR_MESSAGE);
+			}
+			swingSession.setCurrentEditorComponent(editor.getPanel());
+		}
+	};
+	
 	private Window getParentWindow() {
 	    return SwingUtilities.getWindowAncestor(panel);
 	}
@@ -231,17 +246,15 @@ public class MatchEditor {
 
 
 
-	private NewMatchGroupAction newMatchGroupAction;
+	
 
 
 
     private void buildUI() throws ArchitectException {
 
     	matchId.setName("Match ID");
-		sourceChooser = new SQLObjectChooser(swingSession.getFrame(),
-        		swingSession.getContext().getDataSources());
-        resultChooser = new SQLObjectChooser(swingSession.getFrame(),
-        		swingSession.getContext().getDataSources());
+		sourceChooser = new SQLObjectChooser(swingSession);
+        resultChooser = new SQLObjectChooser(swingSession);
         sourceChooser.getTableComboBox().setName("Source Table");
         resultChooser.getCatalogComboBox().setName("Result "+
         		resultChooser.getCatalogTerm().getText());
@@ -392,20 +405,19 @@ public class MatchEditor {
 
         if ( match.getSourceTable() != null ) {
 
-        	SQLTable tableByName = match.getSourceTable().getTable();
-        	if (tableByName == null) {
+        	SQLTable sourceTable = match.getSourceTable().getTable();
+        	if (sourceTable == null) {
         	} else {
-        		filterPanel.setTable(tableByName);
-        		SQLCatalog cat = tableByName.getCatalog();
-	    		SQLSchema sch = tableByName.getSchema();
+        		filterPanel.setTable(sourceTable);
+        		SQLCatalog cat = sourceTable.getCatalog();
+	    		SQLSchema sch = sourceTable.getSchema();
 	    		if ( cat != null ) {
 	    			sourceChooser.getCatalogComboBox().setSelectedItem(cat);
 	    		}
 	    		if ( sch != null ) {
 	    			sourceChooser.getSchemaComboBox().setSelectedItem(sch);
 	    		}
-	    		sourceChooser.getTableComboBox().setSelectedItem(tableByName);
-
+	    		sourceChooser.getTableComboBox().setSelectedItem(sourceTable);
     			SQLIndex pk = null;
 				pk = match.getSourceTable().getUniqueIndex();
     			if ( pk != null ) {
@@ -447,7 +459,7 @@ public class MatchEditor {
      * @throws ArchitectException
      * @return true if save OK
      */
-    private boolean saveMatch() throws ArchitectException {
+    private boolean saveMatch() {
 
     	List<String> fail = handler.getFailResults();
     	List<String> warn = handler.getWarnResults();
@@ -536,10 +548,16 @@ public class MatchEditor {
         if ( trimedresultTableName == null || trimedresultTableName.length() == 0 ) {
         	trimedresultTableName = "MM_"+match.getName();
         }
-        match.setResultTable(new SQLTable(resultTableParentDB,
-        		trimedresultTableName,
-        		"MatchMaker result table",
-        		"TABLE", true));
+        
+        try {
+        	match.setResultTable(new SQLTable(resultTableParentDB,
+        			trimedresultTableName,
+        			"MatchMaker result table",
+        			"TABLE", true));
+        } catch ( ArchitectException e ) {
+        	ASUtils.showExceptionDialog(swingSession.getFrame(),"Save error",e);
+        	return false;
+        }
 
         match.setFilter(filterPanel.getFilterTextArea().getText());
 
@@ -567,7 +585,7 @@ public class MatchEditor {
 
     }
 
-    private void refershButtons() {
+    private void refreshActionStatus() {
     	ValidateResult worst = handler.getWorstValidationStatus();
     	saveAction.setEnabled(true);
 		newMatchGroupAction.setEnabled(true);
@@ -578,6 +596,7 @@ public class MatchEditor {
     		newMatchGroupAction.setEnabled(false);
     		runMatchAction.setEnabled(false);
     	} else if ( worst.getStatus() == Status.WARN ) {
+    		newMatchGroupAction.setEnabled(false);
     		runMatchAction.setEnabled(false);
     	}
     }

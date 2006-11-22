@@ -16,9 +16,8 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
-import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
@@ -58,11 +57,14 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
 
                     swingSession.setCurrentEditorComponent(me.getPanel());
 
-                } else if (o instanceof PlMatchGroup) {
+                } else if (o instanceof MatchMakerCriteriaGroup ) {
+                	Match m = ((MatchMakerCriteriaGroup)o).getParentMatch();
                     try {
-                        PlMatchGroupPanel panel = new PlMatchGroupPanel(
-                                swingSession, (PlMatchGroup) o);
-                        swingSession.setCurrentEditorComponent(panel);
+                        MatchMakerCriteriaGroupEditor editor = 
+                        	new MatchMakerCriteriaGroupEditor(
+                        			swingSession,
+                        			m, (MatchMakerCriteriaGroup) o);
+                        swingSession.setCurrentEditorComponent(editor.getPanel());
                     } catch (ArchitectException e1) {
                         throw new ArchitectRuntimeException(e1);
                     }
@@ -102,16 +104,16 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                     createFolderMenu((PlFolder) o);
                 } else if (o instanceof Match) {
                     createMatchMenu((Match) o);
-                } else if (o instanceof PlMatchGroup) {
-                    createMatchGroupMenu((PlMatchGroup) o);
+                } else if (o instanceof MatchMakerCriteriaGroup) {
+                    createMatchGroupMenu((MatchMakerCriteriaGroup) o);
                 }
             }
             m.show(t, e.getX(), e.getY());
         }
     }
 
-    private void createMatchGroupMenu(PlMatchGroup group) {
-        m.add(new JMenuItem(new DeleteMatchGroupAction(swingSession, group)));
+    private void createMatchGroupMenu(MatchMakerCriteriaGroup group) {
+        m.add(new JMenuItem("need code"));
     }
 
     private void createMatchMenu(final Match match) {
