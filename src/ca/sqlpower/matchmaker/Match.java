@@ -377,15 +377,26 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
             }
             
             try {
-                logger.debug("MatchWithSQLTableHelper.getSourceTable()");
+                logger.debug("Match.getSourceTable("+catalogName+","+schemaName+","+tableName+")");
                 MatchMakerSession session = getSession();
                 SQLDatabase db = session.getDatabase();
-                SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
-                if (table == null) {
-                    table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
+                if (ArchitectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
+                    SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
+                    if (table == null) {
+                        logger.debug("     Not found.  Adding simulated...");
+                        table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
+                    } else {
+                        logger.debug("     Found!");
+                    }
+                    SourceTable sourceTable = new SourceTable(table,index);
+                    cachedTable = sourceTable;
+                    return sourceTable;
+                } else {
+                    session.handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
+                                    " in Match "+getName()+ " is not compatible with the "+db.getName() +" database. " +
+                                    "The table selection has been reset to nothing");
+                    return null;
                 }
-                cachedTable = new SourceTable(table,index);
-                return cachedTable;
             } catch (ArchitectException e) {
                 throw new RuntimeException(e);
             }
@@ -457,7 +468,13 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 
     /////// The result table delegate methods //////
     public SQLTable getResultTable() {
-        return resultTablePropertiesDelegate.getSourceTable().getTable();
+        SourceTable sourceTable = resultTablePropertiesDelegate.getSourceTable();
+        if (sourceTable != null) {
+            return sourceTable.getTable();
+        } else {
+            return null;
+        }
+        
     }
     public String getResultTableCatalog() {
         return resultTablePropertiesDelegate.getCatalogName();
@@ -484,7 +501,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     
     /////// The xref table delegate methods //////
     public SQLTable getXrefTable() {
-        return xrefTablePropertiesDelegate.getSourceTable().getTable();
+        SourceTable sourceTable = xrefTablePropertiesDelegate.getSourceTable();
+        if (sourceTable != null) {
+            return sourceTable.getTable();
+        } else {
+            return null;
+        }
     }
     public String getXrefTableCatalog() {
         return xrefTablePropertiesDelegate.getCatalogName();
