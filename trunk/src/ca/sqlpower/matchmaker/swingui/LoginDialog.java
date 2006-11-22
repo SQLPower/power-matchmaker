@@ -2,6 +2,9 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -118,9 +121,12 @@ public class LoginDialog extends JDialog {
         }
     };
 
-    private final Action connectionManagerAction = new AbstractAction("Manage Connections...") {
-        public void actionPerformed(ActionEvent e) { sessionContext.showDatabaseConnectionManager(); };
-    };
+    private final Action connectionManagerAction =
+    	new AbstractAction("Manage Connections...") {
+		public void actionPerformed(ActionEvent e) {
+			sessionContext.showDatabaseConnectionManager();
+		};
+	};
 
 	/**
 	 * The session context for this application.  The list of available
@@ -175,7 +181,32 @@ public class LoginDialog extends JDialog {
 		panel = createPanel();
 		getContentPane().add(panel);
         ASUtils.makeJDialogCancellable(this, cancelAction);
+
+        optimizeJumpToManageConnections();
 	}
+
+
+	private void optimizeJumpToManageConnections() {
+        if (dbList.getModel().getSize() == 0) {
+        	ActionEvent actionEvent = new ActionEvent(null, 0, "Fill in empty list");
+			connectionManagerAction.actionPerformed(actionEvent);
+        }
+	}
+
+	WindowListener optimizationManager = new WindowAdapter() {
+		/** If you try to login but have not Connections set up yet,
+		 * there is nothing you can do except Manage Connections,
+		 * so we jump you to there.
+		 */
+		@Override
+		public void windowOpened(WindowEvent e) {
+			logger.debug("Stub call: optimizationManager.windowOpened()");
+			if (dbList.getModel().getSize() == 0) {
+				ActionEvent actionEvent = new ActionEvent(null, 0, "Fill in empty list");
+				connectionManagerAction.actionPerformed(actionEvent);
+			}
+		}
+	};
 
 	public JComponent createPanel() {
 
