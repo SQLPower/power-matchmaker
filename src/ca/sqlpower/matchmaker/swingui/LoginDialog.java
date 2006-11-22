@@ -185,15 +185,15 @@ public class LoginDialog extends JDialog {
 	}
 
 	WindowListener optimizationManager = new WindowAdapter() {
-		/** If you try to login but have not Connections set up yet,
-		 * there is nothing you can do except Manage Connections,
+		/** If you try to login but have no Connections set up yet,
+		 * there is nothing you can do except "Manage Connections",
 		 * so we jump you to there.
 		 */
 		@Override
 		public void windowOpened(WindowEvent e) {
 			logger.debug("Stub call: optimizationManager.windowOpened()");
 			int dbListSize = connectionModel.getSize();
-			
+
 			if (dbListSize == 0 ||
 				(dbListSize == 1 && connectionModel.getElementAt(0) == null)) {
 				ActionEvent actionEvent = new ActionEvent(LoginDialog.this, 0, "Fill in empty list");
