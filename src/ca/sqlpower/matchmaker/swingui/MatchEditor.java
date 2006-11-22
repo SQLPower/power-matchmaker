@@ -489,16 +489,10 @@ public class MatchEditor {
         match.setType((Match.MatchType)matchType.getSelectedItem());
         match.getMatchSettings().setDescription(desc.getText());
 
-        if ( match.getSourceTable() == null ) {
-        	match.setSourceTable(new SourceTable());
-        }
-        match.getSourceTable().setTable(
-        		((SQLTable) sourceChooser.getTableComboBox().
-        				getSelectedItem()));
-        match.getSourceTable().setUniqueIndex(
-        		((SQLIndex) sourceChooser.getUniqueKeyComboBox().
-        				getSelectedItem()));
-
+        match.setSourceTable(new SourceTable(
+        		((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()),
+        		((SQLIndex) sourceChooser.getUniqueKeyComboBox().getSelectedItem())));
+        
         if ((matchName == null || matchName.length() == 0) &&
         		match.getSourceTable().getTable() == null ) {
         	JOptionPane.showMessageDialog(getPanel(),

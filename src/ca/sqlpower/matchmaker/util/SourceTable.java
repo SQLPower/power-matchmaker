@@ -4,15 +4,21 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 /**
  * The source table represents the table in which we're looking for matching records,
- * and the unique index that we are using on that table.  
+ * and the unique index that we are using on that table.
+ * 
+ *   no setters on this class, whenever you need to change property of the class,
+ *   you will have to create a new instance of the class 
  */
 public class SourceTable {
 	/** The source table */
-	private SQLTable table;
+	final private SQLTable table;
 	/** the unique index specified by the user */
-	private SQLIndex uniqueIndex;
-	/** true iff the index is a pk */
-	private boolean indexIsPk;
+	final private SQLIndex uniqueIndex;
+
+	public SourceTable(SQLTable table, SQLIndex index) {
+		this.table = table;
+		uniqueIndex = index;
+	}
 	
 	/**
 	 * Returns true iff the sql table exists and
@@ -26,34 +32,22 @@ public class SourceTable {
 		return false;
 	}
 
+	/** true iff the index is a pk */
 	public boolean isIndexIsPk() {
-		return indexIsPk;
-	}
-
-	public void setIndexIsPk(boolean indexIsPk) {
-		if (this.indexIsPk != indexIsPk) {
-			this.indexIsPk = indexIsPk;
-		}
+		if ( table == null || table.getPrimaryKeyName() == null )
+			return false;
+		if ( uniqueIndex == null || uniqueIndex.getName() == null )
+			return false;
+		return table.getPrimaryKeyName().equals(uniqueIndex.getName());
 	}
 
 	public SQLTable getTable() {
 		return table;
 	}
 
-	public void setTable(SQLTable table) {
-		if (this.table != table) {
-			this.table = table;
-		}
-	}
-
 	public SQLIndex getUniqueIndex() {
 		return uniqueIndex;
 	}
 
-	public void setUniqueIndex(SQLIndex uniqueIndex) {
-		if (this.uniqueIndex != uniqueIndex) {
-			this.uniqueIndex = uniqueIndex;
-		}
-	}
 	
 }

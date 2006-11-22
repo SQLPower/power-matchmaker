@@ -315,7 +315,11 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         
         public String getTableName() {
             if (cachedTable != null) {
-                return cachedTable.getTable().getName();
+            	if ( cachedTable.getTable() == null ) {
+            		return null;
+            	} else {
+            		return cachedTable.getTable().getName();
+            	}
             } else {
                 return tableName;
             }
@@ -368,7 +372,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
                 return cachedTable;
             }
             if (tableName == null) {
-                return new SourceTable();  // this has a null table and index
+            	cachedTable = new SourceTable(null,null);  // this has a null table and index 
+                return cachedTable;
             }
             
             try {
@@ -379,11 +384,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
                 if (table == null) {
                     table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
                 }
-                SourceTable sourceTable = new SourceTable();
-                sourceTable.setTable(table);
-                sourceTable.setUniqueIndex(index);
-                cachedTable = sourceTable;
-                return sourceTable;
+                cachedTable = new SourceTable(table,index);
+                return cachedTable;
             } catch (ArchitectException e) {
                 throw new RuntimeException(e);
             }
@@ -392,6 +394,11 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         public void setSourceTable(SourceTable sourceTable) {
             final SourceTable oldSourceTable = this.cachedTable;
             cachedTable = sourceTable;
+            
+            catalogName = null;
+            schemaName = null;
+            tableName = null;
+            
             getEventSupport().firePropertyChange(propertyName, oldSourceTable, sourceTable);
         }
 
@@ -402,8 +409,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         public void setTable(SQLTable table) {
             final SQLTable oldValue = cachedTable == null ? null : cachedTable.getTable();
             final SQLTable newValue = table;
-            cachedTable = new SourceTable();
-            cachedTable.setTable(newValue);
+            cachedTable = new SourceTable(table,null);
             getEventSupport().firePropertyChange(propertyName, oldValue, newValue);
         }
         

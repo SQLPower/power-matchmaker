@@ -16,6 +16,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -239,7 +240,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 							newVal = new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
 						}
 					} else if (property.getPropertyType() == SourceTable.class) {
-						newVal = new SourceTable();
+						newVal = new SourceTable(new SQLTable(), new SQLIndex());
 					} else {
 						if (property.getPropertyType() == MatchSettings.class) {
 							MatchSettings matchSettings = new MatchSettings();

@@ -238,8 +238,7 @@ public class MatchSQLTableHelperTest extends TestCase {
 
     public void testSetSourceTable1() throws Exception {
         SQLTable table = setUpScenario1();
-        SourceTable st = new SourceTable();
-        st.setTable(table);
+        SourceTable st = new SourceTable(table,null);
         
         match.setSourceTable(st);
 
@@ -250,8 +249,7 @@ public class MatchSQLTableHelperTest extends TestCase {
 
     public void testSetSourceTable2() throws Exception {
         SQLTable table = setUpScenario2();
-        SourceTable st = new SourceTable();
-        st.setTable(table);
+        SourceTable st = new SourceTable(table,null);
         
         match.setSourceTable(st);
 
@@ -262,8 +260,7 @@ public class MatchSQLTableHelperTest extends TestCase {
 
     public void testSetSourceTable3() throws Exception {
         SQLTable table = setUpScenario3();
-        SourceTable st = new SourceTable();
-        st.setTable(table);
+        SourceTable st = new SourceTable(table,null);
         
         match.setSourceTable(st);
 
@@ -274,8 +271,7 @@ public class MatchSQLTableHelperTest extends TestCase {
 
     public void testSetSourceTable4() throws Exception {
         SQLTable table = setUpScenario4();
-        SourceTable st = new SourceTable();
-        st.setTable(table);
+        SourceTable st = new SourceTable(table,null);
         
         match.setSourceTable(st);
 

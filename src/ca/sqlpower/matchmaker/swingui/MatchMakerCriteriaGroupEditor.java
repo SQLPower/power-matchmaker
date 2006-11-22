@@ -33,6 +33,8 @@ import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchmakerCriteria;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
@@ -208,6 +210,32 @@ public class MatchMakerCriteriaGroupEditor {
 			MatchmakerCriteria<MatchMakerObject> criteria = 
 				new MatchmakerCriteria<MatchMakerObject>();
 			group.addChild(criteria);
+			criteria.addMatchMakerListener(new MatchMakerListener() {
+
+				public void mmChildrenInserted(MatchMakerEvent evt) {
+				}
+
+				public void mmChildrenRemoved(MatchMakerEvent evt) {
+				}
+
+				public void mmPropertyChanged(MatchMakerEvent evt) {
+					MatchmakerCriteria criteria = (MatchmakerCriteria) evt.getSource();
+					criteria.setName(criteria.getColumn()==null?"imcompleted criteria":criteria.getColumn().getName());
+				}
+
+				public void mmStructureChanged(MatchMakerEvent evt) {
+				}});
+
+		}
+	};
+	
+	private Action deleteCriteria = new AbstractAction("Delete") {
+		public void actionPerformed(ActionEvent e) {
+			int selectedRow = matchCriteriaTable.getSelectedRow();
+			if ( selectedRow == -1 ) return;
+			MatchmakerCriteria c = ((MatchCriteriaTableModel)
+					matchCriteriaTable.getModel()).getRow(selectedRow);
+			group.removeChild(c);
 		}
 	};
 	
@@ -228,7 +256,7 @@ public class MatchMakerCriteriaGroupEditor {
         active.setSelected(true);
 
         newMatchCriterion = new JButton(newCriteria);
-        deleteMatchCriterion = new JButton("Delete");
+        deleteMatchCriterion = new JButton(deleteCriteria);
         copyMatchCriterion = new JButton("Copy");
         pasteMatchCriterion = new JButton("Paste");
         saveMatchCriterion = new JButton(save);
@@ -335,6 +363,8 @@ public class MatchMakerCriteriaGroupEditor {
                                 new ColumnComboBoxModel(sourceTable,group))));
         	}
         }
+        
+        
         
         
         Validator v1 = new MatchGroupNameValidator();

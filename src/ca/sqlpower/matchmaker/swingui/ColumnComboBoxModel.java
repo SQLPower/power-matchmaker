@@ -58,13 +58,13 @@ public class ColumnComboBoxModel implements ComboBoxModel {
 	}
 	private List<SQLColumn> getAllUsableElement() {
 		List<SQLColumn> curElements = new ArrayList<SQLColumn>(columnNames);
-		if ( group != null ) {
+		/*if ( group != null ) {
 			for ( MatchmakerCriteria c : group.getChildren() ) {
 				if ( c.getColumn() != null ) {
 					curElements.remove(c.getColumn());
 				}
 			}
-		}
+		}*/
 		return curElements;
 	}
 
