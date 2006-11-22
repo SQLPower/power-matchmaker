@@ -64,7 +64,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
      */
     private final JDialog d;
 
-	private final Action helpAction = new AbstractAction(){
+	private final Action helpAction = new AbstractAction("Help"){
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
@@ -72,7 +72,16 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		}
 	};
 	
-	private final Action auxLoginAction = new AbstractAction(){
+	private final Action auxLoginAction = new AbstractAction("Aux Login"){
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+            JOptionPane.showMessageDialog(d, 
+            		"This action is not implemented yet.");
+		}
+	};
+	
+	private final Action jdbcDriversAction = new AbstractAction("JDBC Drivers"){
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
@@ -237,6 +246,9 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		removeButton.setText("Remove");
 		bsb.addGridded(removeButton);
 
+		bsb.addUnrelatedGap();
+		JButton jdbcDriversButton = new JButton(jdbcDriversAction);
+		bsb.addGridded(jdbcDriversButton);
 
 		bsb.addUnrelatedGap();
 		JButton loginButton = new JButton(loginDatabaseConnectionAction);
