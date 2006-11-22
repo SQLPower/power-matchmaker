@@ -181,16 +181,7 @@ public class LoginDialog extends JDialog {
 		panel = createPanel();
 		getContentPane().add(panel);
         ASUtils.makeJDialogCancellable(this, cancelAction);
-
-        optimizeJumpToManageConnections();
-	}
-
-
-	private void optimizeJumpToManageConnections() {
-        if (dbList.getModel().getSize() == 0) {
-        	ActionEvent actionEvent = new ActionEvent(null, 0, "Fill in empty list");
-			connectionManagerAction.actionPerformed(actionEvent);
-        }
+        addWindowListener(optimizationManager);
 	}
 
 	WindowListener optimizationManager = new WindowAdapter() {
@@ -201,8 +192,11 @@ public class LoginDialog extends JDialog {
 		@Override
 		public void windowOpened(WindowEvent e) {
 			logger.debug("Stub call: optimizationManager.windowOpened()");
-			if (dbList.getModel().getSize() == 0) {
-				ActionEvent actionEvent = new ActionEvent(null, 0, "Fill in empty list");
+			int dbListSize = connectionModel.getSize();
+			
+			if (dbListSize == 0 ||
+				(dbListSize == 1 && connectionModel.getElementAt(0) == null)) {
+				ActionEvent actionEvent = new ActionEvent(LoginDialog.this, 0, "Fill in empty list");
 				connectionManagerAction.actionPerformed(actionEvent);
 			}
 		}
@@ -243,7 +237,6 @@ public class LoginDialog extends JDialog {
 		bbBuilder.addGridded(loginButton);
 		bbBuilder.addRelatedGap();
 		bbBuilder.addGridded(cancelButton);
-
 
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled()  ? new FormDebugPanel(layout) : new JPanel(layout);
