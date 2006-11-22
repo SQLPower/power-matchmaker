@@ -283,4 +283,33 @@ public class MatchSQLTableHelperTest extends TestCase {
         assertEquals("schema4", match.getSourceTableSchema());
         assertEquals("table4", match.getSourceTableName());
     }
+    
+    
+    /**
+     * The metadata for catalog, schema, table might contain bogus hierarchy
+     * information (for example, null catalog and schema on SQLServer).  This
+     * should generate a warning and then set the table to null.
+     * <p>
+     * This is only a representative test, not exhaustive like the createNew and setSourceTable
+     * families above.  It should be sufficient though.
+     */
+    public void testBadHierarchy() throws Exception {
+        setUpScenario3();
+        
+        /* scenario 3 has catalogs under the database, so this table is specified in an illegal location */ 
+        match.setSourceTableCatalog(null);
+        match.setSourceTableSchema(null);
+        match.setSourceTableName("bad_hierarchy");
+        
+        assertEquals("There should be no warnings in the session to start with",
+                0, session.getWarnings().size());
+
+        assertNull(
+                "the table should not have been created, because location is illegal",
+                match.getSourceTable());
+        
+        assertEquals("Should have generated a warning",
+                1, session.getWarnings().size());
+
+    }
 }

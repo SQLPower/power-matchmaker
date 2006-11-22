@@ -32,4 +32,7 @@ public class MatchMakerHibernateSessionImplTest extends TestCase {
 //        session.handleWarning("cow");
 //        assertEquals(1, l.warningCount);
 //    }
+
+    // placeholder
+    public void testNothing() {}
 }

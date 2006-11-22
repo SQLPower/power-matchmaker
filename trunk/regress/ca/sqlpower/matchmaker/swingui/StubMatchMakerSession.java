@@ -12,12 +12,16 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 
+/**
+ * A true stub implementation. Every method does nothing (except log the call at DEBUG level).
+ */
 public class StubMatchMakerSession implements MatchMakerSession{
 
     private static final Logger logger = Logger.getLogger(StubMatchMakerSession.class);
-
+    
     public PlFolder findFolder(String foldername) {
         logger.debug("Stub call: StubMatchMakerSession.findFolder()");
         return null;
@@ -64,27 +68,34 @@ public class StubMatchMakerSession implements MatchMakerSession{
     }
 
 	public boolean isThisMatchNameAcceptable(String name) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.isThisMatchNameAcceptable()");
 		return false;
 	}
 
 	public Match getMatchByName(String name) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.getMatchByName()");
 		return null;
 	}
 
     public String createNewUniqueName() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerSession.getNewUniqueName()");
         return null;
     }
 
     public long countMatchByName(String name) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerSession.countMatchByName()");
         return 0;
     }
 
+    public void handleWarning(String message) {
+        logger.debug("Stub call: StubMatchMakerSession.handleWarning("+message+")");
+    }
+
+    public void addWarningListener(WarningListener l) {
+        logger.debug("Stub call: StubMatchMakerSession.addWarningListener()");
+    }
+
+    public void removeWarningListener(WarningListener l) {
+        logger.debug("Stub call: StubMatchMakerSession.removeWarningListener()");
+    }
 }
