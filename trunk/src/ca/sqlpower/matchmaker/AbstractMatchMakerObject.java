@@ -140,8 +140,16 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		this.matchMakerSession = matchMakerSession;
 	}
     
-    protected MatchMakerSession getSession() {
-        return matchMakerSession;
+    public MatchMakerSession getSession() {
+        if (getParent() == this) {
+            // this check prevents infinite recursion in case of funniness
+            throw new IllegalStateException("Something tells me this class belongs to the royal family");
+        }
+        if (matchMakerSession != null || getParent() == null) {
+            return matchMakerSession;
+        } else {
+            return getParent().getSession();
+        }
     }
 
 	public Date getCreateDate() {
