@@ -6,8 +6,7 @@ import java.util.prefs.Preferences;
 import junit.framework.TestCase;
 
 /**
- * Test the PreferencesManager by providing Mock instances of both
- * the PreferencesUser and JarFileListMaintainer interfaces.
+ * Test the PreferencesManager.
  */
 public class PreferencesManagerTest extends TestCase {
 
@@ -34,6 +33,5 @@ public class PreferencesManagerTest extends TestCase {
 		p.put(key, date);
 
 		assertEquals(date, p.get(key, null));
-		assertSame(date, p.get(key, null));
 	}
 }
