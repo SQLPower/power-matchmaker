@@ -20,11 +20,15 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 			boolean selected, boolean expanded, boolean leaf, int row,
 			boolean hasFocus) {
 
-		super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+        String text;
+        if (value instanceof MatchMakerObject) {
+            text = (((MatchMakerObject) value).getName());
+        } else {
+            text = value.toString();
+        }
+        
+		super.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus);
 
-		if (value instanceof MatchMakerObject) {
-		    setText(((MatchMakerObject) value).getName());
-		}
 		if (value instanceof Match) {
 			setIcon(matchIcon);
 		} else if (value instanceof MatchMakerCriteriaGroup) {
