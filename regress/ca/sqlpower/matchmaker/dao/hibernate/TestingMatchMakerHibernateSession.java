@@ -3,6 +3,7 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +20,7 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 
 public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSession {
@@ -35,7 +37,8 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     private final SessionFactory hibernateSessionFactory;
     private final TestingConnection con;
     private SQLDatabase db;
-    
+    private List<String> warnings = new ArrayList<String>();
+
     /**
      * Creates a new session that is really connected to a datasource.  
      * This session does not create a SQLDatabase
@@ -183,4 +186,38 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         return 0;
     }
 
+    /**
+     * Prints the message to syserr and appends it to the warnings list.
+     * 
+     * @see #getWarnings()
+     */
+    public void handleWarning(String message) {
+        System.err.println("TestingMatchMakerSession.handleWarning(): got warning: "+message);
+        warnings.add(message);
+    }
+
+    /**
+     * Returns the real warning list.  Feel free to modify it if you want, but your changes
+     * will affect the session's real list of warnings.
+     */
+    public List<String> getWarnings() {
+        return warnings;
+    }
+
+    /**
+     * Replaces this session's warning list.  If you set this to null or an unmodifiable
+     * list, handleWarning() will stop working.
+     */
+    public void setWarnings(List<String> warnings) {
+        this.warnings = warnings;
+    }
+
+    public void addWarningListener(WarningListener l) {
+        logger.debug("Stub call: TestingMatchMakerHibernateSession.addWarningListener()");
+    }
+
+    public void removeWarningListener(WarningListener l) {
+        logger.debug("Stub call: TestingMatchMakerHibernateSession.removeWarningListener()");
+    }
+    
 }

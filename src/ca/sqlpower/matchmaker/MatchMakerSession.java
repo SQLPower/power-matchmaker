@@ -104,4 +104,35 @@ public interface MatchMakerSession {
      *          is already an acceptable name)
      */
     public String createNewUniqueName();
+    
+    /**
+     * Tells the session implementation about a warning message that should be
+     * displayed to the user as soon as possible.  Warnings are different from
+     * exceptions: they do not prevent completion of the current task.  They are
+     * simply assumptions and workarounds in the business logic that the user should
+     * be aware of when they happen.
+     * <p>
+     * A call to this method may invoke some implementation-specific handling mechanism,
+     * but should also always result in all subscribed WarningListeners being notified
+     * with the message as well.
+     * 
+     * @param message The message to display to the user.
+     */
+    public void handleWarning(String message);
+    
+    /**
+     * Subscribes the given listener to the incessant stream of warning messages
+     * generated as a result of bad metadata.
+     */
+    public void addWarningListener(WarningListener l);
+    
+    /**
+     * Removes the given listener to the incessant stream of warning messages
+     * generated as a result of bad metadata.
+     * 
+     * @param l The listener to remove. If it was not actually listening, calling
+     * this method has no effect.
+     */
+    public void removeWarningListener(WarningListener l);
+    
 }

@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -77,6 +79,12 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     private MatchDAO matchDAO;
     private MatchCriteriaGroupDAO matchMakerCriteriaGroupDAO;
 
+    private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
+
+    /**
+     * XXX this is untestable unless you're connected to a database right now.
+     *   It should be given a PLSecurityManager implementation rather than creating one.
+     */
 	public MatchMakerHibernateSessionImpl(
             MatchMakerSessionContext context,
 			ArchitectDataSource ds)
@@ -121,6 +129,31 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		return sessionStartTime;
 	}
 
+    /**
+     * Logs the warning to the log4j logger at WARN level as well as telling all the
+     * warning listeners about the warning.
+     */
+    public void handleWarning(String message) {
+        logger.warn("handleWarning: received warning message: "+message);
+        synchronized (warningListeners) {
+            for (int i = warningListeners.size()-1; i >= 0; i--) {
+                warningListeners.get(i).handleWarning(message);
+            }
+        }
+    }
+    
+    public void addWarningListener(WarningListener l) {
+        synchronized (warningListeners) {
+            warningListeners.add(l);
+        }
+    }
+    
+    public void removeWarningListener(WarningListener l) {
+        synchronized (warningListeners) {
+            warningListeners.remove(l);
+        }
+    }
+    
 	public List<PlFolder> getFolders() {
 		PlFolderDAO folderDAO = (PlFolderDAO) getDAO(PlFolder.class);
 		return folderDAO.findAll();

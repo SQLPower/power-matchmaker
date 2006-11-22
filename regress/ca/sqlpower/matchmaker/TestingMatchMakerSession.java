@@ -16,7 +16,8 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	List<PlFolder> folders;
 	MatchMakerSessionContext context;
 	Connection con;
-
+	List<String> warnings = new ArrayList<String>();
+    
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
 	}
@@ -104,4 +105,45 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         return 0;
     }
 
+    /**
+     * Prints the message to syserr and appends it to the warnings list.
+     * 
+     * @see #getWarnings()
+     */
+    public void handleWarning(String message) {
+        System.err.println("TestingMatchMakerSession.handleWarning(): got warning: "+message);
+        warnings.add(message);
+    }
+
+    /**
+     * Returns the real warning list.  Feel free to modify it if you want, but your changes
+     * will affect the session's real list of warnings.
+     */
+    public List<String> getWarnings() {
+        return warnings;
+    }
+
+    /**
+     * Replaces this session's warning list.  If you set this to null or an unmodifiable
+     * list, handleWarning() will stop working.
+     */
+    public void setWarnings(List<String> warnings) {
+        this.warnings = warnings;
+    }
+
+    /**
+     * Does nothing.
+     */
+    public void addWarningListener(WarningListener l) {
+        // TODO Auto-generated method stub
+    }
+
+    /**
+     * Does nothing.
+     */
+    public void removeWarningListener(WarningListener l) {
+        // TODO Auto-generated method stub
+    }
+    
+    
 }

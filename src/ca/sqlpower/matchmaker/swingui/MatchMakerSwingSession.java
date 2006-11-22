@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -15,7 +16,9 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -25,6 +28,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
@@ -44,6 +48,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
@@ -103,6 +108,19 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      */
 	private JTree tree;
 
+    /**
+     * The window that pops up to display warning messages for this session.
+     */
+    private JFrame warningDialog;
+    
+    /**
+     * The component in the warningDialog which actually contains the messages.
+     */
+    private JTextArea warningTextArea;
+    
+    private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
+
+    
 	private Action aboutAction = new AbstractAction("About MatchMaker...") {
         public void actionPerformed(ActionEvent e) {
             String message =
@@ -190,6 +208,18 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			sm.actionPerformed(e);
 		}
 	};
+    
+    private Action clearWarningsAction = new AbstractAction("Clear") {
+        public void actionPerformed(ActionEvent e) {
+            warningTextArea.setText("");
+        }
+    };
+
+    private Action closeWarningDialogAction = new AbstractAction("Close") {
+        public void actionPerformed(ActionEvent e) {
+            warningDialog.setVisible(false);
+        }
+    };
 
 	private List<PlMatchTranslateGroup> translations = new ArrayList<PlMatchTranslateGroup>();
 
@@ -209,8 +239,25 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, ArchitectException, SchemaVersionFormatException, PLSchemaException, SQLException {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
+        
+        // this grabs warnings from the business model and DAO's and lets us handle them.
+        sessionImpl.addWarningListener(new WarningListener() {
+            public void handleWarning(String message) { MatchMakerSwingSession.this.handleWarning(message); }
+        });
+        
         checkSchema(sessionImpl.getDatabase());
         frame = new JFrame("MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
+
+        warningDialog = new JFrame("MatchMaker Warnings");
+        warningTextArea = new JTextArea(6, 40);
+        JComponent cp = (JComponent) warningDialog.getContentPane();
+        cp.setLayout(new BorderLayout(0, 10));
+        cp.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        cp.add(new JScrollPane(warningTextArea), BorderLayout.CENTER);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(new JButton(clearWarningsAction));
+        buttonPanel.add(new JButton(closeWarningDialogAction));
+        cp.add(buttonPanel, BorderLayout.SOUTH);
 	}
 
 	void showGUI() {
@@ -567,6 +614,41 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     }
 
     ///// MatchMakerSession Implementation //////
+    
+    /**
+     * Appends the warning to the warningTextArea and makes the warningDialog visible
+     * as well as telling all the warning listeners about the warning.
+     */
+    public void handleWarning(String message) {
+        logger.debug("Handling warning: "+message);
+        warningTextArea.append(message+"\n");
+        if (!warningDialog.isVisible()) {
+            warningDialog.pack();
+            warningDialog.setVisible(true);
+        }
+        warningDialog.requestFocus();
+        
+//        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+//            Toolkit.getDefaultToolkit().beep();
+//        }
+        synchronized (warningListeners) {
+            for (int i = warningListeners.size()-1; i >= 0; i--) {
+                warningListeners.get(i).handleWarning(message);
+            }
+        }
+    }
+    
+    public void addWarningListener(WarningListener l) {
+        synchronized (warningListeners) {
+            warningListeners.add(l);
+        }
+    }
+    
+    public void removeWarningListener(WarningListener l) {
+        synchronized (warningListeners) {
+            warningListeners.remove(l);
+        }
+    }
 
     public String getAppUser() {
         return sessionImpl.getAppUser();
