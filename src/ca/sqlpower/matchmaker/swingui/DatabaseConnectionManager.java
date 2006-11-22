@@ -71,6 +71,15 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
             JOptionPane.showMessageDialog(d, "Help is not available yet.");
 		}
 	};
+	
+	private final Action auxLoginAction = new AbstractAction(){
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+            JOptionPane.showMessageDialog(d, 
+            		"This action is not implemented yet.");
+		}
+	};
 
 	private final Action editDatabaseConnectionAction = new AbstractAction("Edit") {
 
@@ -234,21 +243,19 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		loginButton.setText("Login");
 		bsb.addGridded(loginButton);
 		bsb.addRelatedGap();
-		JButton auxLoginButton = new JButton(helpAction);
+		JButton auxLoginButton = new JButton(auxLoginAction);
 		auxLoginButton.setText("Aux Login");
 		bsb.addGridded(auxLoginButton);
 
 		bsb.addUnrelatedGap();
 		JButton helpButton = new JButton(helpAction);
 		helpButton.setText("Help");
-		bsb.addGridded (helpButton);
+		bsb.addGridded(helpButton);
 		bsb.addRelatedGap();
-
 
 		JButton cancelButton = new JButton(closeAction);
 		cancelButton.setText("Close");
 		bsb.addGridded(cancelButton);
-
 
 		JComponent c = (JComponent) d.getRootPane();
 		InputMap inputMap = c.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -256,7 +263,6 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 		inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "cancel");
 		actionMap.put("cancel", closeAction);
-
 
 		pb.add(bsb.getPanel(), cc.xy(4,4));
 		return pb.getPanel();
