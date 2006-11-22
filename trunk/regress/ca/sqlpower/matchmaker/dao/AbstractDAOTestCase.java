@@ -34,6 +34,63 @@ import ca.sqlpower.matchmaker.util.log.LogFactory;
 
 public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends MatchMakerDAO> extends TestCase {
 
+    ///////// Methods that subclasses can/should override //////////
+
+    /**
+     * Should return a new instance of an object that is being used by the 
+     * DAO.  Each new object must be not equal to any of the previously 
+     * created objects.  Every gettable property must be set to a non-default value
+     * 
+     * @return a new test object 
+     * @throws Exception 
+     */
+    public abstract T createNewObjectUnderTest() throws Exception;
+    
+    /**
+     * This should return the data access object that is being tested
+     * @throws Exception 
+     */
+    public abstract D getDataAccessObject() throws Exception;
+    
+    /**
+     * Get the current match maker sesssion from the concrete dao objects
+     */
+    public abstract MatchMakerSession getSession() throws Exception;
+    
+    /**
+     * gets a list of strings that this object dosn't persist
+     */
+    public List<String> getNonPersitingProperties(){
+        ArrayList<String> nonPersisting = new ArrayList<String>();
+        nonPersisting.add("oid");
+        nonPersisting.add("session");
+        return nonPersisting;
+    }
+    
+    
+    //////// Assert methods provided to subclasses /////////
+    
+    /**
+     * Ensures that the given MatchMakerObject and all its descendants have a
+     * reference to the given session.  Every findXXXX() method in every DAO
+     * should explicitly test this assertion on the returned object(s).
+     */
+    public void assertHierarchyHasSession(MatchMakerSession expected, MatchMakerObject<MatchMakerObject, MatchMakerObject> root) {
+        assertNotNull(
+                "the MatchMakerSession went missing for a "+root.getClass().getName(),
+                root.getSession());
+        
+        // this also implies a null check, but the error message is not ideal (hence the previous assert)
+        assertSame(
+                "session out of sync for "+root.getClass().getName(),
+                expected, root.getSession());
+        
+        for (MatchMakerObject<MatchMakerObject, MatchMakerObject> child : root.getChildren()) {
+            assertHierarchyHasSession(expected, child);
+        }
+    }
+    
+    ///////// Base TestCase implementation ///////////
 	    
 	@Override
 	protected void setUp() throws Exception {
@@ -46,11 +103,18 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
             e.printStackTrace();
         }  
 	}
+    
+    
+    
+    //////// Tests that all subtests will inherit ////////
 	
-    // Test and see if find all throws an exception
+    /** Test and see if find all throws an exception. */
 	public void testFindAll() throws Exception {
 		D dao = getDataAccessObject();
 		List<T> all = dao.findAll();
+        
+        // the database is empty at this point (the test is really to find mapping errors, but this assertion won't hurt)
+        assertEquals(0, all.size());
 	}
 	
 	public void testSave() throws Exception {
@@ -59,6 +123,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		dao = getDataAccessObject();
 		dao.save(item1);
 	}
+    
 	public void testDeleteExisting() throws Exception {
 		T item1 = createNewObjectUnderTest();
 		T item2 = createNewObjectUnderTest();
@@ -74,8 +139,6 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 	}
 	
 	public void testSaveAndLoadInOneSession() throws Exception {
-		// This may fail, but it has to be done
-		// make sure there are no objects of this type in the test data
 		D dao = getDataAccessObject();
 		List<T> all;
 		T item1 = createNewObjectUnderTest();
@@ -83,6 +146,9 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		all = dao.findAll();
         assertEquals("We only persisted one item", 1, all.size());
 		T savedItem1 = all.get(0);
+        
+        assertHierarchyHasSession(getSession(), savedItem1);
+        
 		List<PropertyDescriptor> properties;
 		properties = Arrays.asList(PropertyUtils.getPropertyDescriptors(item1.getClass()));
 		
@@ -109,35 +175,9 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		
 	}
 	
-	/**
-	 * Should return a new instance of an object that is being used by the 
-	 * DAO.  Each new object must be not equal to any of the previously 
-	 * created objects.  Every gettable property must be set to a non-default value
-	 * 
-	 * @return a new test object 
-	 * @throws Exception 
-	 */
-	public abstract T createNewObjectUnderTest() throws Exception;
-	
-	/**
-	 * This should return the data access object that is being tested
-	 * @throws Exception 
-	 */
-	public abstract D getDataAccessObject() throws Exception;
-	
-    /**
-     * Get the current match maker sesssion from the concrete dao objects
-     */
-    public abstract MatchMakerSession getSession() throws Exception;
     
-	/**
-	 * gets a list of strings that this object dosn't persist
-	 */
-	public List<String> getNonPersitingProperties(){
-		ArrayList<String> nonPersisting = new ArrayList<String>();
-		nonPersisting.add("oid");
-		return nonPersisting;
-	}
+    //////// Utility methods for subclasses to (ab)use ////////
+    
 	/**
 	 * Sets all setters of the object object with a new default value except
 	 * for those properties listed in propertiesThatAreNotPersisted
@@ -203,11 +243,11 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 					} else {
 						if (property.getPropertyType() == MatchSettings.class) {
 							MatchSettings matchSettings = new MatchSettings();
-							setAllSetters(matchSettings, new ArrayList<String>());
+							setAllSetters(matchSettings, propertiesThatAreNotPersisted);
 							newVal = matchSettings;
 						} else if (property.getPropertyType() == MergeSettings.class) {
 							MergeSettings mergeSettings = new MergeSettings();
-							setAllSetters(mergeSettings, new ArrayList<String>());
+							setAllSetters(mergeSettings, propertiesThatAreNotPersisted);
 							newVal = mergeSettings;
 						} else if (property.getPropertyType() == SQLTable.class) {
 							newVal = new SQLTable();
