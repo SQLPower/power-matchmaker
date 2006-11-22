@@ -16,6 +16,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.SourceTable;
@@ -112,7 +113,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 							newVal = new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
 						}
 					} else if (property.getPropertyType() == SourceTable.class) {
-						newVal = new SourceTable();
+						newVal = new SourceTable(new SQLTable(),new SQLIndex());
 					} else if (property.getPropertyType() == MatchSettings.class) {
 						newVal = new MatchSettings();
                         Integer processCount = ((MatchMakerSettings) newVal).getProcessCount();

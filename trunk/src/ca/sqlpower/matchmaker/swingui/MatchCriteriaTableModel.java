@@ -73,9 +73,7 @@ System.out.println("PropertyChanged:"+evt.getPropertyName()+"  "+evt.getSource()
 		case COLUMN:
 			// Don't allow us to put a null value the DB don't like it.
 			if (aValue == null) return;
-			if (criterion.getColumn() == null) {
-				criterion.setColumn((SQLColumn)aValue);
-			}
+			criterion.setColumn((SQLColumn)aValue);
 			break;
 		case ALLOW_NULL:             
 			criterion.setAllowNullInd((Boolean)aValue);
