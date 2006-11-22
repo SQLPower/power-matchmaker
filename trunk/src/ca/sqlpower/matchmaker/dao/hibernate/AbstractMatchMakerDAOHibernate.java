@@ -27,12 +27,16 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 		this.matchMakerSession = matchMakerSession;
 	}
 	
-	protected Session getCurrentSession() {
+	protected MatchMakerHibernateSession getMatchMakerSession() {
+		return matchMakerSession;
+	}
+	
+	protected Session getHibernateSession() {
 	    return matchMakerSession.openSession();
 	}
 
 	public void delete(T deleteMe) {
-		Session s = getCurrentSession();
+		Session s = getHibernateSession();
 		Transaction t = s.beginTransaction();
 		try {
 			s.delete(deleteMe);
@@ -47,7 +51,7 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 	}
 
 	public List<T> findAll() {
-		Session s = getCurrentSession();
+		Session s = getHibernateSession();
 		try {
 			List<T> results = s.createCriteria(getBusinessClass()).list();
 			for (T item: results){
@@ -62,7 +66,7 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 	}
 
 	public void save(T saveMe) {
-		Session s = getCurrentSession();
+		Session s = getHibernateSession();
 		Transaction t = s.beginTransaction();
 		try {
 			s.saveOrUpdate(saveMe);

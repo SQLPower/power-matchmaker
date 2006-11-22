@@ -25,6 +25,7 @@ import javax.swing.text.BadLocationException;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
@@ -274,7 +275,7 @@ public class FilterMakerDialog extends JDialog {
                                 || trimmedUpperCaseText.endsWith(" NOT"))) {
                     textBuffer.append(" AND ");
                 }
-                textBuffer.append((String)columnName.getSelectedItem());
+                textBuffer.append(((SQLColumn)columnName.getSelectedItem()).getName());
                 textBuffer.append(" ");
                 textBuffer.append((String)comparisonOperator.getSelectedItem());
                 textBuffer.append(" ");
@@ -282,7 +283,7 @@ public class FilterMakerDialog extends JDialog {
                 if (trueForTextField){
                     textBuffer.append(conditionTextField.getText());
                 } else{
-                    textBuffer.append((String)columnName2.getSelectedItem());
+                    textBuffer.append(((SQLColumn)columnName2.getSelectedItem()).getName());
                 }
 
                 filterText.append(textBuffer.toString());

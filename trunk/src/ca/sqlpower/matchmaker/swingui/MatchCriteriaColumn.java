@@ -1,10 +1,11 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 
 
 public enum MatchCriteriaColumn {
-	COLUMN("Column",String.class),
+	COLUMN("Column",SQLColumn.class),
 	ALLOW_NULL("Match Nulls", Boolean.class),
     CASE_SENSITIVE_IND("Case Insensitive", Boolean.class),
     REMOVE_SPECIAL_CHARS("Ignore Characters",Boolean.class),
