@@ -219,8 +219,7 @@ public class MatchMakerCriteriaGroupEditor {
 	
 	private Action newCriteria = new AbstractAction("New Criteria") {
 		public void actionPerformed(ActionEvent arg0) {
-			MatchMakerCriteria<MatchMakerObject> criteria = 
-				new MatchMakerCriteria<MatchMakerObject>();
+			MatchMakerCriteria criteria = new MatchMakerCriteria();
 			String newUniqueName = group.createNewUniqueName();
 			criteria.setName(newUniqueName);
 			group.addChild(criteria);
