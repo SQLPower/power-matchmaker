@@ -20,8 +20,8 @@ public class DatabaseCleanup {
     public static void clearDatabase(Connection con) throws SQLException {
         List<String> tablesToDelete;
         tablesToDelete = new ArrayList<String>();
-        //tablesToDelete.add("pl_match_translate");
-       // tablesToDelete.add("pl_match_translate_group");
+        tablesToDelete.add("pl_match_translate");
+        tablesToDelete.add("pl_match_translate_group");
         tablesToDelete.add("pl_match_criteria");
         tablesToDelete.add("pl_match_group");
         tablesToDelete.add("pl_merge_consolidate_criteria");

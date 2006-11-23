@@ -1,17 +1,15 @@
 package ca.sqlpower.matchmaker;
 
-public class MatchMakerTranslateWordTest<C extends MatchMakerTranslateWord>
+public class MatchMakerTranslateWordTest
 	extends MatchMakerTestCase<MatchMakerTranslateWord> {
 
 	final String appUserName = "test_user";
-	MatchMakerTranslateWord<C> target;
-	private C child;
-
+	MatchMakerTranslateWord target;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchMakerTranslateWord<C>();
+		target = new MatchMakerTranslateWord();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);
@@ -43,10 +41,14 @@ public class MatchMakerTranslateWordTest<C extends MatchMakerTranslateWord>
 		target.setTo("x");
 		checkAppUserName();
 	}
+    
+    public void testAssertDoesNotAllowChildren(){
+        assertFalse(target.allowsChildren());
+    }
 
 	public void testAddChild() {
 		try {
-			target.addChild(child);
+			target.addChild(new TestingAbstractMatchMakerObject());
 			fail("Translate word does not allow child!");
 		} catch ( IllegalStateException e ) {
 			// what we excepted
