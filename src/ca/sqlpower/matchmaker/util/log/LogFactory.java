@@ -51,7 +51,7 @@ public class LogFactory {
 	/**
 	 * The log factory returns a logger appropriate for the given constraint.
 	 * @param constraint See below.
-	 * @return Currently returns a default logger that writes to stdout.
+	 * @return Currently returns a default logger that writes to stdout
 	 * if the constraint is null, else the constraint is interpreted
 	 * as a file name, and a FileLogger is created.
 	 */
