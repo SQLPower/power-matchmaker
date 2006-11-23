@@ -252,8 +252,13 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 	throw new IllegalStateException("user.home property is null!");
                 }
 				plDotIniPath = userHome + File.separator + "pl.ini";
-				// Create and empty file so the read won't throw an IOE
-				new File(plDotIniPath).createNewFile();
+				// Create an empty file so the read won't throw an IOE
+				if (new File(plDotIniPath).createNewFile()) {
+					logger.debug("Created file " + plDotIniPath);
+				} else {
+					logger.debug("Did NOT create file " + plDotIniPath +
+							"; mayhap it already exists?");
+				}
             } else {
                 throw new ArchitectException(
                 "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
