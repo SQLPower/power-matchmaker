@@ -31,7 +31,6 @@ import ca.sqlpower.architect.swingui.table.PercentTableCellRenderer;
 import ca.sqlpower.architect.swingui.table.TableModelColumnAutofit;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.RowSetModel;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
 import com.sun.rowset.CachedRowSetImpl;
@@ -39,12 +38,15 @@ import com.sun.rowset.JoinRowSetImpl;
 
 public class MatchStatisticsPanel extends JPanel {
 
+	private final MatchMakerSwingSession swingSession;
 	private Match match;
 	private Timestamp startDateTime;
 
-	public MatchStatisticsPanel(Match match) throws SQLException {
+	public MatchStatisticsPanel(MatchMakerSwingSession swingSession, Match match) 
+		throws SQLException {
 		super(new BorderLayout());
 		this.match = match;
+		this.swingSession = swingSession;
 		createUI();
 	}
 
@@ -91,7 +93,7 @@ public class MatchStatisticsPanel extends JPanel {
     	Statement stmt = null;
     	ResultSet rs =  null;
     	try {
-    		con = HibernateUtil.primarySession().connection();
+    		con = swingSession.getConnection();
     		StringBuffer sql = new StringBuffer();
     		sql.append("SELECT TRANS_RUN_NO,START_DATE_TIME,ELAPSED_TIME");
     		sql.append(",RUN_STATUS,NO_OF_REC_READ,NO_OF_REC_ADDED");
@@ -124,7 +126,7 @@ public class MatchStatisticsPanel extends JPanel {
     	PreparedStatement pstmt = null;
     	ResultSet rs =  null;
     	try {
-    		con = HibernateUtil.primarySession().connection();
+    		con = swingSession.getConnection();
 
     		if ( total == 0 ) {
     			total = 1;
@@ -349,7 +351,7 @@ public class MatchStatisticsPanel extends JPanel {
     	Connection con = null;
     	PreparedStatement pstmt = null;
     	try {
-    		con = HibernateUtil.primarySession().connection();
+    		con = swingSession.getConnection();
     		StringBuffer sql = new StringBuffer();
     		sql.append("DELETE FROM PL_STATS WHERE OBJECT_TYPE=? ");
     		sql.append(" AND OBJECT_NAME=? ");
@@ -376,7 +378,7 @@ public class MatchStatisticsPanel extends JPanel {
     	Connection con = null;
     	PreparedStatement pstmt = null;
     	try {
-    		con = HibernateUtil.primarySession().connection();
+    		con = swingSession.getConnection();
     		StringBuffer sql = new StringBuffer();
     		sql.append("DELETE FROM PL_STATS WHERE OBJECT_TYPE=? ");
     		sql.append(" AND OBJECT_NAME=? AND START_DATE_TIME<=?");

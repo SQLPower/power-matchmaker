@@ -144,7 +144,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                 d.setVisible(true);
             }
         }));
-        m.add(new JMenuItem(new ShowMatchStatisticInfoAction(match, owningFrame)));
+        m.add(new JMenuItem(new ShowMatchStatisticInfoAction(swingSession,match, owningFrame)));
         m.addSeparator();
         // TODO add this back in m.add(new JMenuItem(new PlMatchExportAction(match)));
         m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));

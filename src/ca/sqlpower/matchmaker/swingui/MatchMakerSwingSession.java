@@ -203,8 +203,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			if ( match == null )
 				return;
 
-			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(match,
-					frame);
+			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(
+					MatchMakerSwingSession.this,match,frame);
 			sm.actionPerformed(e);
 		}
 	};

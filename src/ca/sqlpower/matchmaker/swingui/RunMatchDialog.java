@@ -168,7 +168,8 @@ public class RunMatchDialog extends JDialog {
 		truncateCandDup = new JCheckBox();
 		sendEmail = new JCheckBox();
 		viewLogFile = new JButton(new ShowLogFileAction());
-		viewStats = new JButton(new ShowMatchStatisticInfoAction(match,getParentFrame()));
+		viewStats = new JButton(
+				new ShowMatchStatisticInfoAction(swingSession,match,getParentFrame()));
 		viewStats.setText("Match Statistics");
 		showCommand = new JButton(new ShowCommandAction(match,
 				RunMatchDialog.this));
@@ -248,7 +249,11 @@ public class RunMatchDialog extends JDialog {
 		lastAccessPath = file.getAbsolutePath();
 		logFilePath.setText(logFileName);
 		append.setSelected(settings.getAppendToLog());
-		recordsToProcess.setText(String.valueOf(settings.getProcessCount()));
+		if ( settings.getProcessCount() == null ) {
+			recordsToProcess.setText("");
+		} else {
+			recordsToProcess.setText(String.valueOf(settings.getProcessCount()));
+		}
 		debugMode.setSelected(settings.getDebug());
 		truncateCandDup.setSelected(settings.getTruncateCandDupe());
 		sendEmail.setSelected(settings.getSendEmail());
@@ -264,7 +269,12 @@ public class RunMatchDialog extends JDialog {
 		settings.setSendEmail(sendEmail.isSelected());
 		settings.setLog(LogFactory.getLogger(Level.INFO, logFilePath.getText()));
 		settings.setAppendToLog(append.isSelected());
-		settings.setProcessCount(Integer.valueOf(recordsToProcess.getText()));
+		if ( recordsToProcess.getText() == null ||
+				recordsToProcess.getText().length() == 0 ) {
+			settings.setProcessCount(null);
+		} else {
+			settings.setProcessCount(Integer.valueOf(recordsToProcess.getText()));
+		}
 	}
 
 	public class StatsTableMOdel extends RowSetModel {
@@ -654,9 +664,12 @@ public class RunMatchDialog extends JDialog {
 				settings.getAppendToLog() ? "Y" : "N");
 		command.append(" LOG_FILE=\"").append(
 				settings.getLog().getConstraint().toString()).append("\"");
-		command.append(" SHOW_PROGRESS=")
-				.append(settings.getShowProgressFreq());
-		command.append(" PROCESS_CNT=").append(settings.getProcessCount());
+		if ( settings.getShowProgressFreq() != null ) {
+			command.append(" SHOW_PROGRESS=").append(settings.getShowProgressFreq());
+		}
+		if ( settings.getProcessCount() != null ) {
+			command.append(" PROCESS_CNT=").append(settings.getProcessCount());
+		}
 		return command.toString();
 	}
 
