@@ -47,6 +47,7 @@ import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
+import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 import ca.sqlpower.matchmaker.util.log.Level;
 import ca.sqlpower.matchmaker.util.log.LogFactory;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -428,7 +429,7 @@ public class RunMatchDialog extends JDialog {
 												selection);
 									} catch (BadLocationException e1) {
 										ASUtils.showExceptionDialog(d,
-												"Document Copy Error", e1);
+												"Document Copy Error", e1, new MatchMakerQFAFactory());
 									}
 								}
 							});
@@ -488,14 +489,14 @@ public class RunMatchDialog extends JDialog {
 													stderrAtt);
 								} catch (BadLocationException e1) {
 									ASUtils.showExceptionDialog(d,
-											"Document Display Error", e1);
+											"Document Display Error", e1, new MatchMakerQFAFactory());
 								}
 							}
 						});
 
 					} catch (Throwable e1) {
 						ASUtils.showExceptionDialog(parent,
-								"Engine Run Time Error", e1);
+								"Engine Run Time Error", e1, new MatchMakerQFAFactory());
 					}
 				}
 			}).start();
@@ -549,7 +550,7 @@ public class RunMatchDialog extends JDialog {
 			try {
 				cmdDoc.insertString(0, createCommand(match), att);
 			} catch (BadLocationException e1) {
-				ASUtils.showExceptionDialog(d, "Unknown Document Error", e1);
+				ASUtils.showExceptionDialog(d, "Unknown Document Error", e1, new MatchMakerQFAFactory());
 			}
 
 

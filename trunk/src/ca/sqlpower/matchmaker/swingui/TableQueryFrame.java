@@ -38,6 +38,7 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
+import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -138,7 +139,7 @@ public class TableQueryFrame extends JFrame {
 				ASUtils.showExceptionDialog(
 						SwingUtilities.getWindowAncestor(TableQueryFrame.this),
 						"Unexpected architect exception in ConnectionListener",
-						e);
+						e, new MatchMakerQFAFactory());
 			}
 		}
 

@@ -5,6 +5,7 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import javax.swing.JFrame;
 
 import ca.sqlpower.architect.swingui.ASUtils;
+import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
 public class ExceptionHandler implements UncaughtExceptionHandler {
 
@@ -15,7 +16,7 @@ public class ExceptionHandler implements UncaughtExceptionHandler {
 	}
 
 	public void uncaughtException(Thread t, Throwable e) {
-		ASUtils.showExceptionDialog(parentFrame, e.getMessage(), e);
+		ASUtils.showExceptionDialog(parentFrame, e.getMessage(), e, new MatchMakerQFAFactory());
 	}
 
 }

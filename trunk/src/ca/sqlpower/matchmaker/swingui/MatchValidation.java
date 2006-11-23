@@ -45,6 +45,7 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -136,7 +137,7 @@ public class MatchValidation extends JFrame {
                     if ( col < 0 ) {
                         ASUtils.showExceptionDialog(MatchValidation.this,
                                 "column "+columnName+" not found",
-                                new IllegalStateException("column "+columnName+" not found"));
+                                new IllegalStateException("column "+columnName+" not found"), new MatchMakerQFAFactory());
                         return;
                     }
                     if ( sourceJTable.getValueAt(row,col) == null ) {
@@ -148,7 +149,7 @@ public class MatchValidation extends JFrame {
                 }
             } catch (ArchitectException e1) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "primary key populate error", e1);
+                        "primary key populate error", e1, new MatchMakerQFAFactory());
             }
 
 
@@ -193,10 +194,10 @@ public class MatchValidation extends JFrame {
 
             } catch (SQLException e1) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "Unknown SQL Error:"+sql.toString(), e1);
+                        "Unknown SQL Error:"+sql.toString(), e1, new MatchMakerQFAFactory());
             } catch (ArchitectException e1) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "Unknown Error", e1);
+                        "Unknown Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
                     if ( rs != null )
@@ -293,11 +294,11 @@ public class MatchValidation extends JFrame {
         } catch (ArchitectException e1) {
             crset = null;
             ASUtils.showExceptionDialog(MatchValidation.this,
-                    "Unknown SQL Error", e1);
+                    "Unknown SQL Error", e1, new MatchMakerQFAFactory());
         } catch (SQLException e1) {
             crset = null;
             ASUtils.showExceptionDialog(MatchValidation.this,
-                    "Unknown SQL Error", e1);
+                    "Unknown SQL Error", e1, new MatchMakerQFAFactory());
         } finally {
             try {
                 if ( rs != null )
@@ -517,7 +518,7 @@ public class MatchValidation extends JFrame {
                 return matchSourceTable.getColumns().size();
             } catch (ArchitectException e) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "Unknown SQL Error", e);
+                        "Unknown SQL Error", e, new MatchMakerQFAFactory());
             }
             return 0;
         }
@@ -532,7 +533,7 @@ public class MatchValidation extends JFrame {
                 }
             } catch (ArchitectException e) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "Unknown SQL Error", e);
+                        "Unknown SQL Error", e, new MatchMakerQFAFactory());
             }
             return super.getColumnName(column);
         }
@@ -564,7 +565,7 @@ public class MatchValidation extends JFrame {
                 }
             } catch (ArchitectException e) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "Unknown SQL Error", e);
+                        "Unknown SQL Error", e, new MatchMakerQFAFactory());
             }
             return null;
         }
@@ -580,7 +581,7 @@ public class MatchValidation extends JFrame {
                 }
             } catch (ArchitectException e) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "Unknown SQL Error", e);
+                        "Unknown SQL Error", e, new MatchMakerQFAFactory());
             }
             return super.getColumnName(column);
         }
@@ -695,10 +696,10 @@ public class MatchValidation extends JFrame {
                 output.getSelectionModel().setSelectionInterval(0,0);
             } catch (ArchitectException e1) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "Unknown SQL Error", e1);
+                        "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } catch (SQLException e1) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "Unknown SQL Error", e1);
+                        "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
                     if ( rs != null )
@@ -749,7 +750,7 @@ public class MatchValidation extends JFrame {
                 logger.debug("Apply Auto-match @"+pct.intValue()+"   "+rows+" Updated.");
             } catch (SQLException e1) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "Unknown SQL Error", e1);
+                        "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
                     if ( rs != null )
@@ -797,7 +798,7 @@ public class MatchValidation extends JFrame {
                 logger.debug("Reset Auto-match @"+pct.intValue()+"   "+rows+" Updated.");
             } catch (SQLException e1) {
                 ASUtils.showExceptionDialog(MatchValidation.this,
-                        "Unknown SQL Error", e1);
+                        "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
                     if ( rs != null )

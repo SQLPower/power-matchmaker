@@ -33,6 +33,7 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -175,7 +176,7 @@ public class MatchValidationStatus extends JDialog {
 							resultTable.getName()));
 				} catch (SQLException e1) {
 					ASUtils.showExceptionDialog(MatchValidationStatus.this,
-							"Unknown SQL Error", e1);
+							"Unknown SQL Error", e1, new MatchMakerQFAFactory());
 				}
 			}});
 

@@ -43,6 +43,7 @@ import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchType;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -137,7 +138,7 @@ public class MatchEditor {
                 }
             } catch (Exception ex) {
                 ASUtils.showExceptionDialog(swingSession.getFrame(),
-                		"Match Interface Not Saved", ex);
+                		"Match Interface Not Saved", ex, new MatchMakerQFAFactory());
             }
 		}
 	};
@@ -209,13 +210,13 @@ public class MatchEditor {
 				v.setVisible(true);
 			} catch (HeadlessException e1) {
 				ASUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unknown Error",e1);
+						"Unknown Error",e1, new MatchMakerQFAFactory());
 			} catch (SQLException e1) {
 				ASUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unknown SQL Error",e1);
+						"Unknown SQL Error",e1, new MatchMakerQFAFactory());
 			} catch (ArchitectException e1) {
 				ASUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unknown Error",e1);
+						"Unknown Error",e1, new MatchMakerQFAFactory());
 			}
 		}};
 	private Action viewBuilderAction = new AbstractAction("View Builder") {
@@ -230,7 +231,7 @@ public class MatchEditor {
                     d.setVisible(true);
                 } catch (ArchitectException ex) {
                     ASUtils.showExceptionDialog(swingSession.getFrame(),
-                    		"Couldn't create view builder", ex);
+                    		"Couldn't create view builder", ex, new MatchMakerQFAFactory());
                 }
             }
 		}};
@@ -548,7 +549,7 @@ public class MatchEditor {
         			"MatchMaker result table",
         			"TABLE", true));
         } catch ( ArchitectException e ) {
-        	ASUtils.showExceptionDialog(swingSession.getFrame(),"Save error",e);
+        	ASUtils.showExceptionDialog(swingSession.getFrame(),"Save error",e, new MatchMakerQFAFactory());
         	return false;
         }
 

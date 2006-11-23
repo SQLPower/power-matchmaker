@@ -35,6 +35,10 @@ public interface MatchMakerSession {
 	 */
 	public SQLDatabase getDatabase();
 
+    /**
+     * create a new matchmakersession specific error report
+     */
+    
 	/**
 	 * The PL Schema user for this session.  Often but not necessarily
 	 * the same as the DB User.
