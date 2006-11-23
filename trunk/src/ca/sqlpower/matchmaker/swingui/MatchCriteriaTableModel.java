@@ -32,7 +32,6 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 		}
 
 		public void mmPropertyChanged(MatchMakerEvent evt) {
-System.out.println("PropertyChanged:"+evt.getPropertyName()+"  "+evt.getSource().getName()+"  "+evt.getNewValue().toString());
 			fireTableDataChanged();
 		}
 

@@ -145,7 +145,6 @@ public class MatchMakerCriteriaGroupEditor {
 
 	private void refreshActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
-logger.debug("*** worst="+worst.getStatus().name()+"   message="+worst.getMessage()+"worst.getStatus() == Status.FAIL"+(worst.getStatus() == Status.FAIL));
 		save.setEnabled(true);
 		logger.debug("Setting "+save.getValue("mm_name")+" enabled to "+true);
 		newCriteria.setEnabled(true);
