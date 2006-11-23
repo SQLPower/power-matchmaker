@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.CommonCloseAction;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchStatisticsPanel;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
@@ -23,13 +24,16 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 
 public class ShowMatchStatisticInfoAction extends AbstractAction {
 
+	private final MatchMakerSwingSession swingSession;
 	private Match match;
 	private JFrame parent;
 
-	public ShowMatchStatisticInfoAction(Match match, JFrame parent) {
+	public ShowMatchStatisticInfoAction(MatchMakerSwingSession swingSession, 
+			Match match, JFrame parent) {
 		super("Statistics");
 		this.match = match;
 		this.parent = parent;
+		this.swingSession = swingSession;
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -44,7 +48,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 
 		MatchStatisticsPanel p = null;
 		try {
-			p = new MatchStatisticsPanel(match);
+			p = new MatchStatisticsPanel(swingSession,match);
 		} catch (SQLException e1) {
 			ASUtils.showExceptionDialog(parent,
 					"Could not get match statistic information", e1 , new MatchMakerQFAFactory());
