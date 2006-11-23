@@ -21,7 +21,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     private static final Logger logger = Logger.getLogger(Match.class);
     
 	public enum MatchType {
-		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference");
+		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference"),
+        RECONCILE("RECONCILE RECORDS");
 
 		String displayName;
 
