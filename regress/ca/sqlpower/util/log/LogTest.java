@@ -28,6 +28,7 @@ public class LogTest extends TestCase {
 		Log log = LogFactory.getLogger(Level.INFO, "whee");
 		log.log(Level.WARNING, "This message should appear");
 		log.log(Level.DEBUG, "This message should NOT appear");
+        // FIXME remove the log file
 	}
 
 }
