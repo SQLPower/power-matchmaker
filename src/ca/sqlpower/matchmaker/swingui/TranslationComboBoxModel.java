@@ -28,10 +28,8 @@ public class TranslationComboBoxModel implements ComboBoxModel {
 		return selectedItem;
 	}
 
-	public void setSelectedItem(Object anItem) {
-		
-		selectedItem = (MatchMakerTranslateGroup) anItem;
-		
+	public void setSelectedItem(Object anItem) {		
+		selectedItem = (MatchMakerTranslateGroup) anItem;		
 	}
 
 	public void addListDataListener(ListDataListener l) {

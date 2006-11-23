@@ -24,6 +24,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import org.apache.log4j.Logger;
 
@@ -367,22 +368,27 @@ public class MatchMakerCriteriaGroupEditor {
         	active.setSelected(!group.getActive());
         }
 
+        SQLTable sourceTable;
         newCriteria.setEnabled(false);
         if ( match.getSourceTable() != null ) {
-        	SQLTable sourceTable = match.getSourceTable().getTable();
+        	sourceTable = match.getSourceTable().getTable();
         	if ( sourceTable != null ) {
         		newCriteria.setEnabled(true);
-        		
+
         		int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
         		matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(
         				new DefaultCellEditor(new JComboBox(
-                                new ColumnComboBoxModel(sourceTable,group))));
+        						new ColumnComboBoxModel(sourceTable,group))));
+        		
+        		int colIndex = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
+            	TableColumn col = matchCriteriaTable.getColumnModel().getColumn(colIndex);
+            	final JComboBox translateComboBox = new JComboBox(
+				            					new TranslationComboBoxModel(swingSession));
+				col.setCellEditor(new DefaultCellEditor(translateComboBox));
+				translateComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
         	}
         }
-        
-        
-        
-        
+
         Validator v1 = new MatchGroupNameValidator();
         handler.addValidateObject(groupId,v1);
         
@@ -395,31 +401,6 @@ public class MatchMakerCriteriaGroupEditor {
         
         Validator v4 = new CriteriaTableValidator(matchCriteriaTable);
         handler.addValidateObject(matchCriteriaTable,v4);
-
-        
-        
-        
-        
-        
-/*            int translateColumn = MatchCriteriaColumn
-                    .getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
-            matchCriteriaTable.getColumnModel().getColumn(translateColumn)
-                    .setCellEditor(
-                            new DefaultCellEditor(new JComboBox(
-                                    new TranslationComboBoxModel(swingSession))));
-            int columnColumn = MatchCriteriaColumn
-                    .getIndex(MatchCriteriaColumn.COLUMN);
-            PlMatch plMatch = model.getPlMatch();
-            if (plMatch != null && plMatch.getMatchTable() != null) {
-                SQLTable t = swingSession.getDatabase().getTableByName(
-                        plMatch.getTableCatalog(), plMatch.getTableOwner(),
-                        plMatch.getMatchTable());
-                matchCriteriaTable.getColumnModel().getColumn(columnColumn)
-                        .setCellEditor(
-                                new DefaultCellEditor(new JComboBox(
-                                        new ColumnComboBoxModel(t, model))));
-            }
-        }*/
     }
 
 
