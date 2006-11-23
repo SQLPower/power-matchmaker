@@ -104,9 +104,7 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
      private String xrefOwner;
      private String xrefTableName;
      private boolean autoMatchActiveInd;
-     private Set<PlMergeConsolidateCriteria> plMergeConsolidateCriterias = new TreeSet<PlMergeConsolidateCriteria>();
-     private Set<PlMatchXrefMap> plMatchXrefMaps = new TreeSet<PlMatchXrefMap>();
-     private Set<PlMergeCriteria> plMergeCriteria = new TreeSet<PlMergeCriteria>();
+
      private Set<PlMatchGroup> plMatchGroups = new TreeSet<PlMatchGroup>();
      //private PlFolder folder; Gone!
      // Constructor
@@ -640,18 +638,6 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
     	}
     }
 
-    public Set<PlMergeConsolidateCriteria> getPlMergeConsolidateCriterias() {
-        return Collections.unmodifiableSet(this.plMergeConsolidateCriterias);
-    }
-
-    public Set<PlMatchXrefMap> getPlMatchXrefMaps() {
-        return Collections.unmodifiableSet(this.plMatchXrefMaps);
-    }
-
-    public Set<PlMergeCriteria> getPlMergeCriteria() {
-        return Collections.unmodifiableSet(this.plMergeCriteria);
-    }
-
 
     public Set<PlMatchGroup> getPlMatchGroups() {
         return Collections.unmodifiableSet(this.plMatchGroups);
@@ -743,10 +729,7 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
 //			}
 //		}
 	}
-	public void xmlAddMergeCriteria(PlMergeCriteria c) {
-		plMergeCriteria.add(c);
-		c.setPlMatch(this);
-	}
+
 
 
 	public void addAllPlMatchGroups(Set<PlMatchGroup> groups){
@@ -1243,28 +1226,6 @@ public class PlMatch extends DefaultHibernateObject<PlMatchGroup> implements Ser
 		if (this.plMatchGroups != plMatchGroups) {
 			firePropertyChange("plMatchGroups", this.plMatchGroups, plMatchGroups);
 			this.plMatchGroups = plMatchGroups;
-		}
-	}
-
-	public void setPlMatchXrefMaps(Set<PlMatchXrefMap> plMatchXrefMaps) {
-		if (this.plMatchXrefMaps != plMatchXrefMaps) {
-			firePropertyChange("plMatchXrefMaps", this.plMatchXrefMaps, plMatchXrefMaps);
-			this.plMatchXrefMaps = plMatchXrefMaps;
-		}
-	}
-
-	public void setPlMergeConsolidateCriterias(Set<PlMergeConsolidateCriteria> plMergeConsolidateCriterias) {
-		if (this.plMergeConsolidateCriterias != plMergeConsolidateCriterias) {
-			firePropertyChange("plMergeConsolidateCriterias", this.plMergeConsolidateCriterias,
-					plMergeConsolidateCriterias);
-			this.plMergeConsolidateCriterias = plMergeConsolidateCriterias;
-		}
-	}
-
-	public void setPlMergeCriteria(Set<PlMergeCriteria> plMergeCriteria) {
-		if (this.plMergeCriteria != plMergeCriteria) {
-			firePropertyChange("plMergeCriteria", this.plMergeCriteria, plMergeCriteria);
-			this.plMergeCriteria = plMergeCriteria;
 		}
 	}
 
