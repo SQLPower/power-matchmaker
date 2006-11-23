@@ -6,47 +6,36 @@
 <!-- Generated Oct 23, 2006 12:50:07 PM by Hibernate Tools 3.2.0.beta7 -->
 <hibernate-mapping>
 
-<class 
-    name="ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup"
-    table="PL_MATCH_TRANSLATE_GROUP"
->
-	<id 
-        name="id"
-        type="long"
-    >
-<column name="TRANSLATE_GROUP_OID" precision="22" scale="0" />
-	    <generator class="assigned" />
-    </id>
-
-
-    <property
-        name="translateGroupName"
-        type="string"
-    >
-<column name="TRANSLATE_GROUP_NAME" length="35" unique="true" />
-  	</property>
-	<list
-		name="plMatchTranslations"
-		lazy="true" >
-		<key>
+	<class name="ca.sqlpower.matchmaker.MatchMakerTranslateGroup"
+		table="PL_MATCH_TRANSLATE_GROUP">
+		<id name="oid" type="long" access="field">
 			<column name="TRANSLATE_GROUP_OID" precision="22" scale="0" />
-        </key>
-        <list-index column="seq_no"/>
-		<one-to-many 
-			 class="ca.sqlpower.matchmaker.hibernate.PlMatchTranslate"
-			/>
-	</list>
-	<set
-		name="plMatchCriterias"
-		inverse="true"
-		>
-		<key> 
-<column name="TRANSLATE_GROUP_OID" precision="22" scale="0" />
-        </key>
-		<one-to-many 
-			 class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterion"
-			/>			
-	</set>
+			<generator class="native">
+				<param name="sequence">match_translate_group_oid_seq</param>
+			</generator>
+		</id>
 
-</class>
+
+		<property name="name" type="string">
+			<column name="TRANSLATE_GROUP_NAME" length="35"
+				unique="true" />
+		</property>
+		<bag name="children" lazy="false">
+			<key>
+				<column name="TRANSLATE_GROUP_OID" precision="22"
+					scale="0" />
+			</key>
+			<one-to-many
+				class="ca.sqlpower.matchmaker.MatchMakerTranslateWord" />
+		</bag>
+		<!-- set name="plMatchCriterias" inverse="true">
+			<key>
+				<column name="TRANSLATE_GROUP_OID" precision="22"
+					scale="0" />
+			</key>
+			<one-to-many
+				class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterion" />
+		</set-->
+
+	</class>
 </hibernate-mapping>

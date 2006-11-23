@@ -1,11 +1,12 @@
 package ca.sqlpower.matchmaker;
 
-public class MatchMakerTranslateWord<C extends MatchMakerTranslateWord>
-	extends AbstractMatchMakerObject<MatchMakerTranslateWord, C> {
+public class MatchMakerTranslateWord
+	extends AbstractMatchMakerObject<MatchMakerTranslateWord,MatchMakerObject> {
 
 	private Long oid;
 	private String from;
 	private String to;
+    private Long location;
 
 	public MatchMakerTranslateWord() {
 	}
@@ -31,9 +32,13 @@ public class MatchMakerTranslateWord<C extends MatchMakerTranslateWord>
 	}
 
 	@Override
-	public void addChild(C child) {
+	public void addChild(MatchMakerObject child) {
 		throw new IllegalStateException("MatchMakerTranslateWord does not allow child!");
 	}
+    @Override
+    public boolean allowsChildren() {
+        return false;
+    }
 
 	@Override
 	public int hashCode() {
@@ -59,4 +64,14 @@ public class MatchMakerTranslateWord<C extends MatchMakerTranslateWord>
 			return false;
 		return true;
 	}
+
+    public Long getLocation() {
+        return location;
+    }
+
+    public void setLocation(Long location) {
+        final Long oldValue = this.location;
+        this.location = location;
+        getEventSupport().firePropertyChange("location", oldValue, this.location);
+    }
 }

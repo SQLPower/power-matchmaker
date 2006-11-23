@@ -1,14 +1,14 @@
 package ca.sqlpower.matchmaker;
 
 
-public class MatchMakerTranslateGroupTest<C extends MatchMakerTranslateWord> 
+public class MatchMakerTranslateGroupTest 
 	extends MatchMakerTestCase<MatchMakerTranslateGroup> {
 
 	final String appUserName = "test_user";
-	MatchMakerTranslateGroup<C> target;
+	MatchMakerTranslateGroup target;
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchMakerTranslateGroup<C>();
+		target = new MatchMakerTranslateGroup();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);

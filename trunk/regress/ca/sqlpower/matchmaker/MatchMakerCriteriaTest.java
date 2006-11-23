@@ -175,6 +175,7 @@ public class MatchMakerCriteriaTest<C extends MatchMakerObject> extends MatchMak
 		}
 	}
 
-
-
+    public void testAssertDoesNotAllowChildren(){
+        assertFalse(target.allowsChildren());
+    }
 }
