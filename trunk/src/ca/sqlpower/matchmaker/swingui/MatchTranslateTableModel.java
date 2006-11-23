@@ -2,17 +2,14 @@ package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.hibernate.Transaction;
-
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 
 public class MatchTranslateTableModel extends AbstractTableModel {
 
-	PlMatchTranslateGroup translate;
+	MatchMakerTranslateGroup translate;
 	
-	public  MatchTranslateTableModel(PlMatchTranslateGroup translate){ 
+	public  MatchTranslateTableModel(MatchMakerTranslateGroup translate){ 
 		super();
 		this.translate = translate; 
 	}
@@ -23,7 +20,7 @@ public class MatchTranslateTableModel extends AbstractTableModel {
 
 	public int getRowCount() {
 		if(translate == null) return 0;
-		int size = translate.getPlMatchTranslations().size();		
+		int size = translate.getChildCount();		
 		return size;
 	}
 
@@ -45,12 +42,12 @@ public class MatchTranslateTableModel extends AbstractTableModel {
 	}
 	
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		PlMatchTranslate trans = getRow(rowIndex);
+        MatchMakerTranslateWord trans = getRow(rowIndex);
 		switch(columnIndex) {
 		case 0:
-			return trans.getFromWord();
+			return trans.getFrom();
 		case 1:
-			return trans.getToWord();
+			return trans.getTo();
 		default:
 			throw new IndexOutOfBoundsException("Invalid column index");
 		}
@@ -58,43 +55,40 @@ public class MatchTranslateTableModel extends AbstractTableModel {
 
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		PlMatchTranslate trans = getRow(rowIndex);
-		Transaction tx = HibernateUtil.primarySession().beginTransaction();
+		MatchMakerTranslateWord trans = getRow(rowIndex);
 		try {
 		switch(columnIndex) {
 		case 0:
-			for (PlMatchTranslate t: translate.getPlMatchTranslations()){
-				if ((t.getFromWord() == null ? t.getFromWord() == aValue : t.getFromWord().equals(aValue)) &&
-						(t.getToWord() == null ? t.getToWord() == trans.getToWord() : t.getToWord().equals(trans.getToWord()))) {
+			for (MatchMakerTranslateWord t: translate.getChildren()){
+				if ((t.getFrom() == null ? t.getFrom() == aValue : t.getFrom().equals(aValue)) &&
+						(t.getTo() == null ? t.getTo() == trans.getTo() : t.getTo().equals(trans.getTo()))) {
 					// We would have a collision.
 					return;
 				}
 			}
-			trans.setFromWord((String)aValue);
-			HibernateUtil.primarySession().flush();
+			trans.setFrom((String)aValue);
 			break;
 		case 1:
-			for (PlMatchTranslate t: translate.getPlMatchTranslations()){
-				if ((t.getToWord() == null ? t.getToWord() == aValue : t.getToWord().equals(aValue)) &&
-						(t.getFromWord() == null ? t.getFromWord() == trans.getFromWord() : t.getFromWord().equals(trans.getFromWord()))) {
+			for (MatchMakerTranslateWord t: translate.getChildren()){
+				if ((t.getTo() == null ? t.getTo() == aValue : t.getTo().equals(aValue)) &&
+						(t.getFrom() == null ? t.getFrom() == trans.getFrom() : t.getFrom().equals(trans.getFrom()))) {
 					// We would have a collision.
 					return;
 				}
 			}
-			trans.setToWord((String) aValue);
-			HibernateUtil.primarySession().flush();
+			trans.setTo((String) aValue);
+
 			break;
 		default:
-			tx.rollback();
 			throw new IndexOutOfBoundsException("Invalid column index");
 		}
-		tx.commit();
+
 		} finally {
-			tx.rollback();
+			
 		}
 	}
 	
-	public PlMatchTranslate getRow(int rowIndex) {
-		return translate.getPlMatchTranslations().get(rowIndex );
+	public MatchMakerTranslateWord getRow(int rowIndex) {
+		return translate.getChildren().get(rowIndex );
 	}
 }

@@ -46,7 +46,7 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
             con = getSession().getConnection();
             stmt = con.createStatement();
             stmt.executeUpdate(
-                    "INSERT INTO pl_match_translate_group (translate_group_oid, group_name) " +
+                    "INSERT INTO pl_match_translate_group (translate_group_oid, translate_group_name) " +
                     "VALUES ("+time+", '"+translateGroupName+"')");
             stmt.executeUpdate(
                     "INSERT INTO pl_match_translate (translate_group_oid, match_translate_oid) " +

@@ -22,11 +22,13 @@ import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
@@ -78,6 +80,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     private PlFolderDAO folderDAO;
     private MatchDAO matchDAO;
     private MatchCriteriaGroupDAO matchMakerCriteriaGroupDAO;
+    private MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO;
 
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
@@ -107,6 +110,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         folderDAO = new PlFolderDAOHibernate(this);
         matchDAO = new MatchDAOHibernate(this);
         matchMakerCriteriaGroupDAO = new MatchMakerCriteriaGroupDAOHibernate(this);
+        matchMakerTranslateGroupDAO = new MatchMakerTranslateGroupDAOHibernate(this);
 	}
 
     public MatchMakerSessionContext getContext() {
@@ -173,6 +177,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             return (MatchMakerDAO<T>) matchDAO;
         } else if (businessClass == MatchMakerCriteriaGroup.class){
             return (MatchMakerDAO<T>) matchMakerCriteriaGroupDAO;
+        } else if (businessClass == MatchMakerTranslateGroup.class){
+            return (MatchMakerDAO<T>) matchMakerTranslateGroupDAO;
         } else {
             throw new IllegalArgumentException("I don't know how to create a DAO for "+businessClass.getName());
         }
@@ -255,5 +261,10 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	public long countMatchByName(String name) {
 		return matchDAO.countMatchByName(name);
 	}
+
+    public List<MatchMakerTranslateGroup> getTranslations() {
+        MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
+        return matchMakerTranslateGroupDAO.findAll();
+    }
 
 }

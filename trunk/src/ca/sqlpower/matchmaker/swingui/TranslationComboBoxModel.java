@@ -5,12 +5,12 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 
 public class TranslationComboBoxModel implements ComboBoxModel {
 
-	List<PlMatchTranslateGroup> translations;
-	PlMatchTranslateGroup selectedItem;
+	List<MatchMakerTranslateGroup> translations;
+    MatchMakerTranslateGroup selectedItem;
 	
 	public TranslationComboBoxModel(MatchMakerSwingSession swingSession) {
 		translations = swingSession.getTranslations();
@@ -30,7 +30,7 @@ public class TranslationComboBoxModel implements ComboBoxModel {
 
 	public void setSelectedItem(Object anItem) {
 		
-		selectedItem = (PlMatchTranslateGroup) anItem;
+		selectedItem = (MatchMakerTranslateGroup) anItem;
 		
 	}
 

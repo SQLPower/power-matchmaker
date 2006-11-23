@@ -27,8 +27,6 @@ import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
-import ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria;
-import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 
@@ -103,6 +101,7 @@ public class PlMatchImportAction extends AbstractAction {
                                 + c.getColumnName());
                     }
                 }
+                /* FIXME Restore the merge imports
                 for (PlMergeCriteria c : match.getPlMergeCriteria()) {
                     System.out.println("merge crit=" + c.getTableName() + "."
                             + c.getIndexColumnName0());
@@ -111,7 +110,7 @@ public class PlMatchImportAction extends AbstractAction {
                         .getPlMergeConsolidateCriterias()) {
                     System.out.println("merge con crit=" + c.getTableName()
                             + "." + c.getColumnName());
-                }
+                } */
 
                 // XXX: check for duplication
 				/*Match match2 = swingSession.getMatchByName(match.getMatchId());
@@ -321,8 +320,9 @@ public class PlMatchImportAction extends AbstractAction {
         d.addCallMethod("EXPORT/PL_MATCH_CRITERIA/MIN_WORDS_IN_COMMON", "setMinWordsInCommon", 0);
         d.addCallMethod("EXPORT/PL_MATCH_CRITERIA/MATCH_FIRST_PLUS_ONE_IND", "setMatchFirstPlusOneInd", 0);
         d.addCallMethod("EXPORT/PL_MATCH_CRITERIA/WORDS_IN_COMMON_NUM_WORDS", "setWordsInCommonNumWords", 0);
-
-        d.addObjectCreate("EXPORT/PL_MERGE_CRITERIA", PlMergeCriteria.class);
+        
+        //FIXME restore the merge import 
+        /* d.addObjectCreate("EXPORT/PL_MERGE_CRITERIA", PlMergeCriteria.class);
         d.addSetProperties("EXPORT/PL_MERGE_CRITERIA");
         d.addSetNext("EXPORT/PL_MERGE_CRITERIA", "addMergeCriteria");
 
@@ -364,8 +364,8 @@ public class PlMatchImportAction extends AbstractAction {
         d.addCallMethod("EXPORT/PL_MERGE_CONSOLIDATE_CRITERIA/CAN_UPDATE_ACTION_IND", "setCanUpdateActionInd", 0);
         d.addCallMethod("EXPORT/PL_MERGE_CONSOLIDATE_CRITERIA/COLUMN_LENGTH", "setColumnLength", 0);
         d.addCallMethod("EXPORT/PL_MERGE_CONSOLIDATE_CRITERIA/LAST_UPDATE_OS_USER", "setLastUpdateOsUser", 0);
-        d.addCallMethod("EXPORT/PL_MERGE_CONSOLIDATE_CRITERIA/TABLE_CATALOG", "setTableCatalog", 0);
-        return d;
+        d.addCallMethod("EXPORT/PL_MERGE_CONSOLIDATE_CRITERIA/TABLE_CATALOG", "setTableCatalog", 0); */
+        return d; 
     }
 
 

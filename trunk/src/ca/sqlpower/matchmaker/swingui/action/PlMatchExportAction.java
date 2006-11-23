@@ -25,8 +25,6 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.hibernate.PlMatch;
 import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
 import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
-import ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria;
-import ca.sqlpower.matchmaker.hibernate.PlMergeCriteria;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 public class PlMatchExportAction extends AbstractAction {
@@ -426,7 +424,7 @@ public class PlMatchExportAction extends AbstractAction {
     				ArchitectUtils.escapeXML(c.isMatchFirstPlusOneInd()?"Y":"N")+
             		"</MATCH_FIRST_PLUS_ONE_IND>");
     		ioo.println(out, "<TRANSLATE_GROUP_NAME>"+
-    				ArchitectUtils.escapeXML(c.getTranslateGroup().getTranslateGroupName())+
+    				ArchitectUtils.escapeXML(c.getTranslateGroup().getName())+
             		"</TRANSLATE_GROUP_NAME>");
     		ioo.println(out, "<SEQ_NO>"+
     				c.getSeqNo()+
@@ -438,8 +436,8 @@ public class PlMatchExportAction extends AbstractAction {
 	}
 
 	private void saveMergeCriteria(IOUtils ioo, PrintWriter out, PlMatch match) {
-
-		for ( PlMergeCriteria c : match.getPlMergeCriteria() ) {
+	    throw new UnsupportedOperationException();
+		/* for ( PlMergeCriteria c : match.getPlMergeCriteria() ) {
 
     		ioo.println(out, "<PL_MERGE_CRITERIA>");
     		ioo.indent++;
@@ -509,12 +507,13 @@ public class PlMatchExportAction extends AbstractAction {
             		ArchitectUtils.escapeXML(c.getIndexColumnName9())+
             		"</INDEX_COLUMN_NAME9>");
     		ioo.indent--;
-    		ioo.println(out, "</PL_MERGE_CRITERIA>");
-		}
+    		ioo.println(out, "</PL_MERGE_CRITERIA>"); 
+		} */
 	}
 
 	private void saveMergeConsolidateCriteria(IOUtils ioo, PrintWriter out, PlMatch match) {
-
+	    throw new UnsupportedOperationException();
+        /*
 		for ( PlMergeConsolidateCriteria c : match.getPlMergeConsolidateCriterias() ) {
 
     		ioo.println(out, "<PL_MERGE_CONSOLIDATE_CRITERIA>");
@@ -558,8 +557,8 @@ public class PlMatchExportAction extends AbstractAction {
             		c.getColumnLength()+
             		"</COLUMN_LENGTH>");
     		ioo.indent--;
-    		ioo.println(out, "</PL_MERGE_CONSOLIDATE_CRITERIA>");
-		}
+    		ioo.println(out, "</PL_MERGE_CONSOLIDATE_CRITERIA>"); 
+		} */
 	}
 
 }

@@ -46,11 +46,11 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
@@ -221,7 +221,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         }
     };
 
-	private List<PlMatchTranslateGroup> translations = new ArrayList<PlMatchTranslateGroup>();
+	private List<MatchMakerTranslateGroup> translations = new ArrayList<MatchMakerTranslateGroup>();
 
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
@@ -594,15 +594,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		}
 	}
 
-	public List<PlMatchTranslateGroup> getTranslations() {
-		return translations;
-	}
-
-	public void setTranslations(List<PlMatchTranslateGroup> translations) {
-		if (this.translations != translations) {
-			this.translations = translations;
-			//TODO fire event
-		}
+	public List<MatchMakerTranslateGroup> getTranslations() {
+		return sessionImpl.getTranslations();
 	}
 
 	public String getLastImportExportAccessPath() {
