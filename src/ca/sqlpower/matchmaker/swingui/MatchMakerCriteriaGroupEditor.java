@@ -22,6 +22,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
 
 import org.apache.log4j.Logger;
@@ -82,6 +83,7 @@ public class MatchMakerCriteriaGroupEditor {
 
 	/**
 	 * This is the default constructor
+	 * the validation will be triggered before the end of this constructor
 	 * @throws ArchitectException
 	 */
 	public MatchMakerCriteriaGroupEditor(MatchMakerSwingSession swingSession,
@@ -103,6 +105,10 @@ public class MatchMakerCriteriaGroupEditor {
 			}
         });
 		save.putValue("mm_name", "save action for "+group.getName()+"@"+System.identityHashCode(group));
+		/**
+		 * for trigger the form validation
+		 */
+		matchCriteriaTableModel.fireTableChanged(new TableModelEvent(matchCriteriaTableModel));;
 	}
 
 	private class MatchGroupNameValidator implements Validator {
