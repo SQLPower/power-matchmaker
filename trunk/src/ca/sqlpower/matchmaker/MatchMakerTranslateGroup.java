@@ -34,4 +34,8 @@ public class MatchMakerTranslateGroup
 	public MatchMakerTranslateGroup() {
 	}
 
+	@Override
+	public String toString() {
+		return getName();
+	}
 }
