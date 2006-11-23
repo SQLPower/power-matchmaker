@@ -31,7 +31,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchmakerCriteria;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -55,7 +55,7 @@ public class MatchMakerCriteriaGroupEditor {
 	private static final Logger logger = Logger.getLogger(MatchMakerCriteriaGroupEditor.class);
 
     private final MatchMakerSwingSession swingSession;
-    private MatchMakerCriteriaGroup<MatchmakerCriteria> group;
+    private MatchMakerCriteriaGroup<MatchMakerCriteria> group;
     private Match match;
     
     private JPanel panel;
@@ -87,7 +87,7 @@ public class MatchMakerCriteriaGroupEditor {
 	 */
 	public MatchMakerCriteriaGroupEditor(MatchMakerSwingSession swingSession,
 			Match match,
-			MatchMakerCriteriaGroup<MatchmakerCriteria> group) throws ArchitectException {
+			MatchMakerCriteriaGroup<MatchMakerCriteria> group) throws ArchitectException {
 		super();
         this.swingSession = swingSession;
         this.match = match;
@@ -209,8 +209,8 @@ public class MatchMakerCriteriaGroupEditor {
 	
 	private Action newCriteria = new AbstractAction("New Criteria") {
 		public void actionPerformed(ActionEvent arg0) {
-			MatchmakerCriteria<MatchMakerObject> criteria = 
-				new MatchmakerCriteria<MatchMakerObject>();
+			MatchMakerCriteria<MatchMakerObject> criteria = 
+				new MatchMakerCriteria<MatchMakerObject>();
 			String newUniqueName = group.createNewUniqueName();
 			criteria.setName(newUniqueName);
 			group.addChild(criteria);
@@ -223,7 +223,7 @@ public class MatchMakerCriteriaGroupEditor {
 				}
 
 				public void mmPropertyChanged(MatchMakerEvent evt) {
-					MatchmakerCriteria criteria = (MatchmakerCriteria) evt.getSource();
+					MatchMakerCriteria criteria = (MatchMakerCriteria) evt.getSource();
 					if ( criteria.getColumn() != null ) {
 						criteria.setName(criteria.getColumn().getName());
 					}
@@ -239,7 +239,7 @@ public class MatchMakerCriteriaGroupEditor {
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = matchCriteriaTable.getSelectedRow();
 			if ( selectedRow == -1 ) return;
-			MatchmakerCriteria c = ((MatchCriteriaTableModel)
+			MatchMakerCriteria c = ((MatchCriteriaTableModel)
 					matchCriteriaTable.getModel()).getRow(selectedRow);
 			group.removeChild(c);
 		}
@@ -340,7 +340,7 @@ public class MatchMakerCriteriaGroupEditor {
 	 * @param model the new MatchGroup to edit.
 	 * @throws ArchitectException 
 	 */
-	public void setDefaultSelection(MatchMakerCriteriaGroup<MatchmakerCriteria> group,
+	public void setDefaultSelection(MatchMakerCriteriaGroup<MatchMakerCriteria> group,
 			Match match ) throws ArchitectException {
 		
 		matchCriteriaTable.setModel(new MatchCriteriaTableModel(group));
@@ -459,7 +459,7 @@ public class MatchMakerCriteriaGroupEditor {
 			if ( selectedRow == -1 ) {
 				return ValidateResult.createValidateResult(Status.OK, "");
 			}
-			MatchmakerCriteria c = model.getRow(selectedRow);
+			MatchMakerCriteria c = model.getRow(selectedRow);
 			
 			if ( c.getColumn() == null || 
 					c.getColumn().getName() == null || 
@@ -469,7 +469,7 @@ public class MatchMakerCriteriaGroupEditor {
 			} else {
 				for ( int i=0; i<model.getRowCount(); i++ ) {
 					if ( selectedRow == i ) continue;
-					MatchmakerCriteria c2 = model.getRow(i);
+					MatchMakerCriteria c2 = model.getRow(i);
 					if ( c2.getColumn() == null || 
 							c2.getColumn().getName() == null || 
 							c2.getColumn().getName().length() == 0 ) {

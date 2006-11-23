@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import ca.sqlpower.architect.SQLColumn;
 
-public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatchMakerObject<MatchmakerCriteria, C> {
+public class MatchMakerCriteria<C extends MatchMakerObject> extends AbstractMatchMakerObject<MatchMakerCriteria, C> {
 
 	Long oid;
 
@@ -57,7 +57,7 @@ public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatc
 	private boolean matchFirstPlusOneInd;
 
 
-	public MatchmakerCriteria( ) {
+	public MatchMakerCriteria( ) {
 	}
 
 
@@ -349,11 +349,11 @@ public class MatchmakerCriteria<C extends MatchMakerObject> extends AbstractMatc
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if(!(obj instanceof MatchmakerCriteria)) 
+		if(!(obj instanceof MatchMakerCriteria)) 
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final MatchmakerCriteria other = (MatchmakerCriteria) obj;
+		final MatchMakerCriteria other = (MatchMakerCriteria) obj;
 		if (column == null) {
 			if (other.column != null)
 				return false;

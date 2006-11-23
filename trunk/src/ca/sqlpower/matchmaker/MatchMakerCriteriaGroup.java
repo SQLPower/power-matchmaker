@@ -6,7 +6,7 @@ package ca.sqlpower.matchmaker;
  *
  * @param <C>
  */
-public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria>
+public class MatchMakerCriteriaGroup<C extends MatchMakerCriteria>
 	extends AbstractMatchMakerObject<MatchMakerCriteriaGroup, C> {
 
 	private Long oid;
@@ -124,8 +124,8 @@ public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria>
         return name.toString();
     }
 	
-	private MatchmakerCriteria getCriteriaByName(String name) {
-		for ( MatchmakerCriteria c : getChildren() ) {
+	private MatchMakerCriteria getCriteriaByName(String name) {
+		for ( MatchMakerCriteria c : getChildren() ) {
 			if ( c.getName().equals(name))
 				return c;
         }

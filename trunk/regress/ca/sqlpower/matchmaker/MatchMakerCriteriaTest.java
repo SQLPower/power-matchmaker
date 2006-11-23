@@ -4,22 +4,22 @@ import java.math.BigDecimal;
 
 import ca.sqlpower.architect.SQLColumn;
 
-public class MatchMakerCriteriaTest<C extends MatchMakerObject> extends MatchMakerTestCase<MatchmakerCriteria> {
+public class MatchMakerCriteriaTest<C extends MatchMakerObject> extends MatchMakerTestCase<MatchMakerCriteria> {
 
-	private MatchmakerCriteria<C> target;
+	private MatchMakerCriteria<C> target;
 	final String appUserName = "Test User";
 	private C child;
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchmakerCriteria<C>();
+		target = new MatchMakerCriteria<C>();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);
 	}
 
 	@Override
-	protected MatchmakerCriteria getTarget() {
+	protected MatchMakerCriteria getTarget() {
 		return target;
 	}
 
