@@ -6,7 +6,6 @@ import javax.swing.AbstractAction;
 
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 public class NewMatchGroupAction extends AbstractAction {
@@ -22,7 +21,7 @@ public class NewMatchGroupAction extends AbstractAction {
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		MatchMakerCriteriaGroup<MatchMakerCriteria> g = new MatchMakerCriteriaGroup<MatchMakerCriteria>();
+		MatchMakerCriteriaGroup g = new MatchMakerCriteriaGroup();
 		parent.getMatchCriteriaGroupFolder().addChild(g);
 	}
 

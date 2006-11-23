@@ -29,9 +29,9 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -55,7 +55,7 @@ public class MatchMakerCriteriaGroupEditor {
 	private static final Logger logger = Logger.getLogger(MatchMakerCriteriaGroupEditor.class);
 
     private final MatchMakerSwingSession swingSession;
-    private MatchMakerCriteriaGroup<MatchMakerCriteria> group;
+    private MatchMakerCriteriaGroup group;
     private Match match;
     
     private JPanel panel;
@@ -87,7 +87,7 @@ public class MatchMakerCriteriaGroupEditor {
 	 */
 	public MatchMakerCriteriaGroupEditor(MatchMakerSwingSession swingSession,
 			Match match,
-			MatchMakerCriteriaGroup<MatchMakerCriteria> group) throws ArchitectException {
+			MatchMakerCriteriaGroup group) throws ArchitectException {
 		super();
         this.swingSession = swingSession;
         this.match = match;
@@ -340,7 +340,7 @@ public class MatchMakerCriteriaGroupEditor {
 	 * @param model the new MatchGroup to edit.
 	 * @throws ArchitectException 
 	 */
-	public void setDefaultSelection(MatchMakerCriteriaGroup<MatchMakerCriteria> group,
+	public void setDefaultSelection(MatchMakerCriteriaGroup group,
 			Match match ) throws ArchitectException {
 		
 		matchCriteriaTable.setModel(new MatchCriteriaTableModel(group));
