@@ -143,9 +143,11 @@ public class MatchMakerCriteriaGroupEditor {
 	private void refreshActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
 		save.setEnabled(true);
+		newCriteria.setEnabled(true);
 
 		if ( worst.getStatus() == Status.FAIL ) {
 			save.setEnabled(false);
+			newCriteria.setEnabled(false);
 		}
 	}
 	 
@@ -209,6 +211,8 @@ public class MatchMakerCriteriaGroupEditor {
 		public void actionPerformed(ActionEvent arg0) {
 			MatchmakerCriteria<MatchMakerObject> criteria = 
 				new MatchmakerCriteria<MatchMakerObject>();
+			String newUniqueName = group.createNewUniqueName();
+			criteria.setName(newUniqueName);
 			group.addChild(criteria);
 			criteria.addMatchMakerListener(new MatchMakerListener() {
 
@@ -220,7 +224,9 @@ public class MatchMakerCriteriaGroupEditor {
 
 				public void mmPropertyChanged(MatchMakerEvent evt) {
 					MatchmakerCriteria criteria = (MatchmakerCriteria) evt.getSource();
-					criteria.setName(criteria.getColumn()==null?"imcompleted criteria":criteria.getColumn().getName());
+					if ( criteria.getColumn() != null ) {
+						criteria.setName(criteria.getColumn().getName());
+					}
 				}
 
 				public void mmStructureChanged(MatchMakerEvent evt) {
@@ -377,6 +383,11 @@ public class MatchMakerCriteriaGroupEditor {
         handler.addValidateObject(description,v3);
         handler.addValidateObject(filterCriteria,v3);
         
+        Validator v4 = new CriteriaTableValidator(matchCriteriaTable);
+        handler.addValidateObject(matchCriteriaTable,v4);
+
+        
+        
         
         
         
@@ -429,5 +440,50 @@ public class MatchMakerCriteriaGroupEditor {
 	        setSelected((value != null && ((Boolean) value).booleanValue()));
 	        return this;
 	    }
+	}
+	
+	private class CriteriaTableValidator implements Validator {
+
+		private MatchCriteriaTableModel model;
+		private JTable table;
+		public CriteriaTableValidator(JTable table) {
+			this.table = table;
+			this.model = (MatchCriteriaTableModel) table.getModel();
+		}
+		public ValidateResult validate(Object contents) {
+			
+			int selectedRow = table.getSelectedRow();
+			if ( selectedRow == -1 ) {
+				selectedRow = model.getRowCount()-1;
+			}
+			if ( selectedRow == -1 ) {
+				return ValidateResult.createValidateResult(Status.OK, "");
+			}
+			MatchmakerCriteria c = model.getRow(selectedRow);
+			
+			if ( c.getColumn() == null || 
+					c.getColumn().getName() == null || 
+					c.getColumn().getName().length() == 0 ) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						"column name can not be null"); 
+			} else {
+				for ( int i=0; i<model.getRowCount(); i++ ) {
+					if ( selectedRow == i ) continue;
+					MatchmakerCriteria c2 = model.getRow(i);
+					if ( c2.getColumn() == null || 
+							c2.getColumn().getName() == null || 
+							c2.getColumn().getName().length() == 0 ) {
+						return ValidateResult.createValidateResult(Status.FAIL,
+								"column name can not be null"); 
+					}
+					if ( c.getColumn().getName().equals(c2.getColumn().getName())) {
+						return ValidateResult.createValidateResult(Status.FAIL,
+								"column name can not be duplicated");
+					}
+				}
+			}
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+		
 	}
 }
