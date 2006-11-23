@@ -4,9 +4,9 @@ import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 
 
-public class MatchMakerCriteriaGroupTest<C extends MatchMakerCriteria> extends MatchMakerTestCase<MatchMakerCriteriaGroup> {
+public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchMakerCriteriaGroup> {
     
-	MatchMakerCriteriaGroup<C> target;
+	MatchMakerCriteriaGroup target;
 	final String appUserName = "test user";
 
     public MatchMakerCriteriaGroupTest() {
@@ -15,7 +15,7 @@ public class MatchMakerCriteriaGroupTest<C extends MatchMakerCriteria> extends M
     }
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchMakerCriteriaGroup<C>();
+		target = new MatchMakerCriteriaGroup();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);

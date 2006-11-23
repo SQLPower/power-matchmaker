@@ -41,7 +41,6 @@ import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchType;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.util.SourceTable;
@@ -149,7 +148,7 @@ public class MatchEditor {
 			try {
 				editor = new MatchMakerCriteriaGroupEditor(swingSession,
 						match,
-						new MatchMakerCriteriaGroup<MatchMakerCriteria>());
+						new MatchMakerCriteriaGroup());
 			} catch (ArchitectException e) {
 				JOptionPane.showMessageDialog(swingSession.getFrame(), 
 						"Populate Error", "Error", JOptionPane.ERROR_MESSAGE);

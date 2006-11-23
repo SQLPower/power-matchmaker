@@ -10,19 +10,18 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
 
 public class ColumnComboBoxModel implements ComboBoxModel {
 	private SQLTable table;
 
 	private List<SQLColumn> columnNames = new ArrayList<SQLColumn>();
 
-	private MatchMakerCriteriaGroup<MatchMakerCriteria> group;
+	private MatchMakerCriteriaGroup group;
 
 	private SQLColumn selected;
 
 	public ColumnComboBoxModel(SQLTable table,
-			MatchMakerCriteriaGroup<MatchMakerCriteria> group)
+			MatchMakerCriteriaGroup group)
 			throws ArchitectException {
 		super();
 		ColumnComboBoxModelImpl(table, group);
@@ -36,7 +35,7 @@ public class ColumnComboBoxModel implements ComboBoxModel {
 	}
 
 	private void ColumnComboBoxModelImpl(SQLTable table,
-			MatchMakerCriteriaGroup<MatchMakerCriteria> group)
+			MatchMakerCriteriaGroup group)
 			throws ArchitectException {
 		this.group = group;
 		setTable(table);

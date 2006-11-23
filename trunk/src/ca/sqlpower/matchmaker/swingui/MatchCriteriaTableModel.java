@@ -3,27 +3,27 @@ package ca.sqlpower.matchmaker.swingui;
 import javax.swing.table.AbstractTableModel;
 
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
 public class MatchCriteriaTableModel extends AbstractTableModel {
 
 	private final class TableModelEventAdapter
-		implements MatchMakerListener<MatchMakerObject, MatchMakerObject> {
+		implements MatchMakerListener<MatchMakerCriteriaGroup, MatchMakerCriteria> {
 
-		public void mmChildrenInserted(MatchMakerEvent<MatchMakerObject, MatchMakerObject> evt) {
+		public void mmChildrenInserted(MatchMakerEvent<MatchMakerCriteriaGroup, MatchMakerCriteria> evt) {
 			fireTableRowsInserted(evt.getChangeIndices()[0], evt.getChangeIndices()[0]);
 			for ( MatchMakerObject c : evt.getChildren() ) {
 				MatchMakerUtils.listenToHierarchy(this, c);
 			}
 		}
 
-		public void mmChildrenRemoved(MatchMakerEvent<MatchMakerObject, MatchMakerObject> evt) {
+		public void mmChildrenRemoved(MatchMakerEvent<MatchMakerCriteriaGroup, MatchMakerCriteria> evt) {
 			fireTableRowsDeleted(evt.getChangeIndices()[0], evt.getChangeIndices()[0]);
 			for ( MatchMakerObject c : evt.getChildren() ) {
 				MatchMakerUtils.unlistenToHierarchy(this, c);

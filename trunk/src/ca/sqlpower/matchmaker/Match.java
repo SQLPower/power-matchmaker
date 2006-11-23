@@ -238,7 +238,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      * 
      * @param criteriaGroup
      */
-    public void addMatchCriteriaGroup(MatchMakerCriteriaGroup<MatchMakerCriteria> criteriaGroup) {
+    public void addMatchCriteriaGroup(MatchMakerCriteriaGroup criteriaGroup) {
         // The folder will fire the child inserted event
         matchCriteriaGroupFolder.addChild(criteriaGroup);
     }
@@ -248,7 +248,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      * 
      * @param criteriaGroup 
      */
-    public void removeMatchCriteriaGroup(MatchMakerCriteriaGroup<MatchMakerCriteria> criteriaGroup) {
+    public void removeMatchCriteriaGroup(MatchMakerCriteriaGroup criteriaGroup) {
         // The folder will fire the child removed event   
         matchCriteriaGroupFolder.removeChild(criteriaGroup);
     }

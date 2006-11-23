@@ -6,8 +6,8 @@ package ca.sqlpower.matchmaker;
  *
  * @param <C>
  */
-public class MatchMakerCriteriaGroup<C extends MatchMakerCriteria>
-	extends AbstractMatchMakerObject<MatchMakerCriteriaGroup, C> {
+public class MatchMakerCriteriaGroup
+	extends AbstractMatchMakerObject<MatchMakerCriteriaGroup, MatchMakerCriteria> {
 
 	private Long oid;
 	private String desc;
