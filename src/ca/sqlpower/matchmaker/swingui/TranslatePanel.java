@@ -22,8 +22,8 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.table.TableModelSearchDecorator;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslate;
-import ca.sqlpower.matchmaker.hibernate.PlMatchTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
@@ -44,9 +44,7 @@ public class TranslatePanel implements ArchitectPanel {
 	private JTextField searchGroup;
 	private JButton createGroup;
 	private JButton deleteGroup;
-	private JButton addCommonWords;
 	private JButton copyGroup;
-	private JButton helpButton;
 	private JButton moveItemUp;
 	private JButton moveItemDown;
 	private JButton moveItemToTop;
@@ -74,7 +72,7 @@ public class TranslatePanel implements ArchitectPanel {
 		translationGroup.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 tms.setTableModel(new MatchTranslateTableModel(
-                        (PlMatchTranslateGroup) translationGroup.getSelectedItem()));
+                        (MatchMakerTranslateGroup) translationGroup.getSelectedItem()));
                 tms.fireTableStructureChanged();
             }
         });
@@ -82,7 +80,6 @@ public class TranslatePanel implements ArchitectPanel {
 		tms.setDoc(searchGroup.getDocument());
 		createGroup = new JButton(createGroupAction);
 		deleteGroup = new JButton(deleteGroupAction);
-		addCommonWords = new JButton(addCommonWordsAction);  // FIXME not in layout
 		copyGroup = new JButton(copyGroupAction);
 		moveItemUp = new JButton(moveItemUpAction);
 		moveItemDown = new JButton(moveItemDownAction);
@@ -93,8 +90,6 @@ public class TranslatePanel implements ArchitectPanel {
 		
 		translateTable.setDragEnabled(true);
 		
-		helpButton = new JButton(helpAction); // FIXME not in layout
-			
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:120dlu:grow,4dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu,pref,4dlu");				
 		PanelBuilder pb;
@@ -235,8 +230,8 @@ public class TranslatePanel implements ArchitectPanel {
 			final int index = getTranslateTable().getSelectedRow();
 			if (index >=0 && index < translateTable.getRowCount() ){
 				if (getTranslateTable().getSelectedRowCount() == 1 && index > 0){
-					List<PlMatchTranslate> translateList= getTranslations();
-					PlMatchTranslate selectedTranslate=translateList.get(index);
+					List<MatchMakerTranslateWord> translateList= getTranslations();
+                    MatchMakerTranslateWord selectedTranslate=translateList.get(index);
 					translateList.remove(index);
 					translateList.add(0, selectedTranslate);
 					translateTable.setRowSelectionInterval(0,0);
@@ -251,8 +246,8 @@ public class TranslatePanel implements ArchitectPanel {
 			final int index = getTranslateTable().getSelectedRow();
 			if (index >=0 && index < translateTable.getRowCount() ){
 				if (getTranslateTable().getSelectedRowCount() == 1 && index < (translateTable.getRowCount() -1) ){						
-					List <PlMatchTranslate> translateList=  getTranslations();
-					PlMatchTranslate selectedTranslate=translateList.get(index);
+					List <MatchMakerTranslateWord> translateList=  getTranslations();
+                    MatchMakerTranslateWord selectedTranslate=translateList.get(index);
 					translateList.remove(index);
 					translateList.add(translateList.size(), selectedTranslate);
 					translateTable.setRowSelectionInterval(translateList.size()-1,translateList.size()-1);
@@ -263,8 +258,8 @@ public class TranslatePanel implements ArchitectPanel {
 
 			
 	};
-	private List<PlMatchTranslate> getTranslations() {
-		return ((PlMatchTranslateGroup)translationGroup.getSelectedItem()).getPlMatchTranslations();
+	private List<MatchMakerTranslateWord> getTranslations() {
+		return ((MatchMakerTranslateGroup)translationGroup.getSelectedItem()).getChildren();
 	}
 	
 	/**

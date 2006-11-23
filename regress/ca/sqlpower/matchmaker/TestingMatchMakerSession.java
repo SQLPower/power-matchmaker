@@ -14,12 +14,14 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	String dbUser = "DB User";
 	SQLDatabase db = new SQLDatabase();
 	List<PlFolder> folders;
+    List<MatchMakerTranslateGroup> translateGroups;
 	MatchMakerSessionContext context;
 	Connection con;
 	List<String> warnings = new ArrayList<String>();
     
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
+        translateGroups = new ArrayList<MatchMakerTranslateGroup>();
 	}
 
 	public String getAppUser() {
@@ -143,6 +145,10 @@ public class TestingMatchMakerSession implements MatchMakerSession {
      */
     public void removeWarningListener(WarningListener l) {
         // TODO Auto-generated method stub
+    }
+
+    public List<MatchMakerTranslateGroup> getTranslations() {
+        return translateGroups;
     }
     
     

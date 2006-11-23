@@ -11,6 +11,7 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -97,5 +98,11 @@ public class StubMatchMakerSession implements MatchMakerSession{
 
     public void removeWarningListener(WarningListener l) {
         logger.debug("Stub call: StubMatchMakerSession.removeWarningListener()");
+    }
+
+    public List<MatchMakerTranslateGroup> getTranslations() {
+        // TODO Auto-generated method stub
+        logger.debug("Stub call: StubMatchMakerSession.getTranslations()");
+        return null;
     }
 }

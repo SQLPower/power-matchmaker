@@ -19,6 +19,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -218,6 +219,12 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
     public void removeWarningListener(WarningListener l) {
         logger.debug("Stub call: TestingMatchMakerHibernateSession.removeWarningListener()");
+    }
+
+    public List<MatchMakerTranslateGroup> getTranslations() {
+        // TODO Auto-generated method stub
+        logger.debug("Stub call: TestingMatchMakerHibernateSession.getTranslations()");
+        return null;
     }
     
 }

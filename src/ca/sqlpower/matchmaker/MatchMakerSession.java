@@ -138,5 +138,10 @@ public interface MatchMakerSession {
      * this method has no effect.
      */
     public void removeWarningListener(WarningListener l);
+
+    /**
+     * get all of the translations the user can see
+     */
+    public List<MatchMakerTranslateGroup> getTranslations();
     
 }
