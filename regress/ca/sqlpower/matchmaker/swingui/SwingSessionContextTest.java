@@ -112,6 +112,10 @@ public class SwingSessionContextTest extends TestCase {
             public void write(File location) throws IOException {
                 System.out.println("Stub DSCollection.write("+location+")");
             }
+
+            public void write() throws IOException {
+                // TODO Auto-generated method stub          
+            }
             
         };
         MatchMakerSessionContext stubContext = new MatchMakerSessionContext() {

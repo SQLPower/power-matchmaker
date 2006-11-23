@@ -28,6 +28,7 @@ import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.DatabaseListChangeEvent;
 import ca.sqlpower.architect.DatabaseListChangeListener;
+import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
@@ -106,10 +107,26 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			final DBCSPanel dbcsPanel = new DBCSPanel();
 			dbcsPanel.setDbcs(dbcs);
 
-			DBCSOkAction okAction = new DBCSOkAction(dbcsPanel,
-					false,
-					sessionContext.getPlDotIni());
-			okAction.setConnectionSelectionCallBack(DatabaseConnectionManager.this);
+            // This is super-ugly.  The DBCSOkAction should rot in hell.
+            // I don't know what it's for, so I'm invoking it anyway before
+            // saving the pl.ini file
+			final DBCSOkAction dbcsOkAction = new DBCSOkAction(
+                    dbcsPanel,
+			        false,
+			        sessionContext.getPlDotIni());
+			dbcsOkAction.setConnectionSelectionCallBack(DatabaseConnectionManager.this);
+            dbcsOkAction.setConnectionDialog(d);
+			Action okAction = new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        dbcsOkAction.actionPerformed(e);
+                        plDotIni.write();
+                    } catch (Exception ex) {
+                        ASUtils.showExceptionDialog("Could not save PL.INI file", ex);
+                    }
+                }
+            };
+            
 
 			Action cancelAction = new AbstractAction() {
 				public void actionPerformed(ActionEvent evt) {
@@ -125,7 +142,6 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 					ArchitectPanelBuilder.OK_BUTTON_LABEL,
 					okAction, cancelAction);
 
-			okAction.setConnectionDialog(d);
 			setNewConnectionDialog(d);
 
             dialog.pack();
