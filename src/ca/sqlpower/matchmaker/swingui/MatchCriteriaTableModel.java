@@ -7,7 +7,7 @@ import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
-import ca.sqlpower.matchmaker.MatchmakerCriteria;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -68,14 +68,14 @@ System.out.println("PropertyChanged:"+evt.getPropertyName()+"  "+evt.getSource()
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		return getFieldFromCriteria(
                 MatchCriteriaColumn.values()[columnIndex],
-                (MatchmakerCriteria)group.getChildren().get(rowIndex));
+                (MatchMakerCriteria)group.getChildren().get(rowIndex));
 	}
 	
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		MatchCriteriaColumn column = MatchCriteriaColumn.values()[columnIndex];
-		MatchmakerCriteria criterion = 
-			(MatchmakerCriteria) group.getChildren().get(rowIndex);
+		MatchMakerCriteria criterion = 
+			(MatchMakerCriteria) group.getChildren().get(rowIndex);
 		
 		switch (column) {	
 		case COLUMN:
@@ -144,8 +144,8 @@ System.out.println("PropertyChanged:"+evt.getPropertyName()+"  "+evt.getSource()
 		}
 	}
 	
-	public MatchmakerCriteria getRow(int row){
-		return (MatchmakerCriteria) group.getChildren().get(row);
+	public MatchMakerCriteria getRow(int row){
+		return (MatchMakerCriteria) group.getChildren().get(row);
 	}
 	
 	@Override
@@ -160,7 +160,7 @@ System.out.println("PropertyChanged:"+evt.getPropertyName()+"  "+evt.getSource()
 	}
 	
 	private static Object getFieldFromCriteria(MatchCriteriaColumn column,
-			MatchmakerCriteria criteria) {
+			MatchMakerCriteria criteria) {
 		switch (column) {	
 		case COLUMN:
 			return criteria.getColumn();

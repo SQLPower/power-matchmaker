@@ -5,7 +5,7 @@ import java.util.List;
 
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
-import ca.sqlpower.matchmaker.MatchmakerCriteria;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 
@@ -37,7 +37,7 @@ public abstract class AbstractMatchMakerCriteraGroupDAOTestCase extends Abstract
 	@Override
 	public MatchMakerCriteriaGroup createNewObjectUnderTest() throws Exception {
 		count++;
-		MatchMakerCriteriaGroup<MatchmakerCriteria> criteriaGroup = new MatchMakerCriteriaGroup<MatchmakerCriteria>();
+		MatchMakerCriteriaGroup<MatchMakerCriteria> criteriaGroup = new MatchMakerCriteriaGroup<MatchMakerCriteria>();
         criteriaGroup.setSession(getSession());
 		try {
 			setAllSetters(criteriaGroup, getNonPersitingProperties());

@@ -2,14 +2,14 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
-import ca.sqlpower.matchmaker.MatchmakerCriteria;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.dao.AbstractMatchMakerCriteraGroupDAOTestCase;
 import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
 
 
 public class MatchMakerCriteriaGroupDAOSQLServerTest extends AbstractMatchMakerCriteraGroupDAOTestCase {
     
-    private MatchMakerCriteriaGroup<MatchmakerCriteria> criteriaGroup;
+    private MatchMakerCriteriaGroup<MatchMakerCriteria> criteriaGroup;
     
     @Override
     protected void setUp() throws Exception {
