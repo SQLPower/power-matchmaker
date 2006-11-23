@@ -17,6 +17,7 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.CommonCloseAction;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.swingui.MatchStatisticsPanel;
+import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 
@@ -46,7 +47,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 			p = new MatchStatisticsPanel(match);
 		} catch (SQLException e1) {
 			ASUtils.showExceptionDialog(parent,
-					"Could not get match statistic information", e1);
+					"Could not get match statistic information", e1 , new MatchMakerQFAFactory());
 			return;
 		}
 		if ( p == null ) {
@@ -67,7 +68,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 					p2.deleteAllStatistics();
 				} catch (SQLException e1) {
 					ASUtils.showExceptionDialog(parent,
-							"Could not delete match statistic information", e1);
+							"Could not delete match statistic information", e1, new MatchMakerQFAFactory());
 				}
 			}});
 		JButton deleteBackwardButton = new JButton(new AbstractAction("Delete Backward"){
@@ -76,7 +77,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 					p2.deleteBackwardStatistics();
 				} catch (SQLException e1) {
 					ASUtils.showExceptionDialog(parent,
-							"Could not delete match statistic information", e1);
+							"Could not delete match statistic information", e1, new MatchMakerQFAFactory());
 				}
 			}});
 		Action closeAction = new CommonCloseAction(d);

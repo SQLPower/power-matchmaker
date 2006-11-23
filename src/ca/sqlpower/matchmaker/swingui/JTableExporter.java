@@ -13,6 +13,7 @@ import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.IOUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
+import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
 public class JTableExporter extends JFileChooser {
 
@@ -73,7 +74,7 @@ public class JTableExporter extends JFileChooser {
 				throw new IllegalStateException("Unsupported File Type!");
 			}
 		} catch (IOException e1) {
-			ASUtils.showExceptionDialog(owner,"Save file Error!", e1);
+			ASUtils.showExceptionDialog(owner,"Save file Error!", e1, new MatchMakerQFAFactory());
 		}
 	}
 

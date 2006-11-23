@@ -32,6 +32,7 @@ import ca.sqlpower.architect.swingui.table.TableModelColumnAutofit;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
 import com.sun.rowset.CachedRowSetImpl;
 import com.sun.rowset.JoinRowSetImpl;
@@ -339,7 +340,7 @@ public class MatchStatisticsPanel extends JPanel {
 						new MatchGroupStatisticTableModel(rsmGroup));
 				setMatchGroupStatisticTableCellRenderer(matchGroupTable);
 			} catch (SQLException e1) {
-				ASUtils.showExceptionDialog(MatchStatisticsPanel.this,"SQL Error",e1);
+				ASUtils.showExceptionDialog(MatchStatisticsPanel.this,"SQL Error",e1, new MatchMakerQFAFactory());
 			}
         }
     }

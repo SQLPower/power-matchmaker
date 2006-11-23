@@ -29,6 +29,7 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
+import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -152,7 +153,7 @@ public class FilterMakerDialog extends JDialog {
             columnName = new JComboBox(new ColumnComboBoxModel(matchSourceTable));
         } catch (ArchitectException e) {
             ASUtils.showExceptionDialog(FilterMakerDialog.this,
-                    "Unable to setup the column drop down box", e);
+                    "Unable to setup the column drop down box", e, new MatchMakerQFAFactory());
             return;
         }
 
@@ -188,7 +189,7 @@ public class FilterMakerDialog extends JDialog {
                 columnName2 = new JComboBox(new ColumnComboBoxModel(matchSourceTable));
             } catch (ArchitectException e) {
                 ASUtils.showExceptionDialog(FilterMakerDialog.this,
-                        "Unable to setup the column drop down box", e);
+                        "Unable to setup the column drop down box", e, new MatchMakerQFAFactory());
                 return;
             }
             pb.add(columnName2, cc.xy(4,6));
@@ -365,7 +366,7 @@ public class FilterMakerDialog extends JDialog {
             } catch (BadLocationException e1) {
                 ASUtils.showExceptionDialog(
                         FilterMakerDialog.this,
-                        "Unknown Document Error",e1);
+                        "Unknown Document Error",e1, new MatchMakerQFAFactory());
 
             }
         }};
