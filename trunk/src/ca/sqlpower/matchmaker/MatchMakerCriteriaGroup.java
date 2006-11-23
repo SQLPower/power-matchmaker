@@ -113,4 +113,22 @@ public class MatchMakerCriteriaGroup<C extends MatchmakerCriteria>
 			return false;
 		return true;
 	}
+	
+	public String createNewUniqueName() {
+
+        StringBuffer name = new StringBuffer("new criteria");
+        int i = 1;
+        while ( getCriteriaByName(name.toString()) != null ) {
+        	name = new StringBuffer("new criteria").append(i++);
+        }
+        return name.toString();
+    }
+	
+	private MatchmakerCriteria getCriteriaByName(String name) {
+		for ( MatchmakerCriteria c : getChildren() ) {
+			if ( c.getName().equals(name))
+				return c;
+        }
+		return null;
+	}
 }
