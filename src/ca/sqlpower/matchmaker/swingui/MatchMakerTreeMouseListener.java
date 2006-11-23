@@ -12,6 +12,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
@@ -25,6 +27,8 @@ import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 
 public class MatchMakerTreeMouseListener extends MouseAdapter {
 
+	private static final Logger logger = Logger.getLogger(MatchMakerTreeMouseListener.class);
+	
     private final MatchMakerSwingSession swingSession;
 
     private final JFrame owningFrame;
@@ -64,6 +68,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                         	new MatchMakerCriteriaGroupEditor(
                         			swingSession,
                         			m, (MatchMakerCriteriaGroup) o);
+                        logger.debug("Created new match group editor "+System.identityHashCode(editor));
                         swingSession.setCurrentEditorComponent(editor.getPanel());
                     } catch (ArchitectException e1) {
                         throw new ArchitectRuntimeException(e1);

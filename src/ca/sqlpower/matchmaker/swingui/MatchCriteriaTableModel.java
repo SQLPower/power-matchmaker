@@ -10,8 +10,9 @@ import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.util.EditableJTable;
 
-public class MatchCriteriaTableModel extends AbstractTableModel {
+public class MatchCriteriaTableModel extends AbstractTableModel implements CleanupTableModel {
 
 	private final class TableModelEventAdapter
 		implements MatchMakerListener<MatchMakerCriteriaGroup, MatchMakerCriteria> {
@@ -41,22 +42,42 @@ System.out.println("PropertyChanged:"+evt.getPropertyName()+"  "+evt.getSource()
 	}
 	
 
-	private MatchMakerCriteriaGroup group;
+	private final MatchMakerCriteriaGroup group;
+	private final TableModelEventAdapter tableModelEventAdapter;
 
 	public MatchMakerCriteriaGroup getGroup() {
 		return group;
 	}
 
-	public void setGroup(MatchMakerCriteriaGroup group) {
-		this.group = group;
-		group.addMatchMakerListener(
-				new TableModelEventAdapter());
-	}
-
+	/**
+	 * Creates a new TableModel for the given match group.  If you want a
+	 * table model for a different match group, you have to create a new
+	 * instance of MatchCriteriaTableModel.
+	 * <p>
+	 * Note, it is important to call cleanup() when you are done with this
+	 * table model, because it listens to the matchGroup and its children,
+	 * and without a call to cleanup(), you will have memory leaks of this
+	 * table model, the JTable it's attached to, and all sorts of other stuff.
+	 * The {@link EditableJTable} class knows how to call cleanup() when necessary,
+	 * but if you use this model with another kind of JTable, you will have to
+	 * do the cleanup yourself.
+	 * 
+	 * @param matchGroup The Match Group to use for table data.  Must be non-null.
+	 */
 	public MatchCriteriaTableModel(MatchMakerCriteriaGroup matchGroup) {
-		setGroup(matchGroup);
+		this.group = matchGroup;
+		tableModelEventAdapter = new TableModelEventAdapter();
+		MatchMakerUtils.listenToHierarchy(tableModelEventAdapter, group);
 	}
 
+	/**
+	 * Releases resources and listeners that this model was using.  It is
+	 * important to call this method when you are done with the table model.
+	 */
+	public void cleanup() {
+		MatchMakerUtils.unlistenToHierarchy(tableModelEventAdapter, group);
+	}
+	
 	public int getColumnCount() {
 		return MatchCriteriaColumn.values().length;
 	}
