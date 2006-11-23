@@ -2,12 +2,23 @@ package ca.sqlpower.matchmaker;
 
 import java.math.BigDecimal;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.matchmaker.util.SourceTable;
 
-public class MatchMakerCriteria<C extends MatchMakerObject> extends AbstractMatchMakerObject<MatchMakerCriteria, C> {
+public class MatchMakerCriteria 
+    extends AbstractMatchMakerObject<MatchMakerCriteria, MatchMakerObject> {
 
-    Long oid;
+    /**
+     * Unique ID for this instance. Required by ORM tools.
+     */
+    private Long oid;
 
+    /**
+     * The column that all criteria in this instance applies to.  There can only
+     * be one instance of MatchMakerCriteria per column in a MatchMakerCriteriaGroup.
+     */
     private SQLColumn column;
 
     /**
@@ -60,7 +71,47 @@ public class MatchMakerCriteria<C extends MatchMakerObject> extends AbstractMatc
     public MatchMakerCriteria( ) {
     }
 
+    /**
+     * Overridden to narrow the return type.
+     */
+    @Override
+    public MatchMakerCriteriaGroup getParent() {
+        return (MatchMakerCriteriaGroup) super.getParent();
+    }
+    /**
+     * Returns the name of the column this set of criteria applies to.
+     * You should use {@link #getColumn()} under normal circumstances.
+     */
+    public String getColumnName() {
+        if (getColumn() == null) return null;
+        return getColumn().getName();
+    }
 
+    /**
+     * Attempts to resolve the given column name to a column of the owning
+     * Match object's source table.  This is provided for the benefit of the
+     * ORM layer, which has difficulty using the business model.
+     * 
+     * @param columnName
+     * @throws ArchitectException if there is an error populating the SQLTable
+     * @throws NullPointerException if any of the business objects required for
+     * resolving the column object are missing
+     */
+    public void setColumnName(String columnName) throws ArchitectException {
+        MatchMakerCriteriaGroup group = getParent();
+        if (group == null) throw new NullPointerException("Not attached to a parent");
+        Match match = (Match) group.getParent();
+        if (group == null) throw new NullPointerException("Not attached to a grandparent");
+        SourceTable st = match.getSourceTable();
+        if (st == null) throw new NullPointerException("The owning match has no source table specified");
+        SQLTable sst = st.getTable();
+        if (sst == null) throw new NullPointerException("The owning match's source table has no SQLTable specified");
+        SQLColumn newColumn = sst.getColumnByName(columnName);
+        
+        // did we actually make it here?
+        setColumn(newColumn);
+    }
+    
     public boolean isAllowNullInd() {
         return allowNullInd;
     }
@@ -329,7 +380,7 @@ public class MatchMakerCriteria<C extends MatchMakerObject> extends AbstractMatc
     }
 
     @Override
-    public void addChild(C child) {
+    public void addChild(MatchMakerObject child) {
         throw new IllegalStateException("MatchMakerCriteria class does NOT allow child!");
     }
 
