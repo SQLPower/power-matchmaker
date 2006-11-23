@@ -10,8 +10,12 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+
+import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.swingui.table.TableTextConverter;
+import ca.sqlpower.matchmaker.swingui.CleanupTableModel;
 
 /**
  * This class implements the workarounds for the bugs in the jTable
@@ -19,11 +23,27 @@ import ca.sqlpower.architect.swingui.table.TableTextConverter;
  */
 public class EditableJTable extends JTable implements TableTextConverter {
 
+	private static final Logger logger = Logger.getLogger(EditableJTable.class);
+	
 	public EditableJTable() {
+		this(null);
+	}
+
+	public EditableJTable(TableModel model) {
+		super(model);
 		putClientProperty("terminateEditOnFocusLost", true);
 		setTableHeader(createDefaultTableHeader());
 	}
-
+	
+	@Override
+	public void removeNotify() {
+		super.removeNotify();
+		logger.debug("Table removed from hierarchy.  Cleaning up model...");
+		if (getModel() instanceof CleanupTableModel) {
+			((CleanupTableModel) getModel()).cleanup();
+		}
+	}
+	
 	@Override
 	public void columnMarginChanged(ChangeEvent pE) {
 		if (getEditingColumn() != -1 || getEditingRow() != -1) {

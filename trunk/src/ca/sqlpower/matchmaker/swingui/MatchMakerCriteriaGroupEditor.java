@@ -1,11 +1,11 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -51,7 +51,6 @@ import com.jgoodies.forms.layout.FormLayout;
 
 public class MatchMakerCriteriaGroupEditor {
 
-	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(MatchMakerCriteriaGroupEditor.class);
 
     private final MatchMakerSwingSession swingSession;
@@ -65,6 +64,7 @@ public class MatchMakerCriteriaGroupEditor {
     
     private JSplitPane jSplitPane;
 	private JTable matchCriteriaTable;
+	private MatchCriteriaTableModel matchCriteriaTableModel;
 	private JPanel groupEditPanel;
     private JTextField groupId;
     private JLabel matches;
@@ -72,7 +72,6 @@ public class MatchMakerCriteriaGroupEditor {
     private JTextField matchPercent;
     private JTextField filterCriteria;
     private JCheckBox active;
-    private Color textBackground;
 
     private JButton newMatchCriterion;
     private JButton deleteMatchCriterion;
@@ -92,7 +91,10 @@ public class MatchMakerCriteriaGroupEditor {
         this.swingSession = swingSession;
         this.match = match;
 		this.group = group;
+		
 		handler = new FormValidationHandler(status);
+		matchCriteriaTableModel = new MatchCriteriaTableModel(group);
+		matchCriteriaTable = new EditableJTable(matchCriteriaTableModel);
 		buildUI();
 		setDefaultSelection(group,match);
 		handler.addPropertyChangeListener(new PropertyChangeListener(){
@@ -100,8 +102,9 @@ public class MatchMakerCriteriaGroupEditor {
 				refreshActionStatus();
 			}
         });
+		save.putValue("mm_name", "save action for "+group.getName()+"@"+System.identityHashCode(group));
 	}
-	
+
 	private class MatchGroupNameValidator implements Validator {
 		public ValidateResult validate(Object contents) {
 			String value = (String)contents;
@@ -142,11 +145,13 @@ public class MatchMakerCriteriaGroupEditor {
 
 	private void refreshActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
+logger.debug("*** worst="+worst.getStatus().name()+"   message="+worst.getMessage()+"worst.getStatus() == Status.FAIL"+(worst.getStatus() == Status.FAIL));
 		save.setEnabled(true);
+		logger.debug("Setting "+save.getValue("mm_name")+" enabled to "+true);
 		newCriteria.setEnabled(true);
-
 		if ( worst.getStatus() == Status.FAIL ) {
 			save.setEnabled(false);
+			logger.debug("Setting "+save.getValue("mm_name")+" enabled to "+false);
 			newCriteria.setEnabled(false);
 		}
 	}
@@ -239,8 +244,7 @@ public class MatchMakerCriteriaGroupEditor {
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = matchCriteriaTable.getSelectedRow();
 			if ( selectedRow == -1 ) return;
-			MatchMakerCriteria c = ((MatchCriteriaTableModel)
-					matchCriteriaTable.getModel()).getRow(selectedRow);
+			MatchMakerCriteria c = matchCriteriaTableModel.getRow(selectedRow);
 			group.removeChild(c);
 		}
 	};
@@ -252,20 +256,25 @@ public class MatchMakerCriteriaGroupEditor {
 
 		
         groupId = new JTextField();
+        groupId.setName("Group ID");
         matches = new JLabel();
 
         description = new JTextField();
         matchPercent = new JTextField();
         matchPercent.setColumns(3);
+        matchPercent.setName("Percent");
         filterCriteria = new JTextField();
+        filterCriteria.setName("Filter");
         active = new JCheckBox();
         active.setSelected(true);
 
         newMatchCriterion = new JButton(newCriteria);
+        newMatchCriterion.setName("New button for "+group.getName());
         deleteMatchCriterion = new JButton(deleteCriteria);
         copyMatchCriterion = new JButton("Copy");
         pasteMatchCriterion = new JButton("Paste");
         saveMatchCriterion = new JButton(save);
+        saveMatchCriterion.setName("Save button for "+group.getName());
         cancelMatchCriterion = new JButton("Cancel");
         
 
@@ -316,7 +325,7 @@ public class MatchMakerCriteriaGroupEditor {
 		
 		
 		// group detail (match criteria)
-		matchCriteriaTable = new EditableJTable();
+		matchCriteriaTable.setName("Match Criteria Editor for "+group.getName());
 		matchCriteriaTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		matchCriteriaTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
 
@@ -340,10 +349,8 @@ public class MatchMakerCriteriaGroupEditor {
 	 * @param model the new MatchGroup to edit.
 	 * @throws ArchitectException 
 	 */
-	public void setDefaultSelection(MatchMakerCriteriaGroup group,
+	private void setDefaultSelection(MatchMakerCriteriaGroup group,
 			Match match ) throws ArchitectException {
-		
-		matchCriteriaTable.setModel(new MatchCriteriaTableModel(group));
 		
 		matches.setText(match.getName());
 		groupId.setText(group.getName());
@@ -445,42 +452,30 @@ public class MatchMakerCriteriaGroupEditor {
 	private class CriteriaTableValidator implements Validator {
 
 		private MatchCriteriaTableModel model;
-		private JTable table;
 		public CriteriaTableValidator(JTable table) {
-			this.table = table;
 			this.model = (MatchCriteriaTableModel) table.getModel();
 		}
 		public ValidateResult validate(Object contents) {
-			
-			int selectedRow = table.getSelectedRow();
-			if ( selectedRow == -1 ) {
-				selectedRow = model.getRowCount()-1;
-			}
-			if ( selectedRow == -1 ) {
-				return ValidateResult.createValidateResult(Status.OK, "");
-			}
-			MatchMakerCriteria c = model.getRow(selectedRow);
-			
-			if ( c.getColumn() == null || 
-					c.getColumn().getName() == null || 
-					c.getColumn().getName().length() == 0 ) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						"column name can not be null"); 
-			} else {
-				for ( int i=0; i<model.getRowCount(); i++ ) {
-					if ( selectedRow == i ) continue;
-					MatchMakerCriteria c2 = model.getRow(i);
-					if ( c2.getColumn() == null || 
-							c2.getColumn().getName() == null || 
-							c2.getColumn().getName().length() == 0 ) {
-						return ValidateResult.createValidateResult(Status.FAIL,
-								"column name can not be null"); 
-					}
-					if ( c.getColumn().getName().equals(c2.getColumn().getName())) {
-						return ValidateResult.createValidateResult(Status.FAIL,
-								"column name can not be duplicated");
-					}
+System.out.println("table validator");
+
+			List<String> columnNames = new ArrayList<String>();
+			for ( int i=0; i<model.getRowCount(); i++ ) {
+				MatchMakerCriteria c = model.getRow(i);
+System.out.println("c="+c.getName()+"  column="+(c.getColumn()==null));				
+				if ( c.getColumn() == null || 
+						c.getColumn().getName() == null || 
+						c.getColumn().getName().length() == 0 ) {
+System.out.println("returning :"+Status.FAIL.name());
+					
+					return ValidateResult.createValidateResult(Status.FAIL,
+							"column name can not be null"); 
 				}
+System.out.println("column name=["+c.getColumn().getName()+"]");				
+				if (columnNames.contains(c.getColumn().getName())) {
+					return ValidateResult.createValidateResult(Status.FAIL,
+							"column name can not be duplicated");
+				}
+				columnNames.add(c.getColumn().getName());
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
