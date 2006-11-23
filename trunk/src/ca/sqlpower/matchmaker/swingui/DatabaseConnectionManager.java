@@ -208,7 +208,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	private JPanel createPanel() {
 
 		FormLayout layout = new FormLayout(
-				"6dlu, fill:min(160dlu;default):grow, 6dlu, fill:min(50dlu;default), 6dlu", // columns
+				"6dlu, fill:min(160dlu;default):grow, 6dlu, pref, 6dlu", // columns
 				" 6dlu,10dlu,6dlu,fill:min(180dlu;default):grow,10dlu"); // rows
 
 		layout.setColumnGroups(new int [][] { {1,3,5}});
