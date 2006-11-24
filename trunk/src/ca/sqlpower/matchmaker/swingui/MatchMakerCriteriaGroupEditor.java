@@ -440,21 +440,17 @@ public class MatchMakerCriteriaGroupEditor {
 			this.model = (MatchCriteriaTableModel) table.getModel();
 		}
 		public ValidateResult validate(Object contents) {
-System.out.println("table validator");
 
 			List<String> columnNames = new ArrayList<String>();
 			for ( int i=0; i<model.getRowCount(); i++ ) {
-				MatchMakerCriteria c = model.getRow(i);
-System.out.println("c="+c.getName()+"  column="+(c.getColumn()==null));				
+				MatchMakerCriteria c = model.getRow(i);			
 				if ( c.getColumn() == null || 
 						c.getColumn().getName() == null || 
 						c.getColumn().getName().length() == 0 ) {
-System.out.println("returning :"+Status.FAIL.name());
 					
 					return ValidateResult.createValidateResult(Status.FAIL,
 							"column name can not be null"); 
-				}
-System.out.println("column name=["+c.getColumn().getName()+"]");				
+				}				
 				if (columnNames.contains(c.getColumn().getName())) {
 					return ValidateResult.createValidateResult(Status.FAIL,
 							"column name can not be duplicated");
