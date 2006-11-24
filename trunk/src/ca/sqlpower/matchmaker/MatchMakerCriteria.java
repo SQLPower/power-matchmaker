@@ -87,6 +87,15 @@ public class MatchMakerCriteria
         return (MatchMakerCriteriaGroup) super.getParent();
     }
     
+    /**
+     * Overridden because match criteria don't really have names.  This
+     * method returns the column name which this set of criteria is associated with.
+     */
+    @Override
+    public String getName() {
+        return (cachedColumn == null ? columnName : cachedColumn.getName());
+    }
+    
     public boolean isAllowNullInd() {
         return allowNullInd;
     }
