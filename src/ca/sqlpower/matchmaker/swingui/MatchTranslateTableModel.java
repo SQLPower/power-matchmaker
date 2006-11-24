@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import javax.swing.table.AbstractTableModel;
 
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
@@ -23,6 +24,10 @@ public class MatchTranslateTableModel extends AbstractTableModel implements Matc
 	public int getColumnCount() {		
 		return 2;
 	}
+    
+    public MatchMakerObject getMatchMakerObject(int index){
+        return translate.getChildren().get(index);
+    }
 
 	public int getRowCount() {
 		if(translate == null) return 0;
