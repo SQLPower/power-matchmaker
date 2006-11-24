@@ -19,8 +19,8 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 
@@ -39,7 +39,8 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     private final TestingConnection con;
     private SQLDatabase db;
     private List<String> warnings = new ArrayList<String>();
-
+    private TranslateGroupParent tgp = new TranslateGroupParent(this);
+    
     /**
      * Creates a new session that is really connected to a datasource.  
      * This session does not create a SQLDatabase
@@ -221,10 +222,8 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         logger.debug("Stub call: TestingMatchMakerHibernateSession.removeWarningListener()");
     }
 
-    public List<MatchMakerTranslateGroup> getTranslations() {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: TestingMatchMakerHibernateSession.getTranslations()");
-        return null;
+    public TranslateGroupParent getTranslations() {
+        return tgp;
     }
     
 }
