@@ -254,7 +254,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 							newVal = new SQLTable();
                             ((SQLTable)newVal).setName("Fake Table");
 						} else if (property.getPropertyType() == ViewSpec.class) {
-							newVal = new ViewSpec();
+							newVal = new ViewSpec("select clause", "from clause", "where clause");
 						} else if (property.getPropertyType() == Log.class) {
 							newVal = LogFactory
 									.getLogger(Level.DEBUG, "TestMatchMaker.log");
