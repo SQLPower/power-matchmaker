@@ -142,6 +142,6 @@ public interface MatchMakerSession {
     /**
      * get all of the translations the user can see
      */
-    public List<MatchMakerTranslateGroup> getTranslations();
+    public TranslateGroupParent getTranslations();
     
 }

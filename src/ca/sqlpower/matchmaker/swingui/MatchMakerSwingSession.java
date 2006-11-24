@@ -49,6 +49,7 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
@@ -120,6 +121,10 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
+    /**
+     * Container for translate groups
+     */
+    private MatchMakerObject<MatchMakerObject, MatchMakerTranslateGroup> translateGroupParent;
     
 	private Action aboutAction = new AbstractAction("About MatchMaker...") {
         public void actionPerformed(ActionEvent e) {
@@ -220,8 +225,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
             warningDialog.setVisible(false);
         }
     };
-
-	private List<MatchMakerTranslateGroup> translations = new ArrayList<MatchMakerTranslateGroup>();
 
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
@@ -449,7 +452,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return sessionContext;
     }
 
-	private final class EditMatchAction extends AbstractAction {
+    private final class EditMatchAction extends AbstractAction {
 		private EditMatchAction(String name) {
 			super(name);
 		}
@@ -594,7 +597,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		}
 	}
 
-	public List<MatchMakerTranslateGroup> getTranslations() {
+	public TranslateGroupParent getTranslations() {
 		return sessionImpl.getTranslations();
 	}
 

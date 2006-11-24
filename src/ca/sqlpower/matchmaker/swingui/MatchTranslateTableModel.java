@@ -1,17 +1,23 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import javax.swing.table.AbstractTableModel;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
-public class MatchTranslateTableModel extends AbstractTableModel {
+public class MatchTranslateTableModel extends AbstractTableModel implements MatchMakerListener<MatchMakerTranslateGroup, MatchMakerTranslateWord> {
 
 	MatchMakerTranslateGroup translate;
 	
 	public  MatchTranslateTableModel(MatchMakerTranslateGroup translate){ 
 		super();
 		this.translate = translate; 
+        translate.addMatchMakerListener(this);
 	}
 
 	public int getColumnCount() {		
@@ -91,4 +97,42 @@ public class MatchTranslateTableModel extends AbstractTableModel {
 	public MatchMakerTranslateWord getRow(int rowIndex) {
 		return translate.getChildren().get(rowIndex );
 	}
+
+    public void mmChildrenInserted(MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) {
+        int[] changed = evt.getChangeIndices();
+        ArrayList<Integer> changedIndices = new ArrayList<Integer>();
+        for (int selectedRowIndex:changed){
+            changedIndices.add(new Integer(selectedRowIndex));
+        }
+        Collections.sort(changedIndices);
+        for (int i=1; i < changedIndices.size(); i++){
+            if (changedIndices.get(i-1)!=changedIndices.get(i)-1){
+                fireTableStructureChanged();
+                return;
+            }
+        }
+        fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
+    }
+
+    public void mmChildrenRemoved(MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) {
+        int[] changed = evt.getChangeIndices();
+        ArrayList<Integer> changedIndices = new ArrayList<Integer>();
+        for (int selectedRowIndex:changed){
+            changedIndices.add(new Integer(selectedRowIndex));
+        }
+        Collections.sort(changedIndices);
+        for (int i=1; i < changedIndices.size(); i++){
+            if (changedIndices.get(i-1)!=changedIndices.get(i)-1){
+                fireTableStructureChanged();
+                return;
+            }
+        }
+        fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
+    }
+
+    public void mmPropertyChanged(MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) { }
+
+    public void mmStructureChanged(MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) {
+        fireTableStructureChanged();
+    }
 }

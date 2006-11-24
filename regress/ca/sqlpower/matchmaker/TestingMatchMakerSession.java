@@ -14,14 +14,14 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	String dbUser = "DB User";
 	SQLDatabase db = new SQLDatabase();
 	List<PlFolder> folders;
-    List<MatchMakerTranslateGroup> translateGroups;
+    TranslateGroupParent translateGroupParent;
 	MatchMakerSessionContext context;
 	Connection con;
 	List<String> warnings = new ArrayList<String>();
     
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
-        translateGroups = new ArrayList<MatchMakerTranslateGroup>();
+        translateGroupParent= new TranslateGroupParent(this);
 	}
 
 	public String getAppUser() {
@@ -77,7 +77,9 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
-        // TODO Auto-generated method stub
+        if (businessClass == MatchMakerTranslateGroup.class){
+            return (MatchMakerDAO<T>) new MatchMakerTranslateGroupDAOStub();
+        }
         return null;
     }
 
@@ -147,8 +149,11 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         // TODO Auto-generated method stub
     }
 
-    public List<MatchMakerTranslateGroup> getTranslations() {
-        return translateGroups;
+    public TranslateGroupParent getTranslations() {
+        if (translateGroupParent == null){
+            translateGroupParent = new TranslateGroupParent(this);
+        }
+        return translateGroupParent;
     }
     
     

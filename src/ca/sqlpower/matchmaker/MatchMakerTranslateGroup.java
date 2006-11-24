@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker;
 
 
+
 public class MatchMakerTranslateGroup
 	extends AbstractMatchMakerObject<MatchMakerTranslateGroup, MatchMakerTranslateWord> {
 
@@ -33,6 +34,17 @@ public class MatchMakerTranslateGroup
 
 	public MatchMakerTranslateGroup() {
 	}
+    
+    /** 
+     * Set the translate words to a monitonly increasing form in the order of the parent
+     * and add any newly created children to this translation group
+     */
+    public void syncChildrenSeqNo(){
+        for (Long i = 0L; i < getChildCount(); i++){
+            MatchMakerTranslateWord child = getChildren().get(i.intValue());
+            child.setLocation(i);
+        }
+    }
 
 	@Override
 	public String toString() {

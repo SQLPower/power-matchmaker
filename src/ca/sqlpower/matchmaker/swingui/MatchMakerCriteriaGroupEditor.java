@@ -391,7 +391,7 @@ public class MatchMakerCriteriaGroupEditor {
         		int colIndex = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
             	TableColumn col = matchCriteriaTable.getColumnModel().getColumn(colIndex);
             	final JComboBox translateComboBox = new JComboBox(
-				            					new TranslationComboBoxModel(swingSession));
+				            					new TranslationComboBoxModel(swingSession.getTranslations()));
 				col.setCellEditor(new DefaultCellEditor(translateComboBox));
 				translateComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
         	}

@@ -3,6 +3,7 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -12,11 +13,12 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.apache.log4j.Logger;
 
@@ -26,6 +28,7 @@ import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
@@ -41,17 +44,19 @@ public class TranslatePanel implements ArchitectPanel {
     private JTable translateTable;
 	private JPanel translatePanel;
 	private JComboBox translationGroup;
-	private JTextField searchGroup;
+	private JTextField newGroupName;
 	private JButton createGroup;
 	private JButton deleteGroup;
-	private JButton copyGroup;
+    private JButton createWord;
+    private JButton deleteWord;
+	private JButton saveGroup;
 	private JButton moveItemUp;
 	private JButton moveItemDown;
 	private JButton moveItemToTop;
 	private JButton moveItemToBottom;
 	private JScrollPane tableScrollPane;
 	private TableModelSearchDecorator tms;
-
+    private MatchMakerTranslateGroup matchMakerTranslateGroup; 
 	
 	public TranslatePanel(MatchMakerSwingSession swingSession) {
         this.swingSession = swingSession;
@@ -60,27 +65,60 @@ public class TranslatePanel implements ArchitectPanel {
 	
 	private void buildUI(){
 		translateTable = new EditableJTable();
+		translationGroup = new JComboBox();
+		translationGroup.setModel(new TranslationComboBoxModel(swingSession.getTranslations()));
+        
+		if (translationGroup.getModel().getSize() > 0) {
+		    translationGroup.setSelectedIndex(0);
+		}
+        matchMakerTranslateGroup = (MatchMakerTranslateGroup) translationGroup.getSelectedItem();
 		tms = new TableModelSearchDecorator(
-                new MatchTranslateTableModel(swingSession.getTranslations().get(0)));
+                new MatchTranslateTableModel(matchMakerTranslateGroup));
 		tms.setTableTextConverter((EditableJTable) translateTable);
 		translateTable.setModel(tms);
-		translationGroup = new JComboBox();
-		translationGroup.setModel(new TranslationComboBoxModel(swingSession));
-		if (translationGroup.getModel().getSize() > 0) {
-			translationGroup.setSelectedIndex(0);
-		}
+        
 		translationGroup.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                matchMakerTranslateGroup = (MatchMakerTranslateGroup) translationGroup.getSelectedItem();
                 tms.setTableModel(new MatchTranslateTableModel(
-                        (MatchMakerTranslateGroup) translationGroup.getSelectedItem()));
+                        matchMakerTranslateGroup));
                 tms.fireTableStructureChanged();
             }
         });
-		searchGroup = new JTextField();
-		tms.setDoc(searchGroup.getDocument());
+		newGroupName = new JTextField();
+        newGroupName.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void changedUpdate(DocumentEvent e) {
+                if (e.getDocument().getLength()>0){
+                    createGroup.setEnabled(true);
+                } else {
+                    createGroup.setEnabled(false);
+                }
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                if (e.getDocument().getLength()>0){
+                    createGroup.setEnabled(true);
+                } else {
+                    createGroup.setEnabled(false);
+                }
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                if (e.getDocument().getLength()>0){
+                    createGroup.setEnabled(true);
+                } else {
+                    createGroup.setEnabled(false);
+                }
+            }
+            
+        });
 		createGroup = new JButton(createGroupAction);
+        createGroupAction.setEnabled(false);
 		deleteGroup = new JButton(deleteGroupAction);
-		copyGroup = new JButton(copyGroupAction);
+        createWord = new JButton(createWordsAction);
+        deleteWord = new JButton(deleteWordsAction);
+		saveGroup = new JButton(saveGroupAction);
 		moveItemUp = new JButton(moveItemUpAction);
 		moveItemDown = new JButton(moveItemDownAction);
 		moveItemToTop = new JButton(moveItemTopAction);
@@ -100,13 +138,13 @@ public class TranslatePanel implements ArchitectPanel {
 		pb.appendRow("2dlu");
 		pb.appendRow("pref");
 		pb.add(new JLabel("Group Name:"), cc.xy(2,2));
-		pb.add(searchGroup, cc.xy(4,2));
+		pb.add(newGroupName, cc.xy(4,2));
 		pb.add(createGroup, cc.xy(8,2));
-		pb.add(deleteGroup, cc.xy(10,2));
 		pb.appendRow("4dlu");
 		pb.appendRow("pref");
-		pb.add(copyGroup, cc.xy(8,4));
 		pb.add(translationGroup, cc.xy(4,4));
+		pb.add(saveGroup, cc.xy(8,4));
+        pb.add(deleteGroup, cc.xy(10,4));
 		pb.appendRow("4dlu");
 		pb.appendRow("fill:80dlu:grow");
 		pb.add(tableScrollPane, cc.xyw(2,6,10,"f,f"));
@@ -124,9 +162,15 @@ public class TranslatePanel implements ArchitectPanel {
 		bsb.addGridded(moveItemToBottom);
 		bsb.addRelatedGap();
 		bsb.addGlue();
-		
 		pb.add(bsb.getPanel(), cc.xy(14, 6,"c,c"));
 		pb.appendRow("4dlu");
+		pb.appendRow("pref");
+        ButtonBarBuilder bbb = new ButtonBarBuilder();
+        bbb.addGridded(createWord);
+        bbb.addUnrelatedGap();
+        bbb.addGridded(deleteWord);
+        pb.add(bbb.getPanel(),cc.xyw(1, 8, 14));
+        pb.appendRow("4dlu");
 		pb.appendRow("pref");
 		translatePanel = pb.getPanel();
 	}
@@ -155,47 +199,63 @@ public class TranslatePanel implements ArchitectPanel {
 	Action createGroupAction = new AbstractAction("Create Group"){
 
 		public void actionPerformed(ActionEvent e) {
-			//	TODO Auto-generated method stub
-            JOptionPane.showMessageDialog(translatePanel, "Not implemented yet.");
+            MatchMakerTranslateGroup mmtg = new MatchMakerTranslateGroup();
+            mmtg.setName(newGroupName.getText());
+            swingSession.getTranslations().addChild(mmtg);
 		}		
 	};
 	
 	Action deleteGroupAction = new AbstractAction("Delete Group"){
 
 		public void actionPerformed(ActionEvent e) {
-			//the index is one before the selectedcolumn integer
-			if (translateTable.getSelectedRow() >= 0){
-				swingSession.getTranslations().remove(translateTable.getSelectedRow());
+			MatchMakerTranslateGroup tg = (MatchMakerTranslateGroup) translationGroup.getSelectedItem();
+            //the index is one before the selectedcolumn integer
+			if (tg != null){
+                swingSession.getTranslations().removeChild(tg);
 			}
 		}
 		
 	};
 	
-	Action copyGroupAction = new AbstractAction("Copy Group"){
+	Action saveGroupAction = new AbstractAction("Save Group"){
 
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-            JOptionPane.showMessageDialog(translatePanel, "Not implemented yet.");
+			MatchMakerTranslateGroup group = (MatchMakerTranslateGroup) translationGroup.getSelectedItem();
+            if (group != null){
+                group.syncChildrenSeqNo();
+                swingSession.getDAO(MatchMakerTranslateGroup.class).save(group);
+            }
 		}
 		
 	};
-	
-	Action addCommonWordsAction = new AbstractAction("Add Common Words"){
+    
+    Action createWordsAction = new AbstractAction("Create Translation"){
 
-		public void actionPerformed(ActionEvent e) {
-		    //TODO: should probably have a better implementation than this
-		    JOptionPane.showMessageDialog(translatePanel, "Not implemented yet.");
-		}
-		
-	};
-	
-	Action helpAction = new AbstractAction("Help"){
-		public void actionPerformed(ActionEvent e){
-            //TODO
-            JOptionPane.showMessageDialog(translatePanel, "Not implemented yet.");
-		}
-	};
-	
+        public void actionPerformed(ActionEvent e) {
+            matchMakerTranslateGroup.getChildren().add(new MatchMakerTranslateWord());
+            translateTable.clearSelection();
+            translateTable.setRowSelectionInterval(matchMakerTranslateGroup.getChildCount()-1, matchMakerTranslateGroup.getChildCount()-1);
+            translateTable.editCellAt(matchMakerTranslateGroup.getChildCount()-1, 0);
+            translateTable.grabFocus();
+            translateTable.scrollRectToVisible(translateTable.getCellRect(matchMakerTranslateGroup.getChildCount()-1, 0, true).getBounds());
+        }       
+    };
+    
+    Action deleteWordsAction = new AbstractAction("Delete Selected Translations"){
+        
+        public void actionPerformed(ActionEvent e) {
+            ArrayList<Integer> selectedIndeces = new ArrayList<Integer>();
+            for (int selectedRowIndex:translateTable.getSelectedRows()){
+                selectedIndeces.add(new Integer(selectedRowIndex));
+            }
+            Collections.sort(selectedIndeces);
+            for (int i=selectedIndeces.size()-1;i >= 0; i--){
+                matchMakerTranslateGroup.removeChild(matchMakerTranslateGroup.getChildren().get((int)selectedIndeces.get(i)));
+            }
+        }
+        
+    };
+    
 	Action moveItemUpAction = new AbstractAction("^"){
 		public void actionPerformed(ActionEvent e){
 			final int index = getTranslateTable().getSelectedRow();
