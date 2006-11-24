@@ -77,6 +77,8 @@ public class TranslatePanel implements ArchitectPanel {
 		} else {
             tms = new TableModelSearchDecorator(new MatchTranslateTableModel(new MatchMakerTranslateGroup()));
             translateTable.setEnabled(false);
+            createWord.setEnabled(false);
+            deleteWord.setEnabled(false);
         }
 		tms.setTableTextConverter((EditableJTable) translateTable);
         
@@ -87,9 +89,13 @@ public class TranslatePanel implements ArchitectPanel {
                     tms.setTableModel(new MatchTranslateTableModel(
                             matchMakerTranslateGroup));
                     translateTable.setEnabled(true);
+                    createWord.setEnabled(true);
+                    deleteWord.setEnabled(true);
                 } else {
                     tms.setTableModel(new MatchTranslateTableModel(new MatchMakerTranslateGroup()));
                     translateTable.setEnabled(false);
+                    createWord.setEnabled(false);
+                    deleteWord.setEnabled(false);
                 }
                 
                 tms.fireTableStructureChanged();
