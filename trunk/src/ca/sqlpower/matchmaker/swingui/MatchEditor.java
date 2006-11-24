@@ -590,8 +590,10 @@ public class MatchEditor {
     		newMatchGroupAction.setEnabled(false);
     		runMatchAction.setEnabled(false);
     	} else if ( worst.getStatus() == Status.WARN ) {
-    		newMatchGroupAction.setEnabled(false);
     		runMatchAction.setEnabled(false);
+    	} 
+    	if (sourceChooser.getTableComboBox().getSelectedItem() == null){
+    		newMatchGroupAction.setEnabled(false);
     	}
     }
 
