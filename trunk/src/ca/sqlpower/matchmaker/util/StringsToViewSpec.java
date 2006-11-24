@@ -10,14 +10,11 @@ import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
 /**
- * A SQL Query
- * 
- * note this is a really dumb bean.
- *
+ * A Hibernate UserType which can save and load a ViewSpec object.
+ * <p>
+ * FIXME: this user type is not complete because it ignores the catalog, schema, and viewName properties.
  */
 public class StringsToViewSpec implements UserType {
-
-
 	
 	public Object assemble(Serializable cached, Object owner) throws HibernateException {
 		return deepCopy(cached);
@@ -100,6 +97,4 @@ public class StringsToViewSpec implements UserType {
 		int [] type = {Types.VARCHAR,Types.VARCHAR,Types.VARCHAR};
 		return type;
 	}
-	
-	
 }
