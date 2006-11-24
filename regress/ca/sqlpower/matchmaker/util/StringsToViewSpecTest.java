@@ -11,16 +11,36 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.MockJDBCDriver;
 import ca.sqlpower.architect.MockJDBCResultSet;
 import ca.sqlpower.architect.jdbc.MockJDBCPreparedStatement;
-import ca.sqlpower.matchmaker.Match;
 
 public class StringsToViewSpecTest extends TestCase {
 
-	ViewSpec[] testQuery;
+    /**
+     * The object under test.
+     */
+    private StringsToViewSpec userType;
+    
+    /**
+     * An array of example objects that the tests will attempt to
+     * convert to strings.
+     */
+    private ViewSpec[] testViewSpecs;
 
-	StringsToViewSpec userType;
+    /**
+     * A fake result set that simulates what Hibernate would pass to
+     * the userType in real life.  It is not pre-populated with rows
+     * of data by setUp, but the column names are set up.
+     */
 	private MockJDBCResultSet rs;
+    
+    /**
+     * The column names of rs which hibernate would give to the user type.
+     */
 	private String[] names;
-	String[][] data;
+    
+    /**
+     * The data that tests can feed into the result set rs.
+     */
+    private String[][] data;
 	
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -37,8 +57,8 @@ public class StringsToViewSpecTest extends TestCase {
 		ArchitectConnectionFactory factory = new ArchitectConnectionFactory(ds);
 		
 		Connection con = factory.createConnection();
-		Statement statements = con.createStatement();
-		rs = (MockJDBCResultSet) statements.getResultSet();
+		Statement stmt = con.createStatement();
+		rs = (MockJDBCResultSet) stmt.getResultSet();
 		rs.setColumnCount(3);
 		names = new String[3];
 		rs.setColumnName(1,"select");
@@ -47,48 +67,49 @@ public class StringsToViewSpecTest extends TestCase {
 		names[1]="from";
 		rs.setColumnName(3,"where");
 		names[2]="where";
-		data = new String[Match.MatchType.values().length+1][3];
-		testQuery = new ViewSpec[3];
-		testQuery[0] = new ViewSpec("Select *","from","where");
-		testQuery[1] = new ViewSpec("Select 1","from 1","where 1");
-		testQuery[2] = new ViewSpec("Select 2","from 2","where 2");
+		testViewSpecs = new ViewSpec[3];
+		testViewSpecs[0] = new ViewSpec("Select *","from","where");
+		testViewSpecs[1] = new ViewSpec("Select 1","from 1","where 1");
+		testViewSpecs[2] = new ViewSpec("Select 2","from 2","where 2");
 		
-		for (int i=0; i< testQuery.length; i++) {
-			data[i][0] = testQuery[i].getSelect();
-			data[i][1] = testQuery[i].getFrom();
-			data[i][2] = testQuery[i].getWhere();     
+		data = new String[testViewSpecs.length+1][3];
+		for (int i=0; i< testViewSpecs.length; i++) {
+			data[i][0] = testViewSpecs[i].getSelect();
+			data[i][1] = testViewSpecs[i].getFrom();
+			data[i][2] = testViewSpecs[i].getWhere();     
 		}
+        // note, the data array has one extra entry which is left null (for testing null safety of nullSafeGet)
 	}
 
 	public void testDeepCopy() throws ArchitectException{
-		for (ViewSpec query: testQuery) {
+		for (ViewSpec query: testViewSpecs) {
 			ViewSpec testCopy = (ViewSpec) userType.deepCopy(query);
 			assertEquals("Invalid query",query,testCopy);
 				
 		}
 	}
 	
-	public void testNullGet() throws SQLException, ArchitectException{
-		for	(int i = 0;i < data.length; i++){	
-			Object[] row = data[i];
-			rs.addRow(row);
-			rs.next();
-			ViewSpec get = (ViewSpec)userType.nullSafeGet(rs, names, null);
-			if (i < testQuery.length) {
-				assertEquals("The query is not correct", testQuery[i], get);
-			} else {
-				assertEquals("The result is not correct",null, get);
-			}
-				
-		}
+	public void testNullGet() throws SQLException, ArchitectException {
+        rs.addRow(new Object[] {null, null, null});
+        rs.next();
+        ViewSpec spec = (ViewSpec) userType.nullSafeGet(rs, names, null);
+	    assertNull("Spec should have been null because all data was null", spec);
 	}
 	
+    public void testNonNullGet() throws SQLException, ArchitectException {
+        rs.addRow(new Object[] {"select clause", "from clause", "where clause"});
+        rs.next();
+        ViewSpec spec = (ViewSpec) userType.nullSafeGet(rs, names, null);
+        assertEquals("select clause", spec.getSelect());
+        assertEquals("from clause", spec.getFrom());
+        assertEquals("where clause", spec.getWhere());
+    }
 	
 	public void testNullSafeSetAtFirstIndex() throws SQLException{
 		MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
 		for	(int i = 0;i < data.length; i++){	
-			if (i < testQuery.length) {
-				userType.nullSafeSet(statements, testQuery[i], 1);
+			if (i < testViewSpecs.length) {
+				userType.nullSafeSet(statements, testViewSpecs[i], 1);
 			} else {
 				userType.nullSafeSet(statements, null, 1);
 			}
@@ -102,8 +123,8 @@ public class StringsToViewSpecTest extends TestCase {
 	public void testNullSafeSetAtIndexOtherThanFirst() throws SQLException{
 	MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
 		for	(int i = 0;i < data.length; i++){	
-			if (i < testQuery.length) {
-				userType.nullSafeSet(statements, testQuery[i], 6);
+			if (i < testViewSpecs.length) {
+				userType.nullSafeSet(statements, testViewSpecs[i], 6);
 			} else {
 				userType.nullSafeSet(statements, null, 6);
 			}

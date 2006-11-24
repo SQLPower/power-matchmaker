@@ -1,14 +1,19 @@
 package ca.sqlpower.matchmaker.util;
+
 /**
- * Specification for a view
- *
- * FIXME write me
+ * The ViewSpec class specifies a SQL view object as a fully-qualified view name
+ * with a set of three strings that can be concatenated together to form a
+ * SELECT statement. It also provides methods for creating, replacing, and
+ * dropping the view.
  */
 public class ViewSpec extends SQLQuery {
+    
 	/** the view's name */
 	private String name;
+    
 	/** The jdbc catalog containing the view */
 	private String catalog;
+    
 	/** the jdbc schema containing the view */
 	private String schema;
 	
@@ -21,19 +26,19 @@ public class ViewSpec extends SQLQuery {
 	}
 
 	private void create(){
-		
+		throw new UnsupportedOperationException("Not yet implemented");
 	}
 	
 	private void drop(){
-		
+        throw new UnsupportedOperationException("Not yet implemented");
 	}
 	
 	private void replace(){
-		
+        throw new UnsupportedOperationException("Not yet implemented");
 	}
 	
 	private void verifyQuery(){
-		
+        throw new UnsupportedOperationException("Not yet implemented");
 	}
 
 	public String getCatalog() {

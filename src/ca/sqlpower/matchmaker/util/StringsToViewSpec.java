@@ -64,9 +64,15 @@ public class StringsToViewSpec implements UserType {
                     "(names.length="+names.length+"; number of properties="
                     +sqlTypes().length+")");
         }
-		return new ViewSpec(rs.getString(names[0]),
-							rs.getString(names[1]),
-							rs.getString(names[2]));
+        if (rs.getString(names[0]) == null &&
+                rs.getString(names[1]) == null &&
+                rs.getString(names[2]) == null) {
+            return null;
+        } else {
+            return new ViewSpec(rs.getString(names[0]),
+                                rs.getString(names[1]),
+                                rs.getString(names[2]));
+        }
 	}
 
 	public void nullSafeSet(PreparedStatement st, Object value, int index) throws HibernateException, SQLException {
