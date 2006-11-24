@@ -16,13 +16,14 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteri
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);
+        propertiesToIgnoreForEventGeneration.add("columnName");
 	}
 
 	@Override
 	protected MatchMakerCriteria getTarget() {
 		return target;
 	}
-
+    
 	private void checkNull() {
 		assertNull("The default last_update_user in match object should be null",
 				target.getLastUpdateAppUser());
@@ -33,6 +34,15 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteri
 				appUserName +"], because user1 has changed this match object",
 				appUserName, target.getLastUpdateAppUser());
 	}
+
+    /**
+     * Tests that getColumnName() and setColumnName() work together
+     * in the absence of calls to getColumn() and setColumn().
+     */
+    public void testGetAndSetColumnName() throws Exception {
+        target.setColumnName("testcow");
+        assertEquals("testcow", target.getColumnName());
+    }
 
 	public void testSetAllowNullInd() {
 		checkNull();
