@@ -20,6 +20,7 @@ import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MMTreeNode;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
@@ -49,7 +50,10 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
             TreePath tp = t.getPathForRow(row);
             if (tp != null) {
                 Object o = tp.getLastPathComponent();
-                if (o instanceof Match) {
+                if (o instanceof PlFolder ) {
+                	FolderEditor editor = new FolderEditor(swingSession,(PlFolder)o);
+                	swingSession.setCurrentEditorComponent(editor.getPanel());
+                } else if (o instanceof Match) {
 
                     MatchEditor me;
                     try {
@@ -105,7 +109,16 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
             m.add(new JMenuItem(new Refresh(swingSession)));
             if (tp != null) {
                 Object o = tp.getLastPathComponent();
-                if (o instanceof PlFolder) {
+                if (o instanceof MMTreeNode ) {
+                	MatchMakerTreeModel model = (MatchMakerTreeModel)t.getModel();
+                	int index = model.getIndexOfChild(model.getRoot(), o);
+                	/**
+                	 * I want to create folder under current only
+                	 */
+                	if ( index == 0 ) {
+                		createNewFolderMenuItem();
+                	}
+                } else if (o instanceof PlFolder) {
                     createFolderMenu((PlFolder) o);
                 } else if (o instanceof Match) {
                     createMatchMenu((Match) o);
@@ -121,6 +134,16 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
         m.add(new JMenuItem("need code"));
     }
 
+    private void createNewFolderMenuItem() {
+    	m.add(new JMenuItem(new AbstractAction("New Folder") {
+            public void actionPerformed(ActionEvent e) {
+            	PlFolder<Match> folder = new PlFolder<Match>();
+            	FolderEditor editor = new FolderEditor(swingSession,folder);
+            	swingSession.setCurrentEditorComponent(editor.getPanel());
+            }
+        }));
+    }
+    
     private void createMatchMenu(final Match match) {
 
         m.add(new JMenuItem(new AbstractAction("Run Match") {
