@@ -191,4 +191,8 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 		return new TreePath(path.toArray());
 	}
+	
+	public void addFolderToCurrent(PlFolder folder){
+		current.addChild(folder);
+	}
 }
