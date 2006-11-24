@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -99,7 +100,16 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         this.context = context;
 		database = new SQLDatabase(ds);
 		dbUser = ds.getUser();
-		sm = new PLSecurityManager(database.getConnection(),
+        
+		final Connection con = database.getConnection();
+		final DatabaseMetaData dbmd = con.getMetaData();
+        logger.info("Connected to repository database.");
+        logger.info("Database product name: "+dbmd.getDatabaseProductName());
+        logger.info("Database product version: "+dbmd.getDatabaseProductVersion());
+        logger.info("Database driver name: "+dbmd.getDriverName());
+        logger.info("Database driver version: "+dbmd.getDriverVersion());
+        
+        sm = new PLSecurityManager(con,
 				 					dbUser.toUpperCase(),
 				 					ds.getPass(),
                                     false);  // since this is a database login, we don't require correct app-level password
