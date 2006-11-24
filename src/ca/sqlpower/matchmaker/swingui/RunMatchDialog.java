@@ -197,7 +197,7 @@ public class RunMatchDialog extends JDialog {
 		pb.add(new JLabel("Log File:"), cc.xy(2, 4, "r,f"));
 		pb.add(logFilePath, cc.xy(4, 4, "f,f"));
 		pb.add(browse, cc.xy(5, 4, "r,f"));
-		pb.add(new JLabel("Append?"), cc.xy(7, 4, "r,f"));
+		pb.add(new JLabel("Append to old Log File?"), cc.xy(7, 4, "r,f"));
 		pb.add(append, cc.xy(9, 4, "r,f"));
 		pb.add(new JLabel("Debug Mode?"), cc.xy(7, 6, "r,c"));
 		pb.add(debugMode, cc.xy(9, 6, "r,c"));
