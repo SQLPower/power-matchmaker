@@ -18,9 +18,17 @@ public class MatchMakerCriteria
     /**
      * The column that all criteria in this instance applies to.  There can only
      * be one instance of MatchMakerCriteria per column in a MatchMakerCriteriaGroup.
+     * <p>
+     * This cached version of the column is populated on demand in getColumn().
      */
-    private SQLColumn column;
+    private SQLColumn cachedColumn;
 
+    /**
+     * The column name of the column in the match's source table that these
+     * criteria refer to.
+     */
+    private String columnName;
+    
     /**
      * True if the search should be case insensitive False if the search should
      * be case sensitive
@@ -78,29 +86,57 @@ public class MatchMakerCriteria
     public MatchMakerCriteriaGroup getParent() {
         return (MatchMakerCriteriaGroup) super.getParent();
     }
+    
+    public boolean isAllowNullInd() {
+        return allowNullInd;
+    }
+
+    public boolean isCaseSensitiveInd() {
+        return caseSensitiveInd;
+    }
+
     /**
      * Returns the name of the column this set of criteria applies to.
      * You should use {@link #getColumn()} under normal circumstances.
      */
-    public String getColumnName() {
-        if (getColumn() == null) return null;
-        return getColumn().getName();
+    public String getColumnName() throws ArchitectException {
+        if (cachedColumn == null) return columnName;
+        else return cachedColumn.getName();
+    }
+
+    /**
+     * Sets the column name, and nulls out the cached SQLColumn.  The next
+     * call to getColumn() will result in an attempt to resolve the SQLColumn
+     * that this columnName string refers to.
+     * <p>
+     * Note, this property is not bound.  However, it is coordinated with the
+     * bound property <tt>column</tt>, so setting the column name like this
+     * may eventually result in a property change event for the "column" property.
+     * 
+     * @param columnName the name of the match's source table column these match
+     * criteria are associated with.
+     */
+    public void setColumnName(String columnName) {
+        cachedColumn = null;
+        this.columnName = columnName;
     }
 
     /**
      * Attempts to resolve the given column name to a column of the owning
-     * Match object's source table.  This is provided for the benefit of the
+     * Match object's source table.  This functionality is provided for the benefit of the
      * ORM layer, which has difficulty using the business model.
      * 
-     * @param columnName
      * @throws ArchitectException if there is an error populating the SQLTable
      * @throws NullPointerException if any of the business objects required for
      * resolving the column object are missing
      */
-    public void setColumnName(String columnName) throws ArchitectException {
+    public SQLColumn getColumn() throws ArchitectException {
+        if (cachedColumn != null) return cachedColumn;
+        if (columnName == null) return null;
+        
         MatchMakerCriteriaGroup group = getParent();
         if (group == null) throw new NullPointerException("Not attached to a parent");
-        Match match = (Match) group.getParent();
+        Match match = (Match) group.getParentMatch();
         if (group == null) throw new NullPointerException("Not attached to a grandparent");
         SourceTable st = match.getSourceTable();
         if (st == null) throw new NullPointerException("The owning match has no source table specified");
@@ -110,22 +146,18 @@ public class MatchMakerCriteria
         
         // did we actually make it here?
         setColumn(newColumn);
-    }
-    
-    public boolean isAllowNullInd() {
-        return allowNullInd;
+        return newColumn;
     }
 
-
-    public boolean isCaseSensitiveInd() {
-        return caseSensitiveInd;
+    /**
+     * Sets the cached column as well as the simple columnName string.
+     */
+    public void setColumn(SQLColumn column) {
+        SQLColumn oldVal = this.cachedColumn;
+        this.cachedColumn = column;
+        this.columnName = (column == null ? null : column.getName());
+        getEventSupport().firePropertyChange("column", oldVal, column);
     }
-
-
-    public SQLColumn getColumn() {
-        return column;
-    }
-
 
     public boolean isCountWordsInd() {
         return countWordsInd;
@@ -225,13 +257,6 @@ public class MatchMakerCriteria
         boolean oldVal = this.allowNullInd;
         this.allowNullInd = allowNullInd;
         getEventSupport().firePropertyChange("allowNullInd", oldVal, allowNullInd);
-    }
-
-
-    public void setColumn(SQLColumn column) {
-        SQLColumn oldVal = this.column;
-        this.column = column;
-        getEventSupport().firePropertyChange("column", oldVal, column);
     }
 
 
@@ -389,7 +414,7 @@ public class MatchMakerCriteria
     public int hashCode() {
         final int PRIME = 31;
         int result = 0;
-        result = PRIME * result + ((column == null) ? 0 : column.hashCode());
+        result = PRIME * result + ((cachedColumn == null) ? 0 : cachedColumn.hashCode());
         result = PRIME * result + ((getParent() == null) ? 0 : getParent().hashCode());
 
         return result;
@@ -405,10 +430,10 @@ public class MatchMakerCriteria
         if (getClass() != obj.getClass())
             return false;
         final MatchMakerCriteria other = (MatchMakerCriteria) obj;
-        if (column == null) {
-            if (other.column != null)
+        if (cachedColumn == null) {
+            if (other.cachedColumn != null)
                 return false;
-        } else if (!column.equals(other.column))
+        } else if (!cachedColumn.equals(other.cachedColumn))
             return false;
         if (getParent() == null) {
             if (other.getParent() != null)

@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
@@ -233,9 +234,13 @@ public class MatchMakerCriteriaGroupEditor {
 
 				public void mmPropertyChanged(MatchMakerEvent evt) {
 					MatchMakerCriteria criteria = (MatchMakerCriteria) evt.getSource();
-					if ( criteria.getColumn() != null ) {
-						criteria.setName(criteria.getColumn().getName());
-					}
+                    try {
+                        if ( criteria.getColumn() != null ) {
+                            criteria.setName(criteria.getColumn().getName());
+                        }
+                    } catch (ArchitectException ex) {
+                        ASUtils.showExceptionDialog("Couldn't determine criteria for column", ex);
+                    }
 				}
 
 				public void mmStructureChanged(MatchMakerEvent evt) {
@@ -443,19 +448,22 @@ public class MatchMakerCriteriaGroupEditor {
 
 			List<String> columnNames = new ArrayList<String>();
 			for ( int i=0; i<model.getRowCount(); i++ ) {
-				MatchMakerCriteria c = model.getRow(i);			
-				if ( c.getColumn() == null || 
-						c.getColumn().getName() == null || 
-						c.getColumn().getName().length() == 0 ) {
-					
-					return ValidateResult.createValidateResult(Status.FAIL,
-							"column name can not be null"); 
-				}				
-				if (columnNames.contains(c.getColumn().getName())) {
-					return ValidateResult.createValidateResult(Status.FAIL,
-							"column name can not be duplicated");
-				}
-				columnNames.add(c.getColumn().getName());
+                try {
+                    MatchMakerCriteria c = model.getRow(i);
+                    if ( c.getColumn() == null || 
+                            c.getColumn().getName() == null || 
+                            c.getColumn().getName().length() == 0 ) {
+                        return ValidateResult.createValidateResult(Status.FAIL,
+                        "column name can not be null"); 
+                    }
+                    if (columnNames.contains(c.getColumn().getName())) {
+                        return ValidateResult.createValidateResult(Status.FAIL,
+                        "column name can not be duplicated");
+                    }
+                    columnNames.add(c.getColumn().getName());
+                } catch (ArchitectException ex) {
+                    ASUtils.showExceptionDialog("Couldn't determine criteria for column", ex);
+                }
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
