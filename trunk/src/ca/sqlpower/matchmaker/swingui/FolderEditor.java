@@ -154,7 +154,6 @@ public class FolderEditor {
 	        logger.debug("Saving folder:" + folder.getName());
 
 	        if ( !swingSession.getFolders().contains(folder) ) {
-	        	
 	        	MMTreeNode parent = (MMTreeNode) ((MatchMakerTreeModel)swingSession.getTree().getModel()).getRoot();
 	        	MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();	        	
 	        	if (treeModel.getIndexOfChild(parent, folder) == -1){
