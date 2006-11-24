@@ -530,4 +530,23 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
+    
+    /**
+     * Returns true if the current resultTable of this match exists
+     * in the session's database; false otherwise.
+     * @throws ArchitectException If there are problems accessing the session's database
+     */
+	public boolean resultTableExists() throws ArchitectException {
+		SQLDatabase currentDB = getSession().getDatabase();
+		SQLDatabase tempDB = null;
+		try {
+			tempDB = new SQLDatabase(currentDB.getDataSource());
+			return tempDB.getTableByName(
+					getResultTableCatalog(),
+					getResultTableSchema(),
+					getResultTableName()) != null;
+		} finally {
+			if (tempDB != null) tempDB.disconnect();
+		}
+	}
 }
