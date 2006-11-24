@@ -28,14 +28,14 @@
 			<one-to-many
 				class="ca.sqlpower.matchmaker.MatchMakerTranslateWord" />
 		</bag>
-		<!-- set name="plMatchCriterias" inverse="true">
+		<!--bag name="plMatchCriterias" inverse="true">
 			<key>
 				<column name="TRANSLATE_GROUP_OID" precision="22"
 					scale="0" />
 			</key>
 			<one-to-many
 				class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterion" />
-		</set-->
+		</bag-->
 
 	</class>
 </hibernate-mapping>

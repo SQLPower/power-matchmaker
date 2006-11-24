@@ -31,7 +31,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
      */
     @Override
     public void removeChild(MatchMakerTranslateGroup child) {
-        if(!isUsedInBusinessModel(child)) {
+        if(!isInUseInBusinessModel(child)) {
             this.session.getDAO(MatchMakerTranslateGroup.class).delete(child);
             super.removeChild(child);
         } else {
@@ -44,7 +44,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
      * @param tg the translate group.
      * @return true if tg exists in the folder hierachy false if it dosn't.
      */
-    public boolean isUsedInBusinessModel(MatchMakerTranslateGroup tg) {
+    public boolean isInUseInBusinessModel(MatchMakerTranslateGroup tg) {
         for (MatchMakerObject mmo :this.session.getFolders()){
             // found the translate group
             if(checkMMOContainsTranslateGroup(mmo,tg) == true) return true;
