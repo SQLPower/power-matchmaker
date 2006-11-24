@@ -93,6 +93,26 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
                 (MatchMakerCriteria)group.getChildren().get(rowIndex));
 	}
 	
+	/**
+	 * Gives the row index of where the translate_group_name in the table  
+	 * @param translate_group_name
+	 * @return
+	 */
+	public int getIndexOfClass(MatchCriteriaColumn translate_group_name){
+		//Things have not been setup yet
+		if (group.getChildren()==null || group.getChildren().size() ==0){
+			return -1;
+		}
+		for (int i=0; i < getRowCount(); i++){			
+			MatchMakerCriteria criterion = 
+				(MatchMakerCriteria) group.getChildren().get(i);
+			if (criterion.equals(translate_group_name)){
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		MatchCriteriaColumn column = MatchCriteriaColumn.values()[columnIndex];

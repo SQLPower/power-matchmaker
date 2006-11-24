@@ -7,6 +7,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -406,6 +407,26 @@ public class MatchMakerCriteriaGroupEditor {
         
         Validator v4 = new CriteriaTableValidator(matchCriteriaTable);
         handler.addValidateObject(matchCriteriaTable,v4);
+        
+        
+        //These three fields are not really needed as the table cells automatically
+        //reject if the user enters something that is not a number.  These 
+        //validators act as an insurance in case the invalid text does get 
+        //bypassed.  
+           
+        Validator v5 = new NumberValidatorAllowingNull(matchCriteriaTable,
+        		MatchCriteriaColumn.FIRST_N_CHAR);
+        handler.addValidateObject(matchCriteriaTable,v5);
+        
+           
+        Validator v6 = new NumberValidatorAllowingNull(matchCriteriaTable, 
+        		MatchCriteriaColumn.FIRST_N_CHARS_BY_WORD);
+        handler.addValidateObject(matchCriteriaTable,v6);
+                
+        Validator v7 = new NumberValidatorAllowingNull(matchCriteriaTable,
+        		MatchCriteriaColumn.MIN_WORDS_IN_COMMON);
+        handler.addValidateObject(matchCriteriaTable,v7);
+        
     }
 
 
@@ -468,5 +489,51 @@ public class MatchMakerCriteriaGroupEditor {
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
 		
+	}
+	
+	/**
+	 * Unlike the RegEx validator, this validator allows the content
+	 * to be null as well
+	 */
+	private class NumberValidatorAllowingNull implements Validator{
+		
+		private JTable table;
+		private MatchCriteriaColumn translate_group_name;
+		
+		public NumberValidatorAllowingNull(JTable table, 
+				MatchCriteriaColumn translate_group_name){
+			this.table = table;
+			this.translate_group_name = translate_group_name;			
+		}
+		
+		public ValidateResult validate(Object contents) {
+			Pattern pattern = Pattern.compile("\\d+");
+			int colIndex = ((MatchCriteriaTableModel)table.getModel()).
+							getIndexOfClass(translate_group_name);
+			
+			//If it does not exist, the columns have not been setup yet
+			//therefore it is ok
+			if (colIndex == -1){
+				return ValidateResult.createValidateResult(Status.OK, "");
+			}
+			//Iterates through the rows to ensure that each column
+			//in that row are either empty or valid number inputs
+			for (int i = 0; i < table.getRowCount(); i++){
+				if (table.getValueAt(i, colIndex) instanceof Long ||
+						table.getValueAt(i, colIndex) instanceof Integer) continue;
+				
+				String value = (String) table.getValueAt(i, colIndex);
+				if ( value == null || value.trim().length()==0) continue;
+				if (pattern.matcher(value).matches()){
+					continue;
+				} else {
+					String className =table.getModel().getColumnClass(colIndex)
+											.toString();
+					return ValidateResult.createValidateResult(Status.FAIL, 
+							className + "must be in number form");
+				}			
+			}
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
 	}
 }
