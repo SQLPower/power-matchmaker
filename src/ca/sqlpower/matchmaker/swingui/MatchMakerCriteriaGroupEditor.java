@@ -73,7 +73,7 @@ public class MatchMakerCriteriaGroupEditor {
     private JLabel matches;
     private JTextField description;
     private JTextField matchPercent;
-    private JTextField filterCriteria;
+    private FilterComponentsPanel filterPanel;
     private JCheckBox active;
 
     private JButton newMatchCriterion;
@@ -209,7 +209,7 @@ public class MatchMakerCriteriaGroupEditor {
 				group.setMatchPercent((short)pct);
 			}
 			group.setDesc(description.getText());
-			group.setFilter(filterCriteria.getText());
+			group.setFilter(filterPanel.getFilterTextArea().getText());
 			if ( !match.getMatchCriteriaGroups().contains(group)) {
 				match.addMatchCriteriaGroup(group);
 			}
@@ -273,8 +273,8 @@ public class MatchMakerCriteriaGroupEditor {
         matchPercent = new JTextField();
         matchPercent.setColumns(3);
         matchPercent.setName("Percent");
-        filterCriteria = new JTextField();
-        filterCriteria.setName("Filter");
+        filterPanel = new FilterComponentsPanel();
+        filterPanel.getFilterTextArea().setName("Filter");
         active = new JCheckBox();
         active.setSelected(true);
 
@@ -307,7 +307,7 @@ public class MatchMakerCriteriaGroupEditor {
 		pb.add(new JLabel("Description"), cl.xy(2,6),description , cc.xyw(4,6,5));
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("pref");
-		pb.add(new JLabel("Filter Criteria"), cl.xy(2,8),filterCriteria, cc.xyw(4,8,5));
+		pb.add(new JLabel("Filter Criteria"), cl.xy(2,8),filterPanel, cc.xyw(4,8,5));
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("pref");
 		groupEditPanel = pb.getPanel();
@@ -369,7 +369,7 @@ public class MatchMakerCriteriaGroupEditor {
         if ( group.getMatchPercent() != null ) {
         	matchPercent.setText(group.getMatchPercent().toString());
         }
-        filterCriteria.setText(group.getFilter());
+        filterPanel.getFilterTextArea().setText(group.getFilter());
         if ( group.getActive() != null ) {
         	active.setSelected(!group.getActive());
         }
@@ -381,6 +381,8 @@ public class MatchMakerCriteriaGroupEditor {
         	if ( sourceTable != null ) {
         		newCriteria.setEnabled(true);
 
+                filterPanel.setTable(sourceTable);
+                
         		int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
         		matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(
         				new DefaultCellEditor(new JComboBox(
@@ -403,7 +405,7 @@ public class MatchMakerCriteriaGroupEditor {
         
         Validator v3 = new AlwaysOKValidator();
         handler.addValidateObject(description,v3);
-        handler.addValidateObject(filterCriteria,v3);
+        handler.addValidateObject(filterPanel.getFilterTextArea(),v3);
         
         Validator v4 = new CriteriaTableValidator(matchCriteriaTable);
         handler.addValidateObject(matchCriteriaTable,v4);
