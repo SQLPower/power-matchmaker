@@ -28,15 +28,15 @@
 		<property name="matchPercent" type="short">
 			<column name="MATCH_PERCENT" precision="18" scale="0" />
 		</property>
-		<!--property name="lastUpdateDate" type="date">
+		<property name="lastUpdateDate" type="timestamp" access="field">
 			<column name="LAST_update_DATE" length="23" />
 		</property>
-		<property name="lastUpdateOsUser" type="string">
+		<property name="lastUpdateOsUser" type="string" access="field">
 			<column name="LAST_update_OS_USER" length="30" />
 		</property>
-		<property name="lastUpdateUser" type="string">
+		<property name="lastUpdateAppUser" type="string" access="field">
 			<column name="LAST_update_USER" length="30" />
-		</property-->
+		</property>
 		<property name="filter" type="string">
 			<column name="FILTER_CRITERIA" length="2000" />
 		</property>
@@ -44,14 +44,14 @@
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="ACTIVE_IND" length="1" />
 		</property>
-		<!-- set name="plMatchCriteria" access="field" cascade="all"
-			inverse="true" lazy="true" fetch="subselect">
+		<bag name="children" cascade="all-delete-orphan"
+			inverse="true" lazy="false" fetch="subselect">
 			<key>
 				<column name="GROUP_OID" not-null="true" />
 			</key>
 			<one-to-many
-				class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterion" />
-		</set-->
+				class="ca.sqlpower.matchmaker.MatchMakerCriteria" />
+		</bag>
 
 	</class>
 </hibernate-mapping>

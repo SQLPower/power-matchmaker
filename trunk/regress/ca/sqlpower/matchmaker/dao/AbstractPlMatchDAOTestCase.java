@@ -6,6 +6,8 @@ import java.sql.Statement;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 
 public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Match,MatchDAO>  {
 
@@ -67,12 +69,25 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
             stmt.executeUpdate(
                     "INSERT INTO pl_match_group (group_oid, match_oid, group_id) " +
                     "VALUES ("+time+", "+time+", 'group_"+time+"')");
+            stmt.executeUpdate(
+                    "INSERT INTO pl_match_criteria (group_oid, match_criteria_oid, column_name, last_update_user) " +
+                    "VALUES ("+time+", "+time+", 'fake_column_"+time+"', 'test_"+time+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it
         }
         
         Match match = getDataAccessObject().findByName(matchName);
-        match.getMatchCriteriaGroups(); // this could fail if the DAO doesn't cascade the retrieval properly
+        
+        // this could fail if the DAO doesn't cascade the retrieval properly
+        List<MatchMakerCriteriaGroup> groups = match.getMatchCriteriaGroups();
+        assertEquals("There is only one criteria group", 1, groups.size());
+        MatchMakerCriteriaGroup group = groups.get(0);
+        assertEquals("Wrong Group name", "group_"+time, group.getName());
+        
+        List<MatchMakerCriteria> crits = group.getChildren();
+        assertEquals("There is only one set of column criteria", 1, crits.size());
+        MatchMakerCriteria crit = crits.get(0);
+        assertEquals("Wrong criteria last update user", "test_"+time, crit.getLastUpdateAppUser());
     }
 }
