@@ -2,6 +2,8 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.util.List;
 
+import javax.swing.Action;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -20,17 +22,20 @@ public class MMODuplicateValidator implements Validator {
     private static final Logger logger = Logger.getLogger(MMODuplicateValidator.class);
     
     private MatchMakerObject parent;
+    private List<Action> actionsToDisable;
     
-    public MMODuplicateValidator(MatchMakerObject parent){
+    public MMODuplicateValidator(MatchMakerObject parent, List<Action> actionsToDisable){
         this.parent = parent;
+        this.actionsToDisable = actionsToDisable;
     }
     
     
     public ValidateResult validate(Object contents) {
         String value = (String)contents;
         if (value==null || value.trim().length() ==0){
-            return ValidateResult.createValidateResult(Status.WARN, 
-                    "The group name should not be empty");
+            setComponentsEnabled(false);
+            return ValidateResult.createValidateResult(Status.OK, 
+                    "");
         }
         
         if (!parent.allowsChildren()){
@@ -39,12 +44,22 @@ public class MMODuplicateValidator implements Validator {
         }        
         for (MatchMakerObject mmo : (List<MatchMakerObject>)parent.getChildren()){
             if (mmo.getName().equals(value)){
+                setComponentsEnabled(false);
                 return ValidateResult.createValidateResult(Status.FAIL, 
                         "Cannot have duplicate object name");
             }
         }
+        setComponentsEnabled(true);
         return ValidateResult.createValidateResult(Status.OK, "");
         
+    }
+    
+    private void setComponentsEnabled(boolean enable){
+        if (actionsToDisable != null){
+            for (Action c : actionsToDisable){
+                c.setEnabled(enable);
+            }
+        }
     }
 
 }

@@ -1,10 +1,10 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
+import javax.swing.Action;
 import javax.swing.JTable;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -21,22 +21,33 @@ import ca.sqlpower.validation.Validator;
 public class TranslateWordValidator implements Validator {
 
     private JTable table;
+    private List<Action> actions;
     
-    public TranslateWordValidator(JTable table){
+    public TranslateWordValidator(JTable table,List<Action> actions){
         this.table = table;
+        this.actions = actions;
     }
     public ValidateResult validate(Object contents) {
         MatchTranslateTableModel model = (MatchTranslateTableModel)table.getModel();
-        List<MatchMakerObject> childrenList = new ArrayList<MatchMakerObject>();
-        for (int i =0; i < table.getRowCount(); i++){
-            childrenList.add(model.getMatchMakerObject(i));
+        Set<MatchMakerObject> childrenSet = new HashSet<MatchMakerObject>();
+        for (int i =0; i < model.getRowCount(); i++){
+            childrenSet.add(model.getMatchMakerObject(i));
         }
-        Set<MatchMakerObject> childrenSet = new TreeSet<MatchMakerObject>(childrenList);
-        if (childrenSet.size() < childrenList.size()){
+        if (childrenSet.size() != model.getRowCount()){
+            setComponentsEnabled(false);
             return ValidateResult.createValidateResult(Status.FAIL, 
                     "No Duplicate Translations Allowed");
         } 
+        setComponentsEnabled(true);
         return ValidateResult.createValidateResult(Status.OK, "");
+    }
+    
+    private void setComponentsEnabled(boolean enable){
+        if (actions != null){
+            for (Action c : actions){
+                c.setEnabled(enable);
+            }
+        }
     }
 
 }

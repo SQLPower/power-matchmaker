@@ -20,12 +20,12 @@
 		</property>
 
 		<many-to-one name="parent"
-			class="ca.sqlpower.matchmaker.MatchMakerCriteriaGroup" lazy="proxy">
+			class="ca.sqlpower.matchmaker.MatchMakerCriteriaGroup" lazy="false">
 			<column name="GROUP_OID" not-null="true" />
 		</many-to-one>
 		<many-to-one name="translateGroup"
 			class="ca.sqlpower.matchmaker.MatchMakerTranslateGroup"
-			fetch="select">
+			fetch="join">
 			<column name="TRANSLATE_GROUP_OID" precision="22" scale="0" />
 		</many-to-one>
 		<property name="caseSensitiveInd"

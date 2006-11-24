@@ -11,7 +11,7 @@ public class MatchMakerTranslateGroup
 	public int hashCode() {
 		final int PRIME = 31;
 		int result = 1;
-		result = PRIME * result + ((oid == null) ? 0 : oid.hashCode());
+		result = PRIME * result + ((getName() == null) ? 0 : getName().hashCode());
 		return result;
 	}
 
@@ -19,15 +19,13 @@ public class MatchMakerTranslateGroup
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		if(!(obj instanceof MatchMakerTranslateGroup)) 
+            return false;
 		final MatchMakerTranslateGroup other = (MatchMakerTranslateGroup) obj;
-		if (oid == null) {
-			if (other.oid != null)
+		if (getName() == null) {
+			if (other.getName() != null)
 				return false;
-		} else if (!oid.equals(other.oid))
+		} else if (!getName().equals(other.getName()))
 			return false;
 		return true;
 	}

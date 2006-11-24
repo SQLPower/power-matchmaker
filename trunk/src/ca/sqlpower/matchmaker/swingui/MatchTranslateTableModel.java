@@ -11,14 +11,18 @@ import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
-public class MatchTranslateTableModel extends AbstractTableModel implements MatchMakerListener<MatchMakerTranslateGroup, MatchMakerTranslateWord> {
-
+public class MatchTranslateTableModel extends AbstractTableModel implements MatchMakerListener {
+    
+    
 	MatchMakerTranslateGroup translate;
 	
 	public  MatchTranslateTableModel(MatchMakerTranslateGroup translate){ 
 		super();
 		this.translate = translate; 
         translate.addMatchMakerListener(this);
+        for (MatchMakerTranslateWord word:translate.getChildren()){
+            word.addMatchMakerListener(this);
+        }
 	}
 
 	public int getColumnCount() {		
@@ -67,7 +71,6 @@ public class MatchTranslateTableModel extends AbstractTableModel implements Matc
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		MatchMakerTranslateWord trans = getRow(rowIndex);
-		try {
 		switch(columnIndex) {
 		case 0:
 			for (MatchMakerTranslateWord t: translate.getChildren()){
@@ -88,14 +91,9 @@ public class MatchTranslateTableModel extends AbstractTableModel implements Matc
 				}
 			}
 			trans.setTo((String) aValue);
-
 			break;
 		default:
 			throw new IndexOutOfBoundsException("Invalid column index");
-		}
-
-		} finally {
-			
 		}
 	}
 	
@@ -103,41 +101,55 @@ public class MatchTranslateTableModel extends AbstractTableModel implements Matc
 		return translate.getChildren().get(rowIndex );
 	}
 
-    public void mmChildrenInserted(MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) {
-        int[] changed = evt.getChangeIndices();
-        ArrayList<Integer> changedIndices = new ArrayList<Integer>();
-        for (int selectedRowIndex:changed){
-            changedIndices.add(new Integer(selectedRowIndex));
-        }
-        Collections.sort(changedIndices);
-        for (int i=1; i < changedIndices.size(); i++){
-            if (changedIndices.get(i-1)!=changedIndices.get(i)-1){
-                fireTableStructureChanged();
-                return;
+    public void mmChildrenInserted(MatchMakerEvent evt) {
+        if(evt.getSource() instanceof MatchMakerTranslateGroup){
+            int[] changed = evt.getChangeIndices();
+            ArrayList<Integer> changedIndices = new ArrayList<Integer>();
+            for (int selectedRowIndex:changed){
+                changedIndices.add(new Integer(selectedRowIndex));
             }
+            Collections.sort(changedIndices);
+            for (int i=1; i < changedIndices.size(); i++){
+                if (changedIndices.get(i-1)!=changedIndices.get(i)-1){
+                    fireTableStructureChanged();
+                    return;
+                }
+            }
+            for (Object word:evt.getChildren()){
+                ((MatchMakerTranslateWord) word).addMatchMakerListener(this);
+            }
+            fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
         }
-        fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
     }
 
-    public void mmChildrenRemoved(MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) {
-        int[] changed = evt.getChangeIndices();
-        ArrayList<Integer> changedIndices = new ArrayList<Integer>();
-        for (int selectedRowIndex:changed){
-            changedIndices.add(new Integer(selectedRowIndex));
-        }
-        Collections.sort(changedIndices);
-        for (int i=1; i < changedIndices.size(); i++){
-            if (changedIndices.get(i-1)!=changedIndices.get(i)-1){
-                fireTableStructureChanged();
-                return;
+    public void mmChildrenRemoved(MatchMakerEvent evt) {
+        if(evt.getSource() instanceof MatchMakerTranslateGroup) {
+            int[] changed = evt.getChangeIndices();
+            ArrayList<Integer> changedIndices = new ArrayList<Integer>();
+            for (int selectedRowIndex:changed){
+                changedIndices.add(new Integer(selectedRowIndex));
             }
+            Collections.sort(changedIndices);
+            for (int i=1; i < changedIndices.size(); i++) {
+                if (changedIndices.get(i-1)!=changedIndices.get(i)-1) {
+                    fireTableStructureChanged();
+                    return;
+                }
+            }
+            for (Object word:evt.getChildren()) {
+                ((MatchMakerTranslateWord) word).removeMatchMakerListener(this);
+            }
+            fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
         }
-        fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
     }
 
-    public void mmPropertyChanged(MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) { }
+    public void mmPropertyChanged(MatchMakerEvent evt) { 
+        if(evt.getSource() instanceof MatchMakerTranslateWord) {
+            fireTableRowsUpdated(translate.getChildren().indexOf(evt.getSource()), translate.getChildren().indexOf(evt.getSource()));
+        }
+    }
 
-    public void mmStructureChanged(MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) {
+    public void mmStructureChanged(MatchMakerEvent evt) {
         fireTableStructureChanged();
     }
 }
