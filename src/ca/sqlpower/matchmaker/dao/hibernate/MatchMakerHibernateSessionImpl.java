@@ -158,6 +158,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
+    private TranslateGroupParent tgp;
+
     /**
      * XXX this is untestable unless you're connected to a database right now.
      *   It should be given a PLSecurityManager implementation rather than creating one.
@@ -346,11 +348,13 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	}
 
     public TranslateGroupParent getTranslations() {
-        MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
-        List<MatchMakerTranslateGroup> groups = matchMakerTranslateGroupDAO.findAll();
-        TranslateGroupParent tgp = new TranslateGroupParent(this);
-        for (MatchMakerTranslateGroup g: groups) {
-            tgp.addChild(g);
+        if (tgp == null) {
+            MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
+            List<MatchMakerTranslateGroup> groups = matchMakerTranslateGroupDAO.findAll();
+            tgp = new TranslateGroupParent(this);
+            for (MatchMakerTranslateGroup g: groups) {
+                tgp.addChild(g);
+            }
         }
         return tgp;
     }

@@ -70,18 +70,28 @@ public class TranslatePanel implements ArchitectPanel {
         
 		if (translationGroup.getModel().getSize() > 0) {
 		    translationGroup.setSelectedIndex(0);
-		}
-        matchMakerTranslateGroup = (MatchMakerTranslateGroup) translationGroup.getSelectedItem();
-		tms = new TableModelSearchDecorator(
-                new MatchTranslateTableModel(matchMakerTranslateGroup));
+		    matchMakerTranslateGroup = (MatchMakerTranslateGroup) translationGroup.getSelectedItem();
+		    tms = new TableModelSearchDecorator(
+		            new MatchTranslateTableModel(matchMakerTranslateGroup));
+		    translateTable.setModel(tms);
+		} else {
+            tms = new TableModelSearchDecorator(new MatchTranslateTableModel(new MatchMakerTranslateGroup()));
+            translateTable.setEnabled(false);
+        }
 		tms.setTableTextConverter((EditableJTable) translateTable);
-		translateTable.setModel(tms);
         
 		translationGroup.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 matchMakerTranslateGroup = (MatchMakerTranslateGroup) translationGroup.getSelectedItem();
-                tms.setTableModel(new MatchTranslateTableModel(
-                        matchMakerTranslateGroup));
+                if (matchMakerTranslateGroup != null){
+                    tms.setTableModel(new MatchTranslateTableModel(
+                            matchMakerTranslateGroup));
+                    translateTable.setEnabled(true);
+                } else {
+                    tms.setTableModel(new MatchTranslateTableModel(new MatchMakerTranslateGroup()));
+                    translateTable.setEnabled(false);
+                }
+                
                 tms.fireTableStructureChanged();
             }
         });
