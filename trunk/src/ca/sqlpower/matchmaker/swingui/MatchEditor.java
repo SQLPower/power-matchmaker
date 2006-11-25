@@ -277,7 +277,7 @@ public class MatchEditor {
 
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   16dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   4dlu,32dlu,  16dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,30dlu,4dlu,pref,   16dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   4dlu,32dlu,  16dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
     	//		 1     2    3    4    5    6    7    8    9    10      11    12   13   14  15   16       17    18     19  20    21   22    23   24    25
 
 		PanelBuilder pb;

@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
@@ -80,7 +81,7 @@ public class FolderEditor {
 		pb.add(new JLabel("Description:"), cc.xy(2,6,"r,c"));
 
 		pb.add(folderName, cc.xy(4,4,"l,c"));
-		pb.add(folderDesc, cc.xy(4,6,"l,c"));
+		pb.add(new JScrollPane(folderDesc), cc.xy(4,6,"l,c"));
 		
 		pb.add(saveButton, cc.xyw(2,8,3,"c,c"));
 		panel = pb.getPanel();
