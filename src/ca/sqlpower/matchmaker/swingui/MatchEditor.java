@@ -10,6 +10,7 @@ import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -29,7 +30,6 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -43,8 +43,8 @@ import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchType;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.swingui.action.CreateResultTableAction;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
-import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -113,6 +113,8 @@ public class MatchEditor {
         this.match = match;
         this.folder = folder;
         handler = new FormValidationHandler(status);
+        createResultTableAction = 
+        	new CreateResultTableAction(swingSession, match);
         buildUI();
         handler.addPropertyChangeListener(new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -236,18 +238,7 @@ public class MatchEditor {
             }
 		}};
 
-	private Action createResultTableAction = new AbstractAction("Create Table") {
-		public void actionPerformed(ActionEvent e) {
-            // TODO
-            JOptionPane.showMessageDialog(swingSession.getFrame(),
-            		"We can't create tables yet, sorry.");
-		}
-	};
-
-
-
-	
-
+	private final Action createResultTableAction;
 
 
     private void buildUI() throws ArchitectException {
@@ -329,7 +320,7 @@ public class MatchEditor {
 
 
 		pb.add(viewBuilder, cc.xy(6,12,"f,f"));
-		pb.add(createResultTable, cc.xywh(6,22,1,3));
+		pb.add(createResultTable, cc.xywh(6,22,1,1));
 
 		ButtonStackBuilder bb = new ButtonStackBuilder();
 		bb.addGridded(saveMatch);
@@ -357,7 +348,7 @@ public class MatchEditor {
     }
 
 
-    private void setDefaultSelections() {
+    private void setDefaultSelections() throws ArchitectException {
 
     	final List<PlFolder> folders = swingSession.getFolders();
     	final SQLDatabase loginDB = swingSession.getDatabase();
@@ -404,27 +395,17 @@ public class MatchEditor {
 
 
         if ( match.getSourceTable() != null ) {
-
-        	SQLTable sourceTable = match.getSourceTable().getTable();
-        	if (sourceTable == null) {
-        	} else {
-        		filterPanel.setTable(sourceTable);
-        		SQLCatalog cat = sourceTable.getCatalog();
-	    		SQLSchema sch = sourceTable.getSchema();
-	    		if ( cat != null ) {
-	    			sourceChooser.getCatalogComboBox().setSelectedItem(cat);
-	    		}
-	    		if ( sch != null ) {
-	    			sourceChooser.getSchemaComboBox().setSelectedItem(sch);
-	    		}
-	    		sourceChooser.getTableComboBox().setSelectedItem(sourceTable);
-    			SQLIndex pk = null;
-				pk = match.getSourceTable().getUniqueIndex();
-    			if ( pk != null ) {
-    				sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
-    			}
-        	}
+        	SQLTable sourceTable = match.getSourceTable();
+        	filterPanel.setTable(sourceTable);
+        	SQLCatalog cat = sourceTable.getCatalog();
+        	SQLSchema sch = sourceTable.getSchema();
+        	sourceChooser.getCatalogComboBox().setSelectedItem(cat);
+        	sourceChooser.getSchemaComboBox().setSelectedItem(sch);
+        	sourceChooser.getTableComboBox().setSelectedItem(sourceTable);
     	}
+        SQLIndex pk = match.getSourceTableIndex();
+        sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
+        
     	SQLTable resultTable = match.getResultTable();
     	if ( resultTable != null ) {
     		SQLCatalog cat = resultTable.getCatalog();
@@ -489,12 +470,11 @@ public class MatchEditor {
         match.setType((Match.MatchType)matchType.getSelectedItem());
         match.getMatchSettings().setDescription(desc.getText());
 
-        match.setSourceTable(new SourceTable(
-        		((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()),
-        		((SQLIndex) sourceChooser.getUniqueKeyComboBox().getSelectedItem())));
+        match.setSourceTable(((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()));
+        match.setSourceTableIndex(((SQLIndex) sourceChooser.getUniqueKeyComboBox().getSelectedItem()));
         
         if ((matchName == null || matchName.length() == 0) &&
-        		match.getSourceTable().getTable() == null ) {
+        		match.getSourceTable() == null ) {
         	JOptionPane.showMessageDialog(getPanel(),
         			"Match Name can not be empty",
         			"Error",
@@ -506,7 +486,7 @@ public class MatchEditor {
         if ( id == null || id.length() == 0 ) {
         	StringBuffer s = new StringBuffer();
         	s.append("MATCH_");
-        	SQLTable table = match.getSourceTable().getTable();
+        	SQLTable table = match.getSourceTable();
 			if ( table != null &&
 					table.getCatalogName() != null &&
         			table.getCatalogName().length() > 0 ) {
@@ -524,28 +504,28 @@ public class MatchEditor {
         	matchId.setText(id);
         }
 
-        SQLDatabase resultTableParentDB = null;
-        if ( resultChooser.getCatalogComboBox().isEnabled() &&
-        		resultChooser.getCatalogComboBox().getSelectedItem() != null ) {
-        	resultTableParentDB = ((SQLCatalog)resultChooser.getCatalogComboBox().
-        			getSelectedItem()).getParentDatabase();
-        } else if ( resultChooser.getSchemaComboBox().isEnabled() &&
+        SQLObject resultTableParent;
+        if ( resultChooser.getSchemaComboBox().isEnabled() &&
         		resultChooser.getSchemaComboBox().getSelectedItem() != null ) {
-        	resultTableParentDB = ArchitectUtils.getAncestor(
-        			(SQLSchema)resultChooser.getSchemaComboBox().getSelectedItem(),
-        			SQLDatabase.class );
+        	resultTableParent = 
+        		(SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem();
+        } else if ( resultChooser.getCatalogComboBox().isEnabled() &&
+        		resultChooser.getCatalogComboBox().getSelectedItem() != null ) {
+        	resultTableParent = 
+        		(SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem();
         } else {
-        	resultTableParentDB = (SQLDatabase)resultChooser.getDb();
+        	resultTableParent = (SQLDatabase) resultChooser.getDb();
         }
 
-        String trimedresultTableName = resultTableName.getText().trim();
-        if ( trimedresultTableName == null || trimedresultTableName.length() == 0 ) {
-        	trimedresultTableName = "MM_"+match.getName();
+        String trimmedResultTableName = resultTableName.getText().trim();
+        if ( trimmedResultTableName == null || trimmedResultTableName.length() == 0 ) {
+        	trimmedResultTableName = "MM_"+match.getName();
+        	resultTableName.setText(trimmedResultTableName);
         }
         
         try {
-        	match.setResultTable(new SQLTable(resultTableParentDB,
-        			trimedresultTableName,
+        	match.setResultTable(new SQLTable(resultTableParent,
+        			trimmedResultTableName,
         			"MatchMaker result table",
         			"TABLE", true));
         } catch ( ArchitectException e ) {
@@ -671,16 +651,19 @@ public class MatchEditor {
 		}
 
 		public ValidateResult validate(Object contents) {
-
+			final Pattern sqlIdentifierPattern =
+				Pattern.compile("[a-z_][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
+			
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.WARN,
 						"Match result table name is required");
+			} else if (!sqlIdentifierPattern.matcher(value).matches()) {
+				return ValidateResult.createValidateResult(Status.WARN,
+						"Result table name is not a valid SQL identifier");
 			} else {
-				// TODO: check the table existence here, if does not exist, set
-				// warning as well.
+				return ValidateResult.createValidateResult(Status.OK, "");
 			}
-			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
 }
