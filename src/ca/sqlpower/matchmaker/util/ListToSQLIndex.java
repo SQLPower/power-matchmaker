@@ -42,10 +42,19 @@ public class ListToSQLIndex implements UserType  {
         try {
             for (Object child : oldIndex.getChildren()) {
                 SQLIndex.Column oldIndexColumn = (SQLIndex.Column) child;
-                SQLIndex.Column c = newIndex.new Column(
-                        oldIndexColumn.getName(),
+                
+                SQLIndex.Column c;
+                if (oldIndexColumn.getColumn() != null) {
+                	c = newIndex.new Column(
+                        oldIndexColumn.getColumn(),
                         oldIndexColumn.isAscending(),
                         oldIndexColumn.isDescending());
+                } else {
+                	c = newIndex.new Column(
+                            oldIndexColumn.getName(),
+                            oldIndexColumn.isAscending(),
+                            oldIndexColumn.isDescending());
+                }
                 newIndex.addChild(c);
             }
         } catch (ArchitectException e) {
@@ -91,10 +100,10 @@ public class ListToSQLIndex implements UserType  {
                 if (names[i] != null) {
                     final String columnName = rs.getString(rs.findColumn(names[i]));
                     if (columnName != null) {
-                        SQLIndex.Column c = index.new Column();
-                        c.setName(columnName);
-                        try {
-                            index.addChild(c);
+                    	try {
+                    		SQLIndex.Column c;
+                    		c = index.new Column(columnName, false, false);
+                    		index.addChild(c);
                         } catch (ArchitectException e) {
                             throw new HibernateException(e);
                         }

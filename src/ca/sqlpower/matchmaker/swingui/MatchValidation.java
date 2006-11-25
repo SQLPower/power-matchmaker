@@ -354,12 +354,12 @@ public class MatchValidation extends JFrame {
         candidateJTable = new JTable();
         sourceJTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         db = swingSession.getDatabase();
-        SQLTable sourceTable = match.getSourceTable().getTable();
+        SQLTable sourceTable = match.getSourceTable();
 
         matchSourceTable = db.getTableByName(sourceTable.getCatalogName(),
 				sourceTable.getSchemaName(),
 				sourceTable.getName());
-        pk = match.getSourceTable().getUniqueIndex();
+        pk = match.getSourceTableIndex();
     }
 
     private void buildUI() {

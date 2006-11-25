@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker;
 
+import java.sql.Types;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -7,10 +8,12 @@ import org.apache.log4j.Logger;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.util.SourceTable;
+import ca.sqlpower.architect.SQLIndex.Column;
+import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
 /**
@@ -81,6 +84,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     private CachableTable resultTablePropertiesDelegate = new CachableTable("resultTable");
     private CachableTable xrefTablePropertiesDelegate = new CachableTable("xrefTable");
     
+    /**
+     * The unique index of the source table that we're using.  Not necessarily one of the
+     * unique indices defined in the database; the user can pick an arbitrary set of columns.
+     */
+    private SQLIndex sourceTableIndex;
+    
 	public Match( ) {
         matchCriteriaGroupFolder.setName("Match Criteria Groups");
         this.addChild(matchCriteriaGroupFolder);        
@@ -102,13 +111,109 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	}
 
 	/**
-	 * FIXME Implement me
-	 *
+	 * Creates the result table for this Match based on the properties
+	 * of the current source table. The result table name will be the
+	 * current setting for resultTableName.
+	 * <p>
+	 * This method only sets up an in-memory SQLTable.  You still have
+	 * to do the physical creation operation in the database yourself.
+	 * 
+	 * @throws IllegalStateException If the current result table catalog,
+	 * schema, and name are not set up properly to correspond with the
+	 * session's database.
+	 * <p>
+	 * <b>or</b>
+	 * <p>
+	 * If the source table property of this match is not set yet.
+	 * @throws ArchitectException If there is trouble working with the 
+	 * source table.
 	 */
-	public void createResultTable() {
-		throw new NotImplementedException();
+	public SQLTable createResultTable() throws ArchitectException {
+		SQLIndex si = getSourceTableIndex();
+		
+		if (si == null) {
+			throw new IllegalStateException(
+					"You have to set up the source table of a match " +
+					"before you can create its result table!");
+		}
+		SQLTable oldResultTable = getResultTable();
+		if (oldResultTable == null) {
+			throw new IllegalStateException(
+					"You have to properly specify the result table " +
+					"catalog, schema, and name before calling " +
+					"createResultTable()");
+		}
+		SQLTable t = new SQLTable(oldResultTable.getParent(), oldResultTable.getName(), oldResultTable.getRemarks(), "TABLE", true);
+
+		logger.debug("createResultTable: si="+si+" si.children.size="+si.getChildCount());
+		
+		addResultTableColumns(t, si, "dup_candidate_1");
+		addResultTableColumns(t, si, "dup_candidate_2");
+		addResultTableColumns(t, si, "current_candidate_1");
+		addResultTableColumns(t, si, "current_candidate_2");
+		addResultTableColumns(t, si, "dup_id");
+		addResultTableColumns(t, si, "master_id");
+		
+		SQLColumn col;
+		for (int i = 0; i < si.getChildCount(); i++) {
+			col = new SQLColumn(t, "candidate_1"+i+"_mapped", Types.VARCHAR, 1, 0);
+			t.addColumn(col);
+		}
+
+		for (int i = 0; i < si.getChildCount(); i++) {
+			col = new SQLColumn(t, "candidate_2"+i+"_mapped", Types.VARCHAR, 1, 0);
+			t.addColumn(col);
+		}
+
+		col = new SQLColumn(t, "match_percent", Types.INTEGER, 10, 0);
+		t.addColumn(col);
+
+		col = new SQLColumn(t, "group_id", Types.VARCHAR, 30, 0);
+		t.addColumn(col);
+
+		col = new SQLColumn(t, "match_date", Types.TIMESTAMP, 0, 0);
+		t.addColumn(col);
+
+		col = new SQLColumn(t, "match_status", Types.VARCHAR, 15, 0);
+		t.addColumn(col);
+
+		col = new SQLColumn(t, "match_status_date", Types.TIMESTAMP, 0, 0);
+		t.addColumn(col);
+
+		col = new SQLColumn(t, "match_status_user", Types.VARCHAR, 35, 0);
+		t.addColumn(col);
+
+		col = new SQLColumn(t, "dup1_master_ind", Types.VARCHAR, 1, 0);
+		t.addColumn(col);
+		
+		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, IndexType.HASHED, null);
+		for (int i = 0; i < si.getChildCount(); i++) {
+			newidx.addChild(newidx.new Column(t.getColumn(i), true, false));
+		}
+		t.addIndex(newidx);
+		
+		return t;
 	}
 
+	/**
+	 * Adds one columns to the given table for each column of the given index.
+	 * The columns will be named baseName0, baseName1, ... and their type, precision,
+	 * and scale will correspond with those of the columns in the given index.
+	 * 
+	 * @param t The table to add columns to
+	 * @param si The index to iterate over for type, precision, scale of the
+	 * new columns.
+	 * @param baseName The base name of the new columns.
+	 */
+	private void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) throws ArchitectException {
+		for (int i = 0; i < si.getChildCount(); i++) {
+			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();
+			logger.debug("addColumn: i="+i+" idx="+si.getChild(i)+" idxcol="+idxCol);
+			SQLColumn newCol = new SQLColumn(t, baseName+i, idxCol.getType(), idxCol.getPrecision(), idxCol.getScale());
+			t.addColumn(newCol);
+		}
+	}
+	
 	/**
 	 * FIXME Implement me
 	 *
@@ -288,8 +393,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         private String catalogName;
         private String schemaName;
         private String tableName;
-        private SQLIndex index;
-        private SourceTable cachedTable;
+        private SQLTable cachedTable;
         
         CachableTable(String propertyName) {
             this.propertyName = propertyName;
@@ -297,8 +401,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         
         public String getCatalogName() {
             if (cachedTable != null) {
-                if (cachedTable.getTable() == null) return null;
-                String catalogName = cachedTable.getTable().getCatalogName();
+                String catalogName = cachedTable.getCatalogName();
                 if (catalogName == null || catalogName.length() == 0) {
                     return null;
                 } else {
@@ -316,11 +419,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         
         public String getTableName() {
             if (cachedTable != null) {
-            	if ( cachedTable.getTable() == null ) {
-            		return null;
-            	} else {
-            		return cachedTable.getTable().getName();
-            	}
+            	return cachedTable.getName();
             } else {
                 return tableName;
             }
@@ -333,8 +432,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         
         public String getSchemaName() {
             if (cachedTable != null) {
-                if (cachedTable.getTable() == null) return null;
-                String schemaName = cachedTable.getTable().getSchemaName();
+                String schemaName = cachedTable.getSchemaName();
                 if (schemaName == null || schemaName.length() == 0) {
                     return null;
                 } else {
@@ -368,13 +466,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
          *         up in the session's SQLDatabase, or created in the session's
          *         SQLDatabase if the lookup failed.
          */
-        public SourceTable getSourceTable() {
+        public SQLTable getSourceTable() {  // XXX rename to getTable
             if (cachedTable != null) {
                 return cachedTable;
             }
             if (tableName == null) {
-            	cachedTable = new SourceTable(null,null);  // this has a null table and index 
-                return cachedTable;
+            	return null;
             }
             
             try {
@@ -389,9 +486,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
                     } else {
                         logger.debug("     Found!");
                     }
-                    SourceTable sourceTable = new SourceTable(table,index);
-                    cachedTable = sourceTable;
-                    return sourceTable;
+                    cachedTable = table;
+                    return cachedTable;
                 } else {
                     session.handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
                                     " in Match "+getName()+ " is not compatible with the "+db.getName() +" database. " +
@@ -403,79 +499,86 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
             }
         }
         
-        public void setSourceTable(SourceTable sourceTable) {
-            final SourceTable oldSourceTable = this.cachedTable;
-            cachedTable = sourceTable;
-            
-            catalogName = null;
-            schemaName = null;
-            tableName = null;
-            
-            getEventSupport().firePropertyChange(propertyName, oldSourceTable, sourceTable);
-        }
-
         /**
-         * Sets the table of the cached SourceTable, and fires an event.
+         * Sets the table to the given table, clears the simple string properties, and fires an event.
          * @param table
          */
         public void setTable(SQLTable table) {
-            final SQLTable oldValue = cachedTable == null ? null : cachedTable.getTable();
+            final SQLTable oldValue = cachedTable;
             final SQLTable newValue = table;
-            cachedTable = new SourceTable(table,null);
+
+            catalogName = null;
+            schemaName = null;
+            tableName = null;
+            cachedTable = table;
+            
             getEventSupport().firePropertyChange(propertyName, oldValue, newValue);
         }
-        
-        public SQLIndex getIndex() {
-            return index;
-        }
-        public void setIndex(SQLIndex index) {
-            this.index = index;
-        }
+ 
     }
 
 
     /////// The source table delegate methods //////
-    public SourceTable getSourceTable() {
+    public SQLTable getSourceTable() {
         return sourceTablePropertiesDelegate.getSourceTable();
     }
     public String getSourceTableCatalog() {
         return sourceTablePropertiesDelegate.getCatalogName();
     }
-    public SQLIndex getSourceTableIndex() {
-        return sourceTablePropertiesDelegate.getIndex();
+    public String getSourceTableSchema() {
+    	return sourceTablePropertiesDelegate.getSchemaName();
     }
     public String getSourceTableName() {
         return sourceTablePropertiesDelegate.getTableName();
     }
-    public String getSourceTableSchema() {
-        return sourceTablePropertiesDelegate.getSchemaName();
-    }
-    public void setSourceTable(SourceTable sourceTable) {
-        sourceTablePropertiesDelegate.setSourceTable(sourceTable);
+    public void setSourceTable(SQLTable sourceTable) {
+        sourceTablePropertiesDelegate.setTable(sourceTable);
     }
     public void setSourceTableCatalog(String sourceTableCatalog) {
         sourceTablePropertiesDelegate.setCatalogName(sourceTableCatalog);
     }
-    public void setSourceTableIndex(SQLIndex index) {
-        sourceTablePropertiesDelegate.setIndex(index);
+    public void setSourceTableSchema(String sourceTableSchema) {
+    	sourceTablePropertiesDelegate.setSchemaName(sourceTableSchema);
     }
     public void setSourceTableName(String sourceTableName) {
         sourceTablePropertiesDelegate.setTableName(sourceTableName);
     }
-    public void setSourceTableSchema(String sourceTableSchema) {
-        sourceTablePropertiesDelegate.setSchemaName(sourceTableSchema);
+    
+    /**
+     * Hooks the index up to the source table, attempts to resolve the
+     * column names to actual SQLColumn references on the source table,
+     * and then returns it!
+     */
+    public SQLIndex getSourceTableIndex() throws ArchitectException {
+    	if (getSourceTable() != null) {
+    		sourceTableIndex.setParent(getSourceTable().getIndicesFolder());
+    		resolveSourceTableIndexColumns(sourceTableIndex);
+    	}
+    	return sourceTableIndex;
     }
     
+    /**
+     * Attempts to set the column property of each index column in the
+     * sourceTableColumns.  The UserType for SQLIndex can't do this because
+     * the source table isn't populated yet when it's invoked.
+     */
+    private void resolveSourceTableIndexColumns(SQLIndex si) throws ArchitectException {
+    	SQLTable st = getSourceTable();
+    	for (SQLIndex.Column col : (List<SQLIndex.Column>) si.getChildren()) {
+    		SQLColumn actualColumn = st.getColumnByName(col.getName());
+    		col.setColumn(actualColumn);
+    	}
+	}
+    
+	public void setSourceTableIndex(SQLIndex index) {
+    	final SQLIndex oldIndex = sourceTableIndex;
+    	sourceTableIndex = index;
+    	getEventSupport().firePropertyChange("sourceTableIndex", oldIndex, index);
+    }
 
     /////// The result table delegate methods //////
     public SQLTable getResultTable() {
-        SourceTable sourceTable = resultTablePropertiesDelegate.getSourceTable();
-        if (sourceTable != null) {
-            return sourceTable.getTable();
-        } else {
-            return null;
-        }
-        
+        return resultTablePropertiesDelegate.getSourceTable();
     }
     public String getResultTableCatalog() {
         return resultTablePropertiesDelegate.getCatalogName();
@@ -502,12 +605,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     
     /////// The xref table delegate methods //////
     public SQLTable getXrefTable() {
-        SourceTable sourceTable = xrefTablePropertiesDelegate.getSourceTable();
-        if (sourceTable != null) {
-            return sourceTable.getTable();
-        } else {
-            return null;
-        }
+        return xrefTablePropertiesDelegate.getSourceTable();
     }
     public String getXrefTableCatalog() {
         return xrefTablePropertiesDelegate.getCatalogName();

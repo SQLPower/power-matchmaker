@@ -16,7 +16,6 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -27,7 +26,6 @@ import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
-import ca.sqlpower.matchmaker.util.SourceTable;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.matchmaker.util.log.Level;
 import ca.sqlpower.matchmaker.util.log.Log;
@@ -239,50 +237,47 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						} else {
 							newVal = new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
 						}
-					} else if (property.getPropertyType() == SourceTable.class) {
-						newVal = new SourceTable(new SQLTable(), new SQLIndex());
-					} else {
-						if (property.getPropertyType() == MatchSettings.class) {
-							MatchSettings matchSettings = new MatchSettings();
-							setAllSetters(matchSettings, propertiesThatAreNotPersisted);
-							newVal = matchSettings;
-						} else if (property.getPropertyType() == MergeSettings.class) {
-							MergeSettings mergeSettings = new MergeSettings();
-							setAllSetters(mergeSettings, propertiesThatAreNotPersisted);
-							newVal = mergeSettings;
-						} else if (property.getPropertyType() == SQLTable.class) {
-							newVal = new SQLTable();
-                            ((SQLTable)newVal).setName("Fake Table");
-						} else if (property.getPropertyType() == ViewSpec.class) {
-							newVal = new ViewSpec("select clause", "from clause", "where clause");
-						} else if (property.getPropertyType() == Log.class) {
-							newVal = LogFactory
-									.getLogger(Level.DEBUG, "TestMatchMaker.log");
-						} else if (property.getPropertyType() == PlFolder.class) {
-							newVal = new PlFolder<Match>();
-						} else if (property.getPropertyType() == Match.MatchType.class) {
-							if (oldVal == Match.MatchType.BUILD_XREF) {
-								newVal = Match.MatchType.FIND_DUPES;
-							} else {
-								newVal = Match.MatchType.BUILD_XREF;
-							}
-						} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
-							newVal = new MatchMakerTranslateGroup();
-						} else if (property.getPropertyType() == MatchMakerObject.class) {
-							newVal = new TestingAbstractMatchMakerObject();
-						}else if (property.getPropertyType() == SQLColumn.class) {
-							newVal = new SQLColumn();
-						} else if (property.getPropertyType() == Date.class) {
-							newVal = new Date();
-						} else if (property.getPropertyType() == Short.class) {
-							newVal = new Short("10");
+					} else if (property.getPropertyType() == MatchSettings.class) {
+						MatchSettings matchSettings = new MatchSettings();
+						setAllSetters(matchSettings, propertiesThatAreNotPersisted);
+						newVal = matchSettings;
+					} else if (property.getPropertyType() == MergeSettings.class) {
+						MergeSettings mergeSettings = new MergeSettings();
+						setAllSetters(mergeSettings, propertiesThatAreNotPersisted);
+						newVal = mergeSettings;
+					} else if (property.getPropertyType() == SQLTable.class) {
+						newVal = new SQLTable();
+						((SQLTable)newVal).setName("Fake Table");
+					} else if (property.getPropertyType() == ViewSpec.class) {
+						newVal = new ViewSpec("select clause", "from clause", "where clause");
+					} else if (property.getPropertyType() == Log.class) {
+						newVal = LogFactory
+						.getLogger(Level.DEBUG, "TestMatchMaker.log");
+					} else if (property.getPropertyType() == PlFolder.class) {
+						newVal = new PlFolder<Match>();
+					} else if (property.getPropertyType() == Match.MatchType.class) {
+						if (oldVal == Match.MatchType.BUILD_XREF) {
+							newVal = Match.MatchType.FIND_DUPES;
 						} else {
-							throw new RuntimeException("This test case lacks a value for "
-									+ property.getName() + " (type "
-									+ property.getPropertyType().getName() + ") from "
-									+ mmo.getClass());
+							newVal = Match.MatchType.BUILD_XREF;
 						}
+					} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
+						newVal = new MatchMakerTranslateGroup();
+					} else if (property.getPropertyType() == MatchMakerObject.class) {
+						newVal = new TestingAbstractMatchMakerObject();
+					}else if (property.getPropertyType() == SQLColumn.class) {
+						newVal = new SQLColumn();
+					} else if (property.getPropertyType() == Date.class) {
+						newVal = new Date();
+					} else if (property.getPropertyType() == Short.class) {
+						newVal = new Short("10");
+					} else {
+						throw new RuntimeException("This test case lacks a value for "
+								+ property.getName() + " (type "
+								+ property.getPropertyType().getName() + ") from "
+								+ mmo.getClass());
 					}
+
 					
 					if (newVal instanceof MatchMakerObject){
 						((MatchMakerObject)newVal).setSession(getSession());

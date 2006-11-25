@@ -1,14 +1,20 @@
 package ca.sqlpower.matchmaker;
 
+import java.sql.DatabaseMetaData;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLCatalog;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 public class MatchTest extends MatchMakerTestCase<Match> {
@@ -113,4 +119,145 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         assertFalse(match.resultTableExists());
       }
 
+    public void testCreateResultTable() throws ArchitectException {
+    	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
+    	
+    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
+    	pk1.setNullable(DatabaseMetaData.columnNoNulls);
+    	sourceTable.addColumn(pk1);
+    
+    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", Types.INTEGER, 20, 0);
+    	pk2.setNullable(DatabaseMetaData.columnNoNulls);
+    	sourceTable.addColumn(pk2);
+    	
+    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", Types.VARCHAR, 20, 0);
+    	col.setNullable(DatabaseMetaData.columnNullable);
+    	sourceTable.addColumn(col);
+    	
+    	SQLIndex idx = new SQLIndex("source_pk", true, null, IndexType.HASHED, null);
+    	idx.addChild(idx.new Column(pk1, true, false));
+    	idx.addChild(idx.new Column(pk2, true, false));
+    	sourceTable.addIndex(idx);
+
+    	match.setSourceTable(sourceTable);
+    	match.setSourceTableIndex(idx);
+    	
+    	match.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
+    	SQLTable resultTable = match.createResultTable();
+    	
+    	int i = 0;
+    	assertEquals("dup_candidate_10", resultTable.getColumn(i++).getName());
+    	assertEquals("dup_candidate_11", resultTable.getColumn(i++).getName());
+    	assertEquals("dup_candidate_20", resultTable.getColumn(i++).getName());
+    	assertEquals("dup_candidate_21", resultTable.getColumn(i++).getName());
+    	assertEquals("current_candidate_10", resultTable.getColumn(i++).getName());
+    	assertEquals("current_candidate_11", resultTable.getColumn(i++).getName());
+    	assertEquals("current_candidate_20", resultTable.getColumn(i++).getName());
+    	assertEquals("current_candidate_21", resultTable.getColumn(i++).getName());
+    	assertEquals("dup_id0", resultTable.getColumn(i++).getName());
+    	assertEquals("dup_id1", resultTable.getColumn(i++).getName());
+    	assertEquals("master_id0", resultTable.getColumn(i++).getName());
+    	assertEquals("master_id1", resultTable.getColumn(i++).getName());
+    	assertEquals("candidate_10_mapped", resultTable.getColumn(i++).getName());
+    	assertEquals("candidate_11_mapped", resultTable.getColumn(i++).getName());
+    	assertEquals("candidate_20_mapped", resultTable.getColumn(i++).getName());
+    	assertEquals("candidate_21_mapped", resultTable.getColumn(i++).getName());
+    	assertEquals("match_percent", resultTable.getColumn(i++).getName());
+    	assertEquals("group_id", resultTable.getColumn(i++).getName());
+    	assertEquals("match_date", resultTable.getColumn(i++).getName());
+    	assertEquals("match_status", resultTable.getColumn(i++).getName());
+    	assertEquals("match_status_date", resultTable.getColumn(i++).getName());
+    	assertEquals("match_status_user", resultTable.getColumn(i++).getName());
+    	assertEquals("dup1_master_ind", resultTable.getColumn(i++).getName());
+    	assertEquals(i, idx.getChildCount()*8 + 7); // sanity check for the test
+    	
+    	i = 0;
+    	assertEquals(pk1.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk2.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk1.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk2.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk1.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk2.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk1.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk2.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk1.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk2.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk1.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(pk2.getType(), resultTable.getColumn(i++).getType());
+    	assertEquals(Types.VARCHAR, resultTable.getColumn(i++).getType());
+    	assertEquals(Types.VARCHAR, resultTable.getColumn(i++).getType());
+    	assertEquals(Types.VARCHAR, resultTable.getColumn(i++).getType());
+    	assertEquals(Types.VARCHAR, resultTable.getColumn(i++).getType());
+    	assertEquals(Types.INTEGER, resultTable.getColumn(i++).getType());
+    	assertEquals(Types.VARCHAR, resultTable.getColumn(i++).getType());
+    	assertEquals(Types.TIMESTAMP, resultTable.getColumn(i++).getType());
+    	assertEquals(Types.VARCHAR, resultTable.getColumn(i++).getType());
+    	assertEquals(Types.TIMESTAMP, resultTable.getColumn(i++).getType());
+    	assertEquals(Types.VARCHAR, resultTable.getColumn(i++).getType());
+    	assertEquals(Types.VARCHAR, resultTable.getColumn(i++).getType());
+    	assertEquals(i, idx.getChildCount()*8 + 7); // sanity check for the test
+    }
+    
+    public void testCreateResultTableIndex() throws ArchitectException {
+    	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
+    	
+    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
+    	pk1.setNullable(DatabaseMetaData.columnNoNulls);
+    	sourceTable.addColumn(pk1);
+    
+    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", Types.INTEGER, 20, 0);
+    	pk2.setNullable(DatabaseMetaData.columnNoNulls);
+    	sourceTable.addColumn(pk2);
+    	
+    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", Types.VARCHAR, 20, 0);
+    	col.setNullable(DatabaseMetaData.columnNullable);
+    	sourceTable.addColumn(col);
+    	
+    	SQLIndex idx = new SQLIndex("source_pk", true, null, IndexType.HASHED, null);
+    	idx.addChild(idx.new Column(pk1, true, false));
+    	idx.addChild(idx.new Column(pk2, true, false));
+    	sourceTable.addIndex(idx);
+
+    	match.setSourceTable(sourceTable);
+    	match.setSourceTableIndex(idx);
+    	
+    	match.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
+    	SQLTable resultTable = match.createResultTable();
+    	
+    	List<SQLIndex> indices = resultTable.getIndicesFolder().getChildren();
+    	assertEquals(1, indices.size());
+
+    	SQLIndex rtidx = indices.get(0);
+    	assertEquals(true, rtidx.isUnique());
+    	assertEquals(idx.getChildCount(), rtidx.getChildCount());
+    	final int idxColCount = rtidx.getChildCount();
+    	for (int i = 0; i < idxColCount; i++) {
+    		assertEquals("dup_candidate_1"+i, rtidx.getChild(i).getName());
+    	}
+    }
+    
+    public void testCreateResultTableInCorrectCatalogSchema() throws Exception {
+    	// dumb source table and index with no columns to satisfy createResultsTable() preconditions
+    	SQLTable tab = new SQLTable(session.getDatabase(), true);
+    	SQLIndex idx = new SQLIndex("my_index", true, null, IndexType.CLUSTERED, null);
+    	match.setSourceTable(tab);
+    	match.setSourceTableIndex(idx);
+    	
+    	match.setResultTableCatalog("my_cat");
+    	match.setResultTableSchema("my_dog");
+    	match.setResultTableName("my_chinchilla");
+    	
+    	SQLTable resultTable = match.createResultTable();
+    	
+    	assertEquals("my_cat", resultTable.getCatalogName());
+    	assertEquals("my_dog", resultTable.getSchemaName());
+    	assertEquals("my_chinchilla", resultTable.getName());
+    }
+    
+    public void testGetSourceTableIndex() throws Exception {
+    	SQLIndex foo = new SQLIndex();
+    	match.setSourceTableIndex(foo);
+    	assertNotNull(match.getSourceTableIndex());
+    	assertSame(foo, match.getSourceTableIndex());
+    }
 }

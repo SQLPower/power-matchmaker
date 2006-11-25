@@ -377,7 +377,7 @@ public class MatchMakerCriteriaGroupEditor {
         SQLTable sourceTable;
         newCriteria.setEnabled(false);
         if ( match.getSourceTable() != null ) {
-        	sourceTable = match.getSourceTable().getTable();
+        	sourceTable = match.getSourceTable();
         	if ( sourceTable != null ) {
         		newCriteria.setEnabled(true);
 
