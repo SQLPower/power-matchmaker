@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.util.SourceTable;
 
 public class MatchMakerCriteria 
     extends AbstractMatchMakerObject<MatchMakerCriteria, MatchMakerObject> {
@@ -147,11 +146,9 @@ public class MatchMakerCriteria
         if (group == null) throw new NullPointerException("Not attached to a parent");
         Match match = (Match) group.getParentMatch();
         if (group == null) throw new NullPointerException("Not attached to a grandparent");
-        SourceTable st = match.getSourceTable();
+        SQLTable st = match.getSourceTable();
         if (st == null) throw new NullPointerException("The owning match has no source table specified");
-        SQLTable sst = st.getTable();
-        if (sst == null) throw new NullPointerException("The owning match's source table has no SQLTable specified");
-        SQLColumn newColumn = sst.getColumnByName(columnName);
+        SQLColumn newColumn = st.getColumnByName(columnName);
         
         // did we actually make it here?
         setColumn(newColumn);

@@ -9,7 +9,6 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.util.SourceTable;
 
 /**
  * A collection of tests for the Match class that concentrate on testing the helper
@@ -104,8 +103,7 @@ public class MatchSQLTableHelperTest extends TestCase {
         assertNull(match.getSourceTableSchema());
         assertEquals("table1", match.getSourceTableName());
 
-        SourceTable st = match.getSourceTable();
-        SQLTable found = st.getTable();
+        SQLTable found = match.getSourceTable();
         assertNotNull(found);
         assertEquals("you found it", found.getColumn(0).getName());
         assertSame(table, found);
@@ -129,8 +127,7 @@ public class MatchSQLTableHelperTest extends TestCase {
         assertEquals("schema2", match.getSourceTableSchema());
         assertEquals("table2", match.getSourceTableName());
 
-        SourceTable st = match.getSourceTable();
-        SQLTable found = st.getTable();
+        SQLTable found = match.getSourceTable();
         assertNotNull(found);
         assertEquals("you found it2", found.getColumn(0).getName());
         assertSame(table, found);
@@ -154,8 +151,7 @@ public class MatchSQLTableHelperTest extends TestCase {
         assertNull(match.getSourceTableSchema());
         assertEquals("table3", match.getSourceTableName());
 
-        SourceTable st = match.getSourceTable();
-        SQLTable found = st.getTable();
+        SQLTable found = match.getSourceTable();
         assertNotNull(found);
         assertEquals("you found it3", found.getColumn(0).getName());
         assertSame(table, found);
@@ -179,8 +175,7 @@ public class MatchSQLTableHelperTest extends TestCase {
         assertEquals("schema4", match.getSourceTableSchema());
         assertEquals("table4", match.getSourceTableName());
 
-        SourceTable st = match.getSourceTable();
-        SQLTable found = st.getTable();
+        SQLTable found = match.getSourceTable();
         assertNotNull(found);
         assertEquals("you found it4", found.getColumn(0).getName());
         assertSame(table, found);
@@ -197,8 +192,7 @@ public class MatchSQLTableHelperTest extends TestCase {
         match.setSourceTableSchema(null);
         match.setSourceTableName("table1");
 
-        SourceTable st = match.getSourceTable();
-        SQLTable created = st.getTable();
+        SQLTable created = match.getSourceTable();
         assertNotNull(created);
         assertEquals("table1", created.getName());
     }
@@ -208,8 +202,7 @@ public class MatchSQLTableHelperTest extends TestCase {
         match.setSourceTableSchema("schema2");
         match.setSourceTableName("table2");
 
-        SourceTable st = match.getSourceTable();
-        SQLTable created = st.getTable();
+        SQLTable created = match.getSourceTable();
         assertNotNull(created);
         assertEquals("table2", created.getName());
     }
@@ -219,8 +212,7 @@ public class MatchSQLTableHelperTest extends TestCase {
         match.setSourceTableSchema(null);
         match.setSourceTableName("table3");
 
-        SourceTable st = match.getSourceTable();
-        SQLTable created = st.getTable();
+        SQLTable created = match.getSourceTable();
         assertNotNull(created);
         assertEquals("table3", created.getName());
     }
@@ -230,17 +222,15 @@ public class MatchSQLTableHelperTest extends TestCase {
         match.setSourceTableSchema("schema4");
         match.setSourceTableName("table4");
 
-        SourceTable st = match.getSourceTable();
-        SQLTable created = st.getTable();
+        SQLTable created = match.getSourceTable();
         assertNotNull(created);
         assertEquals("table4", created.getName());
     }
 
     public void testSetSourceTable1() throws Exception {
         SQLTable table = setUpScenario1();
-        SourceTable st = new SourceTable(table,null);
         
-        match.setSourceTable(st);
+        match.setSourceTable(table);
 
         assertNull(match.getSourceTableCatalog());
         assertNull(match.getSourceTableSchema());
@@ -249,9 +239,8 @@ public class MatchSQLTableHelperTest extends TestCase {
 
     public void testSetSourceTable2() throws Exception {
         SQLTable table = setUpScenario2();
-        SourceTable st = new SourceTable(table,null);
         
-        match.setSourceTable(st);
+        match.setSourceTable(table);
 
         assertNull(match.getSourceTableCatalog());
         assertEquals("schema2", match.getSourceTableSchema());
@@ -260,9 +249,8 @@ public class MatchSQLTableHelperTest extends TestCase {
 
     public void testSetSourceTable3() throws Exception {
         SQLTable table = setUpScenario3();
-        SourceTable st = new SourceTable(table,null);
         
-        match.setSourceTable(st);
+        match.setSourceTable(table);
 
         assertEquals("catalog3", match.getSourceTableCatalog());
         assertNull(match.getSourceTableSchema());
@@ -271,9 +259,8 @@ public class MatchSQLTableHelperTest extends TestCase {
 
     public void testSetSourceTable4() throws Exception {
         SQLTable table = setUpScenario4();
-        SourceTable st = new SourceTable(table,null);
         
-        match.setSourceTable(st);
+        match.setSourceTable(table);
 
         assertEquals("catalog4", match.getSourceTableCatalog());
         assertEquals("schema4", match.getSourceTableSchema());

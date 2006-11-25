@@ -1,8 +1,14 @@
 package ca.sqlpower.matchmaker.dao;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
@@ -54,6 +60,75 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		return nonPersistingProperties;
 	}
 
+	public void testIndexSave() throws Exception {
+		Match m = createNewObjectUnderTest();
+		
+		// have to hook up a parent table so the UserType can search it for columns
+		SQLTable table = new SQLTable(null, "test_parent", null, "TABLE", true);
+		table.addColumn(new SQLColumn(table, "test1", 4, 10, 0));
+		table.addColumn(new SQLColumn(table, "test2", 4, 10, 0));
+		table.addColumn(new SQLColumn(table, "test3", 4, 10, 0));
+		
+		SQLIndex idx = new SQLIndex("test_index", true, null, null, null);
+		idx.addChild(idx.new Column("test1", false, false));
+		idx.addChild(idx.new Column("test2", false, false));
+		idx.addChild(idx.new Column("test3", false, false));
+		m.setSourceTableIndex(idx);
+		
+		table.addIndex(idx);
+		
+		getDataAccessObject().save(m);
+		
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            con = getSession().getConnection();
+            stmt = con.createStatement();
+            rs = stmt.executeQuery(
+                    "SELECT * FROM pl_match WHERE match_id='"+m.getName()+"'");
+            
+            if (!rs.next()) {
+            	fail("No results found for match "+m.getName());
+            }
+            
+            assertEquals("test1", rs.getString("index_column_name0"));
+            assertEquals("test2", rs.getString("index_column_name1"));
+            assertEquals("test3", rs.getString("index_column_name2"));
+            assertEquals(null, rs.getString("index_column_name3"));
+            assertEquals(null, rs.getString("index_column_name4"));
+            assertEquals(null, rs.getString("index_column_name5"));
+            assertEquals(null, rs.getString("index_column_name6"));
+            assertEquals(null, rs.getString("index_column_name7"));
+            assertEquals(null, rs.getString("index_column_name8"));
+            assertEquals(null, rs.getString("index_column_name9"));
+            
+        } finally {
+            try { rs.close(); } catch (Exception e) { System.err.println("Couldn't close result set"); e.printStackTrace(); }
+            try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
+            // connection didn't come from a pool so we can't close it
+        }
+        
+        // this is not a good idea for a unit test, but Johnson insists
+        Match loadedMatch = getDataAccessObject().findByName(m.getName());
+        assertNotSame("Woops, got the same match back from cache", m, loadedMatch);
+        assertNotSame("Woops, got the same index back from cache", m.getSourceTableIndex(), loadedMatch.getSourceTableIndex());
+        assertNotSame("Woops, got the same indexColumn back from cache", m.getSourceTableIndex().getChild(0), loadedMatch.getSourceTableIndex().getChild(0));
+
+        // since the table on the original match was fake, the source table
+        // we get back from the DAO will have no columns.  We'll just put it back
+        // before testing the index column resolution.
+        loadedMatch.setSourceTable(table);
+        
+        assertEquals(3, loadedMatch.getSourceTableIndex().getChildCount());
+        assertEquals("test1", loadedMatch.getSourceTableIndex().getChild(0).getName());
+        assertNotNull(loadedMatch.getSourceTableIndex().getChild(0).getColumn());
+        assertEquals("test2", loadedMatch.getSourceTableIndex().getChild(1).getName());
+        assertNotNull(loadedMatch.getSourceTableIndex().getChild(1).getColumn());
+        assertEquals("test3", loadedMatch.getSourceTableIndex().getChild(2).getName());
+        assertNotNull(loadedMatch.getSourceTableIndex().getChild(2).getColumn());
+	}
+	
     /**
      * Inserts data directly into the tables, then uses the DAO to retrieve the
      * objects those rows represent, and checks that the objects are the ones we
@@ -91,7 +166,6 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         }
 
     }
-
     
     /**
      * Inserts a sample entry in PL_MATCH, and returns its OID.  The match will
