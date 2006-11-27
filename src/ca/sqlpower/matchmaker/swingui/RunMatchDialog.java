@@ -145,7 +145,7 @@ public class RunMatchDialog extends JDialog {
 		}
 	};
 
-	public void buildUI() {
+	private void buildUI() {
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:min(70dlu;pref),4dlu,fill:200dlu:grow, pref,20dlu,pref,10dlu,pref,4dlu",
 			//   1    2                    3    4                 5    6     7    8    9    10
@@ -247,13 +247,19 @@ public class RunMatchDialog extends JDialog {
 			file = new File(logFileName);
 		}
 		lastAccessPath = file.getAbsolutePath();
-		logFilePath.setText(logFileName);
-		append.setSelected(settings.getAppendToLog());
+		if (logFileName != null){
+			logFilePath.setText(logFileName);
+		}
+		Boolean appendToLog = settings.getAppendToLog();
+		append.setSelected(appendToLog);
+		
+		System.err.println(append+" "+settings);
 		if ( settings.getProcessCount() == null ) {
 			recordsToProcess.setText("");
 		} else {
 			recordsToProcess.setText(String.valueOf(settings.getProcessCount()));
 		}
+		System.err.println(append);
 		debugMode.setSelected(settings.getDebug());
 		truncateCandDup.setSelected(settings.getTruncateCandDupe());
 		sendEmail.setSelected(settings.getSendEmail());
