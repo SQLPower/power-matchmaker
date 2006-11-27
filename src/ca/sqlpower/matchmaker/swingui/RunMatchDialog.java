@@ -589,18 +589,17 @@ public class RunMatchDialog extends JDialog {
 
 			ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
 
-			Action saveAsAction = new AbstractAction() {
+			Action saveAsAction = new AbstractAction("Save As...") {
 				public void actionPerformed(ActionEvent e) {
 					new SaveDocument(d, cmdDoc,
 							(FileExtensionFilter) ASUtils.BATCH_FILE_FILTER);
 				}
 			};
 			JButton saveAsButton = new JButton(saveAsAction);
-			saveAsButton.setText("Save As...");
 			bbBuilder.addGridded(saveAsButton);
 			bbBuilder.addRelatedGap();
 
-			JButton copyButton = new JButton(new AbstractAction() {
+			JButton copyButton = new JButton(new AbstractAction("Copy to Clipboard") {
 				public void actionPerformed(ActionEvent e) {
 					StringSelection selection = new StringSelection(cmd);
 					Clipboard clipboard = Toolkit.getDefaultToolkit()
@@ -608,7 +607,6 @@ public class RunMatchDialog extends JDialog {
 					clipboard.setContents(selection, selection);
 				}
 			});
-			copyButton.setText("Copy to Clipboard");
 			bbBuilder.addGridded(copyButton);
 			bbBuilder.addRelatedGap();
 			bbBuilder.addGlue();
