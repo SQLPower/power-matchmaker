@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -97,19 +99,23 @@ public final class CreateResultTableAction extends AbstractAction {
 		
 	    final JDialog editor = new JDialog(swingSession.getFrame(),
 	    		"Create Result Table", false );
+	    JComponent cp = (JComponent) editor.getContentPane();
 	    
 	    Box statementsBox = Box.createVerticalBox();
+	    final List<JTextArea> sqlTextFields = new ArrayList<JTextArea>();
 	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
-	    	statementsBox.add(new JTextArea(sqlStatement.getSQLText()));
+	    	final JTextArea sqlTextArea = new JTextArea(sqlStatement.getSQLText());
+			statementsBox.add(sqlTextArea);
+			sqlTextFields.add(sqlTextArea);
 	    }
 	    
 	    Action saveAction = new AbstractAction("Save") {
 			public void actionPerformed(ActionEvent e) {
 				AbstractDocument doc = new DefaultStyledDocument();
-				for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
+				for (JTextArea sqlText : sqlTextFields ) {
 			    	try {
 						doc.insertString(doc.getLength(),
-										sqlStatement.getSQLText(),
+										sqlText.getText(),
 										null);
 						doc.insertString(doc.getLength(),";\n",null);
 					} catch (BadLocationException e1) {
@@ -124,8 +130,8 @@ public final class CreateResultTableAction extends AbstractAction {
 	    Action copyAction = new AbstractAction("Copy to Clipboard") {
 			public void actionPerformed(ActionEvent e) {
 				StringBuffer buf = new StringBuffer();
-				for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
-					buf.append(sqlStatement.getSQLText());
+				for (JTextArea sqlText : sqlTextFields ) {
+					buf.append(sqlText.getText());
 					buf.append(";\n");
 			    }
 				StringSelection selection = new StringSelection(buf.toString());
@@ -143,16 +149,37 @@ public final class CreateResultTableAction extends AbstractAction {
 				try {
 					con = swingSession.getConnection();
 					stmt = con.createStatement();
-
-					for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
-						sql = sqlStatement.getSQLText();
-						stmt.executeUpdate(sql);
+					int successCount = 0;
+					
+					for (JTextArea sqlText : sqlTextFields ) {
+						sql = sqlText.getText();
+						try {
+							stmt.executeUpdate(sql);
+							successCount += 1;
+						} catch (SQLException e1) {
+							int choice = JOptionPane.showOptionDialog(editor,
+									"The following SQL statement failed:\n" +
+									sql +
+									"\nThe error was: " + e1.getMessage() + 
+									"\n\nDo you want to continue executing the create script?",
+									"SQL Error", JOptionPane.YES_NO_OPTION,
+									JOptionPane.ERROR_MESSAGE, null,
+									new String[] {"Abort", "Continue"}, "Continue" );
+							if (choice != 1) {
+								break;
+							}
+						}
 					}
 					
 					JOptionPane.showMessageDialog(swingSession.getFrame(),
-							"SQL Statements executed");
-				} catch (SQLException e1) {
-					ASUtils.showExceptionDialog("SQL Error:", e1);
+							"Successfully executed " + successCount + " of " +
+							sqlTextFields.size() + " SQL Statements." +
+							(successCount == 0 ? "\n\nBetter Luck Next Time." : ""));
+				} catch (SQLException ex) {
+					JOptionPane.showMessageDialog(editor,
+							"Create Script Failure",
+							"Couldn't allocate a Statement:\n" + ex.getMessage(),
+							JOptionPane.ERROR_MESSAGE);
 				} finally {
 					try {
 						if (stmt != null) stmt.close();
@@ -169,7 +196,6 @@ public final class CreateResultTableAction extends AbstractAction {
 	    };
 	    
 	    // the gui layout part
-	    JComponent cp = (JComponent) editor.getContentPane();
 	    cp.setLayout(new BorderLayout(10,10));
 	    cp.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 	    
