@@ -7,6 +7,8 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -266,6 +268,16 @@ public class RunMatchDialog extends JDialog {
 
 		//TODO add roll back segment
 		rollbackSegment.setSelectedItem(settings.getRollbackSegmentName());
+		debugMode.addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e) {
+				if ( ((JCheckBox)e.getSource()).isSelected() ) {
+					truncateCandDup.setSelected(true);
+					recordsToProcess.setText("1");
+				} else {
+					truncateCandDup.setSelected(false);
+					recordsToProcess.setText("0");
+				}
+			}});
 	}
 	private void applyChange() {
 

@@ -133,9 +133,9 @@ public class MatchStatisticsPanel extends JPanel {
     		}
     		StringBuffer sql = new StringBuffer();
 
-    		sql.append("SELECT GROUP_ID,MATCH_PERCENT FROM PL_MATCH_GROUP WHERE MATCH_ID=? ORDER BY MATCH_PERCENT DESC");
+    		sql.append("SELECT GROUP_ID,MATCH_PERCENT FROM PL_MATCH_GROUP WHERE MATCH_OID=? ORDER BY MATCH_PERCENT DESC");
     		pstmt = con.prepareStatement(sql.toString());
-    		pstmt.setString(1, match.getName());
+    		pstmt.setLong(1, match.getOid());
     		rs = pstmt.executeQuery();
     		CachedRowSetImpl matchGroupSet = new CachedRowSetImpl();
     		matchGroupSet.setReadOnly(true);
