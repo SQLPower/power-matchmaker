@@ -22,6 +22,7 @@ import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MMTreeNode;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchCriteria;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
@@ -181,6 +182,9 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
         m.addSeparator();
         // TODO add this back in m.add(new JMenuItem(new PlMatchExportAction(match)));
         m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
+        
+        m.addSeparator();
+        m.add(new JMenuItem(new DeleteMatchAction(swingSession,match)));
     }
 
     private void createFolderMenu(final PlFolder folder) {
