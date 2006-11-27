@@ -43,6 +43,8 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -51,6 +53,8 @@ import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
+import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
+import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
@@ -717,5 +721,46 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			this(frame != null ? frame : null, label);
 		}
 
+	}
+
+	public void save(MatchMakerObject mmo) {
+		if (mmo instanceof Match){
+			Match match = (Match)mmo;
+			MatchDAO dao = (MatchDAO) getDAO(Match.class);
+			dao.save(match);
+		} else if (mmo instanceof MatchMakerFolder){
+			Match match = (Match)mmo.getParent();
+			MatchDAO dao = (MatchDAO) getDAO(Match.class);
+			dao.save(match);
+		}else if (mmo instanceof MatchMakerCriteriaGroup) {
+			MatchMakerCriteriaGroup cg = (MatchMakerCriteriaGroup)mmo;
+			MatchCriteriaGroupDAO dao = (MatchCriteriaGroupDAO) getDAO(MatchMakerCriteriaGroup.class);
+			dao.save(cg);
+		}
+	}
+
+	/**
+	 * Delete the MatchMakerObject passed in.  This will save the parent of the
+	 * mmo.
+	 * @param mmo
+	 */
+	public void delete(MatchMakerObject mmo) {
+		if(mmo.getParent() != null) {
+			mmo.getParent().removeChild(mmo);
+			save(mmo);
+		}
+		if (mmo instanceof Match){
+			Match match = (Match)mmo;
+			MatchDAO dao = (MatchDAO) getDAO(Match.class);
+			dao.delete(match);
+		} else if (mmo instanceof MatchMakerCriteriaGroup) {
+			MatchMakerCriteriaGroup cg = (MatchMakerCriteriaGroup)mmo;
+			MatchCriteriaGroupDAO dao = (MatchCriteriaGroupDAO) getDAO(MatchMakerCriteriaGroup.class);
+			dao.delete(cg);
+		}else if (mmo instanceof MatchMakerCriteriaGroup) {
+			MatchMakerCriteriaGroup cg = (MatchMakerCriteriaGroup)mmo;
+			MatchCriteriaGroupDAO dao = (MatchCriteriaGroupDAO) getDAO(MatchMakerCriteriaGroup.class);
+			dao.delete(cg);
+		}
 	}
 }

@@ -263,8 +263,6 @@ public class MatchMakerCriteriaGroupEditor {
 	 * Creates the GUI components and lays them out.
 	 */
 	private void buildUI() {
-
-		
         groupId = new JTextField();
         groupId.setName("Group ID");
         matches = new JLabel();
@@ -292,6 +290,7 @@ public class MatchMakerCriteriaGroupEditor {
 		// group header
 		FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, fill:pref:grow, 10dlu, pref,5dlu,pref,3dlu");
 		PanelBuilder pb = new PanelBuilder(formLayout);
+		pb.setDefaultDialogBorder();
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("pref");
 		CellConstraints cc = new CellConstraints();
@@ -326,9 +325,6 @@ public class MatchMakerCriteriaGroupEditor {
 		bbb.addGridded(cancelMatchCriterion);
 		bbb.addUnrelatedGap();
 		
-		// TODO: Add Copy and Paste buttons
-		//bbb.addGridded(copyMatchCriterion);
-		//bbb.addGridded(pasteMatchCriterion);
 		bbb.addGlue();
 		pb.add(bbb.getPanel(),cl.xyw(2, 10, 7));
 
@@ -344,11 +340,10 @@ public class MatchMakerCriteriaGroupEditor {
         jSplitPane.setBottomComponent(new JScrollPane(matchCriteriaTable));
         jSplitPane.setTopComponent(groupEditPanel);
         
-        panel = new JPanel();
+        panel = new JPanel();        
         panel.setLayout(new BorderLayout());
         panel.add(jSplitPane, BorderLayout.CENTER);
         panel.add(status, BorderLayout.NORTH);
-
 	}
 
 
@@ -356,7 +351,7 @@ public class MatchMakerCriteriaGroupEditor {
 	/**
 	 * Switches this component to edit a different match group.
 	 *
-	 * @param model the new MatchGroup to edit.
+	 * @param criteria the new MatchGroup to edit.
 	 * @throws ArchitectException 
 	 */
 	private void setDefaultSelection(MatchMakerCriteriaGroup group,

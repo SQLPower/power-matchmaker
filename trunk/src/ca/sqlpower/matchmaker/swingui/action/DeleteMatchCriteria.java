@@ -1,44 +1,24 @@
 package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.JTable;
 
-import ca.sqlpower.matchmaker.hibernate.PlMatchCriterion;
-import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
-import ca.sqlpower.matchmaker.hibernate.home.PlMatchCriteriaHome;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 public class DeleteMatchCriteria extends AbstractAction {
-	PlMatchGroup model;
-	JTable matchTable;
+	MatchMakerCriteria criteria;
+	MatchMakerSwingSession swingSession;
 	
-	
-	public DeleteMatchCriteria(PlMatchGroup model, JTable matchTable) {
+	public DeleteMatchCriteria(MatchMakerSwingSession swingSession, MatchMakerCriteria criteria) {
 		super("Delete Criteria");
-		this.model = model;
-		this.matchTable = matchTable;
+		this.criteria = criteria;
+		this.swingSession = swingSession;
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		List<Integer> selected = new ArrayList<Integer>();
-		for (int i:matchTable.getSelectedRows()){
-			selected.add(i);
-		}
-		Collections.sort(selected);
-		PlMatchCriteriaHome home = new PlMatchCriteriaHome();
-
-		for(int i= selected.size()-1; i>=0;i--){
-			PlMatchCriterion plMatchCriterion = (PlMatchCriterion) model.getChildren().get(i);
-			if ( !model.removePlMatchCriteria(plMatchCriterion)) {
-				System.out.println(" DELETE FAILED");;
-			}
-			home.delete(plMatchCriterion);
-		}
-		home.flush();		
+		swingSession.delete(criteria);
 	}
 
 }

@@ -98,4 +98,14 @@ public class MatchMakerTranslateWord
         this.location = location;
         getEventSupport().firePropertyChange("location", oldValue, this.location);
     }
+    @Override
+    public String toString() {
+    	StringBuffer buf = new StringBuffer();
+    	buf.append("OID: ").append(oid);
+    	buf.append(" Parent: ").append(this.getParent());
+    	buf.append(" From:").append(from);
+    	buf.append("->To:").append(to);
+    	buf.append(". Priority: ").append(location);
+    	return buf.toString();
+    }
 }

@@ -4,31 +4,22 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
-import org.hibernate.Transaction;
-
-import ca.sqlpower.matchmaker.hibernate.PlMatchGroup;
-import ca.sqlpower.matchmaker.hibernate.home.PlMatchGroupHome;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
 
 
 public class DeleteMatchGroupAction extends AbstractAction {
 
     private final MatchMakerSwingSession swingSession;
-    private final PlMatchGroup matchGroup;
+    private final MatchMakerCriteriaGroup matchGroup;
 
-	public DeleteMatchGroupAction(MatchMakerSwingSession swingSession, PlMatchGroup matchGroup) {
+	public DeleteMatchGroupAction(MatchMakerSwingSession swingSession, MatchMakerCriteriaGroup matchGroup) {
 		super("Delete Match Group");
         this.swingSession = swingSession;
 		this.matchGroup = matchGroup;
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		PlMatchGroupHome home = new PlMatchGroupHome();
-		Transaction tx = HibernateUtil.primarySession().beginTransaction();
-		swingSession.setCurrentEditorComponent(null);
-		home.delete(matchGroup);
-		matchGroup.getPlMatch().removePlMatchGroups(matchGroup);
-		tx.commit();
+		swingSession.delete(matchGroup);
 	}
 }

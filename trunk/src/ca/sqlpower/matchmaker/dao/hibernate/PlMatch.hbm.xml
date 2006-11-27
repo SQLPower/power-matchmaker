@@ -208,7 +208,7 @@
 			<one-to-many
 				class="ca.sqlpower.matchmaker.hibernate.PlMergeCriteria" />
 		</set-->
-		<bag name="matchCriteriaGroups" inverse="true" lazy="false" fetch="subselect" cascade="all">
+		<bag name="matchCriteriaGroups" inverse="true" lazy="false" fetch="subselect" cascade="all,delete-orphan">
 			<key>
 				<column name="MATCH_OID" length="80" not-null="true" />
 			</key>

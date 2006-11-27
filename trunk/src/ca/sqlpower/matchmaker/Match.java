@@ -238,6 +238,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	}
 
 	public void setMatchSettings(MatchSettings matchSettings) {
+		if (matchSettings==null) throw new NullPointerException("You should not try to set the settings to null");
 		MatchSettings oldValue = this.matchSettings;
 		this.matchSettings = matchSettings;
 		getEventSupport().firePropertyChange("matchSettings", oldValue,
