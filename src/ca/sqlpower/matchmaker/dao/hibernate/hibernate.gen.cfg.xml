@@ -2,6 +2,11 @@
 <!DOCTYPE hibernate-configuration PUBLIC
 		"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
 		"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<!-- This is the config file that we used to generate the mapping
+     files in the first place.  We've pretty much re-done them by
+     hand since then, though, so the tools that this config applies to
+     are probably useless to us now.
+  -->
 <hibernate-configuration>
 
      <session-factory>
