@@ -16,6 +16,11 @@ public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOH
 		super(matchMakerSession);
 	}
 
+    @Override
+    public void save(MatchMakerTranslateGroup saveMe) {
+    	saveMe.syncChildrenSeqNo();
+    	super.save(saveMe);
+    }
 
 	public Class<MatchMakerTranslateGroup> getBusinessClass() {
 		return MatchMakerTranslateGroup.class;

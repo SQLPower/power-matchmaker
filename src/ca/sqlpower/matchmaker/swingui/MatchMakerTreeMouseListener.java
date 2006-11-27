@@ -18,9 +18,13 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MMTreeNode;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMatchCriteria;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
@@ -124,14 +128,20 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                     createMatchMenu((Match) o);
                 } else if (o instanceof MatchMakerCriteriaGroup) {
                     createMatchGroupMenu((MatchMakerCriteriaGroup) o);
-                }
+                } else if (o instanceof MatchMakerCriteria) {
+                    createMatchCriteriaMenu((MatchMakerCriteria) o);
+                } 
             }
             m.show(t, e.getX(), e.getY());
         }
     }
 
-    private void createMatchGroupMenu(MatchMakerCriteriaGroup group) {
-        m.add(new JMenuItem("need code"));
+    private void createMatchCriteriaMenu(MatchMakerCriteria criteria) {
+    	m.add(new JMenuItem(new DeleteMatchCriteria(swingSession,criteria)));
+    }
+
+	private void createMatchGroupMenu(MatchMakerCriteriaGroup group) {
+    	m.add(new JMenuItem(new DeleteMatchGroupAction(swingSession,group)));
     }
 
     private void createNewFolderMenuItem() {
@@ -176,6 +186,8 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
     private void createFolderMenu(final PlFolder folder) {
         m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match", folder)));
         m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
+        
+        m.add(new JMenuItem(new DeletePlFolderAction(swingSession,"Delete Folder",folder)));
     }
 
 }

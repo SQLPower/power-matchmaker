@@ -118,7 +118,9 @@ public class TranslatePanel implements ArchitectPanel {
 				"4dlu,pref,4dlu,fill:120dlu:grow,4dlu, pref, 10dlu, pref, 4dlu, pref, 4dlu, pref, 4dlu,pref,4dlu");				
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout) : new JPanel(layout);
+		
 		pb = new PanelBuilder(layout, p);
+		pb.setDefaultDialogBorder();
 		CellConstraints cc = new CellConstraints();
 		
 		pb.appendRow("2dlu");
@@ -205,7 +207,9 @@ public class TranslatePanel implements ArchitectPanel {
 		public void actionPerformed(ActionEvent e) {
             MatchMakerTranslateGroup mmtg = new MatchMakerTranslateGroup();
             mmtg.setName(newGroupName.getText());
+            newGroupName.setText("");
             swingSession.getTranslations().addChild(mmtg);
+            translationGroup.setSelectedItem(mmtg);
 		}		
 	};
 	
