@@ -1,9 +1,15 @@
 package ca.sqlpower.matchmaker.swingui.action;
 
+
 import java.awt.BorderLayout;
 import java.awt.HeadlessException;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -15,12 +21,20 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+
+import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
+import ca.sqlpower.architect.swingui.SaveDocument;
+import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
@@ -31,6 +45,7 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
  */
 public final class CreateResultTableAction extends AbstractAction {
 
+	private static final Logger logger = Logger.getLogger(CreateResultTableAction.class);
     private final MatchMakerSwingSession swingSession;
 	private Match match;
 
@@ -59,7 +74,7 @@ public final class CreateResultTableAction extends AbstractAction {
 		throws InstantiationException, IllegalAccessException, 
 		HeadlessException, ArchitectException, SQLException {
 		
-		DDLGenerator ddlg = DDLUtils.createDDLGenerator(
+		final DDLGenerator ddlg = DDLUtils.createDDLGenerator(
 				swingSession.getDatabase().getDataSource());
 		if (ddlg == null) {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
@@ -78,7 +93,7 @@ public final class CreateResultTableAction extends AbstractAction {
 			ddlg.dropTable(match.getResultTable());
 		}
 		ddlg.addTable(match.createResultTable());
-		ddlg.addIndex(match.getSourceTableIndex());
+		ddlg.addIndex((SQLIndex) match.getResultTable().getIndicesFolder().getChild(0));
 		
 	    final JDialog editor = new JDialog(swingSession.getFrame(),
 	    		"Create Result Table", false );
@@ -90,20 +105,64 @@ public final class CreateResultTableAction extends AbstractAction {
 	    
 	    Action saveAction = new AbstractAction("Save") {
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null, "not yet");
+				AbstractDocument doc = new DefaultStyledDocument();
+				for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
+			    	try {
+						doc.insertString(doc.getLength(),
+										sqlStatement.getSQLText(),
+										null);
+						doc.insertString(doc.getLength(),";\n",null);
+					} catch (BadLocationException e1) {
+						ASUtils.showExceptionDialog("Unexcepted Document Error",e1);
+					}
+			    }
+				new SaveDocument(swingSession.getFrame(),
+						doc,
+						(FileExtensionFilter)ASUtils.SQL_FILE_FILTER);
 			}
 	    };
 	    Action copyAction = new AbstractAction("Copy to Clipboard") {
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null, "not yet");
+				StringBuffer buf = new StringBuffer();
+				for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
+					buf.append(sqlStatement.getSQLText());
+					buf.append(";\n");
+			    }
+				StringSelection selection = new StringSelection(buf.toString());
+				Clipboard clipboard = Toolkit.getDefaultToolkit()
+						.getSystemClipboard();
+				clipboard.setContents(selection, selection);
 			}
 	    };
 	    Action executeAction = new AbstractAction("Execute") {
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null, "not yet");
+				
+				Connection con = null;
+				Statement stmt = null;
+				String sql = null;
+				try {
+					con = swingSession.getConnection();
+					stmt = con.createStatement();
+
+					for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
+						sql = sqlStatement.getSQLText();
+						stmt.executeUpdate(sql);
+					}
+					
+					JOptionPane.showMessageDialog(swingSession.getFrame(),
+							"SQL Statements executed");
+				} catch (SQLException e1) {
+					ASUtils.showExceptionDialog("SQL Error:", e1);
+				} finally {
+					try {
+						if (stmt != null) stmt.close();
+					} catch (SQLException ex) {
+						logger.error("SQLException while closing statement", ex);
+					}
+				}
 			}
 	    };
-	    Action cancelAction = new AbstractAction("Cancel") {
+	    Action cancelAction = new AbstractAction("Close") {
 			public void actionPerformed(ActionEvent e) {
 				editor.dispose();
 			}
