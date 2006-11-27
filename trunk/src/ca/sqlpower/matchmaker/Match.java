@@ -191,7 +191,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 			newidx.addChild(newidx.new Column(t.getColumn(i), true, false));
 		}
 		t.addIndex(newidx);
-		
+		setResultTable(t);
+
 		return t;
 	}
 
