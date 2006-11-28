@@ -552,9 +552,7 @@ public class MatchEditor {
         if (!folder.getChildren().contains(match)) {        	
         	swingSession.move(match,folder);
         }
-
-        swingSession.save(match);
-        System.err.println("In editor" + folder.getName() + " has " + folder.getChildCount());
+        swingSession.save(match);        
 		return true;
 
     }
