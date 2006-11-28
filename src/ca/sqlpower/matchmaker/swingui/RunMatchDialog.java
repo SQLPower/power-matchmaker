@@ -112,7 +112,7 @@ public class RunMatchDialog extends JDialog {
 	
 	public RunMatchDialog(MatchMakerSwingSession swingSession, Match match,
 			JFrame parentFrame) {
-		super(parentFrame, "Run Match:[" + match.getName() + "]");
+		super(parentFrame, "Run Match: " + match.getName());
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
 		this.match = match;
