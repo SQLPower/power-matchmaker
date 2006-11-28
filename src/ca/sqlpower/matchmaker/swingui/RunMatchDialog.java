@@ -124,7 +124,7 @@ public class RunMatchDialog extends JDialog {
 				refreshActionStatus();
 			}
         });
-		enginePath = swingSession.getContext().getEngineLocation();
+		enginePath = swingSession.getContext().getMatchEngineLocation();
 	}
 	
 	private void refreshActionStatus() {
@@ -187,7 +187,7 @@ public class RunMatchDialog extends JDialog {
 		});
 
 		runMatchEngine = new JButton(new RunEngineAction(match,RunMatchDialog.this));
-		exit = new JButton(new AbstractAction("Exit") {
+		exit = new JButton(new AbstractAction("Close") {
 			public void actionPerformed(ActionEvent e) {
 				RunMatchDialog.this.setVisible(false);
 				RunMatchDialog.this.dispose();
@@ -657,11 +657,7 @@ public class RunMatchDialog extends JDialog {
 		 */
 		StringBuffer command = new StringBuffer();
 		SQLDatabase db = swingSession.getDatabase();
-		String programPath = null;
-		programPath = ((SwingSessionContextImpl) swingSession.getContext())
-				.getEngineLocation();
-
-		programPath = "\"" + enginePath + "\"";
+		String programPath = "\"" + enginePath + "\"";
 		command.append(programPath);
 		command.append(" MATCH=\"").append(match.getName()).append("\"");
 		if (db != null) {
