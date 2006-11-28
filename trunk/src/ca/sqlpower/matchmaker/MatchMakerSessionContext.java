@@ -61,8 +61,14 @@ public interface MatchMakerSessionContext {
     public DataSourceCollection getPlDotIni();
     
     /**
-     * The location of the engine
+     * The location of the matchmaker engine
      * @return the path to the engine
      */
-    public String getEngineLocation();
+    public String getMatchEngineLocation();
+    
+    /**
+     * The location of the email sender engine
+     * @return the path to the engine
+     */
+    public String getEmailEngineLocation();
 }

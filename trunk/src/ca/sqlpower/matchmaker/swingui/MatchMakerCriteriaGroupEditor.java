@@ -279,13 +279,8 @@ public class MatchMakerCriteriaGroupEditor {
         newMatchCriterion = new JButton(newCriteria);
         newMatchCriterion.setName("New button for "+group.getName());
         deleteMatchCriterion = new JButton(deleteCriteria);
-        copyMatchCriterion = new JButton("Copy");
-        pasteMatchCriterion = new JButton("Paste");
         saveMatchCriterion = new JButton(save);
         saveMatchCriterion.setName("Save button for "+group.getName());
-        cancelMatchCriterion = new JButton("Cancel");
-        
-
 		
 		// group header
 		FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, fill:pref:grow, 10dlu, pref,5dlu,pref,3dlu");

@@ -30,7 +30,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
         return null;
     }
 
-    public String getEngineLocation() {
+    public String getMatchEngineLocation() {
         logger.debug("Stub call: StubSwingSessionContext.getEngineLocation()");
         return null;
     }
@@ -74,4 +74,9 @@ public class StubSwingSessionContext implements SwingSessionContext {
     public void showLoginDialog(ArchitectDataSource selectedDataSource) {
         logger.debug("Stub call: StubSwingSessionContext.showLoginDialog()");
     }
+
+	public String getEmailEngineLocation() {
+		logger.debug("Stub call: StubSwingSessionContext.getEmailEngineLocation()");
+		return null;
+	}
 }

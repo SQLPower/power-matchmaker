@@ -288,9 +288,16 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     }
 
     /* (non-Javadoc)
-     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getEngineLocation()
+     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getMatchEngineLocation()
      */
-    public String getEngineLocation() {
-        return context.getEngineLocation();
+    public String getMatchEngineLocation() {
+        return context.getMatchEngineLocation();
+    }
+    
+    /* (non-Javadoc)
+     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getEmailEngineLocation()
+     */
+    public String getEmailEngineLocation() {
+        return context.getEmailEngineLocation();
     }
 }

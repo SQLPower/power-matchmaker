@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker.util.log;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * LogFactory gets access to a Log implementation, using
@@ -44,6 +45,18 @@ public class LogFactory {
 
 		public Object getConstraint() {
 			return "System.out";
+		}
+
+		public boolean isReadable() {
+			return false;
+		}
+
+		public boolean isWritable() {
+			return false;
+		}
+
+		public List<String> readAsList() {
+			return null;
 		}
 
 	}

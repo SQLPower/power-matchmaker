@@ -3,9 +3,10 @@ package ca.sqlpower.matchmaker.util.log;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
- * An output-only logger writing to a file on disk.
+ * A read-write logger writing to a file on disk.
  */
 public class FileLogger extends BaseLogger implements Log {
 
@@ -50,7 +51,12 @@ public class FileLogger extends BaseLogger implements Log {
 
 	/** Return true iff this logger's writer opened successfully. */
 	public boolean isWritable() {
-		return getOut() != null;
+		try {
+			return getOut() != null;
+		} catch (RuntimeException ex) {
+			// getOut() maps all exceptions to RuntimeException, so we're reduced to this
+			return false;
+		}
 	}
 
 	@Override
@@ -62,5 +68,16 @@ public class FileLogger extends BaseLogger implements Log {
 	void println(String mesg) {
 		getOut().println(mesg);
 		getOut().flush();
+	}
+
+	public List<String> readAsList() {
+		return null;
+	}
+
+	public long size() {
+		return 0;
+	}
+
+	public void truncate() {
 	}
 }
