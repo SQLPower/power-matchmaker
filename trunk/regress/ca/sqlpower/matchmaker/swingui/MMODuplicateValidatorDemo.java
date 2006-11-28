@@ -108,7 +108,7 @@ public class MMODuplicateValidatorDemo {
         pb.add(new JScrollPane(area), cc.xyw(2,6,5));
         pb.add(exit, cc.xy(6,8));
         
-        Validator v1 = new MMODuplicateValidator(obj, null);
+        Validator v1 = new MMODuplicateValidator(obj, null, "Cannot have Duplicate Name");
         form.addValidateObject(field, v1);
         d.getContentPane().add(pb.getPanel());
         
