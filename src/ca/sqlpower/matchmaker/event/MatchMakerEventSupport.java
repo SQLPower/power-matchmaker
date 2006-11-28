@@ -3,6 +3,8 @@ package ca.sqlpower.matchmaker.event;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.MatchMakerObject;
 
 /**
@@ -26,6 +28,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
  */
 public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchMakerObject> {
 
+	private final static Logger logger = Logger.getLogger(MatchMakerEventSupport.class);
 	/**
 	 * The object that this support class is delivering events for.  This will be the source
 	 * of all fired events.
@@ -129,7 +132,9 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 		evt.setChangeIndices(insertedIndices);
 		evt.setPropertyName(childPropertyName);
 		evt.setChildren(insertedChildren);
-
+		if (logger.isDebugEnabled()){
+			logger.debug("Firing children inserted for object "+source);
+		}
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
 			listeners.get(i).mmChildrenInserted(evt);

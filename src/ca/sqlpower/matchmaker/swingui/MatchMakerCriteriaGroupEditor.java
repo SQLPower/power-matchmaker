@@ -78,10 +78,7 @@ public class MatchMakerCriteriaGroupEditor {
 
     private JButton newMatchCriterion;
     private JButton deleteMatchCriterion;
-    private JButton copyMatchCriterion;
-    private JButton pasteMatchCriterion;
 	private JButton saveMatchCriterion;
-	private JButton cancelMatchCriterion;
 
 	/**
 	 * This is the default constructor
@@ -311,15 +308,8 @@ public class MatchMakerCriteriaGroupEditor {
 		bbb.addUnrelatedGap();
 		bbb.addGridded(deleteMatchCriterion);
 		bbb.addUnrelatedGap();
-		bbb.addGridded(copyMatchCriterion);
-		bbb.addUnrelatedGap();
-		bbb.addGridded(pasteMatchCriterion);
-		bbb.addUnrelatedGap();
 		bbb.addGridded(saveMatchCriterion);
 		bbb.addUnrelatedGap();
-		bbb.addGridded(cancelMatchCriterion);
-		bbb.addUnrelatedGap();
-		
 		bbb.addGlue();
 		pb.add(bbb.getPanel(),cl.xyw(2, 10, 7));
 

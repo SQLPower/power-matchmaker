@@ -43,6 +43,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -56,6 +57,7 @@ import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
@@ -723,6 +725,12 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 	}
 
+	/**
+	 * persist the match maker object to the database
+	 * 
+	 * XXX Push this into the match maker session interface
+	 * @param mmo
+	 */
 	public void save(MatchMakerObject mmo) {
 		if (mmo instanceof Match){
 			Match match = (Match)mmo;
@@ -732,16 +740,23 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			Match match = (Match)mmo.getParent();
 			MatchDAO dao = (MatchDAO) getDAO(Match.class);
 			dao.save(match);
-		}else if (mmo instanceof MatchMakerCriteriaGroup) {
+		} else if (mmo instanceof PlFolder){
+			PlFolderDAO dao = (PlFolderDAO) getDAO(PlFolder.class);
+			dao.save((PlFolder) mmo);
+		} else if (mmo instanceof MatchMakerCriteriaGroup) {
 			MatchMakerCriteriaGroup cg = (MatchMakerCriteriaGroup)mmo;
 			MatchCriteriaGroupDAO dao = (MatchCriteriaGroupDAO) getDAO(MatchMakerCriteriaGroup.class);
 			dao.save(cg);
+		} else {
+			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");
 		}
 	}
 
 	/**
 	 * Delete the MatchMakerObject passed in.  This will save the parent of the
 	 * mmo.
+	 * 
+	 * XXX Push this into the match maker session interface
 	 * @param mmo
 	 */
 	public void delete(MatchMakerObject mmo) {
@@ -757,10 +772,31 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			MatchMakerCriteriaGroup cg = (MatchMakerCriteriaGroup)mmo;
 			MatchCriteriaGroupDAO dao = (MatchCriteriaGroupDAO) getDAO(MatchMakerCriteriaGroup.class);
 			dao.delete(cg);
-		}else if (mmo instanceof MatchMakerCriteriaGroup) {
-			MatchMakerCriteriaGroup cg = (MatchMakerCriteriaGroup)mmo;
-			MatchCriteriaGroupDAO dao = (MatchCriteriaGroupDAO) getDAO(MatchMakerCriteriaGroup.class);
-			dao.delete(cg);
+		}else if (mmo instanceof MatchMakerCriteria) {
+			// do nothing only need to remove it from its parent
+		} else {
+			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");
 		}
 	}
+	/**
+	 * Move a match maker object from one parent ( can be null) to a new match maker object.
+	 * The destination object must support children.  This function persists the 
+	 * move to the database and will save any other unsaved changes in both parents
+	 * and the moving object
+	 * 
+	 * @param objectToMove the object you want to move
+	 * @param destination the new parent object
+	 */
+	public void move(MatchMakerObject objectToMove, MatchMakerObject destination) {
+		if (!destination.allowsChildren()) throw new IllegalArgumentException("The destination object "+destination+" Does not support children");
+		
+		MatchMakerObject oldParent = objectToMove.getParent();
+		if (oldParent != null) {
+			oldParent.removeChild(objectToMove);
+			save(oldParent);
+		}		
+		destination.addChild(objectToMove);		
+		save(destination);
+	}
+	
 }
