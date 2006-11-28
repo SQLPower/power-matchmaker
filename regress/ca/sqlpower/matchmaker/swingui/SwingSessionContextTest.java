@@ -130,7 +130,7 @@ public class SwingSessionContextTest extends TestCase {
                 return dsCollection.getConnections();
             }
 
-            public String getEngineLocation() {
+            public String getMatchEngineLocation() {
                 System.out.println("Stub MMSContext.getEngineLocation()");
                 return FAKE_ENGINE_LOCATION;
             }
@@ -139,6 +139,11 @@ public class SwingSessionContextTest extends TestCase {
                 System.out.println("Stub MMSContext.getPlDotIni()");
                 return dsCollection;
             }
+
+			public String getEmailEngineLocation() {
+				System.out.println("Stub call: .getEmailEngineLocation()");
+				return FAKE_ENGINE_LOCATION;
+			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
         PreferencesFactory stubPrefsFactory = new PreferencesFactory();
@@ -154,7 +159,11 @@ public class SwingSessionContextTest extends TestCase {
     }
     
     public void testGetEngineLocation() {
-        assertEquals(FAKE_ENGINE_LOCATION, context.getEngineLocation());        
+        assertEquals(FAKE_ENGINE_LOCATION, context.getMatchEngineLocation());        
+    }
+    
+    public void testGetEmailEngineLocation() {
+        assertEquals(FAKE_ENGINE_LOCATION, context.getEmailEngineLocation());        
     }
     
     public void testGetLastImportExportAccessPath(){

@@ -85,8 +85,19 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         return plDotIni;
     }
 
-    public String getEngineLocation() {
+    public String getMatchEngineLocation() {
         EnginePath p = EnginePath.MATCHMAKER;
+        if (plIniPath == null) {
+            return null;
+        }
+        File plDotIniFile = new File(plIniPath);
+        File programDir = plDotIniFile.getParentFile();
+        File programPath = new File(programDir, p.getProgName());
+        return programPath.toString();
+    }
+    
+    public String getEmailEngineLocation() {
+        EnginePath p = EnginePath.EMAILNOTIFICATION;
         if (plIniPath == null) {
             return null;
         }

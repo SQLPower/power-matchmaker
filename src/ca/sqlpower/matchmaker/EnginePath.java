@@ -6,7 +6,8 @@ package ca.sqlpower.matchmaker;
 public enum EnginePath {
 
 	POWERLOADER("ploader_NOT_RIGHT_YET"),
-	MATCHMAKER("Match_ODBC");
+	MATCHMAKER("Match_ODBC"),
+	EMAILNOTIFICATION("Mailsender_ODBC");
 
 	private String progName;
 
