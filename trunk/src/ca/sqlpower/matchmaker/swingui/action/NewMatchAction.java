@@ -37,9 +37,7 @@ public final class NewMatchAction extends AbstractAction {
 			match.setSession(swingSession);
 			match.setType(Match.MatchType.FIND_DUPES);
 
-			if ( folder == null ) {
-				folder = ArchitectUtils.getTreeObject(swingSession.getTree(),PlFolder.class);
-			}
+			folder = ArchitectUtils.getTreeObject(swingSession.getTree(),PlFolder.class);
 			if ( folder == null ) {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
 						"Please select a folder first",
