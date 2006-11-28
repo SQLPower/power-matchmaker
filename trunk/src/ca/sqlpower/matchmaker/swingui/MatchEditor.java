@@ -42,7 +42,6 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchType;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.action.CreateResultTableAction;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 import ca.sqlpower.validation.Status;
@@ -549,12 +548,13 @@ public class MatchEditor {
 
         logger.debug("Saving Match:" + match.getName());
 
-        if ( !folder.getChildren().contains(match)) {
-        	folder.addChild(match);
+        PlFolder folder = (PlFolder) folderComboBox.getSelectedItem();        
+        if (!folder.getChildren().contains(match)) {        	
+        	swingSession.move(match,folder);
         }
 
-        MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
-        dao.save(match);
+        swingSession.save(match);
+        System.err.println("In editor" + folder.getName() + " has " + folder.getChildCount());
 		return true;
 
     }

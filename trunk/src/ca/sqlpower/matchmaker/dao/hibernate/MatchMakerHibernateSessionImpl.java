@@ -160,6 +160,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     private TranslateGroupParent tgp;
 
+	private List<PlFolder> folders;
+
     /**
      * XXX this is untestable unless you're connected to a database right now.
      *   It should be given a PLSecurityManager implementation rather than creating one.
@@ -244,8 +246,11 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
     
 	public List<PlFolder> getFolders() {
-		PlFolderDAO folderDAO = (PlFolderDAO) getDAO(PlFolder.class);
-		return folderDAO.findAll();
+		if (folders == null) {
+			PlFolderDAO folderDAO = (PlFolderDAO) getDAO(PlFolder.class);
+			folders = folderDAO.findAll();
+		}
+		return folders;
 	}
 
     public PlFolder findFolder(String foldername) {
