@@ -23,10 +23,13 @@ public class MMODuplicateValidator implements Validator {
     
     private MatchMakerObject parent;
     private List<Action> actionsToDisable;
+    private String dupErrorMessage;
     
-    public MMODuplicateValidator(MatchMakerObject parent, List<Action> actionsToDisable){
+    public MMODuplicateValidator(MatchMakerObject parent, List<Action> actionsToDisable,
+    		String dupErrorMessage){
         this.parent = parent;
         this.actionsToDisable = actionsToDisable;
+        this.dupErrorMessage = dupErrorMessage;
     }
     
     
@@ -40,13 +43,13 @@ public class MMODuplicateValidator implements Validator {
         
         if (!parent.allowsChildren()){
             return ValidateResult.createValidateResult(Status.FAIL, 
-                    "Cannot add children to this object");
+                    "Cannot add children to "+parent.getClass());
         }        
         for (MatchMakerObject mmo : (List<MatchMakerObject>)parent.getChildren()){
             if (mmo.getName().equals(value)){
                 setComponentsEnabled(false);
                 return ValidateResult.createValidateResult(Status.FAIL, 
-                        "Cannot have duplicate object name");
+                        dupErrorMessage);
             }
         }
         setComponentsEnabled(true);

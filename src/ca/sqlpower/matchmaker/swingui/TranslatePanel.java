@@ -167,7 +167,7 @@ public class TranslatePanel implements ArchitectPanel {
         List<Action> groupActions = new ArrayList<Action>();
         groupActions.add(createGroupAction);
         MMODuplicateValidator mmoValidator = new MMODuplicateValidator(swingSession.getTranslations(),
-                                    groupActions);
+                                    groupActions, "Cannot have duplicate translate group names");
         handler.addValidateObject(newGroupName, mmoValidator);
         List<Action> wordsActions = new ArrayList<Action>();
         wordsActions.add(saveGroupAction);
