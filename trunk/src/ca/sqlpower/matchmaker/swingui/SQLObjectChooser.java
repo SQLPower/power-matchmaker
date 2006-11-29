@@ -4,7 +4,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
@@ -88,34 +87,22 @@ public class SQLObjectChooser {
 		
 		if (db.isCatalogContainer()) {
 			List<SQLCatalog> catalogs = db.getChildren();
-			if (catalogs != null && catalogs.size() > 0) {
-				catalogComboBox.setEnabled(true);
-				catalogComboBox.setModel(new DefaultComboBoxModel(
-						catalogs.toArray()));
-				catalogComboBox.setSelectedItem(null);
+			setComboBoxStateAndItem(catalogComboBox, catalogs, -1);
+			if ( catalogs != null && catalogs.size() > 0 ) {
 				catalogTerm.setText(catalogs.get(0).getNativeTerm());
 				catalogTerm.setEnabled(true);
 			}
 		} else if (db.isSchemaContainer()) {
 
 			List<SQLSchema> schemas = db.getChildren();
-			if (schemas != null && schemas.size() > 0) {
-				schemaComboBox.setEnabled(true);
-				DefaultComboBoxModel schemaComboBoxModel = new DefaultComboBoxModel(
-						schemas.toArray());
-				schemaComboBox.setModel(schemaComboBoxModel);
-				schemaComboBox.setSelectedItem(null);
+			setComboBoxStateAndItem(schemaComboBox, schemas, -1);
+			if ( schemas != null && schemas.size() > 0 ) {
 				schemaTerm.setText(schemas.get(0).getNativeTerm());
 				schemaTerm.setEnabled(true);
 			}
 		} else {
 			List<SQLTable> tables = db.getChildren();
-			if (tables != null && tables.size() > 0) {
-				tableComboBox.setEnabled(true);
-				tableComboBox.setModel(new DefaultComboBoxModel(tables
-						.toArray()));
-				tableComboBox.setSelectedItem(null);
-			}
+			setComboBoxStateAndItem(tableComboBox, tables, -1);
 		}
 		
 		ItemListener itemListener = new ItemListener() {
@@ -188,34 +175,22 @@ public class SQLObjectChooser {
 
 				if (db.isCatalogContainer()) {
 					List<SQLCatalog> catalogs = db.getChildren();
-					if (catalogs != null && catalogs.size() > 0) {
-						catalogComboBox.setEnabled(true);
-						catalogComboBox.setModel(new DefaultComboBoxModel(
-								catalogs.toArray()));
-						catalogComboBox.setSelectedItem(null);
+					setComboBoxStateAndItem(catalogComboBox,catalogs,-1);
+					if ( catalogs != null && catalogs.size() > 0 ) {
 						catalogTerm.setText(catalogs.get(0).getNativeTerm());
 						catalogTerm.setEnabled(true);
 					}
 				} else if (db.isSchemaContainer()) {
 
 					List<SQLSchema> schemas = db.getChildren();
-					if (schemas != null && schemas.size() > 0) {
-						schemaComboBox.setEnabled(true);
-						DefaultComboBoxModel schemaComboBoxModel = new DefaultComboBoxModel(
-								schemas.toArray());
-						schemaComboBox.setModel(schemaComboBoxModel);
-						schemaComboBox.setSelectedItem(null);
+					setComboBoxStateAndItem(schemaComboBox,schemas,-1);
+					if ( schemas != null && schemas.size() > 0 ) {
 						schemaTerm.setText(schemas.get(0).getNativeTerm());
 						schemaTerm.setEnabled(true);
 					}
 				} else {
 					List<SQLTable> tables = db.getChildren();
-					if (tables != null && tables.size() > 0) {
-						tableComboBox.setEnabled(true);
-						tableComboBox.setModel(new DefaultComboBoxModel(tables
-								.toArray()));
-						tableComboBox.setSelectedItem(null);
-					}
+					setComboBoxStateAndItem(tableComboBox,tables,-1);
 				}
 			} else if (catalog != catalogComboBox.getSelectedItem()) {
 
@@ -240,22 +215,14 @@ public class SQLObjectChooser {
 					catalogTerm.setEnabled(true);
 					if (catalog.isSchemaContainer()) {
 						List<SQLSchema> schemas = catalog.getChildren();
-						if (schemas != null && schemas.size() > 0) {
-							schemaComboBox.setEnabled(true);
-							schemaComboBox.setModel(new DefaultComboBoxModel(
-									schemas.toArray()));
-							schemaComboBox.setSelectedItem(null);
+						setComboBoxStateAndItem(schemaComboBox,schemas,-1);
+						if ( schemas != null && schemas.size() > 0 ) {
 							schemaTerm.setText(schemas.get(0).getNativeTerm());
 							schemaTerm.setEnabled(true);
 						}
 					} else {
 						List<SQLTable> tables = catalog.getChildren();
-						if (tables != null && tables.size() > 0) {
-							tableComboBox.setEnabled(true);
-							tableComboBox.setModel(new DefaultComboBoxModel(
-									tables.toArray()));
-							tableComboBox.setSelectedItem(null);
-						}
+						setComboBoxStateAndItem(tableComboBox,tables,-1);
 					}
 				}
 			} else if (schema != schemaComboBox.getSelectedItem()) {
@@ -275,12 +242,7 @@ public class SQLObjectChooser {
 					schemaTerm.setText(schema.getNativeTerm());
 					schemaTerm.setEnabled(true);
 					List<SQLTable> tables = schema.getChildren();
-					if (tables != null && tables.size() > 0) {
-						tableComboBox.setEnabled(true);
-						tableComboBox.setModel(new DefaultComboBoxModel(tables
-								.toArray()));
-						tableComboBox.setSelectedItem(null);
-					}
+					setComboBoxStateAndItem(tableComboBox,tables,-1);
 				}
 			} else if (table != tableComboBox.getSelectedItem()) {
 
@@ -292,22 +254,37 @@ public class SQLObjectChooser {
 				table = (SQLTable) tableComboBox.getSelectedItem();
 				if (table != null) {
 					List<SQLColumn> columns = table.getColumns();
-					if (columns != null && columns.size() > 0) {
-						columnComboBox.setEnabled(true);
-						columnComboBox.setModel(new DefaultComboBoxModel(
-								columns.toArray()));
-						columnComboBox.setSelectedItem(null);
-					}
+					setComboBoxStateAndItem(columnComboBox,columns,-1);
 
 					List<SQLIndex> indices = table.getUniqueIndex();
-					if (indices != null && indices.size() > 0) {
-						uniqueKeyComboBox.setEnabled(true);
-						uniqueKeyComboBox.setModel(new DefaultComboBoxModel(
-								indices.toArray()));
-						uniqueKeyComboBox.setSelectedIndex(0);
-					}
+					setComboBoxStateAndItem(uniqueKeyComboBox,indices,0);
 				}
 			}
+		}
+	}
+	
+	/**
+	 * replace the combobox items and set the enable/disable state according to
+	 * the size of items, enable if the items size > 0. also set the selected item
+	 * if the selectedItem >= 0
+	 * we don't want to just reset the combobox model, because we may have 
+	 * listener on the combobox.
+	 * @param comboBox   the JcomboBox, all item in it will be removed 
+	 * @param items      List of the item that we want to put in the combobox
+	 * @param selectedIndex the selectedItem after new items in place.
+	 */
+	private void setComboBoxStateAndItem(JComboBox comboBox, List items, int selectedIndex) {
+		comboBox.removeAllItems();
+		comboBox.setEnabled(false);
+		if (items == null || items.size() == 0)		return;
+		for ( Object o : items ) {
+			comboBox.addItem(o);
+		}
+		if (items.size() > 0 ) comboBox.setEnabled(true);
+		if ( selectedIndex >= 0 && selectedIndex < items.size()) {
+			comboBox.setSelectedIndex(selectedIndex);
+		} else {
+			comboBox.setSelectedIndex(-1);
 		}
 	}
 
