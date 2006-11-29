@@ -274,50 +274,57 @@ public class MatchEditor {
 
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,30dlu,4dlu,pref,   16dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,   4dlu,32dlu,  16dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
-    	//		 1     2    3    4    5    6    7    8    9    10      11    12   13   14  15   16       17    18     19  20    21   22    23   24    25
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,30dlu,4dlu,pref,   4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,  4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
 
 		PanelBuilder pb;
 
 		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout) : new JPanel(layout);
 		pb = new PanelBuilder(layout, p);
 		CellConstraints cc = new CellConstraints();
-
-		pb.add(new JLabel("Match ID:"), cc.xy(2,4,"r,c"));
-		pb.add(new JLabel("Folder:"), cc.xy(2,6,"r,c"));
-		pb.add(new JLabel("Description:"), cc.xy(2,8,"r,t"));
-		pb.add(new JLabel("Type:"), cc.xy(2,10,"r,c"));
-
-		pb.add(status, cc.xy(4,2));
-		pb.add(matchId, cc.xy(4,4));
-		pb.add(folderComboBox, cc.xy(4,6));
-		pb.add(new JScrollPane(desc), cc.xy(4,8,"f,f"));
-		pb.add(matchType, cc.xy(4,10));
-
-		pb.add(sourceChooser.getCatalogTerm(), cc.xy(2,12,"r,c"));
-		pb.add(sourceChooser.getSchemaTerm(), cc.xy(2,14,"r,c"));
-		pb.add(new JLabel("Table Name:"), cc.xy(2,16,"r,c"));
-		pb.add(new JLabel("Unique Index:"), cc.xy(2,18,"r,t"));
-		pb.add(new JLabel("Filter:"), cc.xy(2,20,"r,t"));
-
-		pb.add(sourceChooser.getCatalogComboBox(), cc.xy(4,12));
-		pb.add(sourceChooser.getSchemaComboBox(), cc.xy(4,14));
-		pb.add(sourceChooser.getTableComboBox(), cc.xy(4,16));
-		pb.add(sourceChooser.getUniqueKeyComboBox(), cc.xy(4,18,"f,f"));
-		pb.add(filterPanel, cc.xy(4,20,"f,f"));
-
-		pb.add(resultChooser.getCatalogTerm(), cc.xy(2,22,"r,c"));
-		pb.add(resultChooser.getSchemaTerm(), cc.xy(2,24,"r,c"));
-		pb.add(new JLabel("Table Name:"), cc.xy(2,26,"r,c"));
-
-		pb.add(resultChooser.getCatalogComboBox(), cc.xy(4,22));
-		pb.add(resultChooser.getSchemaComboBox(), cc.xy(4,24));
-		pb.add(resultTableName, cc.xy(4,26));
-
-
-
-		pb.add(viewBuilder, cc.xy(6,12,"f,f"));
-		pb.add(createResultTable, cc.xywh(6,22,1,1));
+		int row = 2;
+		pb.add(status, cc.xy(4,row));
+		row += 2;
+		pb.add(new JLabel("Match ID:"), cc.xy(2,row,"r,c"));
+		pb.add(matchId, cc.xy(4,row));
+		row += 2;
+		pb.add(new JLabel("Folder:"), cc.xy(2,row,"r,c"));
+		pb.add(folderComboBox, cc.xy(4,row));
+		row += 2;
+		pb.add(new JLabel("Description:"), cc.xy(2,row,"r,t"));
+		pb.add(new JScrollPane(desc), cc.xy(4,row,"f,f"));
+		row += 2;
+		pb.add(new JLabel("Type:"), cc.xy(2,row,"r,c"));
+		pb.add(matchType, cc.xy(4,row));
+		row+=2;
+		pb.addTitle("Source Table", cc.xy(2, row));
+		row+=2;
+		pb.add(viewBuilder, cc.xy(6,row,"f,f"));
+		pb.add(sourceChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
+		pb.add(sourceChooser.getCatalogComboBox(), cc.xy(4,row));
+		row+=2;
+		pb.add(sourceChooser.getSchemaTerm(), cc.xy(2,row,"r,c"));
+		pb.add(sourceChooser.getSchemaComboBox(), cc.xy(4,row));
+		row+=2;
+		pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,c"));
+		pb.add(sourceChooser.getTableComboBox(), cc.xy(4,row));
+		row+=2;
+		pb.add(new JLabel("Unique Index:"), cc.xy(2,row,"r,t"));
+		pb.add(sourceChooser.getUniqueKeyComboBox(), cc.xy(4,row,"f,f"));
+		row+=2;
+		pb.add(new JLabel("Filter:"), cc.xy(2,row,"r,t"));
+		pb.add(filterPanel, cc.xy(4,row,"f,f"));
+		row+=2;
+		pb.addTitle("Output Table", cc.xy(2, row));
+		row+=2;
+		pb.add(resultChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
+		pb.add(resultChooser.getCatalogComboBox(), cc.xy(4,row));
+		pb.add(createResultTable, cc.xywh(6,row,1,1));
+		row+=2;
+		pb.add(resultChooser.getSchemaTerm(), cc.xy(2,row,"r,c"));
+		pb.add(resultChooser.getSchemaComboBox(), cc.xy(4,row));
+		row+=2;
+		pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,c"));
+		pb.add(resultTableName, cc.xy(4,row));
 
 		ButtonStackBuilder bb = new ButtonStackBuilder();
 		bb.addGridded(saveMatch);
