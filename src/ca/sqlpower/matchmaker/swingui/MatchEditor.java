@@ -115,6 +115,7 @@ public class MatchEditor {
         createResultTableAction = 
         	new CreateResultTableAction(swingSession, match);
         buildUI();
+        folderComboBox.setSelectedItem(folder);
         handler.addPropertyChangeListener(new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshActionStatus();
