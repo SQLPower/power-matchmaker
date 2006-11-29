@@ -70,12 +70,9 @@ public class MatchEditor {
     private JComboBox folderComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
     private JComboBox matchType = new JComboBox();
-
     private JTextField resultTableName = new JTextField();
-
     private JButton viewBuilder;
     private JButton createResultTable;
-
     private JButton saveMatch;
     private JButton showAuditInfo;
     private JButton runMatch;
@@ -115,7 +112,7 @@ public class MatchEditor {
         createResultTableAction = 
         	new CreateResultTableAction(swingSession, match);
         buildUI();
-        folderComboBox.setSelectedItem(folder);
+        setDefaultSelections();
         handler.addPropertyChangeListener(new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshActionStatus();
@@ -344,7 +341,6 @@ public class MatchEditor {
 
 		pb.add(bb.getPanel(), cc.xywh(8,4,1,14,"f,f"));
 		panel = pb.getPanel();
-		setDefaultSelections();
     }
 
 
@@ -365,6 +361,8 @@ public class MatchEditor {
         folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
         if ( match.getParent() != null) {
        		folderComboBox.setSelectedItem(match.getParent());
+        } else if ( folder != null ) {
+        	folderComboBox.setSelectedItem(folder);
         }
 
         matchId.setText(match.getName());
@@ -375,9 +373,12 @@ public class MatchEditor {
         Validator v = new MatchNameValidator(swingSession);
         handler.addValidateObject(matchId,v);
 
-        Validator v2 = new MatchSourceTableValidator(swingSession);
+        Validator v2 = new MatchSourceTableValidator();
         handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
-
+        
+        Validator v2a = new MatchSourceTableIndexValidator();
+        handler.addValidateObject(sourceChooser.getUniqueKeyComboBox(),v2a);
+        
         if ( resultChooser.getCatalogComboBox().isEnabled() ) {
         	Validator v3 = new MatchResultCatalogSchemaValidator("Result "+
         			resultChooser.getCatalogTerm().getText());
@@ -390,7 +391,7 @@ public class MatchEditor {
         	handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
         }
 
-        Validator v5 = new MatchResultTableNameValidator(swingSession);
+        Validator v5 = new MatchResultTableNameValidator();
         handler.addValidateObject(resultTableName,v5);
 
 
@@ -405,6 +406,9 @@ public class MatchEditor {
     	}
         SQLIndex pk = match.getSourceTableIndex();
         sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
+        if (sourceChooser.getUniqueKeyComboBox().getSelectedItem() == null) {
+        	createResultTableAction.setEnabled(false);
+        }
         
     	SQLTable resultTable = match.getResultTable();
     	if ( resultTable != null ) {
@@ -548,12 +552,13 @@ public class MatchEditor {
         }
 
         logger.debug("Saving Match:" + match.getName());
-
-        PlFolder folder = (PlFolder) folderComboBox.getSelectedItem();        
-        if (!folder.getChildren().contains(match)) {        	
-        	swingSession.move(match,folder);
+        
+        PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
+        if (!selectedFolder.getChildren().contains(match)) {        	
+        	swingSession.move(match,selectedFolder);
         }
-        swingSession.save(match);        
+
+        swingSession.save(match);
 		return true;
 
     }
@@ -563,7 +568,6 @@ public class MatchEditor {
     	saveAction.setEnabled(true);
 		newMatchGroupAction.setEnabled(true);
 		runMatchAction.setEnabled(true);
-
     	if ( worst.getStatus() == Status.FAIL ) {
     		saveAction.setEnabled(false);
     		newMatchGroupAction.setEnabled(false);
@@ -573,6 +577,15 @@ public class MatchEditor {
     	} 
     	if (sourceChooser.getTableComboBox().getSelectedItem() == null){
     		newMatchGroupAction.setEnabled(false);
+    	}
+    	
+    	ValidateResult r1 = handler.getResultOf(sourceChooser.getUniqueKeyComboBox());
+    	ValidateResult r2 = handler.getResultOf(resultTableName);
+    	if ( r1 == null || r1.getStatus() != Status.OK ||
+    			r2 == null || r2.getStatus() != Status.OK ) {
+    		createResultTableAction.setEnabled(false);
+    	} else {
+    		createResultTableAction.setEnabled(true);
     	}
     }
 
@@ -600,13 +613,6 @@ public class MatchEditor {
     }
 
     private class MatchSourceTableValidator implements Validator {
-
-		private MatchMakerSwingSession session;
-
-		public MatchSourceTableValidator(MatchMakerSwingSession session) {
-    		this.session = session;
-		}
-
 		public ValidateResult validate(Object contents) {
 
 			SQLTable value = (SQLTable)contents;
@@ -625,6 +631,18 @@ public class MatchEditor {
 		}
     }
 
+    private class MatchSourceTableIndexValidator implements Validator {
+
+    	public ValidateResult validate(Object contents) {
+			SQLIndex value = (SQLIndex)contents;
+			if ( value == null ) {
+				return ValidateResult.createValidateResult(Status.WARN,
+						"Match source table index is required");
+			}
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+    }
+    
     private class MatchResultCatalogSchemaValidator implements Validator {
 
     	private String componentName;
@@ -642,12 +660,6 @@ public class MatchEditor {
     }
 
     private class MatchResultTableNameValidator implements Validator {
-
-		private MatchMakerSwingSession session;
-
-		public MatchResultTableNameValidator(MatchMakerSwingSession session) {
-    		this.session = session;
-		}
 
 		public ValidateResult validate(Object contents) {
 			final Pattern sqlIdentifierPattern =
