@@ -52,6 +52,9 @@ import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 import ca.sqlpower.matchmaker.util.log.Level;
 import ca.sqlpower.matchmaker.util.log.LogFactory;
+import ca.sqlpower.validation.Status;
+import ca.sqlpower.validation.ValidateResult;
+import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
@@ -94,7 +97,7 @@ public class RunMatchDialog extends JDialog {
 
 	private JButton save;
 
-	private JButton runMatchEngine;
+	private JButton runMatchEngineButton;
 
 	private JButton exit;
 
@@ -110,25 +113,33 @@ public class RunMatchDialog extends JDialog {
 
 	private String enginePath;
 	
+	private final Action runEngineAction;
+	
 	public RunMatchDialog(MatchMakerSwingSession swingSession, Match match,
 			JFrame parentFrame) {
-		super(parentFrame, "Run Match: " + match.getName());
+		super(parentFrame, "Run Match:[" + match.getName() + "]");
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
 		this.match = match;
+		runEngineAction = new RunEngineAction(match,RunMatchDialog.this);
 		handler = new FormValidationHandler(status);
-		buildUI();
-		setDefaultSelections(match);
 		handler.addPropertyChangeListener(new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshActionStatus();
 			}
         });
+		buildUI();
+		setDefaultSelections(match);
 		enginePath = swingSession.getContext().getMatchEngineLocation();
 	}
 	
 	private void refreshActionStatus() {
-		// TODO Auto-generated method stub
+		ValidateResult worst = handler.getWorstValidationStatus();
+    	runEngineAction.setEnabled(true);
+
+    	if ( worst.getStatus() == Status.FAIL ) {
+    		runEngineAction.setEnabled(false);
+    	} 
 	}
 
 	private Action browseFileAction = new AbstractAction("...") {
@@ -186,7 +197,8 @@ public class RunMatchDialog extends JDialog {
 			}
 		});
 
-		runMatchEngine = new JButton(new RunEngineAction(match,RunMatchDialog.this));
+		
+		runMatchEngineButton = new JButton(runEngineAction);
 		exit = new JButton(new AbstractAction("Close") {
 			public void actionPerformed(ActionEvent e) {
 				RunMatchDialog.this.setVisible(false);
@@ -224,7 +236,7 @@ public class RunMatchDialog extends JDialog {
 		bbpb = new PanelBuilder(bbLayout, bbp);
 		bbpb.add(viewLogFile, cc.xy(2, 2, "f,f"));
 		bbpb.add(showCommand, cc.xy(4, 2, "f,f"));
-		bbpb.add(runMatchEngine, cc.xy(6, 2, "f,f"));
+		bbpb.add(runMatchEngineButton, cc.xy(6, 2, "f,f"));
 		bbpb.add(viewStats, cc.xy(2, 4, "f,f"));
 		bbpb.add(save, cc.xy(4, 4, "f,f"));
 		bbpb.add(exit, cc.xy(6, 4, "f,f"));
@@ -235,6 +247,16 @@ public class RunMatchDialog extends JDialog {
 	}
 
 	private void setDefaultSelections(Match match) {
+		
+		/* we put the validators here because we want to validate
+		 * the form right after it being loaded
+		 */
+		Validator v1 = new LogFileNameValidator();
+        handler.addValidateObject(logFilePath,v1);
+        
+        Validator v2 = new MatchAndMatchEngineValidator(match);
+        handler.addValidateObject(sendEmail,v2);
+        
 		MatchSettings settings = match.getMatchSettings();
 		String logFileName;
 		if ( settings.getLog() != null ) {
@@ -628,7 +650,7 @@ public class RunMatchDialog extends JDialog {
 					d.setVisible(false);
 				}
 			});
-			cancelButton.setText("Cancel");
+			cancelButton.setText("Close");
 			bbBuilder.addGridded(cancelButton);
 
 			pb.add(bbBuilder.getPanel(), cc.xy(2, 4));
@@ -689,4 +711,71 @@ public class RunMatchDialog extends JDialog {
 		return parentFrame;
 	}
 
+	private class LogFileNameValidator implements Validator {
+		public ValidateResult validate(Object contents) {
+			String name = (String) contents;
+			if ( name == null || name.length() == 0 ) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						"Log file is required.");
+			}
+			File log = new File(name);
+			if (log.exists() ) {
+				if ( !log.isFile()) {
+					return ValidateResult.createValidateResult(Status.FAIL,
+						"Log file name is invalidate.");
+				}
+				if ( !log.canWrite()) {
+					return ValidateResult.createValidateResult(Status.FAIL,
+						"Log file is not writable.");
+				}
+			} else {
+				try {
+					if ( !log.createNewFile()) {
+						return ValidateResult.createValidateResult(Status.FAIL,
+							"Log file can not be created.");
+					}
+				} catch (IOException e) {
+					return ValidateResult.createValidateResult(Status.FAIL,
+						"Log file can not be created.");
+				} finally {
+					log.delete();
+				}
+			}
+			return ValidateResult.createValidateResult(Status.OK,"");
+		}
+		
+	}
+	private class MatchAndMatchEngineValidator implements Validator {
+
+		private Match match;
+		public MatchAndMatchEngineValidator(Match match) {
+			this.match = match;
+		}
+		public ValidateResult validate(Object contents) {
+			if ( !match.isDSNSetup()) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						"The ODBC DSN has not been setup, " +
+						"it's required by the match engine");
+			}
+			if (!match.isMatchEngineExistAndExecutable()) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						"The Match engine executable is not found.\n" +
+						" It should be in the directory of pl.ini");
+			}
+			if (match.getMatchSettings().getSendEmail() != null &&
+				match.getMatchSettings().getSendEmail().booleanValue() &&
+				!match.isEmailEngineExistAndExecutable()) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						"The email notification executable is not found.\n" +
+						" It should be in the directory of pl.ini");
+			}
+			
+			if (!match.isMatchMakerEngineVersionValidate() ) {
+				return ValidateResult.createValidateResult(Status.WARN,
+						"The match engine version is not up to date");
+			}
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+		
+	}
 }
