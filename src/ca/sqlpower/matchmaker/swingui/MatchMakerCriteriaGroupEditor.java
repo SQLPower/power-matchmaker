@@ -210,9 +210,7 @@ public class MatchMakerCriteriaGroupEditor {
 			if ( !match.getMatchCriteriaGroups().contains(group)) {
 				match.addMatchCriteriaGroup(group);
 			}
-			//The reason for doing the opposite of active is that
-			//in the database, it is stored as inactive instead of active.
-			group.setActive(!active.isSelected());
+			group.setActive(active.isSelected());
 			MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
 	        dao.save(match);
 		}
@@ -353,7 +351,7 @@ public class MatchMakerCriteriaGroupEditor {
         }
         filterPanel.getFilterTextArea().setText(group.getFilter());
         if ( group.getActive() != null ) {
-        	active.setSelected(!group.getActive());
+        	active.setSelected(group.getActive());
         }
 
         SQLTable sourceTable;
