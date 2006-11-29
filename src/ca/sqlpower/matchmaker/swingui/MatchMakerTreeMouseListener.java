@@ -117,9 +117,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                 if (o instanceof MMTreeNode ) {
                 	MatchMakerTreeModel model = (MatchMakerTreeModel)t.getModel();
                 	int index = model.getIndexOfChild(model.getRoot(), o);
-                	/**
-                	 * I want to create folder under current only
-                	 */
+                	/*** create folder under current only */
                 	if ( index == 0 ) {
                 		createNewFolderMenuItem();
                 	}
