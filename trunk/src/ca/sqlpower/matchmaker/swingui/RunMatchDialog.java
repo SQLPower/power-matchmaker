@@ -27,6 +27,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -40,11 +41,14 @@ import javax.swing.text.StyleConstants;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SaveDocument;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
+import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerEngine;
+import ca.sqlpower.matchmaker.MatchMakerEngineImpl;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -111,9 +115,9 @@ public class RunMatchDialog extends JDialog {
 	
 	private FormValidationHandler handler;
 
-	private String enginePath;
-	
 	private final Action runEngineAction;
+	
+	private final MatchMakerEngine engine;
 	
 	public RunMatchDialog(MatchMakerSwingSession swingSession, Match match,
 			JFrame parentFrame) {
@@ -121,7 +125,7 @@ public class RunMatchDialog extends JDialog {
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
 		this.match = match;
-		runEngineAction = new RunEngineAction(match,RunMatchDialog.this);
+		runEngineAction = new RunEngineAction(swingSession,match,RunMatchDialog.this);
 		handler = new FormValidationHandler(status);
 		handler.addPropertyChangeListener(new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -130,7 +134,8 @@ public class RunMatchDialog extends JDialog {
         });
 		buildUI();
 		setDefaultSelections(match);
-		enginePath = swingSession.getContext().getMatchEngineLocation();
+		engine = new MatchMakerEngineImpl(swingSession,match);
+		
 	}
 	
 	private void refreshActionStatus() {
@@ -369,7 +374,6 @@ public class RunMatchDialog extends JDialog {
 
 	private class RunEngineAction extends AbstractAction {
 
-		private final Match match;
 
 		private final JDialog parent;
 
@@ -377,10 +381,18 @@ public class RunMatchDialog extends JDialog {
 
 		SimpleAttributeSet stderrAtt = new SimpleAttributeSet();
 
-		public RunEngineAction(Match match, JDialog parent) {
+		private MatchMakerEngine matchEngine;
+
+		private MatchMakerSession session;
+
+		private Match match;
+
+		public RunEngineAction(MatchMakerSession session, Match match, JDialog parent) {
 			super("Run Match Engine");
 			this.parent = parent;
+			this.session = session;
 			this.match = match;
+			matchEngine = new MatchMakerEngineImpl(session,match);
 			StyleConstants.setForeground(stdoutAtt, Color.black);
 			StyleConstants.setFontFamily(stdoutAtt, "Courier New");
 			StyleConstants.setForeground(stderrAtt, Color.red);
@@ -388,8 +400,6 @@ public class RunMatchDialog extends JDialog {
 
 		public void actionPerformed(ActionEvent e) {
 			applyChange();
-			final String cmd = createCommand(match) + " USER_PROMPT=N";
-
 			GraphicsEnvironment ge = GraphicsEnvironment
 					.getLocalGraphicsEnvironment();
 			Font[] fonts = ge.getAllFonts();
@@ -503,51 +513,59 @@ public class RunMatchDialog extends JDialog {
 					d.add(pb.getPanel());
 					// don't display dialog until the process started
 
-					Runtime rt = Runtime.getRuntime();
-					logger.debug("Executing " + cmd);
-					Process proc;
 					try {
-						proc = rt.exec(cmd);
-						StreamGobbler errorGobbler = new StreamGobbler(proc
-								.getErrorStream(), "ERROR", engineOutputDoc,
-								stderrAtt);
-
-						// any output?
-						StreamGobbler outputGobbler = new StreamGobbler(proc
-								.getInputStream(), "OUTPUT", engineOutputDoc,
-								stdoutAtt);
-
-						// kick them off
-						errorGobbler.start();
-						outputGobbler.start();
-
-						d.pack();
-						d.setVisible(true);
-
-						// any error message?
-						// any error???
-						final int exitVal = proc.waitFor();
-						logger.debug("ExitValue: " + exitVal);
-						SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-								try {
-									engineOutputDoc
-											.insertString(engineOutputDoc
-													.getLength(),
-													"\nExecutable Return Code: "
-															+ exitVal + "\n",
-													stderrAtt);
-								} catch (BadLocationException e1) {
-									ASUtils.showExceptionDialog(d,
-											"Document Display Error", e1, new MatchMakerQFAFactory());
-								}
-							}
-						});
-
-					} catch (Throwable e1) {
-						ASUtils.showExceptionDialog(parent,
-								"Engine Run Time Error", e1, new MatchMakerQFAFactory());
+						matchEngine.checkPreConditions();
+						matchEngine.run();
+					} catch (EngineSettingException e) {
+						JOptionPane.showMessageDialog(parent,
+								e.getMessage(),
+								"Engine error",
+								JOptionPane.ERROR_MESSAGE);
+						return;
+					} catch (IOException e) {
+						JOptionPane.showMessageDialog(parent,
+								e.getMessage(),
+								"Engine error",
+								JOptionPane.ERROR_MESSAGE);
+						return;
 					}
+					
+					// any output?
+					StreamGobbler errorGobbler = new StreamGobbler(
+							matchEngine.getEngineErrorOutput(),
+							"ERROR",
+							engineOutputDoc,
+							stderrAtt);
+
+					StreamGobbler outputGobbler = new StreamGobbler(
+							matchEngine.getEngineStandardOutput(),
+							"OUTPUT",
+							engineOutputDoc,
+							stdoutAtt);
+
+					// kick them off
+					errorGobbler.start();
+					outputGobbler.start();
+
+					d.pack();
+					d.setVisible(true);
+
+					final int exitVal = matchEngine.getEngineReturnCode();
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							try {
+								engineOutputDoc
+										.insertString(engineOutputDoc
+												.getLength(),
+												"\nExecutable Return Code: "
+														+ exitVal + "\n",
+												stderrAtt);
+							} catch (BadLocationException e1) {
+								ASUtils.showExceptionDialog(d,
+										"Document Display Error", e1, new MatchMakerQFAFactory());
+							}
+						}
+					});
 				}
 			}).start();
 		}
@@ -589,22 +607,11 @@ public class RunMatchDialog extends JDialog {
 
 		public void actionPerformed(ActionEvent e) {
 			applyChange();
-			final String cmd = createCommand(match);
+			MatchMakerEngine engine = new MatchMakerEngineImpl(swingSession,match);
+			final String cmd = engine.createCommandLine(swingSession, match, false);
 			final JDialog d = new JDialog(parent,
-					"MatchMaker Engine Command Line:");
+					"MatchMaker Engine Command Line");
 
-			final DefaultStyledDocument cmdDoc = new DefaultStyledDocument();
-			SimpleAttributeSet att = new SimpleAttributeSet();
-			StyleConstants.setForeground(att, Color.black);
-
-			try {
-				cmdDoc.insertString(0, createCommand(match), att);
-			} catch (BadLocationException e1) {
-				ASUtils.showExceptionDialog(d, "Unknown Document Error", e1, new MatchMakerQFAFactory());
-			}
-
-
-			
 			FormLayout layout = new FormLayout("4dlu,fill:min(pref;200dlu):grow,4dlu", // columns
 					"4dlu,fill:min(pref;200dlu):grow,4dlu,pref,4dlu"); // rows
 			//		 1    2                        3    4     5
@@ -615,7 +622,7 @@ public class RunMatchDialog extends JDialog {
 			pb = new PanelBuilder(layout, p);
 			CellConstraints cc = new CellConstraints();
 
-			JTextArea cmdText = new JTextArea(cmdDoc,createCommand(match),15,120);
+			JTextArea cmdText = new JTextArea(cmd,15,120);
 			cmdText.setEditable(false);
 			cmdText.setWrapStyleWord(true);
 			cmdText.setLineWrap(true);
@@ -625,6 +632,15 @@ public class RunMatchDialog extends JDialog {
 
 			Action saveAsAction = new AbstractAction("Save As...") {
 				public void actionPerformed(ActionEvent e) {
+					final DefaultStyledDocument cmdDoc = new DefaultStyledDocument();
+					SimpleAttributeSet att = new SimpleAttributeSet();
+					StyleConstants.setForeground(att, Color.black);
+
+					try {
+						cmdDoc.insertString(0, cmd, att);
+					} catch (BadLocationException e1) {
+						ASUtils.showExceptionDialog(d, "Unknown Document Error", e1, new MatchMakerQFAFactory());
+					}
 					new SaveDocument(d, cmdDoc,
 							(FileExtensionFilter) ASUtils.BATCH_FILE_FILTER);
 				}
@@ -662,50 +678,7 @@ public class RunMatchDialog extends JDialog {
 
 	}
 
-	/**
-	 * Create a command to run the match engine on the match passed in
-	 *
-	 * @param match
-	 * @return the run command for the match
-	 */
-	protected String createCommand(Match match) {
-		/*
-		 * command sample:
-		 * "M:\Program Files\Power Loader Suite\Match_Oracle.exe"
-		 * MATCH="MATCH_CTV_ORGS" USER=PL/pl@arthur_test DEBUG=Y
-		 * TRUNCATE_CAND_DUP=N SEND_EMAIL=N APPEND_TO_LOG_IND=N
-		 * LOG_FILE="M:\Program Files\Power Loader Suite\Power Loader\script\MATCH_MATCH_CTV_ORGS.log"
-		 * SHOW_PROGRESS=10 PROCESS_CNT=1
-		 */
-		StringBuffer command = new StringBuffer();
-		SQLDatabase db = swingSession.getDatabase();
-		String programPath = "\"" + enginePath + "\"";
-		command.append(programPath);
-		command.append(" MATCH=\"").append(match.getName()).append("\"");
-		if (db != null) {
-			command.append(" USER=");
-			command.append(db.getDataSource().getUser());
-			command.append("/").append(db.getDataSource().getPass());
-			command.append("@").append(db.getDataSource().getName());
-		}
-		MatchSettings settings = match.getMatchSettings();
-		command.append(" DEBUG=").append(settings.getDebug() ? "Y" : "N");
-		command.append(" TRUNCATE_CAND_DUP=").append(
-				settings.getTruncateCandDupe() ? "Y" : "N");
-		command.append(" SEND_EMAIL=").append(
-				settings.getSendEmail() ? "Y" : "N");
-		command.append(" APPEND_TO_LOG_IND=").append(
-				settings.getAppendToLog() ? "Y" : "N");
-		command.append(" LOG_FILE=\"").append(
-				settings.getLog().getConstraint().toString()).append("\"");
-		if ( settings.getShowProgressFreq() != null ) {
-			command.append(" SHOW_PROGRESS=").append(settings.getShowProgressFreq());
-		}
-		if ( settings.getProcessCount() != null ) {
-			command.append(" PROCESS_CNT=").append(settings.getProcessCount());
-		}
-		return command.toString();
-	}
+	
 
 	private JFrame getParentFrame() {
 		return parentFrame;
@@ -752,28 +725,8 @@ public class RunMatchDialog extends JDialog {
 			this.match = match;
 		}
 		public ValidateResult validate(Object contents) {
-			if ( !match.isDSNSetup()) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						"The ODBC DSN has not been setup, " +
-						"it's required by the match engine");
-			}
-			if (!match.isMatchEngineExistAndExecutable()) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						"The Match engine executable is not found.\n" +
-						" It should be in the directory of pl.ini");
-			}
-			if (match.getMatchSettings().getSendEmail() != null &&
-				match.getMatchSettings().getSendEmail().booleanValue() &&
-				!match.isEmailEngineExistAndExecutable()) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						"The email notification executable is not found.\n" +
-						" It should be in the directory of pl.ini");
-			}
 			
-			if (!match.isMatchMakerEngineVersionValidate() ) {
-				return ValidateResult.createValidateResult(Status.WARN,
-						"The match engine version is not up to date");
-			}
+
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
 		

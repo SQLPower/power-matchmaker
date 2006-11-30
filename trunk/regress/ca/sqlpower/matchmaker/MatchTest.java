@@ -68,57 +68,6 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
     }
     
-    public void testResultTableExistsWhenTrue() throws Exception {
-      ArchitectDataSource ds = new ArchitectDataSource();
-      ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
-      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
-      ds.setUser("n/a");
-      ds.setPass("n/a");
-      final SQLDatabase db = new SQLDatabase(ds);
-      session.setDatabase(db);
-      SQLTable resultTable = db.getTableByName("farm", "cow", "moo");
-      assertNotNull(resultTable);
-      match.setResultTable(resultTable);
-      assertTrue(match.resultTableExists());
-    }
-    
-    /**
-     * Tests that new nonexistant handcrafted tables are nonexistant according
-     * to the Match object.
-     */
-    public void testResultTableExistsWhenFalse() throws Exception {
-        ArchitectDataSource ds = new ArchitectDataSource();
-        ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
-        ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
-        ds.setUser("n/a");
-        ds.setPass("n/a");
-        final SQLDatabase db = new SQLDatabase(ds);
-        session.setDatabase(db);
-        SQLCatalog farmCat = (SQLCatalog) db.getChildByName("farm");
-        SQLSchema cowSchem = (SQLSchema) farmCat.getChildByName("cow");
-        SQLTable resultTable = new SQLTable(cowSchem, "nonexistant", null, "TABLE", true);
-        match.setResultTable(resultTable);
-        assertFalse(match.resultTableExists());
-      }
-
-    /**
-     * Tests that new nonexistant simulated tables that are really in
-     * the session's in-memory view of the database are nonexistant according
-     * to the Match object.
-     */
-    public void testResultTableExistsWhenInMemoryButStillFalse() throws Exception {
-        ArchitectDataSource ds = new ArchitectDataSource();
-        ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
-        ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
-        ds.setUser("n/a");
-        ds.setPass("n/a");
-        final SQLDatabase db = new SQLDatabase(ds);
-        session.setDatabase(db);
-        SQLTable resultTable = ArchitectUtils.addSimulatedTable(db, "cat", "sch", "faketab");
-        match.setResultTable(resultTable);
-        assertFalse(match.resultTableExists());
-      }
-
     public void testCreateResultTable() throws ArchitectException {
     	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
@@ -260,4 +209,118 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	assertNotNull(match.getSourceTableIndex());
     	assertSame(foo, match.getSourceTableIndex());
     }
+    
+	public void testResultTableExistsWhenTrue() throws Exception {
+		ArchitectDataSource ds = new ArchitectDataSource();
+		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
+		ds
+				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
+		ds.setUser("n/a");
+		ds.setPass("n/a");
+		final SQLDatabase db = new SQLDatabase(ds);
+		session.setDatabase(db);
+		SQLTable resultTable = db.getTableByName("farm", "cow", "moo");
+		assertNotNull(resultTable);
+		match.setResultTable(resultTable);
+		assertTrue(match.doesResultTableExist(session, match));
+	}
+
+	/**
+	 * Tests that new nonexistant handcrafted tables are nonexistant according
+	 * to the Match object.
+	 */
+	public void testResultTableExistsWhenFalse() throws Exception {
+		ArchitectDataSource ds = new ArchitectDataSource();
+		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
+		ds
+				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
+		ds.setUser("n/a");
+		ds.setPass("n/a");
+		final SQLDatabase db = new SQLDatabase(ds);
+		session.setDatabase(db);
+		SQLCatalog farmCat = (SQLCatalog) db.getChildByName("farm");
+		SQLSchema cowSchem = (SQLSchema) farmCat.getChildByName("cow");
+		SQLTable resultTable = new SQLTable(cowSchem, "nonexistant", null,
+				"TABLE", true);
+		match.setResultTable(resultTable);
+		assertFalse(match.doesResultTableExist(session, match));
+	}
+
+	/**
+	 * Tests that new nonexistant simulated tables that are really in the
+	 * session's in-memory view of the database are nonexistant according to the
+	 * Match object.
+	 */
+	public void testResultTableExistsWhenInMemoryButStillFalse()
+			throws Exception {
+		ArchitectDataSource ds = new ArchitectDataSource();
+		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
+		ds
+				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
+		ds.setUser("n/a");
+		ds.setPass("n/a");
+		final SQLDatabase db = new SQLDatabase(ds);
+		session.setDatabase(db);
+		SQLTable resultTable = ArchitectUtils.addSimulatedTable(db, "cat",
+				"sch", "faketab");
+		match.setResultTable(resultTable);
+		assertFalse(match.doesResultTableExist(session, match));
+	}
+	
+	public void testSourceTableExistsWhenTrue() throws Exception {
+		ArchitectDataSource ds = new ArchitectDataSource();
+		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
+		ds
+				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
+		ds.setUser("n/a");
+		ds.setPass("n/a");
+		final SQLDatabase db = new SQLDatabase(ds);
+		session.setDatabase(db);
+		SQLTable sourceTable = db.getTableByName("farm", "cow", "moo");
+		assertNotNull(sourceTable);
+		match.setSourceTable(sourceTable);
+		assertTrue(match.doesSourceTableExist(session, match));
+	}
+
+	/**
+	 * Tests that new nonexistant handcrafted tables are nonexistant according
+	 * to the Match object.
+	 */
+	public void testSourceTableExistsWhenFalse() throws Exception {
+		ArchitectDataSource ds = new ArchitectDataSource();
+		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
+		ds
+				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
+		ds.setUser("n/a");
+		ds.setPass("n/a");
+		final SQLDatabase db = new SQLDatabase(ds);
+		session.setDatabase(db);
+		SQLCatalog farmCat = (SQLCatalog) db.getChildByName("farm");
+		SQLSchema cowSchem = (SQLSchema) farmCat.getChildByName("cow");
+		SQLTable sourceTable = new SQLTable(cowSchem, "nonexistant", null,
+				"TABLE", true);
+		match.setSourceTable(sourceTable);
+		assertFalse(match.doesSourceTableExist(session, match));
+	}
+
+	/**
+	 * Tests that new nonexistant simulated tables that are really in the
+	 * session's in-memory view of the database are nonexistant according to the
+	 * Match object.
+	 */
+	public void testSourceTableExistsWhenInMemoryButStillFalse()
+			throws Exception {
+		ArchitectDataSource ds = new ArchitectDataSource();
+		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
+		ds
+				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
+		ds.setUser("n/a");
+		ds.setPass("n/a");
+		final SQLDatabase db = new SQLDatabase(ds);
+		session.setDatabase(db);
+		SQLTable sourceTable = ArchitectUtils.addSimulatedTable(db, "cat",
+				"sch", "faketab");
+		match.setSourceTable(sourceTable);
+		assertFalse(match.doesSourceTableExist(session, match));
+	}
 }
