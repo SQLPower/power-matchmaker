@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -67,7 +68,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
         logger.debug("Stub call: StubSwingSessionContext.setLastLoginDataSource()");
     }
 
-    public void showDatabaseConnectionManager() {
+    public void showDatabaseConnectionManager(Window owner) {
         logger.debug("Stub call: StubSwingSessionContext.showDatabaseConnectionManager()");
     }
 

@@ -203,7 +203,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	private Action databaseConnectionAction = new AbstractAction("Database Connection...") {
 
 		public void actionPerformed(ActionEvent e) {
-            sessionContext.showDatabaseConnectionManager();
+            sessionContext.showDatabaseConnectionManager(frame);
 		}
 	};
 
@@ -541,6 +541,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
                     context.showLoginDialog(null);
 		    	} catch (Exception ex) {
 		    		ASUtils.showExceptionDialog("Couldn't start application!", ex);
+                    System.exit(0);
 		    	}
 		    }
 		});
