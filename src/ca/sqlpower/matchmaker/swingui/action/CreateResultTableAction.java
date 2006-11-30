@@ -84,7 +84,7 @@ public final class CreateResultTableAction extends AbstractAction {
 					swingSession.getDatabase().getDataSource().getDriverClass());
 			return;
 		}
-		if (match.resultTableExists()) {
+		if (Match.doesResultTableExist(swingSession, match)) {
 			int answer = JOptionPane.showConfirmDialog(swingSession.getFrame(),
 					"Result table exists, do you want to drop and recreate it?",
 					"Table exists", 

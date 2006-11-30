@@ -1,7 +1,5 @@
 package ca.sqlpower.matchmaker;
 
-import java.io.FilePermission;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
@@ -17,8 +15,6 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.util.ViewSpec;
-import ca.sqlpower.sql.DefaultParameters;
-import ca.sqlpower.sql.PLSchemaException;
 
 /**
  * folder is the parent of match. should be not null.
@@ -112,6 +108,51 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 */
 	public boolean checkValid() {
 		throw new NotImplementedException();
+	}
+	
+    /**
+     * Returns true if the current resultTable of this match exists
+     * in the session's database; false otherwise.
+     * @throws ArchitectException If there are problems accessing the session's database
+     */
+	public static boolean doesResultTableExist(MatchMakerSession session, Match match) throws ArchitectException {
+		return tableExists(session,
+							match.getResultTableCatalog(),
+							match.getResultTableSchema(),
+							match.getResultTableName());
+	}
+	
+	/**
+	 * Returns true if the source table of this match exists in the
+	 * session's database; false otherwise.
+	 * @throws ArchitectException
+	 */
+	static boolean doesSourceTableExist(MatchMakerSession session, Match match) throws ArchitectException {
+		return tableExists(session, 
+				match.getSourceTableCatalog(),
+				match.getSourceTableSchema(),
+				match.getSourceTableName());
+	}
+	
+	/**
+     * Returns true if the SQL table exists
+     * in the session's database; false otherwise.
+     * @throws ArchitectException If there are problems accessing the session's database
+     */
+	private static boolean tableExists(MatchMakerSession session,
+			String catalog, String schema, String tableName)
+		throws ArchitectException {
+		SQLDatabase currentDB = session.getDatabase();
+		SQLDatabase tempDB = null;
+		try {
+			tempDB = new SQLDatabase(currentDB.getDataSource());
+			return tempDB.getTableByName(
+					catalog,
+					schema,
+					tableName) != null;
+		} finally {
+			if (tempDB != null) tempDB.disconnect();
+		}
 	}
 
 	/**
@@ -635,121 +676,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
     
-    /**
-     * Returns true if the current resultTable of this match exists
-     * in the session's database; false otherwise.
-     * @throws ArchitectException If there are problems accessing the session's database
-     */
-	public boolean resultTableExists() throws ArchitectException {
-		return tableExists(getResultTableCatalog(),
-							getResultTableSchema(),
-							getResultTableName());
-		
-	}
 	
-	/**
-	 * Returns true if the source table of this match exists in the
-	 * session's database; false otherwise.
-	 * @throws ArchitectException
-	 */
-	public boolean sourceTableExists() throws ArchitectException {
-		return tableExists(getSourceTableCatalog(),
-				getSourceTableSchema(),
-				getSourceTableName());
-	}
 	
-	/**
-     * Returns true if the SQL table exists
-     * in the session's database; false otherwise.
-     * @throws ArchitectException If there are problems accessing the session's database
-     */
-	private boolean tableExists(String catalog, String schema, String tableName)
-		throws ArchitectException {
-		SQLDatabase currentDB = getSession().getDatabase();
-		SQLDatabase tempDB = null;
-		try {
-			tempDB = new SQLDatabase(currentDB.getDataSource());
-			return tempDB.getTableByName(
-					catalog,
-					schema,
-					tableName) != null;
-		} finally {
-			if (tempDB != null) tempDB.disconnect();
-		}
-	}
 	
-	/**
-	 * returns true if the log file os this match is writable.
-	 */
-	public boolean isLogFileWritable() {
-		return getMatchSettings().getLog().isWritable();
-	}
-
-	/**
-	 * returns true if the log file of this match is readable.
-	 */
-	public boolean isLogFileReadable() {
-		return getMatchSettings().getLog().isReadable();
-	}
 	
-	/**
-	 * returns true if the given file exists and executable, false otherwise.
-	 * @param fileName  the name of the file you want to check.
-	 */
-	private boolean isFileExistAndExecutable(String fileName) {
-		FilePermission fp = new FilePermission(fileName,"execute");
-		return fp.getActions().contains(
-					"execute".subSequence(0, "execute".length()));
-	}
 	
-	public boolean isMatchEngineExistAndExecutable() {
-		return isFileExistAndExecutable(
-				getSession().getContext().getMatchEngineLocation());
-	}
 	
-	public boolean isEmailEngineExistAndExecutable() {
-		return isFileExistAndExecutable(
-				getSession().getContext().getEmailEngineLocation());
-	}
-	
-	/**
-	 * returns true if the DEF_PARAM.EMAIL_NOTIFICATION_RETURN_ADRS and 
-	 * DEF_PARAM.MAIL_SERVER_NAME column are not null or empty, they are
-	 * require to run email_notification engine.                        
-	 */
-	public boolean isEmailSettingValidate() {
-		boolean validate;
-		try {
-			DefaultParameters def = new DefaultParameters(getSession().getConnection());
-			String emailAddress = def.getEmailReturnAddress();
-			String smtpServer = def.getEmailServerName();
-			validate = emailAddress != null &&
-						emailAddress.length() > 0 &&
-						smtpServer != null &&
-						smtpServer.length() > 0;
-		} catch (SQLException e) {
-			validate = false;
-		} catch (PLSchemaException e) {
-			validate = false;
-		}
-		return validate;
-	}
-	
-	/**
-	 * returns true if the DSN is setup for the current database connection, 
-	 * that's required by the matchmaker odbc engine, since we will not 
-	 * use this odbc engine forever, check for not null is acceptable for now. 
-	 */
-	public boolean isDSNSetup() {
-		final String odbcDsn = getSession().getDatabase().getDataSource().getOdbcDsn();
-		return odbcDsn != null && odbcDsn.length() > 0;
-	}
-	
-	/**
-	 * returns true if the matchmaker engine version is good for the schema that
-	 * we currently connect to. false if the engine version is too old. 
-	 */
-	public boolean isMatchMakerEngineVersionValidate() {
-		return true;
-	}
 }
