@@ -1,15 +1,14 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
@@ -26,8 +25,6 @@ import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersionFormatException;
-
-import com.darwinsys.swingui.UtilGUI;
 
 
 public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingSessionContext {
@@ -49,13 +46,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * the same for all MatchMaker sessions.
      */
     private final Preferences prefs;
-
-    /**
-     * A frame that is not visible which can own application-wide dialogs made by this
-     * class.  Note that any dialogs with this frame as their parent should not be modal
-     * unless they are also always-on-top, since this frame itself isn't visible.
-     */
-    private final JFrame fakeParentFrame;
 
     /**
      * The database connection manager GUI for this session context (because all sessions
@@ -93,9 +83,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         this.prefs = prefsRootNode;
         this.context = delegateContext;
 
-        fakeParentFrame = new JFrame("Never Visible");
-        fakeParentFrame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
-        dbConnectionManager = new DatabaseConnectionManager(fakeParentFrame, this);
+        dbConnectionManager = new DatabaseConnectionManager(this);
         loginDialog = new LoginDialog(this);
     }
 
@@ -187,19 +175,15 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#showDatabaseConnectionManager()
      */
-    public void showDatabaseConnectionManager() {
-        dbConnectionManager.showDialog();
+    public void showDatabaseConnectionManager(Window owner) {
+        dbConnectionManager.showDialog(owner);
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#showLoginDialog(ca.sqlpower.architect.ArchitectDataSource)
      */
     public void showLoginDialog(ArchitectDataSource selectedDataSource) {
-        loginDialog.setDbSource(selectedDataSource);
-        loginDialog.pack();
-        UtilGUI.centre(loginDialog);
-        loginDialog.setVisible(true);
-        loginDialog.requestFocus();
+        loginDialog.showLoginDialog(selectedDataSource);
     }
 
 

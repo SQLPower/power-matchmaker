@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Rectangle;
+import java.awt.Window;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -56,10 +57,11 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
     public ArchitectDataSource getLastLoginDataSource();
 
     /**
-     * Shows the database connection manager.  There will only ever be one created
-     * no matter how many times you call this method.
+     * Shows the database connection manager dialog, attaching it to the given parent
+     * window.  There will only ever be one created no matter how many times you call
+     * this method.
      */
-    public void showDatabaseConnectionManager();
+    public void showDatabaseConnectionManager(Window owner);
 
     /**
      * Shows the login dialog.

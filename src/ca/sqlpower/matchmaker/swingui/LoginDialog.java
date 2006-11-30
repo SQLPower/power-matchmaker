@@ -8,10 +8,11 @@ import java.awt.event.WindowListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -35,7 +36,7 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class LoginDialog extends JDialog {
+public class LoginDialog {
 
 	private static Logger logger = Logger.getLogger(LoginDialog.class);
 
@@ -47,7 +48,7 @@ public class LoginDialog extends JDialog {
             logger.debug("LoginAction.actionPerformed(): disabling login button");
             loginButton.setEnabled(false);
             if (dbSource == null) {
-                JOptionPane.showMessageDialog(LoginDialog.this,
+                JOptionPane.showMessageDialog(frame,
                         "Please select a database connection first!",
                         "Unknown database connection",
                         JOptionPane.ERROR_MESSAGE);
@@ -58,7 +59,7 @@ public class LoginDialog extends JDialog {
 
             String driverClass = dbSource.getDriverClass();
             if (driverClass == null || driverClass.length() == 0) {
-                JOptionPane.showMessageDialog(LoginDialog.this,
+                JOptionPane.showMessageDialog(frame,
                         "Datasource not configured (no JDBC Driver)",
                         "Database connection incomplete",
                         JOptionPane.ERROR_MESSAGE);
@@ -78,7 +79,7 @@ public class LoginDialog extends JDialog {
                 new Thread(this).start();
                 // doStuff() will get invoked soon on the new thread
             } catch (Exception ex) {
-                ASUtils.showExceptionDialogNoReport(LoginDialog.this,
+                ASUtils.showExceptionDialogNoReport(frame,
                         "Connection Error", ex );
                 loginButton.setEnabled(true);
             }
@@ -104,9 +105,9 @@ public class LoginDialog extends JDialog {
                         loginWasSuccessful) {
                     sessionContext.setLastLoginDataSource(dbSource);
                     session.showGUI();
-                    LoginDialog.this.setVisible(false);
+                    frame.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(LoginDialog.this, "The login failed for an unknown reason.");
+                    JOptionPane.showMessageDialog(frame, "The login failed for an unknown reason.");
                 }
             } finally {
                 logger.debug("LoginAction.actionPerformed(): enabling login button (login has either failed or not; dialog might still be showing)");
@@ -117,14 +118,14 @@ public class LoginDialog extends JDialog {
 
     private final Action cancelAction = new AbstractAction("Cancel") {
         public void actionPerformed(ActionEvent e) {
-            LoginDialog.this.dispose();
+            frame.dispose();
         }
     };
 
     private final Action connectionManagerAction =
     	new AbstractAction("Manage Connections...") {
 		public void actionPerformed(ActionEvent e) {
-			sessionContext.showDatabaseConnectionManager();
+			sessionContext.showDatabaseConnectionManager(frame);
 		};
 	};
 
@@ -138,14 +139,19 @@ public class LoginDialog extends JDialog {
 	 * The session that we will create upon successful login.
 	 */
 	private MatchMakerSwingSession session;
-
+	
+    /**
+     * The frame that this dialog's UI gets displayed in.
+     */
+    private final JFrame frame;
+    
 	private JComboBox dbList;
 	private JTextField userID;
 	private JPasswordField password;
 	private JLabel dbSourceName;
-	protected JButton loginButton = new JButton();
-	protected JProgressBar progressBar = new JProgressBar();
-	protected ArchitectDataSource dbSource;
+    private JButton loginButton = new JButton();
+    private JProgressBar progressBar = new JProgressBar();
+    private ArchitectDataSource dbSource;
 	private ConnectionComboBoxModel connectionModel;
 	private JComponent panel;
 
@@ -177,21 +183,38 @@ public class LoginDialog extends JDialog {
 	public LoginDialog(SwingSessionContextImpl sessionContext) {
 		super();
         this.sessionContext = sessionContext;
-		setTitle("Power*MatchMaker Login");
+        frame = new JFrame("Power*MatchMaker Login");
+        frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
 		panel = createPanel();
-		getContentPane().add(panel);
-        ASUtils.makeJDialogCancellable(this, cancelAction);
-        addWindowListener(optimizationManager);
+        frame.getContentPane().add(panel);
+        ASUtils.makeJDialogCancellable(frame, cancelAction);
+        frame.addWindowListener(optimizationManager);
 	}
 
+    /**
+     * Makes this login dialog visible, packing it and centering it on the screen.
+     * You will normally not call this method directly; see 
+     * {@link SwingSessionContext#showLoginDialog(ArchitectDataSource)}.
+     * 
+     * @param selectedDataSource The data source to default the datasource combo box,
+     * username, and password fields to. 
+     */
+    void showLoginDialog(ArchitectDataSource selectedDataSource) {
+        setDbSource(selectedDataSource);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        loginButton.requestFocus();
+    }
+    
 	WindowListener optimizationManager = new WindowAdapter() {
+        
 		/** If you try to login but have no Connections set up yet,
 		 * there is nothing you can do except "Manage Connections",
 		 * so we jump you to there.
 		 */
 		@Override
 		public void windowOpened(WindowEvent e) {
-			logger.debug("Stub call: optimizationManager.windowOpened()");
 			int dbListSize = connectionModel.getSize();
 
 			if (dbListSize == 0 ||
@@ -257,7 +280,7 @@ public class LoginDialog extends JDialog {
 		pb.add(progressBar,cc.xyw(2,12,6));
 		pb.add(bbBuilder.getPanel(), cc.xyw(2,16,7));
 
-		getRootPane().setDefaultButton(loginButton);
+		frame.getRootPane().setDefaultButton(loginButton);
 		return pb.getPanel();
 	}
 

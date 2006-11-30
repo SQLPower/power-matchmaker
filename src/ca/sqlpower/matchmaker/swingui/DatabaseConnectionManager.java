@@ -1,23 +1,21 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Dialog;
+import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -56,14 +54,18 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	 * The session context that this dialog is managing connection properties for.
 	 */
 	private final SwingSessionContextImpl sessionContext;
-    private final JFrame owningFrame;
 	private final NewDatabaseConnectionAction newDatabaseConnectionAction;
     private final JPanel panel;
     
     /**
      * The Dialog that contains all the GUI;
      */
-    private final JDialog d;
+    private JDialog d;
+
+    /**
+     * The current owner of the dialog.  Gets updated in the showDialog() method.
+     */
+    private Window currentOwner;
 
 	private final Action helpAction = new AbstractAction("Help"){
 
@@ -145,7 +147,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			setNewConnectionDialog(d);
 
             dialog.pack();
-			dialog.setLocationRelativeTo(owningFrame);
+			dialog.setLocationRelativeTo(d);
 			dialog.setVisible(true);
 			logger.debug("Editting existing DBCS on panel: "+dbcs);
 		}
@@ -184,11 +186,11 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		}
 	};
 
-	private final Action closeAction = new AbstractAction(){
+	private final Action closeAction = new AbstractAction() {
 		public void actionPerformed(ActionEvent e) {
 			if ( getNewConnectionDialog() != null && getNewConnectionDialog().isVisible() )
 				return;
-			d.setVisible(false);
+			d.dispose();
 		}
 	};
 
@@ -196,10 +198,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	private JTable dsTable;
 	private DataSourceCollection plDotIni;
 
-	public DatabaseConnectionManager(JFrame owningFrame, SwingSessionContextImpl context) {
-        d = new JDialog(owningFrame);
-        d.setTitle("Database Connection Manager");
-        this.owningFrame = owningFrame;
+	public DatabaseConnectionManager(SwingSessionContextImpl context) {
         this.sessionContext = context;
         this.plDotIni = context.getPlDotIni();
         newDatabaseConnectionAction = new NewDatabaseConnectionAction(sessionContext, "Add");
@@ -207,16 +206,44 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
         newDatabaseConnectionAction.setComponentParent(d);
         newDatabaseConnectionAction.setParent(this);
 		panel = createPanel();
-		d.getContentPane().add(panel);  
 	}
 
     
     /**
-     * Packs and shows the user interface
+     * Makes sure this database connection manager is visible,
+     * focused, and in a dialog owned by the given owner.
      *
+     * @param owner the Frame or Dialog that should own the
+     *              DatabaseConnectionManager dialog.
      */
-    public void showDialog(){
+    public void showDialog(Window owner) {
+        if (d != null && d.isVisible() && currentOwner == owner) {
+            d.requestFocus();
+            return;
+        }
+        
+        if (d != null) {
+            d.dispose();
+        }
+        if (panel.getParent() != null) {
+            panel.getParent().remove(panel);
+        }
+        if (owner instanceof Dialog) {
+            d = new JDialog((Dialog) owner);
+        } else if (owner instanceof Frame) {
+            d = new JDialog((Frame) owner);
+        } else {
+            throw new IllegalArgumentException(
+                    "Owner has to be a Frame or Dialog.  You provided a " +
+                    (owner == null ? null : owner.getClass().getName()));
+        }
+        
+        currentOwner = owner;
+        d.setTitle("Database Connection Manager");
+        d.getContentPane().add(panel);  
         d.pack();
+        d.setLocationRelativeTo(owner);
+        ASUtils.makeJDialogCancellable(d, closeAction);
         d.setVisible(true);
         d.requestFocus();
     }
@@ -284,13 +311,6 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		JButton cancelButton = new JButton(closeAction);
 		cancelButton.setText("Close");
 		bsb.addGridded(cancelButton);
-
-		JComponent c = (JComponent) d.getRootPane();
-		InputMap inputMap = c.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-		ActionMap actionMap = c.getActionMap();
-
-		inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "cancel");
-		actionMap.put("cancel", closeAction);
 
 		pb.add(bsb.getPanel(), cc.xy(4,4));
 		return pb.getPanel();
