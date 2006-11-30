@@ -205,7 +205,6 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
         this.plDotIni = context.getPlDotIni();
         newDatabaseConnectionAction = new NewDatabaseConnectionAction(sessionContext, "Add");
         newDatabaseConnectionAction.setCallBack(this);
-        newDatabaseConnectionAction.setComponentParent(d);
         newDatabaseConnectionAction.setParent(this);
 		panel = createPanel();
 	}
@@ -241,6 +240,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
         }
         
         currentOwner = owner;
+        newDatabaseConnectionAction.setComponentParent(d);
         d.setTitle("Database Connection Manager");
         d.getContentPane().add(panel);  
         d.pack();
