@@ -6,6 +6,8 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -143,9 +145,9 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 					"Edit Database Connection",
 					ArchitectPanelBuilder.OK_BUTTON_LABEL,
 					okAction, cancelAction);
-
-			setNewConnectionDialog(d);
-
+            
+			setNewConnectionDialog(dialog);
+            
             dialog.pack();
 			dialog.setLocationRelativeTo(d);
 			dialog.setVisible(true);
@@ -379,6 +381,9 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
     public synchronized void setNewConnectionDialog(JDialog d) {
         newConnectionDialog = d;
+        if (newConnectionDialog !=null){
+            newConnectionDialog.addWindowListener(windowListener);
+        }
     }
     
 	public DataSourceCollection getPlDotIni() {
@@ -389,6 +394,61 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		this.plDotIni = plDotIni;
 	}
 
+    /**
+     * This listener is implemented such that when the dialog closes, it
+     * sets the newConnectionDialog to null.  This is done as the 
+     * DatabaseConnectionManager only allows one connection editting window to appear
+     * at a time.  When trying to start a new window, it will check see if
+     * newConnectionDialog is null, if it is null, it will popup a new dialog.
+     * If not, it will find the connection dialog that is already open and request
+     * focus on it.
+     */
+    private WindowListener windowListener = new WindowListener(){
+
+        public void windowActivated(WindowEvent e) {
+            // TODO Auto-generated method stub
+            logger.debug("Stub call: .windowActivated()");
+            
+        }
+
+        public void windowClosed(WindowEvent e) {
+            setNewConnectionDialog(null);
+            logger.debug("Stub call: .windowClosed()");
+            
+        }
+
+        public void windowClosing(WindowEvent e) {
+            setNewConnectionDialog(null);
+            logger.debug("Stub call: .windowClosing()");
+            
+        }
+
+        public void windowDeactivated(WindowEvent e) {
+            // TODO Auto-generated method stub
+            logger.debug("Stub call: .windowDeactivated()");
+            
+        }
+
+        public void windowDeiconified(WindowEvent e) {
+            // TODO Auto-generated method stub
+            logger.debug("Stub call: .windowDeiconified()");
+            
+        }
+
+        public void windowIconified(WindowEvent e) {
+            // TODO Auto-generated method stub
+            logger.debug("Stub call: .windowIconified()");
+            
+        }
+
+        public void windowOpened(WindowEvent e) {
+            // TODO Auto-generated method stub
+            logger.debug("Stub call: .windowOpened()");
+            
+        }
+        
+    };
+    
 	private class DSTableMouseListener implements MouseListener {
 
 		public void mouseClicked(MouseEvent evt) {
@@ -414,5 +474,4 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		}
 
 	}
-
 }
