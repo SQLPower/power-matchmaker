@@ -13,7 +13,7 @@ public class MatchMakerCriteriaGroup
 	private String desc;
 	private Short matchPercent;		// NULL or something from 0-100, but not guaranteed
 	private String filter;			// SQL filter for process match criteria group
-	private Boolean active;			// enable or disable a group for the engine
+	private boolean active = true;			// enable or disable a group for the engine
 
 	// default constructor
 	public MatchMakerCriteriaGroup( ) {
@@ -25,7 +25,7 @@ public class MatchMakerCriteriaGroup
     public void setOid(Long oid) {
         this.oid = oid;
     }
-    
+
     /**
      * Gets the grandparent of this object in the MatchMaker object tree.  If the parent
      * (a folder) is null, returns null.
@@ -38,10 +38,10 @@ public class MatchMakerCriteriaGroup
             return (Match) parentFolder.getParent();
         }
     }
-    
+
     /**
      * Sets the parent of this object to be the matach criteria group folder of the given match object
-     * 
+     *
      * this will fire a <b>parent</b> changed event not a parent match event
      */
     public void setParentMatch(Match grandparent) {
@@ -51,7 +51,7 @@ public class MatchMakerCriteriaGroup
             setParent(grandparent.getMatchCriteriaGroupFolder());
         }
     }
-    
+
 	public String getDesc() {
 		return desc;
 	}
@@ -72,12 +72,12 @@ public class MatchMakerCriteriaGroup
 		getEventSupport().firePropertyChange("matchPercent", oldValue, matchPercent);
 	}
 
-	public Boolean getActive() {
+	public boolean getActive() {
 		return active;
 	}
 
-	public void setActive(Boolean active) {
-		Boolean oldValue = this.active;
+	public void setActive(boolean active) {
+		boolean oldValue = this.active;
 		this.active = active;
 		getEventSupport().firePropertyChange("active", oldValue, active);
 	}
@@ -113,7 +113,7 @@ public class MatchMakerCriteriaGroup
 			return false;
 		return true;
 	}
-	
+
 	public String createNewUniqueName() {
 
         StringBuffer name = new StringBuffer("new criteria");
@@ -123,7 +123,7 @@ public class MatchMakerCriteriaGroup
         }
         return name.toString();
     }
-	
+
 	private MatchMakerCriteria getCriteriaByName(String name) {
 		for ( MatchMakerCriteria c : getChildren() ) {
 			if ( c.getName().equals(name))

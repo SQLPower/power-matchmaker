@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker.dao;
 
 import java.beans.PropertyDescriptor;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -28,35 +29,32 @@ import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
-import ca.sqlpower.matchmaker.util.log.Level;
-import ca.sqlpower.matchmaker.util.log.Log;
-import ca.sqlpower.matchmaker.util.log.LogFactory;
 
 public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends MatchMakerDAO> extends TestCase {
 
     ///////// Methods that subclasses can/should override //////////
 
     /**
-     * Should return a new instance of an object that is being used by the 
-     * DAO.  Each new object must be not equal to any of the previously 
+     * Should return a new instance of an object that is being used by the
+     * DAO.  Each new object must be not equal to any of the previously
      * created objects.  Every gettable property must be set to a non-default value
-     * 
-     * @return a new test object 
-     * @throws Exception 
+     *
+     * @return a new test object
+     * @throws Exception
      */
     public abstract T createNewObjectUnderTest() throws Exception;
-    
+
     /**
      * This should return the data access object that is being tested
-     * @throws Exception 
+     * @throws Exception
      */
     public abstract D getDataAccessObject() throws Exception;
-    
+
     /**
      * Get the current match maker sesssion from the concrete dao objects
      */
     public abstract MatchMakerSession getSession() throws Exception;
-    
+
     /**
      * gets a list of strings that this object dosn't persist
      */
@@ -66,10 +64,10 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
         nonPersisting.add("session");
         return nonPersisting;
     }
-    
-    
+
+
     //////// Assert methods provided to subclasses /////////
-    
+
     /**
      * Ensures that the given MatchMakerObject and all its descendants have a
      * reference to the given session.  Every findXXXX() method in every DAO
@@ -79,19 +77,19 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
         assertNotNull(
                 "the MatchMakerSession went missing for a "+root.getClass().getName(),
                 root.getSession());
-        
+
         // this also implies a null check, but the error message is not ideal (hence the previous assert)
         assertSame(
                 "session out of sync for "+root.getClass().getName(),
                 expected, root.getSession());
-        
+
         for (MatchMakerObject<MatchMakerObject, MatchMakerObject> child : root.getChildren()) {
             assertHierarchyHasSession(expected, child);
         }
     }
-    
+
     ///////// Base TestCase implementation ///////////
-	    
+
 	@Override
 	protected void setUp() throws Exception {
         Connection con = null;
@@ -101,29 +99,29 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
             DatabaseCleanup.clearDatabase(con);
         } catch (SQLException e) {
             e.printStackTrace();
-        }  
+        }
 	}
-    
-    
-    
+
+
+
     //////// Tests that all subtests will inherit ////////
-	
+
     /** Test and see if find all throws an exception. */
 	public void testFindAll() throws Exception {
 		D dao = getDataAccessObject();
 		List<T> all = dao.findAll();
-        
+
         // the database is empty at this point (the test is really to find mapping errors, but this assertion won't hurt)
         assertEquals(0, all.size());
 	}
-	
+
 	public void testSave() throws Exception {
 		D dao = getDataAccessObject();
 		T item1 = createNewObjectUnderTest();
 		dao = getDataAccessObject();
 		dao.save(item1);
 	}
-    
+
 	public void testDeleteExisting() throws Exception {
 		T item1 = createNewObjectUnderTest();
 		T item2 = createNewObjectUnderTest();
@@ -137,7 +135,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		}
 		assertEquals("There are still some objects of type "+item1.getClass()+" left",0,dao.findAll().size());
 	}
-	
+
 	public void testSaveAndLoadInOneSession() throws Exception {
 		D dao = getDataAccessObject();
 		List<T> all;
@@ -146,12 +144,12 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		all = dao.findAll();
         assertEquals("We only persisted one item", 1, all.size());
 		T savedItem1 = all.get(0);
-        
+
         assertHierarchyHasSession(getSession(), savedItem1);
-        
+
 		List<PropertyDescriptor> properties;
 		properties = Arrays.asList(PropertyUtils.getPropertyDescriptors(item1.getClass()));
-		
+
         // list all the readable properties
 		List<PropertyDescriptor> gettableProperties = new ArrayList<PropertyDescriptor>();
 		for (PropertyDescriptor d: properties){
@@ -159,7 +157,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		        gettableProperties.add(d);
 		    }
 		}
-		
+
         // compare the values of each readable property
 		List<String> nonPersistingProperties = getNonPersitingProperties();
 		for (PropertyDescriptor d: gettableProperties){
@@ -172,16 +170,16 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
                         String.valueOf(newItem));
 		    }
 		}
-		
+
 	}
-	
-    
+
+
     //////// Utility methods for subclasses to (ab)use ////////
-    
+
 	/**
 	 * Sets all setters of the object object with a new default value except
 	 * for those properties listed in propertiesThatAreNotPersisted
-	 * 
+	 *
 	 * @param object
 	 * @param propertiesThatAreNotPersisted
 	 * @throws IllegalAccessException
@@ -220,7 +218,8 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
                         } else {
                             newVal = "new " + oldVal;
                         }
-					} else if (property.getPropertyType() == Boolean.class) {
+					} else if (property.getPropertyType() == Boolean.TYPE ||
+							property.getPropertyType() == Boolean.class) {
                         if(oldVal == null){
                             newVal = new Boolean(false);
                         } else {
@@ -251,9 +250,9 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						((SQLTable)newVal).setName("Fake Table");
 					} else if (property.getPropertyType() == ViewSpec.class) {
 						newVal = new ViewSpec("select clause", "from clause", "where clause");
-					} else if (property.getPropertyType() == Log.class) {
-						newVal = LogFactory
-						.getLogger(Level.DEBUG, "TestMatchMaker.log");
+					} else if (property.getPropertyType() == File.class) {
+						newVal = File.createTempFile("mmTest",".tmp");
+						((File)newVal).deleteOnExit();
 					} else if (property.getPropertyType() == PlFolder.class) {
 						newVal = new PlFolder<Match>();
 					} else if (property.getPropertyType() == MatchMode.class) {
@@ -279,14 +278,14 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 								+ mmo.getClass());
 					}
 
-					
+
 					if (newVal instanceof MatchMakerObject){
 						((MatchMakerObject)newVal).setSession(getSession());
 					}
-				
+
                     assertNotNull("Ooops we should have set "+property.getName() + " to a value in "+mmo.getClass().getName(),newVal);
 					int oldChangeCount = listener.getAllEventCounts();
-				
+
 					try {
 						BeanUtils.copyProperty(mmo, property.getName(), newVal);
 					} catch (InvocationTargetException e) {
@@ -299,5 +298,5 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 			}
 		}
 	}
-	
+
 }

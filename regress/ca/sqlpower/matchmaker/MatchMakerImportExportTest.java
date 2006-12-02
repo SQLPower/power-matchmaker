@@ -6,6 +6,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
@@ -307,12 +311,15 @@ public class MatchMakerImportExportTest extends TestCase {
 	public void testLoadFile() throws Exception {
 		// StringReader r = new StringReader(testData);
 		ByteArrayInputStream r = new ByteArrayInputStream(testData.getBytes());
-		importor.load(match,r);
+
 
 		assertNotNull("match is not created.",match);
-		assertEquals("match name mismatch!",match.getName(),"MATCH_PT_COMPANY");
-		assertEquals("match has 4 groups!",match.getMatchCriteriaGroups().size(),4);
-		assertEquals("match folder name is not right!",match.getParent().getName(),"JOHNSON_TEST");
+		assertEquals("match should have 0 group!",0,match.getMatchCriteriaGroups().size());
+		importor.load(match,r);
+
+		assertEquals("match name mismatch!","MATCH_PT_COMPANY",match.getName());
+		assertEquals("match should have 4 groups!",4,match.getMatchCriteriaGroups().size());
+		assertEquals("match folder name is not right!","JOHNSON_TEST",match.getParent().getName());
 
 		int count = 0;
 		for ( MatchMakerCriteriaGroup g : match.getMatchCriteriaGroups()) {
@@ -322,6 +329,36 @@ public class MatchMakerImportExportTest extends TestCase {
 	}
 
 	public void testSaveFile() throws IOException, ArchitectException {
+		final String name = "test match should have a funny name with #$%~!@@#$%^&*() charactors";
+		final String folderName = "folder name )(*&^%$#@!~\";'.,<>";
+		match.setName(name);
+
+		for ( int i=0; i<10; i++ ) {
+			MatchMakerCriteriaGroup group = new MatchMakerCriteriaGroup();
+			group.setName("group"+i);
+			match.addMatchCriteriaGroup(group);
+
+			for ( int n=0; n<10; n++) {
+				final MatchMakerCriteria matchMakerCriteria = new MatchMakerCriteria();
+				matchMakerCriteria.setName("criteria_"+i+"_"+n);
+				group.addChild(matchMakerCriteria);
+			}
+		}
+		match.setParent(new PlFolder(folderName));
+
+		File tmp = File.createTempFile("test", ".xml");
+		if (deleteOnExit) {
+			tmp.deleteOnExit();
+		}
+		PrintWriter out = new PrintWriter(tmp,ENCODING);
+		assertNotNull(out);
+		assertTrue("File size not zero", (tmp.length() == 0) );
+		exportor.save(match,out,ENCODING);
+
+		assertTrue("File not exists", tmp.exists());
+		assertTrue("File size zero", (tmp.length() > 0) );
+	}
+	public void testSaveAndLoadFile() throws IOException, ArchitectException, ParserConfigurationException, SAXException {
 		final String name = "test match should have a funny name with #$%~!@@#$%^&*() charactors";
 		final String folderName = "folder name )(*&^%$#@!~\";'.,<>";
 		match.setName(name);
@@ -358,12 +395,12 @@ public class MatchMakerImportExportTest extends TestCase {
 		for ( int i=0; i<groupCount; i++ ) {
 			MatchMakerCriteriaGroup g = match2.getMatchCriteriaGroups().get(i);
 			MatchMakerCriteriaGroup g2 = match.getMatchCriteriaGroups().get(i);
-			assertEquals("groups should be the same", g.equals(g2));
+			assertTrue("groups should be the same", g.equals(g2));
 
 			for ( int j=0; j<g.getChildCount(); j++) {
 				MatchMakerCriteria c = g.getChildren().get(j);
 				MatchMakerCriteria c2 = g2.getChildren().get(j);
-				assertEquals("criteria should be the same.", c.equals(c2));
+				assertTrue("criteria should be the same.", c.equals(c2));
 			}
 		}
 
@@ -376,7 +413,7 @@ public class MatchMakerImportExportTest extends TestCase {
 		assertEquals(tmp.length(), tmp2.length());
 	}
 
-	public void testSaveSourceTable() throws ArchitectException, IOException {
+	public void testSaveSourceTable() throws ArchitectException, IOException, ParserConfigurationException, SAXException {
 		ArchitectDataSource ds = new ArchitectDataSource();
 	      ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 	      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -400,10 +437,10 @@ public class MatchMakerImportExportTest extends TestCase {
 
 	      importor.load(match2,new FileInputStream(tmp));
 	      SQLTable table2 = match2.getSourceTable();
-	      assertTrue("table is not equals",table2.equals(sourceTable));
+	      assertTrue("table is not equals",sourceTable.equals(table2));
 	}
 
-	public void testSaveResultTable() throws ArchitectException, IOException {
+	public void testSaveResultTable() throws ArchitectException, IOException, ParserConfigurationException, SAXException {
 		ArchitectDataSource ds = new ArchitectDataSource();
 	      ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 	      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -427,6 +464,6 @@ public class MatchMakerImportExportTest extends TestCase {
 
 	      importor.load(match2,new FileInputStream(tmp));
 	      SQLTable table2 = match2.getResultTable();
-	      assertTrue("table is not equals",table2.equals(table1));
+	      assertTrue("table is not equals",table1.equals(table2));
 	}
 }

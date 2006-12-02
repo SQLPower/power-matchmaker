@@ -37,29 +37,29 @@ public class MergeSettings extends MatchMakerSettings {
 	/**
 	 * Backup the data that is going to be merged
 	 */
-	Boolean backUp;
+	boolean backUp;
 	/**
 	 * Augments null (an engine parameter)
 	 * TODO figure out what this means
 	 */
-	Boolean augmentNull;
+	boolean augmentNull;
 
-	public Boolean getBackUp() {
+	public boolean getBackUp() {
 		return backUp;
 	}
 
-	public void setBackUp(Boolean backUp) {
-		Boolean oldValue = this.backUp;
+	public void setBackUp(boolean backUp) {
+		boolean oldValue = this.backUp;
 		this.backUp = backUp;
 		getEventSupport().firePropertyChange("backUp", oldValue, backUp);
 	}
 
-	public Boolean getAugmentNull() {
+	public boolean getAugmentNull() {
 		return augmentNull;
 	}
 
-	public void setAugmentNull(Boolean augmentNull) {
-		Boolean oldValue = this.augmentNull;
+	public void setAugmentNull(boolean augmentNull) {
+		boolean oldValue = this.augmentNull;
 		this.augmentNull = augmentNull;
 		getEventSupport().firePropertyChange("augmentNull", oldValue,
 				this.augmentNull);

@@ -42,9 +42,11 @@ public class MatchExportor {
             ioo.println(out, "<MATCH_TABLE>"+
             		ArchitectUtils.escapeXML(match.getSourceTableName())+
             		"</MATCH_TABLE>");
-            ioo.println(out, "<PK_COLUMN>"+
-            		ArchitectUtils.escapeXML(match.getSourceTableIndex().getName())+
-            		"</PK_COLUMN>");
+            if ( match.getSourceTableIndex() != null ) {
+            	ioo.println(out, "<PK_COLUMN>"+
+            			ArchitectUtils.escapeXML(match.getSourceTableIndex().getName())+
+            			"</PK_COLUMN>");
+            }
             ioo.println(out, "<RESULTS_TABLE>"+
             		ArchitectUtils.escapeXML(match.getResultTableName())+
             		"</RESULTS_TABLE>");
@@ -60,12 +62,15 @@ public class MatchExportor {
             ioo.println(out, "<MATCH_LAST_RUN_DATE><DATE>"+
             		ArchitectUtils.escapeXML(df.format(match.getMatchSettings().getLastRunDate()))+
             		"</DATE></MATCH_LAST_RUN_DATE>");
-            ioo.println(out, "<MATCH_LOG_FILE_NAME>"+
-            		ArchitectUtils.escapeXML(match.getMatchSettings().getLog().toString())+
-            		"</MATCH_LOG_FILE_NAME>");
-            ioo.println(out, "<MATCH_APPEND_TO_LOG_IND>"+
-            		ArchitectUtils.escapeXML(match.getMatchSettings().getAppendToLog()?"Y":"N")+
+            if ( match.getMatchSettings().getLog() != null ) {
+	            ioo.println(out, "<MATCH_LOG_FILE_NAME>"+
+	            		ArchitectUtils.escapeXML(match.getMatchSettings().getLog().toString())+
+	            		"</MATCH_LOG_FILE_NAME>");
+            }
+           	ioo.println(out, "<MATCH_APPEND_TO_LOG_IND>"+
+           			ArchitectUtils.escapeXML(match.getMatchSettings().getAppendToLog()?"Y":"N")+
             		"</MATCH_APPEND_TO_LOG_IND>");
+
             ioo.println(out, "<MATCH_PROCESS_CNT>"+
             		match.getMatchSettings().getProcessCount()+
             		"</MATCH_PROCESS_CNT>");
@@ -96,9 +101,11 @@ public class MatchExportor {
             ioo.println(out, "<MATCH_DEBUG_MODE_IND>"+
             		ArchitectUtils.escapeXML(match.getMatchSettings().getDebug()?"Y":"N")+
             		"</MATCH_DEBUG_MODE_IND>");
-            ioo.println(out, "<MERGE_LOG_FILE_NAME>"+
-            		ArchitectUtils.escapeXML(match.getMergeSettings().getLog().toString())+
-            		"</MERGE_LOG_FILE_NAME>");
+            if (match.getMergeSettings().getLog() != null) {
+            	ioo.println(out, "<MERGE_LOG_FILE_NAME>"+
+            			ArchitectUtils.escapeXML(match.getMergeSettings().getLog().toString())+
+            	"</MERGE_LOG_FILE_NAME>");
+            }
             ioo.println(out, "<MERGE_APPEND_TO_LOG_IND>"+
             		ArchitectUtils.escapeXML(match.getMergeSettings().getAppendToLog()?"Y":"N")+
             		"</MERGE_APPEND_TO_LOG_IND>");
@@ -112,11 +119,13 @@ public class MatchExportor {
             		ArchitectUtils.escapeXML(match.getMergeSettings().getAugmentNull()?"Y":"N")+
             		"</MERGE_AUGMENT_NULL_IND>");
 
-            List<SQLIndex.Column> indexColNames = match.getSourceTableIndex().getChildren();
-            for (int i = 0, n = indexColNames.size(); i < n; i++) {
-                ioo.println(out, "<INDEX_COLUMN_NAME"+i+">"+
-                        ArchitectUtils.escapeXML(indexColNames.get(i).getName())+
-                        "</INDEX_COLUMN_NAME"+i+">");
+            if ( match.getSourceTableIndex()!= null ) {
+            	List<SQLIndex.Column> indexColNames = match.getSourceTableIndex().getChildren();
+            	for (int i = 0, n = indexColNames.size(); i < n; i++) {
+            		ioo.println(out, "<INDEX_COLUMN_NAME"+i+">"+
+            				ArchitectUtils.escapeXML(indexColNames.get(i).getName())+
+            				"</INDEX_COLUMN_NAME"+i+">");
+            	}
             }
 
             ioo.println(out, "<MERGE_SEND_EMAIL_IND>"+
@@ -280,9 +289,11 @@ public class MatchExportor {
     		ioo.println(out, "<MATCH_FIRST_PLUS_ONE_IND>"+
     				ArchitectUtils.escapeXML(c.isMatchFirstPlusOneInd()?"Y":"N")+
             		"</MATCH_FIRST_PLUS_ONE_IND>");
-    		ioo.println(out, "<TRANSLATE_GROUP_NAME>"+
-    				ArchitectUtils.escapeXML(c.getTranslateGroup().getName())+
-            		"</TRANSLATE_GROUP_NAME>");
+    		if ( c.getTranslateGroup()!= null ) {
+    			ioo.println(out, "<TRANSLATE_GROUP_NAME>"+
+    					ArchitectUtils.escapeXML(c.getTranslateGroup().getName())+
+    			"</TRANSLATE_GROUP_NAME>");
+    		}
     		ioo.println(out, "<SEQ_NO>"+
     				c.getSeqNo()+
             		"</SEQ_NO>");

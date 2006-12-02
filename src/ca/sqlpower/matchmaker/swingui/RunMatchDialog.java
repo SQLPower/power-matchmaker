@@ -54,8 +54,6 @@ import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
-import ca.sqlpower.matchmaker.util.log.Level;
-import ca.sqlpower.matchmaker.util.log.LogFactory;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -112,13 +110,13 @@ public class RunMatchDialog extends JDialog {
 	private Match match;
 
 	StatusComponent status = new StatusComponent();
-	
+
 	private FormValidationHandler handler;
 
 	private final Action runEngineAction;
-	
+
 	private final MatchMakerEngine engine;
-	
+
 	public RunMatchDialog(MatchMakerSwingSession swingSession, Match match,
 			JFrame parentFrame) {
 		super(parentFrame, "Run Match:[" + match.getName() + "]");
@@ -135,16 +133,16 @@ public class RunMatchDialog extends JDialog {
 		buildUI();
 		setDefaultSelections(match);
 		engine = new MatchMakerEngineImpl(swingSession,match);
-		
+
 	}
-	
+
 	private void refreshActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
     	runEngineAction.setEnabled(true);
 
     	if ( worst.getStatus() == Status.FAIL ) {
     		runEngineAction.setEnabled(false);
-    	} 
+    	}
 	}
 
 	private Action browseFileAction = new AbstractAction("...") {
@@ -202,7 +200,7 @@ public class RunMatchDialog extends JDialog {
 			}
 		});
 
-		
+
 		runMatchEngineButton = new JButton(runEngineAction);
 		exit = new JButton(new AbstractAction("Close") {
 			public void actionPerformed(ActionEvent e) {
@@ -210,7 +208,7 @@ public class RunMatchDialog extends JDialog {
 				RunMatchDialog.this.dispose();
 			}
 		});
-		
+
 		pb.add(status, cc.xy(4, 2, "l,c"));
 
 		pb.add(new JLabel("Log File:"), cc.xy(2, 4, "r,f"));
@@ -232,7 +230,7 @@ public class RunMatchDialog extends JDialog {
 		pb.add(new JLabel("Min Word Count Freq:"), cc.xy(2, 10, "r,c"));
 		pb.add(minWord, cc.xy(4, 10, "l,c"));
 
-		
+
 		FormLayout bbLayout = new FormLayout(
 				"4dlu,pref,10dlu:grow,pref,10dlu:grow,pref,4dlu",
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
@@ -252,20 +250,20 @@ public class RunMatchDialog extends JDialog {
 	}
 
 	private void setDefaultSelections(Match match) {
-		
+
 		/* we put the validators here because we want to validate
 		 * the form right after it being loaded
 		 */
 		Validator v1 = new LogFileNameValidator();
         handler.addValidateObject(logFilePath,v1);
-        
+
         Validator v2 = new MatchAndMatchEngineValidator(match);
         handler.addValidateObject(sendEmail,v2);
-        
+
 		MatchSettings settings = match.getMatchSettings();
 		String logFileName;
 		if ( settings.getLog() != null ) {
-			logFileName = (settings.getLog().getConstraint()).toString();
+			logFileName = (settings.getLog().getPath());
 		} else {
 			logFileName = match.getName() + ".log";
 		}
@@ -281,7 +279,7 @@ public class RunMatchDialog extends JDialog {
 		}
 		Boolean appendToLog = settings.getAppendToLog();
 		append.setSelected(appendToLog);
-		
+
 		System.err.println(append+" "+settings);
 		if ( settings.getProcessCount() == null ) {
 			recordsToProcess.setText("");
@@ -312,7 +310,7 @@ public class RunMatchDialog extends JDialog {
 		settings.setDebug(debugMode.isSelected());
 		settings.setTruncateCandDupe(truncateCandDup.isSelected());
 		settings.setSendEmail(sendEmail.isSelected());
-		settings.setLog(LogFactory.getLogger(Level.INFO, logFilePath.getText()));
+		settings.setLog(new File(logFilePath.getText()));
 		settings.setAppendToLog(append.isSelected());
 		if ( recordsToProcess.getText() == null ||
 				recordsToProcess.getText().length() == 0 ) {
@@ -416,7 +414,7 @@ public class RunMatchDialog extends JDialog {
 
 				public void run() {
 
-					final DefaultStyledDocument engineOutputDoc = 
+					final DefaultStyledDocument engineOutputDoc =
 						new DefaultStyledDocument();
 					final JDialog d = new JDialog(parent);
 					d.setTitle("MatchMaker engine output:");
@@ -529,7 +527,7 @@ public class RunMatchDialog extends JDialog {
 								JOptionPane.ERROR_MESSAGE);
 						return;
 					}
-					
+
 					// any output?
 					StreamGobbler errorGobbler = new StreamGobbler(
 							matchEngine.getEngineErrorOutput(),
@@ -678,7 +676,7 @@ public class RunMatchDialog extends JDialog {
 
 	}
 
-	
+
 
 	private JFrame getParentFrame() {
 		return parentFrame;
@@ -716,7 +714,7 @@ public class RunMatchDialog extends JDialog {
 			}
 			return ValidateResult.createValidateResult(Status.OK,"");
 		}
-		
+
 	}
 	private class MatchAndMatchEngineValidator implements Validator {
 
@@ -725,10 +723,10 @@ public class RunMatchDialog extends JDialog {
 			this.match = match;
 		}
 		public ValidateResult validate(Object contents) {
-			
+
 
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
-		
+
 	}
 }

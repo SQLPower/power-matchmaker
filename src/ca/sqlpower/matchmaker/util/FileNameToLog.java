@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.util;
 
+import java.io.File;
 import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,9 +10,7 @@ import java.sql.Types;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
-import ca.sqlpower.matchmaker.util.log.Level;
-import ca.sqlpower.matchmaker.util.log.Log;
-import ca.sqlpower.matchmaker.util.log.LogFactory;
+
 
 public class FileNameToLog implements UserType {
 
@@ -21,8 +20,7 @@ public class FileNameToLog implements UserType {
 	}
 
 	public Object deepCopy(Object value) throws HibernateException {
-		if (value == null) return null;
-		return LogFactory.getLogger(Level.DEBUG,((Log)value).getConstraint());
+		return value;
 	}
 
 	public Serializable disassemble(Object value) throws HibernateException {
@@ -39,13 +37,13 @@ public class FileNameToLog implements UserType {
 	}
 
 	public int hashCode(Object x) throws HibernateException {
-		if ( !(x instanceof Log)) {
+		if ( !(x instanceof File)) {
 			return 0;
 		} else {
 			return x.hashCode();
 		}
 	}
-	
+
 	public boolean isMutable() {
 		return true;
 	}
@@ -54,7 +52,7 @@ public class FileNameToLog implements UserType {
 			throws HibernateException, SQLException {
 		String fileName = rs.getString(names[0]);
 		if (fileName != null) {
-			return LogFactory.getLogger(Level.DEBUG,fileName);
+			return new File(fileName);
 		} else {
 			return null;
 		}
@@ -63,7 +61,7 @@ public class FileNameToLog implements UserType {
 	public void nullSafeSet(PreparedStatement st, Object value, int index)
 			throws HibernateException, SQLException {
 		if (value != null) {
-			st.setString(index, (String) ((Log) value).getConstraint());
+			st.setString(index, ((File) value).toString());
 		} else {
 			st.setString(index, null);
 		}
@@ -75,7 +73,7 @@ public class FileNameToLog implements UserType {
 	}
 
 	public Class returnedClass() {
-		return Log.class;
+		return File.class;
 	}
 
 	public int[] sqlTypes() {

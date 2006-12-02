@@ -22,7 +22,7 @@ import ca.sqlpower.matchmaker.util.ViewSpec;
 public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 
     private static final Logger logger = Logger.getLogger(Match.class);
-    
+
 	public enum MatchMode {
 		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference");
 
@@ -40,6 +40,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		/**
 		 * Get the MatchType that corrisponds to the type string.
 		 *
+		 * in the old version export, we have type like 'FIND DUPLICATES', etc...
 		 * @param type a string detailing the type you want to get
 		 * @return the match type that has type as its toString
 		 */
@@ -49,7 +50,11 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 			for (MatchMode matchType: types) {
 				if (matchType.toString().toLowerCase().equals(type.toLowerCase())) {
 					return matchType;
+				} else if ("FIND DUPLICATES".toLowerCase().equals(type.toLowerCase())) {
+					return FIND_DUPES;
 				}
+
+
 			}
 			throw new IllegalArgumentException("There is no match type with a string "+type);
 		}
@@ -76,22 +81,23 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     /**
      * Contains the match criteria and the match critera groups
      */
-    private MatchMakerFolder<MatchMakerCriteriaGroup> matchCriteriaGroupFolder = 
+    private MatchMakerFolder<MatchMakerCriteriaGroup> matchCriteriaGroupFolder =
     	new MatchMakerFolder<MatchMakerCriteriaGroup>();
 
     private CachableTable sourceTablePropertiesDelegate = new CachableTable("sourceTable");
     private CachableTable resultTablePropertiesDelegate = new CachableTable("resultTable");
     private CachableTable xrefTablePropertiesDelegate = new CachableTable("xrefTable");
-    
+
     /**
      * The unique index of the source table that we're using.  Not necessarily one of the
      * unique indices defined in the database; the user can pick an arbitrary set of columns.
      */
     private SQLIndex sourceTableIndex;
-    
-	public Match( ) {
+
+	public Match() {
         matchCriteriaGroupFolder.setName("Match Criteria Groups");
-        this.addChild(matchCriteriaGroupFolder);        
+        this.addChild(matchCriteriaGroupFolder);
+        setType(MatchMode.FIND_DUPES);
 	}
 	/**
 	 * FIXME Implement me
@@ -108,7 +114,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	public boolean checkValid() {
 		throw new NotImplementedException();
 	}
-	
+
     /**
      * Returns true if the current resultTable of this match exists
      * in the session's database; false otherwise.
@@ -120,19 +126,19 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 							match.getResultTableSchema(),
 							match.getResultTableName());
 	}
-	
+
 	/**
 	 * Returns true if the source table of this match exists in the
 	 * session's database; false otherwise.
 	 * @throws ArchitectException
 	 */
 	static boolean doesSourceTableExist(MatchMakerSession session, Match match) throws ArchitectException {
-		return tableExists(session, 
+		return tableExists(session,
 				match.getSourceTableCatalog(),
 				match.getSourceTableSchema(),
 				match.getSourceTableName());
 	}
-	
+
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
@@ -161,7 +167,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * <p>
 	 * This method only sets up an in-memory SQLTable.  You still have
 	 * to do the physical creation operation in the database yourself.
-	 * 
+	 *
 	 * @throws IllegalStateException If the current result table catalog,
 	 * schema, and name are not set up properly to correspond with the
 	 * session's database.
@@ -169,12 +175,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * <b>or</b>
 	 * <p>
 	 * If the source table property of this match is not set yet.
-	 * @throws ArchitectException If there is trouble working with the 
+	 * @throws ArchitectException If there is trouble working with the
 	 * source table.
 	 */
 	public SQLTable createResultTable() throws ArchitectException {
 		SQLIndex si = getSourceTableIndex();
-		
+
 		if (si == null) {
 			throw new IllegalStateException(
 					"You have to set up the source table of a match " +
@@ -190,14 +196,14 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		SQLTable t = new SQLTable(oldResultTable.getParent(), oldResultTable.getName(), oldResultTable.getRemarks(), "TABLE", true);
 
 		logger.debug("createResultTable: si="+si+" si.children.size="+si.getChildCount());
-		
+
 		addResultTableColumns(t, si, "dup_candidate_1");
 		addResultTableColumns(t, si, "dup_candidate_2");
 		addResultTableColumns(t, si, "current_candidate_1");
 		addResultTableColumns(t, si, "current_candidate_2");
 		addResultTableColumns(t, si, "dup_id");
 		addResultTableColumns(t, si, "master_id");
-		
+
 		SQLColumn col;
 		for (int i = 0; i < si.getChildCount(); i++) {
 			col = new SQLColumn(t, "candidate_1"+i+"_mapped", Types.VARCHAR, 1, 0);
@@ -229,7 +235,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 
 		col = new SQLColumn(t, "dup1_master_ind", Types.VARCHAR, 1, 0);
 		t.addColumn(col);
-		
+
 		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, IndexType.HASHED, null);
 		for (int i = 0; i < si.getChildCount(); i++) {
 			newidx.addChild(newidx.new Column(t.getColumn(i), true, false));
@@ -244,7 +250,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * Adds one columns to the given table for each column of the given index.
 	 * The columns will be named baseName0, baseName1, ... and their type, precision,
 	 * and scale will correspond with those of the columns in the given index.
-	 * 
+	 *
 	 * @param t The table to add columns to
 	 * @param si The index to iterate over for type, precision, scale of the
 	 * new columns.
@@ -258,7 +264,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 			t.addColumn(newCol);
 		}
 	}
-	
+
 	/**
 	 * FIXME Implement me
 	 *
@@ -332,12 +338,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		List <MatchMakerCriteriaGroup> groups = getMatchCriteriaGroups();
 		for ( MatchMakerCriteriaGroup g : groups) {
 			if ( g.getName() != null && g.getName().equals(name)) {
-				return g;				
+				return g;
 			}
 		}
 		return null;
 	}
-	
+
 	@Override
     public int hashCode() {
         final int PRIME = 31;
@@ -345,7 +351,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         result = PRIME * result + ((getName() == null) ? 0 : getName().hashCode());
         return result;
     }
-    
+
 	@Override
     public boolean equals(Object obj) {
 		if ( !(obj instanceof Match) ) {
@@ -384,40 +390,40 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         sb.append("; view=").append(view);
         return sb.toString();
     }
-    
+
     /**
      * Adds a match criteria group to the criteria group folder of this match
-     * 
+     *
      * @param criteriaGroup
      */
     public void addMatchCriteriaGroup(MatchMakerCriteriaGroup criteriaGroup) {
         // The folder will fire the child inserted event
         matchCriteriaGroupFolder.addChild(criteriaGroup);
     }
-    
+
     /**
      * Removes the match criteria group from the criteria group folder of this match
-     * 
-     * @param criteriaGroup 
+     *
+     * @param criteriaGroup
      */
     public void removeMatchCriteriaGroup(MatchMakerCriteriaGroup criteriaGroup) {
-        // The folder will fire the child removed event   
+        // The folder will fire the child removed event
         matchCriteriaGroupFolder.removeChild(criteriaGroup);
     }
-    
+
     public List<MatchMakerCriteriaGroup> getMatchCriteriaGroups(){
         return matchCriteriaGroupFolder.getChildren();
     }
-    
+
     public void setMatchCriteriaGroups(List<MatchMakerCriteriaGroup> groups){
         matchCriteriaGroupFolder.setChildren(groups);
     }
-    
+
     public MatchMakerFolder<MatchMakerCriteriaGroup> getMatchCriteriaGroupFolder() {
         return matchCriteriaGroupFolder;
     }
-    
-    
+
+
     /**
      * Provides the ability to maintain the SQLTable properties of the Match via
      * simple String properties.
@@ -429,22 +435,22 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      * functionality.
      */
     private class CachableTable {
-        
+
         /**
-         * The name of the Match property we're maintaining (for example, 
+         * The name of the Match property we're maintaining (for example,
          * sourceTable, xrefTable, or resultTable).
          */
         private final String propertyName;
-        
+
         private String catalogName;
         private String schemaName;
         private String tableName;
         private SQLTable cachedTable;
-        
+
         CachableTable(String propertyName) {
             this.propertyName = propertyName;
         }
-        
+
         public String getCatalogName() {
             if (cachedTable != null) {
                 String catalogName = cachedTable.getCatalogName();
@@ -457,12 +463,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
                 return catalogName;
             }
         }
-        
+
         public void setCatalogName(String sourceTableCatalog) {
             cachedTable = null;
             this.catalogName = sourceTableCatalog;
         }
-        
+
         public String getTableName() {
             if (cachedTable != null) {
             	return cachedTable.getName();
@@ -470,12 +476,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
                 return tableName;
             }
         }
-        
+
         public void setTableName(String sourceTableName) {
             cachedTable = null;
             this.tableName = sourceTableName;
         }
-        
+
         public String getSchemaName() {
             if (cachedTable != null) {
                 String schemaName = cachedTable.getSchemaName();
@@ -488,18 +494,18 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
                 return schemaName;
             }
         }
-        
+
         public void setSchemaName(String sourceTableSchema) {
             cachedTable = null;
             this.schemaName = sourceTableSchema;
         }
-        
+
         /**
          * Performs some magic to synchronize the sourceTableCatalog,
          * sourceTableSchema, and sourceTableName properties with the sourceTable
          * property. Calling this getter may result in a SQLDatabase lookup of the
          * table specified by the combination of the sourceTableXXX properties.
-         * 
+         *
          * @return The most recently-returned SQLTable instance (the "cached
          *         sourceTable") unless one of the setSourceTableXXX methods has
          *         been called since the last call to this method.
@@ -519,7 +525,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
             if (tableName == null) {
             	return null;
             }
-            
+
             try {
                 logger.debug("Match.getSourceTable("+catalogName+","+schemaName+","+tableName+")");
                 MatchMakerSession session = getSession();
@@ -544,7 +550,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
                 throw new RuntimeException(e);
             }
         }
-        
+
         /**
          * Sets the table to the given table, clears the simple string properties, and fires an event.
          * @param table
@@ -557,10 +563,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
             schemaName = null;
             tableName = null;
             cachedTable = table;
-            
+
             getEventSupport().firePropertyChange(propertyName, oldValue, newValue);
         }
- 
+
     }
 
 
@@ -589,20 +595,20 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public void setSourceTableName(String sourceTableName) {
         sourceTablePropertiesDelegate.setTableName(sourceTableName);
     }
-    
+
     /**
      * Hooks the index up to the source table, attempts to resolve the
      * column names to actual SQLColumn references on the source table,
      * and then returns it!
      */
     public SQLIndex getSourceTableIndex() throws ArchitectException {
-    	if (getSourceTable() != null && sourceTableIndex != null) {            
+    	if (getSourceTable() != null && sourceTableIndex != null) {
     		sourceTableIndex.setParent(getSourceTable().getIndicesFolder());
     		resolveSourceTableIndexColumns(sourceTableIndex);
     	}
     	return sourceTableIndex;
     }
-    
+
     /**
      * Attempts to set the column property of each index column in the
      * sourceTableColumns.  The UserType for SQLIndex can't do this because
@@ -615,7 +621,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     		col.setColumn(actualColumn);
     	}
 	}
-    
+
 	public void setSourceTableIndex(SQLIndex index) {
     	final SQLIndex oldIndex = sourceTableIndex;
     	sourceTableIndex = index;
@@ -648,7 +654,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         resultTablePropertiesDelegate.setSchemaName(resultTableSchema);
     }
 
-    
+
     /////// The xref table delegate methods //////
     public SQLTable getXrefTable() {
         return xrefTablePropertiesDelegate.getSourceTable();
@@ -674,11 +680,11 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
-    
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
 }

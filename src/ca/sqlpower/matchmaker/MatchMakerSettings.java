@@ -3,11 +3,10 @@
  */
 package ca.sqlpower.matchmaker;
 
+import java.io.File;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-
-import ca.sqlpower.matchmaker.util.log.Log;
 
 /**
  * The Match (Object) settings that are common to both the match and the merge
@@ -18,19 +17,19 @@ public abstract class MatchMakerSettings extends
 		AbstractMatchMakerObject<MatchMakerSettings, MatchMakerObject> {
 
     private static final Logger logger = Logger.getLogger(MatchMakerSettings.class);
-    
+
 	@Override
     public int hashCode() {
         final int PRIME = 31;
         int result = 0;
-        result = PRIME * result + ((appendToLog == null) ? 0 : appendToLog.hashCode());
-        result = PRIME * result + ((debug == null) ? 0 : debug.hashCode());
+        result = PRIME * result + ((appendToLog == true) ? 42 : 1234);
+        result = PRIME * result + ((debug == true) ? 2345 : 3456);
         result = PRIME * result + ((description == null) ? 0 : description.hashCode());
         result = PRIME * result + ((lastRunDate == null) ? 0 : lastRunDate.hashCode());
         result = PRIME * result + ((log == null) ? 0 : log.hashCode());
         result = PRIME * result + ((processCount == null) ? 0 : processCount.hashCode());
         result = PRIME * result + ((rollbackSegmentName == null) ? 0 : rollbackSegmentName.hashCode());
-        result = PRIME * result + ((sendEmail == null) ? 0 : sendEmail.hashCode());
+        result = PRIME * result + ((sendEmail == true) ? 4567 : 5678);
         result = PRIME * result + ((showProgressFreq == null) ? 0 : showProgressFreq.hashCode());
         return result;
     }
@@ -44,68 +43,57 @@ public abstract class MatchMakerSettings extends
             return true;
         }
         final MatchMakerSettings other = (MatchMakerSettings) obj;
-        
+
         logger.debug("MMSettings.equals(): this date="+this.getLastRunDate()+"; other date="+other.getLastRunDate()+
                 "\n this="+this+
                 "\nother="+other);
-        
+
         logger.debug("comparing appendToLog");
-        if (appendToLog == null) {
-            if (other.appendToLog != null) return false;
-        } else if (!appendToLog.equals(other.appendToLog)) {
-            return false;
-        }
-        
+        if (appendToLog != other.getAppendToLog())       return false;
+
         logger.debug("comparing debug");
-        if (debug == null) {
-            if (other.debug != null) return false;
-        } else if (!debug.equals(other.debug)) {
-            return false;
-        }
+        if (debug != other.debug ) return false;
+
         logger.debug("comparing description");
         if (description == null) {
             if (other.description != null) return false;
         } else if (!description.equals(other.description)) {
             return false;
         }
-        
+
         logger.debug("Ok, actually comparing lastRunDate now");
         if (lastRunDate == null) {
             if (other.lastRunDate != null) return false;
         } else if (!lastRunDate.equals(other.lastRunDate)) {
             return false;
         }
-        
+
         if (log == null) {
             if (other.log != null) return false;
         } else if (!log.equals(other.log)) {
             return false;
         }
-        
+
         if (processCount == null) {
             if (other.processCount != null) return false;
         } else if (!processCount.equals(other.processCount)) {
             return false;
         }
-        
+
         if (rollbackSegmentName == null) {
             if (other.rollbackSegmentName != null) return false;
         } else if (!rollbackSegmentName.equals(other.rollbackSegmentName)) {
             return false;
         }
-        
-        if (sendEmail == null) {
-            if (other.sendEmail != null) return false;
-        } else if (!sendEmail.equals(other.sendEmail)) {
-            return false;
-        }
-        
+
+        if (sendEmail != other.sendEmail ) return false;
+
         if (showProgressFreq == null) {
             if (other.showProgressFreq != null) return false;
         } else if (!showProgressFreq.equals(other.showProgressFreq)) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -115,16 +103,16 @@ public abstract class MatchMakerSettings extends
 	/**
 	 * Enable the debug mode of the engine
 	 */
-	private Boolean debug;
+	private boolean debug;
 
 	/** specify append rather than overwrite */
-	private Boolean appendToLog;
+	private boolean appendToLog = false;
 
 	/** Log for the engine using this setting */
-	private Log log;
+	private File log;
 
 	/** Send an email when the job is done */
-	private Boolean sendEmail;
+	private boolean sendEmail = false;
 
 	/** show the progress every so often */
 	private Long showProgressFreq;
@@ -147,24 +135,24 @@ public abstract class MatchMakerSettings extends
 	 * The last time these settings were used in a run
 	 */
 	private Date lastRunDate;
-	
-	public Boolean getAppendToLog() {
+
+	public boolean getAppendToLog() {
 		return appendToLog;
 	}
 
-	public void setAppendToLog(Boolean appendToLog) {
-		Boolean oldValue = this.appendToLog;
+	public void setAppendToLog(boolean appendToLog) {
+		boolean oldValue = this.appendToLog;
 		this.appendToLog = appendToLog;
 		getEventSupport().firePropertyChange("appendToLog", oldValue,
 				appendToLog);
 	}
 
-	public Boolean getDebug() {
+	public boolean getDebug() {
 		return debug;
 	}
 
-	public void setDebug(Boolean debug) {
-		Boolean oldValue = this.debug;
+	public void setDebug(boolean debug) {
+		boolean oldValue = this.debug;
 		this.debug = debug;
 		getEventSupport().firePropertyChange("debug", oldValue, debug);
 	}
@@ -180,12 +168,12 @@ public abstract class MatchMakerSettings extends
 				processCount);
 	}
 
-	public Boolean getSendEmail() {
+	public boolean getSendEmail() {
 		return sendEmail;
 	}
 
-	public void setSendEmail(Boolean sendEMail) {
-		Boolean oldValue = this.sendEmail;
+	public void setSendEmail(boolean sendEMail) {
+		boolean oldValue = this.sendEmail;
 		this.sendEmail = sendEMail;
 		getEventSupport().firePropertyChange("sendEmail", oldValue, sendEMail);
 	}
@@ -201,12 +189,12 @@ public abstract class MatchMakerSettings extends
 				showProgressFreq);
 	}
 
-	public Log getLog() {
+	public File getLog() {
 		return log;
 	}
 
-	public void setLog(Log log) {
-		Log oldValue = this.log;
+	public void setLog(File log) {
+		File oldValue = this.log;
 		this.log = log;
 		getEventSupport().firePropertyChange("log", oldValue, this.log);
 	}
@@ -237,7 +225,7 @@ public abstract class MatchMakerSettings extends
 
     /**
      * Stores a defensive copy of the given date.
-     * 
+     *
      * @param lastRunDate The last time the match or merge was run, it can be null.
      */
 	public void setLastRunDate(Date lastRunDate) {
@@ -245,7 +233,7 @@ public abstract class MatchMakerSettings extends
 		this.lastRunDate = lastRunDate == null ? null : new Date(lastRunDate.getTime());
 		getEventSupport().firePropertyChange("lastRunDate", oldValue, this.lastRunDate);
 	}
-    
+
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
