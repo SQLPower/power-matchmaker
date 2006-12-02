@@ -1,5 +1,7 @@
 package ca.sqlpower.matchmaker;
 import java.beans.PropertyDescriptor;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -19,9 +21,6 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
-import ca.sqlpower.matchmaker.util.log.Level;
-import ca.sqlpower.matchmaker.util.log.Log;
-import ca.sqlpower.matchmaker.util.log.LogFactory;
 
 /**
  * A base test that all test cases of MatchMakerObject implementations should extend.
@@ -52,7 +51,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 
 	public void testAllSettersGenerateEvents()
 	throws IllegalArgumentException, IllegalAccessException,
-	InvocationTargetException, NoSuchMethodException, ArchitectException {
+	InvocationTargetException, NoSuchMethodException, ArchitectException, IOException {
 
 		MatchMakerObject mmo = getTarget();
 
@@ -91,7 +90,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 					} else if (property.getPropertyType() == String.class) {
 						// make sure it's unique
 						newVal = "new " + oldVal;
-				
+
 					} else if (property.getPropertyType() == Boolean.class || property.getPropertyType() == Boolean.TYPE ) {
                         if(oldVal == null){
                             newVal = new Boolean(false);
@@ -132,9 +131,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 						newVal = new SQLTable();
 					} else if (property.getPropertyType() == ViewSpec.class) {
 						newVal = new ViewSpec();
-					} else if (property.getPropertyType() == Log.class) {
-						newVal = LogFactory
-								.getLogger(Level.DEBUG, "TestMatchMaker.log");
+					} else if (property.getPropertyType() == File.class) {
+						newVal = File.createTempFile("mmTest",".tmp");
+						((File)newVal).deleteOnExit();
 					} else if (property.getPropertyType() == PlFolder.class) {
 						newVal = new PlFolder<Match>();
 					} else if (property.getPropertyType() == Match.MatchMode.class) {
@@ -162,19 +161,19 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 								+ property.getPropertyType().getName() + ") from "
 								+ mmo.getClass());
 					}
-					
+
 					if (newVal instanceof MatchMakerObject){
 						((MatchMakerObject)newVal).setSession(session);
 					}
-				
+
                     assertFalse("Old value and new value are equivalent for class "+property.getPropertyType()+" of property "+property.getName(),
                             oldVal == null? oldVal == newVal:oldVal.equals(newVal));
 					int oldChangeCount = listener.getAllEventCounts();
-				
+
 					try {
-                        
+
 						BeanUtils.copyProperty(mmo, property.getName(), newVal);
-				
+
 						// some setters fire multiple events (they change more than one property)
 						assertTrue("Event for set "+property.getName()+" on "+mmo.getClass().getName()+" didn't fire!",
 								listener.getAllEventCounts() > oldChangeCount);
@@ -204,7 +203,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
     public void testChildrenNotNull() {
         assertNotNull(getTarget().getChildren());
     }
-    
+
     /**
      * All objects should return false for .equals(null), not true or throw an exception.
      */

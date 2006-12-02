@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.util;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -11,23 +12,21 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.MockJDBCDriver;
 import ca.sqlpower.architect.MockJDBCResultSet;
 import ca.sqlpower.architect.jdbc.MockJDBCPreparedStatement;
-import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.util.log.Level;
-import ca.sqlpower.matchmaker.util.log.Log;
-import ca.sqlpower.matchmaker.util.log.LogFactory;
+import ca.sqlpower.matchmaker.Match.MatchMode;
+
 
 public class FileNameToLogTest extends TestCase {
 
-	Log[] allLogs;
+	File[] allLogs;
 
 	FileNameToLog userType;
 	private MockJDBCResultSet rs;
 	private String[] names;
 	String[] data;
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
-			
+
 		userType = new FileNameToLog();
 		MockJDBCDriver driver = new MockJDBCDriver();
 		ArchitectDataSource ds = new ArchitectDataSource();
@@ -39,7 +38,7 @@ public class FileNameToLogTest extends TestCase {
 		ds.setDisplayName("a");
 		ds.setUser("a");
 		ArchitectConnectionFactory factory = new ArchitectConnectionFactory(ds);
-		
+
 		Connection con = factory.createConnection();
 		Statement statements = con.createStatement();
 		rs = (MockJDBCResultSet) statements.getResultSet();
@@ -47,41 +46,45 @@ public class FileNameToLogTest extends TestCase {
 		rs.setColumnName(1,"file_name");
 		names = new String[1];
 		names[0]="file_name";
-		data = new String[Match.MatchMode.values().length+1];
-		allLogs = new Log[3];
+		data = new String[MatchMode.values().length+1];
+		allLogs = new File[3];
+
 		for (int i = 0; i<3;i++) {
 			data[i] = "File"+i;
-			allLogs[i] = LogFactory.getLogger(Level.DEBUG, data[i]);
+			allLogs[i] = new File(data[i]);
 		}
 	}
 
 	public void testDeepCopy() throws ArchitectException{
-		for (Log log: allLogs) {
-			Log testCopy = (Log) userType.deepCopy(log);
-			assertEquals("Invalid log",log.getConstraint(),testCopy.getConstraint());
-				
-		}
+
+		File testCopy = (File) userType.deepCopy(allLogs[0]);
+		assertEquals("Invalid log",allLogs[0],testCopy);
+		testCopy = (File) userType.deepCopy(allLogs[1]);
+		assertEquals("Invalid log",allLogs[1],testCopy);
+		testCopy = (File) userType.deepCopy(allLogs[2]);
+		assertEquals("Invalid log",allLogs[2],testCopy);
+
 	}
-	
+
 	public void testNullGet() throws SQLException, ArchitectException{
-		for	(int i = 0;i < data.length; i++){	
+		for	(int i = 0;i < data.length; i++){
 			Object[] row = {data[i]};
 			rs.addRow(row);
 			rs.next();
-			Log get = (Log)userType.nullSafeGet(rs, names, null);
+			File get = (File)userType.nullSafeGet(rs, names, null);
 			if (i < allLogs.length) {
-				assertEquals("The log type is not correct", allLogs[i].getConstraint(), get.getConstraint());
+				assertEquals("The log type is not correct", allLogs[i], get);
 			} else {
 				assertEquals("The result is not correct",null, get);
 			}
-				
+
 		}
 	}
-	
-	
+
+
 	public void testNullSafeSetAtFirstIndex() throws SQLException{
 		MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
-		for	(int i = 0;i < data.length; i++){	
+		for	(int i = 0;i < data.length; i++){
 			if (i < allLogs.length) {
 				userType.nullSafeSet(statements, allLogs[i], 1);
 			} else {
@@ -91,10 +94,10 @@ public class FileNameToLogTest extends TestCase {
 			assertEquals("The Log is not correct", data[i], (String)values[0]);
 		}
 	}
-	
+
 	public void testNullSafeSetAtIndexOtherThanFirst() throws SQLException{
 	MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
-		for	(int i = 0;i < data.length; i++){	
+		for	(int i = 0;i < data.length; i++){
 			if (i < allLogs.length) {
 				userType.nullSafeSet(statements, allLogs[i], 6);
 			} else {
@@ -102,7 +105,7 @@ public class FileNameToLogTest extends TestCase {
 			}
 			Object[] values = statements.getParameters();
 			assertEquals("The match string is not correct", data[i], (String)values[5]);
-		}		
+		}
 	}
-		
+
 }

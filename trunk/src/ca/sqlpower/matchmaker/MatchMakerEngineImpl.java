@@ -18,7 +18,7 @@ import ca.sqlpower.sql.PLSchemaException;
 public class MatchMakerEngineImpl implements MatchMakerEngine {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerEngineImpl.class);
-	
+
 	/**
 	 * the session that we are currently connectting to
 	 */
@@ -36,7 +36,7 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 		settings = match.getMatchSettings();
 		context = session.getContext();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#abort()
 	 */
@@ -49,17 +49,17 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 
 	/**
 	 * returns true if the matchmaker engine version is good for the schema that
-	 * we currently connect to. false if the engine version is too old. 
+	 * we currently connect to. false if the engine version is too old.
 	 */
 	static boolean validateMatchMakerEngineVersion() {
 		// require change the engine
 		return true;
 	}
-	
+
 	/**
-	 * returns true if the DEF_PARAM.EMAIL_NOTIFICATION_RETURN_ADRS and 
+	 * returns true if the DEF_PARAM.EMAIL_NOTIFICATION_RETURN_ADRS and
 	 * DEF_PARAM.MAIL_SERVER_NAME column are not null or empty, they are
-	 * require to run email_notification engine.                        
+	 * require to run email_notification engine.
 	 */
 	static boolean validateEmailSetting(DefaultParameters def) {
 		boolean validate;
@@ -71,7 +71,7 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 					smtpServer.length() > 0;
 		return validate;
 	}
-	
+
 	/**
 	 * returns true if the given file exists and executable, false otherwise.
 	 * @param fileName  the name of the file you want to check.
@@ -86,17 +86,17 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 		return canExecuteFile(
 				context.getMatchEngineLocation());
 	}
-	
+
 	static boolean canExecuteEmailEngine(MatchMakerSessionContext context) {
 		return canExecuteFile(
 				context.getEmailEngineLocation());
 	}
-	
+
 	/**
 	 * returns true if the log file os this match is writable.
 	 */
 	static boolean canWriteLogFile(MatchMakerSettings settings) {
-		return settings.getLog().isWritable();
+		return settings.getLog().canWrite();
 	}
 
 	/**
@@ -105,19 +105,19 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 	static boolean canReadLogFile(MatchMakerSettings settings) {
 		return true;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#checkPreConditions()
 	 */
 	public static boolean checkPreConditions(MatchMakerSession session, Match match) throws EngineSettingException {
 		final MatchMakerSessionContext context = session.getContext();
 		final MatchSettings settings = match.getMatchSettings();
-		
+
 		if ( context == null ) {
 			throw new EngineSettingException(
 					"PreCondition failed: session context must not be null");
 		}
-		
+
 		if ( session.getDatabase() == null ) {
 			throw new EngineSettingException(
 					"PreCondition failed: database of the session must not be null");
@@ -128,9 +128,9 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 		}
 
 		/**
-		 * check the DSN setting for the current database connection, 
-		 * that's required by the matchmaker odbc engine, since we will not 
-		 * use this odbc engine forever, check for not null is acceptable for now. 
+		 * check the DSN setting for the current database connection,
+		 * that's required by the matchmaker odbc engine, since we will not
+		 * use this odbc engine forever, check for not null is acceptable for now.
 		 */
 		final String odbcDsn = session.getDatabase().getDataSource().getOdbcDsn();
 		if ( odbcDsn == null || odbcDsn.length() == 0 ) {
@@ -138,26 +138,25 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 					"ODBC DSN is missing in the Logical database connection setting," +
 					" that's required by the matchmaker engine");
 		}
-		
+
 		if (!canExecuteMatchEngine(session.getContext())) {
 			throw new EngineSettingException(
 					"The Matchmaker engine executable is not found.\n" +
 					" It should be in the directory of pl.ini");
 		}
-		
+
 		if (!validateMatchMakerEngineVersion()) {
 			throw new EngineSettingException(
 					"The matchmaker engine version is not up to date");
 		}
-		
-		if (settings.getSendEmail() != null &&
-				settings.getSendEmail().booleanValue() ) {
+
+		if (settings.getSendEmail()) {
 			if (!canExecuteEmailEngine(session.getContext())) {
 				throw new EngineSettingException(
 						"The email notification executable is not found.\n" +
 				" It should be in the directory of pl.ini");
 			}
-			
+
 			try {
 				if (!validateEmailSetting(new DefaultParameters(session.getConnection()))) {
 					throw new EngineSettingException(
@@ -171,7 +170,7 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 				throw new EngineSettingException("Cannot validate email settings",e);
 			}
 		}
-		
+
 		try {
 			if (!Match.doesSourceTableExist(session, match)) {
 				throw new EngineSettingException("Source table does not exist!");
@@ -182,18 +181,18 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 		} catch (ArchitectException e) {
 			throw new EngineSettingException("SQL Error. "+e.getMessage());
 		}
-		
+
 		if (!canReadLogFile(settings)) {
 			throw new EngineSettingException("The log file is not readable.");
 		}
-		
+
 		if (!canWriteLogFile(settings)) {
 			throw new EngineSettingException("The log file is not writable.");
 		}
 		return true;
 	}
 
-	
+
 	public String createCommandLine(MatchMakerSession session, Match match, boolean userPrompt) {
 		/*
 		 * command line sample:
@@ -225,7 +224,7 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 		command.append(" APPEND_TO_LOG_IND=").append(
 				settings.getAppendToLog() ? "Y" : "N");
 		command.append(" LOG_FILE=\"").append(
-				settings.getLog().getConstraint().toString()).append("\"");
+				settings.getLog().getPath()).append("\"");
 		if ( settings.getShowProgressFreq() != null ) {
 			command.append(" SHOW_PROGRESS=").append(settings.getShowProgressFreq());
 		}
@@ -237,7 +236,7 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 		}
 		return command.toString();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#getEngineReturnCode()
 	 */
@@ -266,16 +265,16 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 		logger.debug("Executing " + commandLine);
 		proc = rt.exec(commandLine);
 		processMonitor = new Thread(new Runnable(){
-		
+
 					public void run() {
 						try {
 							proc.waitFor();
 							engineExitCode = proc.exitValue();
 						} catch (InterruptedException e) {
 							throw new RuntimeException(e);
-						}				
+						}
 					}
-					
+
 				});
 		processMonitor.start();
 	}

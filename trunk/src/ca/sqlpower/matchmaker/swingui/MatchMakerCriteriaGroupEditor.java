@@ -59,12 +59,12 @@ public class MatchMakerCriteriaGroupEditor {
     private final MatchMakerSwingSession swingSession;
     private MatchMakerCriteriaGroup group;
     private Match match;
-    
+
     private JPanel panel;
-    
+
     StatusComponent status = new StatusComponent();
     private FormValidationHandler handler;
-    
+
     private JSplitPane jSplitPane;
 	private JTable matchCriteriaTable;
 	private MatchCriteriaTableModel matchCriteriaTableModel;
@@ -92,7 +92,7 @@ public class MatchMakerCriteriaGroupEditor {
         this.swingSession = swingSession;
         this.match = match;
 		this.group = group;
-		
+
 		handler = new FormValidationHandler(status);
 		matchCriteriaTableModel = new MatchCriteriaTableModel(group);
 		matchCriteriaTable = new EditableJTable(matchCriteriaTableModel);
@@ -124,7 +124,7 @@ public class MatchMakerCriteriaGroupEditor {
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
-	
+
 	private class MatchGroupPctValidator implements Validator {
 		public ValidateResult validate(Object contents) {
 			String value = (String)contents;
@@ -159,10 +159,10 @@ public class MatchMakerCriteriaGroupEditor {
 			newCriteria.setEnabled(false);
 		}
 	}
-	 
+
 	private Action save = new AbstractAction("Save") {
 		public void actionPerformed(ActionEvent e) {
-			
+
 			List<String> fail = handler.getFailResults();
 	    	List<String> warn = handler.getWarnResults();
 
@@ -189,7 +189,7 @@ public class MatchMakerCriteriaGroupEditor {
 	    				"Match warning",
 	    				JOptionPane.INFORMATION_MESSAGE);
 	    	}
-	    	
+
 			if ( !groupId.getText().equals(group.getName()) ) {
 	        	if ( match.getMatchCriteriaGroupByName(groupId.getText()) != null ) {
 	        		JOptionPane.showMessageDialog(getPanel(),
@@ -215,7 +215,7 @@ public class MatchMakerCriteriaGroupEditor {
 	        dao.save(match);
 		}
 	};
-	
+
 	private Action newCriteria = new AbstractAction("New Criteria") {
 		public void actionPerformed(ActionEvent arg0) {
 			MatchMakerCriteria criteria = new MatchMakerCriteria();
@@ -246,7 +246,7 @@ public class MatchMakerCriteriaGroupEditor {
 
 		}
 	};
-	
+
 	private Action deleteCriteria = new AbstractAction("Delete") {
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = matchCriteriaTable.getSelectedRow();
@@ -255,7 +255,7 @@ public class MatchMakerCriteriaGroupEditor {
 			group.removeChild(c);
 		}
 	};
-	
+
 	/**
 	 * Creates the GUI components and lays them out.
 	 */
@@ -278,7 +278,7 @@ public class MatchMakerCriteriaGroupEditor {
         deleteMatchCriterion = new JButton(deleteCriteria);
         saveMatchCriterion = new JButton(save);
         saveMatchCriterion.setName("Save button for "+group.getName());
-		
+
 		// group header
 		FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, fill:pref:grow, 10dlu, pref,5dlu,pref,3dlu");
 		PanelBuilder pb = new PanelBuilder(formLayout);
@@ -313,8 +313,8 @@ public class MatchMakerCriteriaGroupEditor {
 		bbb.addGlue();
 		pb.add(bbb.getPanel(),cl.xyw(2, 10, 7));
 
-		
-		
+
+
 		// group detail (match criteria)
 		matchCriteriaTable.setName("Match Criteria Editor for "+group.getName());
 		matchCriteriaTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -324,8 +324,8 @@ public class MatchMakerCriteriaGroupEditor {
         jSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
         jSplitPane.setBottomComponent(new JScrollPane(matchCriteriaTable));
         jSplitPane.setTopComponent(groupEditPanel);
-        
-        panel = new JPanel();        
+
+        panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(jSplitPane, BorderLayout.CENTER);
         panel.add(status, BorderLayout.NORTH);
@@ -337,22 +337,20 @@ public class MatchMakerCriteriaGroupEditor {
 	 * Switches this component to edit a different match group.
 	 *
 	 * @param criteria the new MatchGroup to edit.
-	 * @throws ArchitectException 
+	 * @throws ArchitectException
 	 */
 	private void setDefaultSelection(MatchMakerCriteriaGroup group,
 			Match match ) throws ArchitectException {
-		
+
 		matches.setText(match.getName());
 		groupId.setText(group.getName());
         description.setText(group.getDesc());
-        
+
         if ( group.getMatchPercent() != null ) {
         	matchPercent.setText(group.getMatchPercent().toString());
         }
         filterPanel.getFilterTextArea().setText(group.getFilter());
-        if ( group.getActive() != null ) {
-        	active.setSelected(group.getActive());
-        }
+       	active.setSelected(group.getActive());
 
         SQLTable sourceTable;
         newCriteria.setEnabled(false);
@@ -362,12 +360,12 @@ public class MatchMakerCriteriaGroupEditor {
         		newCriteria.setEnabled(true);
 
                 filterPanel.setTable(sourceTable);
-                
+
         		int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
         		matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(
         				new DefaultCellEditor(new JComboBox(
         						new ColumnComboBoxModel(sourceTable,group))));
-        		
+
         		int colIndex = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
             	TableColumn col = matchCriteriaTable.getColumnModel().getColumn(colIndex);
             	final JComboBox translateComboBox = new JComboBox(
@@ -379,36 +377,36 @@ public class MatchMakerCriteriaGroupEditor {
 
         Validator v1 = new MatchGroupNameValidator();
         handler.addValidateObject(groupId,v1);
-        
+
         Validator v2 = new MatchGroupPctValidator();
         handler.addValidateObject(matchPercent,v2);
-        
+
         Validator v3 = new AlwaysOKValidator();
         handler.addValidateObject(description,v3);
         handler.addValidateObject(filterPanel.getFilterTextArea(),v3);
-        
+
         Validator v4 = new CriteriaTableValidator(matchCriteriaTable);
         handler.addValidateObject(matchCriteriaTable,v4);
-        
-        
+
+
         //These three fields are not really needed as the table cells automatically
-        //reject if the user enters something that is not a number.  These 
-        //validators act as an insurance in case the invalid text does get 
-        //bypassed.  
-           
+        //reject if the user enters something that is not a number.  These
+        //validators act as an insurance in case the invalid text does get
+        //bypassed.
+
         Validator v5 = new NumberValidatorAllowingNull(matchCriteriaTable,
         		MatchCriteriaColumn.FIRST_N_CHAR);
         handler.addValidateObject(matchCriteriaTable,v5);
-        
-           
-        Validator v6 = new NumberValidatorAllowingNull(matchCriteriaTable, 
+
+
+        Validator v6 = new NumberValidatorAllowingNull(matchCriteriaTable,
         		MatchCriteriaColumn.FIRST_N_CHARS_BY_WORD);
         handler.addValidateObject(matchCriteriaTable,v6);
-                
+
         Validator v7 = new NumberValidatorAllowingNull(matchCriteriaTable,
         		MatchCriteriaColumn.MIN_WORDS_IN_COMMON);
         handler.addValidateObject(matchCriteriaTable,v7);
-        
+
     }
 
 
@@ -440,7 +438,7 @@ public class MatchMakerCriteriaGroupEditor {
 	        return this;
 	    }
 	}
-	
+
 	private class CriteriaTableValidator implements Validator {
 
 		private MatchCriteriaTableModel model;
@@ -453,11 +451,11 @@ public class MatchMakerCriteriaGroupEditor {
 			for ( int i=0; i<model.getRowCount(); i++ ) {
                 try {
                     MatchMakerCriteria c = model.getRow(i);
-                    if ( c.getColumn() == null || 
-                            c.getColumn().getName() == null || 
+                    if ( c.getColumn() == null ||
+                            c.getColumn().getName() == null ||
                             c.getColumn().getName().length() == 0 ) {
                         return ValidateResult.createValidateResult(Status.FAIL,
-                        "column name can not be null"); 
+                        "column name can not be null");
                     }
                     if (columnNames.contains(c.getColumn().getName())) {
                         return ValidateResult.createValidateResult(Status.FAIL,
@@ -470,29 +468,29 @@ public class MatchMakerCriteriaGroupEditor {
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
-		
+
 	}
-	
+
 	/**
 	 * Unlike the RegEx validator, this validator allows the content
 	 * to be null as well
 	 */
 	private class NumberValidatorAllowingNull implements Validator{
-		
+
 		private JTable table;
 		private MatchCriteriaColumn translate_group_name;
-		
-		public NumberValidatorAllowingNull(JTable table, 
+
+		public NumberValidatorAllowingNull(JTable table,
 				MatchCriteriaColumn translate_group_name){
 			this.table = table;
-			this.translate_group_name = translate_group_name;			
+			this.translate_group_name = translate_group_name;
 		}
-		
+
 		public ValidateResult validate(Object contents) {
 			Pattern pattern = Pattern.compile("\\d+");
 			int colIndex = ((MatchCriteriaTableModel)table.getModel()).
 							getIndexOfClass(translate_group_name);
-			
+
 			//If it does not exist, the columns have not been setup yet
 			//therefore it is ok
 			if (colIndex == -1){
@@ -503,7 +501,7 @@ public class MatchMakerCriteriaGroupEditor {
 			for (int i = 0; i < table.getRowCount(); i++){
 				if (table.getValueAt(i, colIndex) instanceof Long ||
 						table.getValueAt(i, colIndex) instanceof Integer) continue;
-				
+
 				String value = (String) table.getValueAt(i, colIndex);
 				if ( value == null || value.trim().length()==0) continue;
 				if (pattern.matcher(value).matches()){
@@ -511,9 +509,9 @@ public class MatchMakerCriteriaGroupEditor {
 				} else {
 					String className =table.getModel().getColumnClass(colIndex)
 											.toString();
-					return ValidateResult.createValidateResult(Status.FAIL, 
+					return ValidateResult.createValidateResult(Status.FAIL,
 							className + "must be in number form");
-				}			
+				}
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}

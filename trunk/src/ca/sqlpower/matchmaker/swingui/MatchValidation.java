@@ -43,7 +43,6 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.table.TableUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
-import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
@@ -83,10 +82,9 @@ public class MatchValidation {
     private ItemListener filterMatchGrpListener;
     private FilterMakerDialog filterPanel;
 
-    private MatchPool pool;
-    
+
     private static final int MAX_TABLE_COL_WIDTH= 400;
-    
+
     /**
      * Changes the candidate JTable according to the selection of source table.
      */
@@ -193,12 +191,12 @@ public class MatchValidation {
                 }
 
                 final RowSetModel model = new RowSetModel(jrs);
-                candidateJTable.setModel(new ResultTableModel(model));                
+                candidateJTable.setModel(new ResultTableModel(model));
                 candidateJTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
                 // FIXME would like to set column widths to match upper table,
                 //       but this lower table has two extra columns in front
-                
+
             } catch (SQLException e1) {
                 ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error:"+sql.toString(), e1, new MatchMakerQFAFactory());
@@ -300,7 +298,7 @@ public class MatchValidation {
             con = swingSession.getConnection();
 
             StringBuffer sql = new StringBuffer();
-            sql.append("SELECT ");            
+            sql.append("SELECT ");
             for ( int i=0; i<matchSourceTable.getColumns().size(); i++ ) {
                 if ( i > 0 ) {
                     sql.append(",");
@@ -368,8 +366,8 @@ public class MatchValidation {
 
         allMatchGroup.add(ALL);
         allMatchPct.add(ALL);
-        
-        allMatchStatus.add(ALL);                
+
+        allMatchStatus.add(ALL);
         allMatchStatus.add("AUTO-MATCH");
         allMatchStatus.add("MATCH");
         allMatchStatus.add("NOMATCH");
@@ -394,7 +392,7 @@ public class MatchValidation {
         sourceJTable = new JTable();
         candidateJTable = new JTable();
         sourceJTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-       
+
         matchSourceTable = match.getSourceTable();
         pk = match.getSourceTableIndex();
     }
@@ -718,13 +716,13 @@ public class MatchValidation {
                 if ( newSourceRowSet != null ) {
                     sourceTableRowSet = newSourceRowSet;
                 }
-                
+
                 for ( i = 0; i<pk.getChildCount(); i++ ) {
-                    SQLObject col = pk.getChild(i);                    
+                    SQLObject col = pk.getChild(i);
                     jrs.addRowSet(sourceTableRowSet,col.getName() );
                     jrs.addRowSet(crset2, "DUP_CANDIDATE_"+(i+10) );
                 }
-                                
+
 
                 RowSetModel model = new RowSetModel(jrs);
                 output.getSelectionModel().removeListSelectionListener(sourceJTableListener);
@@ -931,9 +929,9 @@ public class MatchValidation {
                 logger.debug("Updated "+count+" rows with "+lastSQL);
                 pstmt.close();
                 pstmt = null;
-                
+
                 // update all records in the bottom table to mark them duplicates of the new master
-                
+
             } catch (Exception e1) {
                 ASUtils.showExceptionDialog(frame,
                         "Error While setting master record", e1, new MatchMakerQFAFactory());
@@ -1000,8 +998,8 @@ public class MatchValidation {
      * Displays the frame and gives it focus.  It is safe to call this
      * method multiple times.
      */
-    public void showGUI() {        
+    public void showGUI() {
         frame.setVisible(true);
         frame.requestFocus();
-    }    
+    }
 }

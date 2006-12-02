@@ -10,9 +10,9 @@ public class MatchSettings extends MatchMakerSettings {
         final int PRIME = 31;
         int result = super.hashCode();
         result = PRIME * result + ((autoMatchThreshold == null) ? 0 : autoMatchThreshold.hashCode());
-        result = PRIME * result + ((breakUpMatch == null) ? 0 : breakUpMatch.hashCode());
+        result = PRIME * result + ((breakUpMatch == true) ? 123 : 234);
         result = PRIME * result + ((lastBackupNo == null) ? 0 : lastBackupNo.hashCode());
-        result = PRIME * result + ((truncateCandDupe == null) ? 0 : truncateCandDupe.hashCode());
+        result = PRIME * result + ((truncateCandDupe == true) ? 345 : 456);
         return result;
     }
 
@@ -33,21 +33,14 @@ public class MatchSettings extends MatchMakerSettings {
                 return false;
         } else if (!autoMatchThreshold.equals(other.autoMatchThreshold))
             return false;
-        if (breakUpMatch == null) {
-            if (other.breakUpMatch != null)
-                return false;
-        } else if (!breakUpMatch.equals(other.breakUpMatch))
-            return false;
+        if (breakUpMatch != other.breakUpMatch )  return false;
+
         if (lastBackupNo == null) {
             if (other.lastBackupNo != null)
                 return false;
         } else if (!lastBackupNo.equals(other.lastBackupNo))
             return false;
-        if (truncateCandDupe == null) {
-            if (other.truncateCandDupe != null)
-                return false;
-        } else if (!truncateCandDupe.equals(other.truncateCandDupe))
-            return false;
+        if (truncateCandDupe != other.truncateCandDupe ) return false;
         return true;
     }
 
@@ -58,38 +51,38 @@ public class MatchSettings extends MatchMakerSettings {
 	 * The threshold above which matches are automatically resolved
 	 */
 	private Short autoMatchThreshold;
-	
+
 	/**
 	 * The number of the last backup
 	 */
 	private Long lastBackupNo;
-	
+
 	/**
 	 * Breakup the match after each criteria group
 	 */
-	private Boolean breakUpMatch;
+	private boolean breakUpMatch = false;
 	/**
 	 * Truncate the candidate duplicate table
 	 */
-	private Boolean truncateCandDupe;
+	private boolean truncateCandDupe = false;
 
-	public Boolean getBreakUpMatch() {
+	public boolean getBreakUpMatch() {
 		return breakUpMatch;
 	}
 
-	public void setBreakUpMatch(Boolean breakUpMatch) {
-		Boolean oldValue = this.breakUpMatch;
+	public void setBreakUpMatch(boolean breakUpMatch) {
+		boolean oldValue = this.breakUpMatch;
 		this.breakUpMatch = breakUpMatch;
 		getEventSupport().firePropertyChange("breakUpMatch", oldValue,
 				this.breakUpMatch);
 	}
 
-	public Boolean getTruncateCandDupe() {
+	public boolean getTruncateCandDupe() {
 		return truncateCandDupe;
 	}
 
-	public void setTruncateCandDupe(Boolean truncateCandDupe) {
-		Boolean oldValue = this.truncateCandDupe;
+	public void setTruncateCandDupe(boolean truncateCandDupe) {
+		boolean oldValue = this.truncateCandDupe;
 		this.truncateCandDupe = truncateCandDupe;
 		getEventSupport().firePropertyChange("truncateCandDupe", oldValue,
 				this.truncateCandDupe);
