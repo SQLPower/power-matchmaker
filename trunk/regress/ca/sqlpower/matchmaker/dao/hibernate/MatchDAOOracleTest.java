@@ -47,7 +47,7 @@ public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
             stmt = con.createStatement();
             stmt.executeUpdate(
                     "INSERT INTO pl_match (match_oid, match_id, match_type) " +
-                    "VALUES ("+time+", '"+matchName+"', '"+Match.MatchType.FIND_DUPES+"')");
+                    "VALUES ("+time+", '"+matchName+"', '"+Match.MatchMode.FIND_DUPES+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it

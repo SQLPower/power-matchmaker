@@ -15,7 +15,7 @@ public abstract class AbstractMatchMakerCriteraGroupDAOTestCase extends Abstract
     public AbstractMatchMakerCriteraGroupDAOTestCase() {
         match= new Match();
         match.setName("Criteria Group Test Match");
-        match.setType(Match.MatchType.BUILD_XREF);
+        match.setType(Match.MatchMode.BUILD_XREF);
         match.setParent(null);
         try {
             match.setSession(getSession());

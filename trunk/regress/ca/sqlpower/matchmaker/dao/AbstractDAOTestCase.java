@@ -25,6 +25,7 @@ import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 import ca.sqlpower.matchmaker.util.log.Level;
@@ -255,11 +256,11 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						.getLogger(Level.DEBUG, "TestMatchMaker.log");
 					} else if (property.getPropertyType() == PlFolder.class) {
 						newVal = new PlFolder<Match>();
-					} else if (property.getPropertyType() == Match.MatchType.class) {
-						if (oldVal == Match.MatchType.BUILD_XREF) {
-							newVal = Match.MatchType.FIND_DUPES;
+					} else if (property.getPropertyType() == MatchMode.class) {
+						if (oldVal == MatchMode.BUILD_XREF) {
+							newVal = MatchMode.FIND_DUPES;
 						} else {
-							newVal = Match.MatchType.BUILD_XREF;
+							newVal = Match.MatchMode.BUILD_XREF;
 						}
 					} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
 						newVal = new MatchMakerTranslateGroup();

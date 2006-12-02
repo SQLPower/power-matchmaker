@@ -137,11 +137,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 								.getLogger(Level.DEBUG, "TestMatchMaker.log");
 					} else if (property.getPropertyType() == PlFolder.class) {
 						newVal = new PlFolder<Match>();
-					} else if (property.getPropertyType() == Match.MatchType.class) {
-						if (oldVal == Match.MatchType.BUILD_XREF) {
-							newVal = Match.MatchType.FIND_DUPES;
+					} else if (property.getPropertyType() == Match.MatchMode.class) {
+						if (oldVal == Match.MatchMode.BUILD_XREF) {
+							newVal = Match.MatchMode.FIND_DUPES;
 						} else {
-							newVal = Match.MatchType.BUILD_XREF;
+							newVal = Match.MatchMode.BUILD_XREF;
 						}
 					} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
 						newVal = new MatchMakerTranslateGroup();

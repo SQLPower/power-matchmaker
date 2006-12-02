@@ -187,7 +187,8 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
 
     private void createFolderMenu(final PlFolder folder) {
         m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match", folder)));
-        m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
+//XXX: Add back in when PlMatchImport and PlMatchExport are fixed
+        /*        m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));*/
         
         m.add(new JMenuItem(new DeletePlFolderAction(swingSession,"Delete Folder",folder)));
     }

@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -30,6 +31,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.sql.SQL;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -281,8 +283,13 @@ public class FilterMakerDialog extends JDialog {
                 textBuffer.append((String)comparisonOperator.getSelectedItem());
                 textBuffer.append(" ");
 
-                if (trueForTextField){
-                    textBuffer.append(conditionTextField.getText());
+                if (trueForTextField) {
+                    String text = conditionTextField.getText();
+                    SQLColumn lhsCol = (SQLColumn) columnName.getSelectedItem();
+                    if (lhsCol != null && isTextType(lhsCol.getType())) {
+                        text = SQL.quote(text);
+                    }
+                    textBuffer.append(text);
                 } else{
                     textBuffer.append(((SQLColumn)columnName2.getSelectedItem()).getName());
                 }
@@ -292,6 +299,14 @@ public class FilterMakerDialog extends JDialog {
         }
     };
 
+    /**
+     * Returns true if the given java.sql.Types type code is a character
+     * type and requires values to be quoted in a WHERE clause.
+     */
+    private static boolean isTextType(int sqlType) {
+        return (sqlType == Types.CHAR || sqlType == Types.VARCHAR);
+    }
+    
     private Action andAction = new AbstractAction("AND"){
 
         public void actionPerformed(ActionEvent e) {

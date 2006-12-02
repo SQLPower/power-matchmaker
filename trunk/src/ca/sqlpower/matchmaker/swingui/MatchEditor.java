@@ -8,7 +8,6 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -40,7 +39,6 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
-import ca.sqlpower.matchmaker.MatchType;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.action.CreateResultTableAction;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
@@ -79,6 +77,7 @@ public class MatchEditor {
     private JButton validationStatus;
     private JButton validateMatch;
     private FilterComponentsPanel filterPanel;
+    private MatchValidation matchValidation;
 
     private final MatchMakerSwingSession swingSession;
 
@@ -203,10 +202,11 @@ public class MatchEditor {
 		}};
 	private Action validateMatchAction = new AbstractAction("Validate Match") {
 		public void actionPerformed(ActionEvent e) {
-			try {
-				MatchValidation v = new MatchValidation(swingSession, match);
-				v.pack();
-				v.setVisible(true);
+			try {           
+                if (getMatchValidation() == null){
+                    matchValidation = new MatchValidation(swingSession, match);                                        
+                }
+                    matchValidation.showGUI();                                     
 			} catch (HeadlessException e1) {
 				ASUtils.showExceptionDialog(swingSession.getFrame(),
 						"Unknown Error",e1, new MatchMakerQFAFactory());
@@ -252,12 +252,7 @@ public class MatchEditor {
 
         filterPanel = new FilterComponentsPanel();
 
-        List<String> types = new ArrayList<String>();
-        for ( MatchType mt : MatchType.values() ) {
-        	types.add(mt.getName());
-        }
-
-        matchType.setModel(new DefaultComboBoxModel(Match.MatchType.values()));
+        matchType.setModel(new DefaultComboBoxModel(Match.MatchMode.values()));
 
         sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent e) {
@@ -410,9 +405,9 @@ public class MatchEditor {
         	sourceChooser.getCatalogComboBox().setSelectedItem(cat);
         	sourceChooser.getSchemaComboBox().setSelectedItem(sch);
         	sourceChooser.getTableComboBox().setSelectedItem(sourceTable);
+        	SQLIndex pk = match.getSourceTableIndex();
+        	sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
     	}
-        SQLIndex pk = match.getSourceTableIndex();
-        sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
         if (sourceChooser.getUniqueKeyComboBox().getSelectedItem() == null) {
         	createResultTableAction.setEnabled(false);
         }
@@ -478,7 +473,7 @@ public class MatchEditor {
     	}
 
     	final String matchName = matchId.getText().trim();
-        match.setType((Match.MatchType)matchType.getSelectedItem());
+        match.setType((Match.MatchMode)matchType.getSelectedItem());
         match.getMatchSettings().setDescription(desc.getText());
 
         match.setSourceTable(((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()));
@@ -683,5 +678,13 @@ public class MatchEditor {
 				return ValidateResult.createValidateResult(Status.OK, "");
 			}
 		}
+    }
+
+    public MatchValidation getMatchValidation() {
+        return matchValidation;
+    }
+
+    public void setMatchValidation(MatchValidation matchValidation) {
+        this.matchValidation = matchValidation;
     }
 }

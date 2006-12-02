@@ -23,7 +23,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -61,8 +60,6 @@ import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
-import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
-import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersion;
@@ -103,6 +100,12 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	 */
 	private final JFrame frame;
 
+    /**
+     * The small MatchMaker application icon (suitable for use as frame/dialog
+     * icon images).
+     */
+	private final ImageIcon smallMMIcon;
+    
 	/**
 	 * The main part of the UI; the tree lives on the left and the current editor lives on the right.
      *
@@ -127,6 +130,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
+    
     /**
      * Container for translate groups
      */
@@ -248,6 +252,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, ArchitectException, SchemaVersionFormatException, PLSchemaException, SQLException {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
+        this.smallMMIcon = new ImageIcon(getClass().getResource("/icons/matchmaker_24.png"));
         
         // this grabs warnings from the business model and DAO's and lets us handle them.
         sessionImpl.addWarningListener(new WarningListener() {
@@ -258,6 +263,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         frame = new JFrame("MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
 
         warningDialog = new JFrame("MatchMaker Warnings");
+        warningDialog.setIconImage(smallMMIcon.getImage());
         warningTextArea = new JTextArea(6, 40);
         JComponent cp = (JComponent) warningDialog.getContentPane();
         cp.setLayout(new BorderLayout(0, 10));
@@ -278,7 +284,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
         macOSXRegistration();
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(frame));
-        frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
+        frame.setIconImage(smallMMIcon.getImage());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -330,8 +336,9 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		matchesMenu.add(runMatchAction);
 		matchesMenu.add(showMatchStatisticInfoAction);
 		matchesMenu.addSeparator();
-		matchesMenu.add(new JMenuItem(new PlMatchImportAction(this, frame)));
-		matchesMenu.add(new JMenuItem(new PlMatchExportAction(this, frame)));
+//FIXME: Add these two actions back in when they are fixed!!!
+        //matchesMenu.add(new JMenuItem(new PlMatchImportAction(this, frame)));
+		//matchesMenu.add(new JMenuItem(new PlMatchExportAction(this, frame)));
 		menuBar.add(matchesMenu);
 
 		JMenu mergeMenu = new JMenu("Merges");
@@ -799,5 +806,12 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		destination.addChild(objectToMove);		
 		save(destination);
 	}
+
+    /**
+     * See {@link #smallMMIcon}.
+     */
+    public ImageIcon getSmallMMIcon() {
+        return smallMMIcon;
+    }
 	
 }

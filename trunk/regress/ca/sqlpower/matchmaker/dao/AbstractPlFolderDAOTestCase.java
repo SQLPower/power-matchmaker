@@ -36,7 +36,7 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 		PlFolder f = createNewObjectUnderTest();
 		Match match = new Match();
 		match.setName("child");
-		match.setType(Match.MatchType.FIND_DUPES);
+		match.setType(Match.MatchMode.FIND_DUPES);
 		
 		PlFolderDAO dao = getDataAccessObject();
 		

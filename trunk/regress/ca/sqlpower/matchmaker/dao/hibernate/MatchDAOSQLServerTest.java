@@ -112,7 +112,7 @@ public class MatchDAOSQLServerTest extends AbstractPlMatchDAOTestCase {
             stmt = con.createStatement();
             stmt.executeUpdate(
                     "INSERT INTO pl_match (match_id, match_type) " +
-                    "VALUES ('"+matchName+"', '"+Match.MatchType.FIND_DUPES+"')");
+                    "VALUES ('"+matchName+"', '"+Match.MatchMode.FIND_DUPES+"')");
             
             keysRS = stmt.executeQuery("SELECT match_oid FROM pl_match WHERE match_id='"+matchName+"'");
             long matchOid;

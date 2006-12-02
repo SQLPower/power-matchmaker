@@ -24,7 +24,7 @@ public class SelfContainedTests {
         BasicConfigurator.configure();
         Match match = new Match();
         //match.setOid(12345678910L);  // XXX is this the access code to the air shield on druidia?
-        match.setType(Match.MatchType.FIND_DUPES);
+        match.setType(Match.MatchMode.FIND_DUPES);
         match.setName("Test_"+System.currentTimeMillis());
         Method meth = Match.class.getDeclaredMethod("getOid", null);
         Object oid = meth.invoke(match, null);

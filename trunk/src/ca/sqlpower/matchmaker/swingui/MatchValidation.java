@@ -35,16 +35,16 @@ import javax.swing.table.TableModel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
+import ca.sqlpower.architect.swingui.table.TableUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.RowSetModel;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -55,12 +55,13 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.sun.rowset.CachedRowSetImpl;
 import com.sun.rowset.JoinRowSetImpl;
 
-public class MatchValidation extends JFrame {
+public class MatchValidation {
 
     private static final Logger logger = Logger.getLogger(MatchValidation.class);
 
     private MatchMakerSwingSession swingSession;
     private Match match;
+    private JFrame frame;
 
     private RowSet fullResult;
     private List<String> allMatchGroup;
@@ -77,14 +78,17 @@ public class MatchValidation extends JFrame {
 
     private CachedRowSetImpl sourceTableRowSet;
 
-    private SQLDatabase db;
     private SQLTable matchSourceTable;
     private SQLIndex pk;
     private ItemListener filterMatchGrpListener;
     private FilterMakerDialog filterPanel;
 
+    private MatchPool pool;
+    
+    private static final int MAX_TABLE_COL_WIDTH= 400;
+    
     /**
-     * change the candidate JTable according to the selection of source table
+     * Changes the candidate JTable according to the selection of source table.
      */
     private ListSelectionListener sourceJTableListener = new ListSelectionListener(){
 
@@ -135,7 +139,7 @@ public class MatchValidation extends JFrame {
                     String columnName = pk.getChild(i).getName();
                     int col = getColumnByName(sourceJTable,columnName);
                     if ( col < 0 ) {
-                        ASUtils.showExceptionDialog(MatchValidation.this,
+                        ASUtils.showExceptionDialog(frame,
                                 "column "+columnName+" not found",
                                 new IllegalStateException("column "+columnName+" not found"), new MatchMakerQFAFactory());
                         return;
@@ -148,7 +152,7 @@ public class MatchValidation extends JFrame {
                     }
                 }
             } catch (ArchitectException e1) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "primary key populate error", e1, new MatchMakerQFAFactory());
             }
 
@@ -169,7 +173,7 @@ public class MatchValidation extends JFrame {
             PreparedStatement pstmt = null;
             ResultSet rs =  null;
             try {
-                con = HibernateUtil.primarySession().connection();
+                con = swingSession.getConnection();
                 logger.debug("About to execute SQL for result table: "+sql);
                 pstmt = con.prepareStatement(sql.toString());
                 int i = 1;
@@ -189,25 +193,36 @@ public class MatchValidation extends JFrame {
                 }
 
                 final RowSetModel model = new RowSetModel(jrs);
-                candidateJTable.setModel(new ResultTableModel(model));
+                candidateJTable.setModel(new ResultTableModel(model));                
+                candidateJTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-
+                // FIXME would like to set column widths to match upper table,
+                //       but this lower table has two extra columns in front
+                
             } catch (SQLException e1) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error:"+sql.toString(), e1, new MatchMakerQFAFactory());
             } catch (ArchitectException e1) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "Unknown Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
                     if ( rs != null )
                         rs.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                }
+                try {
                     if ( pstmt != null )
                         pstmt.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                }
+                try {
                     if (con != null)
                         con.close();
                 } catch (SQLException e1) {
-                    logger.debug("SQL ERROR: "+ e1.getStackTrace());
+                    logger.debug("Couldn't close connection: "+ e1.getStackTrace());
                 }
             }
 
@@ -215,11 +230,14 @@ public class MatchValidation extends JFrame {
     };
 
     public MatchValidation(MatchMakerSwingSession swingSession, Match match) throws HeadlessException, SQLException, ArchitectException {
-        super("Validate Matches: ["+match.getName()+"]");
+        frame = new JFrame("Validate Matches: " + match.getName());
+        frame.setIconImage(swingSession.getSmallMMIcon().getImage());
         this.swingSession = swingSession;
         this.match = match;
         setup();
         buildUI();
+        frame.pack();
+        frame.setLocationRelativeTo(swingSession.getFrame());
     }
 
     /**
@@ -233,7 +251,7 @@ public class MatchValidation extends JFrame {
         PreparedStatement pstmt = null;
         ResultSet rs =  null;
         try {
-            con = HibernateUtil.primarySession().connection();
+            con = swingSession.getConnection();
             StringBuffer sql = new StringBuffer();
             sql.append("SELECT * FROM ");
             SQLTable resultTable = match.getResultTable();
@@ -247,12 +265,24 @@ public class MatchValidation extends JFrame {
             crset.populate(rs);
             return crset;
         } finally {
-            if ( rs != null )
-                rs.close();
-            if ( pstmt != null )
-                pstmt.close();
-            if (con != null)
-                con.close();
+            try {
+                if ( rs != null )
+                    rs.close();
+            } catch (SQLException e1) {
+                logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+            }
+            try {
+                if ( pstmt != null )
+                    pstmt.close();
+            } catch (SQLException e1) {
+                logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+            }
+            try {
+                if (con != null)
+                    con.close();
+            } catch (SQLException e1) {
+                logger.debug("Couldn't close connection: "+ e1.getStackTrace());
+            }
         }
     }
 
@@ -265,12 +295,12 @@ public class MatchValidation extends JFrame {
         PreparedStatement pstmt = null;
         ResultSet rs =  null;
         CachedRowSetImpl crset;
-
+        String lastSQL = null;
         try {
-            con = HibernateUtil.primarySession().connection();
+            con = swingSession.getConnection();
 
             StringBuffer sql = new StringBuffer();
-            sql.append("SELECT ");
+            sql.append("SELECT ");            
             for ( int i=0; i<matchSourceTable.getColumns().size(); i++ ) {
                 if ( i > 0 ) {
                     sql.append(",");
@@ -278,7 +308,7 @@ public class MatchValidation extends JFrame {
                 sql.append(matchSourceTable.getColumn(i).getName());
             }
             sql.append(" FROM ");
-            SQLTable resultTable = match.getResultTable();
+            SQLTable resultTable = match.getSourceTable();
             sql.append(DDLUtils.toQualifiedName(resultTable.getCatalogName(),
 					resultTable.getSchemaName(),
 					resultTable.getName()));
@@ -286,29 +316,39 @@ public class MatchValidation extends JFrame {
                 sql.append(" WHERE ").append(filter);
             }
 
-            pstmt = con.prepareStatement(sql.toString());
+            lastSQL = sql.toString();
+            pstmt = con.prepareStatement(lastSQL);
             rs = pstmt.executeQuery();
             crset = new CachedRowSetImpl();
             crset.populate(rs);
             return crset;
         } catch (ArchitectException e1) {
             crset = null;
-            ASUtils.showExceptionDialog(MatchValidation.this,
+            ASUtils.showExceptionDialog(frame,
                     "Unknown SQL Error", e1, new MatchMakerQFAFactory());
         } catch (SQLException e1) {
             crset = null;
-            ASUtils.showExceptionDialog(MatchValidation.this,
-                    "Unknown SQL Error", e1, new MatchMakerQFAFactory());
+            ASUtils.showExceptionDialog(frame,
+                    "SQL Error", "The SQL Statement that caused the error: " + lastSQL,
+                    e1, new MatchMakerQFAFactory());
         } finally {
             try {
                 if ( rs != null )
                     rs.close();
+            } catch (SQLException e1) {
+                logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+            }
+            try {
                 if ( pstmt != null )
                     pstmt.close();
+            } catch (SQLException e1) {
+                logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+            }
+            try {
                 if (con != null)
                     con.close();
             } catch (SQLException e1) {
-                logger.debug("SQL ERROR: "+ e1.getStackTrace());
+                logger.debug("Couldn't close connection: "+ e1.getStackTrace());
             }
         }
         return crset;
@@ -328,7 +368,8 @@ public class MatchValidation extends JFrame {
 
         allMatchGroup.add(ALL);
         allMatchPct.add(ALL);
-        allMatchStatus.add(ALL);
+        
+        allMatchStatus.add(ALL);                
         allMatchStatus.add("AUTO-MATCH");
         allMatchStatus.add("MATCH");
         allMatchStatus.add("NOMATCH");
@@ -353,12 +394,8 @@ public class MatchValidation extends JFrame {
         sourceJTable = new JTable();
         candidateJTable = new JTable();
         sourceJTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        db = swingSession.getDatabase();
-        SQLTable sourceTable = match.getSourceTable();
-
-        matchSourceTable = db.getTableByName(sourceTable.getCatalogName(),
-				sourceTable.getSchemaName(),
-				sourceTable.getName());
+       
+        matchSourceTable = match.getSourceTable();
         pk = match.getSourceTableIndex();
     }
 
@@ -418,12 +455,12 @@ public class MatchValidation extends JFrame {
 
             // right hand panel
             FormLayout layout = new FormLayout(
-                    "4dlu,fill:100dlu:grow,4dlu",
+                    "4dlu,pref,4dlu",
                     //   1    2                 3    4             5
-                    "20dlu,12dlu,4dlu,12dlu,4dlu,12dlu,50dlu,12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,12dlu,"+
-//                  1     2     3    4     5    6     7     8     9    10    11   12    13   13
-            "4dlu,12dlu,4dlu,12dlu,4dlu,12dlu,10dlu,12dlu,4dlu,80dlu,30dlu,12dlu,4dlu,12dlu,4dlu");
-//          15   16    17   18    19   20    21   22     23   24    25    26    27   28    29   30
+                    "20dlu,12dlu,4dlu,12dlu,4dlu,pref,50dlu,12dlu,4dlu,12dlu,4dlu,12dlu,4dlu,12dlu,"+
+//                    1     2     3    4     5    6     7     8     9    10    11   12    13   14
+            "4dlu,12dlu,4dlu,12dlu,4dlu,12dlu,10dlu,pref,4dlu,80dlu,30dlu,pref,4dlu,pref,4dlu");
+//            15   16    17   18    19   20    21   22     23   24    25    26    27   28    29   30
             JPanel rightPanel = logger.isDebugEnabled() ? new FormDebugPanel(layout) : new JPanel(layout);
             PanelBuilder pb = new PanelBuilder(layout, rightPanel );
             CellConstraints cc = new CellConstraints();
@@ -464,7 +501,7 @@ public class MatchValidation extends JFrame {
 
             Action validationStatusAction = new AbstractAction("View Validation Status") {
                 public void actionPerformed(ActionEvent e) {
-                    MatchValidationStatus p = new MatchValidationStatus(swingSession, match, MatchValidation.this);
+                    MatchValidationStatus p = new MatchValidationStatus(swingSession, match, frame);
                     p.pack();
                     p.setVisible(true);
                 }};
@@ -473,8 +510,7 @@ public class MatchValidation extends JFrame {
 
                 Action exit = new AbstractAction("Exit") {
                     public void actionPerformed(ActionEvent e) {
-                        setVisible(false);
-                        dispose();
+                        frame.dispose();
                     }};
                     pb.add(new JButton(exit), cc.xy(2,28,"c,c"));
 
@@ -498,9 +534,9 @@ public class MatchValidation extends JFrame {
                     pb.add(new JButton(lowerMasterAction), cc.xy(2,10,"r,c"));
 
                     pb.add(rightPanel, cc.xywh(4,2,1,9,"f,f"));
-                    getContentPane().add(pb.getPanel());
-        filterPanel = new FilterMakerDialog(MatchValidation.this,
-                filterTextArea, matchSourceTable, true);
+                    frame.getContentPane().add(pb.getPanel());
+                    filterPanel = new FilterMakerDialog(frame,
+                            filterTextArea, matchSourceTable, true);
     }
 
     private class SourceTableModel extends AbstractTableModel {
@@ -517,7 +553,7 @@ public class MatchValidation extends JFrame {
             try {
                 return matchSourceTable.getColumns().size();
             } catch (ArchitectException e) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e, new MatchMakerQFAFactory());
             }
             return 0;
@@ -532,7 +568,7 @@ public class MatchValidation extends JFrame {
                     return matchSourceTable.getColumn(column).getName();
                 }
             } catch (ArchitectException e) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e, new MatchMakerQFAFactory());
             }
             return super.getColumnName(column);
@@ -564,7 +600,7 @@ public class MatchValidation extends JFrame {
                     return model.getValueAt(rowIndex,columnIndex-pk.getChildCount()-1);
                 }
             } catch (ArchitectException e) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e, new MatchMakerQFAFactory());
             }
             return null;
@@ -580,7 +616,7 @@ public class MatchValidation extends JFrame {
                     return matchSourceTable.getColumn(column-1-pk.getChildCount()).getName();
                 }
             } catch (ArchitectException e) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e, new MatchMakerQFAFactory());
             }
             return super.getColumnName(column);
@@ -632,7 +668,7 @@ public class MatchValidation extends JFrame {
             ResultSet rs =  null;
             try {
 
-                con = HibernateUtil.primarySession().connection();
+                con = swingSession.getConnection();
 
                 StringBuffer sql = new StringBuffer();
                 StringBuffer dupCandItems = new StringBuffer();
@@ -682,34 +718,44 @@ public class MatchValidation extends JFrame {
                 if ( newSourceRowSet != null ) {
                     sourceTableRowSet = newSourceRowSet;
                 }
-
+                
                 for ( i = 0; i<pk.getChildCount(); i++ ) {
-                    SQLObject col = pk.getChild(i);
+                    SQLObject col = pk.getChild(i);                    
                     jrs.addRowSet(sourceTableRowSet,col.getName() );
                     jrs.addRowSet(crset2, "DUP_CANDIDATE_"+(i+10) );
                 }
+                                
 
                 RowSetModel model = new RowSetModel(jrs);
                 output.getSelectionModel().removeListSelectionListener(sourceJTableListener);
                 output.setModel(new SourceTableModel(model));
                 output.getSelectionModel().addListSelectionListener(sourceJTableListener);
                 output.getSelectionModel().setSelectionInterval(0,0);
+                TableUtils.fitColumnWidths(output, MAX_TABLE_COL_WIDTH);
             } catch (ArchitectException e1) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } catch (SQLException e1) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
                     if ( rs != null )
                         rs.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                }
+                try {
                     if ( pstmt != null )
                         pstmt.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                }
+                try {
                     if (con != null)
                         con.close();
                 } catch (SQLException e1) {
-                    logger.debug("SQL ERROR: "+ e1.getStackTrace());
+                    logger.debug("Couldn't close connection: "+ e1.getStackTrace());
                 }
             }
 
@@ -733,7 +779,7 @@ public class MatchValidation extends JFrame {
             PreparedStatement pstmt = null;
             ResultSet rs =  null;
             try {
-                con = HibernateUtil.primarySession().connection();
+                con = swingSession.getConnection();
 
                 StringBuffer sql = new StringBuffer();
 
@@ -749,18 +795,26 @@ public class MatchValidation extends JFrame {
                 searchAction.actionPerformed(null);
                 logger.debug("Apply Auto-match @"+pct.intValue()+"   "+rows+" Updated.");
             } catch (SQLException e1) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
                     if ( rs != null )
                         rs.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                }
+                try {
                     if ( pstmt != null )
                         pstmt.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                }
+                try {
                     if (con != null)
                         con.close();
                 } catch (SQLException e1) {
-                    logger.debug("SQL ERROR: "+ e1.getStackTrace());
+                    logger.debug("Couldn't close connection: "+ e1.getStackTrace());
                 }
             }
         }
@@ -781,7 +835,7 @@ public class MatchValidation extends JFrame {
             PreparedStatement pstmt = null;
             ResultSet rs =  null;
             try {
-                con = HibernateUtil.primarySession().connection();
+                con = swingSession.getConnection();
 
                 StringBuffer sql = new StringBuffer();
 
@@ -797,18 +851,26 @@ public class MatchValidation extends JFrame {
                 searchAction.actionPerformed(null);
                 logger.debug("Reset Auto-match @"+pct.intValue()+"   "+rows+" Updated.");
             } catch (SQLException e1) {
-                ASUtils.showExceptionDialog(MatchValidation.this,
+                ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
                     if ( rs != null )
                         rs.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                }
+                try {
                     if ( pstmt != null )
                         pstmt.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                }
+                try {
                     if (con != null)
                         con.close();
                 } catch (SQLException e1) {
-                    logger.debug("SQL ERROR: "+ e1.getStackTrace());
+                    logger.debug("Couldn't close connection: "+ e1.getStackTrace());
                 }
             }
         }
@@ -816,6 +878,7 @@ public class MatchValidation extends JFrame {
 
     private Action columnFilterAction = new AbstractAction("Column Filter"){
         public void actionPerformed(ActionEvent e) {
+            filterPanel.setFilterTextContent(filterTextArea);
             filterPanel.pack();
             filterPanel.setVisible(true);
             filterPanel.setFilterTextContent(filterTextArea);
@@ -831,8 +894,70 @@ public class MatchValidation extends JFrame {
     private Action upperMasterAction = new AbstractAction("Master") {
 
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(MatchValidation.this,
-                    "We cant do that yet, Dave");
+            Connection con = null;
+            PreparedStatement pstmt = null;
+            ResultSet rs = null;
+            String lastSQL = null;
+            try {
+                con = swingSession.getConnection();
+
+                StringBuilder sql;
+
+                // find the match output table record that corresponds with the top table's selected row
+                int upperRowNum = sourceJTable.getSelectedRow();
+                Object[] masterKey = new Object[match.getSourceTableIndex().getChildCount()];
+                for (int i = 0; i < masterKey.length; i++) {
+                    masterKey[i] = sourceJTable.getValueAt(upperRowNum, i);
+                }
+
+                // update that record in the match output table to mark it as a master record
+                sql = new StringBuilder();
+                sql.append("UPDATE " + DDLUtils.toQualifiedName(match.getResultTable()));
+                sql.append("\n SET dup1_master_ind='Y'");
+                sql.append("\n WHERE");
+                for (int i = 0; i < masterKey.length; i++) {
+                    if (i != 0) {
+                        sql.append(" AND");
+                    }
+                    sql.append(" dup_candidate_1").append(i);
+                    sql.append("=?");
+                }
+                lastSQL = sql.toString();
+                pstmt = con.prepareStatement(lastSQL);
+                for (int i = 0; i < masterKey.length; i++) {
+                    pstmt.setObject(i+1, masterKey[i]);
+                }
+                int count = pstmt.executeUpdate();
+                logger.debug("Updated "+count+" rows with "+lastSQL);
+                pstmt.close();
+                pstmt = null;
+                
+                // update all records in the bottom table to mark them duplicates of the new master
+                
+            } catch (Exception e1) {
+                ASUtils.showExceptionDialog(frame,
+                        "Error While setting master record", e1, new MatchMakerQFAFactory());
+            } finally {
+                try {
+                    if ( rs != null )
+                        rs.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                }
+                try {
+                    if ( pstmt != null )
+                        pstmt.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                }
+                try {
+                    if (con != null)
+                        con.close();
+                } catch (SQLException e1) {
+                    logger.debug("Couldn't close connection: "+ e1.getStackTrace());
+                }
+            }
+
         }
 
     };
@@ -847,7 +972,7 @@ public class MatchValidation extends JFrame {
     private Action lowerMasterAction = new AbstractAction("Master") {
 
         public void actionPerformed(ActionEvent e) {
-            JOptionPane.showMessageDialog(MatchValidation.this,
+            JOptionPane.showMessageDialog(frame,
                     "We cant do that yet, Dave");
         }
 
@@ -870,4 +995,13 @@ public class MatchValidation extends JFrame {
         }
 
     };
+
+    /**
+     * Displays the frame and gives it focus.  It is safe to call this
+     * method multiple times.
+     */
+    public void showGUI() {        
+        frame.setVisible(true);
+        frame.requestFocus();
+    }    
 }
