@@ -10,6 +10,7 @@ import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.swingui.MatchEditor;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
@@ -35,7 +36,7 @@ public final class NewMatchAction extends AbstractAction {
 		try {
 			final Match match = new Match();
 			match.setSession(swingSession);
-			match.setType(Match.MatchType.FIND_DUPES);
+			match.setType(MatchMode.FIND_DUPES);
 
 			folder = ArchitectUtils.getTreeObject(swingSession.getTree(),PlFolder.class);
 			if ( folder == null ) {

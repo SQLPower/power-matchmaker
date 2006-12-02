@@ -15,7 +15,7 @@ import ca.sqlpower.matchmaker.Match;
 
 public class TypeStringToMatchTypeEnumTest extends TestCase {
 
-	Match.MatchType[] allTypes = Match.MatchType.values();
+	Match.MatchMode[] allTypes = Match.MatchMode.values();
 
 	TypeStringToMatchTypeEnum userType;
 	private MockJDBCResultSet rs;
@@ -44,17 +44,17 @@ public class TypeStringToMatchTypeEnumTest extends TestCase {
 		rs.setColumnName(1,"match_type");
 		names = new String[1];
 		names[0]="match_type";
-		data = new String[Match.MatchType.values().length+1];
+		data = new String[Match.MatchMode.values().length+1];
 		int i = 0;
-		for (Match.MatchType type: allTypes) {
+		for (Match.MatchMode type: allTypes) {
 			data[i] = type.toString();
 			i++;     
 		}
 	}
 
 	public void testDeepCopy() throws ArchitectException{
-		for (Match.MatchType type: allTypes) {
-			Match.MatchType testCopy = (Match.MatchType) userType.deepCopy(type);
+		for (Match.MatchMode type: allTypes) {
+			Match.MatchMode testCopy = (Match.MatchMode) userType.deepCopy(type);
 			assertEquals("Invalid match type",type,testCopy);
 				
 		}
@@ -65,7 +65,7 @@ public class TypeStringToMatchTypeEnumTest extends TestCase {
 			Object[] row = {data[i]};
 			rs.addRow(row);
 			rs.next();
-			Match.MatchType get = (Match.MatchType)userType.nullSafeGet(rs, names, null);
+			Match.MatchMode get = (Match.MatchMode)userType.nullSafeGet(rs, names, null);
 			if (i < allTypes.length) {
 				assertEquals("The match type is not correct", allTypes[i], get);
 			} else {

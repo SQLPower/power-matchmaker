@@ -10,7 +10,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.Match.MatchType;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 
 public class TypeStringToMatchTypeEnum implements UserType {
 
@@ -37,7 +37,7 @@ public class TypeStringToMatchTypeEnum implements UserType {
 	}
 
 	public int hashCode(Object x) throws HibernateException {
-		if ( !(x instanceof Match.MatchType)) {
+		if ( !(x instanceof Match.MatchMode)) {
 			return 0;
 		} else {
 			return x.hashCode();
@@ -54,7 +54,7 @@ public class TypeStringToMatchTypeEnum implements UserType {
 			throws HibernateException, SQLException {
 		String typeString = rs.getString(names[0]);
 		if (typeString != null) {
-			return MatchType.getTypeByString(typeString);
+			return MatchMode.getTypeByString(typeString);
 		} else {
 			return null;
 		}
@@ -63,7 +63,7 @@ public class TypeStringToMatchTypeEnum implements UserType {
 	public void nullSafeSet(PreparedStatement st, Object value, int index)
 			throws HibernateException, SQLException {
 		if (value != null) {
-			st.setString(index, ((MatchType) value).toString());
+			st.setString(index, ((MatchMode) value).toString());
 		} else {
 			st.setString(index, null);
 		}
@@ -75,7 +75,7 @@ public class TypeStringToMatchTypeEnum implements UserType {
 	}
 
 	public Class returnedClass() {
-		return Match.MatchType.class;
+		return Match.MatchMode.class;
 	}
 
 	public int[] sqlTypes() {

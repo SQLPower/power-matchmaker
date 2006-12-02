@@ -47,7 +47,7 @@ public class FileNameToLogTest extends TestCase {
 		rs.setColumnName(1,"file_name");
 		names = new String[1];
 		names[0]="file_name";
-		data = new String[Match.MatchType.values().length+1];
+		data = new String[Match.MatchMode.values().length+1];
 		allLogs = new Log[3];
 		for (int i = 0; i<3;i++) {
 			data[i] = "File"+i;

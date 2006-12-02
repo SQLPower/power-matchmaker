@@ -23,13 +23,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 
     private static final Logger logger = Logger.getLogger(Match.class);
     
-	public enum MatchType {
-		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference"),
-        RECONCILE("RECONCILE RECORDS");
+	public enum MatchMode {
+		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference");
 
 		String displayName;
 
-		private MatchType(String displayName) {
+		private MatchMode(String displayName) {
 			this.displayName = displayName;
 		}
 
@@ -44,10 +43,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		 * @param type a string detailing the type you want to get
 		 * @return the match type that has type as its toString
 		 */
-		public static MatchType getTypeByString(String type){
-			MatchType[] types = MatchType.values();
+		public static MatchMode getTypeByString(String type){
+			MatchMode[] types = MatchMode.values();
 
-			for (MatchType matchType: types) {
+			for (MatchMode matchType: types) {
 				if (matchType.toString().toLowerCase().equals(type.toLowerCase())) {
 					return matchType;
 				}
@@ -60,7 +59,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	private Long oid;
 
 	/** The type of match */
-    private MatchType type;
+    private MatchMode type;
 
 	/** The settings for the match engine */
     private MatchSettings matchSettings = new MatchSettings();;
@@ -304,12 +303,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 
 
 
-	public MatchType getType() {
+	public MatchMode getType() {
 		return type;
 	}
 
-	public void setType(MatchType type) {
-		MatchType oldValue = this.type;
+	public void setType(MatchMode type) {
+		MatchMode oldValue = this.type;
 		this.type = type;
 		getEventSupport().firePropertyChange("type", oldValue, this.type);
 	}
@@ -597,7 +596,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      * and then returns it!
      */
     public SQLIndex getSourceTableIndex() throws ArchitectException {
-    	if (getSourceTable() != null) {
+    	if (getSourceTable() != null && sourceTableIndex != null) {            
     		sourceTableIndex.setParent(getSourceTable().getIndicesFolder());
     		resolveSourceTableIndexColumns(sourceTableIndex);
     	}
