@@ -29,6 +29,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -42,6 +43,7 @@ import javax.swing.text.StyleConstants;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.swingui.ASUtils;
+import ca.sqlpower.architect.swingui.ProgressWatcher;
 import ca.sqlpower.architect.swingui.SaveDocument;
 import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 import ca.sqlpower.matchmaker.EngineSettingException;
@@ -110,6 +112,8 @@ public class RunMatchDialog extends JDialog {
 	private JFrame parentFrame;
 
 	private Match match;
+	
+	private JProgressBar progressBar;
 
 	StatusComponent status = new StatusComponent();
 
@@ -168,7 +172,7 @@ public class RunMatchDialog extends JDialog {
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:min(70dlu;pref),4dlu,fill:200dlu:grow, pref,20dlu,pref,10dlu,pref,4dlu",
 				// 1 2 3 4 5 6 7 8 9 10
-				"10dlu,pref,10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,30dlu,pref,4dlu,pref,4dlu");
+				"10dlu,pref,10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,30dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		// 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
@@ -194,6 +198,8 @@ public class RunMatchDialog extends JDialog {
 		showCommand = new JButton(new ShowCommandAction(match,
 				RunMatchDialog.this));
 
+		progressBar = new JProgressBar();
+		progressBar.setVisible(false);
 		// might need more buttons here... (check VB app)
 
 		save = new JButton(new AbstractAction("Save") {
@@ -233,6 +239,7 @@ public class RunMatchDialog extends JDialog {
 		pb.add(new JLabel("Min Word Count Freq:"), cc.xy(2, 10, "r,c"));
 		pb.add(minWord, cc.xy(4, 10, "l,c"));
 
+		pb.add(progressBar, cc.xyw(2, 12,8));
 		FormLayout bbLayout = new FormLayout(
 				"4dlu,pref,10dlu:grow,pref,10dlu:grow,pref,4dlu",
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
@@ -391,6 +398,8 @@ public class RunMatchDialog extends JDialog {
 
 		private DefaultStyledDocument engineOutputDoc;
 
+		private ProgressWatcher watcher;
+
 		public RunEngineAction(MatchMakerSession session, Match match,
 				JDialog parent) {
 			super("Run Match Engine");
@@ -539,9 +548,11 @@ public class RunMatchDialog extends JDialog {
 				throw new RuntimeException(e1);
 			}
 			matchEngine.removeEngineListener(this);
+			progressBar.setVisible(false);
 		}
 
 		public void engineStart(EngineEvent e) {
+			watcher = new ProgressWatcher(progressBar,matchEngine);
 			// any output?
 			StreamGobbler errorGobbler = new StreamGobbler(matchEngine
 					.getEngineErrorOutput(), "ERROR", engineOutputDoc,

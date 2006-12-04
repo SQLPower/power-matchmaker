@@ -6,6 +6,7 @@ package ca.sqlpower.matchmaker;
 import java.io.IOException;
 import java.io.InputStream;
 
+import ca.sqlpower.architect.swingui.Monitorable;
 import ca.sqlpower.matchmaker.event.EngineListener;
 
 /**
@@ -19,7 +20,7 @@ import ca.sqlpower.matchmaker.event.EngineListener;
  * create a new instance.
  *  
  */
-public interface MatchMakerEngine {
+public interface MatchMakerEngine  extends Monitorable{
 
 	/**
 	 * start the engine!
