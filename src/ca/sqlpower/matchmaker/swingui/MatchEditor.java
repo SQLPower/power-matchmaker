@@ -42,6 +42,7 @@ import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.action.CreateResultTableAction;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -381,6 +382,7 @@ public class MatchEditor {
         Validator v2a = new MatchSourceTableIndexValidator();
         handler.addValidateObject(sourceChooser.getUniqueKeyComboBox(),v2a);
         
+        
         if ( resultChooser.getCatalogComboBox().isEnabled() ) {
         	Validator v3 = new MatchResultCatalogSchemaValidator("Result "+
         			resultChooser.getCatalogTerm().getText());
@@ -396,6 +398,10 @@ public class MatchEditor {
         Validator v5 = new MatchResultTableNameValidator();
         handler.addValidateObject(resultTableName,v5);
 
+        Validator v6 = new AlwaysOKValidator();
+        handler.addValidateObject(desc, v6);        
+        handler.addValidateObject(filterPanel.getFilterTextArea(), v6);
+        
 
         if ( match.getSourceTable() != null ) {
         	SQLTable sourceTable = match.getSourceTable();
@@ -464,7 +470,7 @@ public class MatchEditor {
     	} else if ( warn.size() > 0 ) {
     		StringBuffer warnMessage = new StringBuffer();
     		for ( String w : warn ) {
-    			warnMessage.append(w).append("\n");
+    			warnMessage.append("<br>").append(w);
     		}
     		JOptionPane.showMessageDialog(swingSession.getFrame(),
     				"Warning: match will be saved, but you may not be able to run it, because of these wanings:\n"+warnMessage.toString(),
