@@ -36,6 +36,9 @@ public class MatchExportor {
             ioo.println(out, "<MATCH_DESC>"+
             		ArchitectUtils.escapeXML(match.getMatchSettings().getDescription())+
             		"</MATCH_DESC>");
+            ioo.println(out, "<TABLE_CATALOG>"+
+            		ArchitectUtils.escapeXML(match.getSourceTableCatalog())+
+            		"</TABLE_CATALOG>");
             ioo.println(out, "<TABLE_OWNER>"+
             		ArchitectUtils.escapeXML(match.getSourceTableSchema())+
             		"</TABLE_OWNER>");
@@ -47,6 +50,12 @@ public class MatchExportor {
             			ArchitectUtils.escapeXML(match.getSourceTableIndex().getName())+
             			"</PK_COLUMN>");
             }
+            ioo.println(out, "<RESULTS_TABLE_CATALOG>"+
+            		ArchitectUtils.escapeXML(match.getResultTableCatalog())+
+            		"</RESULTS_TABLE_CATALOG>");
+            ioo.println(out, "<RESULTS_TABLE_OWNER>"+
+            		ArchitectUtils.escapeXML(match.getResultTableSchema())+
+            		"</RESULTS_TABLE_OWNER>");
             ioo.println(out, "<RESULTS_TABLE>"+
             		ArchitectUtils.escapeXML(match.getResultTableName())+
             		"</RESULTS_TABLE>");
@@ -77,9 +86,6 @@ public class MatchExportor {
             ioo.println(out, "<MATCH_SHOW_PROGRESS_FREQ>"+
             		match.getMatchSettings().getShowProgressFreq()+
             		"</MATCH_SHOW_PROGRESS_FREQ>");
-            ioo.println(out, "<RESULTS_TABLE_OWNER>"+
-            		ArchitectUtils.escapeXML(match.getResultTableSchema())+
-            		"</RESULTS_TABLE_OWNER>");
             ioo.println(out, "<MATCH_TYPE>"+
             		ArchitectUtils.escapeXML(match.getType().name())+
             		"</MATCH_TYPE>");

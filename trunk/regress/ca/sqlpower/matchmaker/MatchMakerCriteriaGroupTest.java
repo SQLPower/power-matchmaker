@@ -5,7 +5,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 
 public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchMakerCriteriaGroup> {
-    
+
 	MatchMakerCriteriaGroup target;
 	final String appUserName = "test user";
 
@@ -68,7 +68,7 @@ public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchMakerCr
 	public void testSetActive() {
 		assertNull("The default last_update_user in match object should be null",
 				target.getLastUpdateAppUser());
-		target.setActive(true);
+		target.setActive(!target.getActive());
 		assertEquals("The last_update_user should be [" +
 				appUserName +"], because user1 has changed this match object",
 				appUserName, target.getLastUpdateAppUser());
@@ -90,7 +90,7 @@ public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchMakerCr
         Match match = new Match();
         MatchMakerEventCounter listener = new MatchMakerEventCounter();
         MatchMakerCriteriaGroup group = new MatchMakerCriteriaGroup();
-        
+
         group.addMatchMakerListener(listener);
         group.setParentMatch(match);
         assertEquals("Incorrect number of events fired",1,listener.getAllEventCounts());

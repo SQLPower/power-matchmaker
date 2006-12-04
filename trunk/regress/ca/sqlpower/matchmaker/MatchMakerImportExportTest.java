@@ -385,6 +385,7 @@ public class MatchMakerImportExportTest extends TestCase {
 		exportor.save(match,out,ENCODING);
 
 		Match match2 = new Match();
+		match2.setSession(session);
 		importor.load(match2,new FileInputStream(tmp));
 		assertEquals("the name is not right",match2.getName(),name);
 		assertTrue("reloaded match should equals to old match",match.equals(match2));
