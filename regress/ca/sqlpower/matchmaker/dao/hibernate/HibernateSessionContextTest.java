@@ -70,10 +70,11 @@ public class HibernateSessionContextTest extends TestCase {
     
     public void testGetEngineLocationWindows() {
         final String realOsName = System.getProperty("os.name");
+        final String sep = System.getProperty("file.separator");
         try {
             System.setProperty("os.name", "Windows");
             assertEquals("You have to change this test if you modify PLINIPATH", "/fake/pl.ini", PLINIPATH);
-            assertEquals("/fake/Match_ODBC.exe", ctx.getMatchEngineLocation());
+            assertEquals(sep+"fake"+sep+"Match_ODBC.exe", ctx.getMatchEngineLocation());
         } finally {
             System.setProperty("os.name", realOsName);
         }
@@ -81,10 +82,11 @@ public class HibernateSessionContextTest extends TestCase {
 
     public void testGetEngineLocationUnix() {
         final String realOsName = System.getProperty("os.name");
+        final String sep = System.getProperty("file.separator");
         try {
             System.setProperty("os.name", "unix");
             assertEquals("You have to change this test if you modify PLINIPATH", "/fake/pl.ini", PLINIPATH);
-            assertEquals("/fake/Match_ODBC", ctx.getMatchEngineLocation());
+            assertEquals(sep+"fake"+sep+"Match_ODBC", ctx.getMatchEngineLocation());
         } finally {
             System.setProperty("os.name", realOsName);
         }
