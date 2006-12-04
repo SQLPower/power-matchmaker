@@ -20,6 +20,7 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.TestingMatchMakerContext;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -36,6 +37,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     
     private final ArchitectDataSource dataSource;
     private final SessionFactory hibernateSessionFactory;
+    private TestingMatchMakerContext context;
     private final TestingConnection con;
     private SQLDatabase db;
     private List<String> warnings = new ArrayList<String>();
@@ -225,5 +227,9 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     public TranslateGroupParent getTranslations() {
         return tgp;
     }
+
+	public void setContext(TestingMatchMakerContext context) {
+		this.context = context;
+	}
     
 }

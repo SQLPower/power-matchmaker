@@ -52,6 +52,8 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.event.EngineEvent;
+import ca.sqlpower.matchmaker.event.EngineListener;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 import ca.sqlpower.validation.Status;
@@ -123,26 +125,27 @@ public class RunMatchDialog extends JDialog {
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
 		this.match = match;
-		runEngineAction = new RunEngineAction(swingSession,match,RunMatchDialog.this);
+		runEngineAction = new RunEngineAction(swingSession, match,
+				RunMatchDialog.this);
 		handler = new FormValidationHandler(status);
-		handler.addPropertyChangeListener(new PropertyChangeListener(){
+		handler.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshActionStatus();
 			}
-        });
+		});
 		buildUI();
 		setDefaultSelections(match);
-		engine = new MatchMakerEngineImpl(swingSession,match);
+		engine = new MatchMakerEngineImpl(swingSession, match);
 
 	}
 
 	private void refreshActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
-    	runEngineAction.setEnabled(true);
+		runEngineAction.setEnabled(true);
 
-    	if ( worst.getStatus() == Status.FAIL ) {
-    		runEngineAction.setEnabled(false);
-    	}
+		if (worst.getStatus() == Status.FAIL) {
+			runEngineAction.setEnabled(false);
+		}
 	}
 
 	private Action browseFileAction = new AbstractAction("...") {
@@ -164,11 +167,12 @@ public class RunMatchDialog extends JDialog {
 	private void buildUI() {
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:min(70dlu;pref),4dlu,fill:200dlu:grow, pref,20dlu,pref,10dlu,pref,4dlu",
-			//   1    2                    3    4                 5    6     7    8    9    10
+				// 1 2 3 4 5 6 7 8 9 10
 				"10dlu,pref,10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,30dlu,pref,4dlu,pref,4dlu");
-			//	 1     2    3     4    5     6    7    8    9    10   11    12   13   14   15
+		// 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 		PanelBuilder pb;
-		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout) : new JPanel(layout);
+		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
+				: new JPanel(layout);
 		pb = new PanelBuilder(layout, p);
 
 		CellConstraints cc = new CellConstraints();
@@ -184,8 +188,8 @@ public class RunMatchDialog extends JDialog {
 		truncateCandDup = new JCheckBox();
 		sendEmail = new JCheckBox();
 		viewLogFile = new JButton(new ShowLogFileAction());
-		viewStats = new JButton(
-				new ShowMatchStatisticInfoAction(swingSession,match,getParentFrame()));
+		viewStats = new JButton(new ShowMatchStatisticInfoAction(swingSession,
+				match, getParentFrame()));
 		viewStats.setText("Match Statistics");
 		showCommand = new JButton(new ShowCommandAction(match,
 				RunMatchDialog.this));
@@ -196,10 +200,9 @@ public class RunMatchDialog extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				applyChange();
 				MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
-		        dao.save(match);
+				dao.save(match);
 			}
 		});
-
 
 		runMatchEngineButton = new JButton(runEngineAction);
 		exit = new JButton(new AbstractAction("Close") {
@@ -230,12 +233,12 @@ public class RunMatchDialog extends JDialog {
 		pb.add(new JLabel("Min Word Count Freq:"), cc.xy(2, 10, "r,c"));
 		pb.add(minWord, cc.xy(4, 10, "l,c"));
 
-
 		FormLayout bbLayout = new FormLayout(
 				"4dlu,pref,10dlu:grow,pref,10dlu:grow,pref,4dlu",
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		PanelBuilder bbpb;
-		JPanel bbp = logger.isDebugEnabled() ? new FormDebugPanel(bbLayout) : new JPanel(bbLayout);
+		JPanel bbp = logger.isDebugEnabled() ? new FormDebugPanel(bbLayout)
+				: new JPanel(bbLayout);
 		bbpb = new PanelBuilder(bbLayout, bbp);
 		bbpb.add(viewLogFile, cc.xy(2, 2, "f,f"));
 		bbpb.add(showCommand, cc.xy(4, 2, "f,f"));
@@ -251,14 +254,15 @@ public class RunMatchDialog extends JDialog {
 
 	private void setDefaultSelections(Match match) {
 
-		/* we put the validators here because we want to validate
-		 * the form right after it being loaded
+		/*
+		 * we put the validators here because we want to validate the form right
+		 * after it being loaded
 		 */
 		Validator v1 = new LogFileNameValidator();
-        handler.addValidateObject(logFilePath,v1);
+		handler.addValidateObject(logFilePath, v1);
 
-        Validator v2 = new MatchAndMatchEngineValidator(match);
-        handler.addValidateObject(sendEmail,v2);
+		Validator v2 = new MatchAndMatchEngineValidator(match);
+		handler.addValidateObject(sendEmail, v2);
 
 		MatchSettings settings = match.getMatchSettings();
 		String logFileName;
@@ -274,36 +278,37 @@ public class RunMatchDialog extends JDialog {
 			file = new File(logFileName);
 		}
 		lastAccessPath = file.getAbsolutePath();
-		if (logFileName != null){
+		if (logFileName != null) {
 			logFilePath.setText(logFileName);
 		}
 		Boolean appendToLog = settings.getAppendToLog();
 		append.setSelected(appendToLog);
-
-		System.err.println(append+" "+settings);
-		if ( settings.getProcessCount() == null ) {
+		if (settings.getProcessCount() == null) {
 			recordsToProcess.setText("");
 		} else {
-			recordsToProcess.setText(String.valueOf(settings.getProcessCount()));
+			recordsToProcess
+					.setText(String.valueOf(settings.getProcessCount()));
 		}
 		System.err.println(append);
 		debugMode.setSelected(settings.getDebug());
 		truncateCandDup.setSelected(settings.getTruncateCandDupe());
 		sendEmail.setSelected(settings.getSendEmail());
 
-		//TODO add roll back segment
+		// TODO add roll back segment
 		rollbackSegment.setSelectedItem(settings.getRollbackSegmentName());
-		debugMode.addItemListener(new ItemListener(){
+		debugMode.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				if ( ((JCheckBox)e.getSource()).isSelected() ) {
+				if (((JCheckBox) e.getSource()).isSelected()) {
 					truncateCandDup.setSelected(true);
 					recordsToProcess.setText("1");
 				} else {
 					truncateCandDup.setSelected(false);
 					recordsToProcess.setText("0");
 				}
-			}});
+			}
+		});
 	}
+
 	private void applyChange() {
 
 		MatchSettings settings = match.getMatchSettings();
@@ -312,11 +317,12 @@ public class RunMatchDialog extends JDialog {
 		settings.setSendEmail(sendEmail.isSelected());
 		settings.setLog(new File(logFilePath.getText()));
 		settings.setAppendToLog(append.isSelected());
-		if ( recordsToProcess.getText() == null ||
-				recordsToProcess.getText().length() == 0 ) {
+		if (recordsToProcess.getText() == null
+				|| recordsToProcess.getText().length() == 0) {
 			settings.setProcessCount(null);
 		} else {
-			settings.setProcessCount(Integer.valueOf(recordsToProcess.getText()));
+			settings.setProcessCount(Integer
+					.valueOf(recordsToProcess.getText()));
 		}
 	}
 
@@ -370,8 +376,8 @@ public class RunMatchDialog extends JDialog {
 		}
 	}
 
-	private class RunEngineAction extends AbstractAction {
-
+	private class RunEngineAction extends AbstractAction implements
+			EngineListener {
 
 		private final JDialog parent;
 
@@ -380,17 +386,17 @@ public class RunMatchDialog extends JDialog {
 		SimpleAttributeSet stderrAtt = new SimpleAttributeSet();
 
 		private MatchMakerEngine matchEngine;
-
 		private MatchMakerSession session;
-
 		private Match match;
 
-		public RunEngineAction(MatchMakerSession session, Match match, JDialog parent) {
+		private DefaultStyledDocument engineOutputDoc;
+
+		public RunEngineAction(MatchMakerSession session, Match match,
+				JDialog parent) {
 			super("Run Match Engine");
 			this.parent = parent;
 			this.session = session;
 			this.match = match;
-			matchEngine = new MatchMakerEngineImpl(session,match);
 			StyleConstants.setForeground(stdoutAtt, Color.black);
 			StyleConstants.setFontFamily(stdoutAtt, "Courier New");
 			StyleConstants.setForeground(stderrAtt, Color.red);
@@ -409,163 +415,145 @@ public class RunMatchDialog extends JDialog {
 				}
 			}
 			final boolean courierNewExist2 = courierNewExist;
+			engineOutputDoc = new DefaultStyledDocument();
+			final JDialog d = new JDialog(parent);
+			d.setTitle("MatchMaker engine output:");
 
-			new Thread(new Runnable() {
+			FormLayout layout = new FormLayout("4dlu,fill:pref:grow,4dlu", // columns
+					"4dlu,fill:pref:grow,4dlu,16dlu,4dlu"); // rows
+			// 1 2 3 4 5
 
-				public void run() {
+			PanelBuilder pb;
+			JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
+					: new JPanel(layout);
+			pb = new PanelBuilder(layout, p);
+			CellConstraints cc = new CellConstraints();
 
-					final DefaultStyledDocument engineOutputDoc =
-						new DefaultStyledDocument();
-					final JDialog d = new JDialog(parent);
-					d.setTitle("MatchMaker engine output:");
+			JTextArea cmdText = new JTextArea(35, 120);
+			cmdText.setDocument(engineOutputDoc);
+			cmdText.setEditable(false);
+			cmdText.setWrapStyleWord(true);
+			cmdText.setLineWrap(true);
+			cmdText.setAutoscrolls(true);
 
-					FormLayout layout = new FormLayout(
-							"4dlu,fill:pref:grow,4dlu", // columns
-							"4dlu,fill:pref:grow,4dlu,16dlu,4dlu"); // rows
-					//		 1    2                        3    4     5
+			if (courierNewExist2) {
+				Font oldFont = cmdText.getFont();
+				Font f = new Font("Courier New", oldFont.getStyle(), oldFont
+						.getSize());
+				cmdText.setFont(f);
 
-					PanelBuilder pb;
-					JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(
-							layout) : new JPanel(layout);
-					pb = new PanelBuilder(layout, p);
-					CellConstraints cc = new CellConstraints();
+			}
 
-					JTextArea cmdText = new JTextArea(35,120);
-					cmdText.setDocument(engineOutputDoc);
-					cmdText.setEditable(false);
-					cmdText.setWrapStyleWord(true);
-					cmdText.setLineWrap(true);
-					cmdText.setAutoscrolls(true);
+			JScrollPane scrollPane = new JScrollPane(cmdText);
+			scrollPane
+					.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			scrollPane.setAutoscrolls(true);
+			scrollPane.setWheelScrollingEnabled(true);
+			pb.add(scrollPane, cc.xy(2, 2, "f,f"));
 
-					if (courierNewExist2) {
-						Font oldFont = cmdText.getFont();
-						Font f = new Font("Courier New", oldFont.getStyle(),
-								oldFont.getSize());
-						cmdText.setFont(f);
+			ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
 
-					}
-
-					JScrollPane scrollPane = new JScrollPane(cmdText);
-					scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-					scrollPane.setAutoscrolls(true);
-					scrollPane.setWheelScrollingEnabled(true);
-					pb.add(scrollPane, cc.xy(2, 2, "f,f"));
-
-					ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
-
-					Action saveAsAction = new AbstractAction() {
-						public void actionPerformed(ActionEvent e) {
-							SwingUtilities.invokeLater(new Runnable() {
-								public void run() {
-									new SaveDocument(
-											d,
-											engineOutputDoc,
-											(FileExtensionFilter) ASUtils.TEXT_FILE_FILTER);
-								}
-							});
-						}
-					};
-					JButton saveAsButton = new JButton(saveAsAction);
-					saveAsButton.setText("Save As...");
-					bbBuilder.addGridded(saveAsButton);
-					bbBuilder.addRelatedGap();
-
-					JButton copyButton = new JButton(new AbstractAction() {
-						public void actionPerformed(ActionEvent e) {
-							SwingUtilities.invokeLater(new Runnable() {
-
-								public void run() {
-									try {
-										StringSelection selection = new StringSelection(
-												engineOutputDoc.getText(0,
-														engineOutputDoc
-																.getLength()));
-										Clipboard clipboard = Toolkit
-												.getDefaultToolkit()
-												.getSystemClipboard();
-										clipboard.setContents(selection,
-												selection);
-									} catch (BadLocationException e1) {
-										ASUtils.showExceptionDialog(d,
-												"Document Copy Error", e1, new MatchMakerQFAFactory());
-									}
-								}
-							});
-						}
-					});
-					copyButton.setText("Copy to Clipboard");
-					bbBuilder.addGridded(copyButton);
-					bbBuilder.addRelatedGap();
-					bbBuilder.addGlue();
-
-					JButton cancelButton = new JButton(new AbstractAction() {
-						public void actionPerformed(ActionEvent e) {
-							d.setVisible(false);
-							d.dispose();
-						}
-					});
-					cancelButton.setText("Close");
-					bbBuilder.addGridded(cancelButton);
-
-					pb.add(bbBuilder.getPanel(), cc.xy(2, 4));
-					d.add(pb.getPanel());
-					// don't display dialog until the process started
-
-					try {
-						matchEngine.checkPreConditions();
-						matchEngine.run();
-					} catch (EngineSettingException e) {
-						JOptionPane.showMessageDialog(parent,
-								e.getMessage(),
-								"Engine error",
-								JOptionPane.ERROR_MESSAGE);
-						return;
-					} catch (IOException e) {
-						JOptionPane.showMessageDialog(parent,
-								e.getMessage(),
-								"Engine error",
-								JOptionPane.ERROR_MESSAGE);
-						return;
-					}
-
-					// any output?
-					StreamGobbler errorGobbler = new StreamGobbler(
-							matchEngine.getEngineErrorOutput(),
-							"ERROR",
-							engineOutputDoc,
-							stderrAtt);
-
-					StreamGobbler outputGobbler = new StreamGobbler(
-							matchEngine.getEngineStandardOutput(),
-							"OUTPUT",
-							engineOutputDoc,
-							stdoutAtt);
-
-					// kick them off
-					errorGobbler.start();
-					outputGobbler.start();
-
-					d.pack();
-					d.setVisible(true);
-
-					final int exitVal = matchEngine.getEngineReturnCode();
+			Action saveAsAction = new AbstractAction() {
+				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
+							new SaveDocument(
+									d,
+									engineOutputDoc,
+									(FileExtensionFilter) ASUtils.TEXT_FILE_FILTER);
+						}
+					});
+				}
+			};
+			JButton saveAsButton = new JButton(saveAsAction);
+			saveAsButton.setText("Save As...");
+			bbBuilder.addGridded(saveAsButton);
+			bbBuilder.addRelatedGap();
+
+			JButton copyButton = new JButton(new AbstractAction() {
+				public void actionPerformed(ActionEvent e) {
+					SwingUtilities.invokeLater(new Runnable() {
+
+						public void run() {
 							try {
-								engineOutputDoc
-										.insertString(engineOutputDoc
-												.getLength(),
-												"\nExecutable Return Code: "
-														+ exitVal + "\n",
-												stderrAtt);
+								StringSelection selection = new StringSelection(
+										engineOutputDoc.getText(0,
+												engineOutputDoc.getLength()));
+								Clipboard clipboard = Toolkit
+										.getDefaultToolkit()
+										.getSystemClipboard();
+								clipboard.setContents(selection, selection);
 							} catch (BadLocationException e1) {
 								ASUtils.showExceptionDialog(d,
-										"Document Display Error", e1, new MatchMakerQFAFactory());
+										"Document Copy Error", e1,
+										new MatchMakerQFAFactory());
 							}
 						}
 					});
 				}
-			}).start();
+			});
+			copyButton.setText("Copy to Clipboard");
+			bbBuilder.addGridded(copyButton);
+			bbBuilder.addRelatedGap();
+			bbBuilder.addGlue();
+
+			JButton cancelButton = new JButton(new AbstractAction() {
+				public void actionPerformed(ActionEvent e) {
+					d.setVisible(false);
+					d.dispose();
+				}
+			});
+			cancelButton.setText("Close");
+			bbBuilder.addGridded(cancelButton);
+
+			pb.add(bbBuilder.getPanel(), cc.xy(2, 4));
+			d.add(pb.getPanel());
+			// don't display dialog until the process started
+
+			try {
+				matchEngine = new MatchMakerEngineImpl(session, match);
+				matchEngine.checkPreConditions();
+				matchEngine.addEngineListener(this);
+				matchEngine.run();
+			} catch (EngineSettingException ese) {
+				JOptionPane.showMessageDialog(parent, ese.getMessage(),
+						"Engine error", JOptionPane.ERROR_MESSAGE);
+				return;
+			} catch (IOException ese) {
+				JOptionPane.showMessageDialog(parent, ese.getMessage(),
+						"Engine error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
+			d.pack();
+			d.setVisible(true);
+
+		}
+
+		public void engineEnd(EngineEvent e) {
+			int exitVal = matchEngine.getEngineReturnCode();
+			try {
+				engineOutputDoc.insertString(engineOutputDoc.getLength(),
+						"\nExecutable Return Code: " + exitVal + "\n", stderrAtt);
+			} catch (BadLocationException e1) {
+				throw new RuntimeException(e1);
+			}
+			matchEngine.removeEngineListener(this);
+		}
+
+		public void engineStart(EngineEvent e) {
+			// any output?
+			StreamGobbler errorGobbler = new StreamGobbler(matchEngine
+					.getEngineErrorOutput(), "ERROR", engineOutputDoc,
+					stderrAtt);
+
+			StreamGobbler outputGobbler = new StreamGobbler(matchEngine
+					.getEngineStandardOutput(), "OUTPUT", engineOutputDoc,
+					stdoutAtt);
+
+			// kick them off
+			errorGobbler.start();
+			outputGobbler.start();
 		}
 	}
 
@@ -579,8 +567,8 @@ public class RunMatchDialog extends JDialog {
 			String logFileName = logFilePath.getText();
 			try {
 				/**
-				 * Notepad has its own frame and should be modified to allow
-				 * an icon argument in the constructor
+				 * Notepad has its own frame and should be modified to allow an
+				 * icon argument in the constructor
 				 */
 				new Notepad().doLoad(logFileName);
 			} catch (IOException e1) {
@@ -605,14 +593,17 @@ public class RunMatchDialog extends JDialog {
 
 		public void actionPerformed(ActionEvent e) {
 			applyChange();
-			MatchMakerEngine engine = new MatchMakerEngineImpl(swingSession,match);
-			final String cmd = engine.createCommandLine(swingSession, match, false);
+			MatchMakerEngine engine = new MatchMakerEngineImpl(swingSession,
+					match);
+			final String cmd = engine.createCommandLine(swingSession, match,
+					false);
 			final JDialog d = new JDialog(parent,
 					"MatchMaker Engine Command Line");
 
-			FormLayout layout = new FormLayout("4dlu,fill:min(pref;200dlu):grow,4dlu", // columns
+			FormLayout layout = new FormLayout(
+					"4dlu,fill:min(pref;200dlu):grow,4dlu", // columns
 					"4dlu,fill:min(pref;200dlu):grow,4dlu,pref,4dlu"); // rows
-			//		 1    2                        3    4     5
+			// 1 2 3 4 5
 
 			PanelBuilder pb;
 			JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
@@ -620,7 +611,7 @@ public class RunMatchDialog extends JDialog {
 			pb = new PanelBuilder(layout, p);
 			CellConstraints cc = new CellConstraints();
 
-			JTextArea cmdText = new JTextArea(cmd,15,120);
+			JTextArea cmdText = new JTextArea(cmd, 15, 120);
 			cmdText.setEditable(false);
 			cmdText.setWrapStyleWord(true);
 			cmdText.setLineWrap(true);
@@ -637,7 +628,9 @@ public class RunMatchDialog extends JDialog {
 					try {
 						cmdDoc.insertString(0, cmd, att);
 					} catch (BadLocationException e1) {
-						ASUtils.showExceptionDialog(d, "Unknown Document Error", e1, new MatchMakerQFAFactory());
+						ASUtils.showExceptionDialog(d,
+								"Unknown Document Error", e1,
+								new MatchMakerQFAFactory());
 					}
 					new SaveDocument(d, cmdDoc,
 							(FileExtensionFilter) ASUtils.BATCH_FILE_FILTER);
@@ -647,7 +640,8 @@ public class RunMatchDialog extends JDialog {
 			bbBuilder.addGridded(saveAsButton);
 			bbBuilder.addRelatedGap();
 
-			JButton copyButton = new JButton(new AbstractAction("Copy to Clipboard") {
+			JButton copyButton = new JButton(new AbstractAction(
+					"Copy to Clipboard") {
 				public void actionPerformed(ActionEvent e) {
 					StringSelection selection = new StringSelection(cmd);
 					Clipboard clipboard = Toolkit.getDefaultToolkit()
@@ -676,8 +670,6 @@ public class RunMatchDialog extends JDialog {
 
 	}
 
-
-
 	private JFrame getParentFrame() {
 		return parentFrame;
 	}
@@ -685,43 +677,46 @@ public class RunMatchDialog extends JDialog {
 	private class LogFileNameValidator implements Validator {
 		public ValidateResult validate(Object contents) {
 			String name = (String) contents;
-			if ( name == null || name.length() == 0 ) {
+			if (name == null || name.length() == 0) {
 				return ValidateResult.createValidateResult(Status.FAIL,
 						"Log file is required.");
 			}
 			File log = new File(name);
-			if (log.exists() ) {
-				if ( !log.isFile()) {
+			if (log.exists()) {
+				if (!log.isFile()) {
 					return ValidateResult.createValidateResult(Status.FAIL,
-						"Log file name is invalidate.");
+							"Log file name is invalidate.");
 				}
-				if ( !log.canWrite()) {
+				if (!log.canWrite()) {
 					return ValidateResult.createValidateResult(Status.FAIL,
-						"Log file is not writable.");
+							"Log file is not writable.");
 				}
 			} else {
 				try {
-					if ( !log.createNewFile()) {
+					if (!log.createNewFile()) {
 						return ValidateResult.createValidateResult(Status.FAIL,
-							"Log file can not be created.");
+								"Log file can not be created.");
 					}
 				} catch (IOException e) {
 					return ValidateResult.createValidateResult(Status.FAIL,
-						"Log file can not be created.");
+							"Log file can not be created.");
 				} finally {
 					log.delete();
 				}
 			}
-			return ValidateResult.createValidateResult(Status.OK,"");
+			return ValidateResult.createValidateResult(Status.OK, "");
 		}
 
 	}
+
 	private class MatchAndMatchEngineValidator implements Validator {
 
 		private Match match;
+
 		public MatchAndMatchEngineValidator(Match match) {
 			this.match = match;
 		}
+
 		public ValidateResult validate(Object contents) {
 
 
