@@ -23,13 +23,18 @@ public class HibernateSessionContextTest extends TestCase {
      */
 	private ArchitectDataSource ds;
     
+    /**
+     * The path that we tell the session context the PL.INI file lives in.
+     */
+    private static final String PLINIPATH = "/fake/pl.ini";
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         DataSourceCollection ini = new PlDotIni();
         ds = HibernateTestUtil.getOracleDS();
         ini.addDataSource(ds);
-        ctx = new MatchMakerHibernateSessionContext(ini, null);
+        ctx = new MatchMakerHibernateSessionContext(ini, PLINIPATH);
     }
     
     public void testGetDataSources() {
@@ -63,7 +68,25 @@ public class HibernateSessionContextTest extends TestCase {
         assertNotNull(mmSession.getFolders());
     }
     
-    public void testGetEngineLocation() {
-        fail("test not implemented yet");
+    public void testGetEngineLocationWindows() {
+        final String realOsName = System.getProperty("os.name");
+        try {
+            System.setProperty("os.name", "Windows");
+            assertEquals("You have to change this test if you modify PLINIPATH", "/fake/pl.ini", PLINIPATH);
+            assertEquals("/fake/Match_ODBC.exe", ctx.getMatchEngineLocation());
+        } finally {
+            System.setProperty("os.name", realOsName);
+        }
+    }
+
+    public void testGetEngineLocationUnix() {
+        final String realOsName = System.getProperty("os.name");
+        try {
+            System.setProperty("os.name", "unix");
+            assertEquals("You have to change this test if you modify PLINIPATH", "/fake/pl.ini", PLINIPATH);
+            assertEquals("/fake/Match_ODBC", ctx.getMatchEngineLocation());
+        } finally {
+            System.setProperty("os.name", realOsName);
+        }
     }
 }
