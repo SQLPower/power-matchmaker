@@ -69,10 +69,7 @@ public class LogFactory {
 	 * as a file name, and a FileLogger is created.
 	 */
 	public static Log getLogger(Level level, Object constraint) {
-		if (constraint == null) {
-			return new DefaultLogger(level, constraint);
-		}
-		return new FileLogger(level, (String)constraint);
+		return new DefaultLogger(level, constraint);
 	}
 
 	/**
