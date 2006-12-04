@@ -8,6 +8,7 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -340,8 +341,6 @@ public class MatchEditor {
 		bb.addRelatedGap();
 		bb.addGridded(validateMatch);
 
-
-
 		pb.add(bb.getPanel(), cc.xywh(8,4,1,14,"f,f"));
 		panel = pb.getPanel();
     }
@@ -376,7 +375,9 @@ public class MatchEditor {
         Validator v = new MatchNameValidator(swingSession);
         handler.addValidateObject(matchId,v);
 
-        Validator v2 = new MatchSourceTableValidator();
+        List<Action> actionsToDisable = new ArrayList<Action>();
+        actionsToDisable.add(newMatchGroupAction);
+        Validator v2 = new MatchSourceTableValidator(actionsToDisable);
         handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
 
         Validator v2a = new MatchSourceTableIndexValidator();
@@ -530,7 +531,11 @@ public class MatchEditor {
 
         String trimmedResultTableName = resultTableName.getText().trim();
         if ( trimmedResultTableName == null || trimmedResultTableName.length() == 0 ) {
-        	trimmedResultTableName = "MM_"+match.getName();
+            //matchName (string taken from the match id textfield) is used  
+            //instead of match.getName() because if the match is new, the 
+            //matchName has not been saved to the database and therefore would
+            //return MM.Null instead
+            trimmedResultTableName = "MM_"+matchName;
         	resultTableName.setText(trimmedResultTableName);
         }
 
@@ -561,8 +566,8 @@ public class MatchEditor {
         logger.debug("Saving Match:" + match.getName());
 
         PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
-        if (!selectedFolder.getChildren().contains(match)) {
-        	swingSession.move(match,selectedFolder);
+        if (!selectedFolder.getChildren().contains(match)) {        	
+            swingSession.move(match,selectedFolder);            
         	swingSession.save(selectedFolder);
         }
 
@@ -621,15 +626,24 @@ public class MatchEditor {
     }
 
     private class MatchSourceTableValidator implements Validator {
-		public ValidateResult validate(Object contents) {
+		
+        List<Action> actionsToDisable;
+        
+        public MatchSourceTableValidator(List<Action> actionsToDisable){
+            this.actionsToDisable = actionsToDisable;
+        }
+        
+        public ValidateResult validate(Object contents) {
 
 			SQLTable value = (SQLTable)contents;
 			if ( value == null ) {
+                enableAction(false);
 				return ValidateResult.createValidateResult(Status.WARN,
 						"Match source table is required");
 			} else {
 				try {
 					value.populate();
+                    enableAction(true);
 				} catch (ArchitectException e) {
 					return ValidateResult.createValidateResult(Status.WARN,
 						"Match source table has error:"+e.getMessage());
@@ -637,7 +651,15 @@ public class MatchEditor {
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
+        
+        
+        public void enableAction(boolean enable){
+            for (Action a : actionsToDisable){
+                a.setEnabled(enable);
+            }            
+        }
     }
+    
 
     private class MatchSourceTableIndexValidator implements Validator {
 

@@ -193,6 +193,7 @@ public class MatchValidation {
                 final RowSetModel model = new RowSetModel(jrs);
                 candidateJTable.setModel(new ResultTableModel(model));
                 candidateJTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+                TableUtils.fitColumnWidths(candidateJTable, MAX_TABLE_COL_WIDTH);
 
                 // FIXME would like to set column widths to match upper table,
                 //       but this lower table has two extra columns in front
