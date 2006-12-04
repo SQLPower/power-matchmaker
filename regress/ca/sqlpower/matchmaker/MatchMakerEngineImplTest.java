@@ -140,6 +140,41 @@ public class MatchMakerEngineImplTest extends TestCase {
 		fakeEngine.delete();
 	}
 	
+	//   check for unwriteable file
+    public void testCanAccessLogCantWrite() throws IOException{
+        MatchMakerSettings settings = new MatchSettings(); 
+        File log = new File("mmenginetest.log");
+        settings.setLog(log);
+        log.createNewFile();
+        log.setReadOnly();
+        assertFalse(log.canWrite());
+        assertFalse(matchMakerEngine.canWriteLogFile(settings));
+        log.delete();
+    }
+    
+    // check for append
+    public void testCanAccessLogExists() throws IOException{
+        MatchMakerSettings settings = new MatchSettings(); 
+        File log = new File("mmenginetest.log");
+        settings.setLog(log);
+        log.createNewFile();
+        assertTrue(log.canWrite());
+        assertTrue(matchMakerEngine.canWriteLogFile(settings));
+        log.delete();
+    }
+    
+    // check for create
+    public void testCanAcessLogNonExistantButWritable() throws IOException{
+        MatchMakerSettings settings = new MatchSettings(); 
+        File log = new File("mmenginetest.log");
+        settings.setLog(log);
+        log.createNewFile();
+        assertTrue(log.canWrite());
+        log.delete();
+        assertTrue(matchMakerEngine.canWriteLogFile(settings));
+    }
+    
+    
 	public void testCanExecuteMatchEngineExists() throws IOException{
 		File fakeEngine = new File("fakeMatchEngine");
 		fakeEngine.createNewFile();
