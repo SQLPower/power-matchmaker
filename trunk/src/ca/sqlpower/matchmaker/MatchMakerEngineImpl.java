@@ -326,4 +326,42 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 			engineListeners.get(i).engineEnd(e);
 		}
 	}
+
+	///////// Monitorabe support ///////////
+	/**
+	 * Right now the job size is always indeterminant
+	 */
+	public Integer getJobSize() throws ArchitectException {
+		return null;
+	}
+
+	public String getMessage() {
+		if(isRunning()){
+			return "Running MatchMaker Engine";
+		} else {
+			return "";
+		}
+	}
+
+	public int getProgress() throws ArchitectException {
+		// since this is always indeterminant  
+		return 0;
+	}
+
+	public boolean hasStarted() throws ArchitectException {
+		return isRunning() || getEngineReturnCode() != null;
+	}
+	
+	// The engine is done when it has an exit code
+	public boolean isFinished() throws ArchitectException {
+		if (getEngineReturnCode() != null){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public void setCancelled(boolean cancelled) {
+		abort();
+	}
 }
