@@ -537,10 +537,11 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			return;	// User clicked on same item, don't hassle them
 		}
 
-		boolean doit = true;
+		boolean save = false, doit = true;
 
 		if (oldPane != null && oldPane.hasUnsavedChanges()) {
-			String[] options = { "Save", "Cancel" };
+			String[] options = { "Save", "Discard Changes", "Cancel" };
+			final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
 			int ret = JOptionPane.showOptionDialog(
 					frame,
 					String.format("Your %s has unsaved changes", ASUtils.niceClassName(oldPane)),
@@ -550,21 +551,30 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 			switch (ret) {
 			case JOptionPane.CLOSED_OPTION:
+				save = false;
 				doit = false;
 				break;
-			case 0:
-				// nothing to do
+			case O_SAVE:
+				save = true;
+				doit = true;
 				break;
-			case 1:
+			case O_DISCARD:
+				save = false;
+				doit = true;
+				break;
+			case O_CANCEL:
+				save = false;
 				doit = false;
 				break;
 			}
 		}
 
-		if (doit) {
+		if (save) {
 			 if (oldPane != null) {
 				 oldPane.doSave();
 			 }
+		}
+		if (doit) {
 			 splitPane.setRightComponent(pane == null ? null : pane.getPanel());
 			 // XXX Don't set this if we didn't change the pane!
 			 oldPane = pane;
