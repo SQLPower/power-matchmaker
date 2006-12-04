@@ -141,7 +141,7 @@ public class MatchMakerEngineImplTest extends TestCase {
 	}
 	
 	//   check for unwriteable file
-    public void testCanAccessLogCantWrite() throws IOException{
+    public void testLogCantWrite() throws IOException{
         MatchMakerSettings settings = new MatchSettings(); 
         File log = new File("mmenginetest.log");
         settings.setLog(log);
@@ -153,7 +153,7 @@ public class MatchMakerEngineImplTest extends TestCase {
     }
     
     // check for append
-    public void testCanAccessLogExists() throws IOException{
+    public void testCanWriteLogExists() throws IOException{
         MatchMakerSettings settings = new MatchSettings(); 
         File log = new File("mmenginetest.log");
         settings.setLog(log);
@@ -164,7 +164,7 @@ public class MatchMakerEngineImplTest extends TestCase {
     }
     
     // check for create
-    public void testCanAcessLogNonExistantButWritable() throws IOException{
+    public void testCanWriteLogNonExistantButWritable() throws IOException{
         MatchMakerSettings settings = new MatchSettings(); 
         File log = new File("mmenginetest.log");
         settings.setLog(log);
@@ -174,6 +174,28 @@ public class MatchMakerEngineImplTest extends TestCase {
         assertTrue(matchMakerEngine.canWriteLogFile(settings));
     }
     
+    
+//  check for append
+    public void testCanReadLogExists() throws IOException{
+        MatchMakerSettings settings = new MatchSettings(); 
+        File log = new File("mmenginetest.log");
+        settings.setLog(log);
+        log.createNewFile();
+        assertTrue(log.canWrite());
+        assertTrue(matchMakerEngine.canReadLogFile(settings));
+        log.delete();
+    }
+    
+    // check for create
+    public void testCanReadLogNonExistant() throws IOException{
+        MatchMakerSettings settings = new MatchSettings(); 
+        File log = new File("mmenginetest.log");
+        settings.setLog(log);
+        // this is an unreadable file (I hope)
+        log.mkdir();
+        assertTrue(matchMakerEngine.canReadLogFile(settings));
+        log.delete();
+    }
     
 	public void testCanExecuteMatchEngineExists() throws IOException{
 		File fakeEngine = new File("fakeMatchEngine");
