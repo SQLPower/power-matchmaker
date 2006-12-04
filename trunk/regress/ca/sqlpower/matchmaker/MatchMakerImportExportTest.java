@@ -8,14 +8,14 @@ import java.io.PrintWriter;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import junit.framework.TestCase;
+
 import org.xml.sax.SAXException;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
-
-import junit.framework.TestCase;
 
 /**
  * note:
@@ -467,4 +467,5 @@ public class MatchMakerImportExportTest extends TestCase {
 	      SQLTable table2 = match2.getResultTable();
 	      assertTrue("table is not equals",table1.equals(table2));
 	}
+
 }

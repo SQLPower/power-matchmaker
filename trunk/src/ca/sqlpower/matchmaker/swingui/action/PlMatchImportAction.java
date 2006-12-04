@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -21,6 +22,7 @@ import ca.sqlpower.architect.swingui.ArchitectFrame;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchImportor;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 public class PlMatchImportAction extends AbstractAction {
@@ -28,7 +30,6 @@ public class PlMatchImportAction extends AbstractAction {
 	private static final Logger logger = Logger.getLogger(PlMatchImportAction.class);
     private final MatchMakerSwingSession swingSession;
 
-	private Match match;
 	private JFrame owningFrame;
 
 	public PlMatchImportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
@@ -56,6 +57,7 @@ public class PlMatchImportAction extends AbstractAction {
 			swingSession.setLastImportExportAccessPath(
 					importFile.getAbsolutePath());
 
+			Match match = new Match();
 			BufferedInputStream in = null;
 			try {
 				in = new BufferedInputStream(new FileInputStream(importFile));
@@ -86,6 +88,7 @@ public class PlMatchImportAction extends AbstractAction {
 
 				Match match2 = swingSession.getMatchByName(match.getName());
 				if ( match2 != null ) {
+					logger.debug("Match ["+match2.getName()+"] exists");
 					int option = JOptionPane.showConfirmDialog(
 							null,
 		                    "Match ["+match.getName()+"] Exists! Do you want to overwrite it?",
@@ -93,11 +96,21 @@ public class PlMatchImportAction extends AbstractAction {
 		                    JOptionPane.OK_CANCEL_OPTION );
 					if ( option != JOptionPane.OK_OPTION ) {
 						return;
-					} else {
-						swingSession.delete(match2);
-						swingSession.save(match);
 					}
 				}
+
+				if ( match.getParent() != null ) {
+					List<PlFolder> folders = swingSession.getFolders();
+					for ( PlFolder<Match> folder : folders ) {
+						if ( folder.getName().equals(((PlFolder<Match>)match.getParent()).getName())) {
+							logger.debug("Folder ["+folder.getName()+"] exists");
+							swingSession.move(match,folder);
+							break;
+						}
+					}
+				}
+				logger.debug("Saving Match:" + match.getName());
+				swingSession.save(match);
 			}
 
 		}
