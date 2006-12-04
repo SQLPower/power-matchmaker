@@ -470,7 +470,7 @@ public class MatchEditor {
     	} else if ( warn.size() > 0 ) {
     		StringBuffer warnMessage = new StringBuffer();
     		for ( String w : warn ) {
-    			warnMessage.append("<br>").append(w);
+    			warnMessage.append("--").append(w).append("\n");
     		}
     		JOptionPane.showMessageDialog(swingSession.getFrame(),
     				"Warning: match will be saved, but you may not be able to run it, because of these wanings:\n"+warnMessage.toString(),
