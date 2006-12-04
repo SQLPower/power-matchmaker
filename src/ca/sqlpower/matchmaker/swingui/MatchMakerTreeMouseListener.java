@@ -27,6 +27,7 @@ import ca.sqlpower.matchmaker.swingui.action.DeleteMatchCriteria;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
+import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
@@ -34,7 +35,7 @@ import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 public class MatchMakerTreeMouseListener extends MouseAdapter {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerTreeMouseListener.class);
-	
+
     private final MatchMakerSwingSession swingSession;
 
     private final JFrame owningFrame;
@@ -73,7 +74,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                 } else if (o instanceof MatchMakerCriteriaGroup ) {
                 	Match m = ((MatchMakerCriteriaGroup)o).getParentMatch();
                     try {
-                        MatchMakerCriteriaGroupEditor editor = 
+                        MatchMakerCriteriaGroupEditor editor =
                         	new MatchMakerCriteriaGroupEditor(
                         			swingSession,
                         			m, (MatchMakerCriteriaGroup) o);
@@ -129,7 +130,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                     createMatchGroupMenu((MatchMakerCriteriaGroup) o);
                 } else if (o instanceof MatchMakerCriteria) {
                     createMatchCriteriaMenu((MatchMakerCriteria) o);
-                } 
+                }
             }
             m.show(t, e.getX(), e.getY());
         }
@@ -152,7 +153,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
             }
         }));
     }
-    
+
     private void createMatchMenu(final Match match) {
 
         m.add(new JMenuItem(new AbstractAction("Run Match") {
@@ -178,18 +179,16 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
         }));
         m.add(new JMenuItem(new ShowMatchStatisticInfoAction(swingSession,match, owningFrame)));
         m.addSeparator();
-        // TODO add this back in m.add(new JMenuItem(new PlMatchExportAction(match)));
+        m.add(new JMenuItem(new PlMatchExportAction(swingSession, owningFrame)));
         m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
-        
+
         m.addSeparator();
         m.add(new JMenuItem(new DeleteMatchAction(swingSession,match)));
     }
 
     private void createFolderMenu(final PlFolder folder) {
         m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match", folder)));
-//XXX: Add back in when PlMatchImport and PlMatchExport are fixed
-        /*        m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));*/
-        
+        m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
         m.add(new JMenuItem(new DeletePlFolderAction(swingSession,"Delete Folder",folder)));
     }
 

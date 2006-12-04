@@ -109,7 +109,7 @@ public class MatchEditor {
         this.match = match;
         this.folder = folder;
         handler = new FormValidationHandler(status);
-        createResultTableAction = 
+        createResultTableAction =
         	new CreateResultTableAction(swingSession, match);
         buildUI();
         setDefaultSelections();
@@ -150,13 +150,13 @@ public class MatchEditor {
 						match,
 						new MatchMakerCriteriaGroup());
 			} catch (ArchitectException e) {
-				JOptionPane.showMessageDialog(swingSession.getFrame(), 
+				JOptionPane.showMessageDialog(swingSession.getFrame(),
 						"Populate Error", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 			swingSession.setCurrentEditorComponent(editor.getPanel());
 		}
 	};
-	
+
 	private Window getParentWindow() {
 	    return SwingUtilities.getWindowAncestor(panel);
 	}
@@ -203,11 +203,11 @@ public class MatchEditor {
 		}};
 	private Action validateMatchAction = new AbstractAction("Validate Match") {
 		public void actionPerformed(ActionEvent e) {
-			try {           
+			try {
                 if (getMatchValidation() == null){
-                    matchValidation = new MatchValidation(swingSession, match);                                        
+                    matchValidation = new MatchValidation(swingSession, match);
                 }
-                    matchValidation.showGUI();                                     
+                    matchValidation.showGUI();
 			} catch (HeadlessException e1) {
 				ASUtils.showExceptionDialog(swingSession.getFrame(),
 						"Unknown Error",e1, new MatchMakerQFAFactory());
@@ -378,11 +378,10 @@ public class MatchEditor {
 
         Validator v2 = new MatchSourceTableValidator();
         handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
-        
+
         Validator v2a = new MatchSourceTableIndexValidator();
         handler.addValidateObject(sourceChooser.getUniqueKeyComboBox(),v2a);
-        
-        
+
         if ( resultChooser.getCatalogComboBox().isEnabled() ) {
         	Validator v3 = new MatchResultCatalogSchemaValidator("Result "+
         			resultChooser.getCatalogTerm().getText());
@@ -399,9 +398,9 @@ public class MatchEditor {
         handler.addValidateObject(resultTableName,v5);
 
         Validator v6 = new AlwaysOKValidator();
-        handler.addValidateObject(desc, v6);        
+        handler.addValidateObject(desc, v6);
         handler.addValidateObject(filterPanel.getFilterTextArea(), v6);
-        
+
 
         if ( match.getSourceTable() != null ) {
         	SQLTable sourceTable = match.getSourceTable();
@@ -417,7 +416,7 @@ public class MatchEditor {
         if (sourceChooser.getUniqueKeyComboBox().getSelectedItem() == null) {
         	createResultTableAction.setEnabled(false);
         }
-        
+
     	SQLTable resultTable = match.getResultTable();
     	if ( resultTable != null ) {
     		SQLCatalog cat = resultTable.getCatalog();
@@ -484,7 +483,7 @@ public class MatchEditor {
 
         match.setSourceTable(((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()));
         match.setSourceTableIndex(((SQLIndex) sourceChooser.getUniqueKeyComboBox().getSelectedItem()));
-        
+
         if ((matchName == null || matchName.length() == 0) &&
         		match.getSourceTable() == null ) {
         	JOptionPane.showMessageDialog(getPanel(),
@@ -519,11 +518,11 @@ public class MatchEditor {
         SQLObject resultTableParent;
         if ( resultChooser.getSchemaComboBox().isEnabled() &&
         		resultChooser.getSchemaComboBox().getSelectedItem() != null ) {
-        	resultTableParent = 
+        	resultTableParent =
         		(SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem();
         } else if ( resultChooser.getCatalogComboBox().isEnabled() &&
         		resultChooser.getCatalogComboBox().getSelectedItem() != null ) {
-        	resultTableParent = 
+        	resultTableParent =
         		(SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem();
         } else {
         	resultTableParent = (SQLDatabase) resultChooser.getDb();
@@ -534,7 +533,7 @@ public class MatchEditor {
         	trimmedResultTableName = "MM_"+match.getName();
         	resultTableName.setText(trimmedResultTableName);
         }
-        
+
         try {
         	match.setResultTable(new SQLTable(resultTableParent,
         			trimmedResultTableName,
@@ -560,10 +559,11 @@ public class MatchEditor {
         }
 
         logger.debug("Saving Match:" + match.getName());
-        
+
         PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
-        if (!selectedFolder.getChildren().contains(match)) {        	
+        if (!selectedFolder.getChildren().contains(match)) {
         	swingSession.move(match,selectedFolder);
+        	swingSession.save(selectedFolder);
         }
 
         swingSession.save(match);
@@ -582,11 +582,11 @@ public class MatchEditor {
     		runMatchAction.setEnabled(false);
     	} else if ( worst.getStatus() == Status.WARN ) {
     		runMatchAction.setEnabled(false);
-    	} 
+    	}
     	if (sourceChooser.getTableComboBox().getSelectedItem() == null){
     		newMatchGroupAction.setEnabled(false);
     	}
-    	
+
     	ValidateResult r1 = handler.getResultOf(sourceChooser.getUniqueKeyComboBox());
     	ValidateResult r2 = handler.getResultOf(resultTableName);
     	if ( r1 == null || r1.getStatus() != Status.OK ||
@@ -650,7 +650,7 @@ public class MatchEditor {
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
-    
+
     private class MatchResultCatalogSchemaValidator implements Validator {
 
     	private String componentName;
@@ -672,7 +672,7 @@ public class MatchEditor {
 		public ValidateResult validate(Object contents) {
 			final Pattern sqlIdentifierPattern =
 				Pattern.compile("[a-z_][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
-			
+
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.WARN,

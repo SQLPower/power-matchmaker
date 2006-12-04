@@ -23,6 +23,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -60,6 +61,8 @@ import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
+import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
+import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersion;
@@ -105,7 +108,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      * icon images).
      */
 	private final ImageIcon smallMMIcon;
-    
+
 	/**
 	 * The main part of the UI; the tree lives on the left and the current editor lives on the right.
      *
@@ -122,20 +125,20 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      * The window that pops up to display warning messages for this session.
      */
     private JFrame warningDialog;
-    
+
     /**
      * The component in the warningDialog which actually contains the messages.
      */
     private JTextArea warningTextArea;
-    
+
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
-    
+
     /**
      * Container for translate groups
      */
     private MatchMakerObject<MatchMakerObject, MatchMakerTranslateGroup> translateGroupParent;
-    
+
 	private Action aboutAction = new AbstractAction("About MatchMaker...") {
         public void actionPerformed(ActionEvent e) {
             String message =
@@ -223,7 +226,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			sm.actionPerformed(e);
 		}
 	};
-    
+
     private Action clearWarningsAction = new AbstractAction("Clear") {
         public void actionPerformed(ActionEvent e) {
             warningTextArea.setText("");
@@ -253,12 +256,12 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
         this.smallMMIcon = new ImageIcon(getClass().getResource("/icons/matchmaker_24.png"));
-        
+
         // this grabs warnings from the business model and DAO's and lets us handle them.
         sessionImpl.addWarningListener(new WarningListener() {
             public void handleWarning(String message) { MatchMakerSwingSession.this.handleWarning(message); }
         });
-        
+
         checkSchema(sessionImpl.getDatabase());
         frame = new JFrame("MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
 
@@ -336,9 +339,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		matchesMenu.add(runMatchAction);
 		matchesMenu.add(showMatchStatisticInfoAction);
 		matchesMenu.addSeparator();
-//FIXME: Add these two actions back in when they are fixed!!!
-        //matchesMenu.add(new JMenuItem(new PlMatchImportAction(this, frame)));
-		//matchesMenu.add(new JMenuItem(new PlMatchExportAction(this, frame)));
+        matchesMenu.add(new JMenuItem(new PlMatchImportAction(this, frame)));
+		matchesMenu.add(new JMenuItem(new PlMatchExportAction(this, frame)));
 		menuBar.add(matchesMenu);
 
 		JMenu mergeMenu = new JMenu("Merges");
@@ -624,7 +626,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     }
 
     ///// MatchMakerSession Implementation //////
-    
+
     /**
      * Appends the warning to the warningTextArea and makes the warningDialog visible
      * as well as telling all the warning listeners about the warning.
@@ -637,7 +639,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
             warningDialog.setVisible(true);
         }
         warningDialog.requestFocus();
-        
+
 //        for (int i = 0; i < Integer.MAX_VALUE; i++) {
 //            Toolkit.getDefaultToolkit().beep();
 //        }
@@ -647,13 +649,13 @@ public class MatchMakerSwingSession implements MatchMakerSession {
             }
         }
     }
-    
+
     public void addWarningListener(WarningListener l) {
         synchronized (warningListeners) {
             warningListeners.add(l);
         }
     }
-    
+
     public void removeWarningListener(WarningListener l) {
         synchronized (warningListeners) {
             warningListeners.remove(l);
@@ -735,7 +737,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 	/**
 	 * persist the match maker object to the database
-	 * 
+	 *
 	 * XXX Push this into the match maker session interface
 	 * @param mmo
 	 */
@@ -763,7 +765,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	/**
 	 * Delete the MatchMakerObject passed in.  This will save the parent of the
 	 * mmo.
-	 * 
+	 *
 	 * XXX Push this into the match maker session interface
 	 * @param mmo
 	 */
@@ -788,22 +790,22 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	}
 	/**
 	 * Move a match maker object from one parent ( can be null) to a new match maker object.
-	 * The destination object must support children.  This function persists the 
+	 * The destination object must support children.  This function persists the
 	 * move to the database and will save any other unsaved changes in both parents
 	 * and the moving object
-	 * 
+	 *
 	 * @param objectToMove the object you want to move
 	 * @param destination the new parent object
 	 */
 	public void move(MatchMakerObject objectToMove, MatchMakerObject destination) {
 		if (!destination.allowsChildren()) throw new IllegalArgumentException("The destination object "+destination+" Does not support children");
-		
+
 		MatchMakerObject oldParent = objectToMove.getParent();
 		if (oldParent != null) {
 			oldParent.removeChild(objectToMove);
 			save(oldParent);
-		}		
-		destination.addChild(objectToMove);		
+		}
+		destination.addChild(objectToMove);
 		save(destination);
 	}
 
@@ -813,5 +815,5 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     public ImageIcon getSmallMMIcon() {
         return smallMMIcon;
     }
-	
+
 }

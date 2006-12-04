@@ -66,13 +66,10 @@ public class MatchImportor {
 			buf = new StringBuffer();
 
 
-			if ( qName.equalsIgnoreCase("PL_MATCH")) {
-				properties = new ArrayList<LabelValueBean>();
-			} else if ( qName.equalsIgnoreCase("PL_MATCH_GROUP")) {
-				properties = new ArrayList<LabelValueBean>();
-			} else if ( qName.equalsIgnoreCase("PL_MATCH_CRITERIA")) {
-				properties = new ArrayList<LabelValueBean>();
-			} else if ( qName.equalsIgnoreCase("PL_FOLDER")) {
+			if ( qName.equalsIgnoreCase("PL_MATCH") ||
+				 qName.equalsIgnoreCase("PL_MATCH_GROUP") ||
+				 qName.equalsIgnoreCase("PL_MATCH_CRITERIA") ||
+				 qName.equalsIgnoreCase("PL_FOLDER")) {
 				properties = new ArrayList<LabelValueBean>();
 			}
 		}
@@ -236,7 +233,7 @@ public class MatchImportor {
 						group.setActive(((String) bean.getValue()).equalsIgnoreCase("y"));
 					}
 				}
-System.out.println("\n\n***\nadding group:"+group.getName());
+
 				parentMatch.addMatchCriteriaGroup(group);
 			} else if ( mmo instanceof MatchMakerCriteria ) {
 				MatchMakerCriteria criteria = (MatchMakerCriteria) mmo;
@@ -325,7 +322,7 @@ System.out.println("\n\n***\nadding group:"+group.getName());
 					}
 				}
 			} else if ( mmo instanceof PlFolder ) {
-				PlFolder folder = (PlFolder) mmo;
+				PlFolder<Match> folder = (PlFolder<Match>) mmo;
 				folder.addChild(parentMatch);
 				for ( LabelValueBean bean : properties ) {
 					logger.debug("setting:["+bean.getLabel()+"] to ["+ bean.getValue()+"]");
