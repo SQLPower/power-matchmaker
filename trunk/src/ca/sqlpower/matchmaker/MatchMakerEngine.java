@@ -6,17 +6,25 @@ package ca.sqlpower.matchmaker;
 import java.io.IOException;
 import java.io.InputStream;
 
+import ca.sqlpower.matchmaker.event.EngineListener;
+
 /**
  * the matchmaker engine interface represents the contexts that required 
  * to run the engine, the engine now is a C program uses ODBC to connect
  * to database as we create this interface. we may change it to java base
- * in the futrue.
+ * in the future.
+ * 
+ * 
+ * This interface is not reentrant.  If you want to do multiple runs
+ * create a new instance.
  *  
  */
 public interface MatchMakerEngine {
 
 	/**
 	 * start the engine!
+	 * 
+	 * Note this is not reentrant.  
 	 * @throws EngineSettingException if not all the preconditions met
 	 * @throws IOException 
 	 */
@@ -60,4 +68,16 @@ public interface MatchMakerEngine {
 	 * returns the standard output of the engine, if it's running, otherwise returns null
 	 */
 	public InputStream getEngineStandardOutput();
+	
+	/**
+	 * Add a engine listener to this engine.  Note the listener cannot be null
+	 * @param l EngineListener not null
+	 */
+	public void addEngineListener(EngineListener l);
+	
+	/**
+	 * Removes a engine listener from this engine.  Note the listener cannot be null
+	 * @param l EngineListener not null
+	 */
+	public void removeEngineListener(EngineListener l);
 }
