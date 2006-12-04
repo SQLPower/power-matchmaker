@@ -1,5 +1,8 @@
 package ca.sqlpower.matchmaker.dao;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.Match;
@@ -49,4 +52,79 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 		assertEquals("Wrong child",match, fAgain.getChildren().get(0));
 	}
 
+    /**
+     * Test if you can properly move a match.
+     */
+    public void testMatchMove() throws Exception {
+        Match m = new Match();
+        m.setName("match");
+
+        PlFolder<Match> oldFolder = new PlFolder<Match>("old");
+        PlFolder<Match> newFolder = new PlFolder<Match>("new");
+
+        oldFolder.addChild(m);
+        PlFolderDAO dao = getDataAccessObject();
+
+        dao.save(oldFolder);
+        dao.save(newFolder);
+
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            con = getSession().getConnection();
+            stmt = con.createStatement();
+            try {
+                rs = stmt
+                        .executeQuery("SELECT * FROM pl_match WHERE match_id='"
+                                + m.getName() + "'");
+
+                if (!rs.next()) {
+                    fail("No results found for match " + m.getName());
+                }
+
+                assertEquals("The setup failed to work", "old", rs
+                        .getString("folder_name"));
+            } finally {
+                try {
+                    rs.close();
+                } catch (Exception e) {
+                    System.err.println("Couldn't close result set");
+                    e.printStackTrace();
+                }
+            }
+
+            oldFolder.removeChild(m);
+            newFolder.addChild(m);
+            dao.save(newFolder);
+            dao.save(oldFolder);
+            try {
+                rs = stmt
+                        .executeQuery("SELECT * FROM pl_match WHERE match_id='"
+                                + m.getName() + "'");
+
+                if (!rs.next()) {
+                    fail("No results found for match " + m.getName());
+                }
+
+                assertEquals("move failed to work", "new", rs
+                        .getString("folder_name"));
+            } finally {
+                try {
+                    rs.close();
+                } catch (Exception e) {
+                    System.err.println("Couldn't close result set");
+                    e.printStackTrace();
+                }
+            }
+        } finally {
+            try {
+                stmt.close();
+            } catch (Exception e) {
+                System.err.println("Couldn't close statement");
+                e.printStackTrace();
+            }
+            // connection didn't come from a pool so we can't close it
+        }
+    }
 }

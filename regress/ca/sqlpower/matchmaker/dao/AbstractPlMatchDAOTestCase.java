@@ -128,6 +128,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         assertEquals("test3", loadedMatch.getSourceTableIndex().getChild(2).getName());
         assertNotNull(loadedMatch.getSourceTableIndex().getChild(2).getColumn());
 	}
+    
 	
     /**
      * Inserts data directly into the tables, then uses the DAO to retrieve the
@@ -165,6 +166,64 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
             ((TestingMatchMakerHibernateSession) getSession()).setConnectionDisabled(false);
         }
 
+    }
+    
+    public void testCriteriaGroupMove() throws Exception {
+        MatchMakerCriteriaGroup cg = new MatchMakerCriteriaGroup();
+        cg.setName("criteria group");
+        
+        Match oldMatch = new Match();
+        oldMatch.setName("old");
+        
+        Match newMatch = new Match();
+        newMatch.setName("new");
+        
+        oldMatch.addMatchCriteriaGroup(cg);
+        MatchDAO dao = getDataAccessObject();
+        
+        dao.save(oldMatch);
+        dao.save(newMatch);
+        
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        try {
+            con = getSession().getConnection();
+            stmt = con.createStatement();
+            try { 
+                rs = stmt.executeQuery(
+                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+cg.getName()+"'");
+            
+                if (!rs.next()) {
+                    fail("No results found for match "+cg.getName());
+                }
+            
+                assertEquals("The setup failed to work","old", rs.getString("match_id"));
+            } finally {
+                try { rs.close(); } catch (Exception e) { System.err.println("Couldn't close result set"); e.printStackTrace(); }
+            }
+            
+            oldMatch.removeMatchCriteriaGroup(cg);
+            newMatch.addMatchCriteriaGroup(cg);
+            dao.save(newMatch);
+            dao.save(oldMatch);
+            try { 
+                rs = stmt.executeQuery(
+                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+cg.getName()+"'");
+            
+                if (!rs.next()) {
+                    fail("No results found for match "+cg.getName());
+                }
+            
+                assertEquals("move failed to work","new", rs.getString("match_id"));
+            } finally {
+                try { rs.close(); } catch (Exception e) { System.err.println("Couldn't close result set"); e.printStackTrace(); }
+            }
+        } finally {
+            try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
+            // connection didn't come from a pool so we can't close it
+        }
+     
     }
     
     /**
