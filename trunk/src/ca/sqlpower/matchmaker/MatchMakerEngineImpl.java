@@ -96,10 +96,23 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 	}
 
 	/**
-	 * returns true if the log file os this match is writable.
+	 * returns true if the log file of this match is writable.
 	 */
 	static boolean canWriteLogFile(MatchMakerSettings settings) {
-		return settings.getLog().canWrite();
+        File file = settings.getLog();
+        if (file.exists()) {
+            return file.canWrite();
+        } else {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                logger.debug("IOException thrown when testing write assuming failure");
+                return false;
+            }
+            boolean canWrite = file.canWrite();
+            file.delete();
+            return canWrite;
+        }
 	}
 
 	/**
