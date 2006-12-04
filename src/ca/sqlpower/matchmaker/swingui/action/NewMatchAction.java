@@ -51,6 +51,6 @@ public final class NewMatchAction extends AbstractAction {
 		} catch (ArchitectException e1) {
 			throw new ArchitectRuntimeException(e1);
 		}
-		swingSession.setCurrentEditorComponent(me.getPanel());
+		swingSession.setCurrentEditorComponent(me);
 	}
 }
