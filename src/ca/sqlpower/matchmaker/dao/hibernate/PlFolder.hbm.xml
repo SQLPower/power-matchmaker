@@ -24,7 +24,7 @@
 		</property>
 
 		<bag name="children" access="field" lazy="false"
-			inverse="true" fetch="subselect" cascade="all,delete-orphan">
+			inverse="true" fetch="subselect" cascade="all">
 			<key>
 				<column name="folder_name" length="80" not-null="true" />
 			</key>
