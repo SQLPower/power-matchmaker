@@ -51,8 +51,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-
-public class MatchMakerCriteriaGroupEditor {
+public class MatchMakerCriteriaGroupEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerCriteriaGroupEditor.class);
 
@@ -161,7 +160,7 @@ public class MatchMakerCriteriaGroupEditor {
 	}
 
 	private Action save = new AbstractAction("Save") {
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
 
 			List<String> fail = handler.getFailResults();
 	    	List<String> warn = handler.getWarnResults();
@@ -213,6 +212,7 @@ public class MatchMakerCriteriaGroupEditor {
 			group.setActive(active.isSelected());
 			MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
 	        dao.save(match);
+	        handler.setValidated(false);
 		}
 	};
 
@@ -486,24 +486,26 @@ public class MatchMakerCriteriaGroupEditor {
 			this.translate_group_name = translate_group_name;
 		}
 
+		Pattern pattern = Pattern.compile("\\d+");
 		public ValidateResult validate(Object contents) {
-			Pattern pattern = Pattern.compile("\\d+");
 			int colIndex = ((MatchCriteriaTableModel)table.getModel()).
 							getIndexOfClass(translate_group_name);
 
 			//If it does not exist, the columns have not been setup yet
 			//therefore it is ok
-			if (colIndex == -1){
+			if (colIndex == -1) {
 				return ValidateResult.createValidateResult(Status.OK, "");
 			}
 			//Iterates through the rows to ensure that each column
 			//in that row are either empty or valid number inputs
 			for (int i = 0; i < table.getRowCount(); i++){
 				if (table.getValueAt(i, colIndex) instanceof Long ||
-						table.getValueAt(i, colIndex) instanceof Integer) continue;
+						table.getValueAt(i, colIndex) instanceof Integer)
+					continue;
 
 				String value = (String) table.getValueAt(i, colIndex);
-				if ( value == null || value.trim().length()==0) continue;
+				if (value == null || value.trim().length()==0)
+					continue;
 				if (pattern.matcher(value).matches()){
 					continue;
 				} else {
@@ -515,5 +517,14 @@ public class MatchMakerCriteriaGroupEditor {
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
+	}
+
+	public boolean doSave() {
+		save.actionPerformed(null);
+		return true;
+	}
+
+	public boolean hasUnsavedChanges() {
+		return handler.isValidated();
 	}
 }

@@ -58,7 +58,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                 Object o = tp.getLastPathComponent();
                 if (o instanceof PlFolder ) {
                 	FolderEditor editor = new FolderEditor(swingSession,(PlFolder)o);
-                	swingSession.setCurrentEditorComponent(editor.getPanel());
+                	swingSession.setCurrentEditorComponent(editor);
                 } else if (o instanceof Match) {
 
                     MatchEditor me;
@@ -69,7 +69,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                         throw new ArchitectRuntimeException(e1);
                     }
 
-                    swingSession.setCurrentEditorComponent(me.getPanel());
+                    swingSession.setCurrentEditorComponent(me);
 
                 } else if (o instanceof MatchMakerCriteriaGroup ) {
                 	Match m = ((MatchMakerCriteriaGroup)o).getParentMatch();
@@ -79,7 +79,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
                         			swingSession,
                         			m, (MatchMakerCriteriaGroup) o);
                         logger.debug("Created new match group editor "+System.identityHashCode(editor));
-                        swingSession.setCurrentEditorComponent(editor.getPanel());
+                        swingSession.setCurrentEditorComponent(editor);
                     } catch (ArchitectException e1) {
                         throw new ArchitectRuntimeException(e1);
                     }
@@ -149,7 +149,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
             public void actionPerformed(ActionEvent e) {
             	PlFolder<Match> folder = new PlFolder<Match>();
             	FolderEditor editor = new FolderEditor(swingSession,folder);
-            	swingSession.setCurrentEditorComponent(editor.getPanel());
+            	swingSession.setCurrentEditorComponent(editor);
             }
         }));
     }

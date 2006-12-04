@@ -56,7 +56,7 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MatchEditor {
+public class MatchEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MatchEditor.class);
 
@@ -94,8 +94,8 @@ public class MatchEditor {
 	private FormValidationHandler handler;
 
 	/**
-	 * the constructor, for a match that is not new, we create a backup for it,
-	 * and give it the name of the old one, when we save it, we will remove the
+	 * Construct a MatchEditor; for a match that is not new, we create a backup for it,
+	 * and give it the name of the old one, when we save it, we will remove
 	 * the backup from the folder, and insert the new one.
 	 * @param swingSession  -- a MatchMakerSession
 	 * @param match			-- a Match Object to be edited
@@ -108,7 +108,8 @@ public class MatchEditor {
     		PlFolder<Match> folder) throws HeadlessException, ArchitectException {
     	super();
         this.swingSession = swingSession;
-        if (match == null) throw new NullPointerException("You can't edit a null plmatch");
+        if (match == null)
+        	throw new NullPointerException("You can't edit a null plmatch");
         this.match = match;
         this.folder = folder;
         handler = new FormValidationHandler(status);
@@ -121,6 +122,7 @@ public class MatchEditor {
 				refreshActionStatus();
 			}
         });
+        handler.setValidated(false); // avoid false hits when newly created
     }
 
     /**
@@ -130,12 +132,12 @@ public class MatchEditor {
      * match object back to the database (but it should use the MatchHome interface instead).
      */
 	private Action saveAction = new AbstractAction("Save") {
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             try {
-                boolean ok = saveMatch();
+                boolean ok = doSave();
                 if ( ok ) {
                 	JOptionPane.showMessageDialog(swingSession.getFrame(),
-                			"Match Interface Save Successfully",
+                			"Match Interface Saved Successfully",
                 			"Saved",JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (Exception ex) {
@@ -156,7 +158,7 @@ public class MatchEditor {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
 						"Populate Error", "Error", JOptionPane.ERROR_MESSAGE);
 			}
-			swingSession.setCurrentEditorComponent(editor.getPanel());
+			swingSession.setCurrentEditorComponent(editor);
 		}
 	};
 
@@ -226,7 +228,12 @@ public class MatchEditor {
 		public void actionPerformed(ActionEvent e) {
             SQLTable t = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
             JDialog d;
-			if (t !=null){
+			if (t == null) {
+				JOptionPane.showMessageDialog(swingSession.getFrame(),
+						"No Table selected, can't create view builder",
+						"Error",
+						JOptionPane.ERROR_MESSAGE);
+			} else {
                 try {
                     d = new ViewBuilderDialog(swingSession, getParentFrame(), t);
                     d.pack();
@@ -470,7 +477,7 @@ public class MatchEditor {
      * @throws ArchitectException
      * @return true if save OK
      */
-    private boolean saveMatch() {
+    public boolean doSave() {
 
     	List<String> fail = handler.getFailResults();
     	List<String> warn = handler.getWarnResults();
@@ -549,8 +556,8 @@ public class MatchEditor {
 
         String trimmedResultTableName = resultTableName.getText().trim();
         if ( trimmedResultTableName == null || trimmedResultTableName.length() == 0 ) {
-            //matchName (string taken from the match id textfield) is used  
-            //instead of match.getName() because if the match is new, the 
+            //matchName (string taken from the match id textfield) is used
+            //instead of match.getName() because if the match is new, the
             //matchName has not been saved to the database and therefore would
             //return MM.Null instead
             trimmedResultTableName = "MM_"+matchName;
@@ -584,12 +591,14 @@ public class MatchEditor {
         logger.debug("Saving Match:" + match.getName());
 
         PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
-        if (!selectedFolder.getChildren().contains(match)) {        	
-            swingSession.move(match,selectedFolder);            
+        if (!selectedFolder.getChildren().contains(match)) {
+            swingSession.move(match,selectedFolder);
         	swingSession.save(selectedFolder);
         }
 
         swingSession.save(match);
+
+        handler.setValidated(false);
 		return true;
 
     }
@@ -644,13 +653,13 @@ public class MatchEditor {
     }
 
     private class MatchSourceTableValidator implements Validator {
-		
+
         List<Action> actionsToDisable;
-        
+
         public MatchSourceTableValidator(List<Action> actionsToDisable){
             this.actionsToDisable = actionsToDisable;
         }
-        
+
         public ValidateResult validate(Object contents) {
 
 			SQLTable value = (SQLTable)contents;
@@ -669,15 +678,14 @@ public class MatchEditor {
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
-        
-        
+
         public void enableAction(boolean enable){
             for (Action a : actionsToDisable){
                 a.setEnabled(enable);
-            }            
+            }
         }
     }
-    
+
 
     private class MatchSourceTableIndexValidator implements Validator {
 
@@ -733,4 +741,8 @@ public class MatchEditor {
     public void setMatchValidation(MatchValidation matchValidation) {
         this.matchValidation = matchValidation;
     }
+
+	public boolean hasUnsavedChanges() {
+		return handler.isValidated();
+	}
 }

@@ -259,8 +259,10 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
         // this grabs warnings from the business model and DAO's and lets us handle them.
         sessionImpl.addWarningListener(new WarningListener() {
-            public void handleWarning(String message) { MatchMakerSwingSession.this.handleWarning(message); }
-        });
+			public void handleWarning(String message) {
+				MatchMakerSwingSession.this.handleWarning(message);
+			}
+		});
 
         checkSchema(sessionImpl.getDatabase());
         frame = new JFrame("MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
@@ -485,7 +487,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 				throw new ArchitectRuntimeException(e1);
 			}
 
-			setCurrentEditorComponent(me.getPanel());
+			setCurrentEditorComponent(me);
 		}
 	}
 
@@ -520,21 +522,61 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	    System.exit(0);
 	}
 
+	EditorPane oldPane;
+
     /**
-     * Shows the given component in the main part of the frame's UI.
-     *
-     * @param editor The editor component to display in the UI.  If you pass
-     * in null, then no editor will be showing.
-     */
-    public void setCurrentEditorComponent(JComponent editor) {
-        splitPane.setRightComponent(editor);
-    }
+	 * Shows the given component in the main part of the frame's UI.
+	 *
+	 * @param editor
+	 *            The editor component to display in the UI. If you pass in
+	 *            null, then no editor will be showing.
+	 */
+	public void setCurrentEditorComponent(EditorPane pane) {
+
+		if (pane == oldPane) {
+			return;	// User clicked on same item, don't hassle them
+		}
+
+		boolean doit = true;
+
+		if (oldPane != null && oldPane.hasUnsavedChanges()) {
+			String[] options = { "Save", "Cancel" };
+			int ret = JOptionPane.showOptionDialog(
+					frame,
+					String.format("Your %s has unsaved changes", ASUtils.niceClassName(oldPane)),
+					"Warning", JOptionPane.OK_CANCEL_OPTION,
+					JOptionPane.QUESTION_MESSAGE, null, options,
+					options[0]);
+
+			switch (ret) {
+			case JOptionPane.CLOSED_OPTION:
+				doit = false;
+				break;
+			case 0:
+				// nothing to do
+				break;
+			case 1:
+				doit = false;
+				break;
+			}
+		}
+
+		if (doit) {
+			 if (oldPane != null) {
+				 oldPane.doSave();
+			 }
+			 splitPane.setRightComponent(pane == null ? null : pane.getPanel());
+			 // XXX Don't set this if we didn't change the pane!
+			 oldPane = pane;
+		}
+	}
 
 	/**
-	 * Creates a MatchMakerSwingSession and shows the login prompt.  This method is
-	 * an acceptable way to launch the Swing GUI of the MatchMaker application.
-     *
-     * XXX should move to LoginDialog or its own class, I think
+	 * Creates a MatchMakerSwingSession and shows the login prompt. This method
+	 * is an acceptable way to launch the Swing GUI of the MatchMaker
+	 * application.
+	 *
+	 * XXX should move to LoginDialog or its own class, I think
 	 */
 	public static void main(String args[]) throws ArchitectException {
 

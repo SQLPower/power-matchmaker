@@ -33,7 +33,7 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class FolderEditor {
+public class FolderEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MatchEditor.class);
 	private JPanel panel;
@@ -42,10 +42,10 @@ public class FolderEditor {
 
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
-	
+
 	private JTextField folderName = new JTextField(40);
 	private JTextArea folderDesc = new JTextArea(4,40);
-	
+
 	public FolderEditor(MatchMakerSwingSession swingSession, PlFolder<Match> folder) {
 		this.swingSession = swingSession;
 		this.folder = folder;
@@ -57,14 +57,15 @@ public class FolderEditor {
 				refreshActionStatus();
 			}
         });
+		handler.setValidated(false);
 	}
-	
+
 	private void buildUI() {
 		folderName.setName("Folder Name");
 		folderDesc.setName("Folder Description");
-		
+
     	JButton saveButton = new JButton(saveAction);
-    	
+
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
@@ -82,7 +83,7 @@ public class FolderEditor {
 
 		pb.add(folderName, cc.xy(4,4,"l,c"));
 		pb.add(new JScrollPane(folderDesc), cc.xy(4,6,"l,c"));
-		
+
 		pb.add(saveButton, cc.xyw(2,8,3,"c,c"));
 		panel = pb.getPanel();
 
@@ -91,14 +92,14 @@ public class FolderEditor {
 	private void setDefaultSelection() {
 		folderName.setText(folder.getName());
 		folderDesc.setText(folder.getFolderDesc());
-		
+
 		Validator v1 = new FolderNameValidator(swingSession);
         handler.addValidateObject(folderName,v1);
 
         Validator v2 = new AlwaysOKValidator();
         handler.addValidateObject(folderDesc,v2);
 	}
-	
+
 	private void refreshActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
     	saveAction.setEnabled(true);
@@ -107,15 +108,14 @@ public class FolderEditor {
     		saveAction.setEnabled(false);
     	}
 	}
-	
+
 	/**
      * Saves the folder
      */
 	private Action saveAction = new AbstractAction("Save") {
-		
 
-		public void actionPerformed(ActionEvent e) {
-			
+		public void actionPerformed(final ActionEvent e) {
+
 			List<String> fail = handler.getFailResults();
 	    	List<String> warn = handler.getWarnResults();
 
@@ -135,7 +135,7 @@ public class FolderEditor {
 	    			warnMessage.append(w).append("\n");
 	    		}
 	    		JOptionPane.showMessageDialog(swingSession.getFrame(),
-	    				"Warning: match will be saved with these wanings:\n"+warnMessage.toString(),
+	    				"Warning: match will be saved with these warnings:\n"+warnMessage.toString(),
 	    				"Folder warning",
 	    				JOptionPane.INFORMATION_MESSAGE);
 	    	}
@@ -156,18 +156,24 @@ public class FolderEditor {
 
 	        if ( !swingSession.getFolders().contains(folder) ) {
 	        	MMTreeNode parent = (MMTreeNode) ((MatchMakerTreeModel)swingSession.getTree().getModel()).getRoot();
-	        	MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();	        	
+	        	MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();
 	        	if (treeModel.getIndexOfChild(parent, folder) == -1){
-	        		swingSession.getFolders().add(folder);	  
+	        		swingSession.getFolders().add(folder);
 	        		treeModel.addFolderToCurrent(folder);
 	        	}
 	        }
 
 	        PlFolderDAO dao = (PlFolderDAO)swingSession.getDAO(PlFolder.class);
 	        dao.save(folder);
+	        handler.setValidated(false);
 		}
 	};
-	
+
+	public boolean doSave() {
+		saveAction.actionPerformed(null);
+		return true;
+	}
+
 	private class FolderNameValidator implements Validator {
 
 		private MatchMakerSwingSession session;
@@ -190,10 +196,14 @@ public class FolderEditor {
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
-	
+
 	public JPanel getPanel() {
 		return panel;
 	}
-	
-	
+
+	public boolean hasUnsavedChanges() {
+		return handler.isValidated();
+	}
+
+
 }
