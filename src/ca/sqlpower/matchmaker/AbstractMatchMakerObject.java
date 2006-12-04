@@ -94,7 +94,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
     }
 
 	/**
-	 * anyone who going to overwrite this method should fire the ChildrenRemoved
+	 * Anyone who is going to overwrite this method should fire the ChildrenRemoved
 	 * event in the overwriten method
 	 * @param child
 	 */
