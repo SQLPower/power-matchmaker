@@ -178,11 +178,15 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 
     	SQLIndex rtidx = indices.get(0);
     	assertEquals(true, rtidx.isUnique());
-    	assertEquals(idx.getChildCount(), rtidx.getChildCount());
     	final int idxColCount = rtidx.getChildCount();
-    	for (int i = 0; i < idxColCount; i++) {
+    	assertEquals(idx.getChildCount() * 2, idxColCount);
+    	for (int i = 0; i < idxColCount/2; i++) {
     		assertEquals("dup_candidate_1"+i, rtidx.getChild(i).getName());
     	}
+        for (int i = idxColCount/2; i < idxColCount; i++) {
+            assertEquals("dup_candidate_2"+(i-idxColCount/2), rtidx.getChild(i).getName());
+        }
+
     }
     
     public void testCreateResultTableInCorrectCatalogSchema() throws Exception {

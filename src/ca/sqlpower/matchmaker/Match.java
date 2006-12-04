@@ -237,7 +237,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		t.addColumn(col);
 
 		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, IndexType.HASHED, null);
-		for (int i = 0; i < si.getChildCount(); i++) {
+		for (int i = 0; i < si.getChildCount() * 2; i++) {
 			newidx.addChild(newidx.new Column(t.getColumn(i), true, false));
 		}
 		t.addIndex(newidx);
