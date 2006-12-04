@@ -78,9 +78,11 @@ public class MatchEditor {
     private JButton runMatch;
     private JButton validationStatus;
     private JButton validateMatch;
+    private JButton matchResultVisualizerButton;
     private FilterComponentsPanel filterPanel;
     private MatchValidation matchValidation;
-
+    private MatchResultVisualizer matchResultVisualizer;
+    
     private final MatchMakerSwingSession swingSession;
 
     /**
@@ -238,7 +240,19 @@ public class MatchEditor {
 		}};
 
 	private final Action createResultTableAction;
-
+    
+	private Action matchResultVisualizerAction = new AbstractAction("Visualize Match Results") {
+        public void actionPerformed(ActionEvent e) {
+            if (matchResultVisualizer == null) {
+                try {
+                    matchResultVisualizer = new MatchResultVisualizer(match, swingSession);
+                } catch (Exception ex) {
+                    ASUtils.showExceptionDialog(panel, "Couldn't create match result visualizer component", ex, null);
+                }
+            }
+            matchResultVisualizer.showDialog();
+        }
+    };
 
     private void buildUI() throws ArchitectException {
 
@@ -268,6 +282,7 @@ public class MatchEditor {
     	runMatch= new JButton(runMatchAction);
     	validationStatus = new JButton(validationStatusAction);
     	validateMatch = new JButton(validateMatchAction);
+        matchResultVisualizerButton = new JButton(matchResultVisualizerAction);
 
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
@@ -337,9 +352,12 @@ public class MatchEditor {
 		bb.addRelatedGap();
 		bb.addRelatedGap();
 		bb.addGridded(validationStatus);
-		bb.addRelatedGap();
-		bb.addRelatedGap();
-		bb.addGridded(validateMatch);
+        bb.addRelatedGap();
+        bb.addRelatedGap();
+        bb.addGridded(validateMatch);
+        bb.addRelatedGap();
+        bb.addRelatedGap();
+        bb.addGridded(matchResultVisualizerButton);
 
 		pb.add(bb.getPanel(), cc.xywh(8,4,1,14,"f,f"));
 		panel = pb.getPanel();
