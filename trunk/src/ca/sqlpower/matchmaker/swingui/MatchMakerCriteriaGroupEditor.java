@@ -104,9 +104,14 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         });
 		save.putValue("mm_name", "save action for "+group.getName()+"@"+System.identityHashCode(group));
 		/**
-		 * for trigger the form validation
+		 * A tableChanged is fired to trigger the form validation.
+         * Afterwards it is required,to setValidated to false because 
+         * it would then cause the handlerer in thinking that there are 
+         * unsaved changes in the dialog when really the dialog is brand
+         * new
 		 */
-		matchCriteriaTableModel.fireTableChanged(new TableModelEvent(matchCriteriaTableModel));;
+		matchCriteriaTableModel.fireTableChanged(new TableModelEvent(matchCriteriaTableModel));
+        handler.setValidated(false);
 	}
 
 	private class MatchGroupNameValidator implements Validator {
@@ -161,58 +166,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 
 	private Action save = new AbstractAction("Save") {
 		public void actionPerformed(final ActionEvent e) {
-
-			List<String> fail = handler.getFailResults();
-	    	List<String> warn = handler.getWarnResults();
-
-	    	if ( fail.size() > 0 ) {
-	    		StringBuffer failMessage = new StringBuffer();
-	    		for ( String f : fail ) {
-	    			failMessage.append(f).append("\n");
-	    		}
-	    		JOptionPane.showMessageDialog(swingSession.getFrame(),
-	    				"You have to fix these errors before saving:\n"+
-	    				failMessage.toString(),
-	    				"Match group error",
-	    				JOptionPane.ERROR_MESSAGE);
-	    		return;
-	    	} else if ( warn.size() > 0 ) {
-	    		StringBuffer warnMessage = new StringBuffer();
-	    		for ( String w : warn ) {
-	    			warnMessage.append(w).append("\n");
-	    		}
-	    		JOptionPane.showMessageDialog(swingSession.getFrame(),
-	    				"Warning: match group will be saved, " +
-	    				"but you may not be able to run it, because of these wanings:\n"+
-	    				warnMessage.toString(),
-	    				"Match warning",
-	    				JOptionPane.INFORMATION_MESSAGE);
-	    	}
-
-			if ( !groupId.getText().equals(group.getName()) ) {
-	        	if ( match.getMatchCriteriaGroupByName(groupId.getText()) != null ) {
-	        		JOptionPane.showMessageDialog(getPanel(),
-	        				"Match group name \""+groupId.getText()+
-	        				"\" exist or invalid. The match group can not be saved",
-	        				"Match group name invalid",
-	        				JOptionPane.ERROR_MESSAGE);
-	        		return;
-	        	}
-	        	group.setName(groupId.getText());
-	        }
-			if (matchPercent.getText().trim().length() > 0){
-				int pct = Integer.parseInt(matchPercent.getText());
-				group.setMatchPercent((short)pct);
-			}
-			group.setDesc(description.getText());
-			group.setFilter(filterPanel.getFilterTextArea().getText());
-			if ( !match.getMatchCriteriaGroups().contains(group)) {
-				match.addMatchCriteriaGroup(group);
-			}
-			group.setActive(active.isSelected());
-			MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
-	        dao.save(match);
-	        handler.setValidated(false);
+		    doSave();
 		}
 	};
 
@@ -520,7 +474,57 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	}
 
 	public boolean doSave() {
-		save.actionPerformed(null);
+        List<String> fail = handler.getFailResults();
+        List<String> warn = handler.getWarnResults();
+
+        if ( fail.size() > 0 ) {
+            StringBuffer failMessage = new StringBuffer();
+            for ( String f : fail ) {
+                failMessage.append(f).append("\n");
+            }
+            JOptionPane.showMessageDialog(swingSession.getFrame(),
+                    "You have to fix these errors before saving:\n"+
+                    failMessage.toString(),
+                    "Match group error",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if ( warn.size() > 0 ) {
+            StringBuffer warnMessage = new StringBuffer();
+            for ( String w : warn ) {
+                warnMessage.append(w).append("\n");
+            }
+            JOptionPane.showMessageDialog(swingSession.getFrame(),
+                    "Warning: match group will be saved, " +
+                    "but you may not be able to run it, because of these wanings:\n"+
+                    warnMessage.toString(),
+                    "Match warning",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        if ( !groupId.getText().equals(group.getName()) ) {
+            if ( match.getMatchCriteriaGroupByName(groupId.getText()) != null ) {
+                JOptionPane.showMessageDialog(getPanel(),
+                        "Match group name \""+groupId.getText()+
+                        "\" exist or invalid. The match group can not be saved",
+                        "Match group name invalid",
+                        JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+            group.setName(groupId.getText());
+        }
+        if (matchPercent.getText().trim().length() > 0){
+            int pct = Integer.parseInt(matchPercent.getText());
+            group.setMatchPercent((short)pct);
+        }
+        group.setDesc(description.getText());
+        group.setFilter(filterPanel.getFilterTextArea().getText());
+        if ( !match.getMatchCriteriaGroups().contains(group)) {
+            match.addMatchCriteriaGroup(group);
+        }
+        group.setActive(active.isSelected());
+        MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
+        dao.save(match);
+        handler.setValidated(false);
 		return true;
 	}
 

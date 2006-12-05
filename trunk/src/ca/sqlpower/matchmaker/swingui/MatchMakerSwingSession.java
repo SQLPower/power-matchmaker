@@ -32,6 +32,7 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
@@ -133,7 +134,12 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
-
+    /*
+     * This variable is used to restore the old selection if the user
+     * decides to hit cancel on a request to save or discard unsaved changes.
+     */
+    private TreePath lastTreePath;
+    
     /**
      * Container for translate groups
      */
@@ -556,7 +562,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 				break;
 			case O_SAVE:
 				save = true;
-				doit = true;
+				doit = false;
 				break;
 			case O_DISCARD:
 				save = false;
@@ -565,16 +571,27 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			case O_CANCEL:
 				save = false;
 				doit = false;
+                //The treepath should never be null if it reaches here
+                //since prompting this means that the right side of the splitpane
+                //must have at least been replaced once.
+                tree.setSelectionPath(lastTreePath);
 				break;
 			}
 		}
 
 		if (save) {
 			 if (oldPane != null) {
-				 oldPane.doSave();
+				 doit = oldPane.doSave();
+                 if (!doit){
+                     tree.setSelectionPath(lastTreePath);
+                 }
 			 }
 		}
 		if (doit) {
+            //Remebers the treepath to the last node that it clicked on
+            if (pane != null){
+                lastTreePath = tree.getSelectionPath();
+            }
 			 splitPane.setRightComponent(pane == null ? null : pane.getPanel());
 			 // XXX Don't set this if we didn't change the pane!
 			 oldPane = pane;
@@ -868,4 +885,5 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return smallMMIcon;
     }
 
+    
 }

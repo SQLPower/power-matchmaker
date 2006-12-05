@@ -366,7 +366,7 @@ public class MatchEditor implements EditorPane {
         bb.addRelatedGap();
         bb.addGridded(matchResultVisualizerButton);
 
-		pb.add(bb.getPanel(), cc.xywh(8,4,1,14,"f,f"));
+		pb.add(bb.getPanel(), cc.xywh(8,4,1,16,"f,f"));
 		panel = pb.getPanel();
     }
 

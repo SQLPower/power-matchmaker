@@ -14,7 +14,17 @@ public interface EditorPane {
 	 */
 	public boolean hasUnsavedChanges();
 
-	/** Perform the editor save */
+	/** Perform the editor save.
+     * 
+     * <p><b>IMPORTANT NOTE:</b> Make sure this method does not blindly return true
+     * just so that it has a valid return type, it is essiental that it
+     * returns if the object is saved properly or not.  This is required
+     * since if the save does fail, the swing session needs to know to restore
+     * the interface back and reselect the lastTreePath in the JTree.  You have
+     * officially been warned...
+     * </p>
+     * @return the success of the saving process (do not fake it!)
+	 */                
 	public boolean doSave();
 
 	/** Retrieve the Editor's visual component */
