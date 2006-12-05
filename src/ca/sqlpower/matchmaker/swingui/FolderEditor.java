@@ -115,62 +115,68 @@ public class FolderEditor implements EditorPane {
 	private Action saveAction = new AbstractAction("Save") {
 
 		public void actionPerformed(final ActionEvent e) {
-
-			List<String> fail = handler.getFailResults();
-	    	List<String> warn = handler.getWarnResults();
-
-	    	if ( fail.size() > 0 ) {
-	    		StringBuffer failMessage = new StringBuffer();
-	    		for ( String f : fail ) {
-	    			failMessage.append(f).append("\n");
-	    		}
-	    		JOptionPane.showMessageDialog(swingSession.getFrame(),
-	    				"You have to fix these errors before saving:\n"+failMessage.toString(),
-	    				"Folder error",
-	    				JOptionPane.ERROR_MESSAGE);
-	    		return;
-	    	} else if ( warn.size() > 0 ) {
-	    		StringBuffer warnMessage = new StringBuffer();
-	    		for ( String w : warn ) {
-	    			warnMessage.append(w).append("\n");
-	    		}
-	    		JOptionPane.showMessageDialog(swingSession.getFrame(),
-	    				"Warning: match will be saved with these warnings:\n"+warnMessage.toString(),
-	    				"Folder warning",
-	    				JOptionPane.INFORMATION_MESSAGE);
-	    	}
-
-	        if ( !folderName.getText().equals(folder.getName()) ) {
-	        	if ( swingSession.findFolder(folderName.getText()) != null ) {
-	        		JOptionPane.showMessageDialog(getPanel(),
-	        				"Folder name \""+folderName.getText()+
-	        				"\" exist or invalid. The folder can not be saved",
-	        				"Folder name invalid",
-	        				JOptionPane.ERROR_MESSAGE);
-	        		return;
-	        	}
-	        	folder.setName(folderName.getText());
-	        }
-	        folder.setFolderDesc(folderDesc.getText());
-	        logger.debug("Saving folder:" + folder.getName());
-
-	        if ( !swingSession.getFolders().contains(folder) ) {
-	        	MMTreeNode parent = (MMTreeNode) ((MatchMakerTreeModel)swingSession.getTree().getModel()).getRoot();
-	        	MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();
-	        	if (treeModel.getIndexOfChild(parent, folder) == -1){
-	        		swingSession.getFolders().add(folder);
-	        		treeModel.addFolderToCurrent(folder);
-	        	}
-	        }
-
-	        PlFolderDAO dao = (PlFolderDAO)swingSession.getDAO(PlFolder.class);
-	        dao.save(folder);
-	        handler.setValidated(false);
-		}
+            /**
+             * It is essiental that doSave() does do all the saving work
+             * since doSave needs to return a the successfulness of the  
+             * saving process for the swing session to know if it needs
+             * to bring the panel back or not.                        
+             */
+            doSave();
+        }
 	};
 
 	public boolean doSave() {
-		saveAction.actionPerformed(null);
+        List<String> fail = handler.getFailResults();
+        List<String> warn = handler.getWarnResults();
+
+        if ( fail.size() > 0 ) {
+            StringBuffer failMessage = new StringBuffer();
+            for ( String f : fail ) {
+                failMessage.append(f).append("\n");
+            }
+            JOptionPane.showMessageDialog(swingSession.getFrame(),
+                    "You have to fix these errors before saving:\n"+failMessage.toString(),
+                    "Folder error",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if ( warn.size() > 0 ) {
+            StringBuffer warnMessage = new StringBuffer();
+            for ( String w : warn ) {
+                warnMessage.append(w).append("\n");
+            }
+            JOptionPane.showMessageDialog(swingSession.getFrame(),
+                    "Warning: match will be saved with these warnings:\n"+warnMessage.toString(),
+                    "Folder warning",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        if ( !folderName.getText().equals(folder.getName()) ) {
+            if ( swingSession.findFolder(folderName.getText()) != null ) {
+                JOptionPane.showMessageDialog(getPanel(),
+                        "Folder name \""+folderName.getText()+
+                        "\" exist or invalid. The folder can not be saved",
+                        "Folder name invalid",
+                        JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+            folder.setName(folderName.getText());
+        }
+        folder.setFolderDesc(folderDesc.getText());
+        logger.debug("Saving folder:" + folder.getName());
+
+        if ( !swingSession.getFolders().contains(folder) ) {
+            MMTreeNode parent = (MMTreeNode) ((MatchMakerTreeModel)swingSession.getTree().getModel()).getRoot();
+            MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();
+            if (treeModel.getIndexOfChild(parent, folder) == -1){
+                swingSession.getFolders().add(folder);
+                treeModel.addFolderToCurrent(folder);
+            }
+        }
+
+        PlFolderDAO dao = (PlFolderDAO)swingSession.getDAO(PlFolder.class);
+        dao.save(folder);
+        handler.setValidated(false);
+
 		return true;
 	}
 
