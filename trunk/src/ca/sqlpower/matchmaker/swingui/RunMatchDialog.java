@@ -626,7 +626,7 @@ public class RunMatchDialog extends JDialog {
 			cmdText.setEditable(false);
 			cmdText.setWrapStyleWord(true);
 			cmdText.setLineWrap(true);
-			pb.add(cmdText, cc.xy(2, 2, "f,f"));
+			pb.add(new JScrollPane(cmdText), cc.xy(2, 2, "f,f"));
 
 			ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
 
