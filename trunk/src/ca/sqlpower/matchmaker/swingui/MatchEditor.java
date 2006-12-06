@@ -79,6 +79,7 @@ public class MatchEditor implements EditorPane {
     private JButton validationStatus;
     private JButton validateMatch;
     private JButton matchResultVisualizerButton;
+    private JButton createIndexButton;
     private FilterComponentsPanel filterPanel;
     private MatchValidation matchValidation;
     private MatchResultVisualizer matchResultVisualizer;
@@ -261,6 +262,22 @@ public class MatchEditor implements EditorPane {
         }
     };
 
+	private Action createIndexAction = new AbstractAction("Pick Columns"){
+		public void actionPerformed(ActionEvent e) {
+			if ( match.getSourceTable() == null ) {
+				JOptionPane.showMessageDialog(panel,
+						"You have to select a source table and save before picking columns" );
+				return;
+			}
+			try {
+				new MatchMakerIndexBuilder(match,swingSession);
+			} catch (ArchitectException e1) {
+				ASUtils.showExceptionDialog(panel, "Unexcepted Error", e1, null);
+			}
+		}};
+
+	
+
     private void buildUI() throws ArchitectException {
 
     	matchId.setName("Match ID");
@@ -290,7 +307,8 @@ public class MatchEditor implements EditorPane {
     	validationStatus = new JButton(validationStatusAction);
     	validateMatch = new JButton(validateMatchAction);
         matchResultVisualizerButton = new JButton(matchResultVisualizerAction);
-
+        createIndexButton = new JButton(createIndexAction );
+        
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,30dlu,4dlu,pref,   4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,  4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
@@ -329,6 +347,7 @@ public class MatchEditor implements EditorPane {
 		row+=2;
 		pb.add(new JLabel("Unique Index:"), cc.xy(2,row,"r,t"));
 		pb.add(sourceChooser.getUniqueKeyComboBox(), cc.xy(4,row,"f,f"));
+		pb.add(createIndexButton, cc.xy(6,row,"f,f"));
 		row+=2;
 		pb.add(new JLabel("Filter:"), cc.xy(2,row,"r,t"));
 		pb.add(filterPanel, cc.xy(4,row,"f,f"));
