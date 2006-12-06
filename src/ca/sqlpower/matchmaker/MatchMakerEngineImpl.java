@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.event.EngineEvent;
@@ -143,13 +144,7 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 					"PreCondition failed: data source of the session must not be null");
 		}
 
-		/**
-		 * check the DSN setting for the current database connection,
-		 * that's required by the matchmaker odbc engine, since we will not
-		 * use this odbc engine forever, check for not null is acceptable for now.
-		 */
-		final String odbcDsn = session.getDatabase().getDataSource().getOdbcDsn();
-		if ( odbcDsn == null || odbcDsn.length() == 0 ) {
+		if (!hasODBCDSN(session.getDatabase().getDataSource())){
 			throw new EngineSettingException(
 					"ODBC DSN is missing in the Logical database connection setting," +
 					" that's required by the matchmaker engine");
@@ -208,6 +203,20 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 		return true;
 	}
 
+
+	protected static boolean hasODBCDSN(ArchitectDataSource dataSource) {
+		/**
+		 * check the DSN setting for the current database connection,
+		 * that's required by the matchmaker odbc engine, since we will not
+		 * use this odbc engine forever, check for not null is acceptable for now.
+		 */
+		final String odbcDsn = dataSource.getOdbcDsn();
+		if ( odbcDsn == null || odbcDsn.length() == 0 ) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 	public String createCommandLine(MatchMakerSession session, Match match, boolean userPrompt) {
 		/*
