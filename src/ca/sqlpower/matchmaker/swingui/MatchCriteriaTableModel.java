@@ -179,7 +179,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 			if ((Boolean)aValue){
 				criterion.setReorderInd(true);
 			}
-			criterion.setFirstNCharByWordInd((Boolean)aValue);
+			criterion.setMatchFirstPlusOneInd((Boolean)aValue);
 			break;
 		default:
 			throw new IllegalArgumentException("Invalid column");
