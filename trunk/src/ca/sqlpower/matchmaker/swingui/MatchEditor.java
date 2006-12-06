@@ -40,7 +40,10 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.swingui.action.CreateResultTableAction;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -68,6 +71,7 @@ public class MatchEditor implements EditorPane {
 	StatusComponent status = new StatusComponent();
     private JTextField matchId = new JTextField();
     private JComboBox folderComboBox = new JComboBox();
+    private JComboBox indexComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
     private JComboBox matchType = new JComboBox();
     private JTextField resultTableName = new JTextField();
@@ -346,7 +350,7 @@ public class MatchEditor implements EditorPane {
 		pb.add(sourceChooser.getTableComboBox(), cc.xy(4,row));
 		row+=2;
 		pb.add(new JLabel("Unique Index:"), cc.xy(2,row,"r,t"));
-		pb.add(sourceChooser.getUniqueKeyComboBox(), cc.xy(4,row,"f,f"));
+		pb.add(indexComboBox, cc.xy(4,row,"f,f"));
 		pb.add(createIndexButton, cc.xy(6,row,"f,f"));
 		row+=2;
 		pb.add(new JLabel("Filter:"), cc.xy(2,row,"r,t"));
@@ -416,6 +420,38 @@ public class MatchEditor implements EditorPane {
         matchType.setSelectedItem(match.getType());
         filterPanel.getFilterTextArea().setText(match.getFilter());
 
+        refreshIndexComboBox(match.getSourceTableIndex(),match.getSourceTable());
+
+        // listen to the table change
+        sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
+			public void itemStateChanged(ItemEvent e) {
+				refreshIndexComboBox(null,(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
+			}});
+        
+        // listen to the sourceTableIndex changes
+        match.addMatchMakerListener(new MatchMakerListener<Match, MatchMakerFolder>(){
+
+        	// don't care
+			public void mmChildrenInserted(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
+
+			//don't care
+			public void mmChildrenRemoved(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
+
+			public void mmPropertyChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {
+				if ( evt.getPropertyName().equals("sourceTableIndex")) {
+					try {
+						refreshIndexComboBox(match.getSourceTableIndex(),(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
+					} catch (ArchitectException e) {
+						ASUtils.showExceptionDialog(getPanel(),
+								"Unexcepted error when getting unique index of match",
+								e, null);
+					}
+				}
+			}
+			//don't care
+			public void mmStructureChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
+			});
+        
         Validator v = new MatchNameValidator(swingSession);
         handler.addValidateObject(matchId,v);
 
@@ -425,7 +461,7 @@ public class MatchEditor implements EditorPane {
         handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
 
         Validator v2a = new MatchSourceTableIndexValidator();
-        handler.addValidateObject(sourceChooser.getUniqueKeyComboBox(),v2a);
+        handler.addValidateObject(indexComboBox,v2a);
 
         if ( resultChooser.getCatalogComboBox().isEnabled() ) {
         	Validator v3 = new MatchResultCatalogSchemaValidator("Result "+
@@ -456,9 +492,9 @@ public class MatchEditor implements EditorPane {
         	sourceChooser.getSchemaComboBox().setSelectedItem(sch);
         	sourceChooser.getTableComboBox().setSelectedItem(sourceTable);
         	SQLIndex pk = match.getSourceTableIndex();
-        	sourceChooser.getUniqueKeyComboBox().setSelectedItem(pk);
+        	indexComboBox.setSelectedItem(pk);
     	}
-        if (sourceChooser.getUniqueKeyComboBox().getSelectedItem() == null) {
+        if (indexComboBox.getSelectedItem() == null) {
         	createResultTableAction.setEnabled(false);
         }
 
@@ -483,6 +519,38 @@ public class MatchEditor implements EditorPane {
             }
          });
     }
+
+    /**
+     * refersh combobox item
+     * @param newIndex       the match object, if the custom pick index is not a
+     * part of the table, we will add it to the combobox as well
+     * @param newTable    the sqlTable contains unique index
+     * @throws ArchitectException
+     */
+	private void refreshIndexComboBox(SQLIndex newIndex, SQLTable newTable) {
+		
+		try {
+			indexComboBox.removeAllItems();
+	        if ( newTable != null ) {
+	        	for ( SQLIndex index : newTable.getUniqueIndex() ) {
+	        		indexComboBox.addItem(index);
+	        	}
+	        	if ( !newTable.getUniqueIndex().contains(newIndex) &&
+	        			newIndex != null ) {
+	        		indexComboBox.addItem(newIndex);
+	        	}
+	        } else if ( newIndex!= null ){
+	        	indexComboBox.addItem(newIndex);
+	        }
+	        indexComboBox.setSelectedItem(newIndex);
+		} catch (ArchitectException e1) {
+			ASUtils.showExceptionDialog(getPanel(),
+					"Unexcepted error when getting index list",
+					e1, null);
+		}
+		
+		
+	}
 
 	public JPanel getPanel() {
 		return panel;
@@ -527,7 +595,7 @@ public class MatchEditor implements EditorPane {
         match.getMatchSettings().setDescription(desc.getText());
 
         match.setSourceTable(((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()));
-        match.setSourceTableIndex(((SQLIndex) sourceChooser.getUniqueKeyComboBox().getSelectedItem()));
+        match.setSourceTableIndex(((SQLIndex) indexComboBox.getSelectedItem()));
 
         if ((matchName == null || matchName.length() == 0) &&
         		match.getSourceTable() == null ) {
@@ -638,7 +706,7 @@ public class MatchEditor implements EditorPane {
     		newMatchGroupAction.setEnabled(false);
     	}
 
-    	ValidateResult r1 = handler.getResultOf(sourceChooser.getUniqueKeyComboBox());
+    	ValidateResult r1 = handler.getResultOf(indexComboBox);
     	ValidateResult r2 = handler.getResultOf(resultTableName);
     	if ( r1 == null || r1.getStatus() != Status.OK ||
     			r2 == null || r2.getStatus() != Status.OK ) {
