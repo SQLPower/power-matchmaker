@@ -7,17 +7,22 @@ import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 
 /**
  * The MatchPool class represents the set of matching records for
- * a particular Match instance.
+ * a particular Match instance.  Taken together, it is a graph of
+ * matching (and potentially matching) source table records, with
+ * the edges between those records represented by the list of
+ * PotentialMatchRecords.
  */
 public class MatchPool {
     
     private final Match match;
-    private final List<PotentialMatchRecord> potentialMatches;
-    private boolean isMaster;
     
-    public MatchPool (Match match){
-        this.match = match;
-        potentialMatches = new ArrayList<PotentialMatchRecord>();
+    /**
+     * The edge list for this graph.
+     */
+    private final List<PotentialMatchRecord> potentialMatches;
+    
+    public MatchPool(Match match) {
+        this(match, new ArrayList<PotentialMatchRecord>());
     }
     
     public MatchPool(Match match, List<PotentialMatchRecord> potentialMatches){
@@ -28,19 +33,7 @@ public class MatchPool {
     public Match getMatch() {
         return match;
     }
-    
-    
-    public void addPotentialMatches(
-            Match match, MatchMakerCriteriaGroup matchGroup, MatchType matchStatus) {
-        if (match!= null){
-            potentialMatches.add(new PotentialMatchRecord(
-                    MatchPool.this,matchGroup, matchStatus));
-        }
-    }
-    
- 
-   
-    
+        
     /**
      * Finds all the potentialMatchRecordInfo that has the passed in groupName and
      * update the status of the potentialMatchRecordInfo 

@@ -1,28 +1,58 @@
 package ca.sqlpower.matchmaker;
 
-import java.util.List;
 
 /**
  * This object represents one row in a Match Source Table, which is half of
- * a row in the Match Output ("cand dup") table.
+ * a row in the Match Output ("cand dup") table.  If you think of the set of
+ * potential matches and the source table records they point to as a graph,
+ * instances of this class are directed edges in the graph, and instances
+ * of SourceTableRecord are nodes.
  */
 public class PotentialMatchRecord {
 
-    private MatchPool pool;
-    private MatchMakerCriteriaGroup criteriaGroup;
+    /**
+     * The pool of matches (graph) that this match record belongs to.
+     */
+    private final MatchPool pool;
+    
+    /**
+     * The group of criteria that caused the two source table records
+     * identified here to be considered as potential matches.
+     */
+    private final MatchMakerCriteriaGroup criteriaGroup;
+    
+    /**
+     * The current status of this potential match (unexamined, confirmed correct,
+     * confirmed incorrect, and so on).
+     */
     private MatchType matchStatus;
+    
+    /**
+     * Indicates whether the left-hand, right-hand, or neither record is
+     * considered the "master."
+     */
     private MasterSide master;
     
-    private SourceTableRecord lhs;
-    private SourceTableRecord rhs;
     /**
-     * The values of the unique index columns in the same order as the
-     * Index Column objects in the source table's index.  This lets us
-     * select the entire match source record when we need it.
+     * One of the two records originally identified as a potential duplicate.
      */
-    private List<Object> keyValues;
+    private final SourceTableRecord originalLhs;
     
+    /**
+     * One of the two records originally identified as a potential duplicate.
+     */
+    private final SourceTableRecord originalRhs;
+
+    /**
+     * One of the two records currently identified as a potential duplicate.
+     */
+    private SourceTableRecord lhs;
     
+    /**
+     * One of the two records currently identified as a potential duplicate.
+     */
+    private SourceTableRecord rhs;
+
     public static enum MasterSide {
         LEFT_HAND_SIDE,
         RIGHT_HAND_SIDE,
@@ -66,10 +96,17 @@ public class PotentialMatchRecord {
         }
     }
     
-    public PotentialMatchRecord(MatchPool pool, MatchMakerCriteriaGroup criteriaGroup, MatchType matchStatus){
+    public PotentialMatchRecord(
+            MatchPool pool,
+            MatchMakerCriteriaGroup criteriaGroup,
+            MatchType matchStatus,
+            SourceTableRecord originalLhs,
+            SourceTableRecord originalRhs) {
         this.pool = pool;    
         this.criteriaGroup = criteriaGroup;
         this.matchStatus = matchStatus;
+        this.originalLhs = originalLhs;
+        this.originalRhs = originalRhs;
     }
 
     public MatchType getMatchStatus() {
@@ -79,7 +116,6 @@ public class PotentialMatchRecord {
     public void setMatchStatus(MatchType matchStatus) {
         this.matchStatus = matchStatus;
     }
-
 
     public MatchMakerCriteriaGroup getCriteriaGroup() {
         return criteriaGroup;
@@ -101,9 +137,18 @@ public class PotentialMatchRecord {
         this.rhs = rhs;
     }
 
-    public void setCriteriaGroup(MatchMakerCriteriaGroup criteriaGroup) {
-        this.criteriaGroup = criteriaGroup;
+    public SourceTableRecord getOriginalLhs() {
+        return originalLhs;
     }
+
+    public SourceTableRecord getOriginalRhs() {
+        return originalRhs;
+    }
+
+    public MatchPool getPool() {
+        return pool;
+    }
+
     /**
      * Set the master record to the source table record passed in.  If the
      * value passed is null it sets neither as the master record.  If 
@@ -125,7 +170,7 @@ public class PotentialMatchRecord {
         }  
     }
     
-    public boolean isRHSMaster() {
+    public boolean isRhsMaster() {
         if (master == MasterSide.RIGHT_HAND_SIDE) {
             return true;
         } else {
@@ -133,7 +178,7 @@ public class PotentialMatchRecord {
         }
     }
     
-    public boolean isLHSMaster() {
+    public boolean isLhsMaster() {
         if (master == MasterSide.LEFT_HAND_SIDE) {
             return true;
         } else {
