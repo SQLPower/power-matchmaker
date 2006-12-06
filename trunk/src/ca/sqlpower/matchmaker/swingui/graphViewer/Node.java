@@ -22,9 +22,8 @@ public interface Node extends LayoutNode, GraphComponent {
 	void addAdjacentEdge(Diedge edge);
 	
 	/**
-	 * Creates an edge between this node and
-	 * the node passed in if these nodes are not already
-	 * adjacent.
+	 * Creates an edge with this node as the tail and
+	 * the node passed in
 	 */
 	void addAdjacentNode(Node node);
 	
