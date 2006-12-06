@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import junit.framework.TestCase;
+import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.hibernate.HibernateTestUtil;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
@@ -244,5 +245,24 @@ public class MatchMakerEngineImplTest extends TestCase {
 		assertEquals("Wrong number of events received",1,l2.getAllEvents());
 		assertEquals("Wrong type of events received",1,l1.getStarts());
 		assertEquals("Wrong type of events received",1,l2.getStarts());
+	}
+	
+	public void testHasOdbcDsnNull(){
+		ArchitectDataSource ds = new ArchitectDataSource();
+		ds.setOdbcDsn(null);
+		assertFalse("An empty dsn should be considered invalid",MatchMakerEngineImpl.hasODBCDSN(ds));
+	}
+	public void testHasOdbcDsnEmpty(){
+		ArchitectDataSource ds = new ArchitectDataSource();
+		ds.setOdbcDsn("");
+		assertFalse("An empty dsn should be considered invalid",MatchMakerEngineImpl.hasODBCDSN(ds));
+	}
+	// Because we can't check to see if this is a valid odbc
+	// dsn we have to go on length of string
+	public void testHasOdbcDsnvalid(){
+		ArchitectDataSource ds = new ArchitectDataSource();
+		ds.setOdbcDsn("Valid");
+		
+		assertTrue("Dsn should be considered valid",MatchMakerEngineImpl.hasODBCDSN(ds));
 	}
 }
