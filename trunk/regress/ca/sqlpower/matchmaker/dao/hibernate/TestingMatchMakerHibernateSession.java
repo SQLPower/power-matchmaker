@@ -1,14 +1,9 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -16,6 +11,7 @@ import org.hibernate.SessionFactory;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -28,13 +24,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSession {
 
     private static final Logger logger = Logger.getLogger(TestingMatchMakerHibernateSession.class);
-    
-    /**
-     * The connections we've made in this test run.
-     */
-    private static final Map<ArchitectDataSource, Connection> connections =
-        new HashMap<ArchitectDataSource, Connection>();
-    
+        
     private final ArchitectDataSource dataSource;
     private final SessionFactory hibernateSessionFactory;
     private TestingMatchMakerContext context;
@@ -55,25 +45,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         try {
             this.dataSource = dataSource;
             this.hibernateSessionFactory = HibernateTestUtil.buildHibernateSessionFactory(this.dataSource);
-            if (connections.get(dataSource) == null) {
-                System.out.println("*** Connecting to Database: "+dataSource);
-                Driver driver = (Driver) Class.forName(dataSource.getDriverClass()).newInstance();
-                if (!driver.acceptsURL(dataSource.getUrl())) {
-                    throw new SQLException("Couldn't connect to database:\n"
-                            +"JDBC Driver "+dataSource.getDriverClass()+"\n"
-                            +"does not accept the URL "+dataSource.getUrl());
-                }
-                Properties connectionProps = new Properties();
-                connectionProps.setProperty("user", dataSource.getUser());
-                connectionProps.setProperty("password", dataSource.getPass());
-                Connection mycon = driver.connect(dataSource.getUrl(), connectionProps);
-                if (mycon == null) {
-                    throw new SQLException("Couldn't connect to datasource " + dataSource +
-                            " (driver returned null connection)");
-                }
-                connections.put(dataSource, mycon);
-            }
-            con = new TestingConnection(connections.get(dataSource));
+            this.con = DBTestUtil.connectToDatabase(this.dataSource);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -16,9 +16,9 @@ import ca.sqlpower.architect.CoreUserSettings;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.DatabaseListChangeListener;
 import ca.sqlpower.architect.JDBCClassLoader;
+import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.dao.hibernate.HibernateTestUtil;
 import ca.sqlpower.security.PLSecurityException;
 
 public class SwingSessionContextTest extends TestCase {
@@ -84,7 +84,7 @@ public class SwingSessionContextTest extends TestCase {
             public List<ArchitectDataSource> getConnections() {
                 System.out.println("Stub DSCollection.getConnections()");
                 List<ArchitectDataSource> connections = new ArrayList<ArchitectDataSource>();
-                connections.add(HibernateTestUtil.getOracleDS());
+                connections.add(DBTestUtil.getOracleDS());
                 return connections;
             }
 
@@ -152,7 +152,7 @@ public class SwingSessionContextTest extends TestCase {
     }
     
     public void testGetLastLogin(){                
-        ArchitectDataSource ds = HibernateTestUtil.getOracleDS();
+        ArchitectDataSource ds = DBTestUtil.getOracleDS();
         context.setLastLoginDataSource(ds);        
         ArchitectDataSource actualDS = context.getLastLoginDataSource();
         assertEquals("Did not remember the last login", ds, actualDS);

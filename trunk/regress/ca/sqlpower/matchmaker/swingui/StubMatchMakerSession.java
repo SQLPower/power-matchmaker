@@ -89,7 +89,7 @@ public class StubMatchMakerSession implements MatchMakerSession{
     }
 
     public void handleWarning(String message) {
-        logger.debug("Stub call: StubMatchMakerSession.handleWarning("+message+")");
+        logger.warn("Stub call: StubMatchMakerSession.handleWarning("+message+")");
     }
 
     public void addWarningListener(WarningListener l) {

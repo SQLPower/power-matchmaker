@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import junit.framework.TestCase;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.matchmaker.dao.hibernate.HibernateTestUtil;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.event.EngineEvent;
 import ca.sqlpower.matchmaker.event.EngineListener;
@@ -75,7 +74,7 @@ public class MatchMakerEngineImplTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		match = new Match();
-		session = new TestingMatchMakerHibernateSession(HibernateTestUtil.getOracleDS());
+		session = new TestingMatchMakerHibernateSession(DBTestUtil.getOracleDS());
 		session.setDatabase(new SQLDatabase());
 		match.setSession(session);
 		matchMakerEngine = new MatchMakerEngineImpl(session,match);

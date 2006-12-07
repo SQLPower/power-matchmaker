@@ -9,9 +9,9 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.dao.hibernate.HibernateTestUtil;
 
 public class MatchMakerSwingSessionTest extends TestCase {
     
@@ -26,7 +26,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
     protected void setUp() throws Exception {
         folder1 = new PlFolder("Test Folder");
         folder2 = new PlFolder("Test Folder2");
-        ds = HibernateTestUtil.getSqlServerDS();
+        ds = DBTestUtil.getSqlServerDS();
         
         SwingSessionContext stubContext = new StubSwingSessionContext() {
             @Override
