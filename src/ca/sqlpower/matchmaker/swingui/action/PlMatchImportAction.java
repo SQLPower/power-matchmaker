@@ -17,6 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectFrame;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
@@ -48,7 +49,7 @@ public class PlMatchImportAction extends AbstractAction {
 				swingSession.getLastImportExportAccessPath());
 		fc.setFileFilter(ASUtils.XML_FILE_FILTER);
 		fc.setDialogTitle("Import Match");
-
+	
 		File importFile = null;
 		int fcChoice = fc.showOpenDialog(owningFrame);
 
@@ -63,6 +64,7 @@ public class PlMatchImportAction extends AbstractAction {
 				in = new BufferedInputStream(new FileInputStream(importFile));
 				MatchImportor importor = new MatchImportor();
 				match = new Match();
+				match.setSession(swingSession);
 				importor.load(match,in);
 			} catch (FileNotFoundException e1) {
 				ASUtils.showExceptionDialogNoReport(
@@ -76,6 +78,9 @@ public class PlMatchImportAction extends AbstractAction {
 			} catch (SAXException e1) {
 				ASUtils.showExceptionDialogNoReport(
 						"XML Format Error", e1 );
+			} catch (ArchitectException e1) {
+				ASUtils.showExceptionDialogNoReport(
+						"Unknown SQL Object Error", e1 );
 			}
 
 			if ( match == null ) {
@@ -90,13 +95,14 @@ public class PlMatchImportAction extends AbstractAction {
 				if ( match2 != null ) {
 					logger.debug("Match ["+match2.getName()+"] exists");
 					int option = JOptionPane.showConfirmDialog(
-							null,
-		                    "Match ["+match.getName()+"] Exists! Do you want to overwrite it?",
-		                    "Match ["+match.getName()+"] Exists!",
+							swingSession.getFrame(),
+		                    "Match ["+match2.getName()+"] Exists! Do you want to overwrite it?",
+		                    "Match ["+match2.getName()+"] Exists!",
 		                    JOptionPane.OK_CANCEL_OPTION );
 					if ( option != JOptionPane.OK_OPTION ) {
 						return;
 					}
+					swingSession.delete(match2);
 				}
 
 				if ( match.getParent() != null ) {
