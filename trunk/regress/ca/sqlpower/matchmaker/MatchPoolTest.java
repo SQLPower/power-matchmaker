@@ -1,10 +1,13 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import java.util.List;
+import java.util.Collection;
+import java.util.Set;
 
 import junit.framework.TestCase;
 import ca.sqlpower.architect.ArchitectDataSource;
@@ -37,6 +40,7 @@ public class MatchPoolTest extends TestCase {
         db = new SQLDatabase(dataSource);
         con = db.getConnection();
         
+        createPlSchemaIfNecessary(con);
         createResultTable(con);
         
         SQLSchema plSchema = db.getSchemaByName("pl");
@@ -84,9 +88,25 @@ public class MatchPoolTest extends TestCase {
         con.close();
     }
     
+    private static void createPlSchemaIfNecessary(Connection con) throws SQLException {
+        DatabaseMetaData dbmd = con.getMetaData();
+        ResultSet rs = dbmd.getSchemas();
+        boolean foundPlSchema = false;
+        while (rs.next()) {
+            if ("pl".equalsIgnoreCase(rs.getString("TABLE_SCHEM"))) {
+                foundPlSchema = true;
+            }
+        }
+        rs.close();
+        if (!foundPlSchema) {
+            Statement stmt = con.createStatement();
+            stmt.executeUpdate("CREATE SCHEMA pl AUTHORIZATION DBA");
+            stmt.close();
+        }
+    }
+    
     private static void createResultTable(Connection con) throws SQLException {
         Statement stmt = con.createStatement();
-        stmt.executeUpdate("CREATE SCHEMA pl AUTHORIZATION DBA");
         stmt.executeUpdate("CREATE TABLE pl.match_results (" +
                 "\n DUP_CANDIDATE_10 integer not null," +
                 "\n DUP_CANDIDATE_20 integer not null," +
@@ -159,15 +179,40 @@ public class MatchPoolTest extends TestCase {
         
     }
     
+    /** Tests that findAll() does find all potential match records (graph edges) properly. */
     public void testFindAllPotentialMatches() throws Exception {
         insertResultTableRecord(con, 1, 2, 15, "Group_One");
         pool.findAll();        
-        List<PotentialMatchRecord> matches = pool.getPotentialMatches();
+        Set<PotentialMatchRecord> matches = pool.getPotentialMatches();
         assertEquals(2, matches.size());
-        PotentialMatchRecord pmr = matches.get(0);
-        assertNotNull(pmr);
-        assertNotNull(pmr.getOriginalLhs());
-        assertNotNull(pmr.getOriginalLhs().getKeyValues());
-        assertEquals(1, pmr.getOriginalLhs().getKeyValues().get(0));
+        for (PotentialMatchRecord pmr : matches) {
+            assertNotNull(pmr);
+            assertNotNull(pmr.getOriginalLhs());
+            assertNotNull(pmr.getOriginalLhs().getKeyValues());
+            assertEquals(1, pmr.getOriginalLhs().getKeyValues().size());
+            assertEquals("Group_One", pmr.getCriteriaGroup().getName());
+        }
+    }
+    
+    /** Tests that findAll() does find all source table records (graph nodes) properly. */
+    public void testFindSourceTableRecords() throws Exception {
+        insertResultTableRecord(con, 1, 2, 15, "Group_One");
+        insertResultTableRecord(con, 1, 3, 15, "Group_One");
+        pool.findAll();
+        Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
+        assertEquals(3, nodes.size());
+        
+        boolean foundOne = false;
+        boolean foundTwo = false;
+        boolean foundThree = false;
+        for (SourceTableRecord str : nodes) {
+            if (str.getKeyValues().get(0).equals(1)) foundOne = true;
+            if (str.getKeyValues().get(0).equals(2)) foundTwo = true;
+            if (str.getKeyValues().get(0).equals(3)) foundThree = true;
+        }
+        
+        assertTrue(foundOne);
+        assertTrue(foundTwo);
+        assertTrue(foundThree);
     }
 }

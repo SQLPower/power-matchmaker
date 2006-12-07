@@ -58,7 +58,7 @@ public class SourceTableRecord {
      * @param match The Match this record is attached to
      * @param keyValues The values of the unique index on the match's source
      * table.  These values must be specified in the same order as the match's
-     * sourceTableIndex columns.
+     * sourceTableIndex columns. Not allowed to be null.
      */
     public SourceTableRecord(
             final MatchMakerSession session,
@@ -153,7 +153,7 @@ public class SourceTableRecord {
 
     /**
      * Two source table records are equal if their primary key values are all the 
-     * same
+     * same.
      */
     @Override
     public boolean equals(Object obj) {
@@ -161,20 +161,14 @@ public class SourceTableRecord {
             return false;
         } 
         SourceTableRecord other = (SourceTableRecord) obj;
-        for (int i=0; i<keyValues.size(); i++){
-            Object otherKeyValue = other.getKeyValues().get(i);
-            if (otherKeyValue != keyValues.get(i)){
-                if (keyValues != null) {
-                    if (!keyValues.equals(otherKeyValue)) {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
-      
-        return true;
+        return keyValues.equals(other.getKeyValues());
     }
 
+    /**
+     * Returns a hash code dependant only on the keyValues list.
+     */
+    @Override
+    public int hashCode() {
+        return 37 * keyValues.hashCode();
+    }
 }
