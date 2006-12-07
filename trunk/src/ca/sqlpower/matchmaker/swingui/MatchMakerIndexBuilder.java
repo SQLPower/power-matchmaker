@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -45,20 +46,41 @@ public class MatchMakerIndexBuilder implements EditorPane {
 	private JTable columntable;
 	private final SQLTable sqlTable;
 	private final IndexColumnTableModel indexColumnTableModel;
+	private boolean modified = false;
 	
 	
+	public boolean isModified() {
+		return modified;
+	}
+
+	public void setModified(boolean modified) {
+		this.modified = modified;
+	}
+
 	public MatchMakerIndexBuilder(Match match, MatchMakerSwingSession swingSession) throws ArchitectException {
 		this.match = match;
 		this.swingSession = swingSession;
-		selectedColumns = new ArrayList<CustomTableColumn>();
-		dialog = new JDialog(swingSession.getFrame());
-		indexName = new JTextField(match.getSourceTableName()+"_UPK",80);
+
 		sqlTable = match.getSourceTable();
 		SQLIndex oldIndex = match.getSourceTableIndex();
+		
+		String name;
+		if (oldIndex != null && 
+				sqlTable.getIndexByName(oldIndex.getName()) == null) {
+			name = oldIndex.getName();
+		} else {
+			for( int i=0; ;i++) {
+				name = match.getSourceTableName()+"_UPK"+(i==0?"":String.valueOf(i));
+				if (sqlTable.getIndexByName(name) == null) break;
+			}
+		}
+
+		indexName = new JTextField(name,80);
 		indexColumnTableModel = new IndexColumnTableModel(sqlTable,oldIndex);
 		columntable = new JTable(indexColumnTableModel);
 		columntable.addColumnSelectionInterval(1, 1);
 
+		dialog = new JDialog(swingSession.getFrame());
 		buildUI();
 		dialog.pack();
 		dialog.setLocationRelativeTo(swingSession.getFrame());
@@ -82,11 +104,20 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		JButton save = new JButton(new AbstractAction("OK") {
 			public void actionPerformed(ActionEvent e) {
 				doSave();
+				dialog.setVisible(false);
+				dialog.dispose();
 			}
 		});
 
 		JButton exit = new JButton(new AbstractAction("Cancel") {
 			public void actionPerformed(ActionEvent e) {
+				if (hasUnsavedChanges()) {
+					int responds = JOptionPane.showConfirmDialog(
+							dialog,
+							"Do you want to save before close the index builder?");
+					if ( responds != JOptionPane.NO_OPTION)
+						return;
+				}
 				dialog.setVisible(false);
 				dialog.dispose();
 			}
@@ -109,10 +140,11 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		
 	}
 	
-	private void setDefaultSelections(Match match) {
-		
-	}
-		
+	/**
+	 * this class repersens the table row model of the pick your owner 
+	 * column for index table. which has only 3 columns. 
+	 *
+	 */
 	private class CustomTableColumn implements Comparable<CustomTableColumn> {
 		private boolean key;
 		private Integer position;
@@ -161,17 +193,16 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		}
 	}
 	
-	
 	private class IndexColumnTableModel extends AbstractTableModel {
 
-		
 		private List<CustomTableColumn> candidateColumns
 							= new ArrayList<CustomTableColumn>(); 
 		public IndexColumnTableModel(SQLTable sqlTable, SQLIndex oldIndex) throws ArchitectException {
 			
 			int pos = 0;
 			for ( SQLColumn column : sqlTable.getColumns()) {
-				SQLIndex.Column indexColumn = (Column) oldIndex.getChildByName(column.getName());
+				SQLIndex.Column indexColumn = (oldIndex==null?null: 
+					(Column) oldIndex.getChildByName(column.getName()));
 				if (indexColumn!=null) pos++;
 				candidateColumns.add(
 						new CustomTableColumn((indexColumn!=null),
@@ -215,6 +246,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+			setModified(true);
 			if ( columnIndex == 0 ) {
 				candidateColumns.get(rowIndex).setKey((Boolean) aValue);
 				if ( (Boolean) aValue ) {
@@ -260,8 +292,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
-		return selectedColumns.size() > 0 ||
-				indexName.getText().length() > 0;
+		return isModified();
 	}
 	
 	public boolean doSave() {
