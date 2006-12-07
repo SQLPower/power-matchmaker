@@ -47,9 +47,17 @@ public class DefaultNode implements Node {
 	}
 
 	public List<Node> getAdjacentNodes() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: DefaultNode.getAdjacentNodes()");
-		return null;
+		List<Node> adjacentNodes = new ArrayList<Node>();
+        for (Diedge e : edges){
+            if (e.getHeadNode() == this){
+                adjacentNodes.add(e.getTailNode());
+            } else if (e.getTailNode() == this) {
+                adjacentNodes.add(e.getHeadNode());
+            } else {
+                throw new IllegalStateException("One of the adjacent edge is not attached to the node");
+            }
+        }
+        return adjacentNodes;
 	}
 
 	public boolean isAdjacent(Node node) {
