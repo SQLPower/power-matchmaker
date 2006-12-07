@@ -20,7 +20,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ASUtils.LabelValueBean;
 import ca.sqlpower.matchmaker.Match.MatchMode;
 
@@ -40,11 +42,19 @@ public class MatchImportor {
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws IOException
+	 * @throws ArchitectException 
 	 */
-	public boolean load(Match match, InputStream in) throws ParserConfigurationException, SAXException, IOException {
+	public boolean load(Match match, InputStream in) 
+		throws ParserConfigurationException, SAXException, IOException, ArchitectException {
 
 		SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
 		parser.parse(in,new MatchExportFileHandler(match));
+		SQLTable table = match.getSourceTable();
+		SQLIndex index = match.getSourceTableIndex();
+		if (table != null && index != null) {
+			SQLIndex index2 = table.getIndexByName(index.getName());
+			if ( index2 != null ) match.setSourceTableIndex(index2);
+		}
 		return true;
 	}
 
@@ -54,6 +64,7 @@ public class MatchImportor {
 		StringBuffer buf = new StringBuffer();
 		List<LabelValueBean> properties = new ArrayList<LabelValueBean>();
 		Match match;
+		SQLIndex idx = new SQLIndex();
 
 		public MatchExportFileHandler(Match match) {
 			this.match = match;
@@ -113,11 +124,15 @@ public class MatchImportor {
 				final SAXException exception = new SAXException("Parse Error:"+e.getMessage());
 				exception.setStackTrace(e.getStackTrace());
 				throw exception;
+			} catch (ArchitectException e) {
+				final SAXException exception = new SAXException("Unexcepted SQL Object Error:"+e.getMessage());
+				exception.setStackTrace(e.getStackTrace());
+				throw exception;
 			}
 		}
 
 		private void setMatchMaketProperties(Match parentMatch,
-				MatchMakerObject mmo,List<LabelValueBean> properties) throws ParseException {
+				MatchMakerObject mmo,List<LabelValueBean> properties) throws ParseException, ArchitectException {
 			if ( mmo instanceof Match ) {
 				Match match = (Match) mmo;
 				for ( LabelValueBean bean : properties ) {
@@ -128,11 +143,14 @@ public class MatchImportor {
 					} else if ( bean.getLabel().equalsIgnoreCase("MATCH_DESC")) {
 						match.getMatchSettings().setDescription(value);
 					} else if ( bean.getLabel().equalsIgnoreCase("TABLE_OWNER")) {
-						match.setSourceTableSchema(value);
+						if ( value != null && value.length() > 0 ) {
+							match.setSourceTableSchema(value);
+						}
 					} else if ( bean.getLabel().equalsIgnoreCase("MATCH_TABLE")) {
-						match.setSourceTableName(value);
+						if ( value != null && value.length() > 0 ) {
+							match.setSourceTableName(value);
+						}
 					} else if ( bean.getLabel().equalsIgnoreCase("PK_COLUMN")) {
-						SQLIndex idx = new SQLIndex();
 						idx.setName(value);
 						match.setSourceTableIndex(idx);
 					} else if ( bean.getLabel().equalsIgnoreCase("FILTER")) {
@@ -187,9 +205,13 @@ public class MatchImportor {
 					} else if ( bean.getLabel().equalsIgnoreCase("WHERE_CLAUSE")) {
 						match.getView().setWhere(value);
 					} else if ( bean.getLabel().equalsIgnoreCase("RESULTS_TABLE")) {
-						match.setResultTableName(value);
+						if ( value != null && value.length() > 0 ) {
+							match.setResultTableName(value);
+						}
 					} else if ( bean.getLabel().equalsIgnoreCase("RESULTS_TABLE_OWNER")) {
-						match.setResultTableSchema(value);
+						if ( value != null && value.length() > 0 ) {
+							match.setResultTableSchema(value);
+						}
 					} else if ( bean.getLabel().equalsIgnoreCase("MATCH_BREAK_IND")) {
 						match.getMatchSettings().setBreakUpMatch((value).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("MATCH_TYPE")) {
@@ -205,17 +227,54 @@ public class MatchImportor {
 					} else if ( bean.getLabel().equalsIgnoreCase("MERGE_SEND_EMAIL_IND")) {
 						match.getMergeSettings().setSendEmail((value).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("XREF_OWNER")) {
-						match.setXrefTableSchema(value);
+						if ( value != null && value.length() > 0 ) {
+							match.setXrefTableSchema(value);
+						}
 					} else if ( bean.getLabel().equalsIgnoreCase("XREF_TABLE_NAME")) {
-						match.setXrefTableName(value);
+						if ( value != null && value.length() > 0 ) {
+							match.setXrefTableName(value);
+						}
 					} else if ( bean.getLabel().equalsIgnoreCase("XREF_CATALOG")) {
-						match.setXrefTableCatalog(value);
+						if ( value != null && value.length() > 0 ) {
+							match.setXrefTableCatalog(value);
+						}
 					} else if ( bean.getLabel().equalsIgnoreCase("TABLE_CATALOG")) {
-						match.setSourceTableCatalog(value);
+						if ( value != null && value.length() > 0 ) {
+							match.setSourceTableCatalog(value);
+						}
 					} else if ( bean.getLabel().equalsIgnoreCase("RESULTS_TABLE_CATALOG")) {
-						match.setResultTableCatalog(value);
+						if ( value != null && value.length() > 0 ) {
+							match.setResultTableCatalog(value);
+						}
+					} else if ( bean.getLabel().equalsIgnoreCase("INDEX_COLUMN_NAME0")) {
+						idx.addChild(idx.new Column(value,false,false));
+					} else if ( bean.getLabel().equalsIgnoreCase("INDEX_COLUMN_NAME1")) {
+						idx.addChild(idx.new Column(value,false,false));
+					} else if ( bean.getLabel().equalsIgnoreCase("INDEX_COLUMN_NAME2")) {
+						idx.addChild(idx.new Column(value,false,false));
+					} else if ( bean.getLabel().equalsIgnoreCase("INDEX_COLUMN_NAME3")) {
+						idx.addChild(idx.new Column(value,false,false));
+					} else if ( bean.getLabel().equalsIgnoreCase("INDEX_COLUMN_NAME4")) {
+						idx.addChild(idx.new Column(value,false,false));
+					} else if ( bean.getLabel().equalsIgnoreCase("INDEX_COLUMN_NAME5")) {
+						idx.addChild(idx.new Column(value,false,false));
+					} else if ( bean.getLabel().equalsIgnoreCase("INDEX_COLUMN_NAME6")) {
+						idx.addChild(idx.new Column(value,false,false));
+					} else if ( bean.getLabel().equalsIgnoreCase("INDEX_COLUMN_NAME7")) {
+						idx.addChild(idx.new Column(value,false,false));
+					} else if ( bean.getLabel().equalsIgnoreCase("INDEX_COLUMN_NAME8")) {
+						idx.addChild(idx.new Column(value,false,false));
+					} else if ( bean.getLabel().equalsIgnoreCase("INDEX_COLUMN_NAME9")) {
+						idx.addChild(idx.new Column(value,false,false));
 					}
 
+					
+					
+					/**
+					 * SQLIndex idx = new SQLIndex();
+						idx.setName(value);
+						match.setSourceTableIndex(idx);
+					 */
 				}
 			} else if ( mmo instanceof MatchMakerCriteriaGroup ) {
 				MatchMakerCriteriaGroup group = (MatchMakerCriteriaGroup) mmo;
