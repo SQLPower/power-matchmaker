@@ -124,7 +124,7 @@ public class GraphComponentEventSupport {
 		evt.setSource(source);
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
-			listeners.get(i).gcEdgeDirectionSwap(evt);
+			listeners.get(i).gcEdgeCut(evt);
 		}
 	}
 	
@@ -134,7 +134,7 @@ public class GraphComponentEventSupport {
 		evt.setEdge(edge);
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
-			listeners.get(i).gcEdgeDirectionSwap(evt);
+			listeners.get(i).gcNewEdgeAddedToNode(evt);
 		}
 	}
 }
