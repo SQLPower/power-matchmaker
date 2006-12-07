@@ -5,7 +5,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -33,13 +39,20 @@ public class MatchPool {
     /**
      * The edge list for this graph.
      */
-    private final List<PotentialMatchRecord> potentialMatches;
+    private final Set<PotentialMatchRecord> potentialMatches;
+
+    /**
+     * A map of keys to node instances for this graph.  The values() set of
+     * this map is the node set for the graph.
+     */
+    private final Map<List<Object>, SourceTableRecord> sourceTableRecords =
+        new HashMap<List<Object>, SourceTableRecord>();
     
     public MatchPool(Match match) {
-        this(match, new ArrayList<PotentialMatchRecord>());
+        this(match, new HashSet<PotentialMatchRecord>());
     }
     
-    public MatchPool(Match match, List<PotentialMatchRecord> potentialMatches) {
+    public MatchPool(Match match, Set<PotentialMatchRecord> potentialMatches) {
         this.match = match;
         this.session = match.getSession();
         this.potentialMatches = potentialMatches;
@@ -124,8 +137,8 @@ public class MatchPool {
                     lhsKeyValues.add(rs.getObject("DUP_CANDIDATE_1"+i));
                     rhsKeyValues.add(rs.getObject("DUP_CANDIDATE_2"+i));
                 }
-                SourceTableRecord lhs = new SourceTableRecord(session, match, lhsKeyValues);
-                SourceTableRecord rhs = new SourceTableRecord(session, match, rhsKeyValues);
+                SourceTableRecord lhs = makeSourceTableRecord(lhsKeyValues);
+                SourceTableRecord rhs = makeSourceTableRecord(rhsKeyValues);
                 PotentialMatchRecord pmr =
                     new PotentialMatchRecord(this, criteriaGroup, matchStatus, lhs, rhs);                
                 potentialMatches.add(pmr);
@@ -147,7 +160,38 @@ public class MatchPool {
 
     }
     
-    public List<PotentialMatchRecord> getPotentialMatches() {
+    /**
+     * Attempts to look up the existing SourceTableRecord instance in
+     * the cache, but makes a new one and puts it in the cache if not found.
+     * 
+     * @param keyValues The values for this record's unique index
+     * @return The source table record that corresponds with the given key values.
+     * The return value is never null.
+     */
+    private SourceTableRecord makeSourceTableRecord(List<Object> keyValues) {
+        SourceTableRecord node = sourceTableRecords.get(keyValues);
+        if (node == null) {
+            node = new SourceTableRecord(session, match, keyValues);
+            sourceTableRecords.put(keyValues, node);
+        }
+        return node;
+    }
+
+    /**
+     * Returns the set of PotentialMatchRecords in this match pool.  
+     * Before calling this, you should populate the pool by calling
+     * one of the findXXX() methods.
+     * <p>
+     * Potential Match records are the edges of this graph of matching records.
+     * For the nodes, see {@link #getSourceTableRecords()}.
+     * 
+     * @return The current list of potential match records.
+     */
+    public Set<PotentialMatchRecord> getPotentialMatches() {
         return potentialMatches;
+    }
+    
+    public Collection<SourceTableRecord> getSourceTableRecords() {
+        return Collections.unmodifiableCollection(sourceTableRecords.values());
     }
 }
