@@ -420,38 +420,6 @@ public class MatchEditor implements EditorPane {
         matchType.setSelectedItem(match.getType());
         filterPanel.getFilterTextArea().setText(match.getFilter());
 
-        refreshIndexComboBox(match.getSourceTableIndex(),match.getSourceTable());
-
-        // listen to the table change
-        sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
-			public void itemStateChanged(ItemEvent e) {
-				refreshIndexComboBox(null,(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
-			}});
-        
-        // listen to the sourceTableIndex changes
-        match.addMatchMakerListener(new MatchMakerListener<Match, MatchMakerFolder>(){
-
-        	// don't care
-			public void mmChildrenInserted(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
-
-			//don't care
-			public void mmChildrenRemoved(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
-
-			public void mmPropertyChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {
-				if ( evt.getPropertyName().equals("sourceTableIndex")) {
-					try {
-						refreshIndexComboBox(match.getSourceTableIndex(),(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
-					} catch (ArchitectException e) {
-						ASUtils.showExceptionDialog(getPanel(),
-								"Unexcepted error when getting unique index of match",
-								e, null);
-					}
-				}
-			}
-			//don't care
-			public void mmStructureChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
-			});
-        
         Validator v = new MatchNameValidator(swingSession);
         handler.addValidateObject(matchId,v);
 
@@ -491,13 +459,44 @@ public class MatchEditor implements EditorPane {
         	sourceChooser.getCatalogComboBox().setSelectedItem(cat);
         	sourceChooser.getSchemaComboBox().setSelectedItem(sch);
         	sourceChooser.getTableComboBox().setSelectedItem(sourceTable);
-        	SQLIndex pk = match.getSourceTableIndex();
-        	indexComboBox.setSelectedItem(pk);
     	}
         if (indexComboBox.getSelectedItem() == null) {
         	createResultTableAction.setEnabled(false);
         }
 
+        refreshIndexComboBox(match.getSourceTableIndex(),match.getSourceTable());
+
+        // listen to the table change
+        sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
+        	public void itemStateChanged(ItemEvent e) {
+        		refreshIndexComboBox(null,(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
+        	}});
+
+        // listen to the sourceTableIndex changes, 
+        // for update the index combobox selection
+        match.addMatchMakerListener(new MatchMakerListener<Match, MatchMakerFolder>(){
+
+        	// don't care
+        	public void mmChildrenInserted(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
+        	//don't care
+        	public void mmChildrenRemoved(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
+
+        	public void mmPropertyChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {
+        		if ( evt.getPropertyName().equals("sourceTableIndex")) {
+        			try {
+        				refreshIndexComboBox(match.getSourceTableIndex(),(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
+        			} catch (ArchitectException e) {
+        				ASUtils.showExceptionDialog(getPanel(),
+        						"Unexcepted error when getting unique index of match",
+        						e, null);
+        			}
+        		}
+        	}
+        	//don't care
+        	public void mmStructureChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
+        });
+
+                
     	SQLTable resultTable = match.getResultTable();
     	if ( resultTable != null ) {
     		SQLCatalog cat = resultTable.getCatalog();
@@ -532,21 +531,26 @@ public class MatchEditor implements EditorPane {
 		try {
 			indexComboBox.removeAllItems();
 	        if ( newTable != null ) {
+	        	boolean contains = false;
 	        	for ( SQLIndex index : newTable.getUniqueIndex() ) {
 	        		indexComboBox.addItem(index);
+	        		if ( newIndex != null && index.getName().equalsIgnoreCase(newIndex.getName())) {
+	        			contains = true;
+	        		}
 	        	}
-	        	if ( !newTable.getUniqueIndex().contains(newIndex) &&
-	        			newIndex != null ) {
+	        	if ( !contains && newIndex != null ) {
 	        		indexComboBox.addItem(newIndex);
+	        		indexComboBox.setSelectedItem(newIndex);
+	        	} else if ( indexComboBox.getItemCount() > 0 ) {
+	        		indexComboBox.setSelectedIndex(0);
 	        	}
 	        } else if ( newIndex!= null ){
 	        	indexComboBox.addItem(newIndex);
+	        	indexComboBox.setSelectedItem(newIndex);
 	        }
-	        indexComboBox.setSelectedItem(newIndex);
 		} catch (ArchitectException e1) {
 			ASUtils.showExceptionDialog(getPanel(),
-					"Unexcepted error when getting index list",
-					e1, null);
+					"Unexcepted error when getting index list",e1,null);
 		}
 		
 		
@@ -684,8 +688,10 @@ public class MatchEditor implements EditorPane {
         }
 
         swingSession.save(match);
-
         handler.setValidated(false);
+        
+        // bring back some buttons like create index...
+        refreshActionStatus();
 		return true;
 
     }
@@ -695,6 +701,7 @@ public class MatchEditor implements EditorPane {
     	saveAction.setEnabled(true);
 		newMatchGroupAction.setEnabled(true);
 		runMatchAction.setEnabled(true);
+		
     	if ( worst.getStatus() == Status.FAIL ) {
     		saveAction.setEnabled(false);
     		newMatchGroupAction.setEnabled(false);
@@ -704,6 +711,14 @@ public class MatchEditor implements EditorPane {
     	}
     	if (sourceChooser.getTableComboBox().getSelectedItem() == null){
     		newMatchGroupAction.setEnabled(false);
+    		createIndexAction.setEnabled(false);
+    	} else {
+    		if (sourceChooser.getTableComboBox().getSelectedItem() !=
+        		match.getSourceTable() ) {
+        		createIndexAction.setEnabled(false);
+        	} else {
+        		createIndexAction.setEnabled(true);
+        	}
     	}
 
     	ValidateResult r1 = handler.getResultOf(indexComboBox);
