@@ -25,6 +25,11 @@ public class MatchMakerTranslateGroupDAOSQLServerTest extends AbstractMatchMaker
 	public MatchMakerTranslateGroupDAO getDataAccessObject() throws Exception {
 		return new MatchMakerTranslateGroupDAOHibernate(getSession());
 	}
+	
+	@Override
+	public void resetSession() throws Exception {
+		((TestingMatchMakerHibernateSession) getSession()).resetSession();
+	}
 
     @Override
     public MatchMakerHibernateSession getSession() throws Exception {

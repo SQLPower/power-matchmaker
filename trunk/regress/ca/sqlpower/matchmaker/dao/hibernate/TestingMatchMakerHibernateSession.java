@@ -32,6 +32,8 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     private SQLDatabase db;
     private List<String> warnings = new ArrayList<String>();
     private TranslateGroupParent tgp = new TranslateGroupParent(this);
+
+	private Session hSession;
     
     /**
      * Creates a new session that is really connected to a datasource.  
@@ -49,6 +51,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        resetSession();
     }
     
     /**
@@ -62,9 +65,12 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     }
 
     public Session openSession() {
-        return hibernateSessionFactory.openSession(getConnection());
+        return hSession;
     }
 
+    public void resetSession() {
+    	hSession = hibernateSessionFactory.openSession(getConnection());
+    }
     /**
      * Enables or disables the connection associated with this session.  This is useful for
      * testing that Hibernate is correctly configured to eagerly fetch the data we expect it to.

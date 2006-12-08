@@ -90,6 +90,11 @@ public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
         }
         return time;
     }
+
+	@Override
+	public void resetSession() throws Exception {
+		((TestingMatchMakerHibernateSession) getSession()).resetSession();
+	}
     
     
 }

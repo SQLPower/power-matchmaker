@@ -162,6 +162,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
 	private List<PlFolder> folders;
 
+	private Session hSession;
+
     /**
      * XXX this is untestable unless you're connected to a database right now.
      *   It should be given a PLSecurityManager implementation rather than creating one.
@@ -194,6 +196,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		sessionStartTime = new Date();
 		this.hibernateSessionFactory = buildHibernateSessionFactory(ds);
 
+		hSession = hibernateSessionFactory.openSession();
         folderDAO = new PlFolderDAOHibernate(this);
         matchDAO = new MatchDAOHibernate(this);
         matchMakerCriteriaGroupDAO = new MatchMakerCriteriaGroupDAOHibernate(this);
@@ -287,7 +290,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * to get its database connection using our &uuml;ber-cool connection provider.
      */
     public Session openSession() {
-        return hibernateSessionFactory.openSession();
+        return hSession;
     }
 
 

@@ -10,6 +10,7 @@ public class DefaultDigraphTest extends TestCase {
 	}
 	
 	public void testRemoveNodeCascades() {
+		fail("Taking a long long time");
 		Node n1 = new DefaultNode("N1",new DefaultEdgeFactory());
 		Node n2 = new DefaultNode("N2",new DefaultEdgeFactory());
 		defaultDigraph.addNode(n1);

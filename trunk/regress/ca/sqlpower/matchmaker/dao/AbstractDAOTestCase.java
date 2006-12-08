@@ -56,6 +56,11 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
     public abstract MatchMakerSession getSession() throws Exception;
 
     /**
+     * Notify the session that the new session has started
+     * @throws Exception
+     */
+    public abstract void resetSession() throws Exception;
+    /**
      * gets a list of strings that this object dosn't persist
      */
     public List<String> getNonPersitingProperties(){
@@ -100,6 +105,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        resetSession();
 	}
 
 
@@ -136,13 +142,15 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		assertEquals("There are still some objects of type "+item1.getClass()+" left",0,dao.findAll().size());
 	}
 
-	public void testSaveAndLoadInOneSession() throws Exception {
+	public void testSaveAndLoadInTwoSessions() throws Exception {
 		D dao = getDataAccessObject();
 		List<T> all;
 		T item1 = createNewObjectUnderTest();
 		dao.save(item1);
+		resetSession();
+		dao = getDataAccessObject();
 		all = dao.findAll();
-        assertEquals("We only persisted one item", 1, all.size());
+        assertTrue("We want at least one item", 1 <= all.size());
 		T savedItem1 = all.get(0);
 
         assertHierarchyHasSession(getSession(), savedItem1);

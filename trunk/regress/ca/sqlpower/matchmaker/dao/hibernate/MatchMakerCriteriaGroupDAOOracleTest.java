@@ -15,6 +15,10 @@ public class MatchMakerCriteriaGroupDAOOracleTest extends AbstractMatchMakerCrit
         super.setUp();
         criteriaGroup = createNewObjectUnderTest();
     }
+    @Override
+	public void resetSession() throws Exception {
+		((TestingMatchMakerHibernateSession) getSession()).resetSession();
+	}
     
 	@Override
 	public MatchCriteriaGroupDAO getDataAccessObject() throws Exception {

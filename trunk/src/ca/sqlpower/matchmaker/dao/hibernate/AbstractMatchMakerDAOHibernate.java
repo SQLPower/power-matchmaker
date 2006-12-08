@@ -46,7 +46,6 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 			t.rollback();
 			throw re;
 		} finally {
-			s.close();
 		}
 	}
 
@@ -61,7 +60,6 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 		} catch (RuntimeException re) {
 			throw re;
 		} finally {
-			s.close();
 		}
 	}
 
@@ -76,7 +74,6 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 			t.rollback();
 			throw re;
 		} finally {
-			s.close();
 		}
 	}
 

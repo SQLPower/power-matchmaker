@@ -78,7 +78,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		table.addIndex(idx);
 		
 		getDataAccessObject().save(m);
-		
+		resetSession();
         Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;
