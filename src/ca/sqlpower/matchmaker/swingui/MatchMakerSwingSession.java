@@ -872,7 +872,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		MatchMakerObject oldParent = objectToMove.getParent();
 		if (oldParent != null) {
 			oldParent.removeChild(objectToMove);
-			save(oldParent);
 		}
 		destination.addChild(objectToMove);
 		save(destination);

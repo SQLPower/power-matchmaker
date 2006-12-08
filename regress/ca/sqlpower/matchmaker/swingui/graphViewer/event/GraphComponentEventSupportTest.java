@@ -171,7 +171,6 @@ public class GraphComponentEventSupportTest extends TestCase {
 	}
 	
 	public void testEdgeDirectionSwapEvent(){
-		Diedge diedge = new DefaultEdge(new DefaultNode("n1",new DefaultEdgeFactory()),new DefaultNode("n1",new DefaultEdgeFactory()));
 		eventSupport.fireEdgeDirectionSwap();
 		assertEquals("Wrong number of events fired",1,l.getAllEvents());
 		assertEquals("Wrong type of events fired should have been direction swap",1,l.getEdgeDirectionSwap());
@@ -186,7 +185,6 @@ public class GraphComponentEventSupportTest extends TestCase {
 	}
 
 	public void testPropertyChangeEvent(){
-		Diedge diedge = new DefaultEdge(new DefaultNode("n1",new DefaultEdgeFactory()),new DefaultNode("n1",new DefaultEdgeFactory()));
 		eventSupport.firePropertyChange("name", "2", "1");
 		assertEquals("Wrong number of events fired",1,l.getAllEvents());
 		assertEquals("Wrong type of events fired",1,l.getPropertyChange());

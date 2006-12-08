@@ -21,6 +21,11 @@ public class MatchDAOSQLServerTest extends AbstractPlMatchDAOTestCase {
     public MatchMakerHibernateSession getSession() throws Exception {
         return HibernateTestUtil.getSqlServerHibernateSession();
     }
+    
+    @Override
+	public void resetSession() throws Exception {
+		((TestingMatchMakerHibernateSession) getSession()).resetSession();
+	}
 
     @Override
     protected long insertSampleMatchCriteriaData(long parentGroupOid, String lastUpdateUser) throws Exception {

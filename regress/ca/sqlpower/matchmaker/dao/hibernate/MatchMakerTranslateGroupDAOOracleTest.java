@@ -25,4 +25,9 @@ public class MatchMakerTranslateGroupDAOOracleTest extends AbstractMatchMakerTra
     public MatchMakerHibernateSession getSession() throws Exception {
         return HibernateTestUtil.getOracleHibernateSession();
     }
+    
+    @Override
+	public void resetSession() throws Exception {
+		((TestingMatchMakerHibernateSession) getSession()).resetSession();
+	}
 }

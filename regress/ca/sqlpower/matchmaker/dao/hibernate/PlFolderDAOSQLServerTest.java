@@ -16,4 +16,9 @@ public class PlFolderDAOSQLServerTest extends AbstractPlFolderDAOTestCase {
     public MatchMakerHibernateSession getSession() throws Exception {
         return HibernateTestUtil.getSqlServerHibernateSession();
     }
+    
+    @Override
+	public void resetSession() throws Exception {
+		((TestingMatchMakerHibernateSession) getSession()).resetSession();
+	}
 }
