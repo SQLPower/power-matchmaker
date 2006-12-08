@@ -534,6 +534,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 	private String lastMessage;
 
+	private NoEditEditorPane splashScreen;
+
     /**
 	 * Shows the given component in the main part of the frame's UI.
 	 *
@@ -543,10 +545,13 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	 */
 	public void setCurrentEditorComponent(EditorPane pane) {
 
-		if (pane == oldPane) {
+		if (pane == oldPane && pane != null) {
 			return;	// User clicked on same item, don't hassle them
 		}
 
+		if (splashScreen == null){
+			splashScreen = new NoEditEditorPane(new MatchMakerSplashScreen(this).getSplashScreen());
+		}
 		boolean save = false, doit = true;
 
 		if (oldPane != null && oldPane.hasUnsavedChanges()) {
@@ -581,24 +586,25 @@ public class MatchMakerSwingSession implements MatchMakerSession {
                 tree.setSelectionPath(lastTreePath);
 				break;
 			}
-		}
-
-		if (save) {
-			 if (oldPane != null) {
-				 doit = oldPane.doSave();
-                 if (!doit){
-                     tree.setSelectionPath(lastTreePath);
-                 }
-			 }
-		}
+			if (save) {
+				if (oldPane != null) {
+					doit = oldPane.doSave();
+					if (!doit){
+						tree.setSelectionPath(lastTreePath);
+					}
+				}
+			}
+		} 
 		if (doit) {
-            //Remebers the treepath to the last node that it clicked on
-            if (pane != null){
-                lastTreePath = tree.getSelectionPath();
-            }
-			 splitPane.setRightComponent(pane == null ? null : pane.getPanel());
-			 // XXX Don't set this if we didn't change the pane!
-			 oldPane = pane;
+			//Remebers the treepath to the last node that it clicked on
+			if (pane != null){
+				lastTreePath = tree.getSelectionPath();
+				splitPane.setRightComponent(pane.getPanel());
+				oldPane = pane;
+			} else {
+				splitPane.setRightComponent(splashScreen.getPanel());
+				oldPane = splashScreen;
+			}
 		}
 	}
 
