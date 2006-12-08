@@ -109,7 +109,7 @@ public class MatchEditor implements EditorPane {
 	 * @throws HeadlessException
 	 * @throws ArchitectException
 	 */
-    public MatchEditor(MatchMakerSwingSession swingSession, Match match,
+    public MatchEditor(final MatchMakerSwingSession swingSession, Match match,
     		PlFolder<Match> folder) throws HeadlessException, ArchitectException {
     	super();
         this.swingSession = swingSession;
@@ -128,6 +128,46 @@ public class MatchEditor implements EditorPane {
 			}
         });
         handler.setValidated(false); // avoid false hits when newly created
+        
+
+        /**
+         * listen to the parent of the match, to handle the match removal
+         * from the tree. if this currently editting match was deleted 
+         * from the tree, we want to close this panel without saving.
+         */
+        if ( match.getParent() != null ) {
+        	final Match match2 = match;
+        	final PlFolder<Match> parentFolder = (PlFolder<Match>) match.getParent();
+        	final JPanel panel = getPanel();
+        	final MatchMakerListener<PlFolder, Match> matchRemovalListener = new MatchMakerListener<PlFolder, Match>(){
+
+        		// we don't care
+        		public void mmChildrenInserted(MatchMakerEvent<PlFolder, Match> evt) {}
+
+        		public void mmChildrenRemoved(MatchMakerEvent<PlFolder, Match> evt) {
+        			if (!panel.isVisible() || !panel.isDisplayable()) {
+        				return;
+        			}
+        			final List<Match> matches = evt.getChildren();
+        			boolean found = false;
+        			for ( Match m : matches ) {
+        				if ( m == match2 ) found = true;
+        			}
+        			if ( found ) {
+        				logger.debug("This match is deleted from somewhere");
+        				logger.debug("we have to close the editor without saving");
+        				panel.setVisible(false);
+        				swingSession.setCurrentEditorComponent(null);
+        				parentFolder.removeMatchMakerListener(this);
+        			}
+        		}
+        		// we don't care
+        		public void mmPropertyChanged(MatchMakerEvent<PlFolder, Match> evt) {}
+        		// we don't care
+        		public void mmStructureChanged(MatchMakerEvent<PlFolder, Match> evt) {}
+        	};
+        	parentFolder.addMatchMakerListener(matchRemovalListener);
+        }
     }
 
     /**
