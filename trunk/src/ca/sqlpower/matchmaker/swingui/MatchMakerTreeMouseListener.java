@@ -3,6 +3,7 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
@@ -56,34 +57,40 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
             TreePath tp = t.getPathForRow(row);
             if (tp != null) {
                 Object o = tp.getLastPathComponent();
-                if (o instanceof PlFolder ) {
-                	FolderEditor editor = new FolderEditor(swingSession,(PlFolder)o);
-                	swingSession.setCurrentEditorComponent(editor);
-                } else if (o instanceof Match) {
+                try {
+					if (o instanceof PlFolder) {
+						FolderEditor editor = new FolderEditor(swingSession,
+								(PlFolder) o);
+						swingSession.setCurrentEditorComponent(editor);
+					} else if (o instanceof Match) {
 
-                    MatchEditor me;
-                    try {
-                        me = new MatchEditor(swingSession,(Match) o,
-                        		(PlFolder<Match>)((Match) o).getParent());
-                    } catch (ArchitectException e1) {
-                        throw new ArchitectRuntimeException(e1);
-                    }
+						MatchEditor me;
+						try {
+							me = new MatchEditor(swingSession, (Match) o,
+									(PlFolder<Match>) ((Match) o).getParent());
+						} catch (ArchitectException e1) {
+							throw new ArchitectRuntimeException(e1);
+						}
 
-                    swingSession.setCurrentEditorComponent(me);
+						swingSession.setCurrentEditorComponent(me);
 
-                } else if (o instanceof MatchMakerCriteriaGroup ) {
-                	Match m = ((MatchMakerCriteriaGroup)o).getParentMatch();
-                    try {
-                        MatchMakerCriteriaGroupEditor editor =
-                        	new MatchMakerCriteriaGroupEditor(
-                        			swingSession,
-                        			m, (MatchMakerCriteriaGroup) o);
-                        logger.debug("Created new match group editor "+System.identityHashCode(editor));
-                        swingSession.setCurrentEditorComponent(editor);
-                    } catch (ArchitectException e1) {
-                        throw new ArchitectRuntimeException(e1);
-                    }
-                }
+					} else if (o instanceof MatchMakerCriteriaGroup) {
+						Match m = ((MatchMakerCriteriaGroup) o)
+								.getParentMatch();
+						try {
+							MatchMakerCriteriaGroupEditor editor = new MatchMakerCriteriaGroupEditor(
+									swingSession, m,
+									(MatchMakerCriteriaGroup) o);
+							logger.debug("Created new match group editor "
+									+ System.identityHashCode(editor));
+							swingSession.setCurrentEditorComponent(editor);
+						} catch (ArchitectException e1) {
+							throw new ArchitectRuntimeException(e1);
+						}
+					}
+                }catch (SQLException e1) {
+					throw new RuntimeException(e1);
+				}
             }
         }
 
@@ -149,7 +156,11 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
             public void actionPerformed(ActionEvent e) {
             	PlFolder<Match> folder = new PlFolder<Match>();
             	FolderEditor editor = new FolderEditor(swingSession,folder);
-            	swingSession.setCurrentEditorComponent(editor);
+            	try {
+					swingSession.setCurrentEditorComponent(editor);
+				} catch (SQLException e1) {
+					throw new RuntimeException(e1);
+				}
             }
         }));
     }

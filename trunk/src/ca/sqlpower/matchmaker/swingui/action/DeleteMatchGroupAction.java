@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
@@ -26,6 +27,10 @@ public class DeleteMatchGroupAction extends AbstractAction {
 		if (responds != JOptionPane.YES_OPTION)
 			return;
 		swingSession.delete(matchGroup);
-		swingSession.setCurrentEditorComponent(null);
+		try {
+			swingSession.setCurrentEditorComponent(null);
+		} catch (SQLException e1) {
+			throw new RuntimeException(e1);
+		}
 	}
 }

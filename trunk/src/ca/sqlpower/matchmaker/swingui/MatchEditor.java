@@ -157,7 +157,11 @@ public class MatchEditor implements EditorPane {
         				logger.debug("This match is deleted from somewhere");
         				logger.debug("we have to close the editor without saving");
         				panel.setVisible(false);
-        				swingSession.setCurrentEditorComponent(null);
+        				try {
+							swingSession.setCurrentEditorComponent(null);
+						} catch (SQLException e) {
+							throw new RuntimeException(e);
+						}
         				parentFolder.removeMatchMakerListener(this);
         			}
         		}
@@ -203,7 +207,11 @@ public class MatchEditor implements EditorPane {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
 						"Populate Error", "Error", JOptionPane.ERROR_MESSAGE);
 			}
-			swingSession.setCurrentEditorComponent(editor);
+			try {
+				swingSession.setCurrentEditorComponent(editor);
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	};
 
