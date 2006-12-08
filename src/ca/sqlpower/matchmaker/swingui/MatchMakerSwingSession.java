@@ -418,7 +418,11 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         tree.setShowsRootHandles(true);
 
 		splitPane.setLeftComponent(new JScrollPane(tree));
-        setCurrentEditorComponent(null);
+        try {
+			setCurrentEditorComponent(null);
+		} catch (SQLException e1) {
+			throw new RuntimeException(e1);
+		}
 		cp.add(splitPane);
 
 		frame.setBounds(sessionContext.getFrameBounds());
@@ -492,8 +496,11 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			} catch (ArchitectException e1) {
 				throw new ArchitectRuntimeException(e1);
 			}
-
-			setCurrentEditorComponent(me);
+			try {
+				setCurrentEditorComponent(me);
+			} catch (SQLException ex) {
+				throw new RuntimeException(ex);
+			}
 		}
 	}
 
@@ -542,8 +549,9 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	 * @param editor
 	 *            The editor component to display in the UI. If you pass in
 	 *            null, then no editor will be showing.
+     * @throws SQLException 
 	 */
-	public void setCurrentEditorComponent(EditorPane pane) {
+	public void setCurrentEditorComponent(EditorPane pane) throws SQLException {
 
 		if (pane == oldPane && pane != null) {
 			return;	// User clicked on same item, don't hassle them

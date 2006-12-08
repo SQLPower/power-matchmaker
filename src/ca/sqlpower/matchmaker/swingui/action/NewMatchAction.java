@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
@@ -48,9 +49,11 @@ public final class NewMatchAction extends AbstractAction {
 			}
 
 			me = new MatchEditor(swingSession,match,folder);
+			swingSession.setCurrentEditorComponent(me);
 		} catch (ArchitectException e1) {
 			throw new ArchitectRuntimeException(e1);
+		} catch (SQLException e2) {
+			throw new RuntimeException(e2);
 		}
-		swingSession.setCurrentEditorComponent(me);
 	}
 }
