@@ -34,6 +34,7 @@ public class MatchMakerSplashScreen {
 		JLabel databaseInfo = new JLabel(session.getDatabase().getName());
 		JLabel dbUserLabel = new JLabel("Database Username:");
 		JLabel dbUserInfo = new JLabel(session.getDBUser());
+		JLabel sqlpower = new JLabel("<html><div align='center'>SQL Power Group Inc.<br>http://www.sqlpower.ca</div></html>");
 		
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:pref:grow, 4dlu ");
@@ -63,7 +64,15 @@ public class MatchMakerSplashScreen {
 		pb.appendRow(new RowSpec("pref"));
 		rowCount++;
 		pb.add(dbUserLabel,c.xy(2, rowCount),dbUserInfo,c2.xy(4, rowCount));
+		pb.appendRow(new RowSpec("4dlu"));
+		rowCount++;
+		pb.appendRow(new RowSpec("pref:grow"));
+		rowCount++;
+		pb.add(sqlpower, c.xyw(2, rowCount, 3));
+		sqlpower.setHorizontalAlignment(JLabel.CENTER);
+		sqlpower.setVerticalAlignment(JLabel.BOTTOM);
 		splashScreen = pb.getPanel();
+		
 	}
 
 	public JPanel getSplashScreen() {
