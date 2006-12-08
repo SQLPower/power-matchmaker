@@ -79,7 +79,11 @@ public class PlFolder<C extends MatchMakerObject>
 
 
 	public int hashCode() {
-		return getName().hashCode();
+		if (getName() == null){ 
+			return 0;
+		} else {
+			return getName().hashCode();
+		}
 	}
 
 
