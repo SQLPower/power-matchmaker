@@ -530,6 +530,10 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 	EditorPane oldPane;
 
+	private int lastMessageCount;
+
+	private String lastMessage;
+
     /**
 	 * Shows the given component in the main part of the frame's UI.
 	 *
@@ -701,22 +705,31 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      * as well as telling all the warning listeners about the warning.
      */
     public void handleWarning(String message) {
-        logger.debug("Handling warning: "+message);
-        warningTextArea.append(message+"\n");
-        if (!warningDialog.isVisible()) {
-            warningDialog.pack();
-            warningDialog.setVisible(true);
-        }
-        warningDialog.requestFocus();
+    	if (message.equals(lastMessage)) {
+    		lastMessageCount++;
+    	} else {
+    		if ( lastMessageCount > 0) {
+    			warningTextArea.append("Last message repeated " +lastMessageCount + (lastMessageCount == 1? " time.\n" :" times.\n"));
+    			lastMessageCount = 0;
+    		}
+    		lastMessage = message;
+    		logger.debug("Handling warning: " + message);
+			warningTextArea.append(message + "\n");
+			if (!warningDialog.isVisible()) {
+				warningDialog.pack();
+				warningDialog.setVisible(true);
+			}
+			warningDialog.requestFocus();
 
-//        for (int i = 0; i < Integer.MAX_VALUE; i++) {
-//            Toolkit.getDefaultToolkit().beep();
-//        }
-        synchronized (warningListeners) {
-            for (int i = warningListeners.size()-1; i >= 0; i--) {
-                warningListeners.get(i).handleWarning(message);
-            }
-        }
+			// for (int i = 0; i < Integer.MAX_VALUE; i++) {
+			// Toolkit.getDefaultToolkit().beep();
+			// }
+			synchronized (warningListeners) {
+				for (int i = warningListeners.size() - 1; i >= 0; i--) {
+					warningListeners.get(i).handleWarning(message);
+				}
+			}
+    	}
     }
 
     public void addWarningListener(WarningListener l) {
