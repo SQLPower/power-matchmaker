@@ -28,7 +28,6 @@ public class DeleteMatchAction extends AbstractAction {
 		if ( responds != JOptionPane.YES_OPTION )
 			return;
 		swingSession.delete(match);
-		swingSession.setCurrentEditorComponent(null);
 	}
 	
 }
