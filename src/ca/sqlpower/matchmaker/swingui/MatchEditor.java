@@ -363,7 +363,7 @@ public class MatchEditor implements EditorPane {
         
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,30dlu,4dlu,pref,   4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,  4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,40dlu,4dlu,pref,   4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,  4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
 
 		PanelBuilder pb;
 
@@ -379,6 +379,8 @@ public class MatchEditor implements EditorPane {
 		pb.add(new JLabel("Folder:"), cc.xy(2,row,"r,c"));
 		pb.add(folderComboBox, cc.xy(4,row));
 		row += 2;
+        desc.setWrapStyleWord(true);
+        desc.setLineWrap(true);    
 		pb.add(new JLabel("Description:"), cc.xy(2,row,"r,t"));
 		pb.add(new JScrollPane(desc), cc.xy(4,row,"f,f"));
 		row += 2;
