@@ -113,7 +113,7 @@ public class RunMatchDialog extends JDialog {
 
 	private Match match;
 	
-	private JProgressBar progressBar;
+	
 
 	StatusComponent status = new StatusComponent();
 
@@ -172,7 +172,7 @@ public class RunMatchDialog extends JDialog {
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:min(70dlu;pref),4dlu,fill:200dlu:grow, pref,20dlu,pref,10dlu,pref,4dlu",
 				// 1 2 3 4 5 6 7 8 9 10
-				"10dlu,pref,10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,30dlu,pref,4dlu,pref,4dlu,pref,4dlu");
+				"10dlu,pref,10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,30dlu,pref,4dlu,pref,4dlu");
 		// 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
@@ -198,8 +198,6 @@ public class RunMatchDialog extends JDialog {
 		showCommand = new JButton(new ShowCommandAction(match,
 				RunMatchDialog.this));
 
-		progressBar = new JProgressBar();
-		progressBar.setVisible(false);
 		// might need more buttons here... (check VB app)
 
 		save = new JButton(new AbstractAction("Save") {
@@ -239,7 +237,6 @@ public class RunMatchDialog extends JDialog {
 		pb.add(new JLabel("Min Word Count Freq:"), cc.xy(2, 10, "r,c"));
 		pb.add(minWord, cc.xy(4, 10, "l,c"));
 
-		pb.add(progressBar, cc.xyw(2, 12,8));
 		FormLayout bbLayout = new FormLayout(
 				"4dlu,pref,10dlu:grow,pref,10dlu:grow,pref,4dlu",
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
@@ -254,7 +251,7 @@ public class RunMatchDialog extends JDialog {
 		bbpb.add(save, cc.xy(4, 4, "f,f"));
 		bbpb.add(exit, cc.xy(6, 4, "f,f"));
 
-		pb.add(bbpb.getPanel(), cc.xyw(2, 14, 8));
+		pb.add(bbpb.getPanel(), cc.xyw(2, 12, 8));
 
 		getContentPane().add(pb.getPanel());
 	}
@@ -399,6 +396,7 @@ public class RunMatchDialog extends JDialog {
 		private DefaultStyledDocument engineOutputDoc;
 
 		private ProgressWatcher watcher;
+		private JProgressBar progressBar;
 
 		public RunEngineAction(MatchMakerSession session, Match match,
 				JDialog parent) {
@@ -409,6 +407,7 @@ public class RunMatchDialog extends JDialog {
 			StyleConstants.setForeground(stdoutAtt, Color.black);
 			StyleConstants.setFontFamily(stdoutAtt, "Courier New");
 			StyleConstants.setForeground(stderrAtt, Color.red);
+			progressBar = new JProgressBar();
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -429,7 +428,7 @@ public class RunMatchDialog extends JDialog {
 			d.setTitle("MatchMaker engine output:");
 
 			FormLayout layout = new FormLayout("4dlu,fill:pref:grow,4dlu", // columns
-					"4dlu,fill:pref:grow,4dlu,16dlu,4dlu"); // rows
+					"4dlu,fill:pref:grow,4dlu,pref,4dlu,pref,4dlu"); // rows
 			// 1 2 3 4 5
 
 			PanelBuilder pb;
@@ -459,6 +458,7 @@ public class RunMatchDialog extends JDialog {
 			scrollPane.setAutoscrolls(true);
 			scrollPane.setWheelScrollingEnabled(true);
 			pb.add(scrollPane, cc.xy(2, 2, "f,f"));
+			pb.add(progressBar,cc.xy(2,4,"f,f"));
 
 			ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
 
@@ -515,7 +515,7 @@ public class RunMatchDialog extends JDialog {
 			cancelButton.setText("Close");
 			bbBuilder.addGridded(cancelButton);
 
-			pb.add(bbBuilder.getPanel(), cc.xy(2, 4));
+			pb.add(bbBuilder.getPanel(), cc.xy(2, 6));
 			d.add(pb.getPanel());
 			// don't display dialog until the process started
 
