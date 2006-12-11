@@ -24,9 +24,9 @@ public class MatchMakerSplashScreen {
 		this.session = session;
 		buildUI();
 	}
-	
+
 	private void buildUI() throws SQLException{
-		
+
 		JLabel logo = new JLabel(new ImageIcon(getClass().getResource("/icons/matchmaker_huge.png")));
 		JLabel welcome  = new JLabel("<html>" + "Power*MatchMaker" + "</html>");
 		Font f = welcome.getFont();
@@ -34,14 +34,13 @@ public class MatchMakerSplashScreen {
 		welcome.setFont(newf);
 		final Connection con = session.getConnection();
 		final DatabaseMetaData dbmd = con.getMetaData();
-		
+
 		JLabel databaseLabel = new JLabel("Database:");
 		databaseLabel.setVerticalAlignment(JLabel.TOP);
 		JLabel databaseInfo = new JLabel("<html>" + session.getDatabase().getName()+"</html>");
 		JLabel dbUserLabel = new JLabel("Database Username:");
 		dbUserLabel.setVerticalAlignment(JLabel.TOP);
 		JLabel dbUserInfo = new JLabel("<html>" +session.getDBUser()+"</html>");
-		JLabel sqlpower = new JLabel("<html><div align='center'>SQL Power Group Inc.<br>http://www.sqlpower.ca</div></html>");
 		JLabel dbProdNameLabel = new JLabel("Database product name: ");
 		dbProdNameLabel.setVerticalAlignment(JLabel.TOP);
 		JLabel dbProdNameInfo = new JLabel("<html>" +dbmd.getDatabaseProductName()+"</html>");
@@ -56,7 +55,10 @@ public class MatchMakerSplashScreen {
 		JLabel dbDriverVersionInfo = new JLabel("<html>" +dbmd.getDriverVersion()+"</html>");
         JLabel plSchemaVersionLabel = new JLabel("Power*Loader Schema Version: ");
         JLabel plSchemaVersionInfo = new JLabel("<html>" +session.getPLSchemaVersion()+"</html>");
-		FormLayout layout = new FormLayout(
+        JLabel sqlpower =
+			new JLabel("<html><div align='center'>SQL Power Group Inc.<br>http://www.sqlpower.ca/</div></html>");
+
+        FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:100:grow, 4dlu ");
 		int rowCount =0;
 		PanelBuilder pb = new PanelBuilder(layout);
@@ -96,32 +98,32 @@ public class MatchMakerSplashScreen {
 		pb.add(dbProdVersionLabel,c.xy(2, rowCount),dbProdVersionInfo,c2.xy(4, rowCount));
 		pb.appendRow(new RowSpec("4dlu"));
 		rowCount++;
-        
+
 		pb.appendRow(new RowSpec("fill:pref"));
 		rowCount++;
 		pb.add(dbDriverNameLabel,c.xy(2, rowCount),dbDriverNameInfo,c2.xy(4, rowCount));
         pb.appendRow(new RowSpec("4dlu"));
 		rowCount++;
-        
+
 		pb.appendRow(new RowSpec("fill:pref"));
 		rowCount++;
  		pb.add(dbDriverVersionLabel,c.xy(2, rowCount),dbDriverVersionInfo,c2.xy(4, rowCount));
 		pb.appendRow(new RowSpec("4dlu"));
 		rowCount++;
-        
+
         pb.appendRow(new RowSpec("fill:pref"));
         rowCount++;
         pb.add(plSchemaVersionLabel,c.xy(2, rowCount), plSchemaVersionInfo,c2.xy(4, rowCount));
         pb.appendRow(new RowSpec("4dlu"));
         rowCount++;
-        
+
 		pb.appendRow(new RowSpec("pref:grow"));
 		rowCount++;
 		pb.add(sqlpower, c.xyw(2, rowCount, 3));
 		sqlpower.setHorizontalAlignment(JLabel.CENTER);
 		sqlpower.setVerticalAlignment(JLabel.BOTTOM);
 		splashScreen = pb.getPanel();
-		
+
 	}
 
 	public JPanel getSplashScreen() {
