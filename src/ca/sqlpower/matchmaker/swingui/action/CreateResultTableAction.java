@@ -175,6 +175,12 @@ public final class CreateResultTableAction extends AbstractAction {
 							"Successfully executed " + successCount + " of " +
 							sqlTextFields.size() + " SQL Statements." +
 							(successCount == 0 ? "\n\nBetter Luck Next Time." : ""));
+					
+                    //closes the dialog if all the statement is executed successfully
+                    //if not, the dialog remains on the screen
+                    if (successCount == sqlTextFields.size()){
+					    editor.dispose();
+                    }
 				} catch (SQLException ex) {
 					JOptionPane.showMessageDialog(editor,
 							"Create Script Failure",
