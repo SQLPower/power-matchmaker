@@ -705,6 +705,12 @@ public class MatchEditor implements EditorPane {
         	resultTableName.setText(trimmedResultTableName);
         }
 
+        if(resultChooser.getCatalogComboBox().getSelectedItem() != null) {
+        	match.setResultTableCatalog( ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName());
+        }
+        if(resultChooser.getSchemaComboBox().getSelectedItem() != null) {
+        	match.setResultTableSchema( ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName());
+        }
         try {
         	match.setResultTable(new SQLTable(resultTableParent,
         			trimmedResultTableName,
@@ -773,8 +779,10 @@ public class MatchEditor implements EditorPane {
 
     	ValidateResult r1 = handler.getResultOf(indexComboBox);
     	ValidateResult r2 = handler.getResultOf(resultTableName);
+    	ValidateResult r3 = handler.getResultOf(sourceChooser.getTableComboBox());
     	if ( r1 == null || r1.getStatus() != Status.OK ||
-    			r2 == null || r2.getStatus() != Status.OK ) {
+    			r2 == null || r2.getStatus() != Status.OK ||
+    			r3 == null || r3.getStatus() != Status.OK ) {
     		createResultTableAction.setEnabled(false);
     	} else {
     		createResultTableAction.setEnabled(true);
@@ -819,13 +827,37 @@ public class MatchEditor implements EditorPane {
                 enableAction(false);
 				return ValidateResult.createValidateResult(Status.WARN,
 						"Match source table is required");
-			} else {
+			}
+			else {
 				try {
 					value.populate();
                     enableAction(true);
 				} catch (ArchitectException e) {
 					return ValidateResult.createValidateResult(Status.WARN,
 						"Match source table has error:"+e.getMessage());
+				}
+				
+				final String tableName = resultTableName.getText();
+				if (tableName != null && tableName.length() > 0) {
+					String catalogName = null;
+					String schemaName = null;
+
+					if ( resultChooser.getCatalogComboBox().getSelectedItem() != null) {
+						catalogName = ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName();
+					}
+					if ( resultChooser.getSchemaComboBox().getSelectedItem() != null) {
+						schemaName = ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName();
+					}
+					try {
+						SQLTable resultTable = swingSession.getDatabase().getTableByName(
+								catalogName, schemaName, tableName);
+						if ( value == resultTable ) {
+							return ValidateResult.createValidateResult(Status.WARN,
+							"Match source table has the same name as the result table");
+						}
+					} catch (ArchitectException e) {
+						// XXX: result table has error, does that mean the source is OK?
+					}
 				}
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
@@ -880,9 +912,29 @@ public class MatchEditor implements EditorPane {
 			} else if (!sqlIdentifierPattern.matcher(value).matches()) {
 				return ValidateResult.createValidateResult(Status.WARN,
 						"Result table name is not a valid SQL identifier");
-			} else {
-				return ValidateResult.createValidateResult(Status.OK, "");
+			} else if (sourceChooser.getTableComboBox().getSelectedItem() != null ) {
+				SQLTable sourceTable = (SQLTable) sourceChooser.getTableComboBox().getSelectedItem();
+				String catalogName = null;
+				String schemaName = null;
+				if ( resultChooser.getCatalogComboBox().getSelectedItem() != null) {
+					catalogName = ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName();
+				}
+				if ( resultChooser.getSchemaComboBox().getSelectedItem() != null) {
+					schemaName = ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName();
+				}
+				
+				try {
+					SQLTable resultTable = swingSession.getDatabase().getTableByName(
+							catalogName, schemaName, value);
+					if ( sourceTable == resultTable ) {
+						return ValidateResult.createValidateResult(Status.WARN,
+							"Match result table has the same name as the source table");
+					}
+				} catch (ArchitectException e) {
+					// XXX: result table has error, does that mean the source is OK?
+				}
 			}
+			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
 
