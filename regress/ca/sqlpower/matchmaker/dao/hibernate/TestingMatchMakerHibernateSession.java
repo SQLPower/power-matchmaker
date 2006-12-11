@@ -20,6 +20,7 @@ import ca.sqlpower.matchmaker.TestingMatchMakerContext;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.util.Version;
 
 public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSession {
 
@@ -210,4 +211,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		this.context = context;
 	}
     
+    public Version getPLSchemaVersion() {
+        throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");
+    }
 }

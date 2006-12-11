@@ -911,5 +911,9 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return smallMMIcon;
     }
 
+    public Version getPLSchemaVersion() {
+        return sessionImpl.getPLSchemaVersion();
+    }
+
     
 }

@@ -15,6 +15,7 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.util.Version;
 
 /**
  * A true stub implementation. Every method does nothing (except log the call at DEBUG level).
@@ -101,8 +102,13 @@ public class StubMatchMakerSession implements MatchMakerSession{
     }
 
     public TranslateGroupParent getTranslations() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerSession.getTranslations()");
         return null;
     }
+
+    public Version getPLSchemaVersion() {
+        logger.debug("Stub call: StubMatchMakerSession.getPLSchemaVersion()");
+        return null;
+    }
+    
 }

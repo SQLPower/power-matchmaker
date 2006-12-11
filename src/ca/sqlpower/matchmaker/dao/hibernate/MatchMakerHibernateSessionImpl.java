@@ -18,9 +18,7 @@ import org.hibernate.cfg.Environment;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -38,7 +36,10 @@ import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
+import ca.sqlpower.sql.SchemaVersion;
+import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.util.UnknownFreqCodeException;
+import ca.sqlpower.util.Version;
 
 /**
  * An implementation of MatchMakerSession that uses Hibernate to
@@ -48,76 +49,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionImpl.class);
 
-    private MatchMakerObject<MatchMakerObject, MatchMakerTranslateGroup> translateGroupParent = new AbstractMatchMakerObject<MatchMakerObject, MatchMakerTranslateGroup>(){
-
-        @Override
-        public void addChild(MatchMakerTranslateGroup child) {
-            getDAO(MatchMakerTranslateGroup.class).save(child);
-            super.addChild(child);
-        }
-        
-        @Override
-        public void removeChild(MatchMakerTranslateGroup child) {
-            if(!isUsedInBusinessModel(child)) {
-                getDAO(MatchMakerTranslateGroup.class).delete(child);
-                super.removeChild(child);
-            } else {
-                handleWarning("Sorry the translate group "+child.getName()+" is in use and can't be deleted");
-            }
-        }
-        /**
-         * check and see if the translate group tg exists in the folder hierachy.
-         * @param tg the translate group.
-         * @return true if tg exists in the folder hierachy false if it dosn't.
-         */
-        public boolean isUsedInBusinessModel(MatchMakerTranslateGroup tg) {
-            for (MatchMakerObject mmo :getFolders()){
-                // found the translate group
-                if(checkMMOContainsTranslateGroup(mmo,tg) == true) return true;
-            }
-            return false;
-        }
-        
-        /**
-         * recursivly check and see if there is a criterion with the passed in translate group. 
-         * @param mmo the object and decendents we want to check.
-         * @param tg the translate group that we want to know if it is used.
-         * @return true if tg is used by mmo or a decendent false otherwise.
-         */
-        private boolean checkMMOContainsTranslateGroup(MatchMakerObject mmo,MatchMakerTranslateGroup tg){
-            if (mmo instanceof MatchMakerCriteria){
-                MatchMakerCriteria criteria = (MatchMakerCriteria) mmo;
-                if(tg.equals(criteria.getTranslateGroup())){
-                    return true;
-                }
-            }
-            if ( mmo instanceof Match ){
-                Match matchChild = (Match) mmo;
-                for (MatchMakerCriteriaGroup critGroup : matchChild.getMatchCriteriaGroups()){
-                    if (checkMMOContainsTranslateGroup(critGroup, tg)) return true;
-                }
-            } else {
-                for (int i = 0; i< mmo.getChildCount(); i++){
-                    MatchMakerObject child = (MatchMakerObject) mmo.getChildren().get(i);
-                    if (checkMMOContainsTranslateGroup(child, tg)) return true;
-                }
-            }
-            
-            return false;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return this==obj;
-        }
-
-        @Override
-        public int hashCode() {
-            return System.identityHashCode(this);
-        }
-        
-    };
-    
     /**
      * The ID of the next instance we will create.  Used for Hibernate integration (ugh?)
      */
@@ -161,18 +92,21 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     private TranslateGroupParent tgp;
 
 	private List<PlFolder> folders;
+    
+    private final SchemaVersion schemaVersion;
 
 	private Session hSession;
 
     /**
      * XXX this is untestable unless you're connected to a database right now.
      *   It should be given a PLSecurityManager implementation rather than creating one.
+     * @throws SchemaVersionFormatException 
      */
 	public MatchMakerHibernateSessionImpl(
             MatchMakerSessionContext context,
 			ArchitectDataSource ds)
 		throws PLSecurityException, UnknownFreqCodeException,
-				SQLException, ArchitectException {
+				SQLException, ArchitectException, SchemaVersionFormatException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
 
@@ -187,6 +121,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         logger.info("Database product version: "+dbmd.getDatabaseProductVersion());
         logger.info("Database driver name: "+dbmd.getDriverName());
         logger.info("Database driver version: "+dbmd.getDriverVersion());
+        
+        schemaVersion = SchemaVersion.makeFromDatabase(con);
         
         sm = new PLSecurityManager(con,
 				 					dbUser.toUpperCase(),
@@ -365,6 +301,10 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             }
         }
         return tgp;
+    }
+
+    public Version getPLSchemaVersion() {
+        return schemaVersion;
     }
 
 }

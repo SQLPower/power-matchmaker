@@ -14,6 +14,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
+import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.util.UnknownFreqCodeException;
 
 /**
@@ -65,7 +66,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      */
     public MatchMakerSession createSession(
             ArchitectDataSource ds, String username, String password)
-    throws PLSecurityException, SQLException, ArchitectException {
+    throws PLSecurityException, SQLException, ArchitectException, SchemaVersionFormatException {
 
         // We create a copy of the data source and change the userID and password
         //and use that for the login attempt.  We do not want to change the
