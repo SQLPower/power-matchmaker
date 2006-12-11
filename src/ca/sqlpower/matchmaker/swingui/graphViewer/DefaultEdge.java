@@ -6,13 +6,17 @@ import java.awt.Rectangle;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.swingui.graphViewer.event.GraphComponentListener;
+import ca.sqlpower.util.WebColour;
 
 public class DefaultEdge implements Diedge {
 	private final static Logger logger = Logger.getLogger(DefaultEdge.class);
 	private Node headNode;
 	private Node tailNode;
-
+	private MatchMode status;
+    private WebColour colour;
+    
 	public DefaultEdge(Node head,Node tail){
 		headNode = head;
 		tailNode = tail;
@@ -109,8 +113,10 @@ public class DefaultEdge implements Diedge {
 	}
 
 	public void swapDirection() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: DefaultEdge.swapDirection()");
+		Node oldHeadNode = headNode;
+        Node oldTailNode = tailNode;
+        this.headNode = oldTailNode;
+        this.tailNode = oldHeadNode;
 		
 	}
 
@@ -125,6 +131,14 @@ public class DefaultEdge implements Diedge {
 		logger.debug("Stub call: DefaultEdge.setLocation()");
 		
 	}
+
+    public MatchMode getStatus() {
+        return status;
+    }
+
+    public void setStatus(MatchMode status) {
+        this.status = status;
+    }
 
 
 }

@@ -61,21 +61,8 @@ public class MatchPool {
     public Match getMatch() {
         return match;
     }
-        
-    /**
-     * Finds all the potentialMatchRecordInfo that has the passed in groupName and
-     * update the status of the potentialMatchRecordInfo 
-     * 
-     * @param matchGroup the name of the match group that is to be updated 
-     * @param newMatchType the new status set to the group
-     */
-    public void updateStatusToMatchGroup(String matchGroup, MatchType newMatchType){
-        for (PotentialMatchRecord pmri : getAllPotentialMatchByMatchGroupName(matchGroup)) {
-            pmri.setMatchStatus(newMatchType);
-        }
-    }
-    
-    public List<PotentialMatchRecord> getAllPotentialMatchByMatchGroupName
+            
+    public List<PotentialMatchRecord> getAllPotentialMatchByMatchCriteriaGroup
                         (String matchGroupName) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
@@ -86,9 +73,26 @@ public class MatchPool {
         }
         return matchList;
     }
+          
+    /**
+     * Finds all the potential match record (edges in the graph) that belongs to the
+     * particular match group
+     * @param matchGroupName
+     * @return a list of potential match records that belong to the match critieria group
+     */
+    public List<PotentialMatchRecord> getAllPotentialMatchByMatchCriteriaGroup(MatchMakerCriteriaGroup criteriaGroup) {
+        List<PotentialMatchRecord> matchList =
+            new ArrayList<PotentialMatchRecord>();
+        for (PotentialMatchRecord pmr : potentialMatches){
+            if (pmr.getCriteriaGroup() == criteriaGroup){
+                matchList.add(pmr);
+            }
+        }
+        return matchList;
+    }
     
     public void removePotentialMatchesInMatchGroup(String groupName){
-        potentialMatches.removeAll(getAllPotentialMatchByMatchGroupName(groupName));        
+        potentialMatches.removeAll(getAllPotentialMatchByMatchCriteriaGroup(groupName));        
     }
     
     public void findAll() throws SQLException, ArchitectException {
@@ -142,6 +146,8 @@ public class MatchPool {
                 PotentialMatchRecord pmr =
                     new PotentialMatchRecord(this, criteriaGroup, matchStatus, lhs, rhs);                
                 potentialMatches.add(pmr);
+                lhs.addPotentialMatch(pmr);
+                rhs.addPotentialMatch(pmr);
             }
             
         } catch (SQLException ex) {
