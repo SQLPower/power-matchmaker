@@ -7,6 +7,7 @@ import java.util.List;
 
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.util.Version;
 
 public class TestingMatchMakerSession implements MatchMakerSession {
 	Date date = new Date();
@@ -154,6 +155,10 @@ public class TestingMatchMakerSession implements MatchMakerSession {
             translateGroupParent = new TranslateGroupParent(this);
         }
         return translateGroupParent;
+    }
+
+    public Version getPLSchemaVersion() {
+        throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");
     }
     
     

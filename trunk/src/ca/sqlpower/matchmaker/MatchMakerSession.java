@@ -8,6 +8,7 @@ import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.util.Version;
 
 /**
  * The MatchMakerSession interface represents one person's login to
@@ -36,8 +37,9 @@ public interface MatchMakerSession {
 	public SQLDatabase getDatabase();
 
     /**
-     * create a new matchmakersession specific error report
+     * get the PL Schema Version
      */
+    public Version getPLSchemaVersion();
     
 	/**
 	 * The PL Schema user for this session.  Often but not necessarily
