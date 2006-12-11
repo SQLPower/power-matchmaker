@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -170,5 +171,33 @@ public class SourceTableRecord {
     @Override
     public int hashCode() {
         return 37 * keyValues.hashCode();
+    }
+    
+    public void addPotentialMatch(PotentialMatchRecord pmr){
+        potentialMatches.add(pmr);
+    }
+    
+    public Collection<PotentialMatchRecord> getPotentialMatches(){
+        return potentialMatches;
+    }
+    
+    public Collection<PotentialMatchRecord> getInboundEdges(){
+        Collection<PotentialMatchRecord> inboundEdges = new ArrayList<PotentialMatchRecord>();
+        for (PotentialMatchRecord pmr : potentialMatches){
+            if (pmr.getMaster() == this){
+                inboundEdges.add(pmr);
+            }
+        }
+        return inboundEdges;
+    }
+    
+    public Collection<PotentialMatchRecord> getOutboundEdges(){
+        Collection<PotentialMatchRecord> inboundEdges = new ArrayList<PotentialMatchRecord>();
+        for (PotentialMatchRecord pmr : potentialMatches){
+            if (pmr.getMaster() != this){
+                inboundEdges.add(pmr);
+            }
+        }
+        return inboundEdges;
     }
 }

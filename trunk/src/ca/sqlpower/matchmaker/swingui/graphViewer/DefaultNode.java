@@ -61,9 +61,7 @@ public class DefaultNode implements Node {
 	}
 
 	public boolean isAdjacent(Node node) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: DefaultNode.isAdjacent()");
-		return false;
+		return getAdjacentNodes().contains(node);		
 	}
 
 	public Rectangle getBounds(Rectangle b) {
@@ -151,9 +149,7 @@ public class DefaultNode implements Node {
 	}
 
 	public String getLabel() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: DefaultNode.getLabel()");
-		return null;
+	    return label;
 	}
 
 	public String getToolTip() {

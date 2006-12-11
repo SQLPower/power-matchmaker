@@ -215,4 +215,16 @@ public class MatchPoolTest extends TestCase {
         assertTrue(foundTwo);
         assertTrue(foundThree);
     }
+    
+    /** Tests that findAll() hooks up inbound and outbound matches properly. */
+    public void testFindAllEdgeHookup() throws Exception {
+        insertResultTableRecord(con, 1, 2, 15, "Group_One");
+        insertResultTableRecord(con, 1, 3, 15, "Group_One");
+        pool.findAll();
+        Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
+        assertEquals(3, nodes.size());
+
+        //FIXME need to be able to retrieve a particular PMR by key values
+    }
+
 }

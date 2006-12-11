@@ -193,4 +193,36 @@ public class PotentialMatchRecord {
             return false;
         }
     }
+
+    /**
+     * Returns the SourceTableRecord that is the master indicated by this record.
+     * NOTE: If the master is undecided, left hand side SourceTableRecord is considered
+     * the master.
+     *  
+     * @return the master SourceTableRecord or the left-hand side record if no master
+     * is declared.
+     */
+    public SourceTableRecord getMaster() {
+        if (isRhsMaster()){
+            return rhs;
+        } else {
+            return lhs;
+        }
+    }
+    
+    /**
+     * Returns the SourceTableRecord that is the duplicate indicated by this record.
+     * NOTE: If the master is undecided, left hand side SourceTableRecord is considered
+     * the master.
+     *  
+     * @return the duplicate (non-master) SourceTableRecord or the right-hand side record
+     * if no master is declared.
+     */
+    public SourceTableRecord getDuplicate() {
+        if (!isRhsMaster()){
+            return rhs;
+        } else {
+            return lhs;
+        }
+    }
 }
