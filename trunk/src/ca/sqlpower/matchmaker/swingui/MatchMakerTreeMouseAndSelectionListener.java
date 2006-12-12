@@ -29,6 +29,7 @@ import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchCriteria;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
+import ca.sqlpower.matchmaker.swingui.action.DuplicateMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
@@ -193,6 +194,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 
         m.addSeparator();
         m.add(new JMenuItem(new DeleteMatchAction(swingSession,match)));
+        m.add(new JMenuItem(new DuplicateMatchAction(swingSession,match)));
+        
     }
 
     private void createFolderMenu(final PlFolder folder) {
