@@ -166,9 +166,31 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 
 		public void mmChildrenRemoved(MatchMakerEvent<T, C> evt) {
-			TreePath paths = getPathForNode(evt.getSource());
-			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths, evt
+			TreePath path = getPathForNode(evt.getSource());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Got MM children removed event!");
+                StringBuilder sb = new StringBuilder();
+                MatchMakerObject mmo = evt.getSource();
+                while (mmo != null) {
+                    sb.insert(0, "->" + mmo.getName());
+                    mmo = mmo.getParent();
+                }
+                logger.debug("Parent of removed MMObject: "+sb);
+                logger.debug("          removed children: "+evt.getChildren());
+                
+                sb = new StringBuilder();
+                sb.append("{");
+                for (int i = 0; i < evt.getChangeIndices().length; i++) {
+                    if (i != 0) sb.append(", ");
+                    sb.append(evt.getChangeIndices()[i]);
+                }
+                sb.append("}");
+                logger.debug("     removed child indices: "+sb);
+                logger.debug("Traceback:", new Exception());
+            }
+			TreeModelEvent e = new TreeModelEvent(evt.getSource(), path, evt
 					.getChangeIndices(), evt.getChildren().toArray());
+            logger.debug("About to fire tree model event: "+e);
 			fireTreeNodesRemoved(e);
 			for ( MatchMakerObject o : evt.getChildren() ) {
 				MatchMakerUtils.unlistenToHierarchy(listener,o);
