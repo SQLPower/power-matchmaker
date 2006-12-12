@@ -1,8 +1,11 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.Driver;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -33,7 +36,7 @@ public class DBTestUtil {
      * leave the connection in a good default state (not disabled and not closed).
      * 
      * @param dataSource The data source to connect to
-     * @return A TestingConnection which is connected to the given data source
+     * @return A TestingConnection which is connected to the given data source. Don't close it.
      * @throws InstantiationException If the JDBC driver can't be created
      * @throws IllegalAccessException If the JDBC driver can't be created
      * @throws ClassNotFoundException If the JDBC driver can't be found
@@ -128,7 +131,35 @@ public class DBTestUtil {
         hsqlDataSource.setPlDbType("hsql");
         hsqlDataSource.setPlSchema("pl");
         hsqlDataSource.setUrl(hsqlUrl);
+        
+        try {
+            Connection con = connectToDatabase(hsqlDataSource);
+            createHsqlPlSchemaIfNecessary(con);
+            // have to leave connection open (see connectToDatabase())
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+        
         return hsqlDataSource;
     }
 
+    /**
+     * Creates a schema called "pl" in the given HSQLDB connection.
+     */
+    private static void createHsqlPlSchemaIfNecessary(Connection con) throws SQLException {
+        DatabaseMetaData dbmd = con.getMetaData();
+        ResultSet rs = dbmd.getSchemas();
+        boolean foundPlSchema = false;
+        while (rs.next()) {
+            if ("pl".equalsIgnoreCase(rs.getString("TABLE_SCHEM"))) {
+                foundPlSchema = true;
+            }
+        }
+        rs.close();
+        if (!foundPlSchema) {
+            Statement stmt = con.createStatement();
+            stmt.executeUpdate("CREATE SCHEMA pl AUTHORIZATION DBA");
+            stmt.close();
+        }
+    }
 }

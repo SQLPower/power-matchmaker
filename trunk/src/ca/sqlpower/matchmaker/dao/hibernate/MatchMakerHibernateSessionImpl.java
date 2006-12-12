@@ -37,10 +37,11 @@ import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
-import ca.sqlpower.sql.SchemaVersion;
-import ca.sqlpower.sql.SchemaVersionFormatException;
+import ca.sqlpower.sql.DefaultParameters;
+import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.util.UnknownFreqCodeException;
 import ca.sqlpower.util.Version;
+import ca.sqlpower.util.VersionFormatException;
 
 /**
  * An implementation of MatchMakerSession that uses Hibernate to
@@ -92,21 +93,28 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
     private TranslateGroupParent tgp;
-
-	private final SchemaVersion schemaVersion;
-	
+    
 	private Session hSession;
+
+    /**
+     * A snapshot of the def_param table when we logged in.
+     */
+    private final DefaultParameters defParam;
+
+    /**
+     * The version of the Power*Loader schema we're connected to.
+     */
+    private final Version plSchemaVersion;
 
     /**
      * XXX this is untestable unless you're connected to a database right now.
      *   It should be given a PLSecurityManager implementation rather than creating one.
-     * @throws SchemaVersionFormatException 
      */
 	public MatchMakerHibernateSessionImpl(
             MatchMakerSessionContext context,
 			ArchitectDataSource ds)
 		throws PLSecurityException, UnknownFreqCodeException,
-				SQLException, ArchitectException, SchemaVersionFormatException {
+				SQLException, ArchitectException, PLSchemaException, VersionFormatException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
 
@@ -122,8 +130,24 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         logger.info("Database driver name: "+dbmd.getDriverName());
         logger.info("Database driver version: "+dbmd.getDriverVersion());
         
-        schemaVersion = SchemaVersion.makeFromDatabase(con);
+        try {
+            defParam = new DefaultParameters(con, null, ds.getPlSchema());
+            plSchemaVersion = defParam.getPLSchemaVersion();
+        } catch (SQLException e) {
+            SQLException exception = new SQLException(
+                    "Couldn't determine Power*Loader schema version for database " + ds.getDisplayName() + "\n" + 
+                    "Please check that you have set the PL Schema Owner correctly in the DataSource Configuration\n" +
+                    "(PL Schema Owner currently " + ds.getPlSchema() + ").");
+            exception.setNextException(e);
+            throw exception;
+        }
         
+        if (plSchemaVersion.compareTo(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION) < 0) {
+            throw new PLSchemaException(
+                    "The MatchMaker requires a newer version of the PL Schema" +
+                    " than is installed in the "+ds.getDisplayName()+" database.",
+                    plSchemaVersion.toString(), MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.toString());
+        }
         sm = new PLSecurityManager(con,
 				 					dbUser.toUpperCase(),
 				 					ds.getPass(),
@@ -319,7 +343,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	}
 
     public Version getPLSchemaVersion() {
-        return schemaVersion;
+        return plSchemaVersion;
     }
 
 }

@@ -1,5 +1,7 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +12,8 @@ import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.util.Version;
 
 public class HibernateSessionContextTest extends TestCase {
 
@@ -47,6 +51,35 @@ public class HibernateSessionContextTest extends TestCase {
 		assertNotNull(session);
 	}
     
+    public void testCheckSchemaVersion() throws Exception {
+        ArchitectDataSource ds = DBTestUtil.getHSQLDBInMemoryDS();
+
+        Version v = new Version();
+        v.setMajor(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.getMajor() - 1);
+        v.setMinor(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.getMinor());
+        v.setTiny(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.getTiny());
+        
+        // this is very simplistic, and assumes that the startup sequence of
+        // MatchMakerHibernateSessionImpl checks the schema version before accessing
+        // the database in any other way.  The only thing in the whole database is a
+        // DEF_PARAM table with one column!
+        Connection con = DBTestUtil.connectToDatabase(ds);
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate("CREATE TABLE "+ds.getPlSchema()+".DEF_PARAM ( SCHEMA_VERSION VARCHAR(50) )");
+        stmt.executeUpdate("INSERT INTO "+ds.getPlSchema()+".DEF_PARAM VALUES ('"+v.toString()+"')");
+        stmt.close();
+        
+        try {
+            // if this fails for any reason other than version mismatch, you will have
+            // to enhance the "pl schema create script" above, or modify the HibernateSession
+            // to check the schema version earlier.
+            ctx.createSession(ds, ds.getUser(), ds.getPass());
+            fail("Session init failed to report bad schema version");
+        } catch (PLSchemaException ex) {
+            assertEquals(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.toString(), ex.getRequiredVersion());
+            assertEquals(v.toString(), ex.getCurrentVersion());
+        }
+    }
     /**
      * The context might have to alter the username and password in the data source
      * we give it, but we don't want this to permanently alter the settings in pl.ini.

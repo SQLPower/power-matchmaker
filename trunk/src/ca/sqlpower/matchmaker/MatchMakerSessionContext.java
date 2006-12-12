@@ -9,7 +9,8 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.PLSchemaException;
-import ca.sqlpower.sql.SchemaVersionFormatException;
+import ca.sqlpower.util.Version;
+import ca.sqlpower.util.VersionFormatException;
 
 /**
  * A MatchMakerSessionContext holds global (well, systemwide) configuration and
@@ -25,6 +26,17 @@ import ca.sqlpower.sql.SchemaVersionFormatException;
  */
 public interface MatchMakerSessionContext {
 
+    /**
+     * The version of this MatchMaker front end.
+     */
+    public static final Version APP_VERSION = new Version(5,13,13);
+    
+    /**
+     * The minimum PL Schema version according to DEF_PARAM that we can work with.
+     * Should be checked every time a session is created.
+     */
+    public static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,27);
+    
     public List<ArchitectDataSource> getDataSources();
 
     /**
@@ -44,11 +56,11 @@ public interface MatchMakerSessionContext {
      * @throws ArchitectException Because of cut and paste.
      * @throws IOException If any bootstrap init files are missing or unreadable.
      * @throws PLSchemaException If the version of the schema is not up to date or is missing
-     * @throws SchemaVersionFormatException If the format of the version number is not in the form x.y.z
+     * @throws VersionFormatException If the format of the version number is not in the form x.y.z
      */
     public MatchMakerSession createSession(ArchitectDataSource ds,
             String username, String password) throws PLSecurityException,
-            SQLException, ArchitectException, IOException, SchemaVersionFormatException, PLSchemaException;
+            SQLException, ArchitectException, IOException, PLSchemaException, VersionFormatException;
 
     /**
      * Returns the PlDotIni object that manages this context's list of data sources.
