@@ -10,6 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -28,7 +29,7 @@ public class MatchMakerSplashScreen {
 	private void buildUI() throws SQLException{
 
 		JLabel logo = new JLabel(new ImageIcon(getClass().getResource("/icons/matchmaker_huge.png")));
-		JLabel welcome  = new JLabel("<html>" + "Power*MatchMaker" + "</html>");
+		JLabel welcome  = new JLabel("<html>" + "Power*MatchMaker " + MatchMakerSessionContext.APP_VERSION + "</html>");
 		Font f = welcome.getFont();
 		Font newf = new Font(f.getName(),f.getStyle(),f.getSize()*2);
 		welcome.setFont(newf);
