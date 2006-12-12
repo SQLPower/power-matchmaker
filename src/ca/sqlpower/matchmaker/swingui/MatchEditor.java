@@ -128,7 +128,7 @@ public class MatchEditor implements EditorPane {
 				refreshActionStatus();
 			}
         });
-        handler.setValidated(false); // avoid false hits when newly created
+        handler.resetHasValidated(); // avoid false hits when newly created
         
 
         /**
@@ -745,7 +745,7 @@ public class MatchEditor implements EditorPane {
         }
 
         swingSession.save(match);
-        handler.setValidated(false);
+        handler.resetHasValidated();
         
         // bring back some buttons like create index...
         refreshActionStatus();
@@ -925,6 +925,6 @@ public class MatchEditor implements EditorPane {
     }
 
 	public boolean hasUnsavedChanges() {
-		return handler.isValidated();
+		return handler.hasPerformedValidation();
 	}
 }

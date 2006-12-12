@@ -111,7 +111,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
          * new
 		 */
 		matchCriteriaTableModel.fireTableChanged(new TableModelEvent(matchCriteriaTableModel));
-        handler.setValidated(false);
+        handler.resetHasValidated();
 	}
 
 	private class MatchGroupNameValidator implements Validator {
@@ -524,11 +524,11 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         group.setActive(active.isSelected());
         MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
         dao.save(match);
-        handler.setValidated(false);
+        handler.resetHasValidated();
 		return true;
 	}
 
 	public boolean hasUnsavedChanges() {
-		return handler.isValidated();
+		return handler.hasPerformedValidation();
 	}
 }

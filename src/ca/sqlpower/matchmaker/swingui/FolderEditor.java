@@ -57,7 +57,7 @@ public class FolderEditor implements EditorPane {
 				refreshActionStatus();
 			}
         });
-		handler.setValidated(false);
+		handler.resetHasValidated();
 	}
 
 	private void buildUI() {
@@ -174,7 +174,7 @@ public class FolderEditor implements EditorPane {
 
         PlFolderDAO dao = (PlFolderDAO)swingSession.getDAO(PlFolder.class);
         dao.save(folder);
-        handler.setValidated(false);
+        handler.resetHasValidated();
 
 		return true;
 	}
@@ -207,7 +207,7 @@ public class FolderEditor implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
-		return handler.isValidated();
+		return handler.hasPerformedValidation();
 	}
 
 
