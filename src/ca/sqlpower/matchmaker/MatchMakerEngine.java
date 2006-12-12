@@ -11,7 +11,7 @@ import ca.sqlpower.matchmaker.event.EngineListener;
 
 /**
  * the matchmaker engine interface represents the contexts that required 
- * to run the engine, the engine now is a C program uses ODBC to connect
+ * to run an engine, the engine now is a C program uses ODBC to connect
  * to database as we create this interface. we may change it to java base
  * in the future.
  * 
@@ -48,7 +48,7 @@ public interface MatchMakerEngine  extends Monitorable{
 	 * checks the preconditions that required by the engine, true is everything is OK.
 	 * @throws EngineSettingException 
 	 */
-	public boolean checkPreConditions() throws EngineSettingException;
+	public boolean checkPreconditions() throws EngineSettingException;
 	
 	/**
 	 * Create the command line to run the match engine or for display

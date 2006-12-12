@@ -119,6 +119,8 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	 * Register an update if the object is participating in a session
 	 */
 	public void registerUpdate() {
+		// FIXME Change this to be handled by the daos
+		logger.debug("We have registered a change");
 		if (matchMakerSession != null){
 			lastUpdateDate = new Date();
 			lastUpdateOsUser = System.getProperty("user.name");
