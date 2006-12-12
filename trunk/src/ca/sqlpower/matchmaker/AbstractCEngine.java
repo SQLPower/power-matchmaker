@@ -11,7 +11,11 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.event.EngineEvent;
 import ca.sqlpower.matchmaker.event.EngineListener;
 import ca.sqlpower.matchmaker.event.EngineEvent.EngineEventType;
-
+/**
+ * Common ground for all C engines.  This class handles events
+ * output capture, monitoring and starting and stoping the engine. 
+ *
+ */
 public abstract class AbstractCEngine implements MatchMakerEngine {
 
 	private final static Logger logger = Logger.getLogger(AbstractCEngine.class);
