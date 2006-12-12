@@ -51,10 +51,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         this.owningFrame = swingSession.getFrame();
     }
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
-    }
-
 	private void itemSelected(TreeSelectionEvent e) {
 		TreePath tp = e.getPath();
 		if (tp != null) {
@@ -96,22 +92,20 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 	
 
     @Override
+    public void mouseClicked(MouseEvent e) {
+        makePopup(e);
+    }
+
+    @Override
     public void mousePressed(MouseEvent e) {
         makePopup(e);
-
-        JTree t = (JTree) e.getSource();
-        int row = t.getRowForLocation(e.getX(), e.getY());
-        TreePath tp = t.getPathForRow(row);
-        if (tp != null) {
-            t.setSelectionPath(tp);
-        }
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         makePopup(e);
     }
-
+    
     private void makePopup(MouseEvent e) {
         if (e.isPopupTrigger()) {
             m = new JPopupMenu();
