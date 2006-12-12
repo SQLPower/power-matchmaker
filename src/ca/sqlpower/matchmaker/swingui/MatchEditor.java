@@ -46,6 +46,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.swingui.action.CreateResultTableAction;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.matchmaker.validation.MatchNameValidator;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -470,7 +471,7 @@ public class MatchEditor implements EditorPane {
         matchType.setSelectedItem(match.getType());
         filterPanel.getFilterTextArea().setText(match.getFilter());
 
-        Validator v = new MatchNameValidator(swingSession);
+        Validator v = new MatchNameValidator(swingSession,match);
         handler.addValidateObject(matchId,v);
 
         List<Action> actionsToDisable = new ArrayList<Action>();
@@ -787,29 +788,6 @@ public class MatchEditor implements EditorPane {
     	} else {
     		createResultTableAction.setEnabled(true);
     	}
-    }
-
-    private class MatchNameValidator implements Validator {
-
-		private MatchMakerSwingSession session;
-
-		public MatchNameValidator(MatchMakerSwingSession session) {
-    		this.session = session;
-		}
-
-		public ValidateResult validate(Object contents) {
-
-			String value = (String)contents;
-			if ( value == null || value.length() == 0 ) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						"Match name is required");
-			} else if ( !value.equals(match.getName()) &&
-						!session.isThisMatchNameAcceptable(value) ) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						"Match name is invalid or already exists.");
-			}
-			return ValidateResult.createValidateResult(Status.OK, "");
-		}
     }
 
     private class MatchSourceTableValidator implements Validator {
