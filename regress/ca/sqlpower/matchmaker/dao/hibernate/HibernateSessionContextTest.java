@@ -66,7 +66,7 @@ public class HibernateSessionContextTest extends TestCase {
         MatchMakerSession mmSession = ctx.createSession(ds, ds.getUser(), ds.getPass());
         //we're testing this since the purpose of the getHibernateSessionFactory is to
         //initialize the PlFolder
-        assertNotNull(mmSession.getFolders());
+        assertNotNull(mmSession.getCurrentFolderParent().getChildren());
     }
     
     public void testGetEngineLocationWindows() {

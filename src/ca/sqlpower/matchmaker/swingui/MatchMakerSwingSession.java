@@ -43,6 +43,7 @@ import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
@@ -411,8 +412,10 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
-		tree = new JTree(new MatchMakerTreeModel(getFolders()));
-		tree.addMouseListener(new MatchMakerTreeMouseListener(this));
+		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent()));
+		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
+		tree.addMouseListener(matchMakerTreeMouseAndSelectionListener);
+		tree.addTreeSelectionListener(matchMakerTreeMouseAndSelectionListener);
 		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
 		tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
@@ -429,7 +432,19 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		frame.addWindowListener(new MatchMakerFrameWindowListener());
 	}
 
-    /**
+    public FolderParent getBackupFolderParent() {
+    	FolderParent backup = sessionImpl.getBackupFolderParent();
+        logger.debug("getBackupFolderParent(): Found folder list: "+backup.getChildren());
+        return backup;
+	}
+
+	public FolderParent getCurrentFolderParent() {
+		FolderParent current = sessionImpl.getCurrentFolderParent();
+        logger.debug("getCurrentFolderParent(): Found folder list: "+current.getChildren());
+        return current;
+	}
+
+	/**
      * Checks the PL Schema version in the given database.
      *
      * @param db the database to check
@@ -681,13 +696,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
             }
         }
     }
-
-
-	public List<PlFolder> getFolders() {
-		List<PlFolder> folders = sessionImpl.getFolders();
-        logger.debug("getFolders(): Found folder list: "+folders);
-        return folders;
-	}
 
 	public JTree getTree() {
 		return tree;

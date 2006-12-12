@@ -19,8 +19,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
      * Persists the translate group as well as adding it to the child list and 
      * firing the proper events 
      */
-    @Override
-    public void addChild(MatchMakerTranslateGroup child) {
+    public void addNewChild(MatchMakerTranslateGroup child) {
         this.session.getDAO(MatchMakerTranslateGroup.class).save(child);
         super.addChild(child);
     }
@@ -29,8 +28,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
      * Deletes the translate group as well as adding it to the child list and 
      * firing the proper events.  If the group is in use it gives a warning to the session.
      */
-    @Override
-    public void removeChild(MatchMakerTranslateGroup child) {
+    public void removeAndDeleteChild(MatchMakerTranslateGroup child) {
         if(!isInUseInBusinessModel(child)) {
             this.session.getDAO(MatchMakerTranslateGroup.class).delete(child);
             super.removeChild(child);
@@ -45,7 +43,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
      * @return true if tg exists in the folder hierachy false if it dosn't.
      */
     public boolean isInUseInBusinessModel(MatchMakerTranslateGroup tg) {
-        for (MatchMakerObject mmo :this.session.getFolders()){
+        for (MatchMakerObject mmo :this.session.getCurrentFolderParent().getChildren()){
             // found the translate group
             if(checkMMOContainsTranslateGroup(mmo,tg) == true) return true;
         }

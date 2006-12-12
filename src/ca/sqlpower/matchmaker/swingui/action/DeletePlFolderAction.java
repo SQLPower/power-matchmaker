@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.swingui.DeleteFolderDialog;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 public class DeletePlFolderAction extends AbstractAction {
@@ -18,7 +19,7 @@ public class DeletePlFolderAction extends AbstractAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		
+		DeleteFolderDialog d = new DeleteFolderDialog(folder,session.getFrame(),session);
 	}
 
 }

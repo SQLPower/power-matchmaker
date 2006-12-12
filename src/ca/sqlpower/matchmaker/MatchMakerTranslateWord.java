@@ -11,7 +11,13 @@ public class MatchMakerTranslateWord
 	public MatchMakerTranslateWord() {
 	}
 
+	/**
+	 * Return the from value.  
+	 * If the from value is null return "" if it dosn't 
+	 * Done this way to stop update storm in hibernate
+	 */
 	public String getFrom() {
+		if (from == null) return "";
 		return from;
 	}
 
@@ -20,15 +26,18 @@ public class MatchMakerTranslateWord
      * so we change null to "" otherwise this is a normal setter.
      */
 	public void setFrom(String from) {
-        if (from == null){
-            from = "";
-        }
 		String oldValue = this.from;
 		this.from = from;
 		getEventSupport().firePropertyChange("from", oldValue, this.from);
 	}
 
+	/**
+	 * Return the to value.  
+	 * If the from value is null return "" if it dosn't 
+	 * Done this way to stop update storm in hibernate
+	 */
 	public String getTo() {
+		if (to == null) return "";
 		return to;
 	}
 
@@ -37,9 +46,6 @@ public class MatchMakerTranslateWord
      * so we change null to "" otherwise this is a normal setter.
      */
 	public void setTo(String to) {
-        if (to == null){
-            to = "";
-        }
 		String oldValue = this.to;
 		this.to = to;
 		getEventSupport().firePropertyChange("to", oldValue, this.to);
@@ -58,9 +64,9 @@ public class MatchMakerTranslateWord
     public int hashCode() {
         final int PRIME = 31;
         int result = 0;
-        result = PRIME * result + ((from == null) ? 0 : from.hashCode());
+        result = PRIME * result + ((getFrom() == null) ? 0 : getFrom().hashCode());
         result = PRIME * result + ((getParent() == null) ? 0 : getParent().hashCode());
-        result = PRIME * result + ((to == null) ? 0 : to.hashCode());
+        result = PRIME * result + ((getTo() == null) ? 0 : getTo().hashCode());
         return result;
     }
 
@@ -71,20 +77,20 @@ public class MatchMakerTranslateWord
         if (!(obj instanceof MatchMakerTranslateWord))
             return false;
         final MatchMakerTranslateWord other = (MatchMakerTranslateWord) obj;
-        if (from == null) {
-            if (other.from != null)
+        if (getFrom() == null) {
+            if (other.getFrom() != null)
                 return false;
-        } else if (!from.equals(other.from))
+        } else if (!getFrom().equals(other.getFrom()))
             return false;
         if (getParent() == null) {
             if (other.getParent() != null)
                 return false;
         } else if (!getParent().equals(other.getParent()))
             return false;
-        if (to == null) {
-            if (other.to != null)
+        if (getTo() == null) {
+            if (other.getTo() != null)
                 return false;
-        } else if (!to.equals(other.to))
+        } else if (!getTo().equals(other.getTo()))
             return false;
         return true;
     }
@@ -103,8 +109,8 @@ public class MatchMakerTranslateWord
     	StringBuffer buf = new StringBuffer();
     	buf.append("OID: ").append(oid);
     	buf.append(" Parent: ").append(this.getParent());
-    	buf.append(" From:").append(from);
-    	buf.append("->To:").append(to);
+    	buf.append(" From:").append(getFrom());
+    	buf.append("->To:").append(getTo());
     	buf.append(". Priority: ").append(location);
     	return buf.toString();
     }

@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.DBTestUtil;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 
@@ -38,11 +39,13 @@ public class MatchMakerSwingSessionTest extends TestCase {
         };
         
         MatchMakerSession stubSessionImp = new StubMatchMakerSession(){
+        	FolderParent folders;
+        	
             @Override
-            public List<PlFolder> getFolders() {
-                List<PlFolder> folders = new ArrayList <PlFolder>();
-                folders.add(folder1);
-                folders.add(folder2);
+            public FolderParent getCurrentFolderParent() {
+            	folders = new FolderParent(this);
+                folders.getChildren().add(folder1);
+                folders.getChildren().add(folder2);
                 return folders;
             }
             
@@ -53,7 +56,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
            
             @Override
             public PlFolder findFolder(String foldername) {
-                for (PlFolder folder : getFolders()){
+                for (PlFolder folder : getCurrentFolderParent().getChildren()){
                     if (folder.getName().equals(foldername)) return folder;
                 }
                 return null;
@@ -66,9 +69,9 @@ public class MatchMakerSwingSessionTest extends TestCase {
     
     
     public void testGetFolders(){
-        assertEquals("Got the wrong number of folders", 2, session.getFolders().size());
-        assertTrue("Missing Folder", session.getFolders().contains(folder1));
-        assertTrue("Missing Folder", session.getFolders().contains(folder2));        
+        assertEquals("Got the wrong number of folders", 2, session.getCurrentFolderParent().getChildren().size());
+        assertTrue("Missing Folder", session.getCurrentFolderParent().getChildren().contains(folder1));
+        assertTrue("Missing Folder", session.getCurrentFolderParent().getChildren().contains(folder2));        
     }
     
     public void testGetFolderByName(){

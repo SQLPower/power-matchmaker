@@ -142,7 +142,7 @@ public class MatchValidationStatus extends JDialog {
 
 	private void createUI() {
 
-		final JComboBox folderComboBox = new JComboBox(swingSession.getFolders().toArray());
+		final JComboBox folderComboBox = new JComboBox(swingSession.getCurrentFolderParent().getChildren().toArray());
 		folderComboBox.setSelectedItem(match.getParent());
 		folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
 		List <Match> matches = ((PlFolder)match.getParent()).getChildren();

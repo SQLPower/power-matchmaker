@@ -18,6 +18,7 @@ import org.hibernate.cfg.Environment;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -49,7 +50,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionImpl.class);
 
-    /**
+     /**
      * The ID of the next instance we will create.  Used for Hibernate integration (ugh?)
      */
     private static long nextInstanceID = 0L;
@@ -82,6 +83,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	private String dbUser;
 	private Date sessionStartTime;
 
+	private FolderParent folders;
     private PlFolderDAO folderDAO;
     private MatchDAO matchDAO;
     private MatchCriteriaGroupDAO matchMakerCriteriaGroupDAO;
@@ -91,10 +93,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     private TranslateGroupParent tgp;
 
-	private List<PlFolder> folders;
-    
-    private final SchemaVersion schemaVersion;
-
+	private final SchemaVersion schemaVersion;
+	
 	private Session hSession;
 
     /**
@@ -184,16 +184,9 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         }
     }
     
-	public List<PlFolder> getFolders() {
-		if (folders == null) {
-			PlFolderDAO folderDAO = (PlFolderDAO) getDAO(PlFolder.class);
-			folders = folderDAO.findAll();
-		}
-		return folders;
-	}
 
     public PlFolder findFolder(String foldername) {
-        for (PlFolder folder : getFolders()){
+        for (PlFolder folder : getCurrentFolderParent().getChildren()){
             if (folder.getName().equals(foldername)) return folder;
         }
         return null;
@@ -302,6 +295,28 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         }
         return tgp;
     }
+
+    /**
+     * Get all the folders
+     */
+	public FolderParent getCurrentFolderParent() {
+		if (folders == null) {
+			folders = new FolderParent(this);
+			PlFolderDAO folderDAO = (PlFolderDAO) getDAO(PlFolder.class);
+			for(PlFolder f :folderDAO.findAll()) {
+				folders.addChild(f);
+			}
+		}
+		return folders;
+	}
+	
+	/**
+	 * get all the folders that have backups.
+	 * TODO implement backups
+	 */
+	public FolderParent getBackupFolderParent() {
+		return new FolderParent(this);
+	}
 
     public Version getPLSchemaVersion() {
         return schemaVersion;
