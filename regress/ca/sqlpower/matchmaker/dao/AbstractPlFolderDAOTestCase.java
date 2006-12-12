@@ -17,7 +17,8 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 	public PlFolder<MatchMakerObject> createNewObjectUnderTest() throws Exception {
 		count++;
 		PlFolder<MatchMakerObject> plFolder =
-			new PlFolder<MatchMakerObject>("Test Folder");
+			new PlFolder<MatchMakerObject>("Test Folder"+count);
+		count++;
 		plFolder.setSession(getSession());
 		plFolder.setName("test "+count);
 		plFolder.setFolderDesc("My Desc");
@@ -76,8 +77,8 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
             stmt = con.createStatement();
             try {
                 rs = stmt
-                        .executeQuery("SELECT * FROM pl_match WHERE match_id='"
-                                + m.getName() + "'");
+                        .executeQuery("SELECT folder_name FROM pl_match,pl_folder2 WHERE match_id='"
+                                + m.getName() + "' and pl_folder2.folder_oid = pl_match.folder_oid");
 
                 if (!rs.next()) {
                     fail("No results found for match " + m.getName());
@@ -100,8 +101,8 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
             dao.save(oldFolder);
             try {
                 rs = stmt
-                        .executeQuery("SELECT * FROM pl_match WHERE match_id='"
-                                + m.getName() + "'");
+                .executeQuery("SELECT folder_name FROM pl_match,pl_folder2 WHERE match_id='"
+                        + m.getName() + "' and pl_folder2.folder_oid = pl_match.folder_oid");
 
                 if (!rs.next()) {
                     fail("No results found for match " + m.getName());

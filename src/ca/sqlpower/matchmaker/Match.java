@@ -423,6 +423,35 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         return matchCriteriaGroupFolder;
     }
 
+    /**
+     * duplicate the match object. by inserting a new set of record 
+     * to the matchmaker tables.
+     * objects under different id and oid 
+     * @return true if nothing wrong.
+     * @throws ArchitectException 
+     */
+	public Match duplicate(String targetName) throws ArchitectException {
+		Match newMatch = new Match();
+		newMatch.setParent(getParent());
+		newMatch.setName(targetName);
+		newMatch.setFilter(getFilter()==null?null:new String(getFilter()));
+		newMatch.setMergeSettings(getMergeSettings().duplicate());
+		newMatch.setMatchSettings(getMatchSettings().duplicate());
+		newMatch.setSourceTable(getSourceTable());
+		newMatch.setResultTable(getResultTable());
+		newMatch.setXrefTable(getXrefTable());
+		newMatch.setType(getType());
+		newMatch.setView(getView()==null?null:getView().duplicate());
+		newMatch.setSession(getSession());
+		
+		for (MatchMakerCriteriaGroup g : getMatchCriteriaGroups()) {
+			MatchMakerCriteriaGroup newGroup = g.duplicate();
+			newMatch.addMatchCriteriaGroup(newGroup);
+		}
+	
+		return newMatch;
+	}
+	
 
     /**
      * Provides the ability to maintain the SQLTable properties of the Match via

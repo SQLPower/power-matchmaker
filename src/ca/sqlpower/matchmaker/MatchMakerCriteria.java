@@ -448,4 +448,41 @@ public class MatchMakerCriteria
             return false;
         return true;
     }
+
+    /**
+     * duplicate all criteria properties except parent and oid
+     * @return new MatchmakerCriteria object with all original 
+     * properties except parent and oid
+     * @throws ArchitectException
+     */
+	public MatchMakerCriteria duplicate() throws ArchitectException {
+		MatchMakerCriteria criteria = new MatchMakerCriteria();
+		criteria.setAllowNullInd(isAllowNullInd());
+		criteria.setCaseSensitiveInd(isCaseSensitiveInd());
+		criteria.setColumn(getColumn());
+		criteria.setColumnName(getColumnName()==null?null:new String(getColumnName()));
+		criteria.setCountWordsInd(isCountWordsInd());
+		criteria.setFirstNChar(getFirstNChar()==null?null:new Long(getFirstNChar()));
+		criteria.setFirstNCharByWord(getFirstNCharByWord()==null?null:new Long(getFirstNCharByWord()));
+		criteria.setFirstNCharByWordInd(isFirstNCharByWordInd());
+		criteria.setMatchEnd(isMatchEnd());
+		criteria.setMatchFirstPlusOneInd(isMatchFirstPlusOneInd());
+		criteria.setMatchStart(isMatchStart());
+		criteria.setMinWordsInCommon(getMinWordsInCommon()==null?null:new Long(getMinWordsInCommon()));
+		criteria.setName(getName()==null?null:new String(getName()));
+		criteria.setRemoveSpecialChars(isRemoveSpecialChars());
+		criteria.setReorderInd(isReorderInd());
+		criteria.setReplaceWithSpace(getReplaceWithSpace()==null?null:new String(getReplaceWithSpace()));
+		criteria.setReplaceWithSpaceInd(isReplaceWithSpaceInd());
+		criteria.setSeqNo(getSeqNo()==null?null:new BigDecimal(getSeqNo().longValue()));
+		criteria.setSession(getSession());
+		criteria.setSoundInd(isSoundInd());
+		criteria.setSuppressChar(getSuppressChar()==null?null:new String(getSuppressChar()));
+		criteria.setTranslateGroup(getTranslateGroup());
+		criteria.setVarianceAmt(getVarianceAmt()==null?null:new BigDecimal(getVarianceAmt().longValue()));
+		criteria.setVarianceType(getVarianceType()==null?null:new String(getVarianceType()));
+		criteria.setWordsInCommonNumWords(getWordsInCommonNumWords()==null?null:new Long(getWordsInCommonNumWords()));
+
+		return criteria;
+	}
 }

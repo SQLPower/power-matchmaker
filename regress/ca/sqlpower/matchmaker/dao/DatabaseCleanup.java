@@ -28,7 +28,7 @@ public class DatabaseCleanup {
         tablesToDelete.add("pl_merge_criteria");
         tablesToDelete.add("pl_match_xref_map");
         tablesToDelete.add("pl_match");
-        tablesToDelete.add("pl_folder");
+        tablesToDelete.add("pl_folder2");
   
         Statement stmt = con.createStatement();
         try {

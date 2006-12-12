@@ -12,6 +12,11 @@ public class PlFolder<C extends MatchMakerObject>
 	extends AbstractMatchMakerObject<PlFolder, C> {
 
 	/**
+	 * The object id
+	 */
+	private Long oid;
+	
+	/**
 	 * This folder's description.
 	 */
     private String folderDesc;

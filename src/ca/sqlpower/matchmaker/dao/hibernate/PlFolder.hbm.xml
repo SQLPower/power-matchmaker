@@ -6,13 +6,17 @@
 <!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
 <hibernate-mapping>
 
-	<class name="ca.sqlpower.matchmaker.PlFolder" table="PL_FOLDER">
-		<id name="name" type="string">
-			<column name="folder_name" length="80" />
-			<generator class="assigned" />
+	<class name="ca.sqlpower.matchmaker.PlFolder" table="PL_FOLDER2">
+		<id name="oid" type="long" access="field">
+			<column name="folder_oid"/>
+			<generator class="native">
+				<param name="sequence">pl_folder_oid_seq</param>
+			</generator>
 		</id>
 
-
+		<property name="name" type="string">
+			<column name="folder_name" />
+		</property>
 		<property name="folderDesc" type="string">
 			<column name="folder_desc" />
 		</property>
@@ -26,7 +30,7 @@
 		<bag name="children" access="field" lazy="false"
 			inverse="true" fetch="subselect" cascade="all">
 			<key>
-				<column name="folder_name" length="80" not-null="true" />
+				<column name="folder_oid" length="80" not-null="true" />
 			</key>
 			<one-to-many class="ca.sqlpower.matchmaker.Match"  />
 		</bag>

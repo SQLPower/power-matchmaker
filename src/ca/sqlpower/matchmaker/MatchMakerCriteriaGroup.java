@@ -1,5 +1,7 @@
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.architect.ArchitectException;
+
 /**
  * group of matchmaker criteria, the child type is MatchmakerCriteria
  * matchPercent can be NULL, and it's NULL when the object just create(default constructor)
@@ -130,5 +132,28 @@ public class MatchMakerCriteriaGroup
 				return c;
         }
 		return null;
+	}
+
+	/**
+	 * duplicate all the properties of the matchmakerCriteria group 
+	 * and it's children, except oid and parent
+	 * @return new matchmaker group object with the same properties
+	 * and children
+	 * @throws ArchitectException 
+	 */
+	public MatchMakerCriteriaGroup duplicate() throws ArchitectException {
+		MatchMakerCriteriaGroup group = new MatchMakerCriteriaGroup();
+		group.setActive(getActive());
+		group.setDesc(getDesc()==null?null:new String(getDesc()));
+		group.setFilter(getFilter()==null?null:new String(getFilter()));
+		group.setMatchPercent(getMatchPercent()==null?null:new Short(getMatchPercent()));
+		group.setName(getName()==null?null:new String(getName()));
+		group.setSession(getSession());
+		
+		for ( MatchMakerCriteria criteria : getChildren()) {
+			MatchMakerCriteria newCriteria = criteria.duplicate();
+			group.addChild(newCriteria);
+		}
+		return group;
 	}
 }
