@@ -94,12 +94,19 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
     }
 
 	/**
-	 * Anyone who is going to overwrite this method should fire the ChildrenRemoved
-	 * event in the overwriten method
+     * Removes the given child and fires a childrenRemoved event.  If the
+     * given child is not present in this object, calling this method has
+     * no effect (no children are removed and no events are fired).
+     * <p>
+	 * Anyone who is going to override this method should fire the ChildrenRemoved
+	 * event in the overridden method.
+     * 
 	 * @param child
 	 */
 	public void removeChild(C child) {
-		int [] removedIndices = {children.indexOf(child)};
+		int childIndex = children.indexOf(child);
+        if (childIndex == -1) return;
+        int [] removedIndices = {childIndex};
 		List<C> removedChildren = new ArrayList<C>();
 		removedChildren.add(child);
 		children.remove(child);
