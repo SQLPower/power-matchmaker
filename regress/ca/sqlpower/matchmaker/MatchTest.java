@@ -331,4 +331,57 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	public void testDuplicate() throws ArchitectException {
 		Match anotherMatch = match.duplicate(match.getName()+"_dup");
 	}
+	
+	public void testVertifyResultTable() throws ArchitectException {
+    	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
+    	
+    	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
+    	pk1.setNullable(DatabaseMetaData.columnNoNulls);
+    	sourceTable.addColumn(pk1);
+    
+    	SQLColumn pk2 = new SQLColumn(sourceTable, "pk2", Types.INTEGER, 20, 0);
+    	pk2.setNullable(DatabaseMetaData.columnNoNulls);
+    	sourceTable.addColumn(pk2);
+    	
+    	SQLColumn col = new SQLColumn(sourceTable, "normal_col_1", Types.VARCHAR, 20, 0);
+    	col.setNullable(DatabaseMetaData.columnNullable);
+    	sourceTable.addColumn(col);
+    	
+    	SQLIndex idx = new SQLIndex("source_pk", true, null, IndexType.HASHED, null);
+    	idx.addChild(idx.new Column(pk1, true, false));
+    	idx.addChild(idx.new Column(pk2, true, false));
+    	sourceTable.addIndex(idx);
+
+    	try {
+    		match.vertifyResultTableStruct();
+    		fail("No exception caught.");
+    	} catch (Exception e) {
+		}
+    	
+    	match.setSourceTable(sourceTable);
+    	
+    	try {
+    		match.vertifyResultTableStruct();
+    		fail("No exception caught.");
+    	} catch (Exception e) {
+		}
+    	
+    	match.setSourceTableIndex(idx);
+    	
+    	try {
+    		match.vertifyResultTableStruct();
+    		fail("No exception caught.");
+    	} catch (Exception e) {
+		}
+    	
+    	match.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
+    	SQLTable resultTable = match.createResultTable();
+
+    	assertTrue("we should have a good result table.",
+    			match.vertifyResultTableStruct());
+    	resultTable.removeColumn(0);
+    	assertFalse("the result table should be broken by now",
+    			match.vertifyResultTableStruct());
+    	
+    }
 }

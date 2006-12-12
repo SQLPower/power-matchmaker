@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -123,5 +124,11 @@ public class StubMatchMakerSession implements MatchMakerSession{
         logger.debug("Stub call: StubMatchMakerSession.getPLSchemaVersion()");
         return null;
     }
+
+	public boolean isThisSQLTableExists(SQLTable table) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerSession.isThisSQLTableExists()");
+		return false;
+	}
     
 }

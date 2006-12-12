@@ -18,6 +18,7 @@ import org.hibernate.cfg.Environment;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
@@ -345,5 +346,18 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     public Version getPLSchemaVersion() {
         return plSchemaVersion;
     }
+
+    public boolean isThisSQLTableExists(SQLTable table) {
+		if ( table == null ) return false;
+		try {
+			SQLTable t = getDatabase().getTableByName(
+					table.getCatalogName(),
+					table.getSchemaName(),
+					table.getName());
+			return (t != null);
+		} catch (ArchitectException e) {
+			return false;
+		}
+	}
 
 }

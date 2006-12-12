@@ -266,6 +266,206 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	}
 
 	/**
+	 * compare column name and datatype
+	 * @param c1 the column has the correct datatype
+	 * @param c2 the column that you want to check
+	 * @param name that name of the column that we were looking for
+	 * @return true if name of c2 match name and type of c1 == type of c2
+	 */
+	private boolean compareColumnNameAndType(SQLColumn c1, SQLColumn c2, String name) {
+		if (c2 == null) {
+			logger.debug("Column name mismatched: excepted:" +
+					name + "but not found.");
+			return false;
+		}
+		if (c2.getType() != c1.getType()) {
+			logger.debug("Column [" + c2.getName() +
+					"] datatype mismatched: excepted:[" +
+					 + c1.getType() +
+					 "] but was:[" + c2.getType() + "]");
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Vetify the result table structure, the result table should looks 
+	 * like these:
+	 * <p>
+	 * <p>dup_candidate_1xxx  [yyy],
+	 * <p>dup_candidate_2xxx  [yyy],
+	 * <p>current_candidate_1xxx [yyy],
+	 * <p>current_candidate_2xxx [yyy],
+	 * <p>dup_idxxx [yyy],
+	 * <p>master_idxxx [yyy],
+	 * <p>candidate_1xxx_mapped VARCHAR(1),
+	 * <p>candidate_2xxx_mapped VARCHAR(1),
+	 * <p>match_percent INTEGER(10),
+	 * <p>group_id  VARCHAR(30),
+	 * <p>match_date TIMESTAMP,
+	 * <p>match_status VARCHAR(15),
+	 * <p>match_status_date  TIMESTAMP,
+	 * <p>match_status_user  VARCHAR(35),
+	 * <p>dup1_master_ind  VARCHAR(1)
+	 * <p>
+	 * where xxx is a sequence from 0 to the total number of unique
+	 * index column - 1 of the source table. yyy is the datatype of 
+	 * column datatype of the unique index of the source table.
+	 * 
+	 * the result table may not exists in the database (in-memory), and
+	 * the source unique index also may not in the database. you may need
+	 * to call {@link MatchMakerSession.isThisSQLTableExists()} to vertify
+	 * the result table existence
+	 * <p> 
+	 * @return false if the table is not exist in the sql database, or
+	 * the table structure does not match above table structure.
+	 * @throws ArchitectException if something unexcepted wrong
+	 * 
+	 * @throws IllegalStateException If the source table has not been setup 
+	 * <p>
+	 * <b>or</b>
+	 * <p>unique index has not been setup 
+	 * <p>
+	 * <b>or</b>
+	 * <p>session and sql database have not been setup for the match
+	 */
+	public boolean vertifyResultTableStruct() throws ArchitectException {
+
+		MatchMakerSession session = getSession();
+		if ( session == null ) {
+			throw new IllegalStateException("Session has not been setup " +
+					"for the match, you will need session and database " +
+					"connection to check the result table");
+		}
+		SQLDatabase db = session.getDatabase();
+		if ( db == null ) {
+			throw new IllegalStateException("Database has not been setup " +
+					"for the match session, you will need database " +
+					"connection to check the result table");
+		}
+		SQLIndex si = getSourceTableIndex();
+		if (si == null) {
+			throw new IllegalStateException("No unique index specified " +
+					"for the match, I don't know how to vertify the " +
+					"result table stucture.");
+		}
+		SQLTable sourceTable = getSourceTable();
+		if ( sourceTable == null) {
+			throw new IllegalStateException("No source table specified " +
+					"for the match, I don't know how to vertify the " +
+					"result table stucture.");
+		}
+
+		SQLTable oldResultTable = getResultTable();
+		if (oldResultTable == null) {
+			throw new IllegalStateException(
+					"You have to properly specify the result table " +
+					"catalog, schema, and name before calling " +
+					"vertifyResultTableStruct()");
+		}
+
+		String colName;
+		SQLColumn column;
+		SQLColumn indexColumn;
+		for (int i = 0; i < si.getChildCount(); i++) {
+			indexColumn = si.getChild(i).getColumn();
+			colName = "dup_candidate_1"+i;
+			column = oldResultTable.getColumnByName(colName);
+			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+				return false;
+			}
+			colName = "dup_candidate_2"+i;
+			column = oldResultTable.getColumnByName(colName);
+			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+				return false;
+			}
+			colName = "current_candidate_1"+i;
+			column = oldResultTable.getColumnByName(colName);
+			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+				return false;
+			}
+			colName = "current_candidate_2"+i;
+			column = oldResultTable.getColumnByName(colName);
+			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+				return false;
+			}
+			colName = "dup_id"+i;
+			column = oldResultTable.getColumnByName(colName);
+			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+				return false;
+			}
+			colName = "master_id"+i;
+			column = oldResultTable.getColumnByName(colName);
+			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+				return false;
+			}
+			
+			colName = "candidate_1"+i+"_mapped";
+			column = oldResultTable.getColumnByName(colName);
+			indexColumn = new SQLColumn(null,colName, Types.VARCHAR, 1, 0);
+			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+				return false;
+			}
+			colName = "candidate_2"+i+"_mapped";
+			column = oldResultTable.getColumnByName(colName);
+			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+				return false;
+			}
+		}
+
+		colName = "match_percent";
+		column = oldResultTable.getColumnByName(colName);
+		indexColumn = new SQLColumn(null, colName, Types.INTEGER, 10, 0);
+		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+			return false;
+		}
+
+		colName = "group_id";
+		column = oldResultTable.getColumnByName(colName);
+		indexColumn = new SQLColumn(null, colName, Types.VARCHAR, 30, 0);
+		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+			return false;
+		}
+
+		colName = "match_date";
+		column = oldResultTable.getColumnByName(colName);
+		indexColumn = new SQLColumn(null, colName, Types.TIMESTAMP, 0, 0);
+		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+			return false;
+		}
+		
+		colName = "match_status";
+		column = oldResultTable.getColumnByName(colName);
+		indexColumn = new SQLColumn(null, colName, Types.VARCHAR, 15, 0);
+		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+			return false;
+		}
+
+		colName = "match_status_date";
+		column = oldResultTable.getColumnByName(colName);
+		indexColumn = new SQLColumn(null, colName, Types.TIMESTAMP, 0, 0);
+		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+			return false;
+		}
+		
+		colName = "match_status_user";
+		column = oldResultTable.getColumnByName(colName);
+		indexColumn = new SQLColumn(null, colName, Types.VARCHAR, 35, 0);
+		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+			return false;
+		}
+
+		colName = "dup1_master_ind";
+		column = oldResultTable.getColumnByName(colName);
+		indexColumn = new SQLColumn(null, colName, Types.VARCHAR, 1, 0);
+		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
+			return false;
+		}
+		return true;
+	}
+	
+	
+	/**
 	 * FIXME Implement me
 	 *
 	 */
