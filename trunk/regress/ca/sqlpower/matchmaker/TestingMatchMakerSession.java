@@ -80,6 +80,8 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
         if (businessClass == MatchMakerTranslateGroup.class){
             return (MatchMakerDAO<T>) new MatchMakerTranslateGroupDAOStub();
+        } else if (businessClass == PlFolder.class){
+            return (MatchMakerDAO<T>) new PlFolderDAOStup();
         }
         return null;
     }
@@ -156,6 +158,16 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         }
         return translateGroupParent;
     }
+
+	public FolderParent getBackupFolderParent() {
+		return null;
+	}
+
+	public FolderParent getCurrentFolderParent() {
+		FolderParent current = new FolderParent(this);
+		current.getChildren().addAll(folders);
+		return current;
+	}
 
     public Version getPLSchemaVersion() {
         throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");

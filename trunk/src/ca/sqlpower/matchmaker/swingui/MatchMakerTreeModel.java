@@ -11,6 +11,7 @@ import javax.swing.tree.TreePath;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -51,24 +52,22 @@ public class MatchMakerTreeModel implements TreeModel {
 
 	}
 
-	private final MMTreeNode<MMTreeNode> root = new MMTreeNode<MMTreeNode>(
+	private final MMTreeNode<FolderParent> root = new MMTreeNode<FolderParent>(
 			"root",true);
 
-	private final MMTreeNode<PlFolder> current = new MMTreeNode<PlFolder>(
-			"Current Match/Merge Information",false);
 
-	private final MMTreeNode<PlFolder> backup = new MMTreeNode<PlFolder>(
-			"Backup Match/Merge Information",false);
-
+	private FolderParent current;
+	private FolderParent backup;
+	
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
 
-	public MatchMakerTreeModel(List<PlFolder> folders) {
+	public MatchMakerTreeModel(FolderParent current, FolderParent backup) {
+		current.setName("Current Match/Merge Information");
 		root.addChild(current);
+		this.current = current;
+		backup.setName("Backup Match/Merge Information");
 		root.addChild(backup);
-
-		for (PlFolder f : folders) {
-			current.addChild(f);
-		}
+		this.backup = backup;
 		MatchMakerUtils.listenToHierarchy(listener, root);
 	}
 

@@ -446,7 +446,7 @@ public class MatchEditor implements EditorPane {
 
     private void setDefaultSelections() throws ArchitectException {
 
-    	final List<PlFolder> folders = swingSession.getFolders();
+    	final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
     	final SQLDatabase loginDB = swingSession.getDatabase();
         sourceChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
         resultChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());

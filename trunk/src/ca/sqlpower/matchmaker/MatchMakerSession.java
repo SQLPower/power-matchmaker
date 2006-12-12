@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
 import java.util.Date;
-import java.util.List;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
@@ -56,11 +55,6 @@ public interface MatchMakerSession {
 	 * The time this session was created.
 	 */
 	public Date getSessionStartTime();
-
-	/**
-	 * All of the Match folders that the current user can see.
-	 */
-	public List<PlFolder> getFolders();
 
     /**
      * Returns the folder that matches with the name
@@ -145,5 +139,14 @@ public interface MatchMakerSession {
      * get all of the translations the user can see
      */
     public TranslateGroupParent getTranslations();
-    
+
+    /**
+	 * All of the Match folders that the current user can see with backup.
+	 */
+	public FolderParent getBackupFolderParent();
+
+	/**
+	 * All of the Match folders that the current user can see that are active.
+	 */
+	public FolderParent getCurrentFolderParent();
 }

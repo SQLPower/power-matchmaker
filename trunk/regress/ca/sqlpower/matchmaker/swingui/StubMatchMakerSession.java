@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -105,6 +106,18 @@ public class StubMatchMakerSession implements MatchMakerSession{
         logger.debug("Stub call: StubMatchMakerSession.getTranslations()");
         return null;
     }
+
+	public FolderParent getBackupFolderParent() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerSession.getBackupFolderParent()");
+		return null;
+	}
+
+	public FolderParent getCurrentFolderParent() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerSession.getCurrentFolderParent()");
+		return null;
+	}
 
     public Version getPLSchemaVersion() {
         logger.debug("Stub call: StubMatchMakerSession.getPLSchemaVersion()");

@@ -25,11 +25,11 @@
 			<column name="SEQ_NO" precision="22" scale="0" />
 		</property>
 		
-		<property name="from" type="string">
+		<property name="from" type="string" access="field">
 			<column name="FROM_WORD" length="80" />
 		</property>
 		
-		<property name="to" type="string">
+		<property name="to" type="string" access="field">
 			<column name="TO_WORD" length="80" />
 		</property>
 

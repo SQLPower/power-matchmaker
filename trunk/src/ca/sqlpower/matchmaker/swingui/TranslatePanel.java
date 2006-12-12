@@ -208,7 +208,7 @@ public class TranslatePanel implements ArchitectPanel {
             MatchMakerTranslateGroup mmtg = new MatchMakerTranslateGroup();
             mmtg.setName(newGroupName.getText());
             newGroupName.setText("");
-            swingSession.getTranslations().addChild(mmtg);
+            swingSession.getTranslations().addNewChild(mmtg);
             translationGroup.setSelectedItem(mmtg);
 		}		
 	};
@@ -218,7 +218,7 @@ public class TranslatePanel implements ArchitectPanel {
 		public void actionPerformed(ActionEvent e) {
 			MatchMakerTranslateGroup tg = (MatchMakerTranslateGroup) translationGroup.getSelectedItem();
 			if (tg != null){
-                swingSession.getTranslations().removeChild(tg);
+                swingSession.getTranslations().removeAndDeleteChild(tg);
 			}
 		}
 		

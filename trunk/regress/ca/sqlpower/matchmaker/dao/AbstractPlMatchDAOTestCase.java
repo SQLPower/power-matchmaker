@@ -12,7 +12,6 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
-import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
 
 public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Match,MatchDAO>  {
 
@@ -144,28 +143,19 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         insertSampleMatchCriteriaData(groupOid, "test_crit_"+time);
         
         Match match = getDataAccessObject().findByName(matchName);
-        
-        try {
-            ((TestingMatchMakerHibernateSession) getSession()).setConnectionDisabled(true);
             List<MatchMakerCriteriaGroup> groups = match.getMatchCriteriaGroups();
-            assertEquals("There should be one criteria group",
-                    1, groups.size());
+		assertEquals("There should be one criteria group", 1, groups.size());
 
-            MatchMakerCriteriaGroup group = groups.get(0);
-            assertEquals("Wrong Group name",
-                    "group_"+time, group.getName());
+		MatchMakerCriteriaGroup group = groups.get(0);
+		assertEquals("Wrong Group name", "group_" + time, group.getName());
 
-            List<MatchMakerCriteria> crits = group.getChildren();
-            assertEquals("There is only one set of column criteria",
-                    1, crits.size());
+		List<MatchMakerCriteria> crits = group.getChildren();
+		assertEquals("There is only one set of column criteria", 1, crits
+				.size());
 
-            MatchMakerCriteria crit = crits.get(0);
-            assertEquals("Wrong criteria last update user",
+		MatchMakerCriteria crit = crits.get(0);
+		assertEquals("Wrong criteria last update user",
                     "test_crit_"+time, crit.getLastUpdateAppUser());
-        } finally {
-            ((TestingMatchMakerHibernateSession) getSession()).setConnectionDisabled(false);
-        }
-
     }
     
     public void testCriteriaGroupMove() throws Exception {

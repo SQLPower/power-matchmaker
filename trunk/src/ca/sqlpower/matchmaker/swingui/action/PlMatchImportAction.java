@@ -106,7 +106,7 @@ public class PlMatchImportAction extends AbstractAction {
 				}
 
 				if ( match.getParent() != null ) {
-					List<PlFolder> folders = swingSession.getFolders();
+					List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
 					for ( PlFolder<Match> folder : folders ) {
 						if ( folder.getName().equals(((PlFolder<Match>)match.getParent()).getName())) {
 							logger.debug("Folder ["+folder.getName()+"] exists");

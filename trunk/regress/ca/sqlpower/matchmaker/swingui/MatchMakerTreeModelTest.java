@@ -1,15 +1,16 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.event.TreeModelEvent;
 
 import junit.framework.TestCase;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
 public class MatchMakerTreeModelTest extends TestCase {
 
@@ -24,7 +25,9 @@ public class MatchMakerTreeModelTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		counter = new MatchMakerTreeEventCounter();
-		treeModel = new MatchMakerTreeModel(new ArrayList<PlFolder>());
+		FolderParent current = new FolderParent(new TestingMatchMakerSession());
+		FolderParent backup = new FolderParent(new TestingMatchMakerSession());
+		treeModel = new MatchMakerTreeModel(current,backup);
 		currentFoldersNode = (MatchMakerObject<MatchMakerObject, PlFolder>) treeModel.getChild(treeModel.getRoot(), 0);
 		currentFoldersNode.addChild(folder);
 	}

@@ -12,6 +12,7 @@ import org.hibernate.SessionFactory;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.DBTestUtil;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -209,6 +210,18 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
 	public void setContext(TestingMatchMakerContext context) {
 		this.context = context;
+	}
+
+	public FolderParent getBackupFolderParent() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.getBackupFolderParent()");
+		return null;
+	}
+
+	public FolderParent getCurrentFolderParent() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.getCurrentFolderParent()");
+		return null;
 	}
     
     public Version getPLSchemaVersion() {

@@ -11,6 +11,8 @@ import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
@@ -18,11 +20,11 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MMTreeNode;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchCriteria;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
@@ -33,9 +35,9 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 
-public class MatchMakerTreeMouseListener extends MouseAdapter {
+public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implements TreeSelectionListener {
 
-	private static final Logger logger = Logger.getLogger(MatchMakerTreeMouseListener.class);
+	private static final Logger logger = Logger.getLogger(MatchMakerTreeMouseAndSelectionListener.class);
 
     private final MatchMakerSwingSession swingSession;
 
@@ -43,58 +45,54 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
 
     private JPopupMenu m;
 
-    public MatchMakerTreeMouseListener(MatchMakerSwingSession swingSession) {
+    public MatchMakerTreeMouseAndSelectionListener(MatchMakerSwingSession swingSession) {
         this.swingSession = swingSession;
         this.owningFrame = swingSession.getFrame();
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-
-        if (MouseEvent.BUTTON1 == e.getButton()) {
-            JTree t = (JTree) e.getSource();
-            int row = t.getRowForLocation(e.getX(), e.getY());
-            TreePath tp = t.getPathForRow(row);
-            if (tp != null) {
-                Object o = tp.getLastPathComponent();
-                try {
-					if (o instanceof PlFolder) {
-						FolderEditor editor = new FolderEditor(swingSession,
-								(PlFolder) o);
-						swingSession.setCurrentEditorComponent(editor);
-					} else if (o instanceof Match) {
-
-						MatchEditor me;
-						try {
-							me = new MatchEditor(swingSession, (Match) o,
-									(PlFolder<Match>) ((Match) o).getParent());
-						} catch (ArchitectException e1) {
-							throw new ArchitectRuntimeException(e1);
-						}
-
-						swingSession.setCurrentEditorComponent(me);
-
-					} else if (o instanceof MatchMakerCriteriaGroup) {
-						Match m = ((MatchMakerCriteriaGroup) o)
-								.getParentMatch();
-						try {
-							MatchMakerCriteriaGroupEditor editor = new MatchMakerCriteriaGroupEditor(
-									swingSession, m,
-									(MatchMakerCriteriaGroup) o);
-							logger.debug("Created new match group editor "
-									+ System.identityHashCode(editor));
-							swingSession.setCurrentEditorComponent(editor);
-						} catch (ArchitectException e1) {
-							throw new ArchitectRuntimeException(e1);
-						}
-					}
-                }catch (SQLException e1) {
-					throw new RuntimeException(e1);
-				}
-            }
-        }
-
     }
+
+	private void itemSelected(TreeSelectionEvent e) {
+		TreePath tp = e.getPath();
+		if (tp != null) {
+			Object o = tp.getLastPathComponent();
+			try {
+				if (o instanceof PlFolder) {
+					FolderEditor editor = new FolderEditor(swingSession,
+							(PlFolder) o);
+					swingSession.setCurrentEditorComponent(editor);
+				} else if (o instanceof Match) {
+
+					MatchEditor me;
+					try {
+						me = new MatchEditor(swingSession, (Match) o,
+								(PlFolder<Match>) ((Match) o).getParent());
+					} catch (ArchitectException e1) {
+						throw new ArchitectRuntimeException(e1);
+					}
+
+					swingSession.setCurrentEditorComponent(me);
+
+				} else if (o instanceof MatchMakerCriteriaGroup) {
+					Match m = ((MatchMakerCriteriaGroup) o).getParentMatch();
+					try {
+						MatchMakerCriteriaGroupEditor editor = new MatchMakerCriteriaGroupEditor(
+								swingSession, m, (MatchMakerCriteriaGroup) o);
+						logger.debug("Created new match group editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
+					} catch (ArchitectException e1) {
+						throw new ArchitectRuntimeException(e1);
+					}
+				}
+			} catch (SQLException e1) {
+				throw new RuntimeException(e1);
+			}
+		}
+	}
+	
 
     @Override
     public void mousePressed(MouseEvent e) {
@@ -122,7 +120,7 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
             m.add(new JMenuItem(new Refresh(swingSession)));
             if (tp != null) {
                 Object o = tp.getLastPathComponent();
-                if (o instanceof MMTreeNode ) {
+                if (o instanceof FolderParent ) {
                 	MatchMakerTreeModel model = (MatchMakerTreeModel)t.getModel();
                 	int index = model.getIndexOfChild(model.getRoot(), o);
                 	/*** create folder under current only */
@@ -202,5 +200,11 @@ public class MatchMakerTreeMouseListener extends MouseAdapter {
         m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
         m.add(new JMenuItem(new DeletePlFolderAction(swingSession,"Delete Folder",folder)));
     }
+
+	public void valueChanged(TreeSelectionEvent e) {
+		itemSelected(e);
+	}
+
+	
 
 }
