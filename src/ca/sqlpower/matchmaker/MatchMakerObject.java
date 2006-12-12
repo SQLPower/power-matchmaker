@@ -13,17 +13,22 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMakerObject> extends Auditable {
 
 	/**
-	 * Support for adding match maker event listeners
+	 * Registers the given listener as a recipient of future MatchMakerEvents
+     * that this object generates.  Does not register the listener for any such
+     * events that this object's ancestors or descendants generate.  For that,
+     * see {@link MatchMakerUtils#listenToHierarchy(MatchMakerListener, MatchMakerObject)}.
 	 */
 	void addMatchMakerListener(MatchMakerListener<T, C> l);
 
 	/**
-	 * Support for adding match maker event listeners
+	 * De-registers the given listener as a recipient of future MatchMakerEvents
+     * that this object generates.  If the given listener was not in this object's
+     * listener list, calling this method has non effect.
 	 */
 	void removeMatchMakerListener(MatchMakerListener<T, C> l);
 
 	/**
-	 * get the parent of this object
+	 * Returns the parent of this object.
 	 */
 	MatchMakerObject getParent();
 
@@ -33,11 +38,13 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
     String getName();
     
 	/**
-	 * Set the parent (ie. the object that holds this one as a child)
+	 * Sets the parent (ie. the object that holds this one as a child)
 	 */
 	 void setParent(MatchMakerObject parent);
 
 	 /**
+      * Tells whether or not this MatchMaker object can have children.
+      * 
 	  * @return true if this MatchMakerObject allows children, false otherwise.
 	  */
 	 public boolean allowsChildren();
@@ -48,7 +55,7 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
 	List<C> getChildren();
 
 	/**
-	 * Get the number of children
+	 * Returns the number of children on this MatchMaker Object.
 	 */
 	int getChildCount();
 
@@ -57,8 +64,10 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
 	 */
 	void addChild(C child);
 
-	/**
-	 * remove a child from this object
+    /**
+     * Removes the given child and fires a childrenRemoved event.  If the
+     * given child is not present in this object, calling this method has
+     * no effect (no children are removed and no events are fired).
 	 */
 	void removeChild(C child);
 
