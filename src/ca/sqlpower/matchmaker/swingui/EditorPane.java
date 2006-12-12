@@ -8,13 +8,16 @@ import javax.swing.JComponent;
  *
  */
 public interface EditorPane {
-	/** True if this Pane has any changes; will usually delegate
+    
+	/** 
+     * True if this Pane has any changes; will usually delegate
 	 * to the Panel's Validator's hasValidated() method.
 	 * @return
 	 */
 	public boolean hasUnsavedChanges();
 
-	/** Perform the editor save.
+	/** 
+     * Performs the editor save.
      * 
      * <p><b>IMPORTANT NOTE:</b> Make sure this method does not blindly return true
      * just so that it has a valid return type, it is essiental that it
@@ -27,6 +30,8 @@ public interface EditorPane {
 	 */                
 	public boolean doSave();
 
-	/** Retrieve the Editor's visual component */
+	/** 
+     * Retrieves the Editor's visual component.
+     */
 	public JComponent getPanel();
 }
