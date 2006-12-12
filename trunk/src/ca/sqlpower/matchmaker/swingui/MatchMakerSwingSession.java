@@ -51,7 +51,6 @@ import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
@@ -66,7 +65,6 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.sql.PLSchemaException;
-import ca.sqlpower.sql.SchemaVersion;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.util.Version;
 
@@ -77,11 +75,6 @@ import ca.sqlpower.util.Version;
 public class MatchMakerSwingSession implements MatchMakerSession {
 
 	private static Logger logger = Logger.getLogger(MatchMakerSwingSession.class);
-
-	/**
-	 * The minimum PL schema version that the MatchMaker works with.
-	 */
-	private static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,27);
 
     /**
      * Controls a few GUI tweaks that we do on OS X, such as moving menu items around.
@@ -134,30 +127,25 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
-    /*
+    /**
      * This variable is used to restore the old selection if the user
      * decides to hit cancel on a request to save or discard unsaved changes.
      */
     private TreePath lastTreePath;
-    
-    /**
-     * Container for translate groups
-     */
-    private MatchMakerObject<MatchMakerObject, MatchMakerTranslateGroup> translateGroupParent;
 
 	private Action aboutAction = new AbstractAction("About MatchMaker...") {
         public void actionPerformed(ActionEvent e) {
             String message =
                 "<html>" +
                 "<h1>Power*MatchMaker</h1>" +
-                "<p>Version x.y</p>" +
+                "<p>Version "+MatchMakerSessionContext.APP_VERSION+"</p>" +
                 "<p>Copyright 2006 SQL Power Group Inc.</p>" +
                 "</html>";
             ImageIcon icon = new ImageIcon(getClass().getResource("/icons/matchmaker_128.png"));
             JOptionPane.showOptionDialog(
                     frame, message, "About Power*MatchMaker",
                     JOptionPane.YES_OPTION, JOptionPane.INFORMATION_MESSAGE,
-                    icon, new String[] { "Ok" }, "Ok");
+                    icon, new String[] { "OK" }, "OK");
         }
     };
 
@@ -193,9 +181,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	};
 
 	private Action runMergeAction = new DummyAction(null, "Run Merge");
-
-	private Action dbBrowseAction =
-		new DummyAction(null, "Database Browser");
 
 	private Action configAction = new DummyAction(null, "Config");
 	private Action helpAction;
@@ -245,6 +230,40 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         }
     };
 
+    /**
+     * This is a special variable to remember the panel that was last on 
+     * the right side of the splitpane.  If the user decides to cancel on switching
+     * screens (via the JTree), this variable is invoked to go back to the original
+     * screen so the unsaved change method would still work properly.
+     */
+    private EditorPane oldPane;
+
+    /**
+     * The number of times in a row this session has handled a warning message with
+     * exactly the same text as the most recent warning message.
+     */
+    private int lastMessageCount;
+
+    /**
+     * The most recent warning message handled by this session.  A running count is
+     * kept of how many times in a row we have seen this message.
+     */
+    private String lastMessage;
+
+    /**
+     * A space filler with semi-useful information about the application, and the database
+     * this session is connected to.
+     */
+    private EditorPane splashScreen;
+
+    /**
+     * Tracks whether or not we are currently in the middle of updating the
+     * editor pane.  When we are, various behaviours are suppressed in order
+     * to prevent asking the user the same questions multiple times, or asking
+     * seemingly contradictory questions one after the other.
+     */
+    private boolean editorComponentUpdateInProgress = false;
+
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
      * would use a LoginDialog instead of calling this constructor directly.
@@ -270,7 +289,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			}
 		});
 
-        checkSchema(sessionImpl.getDatabase());
         frame = new JFrame("MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
 
         warningDialog = new JFrame("MatchMaker Warnings");
@@ -444,45 +462,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return current;
 	}
 
-	/**
-     * Checks the PL Schema version in the given database.
-     *
-     * @param db the database to check
-     * @throws PLSchemaException if the schema in db is older than
-     * {@link #MIN_PL_SCHEMA_VERSION}.
-     * @throws ArchitectException if it is not possible to get a JDBC connection for db.
-     * @throws SQLException if there is a miscellaneous database error (including missing
-     * DEF_PARAM table).
-     * @throws SchemaVersionFormatException if the schema version in DEF_PARAM is not formatted
-     * as a dotted triple.
-     */
-    private void checkSchema(SQLDatabase db) throws PLSchemaException, ArchitectException, SchemaVersionFormatException, SQLException {
-        Version ver = null;
-        Connection con = null;
-        try {
-            con = db.getConnection();
-            ver = SchemaVersion.makeFromDatabase(con);
-            logger.info(
-                    "checkSchema(): connected to "+db.getName()+
-                    " schema version: " + ver );
-            if (ver.compareTo(MIN_PL_SCHEMA_VERSION) < 0) {
-                throw new PLSchemaException(
-                        "The MatchMaker requires PL Schema version "+
-                        MIN_PL_SCHEMA_VERSION+" or newer.  This database " +
-                        "is at version "+ver, ver.toString(),
-                        MIN_PL_SCHEMA_VERSION.toString());
-            }
-        } finally {
-            try {
-                if (con != null) con.close();
-            } catch (SQLException e) {
-                logger.error("Couldn't close connection", e);
-            }
-        }
-    }
-
-
-
     /**
      * Returns the frame for this Swing session.
      */
@@ -550,14 +529,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	    System.exit(0);
 	}
 
-	EditorPane oldPane;
-
-	private int lastMessageCount;
-
-	private String lastMessage;
-
-	private NoEditEditorPane splashScreen;
-
     /**
 	 * Shows the given component in the main part of the frame's UI.
 	 *
@@ -572,63 +543,72 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			return;	// User clicked on same item, don't hassle them
 		}
 
-		if (splashScreen == null){
-			splashScreen = new NoEditEditorPane(new MatchMakerSplashScreen(this).getSplashScreen());
-		}
-		boolean save = false, doit = true;
+        if (editorComponentUpdateInProgress) {
+            return;
+        }
+        
+        try {
+            editorComponentUpdateInProgress = true;
+            if (splashScreen == null){
+                splashScreen = new NoEditEditorPane(new MatchMakerSplashScreen(this).getSplashScreen());
+            }
+            boolean save = false, doit = true;
 
-		if (oldPane != null && oldPane.hasUnsavedChanges()) {
-			String[] options = { "Save", "Discard Changes", "Cancel" };
-			final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
-			int ret = JOptionPane.showOptionDialog(
-					frame,
-					String.format("Your %s has unsaved changes", ASUtils.niceClassName(oldPane)),
-					"Warning", JOptionPane.OK_CANCEL_OPTION,
-					JOptionPane.QUESTION_MESSAGE, null, options,
-					options[0]);
+            if (oldPane != null && oldPane.hasUnsavedChanges()) {
+                String[] options = { "Save", "Discard Changes", "Cancel" };
+                final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
+                int ret = JOptionPane.showOptionDialog(
+                        frame,
+                        String.format("Your %s has unsaved changes", ASUtils.niceClassName(oldPane)),
+                        "Warning", JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE, null, options,
+                        options[0]);
 
-			switch (ret) {
-			case JOptionPane.CLOSED_OPTION:
-				save = false;
-				doit = false;
-				break;
-			case O_SAVE:
-				save = true;
-				doit = false;
-				break;
-			case O_DISCARD:
-				save = false;
-				doit = true;
-				break;
-			case O_CANCEL:
-				save = false;
-				doit = false;
-                //The treepath should never be null if it reaches here
-                //since prompting this means that the right side of the splitpane
-                //must have at least been replaced once.
-                tree.setSelectionPath(lastTreePath);
-				break;
-			}
-			if (save) {
-				if (oldPane != null) {
-					doit = oldPane.doSave();
-					if (!doit){
-						tree.setSelectionPath(lastTreePath);
-					}
-				}
-			}
-		} 
-		if (doit) {
-			//Remebers the treepath to the last node that it clicked on
-			if (pane != null){
-				lastTreePath = tree.getSelectionPath();
-				splitPane.setRightComponent(pane.getPanel());
-				oldPane = pane;
-			} else {
-				splitPane.setRightComponent(splashScreen.getPanel());
-				oldPane = splashScreen;
-			}
-		}
+                switch (ret) {
+                case JOptionPane.CLOSED_OPTION:
+                    save = false;
+                    doit = false;
+                    break;
+                case O_SAVE:
+                    save = true;
+                    doit = false;
+                    break;
+                case O_DISCARD:
+                    save = false;
+                    doit = true;
+                    break;
+                case O_CANCEL:
+                    save = false;
+                    doit = false;
+                    //The treepath should never be null if it reaches here
+                    //since prompting this means that the right side of the splitpane
+                    //must have at least been replaced once.
+                    tree.setSelectionPath(lastTreePath);
+                    break;
+                }
+                if (save) {
+                    if (oldPane != null) {
+                        doit = oldPane.doSave();
+                        if (!doit){
+                            tree.setSelectionPath(lastTreePath);
+                        }
+                    }
+                }
+            } 
+            if (doit) {
+                //Remebers the treepath to the last node that it clicked on
+                if (pane != null){
+                    lastTreePath = tree.getSelectionPath();
+                    splitPane.setRightComponent(pane.getPanel());
+                    oldPane = pane;
+                } else {
+                    splitPane.setRightComponent(splashScreen.getPanel());
+                    oldPane = splashScreen;
+                }
+            }
+        } finally {
+            editorComponentUpdateInProgress = false;
+        }
 	}
 
 	/**
