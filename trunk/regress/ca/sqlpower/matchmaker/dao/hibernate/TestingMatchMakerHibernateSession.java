@@ -10,7 +10,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
@@ -227,4 +229,17 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     public Version getPLSchemaVersion() {
         throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");
     }
+
+	public boolean isThisSQLTableExists(SQLTable table) {
+		if ( table == null ) return false;
+		try {
+			SQLTable t = getDatabase().getTableByName(
+					table.getCatalogName(),
+					table.getSchemaName(),
+					table.getName());
+			return (t != null);
+		} catch (ArchitectException e) {
+			return false;
+		}
+	}
 }

@@ -66,5 +66,4 @@ public class MatchDAOHibernate extends AbstractMatchMakerDAOHibernate<Match> imp
 		Long count = (Long)query.uniqueResult();
 		return count;
 	}
-	
 }

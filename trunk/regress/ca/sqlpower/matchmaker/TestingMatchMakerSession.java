@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.util.Version;
 
@@ -172,6 +174,18 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     public Version getPLSchemaVersion() {
         throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");
     }
-    
+
+    public boolean isThisSQLTableExists(SQLTable table) {
+		if ( table == null ) return false;
+		try {
+			SQLTable t = getDatabase().getTableByName(
+					table.getCatalogName(),
+					table.getSchemaName(),
+					table.getName());
+			return (t != null);
+		} catch (ArchitectException e) {
+			return false;
+		}
+	}
     
 }

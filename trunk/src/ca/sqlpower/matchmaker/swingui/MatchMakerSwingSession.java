@@ -41,6 +41,7 @@ import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectSessionImpl;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -891,5 +892,17 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return sessionImpl.getPLSchemaVersion();
     }
 
-    
+    public boolean isThisSQLTableExists(SQLTable table) {
+		if ( table == null ) return false; 
+		try {
+			SQLTable t = getDatabase().getTableByName(
+					table.getCatalogName(),
+					table.getSchemaName(),
+					table.getName());
+			return (t != null);
+		} catch (ArchitectException e) {
+			return false;
+		}
+	}
+  
 }

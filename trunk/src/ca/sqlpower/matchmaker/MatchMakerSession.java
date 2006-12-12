@@ -5,6 +5,7 @@ import java.util.Date;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.util.Version;
@@ -149,4 +150,12 @@ public interface MatchMakerSession {
 	 * All of the Match folders that the current user can see that are active.
 	 */
 	public FolderParent getCurrentFolderParent();
+	
+	/**
+	 * check if the given SQLTable exists in the session's SQLDatabase
+	 * @param table the SQLTable that you want to check
+	 * @return true if the sql table exists in the sql database
+	 * of this session
+	 */
+	public boolean isThisSQLTableExists(SQLTable table);
 }

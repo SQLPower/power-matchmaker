@@ -43,4 +43,7 @@ public interface MatchDAO extends MatchMakerDAO<Match> {
 	 * @return number of match entity by given name
 	 */
 	public long countMatchByName(String name);
+	
+
+	
 }
