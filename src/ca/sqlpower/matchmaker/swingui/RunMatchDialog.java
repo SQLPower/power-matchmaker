@@ -521,7 +521,7 @@ public class RunMatchDialog extends JDialog {
 
 			try {
 				matchEngine = new MatchMakerEngineImpl(session, match);
-				matchEngine.checkPreConditions();
+				matchEngine.checkPreconditions();
 				matchEngine.addEngineListener(this);
 				matchEngine.run();
 			} catch (EngineSettingException ese) {
