@@ -45,7 +45,6 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -857,20 +856,9 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		if(mmo.getParent() != null) {
 			mmo.getParent().removeChild(mmo);
 			save(mmo);
-		}
-		if (mmo instanceof Match){
-			Match match = (Match)mmo;
-			MatchDAO dao = (MatchDAO) getDAO(Match.class);
-			dao.delete(match);
-		} else if (mmo instanceof MatchMakerCriteriaGroup) {
-			MatchMakerCriteriaGroup cg = (MatchMakerCriteriaGroup)mmo;
-			MatchCriteriaGroupDAO dao = (MatchCriteriaGroupDAO) getDAO(MatchMakerCriteriaGroup.class);
-			dao.delete(cg);
-		}else if (mmo instanceof MatchMakerCriteria) {
-			// do nothing only need to remove it from its parent
 		} else {
-			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");
-		}
+            throw new IllegalStateException("I don't know how to delete a parentless object");
+        }
 	}
 	/**
 	 * Move a match maker object from one parent ( can be null) to a new match maker object.
