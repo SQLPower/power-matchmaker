@@ -1,6 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +12,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
@@ -23,14 +23,18 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
+import ca.sqlpower.architect.swingui.table.TableUtils;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.validation.RegExValidator;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
+import ca.sqlpower.validation.swingui.StatusComponent;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
+import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -46,15 +50,60 @@ public class MatchMakerIndexBuilder implements EditorPane {
 	private JTable columntable;
 	private final SQLTable sqlTable;
 	private final IndexColumnTableModel indexColumnTableModel;
-	private boolean modified = false;
+	private boolean tableModified = false;
+    
+    /** Displays validation results */
+    private StatusComponent statusComponent;
+
+    /**
+     * Handles the validation rules for this form.
+     */
+    private FormValidationHandler validationHandler; 
+    
+    private final AbstractAction okAction = new AbstractAction("OK") {
+    			public void actionPerformed(ActionEvent e) {
+                    boolean success = doSave();
+                    if (!success) {
+                        JOptionPane.showMessageDialog(dialog, "Validation Error.  Can't save.");
+                    } else {
+                        dialog.dispose();
+                    }
+    			}
+    		};
+            
+    private final AbstractAction cancelAction = new AbstractAction("Cancel") {
+    			public void actionPerformed(ActionEvent e) {
+    				if (hasUnsavedChanges()) {
+    					int choice = JOptionPane.showOptionDialog(
+    							dialog,
+    							"Your index has unsaved changes", "Unsaved Changes", 0, 0, null,
+                                new String[] { "Save", "Discard", "Cancel" }, "Save");
+                        System.out.println("choice: "+choice);
+                        if (choice == 0) {
+                            boolean success = doSave();
+                            if (!success) {
+                                JOptionPane.showMessageDialog(dialog, "Validation Error.  Can't save.");
+                                return;
+                            }
+                        } else if (choice == 1) {
+                            // fall through
+                        } else if (choice == 2 || choice == -1) {
+                            return;
+                        } else {
+                            throw new IllegalStateException("Unknown choice: "+choice);
+                        }
+    				}
+    				dialog.dispose();
+    			}
+    		};
+            
 	
-	
-	public boolean isModified() {
-		return modified;
+	private boolean isTableModified() {
+		return tableModified;
 	}
 
-	public void setModified(boolean modified) {
-		this.modified = modified;
+	private void setTableModified(boolean modified) {
+		this.tableModified = modified;
 	}
 
 	public MatchMakerIndexBuilder(Match match, MatchMakerSwingSession swingSession) throws ArchitectException {
@@ -75,12 +124,21 @@ public class MatchMakerIndexBuilder implements EditorPane {
 			}
 		}
 
-		indexName = new JTextField(name,80);
+        statusComponent = new StatusComponent();
+        validationHandler = new FormValidationHandler(statusComponent);
+		indexName = new JTextField(name,15);
+		validationHandler.addValidateObject(indexName, 
+                new RegExValidator(
+                        "[a-z_][a-z0-9_]*",
+                        "Index name must be a valid SQL identifier",
+                        false));
 		indexColumnTableModel = new IndexColumnTableModel(sqlTable,oldIndex);
 		columntable = new JTable(indexColumnTableModel);
 		columntable.addColumnSelectionInterval(1, 1);
-
+		TableUtils.fitColumnWidths(columntable, 6);
+        
 		dialog = new JDialog(swingSession.getFrame());
+        dialog.setTitle("Index Column Chooser");
 		buildUI();
 		dialog.pack();
 		dialog.setLocationRelativeTo(swingSession.getFrame());
@@ -90,10 +148,10 @@ public class MatchMakerIndexBuilder implements EditorPane {
 	private void buildUI() {
 		
 		FormLayout layout = new FormLayout(
-				"4dlu,fill:min(200dlu;pref):grow,4dlu",
+				"4dlu,fill:pref:grow,4dlu",
 		// column1    2    3  
-				"10dlu,pref,4dlu,pref,10dlu,fill:min(200dlu;pref):grow,4dlu,pref,4dlu");
-		//       1     2    3    4    5     6    7                     8    9 
+				"10dlu,pref:grow,4dlu,pref:grow,4dlu,pref:grow,10dlu,fill:min(200dlu;pref):grow,4dlu,pref,4dlu");
+		//       1     2         3    4         5    6         7     8                          9    10   11
 		PanelBuilder pb;
 		JPanel panel = logger.isDebugEnabled() ? new FormDebugPanel(layout)
 				: new JPanel(layout);
@@ -101,47 +159,24 @@ public class MatchMakerIndexBuilder implements EditorPane {
 
 		CellConstraints cc = new CellConstraints();
 
-		JButton save = new JButton(new AbstractAction("OK") {
-			public void actionPerformed(ActionEvent e) {
-				doSave();
-				dialog.setVisible(false);
-				dialog.dispose();
-			}
-		});
+		JButton save = new JButton(okAction);
+		JButton exit = new JButton(cancelAction);
 
-		JButton exit = new JButton(new AbstractAction("Cancel") {
-			public void actionPerformed(ActionEvent e) {
-				if (hasUnsavedChanges()) {
-					int responds = JOptionPane.showConfirmDialog(
-							dialog,
-							"Do you want to save before close the index builder?");
-					if ( responds != JOptionPane.NO_OPTION)
-						return;
-				}
-				dialog.setVisible(false);
-				dialog.dispose();
-			}
-		});
+        pb.add(statusComponent, cc.xy(2, 2));
+		pb.add(new JLabel("Table: " + DDLUtils.toQualifiedName(match.getSourceTable())),
+					cc.xy(2, 4));
+		pb.add(indexName, cc.xy(2, 6));
+		JScrollPane scrollPane = new JScrollPane(columntable);
+        pb.add(scrollPane, cc.xy(2, 8, "f,f"));
 
-		pb.add(new JLabel("Table Name:" + match.getSourceTableName()),
-					cc.xy(2, 2, "l,c"));
-		pb.add(indexName, cc.xy(2, 4, "l,f"));
-		final ScrollPane scrollPane = new ScrollPane();
-		scrollPane.add(columntable);
-		pb.add(scrollPane, cc.xy(2, 6, "f,f"));
-		
-		ButtonBarBuilder bbb = new ButtonBarBuilder();
-		bbb.addGridded(save);
-		bbb.addRelatedGap();
-		bbb.addGridded(exit);
-
-		pb.add(bbb.getPanel(), cc.xy(2,8,"r,c"));
+		pb.add(ButtonBarFactory.buildOKCancelBar(save, exit), cc.xy(2,10));
 		dialog.getContentPane().add(panel);
-		
+        dialog.getRootPane().setDefaultButton(save);
+        ASUtils.makeJDialogCancellable(dialog, cancelAction, false);
 	}
 	
 	/**
-	 * this class repersens the table row model of the pick your owner 
+	 * This class represents the table row model of the pick your own
 	 * column for index table. which has only 3 columns. 
 	 *
 	 */
@@ -191,6 +226,11 @@ public class MatchMakerIndexBuilder implements EditorPane {
 			else 
 				return getPosition().compareTo(o.getPosition());
 		}
+        
+        @Override
+        public String toString() {
+            return "[CustomTableColumn: key="+key+"; position="+position+"; column="+sqlColumn.getName()+"]";
+        }
 	}
 	
 	private class IndexColumnTableModel extends AbstractTableModel {
@@ -199,17 +239,29 @@ public class MatchMakerIndexBuilder implements EditorPane {
 							= new ArrayList<CustomTableColumn>(); 
 		public IndexColumnTableModel(SQLTable sqlTable, SQLIndex oldIndex) throws ArchitectException {
 			
-			int pos = 0;
 			for ( SQLColumn column : sqlTable.getColumns()) {
-				SQLIndex.Column indexColumn = (oldIndex==null?null: 
-					(Column) oldIndex.getChildByName(column.getName()));
-				if (indexColumn!=null) pos++;
+                int positionInIndex = oldIndex.getIndexOfChildByName(column.getName());
 				candidateColumns.add(
-						new CustomTableColumn((indexColumn!=null),
-								(indexColumn==null?null:pos),column));
+						new CustomTableColumn(
+                                (positionInIndex >= 0),
+								(positionInIndex >= 0 ? positionInIndex +1 : null),
+                                column));
 			}
 		}
 		
+        @Override
+        public String getColumnName(int column) {
+            if (column == 0) {
+                return "In Index?";
+            } else if (column == 1) {
+                return "Index Seq";
+            } else if (column == 2) {
+                return "Column Name";
+            } else {
+                throw new IndexOutOfBoundsException("No such column in table: "+column);
+            }
+        }
+        
 		public int getColumnCount() {
 			return 3;
 		}
@@ -246,7 +298,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			setModified(true);
+			setTableModified(true);
 			if ( columnIndex == 0 ) {
 				candidateColumns.get(rowIndex).setKey((Boolean) aValue);
 				if ( (Boolean) aValue ) {
@@ -292,7 +344,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
-		return isModified();
+		return isTableModified() || validationHandler.hasPerformedValidation();
 	}
 	
 	public boolean doSave() {
@@ -302,19 +354,28 @@ public class MatchMakerIndexBuilder implements EditorPane {
 			if ( column.isKey() ) selectedColumns.add(column);
 		}
 		Collections.sort(selectedColumns);
-
-		if ( selectedColumns.size() == 0 || indexName.getText().length() == 0 )
+		logger.debug("Sorted list of selected columns: "+selectedColumns);
+        
+		if (selectedColumns.size() == 0) {
 			return false;
+        }
+        
+        if (validationHandler.getFailResults().size() != 0) {
+            return false;
+        }
+        
 		SQLIndex index = new SQLIndex(indexName.getText(),true,null,IndexType.OTHER,null);
-		for ( CustomTableColumn column : selectedColumns ) {
-			try {
+		try {
+		    for ( CustomTableColumn column : selectedColumns ) {
 				index.addChild(index.new Column(column.getSQLColumn(),false,false));
-			} catch (ArchitectException e) {
-				ASUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unexcepted error when adding Column to the Index",
-						e, null);
-			}
+		    }
+		    logger.debug("Index columns after save: "+index.getChildren());
+		} catch (ArchitectException e) {
+		    ASUtils.showExceptionDialog(swingSession.getFrame(),
+		            "Unexcepted error when adding Column to the Index",
+		            e, null);
 		}
+        
 		match.setSourceTableIndex(index);
 		return true;
 	}
