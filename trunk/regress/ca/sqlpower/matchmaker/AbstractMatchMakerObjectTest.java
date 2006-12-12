@@ -53,25 +53,18 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 				appUserName, test.getLastUpdateAppUser());
 	}
 
-	public void testAuditingInfoRemoveChild() {
-		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject(){};
-		assertNull("The default last_update_user in match object should be null",
-				test.getLastUpdateAppUser());
-		assertNull("The default last_update_user in match object should be null",
-				mmo1.getLastUpdateAppUser());
-		test.removeChild(mmo1);
-		assertEquals("The last_update_user should be [" +
-				appUserName +"], because user1 has changed this match object",
-				appUserName, test.getLastUpdateAppUser());
-		assertNull("The default last_update_user in match object should be null," +
-				" because we have never change it",
-				mmo1.getLastUpdateAppUser());
-	}
-
 	public void testParentSetCorrectly() {
 		TestingAbstractMatchMakerObject mmo1 = new TestingAbstractMatchMakerObject(){};
 		TestingAbstractMatchMakerObject mmo2 = new TestingAbstractMatchMakerObject(){};
 		mmo2.addChild(mmo1);
 		assertEquals("mmo2 is not the parent of mmo1",mmo2,mmo1.getParent());
 	}
+    
+    public void testRemoveChildDoesntFireWhenChildNotPresent() {
+        MatchMakerEventCounter<TestingAbstractMatchMakerObject, MatchMakerObject> mml =
+            new MatchMakerEventCounter<TestingAbstractMatchMakerObject, MatchMakerObject>();
+        test.addMatchMakerListener(mml);
+        test.removeChild(new StubMatchMakerObject("not a child of test"));
+        assertEquals(0, mml.getAllEventCounts());
+    }
 }    
