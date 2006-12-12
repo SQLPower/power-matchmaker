@@ -2,64 +2,35 @@ package ca.sqlpower.matchmaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.matchmaker.event.EngineEvent;
-import ca.sqlpower.matchmaker.event.EngineListener;
-import ca.sqlpower.matchmaker.event.EngineEvent.EngineEventType;
 import ca.sqlpower.sql.DefaultParameters;
 import ca.sqlpower.sql.PLSchemaException;
 
 /**
  * Sets up and runs the C Match Maker engine
  */
-public class MatchMakerEngineImpl implements MatchMakerEngine {
+public class MatchMakerEngineImpl extends AbstractCEngine {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerEngineImpl.class);
 
-	/**
-	 * the session that we are currently connectting to
-	 */
-	private MatchMakerSession session;
 	private final MatchMakerSessionContext context;
-	private Match match;
-	private Process proc;
-	private Thread processMonitor;
-	private Integer engineExitCode;
 
+	
 	public MatchMakerEngineImpl(MatchMakerSession session, Match match) {
-		this.session = session;
-		this.match = match;
+		this.setSession(session);
+		this.setMatch(match);
 		context = session.getContext();
 	}
 
-	/* (non-Javadoc)
-	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#abort()
-	 */
-	public void abort() {
-		if ( proc != null ) {
-			proc.destroy();
-			proc = null;
-		}
-	}
-
-	/**
-	 * returns true if the matchmaker engine version is good for the schema that
-	 * we currently connect to. false if the engine version is too old.
-	 */
-	static boolean validateMatchMakerEngineVersion() {
-		// require change the engine
-		return true;
-	}
-
+	public boolean checkPreconditions() throws EngineSettingException {
+		return checkPreConditions(getSession(),getMatch());
+	} 
 	/**
 	 * returns true if the DEF_PARAM.EMAIL_NOTIFICATION_RETURN_ADRS and
 	 * DEF_PARAM.MAIL_SERVER_NAME column are not null or empty, they are
@@ -262,128 +233,5 @@ public class MatchMakerEngineImpl implements MatchMakerEngine {
 		return command.toString();
 	}
 
-	/* (non-Javadoc)
-	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#getEngineReturnCode()
-	 */
-	public Integer getEngineReturnCode() {
-		return engineExitCode;
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#isRunning()
-	 */
-	public boolean isRunning() {
-		if (processMonitor == null) {
-			return false;
-		} else {
-			return processMonitor.isAlive();
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#run()
-	 */
-	public void run() throws EngineSettingException, IOException {
-		checkPreConditions();
-		if (proc!=null) throw new IllegalStateException("Engine has already been run");
-		String commandLine = createCommandLine(session,match,false);
-		Runtime rt = Runtime.getRuntime();
-		logger.debug("Executing " + commandLine);
-		proc = rt.exec(commandLine);
-		fireEngineStart();
-		processMonitor = new Thread(new Runnable(){
-
-					public void run() {
-						try {
-							proc.waitFor();
-							engineExitCode = proc.exitValue();
-							fireEngineEnd();
-						} catch (InterruptedException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				});
-		processMonitor.start();
-	}
-
-	public InputStream getEngineErrorOutput() {
-		if ( proc != null ) {
-			return proc.getErrorStream();
-		}
-		return null;
-	}
-
-	public InputStream getEngineStandardOutput() {
-		if ( proc != null ) {
-			return proc.getInputStream();
-		}
-		return null;
-	}
-
-	public boolean checkPreConditions() throws EngineSettingException {
-		return checkPreConditions(session, match);
-	}
 	
-	/** ENGINE EVENT SUPPORT **/
-	private List<EngineListener> engineListeners = new ArrayList<EngineListener>();
-	
-	public void addEngineListener(EngineListener l){
-		if (l == null) throw new NullPointerException();
-		engineListeners.add(l);
-	}
-	public void removeEngineListener(EngineListener l){
-		engineListeners.remove(l);
-	}
-	
-	void fireEngineStart() {
-		for (int i = engineListeners.size()-1; i >= 0; i--){
-			EngineEvent e = new EngineEvent(this,EngineEventType.ENGINE_START,match);
-			engineListeners.get(i).engineStart(e);
-		}
-	}
-
-	void fireEngineEnd() {
-		for (int i = engineListeners.size()-1; i >= 0; i--){
-			EngineEvent e = new EngineEvent(this,EngineEventType.ENGINE_START,match);
-			engineListeners.get(i).engineEnd(e);
-		}
-	}
-
-	///////// Monitorabe support ///////////
-	/**
-	 * Right now the job size is always indeterminant
-	 */
-	public Integer getJobSize() throws ArchitectException {
-		return null;
-	}
-
-	public String getMessage() {
-		if(isRunning()){
-			return "Running MatchMaker Engine";
-		} else {
-			return "";
-		}
-	}
-
-	public int getProgress() throws ArchitectException {
-		// since this is always indeterminant  
-		return 0;
-	}
-
-	public boolean hasStarted() throws ArchitectException {
-		return isRunning() || getEngineReturnCode() != null;
-	}
-	
-	// The engine is done when it has an exit code
-	public boolean isFinished() throws ArchitectException {
-		if (getEngineReturnCode() != null){
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public void setCancelled(boolean cancelled) {
-		abort();
-	}
 }

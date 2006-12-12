@@ -709,11 +709,4 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
-
-
-
-
-
-
-
 }
