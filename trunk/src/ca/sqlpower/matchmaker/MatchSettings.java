@@ -1,5 +1,8 @@
 package ca.sqlpower.matchmaker;
 
+import java.io.File;
+import java.util.Date;
+
 /**
  * Settings that are specific to the Match engine
  */
@@ -121,4 +124,29 @@ public class MatchSettings extends MatchMakerSettings {
         buf.append("]");
         return buf.toString();
     }
+
+    /**
+     * duplicate all properties of the MatchSettings except parent
+     * @return new MatchSettings instance with the same properties
+     * except parent
+     */
+	public MatchSettings duplicate() {
+		MatchSettings settings = new MatchSettings();
+		settings.setAppendToLog(getAppendToLog());
+		settings.setAutoMatchThreshold(getAutoMatchThreshold()==null?null:new Short(getAutoMatchThreshold()));
+		settings.setBreakUpMatch(getBreakUpMatch());
+		settings.setDebug(getDebug());
+		settings.setDescription(getDescription()==null?null:new String(getDescription()));
+		settings.setLastBackupNo(getLastBackupNo()==null?null:new Long(getLastBackupNo()));
+		settings.setLastRunDate(getLastRunDate()==null?null:new Date(getLastRunDate().getTime()));
+		settings.setLog(getLog()==null?null:new File(getLog().getPath()));
+		settings.setName(getName()==null?null:new String(getName()));
+		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
+		settings.setRollbackSegmentName(getRollbackSegmentName()==null?null:new String(getRollbackSegmentName()));
+		settings.setSendEmail(getSendEmail());
+		settings.setSession(getSession());
+		settings.setShowProgressFreq(getShowProgressFreq()==null?null:new Long(getShowProgressFreq()));
+		settings.setTruncateCandDupe(getTruncateCandDupe());
+		return settings;
+	}
 }

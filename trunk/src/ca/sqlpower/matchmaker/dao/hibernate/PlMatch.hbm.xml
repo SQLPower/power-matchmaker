@@ -218,7 +218,7 @@
 
 		<many-to-one name="parent"
 			class="ca.sqlpower.matchmaker.PlFolder" fetch="select">
-			<column name="FOLDER_NAME" />
+			<column name="folder_oid" />
 		</many-to-one>
 
 	</class>

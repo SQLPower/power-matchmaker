@@ -316,8 +316,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 			throws Exception {
 		ArchitectDataSource ds = new ArchitectDataSource();
 		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
-		ds
-				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
+		ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Sc" +
+				"hema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
 		ds.setPass("n/a");
 		final SQLDatabase db = new SQLDatabase(ds);
@@ -326,5 +326,9 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 				"sch", "faketab");
 		match.setSourceTable(sourceTable);
 		assertFalse(match.doesSourceTableExist(session, match));
+	}
+	
+	public void testDuplicate() throws ArchitectException {
+		Match anotherMatch = match.duplicate(match.getName()+"_dup");
 	}
 }

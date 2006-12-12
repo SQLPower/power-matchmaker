@@ -71,4 +71,19 @@ public class ViewSpec extends SQLQuery {
 		}
 	}
 
+	/**
+	 * duplicate all the properties of the ViewSpec
+	 * @return new ViewSpec instance with the same properties
+	 */
+	public ViewSpec duplicate() {
+		ViewSpec spec = new ViewSpec();
+		spec.setCatalog(getCatalog()==null?null:new String(getCatalog()));
+		spec.setFrom(getFrom()==null?null:new String(getFrom()));
+		spec.setName(getName()==null?null:new String(getName()));
+		spec.setSchema(getSchema()==null?null:new String(getSchema()));
+		spec.setSelect(getSelect()==null?null:new String(getSelect()));
+		spec.setWhere(getWhere()==null?null:new String(getWhere()));
+		return spec;
+	}
+
 }

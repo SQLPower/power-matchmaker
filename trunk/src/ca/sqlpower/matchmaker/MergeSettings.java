@@ -1,5 +1,8 @@
 package ca.sqlpower.matchmaker;
 
+import java.io.File;
+import java.util.Date;
+
 /**
  * Settings specific to the merge engine
  *
@@ -63,5 +66,24 @@ public class MergeSettings extends MatchMakerSettings {
 		this.augmentNull = augmentNull;
 		getEventSupport().firePropertyChange("augmentNull", oldValue,
 				this.augmentNull);
+	}
+
+	public MergeSettings duplicate() {
+		MergeSettings settings = new MergeSettings();
+		settings.setAppendToLog(getAppendToLog());
+		settings.setAugmentNull(getAugmentNull());
+		settings.setBackUp(getBackUp());
+		settings.setDebug(getDebug());
+		settings.setDescription(getDescription()==null?null:new String(getDescription()));
+		settings.setLastRunDate(getLastRunDate()==null?null:new Date(getLastRunDate().getTime()));
+		settings.setLog(getLog()==null?null:new File(getLog().getPath()));
+		settings.setName(getName()==null?null:new String(getName()));
+		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
+		settings.setRollbackSegmentName(getRollbackSegmentName()==null?null:new String(getRollbackSegmentName()));
+		settings.setSendEmail(getSendEmail());
+		settings.setSession(getSession());
+		settings.setShowProgressFreq(getShowProgressFreq()==null?null:new Long(getShowProgressFreq()));
+		
+		return settings;
 	}
 }
