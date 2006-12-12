@@ -24,7 +24,7 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.PLSchemaException;
-import ca.sqlpower.sql.SchemaVersionFormatException;
+import ca.sqlpower.util.VersionFormatException;
 
 
 public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingSessionContext {
@@ -88,13 +88,13 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     }
 
 
-    //////// MaatchMakerSessionContext implementation //////////
+    //////// MatchMakerSessionContext implementation //////////
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#createSession(ca.sqlpower.architect.ArchitectDataSource, java.lang.String, java.lang.String)
      */
     public MatchMakerSwingSession createSession(
             ArchitectDataSource ds, String username, String password)
-    throws PLSecurityException, SQLException, ArchitectException, IOException, SchemaVersionFormatException, PLSchemaException {
+    throws PLSecurityException, SQLException, ArchitectException, IOException, VersionFormatException, PLSchemaException {
         return new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     }
 

@@ -29,6 +29,7 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
+import ca.sqlpower.sql.PLSchemaException;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -78,6 +79,13 @@ public class LoginDialog {
                 progressMonitor = session.getDatabase().getProgressMonitor();
                 new Thread(this).start();
                 // doStuff() will get invoked soon on the new thread
+            } catch (PLSchemaException ex) {
+                ASUtils.showExceptionDialogNoReport(frame,
+                        ex.getMessage() +
+                        "\nExisting version: "+ex.getCurrentVersion() +
+                        "\nRequired Version: "+ex.getRequiredVersion(),
+                        ex );
+                loginButton.setEnabled(true);
             } catch (Exception ex) {
                 ASUtils.showExceptionDialogNoReport(frame,
                         "Connection Error", ex );

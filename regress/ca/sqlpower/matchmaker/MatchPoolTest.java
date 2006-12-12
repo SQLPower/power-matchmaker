@@ -1,8 +1,6 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
@@ -40,7 +38,6 @@ public class MatchPoolTest extends TestCase {
         db = new SQLDatabase(dataSource);
         con = db.getConnection();
         
-        createPlSchemaIfNecessary(con);
         createResultTable(con);
         
         SQLSchema plSchema = db.getSchemaByName("pl");
@@ -86,23 +83,6 @@ public class MatchPoolTest extends TestCase {
     protected void tearDown() throws Exception {
         dropResultTable(con);
         con.close();
-    }
-    
-    private static void createPlSchemaIfNecessary(Connection con) throws SQLException {
-        DatabaseMetaData dbmd = con.getMetaData();
-        ResultSet rs = dbmd.getSchemas();
-        boolean foundPlSchema = false;
-        while (rs.next()) {
-            if ("pl".equalsIgnoreCase(rs.getString("TABLE_SCHEM"))) {
-                foundPlSchema = true;
-            }
-        }
-        rs.close();
-        if (!foundPlSchema) {
-            Statement stmt = con.createStatement();
-            stmt.executeUpdate("CREATE SCHEMA pl AUTHORIZATION DBA");
-            stmt.close();
-        }
     }
     
     private static void createResultTable(Connection con) throws SQLException {

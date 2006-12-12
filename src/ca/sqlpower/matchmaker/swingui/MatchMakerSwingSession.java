@@ -52,7 +52,6 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
-import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
@@ -306,14 +305,15 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			public void actionPerformed(ActionEvent e) {
 				JOptionPane.showMessageDialog(frame,
 						"<html>Power*MatchMaker "+
-						MatchMakerVersion.APP_VERSION + "<br><br>" +
+						MatchMakerSessionContext.APP_VERSION + "<br><br>" +
 						"Copyright 2003-2006 SQL Power Group Inc.<br>" +
 						"</html>",
 					"About MatchMaker",
 					JOptionPane.INFORMATION_MESSAGE);
-			}};
+			}
+		};
 
-		newMatchAction = new NewMatchAction(this, "New Match",null);
+		newMatchAction = new NewMatchAction(this, "New Match", null);
         JMenuBar menuBar = new JMenuBar();
 
 		//Settingup

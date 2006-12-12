@@ -12,14 +12,14 @@ import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.PLSchemaException;
-import ca.sqlpower.sql.SchemaVersionFormatException;
+import ca.sqlpower.util.VersionFormatException;
 
 public interface SwingSessionContext extends MatchMakerSessionContext {
 
-    //////// MaatchMakerSessionContext implementation //////////
+    //////// MatchMakerSessionContext implementation //////////
     public MatchMakerSwingSession createSession(ArchitectDataSource ds,
             String username, String password) throws PLSecurityException,
-            SQLException, ArchitectException, IOException, PLSchemaException, SchemaVersionFormatException;
+            SQLException, ArchitectException, IOException, PLSchemaException, VersionFormatException;
 
     public List<ArchitectDataSource> getDataSources();
 
