@@ -40,4 +40,8 @@ public class TestingAbstractMatchMakerObject
 	public boolean hasListener(MatchMakerListener<?,?> listener) {
 		return getEventSupport().getListeners().contains(listener);
 	}
+
+	public TestingAbstractMatchMakerObject duplicate(MatchMakerObject parent, MatchMakerSession session) {
+		return null;
+	}
 }

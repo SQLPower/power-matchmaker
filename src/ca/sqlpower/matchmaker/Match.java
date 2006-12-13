@@ -611,22 +611,30 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      * @return true if nothing wrong.
      * @throws ArchitectException 
      */
-	public Match duplicate(String targetName) throws ArchitectException {
+	public Match duplicate(MatchMakerObject parent,MatchMakerSession s) {
 		Match newMatch = new Match();
 		newMatch.setParent(getParent());
-		newMatch.setName(targetName);
-		newMatch.setFilter(getFilter()==null?null:new String(getFilter()));
-		newMatch.setMergeSettings(getMergeSettings().duplicate());
-		newMatch.setMatchSettings(getMatchSettings().duplicate());
+		newMatch.setName(getName());
+		newMatch.setFilter(getFilter());
+		newMatch.setMergeSettings(getMergeSettings().duplicate(newMatch,s));
+		newMatch.setMatchSettings(getMatchSettings().duplicate(newMatch,s));
 		newMatch.setSourceTable(getSourceTable());
 		newMatch.setResultTable(getResultTable());
 		newMatch.setXrefTable(getXrefTable());
 		newMatch.setType(getType());
-		newMatch.setView(getView()==null?null:getView().duplicate());
-		newMatch.setSession(getSession());
+		ViewSpec viewSpec = new ViewSpec();
+		viewSpec.setCatalog(getView().getCatalog());
+		viewSpec.setSchema(getView().getSchema());
+		viewSpec.setName(getView().getName());
+		viewSpec.setSelect(getView().getSelect());
+		viewSpec.setFrom(getView().getFrom());
+		viewSpec.setWhere(getView().getWhere());
+		newMatch.setView(viewSpec);
+		
+		newMatch.setSession(s);
 		
 		for (MatchMakerCriteriaGroup g : getMatchCriteriaGroups()) {
-			MatchMakerCriteriaGroup newGroup = g.duplicate();
+			MatchMakerCriteriaGroup newGroup = g.duplicate(newMatch,s);
 			newMatch.addMatchCriteriaGroup(newGroup);
 		}
 	

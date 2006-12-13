@@ -8,7 +8,11 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		mms = new MatchMakerSettings() {};
+		mms = new MatchMakerSettings() {
+
+			public MatchMakerSettings duplicate(MatchMakerObject parent, MatchMakerSession s) {
+				return null;
+			}};
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		mms.setSession(session);
@@ -21,4 +25,8 @@ public class MatchMakerSettingsTest extends MatchMakerTestCase {
 		return mms;
 	}
 
+	@Override
+	public void testDuplicate() throws Exception {
+		// this class is not duplicated only its subclasses are.
+	}
 }

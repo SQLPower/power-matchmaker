@@ -3,6 +3,7 @@ package ca.sqlpower.matchmaker;
 import java.math.BigDecimal;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 
@@ -455,33 +456,37 @@ public class MatchMakerCriteria
      * properties except parent and oid
      * @throws ArchitectException
      */
-	public MatchMakerCriteria duplicate() throws ArchitectException {
+	public MatchMakerCriteria duplicate(MatchMakerObject parent,MatchMakerSession s){
 		MatchMakerCriteria criteria = new MatchMakerCriteria();
 		criteria.setAllowNullInd(isAllowNullInd());
 		criteria.setCaseSensitiveInd(isCaseSensitiveInd());
-		criteria.setColumn(getColumn());
-		criteria.setColumnName(getColumnName()==null?null:new String(getColumnName()));
+		try {
+			criteria.setColumn(getColumn());
+			criteria.setColumnName(getColumnName());
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
+		}
 		criteria.setCountWordsInd(isCountWordsInd());
-		criteria.setFirstNChar(getFirstNChar()==null?null:new Long(getFirstNChar()));
-		criteria.setFirstNCharByWord(getFirstNCharByWord()==null?null:new Long(getFirstNCharByWord()));
+		criteria.setFirstNChar(getFirstNChar());
+		criteria.setFirstNCharByWord(getFirstNCharByWord());
 		criteria.setFirstNCharByWordInd(isFirstNCharByWordInd());
 		criteria.setMatchEnd(isMatchEnd());
 		criteria.setMatchFirstPlusOneInd(isMatchFirstPlusOneInd());
 		criteria.setMatchStart(isMatchStart());
-		criteria.setMinWordsInCommon(getMinWordsInCommon()==null?null:new Long(getMinWordsInCommon()));
-		criteria.setName(getName()==null?null:new String(getName()));
+		criteria.setMinWordsInCommon(getMinWordsInCommon());
+		criteria.setName(getName());
 		criteria.setRemoveSpecialChars(isRemoveSpecialChars());
 		criteria.setReorderInd(isReorderInd());
-		criteria.setReplaceWithSpace(getReplaceWithSpace()==null?null:new String(getReplaceWithSpace()));
+		criteria.setReplaceWithSpace(getReplaceWithSpace());
 		criteria.setReplaceWithSpaceInd(isReplaceWithSpaceInd());
-		criteria.setSeqNo(getSeqNo()==null?null:new BigDecimal(getSeqNo().longValue()));
-		criteria.setSession(getSession());
+		criteria.setSeqNo(getSeqNo());
+		criteria.setSession(s);
 		criteria.setSoundInd(isSoundInd());
-		criteria.setSuppressChar(getSuppressChar()==null?null:new String(getSuppressChar()));
+		criteria.setSuppressChar(getSuppressChar());
 		criteria.setTranslateGroup(getTranslateGroup());
-		criteria.setVarianceAmt(getVarianceAmt()==null?null:new BigDecimal(getVarianceAmt().longValue()));
-		criteria.setVarianceType(getVarianceType()==null?null:new String(getVarianceType()));
-		criteria.setWordsInCommonNumWords(getWordsInCommonNumWords()==null?null:new Long(getWordsInCommonNumWords()));
+		criteria.setVarianceAmt(getVarianceAmt());
+		criteria.setVarianceType(getVarianceType());
+		criteria.setWordsInCommonNumWords(getWordsInCommonNumWords());
 
 		return criteria;
 	}

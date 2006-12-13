@@ -65,6 +65,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	 */
 	public void addChild(C child) {
         logger.debug("addChild: children collection is a "+children.getClass().getName());
+        if(child== null) throw new NullPointerException("Cannot add a null child");
 		children.add(child);
 		child.setParent(this);
 		List<C> insertedChildren = new ArrayList<C>();

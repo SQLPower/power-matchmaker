@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
@@ -48,6 +49,10 @@ public class MatchMakerTreeModel implements TreeModel {
 		@Override
 		public int hashCode() {
 			return System.identityHashCode(this);
+		}
+
+		public MMTreeNode duplicate(MatchMakerObject parent, MatchMakerSession session) {
+			throw new UnsupportedOperationException("MMTreeNodes cannot be duplicated");
 		}
 
 	}

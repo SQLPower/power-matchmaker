@@ -87,4 +87,8 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
     public int hashCode() {
         return System.identityHashCode(this);
     }
+
+	public TranslateGroupParent duplicate(MatchMakerObject parent, MatchMakerSession session) {
+		throw new IllegalAccessError("Translate group not duplicatable");
+	}
 }

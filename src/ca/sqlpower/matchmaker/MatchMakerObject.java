@@ -36,6 +36,11 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
      * Returns the user-visible name of this object.
      */
     String getName();
+
+    /**
+     * Set the user visible name of this object
+     */
+    void setName(String string);
     
 	/**
 	 * Sets the parent (ie. the object that holds this one as a child)
@@ -71,6 +76,10 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
 	 */
 	void removeChild(C child);
 
+	/**
+	 * copy the match maker object 
+	 */
+	T duplicate(MatchMakerObject parent, MatchMakerSession session);
     /**
      * Returns the current session that this object is associated with.
      */
@@ -81,4 +90,5 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
      * DAO access will be done via this session.
 	 */
 	public void setSession(MatchMakerSession matchMakerSession);
+
 }

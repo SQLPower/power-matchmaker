@@ -38,4 +38,10 @@ public class MatchMakerFolderTest<C extends MatchMakerObject> extends MatchMaker
 				appUserName, folder.getLastUpdateAppUser());
 	}
 
+	/*
+	 * Duplicate should not be run on this class
+	 */
+	@Override
+	public void testDuplicate() throws Exception {
+	}
 }

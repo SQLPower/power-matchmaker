@@ -52,6 +52,10 @@ public class MatchMakerFolder<C extends MatchMakerObject>
 		return true;
 	}
 
+	public MatchMakerFolder duplicate(MatchMakerObject parent, MatchMakerSession s) {
+		throw new IllegalAccessError("The match maker folder should never be duplicated.  It should be managed by the Match object");
+	}
+
 
 
 

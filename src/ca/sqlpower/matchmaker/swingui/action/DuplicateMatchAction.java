@@ -16,8 +16,6 @@ import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
@@ -103,16 +101,13 @@ public class DuplicateMatchAction extends AbstractAction {
 		okAction = new AbstractAction("OK") {
 			public void actionPerformed(ActionEvent e) {
 				String newName = archPanel.getDupName();
-				try {
-					Match newmatch = match.duplicate(newName);
-					PlFolder<Match> folder = (PlFolder<Match>) folderComboBox.getSelectedItem();
-					folder.addChild(newmatch);
-					swingSession.save(newmatch);
-				} catch (ArchitectException e1) {
-					ASUtils.showExceptionDialog(swingSession.getFrame(),
-							"Unexcepted error when dupliating Match",
-							e1, null );
-				}
+				PlFolder<Match> folder = (PlFolder<Match>) folderComboBox
+				.getSelectedItem();
+				Match newmatch = match.duplicate(folder,swingSession);
+				newmatch.setName(newName);
+				folder.addChild(newmatch);
+				swingSession.save(newmatch);
+			
 			}};
 			
 		cancelAction = new AbstractAction("Cancel") {

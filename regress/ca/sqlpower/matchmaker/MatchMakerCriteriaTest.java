@@ -13,10 +13,24 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteri
 	protected void setUp() throws Exception {
 		super.setUp();
 		target = new MatchMakerCriteria();
+		MatchMakerCriteriaGroup g = new MatchMakerCriteriaGroup();
+		g.addChild(target);
+		Match match = new Match();
+		match.setSession(new TestingMatchMakerSession());
+		match.addMatchCriteriaGroup(g);
+		match.setSourceTableCatalog("cat");
+		match.setSourceTableName("name");
+		match.setSourceTableSchema("schema");
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);
         propertiesToIgnoreForEventGeneration.add("columnName");
+        // ignored due to inter-related behavior
+        propertiesToIgnoreForDuplication.add("column");
+        propertiesToIgnoreForDuplication.add("columnName");
+        propertiesToIgnoreForDuplication.add("name");
+        // removed as this should be the same object
+        propertiesToIgnoreForDuplication.add("translateGroup");
 	}
 
 	@Override
