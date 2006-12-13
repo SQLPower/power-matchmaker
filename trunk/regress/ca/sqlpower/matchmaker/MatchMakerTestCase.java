@@ -18,6 +18,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
@@ -38,6 +39,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
     Set<String>propertiesToIgnoreForEventGeneration = new HashSet<String>();
     public MatchMakerSession session = new TestingMatchMakerSession();
 
+	protected Set<String> propertiesToIgnoreForDuplication = new HashSet<String>();
+
 	protected void setUp() throws Exception {
 		super.setUp();
 
@@ -48,6 +51,133 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	}
 
 	protected abstract C getTarget();
+
+	public void testDuplicate() throws Exception {
+		MatchMakerObject mmo = getTarget();
+
+		List<PropertyDescriptor> settableProperties;
+		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
+        propertiesToIgnoreForDuplication.add("oid");
+        propertiesToIgnoreForDuplication.add("parent");
+        propertiesToIgnoreForDuplication.add("parentMatch");
+        propertiesToIgnoreForDuplication.add("session");
+        propertiesToIgnoreForDuplication.add("class");
+        propertiesToIgnoreForDuplication.add("createDate");
+        propertiesToIgnoreForDuplication.add("createAppUser");
+        propertiesToIgnoreForDuplication.add("createOsUser");
+        propertiesToIgnoreForDuplication.add("lastUpdateDate");
+        propertiesToIgnoreForDuplication.add("lastUpdateAppUser");
+        propertiesToIgnoreForDuplication.add("lastUpdateOSUser");
+        
+        // First pass set all settable properties
+		for (PropertyDescriptor property : settableProperties) {
+			if (propertiesToIgnoreForDuplication.contains(property.getName())) continue;
+			Object oldVal;
+			try {
+				oldVal = PropertyUtils.getSimpleProperty(mmo, property.getName());
+				// check for a setter
+				if (property.getWriteMethod() != null)
+				{
+					Object newVal = getNewDifferentValue(mmo, property, oldVal);
+					BeanUtils.copyProperty(mmo, property.getName(), newVal);
+				}
+			} catch (NoSuchMethodException e) {
+				System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());
+			}
+		}
+		// Second pass get a copy make sure all of 
+		// the origional mutable objects are different
+		// but have the same values
+		MatchMakerObject duplicate = mmo.duplicate(mmo.getParent(),session);
+		for (PropertyDescriptor property : settableProperties) {
+			if (propertiesToIgnoreForDuplication.contains(property.getName())) continue;
+			Object oldVal;
+			try {
+				oldVal = PropertyUtils.getSimpleProperty(mmo, property.getName());
+				Object copyVal = PropertyUtils.getSimpleProperty(duplicate, property.getName());
+				if(oldVal == null) {
+					throw new NullPointerException("We forgot to set "+property.getName());
+				} else {
+					assertEquals("The two values for property "+property.getDisplayName()+" should be the same",oldVal,copyVal);
+					copyVal = modifyObject(property, copyVal);
+					assertFalse("The two values are the same mutable object for property "+property.getDisplayName() + " was "+oldVal+ " and " + copyVal,oldVal.equals(copyVal));
+				}
+			} catch (NoSuchMethodException e) {
+				System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());
+			}
+		}
+	}
+	
+	/**
+	 * Returns a new value that is not equal if the Object is immutable or 
+	 * modifies and returns oldVal if the object is mutable
+	 * Assumes oldVal is not null.
+	 * @param oldVal
+	 * @return
+	 * @throws IOException 
+	 */
+	
+	private Object modifyObject(PropertyDescriptor property, Object oldVal) throws IOException {
+		if (property.getPropertyType() == Integer.TYPE
+				|| property.getPropertyType() == Integer.class) {
+				return ((Integer) oldVal) + 1;
+		} else if (property.getPropertyType() == Short.TYPE
+				|| property.getPropertyType() == Short.class) {
+				return ((Short) oldVal) + 1;
+		} else if (property.getPropertyType() == String.class) {
+			return "new " + oldVal;
+		} else if (property.getPropertyType() == Boolean.class || property.getPropertyType() == Boolean.TYPE ) {
+	        return new Boolean(!((Boolean) oldVal).booleanValue());
+		} else if (property.getPropertyType() == Long.class) {
+			return new Long(((Long) oldVal).longValue() + 1L);
+		} else if (property.getPropertyType() == BigDecimal.class) {
+			return new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
+		} else if (property.getPropertyType() == MatchSettings.class) {
+		    Integer processCount = ((MatchMakerSettings) oldVal).getProcessCount();
+		    ((MatchMakerSettings) oldVal).setProcessCount(new Integer(processCount +1));
+		    return oldVal;
+		} else if (property.getPropertyType() == MergeSettings.class) {
+		    Integer processCount = ((MatchMakerSettings) oldVal).getProcessCount();
+		    processCount = new Integer(processCount +1);
+		    ((MatchMakerSettings) oldVal).setProcessCount(processCount);
+		    return oldVal;
+		} else if (property.getPropertyType() == SQLTable.class) {
+			return new SQLTable();
+		} else if (property.getPropertyType() == ViewSpec.class) {
+			return new ViewSpec("select *"," FROM table ", " where true");
+		} else if (property.getPropertyType() == File.class) {
+			oldVal = File.createTempFile("mmTest2",".tmp");
+			((File)oldVal).deleteOnExit();
+			return oldVal;
+		} else if (property.getPropertyType() == Match.MatchMode.class) {
+			if (oldVal == Match.MatchMode.BUILD_XREF) {
+				return Match.MatchMode.FIND_DUPES;
+			} else {
+				return Match.MatchMode.BUILD_XREF;
+			}
+		} else if (property.getPropertyType() == MatchMakerObject.class) {
+			((MatchMakerObject) oldVal).setName("Testing New Name");
+			return oldVal;
+		} else if (property.getPropertyType() == MatchMakerFolder.class) {
+			((MatchMakerObject) oldVal).setName("Testing New Name");
+			return oldVal;
+		} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
+			((MatchMakerObject) oldVal).setName("Testing New Name2");
+			return oldVal;
+		} else if (property.getPropertyType() == SQLColumn.class) {
+			return new SQLColumn();
+		} else if (property.getPropertyType() == Date.class) {
+			((Date)oldVal).setTime(((Date)oldVal).getTime()+10000);
+			return oldVal;
+		} else if (property.getPropertyType() == List.class) {
+		    ((List)oldVal).add("Test");
+		    return oldVal;
+		} else {
+			throw new RuntimeException("This test case lacks the ability to modify values for "
+					+ property.getName() + " (type "
+					+ property.getPropertyType().getName() + ")");
+		}
+	}
 
 	public void testAllSettersGenerateEvents()
 	throws IllegalArgumentException, IllegalAccessException,
@@ -71,100 +201,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				// check for a setter
 				if (property.getWriteMethod() != null)
 				{
-					Object newVal; // don't init here so compiler can warn if the
-					// following code doesn't always give it a value
-					if (property.getPropertyType() == Integer.TYPE
-							|| property.getPropertyType() == Integer.class) {
-						if (oldVal == null)
-							newVal = new Integer(0);
-						else {
-							newVal = ((Integer) oldVal) + 1;
-						}
-					} else if (property.getPropertyType() == Short.TYPE
-							|| property.getPropertyType() == Short.class) {
-						if (oldVal == null)
-							newVal = new Short("0");
-						else {
-							newVal = ((Short) oldVal) + 1;
-						}
-					} else if (property.getPropertyType() == String.class) {
-						// make sure it's unique
-						newVal = "new " + oldVal;
-
-					} else if (property.getPropertyType() == Boolean.class || property.getPropertyType() == Boolean.TYPE ) {
-                        if(oldVal == null){
-                            newVal = new Boolean(false);
-                        } else {
-                            newVal = new Boolean(!((Boolean) oldVal).booleanValue());
-                        }
-					} else if (property.getPropertyType() == Long.class) {
-						if (oldVal == null) {
-							newVal = new Long(0L);
-						} else {
-							newVal = new Long(((Long) oldVal).longValue() + 1L);
-						}
-					} else if (property.getPropertyType() == BigDecimal.class) {
-						if (oldVal == null) {
-							newVal = new BigDecimal(0);
-						} else {
-							newVal = new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
-						}
-					} else if (property.getPropertyType() == MatchSettings.class) {
-						newVal = new MatchSettings();
-                        Integer processCount = ((MatchMakerSettings) newVal).getProcessCount();
-                        if (processCount == null) {
-                            processCount = new Integer(0);
-                        } else {
-                            processCount = new Integer(processCount +1);
-                        }
-                        ((MatchMakerSettings) newVal).setProcessCount(processCount);
-					} else if (property.getPropertyType() == MergeSettings.class) {
-						newVal = new MergeSettings();
-                        Integer processCount = ((MatchMakerSettings) newVal).getProcessCount();
-                        if (processCount == null) {
-                            processCount = new Integer(0);
-                        } else {
-                            processCount = new Integer(processCount +1);
-                        }
-                        ((MatchMakerSettings) newVal).setProcessCount(processCount);
-					} else if (property.getPropertyType() == SQLTable.class) {
-						newVal = new SQLTable();
-					} else if (property.getPropertyType() == ViewSpec.class) {
-						newVal = new ViewSpec();
-					} else if (property.getPropertyType() == File.class) {
-						newVal = File.createTempFile("mmTest",".tmp");
-						((File)newVal).deleteOnExit();
-					} else if (property.getPropertyType() == PlFolder.class) {
-						newVal = new PlFolder<Match>();
-					} else if (property.getPropertyType() == Match.MatchMode.class) {
-						if (oldVal == Match.MatchMode.BUILD_XREF) {
-							newVal = Match.MatchMode.FIND_DUPES;
-						} else {
-							newVal = Match.MatchMode.BUILD_XREF;
-						}
-					} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
-						newVal = new MatchMakerTranslateGroup();
-					} else if (property.getPropertyType() == MatchMakerObject.class) {
-						newVal = new TestingAbstractMatchMakerObject();
-					}else if (property.getPropertyType() == SQLColumn.class) {
-						newVal = new SQLColumn();
-					} else if (property.getPropertyType() == Date.class) {
-						newVal = new Date();
-					} else if (property.getPropertyType() == List.class) {
-                        newVal = new ArrayList();
-                    } else if (property.getPropertyType() == Match.class) {
-                        newVal = new Match();
-                        ((Match) newVal).setName("Fake_Match_"+System.currentTimeMillis());
-                    } else {
-						throw new RuntimeException("This test case lacks a value for "
-								+ property.getName() + " (type "
-								+ property.getPropertyType().getName() + ") from "
-								+ mmo.getClass());
-					}
-
-					if (newVal instanceof MatchMakerObject){
-						((MatchMakerObject)newVal).setSession(session);
-					}
+					Object newVal = getNewDifferentValue(mmo, property, oldVal);
 
                     assertFalse("Old value and new value are equivalent for class "+property.getPropertyType()+" of property "+property.getName(),
                             oldVal == null? oldVal == newVal:oldVal.equals(newVal));
@@ -194,6 +231,111 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());
 			}
 		}
+	}
+
+	/**
+	 * Get a new value for the property 'property' of mmo that
+	 * is different from old Val.
+	 * @throws IOException
+	 */
+	private Object getNewDifferentValue(MatchMakerObject mmo, PropertyDescriptor property, Object oldVal) throws IOException {
+		Object newVal; // don't init here so compiler can warn if the
+		// following code doesn't always give it a value
+		if (property.getPropertyType() == Integer.TYPE
+				|| property.getPropertyType() == Integer.class) {
+			if (oldVal == null)
+				newVal = new Integer(0);
+			else {
+				newVal = ((Integer) oldVal) + 1;
+			}
+		} else if (property.getPropertyType() == Short.TYPE
+				|| property.getPropertyType() == Short.class) {
+			if (oldVal == null)
+				newVal = new Short("0");
+			else {
+				newVal = ((Short) oldVal) + 1;
+			}
+		} else if (property.getPropertyType() == String.class) {
+			// make sure it's unique
+			newVal = "new " + oldVal;
+
+		} else if (property.getPropertyType() == Boolean.class || property.getPropertyType() == Boolean.TYPE ) {
+		    if(oldVal == null){
+		        newVal = new Boolean(false);
+		    } else {
+		        newVal = new Boolean(!((Boolean) oldVal).booleanValue());
+		    }
+		} else if (property.getPropertyType() == Long.class) {
+			if (oldVal == null) {
+				newVal = new Long(0L);
+			} else {
+				newVal = new Long(((Long) oldVal).longValue() + 1L);
+			}
+		} else if (property.getPropertyType() == BigDecimal.class) {
+			if (oldVal == null) {
+				newVal = new BigDecimal(0);
+			} else {
+				newVal = new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
+			}
+		} else if (property.getPropertyType() == MatchSettings.class) {
+			newVal = new MatchSettings();
+		    Integer processCount = ((MatchMakerSettings) newVal).getProcessCount();
+		    if (processCount == null) {
+		        processCount = new Integer(0);
+		    } else {
+		        processCount = new Integer(processCount +1);
+		    }
+		    ((MatchMakerSettings) newVal).setProcessCount(processCount);
+		} else if (property.getPropertyType() == MergeSettings.class) {
+			newVal = new MergeSettings();
+		    Integer processCount = ((MatchMakerSettings) newVal).getProcessCount();
+		    if (processCount == null) {
+		        processCount = new Integer(0);
+		    } else {
+		        processCount = new Integer(processCount +1);
+		    }
+		    ((MatchMakerSettings) newVal).setProcessCount(processCount);
+		} else if (property.getPropertyType() == SQLTable.class) {
+			newVal = new SQLTable();
+		} else if (property.getPropertyType() == ViewSpec.class) {
+			newVal = new ViewSpec();
+		} else if (property.getPropertyType() == File.class) {
+			newVal = File.createTempFile("mmTest",".tmp");
+			((File)newVal).deleteOnExit();
+		} else if (property.getPropertyType() == PlFolder.class) {
+			newVal = new PlFolder<Match>();
+		} else if (property.getPropertyType() == Match.MatchMode.class) {
+			if (oldVal == Match.MatchMode.BUILD_XREF) {
+				newVal = Match.MatchMode.FIND_DUPES;
+			} else {
+				newVal = Match.MatchMode.BUILD_XREF;
+			}
+		} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
+			newVal = new MatchMakerTranslateGroup();
+		} else if (property.getPropertyType() == MatchMakerObject.class) {
+			newVal = new TestingAbstractMatchMakerObject();
+		}else if (property.getPropertyType() == SQLColumn.class) {
+			newVal = new SQLColumn();
+		} else if (property.getPropertyType() == Date.class) {
+			newVal = new Date();
+		} else if (property.getPropertyType() == List.class) {
+		    newVal = new ArrayList();
+		} else if (property.getPropertyType() == Match.class) {
+		    newVal = new Match();
+		    ((Match) newVal).setName("Fake_Match_"+System.currentTimeMillis());
+		} else if (property.getPropertyType() == SQLIndex.class) {
+			return new SQLIndex();
+		} else {
+			throw new RuntimeException("This test case lacks a value for "
+					+ property.getName() + " (type "
+					+ property.getPropertyType().getName() + ") from "
+					+ mmo.getClass());
+		}
+
+		if (newVal instanceof MatchMakerObject){
+			((MatchMakerObject)newVal).setSession(session);
+		}
+		return newVal;
 	}
 
     /**
