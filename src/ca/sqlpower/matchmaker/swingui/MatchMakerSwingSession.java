@@ -858,7 +858,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
 		if (mmo.getParent() != null) {
 			mmo.getParent().removeChild(mmo);
-            mmo.getClass();
             
             /* XXX I don't know how to parameterize this.
              * It should be something like:
