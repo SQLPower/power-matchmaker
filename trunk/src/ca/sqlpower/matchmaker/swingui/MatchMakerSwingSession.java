@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +43,7 @@ import ca.sqlpower.architect.ArchitectSessionImpl;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -892,16 +894,61 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return sessionImpl.getPLSchemaVersion();
     }
 
-    public boolean isThisSQLTableExists(SQLTable table) {
-		if ( table == null ) return false; 
+    public SQLTable findSQLTableByName(String catalog, String schema, String tableName)
+		throws ArchitectException {
+		SQLDatabase currentDB = getDatabase();
+		SQLDatabase tempDB = null;
 		try {
-			SQLTable t = getDatabase().getTableByName(
-					table.getCatalogName(),
-					table.getSchemaName(),
-					table.getName());
-			return (t != null);
-		} catch (ArchitectException e) {
+			tempDB = new SQLDatabase(currentDB.getDataSource());
+			return tempDB.getTableByName(
+					catalog,
+					schema,
+					tableName);
+		} finally {
+			if (tempDB != null) tempDB.disconnect();
+		}
+	}
+
+    public boolean tableExists(String catalog, String schema, 
+    		String tableName) throws ArchitectException {
+    	return (findSQLTableByName(catalog,schema,tableName) != null);
+	}
+	
+     public boolean tableExists(SQLTable table) throws ArchitectException {
+		if ( table == null ) return false;
+		return tableExists(table.getCatalogName(),
+				table.getSchemaName(),
+				table.getName());
+	}
+
+     /**
+      * this method requires real JDBC connection and create sql statement
+     * on it.
+      */
+	public boolean canSelectTable(SQLTable table) throws ArchitectException {
+
+		Connection conn = getConnection();
+		Statement stmt = null;
+		StringBuffer sql = new StringBuffer();
+		try {
+			sql.append("select * from ");
+			sql.append(DDLUtils.toQualifiedName(table));
+			stmt = conn.createStatement();
+			stmt.executeQuery(sql.toString());
+			return true;
+		} catch (SQLException e) {
+			logger.debug("sql error: select statement:[" +
+					sql.toString() + "]\n" + e.getMessage() );
 			return false;
+		} finally {
+			try {
+				if (stmt != null) {
+					stmt.close();
+				}
+			} catch (SQLException e) {
+				logger.debug("unknown sql error when close result set and " +
+						"statement. " + e.getMessage());
+			}
 		}
 	}
   

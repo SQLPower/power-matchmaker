@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.Date;
 
 import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -151,11 +152,39 @@ public interface MatchMakerSession {
 	 */
 	public FolderParent getCurrentFolderParent();
 	
+	
 	/**
-	 * check if the given SQLTable exists in the session's SQLDatabase
-	 * @param table the SQLTable that you want to check
-	 * @return true if the sql table exists in the sql database
-	 * of this session
-	 */
-	public boolean isThisSQLTableExists(SQLTable table);
+     * find the sql table that exists in the session's database 
+     * (i.e. not just in memory)
+     * @param catalog	catalog of the table
+     * @param schema	schema of the table
+     * @param tableName name of the table
+     * @return SQLTable if found or null if not
+	 * @throws ArchitectException 
+     * @throws ArchitectException If there are problems accessing the 
+     * session's database
+     */
+    public SQLTable findSQLTableByName(String catalog, String schema, String tableName) throws ArchitectException;
+    
+	/**
+     * Returns true if the SQL table exists
+     * in the session's database; false otherwise.
+     * @throws ArchitectException If there are problems accessing the session's database
+     */
+    public boolean tableExists(String catalog, String schema, String tableName) throws ArchitectException;
+	/**
+     * Returns true if the SQL table exists
+     * in the session's database; false otherwise.
+     * @throws ArchitectException If there are problems accessing the session's database
+     */
+    public boolean tableExists(SQLTable table) throws ArchitectException;
+    
+    /**
+     * return true if the current user of session can select the sql table
+     * @param table -- the table that we want to try select on
+     * @return true if the user can select table, 
+     * false if the user has no select privilege
+     * @throws ArchitectException
+     */
+    public boolean canSelectTable(SQLTable table) throws ArchitectException;
 }

@@ -121,7 +121,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      * @throws ArchitectException If there are problems accessing the session's database
      */
 	public static boolean doesResultTableExist(MatchMakerSession session, Match match) throws ArchitectException {
-		return tableExists(session,
+		return session.tableExists(
 							match.getResultTableCatalog(),
 							match.getResultTableSchema(),
 							match.getResultTableName());
@@ -132,33 +132,14 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * session's database; false otherwise.
 	 * @throws ArchitectException
 	 */
-	static boolean doesSourceTableExist(MatchMakerSession session, Match match) throws ArchitectException {
-		return tableExists(session,
+	public static boolean doesSourceTableExist(MatchMakerSession session, Match match) throws ArchitectException {
+		return session.tableExists(
 				match.getSourceTableCatalog(),
 				match.getSourceTableSchema(),
 				match.getSourceTableName());
 	}
 
-	/**
-     * Returns true if the SQL table exists
-     * in the session's database; false otherwise.
-     * @throws ArchitectException If there are problems accessing the session's database
-     */
-	private static boolean tableExists(MatchMakerSession session,
-			String catalog, String schema, String tableName)
-		throws ArchitectException {
-		SQLDatabase currentDB = session.getDatabase();
-		SQLDatabase tempDB = null;
-		try {
-			tempDB = new SQLDatabase(currentDB.getDataSource());
-			return tempDB.getTableByName(
-					catalog,
-					schema,
-					tableName) != null;
-		} finally {
-			if (tempDB != null) tempDB.disconnect();
-		}
-	}
+	
 
 	/**
 	 * Creates the result table for this Match based on the properties
