@@ -205,6 +205,19 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 			if ( selectedRow == -1 ) return;
 			MatchMakerCriteria c = matchCriteriaTableModel.getRow(selectedRow);
 			group.removeChild(c);
+            
+            /* Note, this is a temporary workaround.  Deleting a criteria set will have
+             * the side effect of saving all other sets in the group.
+             * 
+             * We'd prefer to be able to do one of the following (in order of preference):
+             * 
+             * 1. Make it so when you delete a criteria row and don't save, the
+             *    row reappears next time you come to this group editor
+             * 2. Make the delete permanently and immediately delete the one criteria set
+             *    we just removed, but not save the group or any other criteria
+             *    (this would require having a working MatchMakerCriteriaDAO, which we don't)
+             */
+			swingSession.save(match);
 		}
 	};
 
