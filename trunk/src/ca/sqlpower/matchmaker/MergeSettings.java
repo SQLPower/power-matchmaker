@@ -68,7 +68,7 @@ public class MergeSettings extends MatchMakerSettings {
 				this.augmentNull);
 	}
 
-	public MergeSettings duplicate() {
+	public MergeSettings duplicate(MatchMakerObject parent,MatchMakerSession s) {
 		MergeSettings settings = new MergeSettings();
 		settings.setAppendToLog(getAppendToLog());
 		settings.setAugmentNull(getAugmentNull());
@@ -81,7 +81,7 @@ public class MergeSettings extends MatchMakerSettings {
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
 		settings.setRollbackSegmentName(getRollbackSegmentName()==null?null:new String(getRollbackSegmentName()));
 		settings.setSendEmail(getSendEmail());
-		settings.setSession(getSession());
+		settings.setSession(s);
 		settings.setShowProgressFreq(getShowProgressFreq()==null?null:new Long(getShowProgressFreq()));
 		
 		return settings;

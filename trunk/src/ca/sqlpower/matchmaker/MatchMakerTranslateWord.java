@@ -114,4 +114,15 @@ public class MatchMakerTranslateWord
     	buf.append(". Priority: ").append(location);
     	return buf.toString();
     }
+    
+    public MatchMakerTranslateWord duplicate(MatchMakerObject parent, MatchMakerSession session) {
+    	MatchMakerTranslateWord w = new MatchMakerTranslateWord();
+    	w.setName(getName());
+    	w.setFrom(getFrom());
+    	w.setTo(getTo());
+    	w.setLocation(getLocation());
+    	w.setParent(parent);
+    	w.setSession(session);
+    	return w;
+    }
 }

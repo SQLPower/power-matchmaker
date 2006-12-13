@@ -130,7 +130,7 @@ public class MatchSettings extends MatchMakerSettings {
      * @return new MatchSettings instance with the same properties
      * except parent
      */
-	public MatchSettings duplicate() {
+	public MatchSettings duplicate(MatchMakerObject parent,MatchMakerSession s) {
 		MatchSettings settings = new MatchSettings();
 		settings.setAppendToLog(getAppendToLog());
 		settings.setAutoMatchThreshold(getAutoMatchThreshold()==null?null:new Short(getAutoMatchThreshold()));
@@ -144,7 +144,7 @@ public class MatchSettings extends MatchMakerSettings {
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
 		settings.setRollbackSegmentName(getRollbackSegmentName()==null?null:new String(getRollbackSegmentName()));
 		settings.setSendEmail(getSendEmail());
-		settings.setSession(getSession());
+		settings.setSession(s);
 		settings.setShowProgressFreq(getShowProgressFreq()==null?null:new Long(getShowProgressFreq()));
 		settings.setTruncateCandDupe(getTruncateCandDupe());
 		return settings;

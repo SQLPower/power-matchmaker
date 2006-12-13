@@ -34,6 +34,12 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         propertiesToIgnoreForEventGeneration.add("xrefTableCatalog");
         propertiesToIgnoreForEventGeneration.add("xrefTableSchema");
         propertiesToIgnoreForEventGeneration.add("xrefTableName");
+        propertiesToIgnoreForDuplication.add("matchGroups");
+        // These set other properties to null that describe the same object
+        propertiesToIgnoreForDuplication.add("resultTable");
+        propertiesToIgnoreForDuplication.add("sourceTable");
+        
+        propertiesToIgnoreForDuplication.add("sourceTableIndex");
         super.setUp();
         match = new Match();
         session = new TestingMatchMakerSession();
@@ -327,10 +333,6 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 				"sch", "faketab");
 		match.setSourceTable(sourceTable);
 		assertFalse(Match.doesSourceTableExist(session, match));
-	}
-	
-	public void testDuplicate() throws ArchitectException {
-		Match anotherMatch = match.duplicate(match.getName()+"_dup");
 	}
 	
 	public void testVertifyResultTable() throws ArchitectException {

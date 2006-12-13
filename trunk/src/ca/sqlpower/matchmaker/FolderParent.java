@@ -46,4 +46,8 @@ public class FolderParent extends AbstractMatchMakerObject<FolderParent, PlFolde
     public int hashCode() {
         return System.identityHashCode(this);
     }
+
+	public FolderParent duplicate(MatchMakerObject parent, MatchMakerSession session) {
+		throw new IllegalAccessError("Folder parent not duplicatable");
+	}
 }

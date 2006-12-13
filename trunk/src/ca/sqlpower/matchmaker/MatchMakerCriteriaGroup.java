@@ -141,17 +141,17 @@ public class MatchMakerCriteriaGroup
 	 * and children
 	 * @throws ArchitectException 
 	 */
-	public MatchMakerCriteriaGroup duplicate() throws ArchitectException {
+	public MatchMakerCriteriaGroup duplicate(MatchMakerObject parent,MatchMakerSession s){
 		MatchMakerCriteriaGroup group = new MatchMakerCriteriaGroup();
 		group.setActive(getActive());
 		group.setDesc(getDesc()==null?null:new String(getDesc()));
 		group.setFilter(getFilter()==null?null:new String(getFilter()));
 		group.setMatchPercent(getMatchPercent()==null?null:new Short(getMatchPercent()));
 		group.setName(getName()==null?null:new String(getName()));
-		group.setSession(getSession());
+		group.setSession(s);
 		
 		for ( MatchMakerCriteria criteria : getChildren()) {
-			MatchMakerCriteria newCriteria = criteria.duplicate();
+			MatchMakerCriteria newCriteria = criteria.duplicate(group,s);
 			group.addChild(newCriteria);
 		}
 		return group;

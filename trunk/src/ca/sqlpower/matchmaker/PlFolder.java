@@ -108,5 +108,19 @@ public class PlFolder<C extends MatchMakerObject>
 		return true;
 	}
 
+	public PlFolder duplicate(MatchMakerObject parent, MatchMakerSession session) {
+		PlFolder f = new PlFolder();
+		f.setName(getName());
+		f.setFolderDesc(getFolderDesc());
+		f.setLastBackupNo(getLastBackupNo());
+		f.setFolderStatus(getFolderStatus());
+		f.setParent(parent);
+		f.setSession(session);
+		for (MatchMakerObject o: getChildren()){
+			f.addChild(o.duplicate(parent, session));
+		}
+		return f;
+	}
+
 
 }

@@ -118,4 +118,16 @@ public class StubMatchMakerObject implements MatchMakerObject {
         this.allowChildren = allowChildren;
     }
 
+	public MatchMakerObject duplicate(MatchMakerObject parent, MatchMakerSession s) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerObject.duplicate()");
+		return null;
+	}
+
+	public void setName(String string) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerObject.setName()");
+		
+	}
+
 }

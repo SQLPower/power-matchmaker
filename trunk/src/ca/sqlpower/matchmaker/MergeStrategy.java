@@ -40,4 +40,9 @@ public class MergeStrategy
 		return true;
 	}
 
+	public MergeStrategy duplicate(MatchMakerObject parent, MatchMakerSession session) {
+		//TODO implement this method
+		throw new UnsupportedOperationException("THis method has not yet been implemented");
+	}
+
 }
