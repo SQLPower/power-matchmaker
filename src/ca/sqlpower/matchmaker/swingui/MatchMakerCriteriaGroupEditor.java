@@ -65,7 +65,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
     private FormValidationHandler handler;
 
     private JSplitPane jSplitPane;
-	private JTable matchCriteriaTable;
+	private final JTable matchCriteriaTable;
 	private MatchCriteriaTableModel matchCriteriaTableModel;
 	private JPanel groupEditPanel;
     private JTextField groupId;
@@ -103,12 +103,10 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 			}
         });
 		save.putValue("mm_name", "save action for "+group.getName()+"@"+System.identityHashCode(group));
-		/**
-		 * A tableChanged is fired to trigger the form validation.
-         * Afterwards it is required,to setValidated to false because 
-         * it would then cause the handlerer in thinking that there are 
-         * unsaved changes in the dialog when really the dialog is brand
-         * new
+        
+		/* Now trigger form validation so the validation status starts up correctly,
+         * then reset the validation handler so we don't think there are unsaved changes
+         * to start with.
 		 */
 		matchCriteriaTableModel.fireTableChanged(new TableModelEvent(matchCriteriaTableModel));
         handler.resetHasValidated();
@@ -311,7 +309,9 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         if ( match.getSourceTable() != null ) {
         	sourceTable = match.getSourceTable();
         	if ( sourceTable != null ) {
-        		newCriteria.setEnabled(true);
+        	    logger.debug("sourceTable isn't null.  Creating filterPanel, column chooser, and translation chooser.");
+
+                newCriteria.setEnabled(true);
 
                 filterPanel.setTable(sourceTable);
 
@@ -326,7 +326,9 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 				            					new TranslationComboBoxModel(swingSession.getTranslations()));
 				col.setCellEditor(new DefaultCellEditor(translateComboBox));
 				translateComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
-        	}
+        	} else {
+                logger.debug("sourceTable is null.  not setting up editors.");
+            }
         }
 
         Validator v1 = new MatchGroupNameValidator();
@@ -442,7 +444,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 
 		Pattern pattern = Pattern.compile("\\d+");
 		public ValidateResult validate(Object contents) {
-			int colIndex = ((MatchCriteriaTableModel)table.getModel()).
+			int colIndex = ((MatchCriteriaTableModel) table.getModel()).
 							getIndexOfClass(translate_group_name);
 
 			//If it does not exist, the columns have not been setup yet
