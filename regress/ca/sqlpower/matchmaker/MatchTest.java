@@ -226,8 +226,9 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		SQLTable resultTable = db.getTableByName("farm", "cow", "moo");
 		assertNotNull(resultTable);
 		match.setResultTable(resultTable);
-		assertTrue(match.doesResultTableExist(session, match));
+		assertTrue(Match.doesResultTableExist(session, match));
 	}
+	
 
 	/**
 	 * Tests that new nonexistant handcrafted tables are nonexistant according
@@ -247,7 +248,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		SQLTable resultTable = new SQLTable(cowSchem, "nonexistant", null,
 				"TABLE", true);
 		match.setResultTable(resultTable);
-		assertFalse(match.doesResultTableExist(session, match));
+		assertFalse(Match.doesResultTableExist(session, match));
 	}
 
 	/**
@@ -268,7 +269,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		SQLTable resultTable = ArchitectUtils.addSimulatedTable(db, "cat",
 				"sch", "faketab");
 		match.setResultTable(resultTable);
-		assertFalse(match.doesResultTableExist(session, match));
+		assertFalse(Match.doesResultTableExist(session, match));
 	}
 	
 	public void testSourceTableExistsWhenTrue() throws Exception {
@@ -283,7 +284,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		SQLTable sourceTable = db.getTableByName("farm", "cow", "moo");
 		assertNotNull(sourceTable);
 		match.setSourceTable(sourceTable);
-		assertTrue(match.doesSourceTableExist(session, match));
+		assertTrue(Match.doesSourceTableExist(session, match));
 	}
 
 	/**
@@ -304,7 +305,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		SQLTable sourceTable = new SQLTable(cowSchem, "nonexistant", null,
 				"TABLE", true);
 		match.setSourceTable(sourceTable);
-		assertFalse(match.doesSourceTableExist(session, match));
+		assertFalse(Match.doesSourceTableExist(session, match));
 	}
 
 	/**
@@ -325,7 +326,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		SQLTable sourceTable = ArchitectUtils.addSimulatedTable(db, "cat",
 				"sch", "faketab");
 		match.setSourceTable(sourceTable);
-		assertFalse(match.doesSourceTableExist(session, match));
+		assertFalse(Match.doesSourceTableExist(session, match));
 	}
 	
 	public void testDuplicate() throws ArchitectException {

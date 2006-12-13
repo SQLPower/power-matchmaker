@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -125,10 +126,28 @@ public class StubMatchMakerSession implements MatchMakerSession{
         return null;
     }
 
-	public boolean isThisSQLTableExists(SQLTable table) {
+	public boolean canSelectTable(SQLTable table) throws ArchitectException {
 		// TODO Auto-generated method stub
-		logger.debug("Stub call: StubMatchMakerSession.isThisSQLTableExists()");
+		logger.debug("Stub call: StubMatchMakerSession.canSelectTable()");
 		return false;
 	}
-    
+
+	public SQLTable findSQLTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerSession.findSQLTableByName()");
+		return null;
+	}
+
+	public boolean tableExists(String catalog, String schema, String tableName) throws ArchitectException {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerSession.tableExists()");
+		return false;
+	}
+
+	public boolean tableExists(SQLTable table) throws ArchitectException {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerSession.tableExists()");
+		return false;
+	}
+
 }
