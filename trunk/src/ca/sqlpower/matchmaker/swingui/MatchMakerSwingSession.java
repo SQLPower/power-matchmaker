@@ -48,6 +48,7 @@ import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -856,15 +857,19 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		if (mmo.getParent() != null) {
 			mmo.getParent().removeChild(mmo);
             
-            /* XXX I don't know how to parameterize this.
-             * It should be something like:
-             * MatchMakerDAO<T> dao = getDAO(mmo.getClass());
-             * But that doesn't work
-             */
-            MatchMakerDAO dao = getDAO(mmo.getClass());
             
-            dao.delete(mmo);
-		} else {
+            if (mmo instanceof MatchMakerCriteria) {
+                // XXX Criteria are special because they don't have a DAO of their own
+                MatchMakerObject criteriaGroup = mmo.getParent();
+                MatchMakerDAO dao = getDAO(criteriaGroup.getClass());
+                dao.save(criteriaGroup);
+            } else {
+                MatchMakerDAO dao = getDAO(mmo.getClass());
+                dao.delete(mmo);
+            }
+        
+
+        } else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
         }
 	}
