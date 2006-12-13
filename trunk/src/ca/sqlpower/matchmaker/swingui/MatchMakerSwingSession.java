@@ -855,10 +855,19 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	 * XXX Push this into the match maker session interface
 	 * @param mmo
 	 */
-	public void delete(MatchMakerObject mmo) {
-		if(mmo.getParent() != null) {
+	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
+		if (mmo.getParent() != null) {
 			mmo.getParent().removeChild(mmo);
-			save(mmo);
+            mmo.getClass();
+            
+            /* XXX I don't know how to parameterize this.
+             * It should be something like:
+             * MatchMakerDAO<T> dao = getDAO(mmo.getClass());
+             * But that doesn't work
+             */
+            MatchMakerDAO dao = getDAO(mmo.getClass());
+            
+            dao.delete(mmo);
 		} else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
         }
