@@ -4,9 +4,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -65,6 +67,43 @@ public class EditableJTable extends JTable implements TableTextConverter {
 		return viewIndex;
 	}
 
+    /**
+     * Just logs the call and forwards to superclass implementation.
+     */
+    @Override
+    public void setModel(TableModel dataModel) {
+        logger.debug("Table Model change for EditableJTable "+this+
+                ". Old model: "+getModel()+" new model: "+dataModel);
+        super.setModel(dataModel);
+    }
+    
+    /**
+     * Just logs the call and forwards to superclass implementation.
+     */
+    @Override
+    public void setSelectionModel(ListSelectionModel newModel) {
+        logger.debug("Table Selection Model change for EditableJTable "+this+
+                ". Old model: "+getSelectionModel()+" new model: "+newModel);
+        super.setSelectionModel(newModel);
+    }
+    
+    @Override
+    public TableCellEditor getCellEditor() {
+        TableCellEditor editor = super.getCellEditor();
+        logger.debug("EditableJTable.getCellEditor(): returning "+editor);
+        return editor;
+    }
+    
+    @Override
+    public TableCellEditor getCellEditor(int row, int column) {
+        TableColumn tableColumn = getColumnModel().getColumn(column);
+
+        TableCellEditor returnVal = super.getCellEditor(row, column);
+        logger.debug("EditableJTable.getCellEditor("+row+","+column+"): returning "+returnVal
+                +" (tableColumn.getCellEditor()="+tableColumn.getCellEditor()+")");
+        return returnVal;
+    }
+    
 	/**
 	 * Taken from the Bug ID:	4292511 of bug parade as a workaround
 	 * 
