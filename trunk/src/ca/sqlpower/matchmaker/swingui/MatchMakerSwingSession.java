@@ -540,15 +540,12 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      * @throws SQLException 
 	 */
 	public void setCurrentEditorComponent(EditorPane pane) throws SQLException {
-
 		if (pane == oldPane && pane != null) {
 			return;	// User clicked on same item, don't hassle them
 		}
-
         if (editorComponentUpdateInProgress) {
             return;
         }
-        
         try {
             editorComponentUpdateInProgress = true;
             if (splashScreen == null){
@@ -904,6 +901,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
     public SQLTable findSQLTableByName(String catalog, String schema, String tableName)
 		throws ArchitectException {
+    	if (tableName == null || tableName.length() == 0) return null;
 		SQLDatabase currentDB = getDatabase();
 		SQLDatabase tempDB = null;
 		try {
