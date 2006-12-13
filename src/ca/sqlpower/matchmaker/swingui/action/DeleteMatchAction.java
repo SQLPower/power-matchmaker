@@ -24,7 +24,8 @@ public class DeleteMatchAction extends AbstractAction {
 	
 	public void actionPerformed(ActionEvent e) {
 		int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-				"Are you sure you want to delete the match?",
+				"Are you sure you want to delete the match [" +
+				match.getName() + "]?",
 				"Confirm Delete",
 				JOptionPane.YES_NO_OPTION);
 		if ( responds != JOptionPane.YES_OPTION )
