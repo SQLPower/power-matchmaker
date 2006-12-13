@@ -2,11 +2,11 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
-import ca.sqlpower.matchmaker.dao.AbstractMatchMakerCriteraGroupDAOTestCase;
+import ca.sqlpower.matchmaker.dao.AbstractMatchMakerCriteriaGroupDAOTestCase;
 import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
 
 
-public class MatchMakerCriteriaGroupDAOOracleTest extends AbstractMatchMakerCriteraGroupDAOTestCase {
+public class MatchMakerCriteriaGroupDAOOracleTest extends AbstractMatchMakerCriteriaGroupDAOTestCase {
     
     private MatchMakerCriteriaGroup criteriaGroup;
     
