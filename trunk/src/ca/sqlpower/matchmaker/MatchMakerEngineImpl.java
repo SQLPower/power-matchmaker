@@ -132,6 +132,42 @@ public class MatchMakerEngineImpl extends AbstractCEngine {
 					"The matchmaker engine version is not up to date");
 		}
 
+		try {
+			if (!Match.doesSourceTableExist(session, match)) {
+				throw new EngineSettingException(
+					"PreCondition failed: match source table does not exist");
+			}
+		} catch (ArchitectException e1) {
+			throw new EngineSettingException(
+				"PreCondition failed: " + e1.getMessage());
+		}
+		try {
+			if (!session.canSelectTable(match.getSourceTable())) {
+				throw new EngineSettingException(
+					"PreCondition failed: can not select match source table");
+			}
+		} catch (ArchitectException e1) {
+			throw new EngineSettingException(
+					"PreCondition failed: " + e1.getMessage());
+		}
+		try {
+			if (!Match.doesResultTableExist(session, match)) {
+				throw new EngineSettingException(
+					"PreCondition failed: match result table does not exist");
+			}
+		} catch (ArchitectException e1) {
+			throw new EngineSettingException(
+					"PreCondition failed: " + e1.getMessage());
+		}
+		try {
+			if (!match.vertifyResultTableStruct() ) {
+				throw new EngineSettingException(
+					"PreCondition failed: match result table structure incorrect");
+			}
+		} catch (ArchitectException e1) {
+			throw new EngineSettingException(
+					"PreCondition failed: " + e1.getMessage());
+		}
 		if (settings.getSendEmail()) {
 			if (!canExecuteEmailEngine(session.getContext())) {
 				throw new EngineSettingException(
