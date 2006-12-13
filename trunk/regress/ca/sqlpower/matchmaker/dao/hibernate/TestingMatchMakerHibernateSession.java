@@ -230,16 +230,28 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");
     }
 
-	public boolean isThisSQLTableExists(SQLTable table) {
-		if ( table == null ) return false;
-		try {
-			SQLTable t = getDatabase().getTableByName(
-					table.getCatalogName(),
-					table.getSchemaName(),
-					table.getName());
-			return (t != null);
-		} catch (ArchitectException e) {
-			return false;
-		}
+	public boolean canSelectTable(SQLTable table) throws ArchitectException {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.canSelectTable()");
+		return false;
 	}
+
+	public SQLTable findSQLTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.findSQLTableByName()");
+		return null;
+	}
+
+	public boolean tableExists(String catalog, String schema, String tableName) throws ArchitectException {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.tableExists()");
+		return false;
+	}
+
+	public boolean tableExists(SQLTable table) throws ArchitectException {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.tableExists()");
+		return false;
+	}
+
 }

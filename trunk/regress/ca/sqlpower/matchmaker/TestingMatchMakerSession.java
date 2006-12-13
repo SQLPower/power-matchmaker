@@ -1,17 +1,25 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.util.Version;
 
 public class TestingMatchMakerSession implements MatchMakerSession {
+	
+	private static Logger logger = Logger.getLogger(TestingMatchMakerSession.class);
+	
 	Date date = new Date();
 	String appUser = "App User";
 	String dbUser = "DB User";
@@ -151,41 +159,83 @@ public class TestingMatchMakerSession implements MatchMakerSession {
      * Does nothing.
      */
     public void removeWarningListener(WarningListener l) {
-        // TODO Auto-generated method stub
+    	// TODO Auto-generated method stub
     }
 
     public TranslateGroupParent getTranslations() {
-        if (translateGroupParent == null){
-            translateGroupParent = new TranslateGroupParent(this);
-        }
-        return translateGroupParent;
+    	if (translateGroupParent == null){
+    		translateGroupParent = new TranslateGroupParent(this);
+    	}
+    	return translateGroupParent;
     }
 
-	public FolderParent getBackupFolderParent() {
-		return null;
-	}
+    public FolderParent getBackupFolderParent() {
+    	return null;
+    }
 
-	public FolderParent getCurrentFolderParent() {
-		FolderParent current = new FolderParent(this);
-		current.getChildren().addAll(folders);
-		return current;
-	}
+    public FolderParent getCurrentFolderParent() {
+    	FolderParent current = new FolderParent(this);
+    	current.getChildren().addAll(folders);
+    	return current;
+    }
 
     public Version getPLSchemaVersion() {
-        throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");
+    	throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");
     }
 
-    public boolean isThisSQLTableExists(SQLTable table) {
-		if ( table == null ) return false;
-		try {
-			SQLTable t = getDatabase().getTableByName(
-					table.getCatalogName(),
-					table.getSchemaName(),
-					table.getName());
-			return (t != null);
-		} catch (ArchitectException e) {
-			return false;
-		}
-	}
-    
+
+    public SQLTable findSQLTableByName(String catalog, String schema, String tableName)
+    throws ArchitectException {
+    	SQLDatabase currentDB = getDatabase();
+    	SQLDatabase tempDB = null;
+    	try {
+    		tempDB = new SQLDatabase(currentDB.getDataSource());
+    		return tempDB.getTableByName(
+    				catalog,
+    				schema,
+    				tableName);
+    	} finally {
+    		if (tempDB != null) tempDB.disconnect();
+    	}
+    }
+
+    public boolean tableExists(String catalog, String schema, 
+    		String tableName) throws ArchitectException {
+    	return (findSQLTableByName(catalog,schema,tableName) != null);
+    }
+
+    public boolean tableExists(SQLTable table) throws ArchitectException {
+    	if ( table == null ) return false;
+    	return tableExists(table.getCatalogName(),
+    			table.getSchemaName(),
+    			table.getName());
+    }
+
+    public boolean canSelectTable(SQLTable table) throws ArchitectException {
+
+    	Connection conn = getConnection();
+    	Statement stmt = null;
+    	StringBuffer sql = new StringBuffer();
+    	try {
+    		sql.append("select * from ");
+    		sql.append(DDLUtils.toQualifiedName(table));
+    		stmt = conn.createStatement();
+    		stmt.executeQuery(sql.toString());
+    		return true;
+    	} catch (SQLException e) {
+    		logger.debug("sql error: select statement:[" +
+    				sql.toString() + "]\n" + e.getMessage() );
+    		return false;
+    	} finally {
+    		try {
+    			if (stmt != null) {
+    				stmt.close();
+    			}
+    		} catch (SQLException e) {
+    			logger.debug("unknown sql error when close result set and " +
+    					"statement. " + e.getMessage());
+    		}
+    	}
+    }
+
 }
