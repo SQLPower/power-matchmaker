@@ -517,7 +517,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         //it to load back appropiately.  There is no need to worry about invalid cases 
         //here since the Validation handles them and won't allow the user to save
         //if there's a failure.
-        if (matchPercent.getText().trim().length() < 0){
+        if (matchPercent.getText().trim().length() == 0) {
             group.setMatchPercent(null);
         } else {
             int pct = Integer.parseInt(matchPercent.getText());
