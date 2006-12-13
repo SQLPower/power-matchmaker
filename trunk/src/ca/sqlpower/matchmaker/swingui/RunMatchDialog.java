@@ -265,9 +265,12 @@ public class RunMatchDialog extends JDialog {
 		Validator v1 = new LogFileNameValidator();
 		handler.addValidateObject(logFilePath, v1);
 
-		Validator v2 = new MatchAndMatchEngineValidator(match);
+		Validator v2 = new MatchAndMatchEngineValidator(swingSession, match);
 		handler.addValidateObject(sendEmail, v2);
 
+		/* trigger the validator */
+		v2.validate(sendEmail.isSelected());
+		
 		MatchSettings settings = match.getMatchSettings();
 		String logFileName;
 		if ( settings.getLog() != null ) {
@@ -722,12 +725,21 @@ public class RunMatchDialog extends JDialog {
 	private class MatchAndMatchEngineValidator implements Validator {
 
 		private Match match;
+		private MatchMakerSession session;
 
-		public MatchAndMatchEngineValidator(Match match) {
+		public MatchAndMatchEngineValidator(MatchMakerSession session, Match match) {
 			this.match = match;
+			this.session = session;
 		}
 
 		public ValidateResult validate(Object contents) {
+			MatchMakerEngineImpl matchEngine = new MatchMakerEngineImpl(session, match);
+			try {
+				matchEngine.checkPreconditions();
+			} catch (EngineSettingException e) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						e.getMessage());
+			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
 
