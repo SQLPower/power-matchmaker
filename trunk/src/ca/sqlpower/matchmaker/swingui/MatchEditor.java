@@ -1,22 +1,31 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.BorderLayout;
 import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -26,6 +35,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 
 import org.apache.log4j.Logger;
 
@@ -36,15 +48,19 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.ddl.DDLGenerator;
+import ca.sqlpower.architect.ddl.DDLStatement;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
+import ca.sqlpower.architect.swingui.SaveDocument;
+import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.swingui.action.CreateResultTableAction;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 import ca.sqlpower.matchmaker.validation.MatchNameValidator;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -54,6 +70,7 @@ import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
+import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
@@ -130,7 +147,6 @@ public class MatchEditor implements EditorPane {
         });
         handler.resetHasValidated(); // avoid false hits when newly created
         
-
         /**
          * listen to the parent of the match, to handle the match removal
          * from the tree. if this currently editting match was deleted 
@@ -157,6 +173,7 @@ public class MatchEditor implements EditorPane {
         			if ( found ) {
         				logger.debug("This match is deleted from somewhere");
         				logger.debug("we have to close the editor without saving");
+        				handler.resetHasValidated();
         				panel.setVisible(false);
         				try {
 							swingSession.setCurrentEditorComponent(null);
@@ -783,7 +800,8 @@ public class MatchEditor implements EditorPane {
     	ValidateResult r3 = handler.getResultOf(sourceChooser.getTableComboBox());
     	if ( r1 == null || r1.getStatus() != Status.OK ||
     			r2 == null || r2.getStatus() != Status.OK ||
-    			r3 == null || r3.getStatus() != Status.OK ) {
+    			r3 == null || r3.getStatus() != Status.OK ||
+    			handler.hasPerformedValidation() ) {
     		createResultTableAction.setEnabled(false);
     	} else {
     		createResultTableAction.setEnabled(true);
@@ -927,5 +945,207 @@ public class MatchEditor implements EditorPane {
 
 	public boolean hasUnsavedChanges() {
 		return handler.hasPerformedValidation();
+	}
+	
+	
+	/**
+	 * Creates a new Match object and a GUI editor for it, then puts that editor in the split pane.
+	 */
+	private final class CreateResultTableAction extends AbstractAction {
+
+	    private final MatchMakerSwingSession swingSession;
+		private Match match;
+
+		public CreateResultTableAction(
+	            MatchMakerSwingSession swingSession,
+	            Match match) {
+			super("Create Result Table");
+	        this.swingSession = swingSession;
+			this.match = match;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			if (hasUnsavedChanges()) {
+				int choice = JOptionPane.showOptionDialog(
+						MatchEditor.this.getPanel(),
+						"Your match has unsaved changes", "Unsaved Changes",
+						0, 0, null,
+						new String[] { "Save", "Cancel" }, "Save");
+				logger.debug("choice: "+choice);
+				if (choice == 0) {
+					boolean success = doSave();
+					if (!success) {
+						JOptionPane.showMessageDialog(
+								MatchEditor.this.getPanel(),
+						"Validation Error.  Can't save.");
+						return;
+					}
+				} else if (choice == 1 || choice == -1) {
+					return;
+				} else {
+					throw new IllegalStateException("Unknown choice: "+choice);
+				}
+			}                
+			try {
+				showSqlGui();
+			} catch (Exception ex) {
+				ASUtils.showExceptionDialog("Couldn't create SQL Preview", ex);
+			}
+		}
+		
+		/**
+		 * Creates and shows a dialog with the generated SQL in it.
+		 * The dialog has buttons with actions that can save, execute,
+		 * or copy the SQL to the clipboard.
+		 */
+		public void showSqlGui() 
+			throws InstantiationException, IllegalAccessException, 
+			HeadlessException, ArchitectException, SQLException {
+			
+			final DDLGenerator ddlg = DDLUtils.createDDLGenerator(
+					swingSession.getDatabase().getDataSource());
+			if (ddlg == null) {
+				JOptionPane.showMessageDialog(swingSession.getFrame(),
+						"Couldn't create DDL Generator for database type\n"+
+						swingSession.getDatabase().getDataSource().getDriverClass());
+				return;
+			}
+			ddlg.setTargetCatalog(match.getResultTableCatalog());
+			ddlg.setTargetSchema(match.getResultTableSchema());
+			if (Match.doesResultTableExist(swingSession, match)) {
+				int answer = JOptionPane.showConfirmDialog(swingSession.getFrame(),
+						"Result table exists, do you want to drop and recreate it?",
+						"Table exists", 
+						JOptionPane.YES_NO_OPTION);
+				if ( answer != JOptionPane.YES_OPTION ) {
+					return;
+				}
+				ddlg.dropTable(match.getResultTable());
+			}
+			ddlg.addTable(match.createResultTable());
+			ddlg.addIndex((SQLIndex) match.getResultTable().getIndicesFolder().getChild(0));
+			
+		    final JDialog editor = new JDialog(swingSession.getFrame(),
+		    		"Create Result Table", false );
+		    JComponent cp = (JComponent) editor.getContentPane();
+		    
+		    Box statementsBox = Box.createVerticalBox();
+		    final List<JTextArea> sqlTextFields = new ArrayList<JTextArea>();
+		    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
+		    	final JTextArea sqlTextArea = new JTextArea(sqlStatement.getSQLText());
+				statementsBox.add(sqlTextArea);
+				sqlTextFields.add(sqlTextArea);
+		    }
+		    
+		    Action saveAction = new AbstractAction("Save") {
+				public void actionPerformed(ActionEvent e) {
+					AbstractDocument doc = new DefaultStyledDocument();
+					for (JTextArea sqlText : sqlTextFields ) {
+				    	try {
+							doc.insertString(doc.getLength(),
+											sqlText.getText(),
+											null);
+							doc.insertString(doc.getLength(),";\n",null);
+						} catch (BadLocationException e1) {
+							ASUtils.showExceptionDialog("Unexcepted Document Error",e1);
+						}
+				    }
+					new SaveDocument(swingSession.getFrame(),
+							doc,
+							(FileExtensionFilter)ASUtils.SQL_FILE_FILTER);
+				}
+		    };
+		    Action copyAction = new AbstractAction("Copy to Clipboard") {
+				public void actionPerformed(ActionEvent e) {
+					StringBuffer buf = new StringBuffer();
+					for (JTextArea sqlText : sqlTextFields ) {
+						buf.append(sqlText.getText());
+						buf.append(";\n");
+				    }
+					StringSelection selection = new StringSelection(buf.toString());
+					Clipboard clipboard = Toolkit.getDefaultToolkit()
+							.getSystemClipboard();
+					clipboard.setContents(selection, selection);
+				}
+		    };
+		    Action executeAction = new AbstractAction("Execute") {
+				public void actionPerformed(ActionEvent e) {
+					
+					Connection con = null;
+					Statement stmt = null;
+					String sql = null;
+					try {
+						con = swingSession.getConnection();
+						stmt = con.createStatement();
+						int successCount = 0;
+						
+						for (JTextArea sqlText : sqlTextFields ) {
+							sql = sqlText.getText();
+							try {
+								stmt.executeUpdate(sql);
+								successCount += 1;
+							} catch (SQLException e1) {
+								int choice = JOptionPane.showOptionDialog(editor,
+										"The following SQL statement failed:\n" +
+										sql +
+										"\nThe error was: " + e1.getMessage() + 
+										"\n\nDo you want to continue executing the create script?",
+										"SQL Error", JOptionPane.YES_NO_OPTION,
+										JOptionPane.ERROR_MESSAGE, null,
+										new String[] {"Abort", "Continue"}, "Continue" );
+								if (choice != 1) {
+									break;
+								}
+							}
+						}
+						
+						JOptionPane.showMessageDialog(swingSession.getFrame(),
+								"Successfully executed " + successCount + " of " +
+								sqlTextFields.size() + " SQL Statements." +
+								(successCount == 0 ? "\n\nBetter Luck Next Time." : ""));
+						
+	                    //closes the dialog if all the statement is executed successfully
+	                    //if not, the dialog remains on the screen
+	                    if (successCount == sqlTextFields.size()){
+						    editor.dispose();
+	                    }
+					} catch (SQLException ex) {
+						JOptionPane.showMessageDialog(editor,
+								"Create Script Failure",
+								"Couldn't allocate a Statement:\n" + ex.getMessage(),
+								JOptionPane.ERROR_MESSAGE);
+					} finally {
+						try {
+							if (stmt != null) stmt.close();
+						} catch (SQLException ex) {
+							logger.error("SQLException while closing statement", ex);
+						}
+					}
+				}
+		    };
+		    Action cancelAction = new AbstractAction("Close") {
+				public void actionPerformed(ActionEvent e) {
+					editor.dispose();
+				}
+		    };
+		    
+		    // the gui layout part
+		    cp.setLayout(new BorderLayout(10,10));
+		    cp.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		    
+		    cp.add(new JScrollPane(statementsBox), BorderLayout.CENTER);
+		    
+		    ButtonBarBuilder bbb = ButtonBarBuilder.createLeftToRightBuilder();
+		    bbb.addGridded(new JButton(saveAction));
+		    bbb.addGridded(new JButton(copyAction));
+		    bbb.addGridded(new JButton(executeAction));
+		    bbb.addGridded(new JButton(cancelAction));
+		    
+		    cp.add(bbb.getPanel(), BorderLayout.SOUTH);
+		    
+		    editor.pack();
+		    editor.setLocationRelativeTo(null);
+		    editor.setVisible(true);
+		}
 	}
 }
