@@ -176,6 +176,11 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		}
 		SQLTable t = new SQLTable(oldResultTable.getParent(), oldResultTable.getName(), oldResultTable.getRemarks(), "TABLE", true);
 
+		logger.debug("createResultTable: table parent=" +
+				(oldResultTable.getParent()==null?"null":oldResultTable.getParent().getClass()) +
+				"  name:[" +
+				(oldResultTable.getParent()==null?"null":oldResultTable.getParent().getName()) +
+				"]");
 		logger.debug("createResultTable: si="+si+" si.children.size="+si.getChildCount());
 
 		addResultTableColumns(t, si, "dup_candidate_1");
@@ -622,15 +627,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		newMatch.setResultTable(getResultTable());
 		newMatch.setXrefTable(getXrefTable());
 		newMatch.setType(getType());
-		ViewSpec viewSpec = new ViewSpec();
-		viewSpec.setCatalog(getView().getCatalog());
-		viewSpec.setSchema(getView().getSchema());
-		viewSpec.setName(getView().getName());
-		viewSpec.setSelect(getView().getSelect());
-		viewSpec.setFrom(getView().getFrom());
-		viewSpec.setWhere(getView().getWhere());
-		newMatch.setView(viewSpec);
-		
+		newMatch.setView(getView()==null?null:getView().duplicate());
 		newMatch.setSession(s);
 		
 		for (MatchMakerCriteriaGroup g : getMatchCriteriaGroups()) {
