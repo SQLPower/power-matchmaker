@@ -52,42 +52,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
     }
 
 	private void itemSelected(TreeSelectionEvent e) {
-		TreePath tp = e.getPath();
-		if (tp != null) {
-			Object o = tp.getLastPathComponent();
-			try {
-				if (o instanceof PlFolder) {
-					FolderEditor editor = new FolderEditor(swingSession,
-							(PlFolder) o);
-					swingSession.setCurrentEditorComponent(editor);
-				} else if (o instanceof Match) {
-
-					MatchEditor me;
-					try {
-						me = new MatchEditor(swingSession, (Match) o,
-								(PlFolder<Match>) ((Match) o).getParent());
-					} catch (ArchitectException e1) {
-						throw new ArchitectRuntimeException(e1);
-					}
-
-					swingSession.setCurrentEditorComponent(me);
-
-				} else if (o instanceof MatchMakerCriteriaGroup) {
-					Match m = ((MatchMakerCriteriaGroup) o).getParentMatch();
-					try {
-						MatchMakerCriteriaGroupEditor editor = new MatchMakerCriteriaGroupEditor(
-								swingSession, m, (MatchMakerCriteriaGroup) o);
-						logger.debug("Created new match group editor "
-								+ System.identityHashCode(editor));
-						swingSession.setCurrentEditorComponent(editor);
-					} catch (ArchitectException e1) {
-						throw new ArchitectRuntimeException(e1);
-					}
-				}
-			} catch (SQLException e1) {
-				throw new RuntimeException(e1);
-			}
-		}
+		
 	}
 	
 
@@ -199,7 +164,48 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
     }
 
 	public void valueChanged(TreeSelectionEvent e) {
-		itemSelected(e);
+
+		JTree tree = (JTree) e.getSource();
+		if ( tree.getSelectionPath() == null ) {
+			logger.debug("Nothing selected, so return.");
+			return;
+		}
+		TreePath tp = e.getPath();
+		if (tp != null) {
+			Object o = tp.getLastPathComponent();
+			try {
+				if (o instanceof PlFolder) {
+					FolderEditor editor = new FolderEditor(swingSession,
+							(PlFolder) o);
+					swingSession.setCurrentEditorComponent(editor);
+				} else if (o instanceof Match) {
+
+					MatchEditor me;
+					try {
+						me = new MatchEditor(swingSession, (Match) o,
+								(PlFolder<Match>) ((Match) o).getParent());
+					} catch (ArchitectException e1) {
+						throw new ArchitectRuntimeException(e1);
+					}
+
+					swingSession.setCurrentEditorComponent(me);
+
+				} else if (o instanceof MatchMakerCriteriaGroup) {
+					Match m = ((MatchMakerCriteriaGroup) o).getParentMatch();
+					try {
+						MatchMakerCriteriaGroupEditor editor = new MatchMakerCriteriaGroupEditor(
+								swingSession, m, (MatchMakerCriteriaGroup) o);
+						logger.debug("Created new match group editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
+					} catch (ArchitectException e1) {
+						throw new ArchitectRuntimeException(e1);
+					}
+				}
+			} catch (SQLException e1) {
+				throw new RuntimeException(e1);
+			}
+		}
 	}
 
 	
