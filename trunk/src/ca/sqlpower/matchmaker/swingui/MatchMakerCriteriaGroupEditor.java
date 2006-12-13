@@ -512,7 +512,14 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
             }
             group.setName(groupId.getText());
         }
-        if (matchPercent.getText().trim().length() > 0){
+        
+        //If the field is empty, we need to store it as null in order for
+        //it to load back appropiately.  There is no need to worry about invalid cases 
+        //here since the Validation handles them and won't allow the user to save
+        //if there's a failure.
+        if (matchPercent.getText().trim().length() < 0){
+            group.setMatchPercent(null);
+        } else {
             int pct = Integer.parseInt(matchPercent.getText());
             group.setMatchPercent((short)pct);
         }
