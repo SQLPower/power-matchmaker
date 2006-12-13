@@ -11,11 +11,11 @@ import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 
-public abstract class AbstractMatchMakerCriteraGroupDAOTestCase extends AbstractDAOTestCase<MatchMakerCriteriaGroup,MatchCriteriaGroupDAO>  {
+public abstract class AbstractMatchMakerCriteriaGroupDAOTestCase extends AbstractDAOTestCase<MatchMakerCriteriaGroup,MatchCriteriaGroupDAO>  {
 
 	Long count=0L;
     Match match;
-    public AbstractMatchMakerCriteraGroupDAOTestCase() {
+    public AbstractMatchMakerCriteriaGroupDAOTestCase() {
         match= new Match();
         match.setName("Criteria Group Test Match");
         match.setType(Match.MatchMode.BUILD_XREF);
