@@ -830,8 +830,9 @@ public class MatchEditor implements EditorPane {
 						SQLTable resultTable = swingSession.getDatabase().getTableByName(
 								catalogName, schemaName, tableName);
 						if ( value == resultTable ) {
-							return ValidateResult.createValidateResult(Status.WARN,
-							"Match source table has the same name as the result table");
+							return ValidateResult.createValidateResult(
+									Status.WARN,
+									"Match source table has the same name as the result table");
 						}
 					} catch (ArchitectException e) {
 						// XXX: result table has error, does that mean the source is OK?

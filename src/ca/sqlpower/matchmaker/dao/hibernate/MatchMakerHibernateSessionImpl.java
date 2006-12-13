@@ -3,6 +3,7 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
@@ -347,17 +349,61 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         return plSchemaVersion;
     }
 
-    public boolean isThisSQLTableExists(SQLTable table) {
-		if ( table == null ) return false;
+    public SQLTable findSQLTableByName(String catalog, String schema, String tableName)
+    throws ArchitectException {
+    	SQLDatabase currentDB = getDatabase();
+    	SQLDatabase tempDB = null;
+    	try {
+    		tempDB = new SQLDatabase(currentDB.getDataSource());
+    		return tempDB.getTableByName(
+    				catalog,
+    				schema,
+    				tableName);
+    	} finally {
+    		if (tempDB != null) tempDB.disconnect();
+    	}
+    }
+
+    public boolean tableExists(String catalog, String schema, 
+    		String tableName) throws ArchitectException {
+    	return (findSQLTableByName(catalog,schema,tableName) != null);
+    }
+
+    public boolean tableExists(SQLTable table) throws ArchitectException {
+    	if ( table == null ) return false;
+    	return tableExists(table.getCatalogName(),
+    			table.getSchemaName(),
+    			table.getName());
+    }
+
+    /**
+     * this method requires real JDBC connection and create sql statement
+     * on the connection.
+     */
+    public boolean canSelectTable(SQLTable table) throws ArchitectException {
+
+		Connection conn = getConnection();
+		Statement stmt = null;
+		StringBuffer sql = new StringBuffer();
 		try {
-			SQLTable t = getDatabase().getTableByName(
-					table.getCatalogName(),
-					table.getSchemaName(),
-					table.getName());
-			return (t != null);
-		} catch (ArchitectException e) {
+			sql.append("select * from ");
+			sql.append(DDLUtils.toQualifiedName(table));
+			stmt = conn.createStatement();
+			stmt.executeQuery(sql.toString());
+			return true;
+		} catch (SQLException e) {
+			logger.debug("sql error: select statement:[" +
+					sql.toString() + "]\n" + e.getMessage() );
 			return false;
+		} finally {
+			try {
+				if (stmt != null) {
+					stmt.close();
+				}
+			} catch (SQLException e) {
+				logger.debug("unknown sql error when close result set and " +
+						"statement. " + e.getMessage());
+			}
 		}
 	}
-
 }

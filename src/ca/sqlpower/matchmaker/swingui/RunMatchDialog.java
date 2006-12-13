@@ -429,7 +429,6 @@ public class RunMatchDialog extends JDialog {
 
 			FormLayout layout = new FormLayout("4dlu,fill:pref:grow,4dlu", // columns
 					"4dlu,fill:pref:grow,4dlu,pref,4dlu,pref,4dlu"); // rows
-			// 1 2 3 4 5
 
 			PanelBuilder pb;
 			JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
@@ -729,8 +728,6 @@ public class RunMatchDialog extends JDialog {
 		}
 
 		public ValidateResult validate(Object contents) {
-
-
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
 
