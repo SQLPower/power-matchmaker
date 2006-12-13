@@ -1,6 +1,9 @@
 package ca.sqlpower.matchmaker.dao;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.Match;
@@ -64,4 +67,30 @@ public abstract class AbstractMatchMakerCriteraGroupDAOTestCase extends Abstract
 		return nonPersistingProperties;
 	}
 
+    public void testDelete() throws Exception {
+        Connection con = getSession().getConnection();
+        MatchDAO matchDAO = new MatchDAOHibernate(getSession());
+        Statement stmt = null;
+        try {
+
+            MatchMakerCriteriaGroup group = match.getMatchCriteriaGroups().get(0);
+            String groupId = group.getName();
+
+            MatchCriteriaGroupDAO dao = getDataAccessObject();
+            dao.save(group);
+            
+            stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+groupId+"'");
+            assertTrue("match group didn't save?!", rs.next());
+            rs.close();
+
+            dao.delete(group);
+
+            rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+groupId+"'");
+            assertFalse("match group didn't delete", rs.next());
+            rs.close();
+        } finally {
+            stmt.close();
+        }
+    }
 }
