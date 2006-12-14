@@ -150,14 +150,27 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		this.matchMakerSession = matchMakerSession;
 	}
     
+	/**
+	 * Returns this object's session, if it has one, otherwise defers
+	 * to the parent's getSession() method.
+	 */
     public MatchMakerSession getSession() {
         if (getParent() == this) {
             // this check prevents infinite recursion in case of funniness
             throw new IllegalStateException("Something tells me this class belongs to the royal family");
         }
         if (matchMakerSession != null || getParent() == null) {
+        	if (logger.isDebugEnabled()) {
+        		logger.debug(getClass().getName()+"@"+System.identityHashCode(this)+
+        				": Returning session "+matchMakerSession+
+        				" (my parent is "+getParent()+")");
+        	}
             return matchMakerSession;
         } else {
+        	if (logger.isDebugEnabled()) {
+        		logger.debug(getClass().getName()+"@"+System.identityHashCode(this)+
+        				": looking up the tree");
+        	}
             return getParent().getSession();
         }
     }

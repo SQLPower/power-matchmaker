@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -21,7 +20,7 @@ import ca.sqlpower.matchmaker.util.ViewSpec;
  */
 public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 
-    private static final Logger logger = Logger.getLogger(Match.class);
+    static final Logger logger = Logger.getLogger(Match.class);
 
 	public enum MatchMode {
 		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference");
@@ -84,9 +83,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     private MatchMakerFolder<MatchMakerCriteriaGroup> matchCriteriaGroupFolder =
     	new MatchMakerFolder<MatchMakerCriteriaGroup>();
 
-    private CachableTable sourceTablePropertiesDelegate = new CachableTable("sourceTable");
-    private CachableTable resultTablePropertiesDelegate = new CachableTable("resultTable");
-    private CachableTable xrefTablePropertiesDelegate = new CachableTable("xrefTable");
+    private CachableTable sourceTablePropertiesDelegate;
+    private CachableTable resultTablePropertiesDelegate;
+    private CachableTable xrefTablePropertiesDelegate;
 
     /**
      * The unique index of the source table that we're using.  Not necessarily one of the
@@ -98,6 +97,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         matchCriteriaGroupFolder.setName("Match Criteria Groups");
         this.addChild(matchCriteriaGroupFolder);
         setType(MatchMode.FIND_DUPES);
+        sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
+        resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
+        xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
 	}
 	/**
 	 * FIXME Implement me
@@ -638,152 +640,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		return newMatch;
 	}
 	
-
-    /**
-     * Provides the ability to maintain the SQLTable properties of the Match via
-     * simple String properties.
-     * <p>
-     * All this behaviour would be better off in a Hibernate user type, but we
-     * couldn't get that working, so we moved the logic into the business model.
-     * Note that it doesn't depend on Hibernate in any way; it's just that the
-     * Hibernate mappings are the only part of the application that use this
-     * functionality.
-     */
-    private class CachableTable {
-
-        /**
-         * The name of the Match property we're maintaining (for example,
-         * sourceTable, xrefTable, or resultTable).
-         */
-        private final String propertyName;
-
-        private String catalogName;
-        private String schemaName;
-        private String tableName;
-        private SQLTable cachedTable;
-
-        CachableTable(String propertyName) {
-            this.propertyName = propertyName;
-        }
-
-        public String getCatalogName() {
-            if (cachedTable != null) {
-                String catalogName = cachedTable.getCatalogName();
-                if (catalogName == null || catalogName.length() == 0) {
-                    return null;
-                } else {
-                    return catalogName;
-                }
-            } else {
-                return catalogName;
-            }
-        }
-
-        public void setCatalogName(String sourceTableCatalog) {
-            cachedTable = null;
-            this.catalogName = sourceTableCatalog;
-        }
-
-        public String getTableName() {
-            if (cachedTable != null) {
-            	return cachedTable.getName();
-            } else {
-                return tableName;
-            }
-        }
-
-        public void setTableName(String sourceTableName) {
-            cachedTable = null;
-            this.tableName = sourceTableName;
-        }
-
-        public String getSchemaName() {
-            if (cachedTable != null) {
-                String schemaName = cachedTable.getSchemaName();
-                if (schemaName == null || schemaName.length() == 0) {
-                    return null;
-                } else {
-                    return schemaName;
-                }
-            } else {
-                return schemaName;
-            }
-        }
-
-        public void setSchemaName(String sourceTableSchema) {
-            cachedTable = null;
-            this.schemaName = sourceTableSchema;
-        }
-
-        /**
-         * Performs some magic to synchronize the sourceTableCatalog,
-         * sourceTableSchema, and sourceTableName properties with the sourceTable
-         * property. Calling this getter may result in a SQLDatabase lookup of the
-         * table specified by the combination of the sourceTableXXX properties.
-         *
-         * @return The most recently-returned SQLTable instance (the "cached
-         *         sourceTable") unless one of the setSourceTableXXX methods has
-         *         been called since the last call to this method.
-         *         <p>
-         *         Returns null if the sourceTableName property is null and there is
-         *         no cached sourceTable.
-         *         <p>
-         *         If there is no cached sourceTable and the sourceTableName is not
-         *         null, this method returns a new SQLTable which is either looked
-         *         up in the session's SQLDatabase, or created in the session's
-         *         SQLDatabase if the lookup failed.
-         */
-        public SQLTable getSourceTable() {  // XXX rename to getTable
-            if (cachedTable != null) {
-                return cachedTable;
-            }
-            if (tableName == null) {
-            	return null;
-            }
-
-            try {
-                logger.debug("Match.getSourceTable("+catalogName+","+schemaName+","+tableName+")");
-                MatchMakerSession session = getSession();
-                SQLDatabase db = session.getDatabase();
-                if (ArchitectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
-                    SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
-                    if (table == null) {
-                        logger.debug("     Not found.  Adding simulated...");
-                        table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
-                    } else {
-                        logger.debug("     Found!");
-                    }
-                    cachedTable = table;
-                    return cachedTable;
-                } else {
-                    session.handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
-                                    " in Match "+getName()+ " is not compatible with the "+db.getName() +" database. " +
-                                    "The table selection has been reset to nothing");
-                    return null;
-                }
-            } catch (ArchitectException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        /**
-         * Sets the table to the given table, clears the simple string properties, and fires an event.
-         * @param table
-         */
-        public void setTable(SQLTable table) {
-            final SQLTable oldValue = cachedTable;
-            final SQLTable newValue = table;
-
-            catalogName = null;
-            schemaName = null;
-            tableName = null;
-            cachedTable = table;
-
-            getEventSupport().firePropertyChange(propertyName, oldValue, newValue);
-        }
-
-    }
-
 
     /////// The source table delegate methods //////
     public SQLTable getSourceTable() {

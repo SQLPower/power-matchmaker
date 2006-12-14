@@ -152,6 +152,9 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		all = dao.findAll();
         assertTrue("We want at least one item", 1 <= all.size());
 		T savedItem1 = all.get(0);
+		for (T item: all){
+			item.setSession(getSession());
+		}
 
         assertHierarchyHasSession(getSession(), savedItem1);
 

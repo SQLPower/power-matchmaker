@@ -433,7 +433,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
-		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent()));
+		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent(),this));
 		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
 		tree.addMouseListener(matchMakerTreeMouseAndSelectionListener);
 		tree.addTreeSelectionListener(matchMakerTreeMouseAndSelectionListener);

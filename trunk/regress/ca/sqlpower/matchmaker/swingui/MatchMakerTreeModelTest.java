@@ -27,7 +27,7 @@ public class MatchMakerTreeModelTest extends TestCase {
 		counter = new MatchMakerTreeEventCounter();
 		FolderParent current = new FolderParent(new TestingMatchMakerSession());
 		FolderParent backup = new FolderParent(new TestingMatchMakerSession());
-		treeModel = new MatchMakerTreeModel(current,backup);
+		treeModel = new MatchMakerTreeModel(current,backup,new TestingMatchMakerSession());
 		currentFoldersNode = (MatchMakerObject<MatchMakerObject, PlFolder>) treeModel.getChild(treeModel.getRoot(), 0);
 		currentFoldersNode.addChild(folder);
 	}
