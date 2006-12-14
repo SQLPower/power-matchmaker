@@ -200,25 +200,34 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	};
 
 	private Action deleteCriteria = new AbstractAction("Delete") {
-		public void actionPerformed(ActionEvent e) {
-			int selectedRow = matchCriteriaTable.getSelectedRow();
-			if ( selectedRow == -1 ) return;
-			MatchMakerCriteria c = matchCriteriaTableModel.getRow(selectedRow);
-			group.removeChild(c);
+	    public void actionPerformed(ActionEvent e) {
+	        int selectedRow = matchCriteriaTable.getSelectedRow();
+	        if ( selectedRow == -1 ) return;
+	        MatchMakerCriteria c = matchCriteriaTableModel.getRow(selectedRow);
+	        
+	        /* Note, this is a temporary workaround.  Deleting a criteria set will have
+	         * the side effect of saving all other sets in the group.
+	         * 
+	         * We'd prefer to be able to do one of the following (in order of preference):
+	         * 
+	         * 1. Make it so when you delete a criteria row and don't save, the
+	         *    row reappears next time you come to this group editor
+	         * 2. Make the delete permanently and immediately delete the one criteria set
+	         *    we just removed, but not save the group or any other criteria
+	         *    (this would require having a working MatchMakerCriteriaDAO, which we don't)
+	         */
             
-            /* Note, this is a temporary workaround.  Deleting a criteria set will have
-             * the side effect of saving all other sets in the group.
-             * 
-             * We'd prefer to be able to do one of the following (in order of preference):
-             * 
-             * 1. Make it so when you delete a criteria row and don't save, the
-             *    row reappears next time you come to this group editor
-             * 2. Make the delete permanently and immediately delete the one criteria set
-             *    we just removed, but not save the group or any other criteria
-             *    (this would require having a working MatchMakerCriteriaDAO, which we don't)
-             */
-			swingSession.save(match);
-		}
+            //For now we catch the exception as an additional workaround, we add the child back 
+            //and give the user a message
+	        try {
+	            group.removeChild(c);
+	            swingSession.save(match);
+	        } catch (Exception ex){
+	            group.addChild(c);     
+                ASUtils.showExceptionDialog("Delete operation failed!", ex);
+	        }
+
+	    }
 	};
 
 	/**
