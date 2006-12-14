@@ -53,9 +53,6 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 		Session s = getHibernateSession();
 		try {
 			List<T> results = s.createCriteria(getBusinessClass()).list();
-			for (T item: results){
-				item.setSession(matchMakerSession);
-			}
 			return results;
 		} catch (RuntimeException re) {
 			throw re;

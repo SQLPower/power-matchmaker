@@ -80,6 +80,7 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
 	 * copy the match maker object 
 	 */
 	T duplicate(MatchMakerObject parent, MatchMakerSession session);
+	
     /**
      * Returns the current session that this object is associated with.
      */

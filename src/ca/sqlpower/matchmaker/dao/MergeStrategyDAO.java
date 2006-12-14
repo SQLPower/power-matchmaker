@@ -1,6 +1,6 @@
 package ca.sqlpower.matchmaker.dao;
 
-import ca.sqlpower.matchmaker.MergeStrategy;
+import ca.sqlpower.matchmaker.TableMergeRules;
 
 /**
  * The Data access interface for merge strategy objects
@@ -10,6 +10,6 @@ import ca.sqlpower.matchmaker.MergeStrategy;
  *
  * Remember to program to this interface rather than an implemenation
  */
-public interface MergeStrategyDAO extends MatchMakerDAO<MergeStrategy> {
+public interface MergeStrategyDAO extends MatchMakerDAO<TableMergeRules> {
 
 }

@@ -13,9 +13,13 @@ public class StubMatchMakerObject implements MatchMakerObject {
     List<MatchMakerObject> children = new ArrayList<MatchMakerObject>();
     String name;
     boolean allowChildren;
+    MatchMakerSession session;
     
     public StubMatchMakerObject(String name){
         this.name = name;
+    }
+    
+    public StubMatchMakerObject(){
     }
     
     public void addChild(MatchMakerObject child){       
@@ -54,9 +58,7 @@ public class StubMatchMakerObject implements MatchMakerObject {
     }
 
     public MatchMakerSession getSession() {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: StubMatchMakerObject.getSession()");
-        return null;
+        return session;
     }
 
     public void removeChild(MatchMakerObject child) {
@@ -79,9 +81,7 @@ public class StubMatchMakerObject implements MatchMakerObject {
     }
 
     public void setSession(MatchMakerSession matchMakerSession) {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: StubMatchMakerObject.setSession()");
-
+    	this.session = matchMakerSession;
     }
 
     public Date getCreateDate() {
