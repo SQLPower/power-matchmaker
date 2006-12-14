@@ -268,9 +268,6 @@ public class RunMatchDialog extends JDialog {
 		Validator v2 = new MatchAndMatchEngineValidator(swingSession, match);
 		handler.addValidateObject(sendEmail, v2);
 
-		/* trigger the validator */
-		v2.validate(sendEmail.isSelected());
-		
 		MatchSettings settings = match.getMatchSettings();
 		String logFileName;
 		if ( settings.getLog() != null ) {
@@ -284,10 +281,14 @@ public class RunMatchDialog extends JDialog {
 		} else {
 			file = new File(logFileName);
 		}
+		if ( match.getMatchSettings().getLog() == null) {
+			match.getMatchSettings().setLog(file);
+		}
 		lastAccessPath = file.getAbsolutePath();
 		if (logFileName != null) {
 			logFilePath.setText(logFileName);
 		}
+
 		Boolean appendToLog = settings.getAppendToLog();
 		append.setSelected(appendToLog);
 		if (settings.getProcessCount() == null) {
@@ -296,7 +297,8 @@ public class RunMatchDialog extends JDialog {
 			recordsToProcess
 					.setText(String.valueOf(settings.getProcessCount()));
 		}
-		System.err.println(append);
+		
+		logger.debug("append to log? "+append);
 		debugMode.setSelected(settings.getDebug());
 		truncateCandDup.setSelected(settings.getTruncateCandDupe());
 		sendEmail.setSelected(settings.getSendEmail());
@@ -314,6 +316,9 @@ public class RunMatchDialog extends JDialog {
 				}
 			}
 		});
+		
+		/* trigger the validator */
+		v2.validate(sendEmail.isSelected());
 	}
 
 	private void applyChange() {
