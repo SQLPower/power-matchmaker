@@ -83,9 +83,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     private MatchMakerFolder<MatchMakerCriteriaGroup> matchCriteriaGroupFolder =
     	new MatchMakerFolder<MatchMakerCriteriaGroup>();
 
-    private CachableTable sourceTablePropertiesDelegate;
-    private CachableTable resultTablePropertiesDelegate;
-    private CachableTable xrefTablePropertiesDelegate;
+    private final CachableTable sourceTablePropertiesDelegate;
+    private final CachableTable resultTablePropertiesDelegate;
+    private final CachableTable xrefTablePropertiesDelegate;
 
     /**
      * The unique index of the source table that we're using.  Not necessarily one of the
@@ -94,12 +94,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     private SQLIndex sourceTableIndex;
 
 	public Match() {
+	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
+	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
+	    xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
         matchCriteriaGroupFolder.setName("Match Criteria Groups");
         this.addChild(matchCriteriaGroupFolder);
         setType(MatchMode.FIND_DUPES);
-        sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
-        resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
-        xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
 	}
 	/**
 	 * FIXME Implement me
