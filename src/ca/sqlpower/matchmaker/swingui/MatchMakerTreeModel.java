@@ -66,7 +66,8 @@ public class MatchMakerTreeModel implements TreeModel {
 	
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
 
-	public MatchMakerTreeModel(FolderParent current, FolderParent backup) {
+	public MatchMakerTreeModel(FolderParent current, FolderParent backup, MatchMakerSession s) {
+		root.setSession(s);
 		current.setName("Current Match/Merge Information");
 		root.addChild(current);
 		this.current = current;
@@ -112,8 +113,10 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	protected void fireTreeNodesInserted(TreeModelEvent e) {
-		logger.debug("Firing treeNodesInserted event " + e + " to "
+		if (logger.isDebugEnabled()){
+			logger.debug("Firing treeNodesInserted event " + e + " to "
 				+ treeModelListeners.size() + " listeners...");
+		}
 		for (int i = treeModelListeners.size() - 1; i >= 0; i--) {
 			treeModelListeners.get(i).treeNodesInserted(e);
 		}
@@ -121,8 +124,10 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	protected void fireTreeNodesRemoved(TreeModelEvent e) {
-		logger.debug("Firing treeNodesRemoved event " + e + " to "
+		if (logger.isDebugEnabled()){
+			logger.debug("Firing treeNodesRemoved event " + e + " to "
 				+ treeModelListeners.size() + " listeners...");
+		}
 		for (int i = treeModelListeners.size() - 1; i >= 0; i--) {
 			treeModelListeners.get(i).treeNodesRemoved(e);
 		}
@@ -130,8 +135,10 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	protected void fireTreeNodesChanged(TreeModelEvent e) {
-		logger.debug("Firing treeNodesChanged event " + e + " to "
+		if (logger.isDebugEnabled()){
+			logger.debug("Firing treeNodesChanged event " + e + " to "
 				+ treeModelListeners.size() + " listeners...");
+		}
 		for (int i = treeModelListeners.size() - 1; i >= 0; i--) {
 			logger.debug("Notifing " + treeModelListeners.get(i));
 			treeModelListeners.get(i).treeNodesChanged(e);
@@ -140,8 +147,10 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	protected void fireTreeStructureChanged(TreeModelEvent e) {
-		logger.debug("Firing treeStructureChanged event " + e + " to "
+		if (logger.isDebugEnabled()){
+			logger.debug("Firing treeStructureChanged event " + e + " to "
 				+ treeModelListeners.size() + " listeners...");
+		}
 		for (int i = treeModelListeners.size() - 1; i >= 0; i--) {
 			treeModelListeners.get(i).treeStructureChanged(e);
 		}
