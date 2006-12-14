@@ -105,7 +105,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
-			listeners.get(i).mmPropertyChanged(evt);
+            listeners.get(i).mmPropertyChanged(evt);
 		}
 	}
 
@@ -133,10 +133,12 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 		evt.setPropertyName(childPropertyName);
 		evt.setChildren(insertedChildren);
 		if (logger.isDebugEnabled()){
-			logger.debug("Firing children inserted for object "+source);
+		    logger.debug("Firing children inserted for object "+source);
 		}
+        
 		// see class-level comment A
-		for (int i = listeners.size() - 1; i >= 0; i--) {
+		for (int i = listeners.size() - 1; i >= 0; i--) {            
+            logger.debug("fireChildrenInserted calling listeners");
 			listeners.get(i).mmChildrenInserted(evt);
 		}
 	}
@@ -167,6 +169,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
+            logger.debug("fireChildrenRemoved calling listeners");
 			listeners.get(i).mmChildrenRemoved(evt);
 		}
 	}
@@ -180,6 +183,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
+            logger.debug("fireStructureChanged: source="+source+"; listener="+ listeners.get(i));
 			listeners.get(i).mmStructureChanged(evt);
 		}
 	}
