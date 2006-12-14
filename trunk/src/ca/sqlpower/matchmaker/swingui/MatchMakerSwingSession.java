@@ -904,8 +904,9 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return sessionImpl.getPLSchemaVersion();
     }
 
-    public SQLTable findSQLTableByName(String catalog, String schema, String tableName)
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName)
 		throws ArchitectException {
+    	logger.debug("Session.findSQLTableByName:" + catalog + "." + schema + "." + tableName);
     	if (tableName == null || tableName.length() == 0) return null;
 		SQLDatabase currentDB = getDatabase();
 		SQLDatabase tempDB = null;
@@ -922,7 +923,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
     public boolean tableExists(String catalog, String schema, 
     		String tableName) throws ArchitectException {
-    	return (findSQLTableByName(catalog,schema,tableName) != null);
+    	return (findPhysicalTableByName(catalog,schema,tableName) != null);
 	}
 	
      public boolean tableExists(SQLTable table) throws ArchitectException {

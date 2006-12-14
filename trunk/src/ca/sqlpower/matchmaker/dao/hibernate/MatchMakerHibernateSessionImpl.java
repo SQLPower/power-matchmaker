@@ -349,24 +349,27 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         return plSchemaVersion;
     }
 
-    public SQLTable findSQLTableByName(String catalog, String schema, String tableName)
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName)
     throws ArchitectException {
-    	SQLDatabase currentDB = getDatabase();
-    	SQLDatabase tempDB = null;
-    	try {
-    		tempDB = new SQLDatabase(currentDB.getDataSource());
-    		return tempDB.getTableByName(
-    				catalog,
-    				schema,
-    				tableName);
-    	} finally {
-    		if (tempDB != null) tempDB.disconnect();
-    	}
+    	logger.debug("Session.findSQLTableByName:" + 
+    			catalog + "." + schema + "." + tableName);
+    	if (tableName == null || tableName.length() == 0) return null;
+		SQLDatabase currentDB = getDatabase();
+		SQLDatabase tempDB = null;
+		try {
+			tempDB = new SQLDatabase(currentDB.getDataSource());
+			return tempDB.getTableByName(
+					catalog,
+					schema,
+					tableName);
+		} finally {
+			if (tempDB != null) tempDB.disconnect();
+		}
     }
 
     public boolean tableExists(String catalog, String schema, 
     		String tableName) throws ArchitectException {
-    	return (findSQLTableByName(catalog,schema,tableName) != null);
+    	return (findPhysicalTableByName(catalog,schema,tableName) != null);
     }
 
     public boolean tableExists(SQLTable table) throws ArchitectException {

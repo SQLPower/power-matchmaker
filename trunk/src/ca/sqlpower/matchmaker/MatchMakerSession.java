@@ -164,7 +164,7 @@ public interface MatchMakerSession {
      * @throws ArchitectException If there are problems accessing the 
      * session's database
      */
-    public SQLTable findSQLTableByName(String catalog, String schema, String tableName) throws ArchitectException;
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException;
     
 	/**
      * Returns true if the SQL table exists
