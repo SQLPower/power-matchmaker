@@ -328,17 +328,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 
                 filterPanel.setTable(sourceTable);
 
-        		int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
-        		matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(
-        				new DefaultCellEditor(new JComboBox(
-        						new ColumnComboBoxModel(sourceTable,group))));
-
-        		int colIndex = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
-            	TableColumn col = matchCriteriaTable.getColumnModel().getColumn(colIndex);
-            	final JComboBox translateComboBox = new JComboBox(
-				            					new TranslationComboBoxModel(swingSession.getTranslations()));
-				col.setCellEditor(new DefaultCellEditor(translateComboBox));
-				translateComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
+        		setupColumnEditors(group, sourceTable);
         	} else {
                 logger.debug("sourceTable is null.  not setting up editors.");
             }
@@ -376,6 +366,30 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         		MatchCriteriaColumn.MIN_WORDS_IN_COMMON);
         handler.addValidateObject(matchCriteriaTable,v7);
 
+    }
+
+
+	/**
+     * Sets up all the renderers and listeners that the match criteria table needs
+     * in order to display the GUI properly (ie a ColumnComboBoxModel for Translate
+     * Words dropdown)
+     * 
+     * @param group the MatchCriteriaGroup the editors will be setting up for
+     * @param sourceTable the source table of the match
+     * @throws ArchitectException if the table cannot 
+	 */
+    private void setupColumnEditors(MatchMakerCriteriaGroup group, SQLTable sourceTable) throws ArchitectException {
+        int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
+        matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(
+        		new DefaultCellEditor(new JComboBox(
+        				new ColumnComboBoxModel(sourceTable,group))));
+
+        int colIndex = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
+        TableColumn col = matchCriteriaTable.getColumnModel().getColumn(colIndex);
+        final JComboBox translateComboBox = new JComboBox(
+                    					new TranslationComboBoxModel(swingSession.getTranslations()));
+        col.setCellEditor(new DefaultCellEditor(translateComboBox));
+        translateComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
     }
 
 
@@ -491,7 +505,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	public boolean doSave() {
         List<String> fail = handler.getFailResults();
         List<String> warn = handler.getWarnResults();
-
+        
         if ( fail.size() > 0 ) {
             StringBuffer failMessage = new StringBuffer();
             for ( String f : fail ) {
@@ -515,7 +529,6 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
                     "Match warning",
                     JOptionPane.INFORMATION_MESSAGE);
         }
-
         if ( !groupId.getText().equals(group.getName()) ) {
             if ( match.getMatchCriteriaGroupByName(groupId.getText()) != null ) {
                 JOptionPane.showMessageDialog(getPanel(),
@@ -527,6 +540,8 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
             }
             group.setName(groupId.getText());
         }
+        
+
         
         //If the field is empty, we need to store it as null in order for
         //it to load back appropiately.  There is no need to worry about invalid cases 
@@ -543,9 +558,21 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         if ( !match.getMatchCriteriaGroups().contains(group)) {
             match.addMatchCriteriaGroup(group);
         }
+        
         group.setActive(active.isSelected());
+        
         MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
-        dao.save(match);
+        dao.save(match);        
+
+        //This code is called since saving the match, under some circumstances, fires structure change
+        //and that causes all the renderers and cell editors to be set to null.  Therefore it is 
+        //required to re-hook up all the editors and renderers as a workaround.
+        try {
+            setupColumnEditors(group, match.getSourceTable());
+        } catch (ArchitectException e) {
+            ASUtils.showExceptionDialog("Unable to setup table renderers or cell editors!", e);
+        }
+
         handler.resetHasValidated();
 		return true;
 	}
