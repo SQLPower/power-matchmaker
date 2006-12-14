@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -10,9 +11,12 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.architect.diff.CompareSQL;
+import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
 /**
@@ -101,6 +105,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         this.addChild(matchCriteriaGroupFolder);
         setType(MatchMode.FIND_DUPES);
 	}
+	
 	/**
 	 * FIXME Implement me
 	 *
@@ -252,33 +257,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 			t.addColumn(newCol);
 		}
 	}
-
-	/**
-	 * compare column name and datatype
-	 * @param c1 the column has the correct datatype
-	 * @param c2 the column that you want to check
-	 * @param name that name of the column that we were looking for
-	 * @return true if name of c2 match name and type of c1 == type of c2
-	 */
-	private boolean compareColumnNameAndType(SQLColumn c1, SQLColumn c2, String name) {
-		if (c2 == null) {
-			logger.debug("Column name mismatched: excepted:" +
-					name + "but not found.");
-			return false;
-		}
-		if (c2.getType() != c1.getType()) {
-			logger.debug("Column [" + c2.getName() +
-					"] datatype mismatched: excepted:[" +
-					 + c1.getType() +
-					 "] but was:[" + c2.getType() + "]");
-			return false;
-		}
-		return true;
-	}
 	
 	/**
-	 * Vetify the result table structure, the result table should looks 
-	 * like these:
+	 * Vetify the result table structure and existence in the SQL Database,
+	 * the result table should looks like this:
 	 * <p>
 	 * <p>dup_candidate_1xxx  [yyy],
 	 * <p>dup_candidate_2xxx  [yyy],
@@ -344,112 +326,36 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 					"result table stucture.");
 		}
 
-		SQLTable oldResultTable = getResultTable();
-		if (oldResultTable == null) {
+		SQLTable resultTable = getResultTable();
+		if (resultTable == null) {
 			throw new IllegalStateException(
 					"You have to properly specify the result table " +
 					"catalog, schema, and name before calling " +
 					"vertifyResultTableStruct()");
 		}
 
-		String colName;
-		SQLColumn column;
-		SQLColumn indexColumn;
-		for (int i = 0; i < si.getChildCount(); i++) {
-			indexColumn = si.getChild(i).getColumn();
-			colName = "dup_candidate_1"+i;
-			column = oldResultTable.getColumnByName(colName);
-			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-				return false;
-			}
-			colName = "dup_candidate_2"+i;
-			column = oldResultTable.getColumnByName(colName);
-			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-				return false;
-			}
-			colName = "current_candidate_1"+i;
-			column = oldResultTable.getColumnByName(colName);
-			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-				return false;
-			}
-			colName = "current_candidate_2"+i;
-			column = oldResultTable.getColumnByName(colName);
-			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-				return false;
-			}
-			colName = "dup_id"+i;
-			column = oldResultTable.getColumnByName(colName);
-			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-				return false;
-			}
-			colName = "master_id"+i;
-			column = oldResultTable.getColumnByName(colName);
-			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-				return false;
-			}
-			
-			colName = "candidate_1"+i+"_mapped";
-			column = oldResultTable.getColumnByName(colName);
-			indexColumn = new SQLColumn(null,colName, Types.VARCHAR, 1, 0);
-			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-				return false;
-			}
-			colName = "candidate_2"+i+"_mapped";
-			column = oldResultTable.getColumnByName(colName);
-			if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-				return false;
-			}
+		SQLTable table = session.findPhysicalTableByName(
+				resultTable.getCatalogName(),
+				resultTable.getSchemaName(),
+				resultTable.getName());
+		
+		if (table == null) {
+			throw new IllegalStateException(
+					"The result table does not exist in the SQL Database");
 		}
 
-		colName = "match_percent";
-		column = oldResultTable.getColumnByName(colName);
-		indexColumn = new SQLColumn(null, colName, Types.INTEGER, 10, 0);
-		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-			return false;
-		}
-
-		colName = "group_id";
-		column = oldResultTable.getColumnByName(colName);
-		indexColumn = new SQLColumn(null, colName, Types.VARCHAR, 30, 0);
-		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-			return false;
-		}
-
-		colName = "match_date";
-		column = oldResultTable.getColumnByName(colName);
-		indexColumn = new SQLColumn(null, colName, Types.TIMESTAMP, 0, 0);
-		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-			return false;
+		List<SQLTable> inMemory = new ArrayList<SQLTable>();
+		inMemory.add(resultTable);
+		List<SQLTable> physical = new ArrayList<SQLTable>();
+		physical.add(table);
+		CompareSQL compare = new CompareSQL(inMemory,physical);
+		List<DiffChunk<SQLObject>> tableDiffs = compare.generateTableDiffs();
+		logger.debug("Table differences are:");
+		for ( DiffChunk<SQLObject> diff : tableDiffs) {
+			logger.debug(diff.toString());
 		}
 		
-		colName = "match_status";
-		column = oldResultTable.getColumnByName(colName);
-		indexColumn = new SQLColumn(null, colName, Types.VARCHAR, 15, 0);
-		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-			return false;
-		}
-
-		colName = "match_status_date";
-		column = oldResultTable.getColumnByName(colName);
-		indexColumn = new SQLColumn(null, colName, Types.TIMESTAMP, 0, 0);
-		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-			return false;
-		}
-		
-		colName = "match_status_user";
-		column = oldResultTable.getColumnByName(colName);
-		indexColumn = new SQLColumn(null, colName, Types.VARCHAR, 35, 0);
-		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-			return false;
-		}
-
-		colName = "dup1_master_ind";
-		column = oldResultTable.getColumnByName(colName);
-		indexColumn = new SQLColumn(null, colName, Types.VARCHAR, 1, 0);
-		if ( !compareColumnNameAndType(indexColumn,column,colName)) {
-			return false;
-		}
-		return true;
+		return tableDiffs.size() > 0;
 	}
 	
 	
@@ -751,4 +657,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
+    
+    
 }
