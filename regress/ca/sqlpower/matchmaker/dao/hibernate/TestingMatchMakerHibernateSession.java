@@ -236,7 +236,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		return false;
 	}
 
-	public SQLTable findSQLTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+	public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.findSQLTableByName()");
 		return null;

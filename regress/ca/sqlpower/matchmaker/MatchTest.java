@@ -1,6 +1,9 @@
 package ca.sqlpower.matchmaker;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +18,9 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.architect.ddl.DDLGenerator;
+import ca.sqlpower.architect.ddl.DDLStatement;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 public class MatchTest extends MatchMakerTestCase<Match> {
@@ -335,8 +341,17 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		assertFalse(Match.doesSourceTableExist(session, match));
 	}
 	
-	public void testVertifyResultTable() throws ArchitectException {
-    	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
+	public void testVertifyResultTableSS() throws ArchitectException, SQLException, InstantiationException, IllegalAccessException {
+		
+		ArchitectDataSource ds = DBTestUtil.getSqlServerDS();
+		SQLDatabase db = new SQLDatabase(ds);
+		session.setDatabase(db);
+		session.setConnection(db.getConnection());
+		match.setSession(session);
+		
+		
+		
+    	SQLTable sourceTable = new SQLTable(db.getSchemaByName(ds.getPlSchema()), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
     	pk1.setNullable(DatabaseMetaData.columnNoNulls);
@@ -357,7 +372,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 
     	try {
     		match.vertifyResultTableStruct();
-    		fail("No exception caught.");
+    		fail("match has no source table, but no exception caught.");
     	} catch (Exception e) {
 		}
     	
@@ -365,7 +380,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	
     	try {
     		match.vertifyResultTableStruct();
-    		fail("No exception caught.");
+    		fail("match has no unique index, but no exception caught.");
     	} catch (Exception e) {
 		}
     	
@@ -373,18 +388,71 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	
     	try {
     		match.vertifyResultTableStruct();
-    		fail("No exception caught.");
+    		fail("result table name has not been setup, but no exception caught.");
     	} catch (Exception e) {
 		}
     	
-    	match.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
-    	SQLTable resultTable = match.createResultTable();
+    	SQLSchema sch = db.getSchemaByName(ds.getPlSchema());
+    	SQLTable resultTable = new SQLTable(sch,"my_result_table",null,"TABLE",true);
+    	match.setResultTable(resultTable);
+    	resultTable = match.createResultTable();
 
+    	Connection con = db.getConnection();
+    	Statement stmt = null;
+		String sql = "drop table " + DDLUtils.toQualifiedName(resultTable);
+		execSQL(con,sql);
+
+		try {
+    		match.vertifyResultTableStruct();
+    		fail("result table is not persistent, but no exception caught.");
+    	} catch (Exception e) {
+		}
+    	
+    	DDLGenerator ddlg = DDLUtils.createDDLGenerator(ds);
+    	assertNotNull("DDLGenerator error", ddlg);
+		ddlg.setTargetSchema(ds.getPlSchema());
+		
+		if (Match.doesResultTableExist(session, match)) {
+			ddlg.dropTable(match.getResultTable());
+		}
+		ddlg.addTable(match.createResultTable());
+		ddlg.addIndex((SQLIndex) match.getResultTable().getIndicesFolder().getChild(0));
+		
+		
+		int successCount = 0;
+	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
+	    	sql = sqlStatement.getSQLText();
+	    	if ( execSQL(con,sql))	successCount += 1;
+	    }
+
+	    assertEquals("Not all statements executed", ddlg.getDdlStatements().size(), successCount);
     	assertTrue("we should have a good result table.",
     			match.vertifyResultTableStruct());
-    	resultTable.removeColumn(0);
-    	assertFalse("the result table should be broken by now",
-    			match.vertifyResultTableStruct());
     	
+    	sql = "drop table " + DDLUtils.toQualifiedName(resultTable);
+    	execSQL(con,sql);
+
+    	try {
+    		match.vertifyResultTableStruct();
+    		fail("result table is droped, but no exception caught.");
+    	} catch (Exception e) {
+		}
     }
+	
+	private boolean execSQL(Connection conn, String sql) {
+		Statement stmt = null;
+		try {
+    		stmt = conn.createStatement();
+   			stmt.executeUpdate(sql);
+		} catch (SQLException e) {
+			System.out.println("SQL ERROR:["+sql+"]\n"+e.getMessage());
+			return false;
+		} finally {
+			try {
+				if (stmt != null) stmt.close();
+			} catch (SQLException ex) {
+			}
+	    }
+		return true;
+	}
 }

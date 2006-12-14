@@ -184,7 +184,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
 
-    public SQLTable findSQLTableByName(String catalog, String schema, String tableName)
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName)
     throws ArchitectException {
     	SQLDatabase currentDB = getDatabase();
     	SQLDatabase tempDB = null;
@@ -201,7 +201,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 
     public boolean tableExists(String catalog, String schema, 
     		String tableName) throws ArchitectException {
-    	return (findSQLTableByName(catalog,schema,tableName) != null);
+    	return (findPhysicalTableByName(catalog,schema,tableName) != null);
     }
 
     public boolean tableExists(SQLTable table) throws ArchitectException {

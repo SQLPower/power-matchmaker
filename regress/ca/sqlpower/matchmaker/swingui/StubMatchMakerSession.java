@@ -132,7 +132,7 @@ public class StubMatchMakerSession implements MatchMakerSession{
 		return false;
 	}
 
-	public SQLTable findSQLTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+	public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.findSQLTableByName()");
 		return null;
