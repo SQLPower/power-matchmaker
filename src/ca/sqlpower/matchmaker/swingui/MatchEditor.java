@@ -51,6 +51,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.architect.qfa.ArchitectExceptionReportFactory;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.SaveDocument;
@@ -321,11 +322,19 @@ public class MatchEditor implements EditorPane {
     
 	private Action matchResultVisualizerAction = new AbstractAction("Visualize Match Results") {
         public void actionPerformed(ActionEvent e) {
+            if (match.getResultTable() == null){
+                JOptionPane.showMessageDialog(panel, "You have not ran the match engine",
+                        "No Data is Available", JOptionPane.OK_OPTION);
+                return;
+            }
+            
             if (matchResultVisualizer == null) {
                 try {
                     matchResultVisualizer = new MatchResultVisualizer(match, swingSession);
                 } catch (Exception ex) {
-                    ASUtils.showExceptionDialog(panel, "Couldn't create match result visualizer component", ex, null);
+                    ASUtils.showExceptionDialog(panel, "Couldn't create match result visualizer component",
+                            ex, new ArchitectExceptionReportFactory());
+                            
                 }
             }
             matchResultVisualizer.showDialog();
