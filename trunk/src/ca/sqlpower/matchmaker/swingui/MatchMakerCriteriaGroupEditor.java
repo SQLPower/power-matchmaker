@@ -23,6 +23,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -399,6 +400,8 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
                     					new TranslationComboBoxModel(swingSession.getTranslations()));
         col.setCellEditor(new DefaultCellEditor(translateComboBox));
         translateComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
+        
+        matchCriteriaTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
 
