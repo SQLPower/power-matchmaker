@@ -72,6 +72,10 @@ public class MatchMakerEngineImpl extends AbstractCEngine {
 	 */
 	static boolean canWriteLogFile(MatchMakerSettings settings) {
         File file = settings.getLog();
+        if (file == null) {
+        	logger.debug("file is null.");
+        	return false;
+        }
         if (file.exists()) {
             return file.canWrite();
         } else {
