@@ -134,7 +134,7 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
     public Rectangle getNodeBounds(V node) {
         Rectangle nodeBounds = layoutCache.getNodeBounds(node);
         if (nodeBounds == null){
-            throw new NullPointerException("Node bounds cannot be null");
+            throw new NullPointerException("Node bounds for node "+node+" is null. This is not allowed.");
         }
         return nodeBounds;
     }
