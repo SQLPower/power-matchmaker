@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -38,8 +39,18 @@ public class SourceTableRecord {
      * The values of the unique index columns in the same order as the
      * Index Column objects in the source table's index.  This lets us
      * select the entire match source record when we need it.
+     * <p>
+     * Note, the contents of this list can never be modified.
      */
     private final List<Object> keyValues;
+    
+    /**
+     * The computed hash code for this object.  It is based on the unmidifiable
+     * keyValues list, and is computed only once.  We determined by profiling
+     * that most of the time spent in graph layout was in recomputing this
+     * hash code over and over.
+     */
+    private final int computedHashCode;
     
     /**
      * All of the PotentialMatchRecords that reference this source table record.
@@ -68,7 +79,8 @@ public class SourceTableRecord {
         super();
         this.session = session;
         this.match = match;
-        this.keyValues = new ArrayList<Object>(keyValues);
+        this.keyValues = Collections.unmodifiableList(new ArrayList<Object>(keyValues));
+        this.computedHashCode = this.keyValues.hashCode();
     }
 
 
@@ -170,7 +182,7 @@ public class SourceTableRecord {
      */
     @Override
     public int hashCode() {
-        return 37 * keyValues.hashCode();
+        return computedHashCode;
     }
     
     public void addPotentialMatch(PotentialMatchRecord pmr){
