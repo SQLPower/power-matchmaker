@@ -105,136 +105,16 @@ public class MatchResultVisualizer {
     };
     
     private Action viewerAutoLayoutAction = new AbstractAction("Auto layout") {
-
-        private Map<PotentialMatchRecord, LayoutEdge> edges;
-        private Map<SourceTableRecord, LayoutNode> nodes;
         
         public void actionPerformed(ActionEvent e) {
-            edges = new HashMap<PotentialMatchRecord, LayoutEdge>();
-            nodes = new HashMap<SourceTableRecord, LayoutNode>();
-            final GraphModel<SourceTableRecord, PotentialMatchRecord> model = viewer.getModel();
-            ArchitectLayout layout = new FruchtermanReingoldForceLayout();
-            for (SourceTableRecord str : model.getNodes()) {
-                makeLayoutNodeAdapter(str);
-            }
-            Dimension preferredSize = viewer.getPreferredSize();
-            layout.setup(nodes.values(), edges.values(),
-                    new Rectangle(0, 0, preferredSize.width, preferredSize.height));
-            int frame = 0;
-            while (!layout.isDone()) {
-                layout.nextFrame();
-                System.out.println("Frame"+(frame++));
-                if (frame == 100) {
-                    layout.done();
-                    break;
-                }
-            }
-            viewer.repaint();
+            doAutoLayout();
         }
         
-        private LayoutNode makeLayoutNodeAdapter(SourceTableRecord str) {
-            LayoutNode adapter = nodes.get(str);
-            if (adapter == null) {
-                adapter = new MatchResultLayoutNode(str);
-                nodes.put(str, adapter);
-            }
-            return adapter;
-        }
-        
-        private LayoutEdge makeLayoutEdgeAdapter(PotentialMatchRecord pmr) {
-            LayoutEdge adapter = edges.get(pmr);
-            if (adapter == null) {
-                adapter = new MatchResultLayoutEdge(pmr);
-                edges.put(pmr, adapter);
-            }
-            return adapter;
-        }
-        
-        /**
-         * An adapter for the PotentialMatchRecord's original match pointers,
-         * which are immutable. Does not deal with the LHS/RHS relations that
-         * are mutable.
-         */
-        class MatchResultLayoutEdge implements LayoutEdge {
-            
-            private final LayoutNode head;
-            private final LayoutNode tail;
-            
-            /**
-             * Takes a snapshot of the original LHS and RHS records, which are
-             * immutable, so they don't need to be created dynamically.
-             */
-            MatchResultLayoutEdge(PotentialMatchRecord edge) {
-                head = makeLayoutNodeAdapter(edge.getOriginalLhs());
-                tail = makeLayoutNodeAdapter(edge.getOriginalRhs());
-            }
-            
-            /**
-             * Returns the original LHS of the edge, no matter what.  This
-             * is ok because the original matching edge is not directional.
-             */
-            public LayoutNode getHeadNode() {
-                return head;
-            }
-
-            /**
-             * Returns the original RHS of the edge, no matter what.  This
-             * is ok because the original matching edge is not directional.
-             */
-            public LayoutNode getTailNode() {
-                return tail;
-            }
-            
-        }
-        
-        class MatchResultLayoutNode extends AbstractLayoutNode {
-            
-            private final SourceTableRecord node;
-
-            MatchResultLayoutNode(SourceTableRecord node) {
-                if (node == null) throw new NullPointerException("Can't create a LayoutNode proxy for null node");
-                this.node = node;
-            }
-            
-            @Override
-            public String getNodeName() {
-                return node.getKeyValues().toString();
-            }
-
-            @Override
-            public Rectangle getBounds(Rectangle b) {
-                Rectangle nodeBounds = viewer.getNodeBounds(node);
-                b.x = nodeBounds.x;
-                b.y = nodeBounds.y;
-                return b;
-            }
-
-            @Override
-            public void setBounds(int x, int y, int width, int height) {
-                viewer.setNodeBounds(node, new Rectangle(x, y, width, height));
-            }
-
-            @Override
-            public List<LayoutEdge> getInboundEdges() {
-                List<LayoutEdge> inbound = new ArrayList<LayoutEdge>();
-                for (PotentialMatchRecord pmr : viewer.getModel().getInboundEdges(node)) {
-                    inbound.add(makeLayoutEdgeAdapter(pmr));
-                }
-                return inbound;
-            }
-
-            @Override
-            public List<LayoutEdge> getOutboundEdges() {
-                List<LayoutEdge> outbound = new ArrayList<LayoutEdge>();
-                for (PotentialMatchRecord pmr : viewer.getModel().getOutboundEdges(node)) {
-                    outbound.add(makeLayoutEdgeAdapter(pmr));
-                }
-                return outbound;
-            }
-            
-        }
     };
-   
+
+    private Map<PotentialMatchRecord, LayoutEdge> edges;
+    private Map<SourceTableRecord, LayoutNode> nodes;
+
     public MatchResultVisualizer(Match match, MatchMakerSwingSession session) throws SQLException, ArchitectException {
         this.match = match;
         this.session = session;
@@ -286,6 +166,133 @@ public class MatchResultVisualizer {
         exporter.setDotFile(new File(dotFileField.getText()));
         exporter.exportDotFile();
     }
-    
 
+    /**
+     * Performs auto-layout on the visible graph of matches managed
+     * by this component.
+     */
+    public void doAutoLayout() {
+        edges = new HashMap<PotentialMatchRecord, LayoutEdge>();
+        nodes = new HashMap<SourceTableRecord, LayoutNode>();
+        final GraphModel<SourceTableRecord, PotentialMatchRecord> model = viewer.getModel();
+        ArchitectLayout layout = new FruchtermanReingoldForceLayout();
+        for (SourceTableRecord str : model.getNodes()) {
+            makeLayoutNodeAdapter(str);
+        }
+        Dimension preferredSize = viewer.getPreferredSize();
+        layout.setup(nodes.values(), edges.values(),
+                new Rectangle(0, 0, preferredSize.width, preferredSize.height));
+        int frame = 0;
+        while (!layout.isDone()) {
+            layout.nextFrame();
+            System.out.println("Frame"+(frame++));
+            if (frame == 100) {
+                layout.done();
+                break;
+            }
+        }
+        viewer.repaint();
+    }
+    
+    private LayoutNode makeLayoutNodeAdapter(SourceTableRecord str) {
+        LayoutNode adapter = nodes.get(str);
+        if (adapter == null) {
+            adapter = new MatchResultLayoutNode(str);
+            nodes.put(str, adapter);
+        }
+        return adapter;
+    }
+    
+    private LayoutEdge makeLayoutEdgeAdapter(PotentialMatchRecord pmr) {
+        LayoutEdge adapter = edges.get(pmr);
+        if (adapter == null) {
+            adapter = new MatchResultLayoutEdge(pmr);
+            edges.put(pmr, adapter);
+        }
+        return adapter;
+    }
+    
+    /**
+     * An adapter for the PotentialMatchRecord's original match pointers,
+     * which are immutable. Does not deal with the LHS/RHS relations that
+     * are mutable.
+     */
+    class MatchResultLayoutEdge implements LayoutEdge {
+        
+        private final LayoutNode head;
+        private final LayoutNode tail;
+        
+        /**
+         * Takes a snapshot of the original LHS and RHS records, which are
+         * immutable, so they don't need to be created dynamically.
+         */
+        MatchResultLayoutEdge(PotentialMatchRecord edge) {
+            head = makeLayoutNodeAdapter(edge.getOriginalLhs());
+            tail = makeLayoutNodeAdapter(edge.getOriginalRhs());
+        }
+        
+        /**
+         * Returns the original LHS of the edge, no matter what.  This
+         * is ok because the original matching edge is not directional.
+         */
+        public LayoutNode getHeadNode() {
+            return head;
+        }
+        
+        /**
+         * Returns the original RHS of the edge, no matter what.  This
+         * is ok because the original matching edge is not directional.
+         */
+        public LayoutNode getTailNode() {
+            return tail;
+        }
+        
+    }
+    
+    class MatchResultLayoutNode extends AbstractLayoutNode {
+        
+        private final SourceTableRecord node;
+        
+        MatchResultLayoutNode(SourceTableRecord node) {
+            if (node == null) throw new NullPointerException("Can't create a LayoutNode proxy for null node");
+            this.node = node;
+        }
+        
+        @Override
+        public String getNodeName() {
+            return node.getKeyValues().toString();
+        }
+        
+        @Override
+        public Rectangle getBounds(Rectangle b) {
+            Rectangle nodeBounds = viewer.getNodeBounds(node);
+            b.x = nodeBounds.x;
+            b.y = nodeBounds.y;
+            return b;
+        }
+        
+        @Override
+        public void setBounds(int x, int y, int width, int height) {
+            viewer.setNodeBounds(node, new Rectangle(x, y, width, height));
+        }
+        
+        @Override
+        public List<LayoutEdge> getInboundEdges() {
+            List<LayoutEdge> inbound = new ArrayList<LayoutEdge>();
+            for (PotentialMatchRecord pmr : viewer.getModel().getInboundEdges(node)) {
+                inbound.add(makeLayoutEdgeAdapter(pmr));
+            }
+            return inbound;
+        }
+        
+        @Override
+        public List<LayoutEdge> getOutboundEdges() {
+            List<LayoutEdge> outbound = new ArrayList<LayoutEdge>();
+            for (PotentialMatchRecord pmr : viewer.getModel().getOutboundEdges(node)) {
+                outbound.add(makeLayoutEdgeAdapter(pmr));
+            }
+            return outbound;
+        }
+        
+    }
 }
