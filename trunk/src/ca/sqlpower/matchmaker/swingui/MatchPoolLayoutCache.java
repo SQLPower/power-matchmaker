@@ -11,7 +11,7 @@ import ca.sqlpower.matchmaker.swingui.graphViewer.GraphLayoutCache;
 public class MatchPoolLayoutCache implements GraphLayoutCache {
 
     private final MatchPool pool;
-    private final Map<Object, Rectangle> positions = new HashMap<Object, Rectangle>();
+    private final Map<Object, Rectangle> positions = new HashMap<Object, Rectangle>(16,0.5f);
     
     public MatchPoolLayoutCache(final MatchPool pool) {
         this.pool = pool;
