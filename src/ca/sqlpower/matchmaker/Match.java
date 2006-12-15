@@ -17,6 +17,7 @@ import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.architect.diff.DiffChunk;
+import ca.sqlpower.architect.diff.DiffType;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
 /**
@@ -351,11 +352,20 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		CompareSQL compare = new CompareSQL(inMemory,physical);
 		List<DiffChunk<SQLObject>> tableDiffs = compare.generateTableDiffs();
 		logger.debug("Table differences are:");
+		int diffCount = 0;
 		for ( DiffChunk<SQLObject> diff : tableDiffs) {
 			logger.debug(diff.toString());
+			/** we have not made the  sql Comparator smart enough to hanel 
+			 * some difference like oracle Date = Date(7) etc. so we
+			 * do not count the modified. (different type,percision,scale)
+			 */
+			if ( diff.getType() != DiffType.SAME &&
+					diff.getType() != DiffType.MODIFIED) {
+				diffCount++;
+			}
 		}
 		
-		return tableDiffs.size() > 0;
+		return diffCount == 0;
 	}
 	
 	
