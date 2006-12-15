@@ -1,6 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -12,7 +11,6 @@ import javax.swing.JComponent;
 
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphEdgeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
 
@@ -36,11 +34,13 @@ public class PotentialMatchEdgeRenderer extends JComponent implements
         lhsPosition = graph.getNodeBounds(origLHS);
         rhsPosition = graph.getNodeBounds(origRHS);
         edgeColor = Color.BLACK;
-        if (edge.getMatchStatus() == null) {
-            edgeStroke = new BasicStroke(1.7f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 0f, new float[] {1.7f, 10f}, 0f);
-        } else if (edge.getMatchStatus() == MatchType.MATCH) {
-            edgeStroke = new BasicStroke(1f);
-        }
+        
+        // dotted lines are temporarily disabled so we can see the edges more clearly in the absense of sensible layout
+//        if (edge.getMatchStatus() == null) {
+//            edgeStroke = new BasicStroke(1.7f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 0f, new float[] {1.7f, 10f}, 0f);
+//        } else if (edge.getMatchStatus() == MatchType.MATCH) {
+//            edgeStroke = new BasicStroke(1f);
+//        }
         return this;
     }
 
@@ -54,10 +54,12 @@ public class PotentialMatchEdgeRenderer extends JComponent implements
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        g2.setStroke(edgeStroke);
+        if (edgeStroke != null) {
+            g2.setStroke(edgeStroke);
+        }
         g2.setColor(edgeColor);
         g2.drawLine(
-                lhsPosition.x + lhsPosition.width/2, lhsPosition.y + lhsPosition.y/2,
-                rhsPosition.x + rhsPosition.width/2, rhsPosition.y + rhsPosition.y/2);
+                lhsPosition.x + lhsPosition.width/2, lhsPosition.y + lhsPosition.height/2,
+                rhsPosition.x + rhsPosition.width/2, rhsPosition.y + rhsPosition.height/2);
     }
 }
