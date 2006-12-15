@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
@@ -28,7 +27,7 @@ public class MatchPoolGraphModel implements GraphModel<SourceTableRecord, Potent
     }
 
     public Collection<SourceTableRecord> getAdjacentNodes(SourceTableRecord node) {
-        throw new NotImplementedException();
+        return node.getAdjacentNodes();
     }
 
     public Collection<PotentialMatchRecord> getInboundEdges(SourceTableRecord node) {
