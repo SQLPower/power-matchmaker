@@ -150,20 +150,39 @@ public class MatchResultVisualizer {
             return adapter;
         }
         
+        /**
+         * An adapter for the PotentialMatchRecord's original match pointers,
+         * which are immutable. Does not deal with the LHS/RHS relations that
+         * are mutable.
+         */
         class MatchResultLayoutEdge implements LayoutEdge {
-
-            private final PotentialMatchRecord edge;
-            private 
+            
+            private final LayoutNode head;
+            private final LayoutNode tail;
+            
+            /**
+             * Takes a snapshot of the original LHS and RHS records, which are
+             * immutable, so they don't need to be created dynamically.
+             */
             MatchResultLayoutEdge(PotentialMatchRecord edge) {
-                this.edge = edge;
+                head = makeLayoutNodeAdapter(edge.getOriginalLhs());
+                tail = makeLayoutNodeAdapter(edge.getOriginalRhs());
             }
             
+            /**
+             * Returns the original LHS of the edge, no matter what.  This
+             * is ok because the original matching edge is not directional.
+             */
             public LayoutNode getHeadNode() {
-                return makeLayoutNodeAdapter(edge.getMaster());
+                return head;
             }
 
+            /**
+             * Returns the original RHS of the edge, no matter what.  This
+             * is ok because the original matching edge is not directional.
+             */
             public LayoutNode getTailNode() {
-                return makeLayoutNodeAdapter(edge.getDuplicate());
+                return tail;
             }
             
         }
@@ -173,6 +192,7 @@ public class MatchResultVisualizer {
             private final SourceTableRecord node;
 
             MatchResultLayoutNode(SourceTableRecord node) {
+                if (node == null) throw new NullPointerException("Can't create a LayoutNode proxy for null node");
                 this.node = node;
             }
             
