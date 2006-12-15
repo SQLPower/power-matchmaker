@@ -355,9 +355,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		int diffCount = 0;
 		for ( DiffChunk<SQLObject> diff : tableDiffs) {
 			logger.debug(diff.toString());
-			/** we have not made the  sql Comparator smart enough to hanel 
-			 * some difference like oracle Date = Date(7) etc. so we
-			 * do not count the modified. (different type,percision,scale)
+			/** we have not made the sql Comparator smart enough to handle 
+			 * some difference like oracle Date = Date(7) etc. so we can
+			 * not count the type=modified. (different type,percision,scale)
 			 */
 			if ( diff.getType() != DiffType.SAME &&
 					diff.getType() != DiffType.MODIFIED) {
