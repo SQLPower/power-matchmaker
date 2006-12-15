@@ -200,4 +200,21 @@ public class SourceTableRecord {
         }
         return inboundEdges;
     }
+    
+    public Collection<SourceTableRecord> getAdjacentNodes(){
+        Collection<SourceTableRecord> adjacentNodes = new ArrayList<SourceTableRecord>();
+        for (PotentialMatchRecord pmr: getInboundEdges()){
+             SourceTableRecord incomingNode = pmr.getDuplicate();
+             if (!adjacentNodes.contains(incomingNode)){
+                 adjacentNodes.add(incomingNode);
+             }
+        }
+        for (PotentialMatchRecord pmr: getOutboundEdges()){
+            SourceTableRecord outgoingNode = pmr.getMaster();
+            if (!adjacentNodes.contains(outgoingNode)){
+                adjacentNodes.add(outgoingNode);
+            }            
+       }
+       return adjacentNodes;
+    }
 }
