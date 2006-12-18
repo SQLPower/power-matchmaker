@@ -51,15 +51,15 @@ public class MatchMakerIndexBuilder implements EditorPane {
 	private final SQLTable sqlTable;
 	private final IndexColumnTableModel indexColumnTableModel;
 	private boolean tableModified = false;
-    
+
     /** Displays validation results */
     private StatusComponent statusComponent;
 
     /**
      * Handles the validation rules for this form.
      */
-    private FormValidationHandler validationHandler; 
-    
+    private FormValidationHandler validationHandler;
+
     private final AbstractAction okAction = new AbstractAction("OK") {
     			public void actionPerformed(ActionEvent e) {
                     boolean success = doSave();
@@ -70,7 +70,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
                     }
     			}
     		};
-            
+
     private final AbstractAction cancelAction = new AbstractAction("Cancel") {
     			public void actionPerformed(ActionEvent e) {
     				if (hasUnsavedChanges()) {
@@ -96,8 +96,8 @@ public class MatchMakerIndexBuilder implements EditorPane {
     				dialog.dispose();
     			}
     		};
-            
-	
+
+
 	private boolean isTableModified() {
 		return tableModified;
 	}
@@ -112,9 +112,9 @@ public class MatchMakerIndexBuilder implements EditorPane {
 
 		sqlTable = match.getSourceTable();
 		SQLIndex oldIndex = match.getSourceTableIndex();
-		
+
 		String name;
-		if (oldIndex != null && 
+		if (oldIndex != null &&
 				sqlTable.getIndexByName(oldIndex.getName()) == null) {
 			name = oldIndex.getName();
 		} else {
@@ -127,7 +127,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
         statusComponent = new StatusComponent();
         validationHandler = new FormValidationHandler(statusComponent);
 		indexName = new JTextField(name,15);
-		validationHandler.addValidateObject(indexName, 
+		validationHandler.addValidateObject(indexName,
                 new RegExValidator(
                         "[a-z_][a-z0-9_]*",
                         "Index name must be a valid SQL identifier",
@@ -136,7 +136,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		columntable = new JTable(indexColumnTableModel);
 		columntable.addColumnSelectionInterval(1, 1);
 		TableUtils.fitColumnWidths(columntable, 6);
-        
+
 		dialog = new JDialog(swingSession.getFrame());
         dialog.setTitle("Index Column Chooser");
 		buildUI();
@@ -144,12 +144,12 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		dialog.setLocationRelativeTo(swingSession.getFrame());
 		dialog.setVisible(true);
 	}
-	
+
 	private void buildUI() {
-		
+
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:pref:grow,4dlu",
-		// column1    2    3  
+		// column1    2    3
 				"10dlu,pref:grow,4dlu,pref:grow,4dlu,pref:grow,10dlu,fill:min(200dlu;pref):grow,4dlu,pref,4dlu");
 		//       1     2         3    4         5    6         7     8                          9    10   11
 		PanelBuilder pb;
@@ -174,17 +174,17 @@ public class MatchMakerIndexBuilder implements EditorPane {
         dialog.getRootPane().setDefaultButton(save);
         ASUtils.makeJDialogCancellable(dialog, cancelAction, false);
 	}
-	
+
 	/**
 	 * This class represents the table row model of the pick your own
-	 * column for index table. which has only 3 columns. 
+	 * column for index table. which has only 3 columns.
 	 *
 	 */
 	private class CustomTableColumn implements Comparable<CustomTableColumn> {
 		private boolean key;
 		private Integer position;
 		private SQLColumn sqlColumn;
-		
+
 		public CustomTableColumn(boolean key, Integer position, SQLColumn column) {
 			this.key = key;
 			this.position = position;
@@ -223,22 +223,22 @@ public class MatchMakerIndexBuilder implements EditorPane {
 				return -1;
 			else if ( o.getPosition() == null )
 				return 1;
-			else 
+			else
 				return getPosition().compareTo(o.getPosition());
 		}
-        
+
         @Override
         public String toString() {
             return "[CustomTableColumn: key="+key+"; position="+position+"; column="+sqlColumn.getName()+"]";
         }
 	}
-	
+
 	private class IndexColumnTableModel extends AbstractTableModel {
 
 		private List<CustomTableColumn> candidateColumns
-							= new ArrayList<CustomTableColumn>(); 
+							= new ArrayList<CustomTableColumn>();
 		public IndexColumnTableModel(SQLTable sqlTable, SQLIndex oldIndex) throws ArchitectException {
-			
+
 			for ( SQLColumn column : sqlTable.getColumns()) {
                 int positionInIndex = oldIndex.getIndexOfChildByName(column.getName());
 				candidateColumns.add(
@@ -248,7 +248,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
                                 column));
 			}
 		}
-		
+
         @Override
         public String getColumnName(int column) {
             if (column == 0) {
@@ -261,7 +261,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
                 throw new IndexOutOfBoundsException("No such column in table: "+column);
             }
         }
-        
+
 		public int getColumnCount() {
 			return 3;
 		}
@@ -281,8 +281,8 @@ public class MatchMakerIndexBuilder implements EditorPane {
 				throw new IllegalArgumentException("unknown columnIndex: " + columnIndex);
 			}
 		}
-		
-		
+
+
 		@Override
 		public Class<?> getColumnClass(int columnIndex) {
 			if ( columnIndex == 0 ) {
@@ -295,7 +295,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 				throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
 			}
 		}
-		
+
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			setTableModified(true);
@@ -320,7 +320,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 			}
 			fireTableDataChanged();
 		}
-		
+
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
 			if ( columnIndex == 0 ) {
@@ -346,24 +346,24 @@ public class MatchMakerIndexBuilder implements EditorPane {
 	public boolean hasUnsavedChanges() {
 		return isTableModified() || validationHandler.hasPerformedValidation();
 	}
-	
+
 	public boolean doSave() {
-		
+
 		selectedColumns = new ArrayList<CustomTableColumn>();
 		for ( CustomTableColumn column : indexColumnTableModel.getCandidateColumns() ) {
 			if ( column.isKey() ) selectedColumns.add(column);
 		}
 		Collections.sort(selectedColumns);
 		logger.debug("Sorted list of selected columns: "+selectedColumns);
-        
+
 		if (selectedColumns.size() == 0) {
 			return false;
         }
-        
+
         if (validationHandler.getFailResults().size() != 0) {
             return false;
         }
-        
+
 		SQLIndex index = new SQLIndex(indexName.getText(),true,null,IndexType.OTHER,null);
 		try {
 		    for ( CustomTableColumn column : selectedColumns ) {
@@ -372,10 +372,10 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		    logger.debug("Index columns after save: "+index.getChildren());
 		} catch (ArchitectException e) {
 		    ASUtils.showExceptionDialog(swingSession.getFrame(),
-		            "Unexcepted error when adding Column to the Index",
+		            "Unexpected error when adding Column to the Index",
 		            e, null);
 		}
-        
+
 		match.setSourceTableIndex(index);
 		return true;
 	}

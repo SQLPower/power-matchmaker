@@ -106,7 +106,7 @@ public class MatchEditor implements EditorPane {
     private FilterComponents filterPanel;
     private MatchValidation matchValidation;
     private MatchResultVisualizer matchResultVisualizer;
-    
+
     private final MatchMakerSwingSession swingSession;
 
     /**
@@ -147,10 +147,10 @@ public class MatchEditor implements EditorPane {
 			}
         });
         handler.resetHasValidated(); // avoid false hits when newly created
-        
+
         /**
          * listen to the parent of the match, to handle the match removal
-         * from the tree. if this currently editting match was deleted 
+         * from the tree. if this currently editting match was deleted
          * from the tree, we want to close this panel without saving.
          */
         if ( match.getParent() != null ) {
@@ -278,6 +278,7 @@ public class MatchEditor implements EditorPane {
 			p.pack();
 			p.setVisible(true);
 		}};
+
 	private Action validateMatchAction = new AbstractAction("Validate Match") {
 		public void actionPerformed(ActionEvent e) {
 			try {
@@ -287,15 +288,16 @@ public class MatchEditor implements EditorPane {
                     matchValidation.showGUI();
 			} catch (HeadlessException e1) {
 				ASUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unknown Error",e1, new MatchMakerQFAFactory());
+						"Unknown Error", e1, new MatchMakerQFAFactory());
 			} catch (SQLException e1) {
 				ASUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unknown SQL Error",e1, new MatchMakerQFAFactory());
+						"Unknown SQL Error", e1, new MatchMakerQFAFactory());
 			} catch (ArchitectException e1) {
 				ASUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unknown Error",e1, new MatchMakerQFAFactory());
+						"Unknown Error", e1, new MatchMakerQFAFactory());
 			}
 		}};
+
 	private Action viewBuilderAction = new AbstractAction("View Builder") {
 		public void actionPerformed(ActionEvent e) {
             SQLTable t = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
@@ -319,7 +321,7 @@ public class MatchEditor implements EditorPane {
 		}};
 
 	private final Action createResultTableAction;
-    
+
 	private Action matchResultVisualizerAction = new AbstractAction("Visualize Match Results") {
         public void actionPerformed(ActionEvent e) {
             if (match.getResultTable() == null){
@@ -327,14 +329,14 @@ public class MatchEditor implements EditorPane {
                         "No Data is Available", JOptionPane.OK_OPTION);
                 return;
             }
-            
+
             if (matchResultVisualizer == null) {
                 try {
                     matchResultVisualizer = new MatchResultVisualizer(match, swingSession);
                 } catch (Exception ex) {
                     ASUtils.showExceptionDialog(panel, "Couldn't create match result visualizer component",
                             ex, new ArchitectExceptionReportFactory());
-                            
+
                 }
             }
             matchResultVisualizer.showDialog();
@@ -351,11 +353,9 @@ public class MatchEditor implements EditorPane {
 			try {
 				new MatchMakerIndexBuilder(match,swingSession);
 			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialog(panel, "Unexcepted Error", e1, null);
+				ASUtils.showExceptionDialog(panel, "Unexpected Error", e1, null);
 			}
 		}};
-
-	
 
     private void buildUI() throws ArchitectException {
 
@@ -387,7 +387,7 @@ public class MatchEditor implements EditorPane {
     	validateMatch = new JButton(validateMatchAction);
         matchResultVisualizerButton = new JButton(matchResultVisualizerAction);
         createIndexButton = new JButton(createIndexAction );
-        
+
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,40dlu,4dlu,pref,   4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,  4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
@@ -407,7 +407,7 @@ public class MatchEditor implements EditorPane {
 		pb.add(folderComboBox, cc.xy(4,row));
 		row += 2;
         desc.setWrapStyleWord(true);
-        desc.setLineWrap(true);    
+        desc.setLineWrap(true);
 		pb.add(new JLabel("Description:"), cc.xy(2,row,"r,t"));
 		pb.add(new JScrollPane(desc), cc.xy(4,row,"f,f"));
 		row += 2;
@@ -550,7 +550,7 @@ public class MatchEditor implements EditorPane {
         		refreshIndexComboBox(null,(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
         	}});
 
-        // listen to the sourceTableIndex changes, 
+        // listen to the sourceTableIndex changes,
         // for update the index combobox selection
         match.addMatchMakerListener(new MatchMakerListener<Match, MatchMakerFolder>(){
 
@@ -574,7 +574,7 @@ public class MatchEditor implements EditorPane {
         	public void mmStructureChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
         });
 
-                
+
     	SQLTable resultTable = match.getResultTable();
     	if ( resultTable != null ) {
     		SQLCatalog cat = resultTable.getCatalog();
@@ -605,7 +605,7 @@ public class MatchEditor implements EditorPane {
      * @throws ArchitectException
      */
 	private void refreshIndexComboBox(SQLIndex newIndex, SQLTable newTable) {
-		
+
 		try {
 			indexComboBox.removeAllItems();
 	        if ( newTable != null ) {
@@ -628,17 +628,13 @@ public class MatchEditor implements EditorPane {
 	        }
 		} catch (ArchitectException e1) {
 			ASUtils.showExceptionDialog(getPanel(),
-					"Unexcepted error when getting index list",e1,null);
+					"Unexcepted error when getting index list", e1, null);
 		}
-		
-		
 	}
 
 	public JPanel getPanel() {
 		return panel;
 	}
-
-
 
     /**
      * Copies all the values from the GUI components into the PlMatch
@@ -745,22 +741,25 @@ public class MatchEditor implements EditorPane {
         			"MatchMaker result table",
         			"TABLE", true));
         } catch ( ArchitectException e ) {
-        	ASUtils.showExceptionDialog(swingSession.getFrame(),"Save error",e, new MatchMakerQFAFactory());
+        	ASUtils.showExceptionDialog(swingSession.getFrame(),
+        			"Save error", e, new MatchMakerQFAFactory());
         	return false;
         }
 
         match.setFilter(filterPanel.getFilterTextArea().getText());
 
-        if ( !matchId.getText().equals(match.getName()) ) {
-        	if ( !swingSession.isThisMatchNameAcceptable(matchId.getText()) ) {
+        String matchIdText = matchId.getText();
+		if (!matchIdText.equals(match.getName())) {
+        	if (!swingSession.isThisMatchNameAcceptable(matchIdText)) {
         		JOptionPane.showMessageDialog(getPanel(),
-        				"Match name \""+matchId.getText()+
-        				"\" exist or invalid. The match has not been saved",
+        				"<html>Match name \"" + matchId.getText() +
+        					"\" does not exist or is invalid.\n" +
+        					"The match has not been saved",
         				"Match name invalid",
         				JOptionPane.ERROR_MESSAGE);
         		return false;
         	}
-        	match.setName(matchId.getText());
+        	match.setName(matchIdText);
         }
 
         logger.debug("Saving Match:" + match.getName());
@@ -773,7 +772,7 @@ public class MatchEditor implements EditorPane {
 
         swingSession.save(match);
         handler.resetHasValidated();
-        
+
         // bring back some buttons like create index...
         refreshActionStatus();
 		return true;
@@ -785,7 +784,7 @@ public class MatchEditor implements EditorPane {
     	saveAction.setEnabled(true);
 		newMatchGroupAction.setEnabled(true);
 		runMatchAction.setEnabled(true);
-		
+
     	if ( worst.getStatus() == Status.FAIL ) {
     		saveAction.setEnabled(false);
     		newMatchGroupAction.setEnabled(false);
@@ -842,7 +841,7 @@ public class MatchEditor implements EditorPane {
 					return ValidateResult.createValidateResult(Status.WARN,
 						"Match source table has error:"+e.getMessage());
 				}
-				
+
 				final String tableName = resultTableName.getText();
 				if (tableName != null && tableName.length() > 0) {
 					String catalogName = null;
@@ -908,7 +907,7 @@ public class MatchEditor implements EditorPane {
 
     private class MatchResultTableNameValidator implements Validator {
         private static final int MAX_CHAR_RESULT_TABLE = 30;
-        
+
 		public ValidateResult validate(Object contents) {
 			final Pattern sqlIdentifierPattern =
 				Pattern.compile("[a-z_][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
@@ -933,7 +932,7 @@ public class MatchEditor implements EditorPane {
 				if ( resultChooser.getSchemaComboBox().getSelectedItem() != null) {
 					schemaName = ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName();
 				}
-				
+
 				try {
 					SQLTable resultTable = swingSession.getDatabase().getTableByName(
 							catalogName, schemaName, value);
@@ -960,8 +959,8 @@ public class MatchEditor implements EditorPane {
 	public boolean hasUnsavedChanges() {
 		return handler.hasPerformedValidation();
 	}
-	
-	
+
+
 	/**
 	 * Creates a new Match object and a GUI editor for it, then puts that editor in the split pane.
 	 */
@@ -999,23 +998,23 @@ public class MatchEditor implements EditorPane {
 				} else {
 					throw new IllegalStateException("Unknown choice: "+choice);
 				}
-			}                
+			}
 			try {
 				showSqlGui();
 			} catch (Exception ex) {
 				ASUtils.showExceptionDialog("Couldn't create SQL Preview", ex);
 			}
 		}
-		
+
 		/**
 		 * Creates and shows a dialog with the generated SQL in it.
 		 * The dialog has buttons with actions that can save, execute,
 		 * or copy the SQL to the clipboard.
 		 */
-		public void showSqlGui() 
-			throws InstantiationException, IllegalAccessException, 
+		public void showSqlGui()
+			throws InstantiationException, IllegalAccessException,
 			HeadlessException, ArchitectException, SQLException {
-			
+
 			final DDLGenerator ddlg = DDLUtils.createDDLGenerator(
 					swingSession.getDatabase().getDataSource());
 			if (ddlg == null) {
@@ -1029,7 +1028,7 @@ public class MatchEditor implements EditorPane {
 			if (Match.doesResultTableExist(swingSession, match)) {
 				int answer = JOptionPane.showConfirmDialog(swingSession.getFrame(),
 						"Result table exists, do you want to drop and recreate it?",
-						"Table exists", 
+						"Table exists",
 						JOptionPane.YES_NO_OPTION);
 				if ( answer != JOptionPane.YES_OPTION ) {
 					return;
@@ -1038,11 +1037,11 @@ public class MatchEditor implements EditorPane {
 			}
 			ddlg.addTable(match.createResultTable());
 			ddlg.addIndex((SQLIndex) match.getResultTable().getIndicesFolder().getChild(0));
-			
+
 		    final JDialog editor = new JDialog(swingSession.getFrame(),
 		    		"Create Result Table", false );
 		    JComponent cp = (JComponent) editor.getContentPane();
-		    
+
 		    Box statementsBox = Box.createVerticalBox();
 		    final List<JTextArea> sqlTextFields = new ArrayList<JTextArea>();
 		    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
@@ -1050,7 +1049,7 @@ public class MatchEditor implements EditorPane {
 				statementsBox.add(sqlTextArea);
 				sqlTextFields.add(sqlTextArea);
 		    }
-		    
+
 		    Action saveAction = new AbstractAction("Save") {
 				public void actionPerformed(ActionEvent e) {
 					AbstractDocument doc = new DefaultStyledDocument();
@@ -1084,7 +1083,7 @@ public class MatchEditor implements EditorPane {
 		    };
 		    Action executeAction = new AbstractAction("Execute") {
 				public void actionPerformed(ActionEvent e) {
-					
+
 					Connection con = null;
 					Statement stmt = null;
 					String sql = null;
@@ -1092,7 +1091,7 @@ public class MatchEditor implements EditorPane {
 						con = swingSession.getConnection();
 						stmt = con.createStatement();
 						int successCount = 0;
-						
+
 						for (JTextArea sqlText : sqlTextFields ) {
 							sql = sqlText.getText();
 							try {
@@ -1102,7 +1101,7 @@ public class MatchEditor implements EditorPane {
 								int choice = JOptionPane.showOptionDialog(editor,
 										"The following SQL statement failed:\n" +
 										sql +
-										"\nThe error was: " + e1.getMessage() + 
+										"\nThe error was: " + e1.getMessage() +
 										"\n\nDo you want to continue executing the create script?",
 										"SQL Error", JOptionPane.YES_NO_OPTION,
 										JOptionPane.ERROR_MESSAGE, null,
@@ -1112,12 +1111,12 @@ public class MatchEditor implements EditorPane {
 								}
 							}
 						}
-						
+
 						JOptionPane.showMessageDialog(swingSession.getFrame(),
 								"Successfully executed " + successCount + " of " +
 								sqlTextFields.size() + " SQL Statements." +
 								(successCount == 0 ? "\n\nBetter Luck Next Time." : ""));
-						
+
 	                    //closes the dialog if all the statement is executed successfully
 	                    //if not, the dialog remains on the screen
 	                    if (successCount == sqlTextFields.size()){
@@ -1142,21 +1141,21 @@ public class MatchEditor implements EditorPane {
 					editor.dispose();
 				}
 		    };
-		    
+
 		    // the gui layout part
 		    cp.setLayout(new BorderLayout(10,10));
 		    cp.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-		    
+
 		    cp.add(new JScrollPane(statementsBox), BorderLayout.CENTER);
-		    
+
 		    ButtonBarBuilder bbb = ButtonBarBuilder.createLeftToRightBuilder();
 		    bbb.addGridded(new JButton(saveAction));
 		    bbb.addGridded(new JButton(copyAction));
 		    bbb.addGridded(new JButton(executeAction));
 		    bbb.addGridded(new JButton(cancelAction));
-		    
+
 		    cp.add(bbb.getPanel(), BorderLayout.SOUTH);
-		    
+
 		    editor.pack();
 		    editor.setLocationRelativeTo(null);
 		    editor.setVisible(true);

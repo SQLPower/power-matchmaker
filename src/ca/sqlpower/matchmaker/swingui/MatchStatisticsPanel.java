@@ -42,7 +42,7 @@ public class MatchStatisticsPanel extends JPanel {
 	private Match match;
 	private Timestamp startDateTime;
 
-	public MatchStatisticsPanel(MatchMakerSwingSession swingSession, Match match) 
+	public MatchStatisticsPanel(MatchMakerSwingSession swingSession, Match match)
 		throws SQLException {
 		super(new BorderLayout());
 		this.match = match;
@@ -342,7 +342,7 @@ public class MatchStatisticsPanel extends JPanel {
 						new MatchGroupStatisticTableModel(rsmGroup));
 				setMatchGroupStatisticTableCellRenderer(matchGroupTable);
 			} catch (SQLException e1) {
-				ASUtils.showExceptionDialog(MatchStatisticsPanel.this,"SQL Error",e1, new MatchMakerQFAFactory());
+				ASUtils.showExceptionDialog(MatchStatisticsPanel.this, "SQL Error", e1, new MatchMakerQFAFactory());
 			}
         }
     }

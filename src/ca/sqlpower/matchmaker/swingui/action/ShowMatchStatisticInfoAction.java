@@ -28,7 +28,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 	private Match match;
 	private JFrame parent;
 
-	public ShowMatchStatisticInfoAction(MatchMakerSwingSession swingSession, 
+	public ShowMatchStatisticInfoAction(MatchMakerSwingSession swingSession,
 			Match match, JFrame parent) {
 		super("Statistics");
 		this.match = match;
@@ -51,7 +51,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 			p = new MatchStatisticsPanel(swingSession,match);
 		} catch (SQLException e1) {
 			ASUtils.showExceptionDialog(parent,
-					"Could not get match statistic information", e1 , new MatchMakerQFAFactory());
+					"Could not get match statistics information", e1 , new MatchMakerQFAFactory());
 			return;
 		}
 		if ( p == null ) {
@@ -72,7 +72,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 					p2.deleteAllStatistics();
 				} catch (SQLException e1) {
 					ASUtils.showExceptionDialog(parent,
-							"Could not delete match statistic information", e1, new MatchMakerQFAFactory());
+							"Could not delete match statistics information", e1, new MatchMakerQFAFactory());
 				}
 			}});
 		JButton deleteBackwardButton = new JButton(new AbstractAction("Delete Backward"){
@@ -81,7 +81,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 					p2.deleteBackwardStatistics();
 				} catch (SQLException e1) {
 					ASUtils.showExceptionDialog(parent,
-							"Could not delete match statistic information", e1, new MatchMakerQFAFactory());
+							"Could not delete match statistics information", e1, new MatchMakerQFAFactory());
 				}
 			}});
 		Action closeAction = new CommonCloseAction(d);
