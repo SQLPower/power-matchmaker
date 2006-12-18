@@ -21,6 +21,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
@@ -144,7 +145,7 @@ public class MatchResultVisualizer {
         cp.setLayout(new BorderLayout());
         cp.add(viewerSettingsPanel, BorderLayout.NORTH);
         cp.add(dotExportPanel, BorderLayout.SOUTH);
-        cp.add(viewer, BorderLayout.CENTER);
+        cp.add(new JScrollPane(viewer), BorderLayout.CENTER);
         
         dialog.setTitle("Match Result Visualizer");
         dialog.pack();
@@ -186,10 +187,7 @@ public class MatchResultVisualizer {
         while (!layout.isDone()) {
             layout.nextFrame();
             System.out.println("Frame"+(frame++));
-            if (frame == 100) {
-                layout.done();
-                break;
-            }
+
         }
         viewer.repaint();
     }
