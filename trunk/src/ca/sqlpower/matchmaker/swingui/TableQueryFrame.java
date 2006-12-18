@@ -52,7 +52,7 @@ public class TableQueryFrame extends JFrame {
 	public static final String DBCS_DIALOG_TITLE = "New Database Connection";
 
     private final MatchMakerSwingSession swingSession;
-    
+
 	private JProgressBar progressBar;
 	private JPanel buttonPanel;
 	private JComboBox dbDropdown;
@@ -138,7 +138,7 @@ public class TableQueryFrame extends JFrame {
 						"Unexpected architect exception in ConnectionListener",	e);
 				ASUtils.showExceptionDialog(
 						SwingUtilities.getWindowAncestor(TableQueryFrame.this),
-						"Unexpected architect exception in ConnectionListener",
+						"Unexpected exception in ConnectionListener",
 						e, new MatchMakerQFAFactory());
 			}
 		}
@@ -237,10 +237,10 @@ public class TableQueryFrame extends JFrame {
 
 	        }  catch (ArchitectException e1 ) {
 	        	ASUtils.showExceptionDialogNoReport(TableQueryFrame.this,
-						"Unknown Error ["+sql+"]", e1);
+						"Unknown Error while processing query", sql, e1);
 			} catch (SQLException e1 ) {
 				ASUtils.showExceptionDialogNoReport(TableQueryFrame.this,
-						"SQL Error ["+sql+"]", e1);
+						"Database Error while processing query", sql, e1);
 			} finally {
 	        	try {
 	        		if (rs != null)
@@ -280,7 +280,7 @@ public class TableQueryFrame extends JFrame {
 
 		tableDropdown = new JComboBox();
 		tableDropdown.addActionListener(new SqlAreaPopulator());
-		ConnectionComboBoxModel connectionModel = 
+		ConnectionComboBoxModel connectionModel =
             new ConnectionComboBoxModel(swingSession.getContext().getPlDotIni());
 		dbDropdown = new JComboBox(connectionModel);
 		dbDropdown.addActionListener(new TablePopulator());

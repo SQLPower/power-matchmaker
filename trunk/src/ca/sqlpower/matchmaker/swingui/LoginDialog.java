@@ -81,10 +81,10 @@ public class LoginDialog {
                 // doStuff() will get invoked soon on the new thread
             } catch (PLSchemaException ex) {
                 ASUtils.showExceptionDialogNoReport(frame,
-                        ex.getMessage() +
-                        "\nExisting version: "+ex.getCurrentVersion() +
+                        "PLSchema Exception",
+                        "Existing version: "+ex.getCurrentVersion() +
                         "\nRequired Version: "+ex.getRequiredVersion(),
-                        ex );
+                        ex);
                 loginButton.setEnabled(true);
             } catch (Exception ex) {
                 ASUtils.showExceptionDialogNoReport(frame,
@@ -147,12 +147,12 @@ public class LoginDialog {
 	 * The session that we will create upon successful login.
 	 */
 	private MatchMakerSwingSession session;
-	
+
     /**
      * The frame that this dialog's UI gets displayed in.
      */
     private final JFrame frame;
-    
+
 	private JComboBox dbList;
 	private JTextField userID;
 	private JPasswordField password;
@@ -201,11 +201,11 @@ public class LoginDialog {
 
     /**
      * Makes this login dialog visible, packing it and centering it on the screen.
-     * You will normally not call this method directly; see 
+     * You will normally not call this method directly; see
      * {@link SwingSessionContext#showLoginDialog(ArchitectDataSource)}.
-     * 
+     *
      * @param selectedDataSource The data source to default the datasource combo box,
-     * username, and password fields to. 
+     * username, and password fields to.
      */
     void showLoginDialog(ArchitectDataSource selectedDataSource) {
         setDbSource(selectedDataSource);
@@ -214,9 +214,9 @@ public class LoginDialog {
         frame.setVisible(true);
         loginButton.requestFocus();
     }
-    
+
 	WindowListener optimizationManager = new WindowAdapter() {
-        
+
 		/** If you try to login but have no Connections set up yet,
 		 * there is nothing you can do except "Manage Connections",
 		 * so we jump you to there.

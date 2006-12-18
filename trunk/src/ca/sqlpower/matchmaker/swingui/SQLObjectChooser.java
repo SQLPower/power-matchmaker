@@ -61,7 +61,7 @@ public class SQLObjectChooser {
 	 * @param dataSources
 	 *            The list of data sources that the datasource chooser will
 	 *            contain.
-	 * @throws ArchitectException 
+	 * @throws ArchitectException
 	 */
 	public SQLObjectChooser(final MatchMakerSwingSession session) throws ArchitectException {
 
@@ -69,7 +69,7 @@ public class SQLObjectChooser {
 		dataSource = db.getDataSource();
 		dataSourceComboBox.addItem(dataSource);
 		dataSourceComboBox.setSelectedItem(dataSource);
-		
+
 		catalogComboBox.removeAllItems();
 		schemaComboBox.removeAllItems();
 		tableComboBox.removeAllItems();
@@ -84,7 +84,7 @@ public class SQLObjectChooser {
 		catalogTerm.setEnabled(false);
 		schemaTerm.setText("Schema");
 		schemaTerm.setEnabled(false);
-		
+
 		if (db.isCatalogContainer()) {
 			List<SQLCatalog> catalogs = db.getChildren();
 			setComboBoxStateAndItem(catalogComboBox, catalogs, -1);
@@ -104,21 +104,21 @@ public class SQLObjectChooser {
 			List<SQLTable> tables = db.getChildren();
 			setComboBoxStateAndItem(tableComboBox, tables, -1);
 		}
-		
+
 		ItemListener itemListener = new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				try {
 					validate();
 				} catch (ArchitectException e1) {
 					ASUtils.showExceptionDialogNoReport(session.getFrame(),
-							"Database SQL error", e1);
+							"Database error", e1);
 				}
 			}
 		};
-		
+
 		/**
 		 * data source is fixed now
-		 
+
 		dataSourceComboBox.addItemListener(itemListener);
 		*/
 		catalogComboBox.addItemListener(itemListener);
@@ -262,14 +262,14 @@ public class SQLObjectChooser {
 			}
 		}
 	}
-	
+
 	/**
 	 * replace the combobox items and set the enable/disable state according to
 	 * the size of items, enable if the items size > 0. also set the selected item
 	 * if the selectedItem >= 0
-	 * we don't want to just reset the combobox model, because we may have 
+	 * we don't want to just reset the combobox model, because we may have
 	 * listener on the combobox.
-	 * @param comboBox   the JcomboBox, all item in it will be removed 
+	 * @param comboBox   the JcomboBox, all item in it will be removed
 	 * @param items      List of the item that we want to put in the combobox
 	 * @param selectedIndex the selectedItem after new items in place.
 	 */
@@ -331,5 +331,5 @@ public class SQLObjectChooser {
 	public SQLDatabase getDb() {
 		return db;
 	}
-	
+
 }
