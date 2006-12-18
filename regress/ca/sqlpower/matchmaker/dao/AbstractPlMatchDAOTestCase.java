@@ -40,6 +40,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		nonPersistingProperties.add("lastUpdateDate");
 		nonPersistingProperties.add("session");
         nonPersistingProperties.add("matchCriteriaGroups");
+        nonPersistingProperties.add("tableMergeRules");
         
         // tested explicitly elsewhere
         nonPersistingProperties.add("sourceTable");

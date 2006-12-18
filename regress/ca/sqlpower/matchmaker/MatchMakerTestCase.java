@@ -20,6 +20,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
@@ -86,8 +87,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			}
 		}
 		// Second pass get a copy make sure all of 
-		// the origional mutable objects are different
-		// but have the same values
+		// the origional mutable objects returned from getters are different
+		// between the two objects, but have the same values. 
 		MatchMakerObject duplicate = mmo.duplicate(mmo.getParent(),session);
 		for (PropertyDescriptor property : settableProperties) {
 			if (propertiesToIgnoreForDuplication.contains(property.getName())) continue;
@@ -172,6 +173,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		} else if (property.getPropertyType() == List.class) {
 		    ((List)oldVal).add("Test");
 		    return oldVal;
+		} else if (property.getPropertyType() == SQLIndex.class ) {
+			((SQLIndex) oldVal).setName("modified index");
+			return oldVal;
 		} else {
 			throw new RuntimeException("This test case lacks the ability to modify values for "
 					+ property.getName() + " (type "
@@ -203,7 +207,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				{
 					Object newVal = getNewDifferentValue(mmo, property, oldVal);
 
-                    assertFalse("Old value and new value are equivalent for class "+property.getPropertyType()+" of property "+property.getName(),
+                    assertFalse("Old value and new value are equivalent for class "+property.getPropertyType()+" of property "+property.getName() +" old ["+oldVal+"] new ["+newVal+"]",
                             oldVal == null? oldVal == newVal:oldVal.equals(newVal));
 					int oldChangeCount = listener.getAllEventCounts();
 
@@ -324,7 +328,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		    newVal = new Match();
 		    ((Match) newVal).setName("Fake_Match_"+System.currentTimeMillis());
 		} else if (property.getPropertyType() == SQLIndex.class) {
-			return new SQLIndex();
+			return new SQLIndex("new index",false,"",IndexType.HASHED,"");
 		} else {
 			throw new RuntimeException("This test case lacks a value for "
 					+ property.getName() + " (type "

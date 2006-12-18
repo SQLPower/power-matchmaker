@@ -29,10 +29,13 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	private TestingMatchMakerSession session;
 
     protected void setUp() throws Exception {
+    	// The following two are ignored because they are to be used only by hibernate
+    	// so they don't throw events
         propertiesToIgnoreForEventGeneration.add("matchCriteriaGroups");
+        propertiesToIgnoreForEventGeneration.add("tableMergeRules");
+        // Ignored because they are delegates to support functions for the chached table class
         propertiesToIgnoreForEventGeneration.add("sourceTableCatalog");
         propertiesToIgnoreForEventGeneration.add("sourceTableSchema");
-        propertiesToIgnoreForEventGeneration.add("sourceTableIndex");
         propertiesToIgnoreForEventGeneration.add("sourceTableName");
         propertiesToIgnoreForEventGeneration.add("resultTableCatalog");
         propertiesToIgnoreForEventGeneration.add("resultTableSchema");
