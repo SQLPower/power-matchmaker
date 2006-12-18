@@ -21,15 +21,62 @@ public class MMODuplicateValidator implements Validator {
 
     private static final Logger logger = Logger.getLogger(MMODuplicateValidator.class);
     
+    /**
+     * The parent of the object to lookup duplicates
+     */
     private MatchMakerObject parent;
-    private List<Action> actionsToDisable;
-    private String dupErrorMessage;
     
+    
+    /**
+     * A list of actions to disable in certain failing cases
+     */
+    private List<Action> actionsToDisable;
+    
+    /**
+     * The name of the JComponent to aid in displaying proper error messages
+     */
+    private final String fieldName;
+    
+    /**
+     * The maximum characters the JComponent name allows, if no limit, it's a negative number
+     */
+    private final int maxCharacters;
+    
+
+    /**
+     * This validator works by checking if the input is a duplicate of any child's name of
+     * the passed in parent MatchMakerObject and checking on character size limits,
+     * if there is no limit input a negative number for maxCharacters.  
+     * The validator also gets a list of action to enable and disable when appropiate as well.
+     * 
+     * @param parent the parent MatchMakerObject of the validating MatchMakerObject
+     * @param actionsToDisable a list of actions to disable under failing circumstances
+     * @param fieldName the name of the JComponent being validated
+     * @param maxCharacters the restriction on how long the JComponent could be, if no limit
+     * specify a negative number
+     */
     public MMODuplicateValidator(MatchMakerObject parent, List<Action> actionsToDisable,
-    		String dupErrorMessage){
+            String fieldName){
+        this(parent, actionsToDisable, fieldName, -1);
+    }
+    
+    /**
+     * This validator works by checking if the input is a duplicate of any child's name of
+     * the passed in parent MatchMakerObject.  The validator also gets a list of action
+     * to enable and disable when appropiate as well.  This constructor assumes that the field
+     * can accept an infinite amount of characters
+     * 
+     * @param parent the parent MatchMakerObject of the validating MatchMakerObject
+     * @param actionsToDisable a list of actions to disable under failing circumstances
+     * @param fieldName the name of the JComponent being validated
+     * specify a negative number
+     */
+    public MMODuplicateValidator(MatchMakerObject parent, List<Action> actionsToDisable,
+            String fieldName, final int maxCharacters){
         this.parent = parent;
         this.actionsToDisable = actionsToDisable;
-        this.dupErrorMessage = dupErrorMessage;
+        this.fieldName = fieldName;
+        this.maxCharacters = maxCharacters;
     }
     
     
@@ -40,7 +87,14 @@ public class MMODuplicateValidator implements Validator {
             return ValidateResult.createValidateResult(Status.OK, 
                     "");
         }
-        
+
+        if (maxCharacters > 0){
+            if (value.length() > maxCharacters){
+                setComponentsEnabled(false);
+                return ValidateResult.createValidateResult(Status.FAIL, fieldName + " cannot be longer than "
+                        + maxCharacters + " characters long");
+            }
+        }
         if (!parent.allowsChildren()){
             return ValidateResult.createValidateResult(Status.FAIL, 
                     "Cannot add children to "+parent.getClass());
@@ -49,7 +103,7 @@ public class MMODuplicateValidator implements Validator {
             if (mmo.getName().equals(value)){
                 setComponentsEnabled(false);
                 return ValidateResult.createValidateResult(Status.FAIL, 
-                        dupErrorMessage);
+                        "Cannot have duplicate " + fieldName);
             }
         }
         setComponentsEnabled(true);

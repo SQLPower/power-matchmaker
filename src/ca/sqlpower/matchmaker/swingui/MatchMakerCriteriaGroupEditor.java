@@ -114,7 +114,8 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	}
 
 	private class MatchGroupNameValidator implements Validator {
-		public ValidateResult validate(Object contents) {
+		private static final int MAX_GROUP_NAME_CHAR = 30;
+        public ValidateResult validate(Object contents) {
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
@@ -123,7 +124,10 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 					match.getMatchCriteriaGroupByName(groupId.getText()) != null ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
 						"Match group name is invalid or already exists.");
-			}
+			} else if (value.length() > MAX_GROUP_NAME_CHAR){
+			    return ValidateResult.createValidateResult(Status.FAIL, 
+                        "Match group name cannot be more than " + MAX_GROUP_NAME_CHAR + " characters long");
+            }
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
