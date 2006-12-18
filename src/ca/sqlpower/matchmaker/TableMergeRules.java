@@ -4,6 +4,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.ddl.DDLUtils;
 
 /**
  *
@@ -116,7 +117,7 @@ public class TableMergeRules
 	public SQLTable getSourceTable() {
 		return cachableTable.getSourceTable();
 	}
-
+	
 	public String getTableName() {
 		return cachableTable.getTableName();
 	}
@@ -199,6 +200,15 @@ public class TableMergeRules
         } else {
             setParent(grandparent.getMatchCriteriaGroupFolder());
         }
+    }
+    
+    @Override
+    public String getName() {
+    	if (getSourceTable() != null) {
+    		return DDLUtils.toQualifiedName(getSourceTable()); 
+    	} else {
+    		return null;
+    	}
     }
 	
 }
