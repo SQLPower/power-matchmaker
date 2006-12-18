@@ -31,6 +31,15 @@ public class CachableTable {
     private String tableName;
     private SQLTable cachedTable;
 
+    /**
+     * Create a new cachable table.
+     * 
+     * Requres and abstract match maker object for event generation and
+     * as a way to get the session and the database out of the session
+     * So these need to be accessable from the match maker object.
+     * 
+     * propertyName is the name the property change events use for events
+     */
     CachableTable(AbstractMatchMakerObject mmo,String propertyName) {
 		this.propertyName = propertyName;
 		this.mmo = mmo;

@@ -87,16 +87,32 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      */
     private MatchMakerFolder<MatchMakerCriteriaGroup> matchCriteriaGroupFolder =
     	new MatchMakerFolder<MatchMakerCriteriaGroup>();
-
+    
+    /** 
+     * Container for the TableMergeRules 
+     * We have these folders so that we don't have to deal with multiple child types
+     */ 
+    private MatchMakerFolder<TableMergeRules> tableMergeRulesFolder =
+    	new MatchMakerFolder<TableMergeRules>();
+    
+    /**
+     * Cached source table 
+     */
     private final CachableTable sourceTablePropertiesDelegate;
+    /**
+     * Cached result table 
+     */
     private final CachableTable resultTablePropertiesDelegate;
+    /**
+     * Cached xref table 
+     */
     private final CachableTable xrefTablePropertiesDelegate;
 
     /**
      * The unique index of the source table that we're using.  Not necessarily one of the
      * unique indices defined in the database; the user can pick an arbitrary set of columns.
      */
-    private SQLIndex sourceTableIndex;
+    private TableIndex sourceTableIndex;
 
 	public Match() {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
@@ -105,6 +121,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         matchCriteriaGroupFolder.setName("Match Criteria Groups");
         this.addChild(matchCriteriaGroupFolder);
         setType(MatchMode.FIND_DUPES);
+        sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
 	}
 	
 	/**
@@ -496,6 +513,39 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     }
 
     /**
+     * Add a TableMergeRule rule to the TableMergeRules folder of this match
+     */
+    public void addTableMergeRule(TableMergeRules rule) {
+        // The folder will fire the child inserted event
+        tableMergeRulesFolder.addChild(rule);
+    }
+
+    /**
+     * Removes the TableMergeRule rule from the TableMergeRules folder of this match
+     */
+    public void removeTableMergeRule(TableMergeRules rule) {
+        // The folder will fire the child removed event
+    	tableMergeRulesFolder.removeChild(rule);
+    }
+
+    public List<TableMergeRules> getTableMergeRules(){
+        return tableMergeRulesFolder.getChildren();
+    }
+
+    /**
+     *  Allow bulk replacement of all table merge rules for this match
+     *  This should only be used by the DAOs. Assumes that you never
+     *  pass in a null list 
+     */
+    public void setTableMergeRules(List<TableMergeRules> rules){
+    	tableMergeRulesFolder.setChildren(rules);
+    }
+
+    public MatchMakerFolder<TableMergeRules> getTableMergeRulesFolder() {
+        return tableMergeRulesFolder;
+    }
+    
+    /**
      * Adds a match criteria group to the criteria group folder of this match
      *
      * @param criteriaGroup
@@ -583,38 +633,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         sourceTablePropertiesDelegate.setTableName(sourceTableName);
     }
 
-    /**
-     * Hooks the index up to the source table, attempts to resolve the
-     * column names to actual SQLColumn references on the source table,
-     * and then returns it!
-     */
-    public SQLIndex getSourceTableIndex() throws ArchitectException {
-    	if (getSourceTable() != null && sourceTableIndex != null) {
-    		sourceTableIndex.setParent(getSourceTable().getIndicesFolder());
-    		resolveSourceTableIndexColumns(sourceTableIndex);
-    	}
-    	return sourceTableIndex;
-    }
-
-    /**
-     * Attempts to set the column property of each index column in the
-     * sourceTableColumns.  The UserType for SQLIndex can't do this because
-     * the source table isn't populated yet when it's invoked.
-     */
-    private void resolveSourceTableIndexColumns(SQLIndex si) throws ArchitectException {
-    	SQLTable st = getSourceTable();
-    	for (SQLIndex.Column col : (List<SQLIndex.Column>) si.getChildren()) {
-    		SQLColumn actualColumn = st.getColumnByName(col.getName());
-    		col.setColumn(actualColumn);
-    	}
-	}
-
-	public void setSourceTableIndex(SQLIndex index) {
-    	final SQLIndex oldIndex = sourceTableIndex;
-    	sourceTableIndex = index;
-    	getEventSupport().firePropertyChange("sourceTableIndex", oldIndex, index);
-    }
-
     /////// The result table delegate methods //////
     public SQLTable getResultTable() {
         return resultTablePropertiesDelegate.getSourceTable();
@@ -667,6 +685,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
-    
-    
+	public SQLIndex getSourceTableIndex() throws ArchitectException {
+		return sourceTableIndex.getTableIndex();
+	}
+	public void setSourceTableIndex(SQLIndex index) {
+		sourceTableIndex.setTableIndex(index);
+	}
 }

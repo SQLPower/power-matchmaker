@@ -1,5 +1,8 @@
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 
 /**
@@ -29,8 +32,15 @@ public class TableMergeRules
 	 */
 	private CachableTable cachableTable = new CachableTable(this, "table");;
 	
+	
+	/**
+	 * The index for table 
+	 */
+	
+	private TableIndex tableIndex;
+	
 	public TableMergeRules() {
-
+		tableIndex = new TableIndex(this,cachableTable,"tableIndex");
 	}
 
 	@Override
@@ -66,6 +76,13 @@ public class TableMergeRules
 		return true;
 	}
 
+	/**
+	 * Creates a new table merge rules with the parent and session that 
+	 * are passed in.
+	 * 
+	 * It makes a copy of all non mutable objects.  Except the index when the
+	 * index is the default index on the table.
+	 */
 	public TableMergeRules duplicate(MatchMakerObject parent, MatchMakerSession session) {
 		TableMergeRules newMergeStrategy = new TableMergeRules();
 		newMergeStrategy.setParent(parent);
@@ -76,6 +93,15 @@ public class TableMergeRules
 		newMergeStrategy.setTableName(getTableName());
 		newMergeStrategy.setCatalogName(getCatalogName());
 		newMergeStrategy.setSchemaName(getSchemaName());
+		try {
+			if (tableIndex.isUserCreated()) {
+				newMergeStrategy.setTableIndex(new SQLIndex(getTableIndex()));
+			} else {
+				newMergeStrategy.setTableIndex(getTableIndex());
+			}
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
+		}
 		return newMergeStrategy;
 	}
 
@@ -139,5 +165,13 @@ public class TableMergeRules
 		buf.append("Seq No->'").append(getSeqNo()).append("' ");
 		buf.append("isDeletedDup()->'").append(isDeleteDup()).append("' ");
 		return buf.toString();
+	}
+
+	public SQLIndex getTableIndex() throws ArchitectException {
+		return tableIndex.getTableIndex();
+	}
+
+	public void setTableIndex(SQLIndex index) {
+		tableIndex.setTableIndex(index);
 	}
 }

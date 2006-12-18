@@ -3,16 +3,22 @@ package ca.sqlpower.matchmaker;
 public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 
 	TableMergeRules tableMergeRules;
+	private TestingMatchMakerSession testingMatchMakerSession = new TestingMatchMakerSession();
 
 	public TableMergeRuleTest() {
 		propertiesToIgnoreForEventGeneration.add("tableName");
 		propertiesToIgnoreForEventGeneration.add("schemaName");
 		propertiesToIgnoreForEventGeneration.add("catalogName");
 		propertiesToIgnoreForDuplication.add("sourceTable");
+		// The index is either mutable or unequal so ignore it in this test
+		propertiesToIgnoreForDuplication.add("tableIndex");
 	}
 	@Override
 	protected TableMergeRules getTarget() {
-		return new TableMergeRules();
+		
+		TableMergeRules tmr = new TableMergeRules();
+		tmr.setSession(testingMatchMakerSession);
+		return tmr;
 	}
 
 	public void testEquals() {
