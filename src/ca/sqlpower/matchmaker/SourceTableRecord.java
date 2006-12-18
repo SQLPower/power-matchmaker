@@ -235,23 +235,18 @@ public class SourceTableRecord {
      * Compiles and returns a list of SourceTableRecord that this SourceTableRecord
      * is linked to by both incoming and outgoing edges.  If it is linked to 
      * another SourceTableRecord by both an incoming edge and outgoing edge, it 
-     * will only be counted once
+     * will only be counted once.
+     * 
      * @return a list of SourceTableRecord that is being linked to by this SourceTableRecord
      */
-    public Collection<SourceTableRecord> getAdjacentNodes(){
-        Collection<SourceTableRecord> adjacentNodes = new ArrayList<SourceTableRecord>();
-        for (PotentialMatchRecord pmr: getInboundEdges()){
-             SourceTableRecord incomingNode = pmr.getDuplicate();
-             if (!adjacentNodes.contains(incomingNode)){
-                 adjacentNodes.add(incomingNode);
-             }
+    public Collection<SourceTableRecord> getAdjacentNodes() {
+        Collection<SourceTableRecord> adjacentNodes = new HashSet<SourceTableRecord>();
+        for (PotentialMatchRecord pmr : getInboundEdges()) {
+            adjacentNodes.add(pmr.getOriginalLhs());
         }
-        for (PotentialMatchRecord pmr: getOutboundEdges()){
-            SourceTableRecord outgoingNode = pmr.getMaster();
-            if (!adjacentNodes.contains(outgoingNode)){
-                adjacentNodes.add(outgoingNode);
-            }            
-       }
-       return adjacentNodes;
+        for (PotentialMatchRecord pmr : getOutboundEdges()) {
+            adjacentNodes.add(pmr.getOriginalRhs());
+        }
+        return adjacentNodes;
     }
 }
