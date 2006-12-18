@@ -1,32 +1,18 @@
-package ca.sqlpower.matchmaker.swingui;
+package ca.sqlpower.matchmaker.swingui.graphViewer;
 
 import java.awt.Rectangle;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import ca.sqlpower.matchmaker.MatchPool;
-import ca.sqlpower.matchmaker.swingui.graphViewer.GraphLayoutCache;
 
-public class MatchPoolLayoutCache implements GraphLayoutCache {
+public class DefaultGraphLayoutCache implements GraphLayoutCache {
 
-    private final MatchPool pool;
     private final Map<Object, Rectangle> positions = new HashMap<Object, Rectangle>(16,0.5f);
-    
-    public MatchPoolLayoutCache(final MatchPool pool) {
-        this.pool = pool;
 
-        // arrange nodes in a silly grid to start
-        int sqrt = (int) Math.sqrt(pool.getSourceTableRecords().size());
-        Iterator it = pool.getSourceTableRecords().iterator();
-        int y = 0;
-        while (it.hasNext()) {
-            for (int x = 0; x < sqrt && it.hasNext(); x++) {
-                Object node = it.next();
-                positions.put(node, new Rectangle(x * 100, y, 90, 30));
-            }
-            y += 50;
-        }
+    /**
+     * Creates a layout cache with no positions assigned to any nodes.
+     */
+    public DefaultGraphLayoutCache() {
     }
 
     public Rectangle getBounds() {
