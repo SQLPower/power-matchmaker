@@ -120,6 +120,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	    xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
         matchCriteriaGroupFolder.setName("Match Criteria Groups");
         this.addChild(matchCriteriaGroupFolder);
+        this.addChild(tableMergeRulesFolder);
         setType(MatchMode.FIND_DUPES);
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
 	}

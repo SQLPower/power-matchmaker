@@ -25,7 +25,7 @@
 			<column name="TABLE_NAME" length="30" />
 		</property>
 			<property name="tableIndex" type="ca.sqlpower.matchmaker.util.ListToSQLIndex">
-			<column name="PK_COLUMN" length="30" />
+			<column name="primary_key_index" length="30" />
 		    <column name="index_column_name0" length="50" />
 		    <column name="index_column_name1" length="50" />
 		    <column name="index_column_name2" length="50" />
@@ -54,9 +54,8 @@
 		<property name="lastUpdateOsUser" type="string" access="field">
 			<column name="LAST_update_OS_USER" length="30" />
 		</property>
-		<many-to-one name="parent"
-			class="ca.sqlpower.matchmaker.Match" update="false"
-			insert="false" fetch="select">
+		<many-to-one name="parentMatch"
+			class="ca.sqlpower.matchmaker.Match" fetch="select">
 			<column name="MATCH_OID" not-null="true" />
 		</many-to-one>
 	</class>

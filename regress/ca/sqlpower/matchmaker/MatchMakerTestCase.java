@@ -196,6 +196,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
         propertiesToIgnoreForEventGeneration.add("oid");
         propertiesToIgnoreForEventGeneration.add("session");
+        propertiesToIgnoreForEventGeneration.add("parentMatch");
 		for (PropertyDescriptor property : settableProperties) {
 			if (propertiesToIgnoreForEventGeneration.contains(property.getName())) continue;
 			Object oldVal;
