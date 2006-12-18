@@ -113,7 +113,7 @@ public class ViewBuilderDialog extends JDialog {
         wherePasteButton = new JButton(wherePasteAction);
         testButton = new JButton(testAction);
         viewButton = new JButton (viewAction);
-        cancelButton = new JButton (cancelAction);
+        cancelButton = new JButton(cancelAction);
         okButton = new JButton (okAction);
 
         JLabel viewLabel = new JLabel("View Table:");
@@ -215,28 +215,32 @@ public class ViewBuilderDialog extends JDialog {
     Action viewAction = new AbstractAction("View"){
 
         public void actionPerformed(ActionEvent e) {
+        	// XXX do something
         }
 
     };
     Action testAction = new AbstractAction("Test"){
 
         public void actionPerformed(ActionEvent e) {
+        	// XXX do something
         }
 
     };
+
     Action cancelAction = new AbstractAction("Cancel"){
 
         public void actionPerformed(ActionEvent e) {
+        	// XXX should use ASutils.makeDialogCancellable and do something??
+        	ViewBuilderDialog.this.dispose();
         }
 
     };
     Action okAction = new AbstractAction("OK"){
 
         public void actionPerformed(ActionEvent e) {
+        	// XXX Do Something!
         }
 
     };
-
-
 
 }
