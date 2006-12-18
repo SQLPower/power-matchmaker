@@ -61,7 +61,7 @@ public class MatchPool {
     public Match getMatch() {
         return match;
     }
-            
+   
     public List<PotentialMatchRecord> getAllPotentialMatchByMatchCriteriaGroup
                         (String matchGroupName) {
         List<PotentialMatchRecord> matchList =
@@ -95,6 +95,13 @@ public class MatchPool {
         potentialMatches.removeAll(getAllPotentialMatchByMatchCriteriaGroup(groupName));        
     }
     
+    /**
+     * Executes SQL statements to initialize nodes {@link SourceTableRecord} and 
+     * edges {@link PotentialMatchRecord}
+     * 
+     * @throws SQLException if an unexpected error occurred running the SQL statements
+     * @throws ArchitectException if SQLObjects fail to populate its children
+     */
     public void findAll() throws SQLException, ArchitectException {
         SQLTable resultTable = match.getResultTable();
         Connection con = null;
