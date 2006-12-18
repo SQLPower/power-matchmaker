@@ -193,6 +193,15 @@ public class SourceTableRecord {
         return potentialMatches;
     }
     
+    /**
+     * Finds all the PotentialMatchRecord that has this SourceTableRecord recognized as
+     * the head node.  
+     * IMPORTANT: Note that just because this SourceTableRecord is the head, 
+     * it does not mean necessary mean that it is the master record in the database.   
+     * see {@link PotentialMatchRecord#getMaster()} method comment
+     * 
+     * @return a list PotentialMatchRecord that has this SourceTableRecord as its head
+     */
     public Collection<PotentialMatchRecord> getInboundEdges(){
         Collection<PotentialMatchRecord> inboundEdges = new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : potentialMatches){
@@ -203,6 +212,15 @@ public class SourceTableRecord {
         return inboundEdges;
     }
     
+    /**
+     * Finds all the PotentialMatchRecord that has this SourceTableRecord recognized as
+     * the tail node.
+     * IMPORTANT: Note that just because this SourceTableRecord is the tail, 
+     * it does not mean necessary mean that it is the slave record in the database.   
+     * see {@link PotentialMatchRecord#getMaster()} method comment 
+     *  
+     * @return a list PotentialMatchRecord that has this SourceTableRecord as its tail
+     */
     public Collection<PotentialMatchRecord> getOutboundEdges(){
         Collection<PotentialMatchRecord> inboundEdges = new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : potentialMatches){
@@ -213,6 +231,13 @@ public class SourceTableRecord {
         return inboundEdges;
     }
     
+    /**
+     * Compiles and returns a list of SourceTableRecord that this SourceTableRecord
+     * is linked to by both incoming and outgoing edges.  If it is linked to 
+     * another SourceTableRecord by both an incoming edge and outgoing edge, it 
+     * will only be counted once
+     * @return a list of SourceTableRecord that is being linked to by this SourceTableRecord
+     */
     public Collection<SourceTableRecord> getAdjacentNodes(){
         Collection<SourceTableRecord> adjacentNodes = new ArrayList<SourceTableRecord>();
         for (PotentialMatchRecord pmr: getInboundEdges()){
