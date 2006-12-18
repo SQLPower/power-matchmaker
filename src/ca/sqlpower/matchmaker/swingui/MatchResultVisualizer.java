@@ -1,7 +1,6 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -12,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -28,8 +28,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.layout.AbstractLayoutNode;
-import ca.sqlpower.architect.layout.ArchitectLayout;
-import ca.sqlpower.architect.layout.FruchtermanReingoldForceLayout;
 import ca.sqlpower.architect.layout.LayoutEdge;
 import ca.sqlpower.architect.layout.LayoutNode;
 import ca.sqlpower.architect.swingui.ASUtils;
@@ -37,9 +35,11 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.matchmaker.graph.ConnectedComponentFinder;
 import ca.sqlpower.matchmaker.graph.GraphModel;
 import ca.sqlpower.matchmaker.graph.MatchPoolDotExport;
 import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
+import ca.sqlpower.matchmaker.swingui.graphViewer.DefaultGraphLayoutCache;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphLayoutCache;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
 
@@ -132,10 +132,12 @@ public class MatchResultVisualizer {
         MatchPool pool = new MatchPool(match);
         pool.findAll();
         GraphModel<SourceTableRecord, PotentialMatchRecord> model = new MatchPoolGraphModel(pool);
-        GraphLayoutCache layoutCache = new MatchPoolLayoutCache(pool);
+        GraphLayoutCache layoutCache = new DefaultGraphLayoutCache();
         viewer = new GraphViewer<SourceTableRecord, PotentialMatchRecord>(model, layoutCache);
         viewer.setNodeRenderer(new SourceTableNodeRenderer());
         viewer.setEdgeRenderer(new PotentialMatchEdgeRenderer(viewer));
+
+        doAutoLayout();
         
         JPanel viewerSettingsPanel = new JPanel(new FlowLayout());
         viewerSettingsPanel.add(new JButton(viewerAutoLayoutAction));
@@ -177,19 +179,24 @@ public class MatchResultVisualizer {
         edges = new HashMap<PotentialMatchRecord, LayoutEdge>();
         nodes = new HashMap<SourceTableRecord, LayoutNode>();
         final GraphModel<SourceTableRecord, PotentialMatchRecord> model = viewer.getModel();
-        ArchitectLayout layout = new FruchtermanReingoldForceLayout();
-        for (SourceTableRecord str : model.getNodes()) {
-            makeLayoutNodeAdapter(str);
+        
+        ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord> ccf =
+            new ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord>();
+        Set<Set<SourceTableRecord>> components = ccf.findConnectedComponents(model);
+        
+        int y = 0;
+        for (Set<SourceTableRecord> component : components) {
+            int x = 0;
+            
+            logger.debug("Positioning component with "+component.size()+" nodes");
+            
+            for (SourceTableRecord node : component) {
+                viewer.setNodeBounds(node, new Rectangle(x, y, 90, 30));
+                x += 130;
+            }
+            y += 50;
         }
-        Dimension preferredSize = viewer.getPreferredSize();
-        layout.setup(nodes.values(), edges.values(),
-                new Rectangle(0, 0, preferredSize.width, preferredSize.height));
-        int frame = 0;
-        while (!layout.isDone()) {
-            layout.nextFrame();
-            System.out.println("Frame"+(frame++));
-
-        }
+        
         viewer.repaint();
     }
     
