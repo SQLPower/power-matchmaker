@@ -1,7 +1,9 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -41,6 +43,7 @@ import ca.sqlpower.matchmaker.graph.MatchPoolDotExport;
 import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
 import ca.sqlpower.matchmaker.swingui.graphViewer.DefaultGraphLayoutCache;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphLayoutCache;
+import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
 
 /**
@@ -179,6 +182,8 @@ public class MatchResultVisualizer {
         edges = new HashMap<PotentialMatchRecord, LayoutEdge>();
         nodes = new HashMap<SourceTableRecord, LayoutNode>();
         final GraphModel<SourceTableRecord, PotentialMatchRecord> model = viewer.getModel();
+        final GraphNodeRenderer<SourceTableRecord> renderer = viewer.getNodeRenderer();
+        final int vgap = 10;
         
         ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord> ccf =
             new ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord>();
@@ -186,15 +191,43 @@ public class MatchResultVisualizer {
         
         int y = 0;
         for (Set<SourceTableRecord> component : components) {
-            int x = 0;
             
             logger.debug("Positioning component with "+component.size()+" nodes");
+            double angleStep = Math.PI * 2.0 / component.size();
+            double currentAngle = 0.0;
+            double radius = 100.0;
+            double x = radius;
+            Rectangle componentBounds = null;
+            Map<SourceTableRecord, Rectangle> componentNodeBounds = new HashMap<SourceTableRecord, Rectangle>();
             
             for (SourceTableRecord node : component) {
-                viewer.setNodeBounds(node, new Rectangle(x, y, 90, 30));
-                x += 130;
+                double xx = radius * Math.cos(currentAngle);
+                double yy = radius * Math.sin(currentAngle);
+                
+                Dimension prefSize = renderer.getGraphNodeRendererComponent(node).getPreferredSize();
+                
+                final Rectangle nodeBounds = new Rectangle(
+                        (int) xx, (int) yy,
+                        prefSize.width, prefSize.height);
+                if (componentBounds == null) {
+                    componentBounds = new Rectangle(nodeBounds);
+                } else {
+                    componentBounds.add(nodeBounds);
+                }
+                componentNodeBounds.put(node, nodeBounds);
+                
+                currentAngle += angleStep;
             }
-            y += 50;
+            
+            Point translate = new Point(-componentBounds.x, -componentBounds.y);
+            
+            for (SourceTableRecord node : component) {
+                final Rectangle bounds = componentNodeBounds.get(node);
+                bounds.translate(translate.x, y + translate.y);
+                viewer.setNodeBounds(node, bounds);
+            }
+            
+            y += componentBounds.height + vgap;
         }
         
         viewer.repaint();
