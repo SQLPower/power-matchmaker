@@ -96,7 +96,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
     private TranslateGroupParent tgp;
-    
+
 	private Session hSession;
 
     /**
@@ -124,7 +124,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         this.context = context;
 		database = new SQLDatabase(ds);
 		dbUser = ds.getUser();
-        
+
 		final Connection con = database.getConnection();
 		final DatabaseMetaData dbmd = con.getMetaData();
         logger.info("Connected to repository database.");
@@ -132,19 +132,23 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         logger.info("Database product version: "+dbmd.getDatabaseProductVersion());
         logger.info("Database driver name: "+dbmd.getDriverName());
         logger.info("Database driver version: "+dbmd.getDriverVersion());
-        
+
         try {
             defParam = new DefaultParameters(con, null, ds.getPlSchema());
             plSchemaVersion = defParam.getPLSchemaVersion();
         } catch (SQLException e) {
-            SQLException exception = new SQLException(
-                    "Couldn't determine Power*Loader schema version for database " + ds.getDisplayName() + "\n" + 
+            String plSchema = ds.getPlSchema();
+            if (plSchema == null || plSchema.length() == 0) {
+            	plSchema = "not set";
+            }
+			SQLException exception = new SQLException(
+                    "Couldn't determine Power*Loader schema version for database " + ds.getDisplayName() + ".\n" +
                     "Please check that you have set the PL Schema Owner correctly in the DataSource Configuration\n" +
-                    "(PL Schema Owner currently " + ds.getPlSchema() + ").");
+                    "(PL Schema Owner currently " + plSchema + ").");
             exception.setNextException(e);
             throw exception;
         }
-        
+
         if (plSchemaVersion.compareTo(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION) < 0) {
             throw new PLSchemaException(
                     "The MatchMaker requires a newer version of the PL Schema" +
@@ -198,19 +202,19 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             }
         }
     }
-    
+
     public void addWarningListener(WarningListener l) {
         synchronized (warningListeners) {
             warningListeners.add(l);
         }
     }
-    
+
     public void removeWarningListener(WarningListener l) {
         synchronized (warningListeners) {
             warningListeners.remove(l);
         }
     }
-    
+
 
     public PlFolder findFolder(String foldername) {
         for (PlFolder folder : getCurrentFolderParent().getChildren()){
@@ -336,7 +340,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		}
 		return folders;
 	}
-	
+
 	/**
 	 * get all the folders that have backups.
 	 * TODO implement backups
@@ -351,7 +355,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName)
     throws ArchitectException {
-    	logger.debug("Session.findSQLTableByName:" + 
+    	logger.debug("Session.findSQLTableByName:" +
     			catalog + "." + schema + "." + tableName);
     	if (tableName == null || tableName.length() == 0) return null;
 		SQLDatabase currentDB = getDatabase();
@@ -367,7 +371,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		}
     }
 
-    public boolean tableExists(String catalog, String schema, 
+    public boolean tableExists(String catalog, String schema,
     		String tableName) throws ArchitectException {
     	return (findPhysicalTableByName(catalog,schema,tableName) != null);
     }
