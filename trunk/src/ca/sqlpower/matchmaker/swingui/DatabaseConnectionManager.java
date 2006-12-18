@@ -43,7 +43,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * You won't need to create one of these on your own.
  * Use {@link SwingSessionContextImpl#showDatabaseConnectionManager()}.
- * 
+ *
  */
 public class DatabaseConnectionManager
 implements DBConnectionCallBack, DBConnectionUniDialog {
@@ -56,7 +56,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	private final SwingSessionContextImpl sessionContext;
 	private final NewDatabaseConnectionAction newDatabaseConnectionAction;
     private final JPanel panel;
-    
+
     /**
      * The Dialog that contains all the GUI;
      */
@@ -74,21 +74,21 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
             JOptionPane.showMessageDialog(d, "Help is not available yet.");
 		}
 	};
-	
+
 	private final Action auxLoginAction = new AbstractAction("Aux Login"){
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-            JOptionPane.showMessageDialog(d, 
+            JOptionPane.showMessageDialog(d,
             		"This action is not implemented yet.");
 		}
 	};
-	
+
 	private final Action jdbcDriversAction = new AbstractAction("JDBC Drivers"){
 
 		public void actionPerformed(ActionEvent e) {
 			// TODO Auto-generated method stub
-            JOptionPane.showMessageDialog(d, 
+            JOptionPane.showMessageDialog(d,
             		"This action is not implemented yet.");
 		}
 	};
@@ -128,7 +128,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
                     }
                 }
             };
-            
+
 
 			Action cancelAction = new AbstractAction() {
 				public void actionPerformed(ActionEvent evt) {
@@ -143,9 +143,9 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 					"Edit Database Connection",
 					ArchitectPanelBuilder.OK_BUTTON_LABEL,
 					okAction, cancelAction);
-            
+
 			setNewConnectionDialog(dialog);
-            
+
             dialog.pack();
 			dialog.setLocationRelativeTo(d);
 			dialog.setVisible(true);
@@ -207,7 +207,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		panel = createPanel();
 	}
 
-    
+
     /**
      * Makes sure this database connection manager is visible,
      * focused, and in a dialog owned by the given owner.
@@ -220,7 +220,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
             d.requestFocus();
             return;
         }
-        
+
         if (d != null) {
             d.dispose();
         }
@@ -236,18 +236,18 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
                     "Owner has to be a Frame or Dialog.  You provided a " +
                     (owner == null ? null : owner.getClass().getName()));
         }
-        
+
         currentOwner = owner;
         newDatabaseConnectionAction.setComponentParent(d);
         d.setTitle("Database Connection Manager");
-        d.getContentPane().add(panel);  
+        d.getContentPane().add(panel);
         d.pack();
         d.setLocationRelativeTo(owner);
         ASUtils.makeJDialogCancellable(d, closeAction);
         d.setVisible(true);
         d.requestFocus();
     }
-    
+
 	private JPanel createPanel() {
 
 		FormLayout layout = new FormLayout(
@@ -378,9 +378,9 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
     }
 
     public synchronized void setNewConnectionDialog(JDialog d) {
-        newConnectionDialog = d;        
+        newConnectionDialog = d;
     }
-    
+
 	public DataSourceCollection getPlDotIni() {
 		return plDotIni;
 	}
@@ -388,8 +388,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 	public void setPlDotIni(DataSourceCollection plDotIni) {
 		this.plDotIni = plDotIni;
 	}
-   
-    
+
 	private class DSTableMouseListener implements MouseListener {
 
 		public void mouseClicked(MouseEvent evt) {

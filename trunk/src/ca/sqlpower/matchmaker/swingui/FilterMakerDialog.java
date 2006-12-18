@@ -47,7 +47,7 @@ public class FilterMakerDialog extends JDialog {
     private JTextField conditionTextField;
     private JComboBox comparisonOperator;
     private JComboBox columnName2;
-    private JButton pasteButton;    
+    private JButton pasteButton;
     private JButton andButton;
     private JButton orButton;
     private JButton notButton;
@@ -74,12 +74,12 @@ public class FilterMakerDialog extends JDialog {
     private SQLTable matchSourceTable;
 
     /**
-     * 
+     *
      * @param parent The parent frame
      * @param returnText the JTextArea that the filter will put text in
      * @param matchSourceTable the sqltable the filter is being used for
      * @param trueForTextField true if the last input component should be JTextArea
-     *                      false if the last input component should be a dropdown  
+     *                      false if the last input component should be a dropdown
      */
 
     public FilterMakerDialog(JFrame parent,
@@ -94,14 +94,14 @@ public class FilterMakerDialog extends JDialog {
         buildUI();
         addWindowListener(windowsListener);
     }
-    
+
     /**
-     * 
+     *
      * @param parent The parent dialog
      * @param returnText the JTextArea that the filter will put text in
      * @param matchSourceTable the sqltable the filter is being used for
      * @param trueForTextField true if the last input component should be JTextArea
-     *                      false if the last input component should be a dropdown  
+     *                      false if the last input component should be a dropdown
      */
 
     public FilterMakerDialog(JDialog parent,
@@ -186,7 +186,7 @@ public class FilterMakerDialog extends JDialog {
         if (trueForTextField){
             conditionTextField = new JTextField();
             pb.add(conditionTextField, cc.xy(4,6));
-        } else{            
+        } else {
             try {
                 columnName2 = new JComboBox(new ColumnComboBoxModel(matchSourceTable));
             } catch (ArchitectException e) {
@@ -239,7 +239,7 @@ public class FilterMakerDialog extends JDialog {
         filterText.setText(t.getText());
     }
 
-    
+
     /*
      * Adds the operators into the setupOperator Dropdown
      */
@@ -259,9 +259,9 @@ public class FilterMakerDialog extends JDialog {
     private Action pasteAction = new AbstractAction("Paste"){
 
         public void actionPerformed(ActionEvent e) {
-            /* We will put the text into a StringBuffer instead of appending the 
+            /* We will put the text into a StringBuffer instead of appending the
              * text to the JTextArea right away because of undo manager purposes.
-             * If each component is appended at a time, undo will recognize it 
+             * If each component is appended at a time, undo will recognize it
              * as many events whereas just appending it once would just be one
              * undo event
              */
@@ -306,7 +306,7 @@ public class FilterMakerDialog extends JDialog {
     private static boolean isTextType(int sqlType) {
         return (sqlType == Types.CHAR || sqlType == Types.VARCHAR);
     }
-    
+
     private Action andAction = new AbstractAction("AND"){
 
         public void actionPerformed(ActionEvent e) {
@@ -330,7 +330,6 @@ public class FilterMakerDialog extends JDialog {
     private Action testAction = new AbstractAction("Test"){
 
         public void actionPerformed(ActionEvent e) {
-            // TODO Auto-generated method stub
             StringBuffer sql = new StringBuffer();
             sql.append("SELECT 1 FROM ");
             sql.append(DDLUtils.toQualifiedName(matchSourceTable.getCatalogName(),
@@ -349,12 +348,12 @@ public class FilterMakerDialog extends JDialog {
                 rs = stmt.executeQuery(sql.toString());
 
                 JOptionPane.showMessageDialog(FilterMakerDialog.this,
-                        "Your filter forms a vaild SQL statement",
-                        "Vaild filter",
+                        "Your filter forms a valid SQL statement",
+                        "Valid filter",
                         JOptionPane.INFORMATION_MESSAGE);
             } catch (SQLException e1) {
                 ASUtils.showExceptionDialogNoReport(FilterMakerDialog.this,
-                        "SQL Error", e1);
+                        "Database Problem", e1);
             } catch (ArchitectException e1) {
                 ASUtils.showExceptionDialogNoReport(FilterMakerDialog.this,
                         "Connection Error", e1);
