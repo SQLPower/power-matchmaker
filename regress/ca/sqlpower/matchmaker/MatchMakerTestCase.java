@@ -21,6 +21,7 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
@@ -155,6 +156,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				return Match.MatchMode.FIND_DUPES;
 			} else {
 				return Match.MatchMode.BUILD_XREF;
+			}
+		} else if (property.getPropertyType() == MergeActionType.class) {
+			if (oldVal == MergeActionType.AUGMENT) {
+				return MergeActionType.AVG;
+			} else {
+				return MergeActionType.AUGMENT;
 			}
 		} else if (property.getPropertyType() == MatchMakerObject.class) {
 			((MatchMakerObject) oldVal).setName("Testing New Name");
@@ -315,7 +322,13 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			} else {
 				newVal = Match.MatchMode.BUILD_XREF;
 			}
-		} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
+		} else if (property.getPropertyType() == MergeActionType.class) {
+			if (oldVal == MergeActionType.AUGMENT) {
+				newVal = MergeActionType.AVG;
+			} else {
+				newVal = MergeActionType.AUGMENT;
+			}
+		}else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
 			newVal = new MatchMakerTranslateGroup();
 		} else if (property.getPropertyType() == MatchMakerObject.class) {
 			newVal = new TestingAbstractMatchMakerObject();
