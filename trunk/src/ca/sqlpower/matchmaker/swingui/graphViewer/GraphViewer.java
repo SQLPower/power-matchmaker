@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.swingui.graphViewer;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -71,6 +72,15 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
 	public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        //Save the default colour to be used later
+        Color defaultColor = g2.getColor();
+        
+        //Set the colour to white and paint a rectangle so the GUI paints properly
+        g2.setColor(Color.WHITE);
+        //XXX: the x and y co-ordinate should be calculated instead of just using (0,0)
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.setColor(defaultColor);
+        
         for (E edge : model.getEdges()) {
             JComponent er = edgeRenderer.getGraphEdgeRendererComponent(edge);
             er.setSize(er.getPreferredSize());
@@ -95,7 +105,7 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
 	@Override
 	public Dimension getPreferredSize() {
 		Rectangle g = layoutCache.getBounds();
-		Dimension d = new Dimension((int)(g.height*zoom), (int)(g.width*zoom));
+		Dimension d = new Dimension((int)(g.width*zoom), (int)(g.height*zoom));
 		return d;
 	}
 	
