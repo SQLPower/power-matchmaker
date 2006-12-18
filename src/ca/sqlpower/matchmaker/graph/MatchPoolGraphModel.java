@@ -1,4 +1,4 @@
-package ca.sqlpower.matchmaker.swingui;
+package ca.sqlpower.matchmaker.graph;
 
 import java.util.Collection;
 
@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.matchmaker.swingui.graphViewer.GraphModel;
 
 public class MatchPoolGraphModel implements GraphModel<SourceTableRecord, PotentialMatchRecord> {
 

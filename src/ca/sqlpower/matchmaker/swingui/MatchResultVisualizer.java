@@ -37,9 +37,10 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.matchmaker.graph.GraphModel;
 import ca.sqlpower.matchmaker.graph.MatchPoolDotExport;
+import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphLayoutCache;
-import ca.sqlpower.matchmaker.swingui.graphViewer.GraphModel;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
 
 /**

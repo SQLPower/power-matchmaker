@@ -1,4 +1,4 @@
-package ca.sqlpower.matchmaker.swingui.graphViewer;
+package ca.sqlpower.matchmaker.graph;
 
 import java.util.Collection;
 
