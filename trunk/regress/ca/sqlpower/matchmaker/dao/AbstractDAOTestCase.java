@@ -17,7 +17,9 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -282,6 +284,8 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						newVal = new Date();
 					} else if (property.getPropertyType() == Short.class) {
 						newVal = new Short("10");
+					} else if (property.getPropertyType() == SQLIndex.class) {
+						newVal = new SQLIndex("new index",false,"",IndexType.HASHED,"");
 					} else {
 						throw new RuntimeException("This test case lacks a value for "
 								+ property.getName() + " (type "

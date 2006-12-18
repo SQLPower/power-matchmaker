@@ -174,4 +174,31 @@ public class TableMergeRules
 	public void setTableIndex(SQLIndex index) {
 		tableIndex.setTableIndex(index);
 	}
+	
+	/**
+     * Gets the grandparent of this object in the MatchMaker object tree.  If the parent
+     * (a folder) is null, returns null.
+     */
+    public Match getParentMatch() {
+        MatchMakerObject parentFolder = getParent();
+        if (parentFolder == null) {
+            return null;
+        } else {
+            return (Match) parentFolder.getParent();
+        }
+    }
+
+    /**
+     * Sets the parent of this object to be the matach criteria group folder of the given match object
+     *
+     * this will fire a <b>parent</b> changed event not a parent match event
+     */
+    public void setParentMatch(Match grandparent) {
+        if (grandparent == null) {
+            setParent(null);
+        } else {
+            setParent(grandparent.getMatchCriteriaGroupFolder());
+        }
+    }
+	
 }
