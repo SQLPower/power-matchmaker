@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelEvent;
@@ -71,9 +72,9 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	private JPanel groupEditPanel;
     private JTextField groupId;
     private JLabel matches;
-    private JTextField description;
+    private JTextArea description;
     private JTextField matchPercent;
-    private FilterComponentsPanel filterPanel;
+    private FilterComponents filterPanel;
     private JCheckBox active;
 
     private JButton newMatchCriterion;
@@ -243,11 +244,11 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         groupId.setName("Group ID");
         matches = new JLabel();
 
-        description = new JTextField();
+        description = new JTextArea();
         matchPercent = new JTextField();
         matchPercent.setColumns(3);
         matchPercent.setName("Percent");
-        filterPanel = new FilterComponentsPanel();
+        filterPanel = new FilterComponents(swingSession.getFrame());
         filterPanel.getFilterTextArea().setName("Filter");
         active = new JCheckBox();
         active.setSelected(true);
@@ -273,11 +274,13 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 		pb.add(new JLabel("Match Group"), cl.xy(2,4), groupId, cc.xy(4,4));
 		pb.add(new JLabel("Match Percent"), cl.xy(6,4),matchPercent, cc.xy(8,4));
 		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel("Description"), cl.xy(2,6),description , cc.xyw(4,6,5));
+		pb.appendRow("40dlu");
+		pb.add(new JLabel("Description"), cl.xy(2,6),new JScrollPane(description) , cc.xy(4,6,"f,f"));
 		pb.appendRelatedComponentsGapRow();
-		pb.appendRow("pref");
-		pb.add(new JLabel("Filter Criteria"), cl.xy(2,8),filterPanel, cc.xyw(4,8,5));
+		pb.appendRow("40dlu");
+		pb.add(new JLabel("Filter Criteria"), cl.xy(2,8));
+        pb.add(new JScrollPane(filterPanel.getFilterTextArea()), cc.xy(4,8, "f,f"));
+        pb.add(filterPanel.getEditButton(), cc.xy(6,8));
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("pref");
 		groupEditPanel = pb.getPanel();
