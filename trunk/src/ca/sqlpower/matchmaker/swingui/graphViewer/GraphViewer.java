@@ -13,6 +13,8 @@ import javax.swing.Scrollable;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.graph.GraphModel;
+
 public class GraphViewer<V, E> extends JPanel implements Scrollable {
 	/**
      * The amount of space moved up or down one mouse click on the scroll pane does
