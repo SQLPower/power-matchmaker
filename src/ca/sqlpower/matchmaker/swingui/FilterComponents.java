@@ -1,6 +1,5 @@
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 
@@ -8,44 +7,42 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLTable;
 
+import com.jgoodies.forms.layout.CellConstraints;
 
 
-public class FilterComponentsPanel extends JPanel {
 
-	private static Logger logger = Logger.getLogger(FilterComponentsPanel.class);
+public class FilterComponents{
 
-    JTextArea filterTextArea;
-    JButton editButton;
-    SQLTable table;
+	private static Logger logger = Logger.getLogger(FilterComponents.class);
 
+    private JTextArea filterTextArea;
+    private JButton editButton;
+    private SQLTable table;
+    private Container parent;
 
-    public FilterComponentsPanel(){
-        buildUI();
+    public FilterComponents(Container parent){
+        this(null, parent);
     }
 
-    public FilterComponentsPanel(SQLTable t){
+    public FilterComponents(SQLTable t, Container parent){
     	table = t;
+        this.parent= parent;
         buildUI();
     }
 
 	private void buildUI() {
-		setLayout(new BorderLayout());
+        CellConstraints cc = new CellConstraints();		
         filterTextArea = new JTextArea();
         editButton = new JButton(new AbstractAction("Edit"){
 
             public void actionPerformed(ActionEvent e) {
-            	Container parent = SwingUtilities.getWindowAncestor(FilterComponentsPanel.this);
-            	FilterMakerDialog filterMaker = null;
-
+                FilterMakerDialog filterMaker = null;
             	// We set the getfilterTextArea to be uneditable so we don't run
             	// into conflicts with the filterMaker, the filterMaker will
             	// reenable its editability automatically
@@ -71,8 +68,6 @@ public class FilterComponentsPanel extends JPanel {
 
         filterTextArea.setWrapStyleWord(true);
         filterTextArea.setLineWrap(true);
-        add(new JScrollPane(filterTextArea), BorderLayout.CENTER);
-        add(editButton, BorderLayout.EAST);
 	}
 
     /*
@@ -88,15 +83,18 @@ public class FilterComponentsPanel extends JPanel {
 
 	public void setTable(SQLTable table) {
 		if (this.table != table) {
-			firePropertyChange("this.table", this.table, table);
 			this.table = table;
 		}
 	}
 
 	public void setFilterTextArea(JTextArea filterTextArea) {
-		if (this.filterTextArea != filterTextArea) {
-			firePropertyChange("this.filterTextArea", this.filterTextArea, filterTextArea);
+		if (this.filterTextArea != filterTextArea) {			
 			this.filterTextArea = filterTextArea;
 		}
 	}
+    
+    public JButton getEditButton(){
+        return editButton;
+    }
+    
 }

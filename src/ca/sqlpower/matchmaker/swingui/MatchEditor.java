@@ -103,7 +103,7 @@ public class MatchEditor implements EditorPane {
     private JButton validateMatch;
     private JButton matchResultVisualizerButton;
     private JButton createIndexButton;
-    private FilterComponentsPanel filterPanel;
+    private FilterComponents filterPanel;
     private MatchValidation matchValidation;
     private MatchResultVisualizer matchResultVisualizer;
     
@@ -369,7 +369,7 @@ public class MatchEditor implements EditorPane {
         		resultChooser.getSchemaTerm().getText());
         resultTableName.setName("Result Table");
 
-        filterPanel = new FilterComponentsPanel();
+        filterPanel = new FilterComponents(swingSession.getFrame());
 
         matchType.setModel(new DefaultComboBoxModel(Match.MatchMode.values()));
 
@@ -431,7 +431,8 @@ public class MatchEditor implements EditorPane {
 		pb.add(createIndexButton, cc.xy(6,row,"f,f"));
 		row+=2;
 		pb.add(new JLabel("Filter:"), cc.xy(2,row,"r,t"));
-		pb.add(filterPanel, cc.xy(4,row,"f,f"));
+		pb.add(new JScrollPane(filterPanel.getFilterTextArea()), cc.xy(4,row,"f,f"));
+        pb.add(filterPanel.getEditButton(), cc.xy(6,row));
 		row+=2;
 		pb.addTitle("Output Table", cc.xy(2, row));
 		row+=2;
