@@ -906,7 +906,8 @@ public class MatchEditor implements EditorPane {
     }
 
     private class MatchResultTableNameValidator implements Validator {
-
+        private static final int MAX_CHAR_RESULT_TABLE = 30;
+        
 		public ValidateResult validate(Object contents) {
 			final Pattern sqlIdentifierPattern =
 				Pattern.compile("[a-z_][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
@@ -915,7 +916,10 @@ public class MatchEditor implements EditorPane {
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.WARN,
 						"Match result table name is required");
-			} else if (!sqlIdentifierPattern.matcher(value).matches()) {
+			} else if (value.length() > MAX_CHAR_RESULT_TABLE){
+			    return ValidateResult.createValidateResult(Status.FAIL, "The result table" +
+                        "cannot be longer than " +  MAX_CHAR_RESULT_TABLE + " characters long");
+            } else if (!sqlIdentifierPattern.matcher(value).matches()) {
 				return ValidateResult.createValidateResult(Status.WARN,
 						"Result table name is not a valid SQL identifier");
 			} else if (sourceChooser.getTableComboBox().getSelectedItem() != null ) {

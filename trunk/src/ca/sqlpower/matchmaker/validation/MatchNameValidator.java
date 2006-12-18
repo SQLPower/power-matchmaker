@@ -10,14 +10,14 @@ public class MatchNameValidator implements Validator {
 
 	private MatchMakerSwingSession session;
 	private Match match;
+    private static final int MAX_CHAR_MATCH_NAME = 80;
 
 	public MatchNameValidator(MatchMakerSwingSession session, Match match) {
 		this.session = session;
 		this.match = match;
 	}
 
-	public ValidateResult validate(Object contents) {
-
+	public ValidateResult validate(Object contents) {	    
 		String value = (String)contents;
 		if ( value == null || value.length() == 0 ) {
 			return ValidateResult.createValidateResult(Status.FAIL,
@@ -26,7 +26,10 @@ public class MatchNameValidator implements Validator {
 					!session.isThisMatchNameAcceptable(value) ) {
 			return ValidateResult.createValidateResult(Status.FAIL,
 					"Match name is invalid or already exists.");
-		}
+		} else if (value.length() > MAX_CHAR_MATCH_NAME){
+		    return ValidateResult.createValidateResult(Status.FAIL, "Match ID cannot be more than "+
+                    MAX_CHAR_MATCH_NAME + " characters long");
+        }
 		return ValidateResult.createValidateResult(Status.OK, "");
 	}
 }
