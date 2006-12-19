@@ -122,6 +122,7 @@ public class SourceTableRecord {
                 Object ival = keyValues.get(col);
                 if (!first) sql.append(" AND ");
                 sql.append(icol.getName());
+                sql.append("=");
                 if (ival == null) {
                     sql.append(" IS NULL");
                 } else if (ival instanceof Date) {
