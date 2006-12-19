@@ -333,13 +333,13 @@ public class MatchEditor implements EditorPane {
             if (matchResultVisualizer == null) {
                 try {
                     matchResultVisualizer = new MatchResultVisualizer(match, swingSession);
+                    swingSession.setCurrentEditorComponent(matchResultVisualizer);
                 } catch (Exception ex) {
                     ASUtils.showExceptionDialog(panel, "Couldn't create match result visualizer component",
                             ex, new ArchitectExceptionReportFactory());
 
                 }
             }
-            matchResultVisualizer.showDialog();
         }
     };
 
