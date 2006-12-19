@@ -97,12 +97,20 @@ public class MatchPool {
     
     /**
      * Executes SQL statements to initialize nodes {@link SourceTableRecord} and 
-     * edges {@link PotentialMatchRecord}
+     * edges {@link PotentialMatchRecord}.
+     * <p>
+     * IMPORTANT NOTE ABOUT SIDE EFFECTS: before searching the table, this method will
+     * attempt to remove redundant records from the match result table.  Its name implies
+     * that it only reads the database.  This is not the case.  For details, see
+     * {@link #deleteRedundantMatchRecords()}.
      * 
      * @throws SQLException if an unexpected error occurred running the SQL statements
      * @throws ArchitectException if SQLObjects fail to populate its children
      */
     public void findAll() throws SQLException, ArchitectException {
+        
+        deleteRedundantMatchRecords();
+        
         SQLTable resultTable = match.getResultTable();
         Connection con = null;
         Statement stmt = null;
@@ -206,5 +214,58 @@ public class MatchPool {
     
     public Collection<SourceTableRecord> getSourceTableRecords() {
         return Collections.unmodifiableCollection(sourceTableRecords.values());
+    }
+    
+    /**
+     * For historical reasons, the match engine populates the result table
+     * with two copies of each match record: one a-b, and one b-a.  We don't
+     * want to deal with this duplication (isn't this a de-duping tool?), so
+     * this method is designed to de-dupe the de-duping table.
+     * @throws SQLException if there is a problem executing the DELETE statement
+     * @throws ArchitectException if the source table index can't be populated
+     *
+     */
+    private void deleteRedundantMatchRecords() throws SQLException, ArchitectException {
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        String lastSQL = null;
+        try {
+            con = session.getConnection();
+            stmt = con.createStatement();
+            StringBuilder sql = new StringBuilder();
+
+            sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(match.getResultTable())).append(" M1");
+            sql.append("\n WHERE EXISTS( SELECT 1 FROM ").append(DDLUtils.toQualifiedName(match.getResultTable())).append(" M2");
+            sql.append("\n  WHERE ");
+            for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
+                if (i > 0) sql.append("\n   AND ");
+                sql.append("M1.DUP_CANDIDATE_1").append(i).append(" = M2.DUP_CANDIDATE_2").append(i);
+                sql.append("\n AND ");
+                sql.append("M1.DUP_CANDIDATE_2").append(i).append(" = M2.DUP_CANDIDATE_1").append(i);
+                sql.append("\n AND ");
+                sql.append("M1.DUP_CANDIDATE_1").append(i).append(" < M2.DUP_CANDIDATE_1").append(i);
+            }
+            sql.append(")");
+            
+            lastSQL = sql.toString();
+            stmt.executeUpdate(lastSQL);
+            
+            con.commit();
+            
+        } catch (SQLException ex) {
+            logger.error("Error in query: "+lastSQL, ex);
+            session.handleWarning(
+                    "Error in SQL Statement!" +
+                    "\nMessage: "+ex.getMessage() +
+                    "\nSQL State: "+ex.getSQLState() +
+                    "\nQuery: "+lastSQL);
+            throw ex;
+        } finally {
+            if (rs != null) try { rs.close(); } catch (SQLException ex) { logger.error("Couldn't close result set", ex); }
+            if (stmt != null) try { stmt.close(); } catch (SQLException ex) { logger.error("Couldn't close statement", ex); }
+            if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
+        }
+
     }
 }
