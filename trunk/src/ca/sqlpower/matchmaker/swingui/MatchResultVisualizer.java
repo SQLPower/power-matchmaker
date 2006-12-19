@@ -79,6 +79,20 @@ public class MatchResultVisualizer implements EditorPane {
         
     };
 
+    private class SetMasterAction extends AbstractAction {
+        
+        private final SourceTableRecord master;
+        
+        SetMasterAction(SourceTableRecord master) {
+            super("Master");
+            this.master = master;
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            master.makeMaster();
+        }
+    }
+    
     private class MyGraphSelectionListener implements GraphSelectionListener<SourceTableRecord, PotentialMatchRecord> {
 
         public void nodeDeselected(SourceTableRecord node) {
@@ -89,11 +103,12 @@ public class MatchResultVisualizer implements EditorPane {
         public void nodeSelected(SourceTableRecord node) {
             try {
                 recordViewer.removeAll();
+                recordViewer.add(SourceTableRecordViewer.headerPanel(match));
                 BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
                     new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
                 List<SourceTableRecord> reachableNodes = bfs.performSearch(graphModel, node);
                 for (SourceTableRecord str : reachableNodes) {
-                    recordViewer.add(new SourceTableRecordViewer(str, node).getPanel());
+                    recordViewer.add(new SourceTableRecordViewer(str, node, new JButton(new SetMasterAction(node))).getPanel());
                 }
             } catch (Exception ex) {
                 ASUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex, new MatchMakerQFAFactory());
@@ -230,6 +245,7 @@ public class MatchResultVisualizer implements EditorPane {
         
         viewer.repaint();
     }
+    
     
     // ======= EditorPane stuff ========
 
