@@ -1,13 +1,14 @@
 package ca.sqlpower.matchmaker.swingui.graphViewer;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 
 
-public class DefaultGraphLayoutCache implements GraphLayoutCache {
+public class DefaultGraphLayoutCache<V, E> implements GraphLayoutCache<V, E> {
 
-    private final Map<Object, Rectangle> positions = new HashMap<Object, Rectangle>(16,0.5f);
+    private final Map<V, Rectangle> positions = new HashMap<V, Rectangle>(16,0.5f);
 
     /**
      * Creates a layout cache with no positions assigned to any nodes.
@@ -29,7 +30,7 @@ public class DefaultGraphLayoutCache implements GraphLayoutCache {
         return new Rectangle(minx, miny, maxx-minx, maxy-miny);
     }
 
-    public Rectangle getNodeBounds(Object node) {
+    public Rectangle getNodeBounds(V node) {
         Rectangle bounds = positions.get(node);
         if (bounds == null) {
             return null;
@@ -38,8 +39,17 @@ public class DefaultGraphLayoutCache implements GraphLayoutCache {
         }
     }
 
-    public void setNodeBounds(Object node, Rectangle nodePos) {
+    public void setNodeBounds(V node, Rectangle nodePos) {
         positions.put(node, new Rectangle(nodePos));
+    }
+
+    public V getNodeAt(Point p) {
+        for (Map.Entry<V, Rectangle> entry : positions.entrySet()) {
+            if (entry.getValue().contains(p)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
 }
