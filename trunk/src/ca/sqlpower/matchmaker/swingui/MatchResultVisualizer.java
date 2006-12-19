@@ -9,9 +9,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,9 +27,6 @@ import javax.swing.JTextField;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.layout.AbstractLayoutNode;
-import ca.sqlpower.architect.layout.LayoutEdge;
-import ca.sqlpower.architect.layout.LayoutNode;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchPool;
@@ -117,9 +112,6 @@ public class MatchResultVisualizer {
         
     };
 
-    private Map<PotentialMatchRecord, LayoutEdge> edges;
-    private Map<SourceTableRecord, LayoutNode> nodes;
-
     public MatchResultVisualizer(Match match, MatchMakerSwingSession session) throws SQLException, ArchitectException {
         this.match = match;
         this.session = session;
@@ -179,8 +171,6 @@ public class MatchResultVisualizer {
      * by this component.
      */
     public void doAutoLayout() {
-        edges = new HashMap<PotentialMatchRecord, LayoutEdge>();
-        nodes = new HashMap<SourceTableRecord, LayoutNode>();
         final GraphModel<SourceTableRecord, PotentialMatchRecord> model = viewer.getModel();
         final GraphNodeRenderer<SourceTableRecord> renderer = viewer.getNodeRenderer();
         final int hgap = 10;
@@ -197,7 +187,7 @@ public class MatchResultVisualizer {
         
         for (Set<SourceTableRecord> component : components) {
             
-            logger.debug("Positioning component with "+component.size()+" nodes");
+            // lay out the nodes of this component in a circle
             double angleStep = Math.PI * 2.0 / component.size();
             double currentAngle = 0.0;
             double radius = 100.0;
@@ -223,6 +213,8 @@ public class MatchResultVisualizer {
                 currentAngle += angleStep;
             }
             
+            // fit the laid out component under previous component, or in a
+            // new column if nodes won't fit in current column
             Point translate = new Point(-componentBounds.x, -componentBounds.y);
             if (y + componentBounds.height > targetHeight) {
                 y = 0;
@@ -240,107 +232,5 @@ public class MatchResultVisualizer {
         }
         
         viewer.repaint();
-    }
-    
-    private LayoutNode makeLayoutNodeAdapter(SourceTableRecord str) {
-        LayoutNode adapter = nodes.get(str);
-        if (adapter == null) {
-            adapter = new MatchResultLayoutNode(str);
-            nodes.put(str, adapter);
-        }
-        return adapter;
-    }
-    
-    private LayoutEdge makeLayoutEdgeAdapter(PotentialMatchRecord pmr) {
-        LayoutEdge adapter = edges.get(pmr);
-        if (adapter == null) {
-            adapter = new MatchResultLayoutEdge(pmr);
-            edges.put(pmr, adapter);
-        }
-        return adapter;
-    }
-    
-    /**
-     * An adapter for the PotentialMatchRecord's original match pointers,
-     * which are immutable. Does not deal with the LHS/RHS relations that
-     * are mutable.
-     */
-    class MatchResultLayoutEdge implements LayoutEdge {
-        
-        private final LayoutNode head;
-        private final LayoutNode tail;
-        
-        /**
-         * Takes a snapshot of the original LHS and RHS records, which are
-         * immutable, so they don't need to be created dynamically.
-         */
-        MatchResultLayoutEdge(PotentialMatchRecord edge) {
-            head = makeLayoutNodeAdapter(edge.getOriginalLhs());
-            tail = makeLayoutNodeAdapter(edge.getOriginalRhs());
-        }
-        
-        /**
-         * Returns the original LHS of the edge, no matter what.  This
-         * is ok because the original matching edge is not directional.
-         */
-        public LayoutNode getHeadNode() {
-            return head;
-        }
-        
-        /**
-         * Returns the original RHS of the edge, no matter what.  This
-         * is ok because the original matching edge is not directional.
-         */
-        public LayoutNode getTailNode() {
-            return tail;
-        }
-        
-    }
-    
-    class MatchResultLayoutNode extends AbstractLayoutNode {
-        
-        private final SourceTableRecord node;
-        
-        MatchResultLayoutNode(SourceTableRecord node) {
-            if (node == null) throw new NullPointerException("Can't create a LayoutNode proxy for null node");
-            this.node = node;
-        }
-        
-        @Override
-        public String getNodeName() {
-            return node.getKeyValues().toString();
-        }
-        
-        @Override
-        public Rectangle getBounds(Rectangle b) {
-            Rectangle nodeBounds = viewer.getNodeBounds(node);
-            b.x = nodeBounds.x;
-            b.y = nodeBounds.y;
-            return b;
-        }
-        
-        @Override
-        public void setBounds(int x, int y, int width, int height) {
-            viewer.setNodeBounds(node, new Rectangle(x, y, width, height));
-        }
-        
-        @Override
-        public List<LayoutEdge> getInboundEdges() {
-            List<LayoutEdge> inbound = new ArrayList<LayoutEdge>();
-            for (PotentialMatchRecord pmr : viewer.getModel().getInboundEdges(node)) {
-                inbound.add(makeLayoutEdgeAdapter(pmr));
-            }
-            return inbound;
-        }
-        
-        @Override
-        public List<LayoutEdge> getOutboundEdges() {
-            List<LayoutEdge> outbound = new ArrayList<LayoutEdge>();
-            for (PotentialMatchRecord pmr : viewer.getModel().getOutboundEdges(node)) {
-                outbound.add(makeLayoutEdgeAdapter(pmr));
-            }
-            return outbound;
-        }
-        
     }
 }
