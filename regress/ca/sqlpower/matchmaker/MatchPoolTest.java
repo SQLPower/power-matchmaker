@@ -164,7 +164,7 @@ public class MatchPoolTest extends TestCase {
         insertResultTableRecord(con, 1, 2, 15, "Group_One");
         pool.findAll();        
         Set<PotentialMatchRecord> matches = pool.getPotentialMatches();
-        assertEquals(2, matches.size());
+        assertEquals(1, matches.size());
         for (PotentialMatchRecord pmr : matches) {
             assertNotNull(pmr);
             assertNotNull(pmr.getOriginalLhs());
