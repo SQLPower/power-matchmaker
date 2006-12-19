@@ -59,8 +59,11 @@ public class BreadthFirstSearch<V, E> {
      * 
      * @param model
      * @param startingNode
+     * @return the list of nodes discovered, in the order they were discovered
      */
-    public void performSearch(GraphModel<V, E> model, V startingNode) {
+    public List<V> performSearch(GraphModel<V, E> model, V startingNode) {
+        List<V> discoveredNodes = new ArrayList<V>();
+        
         Map<V, Colour> colour = new HashMap<V, Colour>();
         Map<V, Integer> depth = new HashMap<V, Integer>();
         Map<V, V> predecessor = new HashMap<V, V>();
@@ -75,6 +78,7 @@ public class BreadthFirstSearch<V, E> {
         depth.put(startingNode, 0);
         predecessor.put(startingNode, null);
         fireNodeDiscovered(startingNode);
+        discoveredNodes.add(startingNode);
         
         Queue<V> queue = new LinkedList<V>();
         queue.add(startingNode);
@@ -87,11 +91,14 @@ public class BreadthFirstSearch<V, E> {
                     predecessor.put(v, u);
                     queue.add(v);
                     fireNodeDiscovered(v);
+                    discoveredNodes.add(v);
                 }
             }
             queue.remove();
             colour.put(u, Colour.BLACK);
         }
+        
+        return discoveredNodes;
     }
     
     /**
