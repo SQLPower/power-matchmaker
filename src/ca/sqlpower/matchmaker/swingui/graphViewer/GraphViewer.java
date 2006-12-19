@@ -6,6 +6,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -32,15 +36,28 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
 	private GraphModel<V, E> model;
     private GraphNodeRenderer<V> nodeRenderer;
     private GraphEdgeRenderer<E> edgeRenderer;
-    private GraphLayoutCache layoutCache;
-    // don't support selection yet, but will have a GraphSelectionModel
-    // don't support editing yet, but will have GraphNodeEditor and GraphEdgeEditor
-	
+    private GraphLayoutCache<V, E> layoutCache;
+
+    /**
+     * The list of clients interested in changes to the current selection on this graph.
+     */
+    private List<GraphSelectionListener<V, E>> selectionListeners = new ArrayList<GraphSelectionListener<V, E>>();
     
-	public GraphViewer(GraphModel<V, E> model, GraphLayoutCache layoutCache) {
+    /**
+     * The node that is currently selected.  The graph viewer only supports
+     * single selection right now.  If we go to multiple selection, it would
+     * make sense to factor out the selection stuff to a GraphSelectionModel.
+     */
+    private V selectedNode;
+    
+    // don't support editing yet, but will have GraphNodeEditor and GraphEdgeEditor
+	private final GraphMouseListener mouseListener = new GraphMouseListener();
+    
+	public GraphViewer(GraphModel<V, E> model) {
         super();
         this.model = model;
-        this.layoutCache = layoutCache;
+        this.layoutCache = new DefaultGraphLayoutCache<V, E>();
+        addMouseListener(mouseListener);
     }
     
     public GraphEdgeRenderer<E> getEdgeRenderer() {
@@ -161,4 +178,37 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
         layoutCache.setNodeBounds(node, bounds);
     }
 
+    private void fireNodeSelected(V node) {
+        for (int i = selectionListeners.size() - 1; i >= 0; i--) {
+            selectionListeners.get(i).nodeSelected(node);
+        }
+    }
+
+    private void fireNodeDeselected(V node) {
+        for (int i = selectionListeners.size() - 1; i >= 0; i--) {
+            selectionListeners.get(i).nodeDeselected(node);
+        }
+    }
+
+    public void addSelectionListener(GraphSelectionListener<V, E> l) {
+        selectionListeners.add(l);
+    }
+
+    public void removeSelectionListener(GraphSelectionListener<V, E> l) {
+        selectionListeners.remove(l);
+    }
+    
+    private class GraphMouseListener extends MouseAdapter {
+    
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (selectedNode != null) {
+                fireNodeDeselected(selectedNode);
+            }
+            selectedNode = layoutCache.getNodeAt(e.getPoint());
+            if (selectedNode != null) {
+                fireNodeSelected(selectedNode);
+            }
+        }
+    }
 }
