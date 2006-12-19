@@ -10,6 +10,7 @@ import java.awt.RenderingHints;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
 
 import org.apache.log4j.Logger;
 
@@ -112,11 +113,16 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
 	}
 	
 	public Dimension getPreferredScrollableViewportSize() {
-		return getPreferredSize();
+        final int height = 400;
+		return new Dimension((int) (1.618 * height), height);
 	}
 
 	public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-		return SCROLL_UNIT;
+		if (orientation == SwingConstants.HORIZONTAL) {
+		    return visibleRect.width - SCROLL_UNIT;
+        } else {
+            return visibleRect.height - SCROLL_UNIT;
+        }
 	}
 
 	public boolean getScrollableTracksViewportHeight() {

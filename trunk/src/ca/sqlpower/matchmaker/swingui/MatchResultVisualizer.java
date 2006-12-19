@@ -183,20 +183,24 @@ public class MatchResultVisualizer {
         nodes = new HashMap<SourceTableRecord, LayoutNode>();
         final GraphModel<SourceTableRecord, PotentialMatchRecord> model = viewer.getModel();
         final GraphNodeRenderer<SourceTableRecord> renderer = viewer.getNodeRenderer();
+        final int hgap = 10;
         final int vgap = 10;
+        final int targetHeight = viewer.getPreferredScrollableViewportSize().height;
         
         ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord> ccf =
             new ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord>();
         Set<Set<SourceTableRecord>> components = ccf.findConnectedComponents(model);
         
         int y = 0;
+        int x = 0;
+        int nextx = 0;
+        
         for (Set<SourceTableRecord> component : components) {
             
             logger.debug("Positioning component with "+component.size()+" nodes");
             double angleStep = Math.PI * 2.0 / component.size();
             double currentAngle = 0.0;
             double radius = 100.0;
-            double x = radius;
             Rectangle componentBounds = null;
             Map<SourceTableRecord, Rectangle> componentNodeBounds = new HashMap<SourceTableRecord, Rectangle>();
             
@@ -220,11 +224,16 @@ public class MatchResultVisualizer {
             }
             
             Point translate = new Point(-componentBounds.x, -componentBounds.y);
+            if (y + componentBounds.height > targetHeight) {
+                y = 0;
+                x = nextx + hgap;
+            }
             
             for (SourceTableRecord node : component) {
                 final Rectangle bounds = componentNodeBounds.get(node);
-                bounds.translate(translate.x, y + translate.y);
+                bounds.translate(x + translate.x, y + translate.y);
                 viewer.setNodeBounds(node, bounds);
+                nextx = Math.max(nextx, bounds.x + bounds.width);
             }
             
             y += componentBounds.height + vgap;
