@@ -1,6 +1,6 @@
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.architect.ArchitectException;
+import java.awt.Color;
 
 /**
  * group of matchmaker criteria, the child type is MatchmakerCriteria
@@ -13,21 +13,46 @@ public class MatchMakerCriteriaGroup
 
 	private Long oid;
 	private String desc;
-	private Short matchPercent;		// NULL or something from 0-100, but not guaranteed
-	private String filter;			// SQL filter for process match criteria group
-	private boolean active = true;			// enable or disable a group for the engine
-
-	// default constructor
-	public MatchMakerCriteriaGroup( ) {
+    
+    /**
+     * The user's confidence that this group of match criteria produces
+     * actual matches.  Will usually be NULL or in the range 0-100, but
+     * this range is not enforced.
+     */
+	private Short matchPercent;
+    
+    /**
+     * A SQL Where fragment that restricts this set of criteria to a subset
+     * of the whole match table.
+     */
+	private String filter;
+    
+    /**
+     * Marks whether or not the match engine should process this match group when
+     * running a match process.  True means it will be processed.
+     */
+	private boolean active = true;
+    
+    /**
+     * The colour associated with this group of criteria by the user.  Useful
+     * in the GUI.
+     */
+	private Color colour;
+    
+	/**
+     * Constructor that sets up a default match group.
+	 */
+	public MatchMakerCriteriaGroup() {
 	}
 
     public Long getOid() {
         return oid;
     }
+
     public void setOid(Long oid) {
         this.oid = oid;
     }
-
+    
     /**
      * Gets the grandparent of this object in the MatchMaker object tree.  If the parent
      * (a folder) is null, returns null.
@@ -94,12 +119,21 @@ public class MatchMakerCriteriaGroup
 		getEventSupport().firePropertyChange("filter", oldValue, filter);
 	}
 
+    public Color getColour() {
+        return colour;
+    }
+    
+    public void setColour(Color groupColor) {
+        Color oldValue = this.colour;
+        this.colour = groupColor;
+        getEventSupport().firePropertyChange("colour", oldValue, groupColor);
+    }
+    
 	@Override
 	public int hashCode() {
         int result = ((getName() == null) ? 0 : getName().hashCode());
         return result;
 	}
-
 
 	@Override
 	public boolean equals(Object obj) {
@@ -137,15 +171,16 @@ public class MatchMakerCriteriaGroup
 	/**
 	 * duplicate all the properties of the matchmakerCriteria group 
 	 * and it's children, except oid and parent
+     * 
 	 * @return new matchmaker group object with the same properties
 	 * and children
-	 * @throws ArchitectException 
 	 */
-	public MatchMakerCriteriaGroup duplicate(MatchMakerObject parent,MatchMakerSession s){
+	public MatchMakerCriteriaGroup duplicate(MatchMakerObject parent, MatchMakerSession s){
 		MatchMakerCriteriaGroup group = new MatchMakerCriteriaGroup();
 		group.setActive(getActive());
 		group.setDesc(getDesc()==null?null:new String(getDesc()));
 		group.setFilter(getFilter()==null?null:new String(getFilter()));
+        group.setColour(getColour() == null ? null : new Color(getColour().getRGB()));
 		group.setMatchPercent(getMatchPercent()==null?null:new Short(getMatchPercent()));
 		group.setName(getName()==null?null:new String(getName()));
 		group.setSession(s);

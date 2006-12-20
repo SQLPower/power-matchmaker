@@ -44,6 +44,9 @@
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="ACTIVE_IND" length="1" />
 		</property>
+		<property name="colour" type="ca.sqlpower.matchmaker.dao.hibernate.CustomColourType">
+			<column name="colour"/>
+		</property>
 		<bag name="children" cascade="all-delete-orphan"
 			inverse="true" lazy="false" fetch="subselect">
 			<key>

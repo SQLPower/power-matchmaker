@@ -1,6 +1,11 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -32,9 +37,49 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 		if (value instanceof Match) {
 			setIcon(matchIcon);
 		} else if (value instanceof MatchMakerCriteriaGroup) {
-			setIcon(groupIcon);
+            MatchMakerCriteriaGroup group = (MatchMakerCriteriaGroup) value;
+            if (group.getColour() == null) {
+                setIcon(groupIcon);
+            } else {
+                setIcon(new ColoredIcon(groupIcon, group.getColour()));
+            }
 		}
 		return this;
 	}
 
+    /**
+     * Applies a colour tint over the given icon when painted.
+     */
+    private class ColoredIcon implements Icon {
+
+        private Icon sourceIcon;
+        private Color tint;
+        
+        public ColoredIcon(Icon source, Color tint) {
+            this.sourceIcon = source;
+            this.tint = tint;
+        }
+
+        public int getIconHeight() {
+            return sourceIcon.getIconHeight();
+        }
+
+        public int getIconWidth() {
+            return sourceIcon.getIconWidth();
+        }
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            BufferedImage img = new BufferedImage(getIconWidth(), getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = (Graphics2D) img.getGraphics();
+            sourceIcon.paintIcon(c, g2, 0, 0);
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_ATOP, 0.5f));
+            g2.setColor(tint);
+            g2.fillRect(0, 0, getIconWidth(), getIconHeight());
+            g2.dispose();
+            
+            g.drawImage(img, x, y, null);
+        }
+     
+        
+    }
 }

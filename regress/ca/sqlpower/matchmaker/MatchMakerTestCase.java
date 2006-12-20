@@ -1,4 +1,5 @@
 package ca.sqlpower.matchmaker;
+import java.awt.Color;
 import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
@@ -183,6 +184,13 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		} else if (property.getPropertyType() == SQLIndex.class ) {
 			((SQLIndex) oldVal).setName("modified index");
 			return oldVal;
+        } else if (property.getPropertyType() == Color.class) {
+            if (oldVal == null) {
+                return new Color(0xFAC157);
+            } else {
+                Color oldColor = (Color) oldVal;
+                return new Color( (oldColor.getRGB()+0xF00) % 0x1000000);
+            }
 		} else {
 			throw new RuntimeException("This test case lacks the ability to modify values for "
 					+ property.getName() + " (type "
@@ -343,6 +351,13 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		    ((Match) newVal).setName("Fake_Match_"+System.currentTimeMillis());
 		} else if (property.getPropertyType() == SQLIndex.class) {
 			return new SQLIndex("new index",false,"",IndexType.HASHED,"");
+        } else if (property.getPropertyType() == Color.class) {
+            if (oldVal == null) {
+                newVal = new Color(0xFAC157);
+            } else {
+                Color oldColor = (Color) oldVal;
+                newVal = new Color( (oldColor.getRGB()+0xF00) % 0x1000000);
+            }
 		} else {
 			throw new RuntimeException("This test case lacks a value for "
 					+ property.getName() + " (type "
