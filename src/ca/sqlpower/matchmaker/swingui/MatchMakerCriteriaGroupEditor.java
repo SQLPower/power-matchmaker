@@ -30,7 +30,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelEvent;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.apache.log4j.Logger;
@@ -427,30 +426,6 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 
 	public JComponent getPanel() {
 		return panel;
-	}
-
-    /**
-     * A renderer for presenting a JCheckBox in a JTable cell.  It makes sure the check box
-     * looks right (correct foreground and background colour depending on the cell's selection
-     * state) in the table.
-     */
-	private class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
-
-	    CheckBoxRenderer() {
-	        setHorizontalAlignment(JLabel.CENTER);
-	    }
-
-	    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-	        if (isSelected) {
-	            setForeground(table.getSelectionForeground());
-	            setBackground(table.getSelectionBackground());
-	        } else {
-	            setForeground(table.getForeground());
-	            setBackground(table.getBackground());
-	        }
-	        setSelected((value != null && ((Boolean) value).booleanValue()));
-	        return this;
-	    }
 	}
 
 	private class CriteriaTableValidator implements Validator {
