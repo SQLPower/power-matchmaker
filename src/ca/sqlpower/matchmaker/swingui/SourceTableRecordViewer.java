@@ -32,6 +32,13 @@ public class SourceTableRecordViewer {
         panel.setBackground(Color.WHITE);
         panel.add(topButton);
         
+        JLabel label = new JLabel();  // just a label to read defaults from
+        Color differentForeground = label.getForeground();
+        Color sameForeground = differentForeground.brighter().brighter();
+        Font font = label.getFont();
+        Font sameFont = font.deriveFont(Font.PLAIN);
+        Font differentFont = font.deriveFont(Font.BOLD);
+        
         Iterator<Object> viewIt = view.fetchValues().iterator();
         Iterator<Object> masterIt = master.fetchValues().iterator();
         while (viewIt.hasNext()) {
@@ -48,9 +55,12 @@ public class SourceTableRecordViewer {
             
             JLabel colValueLabel = new JLabel(String.valueOf(viewVal));
             
-            if (!same) {
-                Font font = colValueLabel.getFont();
-                colValueLabel.setFont(font.deriveFont(Font.BOLD).deriveFont((float) (font.getSize2D() +0.5)));
+            if (same) {
+                colValueLabel.setFont(sameFont);
+                colValueLabel.setForeground(sameForeground);
+            } else{
+                colValueLabel.setFont(differentFont);
+                colValueLabel.setForeground(differentForeground);
             }
             
             panel.add(colValueLabel);
