@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.dao;
 
+import java.awt.Color;
 import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -284,8 +285,15 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						newVal = new Date();
 					} else if (property.getPropertyType() == Short.class) {
 						newVal = new Short("10");
-					} else if (property.getPropertyType() == SQLIndex.class) {
-						newVal = new SQLIndex("new index",false,"",IndexType.HASHED,"");
+                    } else if (property.getPropertyType() == SQLIndex.class) {
+                        newVal = new SQLIndex("new index",false,"",IndexType.HASHED,"");
+                    } else if (property.getPropertyType() == Color.class) {
+                        if (oldVal == null) {
+                            newVal = new Color(0xFAC157);
+                        } else {
+                            Color oldColor = (Color) oldVal;
+                            newVal = new Color( (oldColor.getRGB()+0xF00) % 0x1000000);
+                        }
 					} else {
 						throw new RuntimeException("This test case lacks a value for "
 								+ property.getName() + " (type "

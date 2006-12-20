@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -11,6 +12,7 @@ import javax.swing.JComponent;
 
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphEdgeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
 
@@ -33,14 +35,13 @@ public class PotentialMatchEdgeRenderer extends JComponent implements
         SourceTableRecord origRHS = edge.getOriginalRhs();
         lhsPosition = graph.getNodeBounds(origLHS);
         rhsPosition = graph.getNodeBounds(origRHS);
-        edgeColor = Color.BLACK;
+        edgeColor = edge.getCriteriaGroup().getColour();
         
-        // dotted lines are temporarily disabled so we can see the edges more clearly in the absense of sensible layout
-//        if (edge.getMatchStatus() == null) {
-//            edgeStroke = new BasicStroke(1.7f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 0f, new float[] {1.7f, 10f}, 0f);
-//        } else if (edge.getMatchStatus() == MatchType.MATCH) {
-//            edgeStroke = new BasicStroke(1f);
-//        }
+        if (edge.getMatchStatus() == null) {
+            edgeStroke = new BasicStroke(1.2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 0f, new float[] {10f, 2.7f}, 0f);
+        } else if (edge.getMatchStatus() == MatchType.MATCH) {
+            edgeStroke = new BasicStroke(1f);
+        }
         return this;
     }
 
@@ -56,6 +57,9 @@ public class PotentialMatchEdgeRenderer extends JComponent implements
         Graphics2D g2 = (Graphics2D) g;
         if (edgeStroke != null) {
             g2.setStroke(edgeStroke);
+        }
+        if (edgeColor == null){
+            edgeColor = Color.BLACK;
         }
         g2.setColor(edgeColor);
         g2.drawLine(
