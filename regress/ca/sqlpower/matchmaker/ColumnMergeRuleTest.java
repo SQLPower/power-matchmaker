@@ -1,6 +1,10 @@
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLTable;
 
 public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 
@@ -8,18 +12,24 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 	private TestingMatchMakerSession testingMatchMakerSession = new TestingMatchMakerSession();
 
 	public ColumnMergeRuleTest() {
-		propertiesToIgnoreForEventGeneration.add("tableName");
-		propertiesToIgnoreForEventGeneration.add("schemaName");
-		propertiesToIgnoreForEventGeneration.add("catalogName");
-		propertiesToIgnoreForDuplication.add("sourceTable");
-		// The index is either mutable or unequal so ignore it in this test
-		propertiesToIgnoreForDuplication.add("tableIndex");
+		propertiesToIgnoreForEventGeneration.add("columnName");
+		propertiesToIgnoreForDuplication.add("columnName");
+		propertiesThatDifferOnSetAndGet.add("name");
+		
+		propertiesThatHaveSideEffects.add("column");
+		propertiesThatHaveSideEffects.add("parent");
 	}
 	@Override
 	protected ColumnMergeRules getTarget() {
 		
 		TableMergeRules tmr = new TableMergeRules();
 		tmr.setSession(testingMatchMakerSession);
+		try {
+			tmr.setTable(new SQLTable(new SQLDatabase(),true));
+			tmr.getSourceTable().addColumn(new SQLColumn(tmr.getSourceTable(),"new",1,1,1));
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
+		}
 		ColumnMergeRules cmr = new ColumnMergeRules();
 		cmr.setParent(tmr);
 		return cmr;
@@ -28,6 +38,8 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 	public void testEquals() {
 		ColumnMergeRules m1 = getTarget();
 		ColumnMergeRules m2 = getTarget();
+		m1.setParent(null);
+		m2.setParent(null);
 		
 		TableMergeRules parent1 = new TableMergeRules();
 		parent1.setSession(new TestingMatchMakerSession());

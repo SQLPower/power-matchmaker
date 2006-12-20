@@ -18,23 +18,4 @@ public class MatchMakerTranslateGroupTest
 	protected MatchMakerTranslateGroup getTarget() {
 		return target;
 	}
-
-	private void checkNull() {
-		assertNull("The default last_update_user in match object should be null",
-				target.getLastUpdateAppUser());
-	}
-
-	private void checkAppUserName() {
-		assertEquals("The last_update_user should be [" +
-				appUserName +"], because user1 has changed this match object",
-				appUserName, target.getLastUpdateAppUser());
-	}
-
-	public void testSetName() {
-		checkNull();
-		target.setName("group name");
-		checkAppUserName();
-	}
-
-
 }

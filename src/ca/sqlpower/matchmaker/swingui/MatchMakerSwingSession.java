@@ -46,6 +46,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
+import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
@@ -863,6 +864,11 @@ public class MatchMakerSwingSession implements MatchMakerSession {
                 MatchMakerObject criteriaGroup = mmo.getParent();
                 MatchMakerDAO dao = getDAO(criteriaGroup.getClass());
                 dao.save(criteriaGroup);
+            } else if ( mmo instanceof ColumnMergeRules) {
+            	// XXX so are column merge rules
+            	MatchMakerObject tableMergeRules = mmo.getParent();
+                MatchMakerDAO dao = getDAO(tableMergeRules.getClass());
+                dao.save(tableMergeRules);
             } else {
                 MatchMakerDAO dao = getDAO(mmo.getClass());
                 dao.delete(mmo);

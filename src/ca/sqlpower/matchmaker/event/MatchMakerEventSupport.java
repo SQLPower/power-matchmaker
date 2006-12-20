@@ -183,7 +183,9 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
-            logger.debug("fireStructureChanged: source="+source+"; listener="+ listeners.get(i));
+			if (logger.isDebugEnabled()) {
+				logger.debug("fireStructureChanged: source="+source+"; listener="+ listeners.get(i));
+			}
 			listeners.get(i).mmStructureChanged(evt);
 		}
 	}

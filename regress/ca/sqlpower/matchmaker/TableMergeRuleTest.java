@@ -12,6 +12,9 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		propertiesToIgnoreForDuplication.add("sourceTable");
 		// The index is either mutable or unequal so ignore it in this test
 		propertiesToIgnoreForDuplication.add("tableIndex");
+		
+		propertiesThatDifferOnSetAndGet.add("name");
+		propertiesThatDifferOnSetAndGet.add("parent");
 	}
 	@Override
 	protected TableMergeRules getTarget() {

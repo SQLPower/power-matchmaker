@@ -12,6 +12,7 @@ public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchMakerCr
     public MatchMakerCriteriaGroupTest() {
         super();
         propertiesToIgnoreForEventGeneration.add("parentMatch");
+        propertiesThatDifferOnSetAndGet.add("parent");
     }
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -26,65 +27,6 @@ public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchMakerCr
 		return target;
 	}
 
-	/*
-	 * Test method for 'ca.sqlpower.matchmaker.MatchMakerCriteriaGroup.setDesc(String)'
-	 */
-	public void testSetDesc() {
-		assertNull("The default last_update_user in match object should be null",
-				target.getLastUpdateAppUser());
-		target.setDesc("xxx");
-		assertEquals("The last_update_user should be [" +
-				appUserName +"], because user1 has changed this match object",
-				appUserName, target.getLastUpdateAppUser());
-	}
-
-	/*
-	 * Test method for 'ca.sqlpower.matchmaker.MatchMakerCriteriaGroup.setMatchPercent(long)'
-	 */
-	public void testSetMatchPercent() {
-		assertNull("The default last_update_user in match object should be null",
-				target.getLastUpdateAppUser());
-		target.setMatchPercent(new Short("100"));
-		assertEquals("The last_update_user should be [" +
-				appUserName +"], because user1 has changed this match object",
-				appUserName, target.getLastUpdateAppUser());
-	}
-
-	/*
-	 * Test method for 'ca.sqlpower.matchmaker.MatchMakerCriteriaGroup.setName(String)'
-	 */
-	public void testSetName() {
-		assertNull("The default last_update_user in match object should be null",
-				target.getLastUpdateAppUser());
-		target.setName("xxx");
-		assertEquals("The last_update_user should be [" +
-				appUserName +"], because user1 has changed this match object",
-				appUserName, target.getLastUpdateAppUser());
-	}
-
-	/*
-	 * Test method for 'ca.sqlpower.matchmaker.MatchMakerCriteriaGroup.setActive(boolean)'
-	 */
-	public void testSetActive() {
-		assertNull("The default last_update_user in match object should be null",
-				target.getLastUpdateAppUser());
-		target.setActive(!target.getActive());
-		assertEquals("The last_update_user should be [" +
-				appUserName +"], because user1 has changed this match object",
-				appUserName, target.getLastUpdateAppUser());
-	}
-
-	/*
-	 * Test method for 'ca.sqlpower.matchmaker.MatchMakerCriteriaGroup.setFilter(String)'
-	 */
-	public void testSetFilter() {
-		assertNull("The default last_update_user in match object should be null",
-				target.getLastUpdateAppUser());
-		target.setFilter("xxx");
-		assertEquals("The last_update_user should be [" +
-				appUserName +"], because user1 has changed this match object",
-				appUserName, target.getLastUpdateAppUser());
-	}
 
     public void testSetParentMatch(){
         Match match = new Match();

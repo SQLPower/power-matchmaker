@@ -1,6 +1,6 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.dao.TableMergeRuleDAO;
 
@@ -13,9 +13,9 @@ public class TableMergeRulesDAOHibernate extends AbstractMatchMakerDAOHibernate<
 	}
 
 	public void delete(TableMergeRules deleteMe) {
-		MatchMakerObject parent = deleteMe.getParent();
+		Match parent = deleteMe.getParentMatch();
 		if (parent != null ){
-			parent.removeChild(deleteMe);
+			parent.removeTableMergeRule(deleteMe);
 		}
 		super.delete(deleteMe);
 	}

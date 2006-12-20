@@ -18,6 +18,7 @@
         <mapping resource="ca/sqlpower/matchmaker/dao/hibernate/PlMatchCriteria.hbm.xml"/>
         <mapping resource="ca/sqlpower/matchmaker/dao/hibernate/PlMatchGroup.hbm.xml"/>
         <mapping resource="ca/sqlpower/matchmaker/dao/hibernate/PlMergeCriteria.hbm.xml"/>
+        <mapping resource="ca/sqlpower/matchmaker/dao/hibernate/PlMergeConsolidateCriteria.hbm.xml"/>
     </session-factory>
 
 </hibernate-configuration>

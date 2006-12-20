@@ -161,7 +161,7 @@ public class TableMergeRules
 	@Override
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append("Merge Strategy->'").append(getName()).append("' ");
+		buf.append("Merge Strategy@"+System.identityHashCode(this)+"->'").append(getName()).append("' ");
 		buf.append("Parent->'").append(getParent()).append("' ");
 		buf.append("Seq No->'").append(getSeqNo()).append("' ");
 		buf.append("isDeletedDup()->'").append(isDeleteDup()).append("' ");
@@ -190,7 +190,7 @@ public class TableMergeRules
     }
 
     /**
-     * Sets the parent of this object to be the matach criteria group folder of the given match object
+     * Sets the parent of this object to be the match criteria group folder of the given match object
      *
      * this will fire a <b>parent</b> changed event not a parent match event
      */

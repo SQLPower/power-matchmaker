@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerEventSupport;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -39,23 +38,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 
 
 	public AbstractMatchMakerObject() {
-		eventSupport.addMatchMakerListener(new MatchMakerListener<T,C>(){
-
-			public void mmPropertyChanged(MatchMakerEvent<T, C> evt) {
-				registerUpdate();
-			}
-
-			public void mmChildrenInserted(MatchMakerEvent<T, C> evt) {
-				registerUpdate();
-			}
-
-			public void mmChildrenRemoved(MatchMakerEvent<T, C> evt) {
-				registerUpdate();
-			}
-
-			public void mmStructureChanged(MatchMakerEvent<T, C> evt) {
-				registerUpdate();
-			}});
+	
 	}
 
 	/**
@@ -133,7 +116,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 			lastUpdateDate = new Date();
 			lastUpdateOsUser = System.getProperty("user.name");
 			lastUpdateAppUser = matchMakerSession.getAppUser();
-		}
+		} 
 	}
 
 	public MatchMakerObject getParent() {

@@ -10,6 +10,24 @@ import ca.sqlpower.architect.SQLTable;
 public class MatchMakerCriteria 
     extends AbstractMatchMakerObject<MatchMakerCriteria, MatchMakerObject> {
 
+	
+	public class MatchMakerCriteriaCachableTable extends CachableColumn {
+		public MatchMakerCriteriaCachableTable() {
+			super(MatchMakerCriteria.this, "column");
+		}
+		
+		public SQLTable getTable() {
+			
+			MatchMakerCriteriaGroup group = (MatchMakerCriteriaGroup) eventSource.getParent();
+	        if (group == null) throw new NullPointerException("Not attached to a parent");
+	        Match match = (Match) group.getParentMatch();
+	        if (group == null) throw new NullPointerException("Not attached to a grandparent");
+	        SQLTable st = match.getSourceTable();
+			return st;
+		}
+
+	}
+	
     /**
      * Unique ID for this instance. Required by ORM tools.
      */
@@ -76,6 +94,8 @@ public class MatchMakerCriteria
     private boolean matchFirstPlusOneInd;
 
 
+    private MatchMakerCriteriaCachableTable cachableTable = new MatchMakerCriteriaCachableTable();
+    
     public MatchMakerCriteria( ) {
     }
 
@@ -104,67 +124,7 @@ public class MatchMakerCriteria
         return caseSensitiveInd;
     }
 
-    /**
-     * Returns the name of the column this set of criteria applies to.
-     * You should use {@link #getColumn()} under normal circumstances.
-     */
-    public String getColumnName() throws ArchitectException {
-        if (cachedColumn == null) return columnName;
-        else return cachedColumn.getName();
-    }
 
-    /**
-     * Sets the column name, and nulls out the cached SQLColumn.  The next
-     * call to getColumn() will result in an attempt to resolve the SQLColumn
-     * that this columnName string refers to.
-     * <p>
-     * Note, this property is not bound.  However, it is coordinated with the
-     * bound property <tt>column</tt>, so setting the column name like this
-     * may eventually result in a property change event for the "column" property.
-     * 
-     * @param columnName the name of the match's source table column these match
-     * criteria are associated with.
-     */
-    public void setColumnName(String columnName) {
-        cachedColumn = null;
-        this.columnName = columnName;
-    }
-
-    /**
-     * Attempts to resolve the given column name to a column of the owning
-     * Match object's source table.  This functionality is provided for the benefit of the
-     * ORM layer, which has difficulty using the business model.
-     * 
-     * @throws ArchitectException if there is an error populating the SQLTable
-     * @throws NullPointerException if any of the business objects required for
-     * resolving the column object are missing
-     */
-    public SQLColumn getColumn() throws ArchitectException {
-        if (cachedColumn != null) return cachedColumn;
-        if (columnName == null) return null;
-        
-        MatchMakerCriteriaGroup group = getParent();
-        if (group == null) throw new NullPointerException("Not attached to a parent");
-        Match match = (Match) group.getParentMatch();
-        if (group == null) throw new NullPointerException("Not attached to a grandparent");
-        SQLTable st = match.getSourceTable();
-        if (st == null) throw new NullPointerException("The owning match has no source table specified");
-        SQLColumn newColumn = st.getColumnByName(columnName);
-        
-        // did we actually make it here?
-        setColumn(newColumn);
-        return newColumn;
-    }
-
-    /**
-     * Sets the cached column as well as the simple columnName string.
-     */
-    public void setColumn(SQLColumn column) {
-        SQLColumn oldVal = this.cachedColumn;
-        this.cachedColumn = column;
-        this.columnName = (column == null ? null : column.getName());
-        getEventSupport().firePropertyChange("column", oldVal, column);
-    }
 
     public boolean isCountWordsInd() {
         return countWordsInd;
@@ -489,5 +449,21 @@ public class MatchMakerCriteria
 		criteria.setWordsInCommonNumWords(getWordsInCommonNumWords());
 
 		return criteria;
+	}
+
+	public SQLColumn getColumn() throws ArchitectException {
+		return cachableTable.getColumn();
+	}
+
+	public String getColumnName() throws ArchitectException {
+		return cachableTable.getColumnName();
+	}
+
+	public void setColumn(SQLColumn column) {
+		cachableTable.setColumn(column);
+	}
+
+	public void setColumnName(String columnName) {
+		cachableTable.setColumnName(columnName);
 	}
 }
