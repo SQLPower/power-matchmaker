@@ -102,7 +102,7 @@ public class MatchResultVisualizer implements EditorPane {
             recordViewerPanel.revalidate();
         }
 
-        public void nodeSelected(SourceTableRecord node) {
+        public void nodeSelected(final SourceTableRecord node) {
             try {
                 recordViewerPanel.removeAll();
                 recordViewerPanel.add(SourceTableRecordViewer.headerPanel(match));
@@ -117,6 +117,7 @@ public class MatchResultVisualizer implements EditorPane {
                         @Override
                         public void mousePressed(MouseEvent e) {
                             viewer.setFocusedNode(str);
+                            viewer.scrollNodeToVisible(str);
                         }
                     });
                     recordViewerPanel.add(recordViewer);
@@ -125,8 +126,7 @@ public class MatchResultVisualizer implements EditorPane {
                 ASUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex, new MatchMakerQFAFactory());
             }
             recordViewerPanel.revalidate();
-        }
-        
+        }     
     }
     
     /**
@@ -157,7 +157,7 @@ public class MatchResultVisualizer implements EditorPane {
     private final MatchPool pool;
 
     private final GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel;
-
+    
     public MatchResultVisualizer(Match match, MatchMakerSwingSession session) throws SQLException, ArchitectException {
         this.match = match;
         this.session = session;
