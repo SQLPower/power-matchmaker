@@ -24,6 +24,7 @@ import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchCriteria;
@@ -198,6 +199,21 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 						logger.debug("Created new match group editor "
 								+ System.identityHashCode(editor));
 						swingSession.setCurrentEditorComponent(editor);
+					} catch (ArchitectException e1) {
+						throw new ArchitectRuntimeException(e1);
+					}
+				} else if ( o instanceof MatchMakerFolder ) {
+					MatchMakerFolder f = (MatchMakerFolder)o;
+					Match m = (Match) f.getParent();
+					
+					try {
+						if ( f.getName().equals(m.MATCH_FOLDER_MERGE) ) {
+							MergeTableRuleEditor editor = 
+								new MergeTableRuleEditor(swingSession,m);
+							logger.debug("Created new merge table rules editor "
+									+ System.identityHashCode(editor));
+							swingSession.setCurrentEditorComponent(editor);
+						}
 					} catch (ArchitectException e1) {
 						throw new ArchitectRuntimeException(e1);
 					}
