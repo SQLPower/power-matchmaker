@@ -132,10 +132,12 @@ public class TableMergeRules
 
 	public void setTable(SQLTable table) {
 		this.cachableTable.setTable(table);
+		setName(table==null?null:DDLUtils.toQualifiedName(table));
 	}
 
 	public void setTableName(String sourceTableName) {
 		cachableTable.setTableName(sourceTableName);
+		setName(DDLUtils.toQualifiedName(getCatalogName(),getSchemaName(),sourceTableName));
 	}
 
 	public boolean isDeleteDup() {
@@ -202,13 +204,13 @@ public class TableMergeRules
         }
     }
     
-    @Override
+ /*   @Override
     public String getName() {
     	if (getSourceTable() != null) {
     		return DDLUtils.toQualifiedName(getSourceTable()); 
     	} else {
     		return null;
     	}
-    }
+    }*/
 	
 }
