@@ -50,6 +50,12 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
      */
     private V selectedNode;
     
+    /**
+     * The node that currently has focus (the one that any keyboard actions will
+     * affect).
+     */
+    private V focusedNode;
+    
     // don't support editing yet, but will have GraphNodeEditor and GraphEdgeEditor
 	private final GraphMouseListener mouseListener = new GraphMouseListener();
     
@@ -72,7 +78,7 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
         return layoutCache;
     }
 
-    public void setLayoutCache(GraphLayoutCache layoutCache) {
+    public void setLayoutCache(GraphLayoutCache<V, E> layoutCache) {
         this.layoutCache = layoutCache;
     }
 
@@ -110,7 +116,7 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
         }
         for (V node : model.getNodes()) {
             Rectangle nodePos = layoutCache.getNodeBounds(node);
-            JComponent nr = nodeRenderer.getGraphNodeRendererComponent(node);
+            JComponent nr = nodeRenderer.getGraphNodeRendererComponent(node, node == selectedNode, node == focusedNode);
             Dimension nodeSize = nr.getPreferredSize();
             nr.setSize(nodeSize);
             nodePos.width = nodeSize.width;
@@ -178,6 +184,28 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
         layoutCache.setNodeBounds(node, bounds);
     }
 
+    public void setSelectedNode(V node) {
+        if (selectedNode != null) {
+            fireNodeDeselected(selectedNode);
+            repaint(layoutCache.getNodeBounds(selectedNode));
+        }
+        selectedNode = node;
+        if (selectedNode != null) {
+            fireNodeSelected(selectedNode);
+            repaint(layoutCache.getNodeBounds(selectedNode));
+        }
+    }
+
+    public void setFocusedNode(V node) {
+        if (focusedNode != null) {
+            repaint(layoutCache.getNodeBounds(focusedNode));
+        }
+        focusedNode = node;
+        if (focusedNode != null) {
+            repaint(layoutCache.getNodeBounds(focusedNode));
+        }
+    }
+
     private void fireNodeSelected(V node) {
         for (int i = selectionListeners.size() - 1; i >= 0; i--) {
             selectionListeners.get(i).nodeSelected(node);
@@ -202,13 +230,9 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
     
         @Override
         public void mousePressed(MouseEvent e) {
-            if (selectedNode != null) {
-                fireNodeDeselected(selectedNode);
-            }
-            selectedNode = layoutCache.getNodeAt(e.getPoint());
-            if (selectedNode != null) {
-                fireNodeSelected(selectedNode);
-            }
+            V node = layoutCache.getNodeAt(e.getPoint());
+            setSelectedNode(node);
+            setFocusedNode(node);
         }
     }
 }

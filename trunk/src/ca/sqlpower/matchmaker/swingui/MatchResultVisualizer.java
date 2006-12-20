@@ -7,6 +7,8 @@ import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -96,24 +98,33 @@ public class MatchResultVisualizer implements EditorPane {
     private class MyGraphSelectionListener implements GraphSelectionListener<SourceTableRecord, PotentialMatchRecord> {
 
         public void nodeDeselected(SourceTableRecord node) {
-            recordViewer.removeAll();
-            recordViewer.revalidate();
+            recordViewerPanel.removeAll();
+            recordViewerPanel.revalidate();
         }
 
         public void nodeSelected(SourceTableRecord node) {
             try {
-                recordViewer.removeAll();
-                recordViewer.add(SourceTableRecordViewer.headerPanel(match));
+                recordViewerPanel.removeAll();
+                recordViewerPanel.add(SourceTableRecordViewer.headerPanel(match));
                 BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
                     new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
                 List<SourceTableRecord> reachableNodes = bfs.performSearch(graphModel, node);
-                for (SourceTableRecord str : reachableNodes) {
-                    recordViewer.add(new SourceTableRecordViewer(str, node, new JButton(new SetMasterAction(node))).getPanel());
+                for (SourceTableRecord rec : reachableNodes) {
+                    final SourceTableRecord str = rec;
+                    JPanel recordViewer = new SourceTableRecordViewer(
+                            str, node, new JButton(new SetMasterAction(node))).getPanel();
+                    recordViewer.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mousePressed(MouseEvent e) {
+                            viewer.setFocusedNode(str);
+                        }
+                    });
+                    recordViewerPanel.add(recordViewer);
                 }
             } catch (Exception ex) {
                 ASUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex, new MatchMakerQFAFactory());
             }
-            recordViewer.revalidate();
+            recordViewerPanel.revalidate();
         }
         
     }
@@ -139,7 +150,7 @@ public class MatchResultVisualizer implements EditorPane {
      */
     private final GraphViewer<SourceTableRecord, PotentialMatchRecord> viewer;
 
-    private final JPanel recordViewer;
+    private final JPanel recordViewerPanel;
 
     private final MyGraphSelectionListener selectionListener = new MyGraphSelectionListener();
 
@@ -166,12 +177,12 @@ public class MatchResultVisualizer implements EditorPane {
         
         doAutoLayout();
         
-        recordViewer = new JPanel(new GridLayout(1, 0));
+        recordViewerPanel = new JPanel(new GridLayout(1, 0));
         
         // put it all together
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 new JScrollPane(viewer),
-                new JScrollPane(recordViewer, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+                new JScrollPane(recordViewerPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
         
         panel = new JPanel(new BorderLayout(12, 12));
         panel.add(topPanel, BorderLayout.NORTH);
@@ -210,7 +221,7 @@ public class MatchResultVisualizer implements EditorPane {
                 double xx = radius * Math.cos(currentAngle);
                 double yy = radius * Math.sin(currentAngle);
                 
-                Dimension prefSize = renderer.getGraphNodeRendererComponent(node).getPreferredSize();
+                Dimension prefSize = renderer.getGraphNodeRendererComponent(node, false, false).getPreferredSize();
                 
                 final Rectangle nodeBounds = new Rectangle(
                         (int) xx, (int) yy,

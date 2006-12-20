@@ -16,5 +16,5 @@ public interface GraphNodeRenderer<V> {
      * @param node
      * @return
      */
-    public JComponent getGraphNodeRendererComponent(V node);
+    public JComponent getGraphNodeRendererComponent(V node, boolean isSelected, boolean hasFocus);
 }
