@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.swingui.ColorScheme;
 import ca.sqlpower.util.WebColour;
 
 /**
@@ -27,24 +28,7 @@ import ca.sqlpower.util.WebColour;
 public class MatchPoolDotExport {
 
     private static final Logger logger = Logger.getLogger(MatchPoolDotExport.class);
-    
-    /**
-     * A list of colours to assign to different match groups (for colouring the edges in the graph).
-     * Currently, this is the Brewer Colour Scheme "set19".
-     */
-    private static final WebColour[] COLOURS = {
-        new WebColour("#e41a1c"),
-        new WebColour("#377eb8"),
-        new WebColour("#4daf4a"),
-        new WebColour("#80b1d3"),
-        new WebColour("#984ea3"),
-        new WebColour("#ff7f00"),
-        new WebColour("#ffff33"),
-        new WebColour("#a65628"),
-        new WebColour("#f781bf"),
-        new WebColour("#999999")
-    };
-    
+        
     /**
      * The group names that have been seen by {@link colourName()} in the order it saw them.
      */
@@ -225,7 +209,7 @@ public class MatchPoolDotExport {
             groupNames.add(groupName);
             index = groupNames.size()-1;
         }
-        WebColour c = COLOURS[index];
+        WebColour c = ColorScheme.BREWER_SET19[index];
         return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
     }
 
