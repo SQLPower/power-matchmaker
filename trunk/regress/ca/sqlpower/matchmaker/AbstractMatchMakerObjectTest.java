@@ -40,19 +40,6 @@ public class AbstractMatchMakerObjectTest extends TestCase {
 
 	}
 
-
-	public void testAuditingInfoAddChild() {
-		MatchMakerObject mmo1 = new TestingAbstractMatchMakerObject(){};
-		assertNull("The default last_update_user in match object should be null",
-				test.getLastUpdateAppUser());
-		assertNull("The default last_update_user in match object should be null",
-				mmo1.getLastUpdateAppUser());
-		test.addChild(mmo1);
-		assertEquals("The last_update_user should be [" +
-				appUserName +"], because user1 has changed this match object",
-				appUserName, test.getLastUpdateAppUser());
-	}
-
 	public void testParentSetCorrectly() {
 		TestingAbstractMatchMakerObject mmo1 = new TestingAbstractMatchMakerObject(){};
 		TestingAbstractMatchMakerObject mmo2 = new TestingAbstractMatchMakerObject(){};

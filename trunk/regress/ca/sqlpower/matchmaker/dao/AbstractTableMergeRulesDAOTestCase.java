@@ -46,7 +46,6 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 			mergeRules.setName("MergeRule "+count);
 			mergeRules.setTableName("table"+count);
             match.addTableMergeRule(mergeRules);
-            System.err.println(mergeRules.getParent().getParent());
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
@@ -69,6 +68,13 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 		return nonPersistingProperties;
 	}
 
+	public void testTableParentIsTheCorrectObject() throws Exception {
+		createNewObjectUnderTest();
+		TableMergeRules mergeRules = match.getTableMergeRules().get(0);
+		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",match.getTableMergeRulesFolder(),mergeRules.getParent());
+		
+	}
+	
     public void testDelete() throws Exception {
         Connection con = getSession().getConnection();
         Statement stmt = null;
@@ -81,11 +87,10 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
             dao.save(mergeRules);
             
             stmt = con.createStatement();
-
             ResultSet rs = stmt.executeQuery("SELECT * FROM pl_merge_criteria WHERE table_name = '"+tableName+"'");
             assertTrue("match group didn't save?!", rs.next());
             rs.close();
-
+            
             dao.delete(mergeRules);
 
             rs = stmt.executeQuery("SELECT * FROM pl_merge_criteria WHERE table_name = '"+tableName+"'");

@@ -8,8 +8,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import junit.framework.TestCase;
@@ -40,6 +42,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	C target;
 
     Set<String>propertiesToIgnoreForEventGeneration = new HashSet<String>();
+    Set<String>propertiesThatDifferOnSetAndGet = new HashSet<String>();
+    Set<String>propertiesThatHaveSideEffects = new HashSet<String>();
+    
     public MatchMakerSession session = new TestingMatchMakerSession();
 
 	protected Set<String> propertiesToIgnoreForDuplication = new HashSet<String>();
@@ -128,7 +133,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				|| property.getPropertyType() == Short.class) {
 				return ((Short) oldVal) + 1;
 		} else if (property.getPropertyType() == String.class) {
-			return "new " + oldVal;
+			if (oldVal == null) {
+				return "new";
+			} else {
+				return "new " + oldVal;
+			}
 		} else if (property.getPropertyType() == Boolean.class || property.getPropertyType() == Boolean.TYPE ) {
 	        return new Boolean(!((Boolean) oldVal).booleanValue());
 		} else if (property.getPropertyType() == Long.class) {
@@ -229,7 +238,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 
 					try {
 
-						BeanUtils.copyProperty(mmo, property.getName(), newVal);
+						PropertyUtils.setProperty(mmo, property.getName(), newVal);
 
 						// some setters fire multiple events (they change more than one property)
 						assertTrue("Event for set "+property.getName()+" on "+mmo.getClass().getName()+" didn't fire!",
@@ -369,6 +378,65 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			((MatchMakerObject)newVal).setSession(session);
 		}
 		return newVal;
+	}
+	
+	public void testWhatSettersSetGettersGet() throws Exception {
+		MatchMakerObject mmo = getTarget();
+		propertiesThatDifferOnSetAndGet.add("session");
+		List<PropertyDescriptor> settableProperties;
+		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
+		for (PropertyDescriptor property : settableProperties) {
+			if (propertiesThatDifferOnSetAndGet.contains(property.getName())) continue;
+			Object oldVal;
+			try {
+				oldVal = PropertyUtils.getSimpleProperty(mmo, property.getName());
+				// check for a setter
+				if (property.getWriteMethod() != null)
+				{
+					Object newVal = getNewDifferentValue(mmo, property, oldVal);
+					PropertyUtils.setProperty(mmo, property.getName(), newVal);
+				
+					Object valueGot = PropertyUtils.getProperty(mmo, property.getName());
+					assertEquals("Property "+property.getName()+" differs on object "+ mmo +" between getter and setter",newVal,valueGot);
+				}
+			} catch (NoSuchMethodException e) {
+				
+				System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());
+			}
+		}
+	}
+	/**
+	 * This test isn't all that good because given the right order we
+	 * can override the side effects
+	 */
+	public void testWhatSettersSetGettersGetWithNoSideffects() throws Exception {
+		MatchMakerObject mmo = getTarget();
+		propertiesThatDifferOnSetAndGet.add("session");
+		propertiesThatHaveSideEffects.addAll(propertiesThatDifferOnSetAndGet);
+		List<PropertyDescriptor> settableProperties;
+		Map<String,Object> setValues = new HashMap<String,Object>();
+		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
+		for (PropertyDescriptor property : settableProperties) {
+			if (!propertiesThatHaveSideEffects.contains(property.getName())) {
+				Object oldVal;
+				try {
+					oldVal = PropertyUtils.getSimpleProperty(mmo, property.getName());
+					// check for a setter
+					if (property.getWriteMethod() != null)
+					{
+						Object newVal = getNewDifferentValue(mmo, property, oldVal);
+						PropertyUtils.setProperty(mmo, property.getName(), newVal);
+						setValues.put(property.getName(), newVal);
+					}
+				} catch (NoSuchMethodException e) {
+					System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());
+				}
+			}
+		}
+		for (String propertyName: setValues.keySet()) {
+			Object valueGot = PropertyUtils.getProperty(mmo, propertyName);
+			assertEquals("Property "+propertyName+" differs on object "+ mmo +" between getter and setter",setValues.get(propertyName),valueGot);
+		}
 	}
 
     /**

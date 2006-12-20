@@ -49,6 +49,10 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         propertiesToIgnoreForDuplication.add("sourceTable");
         
         propertiesToIgnoreForDuplication.add("sourceTableIndex");
+        
+        propertiesThatHaveSideEffects.add("xrefTable");
+        propertiesThatHaveSideEffects.add("sourceTable");
+        propertiesThatHaveSideEffects.add("resultTable");
         super.setUp();
         match = new Match();
         session = new TestingMatchMakerSession();

@@ -7,52 +7,38 @@
 <hibernate-mapping>
 
 	<class
-		name="ca.sqlpower.matchmaker.hibernate.PlMergeConsolidateCriteria"
+		name="ca.sqlpower.matchmaker.ColumnMergeRules"
 		table="PL_MERGE_CONSOLIDATE_CRITERIA">
-		<id name="id" type="long">
-			<column name="merge_consolidate_criteria_oid" />
+		<id name="oid" type="long" access="field">
+			<column name="MERGE_CRITERIA_OID" />
+			<generator class="native">
+				<param name="sequence">mrge_consol_crit_oid_seq</param>
+			</generator>
 		</id>
 
-		<property name="catalog" type="string">
-			<column name="TABLE_CATALOG" length="30" />
-		</property>
-		<property name="owner" type="string">
-			<column name="OWNER" length="30" />
-		</property>
-		<property name="tableName" type="string">
-			<column name="TABLE_NAME" length="30" />
-		</property>
 		<property name="columnName" type="string">
 			<column name="COLUMN_NAME" length="30" />
 		</property>
 
-
-
-		<many-to-one name="plMergeCriteria"
-			class="ca.sqlpower.matchmaker.hibernate.PlMergeCriteria" update="false"
-			insert="false" fetch="select">
+		<many-to-one name="parent"
+			class="ca.sqlpower.matchmaker.TableMergeRules" >
 			<column name="merge_criteria_oid" not-null="true" />
 		</many-to-one>
-		<property name="columnFormat" type="string">
-			<column name="COLUMN_FORMAT" length="12" />
-		</property>
-		<property name="columnLength" type="long">
-			<column name="COLUMN_LENGTH" precision="18" scale="0" />
-		</property>
-		<property name="canUpdateActionInd"
+
+		<property name="updateAction"
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="CAN_update_ACTION_IND" length="1" />
 		</property>
-		<property name="actionType" type="string">
+		<property name="actionType" type="ca.sqlpower.matchmaker.dao.hibernate.ActionTypeStringToActionTypeEnum">
 			<column name="ACTION_TYPE" length="12" />
 		</property>
-		<property name="lastUpdateDate" type="timestamp">
+		<property name="lastUpdateDate" type="timestamp" access="field">
 			<column name="LAST_update_DATE" length="23" />
 		</property>
-		<property name="lastUpdateUser" type="string">
+		<property name="lastUpdateAppUser" type="string" access="field">
 			<column name="LAST_update_USER" length="30" />
 		</property>
-		<property name="lastUpdateOsUser" type="string">
+		<property name="lastUpdateOsUser" type="string" access="field">
 			<column name="LAST_update_OS_USER" length="30" />
 		</property>
 

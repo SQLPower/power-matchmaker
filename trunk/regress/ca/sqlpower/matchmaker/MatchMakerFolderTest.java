@@ -20,24 +20,6 @@ public class MatchMakerFolderTest<C extends MatchMakerObject> extends MatchMaker
 		return folder;
 	}
 
-	public void testPropertyChangesName() {
-		assertNull("The default last_update_user in match object should be null",
-				folder.getLastUpdateAppUser());
-		folder.setName("xxx");
-		assertEquals("The last_update_user should be [" +
-				appUserName +"], because user1 has changed this match object",
-				appUserName, folder.getLastUpdateAppUser());
-	}
-
-	public void testPropertyChangesDesc() {
-		assertNull("The default last_update_user in match object should be null",
-				folder.getLastUpdateAppUser());
-		folder.setFolderDesc("xxx");
-		assertEquals("The last_update_user should be [" +
-				appUserName +"], because user1 has changed this match object",
-				appUserName, folder.getLastUpdateAppUser());
-	}
-
 	/*
 	 * Duplicate should not be run on this class
 	 */

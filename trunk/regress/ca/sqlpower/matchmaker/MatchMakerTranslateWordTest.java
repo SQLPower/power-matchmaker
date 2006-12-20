@@ -30,18 +30,6 @@ public class MatchMakerTranslateWordTest
 				appUserName, target.getLastUpdateAppUser());
 	}
 
-	public void testSetFrom() {
-		checkNull();
-		target.setFrom("x");
-		checkAppUserName();
-	}
-
-	public void testSetTo() {
-		checkNull();
-		target.setTo("x");
-		checkAppUserName();
-	}
-    
     public void testAssertDoesNotAllowChildren(){
         assertFalse(target.allowsChildren());
     }

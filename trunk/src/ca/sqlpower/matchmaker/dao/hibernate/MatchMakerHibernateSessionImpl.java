@@ -29,6 +29,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
@@ -36,6 +37,7 @@ import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
+import ca.sqlpower.matchmaker.dao.TableMergeRuleDAO;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
@@ -92,6 +94,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     private MatchDAO matchDAO;
     private MatchCriteriaGroupDAO matchMakerCriteriaGroupDAO;
     private MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO;
+    private TableMergeRuleDAO tableMergeRulesDAO;
 
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
@@ -168,6 +171,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         matchDAO = new MatchDAOHibernate(this);
         matchMakerCriteriaGroupDAO = new MatchMakerCriteriaGroupDAOHibernate(this);
         matchMakerTranslateGroupDAO = new MatchMakerTranslateGroupDAOHibernate(this);
+        tableMergeRulesDAO = new TableMergeRulesDAOHibernate(this);
 	}
 
     public MatchMakerSessionContext getContext() {
@@ -232,6 +236,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             return (MatchMakerDAO<T>) matchMakerCriteriaGroupDAO;
         } else if (businessClass == MatchMakerTranslateGroup.class){
             return (MatchMakerDAO<T>) matchMakerTranslateGroupDAO;
+        } else if (businessClass == TableMergeRules.class) {
+        	return (MatchMakerDAO<T>) tableMergeRulesDAO;
         } else {
             throw new IllegalArgumentException("I don't know how to create a DAO for "+businessClass.getName());
         }

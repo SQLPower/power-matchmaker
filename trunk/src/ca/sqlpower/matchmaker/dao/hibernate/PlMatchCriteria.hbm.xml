@@ -68,7 +68,7 @@
 			name="countWordsInd"
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="COUNT_WORDS_IND" length="1" />
-			</property>
+		</property>
 		<property name="replaceWithSpaceInd"
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="REPLACE_WITH_SPACE_IND" length="1" />
