@@ -1,7 +1,9 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -12,11 +14,13 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -76,6 +80,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
     private JTextField matchPercent;
     private FilterComponents filterPanel;
     private JCheckBox active;
+    private JComboBox colourPicker;
 
     private JButton newMatchCriterion;
     private JButton deleteMatchCriterion;
@@ -252,7 +257,9 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         filterPanel.getFilterTextArea().setName("Filter");
         active = new JCheckBox();
         active.setSelected(true);
-
+        colourPicker = new JComboBox(ColorScheme.BREWER_SET19);
+        colourPicker.setRenderer(new ColorCellRenderer());
+        
         newMatchCriterion = new JButton(newCriteria);
         newMatchCriterion.setName("New button for "+group.getName());
         deleteMatchCriterion = new JButton(deleteCriteria);
@@ -276,6 +283,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("40dlu");
 		pb.add(new JLabel("Description"), cl.xy(2,6),new JScrollPane(description) , cc.xy(4,6,"f,f"));
+        pb.add(new JLabel("Colour"), cl.xy(6,6), colourPicker, cc.xy(8,6));
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("40dlu");
 		pb.add(new JLabel("Filter Criteria"), cl.xy(2,8));
@@ -334,6 +342,8 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         filterPanel.getFilterTextArea().setText(group.getFilter());
        	active.setSelected(group.getActive());
 
+        colourPicker.setSelectedItem(group.getColour());
+        
         SQLTable sourceTable;
         newCriteria.setEnabled(false);
         if ( match.getSourceTable() != null ) {
@@ -360,7 +370,9 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         Validator v3 = new AlwaysOKValidator();
         handler.addValidateObject(description,v3);
         handler.addValidateObject(filterPanel.getFilterTextArea(),v3);
-
+        handler.addValidateObject(colourPicker, v3);
+        handler.addValidateObject(active, v3);
+        
         Validator v4 = new CriteriaTableValidator(matchCriteriaTable);
         handler.addValidateObject(matchCriteriaTable,v4);
 
@@ -521,6 +533,21 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 		}
 	}
 
+    /**
+     * Renders a rectangle of colour in a list cell.  The colour is determined
+     * by the list item value, which must be of type java.awt.Color.
+     */
+    private class ColorCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus);
+            setBackground((Color) value);
+            setOpaque(true);
+            setPreferredSize(new Dimension(50, 50));
+            return this;
+        }
+    }
+    
 	public boolean doSave() {
         List<String> fail = handler.getFailResults();
         List<String> warn = handler.getWarnResults();
@@ -579,6 +606,8 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         }
         
         group.setActive(active.isSelected());
+        
+        group.setColour((Color) colourPicker.getSelectedItem());
         
         MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
         dao.save(match);        
