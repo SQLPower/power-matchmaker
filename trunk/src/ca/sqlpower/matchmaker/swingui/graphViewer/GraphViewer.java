@@ -235,4 +235,16 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
             setFocusedNode(node);
         }
     }
+
+    public V getSelectedNode() {
+        return selectedNode;
+    }
+
+    public void scrollNodeToVisible(V node) {
+        Rectangle r = layoutCache.getNodeBounds(node);
+        //The multipliers are there to try making it so that the node
+        //is at the centre of the screen as much as possible.
+        scrollRectToVisible(new Rectangle(r.x-r.width*2, r.y-r.height*2, 
+                r.width * 5, r.height * 5));
+    }
 }
