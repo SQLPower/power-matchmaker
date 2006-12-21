@@ -19,6 +19,9 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
+import ca.sqlpower.matchmaker.graph.GraphModel;
+import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.sql.SQL;
 
 public class SourceTableRecord {
@@ -57,6 +60,11 @@ public class SourceTableRecord {
      */
     private final Set<PotentialMatchRecord> potentialMatches =
         new HashSet<PotentialMatchRecord>();
+
+    /**
+     * The match pool that this source table record belongs to.
+     */
+    private final MatchPool pool;
     
     public List<Object> getKeyValues() {
         return keyValues;
@@ -75,10 +83,12 @@ public class SourceTableRecord {
     public SourceTableRecord(
             final MatchMakerSession session,
             final Match match,
+            final MatchPool pool,
             List<Object> keyValues) {
         super();
         this.session = session;
         this.match = match;
+        this.pool = pool;
         this.keyValues = Collections.unmodifiableList(new ArrayList<Object>(keyValues));
         this.computedHashCode = this.keyValues.hashCode();
     }
@@ -202,9 +212,44 @@ public class SourceTableRecord {
         return Collections.unmodifiableCollection(potentialMatches);
     }
 
+    /**
+     * Searches this source table record's set of potential matches (the
+     * incident edges) for the edge that connects it to the given adjacent
+     * node, where adjacency is defined as a user-validated master/duplicate
+     * relationship.
+     * 
+     * @param adjacent The other source table record
+     * @return The edge that makes this record adjacent to the given record,
+     * or null if they are not adjacent by this method's definition of adjacency.
+     */
+    public PotentialMatchRecord getMatchRecordByValidatedSourceTableRecord(SourceTableRecord adjacent) {
+        for (PotentialMatchRecord pmr : potentialMatches) {
+            if (pmr.getMaster() == adjacent || pmr.getDuplicate() == adjacent) {
+                return pmr;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Locates all records which are currently reachable from this record by
+     * user-validated matches, and points them to this record as the master  (all
+     * the reachable records will be considered duplicates of this "offical
+     * version of the truth").
+     */
     public void makeMaster() {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: SourceTableRecord.makeMaster()");
+        GraphModel<SourceTableRecord, PotentialMatchRecord> graph =
+            new NonDirectedUserValidatedMatchPoolGraphModel(pool);
+        BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
+            new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
         
+        Collection<SourceTableRecord> reachable = bfs.performSearch(graph, this);
+        for (SourceTableRecord node : reachable) {
+            PotentialMatchRecord pmr = 
+                node.getMatchRecordByValidatedSourceTableRecord(SourceTableRecord.this);
+            pmr.setLhs(SourceTableRecord.this);
+            pmr.setRhs(node);
+            pmr.setMaster(SourceTableRecord.this);
+        }
     }
 }
