@@ -10,6 +10,7 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		propertiesToIgnoreForEventGeneration.add("schemaName");
 		propertiesToIgnoreForEventGeneration.add("catalogName");
 		propertiesToIgnoreForDuplication.add("sourceTable");
+        propertiesToIgnoreForDuplication.add("name");
 		// The index is either mutable or unequal so ignore it in this test
 		propertiesToIgnoreForDuplication.add("tableIndex");
 		
