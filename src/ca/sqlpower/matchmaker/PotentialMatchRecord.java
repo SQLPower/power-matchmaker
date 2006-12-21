@@ -96,6 +96,17 @@ public class PotentialMatchRecord {
         }
     }
     
+    /**
+     * Sets up a PotentialMatchRecord which is the business model of an edge in the 
+     * MatchValidation graph.  It requires two SourceTableRecord to be identified as the LHS 
+     * and RHS of the edge.  By default, the master is not set.
+     * 
+     * @param pool the MatchPool that this PotentialMatchRecord is in
+     * @param criteriaGroup the MatchMakerCriteriaGroup that makes this edge exist
+     * @param matchStatus the status of the relationship
+     * @param originalLhs one of the SourceTableRecordd attached to this edge
+     * @param originalRhs the other SourceTableRecord attached to this edge
+     */
     public PotentialMatchRecord(
             MatchPool pool,
             MatchMakerCriteriaGroup criteriaGroup,
@@ -107,14 +118,22 @@ public class PotentialMatchRecord {
         this.matchStatus = matchStatus;
         this.originalLhs = originalLhs;
         this.originalRhs = originalRhs;
+        master = MasterSide.NEITHER;
     }
 
     public MatchType getMatchStatus() {
         return matchStatus;
     }
 
+    /**
+     * If the match status is no match, sets the master as undecided
+     * @param matchStatus the type of Match this represents
+     */
     public void setMatchStatus(MatchType matchStatus) {
         this.matchStatus = matchStatus;
+        if (matchStatus == MatchType.NOMATCH){
+            master = MasterSide.NEITHER;
+        }
     }
 
     public MatchMakerCriteriaGroup getCriteriaGroup() {
@@ -196,33 +215,41 @@ public class PotentialMatchRecord {
 
     /**
      * Returns the SourceTableRecord that is the master indicated by this record.
-     * NOTE: If the master is undecided, left hand side SourceTableRecord is considered
-     * the master.
      *  
-     * @return the master SourceTableRecord or the left-hand side record if no master
-     * is declared.
+     * @return the master SourceTableRecord or null if no master has been specified
+     * @throws IllegalStateException if the master is not en element of MasterSide
      */
     public SourceTableRecord getMaster() {
-        if (isRhsMaster()){
+        if(master == MasterSide.NEITHER){
+            return null;
+        } else if (master == MasterSide.LEFT_HAND_SIDE){
+            return lhs;
+        } else if (master == MasterSide.RIGHT_HAND_SIDE){
             return rhs;
         } else {
-            return lhs;
+            throw new IllegalStateException("Invalid master state: " + master);
         }
     }
     
     /**
      * Returns the SourceTableRecord that is the duplicate indicated by this record.
-     * NOTE: If the master is undecided, left hand side SourceTableRecord is considered
-     * the master.
      *  
-     * @return the duplicate (non-master) SourceTableRecord or the right-hand side record
-     * if no master is declared.
+     * @return the duplicate (non-master) SourceTableRecord or returns null if the
+     * master and duplicate has not been setup yet
+     * @throws IllegalStateException if the master is not en element of MasterSide
      */
     public SourceTableRecord getDuplicate() {
-        if (!isRhsMaster()){
-            return rhs;
+        if (master == MasterSide.NEITHER){
+            return null;
         } else {
-            return lhs;
+            if (master == MasterSide.LEFT_HAND_SIDE){
+                return rhs;
+            } else if (master == MasterSide.RIGHT_HAND_SIDE){
+                return lhs;
+            } else {
+                throw new IllegalStateException("Invalid master state: " + master);
+            }
         }
     }
+    
 }

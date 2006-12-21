@@ -192,7 +192,7 @@ public class MatchPool {
     private SourceTableRecord makeSourceTableRecord(List<Object> keyValues) {
         SourceTableRecord node = sourceTableRecords.get(keyValues);
         if (node == null) {
-            node = new SourceTableRecord(session, match, keyValues);
+            node = new SourceTableRecord(session, match, this, keyValues);
             sourceTableRecords.put(keyValues, node);
         }
         return node;
