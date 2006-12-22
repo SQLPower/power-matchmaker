@@ -93,17 +93,6 @@ public class MatchMakerEngineImplTest extends TestCase {
 		super.tearDown();
 	}
 
-
-	/**
-	 * Tests to see if the version of the engine is compatable with the
-	 * MatchMaker
-	 * 
-	 * TODO Add support to the engine to handle this
-	 */
-	public void testValidateMatchMakerEngineVersion(){
-		assertTrue(matchMakerEngine.validateMatchMakerEngineVersion());
-	}
-	
 	public void testValidateEmailSettingsValid() throws SQLException, PLSchemaException{
 		def.setEmailReturnAddress("test@sqlpower.ca");
 		def.setEmailServerName("mail");
