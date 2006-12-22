@@ -6,6 +6,7 @@ package ca.sqlpower.matchmaker;
 import java.io.IOException;
 import java.io.InputStream;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.swingui.Monitorable;
 import ca.sqlpower.matchmaker.event.EngineListener;
 
@@ -28,8 +29,9 @@ public interface MatchMakerEngine  extends Monitorable{
 	 * Note this is not reentrant.  
 	 * @throws EngineSettingException if not all the preconditions met
 	 * @throws IOException 
+	 * @throws ArchitectException 
 	 */
-	public void run() throws EngineSettingException, IOException;
+	public void run() throws EngineSettingException, IOException, ArchitectException;
 	
 	public boolean isRunning();
 	
@@ -45,10 +47,18 @@ public interface MatchMakerEngine  extends Monitorable{
 	public Integer getEngineReturnCode();
 	
 	/**
-	 * checks the preconditions that required by the engine, true is everything is OK.
-	 * @throws EngineSettingException 
+	 * Makes an effort to verify all the assumptions that the engine makes
+     * about the local environment and the remote database(s) are valid.
+     * Throws an exception if the engine's preconditions are not currently
+     * fulfilled.
+     * 
+	 * @throws EngineSettingException If there is a precondition to running
+     * the engine which is not currently met.
+	 * @throws ArchitectException If there are errors encountered while attempting
+     * to check the precondidions (this is a more severe case than a precondition
+     * failure, because it means there's something wrong with the MatchMaker too).
 	 */
-	public boolean checkPreconditions() throws EngineSettingException;
+	public void checkPreconditions() throws EngineSettingException, ArchitectException;
 	
 	/**
 	 * Create the command line to run the match engine or for display

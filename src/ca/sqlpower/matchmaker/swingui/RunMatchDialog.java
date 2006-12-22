@@ -535,8 +535,8 @@ public class RunMatchDialog extends JDialog {
 				JOptionPane.showMessageDialog(parent, ese.getMessage(),
 						"Engine error", JOptionPane.ERROR_MESSAGE);
 				return;
-			} catch (IOException ese) {
-				JOptionPane.showMessageDialog(parent, ese.getMessage(),
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(parent, ex.getMessage(),
 						"Engine error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
@@ -741,10 +741,14 @@ public class RunMatchDialog extends JDialog {
 			MatchMakerEngineImpl matchEngine = new MatchMakerEngineImpl(session, match);
 			try {
 				matchEngine.checkPreconditions();
-			} catch (EngineSettingException e) {
+			} catch (EngineSettingException ex) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						e.getMessage());
-			}
+						ex.getMessage());
+			} catch (Exception ex) {
+                logger.warn("Unexpected exception while checking engine preconditions", ex);
+                return ValidateResult.createValidateResult(Status.FAIL,
+                        "Unexpected exception: "+ex.getMessage());
+            }
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
 

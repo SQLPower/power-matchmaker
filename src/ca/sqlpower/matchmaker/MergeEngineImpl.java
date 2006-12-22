@@ -4,9 +4,8 @@ package ca.sqlpower.matchmaker;
 public class MergeEngineImpl extends AbstractCEngine {
 
 	@Override
-	public boolean checkPreconditions() throws EngineSettingException {
-		// TODO Auto-generated method stub
-		return false;
+	public void checkPreconditions() throws EngineSettingException {
+		throw new EngineSettingException("Merge engine integration is not implemented");
 	}
 
 	public String createCommandLine(MatchMakerSession session, Match match, boolean userPrompt) {
