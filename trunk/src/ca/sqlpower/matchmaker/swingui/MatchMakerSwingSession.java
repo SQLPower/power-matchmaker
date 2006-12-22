@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,7 +42,6 @@ import ca.sqlpower.architect.ArchitectSessionImpl;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
@@ -701,8 +699,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         sessionContext.setLastImportExportAccessPath(path);
     }
 
-    ///// MatchMakerSession Implementation //////
-
     /**
      * Appends the warning to the warningTextArea and makes the warningDialog visible
      * as well as telling all the warning listeners about the warning.
@@ -912,31 +908,16 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
     public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName)
 		throws ArchitectException {
-    	logger.debug("Session.findSQLTableByName:" + catalog + "." + schema + "." + tableName);
-    	if (tableName == null || tableName.length() == 0) return null;
-		SQLDatabase currentDB = getDatabase();
-		SQLDatabase tempDB = null;
-		try {
-			tempDB = new SQLDatabase(currentDB.getDataSource());
-			return tempDB.getTableByName(
-					catalog,
-					schema,
-					tableName);
-		} finally {
-			if (tempDB != null) tempDB.disconnect();
-		}
+    	return sessionImpl.findPhysicalTableByName(catalog, schema, tableName);
 	}
 
     public boolean tableExists(String catalog, String schema, 
     		String tableName) throws ArchitectException {
-    	return (findPhysicalTableByName(catalog,schema,tableName) != null);
+    	return sessionImpl.tableExists(catalog, schema, tableName);
 	}
 	
      public boolean tableExists(SQLTable table) throws ArchitectException {
-		if ( table == null ) return false;
-		return tableExists(table.getCatalogName(),
-				table.getSchemaName(),
-				table.getName());
+         return sessionImpl.tableExists(table);
 	}
 
      /**
@@ -944,30 +925,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      * on it.
       */
 	public boolean canSelectTable(SQLTable table) throws ArchitectException {
-
-		Connection conn = getConnection();
-		Statement stmt = null;
-		StringBuffer sql = new StringBuffer();
-		try {
-			sql.append("select * from ");
-			sql.append(DDLUtils.toQualifiedName(table));
-			stmt = conn.createStatement();
-			stmt.executeQuery(sql.toString());
-			return true;
-		} catch (SQLException e) {
-			logger.debug("sql error: select statement:[" +
-					sql.toString() + "]\n" + e.getMessage() );
-			return false;
-		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (SQLException e) {
-				logger.debug("unknown sql error when close result set and " +
-						"statement. " + e.getMessage());
-			}
-		}
+	    return sessionImpl.canSelectTable(table);
 	}
   
 }
