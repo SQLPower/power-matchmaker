@@ -181,8 +181,6 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	private Action newCriteria = new AbstractAction("New Criteria") {
 		public void actionPerformed(ActionEvent arg0) {
 			MatchMakerCriteria criteria = new MatchMakerCriteria();
-			String newUniqueName = group.createNewUniqueName();
-			criteria.setName(newUniqueName);
 			group.addChild(criteria);
 			criteria.addMatchMakerListener(new MatchMakerListener() {
 
