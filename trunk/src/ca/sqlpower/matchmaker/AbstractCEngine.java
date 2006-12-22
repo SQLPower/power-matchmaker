@@ -28,7 +28,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	private Thread processMonitor;
 	private Integer engineExitCode;
 	
-	public abstract boolean checkPreconditions() throws EngineSettingException; 
+	public abstract void checkPreconditions() throws EngineSettingException, ArchitectException; 
 	
 		
 	protected Match getMatch() {
@@ -61,15 +61,6 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 		}
 	}
 
-	/**
-	 * returns true if the matchmaker engine version is good for the schema that
-	 * we currently connect to. false if the engine version is too old.
-	 */
-	static boolean validateMatchMakerEngineVersion() {
-		// require change the engine
-		return true;
-	}
-	
 	/* (non-Javadoc)
 	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#getEngineReturnCode()
 	 */
@@ -91,7 +82,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	/* (non-Javadoc)
 	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#run()
 	 */
-	public void run() throws EngineSettingException, IOException {
+	public void run() throws EngineSettingException, IOException, ArchitectException {
 		checkPreconditions();
 		if (proc!=null) throw new IllegalStateException("Engine has already been run");
 		String commandLine = createCommandLine(session,match,false);

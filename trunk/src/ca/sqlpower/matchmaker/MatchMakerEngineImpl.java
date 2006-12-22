@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
@@ -9,6 +10,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.DefaultParameters;
 import ca.sqlpower.sql.PLSchemaException;
 
@@ -28,9 +30,108 @@ public class MatchMakerEngineImpl extends AbstractCEngine {
 		context = session.getContext();
 	}
 
-	public boolean checkPreconditions() throws EngineSettingException {
-		return checkPreConditions(getSession(),getMatch());
+	public void checkPreconditions() throws EngineSettingException, ArchitectException {
+		MatchMakerSession session = getSession();
+        Match match = getMatch();
+        final MatchMakerSessionContext context = session.getContext();
+        final MatchSettings settings = match.getMatchSettings();
+        
+        if ( context == null ) {
+        	throw new EngineSettingException(
+        			"PreCondition failed: session context must not be null");
+        }
+        
+        if ( session.getDatabase() == null ) {
+        	throw new EngineSettingException(
+        			"PreCondition failed: database of the session must not be null");
+        }
+        if ( session.getDatabase().getDataSource() == null ) {
+        	throw new EngineSettingException(
+        			"PreCondition failed: data source of the session must not be null");
+        }
+        
+        if (!hasODBCDSN(session.getDatabase().getDataSource())){
+        	throw new EngineSettingException(
+        			"Your Data Source \""+
+                    session.getDatabase().getDataSource().getDisplayName()+
+                    "\" doesn't have the ODBC DSN set.");
+        }
+        
+        if (!canExecuteMatchEngine(session.getContext())) {
+        	throw new EngineSettingException(
+        			"The Matchmaker engine executable at "+
+                    session.getContext().getMatchEngineLocation()+" is either " +
+                    "missing or not accessible");
+        }
+        
+        if (!Match.doesSourceTableExist(session, match)) {
+            throw new EngineSettingException(
+                    "Your match source table \""+
+                    DDLUtils.toQualifiedName(match.getSourceTable())+
+            "\" does not exist");
+        }
+        
+        if (!session.canSelectTable(match.getSourceTable())) {
+            throw new EngineSettingException(
+            "PreCondition failed: can not select match source table");
+        }
+        
+        if (!Match.doesResultTableExist(session, match)) {
+            throw new EngineSettingException(
+            "PreCondition failed: match result table does not exist");
+        }
+        
+        if (!match.vertifyResultTableStruct() ) {
+            throw new EngineSettingException(
+            "PreCondition failed: match result table structure incorrect");
+        }
+        
+        if (settings.getSendEmail()) {
+            if (!canExecuteEmailEngine(session.getContext())) {
+                throw new EngineSettingException(
+                        "The email notification executable is not found.\n" +
+                " It should be in the directory of pl.ini");
+            }
+        
+            Connection con = null;
+            try {
+                con = session.getConnection();
+                if (!validateEmailSetting(new DefaultParameters(con))) {
+                    throw new EngineSettingException(
+                            "missing email setting information," +
+                            " the email sender requires smtp server name and" +
+                    " returning email address!");
+                }
+            } catch (SQLException e) {
+                throw new EngineSettingException("Cannot validate email settings",e);
+            } catch (PLSchemaException e) {
+                throw new EngineSettingException("Cannot validate email settings",e);
+            } finally {
+                try {
+                    if (con != null) con.close();
+                } catch (SQLException ex) {
+                    logger.warn("Couldn't close connection", ex);
+                }
+            }
+        }
+        
+        if (!Match.doesSourceTableExist(session, match)) {
+            throw new EngineSettingException("Source table does not exist!");
+        }
+        if (!Match.doesResultTableExist(session, match)) {
+            throw new EngineSettingException("Result table does not exist!");
+        }
+        
+        
+        if (!canReadLogFile(settings)) {
+            throw new EngineSettingException("The log file is not readable.");
+        }
+        
+        if (!canWriteLogFile(settings)) {
+            throw new EngineSettingException("The log file is not writable.");
+        }
 	} 
+    
 	/**
 	 * returns true if the DEF_PARAM.EMAIL_NOTIFICATION_RETURN_ADRS and
 	 * DEF_PARAM.MAIL_SERVER_NAME column are not null or empty, they are
@@ -98,129 +199,12 @@ public class MatchMakerEngineImpl extends AbstractCEngine {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#checkPreConditions()
+	/**
+	 * check the DSN setting for the current database connection,
+	 * that's required by the matchmaker odbc engine, since we will not
+	 * use this odbc engine forever, check for not null is acceptable for now.
 	 */
-	public static boolean checkPreConditions(MatchMakerSession session, Match match) throws EngineSettingException {
-		final MatchMakerSessionContext context = session.getContext();
-		final MatchSettings settings = match.getMatchSettings();
-
-		if ( context == null ) {
-			throw new EngineSettingException(
-					"PreCondition failed: session context must not be null");
-		}
-
-		if ( session.getDatabase() == null ) {
-			throw new EngineSettingException(
-					"PreCondition failed: database of the session must not be null");
-		}
-		if ( session.getDatabase().getDataSource() == null ) {
-			throw new EngineSettingException(
-					"PreCondition failed: data source of the session must not be null");
-		}
-
-		if (!hasODBCDSN(session.getDatabase().getDataSource())){
-			throw new EngineSettingException(
-					"ODBC DSN is missing in the Logical database connection setting," +
-					" that's required by the matchmaker engine");
-		}
-
-		if (!canExecuteMatchEngine(session.getContext())) {
-			throw new EngineSettingException(
-					"The Matchmaker engine executable is not found.\n" +
-					" It should be in the directory of pl.ini");
-		}
-
-		if (!validateMatchMakerEngineVersion()) {
-			throw new EngineSettingException(
-					"The matchmaker engine version is not up to date");
-		}
-
-		try {
-			if (!Match.doesSourceTableExist(session, match)) {
-				throw new EngineSettingException(
-					"PreCondition failed: match source table does not exist");
-			}
-		} catch (ArchitectException e1) {
-			throw new EngineSettingException(
-				"PreCondition failed: " + e1.getMessage());
-		}
-		try {
-			if (!session.canSelectTable(match.getSourceTable())) {
-				throw new EngineSettingException(
-					"PreCondition failed: can not select match source table");
-			}
-		} catch (ArchitectException e1) {
-			throw new EngineSettingException(
-					"PreCondition failed: " + e1.getMessage());
-		}
-		try {
-			if (!Match.doesResultTableExist(session, match)) {
-				throw new EngineSettingException(
-					"PreCondition failed: match result table does not exist");
-			}
-		} catch (ArchitectException e1) {
-			throw new EngineSettingException(
-					"PreCondition failed: " + e1.getMessage());
-		}
-		try {
-			if (!match.vertifyResultTableStruct() ) {
-				throw new EngineSettingException(
-					"PreCondition failed: match result table structure incorrect");
-			}
-		} catch (ArchitectException e1) {
-			throw new EngineSettingException(
-					"PreCondition failed: " + e1.getMessage());
-		}
-		if (settings.getSendEmail()) {
-			if (!canExecuteEmailEngine(session.getContext())) {
-				throw new EngineSettingException(
-						"The email notification executable is not found.\n" +
-				" It should be in the directory of pl.ini");
-			}
-
-			try {
-				if (!validateEmailSetting(new DefaultParameters(session.getConnection()))) {
-					throw new EngineSettingException(
-							"missing email setting information," +
-							" the email sender requires smtp server name and" +
-							" returning email address!");
-				}
-			} catch (SQLException e) {
-				throw new EngineSettingException("Cannot validate email settings",e);
-			} catch (PLSchemaException e) {
-				throw new EngineSettingException("Cannot validate email settings",e);
-			}
-		}
-
-		try {
-			if (!Match.doesSourceTableExist(session, match)) {
-				throw new EngineSettingException("Source table does not exist!");
-			}
-			if (!Match.doesResultTableExist(session, match)) {
-				throw new EngineSettingException("Result table does not exist!");
-			}
-		} catch (ArchitectException e) {
-			throw new EngineSettingException("SQL Error. "+e.getMessage());
-		}
-
-		if (!canReadLogFile(settings)) {
-			throw new EngineSettingException("The log file is not readable.");
-		}
-
-		if (!canWriteLogFile(settings)) {
-			throw new EngineSettingException("The log file is not writable.");
-		}
-		return true;
-	}
-
-
 	protected static boolean hasODBCDSN(ArchitectDataSource dataSource) {
-		/**
-		 * check the DSN setting for the current database connection,
-		 * that's required by the matchmaker odbc engine, since we will not
-		 * use this odbc engine forever, check for not null is acceptable for now.
-		 */
 		final String odbcDsn = dataSource.getOdbcDsn();
 		if ( odbcDsn == null || odbcDsn.length() == 0 ) {
 			return false;
