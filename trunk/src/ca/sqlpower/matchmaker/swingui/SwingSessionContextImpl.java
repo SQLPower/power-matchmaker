@@ -10,6 +10,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 import org.apache.log4j.Logger;
 
@@ -83,6 +84,13 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         this.prefs = prefsRootNode;
         this.context = delegateContext;
 
+        try {
+            UIManager.setLookAndFeel(
+                UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ex) {
+        	logger.error("Unable to set native look and feel. Continuing with default.", ex);
+        }
+        
         dbConnectionManager = new DatabaseConnectionManager(this);
         loginDialog = new LoginDialog(this);
     }
