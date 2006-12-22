@@ -209,19 +209,19 @@ public class MatchValidation {
                     if ( rs != null )
                         rs.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close result set", e1);
                 }
                 try {
                     if ( pstmt != null )
                         pstmt.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close statement", e1);
                 }
                 try {
                     if (con != null)
                         con.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close connection: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close connection", e1);
                 }
             }
 
@@ -268,19 +268,19 @@ public class MatchValidation {
                 if ( rs != null )
                     rs.close();
             } catch (SQLException e1) {
-                logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                logger.warn("Couldn't close result set", e1);
             }
             try {
                 if ( pstmt != null )
                     pstmt.close();
             } catch (SQLException e1) {
-                logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                logger.warn("Couldn't close statement", e1);
             }
             try {
                 if (con != null)
                     con.close();
             } catch (SQLException e1) {
-                logger.debug("Couldn't close connection: "+ e1.getStackTrace());
+                logger.warn("Couldn't close connection", e1);
             }
         }
     }
@@ -335,19 +335,19 @@ public class MatchValidation {
                 if ( rs != null )
                     rs.close();
             } catch (SQLException e1) {
-                logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                logger.warn("Couldn't close result set", e1);
             }
             try {
                 if ( pstmt != null )
                     pstmt.close();
             } catch (SQLException e1) {
-                logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                logger.warn("Couldn't close statement", e1);
             }
             try {
                 if (con != null)
                     con.close();
             } catch (SQLException e1) {
-                logger.debug("Couldn't close connection: "+ e1.getStackTrace());
+                logger.warn("Couldn't close connection", e1);
             }
         }
         return crset;
@@ -742,19 +742,19 @@ public class MatchValidation {
                     if ( rs != null )
                         rs.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close result set", e1);
                 }
                 try {
                     if ( pstmt != null )
                         pstmt.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close statement", e1);
                 }
                 try {
                     if (con != null)
                         con.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close connection: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close connection", e1);
                 }
             }
 
@@ -801,19 +801,19 @@ public class MatchValidation {
                     if ( rs != null )
                         rs.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close result set", e1);
                 }
                 try {
                     if ( pstmt != null )
                         pstmt.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close statement", e1);
                 }
                 try {
                     if (con != null)
                         con.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close connection: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close connection", e1);
                 }
             }
         }
@@ -857,19 +857,19 @@ public class MatchValidation {
                     if ( rs != null )
                         rs.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close result set", e1);
                 }
                 try {
                     if ( pstmt != null )
                         pstmt.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close statement", e1);
                 }
                 try {
                     if (con != null)
                         con.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close connection: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close connection", e1);
                 }
             }
         }
@@ -941,19 +941,19 @@ public class MatchValidation {
                     if ( rs != null )
                         rs.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close result set: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close result set", e1);
                 }
                 try {
                     if ( pstmt != null )
                         pstmt.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close statement: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close statement", e1);
                 }
                 try {
                     if (con != null)
                         con.close();
                 } catch (SQLException e1) {
-                    logger.debug("Couldn't close connection: "+ e1.getStackTrace());
+                    logger.warn("Couldn't close connection", e1);
                 }
             }
 

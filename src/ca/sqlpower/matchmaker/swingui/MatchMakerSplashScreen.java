@@ -9,6 +9,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 
@@ -19,6 +21,8 @@ import com.jgoodies.forms.layout.RowSpec;
 
 public class MatchMakerSplashScreen {
 
+    private static final Logger logger = Logger.getLogger(MatchMakerSplashScreen.class);
+    
 	private JPanel splashScreen;
 	private MatchMakerSession session;
 	public MatchMakerSplashScreen(MatchMakerSession session) throws SQLException {
@@ -33,9 +37,20 @@ public class MatchMakerSplashScreen {
 		Font f = welcome.getFont();
 		Font newf = new Font(f.getName(),f.getStyle(),f.getSize()*2);
 		welcome.setFont(newf);
-		final Connection con = session.getConnection();
-		final DatabaseMetaData dbmd = con.getMetaData();
-
+        Connection con = null;
+        DatabaseMetaData dbmd = null;
+        try {
+            con = session.getConnection();
+            dbmd = con.getMetaData();
+        } finally {
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (SQLException ex) {
+                logger.warn("Couldn't close connection", ex);
+            }
+        }
 		JLabel databaseLabel = new JLabel("Database:");
 		databaseLabel.setVerticalAlignment(JLabel.TOP);
 		JLabel databaseInfo = new JLabel("<html>" + session.getDatabase().getName()+"</html>");
