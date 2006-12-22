@@ -203,14 +203,12 @@ public class TableMergeRules
             setParent(grandparent.getMatchCriteriaGroupFolder());
         }
     }
-    
- /*   @Override
-    public String getName() {
-    	if (getSourceTable() != null) {
-    		return DDLUtils.toQualifiedName(getSourceTable()); 
-    	} else {
-    		return null;
-    	}
-    }*/
-	
+
+	public Long getOid() {
+		return oid;
+	}
+
+	public void setOid(Long oid) {
+		this.oid = oid;
+	}
 }
