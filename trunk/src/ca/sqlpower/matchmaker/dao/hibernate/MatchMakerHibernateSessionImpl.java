@@ -172,6 +172,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         matchMakerCriteriaGroupDAO = new MatchMakerCriteriaGroupDAOHibernate(this);
         matchMakerTranslateGroupDAO = new MatchMakerTranslateGroupDAOHibernate(this);
         tableMergeRulesDAO = new TableMergeRulesDAOHibernate(this);
+        con.close();
 	}
 
     public MatchMakerSessionContext getContext() {
@@ -395,13 +396,14 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      */
     public boolean canSelectTable(SQLTable table) throws ArchitectException {
 
-		Connection conn = getConnection();
+		Connection con = null;
 		Statement stmt = null;
 		StringBuffer sql = new StringBuffer();
 		try {
+            con = getConnection();
 			sql.append("select * from ");
 			sql.append(DDLUtils.toQualifiedName(table));
-			stmt = conn.createStatement();
+			stmt = con.createStatement();
 			stmt.executeQuery(sql.toString());
 			return true;
 		} catch (SQLException e) {
@@ -409,14 +411,20 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 					sql.toString() + "]\n" + e.getMessage() );
 			return false;
 		} finally {
-			try {
-				if (stmt != null) {
-					stmt.close();
-				}
-			} catch (SQLException e) {
-				logger.debug("unknown sql error when close result set and " +
-						"statement. " + e.getMessage());
-			}
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                logger.warn("Couldn't close statement", e);
+            }
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (SQLException e) {
+                logger.warn("Couldn't close connection", e);
+            }
 		}
 	}
 }

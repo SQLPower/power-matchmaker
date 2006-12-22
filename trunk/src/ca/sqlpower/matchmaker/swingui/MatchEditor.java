@@ -1128,11 +1128,20 @@ public class MatchEditor implements EditorPane {
 								"Couldn't allocate a Statement:\n" + ex.getMessage(),
 								JOptionPane.ERROR_MESSAGE);
 					} finally {
-						try {
-							if (stmt != null) stmt.close();
-						} catch (SQLException ex) {
-							logger.error("SQLException while closing statement", ex);
-						}
+                        try {
+                            if (stmt != null) {
+                                stmt.close();
+                            }
+                        } catch (SQLException ex) {
+                            logger.warn("Couldn't close statement", ex);
+                        }
+                        try {
+                            if (con != null) {
+                                con.close();
+                            }
+                        } catch (SQLException ex) {
+                            logger.warn("Couldn't close connection", ex);
+                        }
 					}
 				}
 		    };
