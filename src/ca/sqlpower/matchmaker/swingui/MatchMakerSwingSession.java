@@ -33,6 +33,7 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.log4j.Logger;
 
@@ -433,6 +434,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
 		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent(),this));
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
 		tree.addMouseListener(matchMakerTreeMouseAndSelectionListener);
 		tree.addTreeSelectionListener(matchMakerTreeMouseAndSelectionListener);
