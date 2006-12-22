@@ -8,7 +8,7 @@
 	<class name="ca.sqlpower.matchmaker.TableMergeRules"
 		table="PL_MERGE_CRITERIA">
 
-		<id name="oid" type="long" access="field">
+		<id name="oid" type="long">
 			<column name="MERGE_CRITERIA_OID" />
 			<generator class="native">
 				<param name="sequence">merge_criteria_oid_seq</param>
@@ -54,10 +54,12 @@
 		<property name="lastUpdateOsUser" type="string" access="field">
 			<column name="LAST_update_OS_USER" length="30" />
 		</property>
+		
 		<many-to-one name="parentMatch"
 			class="ca.sqlpower.matchmaker.Match" fetch="select" >
 			<column name="MATCH_OID" not-null="true" />
 		</many-to-one>
+		
 		<bag name="children" cascade="all-delete-orphan"
 			inverse="true" lazy="false" fetch="subselect">
 			<key>
