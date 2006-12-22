@@ -26,7 +26,6 @@ public class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
             setForeground(table.getForeground());
             setBackground(table.getBackground());
         }
-System.out.println("*** value==null? "+(value==null) + "  "+(value==null?false:((Boolean) value).booleanValue()));        
         setSelected((value != null && ((Boolean) value).booleanValue()));
         return this;
     }

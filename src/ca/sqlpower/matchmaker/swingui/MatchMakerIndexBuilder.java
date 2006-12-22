@@ -78,7 +78,6 @@ public class MatchMakerIndexBuilder implements EditorPane {
     							dialog,
     							"Your index has unsaved changes", "Unsaved Changes", 0, 0, null,
                                 new String[] { "Save", "Discard", "Cancel" }, "Save");
-                        System.out.println("choice: "+choice);
                         if (choice == 0) {
                             boolean success = doSave();
                             if (!success) {
