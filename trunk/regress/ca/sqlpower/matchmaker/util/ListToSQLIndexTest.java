@@ -30,6 +30,18 @@ public class ListToSQLIndexTest extends TestCase {
 	SQLIndex.Column c7;
 	SQLIndex.Column c8;
 	SQLIndex.Column c9;
+	SQLIndex index2;
+	SQLIndex.Column c20;
+	SQLIndex.Column c21;
+	SQLIndex.Column c22;
+	SQLIndex.Column c23;
+	SQLIndex.Column c24;
+	SQLIndex.Column c25;
+	SQLIndex.Column c26;
+	SQLIndex.Column c27;
+	SQLIndex.Column c28;
+	SQLIndex.Column c29;
+
 	ListToSQLIndex userType;
 	private MockJDBCResultSet rs;
 	private String[] names;
@@ -39,6 +51,9 @@ public class ListToSQLIndexTest extends TestCase {
 		super.setUp();
 		index = new SQLIndex();
 		index.setName("TestIndex");
+		index2 = new SQLIndex();
+		index2.setName("TestIndex");
+		
 		c0 = index.new Column("Test0", false, false);
 		c1 = index.new Column("Test1", false, false);
 		c2 = index.new Column("Test2", false, false);
@@ -58,7 +73,28 @@ public class ListToSQLIndexTest extends TestCase {
 		index.addChild(c6);
 		index.addChild(c7);
 		index.addChild(c8);
-		index.addChild(c9);		
+		index.addChild(c9);	
+		
+		c20 = index2.new Column("Test0", false, false);
+		c21 = index2.new Column("Test1", false, false);
+		c22 = index2.new Column("Test2", false, false);
+		c23 = index2.new Column("Test3", false, false);
+		c24 = index2.new Column("Test4", false, false);
+		c25 = index2.new Column("Test5", false, false);
+		c26 = index2.new Column("Test6", false, false);
+		c27 = index2.new Column("Test7", false, false);
+		c28 = index2.new Column("Test8", false, false);
+		c29 = index2.new Column("Test9", false, false);
+		index2.addChild(c20);
+		index2.addChild(c21);
+		index2.addChild(c22);
+		index2.addChild(c23);
+		index2.addChild(c24);
+		index2.addChild(c25);
+		index2.addChild(c26);
+		index2.addChild(c27);
+		index2.addChild(c28);
+		index2.addChild(c29);		
 		userType = new ListToSQLIndex();
 		MockJDBCDriver driver = new MockJDBCDriver();
 		ArchitectDataSource ds = new ArchitectDataSource();
@@ -181,4 +217,14 @@ public class ListToSQLIndexTest extends TestCase {
 		}		
 	}
 		
+	public void testEquals() throws ArchitectException {
+		assertTrue("The two indices are not equal, but should be",userType.equals(index,index2));
+		assertTrue("The two indices are not equal, but should be",userType.equals(index,userType.deepCopy(index)));
+		String oldName = index2.getName();
+		index2.setName("some other name");
+		assertFalse("The two indices are equal, but should not be",userType.equals(index,index2));
+		index2.setName(oldName);
+		index2.addChild(index2.new Column("Test10", false, false));
+		assertFalse("The two indices are equal, but should not be",userType.equals(index,index2));
+	}
 }
