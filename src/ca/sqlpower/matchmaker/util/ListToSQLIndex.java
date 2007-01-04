@@ -12,6 +12,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLIndex;
 
 /**
@@ -67,12 +68,45 @@ public class ListToSQLIndex implements UserType  {
         return (Serializable) (deepCopy(value));
     }
 
+    /**
+     * Two SQLIndex objects have persistance equality iff 
+     * Both indices have the same name, and all column names that
+     * appear in one appear in both in the same order.
+     */
 	public boolean equals(Object x, Object y) throws HibernateException {
         if (x == null && y == null)
             return true;
-        if (x != null && y != null && (x instanceof SQLIndex)
-                && (y instanceof SQLIndex)) {
-            return x.equals(y);
+        if (logger.isDebugEnabled()){
+        	logger.debug("neither null");
+        }
+        if ((x instanceof SQLIndex) && (y instanceof SQLIndex)) {
+        	SQLIndex indexX = (SQLIndex) x;
+        	SQLIndex indexY = (SQLIndex) y;
+            try {
+            	if (indexX.getName() == null ? indexX.getName() != indexY.getName():!indexX.getName().equals(indexY.getName())){
+            		if (logger.isDebugEnabled()){
+                    	logger.debug("different pk name was " + indexY.getName()+ " expecting "+ indexX.getName());
+                    }
+            		return false;
+            	} else if (indexX.getChildCount() != indexY.getChildCount()) {
+            		if (logger.isDebugEnabled()){
+                    	logger.debug("different child count was "+ indexY.getChildCount()+ " expecting "+ indexX.getChildCount());
+                    }
+					return false;
+				} else {
+					for (int i=0; i < indexX.getChildCount(); i++){
+						if (indexX.getChild(i).getName() == null ? indexX.getChild(i).getName() != indexY.getChild(i).getName():!indexX.getChild(i).getName().equals(indexY.getChild(i).getName())){
+							if (logger.isDebugEnabled()){
+		                    	logger.debug("different column name was " + indexY.getChild(i).getName()+ " expecting "+ indexX.getChild(i).getName());
+		                    }
+		            		return false;
+		            	}
+					}
+					return true;
+				}
+			} catch (ArchitectException e) {
+				throw new ArchitectRuntimeException(e);
+			}
         } else {
             return false;
         }
