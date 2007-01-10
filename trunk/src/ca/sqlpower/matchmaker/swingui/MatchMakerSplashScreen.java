@@ -22,7 +22,7 @@ import com.jgoodies.forms.layout.RowSpec;
 public class MatchMakerSplashScreen {
 
     private static final Logger logger = Logger.getLogger(MatchMakerSplashScreen.class);
-    
+
 	private JPanel splashScreen;
 	private MatchMakerSession session;
 	public MatchMakerSplashScreen(MatchMakerSession session) throws SQLException {
@@ -32,7 +32,8 @@ public class MatchMakerSplashScreen {
 
 	private void buildUI() throws SQLException{
 
-		JLabel logo = new JLabel(new ImageIcon(getClass().getResource("/icons/matchmaker_huge.png")));
+		JLabel spgLogo = new JLabel(new ImageIcon(getClass().getResource("/icons/sqlpower_transparent.png")));
+		JLabel mmLogo = new JLabel(new ImageIcon(getClass().getResource("/icons/matchmaker_huge.png")));
 		JLabel welcome  = new JLabel("<html>" + "Power*MatchMaker " + MatchMakerSessionContext.APP_VERSION + "</html>");
 		Font f = welcome.getFont();
 		Font newf = new Font(f.getName(),f.getStyle(),f.getSize()*2);
@@ -75,7 +76,7 @@ public class MatchMakerSplashScreen {
 			new JLabel("<html><div align='center'>SQL Power Group Inc.<br>http://www.sqlpower.ca/</div></html>");
 
         FormLayout layout = new FormLayout(
-				"4dlu,pref,4dlu,fill:100:grow, 4dlu ");
+				"4dlu, pref, 4dlu, fill:100:grow, 4dlu, fill:100:grow, 4dlu ");
 		int rowCount =0;
 		PanelBuilder pb = new PanelBuilder(layout);
 		CellConstraints c = new CellConstraints();
@@ -84,13 +85,15 @@ public class MatchMakerSplashScreen {
 		rowCount++;
 		pb.appendRow(new RowSpec("pref"));
 		rowCount++;
-		pb.add(logo, c.xyw(2, rowCount, 3));
-		logo.setHorizontalAlignment(JLabel.CENTER);
+		pb.add(spgLogo, c.xyw(2, rowCount, 3));
+		spgLogo.setHorizontalAlignment(JLabel.CENTER);
+		pb.add(mmLogo, c.xyw(6, rowCount, 1));
+		mmLogo.setHorizontalAlignment(JLabel.CENTER);
 		pb.appendRow(new RowSpec("10dlu"));
 		rowCount++;
 		pb.appendRow(new RowSpec("pref"));
 		rowCount++;
-		pb.add(welcome, c.xyw(2, rowCount, 3));
+		pb.add(welcome, c.xyw(2, rowCount, 5));
 		welcome.setHorizontalAlignment(JLabel.CENTER);
 		pb.appendRow(new RowSpec("10dlu"));
 		rowCount++;
@@ -135,7 +138,7 @@ public class MatchMakerSplashScreen {
 
 		pb.appendRow(new RowSpec("pref:grow"));
 		rowCount++;
-		pb.add(sqlpower, c.xyw(2, rowCount, 3));
+		pb.add(sqlpower, c.xyw(2, rowCount, 5));
 		sqlpower.setHorizontalAlignment(JLabel.CENTER);
 		sqlpower.setVerticalAlignment(JLabel.BOTTOM);
 		splashScreen = pb.getPanel();
