@@ -20,6 +20,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -44,6 +45,10 @@ import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ASUtils;
+import ca.sqlpower.matchmaker.swingui.AboutPanel;
+import ca.sqlpower.architect.swingui.ArchitectFrame;
+import ca.sqlpower.architect.swingui.CommonCloseAction;
+import ca.sqlpower.architect.swingui.JDefaultButton;
 import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -137,19 +142,39 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     private TreePath lastTreePath;
 
 	private Action aboutAction = new AbstractAction("About MatchMaker...") {
-        public void actionPerformed(ActionEvent e) {
-            String message =
-                "<html>" +
-                "<h1>Power*MatchMaker</h1>" +
-                "<p>Version "+MatchMakerSessionContext.APP_VERSION+"</p>" +
-                "<p>Copyright 2006 SQL Power Group Inc.</p>" +
-                "</html>";
-            ImageIcon icon = new ImageIcon(getClass().getResource("/icons/matchmaker_128.png"));
-            JOptionPane.showOptionDialog(
-                    frame, message, "About Power*MatchMaker",
-                    JOptionPane.YES_OPTION, JOptionPane.INFORMATION_MESSAGE,
-                    icon, new String[] { "OK" }, "OK");
-        }
+
+		public void actionPerformed(ActionEvent evt) {
+			// This is one of the few JDIalogs that can not get replaced
+			// with a call to ArchitectPanelBuilder, because an About
+			// box must have only ONE button...
+			final JDialog d = new JDialog(ArchitectFrame.getMainInstance(),
+										  "About MatchMaker");
+			JPanel cp = new JPanel(new BorderLayout(12,12));
+			cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
+			final AboutPanel aboutPanel = new AboutPanel();
+			cp.add(aboutPanel, BorderLayout.CENTER);
+
+			JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+			Action okAction = new AbstractAction() {
+				public void actionPerformed(ActionEvent evt) {
+						aboutPanel.applyChanges();
+						d.setVisible(false);
+				}
+			};
+			okAction.putValue(Action.NAME, "OK");
+			JDefaultButton okButton = new JDefaultButton(okAction);
+			buttonPanel.add(okButton);
+
+			cp.add(buttonPanel, BorderLayout.SOUTH);
+			ASUtils.makeJDialogCancellable(
+					d, new CommonCloseAction(d));
+			d.getRootPane().setDefaultButton(okButton);
+			d.setContentPane(cp);
+			d.pack();
+			d.setLocationRelativeTo(ArchitectFrame.getMainInstance());
+			d.setVisible(true);
+		}
     };
 
 	private Action exitAction = new AbstractAction("Exit") {
@@ -234,7 +259,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     };
 
     /**
-     * This is a special variable to remember the panel that was last on 
+     * This is a special variable to remember the panel that was last on
      * the right side of the splitpane.  If the user decides to cancel on switching
      * screens (via the JTree), this variable is invoked to go back to the original
      * screen so the unsaved change method would still work properly.
@@ -320,19 +345,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-
-		// Create actions
-		Action aboutAction = new AbstractAction("About"){
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(frame,
-						"<html>Power*MatchMaker "+
-						MatchMakerSessionContext.APP_VERSION + "<br><br>" +
-						"Copyright 2003-2006 SQL Power Group Inc.<br>" +
-						"</html>",
-					"About MatchMaker",
-					JOptionPane.INFORMATION_MESSAGE);
-			}
-		};
 
 		newMatchAction = new NewMatchAction(this, "New Match", null);
         JMenuBar menuBar = new JMenuBar();
@@ -539,7 +551,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	 * @param editor
 	 *            The editor component to display in the UI. If you pass in
 	 *            null, then no editor will be showing.
-     * @throws SQLException 
+     * @throws SQLException
 	 */
 	public void setCurrentEditorComponent(EditorPane pane) throws SQLException {
 		if (pane == oldPane && pane != null) {
@@ -595,7 +607,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
                         }
                     }
                 }
-            } 
+            }
             if (doit) {
                 //Remebers the treepath to the last node that it clicked on
                 if (pane != null){
@@ -855,8 +867,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
 		if (mmo.getParent() != null) {
 			mmo.getParent().removeChild(mmo);
-            
-            
+
+
             if (mmo instanceof MatchMakerCriteria) {
                 // XXX Criteria are special because they don't have a DAO of their own
                 MatchMakerObject criteriaGroup = mmo.getParent();
@@ -871,7 +883,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
                 MatchMakerDAO dao = getDAO(mmo.getClass());
                 dao.delete(mmo);
             }
-        
+
 
         } else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
@@ -913,11 +925,11 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     	return sessionImpl.findPhysicalTableByName(catalog, schema, tableName);
 	}
 
-    public boolean tableExists(String catalog, String schema, 
+    public boolean tableExists(String catalog, String schema,
     		String tableName) throws ArchitectException {
     	return sessionImpl.tableExists(catalog, schema, tableName);
 	}
-	
+
      public boolean tableExists(SQLTable table) throws ArchitectException {
          return sessionImpl.tableExists(table);
 	}
@@ -929,5 +941,5 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	public boolean canSelectTable(SQLTable table) throws ArchitectException {
 	    return sessionImpl.canSelectTable(table);
 	}
-  
+
 }
