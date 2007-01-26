@@ -12,7 +12,7 @@ import ca.sqlpower.architect.ddl.DDLUtils;
  * The best way to think of this is a per row merge rules.
  */
 public class TableMergeRules
-	extends AbstractMatchMakerObject<TableMergeRules, MatchMakerObject> {
+	extends AbstractMatchMakerObject<TableMergeRules, ColumnMergeRules> {
 
 	private Long oid;
 
