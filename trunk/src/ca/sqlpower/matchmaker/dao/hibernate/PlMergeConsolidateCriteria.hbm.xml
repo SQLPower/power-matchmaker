@@ -10,7 +10,7 @@
 		name="ca.sqlpower.matchmaker.ColumnMergeRules"
 		table="PL_MERGE_CONSOLIDATE_CRITERIA">
 		<id name="oid" type="long" access="field">
-			<column name="MERGE_CRITERIA_OID" />
+			<column name="MERGE_CONSOLIDATE_CRITERIA_OID" />
 			<generator class="native">
 				<param name="sequence">mrge_consol_crit_oid_seq</param>
 			</generator>
