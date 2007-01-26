@@ -88,8 +88,8 @@ public class MergeTableRuleEditor implements EditorPane {
 	private void buildUI() {
 		
 		FormLayout layout = new FormLayout(
-				"4dlu,pref,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow, 4dlu,pref,4dlu", // columns
-				"10dlu,pref,4dlu,min(pref;40dlu),4dlu,pref,12dlu,pref:grow,4dlu,pref,4dlu"); // rows
+				"4dlu,14dlu,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow, 4dlu,pref,4dlu", // columns
+				"10dlu,pref,4dlu,pref,4dlu,min(pref;40dlu),12dlu,pref,4dlu,fill:40dlu:grow,4dlu,pref,4dlu"); // rows
 			//	 1     2    3    4               5    6    7     8         9    10   11      
 
 
@@ -105,10 +105,11 @@ public class MergeTableRuleEditor implements EditorPane {
 		
         desc.setWrapStyleWord(true);
         desc.setLineWrap(true);
-		pb.add(new JLabel("Description:"), cc.xy(2,row,"r,t"));
+		pb.add(new JLabel("Description:"), cc.xy(4,row,"l,t"));
+		row += 2;
 		pb.add(new JScrollPane(desc), cc.xy(4,row,"f,f"));
 		row += 2;
-		pb.add(new JLabel("Merge Rules:"), cc.xy(4,row,"c,c"));
+		pb.add(new JLabel("Merge Rules:"), cc.xy(4,row,"l,t"));
 		row += 2;
 		mergeRulesScrollPane = new JScrollPane(mergeRulesTable);
 		pb.add(mergeRulesScrollPane, cc.xy(4,row,"f,f"));
