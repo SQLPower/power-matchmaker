@@ -21,7 +21,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
@@ -54,10 +53,11 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MergeColumnRuleEditor.class);
 	private JPanel panel;
-	StatusComponent status = new StatusComponent();
 	private final MatchMakerSwingSession swingSession;
 	private final Match match;
 	private TableMergeRules mergeRule;
+	private ColumnMergeRules selectedColumn;
+	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
 	private final SQLObjectChooser chooser;
 	private final JCheckBox deleteDup = new JCheckBox();
@@ -66,13 +66,13 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private ColumnMergeRuleTableModel ruleTableModel;
 	private ColumnMergeRulesTable ruleTable;
 	
-	private boolean tableChanged = false;
-
 	public MergeColumnRuleEditor(MatchMakerSwingSession swingSession,
-			Match match, TableMergeRules mergeRule) throws ArchitectException {
+			Match match, TableMergeRules mergeRule, 
+			ColumnMergeRules selectedColumn) throws ArchitectException {
 		this.swingSession = swingSession;
 		this.match = match;
 		this.mergeRule = mergeRule;
+		this.selectedColumn = selectedColumn;
 		if (match == null) throw new NullPointerException("You can't edit a null match");
 		if (mergeRule == null) throw new NullPointerException("You can't edit a null merge rule");
 
@@ -90,12 +90,6 @@ public class MergeColumnRuleEditor implements EditorPane {
         buildUI();
         setDefaultSelections();
         handler.resetHasValidated(); // avoid false hits when newly created
-        
-        ruleTableModel.addTableModelListener(new TableModelListener(){
-			public void tableChanged(TableModelEvent e) {
-				tableChanged = true;
-			}});
-        
         
 	}
 
@@ -246,11 +240,17 @@ public class MergeColumnRuleEditor implements EditorPane {
 		
 		MergeColumnRuleJTableValidator v2 = new MergeColumnRuleJTableValidator();
 		handler.addValidateObject(ruleTable, v2);
+		
+		if (selectedColumn != null) {
+			int selected = mergeRule.getChildren().indexOf(selectedColumn);			
+			if (selected >= 0 && selected<ruleTable.getRowCount()) {
+				ruleTable.setRowSelectionInterval(selected, selected);
+			}
+		}
 	}
 
 	public boolean doSave() {
 		swingSession.save(match);
-		tableChanged = false;
 		return true;
 	}
 
@@ -259,8 +259,23 @@ public class MergeColumnRuleEditor implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
-		if (tableChanged) {
+		
+		final List<ColumnMergeRules> newColumnRules = ruleTableModel.getColumnRules();
+		final List<ColumnMergeRules> oldColumnRules = mergeRule.getChildren();
+		
+		if (newColumnRules.size() != oldColumnRules.size()) {
 			return true;
+		}
+		
+		for (int i=0; i<newColumnRules.size(); i++) {
+			ColumnMergeRules newRule = newColumnRules.get(i);
+			ColumnMergeRules oldRule = oldColumnRules.get(i);
+			if (newRule.getActionType() != oldRule.getActionType()) {
+				return true;
+			}
+			if (!newRule.getColumn().equals(oldRule.getColumn())) {
+				return true;
+			}
 		}
 		return false;
 	}

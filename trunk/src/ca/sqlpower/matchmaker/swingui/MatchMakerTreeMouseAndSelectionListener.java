@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
+import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
@@ -224,7 +225,21 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 					
 					try {
 						MergeColumnRuleEditor editor =
-							new MergeColumnRuleEditor(swingSession,m,f);
+							new MergeColumnRuleEditor(swingSession,m,f,null);
+						logger.debug("Created new merge column rules editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
+					} catch (ArchitectException e1) {
+						throw new ArchitectRuntimeException(e1);
+					}
+				} else if ( o instanceof ColumnMergeRules ) {
+					TableMergeRules f = (TableMergeRules) ((ColumnMergeRules)o).getParent();
+					Match m = (Match) f.getParentMatch();
+					
+					try {
+						MergeColumnRuleEditor editor =
+							new MergeColumnRuleEditor(swingSession,m,f,
+									(ColumnMergeRules)o);
 						logger.debug("Created new merge column rules editor "
 								+ System.identityHashCode(editor));
 						swingSession.setCurrentEditorComponent(editor);
