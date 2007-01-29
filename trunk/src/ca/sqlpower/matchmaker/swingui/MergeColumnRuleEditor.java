@@ -219,6 +219,8 @@ public class MergeColumnRuleEditor implements EditorPane {
 			ruleTableModel.clearRules();
 		}
 	};
+	private SQLTable oldSQLTable;
+	private boolean reSetting = false; 
 	
 	private void setDefaultSelections() throws ArchitectException {
 		chooser.getCatalogComboBox().setSelectedItem(mergeRule.getSourceTable().getCatalog());
@@ -229,7 +231,34 @@ public class MergeColumnRuleEditor implements EditorPane {
 		
 		chooser.getTableComboBox().addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {
-				clearAction.actionPerformed(null);
+				System.out.println("StateChange="+e.getStateChange());
+				
+				if (!reSetting) {
+					if ( e.getStateChange() == ItemEvent.DESELECTED ) {
+						oldSQLTable = (SQLTable) e.getItem();
+					} else if ( e.getStateChange() == ItemEvent.SELECTED ) {
+						if (ruleTable.getRowCount() > 0) {
+							int respond = JOptionPane.showConfirmDialog(
+									swingSession.getFrame(),
+									"Change table will also clear the column merge rules, Do you want to continue?",
+									"Clear the column merge rules?", 
+									JOptionPane.YES_NO_OPTION,
+									JOptionPane.INFORMATION_MESSAGE);
+							if (respond == JOptionPane.YES_OPTION) {
+								clearAction.actionPerformed(null);
+								reSetting = false;
+							} else {
+								reSetting = true;
+								chooser.getTableComboBox().setSelectedItem(oldSQLTable);
+							}
+						}
+					}
+				} else {
+					if ( e.getStateChange() == ItemEvent.SELECTED ) {
+						reSetting = false;
+					}
+				}
+					
 			}});
 		
 		MergeColumnRuleComboBoxValidator v1 = new MergeColumnRuleComboBoxValidator(chooser);
