@@ -45,7 +45,6 @@ import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.matchmaker.swingui.AboutPanel;
 import ca.sqlpower.architect.swingui.ArchitectFrame;
 import ca.sqlpower.architect.swingui.CommonCloseAction;
 import ca.sqlpower.architect.swingui.JDefaultButton;
@@ -141,6 +140,15 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      */
     private TreePath lastTreePath;
 
+    private Action userPrefsAction = new AbstractAction("User Preferences...") {
+		public void actionPerformed(ActionEvent e) {
+			JOptionPane.showMessageDialog(MatchMakerSwingSession.this.frame,
+					"The User Preferences action for OS Xis not yet implemented",
+					"Apologies",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
+    };
+
 	private Action aboutAction = new AbstractAction("About MatchMaker...") {
 
 		public void actionPerformed(ActionEvent evt) {
@@ -190,7 +198,16 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 	};
 
-	private Action logoutAction = new DummyAction("Logout");
+	private Action logoutAction = new AbstractAction("Logout") {
+		public void actionPerformed(ActionEvent e) {
+			logger.debug("Stub call: .actionPerformed()");
+			JOptionPane.showMessageDialog(MatchMakerSwingSession.this.frame,
+					"The logout action is not yet implemented",
+					"Apologies",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
+
+	};
 
 	private Action newMatchAction = null;
 	private Action editMatchAction = new EditMatchAction("Edit");
@@ -205,16 +222,11 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			r.pack();
 			r.setVisible(true);
 		}
-
 	};
 
 	private Action runMergeAction = new DummyAction(null, "Run Merge");
 
-	private Action configAction = new DummyAction(null, "Config");
 	private Action helpAction;
-
-	private Action databasePreferenceAction =
-		new DummyAction("Database Preference");
 
 	private Action tableQueryAction = new AbstractAction("Table Explorer") {
 		public void actionPerformed(ActionEvent e) {
@@ -352,16 +364,9 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		//Settingup
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
-		fileMenu.add(databasePreferenceAction);
 		fileMenu.add(exitAction);
 
 		menuBar.add(fileMenu);
-
-		JMenu explorerMenu = new JMenu("Explorers");
-		explorerMenu.setMnemonic('x');
-		explorerMenu.add(new DummyAction(frame, "Match Maker"));
-		explorerMenu.add(new DummyAction(frame, "Adminstration"));
-		menuBar.add(explorerMenu);
 
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
 		JMenu databaseMenu = new JMenu("Database");
@@ -387,17 +392,11 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 		JMenu mergeMenu = new JMenu("Merges");
 		mergeMenu.add(newMatchAction);
-		mergeMenu.add(new DummyAction(frame, "Edit"));
-		mergeMenu.add(new DummyAction(frame, "Delete"));
-		mergeMenu.add(".....");
 		menuBar.add(mergeMenu);
 
 		JMenu folderMenu = new JMenu("Folders");
 		folderMenu.setMnemonic('F');
 		folderMenu.add(newMatchAction);
-		folderMenu.add(new DummyAction(frame, "Edit"));
-		folderMenu.add(new DummyAction(frame, "Delete"));
-		folderMenu.add(".....");
 		menuBar.add(folderMenu);
 
 		JMenu toolsMenu = new JMenu("Tools");
@@ -431,8 +430,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         toolBar.add(runMatchAction);
         toolBar.add(runMergeAction);
         toolBar.addSeparator();
-        toolBar.add(databasePreferenceAction);
-        toolBar.add(configAction);
         toolBar.addSeparator();
         toolBar.add(helpAction);
         toolBar.add(exitAction);
@@ -665,7 +662,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
                 Class[] defArgs = { Action.class, Action.class, Action.class };
                 Method registerMethod = osxAdapter.getDeclaredMethod("registerMacOSXApplication", defArgs);
                 if (registerMethod != null) {
-                    Object[] args = { exitAction, databasePreferenceAction, aboutAction };  // XXX databasePreferenceAction might not be appropriate here.
+                    Object[] args = { exitAction, userPrefsAction, aboutAction };
                     registerMethod.invoke(osxAdapter, args);
                 }
 
