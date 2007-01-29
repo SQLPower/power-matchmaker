@@ -17,26 +17,21 @@ import ca.sqlpower.util.VersionFormatException;
  * preferences information, and when properly configured, is used for creating
  * MatchMaker sessions, which are a basic requirement for using the rest of the
  * MatchMaker API. If you were looking for the starting point, you've found it!
- * 
- * <p>The normal implementation of this interface is 
+ *
+ * <p>The normal implementation of this interface is
  * {@link ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext},
  * so you probably want to create and configure one of those to get started.
- * 
+ *
  * @version $Id$
  */
 public interface MatchMakerSessionContext {
 
     /**
-     * The version of this MatchMaker front end.
-     */
-    public static final Version APP_VERSION = new Version(5,13,13);
-    
-    /**
      * The minimum PL Schema version according to DEF_PARAM that we can work with.
      * Should be checked every time a session is created.
      */
     public static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,27);
-    
+
     public List<ArchitectDataSource> getDataSources();
 
     /**
@@ -44,7 +39,7 @@ public interface MatchMakerSessionContext {
      * with a current PL Schema.  A MatchMaker session is the core object of the
      * MatchMaker application, so you will want to call this method early in your
      * usage of the MatchMaker API.
-     * 
+     *
      * @param ds The data source that contains the PL Schema you want to connect to.
      * @param username The database user name to connect as.
      * @param password The database password for the given username.
@@ -64,20 +59,20 @@ public interface MatchMakerSessionContext {
 
     /**
      * Returns the PlDotIni object that manages this context's list of data sources.
-     * 
+     *
      * <p>We would much rather make the PlDotIni concept an interface (maybe called
      * DataSourceCollection) and implement that on this session context interface.
      * Such implementations could delegate to PlDotIni and the databases.xml stuff,
      * as well as a JNDI implementation.
      */
     public DataSourceCollection getPlDotIni();
-    
+
     /**
      * The location of the matchmaker engine
      * @return the path to the engine
      */
     public String getMatchEngineLocation();
-    
+
     /**
      * The location of the email sender engine
      * @return the path to the engine

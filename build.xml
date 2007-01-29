@@ -12,7 +12,8 @@
 	<!-- The staging directory is a temp dir that is used as a base for all the distributions -->
 	<property name="staging.dir" value="staging" />
 	<property name="izpack.dir" value="IzPack"/>
-
+	<!-- Amazing jar that we depend on but have no source for -->
+	<property name="sqlpower.jar" value="../architect/lib/sqlpower.jar"/>
 
 	<path id="toolslib">
 	 <fileset dir="lib">
@@ -23,8 +24,9 @@
 		 <include name="**/*.jar"/>
 	 	 <include name="**/*.zip"/>
 	 </fileset>
-	
+
 	 <path location="${jdbc.driver.jar}" />
+	<path location="${sqlpower.jar}"/>
 	 <path location="bin"/>
 	</path>
 
@@ -37,7 +39,7 @@
 	</condition>
 
 	<target name="hibernate-generate">
-		
+
 		<hibernatetool	destdir="tmp/gen" >
 
 		  <classpath refid="toolslib"/>
@@ -49,7 +51,7 @@
 			<hbm2dao destdir="tmp/gen"	/>
 			<hbm2hbmxml destdir="tmp/gen"/>
 			<hbm2java destdir="tmp/gen"	/>
-		</hibernatetool> 
+		</hibernatetool>
 	</target>
 
 	<condition property="isNotMac">
@@ -61,24 +63,40 @@
 	<target name="init">
 		<tstamp/>
 		<mkdir dir="${build}"/>
+		<echo>Compiling just the MatchMakerVersion file ...</echo>
+		<!-- get rid of Makefiles that get copies to the build path -->
+		<delete file="${build}/Makefile"/>
+		<delete file="../architect/${build}/Makefile"/>
 		<javac srcdir="${src}" destdir="${build}"
-				classpathref="compile.classpath"
+				classpath="${sqlpower.jar}"
 				includes="ca/sqlpower/matchmaker/MatchMakerVersion.java"
 				debug="true" deprecation="true">
 		</javac>
 		<taskdef name="genVersion"
-					classname="ca.sqlpower.matchmaker.MatchMakerVersion"
-			        classpath="build"/>
+				classname="ca.sqlpower.matchmaker.MatchMakerVersion"
+			        classpath="${build}:${sqlpower.jar}"/>
 		<genVersion message="get MatchMaker version!"/>
 		<echo message="Building MatchMaker version: ${app_ver_major}.${app_ver_minor}.${app_ver_tiny}"> </echo>
 		<property name="deploy.dir" value="deploy/matchmaker-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}"/>
 		<mkdir dir="${deploy.dir}"/>
-
 	</target>
 
+	<path id="compile.classpath">
+		<fileset dir="lib">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="buildlib">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${build}"/>
+		<fileset dir="../architect/build"/>
+	</path>
+
 	<target name="compile" depends="init,copyicons,copylog4jprops">
-		<javac srcdir="${src}" destdir="${build}" classpathref="compile.classpath" debug="true" deprecation="true">
-          <!-- <compilerarg compiler="jikes" value="+Pno-naming-convention"/> -->
+		<echo>Compiling the whole application</echo>
+		<javac srcdir="${src}" destdir="${build}"
+			classpathref="compile.classpath"
+			debug="true" deprecation="true">
         </javac>
 	</target>
 
@@ -110,14 +128,15 @@
 			PDF - because we can :-)
 	-->
 
-	<!-- NOTE: All XSLT steps currently require xalan on classpath since JDK1.5 is behind -->
+	<!-- NOTE: All XSLT steps currently require xalan on classpath -->
 	<path id="docbookclasspath">
-		<fileset dir="doc/tools/xalan">
+		<fileset dir="../architect/doc/tools/xalan">
 			<include name="*.jar"/>
 		</fileset>
 	</path>
 
-
+	<target name="userguide" depends="help,html" description="Create user guide in HTML and PDF">
+	</target>
 
 	<!-- Create an intermediate docbook document - for use both by help and html -
 	with no width attributes on the images (the Swing HTML browser chokes
@@ -125,7 +144,7 @@
 	-->
 	<target name="xslt-stripwidths">
 		<xslt
-			style="doc/tools/strip-width.xsl"
+			style="../architect/doc/tools/strip-width.xsl"
 			in="doc/PowerMatchMakerUserGuide.xml"
 			out="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
 			classpathref="docbookclasspath">
@@ -137,7 +156,7 @@
 		<delete dir="${build}/help"/>
 		<mkdir dir="${build}/help"/>
 		<xslt
-			style="doc/tools/xslt/javahelp/javahelp.xsl"
+			style="../architect/doc/tools/xslt/javahelp/javahelp.xsl"
 			in="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
 			out="${build}/help/zzz"
 			classpathref="docbookclasspath">
@@ -200,7 +219,7 @@
 		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/" />
 
 		<xslt
-			style="doc/tools/xslt/html/chunk.xsl"
+			style="../architect/doc/tools/xslt/html/chunk.xsl"
 			in="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
 			out="${build}/ca/sqlpower/matchmaker/doc/PowerMatchMakerUserGuide.html"
 			classpathref="docbookclasspath">
@@ -227,7 +246,7 @@
 	<target name="fo" depends="init" description="Create user guide in XML Formatting Objects">
 		<mkdir dir="${build}/doc/" />
         <xslt
-			style="doc/tools/xslt/fo/docbook.xsl"
+			style="../architect/doc/tools/xslt/fo/docbook.xsl"
 			in="doc/PowerMatchMakerUserGuide.xml"
 			out="${build}/doc/PowerMatchMakerUserGuide.fo"
 			classpathref="docbookclasspath">
@@ -235,7 +254,33 @@
 	</target>
 
 
-
+    <!-- Copy the main Jar file, and dependent libs, to the deploy dir.
+     -->
+    <target name="stage" depends="compile,userguide">
+    		<mkdir dir="${deploy.dir}" />
+        <mkdir dir="${staging.dir}"/>
+        <mkdir dir="${staging.dir}/lib"/>
+    	<mkdir dir="${staging.dir}/doc"/>
+    		<jar destfile="${staging.dir}/matchmaker.jar" update="no"
+    				basedir="${build}" includes="ca/** icons/** log4j.properties"
+    				manifest="manifest">
+    		</jar>
+    	    <copy todir="${staging.dir}/lib">
+    	        <fileset dir="lib" includes="*.jar"/>
+    	    </copy>
+    		<copy todir="${staging.dir}/doc">
+        		<fileset dir="${build}/doc" includes="*.pdf"/>
+    		</copy>
+    		<copy todir="${staging.dir}/doc">
+    	    	<fileset dir="${build}/doc" includes="*.txt"/>
+    	    </copy>
+    	    <copy tofile="${staging.dir}/LICENSE" file="matchmaker License.txt"/>
+    		<!-- No point in signing until we have a certificate that's signed by a CA
+    	    <signjar alias="sqlpower" keystore="keystore" storepass="low_security" keypass="low_security">
+    	        <fileset dir="webstart/lib"/>
+    	    </signjar>
+    	        -->
+	</target>
 
 
 
@@ -260,14 +305,6 @@
 		</delete>
 	</target>
 
-	<path id="compile.classpath">
-		<fileset dir="lib">
-			<include name="*.jar"/>
-		</fileset>
-		<fileset dir="buildlib">
-			<include name="*.jar"/>
-		</fileset>
-	</path>
 
 	<path id="test.classpath">
 		<pathelement location="build"/>
@@ -319,18 +356,23 @@
 	</target>
 
 	<!-- Build a "generic" (e.g., UNIX) install that users will just un-tar -->
-    <target name="generic_install" >
-
+    <target name="generic_install" depends="stage">
+		<tar destfile="${deploy.dir}/matchmaker-generic-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.tar.gz"
+			compression="gzip">
+			<tarfileset dir="${staging.dir}" includes="LICENSE"/>
+			<tarfileset dir="${staging.dir}" includes="lib/*.jar"/>
+			<tarfileset dir="${staging.dir}" includes="matchmaker.jar"/>
+			<tarfileset dir="${staging.dir}/doc" includes="*.pdf"/>
+			<tarfileset dir="${staging.dir}/doc" includes="*.txt"/>
+		</tar>
     </target>
 
 	<target name="dist" depends="windows_installer,generic_install,osx_tgz,osx_dmg"><!-- ,osx_dmg -->
-		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
-	    <!--copy tofile="${deploy.dir}/index.html" file="html/SQL Power - PowerMatchMaker.html"/-->
+		<!--copy tofile="${deploy.dir}/index.html" file="html/SQL Power - PowerMatchMaker.html"/-->
 		<!--replace file="${deploy.dir}/index.html">
 			<replacefilter token="@@app_ver_major" value="${app_ver_major}"/>
 			<replacefilter token="@@app_var_minor" value="${app_ver_minor}"/>
 			<replacefilter token="@@app_ver_tiny" value="${app_ver_tiny}"/>
 		</replace-->
-		<echo>Did you forget to turn off all the debugging in log4j.properties?!</echo>
 	</target>
 </project>
