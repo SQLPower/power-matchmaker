@@ -1,0 +1,40 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.0//EN"
+	"http://www.oasis-open.org/docbook/xml/simple/1.0/sdocbook.dtd">
+
+<book id="matchmaker-user-guide" lang="en">
+
+	<bookinfo>
+
+		<!-- $Id$ -->
+
+		<title id="book">Power*MatchMaker User Guide</title>
+
+		<mediaobject>
+			<imageobject id="architect_logo">
+				<imagedata fileref="doc/images/matchmaker_logo.png"
+					format="PNG" />
+			</imageobject>
+		</mediaobject>
+
+		<corpauthor>
+			<ulink url="http://www.sqlpower.ca">SQL Power Group Inc.
+			</ulink>
+		</corpauthor>
+
+		<date>Last Modified</date>
+
+		<copyright>
+			<year>2006</year>
+			<holder>SQL Power Group Inc.</holder>
+		</copyright>
+	</bookinfo>
+	<chapter id="intro-chapter">
+		<title>Introduction</title>
+
+		<para>
+			This is a placeholder for the MatchMaker User's Guide
+		</para>
+	</chapter>
+
+</book>
