@@ -188,4 +188,10 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		buf.append(", Parent: ").append(getParent());
 		return buf.toString();
 	}
+	
+	@Override
+	public boolean allowsChildren() {
+		return false;
+	}
+	
 }
