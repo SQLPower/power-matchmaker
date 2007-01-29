@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
-import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerVersion;
 
 public class AboutPanel extends JPanel implements ArchitectPanel {
 
@@ -34,7 +34,7 @@ public class AboutPanel extends JPanel implements ArchitectPanel {
         String message =
             "<html>" +
             "<h1>Power*MatchMaker</h1>" +
-            "<p>Version "+MatchMakerSessionContext.APP_VERSION+"</p>" +
+            "<p>Version " + MatchMakerVersion.APP_VERSION + "</p>" +
             "<p>Copyright 2006 SQL Power Group Inc.</p>" +
             "</html>";
 		content = new JLabel(message);
