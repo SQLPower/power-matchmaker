@@ -53,7 +53,7 @@ public class MergeTableRuleEditor implements EditorPane {
 	private JPanel panel;
 	StatusComponent status = new StatusComponent();
 	private final MatchMakerSwingSession swingSession;
-	private final Match match;
+	private Match match;
 	private FormValidationHandler handler;
 	private JTextArea desc = new JTextArea(3,80);
 	private JTable mergeRulesTable;
@@ -64,10 +64,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		this.match = match;
 		if (match == null) throw new NullPointerException("You can't edit a null match");
         handler = new FormValidationHandler(status);
-
         setupRulesTable(swingSession,match);
-        
-		
         buildUI();
         setDefaultSelections();
         handler.resetHasValidated(); // avoid false hits when newly created
@@ -208,8 +205,7 @@ public class MergeTableRuleEditor implements EditorPane {
 			mergeTableRuleTableModel.getMergeRules();
 
 		while (match.getTableMergeRules().size() > 0) {
-			match.getTableMergeRulesFolder().removeChild(
-					match.getTableMergeRules().get(0));
+			swingSession.delete(match.getTableMergeRules().get(0));
 		}
 		long i = 1;
 		for (TableMergeRules r : editingRules) {

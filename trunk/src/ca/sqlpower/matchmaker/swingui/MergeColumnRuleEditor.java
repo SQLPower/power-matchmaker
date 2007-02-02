@@ -163,34 +163,26 @@ public class MergeColumnRuleEditor implements EditorPane {
 		
 	private Action deleteRuleAction = new AbstractAction("Delete") {
 		public void actionPerformed(ActionEvent e) {
-			ruleTableModel.deleteColumnRule(ruleTable.getSelectedRow());
+			final int selectedRow = ruleTable.getSelectedRow();
+			ruleTableModel.deleteColumnRule(selectedRow);
+			if (selectedRow >= 0 && selectedRow < ruleTable.getRowCount()) {
+				ruleTable.setRowSelectionInterval(selectedRow, selectedRow);
+			}
 		}};
 
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(ActionEvent e) {
 			
+			if ( !handler.hasPerformedValidation() ) {
+				ruleTableModel.fireTableChanged(new TableModelEvent(ruleTableModel));
+			}
 			ValidateResult result = handler.getWorstValidationStatus();
-			if (result.getStatus() == Status.FAIL) {
+			if ( result.getStatus() == Status.FAIL) {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
 						"You have to fix the error before you can save the merge rules",
 						"Save",
 						JOptionPane.ERROR_MESSAGE);
 				return;
-			}
-			
-			mergeRule.setTable((SQLTable) chooser.getTableComboBox().getSelectedItem());
-			mergeRule.setTableIndex((SQLIndex) chooser.getUniqueKeyComboBox().getSelectedItem());
-			mergeRule.setDeleteDup(deleteDup.isSelected());
-			
-			while(true) {
-				if (mergeRule.getChildCount() > 0) {
-					mergeRule.removeChild(mergeRule.getChildren().get(0));
-				} else {
-					break;
-				}
-			}
-			for (ColumnMergeRules columnMergeRules : ruleTableModel.getColumnRules()) {
-				mergeRule.addChild(columnMergeRules);
 			}
 
 			if ( doSave() ) {
@@ -279,6 +271,17 @@ public class MergeColumnRuleEditor implements EditorPane {
 	}
 
 	public boolean doSave() {
+		
+		mergeRule.setTable((SQLTable) chooser.getTableComboBox().getSelectedItem());
+		mergeRule.setTableIndex((SQLIndex) chooser.getUniqueKeyComboBox().getSelectedItem());
+		mergeRule.setDeleteDup(deleteDup.isSelected());
+		
+		while( mergeRule.getChildren().size() > 0) {
+			swingSession.delete(mergeRule.getChildren().get(0));
+		}
+		for (ColumnMergeRules columnMergeRules : ruleTableModel.getColumnRules()) {
+			mergeRule.addChild(columnMergeRules);
+		}
 		swingSession.save(match);
 		return true;
 	}
