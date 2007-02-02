@@ -173,6 +173,27 @@ public class MatchMakerTreeModel implements TreeModel {
 			TreePath paths = getPathForNode(evt.getSource());
 			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths, evt
 					.getChangeIndices(), evt.getChildren().toArray());
+			if (logger.isDebugEnabled()) {
+                logger.debug("Got MM children inserted event!");
+                StringBuilder sb = new StringBuilder();
+                MatchMakerObject mmo = evt.getSource();
+                while (mmo != null) {
+                    sb.insert(0, "->" + mmo.getName());
+                    mmo = mmo.getParent();
+                }
+                logger.debug("Parent of inserted MMObject: "+sb);
+                logger.debug("          inserted children: "+evt.getChildren());
+                
+                sb = new StringBuilder();
+                sb.append("{");
+                for (int i = 0; i < evt.getChangeIndices().length; i++) {
+                    if (i != 0) sb.append(", ");
+                    sb.append(evt.getChangeIndices()[i]);
+                }
+                sb.append("}");
+                logger.debug("     inserted child indices: "+sb);
+                logger.debug("Traceback:", new Exception());
+			}
 			fireTreeNodesInserted(e);
 			for ( MatchMakerObject o : evt.getChildren() ) {
 				MatchMakerUtils.listenToHierarchy(listener,o);
