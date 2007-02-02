@@ -61,8 +61,9 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private FormValidationHandler handler;
 	private final SQLObjectChooser chooser;
 	private final JCheckBox deleteDup = new JCheckBox();
+	private List<ColumnMergeRules> toBeDeleteList = new ArrayList<ColumnMergeRules>();
 	
-	
+
 	private ColumnMergeRuleTableModel ruleTableModel;
 	private ColumnMergeRulesTable ruleTable;
 	
@@ -73,8 +74,12 @@ public class MergeColumnRuleEditor implements EditorPane {
 		this.match = match;
 		this.mergeRule = mergeRule;
 		this.selectedColumn = selectedColumn;
-		if (match == null) throw new NullPointerException("You can't edit a null match");
-		if (mergeRule == null) throw new NullPointerException("You can't edit a null merge rule");
+		if (match == null) {
+			throw new NullPointerException("You can't edit a null match");
+		}
+		if (mergeRule == null) {
+			throw new NullPointerException("You can't edit a null merge rule");
+		}
 
 		chooser = new SQLObjectChooser(swingSession);
         handler = new FormValidationHandler(status);
@@ -82,7 +87,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 			public void propertyChange(PropertyChangeEvent evt) {
 				resetAction();
 			}});
-
 
         ruleTableModel = new ColumnMergeRuleTableModel(mergeRule);
         ruleTable = new ColumnMergeRulesTable(ruleTableModel);
@@ -211,8 +215,11 @@ public class MergeColumnRuleEditor implements EditorPane {
 			ruleTableModel.clearRules();
 		}
 	};
+
+	/** for reversing the change of table combobox	 */
 	private SQLTable oldSQLTable;
-	private boolean reSetting = false; 
+	private boolean reSetting = false;
+	private boolean tableHasChanges = false; 
 	
 	private void setDefaultSelections() throws ArchitectException {
 		chooser.getCatalogComboBox().setSelectedItem(mergeRule.getSourceTable().getCatalog());
@@ -275,14 +282,11 @@ public class MergeColumnRuleEditor implements EditorPane {
 		mergeRule.setTable((SQLTable) chooser.getTableComboBox().getSelectedItem());
 		mergeRule.setTableIndex((SQLIndex) chooser.getUniqueKeyComboBox().getSelectedItem());
 		mergeRule.setDeleteDup(deleteDup.isSelected());
-		
-		while( mergeRule.getChildren().size() > 0) {
-			swingSession.delete(mergeRule.getChildren().get(0));
-		}
-		for (ColumnMergeRules columnMergeRules : ruleTableModel.getColumnRules()) {
-			mergeRule.addChild(columnMergeRules);
+		for (ColumnMergeRules columnMergeRules : toBeDeleteList) {
+			swingSession.delete(columnMergeRules);
 		}
 		swingSession.save(match);
+		tableHasChanges  = false;
 		return true;
 	}
 
@@ -292,22 +296,9 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 	public boolean hasUnsavedChanges() {
 		
-		final List<ColumnMergeRules> newColumnRules = ruleTableModel.getColumnRules();
-		final List<ColumnMergeRules> oldColumnRules = mergeRule.getChildren();
-		
-		if (newColumnRules.size() != oldColumnRules.size()) {
+		if (tableHasChanges) return true;
+		if (chooser.getTableComboBox().getSelectedItem() != mergeRule.getSourceTable()) {
 			return true;
-		}
-		
-		for (int i=0; i<newColumnRules.size(); i++) {
-			ColumnMergeRules newRule = newColumnRules.get(i);
-			ColumnMergeRules oldRule = oldColumnRules.get(i);
-			if (newRule.getActionType() != oldRule.getActionType()) {
-				return true;
-			}
-			if (!newRule.getColumn().equals(oldRule.getColumn())) {
-				return true;
-			}
 		}
 		return false;
 	}
@@ -319,22 +310,16 @@ public class MergeColumnRuleEditor implements EditorPane {
 	 */
 	private class ColumnMergeRuleTableModel extends AbstractTableModel {
 
-		private List<ColumnMergeRules> columnRules = new ArrayList<ColumnMergeRules>();
 		private TableMergeRules mergeRule;
 
 		public ColumnMergeRuleTableModel(TableMergeRules mergeRule) {
 			this.mergeRule = mergeRule;
-			for ( ColumnMergeRules columnMergeRules : mergeRule.getChildren()) {
-				columnRules.add(columnMergeRules.duplicate(
-						columnMergeRules.getParent(),
-						columnMergeRules.getSession()));
-			}
 		}
 		
 		public ColumnMergeRules newColumnRule() {
 			ColumnMergeRules newRules = new ColumnMergeRules();
 			newRules.setActionType(MergeActionType.IGNORE);
-			columnRules.add(newRules);
+			mergeRule.addChild(newRules);
 			fireTableDataChanged();
 			return newRules;
 		}
@@ -345,7 +330,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 						"You have to select a column first!");
 				return;
 			} else {
-				columnRules.remove(selectedRow);
+				mergeRule.removeChild(mergeRule.getChildren().get(selectedRow));
 				fireTableDataChanged();
 			}
 		}
@@ -366,7 +351,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 		}
 		
 		private boolean doesColumnExistsInChildren( SQLColumn column) {
-			for ( ColumnMergeRules columnMergeRules : columnRules ) {
+			for ( ColumnMergeRules columnMergeRules : mergeRule.getChildren() ) {
 				if ( columnMergeRules.getColumnName().equals(column.getName()) )
 					return true;
 			}
@@ -374,7 +359,9 @@ public class MergeColumnRuleEditor implements EditorPane {
 		}
 		
 		public void clearRules() {
-			columnRules.clear();
+			while( mergeRule.getChildren().size() > 0 ) {
+				mergeRule.removeChild(mergeRule.getChildren().get(0));
+			}
 			fireTableDataChanged();
 		}
 		
@@ -383,7 +370,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 		}
 
 		public int getRowCount() {
-			return columnRules.size();
+			return mergeRule.getChildren().size();
 		}
 
 		@Override
@@ -399,9 +386,9 @@ public class MergeColumnRuleEditor implements EditorPane {
 	
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			if (columnIndex == 0) {
-				return columnRules.get(rowIndex).getColumn();
+				return mergeRule.getChildren().get(rowIndex).getColumn();
 			} else if (columnIndex == 1) {
-				return columnRules.get(rowIndex).getActionType();
+				return mergeRule.getChildren().get(rowIndex).getActionType();
 			} else {
 				throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
 			}		
@@ -414,7 +401,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 		
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			ColumnMergeRules rule = columnRules.get(rowIndex);
+			ColumnMergeRules rule = mergeRule.getChildren().get(rowIndex);
 			if (columnIndex == 0) {
 				rule.setColumn((SQLColumn) aValue);
 			} else if (columnIndex == 1) {
@@ -423,10 +410,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 				throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
 			}
 			fireTableChanged(new TableModelEvent(this,rowIndex));
-		}
-
-		public List<ColumnMergeRules> getColumnRules() {
-			return columnRules;
 		}
 	}
 	
