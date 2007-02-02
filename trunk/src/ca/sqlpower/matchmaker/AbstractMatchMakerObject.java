@@ -55,6 +55,22 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		insertedChildren.add(child);
 		eventSupport.fireChildrenInserted("children",new int[] {children.size()-1},insertedChildren);
 	}
+	
+	/**
+	 * adds child to position index, use for change position of children
+	 * anyone who going to overwrite this method should fire the childrenInserted
+	 * event in the overwriten method
+	 * @param child
+	 */
+	public void addChild(int index, C child) {
+        logger.debug("addChild: children collection is a "+children.getClass().getName());
+        if(child== null) throw new NullPointerException("Cannot add a null child");
+		children.add(index, child);
+		child.setParent(this);
+		List<C> insertedChildren = new ArrayList<C>();
+		insertedChildren.add(child);
+		eventSupport.fireChildrenInserted("children",new int[] {index},insertedChildren);
+	}
 
 	public int getChildCount() {
 		return children.size();
