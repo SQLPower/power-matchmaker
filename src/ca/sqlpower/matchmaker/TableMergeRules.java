@@ -103,6 +103,11 @@ public class TableMergeRules
 		} catch (ArchitectException e) {
 			throw new ArchitectRuntimeException(e);
 		}
+		
+		for (ColumnMergeRules c : getChildren()) {
+			ColumnMergeRules newColumnMergeRules = c.duplicate(newMergeStrategy,session);
+			newMergeStrategy.addChild(newColumnMergeRules);
+		}
 		return newMergeStrategy;
 	}
 
