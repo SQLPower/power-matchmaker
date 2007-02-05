@@ -16,6 +16,7 @@
 	 *** in web-development, soon to be a sqlpower CVS)
 	 -->
 	<property name="sqlpower.jar" value="../architect/lib/sqlpower.jar"/>
+	<property name="hibernate.jar" value="../architect/lib/hibernate3.jar"/>	
 	<property name="architect.jar" value="../architect/staging/architect.jar"/>
 
 	<!-- one of our final targets -->
@@ -69,7 +70,7 @@
 		<delete file="${build}/Makefile"/>
 		<delete file="../architect/${build}/Makefile"/>
 		<javac srcdir="${src}" destdir="${build}"
-				classpath="${sqlpower.jar}:${architect.jar}"
+				classpath="${sqlpower.jar}:${architect.jar}:${hibernate.jar}"
 				includes="ca/sqlpower/matchmaker/MatchMakerVersion.java"
 				debug="true" deprecation="true">
 		</javac>
