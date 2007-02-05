@@ -38,7 +38,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 
 
 	public AbstractMatchMakerObject() {
-	
+
 	}
 
 	/**
@@ -55,7 +55,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		insertedChildren.add(child);
 		eventSupport.fireChildrenInserted("children",new int[] {children.size()-1},insertedChildren);
 	}
-	
+
 	/**
 	 * adds child to position index, use for change position of children
 	 * anyone who going to overwrite this method should fire the childrenInserted
@@ -88,7 +88,6 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * @param children
      */
     void setChildren(List<C> children){
-        List<C> oldVal = this.children;
         this.children = children;
         eventSupport.fireStructureChanged();
     }
@@ -100,7 +99,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * <p>
 	 * Anyone who is going to override this method should fire the ChildrenRemoved
 	 * event in the overridden method.
-     * 
+     *
 	 * @param child
 	 */
 	public void removeChild(C child) {
@@ -132,7 +131,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 			lastUpdateDate = new Date();
 			lastUpdateOsUser = System.getProperty("user.name");
 			lastUpdateAppUser = matchMakerSession.getAppUser();
-		} 
+		}
 	}
 
 	public MatchMakerObject getParent() {
@@ -148,7 +147,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	public void setSession(MatchMakerSession matchMakerSession) {
 		this.matchMakerSession = matchMakerSession;
 	}
-    
+
 	/**
 	 * Returns this object's session, if it has one, otherwise defers
 	 * to the parent's getSession() method.

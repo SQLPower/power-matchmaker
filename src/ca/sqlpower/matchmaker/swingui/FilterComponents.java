@@ -13,8 +13,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLTable;
 
-import com.jgoodies.forms.layout.CellConstraints;
-
 
 
 public class FilterComponents{
@@ -37,7 +35,6 @@ public class FilterComponents{
     }
 
 	private void buildUI() {
-        CellConstraints cc = new CellConstraints();		
         filterTextArea = new JTextArea();
         editButton = new JButton(new AbstractAction("Edit"){
 
@@ -88,13 +85,13 @@ public class FilterComponents{
 	}
 
 	public void setFilterTextArea(JTextArea filterTextArea) {
-		if (this.filterTextArea != filterTextArea) {			
+		if (this.filterTextArea != filterTextArea) {
 			this.filterTextArea = filterTextArea;
 		}
 	}
-    
+
     public JButton getEditButton(){
         return editButton;
     }
-    
+
 }
