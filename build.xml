@@ -16,6 +16,10 @@
 	 *** in web-development, soon to be a sqlpower CVS)
 	 -->
 	<property name="sqlpower.jar" value="../architect/lib/sqlpower.jar"/>
+	<property name="architect.jar" value="../architect/staging/architect.jar"/>
+
+	<!-- one of our final targets -->
+	<property name="matchmaker.jar" value="matchmaker.jar"/>
 
 	<path id="toolslib">
 	 <fileset dir="lib">
@@ -29,7 +33,7 @@
 
 	 <path location="${jdbc.driver.jar}" />
 	<path location="${sqlpower.jar}"/>
-	 <path location="bin"/>
+
 	</path>
 
 	<taskdef name="hibernatetool"
@@ -40,21 +44,7 @@
 		<os family="mac"/>
 	</condition>
 
-	<target name="hibernate-generate">
 
-		<hibernatetool	destdir="tmp/gen" >
-
-		  <classpath refid="toolslib"/>
-	  		<jdbcconfiguration configurationfile="hibernate/hibernate.gen.cfg.xml"
-			  packagename="ca.sqlpower.matchmaker.generated"
-			  detectmanytomany="true"
-			>
-			</jdbcconfiguration>
-			<hbm2dao destdir="tmp/gen"	/>
-			<hbm2hbmxml destdir="tmp/gen"/>
-			<hbm2java destdir="tmp/gen"	/>
-		</hibernatetool>
-	</target>
 
 	<condition property="isNotMac">
 		<not>
@@ -90,8 +80,7 @@
 		<fileset dir="buildlib">
 			<include name="*.jar"/>
 		</fileset>
-		<fileset dir="${build}"/>
-		<fileset dir="../architect/build"/>
+		<path location="${architect.jar}"/>
 	</path>
 
 	<!-- We have to partly build the Architect to get its architect.jar
@@ -267,7 +256,7 @@
 
     <!-- Copy the main Jar file, and dependent libs, to the deploy dir.
      -->
-    <target name="stage" depends="compile,userguide">
+    <target name="stage" depends="compile"> <!-- ,userGuide -->
     		<mkdir dir="${deploy.dir}" />
         <mkdir dir="${staging.dir}"/>
         <mkdir dir="${staging.dir}/lib"/>
@@ -276,16 +265,27 @@
     				basedir="${build}" includes="ca/** icons/** log4j.properties"
     				manifest="manifest">
     		</jar>
+
     	    <copy todir="${staging.dir}/lib">
     	        <fileset dir="lib" includes="*.jar"/>
     	    </copy>
+    		<!--
     		<copy todir="${staging.dir}/doc">
         		<fileset dir="${build}/doc" includes="*.pdf"/>
     		</copy>
     		<copy todir="${staging.dir}/doc">
     	    	<fileset dir="${build}/doc" includes="*.txt"/>
     	    </copy>
-    	    <copy tofile="${staging.dir}/LICENSE" file="matchmaker License.txt"/>
+    	    -->
+    		<copy todir="${staging.dir}/lib" file="${architect.jar}"/>
+    		<copy todir="${staging.dir}/lib" file="${sqlpower.jar}"/>
+    		<copy todir="${staging.dir}/lib" >
+    			<fileset dir="../architect/lib" includes="**.jar"/>
+    		</copy>
+    		<!-- A second jar to add the lib jars to it, they're not under build -->
+    	    		<jar destfile="${staging.dir}/matchmaker.jar" update="yes"
+    	    			basedir="${staging.dir}" includes="lib/*.jar"/>
+    	    <copy tofile="${staging.dir}/LICENSE" file="MatchMaker_License.txt"/>
     		<!-- No point in signing until we have a certificate that's signed by a CA
     	    <signjar alias="sqlpower" keystore="keystore" storepass="low_security" keypass="low_security">
     	        <fileset dir="webstart/lib"/>
@@ -368,6 +368,7 @@
 
 	<!-- Build a "generic" (e.g., UNIX) install that users will just un-tar -->
     <target name="generic_install" depends="stage">
+    	<delete file="${deploy.dir}/matchmaker-generic-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.tar.gz"/>
 		<tar destfile="${deploy.dir}/matchmaker-generic-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.tar.gz"
 			compression="gzip">
 			<tarfileset dir="${staging.dir}" includes="LICENSE"/>
@@ -385,5 +386,22 @@
 			<replacefilter token="@@app_var_minor" value="${app_ver_minor}"/>
 			<replacefilter token="@@app_ver_tiny" value="${app_ver_tiny}"/>
 		</replace-->
+	</target>
+
+	<!-- DO NOT USE. Just here for reference to show how we did it once -->
+	<target name="hibernate-generate">
+
+		<hibernatetool	destdir="tmp/gen" >
+
+		  <classpath refid="toolslib"/>
+	  		<jdbcconfiguration configurationfile="hibernate/hibernate.gen.cfg.xml"
+			  packagename="ca.sqlpower.matchmaker.generated"
+			  detectmanytomany="true"
+			>
+			</jdbcconfiguration>
+			<hbm2dao destdir="tmp/gen"	/>
+			<hbm2hbmxml destdir="tmp/gen"/>
+			<hbm2java destdir="tmp/gen"	/>
+		</hibernatetool>
 	</target>
 </project>
