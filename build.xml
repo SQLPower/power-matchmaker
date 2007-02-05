@@ -283,8 +283,8 @@
     			<fileset dir="../architect/lib" includes="**.jar"/>
     		</copy>
     		<!-- A second jar to add the lib jars to it, they're not under build -->
-    	    		<jar destfile="${staging.dir}/matchmaker.jar" update="yes"
-    	    			basedir="${staging.dir}" includes="lib/*.jar"/>
+    	    <jar destfile="${staging.dir}/matchmaker.jar" update="yes"
+    	    	basedir="${staging.dir}" includes="lib/*.jar"/>
     	    <copy tofile="${staging.dir}/LICENSE" file="MatchMaker_License.txt"/>
     		<!-- No point in signing until we have a certificate that's signed by a CA
     	    <signjar alias="sqlpower" keystore="keystore" storepass="low_security" keypass="low_security">
