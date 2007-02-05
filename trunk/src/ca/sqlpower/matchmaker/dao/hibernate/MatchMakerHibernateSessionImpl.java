@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -273,7 +274,11 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         SessionFactory factory;
         Configuration cfg = new Configuration();
 
-        cfg.configure(getClass().getResource("/ca/sqlpower/matchmaker/dao/hibernate/hibernate.cfg.xml"));
+        URL configFile = getClass().getResource("/ca/sqlpower/matchmaker/dao/hibernate/hibernate.cfg.xml");
+		if (configFile == null) {
+			throw new RuntimeException("Could not classload hibernate.cfg.xml");
+		}
+        cfg.configure(configFile);
 
         // last-minute configuration overrides for stuff that can only be known at runtime
         cfg.setProperty("hibernate.default_schema",ds.getPlSchema());
