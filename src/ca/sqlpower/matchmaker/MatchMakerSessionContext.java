@@ -26,6 +26,11 @@ import ca.sqlpower.util.VersionFormatException;
  */
 public interface MatchMakerSessionContext {
 
+	/**
+     * The version of this MatchMaker front end.
+     */
+    public static final Version APP_VERSION = new Version(5,13,13);
+
     /**
      * The minimum PL Schema version according to DEF_PARAM that we can work with.
      * Should be checked every time a session is created.

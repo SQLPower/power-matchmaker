@@ -56,11 +56,11 @@
 		<tstamp/>
 		<mkdir dir="${build}"/>
 		<echo>Compiling just the MatchMakerVersion file ...</echo>
-		<!-- get rid of Makefiles that get copies to the build path -->
+		<!-- get rid of Makefiles that get copied to the build path -->
 		<delete file="${build}/Makefile"/>
 		<delete file="../architect/${build}/Makefile"/>
 		<javac srcdir="${src}" destdir="${build}"
-				classpath="${sqlpower.jar}"
+				classpath="${sqlpower.jar}:${architect.jar}"
 				includes="ca/sqlpower/matchmaker/MatchMakerVersion.java"
 				debug="true" deprecation="true">
 		</javac>
@@ -257,18 +257,23 @@
     <!-- Copy the main Jar file, and dependent libs, to the deploy dir.
      -->
     <target name="stage" depends="compile"> <!-- ,userGuide -->
-    		<mkdir dir="${deploy.dir}" />
+    	<mkdir dir="${deploy.dir}" />
         <mkdir dir="${staging.dir}"/>
         <mkdir dir="${staging.dir}/lib"/>
     	<mkdir dir="${staging.dir}/doc"/>
-    		<jar destfile="${staging.dir}/matchmaker.jar" update="no"
-    				basedir="${build}" includes="ca/** icons/** log4j.properties"
-    				manifest="manifest">
-    		</jar>
+    	<copy todir="${build}">
+    	    <fileset dir="src" includes="**/*.xml"/>
+    	</copy>
+    	<jar destfile="${staging.dir}/matchmaker.jar" update="no"
+    			basedir="${build}"
+    			includes="ca/** icons/** */**.xml log4j.properties"
+    			manifest="manifest">
+    	</jar>
 
     	    <copy todir="${staging.dir}/lib">
     	        <fileset dir="lib" includes="*.jar"/>
     	    </copy>
+
     		<!--
     		<copy todir="${staging.dir}/doc">
         		<fileset dir="${build}/doc" includes="*.pdf"/>

@@ -2,3 +2,4 @@ build
 deploy
 matchmaker.log*
 whee
+staging
