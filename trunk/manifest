@@ -1,6 +1,14 @@
 Main-Class: ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession
 Class-Path: lib/commons-beanutils-bean-collections.jar
+  lib/antlr-2.7.6.jar
+  lib/architecthelp.jar
   lib/architect.jar
+  lib/asm-attrs.jar
+  lib/asm.jar
+  lib/c3p0-0.9.0.jar
+  lib/cglib-2.1.3.jar
+  lib/classes12.jar
+  lib/classes12.zip
   lib/commons-beanutils-core.jar
   lib/commons-beanutils.jar
   lib/commons-collections-3.1.jar
@@ -8,22 +16,30 @@ Class-Path: lib/commons-beanutils-bean-collections.jar
   lib/commons-digester.jar
   lib/commons-logging.jar
   lib/commons-pool-1.3.jar
+  lib/darwinsys.jar
+  lib/dom4j-1.6.1.jar
   lib/forms-1.0.6.jar
+  lib/freemarker.jar
   lib/hibernate3.jar
+  lib/hibernate-tools.jar
+  lib/hsqldb.jar
+  lib/itext-1.4.2.jar
   lib/jakarta-regexp-1.2.jar
+  lib/jcommon-1.0.0.jar
   lib/jfcunit.jar
+  lib/jfreechart-1.0.1.jar
+  lib/jhall.jar
   lib/jlfgr-1_0.jar
+  lib/jsearch.jar
+  lib/jta.jar
   lib/junit.jar
   lib/log4j.jar
-  lib/sqlpower.jar
-  lib/darwinsys.jar
-  lib/architecthelp.jar
-  lib/jhall.jar
-  lib/jsearch.jar
-  lib/itext-1.4.2.jar
-  lib/jfreechart-1.0.1.jar
-  lib/jcommon-1.0.0.jar
-  lib/postgresql-8.1dev-401.jdbc3.jar
+  lib/matchmakerhelp.jar
   lib/msbase.jar
   lib/mssqlserver.jar
+  lib/msutil.jar
   lib/ojdbc14.jar
+  lib/osx_adapter.jar
+  lib/postgresql-8.1dev-401.jdbc3.jar
+  lib/sqlpower.jar
+  lib/xml-apis.jar
