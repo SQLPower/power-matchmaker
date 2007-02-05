@@ -52,7 +52,16 @@
 		</not>
 	</condition>
 
-	<target name="init">
+	<!-- We have to partly build the Architect to get its architect.jar
+	*** before we can start to build the MatchMaker.
+	*** XXX should commit a copy of Architect Jar here to avoid
+	*** a really long build cycle...
+	-->
+	<target name="pre-init">
+		<ant dir="../architect" target="stage"/>
+	</target>	
+	
+	<target name="init" depends="pre-init">
 		<tstamp/>
 		<mkdir dir="${build}"/>
 		<echo>Compiling just the MatchMakerVersion file ...</echo>
@@ -83,16 +92,8 @@
 		<path location="${architect.jar}"/>
 	</path>
 
-	<!-- We have to partly build the Architect to get its architect.jar
-	*** before we can start to build the MatchMaker.
-	*** XXX should commit a copy of Architect Jar here to avoid
-	*** a really long build cycle...
-	-->
-	<target name="buildArchitect">
-		<ant dir="../architect" target="stage"/>
-	</target>
 
-	<target name="compile" depends="init,buildArchitect,copyicons,copylog4jprops">
+	<target name="compile" depends="init,copyicons,copylog4jprops">
 		<echo>Compiling the MatchMaker application</echo>
 		<javac srcdir="${src}" destdir="${build}"
 			classpathref="compile.classpath"
