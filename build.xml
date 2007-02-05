@@ -12,7 +12,9 @@
 	<!-- The staging directory is a temp dir that is used as a base for all the distributions -->
 	<property name="staging.dir" value="staging" />
 	<property name="izpack.dir" value="IzPack"/>
-	<!-- Amazing jar that we depend on but have no source for -->
+	<!-- Another jar that we depend on (source is in CVS of course,
+	 *** in web-development, soon to be a sqlpower CVS)
+	 -->
 	<property name="sqlpower.jar" value="../architect/lib/sqlpower.jar"/>
 
 	<path id="toolslib">
