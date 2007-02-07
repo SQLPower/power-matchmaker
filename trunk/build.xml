@@ -16,7 +16,7 @@
 	<taskdef name="izpack" classpath="${izpack.home}/lib/compiler.jar"
 		classname="com.izforge.izpack.ant.IzPackTask"/>
 	<taskdef name="jarbundler"
-		classpath="../architect/osx_packaging_utils/jarbundler.jar:osx_packaging_utils/xercesImpl.jar:osx_packaging_utils/xml-apis.jar"
+		classpath="../architect/osx_packaging_utils/jarbundler.jar:../architect/osx_packaging_utils/xercesImpl.jar:../architect/osx_packaging_utils/xml-apis.jar"
 		classname="net.sourceforge.jarbundler.JarBundler"/>
 
 	<!-- Another jar that we depend on (source is in CVS of course,
@@ -455,7 +455,7 @@
            mainclass="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"
            icon="src/icons/matchmaker.icns"
            jvmversion="1.5+"
-           shortname="Architect"
+           shortname="MatchMaker"
            stubfile="../architect/osx_packaging_utils/PowerArchitectStub"
            vmoptions="-Xmx600m">
 			<jarfileset dir="${staging.dir}/lib" includes="*.jar"/>
@@ -516,9 +516,10 @@
     </target>
 
 	<target name="osx_tgz" depends="osx_dist" if="isNotMac">
-		<tar destfile="${deploy.dir}/Architect-OSX-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.tar.gz"
+		<delete file="${deploy.dir}/MatchMaker-OSX-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.tar.gz"/>
+		<tar destfile="${deploy.dir}/MatchMaker-OSX-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.tar.gz"
 					compression="gzip">
-			<tarfileset dir="${staging.dir}" includes="Power Architect.app/**"/>
+			<tarfileset dir="${staging.dir}" includes="Power MatchMaker.app/**"/>
 			<tarfileset dir="${staging.dir}/doc" includes="*.pdf"/>
 			<tarfileset dir="${staging.dir}/doc" includes="*.txt"/>
 		</tar>
