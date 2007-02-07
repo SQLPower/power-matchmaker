@@ -11,7 +11,11 @@
 	<property name="installer.dir" value="installer"/>
 	<!-- The staging directory is a temp dir that is used as a base for all the distributions -->
 	<property name="staging.dir" value="staging" />
-	<property name="izpack.dir" value="IzPack"/>
+	<property name="izpack.home" value="../architect/IzPack"/>
+
+	<taskdef name="izpack" classpath="${izpack.home}/lib/compiler.jar"
+		classname="com.izforge.izpack.ant.IzPackTask"/>
+
 	<!-- Another jar that we depend on (source is in CVS of course,
 	 *** in web-development, soon to be a sqlpower CVS)
 	 -->
@@ -351,8 +355,89 @@
 	</target>
 
 
-	<target name="windows_installer" >
+	<target name="windows_installer" depends="stage">
+		<izpack
+			output="${deploy.dir}/MatchMaker-Setup-Windows-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.jar"
+		    installerType="standard"
+			basedir="${installer.dir}"
+		    izPackDir="${izpack.home}/">
 
+		<config><![CDATA[
+			<installation version="1.0">
+				<!-- comment -->
+				<info>
+					<appname>Power MatchMaker</appname>
+					<appversion>@{app_ver_major}.@{app_ver_minor}.@{app_ver_tiny}</appversion>
+					<url>http://www.sqlpower.ca/</url>
+					<javaversion>1.5</javaversion>
+				</info>
+				<guiprefs height="600" resizable="yes" width="800">
+					<laf name="metouia">
+						<os family="unix"/>
+					</laf>
+				</guiprefs>
+
+				<locale>
+					<langpack iso3="eng"/>
+				</locale>
+				<resources>
+					<res id="Installer.image" src="../src/icons/matchmaker_128.png"/>
+					<res src="MatchMakerShortcut.xml" id="shortcutSpec.xml"/>
+					<res id="LicencePanel.licence" src="../MatchMaker_License.txt" />
+				</resources>
+				<panels>
+					<panel classname="HelloPanel"/>
+					<panel classname="LicencePanel"/>
+					<panel classname="TargetPanel"/>
+					<panel classname="InstallPanel"/>
+					<panel classname="ShortcutPanel"/>
+					<panel classname="SimpleFinishPanel"/>
+				</panels>
+				<packs>
+					<pack name="Core" required="yes">
+						<description>MatchMaker Core Files</description>
+						<fileset dir="../staging/" targetdir="$INSTALL_PATH">
+							<include name="matchmaker.jar"/>
+							<include name="architect.jar"/>
+						</fileset>
+						<fileset dir="../staging/lib" targetdir="$INSTALL_PATH/lib">
+							<include name="*.jar"/>
+						</fileset>
+						<fileset dir="../staging/doc" targetdir="$INSTALL_PATH/doc">
+							<include name="*.pdf"/>
+						</fileset>
+						<fileset dir="../staging/doc" targetdir="$INSTALL_PATH/doc">
+							<include name="*.txt"/>
+						</fileset>
+						<fileset dir=".." targetdir="$INSTALL_PATH">
+							<include name="MatchMaker_License.txt"/>
+						</fileset>
+						<fileset dir="." targetdir="$INSTALL_PATH">
+							<include name="*.reg"/>
+						</fileset>
+						<fileset dir="../src/icons" targetdir="$INSTALL_PATH">
+							<include name="*.ico"/>
+						</fileset>
+						<parsable targetfile="${INSTALL_PATH}/matchmaker_file_association.reg" type="windowsreg"/>
+						<executable targetfile="regedit.exe" stage="postinstall" keep="true">
+						   <args>
+						     <arg value="\/s"/>
+						     <arg value="$INSTALL_PATH/matchmaker_file_association.reg"/>
+					      </args>
+					   </executable>
+						<executable targetfile="regedit.exe" stage="uninstall" keep="true">
+						   <args>
+						     <arg value="\/s"/>
+						     <arg value="$INSTALL_PATH/uninstall.reg"/>
+					      </args>
+					   </executable>
+					</pack>
+				</packs>
+				<native type="izpack" name="ShellLink.dll"/>
+			</installation>
+			]]>
+		</config>
+		</izpack>
 	</target>
 
 	<target name="osx_dist">
