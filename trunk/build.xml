@@ -15,6 +15,9 @@
 
 	<taskdef name="izpack" classpath="${izpack.home}/lib/compiler.jar"
 		classname="com.izforge.izpack.ant.IzPackTask"/>
+	<taskdef name="jarbundler"
+		classpath="../architect/osx_packaging_utils/jarbundler.jar:osx_packaging_utils/xercesImpl.jar:osx_packaging_utils/xml-apis.jar"
+		classname="net.sourceforge.jarbundler.JarBundler"/>
 
 	<!-- Another jar that we depend on (source is in CVS of course,
 	 *** in web-development, soon to be a sqlpower CVS)
@@ -440,18 +443,85 @@
 		</izpack>
 	</target>
 
-	<target name="osx_dist">
+	<target name="osx_dist" depends="stage">
 
+		<!-- The pre-compiled osx adapter class (it only compiles on OS X) -->
+		<copy file="../architect/osx_packaging_utils/osx_adapter.jar" todir="${staging.dir}/lib"/>
+
+		<!-- jarbundler is from sourceforge, taskdeffed near top of file -->
+		<jarbundler dir="${staging.dir}"
+           name="Power MatchMaker"
+           version="${app_ver_major}.${app_ver_minor}.${app_ver_tiny}"
+           mainclass="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"
+           icon="src/icons/matchmaker.icns"
+           jvmversion="1.5+"
+           shortname="Architect"
+           stubfile="../architect/osx_packaging_utils/PowerArchitectStub"
+           vmoptions="-Xmx600m">
+			<jarfileset dir="${staging.dir}/lib" includes="*.jar"/>
+			<jarfileset dir="${staging.dir}" includes="matchmaker.jar"/>
+			<jarfileset dir="${staging.dir}" includes="architect.jar"/>
+		</jarbundler>
 	</target>
 
 	<!-- This target will only work on OS X (it needs the hdiutil command) -->
 
 	<target name="osx_dmg" depends="osx_dist" if="isMac">
+		<!-- hdiutil create -size 50m -fs HFS+ -volname "Power*Architect" RWArchitect.dmg
+				     hdiutil attach RWArchitect.dmg
+				     (copy architect.app over, position it, etc)
+				     /Developer/Tools/SetFile -a V /Volumes/Power\*Architect/install_folder_background.png
+				     hdiutil detach /Volumes/Power\*Architect/
+				     rm Power_Architect-1.0.19.dmg
+				     hdiutil convert -format UDCO -o Power_Architect-1.0.19.dmg RWArchitect.dmg
+				  -->
+		<copy file="osx_packaging_utils/RWArchitect.dmg.sparseimage" tofile="${staging.dir}/RWArchitect.dmg.sparseimage" overwrite="true" />
+		<exec executable="hdiutil">
+					<arg value="detach" />
+					<arg value="/Volumes/Power*Architect" />
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="attach" />
+			<arg value="${staging.dir}/RWArchitect.dmg.sparseimage" />
+		</exec>
+		<copy todir="/Volumes/Power*Architect/Power*Architect.app/" overwrite="true"  >
+			<fileset dir="${staging.dir}/Power Architect.app"></fileset>
+		</copy>
+		<exec executable="chmod">
+			<arg value="a+x"/>
+			<arg value="/Volumes/Power*Architect/Power*Architect.app/Contents/MacOS/PowerArchitectStub"/>
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="detach" />
+			<arg value="/Volumes/Power*Architect" />
+		</exec>
+		<delete file="${deploy.dir}/Architect-OSX-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.dmg" />
+		<exec executable="hdiutil">
+			<arg value="convert"/>
+			<arg value="${staging.dir}/RWArchitect.dmg.sparseimage"/>
+			<arg value="-format"/>
+			<arg value="UDCO"/>
+			<arg value="-o"/>
+			<arg value="${deploy.dir}/Architect-OSX-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.dmg"/>
+		</exec>
 
-	</target>
+		<taskdef name="addLicenseToDMG"
+				 classname="ca.sqlpower.architect.antbuild.AddLicenseToDMGTask"
+			     classpath="../architect/build"/>
+		<addLicenseToDMG
+				dmgFile="${deploy.dir}/Architect-OSX-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.dmg"
+                licenseFile="Architect License.txt"
+		        resourceTemplateFile="osx_packaging_utils/sla_template.r"/>
+
+    </target>
 
 	<target name="osx_tgz" depends="osx_dist" if="isNotMac">
-
+		<tar destfile="${deploy.dir}/Architect-OSX-${app_ver_major}.${app_ver_minor}.${app_ver_tiny}.tar.gz"
+					compression="gzip">
+			<tarfileset dir="${staging.dir}" includes="Power Architect.app/**"/>
+			<tarfileset dir="${staging.dir}/doc" includes="*.pdf"/>
+			<tarfileset dir="${staging.dir}/doc" includes="*.txt"/>
+		</tar>
 	</target>
 
 	<!-- Build a "generic" (e.g., UNIX) install that users will just un-tar -->
