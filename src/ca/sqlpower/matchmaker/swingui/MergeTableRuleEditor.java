@@ -17,10 +17,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 
@@ -32,8 +28,9 @@ import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.table.TableUtils;
+import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
@@ -53,22 +50,25 @@ import com.jgoodies.forms.layout.FormLayout;
 public class MergeTableRuleEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MergeTableRuleEditor.class);
+	
 	private JPanel panel;
-	StatusComponent status = new StatusComponent();
-	private final MatchMakerSwingSession swingSession;
-	private Match match;
-	private FormValidationHandler handler;
 	private JTextArea desc = new JTextArea(3,80);
 	private JTable mergeRulesTable;
 	MergeTableRuleTableModel mergeTableRuleTableModel;
 	private JScrollPane mergeRulesScrollPane;
-	private boolean hasChanges = false;
-	
+
+	private final MatchMakerSwingSession swingSession;
+	private Match match;
+
+	StatusComponent status = new StatusComponent();
+	private FormValidationHandler handler;
 	
 	public MergeTableRuleEditor(MatchMakerSwingSession swingSession,Match match) throws ArchitectException {
 		this.swingSession = swingSession;
 		this.match = match;
-		if (match == null) throw new NullPointerException("You can't edit a null match");
+		if (match == null) {
+			throw new NullPointerException("You can't edit a null match");
+		}
         handler = new FormValidationHandler(status);
         setupRulesTable(swingSession,match);
         buildUI();
@@ -76,17 +76,15 @@ public class MergeTableRuleEditor implements EditorPane {
         handler.resetHasValidated(); // avoid false hits when newly created
 	}
 	
-	private void setupRulesTable(MatchMakerSwingSession swingSession, Match match) throws ArchitectException {
+	private void setupRulesTable(MatchMakerSwingSession swingSession, Match match) 
+		throws ArchitectException {
 		mergeTableRuleTableModel = new MergeTableRuleTableModel(match,swingSession);
 		mergeRulesTable = new TableMergeRulesTable(mergeTableRuleTableModel);
         mergeRulesTable.setName("Merge Tables");
+
         mergeRulesTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
         mergeRulesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		TableUtils.fitColumnWidths(mergeRulesTable, 15);
-		mergeTableRuleTableModel.addTableModelListener(new TableModelListener(){
-			public void tableChanged(TableModelEvent e) {
-				hasChanges = true;
-			}});
 	}
 
 	private void buildUI() {
@@ -95,6 +93,7 @@ public class MergeTableRuleEditor implements EditorPane {
 				"4dlu,14dlu,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow, 4dlu,pref,4dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,min(pref;40dlu),12dlu,pref,4dlu,fill:40dlu:grow,4dlu,pref,4dlu"); // rows
 			//	 1     2    3    4               5    6    7     8         9    10   11      
+
 
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled() ? 
@@ -135,18 +134,6 @@ public class MergeTableRuleEditor implements EditorPane {
 
 	private void setDefaultSelections() {
 		desc.setText(match.getTableMergeRulesFolder().getFolderDesc());
-		desc.getDocument().addDocumentListener(new DocumentListener(){
-			public void changedUpdate(DocumentEvent e) {
-				hasChanges = true;
-			}
-
-			public void insertUpdate(DocumentEvent e) {
-				hasChanges = true;
-			}
-
-			public void removeUpdate(DocumentEvent e) {
-				hasChanges = true;
-			}});
 	}
 	
 	private Action moveUp = new AbstractAction("^") {
@@ -216,29 +203,55 @@ public class MergeTableRuleEditor implements EditorPane {
             }
 		}
 	};
-	public List<TableMergeRules> removeList = new ArrayList<TableMergeRules>();
-	
-	public void doUnSave() {
-		PlFolder<Match> folder = (PlFolder<Match>) match.getParent();
-		int index = folder.getChildren().indexOf(match);
-		// XXX: need the interface support rollback!!! 
-		match = swingSession.getMatchByName(match.getName());
-	}
 	
 	public boolean doSave() {
-		int i = 1;
-		for (TableMergeRules r : match.getTableMergeRules()) {
-			r.setSeqNo(new Long(i++));
+		final List<TableMergeRules> editingRules = 
+			mergeTableRuleTableModel.getMergeRules();
+
+		logger.debug("#1 children size="+match.getTableMergeRules().size());
+		
+		List<TableMergeRules> toBeDeleted = new ArrayList<TableMergeRules>();
+		for ( int i=0; ;i++) {
+			TableMergeRules r1,r2;
+			if (i < editingRules.size()) {
+				r1 = editingRules.get(i);
+			} else {
+				r1 = null;
+			}
+			if (i < match.getTableMergeRules().size()) {
+				r2 = match.getTableMergeRules().get(i);
+			} else {
+				r2 = null;
+			}
+			if (r1 != null && r2 != null) {
+				r2.setSeqNo(new Long(10*i));
+				r2.setDeleteDup(r1.isDeleteDup());
+				r2.setTable((SQLTable) mergeTableRuleTableModel.getSQLObjectChooser(i).getTableComboBox().getSelectedItem());
+				logger.debug("r2 table="+r2.getSourceTable());				
+				try {
+					r2.setTableIndex(r1.getTableIndex());
+				} catch (ArchitectException e) {
+					e.printStackTrace();
+				}
+				while (r2.getChildCount() > 0) {
+					r2.removeChild(r2.getChildren().get(0));
+				}
+				for (ColumnMergeRules cr : r1.getChildren()) {
+					r2.addChild(cr);
+				}
+				swingSession.save(match);
+			} else if ( r1 != null && r2 == null ) {
+				r1.setSeqNo(new Long(10*i));
+				match.addTableMergeRule(r1);
+				swingSession.save(match);
+			} else if ( r1 == null && r2 != null ) {
+				swingSession.delete(r2);
+			} else {
+				break;
+			}
 		}
 		
-		match.getTableMergeRulesFolder().setFolderDesc(desc.getText());
-		
-		for (TableMergeRules r : removeList) {
-			swingSession.delete(r);
-		}
-		
-		swingSession.save(match);
-		hasChanges = false;
+		logger.debug("#3 children size="+match.getTableMergeRules().size());
 		return true;
 	}
 
@@ -247,9 +260,46 @@ public class MergeTableRuleEditor implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
-		return hasChanges;
+		final List<TableMergeRules> editingRules = 
+			mergeTableRuleTableModel.getMergeRules();
+		if (editingRules.size() != match.getTableMergeRules().size()) return true;
+		for (int i=0; i<editingRules.size(); i++ ) {
+			TableMergeRules r1 = editingRules.get(i);
+			TableMergeRules r2 = match.getTableMergeRules().get(i);
+			if ( r1.getSourceTable() != r2.getSourceTable() ||
+					r1.isDeleteDup() != r2.isDeleteDup()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
+	private class TableMergeRuleRow {
+		private final TableMergeRules rules;
+		private final SQLObjectChooser chooser;
+		public TableMergeRuleRow(TableMergeRules rules, 
+				MatchMakerSwingSession swingSession) throws ArchitectException {
+			this.rules = rules.duplicate(new MatchMakerFolder<TableMergeRules>(), swingSession);
+			this.chooser = new SQLObjectChooser(swingSession);
+			chooser.getCatalogComboBox().setSelectedItem(
+					(rules.getSourceTable()==null?null:rules.getSourceTable().getCatalog()));
+			chooser.getSchemaComboBox().setSelectedItem(
+					(rules.getSourceTable()==null?null:rules.getSourceTable().getSchema()));
+			chooser.getTableComboBox().setSelectedItem(
+					rules.getSourceTable());
+			TableMergeRulesValidator v1 = new TableMergeRulesValidator(chooser);
+			handler.addValidateObject(chooser.getCatalogComboBox(), v1);
+			handler.addValidateObject(chooser.getSchemaComboBox(), v1);
+			handler.addValidateObject(chooser.getTableComboBox(), v1);
+		}
+		public SQLObjectChooser getChooser() {
+			return chooser;
+		}
+		public TableMergeRules getRules() {
+			return rules;
+		}
+		
+	}
 	/**
 	 * table model for the merge table rules, it shows the merge tables
 	 * in a JTable, allows user add/delete/reorder merge tables
@@ -262,30 +312,18 @@ public class MergeTableRuleEditor implements EditorPane {
 	 */
 	private class MergeTableRuleTableModel extends AbstractTableModel {
 
+		private List<TableMergeRuleRow> rows;
 		private SQLObjectChooser chooser;
 		private MatchMakerSwingSession swingSession;
-		private Match match;
-		private List<SQLObjectChooser> choosers = new ArrayList<SQLObjectChooser>();
 		
 		public MergeTableRuleTableModel(Match match, 
 				MatchMakerSwingSession swingSession) throws ArchitectException {
 			this.swingSession = swingSession;
-			this.match = match;
-			for (TableMergeRules r : match.getTableMergeRules() ) {
-				SQLObjectChooser chooser = new SQLObjectChooser(swingSession);
-				chooser.getCatalogComboBox().setSelectedItem(
-						(r.getSourceTable()==null?null:r.getSourceTable().getCatalog()));
-				chooser.getSchemaComboBox().setSelectedItem(
-						(r.getSourceTable()==null?null:r.getSourceTable().getSchema()));
-				chooser.getTableComboBox().setSelectedItem(
-						r.getSourceTable());
-				TableMergeRulesValidator v1 = new TableMergeRulesValidator(chooser);
-				handler.addValidateObject(chooser.getCatalogComboBox(), v1);
-				handler.addValidateObject(chooser.getSchemaComboBox(), v1);
-				handler.addValidateObject(chooser.getTableComboBox(), v1);
-				choosers.add(chooser);
-			}
 			this.chooser = new SQLObjectChooser(swingSession);
+			rows = new ArrayList<TableMergeRuleRow>();
+			for (TableMergeRules r : match.getTableMergeRules()) {
+				rows.add(new TableMergeRuleRow(r,swingSession));
+			}
 		}
 		
 		public int getColumnCount() {
@@ -293,19 +331,18 @@ public class MergeTableRuleEditor implements EditorPane {
 		}
 
 		public int getRowCount() {
-			return match.getTableMergeRules().size();
+			return rows.size();
 		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			SQLObjectChooser chooser = getSQLObjectChooser(rowIndex); 
 			if (columnIndex == 0) {
-				return chooser.getCatalogComboBox().getSelectedItem();
+				return rows.get(rowIndex).getChooser().getCatalogComboBox().getSelectedItem();
 			} else if (columnIndex == 1) {
-				return chooser.getSchemaComboBox().getSelectedItem();
+				return rows.get(rowIndex).getChooser().getSchemaComboBox().getSelectedItem();
 			} else if (columnIndex == 2) {
-				return chooser.getTableComboBox().getSelectedItem();
+				return rows.get(rowIndex).getChooser().getTableComboBox().getSelectedItem();
 			} else if ( columnIndex == 3) {
-				return match.getTableMergeRules().get(rowIndex).isDeleteDup();
+				return rows.get(rowIndex).getRules().isDeleteDup();
 			} else {
 				return null;
 			}
@@ -351,65 +388,54 @@ public class MergeTableRuleEditor implements EditorPane {
 		
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			TableMergeRules r = match.getTableMergeRules().get(rowIndex);
+			TableMergeRules r = rows.get(rowIndex).getRules();
 			if (columnIndex == 0) {
-				SQLCatalog oldCatalog = r.getSourceTable() == null ?
-						null : r.getSourceTable().getCatalog();
-				if (aValue != oldCatalog) {
-					setValueAt(null, rowIndex, 1);
-				}
+				setValueAt(null, rowIndex, 1);
 			} else if (columnIndex == 1) {
-				SQLSchema oldSchema = r.getSourceTable() == null ?
-						null : r.getSourceTable().getSchema();
-				if (aValue != oldSchema) {
-					setValueAt(null, rowIndex, 2);
-				}
+				setValueAt(null, rowIndex, 2);
 			} else if (columnIndex == 2) {
 				r.setTable((SQLTable) aValue );
-				fireTableDataChanged();
 			} else if ( columnIndex == 3) {
 				r.setDeleteDup(((Boolean) aValue).booleanValue());
-				fireTableDataChanged();
 			}
+			fireTableDataChanged();
 		}
 
+		public List<TableMergeRules> getMergeRules() {
+			List<TableMergeRules> list = new ArrayList<TableMergeRules>();
+			for ( TableMergeRuleRow r : rows) {
+				list.add(r.getRules());
+			}
+			return list;
+		}
+		
 		public SQLObjectChooser getSQLObjectChooser(int row) {
-			return choosers.get(row);
+			return rows.get(row).getChooser();
 		}
 		
 
 		public void newRules() throws ArchitectException {
-			TableMergeRules tableMergeRules = new TableMergeRules();
-			tableMergeRules.setName("new merge strategy");
-			match.getTableMergeRulesFolder().addChild(tableMergeRules);
-			choosers.add(new SQLObjectChooser(swingSession));
+			rows.add(new TableMergeRuleRow(new TableMergeRules(),swingSession));
 			fireTableDataChanged();
 		}
 		
 		public void removeRules(int index) {
-			removeList.add(match.getTableMergeRules().get(index));
-			match.getTableMergeRulesFolder().removeChild(
-					match.getTableMergeRules().get(index));
-			choosers.remove(index);
+			rows.remove(index);
 			fireTableDataChanged();
 		}
 		
 		public void moveRuleUp(int index) {
-			TableMergeRules rules = match.getTableMergeRules().get(index-1);
-			SQLObjectChooser chooser = choosers.get(index-1);
-			
-			removeRules(index-1);
-			match.getTableMergeRulesFolder().addChild(index, rules);
-			choosers.add(index, chooser);
+			TableMergeRuleRow selectedRow = rows.get(index);
+			TableMergeRuleRow targetRow = rows.get(index-1);
+			rows.remove(targetRow);
+			rows.add(rows.indexOf(selectedRow)+1, targetRow);
 			fireTableDataChanged();
 		}
-
 		public void moveRuleDown(int index) {
-			TableMergeRules rules = match.getTableMergeRules().get(index);
-			SQLObjectChooser chooser = choosers.get(index);
-			removeRules(index);
-			match.getTableMergeRulesFolder().addChild(index+1, rules);
-			choosers.add(index+1, chooser);
+			TableMergeRuleRow selectedRow = rows.get(index);
+			TableMergeRuleRow targetRow = rows.get(index+1);
+			rows.remove(targetRow);
+			rows.add(rows.indexOf(selectedRow), targetRow);
 			fireTableDataChanged();
 		}
 	}
