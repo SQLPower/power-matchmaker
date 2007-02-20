@@ -863,9 +863,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	 */
 	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
 		if (mmo.getParent() != null) {
+			
 			mmo.getParent().removeChild(mmo);
-
-
             if (mmo instanceof MatchMakerCriteria) {
                 // XXX Criteria are special because they don't have a DAO of their own
                 MatchMakerObject criteriaGroup = mmo.getParent();
