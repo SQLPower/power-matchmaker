@@ -252,4 +252,14 @@ public class PotentialMatchRecord {
         }
     }
     
+    @Override
+    public String toString() {
+        return "PotentialMatch: origLhs="+originalLhs+
+        "; origRhs="+originalRhs+
+        "; lhs="+lhs+
+        "; rhs="+rhs+
+        "; matchStatus="+matchStatus+
+        "; masterSide="+master;
+    }
+    
 }
