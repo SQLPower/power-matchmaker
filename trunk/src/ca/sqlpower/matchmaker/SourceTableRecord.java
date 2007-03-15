@@ -19,6 +19,7 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
 import ca.sqlpower.matchmaker.graph.GraphModel;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
@@ -213,6 +214,24 @@ public class SourceTableRecord {
     }
 
     /**
+     * Returns the edge (PotentialMatchRecord) that makes this node (SourceTableRecord)
+     * adjacent to the given other node.  For this method, adjacency is defined as
+     * original potential matches as discovered by the match engine.
+     * 
+     * @param adjacent The node that is adjacent to this one that you want to find the
+     * common edge for.
+     * @return The edge that makes this node adjacent to the given other node.
+     */
+    public PotentialMatchRecord getMatchRecordByOriginalAdjacentSourceTableRecord(SourceTableRecord adjacent) {
+        for (PotentialMatchRecord pmr : potentialMatches) {
+            if (pmr.getOriginalLhs() == adjacent || pmr.getOriginalRhs() == adjacent) {
+                return pmr;
+            }
+        }
+        return null;
+    }
+    
+    /**
      * Searches this source table record's set of potential matches (the
      * incident edges) for the edge that connects it to the given adjacent
      * node, where adjacency is defined as a user-validated master/duplicate
@@ -232,12 +251,20 @@ public class SourceTableRecord {
     }
     
     /**
-     * Locates all records which are currently reachable from this record by
+     * Locates all records which are currently reachable from this record and the
+     * given (formerly potential) duplicate of it by
      * user-validated matches, and points them to this record as the master  (all
      * the reachable records will be considered duplicates of this "offical
      * version of the truth").
      */
-    public void makeMaster() {
+    public void makeMaster(SourceTableRecord duplicate) {
+        if (duplicate == this) {
+            throw new IllegalArgumentException("Can't be my own master");
+        }
+        logger.debug("MakeMaster: this="+this+"; duplicate="+duplicate);
+        PotentialMatchRecord masterDupMatchRecord = 
+            getMatchRecordByOriginalAdjacentSourceTableRecord(duplicate);
+        
         GraphModel<SourceTableRecord, PotentialMatchRecord> graph =
             new NonDirectedUserValidatedMatchPoolGraphModel(pool);
         BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
@@ -245,11 +272,30 @@ public class SourceTableRecord {
         
         Collection<SourceTableRecord> reachable = bfs.performSearch(graph, this);
         for (SourceTableRecord node : reachable) {
+            if (node == this || node == duplicate) continue;
             PotentialMatchRecord pmr = 
-                node.getMatchRecordByValidatedSourceTableRecord(SourceTableRecord.this);
-            pmr.setLhs(SourceTableRecord.this);
+                node.getMatchRecordByOriginalAdjacentSourceTableRecord(this);
+            if (pmr == null) {
+                // not originally a direct potential match-- steal an edge
+                pmr = node.getOriginalMatchEdges().iterator().next();
+            }
+            pmr.setLhs(this);
             pmr.setRhs(node);
-            pmr.setMaster(SourceTableRecord.this);
+            pmr.setMaster(this);
+            pmr.setMatchStatus(MatchType.MATCH);
+            
+            logger.debug("after setMaster: "+pmr);
         }
+    }
+
+    public void makeNoMatch(SourceTableRecord record2) {
+        // TODO Auto-generated method stub
+        logger.debug("Stub call: SourceTableRecord.makeNoMatch()");
+        
+    }
+    
+    @Override
+    public String toString() {
+        return "SourceTableRecord@"+System.identityHashCode(this)+" key="+keyValues;
     }
 }
