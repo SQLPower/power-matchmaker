@@ -8,7 +8,23 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-
+/**
+ * A graph model which sits on top of a match pool and considers nodes to
+ * be the pool's set of SourceTableRecords, and its edges are the user-validated
+ * Master and Duplicate sides of the pool's PotentialMatchRecord set.  Hence,
+ * if you take a pristine match pool from a fresh engine run, this graph model
+ * will say there are no edges.  Once the user starts fiddling around and assigning
+ * master records, this graph model will start having some connectedness.
+ * <p>
+ * Note, although master/duplicate relationships are inherently directional,
+ * this particular model treats them as non-directed.  This is a requirement of
+ * the algorithm in {@link SourceTableRecord#makeMaster()}, so don't go changing
+ * it if you need directionality.  Make another model instead, or introduce a
+ * parameter to this one (and rename the class).
+ * 
+ * <h3>Bug</h3>
+ * The class name is not as long as <i>Pneumonoultramicroscopicsilicovolcanoconiosis</i>.
+ */
 public class NonDirectedUserValidatedMatchPoolGraphModel implements
         GraphModel<SourceTableRecord, PotentialMatchRecord> {
 
@@ -33,8 +49,7 @@ public class NonDirectedUserValidatedMatchPoolGraphModel implements
             } else if (pmr.getDuplicate() == node){
                 adjacentNodes.add(pmr.getMaster());
             } else {
-                throw new IllegalStateException("The edge in an illegal state, it is not connected to the " +
-                        "appropiate node");
+                // edge belongs to some other nodes in the graph
             }
         }
         
