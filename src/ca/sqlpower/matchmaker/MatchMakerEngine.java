@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.swingui.Monitorable;
+import ca.sqlpower.architect.Monitorable;
 import ca.sqlpower.matchmaker.event.EngineListener;
 
 /**

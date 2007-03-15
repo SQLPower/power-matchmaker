@@ -610,7 +610,7 @@ public class MatchEditor implements EditorPane {
 			indexComboBox.removeAllItems();
 	        if ( newTable != null ) {
 	        	boolean contains = false;
-	        	for ( SQLIndex index : newTable.getUniqueIndex() ) {
+	        	for ( SQLIndex index : newTable.getUniqueIndices() ) {
 	        		indexComboBox.addItem(index);
 	        		if ( newIndex != null && index.getName().equalsIgnoreCase(newIndex.getName())) {
 	        			contains = true;

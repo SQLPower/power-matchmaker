@@ -256,7 +256,7 @@ public class SQLObjectChooser {
 					List<SQLColumn> columns = table.getColumns();
 					setComboBoxStateAndItem(columnComboBox,columns,-1);
 
-					List<SQLIndex> indices = table.getUniqueIndex();
+					List<SQLIndex> indices = table.getUniqueIndices();
 					setComboBoxStateAndItem(uniqueKeyComboBox,indices,0);
 				}
 			}
