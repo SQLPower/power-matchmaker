@@ -81,17 +81,35 @@ public class MatchResultVisualizer implements EditorPane {
         
     };
 
+    private class SetNoMatchAction extends AbstractAction{
+        private final SourceTableRecord record1;
+        private final SourceTableRecord record2;
+        
+        protected SetNoMatchAction (SourceTableRecord record1, SourceTableRecord record2){
+            super("No Match");
+            this.record1 = record1;
+            this.record2 = record2;
+        }
+        
+        public void actionPerformed(ActionEvent e){
+            record1.makeNoMatch(record2);
+        }
+    }
+    
     private class SetMasterAction extends AbstractAction {
         
         private final SourceTableRecord master;
+        private final SourceTableRecord duplicate;
         
-        SetMasterAction(SourceTableRecord master) {
+        SetMasterAction(SourceTableRecord master, SourceTableRecord duplicate) {
             super("Master");
             this.master = master;
+            this.duplicate = duplicate;
         }
         
         public void actionPerformed(ActionEvent e) {
-            master.makeMaster();
+            master.makeMaster(duplicate);
+            viewer.repaint();
         }
     }
     
@@ -111,8 +129,12 @@ public class MatchResultVisualizer implements EditorPane {
                 List<SourceTableRecord> reachableNodes = bfs.performSearch(graphModel, node);
                 for (SourceTableRecord rec : reachableNodes) {
                     final SourceTableRecord str = rec;
+                    
+                    //XXX: fix the SetMasterAction with proper parameters, just put in str
+                    //so it compiles for now
                     JPanel recordViewer = new SourceTableRecordViewer(
-                            str, node, new JButton(new SetMasterAction(node))).getPanel();
+                            str, node, new JButton(new SetMasterAction(node, str)),
+                            new JButton(new SetNoMatchAction(node,str))).getPanel();
                     recordViewer.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mousePressed(MouseEvent e) {
