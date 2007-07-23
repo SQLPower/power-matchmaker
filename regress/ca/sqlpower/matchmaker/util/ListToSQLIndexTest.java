@@ -8,8 +8,7 @@ import junit.framework.TestCase;
 
 import org.hibernate.HibernateException;
 
-import ca.sqlpower.architect.ArchitectConnectionFactory;
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.MockJDBCDriver;
 import ca.sqlpower.architect.MockJDBCResultSet;
 import ca.sqlpower.architect.SQLIndex;
@@ -96,7 +95,7 @@ public class ListToSQLIndexTest extends TestCase {
 		index2.addChild(c29);		
 		userType = new ListToSQLIndex();
 		MockJDBCDriver driver = new MockJDBCDriver();
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 		String URL = "jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm,yard,zoo&schemas.farm=cow,pig&schemas.yard=cat,robin&schemas.zoo=lion,giraffe&tables.farm.cow=moo&tables.farm.pig=oink&tables.yard.cat=meow&tables.yard.robin=tweet&tables.zoo.lion=roar&tables.zoo.giraffe=***,^%%";
 		ds.setDriverClass(MockJDBCDriver.class.getCanonicalName());
 		ds.setName("a");
@@ -104,9 +103,8 @@ public class ListToSQLIndexTest extends TestCase {
 		ds.setUrl(URL);
 		ds.setDisplayName("a");
 		ds.setUser("a");
-		ArchitectConnectionFactory factory = new ArchitectConnectionFactory(ds);
 		
-		Connection con = factory.createConnection();
+		Connection con = ds.createConnection();
 		Statement statements = con.createStatement();
 		rs = (MockJDBCResultSet) statements.getResultSet();
 		rs.setColumnCount(11);

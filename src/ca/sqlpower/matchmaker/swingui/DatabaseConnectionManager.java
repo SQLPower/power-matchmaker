@@ -22,7 +22,7 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.DatabaseListChangeEvent;
 import ca.sqlpower.architect.DatabaseListChangeListener;
@@ -104,7 +104,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 				getNewConnectionDialog().requestFocus();
 				return;
 			}
-			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
+			SPDataSource dbcs = (SPDataSource) dsTable.getValueAt(selectedRow,0);
 
 			final DBCSPanel dbcsPanel = new DBCSPanel();
 			dbcsPanel.setDbcs(dbcs);
@@ -160,7 +160,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			if ( selectedRow == -1 ) {
 				return;
 			}
-			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
+			SPDataSource dbcs = (SPDataSource) dsTable.getValueAt(selectedRow,0);
 			int option = JOptionPane.showConfirmDialog(
 					d,
 					"Do you want to delete this database connection? ["+dbcs.getName()+"]",
@@ -180,7 +180,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 			if ( selectedRow == -1 ) {
 				return;
 			}
-			ArchitectDataSource dbcs = (ArchitectDataSource) dsTable.getValueAt(selectedRow,0);
+			SPDataSource dbcs = (SPDataSource) dsTable.getValueAt(selectedRow,0);
 			closeAction.actionPerformed(null);
             sessionContext.showLoginDialog(dbcs);
 		}
@@ -349,7 +349,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 		@Override
 		public Class<?> getColumnClass(int columnIndex) {
-			return ArchitectDataSource.class;
+			return SPDataSource.class;
 		}
 
 		@Override
@@ -363,7 +363,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 	}
 
-	public void selectDBConnection(ArchitectDataSource ds) {
+	public void selectDBConnection(SPDataSource ds) {
 		for ( int i=0; i<dsTable.getRowCount(); i++ ) {
 			if ( dsTable.getValueAt(i,0) == ds ) {
 				dsTable.setRowSelectionInterval(i,i);

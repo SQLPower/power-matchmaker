@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.security.PLSecurityException;
@@ -16,11 +16,11 @@ import ca.sqlpower.util.VersionFormatException;
 public interface SwingSessionContext extends MatchMakerSessionContext {
 
     //////// MatchMakerSessionContext implementation //////////
-    public MatchMakerSwingSession createSession(ArchitectDataSource ds,
+    public MatchMakerSwingSession createSession(SPDataSource ds,
             String username, String password) throws PLSecurityException,
             SQLException, IOException, PLSchemaException, VersionFormatException;
 
-    public List<ArchitectDataSource> getDataSources();
+    public List<SPDataSource> getDataSources();
 
     public DataSourceCollection getPlDotIni();
 
@@ -47,13 +47,13 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      * 
      * @param dataSource The data source to remember.
      */
-    public void setLastLoginDataSource(ArchitectDataSource dataSource);
+    public void setLastLoginDataSource(SPDataSource dataSource);
 
     /**
      * Returns the last data source passed to setLastLoginDataSource, even if
      * that happened since the application was last restarted.
      */
-    public ArchitectDataSource getLastLoginDataSource();
+    public SPDataSource getLastLoginDataSource();
 
     /**
      * Shows the database connection manager dialog, attaching it to the given parent
@@ -68,7 +68,7 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      * @param selectedDataSource The data source that should be selected in the dialog.
      * If null, the dialog's selected data source will remain unchanged.
      */
-    public void showLoginDialog(ArchitectDataSource selectedDataSource);
+    public void showLoginDialog(SPDataSource selectedDataSource);
 
     /**
      * Gets the path of where the matchmaker engine is located base on CoreUserSettings

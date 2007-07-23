@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.DefaultParameters;
@@ -203,7 +203,7 @@ public class MatchMakerEngineImpl extends AbstractCEngine {
 	 * that's required by the matchmaker odbc engine, since we will not
 	 * use this odbc engine forever, check for not null is acceptable for now.
 	 */
-	protected static boolean hasODBCDSN(ArchitectDataSource dataSource) {
+	protected static boolean hasODBCDSN(SPDataSource dataSource) {
 		final String odbcDsn = dataSource.getOdbcDsn();
 		if ( odbcDsn == null || odbcDsn.length() == 0 ) {
 			return false;

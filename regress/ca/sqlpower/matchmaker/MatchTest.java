@@ -8,7 +8,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLColumn;
@@ -233,7 +233,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     }
     
 	public void testResultTableExistsWhenTrue() throws Exception {
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -253,7 +253,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	 * to the Match object.
 	 */
 	public void testResultTableExistsWhenFalse() throws Exception {
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -276,7 +276,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	 */
 	public void testResultTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -291,7 +291,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	}
 	
 	public void testSourceTableExistsWhenTrue() throws Exception {
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -310,7 +310,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	 * to the Match object.
 	 */
 	public void testSourceTableExistsWhenFalse() throws Exception {
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -333,7 +333,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	 */
 	public void testSourceTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 		ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 		ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Sc" +
 				"hema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -349,7 +349,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	
 	public void testVertifyResultTableSS() throws SQLException, InstantiationException, IllegalAccessException {
 		
-		ArchitectDataSource ds = DBTestUtil.getSqlServerDS();
+		SPDataSource ds = DBTestUtil.getSqlServerDS();
 		SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
 		session.setConnection(db.getConnection());
@@ -450,7 +450,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	
 	public void testVertifyResultTableORA() throws SQLException, InstantiationException, IllegalAccessException {
 		
-		ArchitectDataSource ds = DBTestUtil.getOracleDS();
+		SPDataSource ds = DBTestUtil.getOracleDS();
 		SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
 		session.setConnection(db.getConnection());

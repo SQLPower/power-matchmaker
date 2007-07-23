@@ -28,7 +28,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
@@ -160,7 +160,7 @@ public class TableQueryFrame extends JFrame {
 	 * SQLDatabase instance if necessary.
 	 */
 	public synchronized SQLDatabase getDatabase() {
-		ArchitectDataSource ds = (ArchitectDataSource) dbDropdown
+		SPDataSource ds = (SPDataSource) dbDropdown
 		.getSelectedItem();
 		if (ds == null) {
 			cachedDatabase = null;

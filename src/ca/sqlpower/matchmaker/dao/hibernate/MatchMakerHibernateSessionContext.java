@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -57,22 +57,22 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#getDataSources()
      */
-    public List<ArchitectDataSource> getDataSources() {
+    public List<SPDataSource> getDataSources() {
         return plDotIni.getConnections();
     }
 
     /* (non-Javadoc)
-     * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#createSession(ca.sqlpower.architect.ArchitectDataSource, java.lang.String, java.lang.String)
+     * @see ca.sqlpower.matchmaker.MatchMakerSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
     public MatchMakerSession createSession(
-            ArchitectDataSource ds, String username, String password)
+            SPDataSource ds, String username, String password)
     throws PLSecurityException, SQLException, 
             VersionFormatException, PLSchemaException {
 
         // We create a copy of the data source and change the userID and password
         //and use that for the login attempt.  We do not want to change the
         //default userID and password for the connection in here.
-        ArchitectDataSource tempDbSource = new ArchitectDataSource(ds);
+        SPDataSource tempDbSource = new SPDataSource(ds);
         tempDbSource.setUser(username);
         tempDbSource.setPass(password);
 

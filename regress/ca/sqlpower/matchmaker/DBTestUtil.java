@@ -12,7 +12,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingConnection;
 
 /**
@@ -26,8 +26,8 @@ public class DBTestUtil {
     /**
      * A cache of the connections we've made so far.
      */
-    private static final Map<ArchitectDataSource, Connection> connections =
-        new HashMap<ArchitectDataSource, Connection>();
+    private static final Map<SPDataSource, Connection> connections =
+        new HashMap<SPDataSource, Connection>();
 
     /**
      * Returns a JDBC connection to the given data source.  Once a successful connection
@@ -42,7 +42,7 @@ public class DBTestUtil {
      * @throws ClassNotFoundException If the JDBC driver can't be found
      * @throws SQLException If there is a JDBC error (invalid username, password, or database url)
      */
-    public static TestingConnection connectToDatabase(ArchitectDataSource dataSource)
+    public static TestingConnection connectToDatabase(SPDataSource dataSource)
     throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
         
         if (connections.get(dataSource) == null) {
@@ -67,10 +67,10 @@ public class DBTestUtil {
     }
 
     /**
-     * Returns a new ArchitectDataSource which is configured to connect to
+     * Returns a new SPDataSource which is configured to connect to
      * our SQL Server 2000 test database.  The pl schema is in plautotest.
      */
-    public static ArchitectDataSource getSqlServerDS() { 
+    public static SPDataSource getSqlServerDS() { 
     	/*
     	 * Setup information for SQL Server
     	 */
@@ -78,7 +78,7 @@ public class DBTestUtil {
     	final String ssPassword = "TIhR2Es0";
     	final String ssUrl ="jdbc:microsoft:sqlserver://deepthought:1433;SelectMethod=cursor;DatabaseName=plautotest";
     	
-    	ArchitectDataSource sqlServerDS = new ArchitectDataSource();
+    	SPDataSource sqlServerDS = new SPDataSource();
     	sqlServerDS.setDriverClass("com.microsoft.jdbc.sqlserver.SQLServerDriver");
     	sqlServerDS.setName("Test SQLServer");
     	sqlServerDS.setUser(ssUserName);
@@ -90,10 +90,10 @@ public class DBTestUtil {
     }
 
     /**
-     * Returns a new ArchitectDataSource which is configured to connect to
+     * Returns a new SPDataSource which is configured to connect to
      * our Oracle 8i test database.  The PL schema is in mm_test.
      */
-    public static ArchitectDataSource getOracleDS() { 
+    public static SPDataSource getOracleDS() { 
         /*
          * Setup information for Oracle
          */
@@ -101,7 +101,7 @@ public class DBTestUtil {
         final String oraclePassword = "cowmoo";
         final String oracleUrl = "jdbc:oracle:thin:@arthur:1521:test";
         
-        ArchitectDataSource oracleDataSource = new ArchitectDataSource();
+        SPDataSource oracleDataSource = new SPDataSource();
         oracleDataSource.setDriverClass("oracle.jdbc.driver.OracleDriver");
         oracleDataSource.setName("Test Oracle");
     
@@ -114,15 +114,15 @@ public class DBTestUtil {
     }
 
     /**
-     * Returns a new ArchitectDataSource which is configured to create
+     * Returns a new SPDataSource which is configured to create
      * an in-memory (non persistent) HSQLDB instance.  The PL schema is in pl.
      */
-    public static ArchitectDataSource getHSQLDBInMemoryDS() {
+    public static SPDataSource getHSQLDBInMemoryDS() {
         final String hsqlUserName = "sa";
         final String hsqlPassword = "";
         final String hsqlUrl = "jdbc:hsqldb:mem:aname";
         
-        ArchitectDataSource hsqlDataSource = new ArchitectDataSource();
+        SPDataSource hsqlDataSource = new SPDataSource();
         hsqlDataSource.setDriverClass("org.hsqldb.jdbcDriver");
         hsqlDataSource.setName("In-memory HSQLDB");
     

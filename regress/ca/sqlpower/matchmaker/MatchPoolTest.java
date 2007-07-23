@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import junit.framework.TestCase;
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -33,7 +33,7 @@ public class MatchPoolTest extends TestCase {
     
     @Override
     protected void setUp() throws Exception {
-        ArchitectDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
+        SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
         db = new SQLDatabase(dataSource);
         con = db.getConnection();
         

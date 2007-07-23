@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.DBTestUtil;
@@ -28,7 +28,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
     private static final Logger logger = Logger.getLogger(TestingMatchMakerHibernateSession.class);
         
-    private final ArchitectDataSource dataSource;
+    private final SPDataSource dataSource;
     private final SessionFactory hibernateSessionFactory;
     private TestingMatchMakerContext context;
     private final TestingConnection con;
@@ -45,7 +45,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
      * @param dataSource an architect data source describing the connection
      * @throws RuntimeException
      */
-    public TestingMatchMakerHibernateSession(ArchitectDataSource dataSource) throws RuntimeException {
+    public TestingMatchMakerHibernateSession(SPDataSource dataSource) throws RuntimeException {
         super();
         try {
             this.dataSource = dataSource;

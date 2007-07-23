@@ -24,7 +24,7 @@ import javax.swing.event.ListDataListener;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
@@ -159,7 +159,7 @@ public class LoginDialog {
 	private JLabel dbSourceName;
     private JButton loginButton = new JButton();
     private JProgressBar progressBar = new JProgressBar();
-    private ArchitectDataSource dbSource;
+    private SPDataSource dbSource;
 	private ConnectionComboBoxModel connectionModel;
 	private JComponent panel;
 
@@ -175,7 +175,7 @@ public class LoginDialog {
 
 		public void contentsChanged(ListDataEvent e) {
 		    if ( e.getType() == ListDataEvent.CONTENTS_CHANGED ) {
-		        ArchitectDataSource dbSource = (ArchitectDataSource) ((ConnectionComboBoxModel) (e.getSource())).getSelectedItem();
+		        SPDataSource dbSource = (SPDataSource) ((ConnectionComboBoxModel) (e.getSource())).getSelectedItem();
 		        dbSourceName.setText(dbSource.getName());
 		        userID.setText(dbSource.getUser());
 		        password.setText(dbSource.getPass());
@@ -202,12 +202,12 @@ public class LoginDialog {
     /**
      * Makes this login dialog visible, packing it and centering it on the screen.
      * You will normally not call this method directly; see
-     * {@link SwingSessionContext#showLoginDialog(ArchitectDataSource)}.
+     * {@link SwingSessionContext#showLoginDialog(SPDataSource)}.
      *
      * @param selectedDataSource The data source to default the datasource combo box,
      * username, and password fields to.
      */
-    void showLoginDialog(ArchitectDataSource selectedDataSource) {
+    void showLoginDialog(SPDataSource selectedDataSource) {
         setDbSource(selectedDataSource);
         frame.pack();
         frame.setLocationRelativeTo(null);
@@ -300,11 +300,11 @@ public class LoginDialog {
 		this.panel = panel;
 	}
 
-	public ArchitectDataSource getDbSource() {
+	public SPDataSource getDbSource() {
 		return dbSource;
 	}
 
-	public void setDbSource(ArchitectDataSource dbSource) {
+	public void setDbSource(SPDataSource dbSource) {
 		connectionModel.setSelectedItem(dbSource);
 	}
 
