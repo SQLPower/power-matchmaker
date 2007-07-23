@@ -9,7 +9,7 @@ import java.util.prefs.Preferences;
 
 import junit.framework.TestCase;
 import prefs.PreferencesFactory;
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.CoreUserSettings;
 import ca.sqlpower.architect.DataSourceCollection;
@@ -72,7 +72,7 @@ public class SwingSessionContextTest extends TestCase {
         };
         final DataSourceCollection dsCollection = new DataSourceCollection() {
 
-            public void addDataSource(ArchitectDataSource dbcs) {
+            public void addDataSource(SPDataSource dbcs) {
                 System.out.println("Stub DSCollection.addDataSource()");
             }
 
@@ -80,19 +80,19 @@ public class SwingSessionContextTest extends TestCase {
                 System.out.println("Stub DSCollection.addDatabaseListChangeListener()");
             }
 
-            public List<ArchitectDataSource> getConnections() {
+            public List<SPDataSource> getConnections() {
                 System.out.println("Stub DSCollection.getConnections()");
-                List<ArchitectDataSource> connections = new ArrayList<ArchitectDataSource>();
+                List<SPDataSource> connections = new ArrayList<SPDataSource>();
                 connections.add(DBTestUtil.getOracleDS());
                 return connections;
             }
 
-            public ArchitectDataSource getDataSource(String name) {
+            public SPDataSource getDataSource(String name) {
                 System.out.println("Stub DSCollection.getDataSource()");
                 return null;
             }
 
-            public void mergeDataSource(ArchitectDataSource dbcs) {
+            public void mergeDataSource(SPDataSource dbcs) {
                 System.out.println("Stub DSCollection.mergeDataSource()");
             }
 
@@ -100,7 +100,7 @@ public class SwingSessionContextTest extends TestCase {
                 System.out.println("Stub DSCollection.read("+location+")");
             }
 
-            public void removeDataSource(ArchitectDataSource dbcs) {
+            public void removeDataSource(SPDataSource dbcs) {
                 System.out.println("Stub DSCollection.removeDataSource()");
             }
 
@@ -119,12 +119,12 @@ public class SwingSessionContextTest extends TestCase {
         };
         MatchMakerSessionContext stubContext = new MatchMakerSessionContext() {
 
-            public MatchMakerSession createSession(ArchitectDataSource ds, String username, String password) throws PLSecurityException, SQLException, IOException {
+            public MatchMakerSession createSession(SPDataSource ds, String username, String password) throws PLSecurityException, SQLException, IOException {
                 System.out.println("Stub MMSContext.createSession()");
                 return null;
             }
 
-            public List<ArchitectDataSource> getDataSources() {
+            public List<SPDataSource> getDataSources() {
                 System.out.println("Stub MMSContext.getDataSources()");
                 return dsCollection.getConnections();
             }
@@ -151,9 +151,9 @@ public class SwingSessionContextTest extends TestCase {
     }
     
     public void testGetLastLogin(){                
-        ArchitectDataSource ds = DBTestUtil.getOracleDS();
+        SPDataSource ds = DBTestUtil.getOracleDS();
         context.setLastLoginDataSource(ds);        
-        ArchitectDataSource actualDS = context.getLastLoginDataSource();
+        SPDataSource actualDS = context.getLastLoginDataSource();
         assertEquals("Did not remember the last login", ds, actualDS);
     }
     

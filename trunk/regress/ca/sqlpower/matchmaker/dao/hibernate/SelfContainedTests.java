@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 
 import org.apache.log4j.BasicConfigurator;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.Match;
@@ -18,7 +18,7 @@ public class SelfContainedTests {
     public static void main(String[] args) throws Exception {
         Class myclass = HibernateTestUtil.class;
         System.out.println("Class initialized");
-        ArchitectDataSource oracleDS = DBTestUtil.getOracleDS();
+        SPDataSource oracleDS = DBTestUtil.getOracleDS();
     }
     
     private static void testIfLazyLoadingWorksWhenSessionClosed() throws Exception{
@@ -36,7 +36,7 @@ public class SelfContainedTests {
         PlDotIni plIni = new PlDotIni();
         plIni.read(plIniFile);
         MatchMakerSessionContext context = new MatchMakerHibernateSessionContext(plIni, plIniFile.getAbsolutePath());
-        ArchitectDataSource oracleDS = DBTestUtil.getOracleDS();
+        SPDataSource oracleDS = DBTestUtil.getOracleDS();
         MatchMakerSession s = context.createSession(oracleDS, oracleDS.getUser(), oracleDS.getPass());
         match.setSession(s);
         s.getDAO(Match.class).save(match);

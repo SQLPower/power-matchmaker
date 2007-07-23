@@ -12,7 +12,7 @@ import junit.framework.TestCase;
 
 import org.xml.sax.SAXException;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 
@@ -414,7 +414,7 @@ public class MatchMakerImportExportTest extends TestCase {
 	}
 
 	public void testSaveSourceTable() throws IOException, ParserConfigurationException, SAXException {
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 	      ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 	      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 	      ds.setUser("n/a");
@@ -441,7 +441,7 @@ public class MatchMakerImportExportTest extends TestCase {
 	}
 
 	public void testSaveResultTable() throws IOException, ParserConfigurationException, SAXException {
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 	      ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 	      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 	      ds.setUser("n/a");

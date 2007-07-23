@@ -14,7 +14,7 @@ import javax.swing.UIManager;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.PlDotIni;
@@ -97,10 +97,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 
     //////// MatchMakerSessionContext implementation //////////
     /* (non-Javadoc)
-     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#createSession(ca.sqlpower.architect.ArchitectDataSource, java.lang.String, java.lang.String)
+     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#createSession(ca.sqlpower.sql.SPDataSource, java.lang.String, java.lang.String)
      */
     public MatchMakerSwingSession createSession(
-            ArchitectDataSource ds, String username, String password)
+            SPDataSource ds, String username, String password)
     throws PLSecurityException, SQLException, IOException, VersionFormatException, PLSchemaException {
         return new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     }
@@ -108,7 +108,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getDataSources()
      */
-    public List<ArchitectDataSource> getDataSources() {
+    public List<SPDataSource> getDataSources() {
         return context.getDataSources();
     }
 
@@ -159,19 +159,19 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     }
 
     /* (non-Javadoc)
-     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#setLastLoginDataSource(ca.sqlpower.architect.ArchitectDataSource)
+     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#setLastLoginDataSource(ca.sqlpower.sql.SPDataSource)
      */
-    public void setLastLoginDataSource(ArchitectDataSource dataSource) {
+    public void setLastLoginDataSource(SPDataSource dataSource) {
         prefs.put(SwingUserSettings.LAST_LOGIN_DATA_SOURCE, dataSource.getName());
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getLastLoginDataSource()
      */
-    public ArchitectDataSource getLastLoginDataSource() {
+    public SPDataSource getLastLoginDataSource() {
         String lastDSName = prefs.get(SwingUserSettings.LAST_LOGIN_DATA_SOURCE, null);
         if (lastDSName == null) return null;
-        for (ArchitectDataSource ds : getDataSources()) {
+        for (SPDataSource ds : getDataSources()) {
             if (ds.getName().equals(lastDSName)) return ds;
         }
         return null;
@@ -187,9 +187,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     }
 
     /* (non-Javadoc)
-     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#showLoginDialog(ca.sqlpower.architect.ArchitectDataSource)
+     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#showLoginDialog(ca.sqlpower.sql.SPDataSource)
      */
-    public void showLoginDialog(ArchitectDataSource selectedDataSource) {
+    public void showLoginDialog(SPDataSource selectedDataSource) {
         loginDialog.showLoginDialog(selectedDataSource);
     }
 

@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
 
@@ -20,12 +20,12 @@ public class StubSwingSessionContext implements SwingSessionContext {
 
     Logger logger = Logger.getLogger(StubSwingSessionContext.class);
 
-    public MatchMakerSwingSession createSession(ArchitectDataSource ds, String username, String password) throws PLSecurityException, SQLException, IOException {
+    public MatchMakerSwingSession createSession(SPDataSource ds, String username, String password) throws PLSecurityException, SQLException, IOException {
         logger.debug("Stub call: StubSwingSessionContext.createSession()");
         return null;
     }
 
-    public List<ArchitectDataSource> getDataSources() {
+    public List<SPDataSource> getDataSources() {
         logger.debug("Stub call: StubSwingSessionContext.getDataSources()");
         return null;
     }
@@ -45,7 +45,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
         return null;
     }
 
-    public ArchitectDataSource getLastLoginDataSource() {
+    public SPDataSource getLastLoginDataSource() {
         logger.debug("Stub call: StubSwingSessionContext.getLastLoginDataSource()");
         return null;
     }
@@ -63,7 +63,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
         logger.debug("Stub call: StubSwingSessionContext.setLastImportExportAccessPath()");
     }
 
-    public void setLastLoginDataSource(ArchitectDataSource dataSource) {
+    public void setLastLoginDataSource(SPDataSource dataSource) {
         logger.debug("Stub call: StubSwingSessionContext.setLastLoginDataSource()");
     }
 
@@ -71,7 +71,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
         logger.debug("Stub call: StubSwingSessionContext.showDatabaseConnectionManager()");
     }
 
-    public void showLoginDialog(ArchitectDataSource selectedDataSource) {
+    public void showLoginDialog(SPDataSource selectedDataSource) {
         logger.debug("Stub call: StubSwingSessionContext.showLoginDialog()");
     }
 

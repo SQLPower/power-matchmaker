@@ -8,7 +8,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
@@ -39,7 +39,7 @@ public class SQLObjectChooser {
 
 	private JLabel status = new JLabel();
 
-	private ArchitectDataSource dataSource;
+	private SPDataSource dataSource;
 
 	private SQLCatalog catalog;
 
@@ -161,7 +161,7 @@ public class SQLObjectChooser {
 				schemaTerm.setText("Schema");
 				schemaTerm.setEnabled(false);
 
-				dataSource = (ArchitectDataSource) dataSourceComboBox
+				dataSource = (SPDataSource) dataSourceComboBox
 						.getSelectedItem();
 				db = new SQLDatabase(dataSource);
 				db.populate();

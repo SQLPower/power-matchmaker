@@ -7,7 +7,7 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -21,7 +21,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
     private MatchMakerSwingSession session;
     PlFolder folder1;
     PlFolder folder2;
-    ArchitectDataSource ds;
+    SPDataSource ds;
     
     @Override
     protected void setUp() throws Exception {
@@ -31,8 +31,8 @@ public class MatchMakerSwingSessionTest extends TestCase {
         
         SwingSessionContext stubContext = new StubSwingSessionContext() {
             @Override
-            public List<ArchitectDataSource> getDataSources() {
-                List<ArchitectDataSource> dsList = new ArrayList<ArchitectDataSource>();
+            public List<SPDataSource> getDataSources() {
+                List<SPDataSource> dsList = new ArrayList<SPDataSource>();
                 dsList.add(ds);
                 return dsList;
             }

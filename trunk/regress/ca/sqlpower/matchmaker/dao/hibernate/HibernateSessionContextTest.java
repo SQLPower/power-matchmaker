@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.matchmaker.DBTestUtil;
@@ -26,7 +26,7 @@ public class HibernateSessionContextTest extends TestCase {
      * The sole data source the setUp() method puts in the session context.  Provided
      * here for convenience.  You could get the same data source with ctx.getDataSources().get(0).
      */
-	private ArchitectDataSource ds;
+	private SPDataSource ds;
     
     /**
      * The path that we tell the session context the PL.INI file lives in.
@@ -52,7 +52,7 @@ public class HibernateSessionContextTest extends TestCase {
 	}
     
     public void testCheckSchemaVersion() throws Exception {
-        ArchitectDataSource ds = DBTestUtil.getHSQLDBInMemoryDS();
+        SPDataSource ds = DBTestUtil.getHSQLDBInMemoryDS();
 
         Version v = new Version();
         v.setMajor(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.getMajor() - 1);

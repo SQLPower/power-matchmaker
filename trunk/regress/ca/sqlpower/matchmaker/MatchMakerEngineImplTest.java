@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import junit.framework.TestCase;
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.event.EngineEvent;
@@ -236,19 +236,19 @@ public class MatchMakerEngineImplTest extends TestCase {
 	}
 	
 	public void testHasOdbcDsnNull(){
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 		ds.setOdbcDsn(null);
 		assertFalse("An empty dsn should be considered invalid",MatchMakerEngineImpl.hasODBCDSN(ds));
 	}
 	public void testHasOdbcDsnEmpty(){
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 		ds.setOdbcDsn("");
 		assertFalse("An empty dsn should be considered invalid",MatchMakerEngineImpl.hasODBCDSN(ds));
 	}
 	// Because we can't check to see if this is a valid odbc
 	// dsn we have to go on length of string
 	public void testHasOdbcDsnvalid(){
-		ArchitectDataSource ds = new ArchitectDataSource();
+		SPDataSource ds = new SPDataSource();
 		ds.setOdbcDsn("Valid");
 		
 		assertTrue("Dsn should be considered valid",MatchMakerEngineImpl.hasODBCDSN(ds));

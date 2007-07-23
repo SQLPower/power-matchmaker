@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.PLSchemaException;
@@ -36,7 +36,7 @@ public interface MatchMakerSessionContext {
      */
     public static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,27);
 
-    public List<ArchitectDataSource> getDataSources();
+    public List<SPDataSource> getDataSources();
 
     /**
      * Creates a MatchMaker session object, which entails logging into a database
@@ -56,7 +56,7 @@ public interface MatchMakerSessionContext {
      * @throws PLSchemaException If the version of the schema is not up to date or is missing
      * @throws VersionFormatException If the format of the version number is not in the form x.y.z
      */
-    public MatchMakerSession createSession(ArchitectDataSource ds,
+    public MatchMakerSession createSession(SPDataSource ds,
             String username, String password) throws PLSecurityException,
             SQLException, IOException, PLSchemaException, VersionFormatException;
 

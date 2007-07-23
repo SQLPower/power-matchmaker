@@ -4,24 +4,24 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 
 public class TestingMatchMakerContext implements MatchMakerSessionContext {
-	List<ArchitectDataSource> dataSources;
+	List<SPDataSource> dataSources;
 	String emailEngineLocation;
 	String matchEngineLocation;
 	DataSourceCollection plDotIni;
 	MatchMakerSession session;
 	
-	public List<ArchitectDataSource> getDataSources() {
+	public List<SPDataSource> getDataSources() {
 		return dataSources;
 	}
 
-	public void setDataSources(List<ArchitectDataSource> dataSources) {
+	public void setDataSources(List<SPDataSource> dataSources) {
 		this.dataSources = dataSources;
 	}
 
@@ -57,7 +57,7 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 		this.session = session;
 	}
 
-	public MatchMakerSession createSession(ArchitectDataSource ds,
+	public MatchMakerSession createSession(SPDataSource ds,
 			String username, String password) throws PLSecurityException,
 			SQLException, IOException,
 			SchemaVersionFormatException, PLSchemaException {

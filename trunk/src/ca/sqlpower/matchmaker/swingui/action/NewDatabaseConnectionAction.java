@@ -8,7 +8,7 @@ import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
@@ -36,7 +36,7 @@ public class NewDatabaseConnectionAction extends AbstractAction {
 			}
 		}
 		final DBCSPanel dbcsPanel = new DBCSPanel();
-		dbcsPanel.setDbcs(new ArchitectDataSource());
+		dbcsPanel.setDbcs(new SPDataSource());
 
 		DBCSOkAction okAction = new DBCSOkAction(dbcsPanel,
 				true,

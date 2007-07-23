@@ -13,7 +13,7 @@ public class MatchMakerHibernateSessionImplTest extends TestCase {
 //    
 //    @Override
 //    protected void setUp() throws Exception {
-//        ArchitectDataSource ds = new ArchitectDataSource();
+//        SPDataSource ds = new SPDataSource();
 //        ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 //        ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 //        ds.setUser("n/a");

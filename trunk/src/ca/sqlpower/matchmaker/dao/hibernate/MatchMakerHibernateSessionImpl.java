@@ -17,7 +17,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -118,7 +118,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      */
 	public MatchMakerHibernateSessionImpl(
             MatchMakerSessionContext context,
-			ArchitectDataSource ds)
+			SPDataSource ds)
 		throws PLSecurityException, UnknownFreqCodeException,
 				SQLException, PLSchemaException, VersionFormatException {
         this.instanceID = nextInstanceID++;
@@ -265,7 +265,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * @param ds The connection specification for the session factory you want.
      * @return A Hibernate SessionFactory for the given data source.
      */
-    private SessionFactory buildHibernateSessionFactory(ArchitectDataSource ds) {
+    private SessionFactory buildHibernateSessionFactory(SPDataSource ds) {
         SessionFactory factory;
         Configuration cfg = new Configuration();
 

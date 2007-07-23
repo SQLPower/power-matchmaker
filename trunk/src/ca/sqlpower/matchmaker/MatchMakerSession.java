@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker;
 import java.sql.Connection;
 import java.util.Date;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -16,7 +16,7 @@ import ca.sqlpower.util.Version;
  * throughout the MatchMaker business model.
  *
  * <p>To make one of these, use the
- * {@link MatchMakerHibernateSessionContext#createSession(ArchitectDataSource, String, String)}
+ * {@link MatchMakerHibernateSessionContext#createSession(SPDataSource, String, String)}
  * method.
  *
  * <p>This interface makes a strong committment to keeping the MatchMaker

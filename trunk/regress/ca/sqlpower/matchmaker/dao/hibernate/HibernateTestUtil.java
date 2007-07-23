@@ -3,7 +3,7 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
-import ca.sqlpower.architect.ArchitectDataSource;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
@@ -23,7 +23,7 @@ public class HibernateTestUtil {
 	 * 			plSchema and plDbType
 	 * @return a new hibernate session
 	 */	
-	static SessionFactory buildHibernateSessionFactory(ArchitectDataSource ds) {
+	static SessionFactory buildHibernateSessionFactory(SPDataSource ds) {
 		Configuration cfg = new Configuration();
 		SessionFactory sessionFactory = null;
         cfg.configure(ClassLoader.getSystemResource("ca/sqlpower/matchmaker/dao/hibernate/hibernate.cfg.xml"));
