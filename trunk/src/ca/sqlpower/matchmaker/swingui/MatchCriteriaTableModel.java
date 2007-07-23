@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.table.AbstractTableModel;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
@@ -205,11 +204,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 			MatchMakerCriteria criteria) {
 		switch (column) {	
 		case COLUMN:
-			try {
-			    return criteria.getColumn();
-			} catch (ArchitectException e) {
-                ASUtils.showExceptionDialog("Couldn't determine column for criteria", e);
-			}
+			return criteria.getColumn();
 		case ALLOW_NULL:             
 			return criteria.isAllowNullInd();
 		case CASE_SENSITIVE_IND:             

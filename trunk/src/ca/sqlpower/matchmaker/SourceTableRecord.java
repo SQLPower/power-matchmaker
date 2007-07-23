@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
@@ -104,9 +103,8 @@ public class SourceTableRecord {
      * 
      * @return The values for the row of the source table which is uniquely
      * identified by this sourceTableRecord's keyValues list.
-     * @throws ArchitectException, SQLException 
      */
-    public List<Object> fetchValues() throws ArchitectException, SQLException {
+    public List<Object> fetchValues() throws SQLException {
         SQLTable sourceTable = match.getSourceTable();
         List<Object> values = new ArrayList<Object>(sourceTable.getColumns().size());
         Connection con = null;

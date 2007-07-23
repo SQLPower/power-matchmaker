@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.matchmaker.Match;
@@ -50,8 +49,6 @@ public final class NewMatchAction extends AbstractAction {
 
 			me = new MatchEditor(swingSession,match,folder);
 			swingSession.setCurrentEditorComponent(me);
-		} catch (ArchitectException e1) {
-			throw new ArchitectRuntimeException(e1);
 		} catch (SQLException e2) {
 			throw new RuntimeException(e2);
 		}

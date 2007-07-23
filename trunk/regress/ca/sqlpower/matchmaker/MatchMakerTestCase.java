@@ -19,7 +19,6 @@ import junit.framework.TestCase;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
@@ -209,7 +208,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 
 	public void testAllSettersGenerateEvents()
 	throws IllegalArgumentException, IllegalAccessException,
-	InvocationTargetException, NoSuchMethodException, ArchitectException, IOException {
+	InvocationTargetException, NoSuchMethodException, IOException {
 
 		MatchMakerObject mmo = getTarget();
 

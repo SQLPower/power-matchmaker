@@ -15,7 +15,6 @@ import javax.swing.UIManager;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.PlDotIni;
@@ -66,7 +65,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * session context object based on information in the given prefs node, or failing that,
      * by prompting the user with a GUI.
      */
-    public SwingSessionContextImpl(ArchitectSession architectSession, Preferences prefsRootNode) throws ArchitectException, IOException {
+    public SwingSessionContextImpl(ArchitectSession architectSession, Preferences prefsRootNode) throws IOException {
         this(architectSession, prefsRootNode, createDelegateContext(prefsRootNode));
     }
 
@@ -79,7 +78,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     public SwingSessionContextImpl(
             ArchitectSession architectSession,
             Preferences prefsRootNode,
-            MatchMakerSessionContext delegateContext) throws ArchitectException, IOException {
+            MatchMakerSessionContext delegateContext) throws IOException {
         this.architectSession = architectSession;
         this.prefs = prefsRootNode;
         this.context = delegateContext;
@@ -102,7 +101,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     public MatchMakerSwingSession createSession(
             ArchitectDataSource ds, String username, String password)
-    throws PLSecurityException, SQLException, ArchitectException, IOException, VersionFormatException, PLSchemaException {
+    throws PLSecurityException, SQLException, IOException, VersionFormatException, PLSchemaException {
         return new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     }
 
@@ -201,7 +200,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * Creates the delegate context, prompting the user (GUI) for any missing information.
      * @throws IOException
      */
-    private static MatchMakerSessionContext createDelegateContext(Preferences prefs) throws ArchitectException, IOException {
+    private static MatchMakerSessionContext createDelegateContext(Preferences prefs) throws IOException {
         DataSourceCollection plDotIni = null;
         String plDotIniPath = prefs.get(ArchitectSession.PREFS_PL_INI_PATH, null);
         while ((plDotIni = readPlDotIni(plDotIniPath)) == null) {
@@ -227,7 +226,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                     "Missing PL.INI", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
 
             if (choice == JOptionPane.CLOSED_OPTION) {
-                throw new ArchitectException("Can't start without a pl.ini file");
+                throw new RuntimeException("Can't start without a pl.ini file");
             } else if (choice == BROWSE) {
                 JFileChooser fc = new JFileChooser();
                 fc.setFileFilter(ASUtils.INI_FILE_FILTER);
@@ -252,7 +251,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 							"; mayhap it already exists?");
 				}
             } else {
-                throw new ArchitectException(
+                throw new RuntimeException(
                 "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
             }
         }

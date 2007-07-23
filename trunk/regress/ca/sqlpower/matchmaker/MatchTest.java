@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLColumn;
@@ -87,7 +86,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
     }
     
-    public void testCreateResultTable() throws ArchitectException {
+    public void testCreateResultTable() {
     	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
@@ -166,7 +165,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	assertEquals(i, idx.getChildCount()*8 + 7); // sanity check for the test
     }
     
-    public void testCreateResultTableIndex() throws ArchitectException {
+    public void testCreateResultTableIndex() {
     	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
@@ -348,7 +347,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		assertFalse(Match.doesSourceTableExist(session, match));
 	}
 	
-	public void testVertifyResultTableSS() throws ArchitectException, SQLException, InstantiationException, IllegalAccessException {
+	public void testVertifyResultTableSS() throws SQLException, InstantiationException, IllegalAccessException {
 		
 		ArchitectDataSource ds = DBTestUtil.getSqlServerDS();
 		SQLDatabase db = new SQLDatabase(ds);
@@ -449,7 +448,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		}
     }
 	
-	public void testVertifyResultTableORA() throws ArchitectException, SQLException, InstantiationException, IllegalAccessException {
+	public void testVertifyResultTableORA() throws SQLException, InstantiationException, IllegalAccessException {
 		
 		ArchitectDataSource ds = DBTestUtil.getOracleDS();
 		SQLDatabase db = new SQLDatabase(ds);

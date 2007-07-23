@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.event.EngineEvent;
 import ca.sqlpower.matchmaker.event.EngineListener;
 import ca.sqlpower.matchmaker.event.EngineEvent.EngineEventType;
@@ -28,7 +27,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	private Thread processMonitor;
 	private Integer engineExitCode;
 	
-	public abstract void checkPreconditions() throws EngineSettingException, ArchitectException; 
+	public abstract void checkPreconditions() throws EngineSettingException; 
 	
 		
 	protected Match getMatch() {
@@ -82,7 +81,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	/* (non-Javadoc)
 	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#run()
 	 */
-	public void run() throws EngineSettingException, IOException, ArchitectException {
+	public void run() throws EngineSettingException, IOException {
 		checkPreconditions();
 		if (proc!=null) throw new IllegalStateException("Engine has already been run");
 		String commandLine = createCommandLine(session,match,false);
@@ -148,7 +147,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	/**
 	 * Right now the job size is always indeterminant
 	 */
-	public Integer getJobSize() throws ArchitectException {
+	public Integer getJobSize() {
 		return null;
 	}
 
@@ -160,17 +159,17 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 		}
 	}
 
-	public int getProgress() throws ArchitectException {
+	public int getProgress() {
 		// since this is always indeterminant  
 		return 0;
 	}
 
-	public boolean hasStarted() throws ArchitectException {
+	public boolean hasStarted() {
 		return isRunning() || getEngineReturnCode() != null;
 	}
 	
 	// The engine is done when it has an exit code
-	public boolean isFinished() throws ArchitectException {
+	public boolean isFinished() {
 		if (getEngineReturnCode() != null){
 			return true;
 		} else {

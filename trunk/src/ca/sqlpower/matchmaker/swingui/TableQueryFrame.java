@@ -29,7 +29,6 @@ import javax.swing.table.AbstractTableModel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
@@ -109,11 +108,7 @@ public class TableQueryFrame extends JFrame {
 			db = getDatabase();
 
 			if (db != null) {
-				try {
-					progressMonitor = db.getProgressMonitor();
-				} catch (ArchitectException e1) {
-					logger.debug("Error getting progressMonitor", e1);
-				}
+				progressMonitor = db.getProgressMonitor();
 				new Thread(this).start();
 			} else {
 				tableDropdown.removeAllItems();
@@ -128,19 +123,10 @@ public class TableQueryFrame extends JFrame {
 		@Override
 		public void doStuff() /*throws Exception*/ {
 
-			try {
-				ListerProgressBarUpdater progressBarUpdater =
-					new ListerProgressBarUpdater(progressBar, this);
-				new javax.swing.Timer(100, progressBarUpdater).start();
-				db.populate();
-			} catch (ArchitectException e) {
-				logger.debug(
-						"Unexpected architect exception in ConnectionListener",	e);
-				ASUtils.showExceptionDialog(
-						SwingUtilities.getWindowAncestor(TableQueryFrame.this),
-						"Unexpected exception in ConnectionListener",
-						e, new MatchMakerQFAFactory());
-			}
+			ListerProgressBarUpdater progressBarUpdater =
+				new ListerProgressBarUpdater(progressBar, this);
+			new javax.swing.Timer(100, progressBarUpdater).start();
+			db.populate();
 		}
 
 		/**
@@ -155,7 +141,7 @@ public class TableQueryFrame extends JFrame {
 		 * </ul>
 		 */
 		@Override
-		public void cleanup() throws ArchitectException {
+		public void cleanup() {
 			setCleanupExceptionMessage("Could not populate database tables!");
 
 			tableDropdown.removeAllItems();
@@ -235,9 +221,6 @@ public class TableQueryFrame extends JFrame {
 	            recordsFound.setText(String.valueOf(tableData.size())+
 	            		" row(s) found");
 
-	        }  catch (ArchitectException e1 ) {
-	        	ASUtils.showExceptionDialogNoReport(TableQueryFrame.this,
-						"Unknown Error while processing query", sql, e1);
 			} catch (SQLException e1 ) {
 				ASUtils.showExceptionDialogNoReport(TableQueryFrame.this,
 						"Database Error while processing query", sql, e1);

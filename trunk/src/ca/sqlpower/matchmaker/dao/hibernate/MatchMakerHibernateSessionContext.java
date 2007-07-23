@@ -7,7 +7,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -67,7 +66,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      */
     public MatchMakerSession createSession(
             ArchitectDataSource ds, String username, String password)
-    throws PLSecurityException, SQLException, ArchitectException, 
+    throws PLSecurityException, SQLException, 
             VersionFormatException, PLSchemaException {
 
         // We create a copy of the data source and change the userID and password

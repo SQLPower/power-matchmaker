@@ -10,7 +10,6 @@ import org.hibernate.HibernateException;
 
 import ca.sqlpower.architect.ArchitectConnectionFactory;
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.MockJDBCDriver;
 import ca.sqlpower.architect.MockJDBCResultSet;
 import ca.sqlpower.architect.SQLIndex;
@@ -120,7 +119,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}
 	}
 
-	public void testDeepCopy() throws ArchitectException{
+	public void testDeepCopy() {
 		SQLIndex testCopy = (SQLIndex) userType.deepCopy(index);
 		assertEquals("The test copy should have the same number of children",
 						testCopy.getChildCount(), index.getChildCount());
@@ -139,7 +138,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}		
 	}
 	
-	public void testNullGetWithAllValidColumns() throws SQLException, ArchitectException{
+	public void testNullGetWithAllValidColumns() throws SQLException {
 
 		String[] data = new String[11];
 		data[0] = "pkName";
@@ -159,7 +158,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}
 	}
 	
-	public void testNullGetWithNullsInList() throws HibernateException, SQLException, ArchitectException{
+	public void testNullGetWithNullsInList() throws HibernateException, SQLException {
 		String[] data = new String[11];
 		data[0] = "pkName";
 		for (int i=1; i<11;i++){
@@ -171,24 +170,16 @@ public class ListToSQLIndexTest extends TestCase {
 		SQLIndex ind = (SQLIndex)userType.nullSafeGet(rs, names, null);
 		assertNotNull("We should not be getting a null value when we don't pass one in",ind);
 		assertEquals("The primary key is not correct", ind.getName(), "pkName");
-		try {
-			assertEquals("The children size of the SQLIndex is not correct"+ind.getChildren(), 
-										ind.getChildCount(), 9);
-		} catch (ArchitectException e1) {
-			throw new HibernateException(e1);			
-		}
+		assertEquals("The children size of the SQLIndex is not correct"+ind.getChildren(), 
+				ind.getChildCount(), 9);
 		for (int j=1; j>10; j++){
-			try {
-				if (j < 6){
-					assertEquals("The child does not have the right name", 
-							"index_column_name"+j, ind.getChild(j).getName() );
-				}else {
-					assertEquals("The child does not have the right name", 
-							 "index_column_name"+(j+1),ind.getChild(j).getName());
-				}
-			} catch (ArchitectException e) {
-				throw new HibernateException(e);
-			} 
+			if (j < 6){
+				assertEquals("The child does not have the right name", 
+						"index_column_name"+j, ind.getChild(j).getName() );
+			}else {
+				assertEquals("The child does not have the right name", 
+						"index_column_name"+(j+1),ind.getChild(j).getName());
+			}
 		}
 	}
 	
@@ -217,7 +208,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}		
 	}
 		
-	public void testEquals() throws ArchitectException {
+	public void testEquals() {
 		assertTrue("The two indices are not equal, but should be",userType.equals(index,index2));
 		assertTrue("The two indices are not equal, but should be",userType.equals(index,userType.deepCopy(index)));
 		String oldName = index2.getName();

@@ -27,7 +27,6 @@ import javax.swing.JSplitPane;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchPool;
@@ -180,7 +179,7 @@ public class MatchResultVisualizer implements EditorPane {
 
     private final GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel;
     
-    public MatchResultVisualizer(Match match, MatchMakerSwingSession session) throws SQLException, ArchitectException {
+    public MatchResultVisualizer(Match match, MatchMakerSwingSession session) throws SQLException {
         this.match = match;
         this.session = session;
 

@@ -10,7 +10,6 @@ import java.util.prefs.Preferences;
 import junit.framework.TestCase;
 import prefs.PreferencesFactory;
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.CoreUserSettings;
 import ca.sqlpower.architect.DataSourceCollection;
@@ -120,7 +119,7 @@ public class SwingSessionContextTest extends TestCase {
         };
         MatchMakerSessionContext stubContext = new MatchMakerSessionContext() {
 
-            public MatchMakerSession createSession(ArchitectDataSource ds, String username, String password) throws PLSecurityException, SQLException, ArchitectException, IOException {
+            public MatchMakerSession createSession(ArchitectDataSource ds, String username, String password) throws PLSecurityException, SQLException, IOException {
                 System.out.println("Stub MMSContext.createSession()");
                 return null;
             }

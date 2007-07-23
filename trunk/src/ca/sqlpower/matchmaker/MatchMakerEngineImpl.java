@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.DefaultParameters;
@@ -30,7 +29,7 @@ public class MatchMakerEngineImpl extends AbstractCEngine {
 		context = session.getContext();
 	}
 
-	public void checkPreconditions() throws EngineSettingException, ArchitectException {
+	public void checkPreconditions() throws EngineSettingException {
 		MatchMakerSession session = getSession();
         Match match = getMatch();
         final MatchMakerSessionContext context = session.getContext();

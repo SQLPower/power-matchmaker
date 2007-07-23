@@ -10,7 +10,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.DBTestUtil;
@@ -230,25 +229,25 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");
     }
 
-	public boolean canSelectTable(SQLTable table) throws ArchitectException {
+	public boolean canSelectTable(SQLTable table) {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.canSelectTable()");
 		return false;
 	}
 
-	public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+	public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.findSQLTableByName()");
 		return null;
 	}
 
-	public boolean tableExists(String catalog, String schema, String tableName) throws ArchitectException {
+	public boolean tableExists(String catalog, String schema, String tableName) {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.tableExists()");
 		return false;
 	}
 
-	public boolean tableExists(SQLTable table) throws ArchitectException {
+	public boolean tableExists(SQLTable table) {
 		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.tableExists()");
 		return false;

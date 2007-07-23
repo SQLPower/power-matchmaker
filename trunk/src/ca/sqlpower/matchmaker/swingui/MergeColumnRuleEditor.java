@@ -27,7 +27,6 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
@@ -69,7 +68,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 	
 	public MergeColumnRuleEditor(MatchMakerSwingSession swingSession,
 			Match match, TableMergeRules mergeRule, 
-			ColumnMergeRules selectedColumn) throws ArchitectException {
+			ColumnMergeRules selectedColumn) {
 		this.swingSession = swingSession;
 		this.match = match;
 		this.mergeRule = mergeRule;
@@ -221,7 +220,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private boolean reSetting = false;
 	private boolean tableHasChanges = false; 
 	
-	private void setDefaultSelections() throws ArchitectException {
+	private void setDefaultSelections() {
 		chooser.getCatalogComboBox().setSelectedItem(mergeRule.getSourceTable().getCatalog());
 		chooser.getSchemaComboBox().setSelectedItem(mergeRule.getSourceTable().getSchema());
 		chooser.getTableComboBox().setSelectedItem(mergeRule.getSourceTable());
@@ -335,18 +334,14 @@ public class MergeColumnRuleEditor implements EditorPane {
 			}
 		}
 		public void deriveFromTable() {
-			try {
-				List<SQLColumn> columns = new ArrayList<SQLColumn>(
-						((SQLTable) chooser.getTableComboBox().getSelectedItem()).getColumns()); 
-				for (SQLColumn column : columns) {
-					if (!doesColumnExistsInChildren(column) ) {
-						ColumnMergeRules newRules = newColumnRule();
-						newRules.setColumn(column);
-						fireTableDataChanged();
-					}
+			List<SQLColumn> columns = new ArrayList<SQLColumn>(
+					((SQLTable) chooser.getTableComboBox().getSelectedItem()).getColumns()); 
+			for (SQLColumn column : columns) {
+				if (!doesColumnExistsInChildren(column) ) {
+					ColumnMergeRules newRules = newColumnRule();
+					newRules.setColumn(column);
+					fireTableDataChanged();
 				}
-			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialog("Unexcepted Error", e1);
 			}
 		}
 		

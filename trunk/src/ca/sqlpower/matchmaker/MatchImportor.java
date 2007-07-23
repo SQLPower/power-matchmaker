@@ -20,7 +20,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ASUtils.LabelValueBean;
@@ -42,10 +41,9 @@ public class MatchImportor {
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws IOException
-	 * @throws ArchitectException 
 	 */
 	public boolean load(Match match, InputStream in) 
-		throws ParserConfigurationException, SAXException, IOException, ArchitectException {
+		throws ParserConfigurationException, SAXException, IOException {
 
 		SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
 		parser.parse(in,new MatchExportFileHandler(match));
@@ -124,15 +122,11 @@ public class MatchImportor {
 				final SAXException exception = new SAXException("Parse Error:"+e.getMessage());
 				exception.setStackTrace(e.getStackTrace());
 				throw exception;
-			} catch (ArchitectException e) {
-				final SAXException exception = new SAXException("Unexcepted SQL Object Error:"+e.getMessage());
-				exception.setStackTrace(e.getStackTrace());
-				throw exception;
 			}
 		}
 
 		private void setMatchMaketProperties(Match parentMatch,
-				MatchMakerObject mmo,List<LabelValueBean> properties) throws ParseException, ArchitectException {
+				MatchMakerObject mmo,List<LabelValueBean> properties) throws ParseException {
 			if ( mmo instanceof Match ) {
 				Match match = (Match) mmo;
 				for ( LabelValueBean bean : properties ) {

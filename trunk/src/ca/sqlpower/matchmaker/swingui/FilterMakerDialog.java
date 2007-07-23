@@ -25,7 +25,6 @@ import javax.swing.text.BadLocationException;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -151,13 +150,7 @@ public class FilterMakerDialog extends JDialog {
 
         pb = new PanelBuilder(layout,p);
 
-        try {
-            columnName = new JComboBox(new ColumnComboBoxModel(matchSourceTable));
-        } catch (ArchitectException e) {
-            ASUtils.showExceptionDialog(FilterMakerDialog.this,
-                    "Unable to setup the column drop down box", e, new MatchMakerQFAFactory());
-            return;
-        }
+        columnName = new JComboBox(new ColumnComboBoxModel(matchSourceTable));
 
 
         comparisonOperator = new JComboBox();
@@ -187,13 +180,8 @@ public class FilterMakerDialog extends JDialog {
             conditionTextField = new JTextField();
             pb.add(conditionTextField, cc.xy(4,6));
         } else {
-            try {
-                columnName2 = new JComboBox(new ColumnComboBoxModel(matchSourceTable));
-            } catch (ArchitectException e) {
-                ASUtils.showExceptionDialog(FilterMakerDialog.this,
-                        "Unable to setup the column drop down box", e, new MatchMakerQFAFactory());
-                return;
-            }
+        	columnName2 = new JComboBox(new ColumnComboBoxModel(matchSourceTable));
+
             pb.add(columnName2, cc.xy(4,6));
         }
 
@@ -354,9 +342,6 @@ public class FilterMakerDialog extends JDialog {
             } catch (SQLException e1) {
                 ASUtils.showExceptionDialogNoReport(FilterMakerDialog.this,
                         "Database Problem", e1);
-            } catch (ArchitectException e1) {
-                ASUtils.showExceptionDialogNoReport(FilterMakerDialog.this,
-                        "Connection Error", e1);
             } finally {
                 try {
                     if ( rs != null )

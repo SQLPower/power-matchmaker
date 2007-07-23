@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
 
@@ -21,7 +20,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
 
     Logger logger = Logger.getLogger(StubSwingSessionContext.class);
 
-    public MatchMakerSwingSession createSession(ArchitectDataSource ds, String username, String password) throws PLSecurityException, SQLException, ArchitectException, IOException {
+    public MatchMakerSwingSession createSession(ArchitectDataSource ds, String username, String password) throws PLSecurityException, SQLException, IOException {
         logger.debug("Stub call: StubSwingSessionContext.createSession()");
         return null;
     }

@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.security.PLSecurityException;
@@ -19,7 +18,7 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
     //////// MatchMakerSessionContext implementation //////////
     public MatchMakerSwingSession createSession(ArchitectDataSource ds,
             String username, String password) throws PLSecurityException,
-            SQLException, ArchitectException, IOException, PLSchemaException, VersionFormatException;
+            SQLException, IOException, PLSchemaException, VersionFormatException;
 
     public List<ArchitectDataSource> getDataSources();
 

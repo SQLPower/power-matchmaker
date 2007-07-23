@@ -34,7 +34,6 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLTable;
@@ -112,48 +111,41 @@ public class MatchValidation {
             StringBuffer where = new StringBuffer();
             List <Object> params = new ArrayList<Object>();
 
-            try {
+            dupCandItems.append("MATCH_PERCENT");
+            for ( int i = 0; i<pk.getChildCount(); i++ ) {
+            	if ( i > 0 ) {
+            		dupCandWhereClause.append(" AND ");
+            	}
+            	dupCandItems.append(",dup_candidate_").append(i+10);
+            	dupCandItems.append(",dup_candidate_").append(i+20);
 
-                dupCandItems.append("MATCH_PERCENT");
-                for ( int i = 0; i<pk.getChildCount(); i++ ) {
-                    if ( i > 0 ) {
-                        dupCandWhereClause.append(" AND ");
-                    }
-                    dupCandItems.append(",dup_candidate_").append(i+10);
-                    dupCandItems.append(",dup_candidate_").append(i+20);
-
-                    dupCandWhereClause.append("((current_candidate_").append(i+10);
-                    dupCandWhereClause.append(" IS NULL AND current_candidate_").append(i+20);
-                    dupCandWhereClause.append(" IS NOT NULL)");
-                    dupCandWhereClause.append(" OR ");
-                    dupCandWhereClause.append("(current_candidate_").append(i+10);
-                    dupCandWhereClause.append(" IS NOT NULL AND current_candidate_").append(i+20);
-                    dupCandWhereClause.append(" IS NULL)");
-                    dupCandWhereClause.append(" OR ");
-                    dupCandWhereClause.append("(current_candidate_").append(i+10);
-                    dupCandWhereClause.append(" <> current_candidate_").append(i+20).append("))");
+            	dupCandWhereClause.append("((current_candidate_").append(i+10);
+            	dupCandWhereClause.append(" IS NULL AND current_candidate_").append(i+20);
+            	dupCandWhereClause.append(" IS NOT NULL)");
+            	dupCandWhereClause.append(" OR ");
+            	dupCandWhereClause.append("(current_candidate_").append(i+10);
+            	dupCandWhereClause.append(" IS NOT NULL AND current_candidate_").append(i+20);
+            	dupCandWhereClause.append(" IS NULL)");
+            	dupCandWhereClause.append(" OR ");
+            	dupCandWhereClause.append("(current_candidate_").append(i+10);
+            	dupCandWhereClause.append(" <> current_candidate_").append(i+20).append("))");
 
 
-                    String columnName = pk.getChild(i).getName();
-                    int col = getColumnByName(sourceJTable,columnName);
-                    if ( col < 0 ) {
-                        ASUtils.showExceptionDialog(frame,
-                                "column "+columnName+" not found",
-                                new IllegalStateException("column "+columnName+" not found"), new MatchMakerQFAFactory());
-                        return;
-                    }
-                    if ( sourceJTable.getValueAt(row,col) == null ) {
-                        where.append("dup_candidate_").append(i+20).append(" IS NULL");
-                    } else {
-                        where.append("dup_candidate_").append(i+20).append("=?");
-                        params.add(sourceJTable.getValueAt(row,col));
-                    }
-                }
-            } catch (ArchitectException e1) {
-                ASUtils.showExceptionDialog(frame,
-                        "primary key populate error", e1, new MatchMakerQFAFactory());
+            	String columnName = pk.getChild(i).getName();
+            	int col = getColumnByName(sourceJTable,columnName);
+            	if ( col < 0 ) {
+            		ASUtils.showExceptionDialog(frame,
+            				"column "+columnName+" not found",
+            				new IllegalStateException("column "+columnName+" not found"), new MatchMakerQFAFactory());
+            		return;
+            	}
+            	if ( sourceJTable.getValueAt(row,col) == null ) {
+            		where.append("dup_candidate_").append(i+20).append(" IS NULL");
+            	} else {
+            		where.append("dup_candidate_").append(i+20).append("=?");
+            		params.add(sourceJTable.getValueAt(row,col));
+            	}
             }
-
 
             StringBuffer sql = new StringBuffer();
             sql.append("SELECT ").append(dupCandItems).append(" FROM ");
@@ -201,9 +193,6 @@ public class MatchValidation {
             } catch (SQLException e1) {
                 ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error:"+sql.toString(), e1, new MatchMakerQFAFactory());
-            } catch (ArchitectException e1) {
-                ASUtils.showExceptionDialog(frame,
-                        "Unknown Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
                     if ( rs != null )
@@ -228,7 +217,7 @@ public class MatchValidation {
         }
     };
 
-    public MatchValidation(MatchMakerSwingSession swingSession, Match match) throws HeadlessException, SQLException, ArchitectException {
+    public MatchValidation(MatchMakerSwingSession swingSession, Match match) throws HeadlessException, SQLException {
         frame = new JFrame("Validate Matches: " + match.getName());
         frame.setIconImage(swingSession.getSmallMMIcon().getImage());
         this.swingSession = swingSession;
@@ -321,10 +310,6 @@ public class MatchValidation {
             crset = new CachedRowSetImpl();
             crset.populate(rs);
             return crset;
-        } catch (ArchitectException e1) {
-            crset = null;
-            ASUtils.showExceptionDialog(frame,
-                    "Unknown SQL Error", e1, new MatchMakerQFAFactory());
         } catch (SQLException e1) {
             crset = null;
             ASUtils.showExceptionDialog(frame,
@@ -358,7 +343,7 @@ public class MatchValidation {
 
 
 
-    private void setup() throws SQLException, ArchitectException {
+    private void setup() throws SQLException {
         fullResult = getMatchResult(match);
         allMatchGroup = new ArrayList<String>();
         allMatchPct = new ArrayList<String>();
@@ -549,28 +534,17 @@ public class MatchValidation {
             return model.getRowCount();
         }
         public int getColumnCount() {
-            try {
-                return matchSourceTable.getColumns().size();
-            } catch (ArchitectException e) {
-                ASUtils.showExceptionDialog(frame,
-                        "Unknown SQL Error", e, new MatchMakerQFAFactory());
-            }
-            return 0;
+        	return matchSourceTable.getColumns().size();
         }
         public Object getValueAt(int rowIndex, int columnIndex) {
             return model.getValueAt(rowIndex,columnIndex);
         }
         @Override
         public String getColumnName(int column) {
-            try {
-                if ( column < matchSourceTable.getColumns().size() ) {
-                    return matchSourceTable.getColumn(column).getName();
-                }
-            } catch (ArchitectException e) {
-                ASUtils.showExceptionDialog(frame,
-                        "Unknown SQL Error", e, new MatchMakerQFAFactory());
-            }
-            return super.getColumnName(column);
+        	if ( column < matchSourceTable.getColumns().size() ) {
+        		return matchSourceTable.getColumn(column).getName();
+        	}
+        	return super.getColumnName(column);
         }
 
     }
@@ -590,35 +564,25 @@ public class MatchValidation {
         }
         public Object getValueAt(int rowIndex, int columnIndex) {
 
-            try {
-                if ( columnIndex == 0 ) {
-                    return model.getValueAt(rowIndex,matchSourceTable.getColumns().size());
-                } else if ( columnIndex < pk.getChildCount()+1 ) {
-                    return model.getValueAt(rowIndex,matchSourceTable.getColumns().size()+columnIndex);
-                } else {
-                    return model.getValueAt(rowIndex,columnIndex-pk.getChildCount()-1);
-                }
-            } catch (ArchitectException e) {
-                ASUtils.showExceptionDialog(frame,
-                        "Unknown SQL Error", e, new MatchMakerQFAFactory());
-            }
-            return null;
+        	if ( columnIndex == 0 ) {
+        		return model.getValueAt(rowIndex,matchSourceTable.getColumns().size());
+        	} else if ( columnIndex < pk.getChildCount()+1 ) {
+        		return model.getValueAt(rowIndex,matchSourceTable.getColumns().size()+columnIndex);
+        	} else {
+        		return model.getValueAt(rowIndex,columnIndex-pk.getChildCount()-1);
+        	}
+        	return null;
         }
         @Override
         public String getColumnName(int column) {
-            try {
-                if ( column == 0 ) {
-                    return "Match Percent";
-                } else if ( column < pk.getChildCount()+1 ) {
-                    return "Current Target "+pk.getChild(column-1).getName();
-                } else {
-                    return matchSourceTable.getColumn(column-1-pk.getChildCount()).getName();
-                }
-            } catch (ArchitectException e) {
-                ASUtils.showExceptionDialog(frame,
-                        "Unknown SQL Error", e, new MatchMakerQFAFactory());
-            }
-            return super.getColumnName(column);
+        	if ( column == 0 ) {
+        		return "Match Percent";
+        	} else if ( column < pk.getChildCount()+1 ) {
+        		return "Current Target "+pk.getChild(column-1).getName();
+        	} else {
+        		return matchSourceTable.getColumn(column-1-pk.getChildCount()).getName();
+        	}
+        	return super.getColumnName(column);
         }
 
     }
@@ -731,9 +695,6 @@ public class MatchValidation {
                 output.getSelectionModel().addListSelectionListener(sourceJTableListener);
                 output.getSelectionModel().setSelectionInterval(0,0);
                 TableUtils.fitColumnWidths(output, MAX_TABLE_COL_WIDTH);
-            } catch (ArchitectException e1) {
-                ASUtils.showExceptionDialog(frame,
-                        "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } catch (SQLException e1) {
                 ASUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e1, new MatchMakerQFAFactory());

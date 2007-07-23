@@ -18,7 +18,6 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -121,7 +120,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             MatchMakerSessionContext context,
 			ArchitectDataSource ds)
 		throws PLSecurityException, UnknownFreqCodeException,
-				SQLException, ArchitectException, PLSchemaException, VersionFormatException {
+				SQLException, PLSchemaException, VersionFormatException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
 
@@ -246,11 +245,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
 
     public Connection getConnection() {
-        try {
-            return database.getConnection();
-        } catch (ArchitectException ex) {
-            throw new RuntimeException("Couldn't acquire connection to PL Schema Database", ex);
-        }
+    	return database.getConnection();
     }
 
     /**
@@ -365,8 +360,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         return plSchemaVersion;
     }
 
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName)
-    throws ArchitectException {
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) {
     	logger.debug("Session.findSQLTableByName:" +
     			catalog + "." + schema + "." + tableName);
     	if (tableName == null || tableName.length() == 0) return null;
@@ -384,11 +378,11 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
 
     public boolean tableExists(String catalog, String schema,
-    		String tableName) throws ArchitectException {
+    		String tableName) {
     	return (findPhysicalTableByName(catalog,schema,tableName) != null);
     }
 
-    public boolean tableExists(SQLTable table) throws ArchitectException {
+    public boolean tableExists(SQLTable table) {
     	if ( table == null ) return false;
     	return tableExists(table.getCatalogName(),
     			table.getSchemaName(),
@@ -399,7 +393,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * this method requires real JDBC connection and create sql statement
      * on the connection.
      */
-    public boolean canSelectTable(SQLTable table) throws ArchitectException {
+    public boolean canSelectTable(SQLTable table) {
 
 		Connection con = null;
 		Statement stmt = null;

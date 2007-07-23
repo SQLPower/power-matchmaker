@@ -14,7 +14,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.swingui.ColorScheme;
@@ -72,7 +71,7 @@ public class MatchPoolDotExport {
      * Saves a dot file representing the current contents of the match
      * result table.
      */
-    public void exportDotFile() throws SQLException, IOException, ArchitectException {
+    public void exportDotFile() throws SQLException, IOException {
         Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -217,7 +216,7 @@ public class MatchPoolDotExport {
      * Calls nodeName() with the correct parameters to get the unique identifier
      * values of the right-hand-side record.
      */
-    private String rhsOriginalNodeName(ResultSet rs) throws ArchitectException, SQLException {
+    private String rhsOriginalNodeName(ResultSet rs) throws SQLException {
         List<String> colNames = new ArrayList<String>();
         for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
             colNames.add("DUP_CANDIDATE_2"+i);
@@ -229,7 +228,7 @@ public class MatchPoolDotExport {
      * Calls nodeName() with the correct parameters to get the unique identifier
      * values of the left-hand-side record.
      */
-    private String lhsOriginalNodeName(ResultSet rs) throws SQLException, ArchitectException {
+    private String lhsOriginalNodeName(ResultSet rs) throws SQLException {
         List<String> colNames = new ArrayList<String>();
         for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
             colNames.add("DUP_CANDIDATE_1"+i);
@@ -241,7 +240,7 @@ public class MatchPoolDotExport {
      * Calls nodeName() with the correct parameters to get the unique identifier
      * values of the right-hand-side record.
      */
-    private String rhsNodeName(ResultSet rs) throws ArchitectException, SQLException {
+    private String rhsNodeName(ResultSet rs) throws SQLException {
         List<String> colNames = new ArrayList<String>();
         for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
             colNames.add("CURRENT_CANDIDATE_2"+i);
@@ -253,7 +252,7 @@ public class MatchPoolDotExport {
      * Calls nodeName() with the correct parameters to get the unique identifier
      * values of the current left-hand-side record.
      */
-    private String lhsNodeName(ResultSet rs) throws SQLException, ArchitectException {
+    private String lhsNodeName(ResultSet rs) throws SQLException {
         List<String> colNames = new ArrayList<String>();
         for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
             colNames.add("CURRENT_CANDIDATE_1"+i);

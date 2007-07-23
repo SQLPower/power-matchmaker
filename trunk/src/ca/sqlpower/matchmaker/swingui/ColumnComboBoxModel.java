@@ -6,7 +6,6 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
@@ -21,22 +20,20 @@ public class ColumnComboBoxModel implements ComboBoxModel {
 	private SQLColumn selected;
 
 	public ColumnComboBoxModel(SQLTable table,
-			MatchMakerCriteriaGroup group)
-			throws ArchitectException {
+			MatchMakerCriteriaGroup group) {
 		super();
 		ColumnComboBoxModelImpl(table, group);
 
 	}
 
-	public ColumnComboBoxModel(SQLTable table) throws ArchitectException {
+	public ColumnComboBoxModel(SQLTable table) {
 		super();
 		ColumnComboBoxModelImpl(table, null);
 
 	}
 
 	private void ColumnComboBoxModelImpl(SQLTable table,
-			MatchMakerCriteriaGroup group)
-			throws ArchitectException {
+			MatchMakerCriteriaGroup group) {
 		this.group = group;
 		setTable(table);
 	}
@@ -84,7 +81,7 @@ public class ColumnComboBoxModel implements ComboBoxModel {
 		return table;
 	}
 
-	public void setTable(SQLTable table) throws ArchitectException {
+	public void setTable(SQLTable table) {
 		if (this.table != table) {
 			this.table = table;
 			if (table != null) {
