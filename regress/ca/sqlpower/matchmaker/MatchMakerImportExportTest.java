@@ -13,7 +13,6 @@ import junit.framework.TestCase;
 import org.xml.sax.SAXException;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 
@@ -328,7 +327,7 @@ public class MatchMakerImportExportTest extends TestCase {
 		assertEquals("we should have total 6 criteria in the match",count,6);
 	}
 
-	public void testSaveFile() throws IOException, ArchitectException {
+	public void testSaveFile() throws IOException {
 		final String name = "test match should have a funny name with #$%~!@@#$%^&*() charactors";
 		final String folderName = "folder name )(*&^%$#@!~\";'.,<>";
 		match.setName(name);
@@ -358,7 +357,7 @@ public class MatchMakerImportExportTest extends TestCase {
 		assertTrue("File not exists", tmp.exists());
 		assertTrue("File size zero", (tmp.length() > 0) );
 	}
-	public void testSaveAndLoadFile() throws IOException, ArchitectException, ParserConfigurationException, SAXException {
+	public void testSaveAndLoadFile() throws IOException, ParserConfigurationException, SAXException {
 		final String name = "test match should have a funny name with #$%~!@@#$%^&*() charactors";
 		final String folderName = "folder name )(*&^%$#@!~\";'.,<>";
 		match.setName(name);
@@ -414,7 +413,7 @@ public class MatchMakerImportExportTest extends TestCase {
 		assertEquals(tmp.length(), tmp2.length());
 	}
 
-	public void testSaveSourceTable() throws ArchitectException, IOException, ParserConfigurationException, SAXException {
+	public void testSaveSourceTable() throws IOException, ParserConfigurationException, SAXException {
 		ArchitectDataSource ds = new ArchitectDataSource();
 	      ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 	      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
@@ -441,7 +440,7 @@ public class MatchMakerImportExportTest extends TestCase {
 	      assertTrue("table is not equals",sourceTable.equals(table2));
 	}
 
-	public void testSaveResultTable() throws ArchitectException, IOException, ParserConfigurationException, SAXException {
+	public void testSaveResultTable() throws IOException, ParserConfigurationException, SAXException {
 		ArchitectDataSource ds = new ArchitectDataSource();
 	      ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
 	      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");

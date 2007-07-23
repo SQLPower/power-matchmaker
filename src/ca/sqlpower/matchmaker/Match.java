@@ -7,7 +7,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -152,9 +151,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     /**
      * Returns true if the current resultTable of this match exists
      * in the session's database; false otherwise.
-     * @throws ArchitectException If there are problems accessing the session's database
      */
-	public static boolean doesResultTableExist(MatchMakerSession session, Match match) throws ArchitectException {
+	public static boolean doesResultTableExist(MatchMakerSession session, Match match) {
 		return session.tableExists(
 							match.getResultTableCatalog(),
 							match.getResultTableSchema(),
@@ -164,9 +162,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	/**
 	 * Returns true if the source table of this match exists in the
 	 * session's database; false otherwise.
-	 * @throws ArchitectException
 	 */
-	public static boolean doesSourceTableExist(MatchMakerSession session, Match match) throws ArchitectException {
+	public static boolean doesSourceTableExist(MatchMakerSession session, Match match) {
 		return session.tableExists(
 				match.getSourceTableCatalog(),
 				match.getSourceTableSchema(),
@@ -190,10 +187,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * <b>or</b>
 	 * <p>
 	 * If the source table property of this match is not set yet.
-	 * @throws ArchitectException If there is trouble working with the
 	 * source table.
 	 */
-	public SQLTable createResultTable() throws ArchitectException {
+	public SQLTable createResultTable() {
 		SQLIndex si = getSourceTableIndex();
 
 		if (si == null) {
@@ -276,7 +272,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * new columns.
 	 * @param baseName The base name of the new columns.
 	 */
-	private void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) throws ArchitectException {
+	private void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) {
 		for (int i = 0; i < si.getChildCount(); i++) {
 			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();
 			logger.debug("addColumn: i="+i+" idx="+si.getChild(i)+" idxcol="+idxCol);
@@ -316,7 +312,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * <p> 
 	 * @return false if the table is not exist in the sql database, or
 	 * the table structure does not match above table structure.
-	 * @throws ArchitectException if something unexcepted wrong
 	 * 
 	 * @throws IllegalStateException If the source table has not been setup 
 	 * <p>
@@ -326,7 +321,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * <b>or</b>
 	 * <p>session and sql database have not been setup for the match
 	 */
-	public boolean vertifyResultTableStruct() throws ArchitectException {
+	public boolean vertifyResultTableStruct() {
 
 		MatchMakerSession session = getSession();
 		if ( session == null ) {
@@ -591,7 +586,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      * to the matchmaker tables.
      * objects under different id and oid 
      * @return true if nothing wrong.
-     * @throws ArchitectException 
      */
 	public Match duplicate(MatchMakerObject parent,MatchMakerSession s) {
 		Match newMatch = new Match();
@@ -694,7 +688,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
-	public SQLIndex getSourceTableIndex() throws ArchitectException {
+	public SQLIndex getSourceTableIndex() {
 		return sourceTableIndex.getTableIndex();
 	}
 	public void setSourceTableIndex(SQLIndex index) {

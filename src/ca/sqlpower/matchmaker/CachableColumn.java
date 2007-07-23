@@ -1,6 +1,5 @@
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 
@@ -20,7 +19,7 @@ public abstract class CachableColumn {
      * Returns the name of the column this set of criteria applies to.
      * You should use {@link #getColumn()} under normal circumstances.
      */
-    public String getColumnName() throws ArchitectException {
+    public String getColumnName() {
         if (cachedColumn == null){
        		return columnName;
         } else {
@@ -50,11 +49,10 @@ public abstract class CachableColumn {
      * Match object's source table.  This functionality is provided for the benefit of the
      * ORM layer, which has difficulty using the business model.
      * 
-     * @throws ArchitectException if there is an error populating the SQLTable
      * @throws NullPointerException if any of the business objects required for
      * resolving the column object are missing
      */
-    public SQLColumn getColumn() throws ArchitectException {
+    public SQLColumn getColumn() {
         if (cachedColumn != null) return cachedColumn;
         if (columnName == null) return null;
         

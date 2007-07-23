@@ -38,7 +38,6 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectSessionImpl;
 import ca.sqlpower.architect.ArchitectUtils;
@@ -317,7 +316,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	 * @throws PLSchemaException
 	 * @throws SchemaVersionFormatException
      */
-	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, ArchitectException, SchemaVersionFormatException, PLSchemaException, SQLException {
+	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, SchemaVersionFormatException, PLSchemaException, SQLException {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
         this.smallMMIcon = new ImageIcon(getClass().getResource("/icons/matchmaker_24.png"));
@@ -497,12 +496,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 				return;
 
 			MatchEditor me;
-			try {
-				me = new MatchEditor(MatchMakerSwingSession.this,
-						match,(PlFolder<Match>)match.getParent());
-			} catch (ArchitectException e1) {
-				throw new ArchitectRuntimeException(e1);
-			}
+			me = new MatchEditor(MatchMakerSwingSession.this,
+					match,(PlFolder<Match>)match.getParent());
 			try {
 				setCurrentEditorComponent(me);
 			} catch (SQLException ex) {
@@ -522,10 +517,8 @@ public class MatchMakerSwingSession implements MatchMakerSession {
     /**
      * This method should become unnecessary soon, since the app will just continually keep
      * the user settings up-to-date...
-     *
-     * @throws ArchitectException
      */
-	public void saveSettings() throws ArchitectException {
+	public void saveSettings() {
 		sessionContext.setFrameBounds(frame.getBounds());  // XXX we should do this in a component listener
 	}
 
@@ -534,11 +527,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	 * JVM.
 	 */
 	public void exit() {
-		try {
-			saveSettings();
-		} catch (ArchitectException e) {
-			logger.error("Couldn't save settings: "+e);
-		}
+		saveSettings();
 	    System.exit(0);
 	}
 
@@ -628,7 +617,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	 *
 	 * XXX should move to LoginDialog or its own class, I think
 	 */
-	public static void main(String args[]) throws ArchitectException {
+	public static void main(String args[]) {
 
         ArchitectUtils.startup();
         System.setProperty("apple.laf.useScreenMenuBar", "true");
@@ -916,17 +905,16 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return sessionImpl.getPLSchemaVersion();
     }
 
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName)
-		throws ArchitectException {
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) {
     	return sessionImpl.findPhysicalTableByName(catalog, schema, tableName);
 	}
 
     public boolean tableExists(String catalog, String schema,
-    		String tableName) throws ArchitectException {
+    		String tableName) {
     	return sessionImpl.tableExists(catalog, schema, tableName);
 	}
 
-     public boolean tableExists(SQLTable table) throws ArchitectException {
+     public boolean tableExists(SQLTable table) {
          return sessionImpl.tableExists(table);
 	}
 
@@ -934,7 +922,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
       * this method requires real JDBC connection and create sql statement
      * on it.
       */
-	public boolean canSelectTable(SQLTable table) throws ArchitectException {
+	public boolean canSelectTable(SQLTable table) {
 	    return sessionImpl.canSelectTable(table);
 	}
 

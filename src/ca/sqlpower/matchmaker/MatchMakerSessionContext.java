@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.PLSchemaException;
@@ -53,14 +52,13 @@ public interface MatchMakerSessionContext {
      * that user doesn't have permission to use the MatchMaker.
      * @throws SQLException If there are general database errors (can't connect, database
      * permission denied, the PL Schema is missing, etc).
-     * @throws ArchitectException Because of cut and paste.
      * @throws IOException If any bootstrap init files are missing or unreadable.
      * @throws PLSchemaException If the version of the schema is not up to date or is missing
      * @throws VersionFormatException If the format of the version number is not in the form x.y.z
      */
     public MatchMakerSession createSession(ArchitectDataSource ds,
             String username, String password) throws PLSecurityException,
-            SQLException, ArchitectException, IOException, PLSchemaException, VersionFormatException;
+            SQLException, IOException, PLSchemaException, VersionFormatException;
 
     /**
      * Returns the PlDotIni object that manages this context's list of data sources.

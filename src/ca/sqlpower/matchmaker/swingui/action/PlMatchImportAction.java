@@ -17,7 +17,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectFrame;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
@@ -78,9 +77,6 @@ public class PlMatchImportAction extends AbstractAction {
 			} catch (SAXException e1) {
 				ASUtils.showExceptionDialogNoReport(
 						"XML Format Error", e1 );
-			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialogNoReport(
-						"Unknown SQL Object Error", e1 );
 			}
 
 			if ( match == null ) {

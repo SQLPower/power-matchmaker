@@ -3,7 +3,6 @@ package ca.sqlpower.matchmaker;
 import java.sql.Types;
 
 import junit.framework.TestCase;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
@@ -41,7 +40,7 @@ public class MatchSQLTableHelperTest extends TestCase {
 
 
     /** Creates a table directly under the session's database. */
-    private SQLTable setUpScenario1() throws ArchitectException {
+    private SQLTable setUpScenario1() {
         SQLDatabase db = session.getDatabase();
         SQLTable table = new SQLTable(db, "table1", null, "TABLE", true);
         db.addChild(table);
@@ -51,7 +50,7 @@ public class MatchSQLTableHelperTest extends TestCase {
     }
     
     /** Creates a schema with a table in it directly under the session's database. */
-    private SQLTable setUpScenario2() throws ArchitectException {
+    private SQLTable setUpScenario2() {
         SQLDatabase db = session.getDatabase();
         SQLSchema sch = new SQLSchema(db, "schema2", true);
         db.addChild(sch);
@@ -63,7 +62,7 @@ public class MatchSQLTableHelperTest extends TestCase {
     }
     
     /** Creates a catalog with a table in it directly under the session's database. */
-    private SQLTable setUpScenario3() throws ArchitectException {
+    private SQLTable setUpScenario3() {
         SQLDatabase db = session.getDatabase();
         SQLCatalog cat = new SQLCatalog(db, "catalog3", true);
         db.addChild(cat);
@@ -75,7 +74,7 @@ public class MatchSQLTableHelperTest extends TestCase {
     }
     
     /** Creates a catalog containing a schema containing a table under the session's database. */
-    private SQLTable setUpScenario4() throws ArchitectException {
+    private SQLTable setUpScenario4() {
         SQLDatabase db = session.getDatabase();
         SQLCatalog cat = new SQLCatalog(db, "catalog4", true);
         db.addChild(cat);

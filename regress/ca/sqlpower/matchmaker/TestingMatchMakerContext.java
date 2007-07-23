@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.PLSchemaException;
@@ -60,7 +59,7 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 
 	public MatchMakerSession createSession(ArchitectDataSource ds,
 			String username, String password) throws PLSecurityException,
-			SQLException, ArchitectException, IOException,
+			SQLException, IOException,
 			SchemaVersionFormatException, PLSchemaException {
 		return session;
 	}

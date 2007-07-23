@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.architect.IOUtils;
@@ -17,7 +16,7 @@ public class MatchExportor {
 	private final static Logger logger = Logger.getLogger(MatchExportor.class);
 	private final DateFormat df = new DateFormatAllowsNull();
 
-	public void save(Match match, PrintWriter out, String encoding) throws ArchitectException {
+	public void save(Match match, PrintWriter out, String encoding) {
 
 		IOUtils ioo = new IOUtils();
         ioo.indent = 0;
@@ -193,7 +192,7 @@ public class MatchExportor {
 
 	}
 
-	private void saveMatchGroup(IOUtils ioo, PrintWriter out, Match match) throws ArchitectException {
+	private void saveMatchGroup(IOUtils ioo, PrintWriter out, Match match) {
 		for ( MatchMakerCriteriaGroup group : match.getMatchCriteriaGroups()) {
 			ioo.println(out, "<PL_MATCH_GROUP>");
 			ioo.indent++;
@@ -229,7 +228,7 @@ public class MatchExportor {
 	}
 
 	private void saveMatchCriteria(IOUtils ioo,
-				PrintWriter out, Match match, MatchMakerCriteriaGroup group) throws ArchitectException {
+				PrintWriter out, Match match, MatchMakerCriteriaGroup group) {
 
 		List <MatchMakerCriteria> criterias = group.getChildren();
 		for ( MatchMakerCriteria c : criterias ) {

@@ -11,7 +11,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.architect.swingui.ASUtils;
@@ -104,8 +103,6 @@ public class PlMatchExportAction extends AbstractAction {
         		exportor.save(match,out, "UTF-8");
         	} catch (IOException e1) {
         		throw new RuntimeException("IO Error during save", e1);
-        	} catch (ArchitectException e2) {
-        		throw new RuntimeException("IO Error during save", e2);
 			}
         }
 

@@ -9,7 +9,6 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -58,11 +57,7 @@ public class MatchPoolTest extends TestCase {
         MatchMakerSession session = new StubMatchMakerSession() {
             @Override
             public Connection getConnection() {
-                try {
-                    return db.getConnection();
-                } catch (ArchitectException ex) {
-                    throw new RuntimeException(ex);
-                }
+            	return db.getConnection();
             }
         };
         

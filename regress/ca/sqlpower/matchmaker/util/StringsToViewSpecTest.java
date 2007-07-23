@@ -7,7 +7,6 @@ import java.sql.Statement;
 import junit.framework.TestCase;
 import ca.sqlpower.architect.ArchitectConnectionFactory;
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.MockJDBCDriver;
 import ca.sqlpower.architect.MockJDBCResultSet;
 import ca.sqlpower.architect.jdbc.MockJDBCPreparedStatement;
@@ -81,7 +80,7 @@ public class StringsToViewSpecTest extends TestCase {
         // note, the data array has one extra entry which is left null (for testing null safety of nullSafeGet)
 	}
 
-	public void testDeepCopy() throws ArchitectException{
+	public void testDeepCopy() {
 		for (ViewSpec query: testViewSpecs) {
 			ViewSpec testCopy = (ViewSpec) userType.deepCopy(query);
 			assertEquals("Invalid query",query,testCopy);
@@ -89,14 +88,14 @@ public class StringsToViewSpecTest extends TestCase {
 		}
 	}
 	
-	public void testNullGet() throws SQLException, ArchitectException {
+	public void testNullGet() throws SQLException {
         rs.addRow(new Object[] {null, null, null});
         rs.next();
         ViewSpec spec = (ViewSpec) userType.nullSafeGet(rs, names, null);
 	    assertNull("Spec should have been null because all data was null", spec);
 	}
 	
-    public void testNonNullGet() throws SQLException, ArchitectException {
+    public void testNonNullGet() throws SQLException {
         rs.addRow(new Object[] {"select clause", "from clause", "where clause"});
         rs.next();
         ViewSpec spec = (ViewSpec) userType.nullSafeGet(rs, names, null);

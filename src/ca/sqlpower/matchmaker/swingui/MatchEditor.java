@@ -41,7 +41,6 @@ import javax.swing.text.DefaultStyledDocument;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -126,10 +125,9 @@ public class MatchEditor implements EditorPane {
 	 * @param folder		-- where the match is
 	 * @param newMatch		-- a flag indicates it's a new match or not
 	 * @throws HeadlessException
-	 * @throws ArchitectException
 	 */
     public MatchEditor(final MatchMakerSwingSession swingSession, Match match,
-    		PlFolder<Match> folder) throws HeadlessException, ArchitectException {
+    		PlFolder<Match> folder) throws HeadlessException {
     	super();
         this.swingSession = swingSession;
         if (match == null)
@@ -218,14 +216,9 @@ public class MatchEditor implements EditorPane {
 	private Action newMatchGroupAction = new AbstractAction("New Match Group") {
 		public void actionPerformed(ActionEvent arg0) {
 			MatchMakerCriteriaGroupEditor editor = null;
-			try {
-				editor = new MatchMakerCriteriaGroupEditor(swingSession,
-						match,
-						new MatchMakerCriteriaGroup());
-			} catch (ArchitectException e) {
-				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"Populate Error", "Error", JOptionPane.ERROR_MESSAGE);
-			}
+			editor = new MatchMakerCriteriaGroupEditor(swingSession,
+					match,
+					new MatchMakerCriteriaGroup());
 			try {
 				swingSession.setCurrentEditorComponent(editor);
 			} catch (SQLException e) {
@@ -292,9 +285,6 @@ public class MatchEditor implements EditorPane {
 			} catch (SQLException e1) {
 				ASUtils.showExceptionDialog(swingSession.getFrame(),
 						"Unknown SQL Error", e1, new MatchMakerQFAFactory());
-			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unknown Error", e1, new MatchMakerQFAFactory());
 			}
 		}};
 
@@ -308,15 +298,10 @@ public class MatchEditor implements EditorPane {
 						"Error",
 						JOptionPane.ERROR_MESSAGE);
 			} else {
-                try {
-                    d = new ViewBuilderDialog(swingSession, getParentFrame(), t);
-                    d.pack();
-                    d.setSize(800, d.getPreferredSize().height);
-                    d.setVisible(true);
-                } catch (ArchitectException ex) {
-                    ASUtils.showExceptionDialog(swingSession.getFrame(),
-                    		"Couldn't create view builder", ex, new MatchMakerQFAFactory());
-                }
+				d = new ViewBuilderDialog(swingSession, getParentFrame(), t);
+				d.pack();
+				d.setSize(800, d.getPreferredSize().height);
+				d.setVisible(true);
             }
 		}};
 
@@ -350,14 +335,10 @@ public class MatchEditor implements EditorPane {
 						"You have to select a source table and save before picking columns" );
 				return;
 			}
-			try {
-				new MatchMakerIndexBuilder(match,swingSession);
-			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialog(panel, "Unexpected Error", e1, null);
-			}
+			new MatchMakerIndexBuilder(match,swingSession);
 		}};
 
-    private void buildUI() throws ArchitectException {
+    private void buildUI() {
 
     	matchId.setName("Match ID");
 		sourceChooser = new SQLObjectChooser(swingSession);
@@ -472,7 +453,7 @@ public class MatchEditor implements EditorPane {
     }
 
 
-    private void setDefaultSelections() throws ArchitectException {
+    private void setDefaultSelections() {
 
     	final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
     	final SQLDatabase loginDB = swingSession.getDatabase();
@@ -561,13 +542,7 @@ public class MatchEditor implements EditorPane {
 
         	public void mmPropertyChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {
         		if ( evt.getPropertyName().equals("sourceTableIndex")) {
-        			try {
-        				refreshIndexComboBox(match.getSourceTableIndex(),(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
-        			} catch (ArchitectException e) {
-        				ASUtils.showExceptionDialog(getPanel(),
-        						"Unexcepted error when getting unique index of match",
-        						e, null);
-        			}
+        			refreshIndexComboBox(match.getSourceTableIndex(),(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
         		}
         	}
         	//don't care
@@ -602,33 +577,27 @@ public class MatchEditor implements EditorPane {
      * @param newIndex       the match object, if the custom pick index is not a
      * part of the table, we will add it to the combobox as well
      * @param newTable    the sqlTable contains unique index
-     * @throws ArchitectException
      */
 	private void refreshIndexComboBox(SQLIndex newIndex, SQLTable newTable) {
 
-		try {
-			indexComboBox.removeAllItems();
-	        if ( newTable != null ) {
-	        	boolean contains = false;
-	        	for ( SQLIndex index : newTable.getUniqueIndices() ) {
-	        		indexComboBox.addItem(index);
-	        		if ( newIndex != null && index.getName().equalsIgnoreCase(newIndex.getName())) {
-	        			contains = true;
-	        		}
-	        	}
-	        	if ( !contains && newIndex != null ) {
-	        		indexComboBox.addItem(newIndex);
-	        		indexComboBox.setSelectedItem(newIndex);
-	        	} else if ( indexComboBox.getItemCount() > 0 ) {
-	        		indexComboBox.setSelectedIndex(0);
-	        	}
-	        } else if ( newIndex!= null ){
-	        	indexComboBox.addItem(newIndex);
-	        	indexComboBox.setSelectedItem(newIndex);
-	        }
-		} catch (ArchitectException e1) {
-			ASUtils.showExceptionDialog(getPanel(),
-					"Unexcepted error when getting index list", e1, null);
+		indexComboBox.removeAllItems();
+		if ( newTable != null ) {
+			boolean contains = false;
+			for ( SQLIndex index : newTable.getUniqueIndices() ) {
+				indexComboBox.addItem(index);
+				if ( newIndex != null && index.getName().equalsIgnoreCase(newIndex.getName())) {
+					contains = true;
+				}
+			}
+			if ( !contains && newIndex != null ) {
+				indexComboBox.addItem(newIndex);
+				indexComboBox.setSelectedItem(newIndex);
+			} else if ( indexComboBox.getItemCount() > 0 ) {
+				indexComboBox.setSelectedIndex(0);
+			}
+		} else if ( newIndex!= null ){
+			indexComboBox.addItem(newIndex);
+			indexComboBox.setSelectedItem(newIndex);
 		}
 	}
 
@@ -639,7 +608,6 @@ public class MatchEditor implements EditorPane {
     /**
      * Copies all the values from the GUI components into the PlMatch
      * object this component is editing, then persists it to the database.
-     * @throws ArchitectException
      * @return true if save OK
      */
     public boolean doSave() {
@@ -735,16 +703,10 @@ public class MatchEditor implements EditorPane {
         if(resultChooser.getSchemaComboBox().getSelectedItem() != null) {
         	match.setResultTableSchema( ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName());
         }
-        try {
-        	match.setResultTable(new SQLTable(resultTableParent,
-        			trimmedResultTableName,
-        			"MatchMaker result table",
-        			"TABLE", true));
-        } catch ( ArchitectException e ) {
-        	ASUtils.showExceptionDialog(swingSession.getFrame(),
-        			"Save error", e, new MatchMakerQFAFactory());
-        	return false;
-        }
+        match.setResultTable(new SQLTable(resultTableParent,
+        		trimmedResultTableName,
+        		"MatchMaker result table",
+        		"TABLE", true));
 
         match.setFilter(filterPanel.getFilterTextArea().getText());
 
@@ -834,13 +796,8 @@ public class MatchEditor implements EditorPane {
 						"Match source table is required");
 			}
 			else {
-				try {
-					value.populate();
-                    enableAction(true);
-				} catch (ArchitectException e) {
-					return ValidateResult.createValidateResult(Status.WARN,
-						"Match source table has error:"+e.getMessage());
-				}
+				value.populate();
+				enableAction(true);
 
 				final String tableName = resultTableName.getText();
 				if (tableName != null && tableName.length() > 0) {
@@ -853,16 +810,12 @@ public class MatchEditor implements EditorPane {
 					if ( resultChooser.getSchemaComboBox().getSelectedItem() != null) {
 						schemaName = ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName();
 					}
-					try {
-						SQLTable resultTable = swingSession.getDatabase().getTableByName(
-								catalogName, schemaName, tableName);
-						if ( value == resultTable ) {
-							return ValidateResult.createValidateResult(
-									Status.WARN,
-									"Match source table has the same name as the result table");
-						}
-					} catch (ArchitectException e) {
-						// XXX: result table has error, does that mean the source is OK?
+					SQLTable resultTable = swingSession.getDatabase().getTableByName(
+							catalogName, schemaName, tableName);
+					if ( value == resultTable ) {
+						return ValidateResult.createValidateResult(
+								Status.WARN,
+								"Match source table has the same name as the result table");
 					}
 				}
 			}
@@ -933,15 +886,11 @@ public class MatchEditor implements EditorPane {
 					schemaName = ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName();
 				}
 
-				try {
-					SQLTable resultTable = swingSession.getDatabase().getTableByName(
-							catalogName, schemaName, value);
-					if ( sourceTable == resultTable ) {
-						return ValidateResult.createValidateResult(Status.WARN,
+				SQLTable resultTable = swingSession.getDatabase().getTableByName(
+						catalogName, schemaName, value);
+				if ( sourceTable == resultTable ) {
+					return ValidateResult.createValidateResult(Status.WARN,
 							"Match result table has the same name as the source table");
-					}
-				} catch (ArchitectException e) {
-					// XXX: result table has error, does that mean the source is OK?
 				}
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
@@ -1013,7 +962,7 @@ public class MatchEditor implements EditorPane {
 		 */
 		public void showSqlGui()
 			throws InstantiationException, IllegalAccessException,
-			HeadlessException, ArchitectException, SQLException {
+			HeadlessException, SQLException {
 
 			final DDLGenerator ddlg = DDLUtils.createDDLGenerator(
 					swingSession.getDatabase().getDataSource());

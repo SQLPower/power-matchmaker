@@ -34,7 +34,6 @@ import javax.swing.table.TableColumn;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.matchmaker.Match;
@@ -88,11 +87,10 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	/**
 	 * This is the default constructor
 	 * the validation will be triggered before the end of this constructor
-	 * @throws ArchitectException
 	 */
 	public MatchMakerCriteriaGroupEditor(MatchMakerSwingSession swingSession,
 			Match match,
-			MatchMakerCriteriaGroup group) throws ArchitectException {
+			MatchMakerCriteriaGroup group) {
 		super();
         this.swingSession = swingSession;
         this.match = match;
@@ -192,13 +190,9 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 
 				public void mmPropertyChanged(MatchMakerEvent evt) {
 					MatchMakerCriteria criteria = (MatchMakerCriteria) evt.getSource();
-                    try {
-                        if ( criteria.getColumn() != null ) {
-                            criteria.setName(criteria.getColumn().getName());
-                        }
-                    } catch (ArchitectException ex) {
-                        ASUtils.showExceptionDialog("Couldn't determine criteria for column", ex);
-                    }
+					if ( criteria.getColumn() != null ) {
+						criteria.setName(criteria.getColumn().getName());
+					}
 				}
 
 				public void mmStructureChanged(MatchMakerEvent evt) {
@@ -324,10 +318,9 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	 * Switches this component to edit a different match group.
 	 *
 	 * @param criteria the new MatchGroup to edit.
-	 * @throws ArchitectException
 	 */
 	private void setDefaultSelection(MatchMakerCriteriaGroup group,
-			Match match ) throws ArchitectException {
+			Match match ) {
 
 		matches.setText(match.getName());
 		groupId.setText(group.getName());
@@ -402,9 +395,8 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
      * 
      * @param group the MatchCriteriaGroup the editors will be setting up for
      * @param sourceTable the source table of the match
-     * @throws ArchitectException if the table cannot 
 	 */
-    private void setupColumnEditors(MatchMakerCriteriaGroup group, SQLTable sourceTable) throws ArchitectException {
+    private void setupColumnEditors(MatchMakerCriteriaGroup group, SQLTable sourceTable) {
         int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
         matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(
         		new DefaultCellEditor(new JComboBox(
@@ -436,22 +428,18 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 
 			List<String> columnNames = new ArrayList<String>();
 			for ( int i=0; i<model.getRowCount(); i++ ) {
-                try {
-                    MatchMakerCriteria c = model.getRow(i);
-                    if ( c.getColumn() == null ||
-                            c.getColumn().getName() == null ||
-                            c.getColumn().getName().length() == 0 ) {
-                        return ValidateResult.createValidateResult(Status.FAIL,
-                        "column name can not be null");
-                    }
-                    if (columnNames.contains(c.getColumn().getName())) {
-                        return ValidateResult.createValidateResult(Status.FAIL,
-                        "column name can not be duplicated");
-                    }
-                    columnNames.add(c.getColumn().getName());
-                } catch (ArchitectException ex) {
-                    ASUtils.showExceptionDialog("Couldn't determine criteria for column", ex);
-                }
+				MatchMakerCriteria c = model.getRow(i);
+				if ( c.getColumn() == null ||
+						c.getColumn().getName() == null ||
+						c.getColumn().getName().length() == 0 ) {
+					return ValidateResult.createValidateResult(Status.FAIL,
+							"column name can not be null");
+				}
+				if (columnNames.contains(c.getColumn().getName())) {
+					return ValidateResult.createValidateResult(Status.FAIL,
+							"column name can not be duplicated");
+				}
+				columnNames.add(c.getColumn().getName());
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
@@ -588,11 +576,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         //This code is called since saving the match, under some circumstances, fires structure change
         //and that causes all the renderers and cell editors to be set to null.  Therefore it is 
         //required to re-hook up all the editors and renderers as a workaround.
-        try {
-            setupColumnEditors(group, match.getSourceTable());
-        } catch (ArchitectException e) {
-            ASUtils.showExceptionDialog("Unable to setup table renderers or cell editors!", e);
-        }
+        setupColumnEditors(group, match.getSourceTable());
 
         handler.resetHasValidated();
 		return true;

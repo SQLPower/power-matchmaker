@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
@@ -155,20 +154,12 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 
 	public SQLColumn getColumn() {
-		try {
-			return cachedColumn.getColumn();
-		} catch (ArchitectException e){
-			throw new ArchitectRuntimeException(e);
-		}
+		return cachedColumn.getColumn();
 	}
 
 
 	public String getColumnName() {
-		try{
-			return cachedColumn.getColumnName();
-		} catch (ArchitectException e){
-			throw new ArchitectRuntimeException(e);
-		}
+		return cachedColumn.getColumnName();
 	}
 
 

@@ -22,7 +22,6 @@ import javax.swing.table.TableCellEditor;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
@@ -63,7 +62,7 @@ public class MergeTableRuleEditor implements EditorPane {
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
 	
-	public MergeTableRuleEditor(MatchMakerSwingSession swingSession,Match match) throws ArchitectException {
+	public MergeTableRuleEditor(MatchMakerSwingSession swingSession,Match match) {
 		this.swingSession = swingSession;
 		this.match = match;
 		if (match == null) {
@@ -76,8 +75,7 @@ public class MergeTableRuleEditor implements EditorPane {
         handler.resetHasValidated(); // avoid false hits when newly created
 	}
 	
-	private void setupRulesTable(MatchMakerSwingSession swingSession, Match match) 
-		throws ArchitectException {
+	private void setupRulesTable(MatchMakerSwingSession swingSession, Match match) {
 		mergeTableRuleTableModel = new MergeTableRuleTableModel(match,swingSession);
 		mergeRulesTable = new TableMergeRulesTable(mergeTableRuleTableModel);
         mergeRulesTable.setName("Merge Tables");
@@ -180,13 +178,7 @@ public class MergeTableRuleEditor implements EditorPane {
 	private Action newRule = new AbstractAction("New") {
 		public void actionPerformed(ActionEvent e) {
 			logger.debug("creating new merge rule:");
-			try {
-				mergeTableRuleTableModel.newRules();
-			} catch (ArchitectException e1) {
-				ASUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unexcepted Error",
-						e1, null);
-			}
+			mergeTableRuleTableModel.newRules();
 		}
 	};
 	
@@ -228,11 +220,7 @@ public class MergeTableRuleEditor implements EditorPane {
 				r2.setDeleteDup(r1.isDeleteDup());
 				r2.setTable((SQLTable) mergeTableRuleTableModel.getSQLObjectChooser(i).getTableComboBox().getSelectedItem());
 				logger.debug("r2 table="+r2.getSourceTable());				
-				try {
-					r2.setTableIndex(r1.getTableIndex());
-				} catch (ArchitectException e) {
-					e.printStackTrace();
-				}
+				r2.setTableIndex(r1.getTableIndex());
 				while (r2.getChildCount() > 0) {
 					r2.removeChild(r2.getChildren().get(0));
 				}
@@ -278,7 +266,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		private final TableMergeRules rules;
 		private final SQLObjectChooser chooser;
 		public TableMergeRuleRow(TableMergeRules rules, 
-				MatchMakerSwingSession swingSession) throws ArchitectException {
+				MatchMakerSwingSession swingSession) {
 			this.rules = rules.duplicate(new MatchMakerFolder<TableMergeRules>(), swingSession);
 			this.chooser = new SQLObjectChooser(swingSession);
 			chooser.getCatalogComboBox().setSelectedItem(
@@ -317,7 +305,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		private MatchMakerSwingSession swingSession;
 		
 		public MergeTableRuleTableModel(Match match, 
-				MatchMakerSwingSession swingSession) throws ArchitectException {
+				MatchMakerSwingSession swingSession) {
 			this.swingSession = swingSession;
 			this.chooser = new SQLObjectChooser(swingSession);
 			rows = new ArrayList<TableMergeRuleRow>();
@@ -414,7 +402,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		}
 		
 
-		public void newRules() throws ArchitectException {
+		public void newRules() {
 			rows.add(new TableMergeRuleRow(new TableMergeRules(),swingSession));
 			fireTableDataChanged();
 		}

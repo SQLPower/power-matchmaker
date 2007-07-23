@@ -9,7 +9,6 @@ import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
@@ -61,9 +60,8 @@ public class SQLObjectChooser {
 	 * @param dataSources
 	 *            The list of data sources that the datasource chooser will
 	 *            contain.
-	 * @throws ArchitectException
 	 */
-	public SQLObjectChooser(final MatchMakerSwingSession session) throws ArchitectException {
+	public SQLObjectChooser(final MatchMakerSwingSession session) {
 
 		db = session.getDatabase();
 		dataSource = db.getDataSource();
@@ -107,12 +105,7 @@ public class SQLObjectChooser {
 
 		ItemListener itemListener = new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				try {
-					validate();
-				} catch (ArchitectException e1) {
-					ASUtils.showExceptionDialogNoReport(session.getFrame(),
-							"Database error", e1);
-				}
+				validate();
 			}
 		};
 
@@ -126,7 +119,7 @@ public class SQLObjectChooser {
 		tableComboBox.addItemListener(itemListener);
 	}
 
-	private void validate() throws ArchitectException {
+	private void validate() {
 
 		if (dataSourceComboBox.getSelectedItem() == null) {
 			dataSource = null;

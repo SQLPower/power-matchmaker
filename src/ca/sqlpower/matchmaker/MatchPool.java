@@ -15,7 +15,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -105,9 +104,8 @@ public class MatchPool {
      * {@link #deleteRedundantMatchRecords()}.
      * 
      * @throws SQLException if an unexpected error occurred running the SQL statements
-     * @throws ArchitectException if SQLObjects fail to populate its children
      */
-    public void findAll() throws SQLException, ArchitectException {
+    public void findAll() throws SQLException {
         
         deleteRedundantMatchRecords();
         
@@ -222,10 +220,9 @@ public class MatchPool {
      * want to deal with this duplication (isn't this a de-duping tool?), so
      * this method is designed to de-dupe the de-duping table.
      * @throws SQLException if there is a problem executing the DELETE statement
-     * @throws ArchitectException if the source table index can't be populated
      *
      */
-    private void deleteRedundantMatchRecords() throws SQLException, ArchitectException {
+    private void deleteRedundantMatchRecords() throws SQLException {
         Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;

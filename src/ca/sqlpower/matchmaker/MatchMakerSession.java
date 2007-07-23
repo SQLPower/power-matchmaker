@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.util.Date;
 
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -160,31 +159,26 @@ public interface MatchMakerSession {
      * @param schema	schema of the table
      * @param tableName name of the table
      * @return SQLTable if found or null if not
-	 * @throws ArchitectException 
-     * @throws ArchitectException If there are problems accessing the 
      * session's database
      */
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException;
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName);
     
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
-     * @throws ArchitectException If there are problems accessing the session's database
      */
-    public boolean tableExists(String catalog, String schema, String tableName) throws ArchitectException;
+    public boolean tableExists(String catalog, String schema, String tableName);
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
-     * @throws ArchitectException If there are problems accessing the session's database
      */
-    public boolean tableExists(SQLTable table) throws ArchitectException;
+    public boolean tableExists(SQLTable table);
     
     /**
      * return true if the current user of session can select the sql table
      * @param table -- the table that we want to try select on
      * @return true if the user can select table, 
      * false if the user has no select privilege
-     * @throws ArchitectException
      */
-    public boolean canSelectTable(SQLTable table) throws ArchitectException;
+    public boolean canSelectTable(SQLTable table);
 }

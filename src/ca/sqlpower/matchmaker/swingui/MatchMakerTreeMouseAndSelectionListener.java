@@ -17,7 +17,6 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
@@ -184,68 +183,48 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 				} else if (o instanceof Match) {
 
 					MatchEditor me;
-					try {
-						me = new MatchEditor(swingSession, (Match) o,
-								(PlFolder<Match>) ((Match) o).getParent());
-					} catch (ArchitectException e1) {
-						throw new ArchitectRuntimeException(e1);
-					}
+					me = new MatchEditor(swingSession, (Match) o,
+							(PlFolder<Match>) ((Match) o).getParent());
 
 					swingSession.setCurrentEditorComponent(me);
 
 				} else if (o instanceof MatchMakerCriteriaGroup) {
 					Match m = ((MatchMakerCriteriaGroup) o).getParentMatch();
-					try {
-						MatchMakerCriteriaGroupEditor editor = new MatchMakerCriteriaGroupEditor(
-								swingSession, m, (MatchMakerCriteriaGroup) o);
-						logger.debug("Created new match group editor "
-								+ System.identityHashCode(editor));
-						swingSession.setCurrentEditorComponent(editor);
-					} catch (ArchitectException e1) {
-						throw new ArchitectRuntimeException(e1);
-					}
+					MatchMakerCriteriaGroupEditor editor = new MatchMakerCriteriaGroupEditor(
+							swingSession, m, (MatchMakerCriteriaGroup) o);
+					logger.debug("Created new match group editor "
+							+ System.identityHashCode(editor));
+					swingSession.setCurrentEditorComponent(editor);
 				} else if ( o instanceof MatchMakerFolder ) {
 					MatchMakerFolder f = (MatchMakerFolder)o;
 					Match m = (Match) f.getParent();
 					
-					try {
-						if ( f.getName().equals(m.MATCH_FOLDER_MERGE) ) {
-							MergeTableRuleEditor editor = 
-								new MergeTableRuleEditor(swingSession,m);
-							logger.debug("Created new merge table rules editor "
-									+ System.identityHashCode(editor));
-							swingSession.setCurrentEditorComponent(editor);
-						}
-					} catch (ArchitectException e1) {
-						throw new ArchitectRuntimeException(e1);
+					if ( f.getName().equals(m.MATCH_FOLDER_MERGE) ) {
+						MergeTableRuleEditor editor = 
+							new MergeTableRuleEditor(swingSession,m);
+						logger.debug("Created new merge table rules editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
 					}
 				} else if ( o instanceof TableMergeRules ) {
 					TableMergeRules f = (TableMergeRules)o;
 					Match m = (Match) f.getParentMatch();
 					
-					try {
-						MergeColumnRuleEditor editor =
-							new MergeColumnRuleEditor(swingSession,m,f,null);
-						logger.debug("Created new merge column rules editor "
-								+ System.identityHashCode(editor));
-						swingSession.setCurrentEditorComponent(editor);
-					} catch (ArchitectException e1) {
-						throw new ArchitectRuntimeException(e1);
-					}
+					MergeColumnRuleEditor editor =
+						new MergeColumnRuleEditor(swingSession,m,f,null);
+					logger.debug("Created new merge column rules editor "
+							+ System.identityHashCode(editor));
+					swingSession.setCurrentEditorComponent(editor);
 				} else if ( o instanceof ColumnMergeRules ) {
 					TableMergeRules f = (TableMergeRules) ((ColumnMergeRules)o).getParent();
 					Match m = (Match) f.getParentMatch();
 					
-					try {
-						MergeColumnRuleEditor editor =
-							new MergeColumnRuleEditor(swingSession,m,f,
-									(ColumnMergeRules)o);
-						logger.debug("Created new merge column rules editor "
-								+ System.identityHashCode(editor));
-						swingSession.setCurrentEditorComponent(editor);
-					} catch (ArchitectException e1) {
-						throw new ArchitectRuntimeException(e1);
-					}
+					MergeColumnRuleEditor editor =
+						new MergeColumnRuleEditor(swingSession,m,f,
+								(ColumnMergeRules)o);
+					logger.debug("Created new merge column rules editor "
+							+ System.identityHashCode(editor));
+					swingSession.setCurrentEditorComponent(editor);
 				}
 			} catch (SQLException e1) {
 				throw new RuntimeException(e1);

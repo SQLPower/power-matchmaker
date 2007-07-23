@@ -7,7 +7,6 @@ import java.sql.Statement;
 import junit.framework.TestCase;
 import ca.sqlpower.architect.ArchitectConnectionFactory;
 import ca.sqlpower.architect.ArchitectDataSource;
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.MockJDBCDriver;
 import ca.sqlpower.architect.MockJDBCResultSet;
 import ca.sqlpower.architect.jdbc.MockJDBCPreparedStatement;
@@ -52,7 +51,7 @@ public class TypeStringToMatchTypeEnumTest extends TestCase {
 		}
 	}
 
-	public void testDeepCopy() throws ArchitectException{
+	public void testDeepCopy() {
 		for (Match.MatchMode type: allTypes) {
 			Match.MatchMode testCopy = (Match.MatchMode) userType.deepCopy(type);
 			assertEquals("Invalid match type",type,testCopy);
@@ -60,7 +59,7 @@ public class TypeStringToMatchTypeEnumTest extends TestCase {
 		}
 	}
 	
-	public void testNullGet() throws SQLException, ArchitectException{
+	public void testNullGet() throws SQLException {
 		for	(int i = 0;i < data.length; i++){	
 			Object[] row = {data[i]};
 			rs.addRow(row);

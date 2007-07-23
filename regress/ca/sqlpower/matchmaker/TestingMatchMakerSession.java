@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -184,8 +183,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
 
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName)
-    throws ArchitectException {
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) {
     	SQLDatabase currentDB = getDatabase();
     	SQLDatabase tempDB = null;
     	try {
@@ -200,18 +198,18 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
     public boolean tableExists(String catalog, String schema, 
-    		String tableName) throws ArchitectException {
+    		String tableName) {
     	return (findPhysicalTableByName(catalog,schema,tableName) != null);
     }
 
-    public boolean tableExists(SQLTable table) throws ArchitectException {
+    public boolean tableExists(SQLTable table) {
     	if ( table == null ) return false;
     	return tableExists(table.getCatalogName(),
     			table.getSchemaName(),
     			table.getName());
     }
 
-    public boolean canSelectTable(SQLTable table) throws ArchitectException {
+    public boolean canSelectTable(SQLTable table) {
 
     	Connection conn = getConnection();
     	Statement stmt = null;
