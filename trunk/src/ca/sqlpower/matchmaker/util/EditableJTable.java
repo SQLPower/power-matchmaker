@@ -16,14 +16,13 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.swingui.table.TableTextConverter;
 import ca.sqlpower.matchmaker.swingui.CleanupTableModel;
 
 /**
  * This class implements the workarounds for the bugs in the jTable
  *
  */
-public class EditableJTable extends JTable implements TableTextConverter {
+public class EditableJTable extends JTable {
 
 	private static final Logger logger = Logger.getLogger(EditableJTable.class);
 	
