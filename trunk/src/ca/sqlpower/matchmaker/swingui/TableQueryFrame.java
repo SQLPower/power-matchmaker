@@ -23,21 +23,19 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
-import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -222,7 +220,7 @@ public class TableQueryFrame extends JFrame {
 	            		" row(s) found");
 
 			} catch (SQLException e1 ) {
-				ASUtils.showExceptionDialogNoReport(TableQueryFrame.this,
+				SPSUtils.showExceptionDialogNoReport(TableQueryFrame.this,
 						"Database Error while processing query", sql, e1);
 			} finally {
 	        	try {

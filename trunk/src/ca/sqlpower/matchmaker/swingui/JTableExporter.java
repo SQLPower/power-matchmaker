@@ -10,10 +10,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
 import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.architect.IOUtils;
-import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
-import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 
 public class JTableExporter extends JFileChooser {
 
@@ -26,8 +24,8 @@ public class JTableExporter extends JFileChooser {
 	 */
 	public JTableExporter ( Component owner, JTable table ) {
 		super();
-		setFileFilter(ASUtils.CSV_FILE_FILTER);
-		setFileFilter(ASUtils.XML_FILE_FILTER);
+		setFileFilter(SPSUtils.CSV_FILE_FILTER);
+		setFileFilter(SPSUtils.XML_FILE_FILTER);
 
 		int returnVal = showSaveDialog(owner);
 
@@ -39,7 +37,7 @@ public class JTableExporter extends JFileChooser {
 				FileExtensionFilter fef = (FileExtensionFilter) getFileFilter();
 				File file = getSelectedFile();
 				String fileName = file.getPath();
-				String fileExt = ASUtils.FileExtensionFilter.getExtension(file);
+				String fileExt = SPSUtils.FileExtensionFilter.getExtension(file);
 				if ( fileExt.length() == 0 ) {
 					file = new File(fileName + "." +
 							fef.getFilterExtension(new Integer(0)));
@@ -66,15 +64,15 @@ public class JTableExporter extends JFileChooser {
 			FileExtensionFilter fef,
 			File file) {
 		try {
-			if ( fef == ASUtils.CSV_FILE_FILTER ) {
+			if ( fef == SPSUtils.CSV_FILE_FILTER ) {
 				writeDocumentCSV(owner,table,file);
-			} else if ( fef == ASUtils.XML_FILE_FILTER ) {
+			} else if ( fef == SPSUtils.XML_FILE_FILTER ) {
 				writeDocumentXml(owner,table,file);
 			} else {
 				throw new IllegalStateException("Unsupported File Type!");
 			}
 		} catch (IOException e1) {
-			ASUtils.showExceptionDialog(owner,
+			SPSUtils.showExceptionDialog(owner,
 					"Save file Error!", e1, new MatchMakerQFAFactory());
 		}
 	}

@@ -24,12 +24,12 @@ import javax.swing.event.ListDataListener;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -80,14 +80,14 @@ public class LoginDialog {
                 new Thread(this).start();
                 // doStuff() will get invoked soon on the new thread
             } catch (PLSchemaException ex) {
-                ASUtils.showExceptionDialogNoReport(frame,
+                SPSUtils.showExceptionDialogNoReport(frame,
                         "PLSchema Exception",
                         "Existing version: "+ex.getCurrentVersion() +
                         "\nRequired Version: "+ex.getRequiredVersion(),
                         ex);
                 loginButton.setEnabled(true);
             } catch (Exception ex) {
-                ASUtils.showExceptionDialogNoReport(frame,
+                SPSUtils.showExceptionDialogNoReport(frame,
                         "Connection Error", ex );
                 loginButton.setEnabled(true);
             }
@@ -105,7 +105,7 @@ public class LoginDialog {
         public void cleanup() {
             try {
                 if (getDoStuffException() != null) {
-                    ASUtils.showExceptionDialog("Login failed", getDoStuffException());
+                    SPSUtils.showExceptionDialog("Login failed", getDoStuffException());
                 } else if (
                         session != null &&
                         session.getDatabase() != null &&
@@ -195,7 +195,7 @@ public class LoginDialog {
         frame.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
 		panel = createPanel();
         frame.getContentPane().add(panel);
-        ASUtils.makeJDialogCancellable(frame, cancelAction);
+        SPSUtils.makeJDialogCancellable(frame, cancelAction);
         frame.addWindowListener(optimizationManager);
 	}
 

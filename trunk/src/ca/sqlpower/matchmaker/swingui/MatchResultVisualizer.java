@@ -27,7 +27,6 @@ import javax.swing.JSplitPane;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
@@ -40,7 +39,7 @@ import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
-import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.swingui.SPSUtils;
 
 /**
  * The MatchResultVisualizer produces graphical representations of the matches
@@ -66,7 +65,7 @@ public class MatchResultVisualizer implements EditorPane {
                     exporter.exportDotFile();
                 }
             } catch (Exception ex) {
-                ASUtils.showExceptionDialogNoReport(panel, "Couldn't export dot file!", ex);
+                SPSUtils.showExceptionDialogNoReport(panel, "Couldn't export dot file!", ex);
             }
         }
     };
@@ -144,7 +143,7 @@ public class MatchResultVisualizer implements EditorPane {
                     recordViewerPanel.add(recordViewer);
                 }
             } catch (Exception ex) {
-                ASUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex, new MatchMakerQFAFactory());
+                SPSUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex, new MatchMakerQFAFactory());
             }
             recordViewerPanel.revalidate();
         }     

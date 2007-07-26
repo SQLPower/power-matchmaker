@@ -28,9 +28,8 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 import ca.sqlpower.sql.SQL;
+import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -340,7 +339,7 @@ public class FilterMakerDialog extends JDialog {
                         "Valid filter",
                         JOptionPane.INFORMATION_MESSAGE);
             } catch (SQLException e1) {
-                ASUtils.showExceptionDialogNoReport(FilterMakerDialog.this,
+                SPSUtils.showExceptionDialogNoReport(FilterMakerDialog.this,
                         "Database Problem", e1);
             } finally {
                 try {
@@ -363,7 +362,7 @@ public class FilterMakerDialog extends JDialog {
             try {
                 filterText.getDocument().remove(0,filterText.getDocument().getLength());
             } catch (BadLocationException e1) {
-                ASUtils.showExceptionDialog(
+                SPSUtils.showExceptionDialog(
                         FilterMakerDialog.this,
                         "Unknown Document Error",e1, new MatchMakerQFAFactory());
 

@@ -24,9 +24,8 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.table.TableUtils;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.RegExValidator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
@@ -170,7 +169,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		pb.add(ButtonBarFactory.buildOKCancelBar(save, exit), cc.xy(2,10));
 		dialog.getContentPane().add(panel);
         dialog.getRootPane().setDefaultButton(save);
-        ASUtils.makeJDialogCancellable(dialog, cancelAction, false);
+        SPSUtils.makeJDialogCancellable(dialog, cancelAction, false);
 	}
 
 	/**

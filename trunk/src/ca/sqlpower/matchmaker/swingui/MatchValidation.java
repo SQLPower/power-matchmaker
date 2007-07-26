@@ -38,12 +38,10 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.table.TableUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.RowSetModel;
-import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -134,7 +132,7 @@ public class MatchValidation {
             	String columnName = pk.getChild(i).getName();
             	int col = getColumnByName(sourceJTable,columnName);
             	if ( col < 0 ) {
-            		ASUtils.showExceptionDialog(frame,
+            		SPSUtils.showExceptionDialog(frame,
             				"column "+columnName+" not found",
             				new IllegalStateException("column "+columnName+" not found"), new MatchMakerQFAFactory());
             		return;
@@ -191,7 +189,7 @@ public class MatchValidation {
                 //       but this lower table has two extra columns in front
 
             } catch (SQLException e1) {
-                ASUtils.showExceptionDialog(frame,
+                SPSUtils.showExceptionDialog(frame,
                         "Unknown SQL Error:"+sql.toString(), e1, new MatchMakerQFAFactory());
             } finally {
                 try {
@@ -312,7 +310,7 @@ public class MatchValidation {
             return crset;
         } catch (SQLException e1) {
             crset = null;
-            ASUtils.showExceptionDialog(frame,
+            SPSUtils.showExceptionDialog(frame,
                     "SQL Error", "The SQL Statement that caused the error: " + lastSQL,
                     e1, new MatchMakerQFAFactory());
         } finally {
@@ -696,7 +694,7 @@ public class MatchValidation {
                 output.getSelectionModel().setSelectionInterval(0,0);
                 TableUtils.fitColumnWidths(output, MAX_TABLE_COL_WIDTH);
             } catch (SQLException e1) {
-                ASUtils.showExceptionDialog(frame,
+                SPSUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
@@ -755,7 +753,7 @@ public class MatchValidation {
                 searchAction.actionPerformed(null);
                 logger.debug("Apply Auto-match @"+pct.intValue()+"   "+rows+" Updated.");
             } catch (SQLException e1) {
-                ASUtils.showExceptionDialog(frame,
+                SPSUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
@@ -811,7 +809,7 @@ public class MatchValidation {
                 searchAction.actionPerformed(null);
                 logger.debug("Reset Auto-match @"+pct.intValue()+"   "+rows+" Updated.");
             } catch (SQLException e1) {
-                ASUtils.showExceptionDialog(frame,
+                SPSUtils.showExceptionDialog(frame,
                         "Unknown SQL Error", e1, new MatchMakerQFAFactory());
             } finally {
                 try {
@@ -895,7 +893,7 @@ public class MatchValidation {
                 // update all records in the bottom table to mark them duplicates of the new master
 
             } catch (Exception e1) {
-                ASUtils.showExceptionDialog(frame,
+                SPSUtils.showExceptionDialog(frame,
                         "Error While setting master record", e1, new MatchMakerQFAFactory());
             } finally {
                 try {

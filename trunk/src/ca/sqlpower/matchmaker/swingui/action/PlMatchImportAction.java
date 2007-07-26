@@ -17,13 +17,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
-import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.ArchitectFrame;
-import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchImportor;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.swingui.SPSUtils;
 
 public class PlMatchImportAction extends AbstractAction {
 
@@ -33,10 +31,10 @@ public class PlMatchImportAction extends AbstractAction {
 	private JFrame owningFrame;
 
 	public PlMatchImportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
+		// FIXME: We need an icon for this
 		super("Import",
-				ASUtils.createJLFIcon( "general/Import",
-                "Import",
-                ArchitectFrame.getMainInstance().getSprefs().getInt(SwingUserSettings.ICON_SIZE, 24)));
+				SPSUtils.createIcon( "general/Import",
+                "Import"));
 		putValue(SHORT_DESCRIPTION, "Import Match");
         this.swingSession = swingSession;
 		this.owningFrame = owningFrame;
@@ -46,7 +44,7 @@ public class PlMatchImportAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		JFileChooser fc = new JFileChooser(
 				swingSession.getLastImportExportAccessPath());
-		fc.setFileFilter(ASUtils.XML_FILE_FILTER);
+		fc.setFileFilter(SPSUtils.XML_FILE_FILTER);
 		fc.setDialogTitle("Import Match");
 	
 		File importFile = null;
@@ -66,16 +64,16 @@ public class PlMatchImportAction extends AbstractAction {
 				match.setSession(swingSession);
 				importor.load(match,in);
 			} catch (FileNotFoundException e1) {
-				ASUtils.showExceptionDialogNoReport(
+				SPSUtils.showExceptionDialogNoReport(
 						"File Not Found", e1 );
 			} catch (IOException e1) {
-				ASUtils.showExceptionDialogNoReport(
+				SPSUtils.showExceptionDialogNoReport(
 						"IO Error", e1 );
 			} catch (ParserConfigurationException e1) {
-				ASUtils.showExceptionDialogNoReport(
+				SPSUtils.showExceptionDialogNoReport(
 						"Parser Error", e1 );
 			} catch (SAXException e1) {
-				ASUtils.showExceptionDialogNoReport(
+				SPSUtils.showExceptionDialogNoReport(
 						"XML Format Error", e1 );
 			}
 

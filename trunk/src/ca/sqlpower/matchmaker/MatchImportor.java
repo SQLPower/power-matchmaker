@@ -22,8 +22,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.swingui.ASUtils.LabelValueBean;
 import ca.sqlpower.matchmaker.Match.MatchMode;
+import ca.sqlpower.swingui.SPSUtils.LabelValueBean;
 
 /**
  * this class imports match from xml export file.

@@ -27,13 +27,12 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.CommonCloseAction;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
-import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -175,7 +174,7 @@ public class MatchValidationStatus extends JDialog {
 							resultTable.getSchemaName(),
 							resultTable.getName()));
 				} catch (SQLException e1) {
-					ASUtils.showExceptionDialog(MatchValidationStatus.this,
+					SPSUtils.showExceptionDialog(MatchValidationStatus.this,
 							"Unknown SQL Error", e1, new MatchMakerQFAFactory());
 				}
 			}});

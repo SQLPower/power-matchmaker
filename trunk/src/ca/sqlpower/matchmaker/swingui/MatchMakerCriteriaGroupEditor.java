@@ -35,7 +35,6 @@ import javax.swing.table.TableColumn;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
@@ -43,6 +42,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.util.EditableJTable;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -226,7 +226,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	            swingSession.save(match);
 	        } catch (Exception ex){
 	            group.addChild(c);     
-                ASUtils.showExceptionDialog("Delete operation failed!", ex);
+                SPSUtils.showExceptionDialogNoReport("Delete operation failed!", ex);
 	        }
 
 	    }
