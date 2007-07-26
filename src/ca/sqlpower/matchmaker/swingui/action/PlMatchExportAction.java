@@ -13,13 +13,11 @@ import javax.swing.JOptionPane;
 
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.DateFormatAllowsNull;
-import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.ArchitectFrame;
-import ca.sqlpower.architect.swingui.SwingUserSettings;
-import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchExportor;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 
 public class PlMatchExportAction extends AbstractAction {
 
@@ -38,11 +36,10 @@ public class PlMatchExportAction extends AbstractAction {
      * determined by the current selection in the Swing Session's tree.
      */
 	public PlMatchExportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
-
+		// FIXME: We need an icon for this.
 		super("Export",
-				ASUtils.createJLFIcon( "general/Export",
-						"Export",
-						ArchitectFrame.getMainInstance().getSprefs().getInt(SwingUserSettings.ICON_SIZE, 24)));
+				SPSUtils.createIcon( "general/Export",
+						"Export"));
 		putValue(SHORT_DESCRIPTION, "Export Match");
         this.swingSession = swingSession;
 		this.owningFrame = owningFrame;
@@ -62,11 +59,11 @@ public class PlMatchExportAction extends AbstractAction {
 		}
 
 		JFileChooser fc = new JFileChooser(swingSession.getLastImportExportAccessPath());
-		fc.setFileFilter(ASUtils.XML_FILE_FILTER);
+		fc.setFileFilter(SPSUtils.XML_FILE_FILTER);
 		fc.setDialogTitle("Export Match");
 		fc.setSelectedFile(
 				new File("export_match_"+match.getName()+"."+
-						((FileExtensionFilter) ASUtils.XML_FILE_FILTER).getFilterExtension(0)));
+						((FileExtensionFilter) SPSUtils.XML_FILE_FILTER).getFilterExtension(0)));
 		fc.setApproveButtonText("Save");
 
 

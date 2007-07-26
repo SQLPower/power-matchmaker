@@ -50,19 +50,17 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.architect.qfa.ArchitectExceptionReportFactory;
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.SaveDocument;
-import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
 import ca.sqlpower.matchmaker.validation.MatchNameValidator;
+import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -207,7 +205,7 @@ public class MatchEditor implements EditorPane {
                 			"Saved",JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (Exception ex) {
-                ASUtils.showExceptionDialog(swingSession.getFrame(),
+                SPSUtils.showExceptionDialog(swingSession.getFrame(),
                 		"Match Interface Not Saved", ex, new MatchMakerQFAFactory());
             }
 		}
@@ -280,10 +278,10 @@ public class MatchEditor implements EditorPane {
                 }
                     matchValidation.showGUI();
 			} catch (HeadlessException e1) {
-				ASUtils.showExceptionDialog(swingSession.getFrame(),
+				SPSUtils.showExceptionDialog(swingSession.getFrame(),
 						"Unknown Error", e1, new MatchMakerQFAFactory());
 			} catch (SQLException e1) {
-				ASUtils.showExceptionDialog(swingSession.getFrame(),
+				SPSUtils.showExceptionDialog(swingSession.getFrame(),
 						"Unknown SQL Error", e1, new MatchMakerQFAFactory());
 			}
 		}};
@@ -320,7 +318,7 @@ public class MatchEditor implements EditorPane {
                     matchResultVisualizer = new MatchResultVisualizer(match, swingSession);
                     swingSession.setCurrentEditorComponent(matchResultVisualizer);
                 } catch (Exception ex) {
-                    ASUtils.showExceptionDialog(panel, "Couldn't create match result visualizer component",
+                    SPSUtils.showExceptionDialog(panel, "Couldn't create match result visualizer component",
                             ex, new ArchitectExceptionReportFactory());
 
                 }
@@ -951,7 +949,7 @@ public class MatchEditor implements EditorPane {
 			try {
 				showSqlGui();
 			} catch (Exception ex) {
-				ASUtils.showExceptionDialog("Couldn't create SQL Preview", ex);
+				SPSUtils.showExceptionDialogNoReport("Couldn't create SQL Preview", ex);
 			}
 		}
 
@@ -1009,12 +1007,12 @@ public class MatchEditor implements EditorPane {
 											null);
 							doc.insertString(doc.getLength(),";\n",null);
 						} catch (BadLocationException e1) {
-							ASUtils.showExceptionDialog("Unexcepted Document Error",e1);
+							SPSUtils.showExceptionDialogNoReport("Unexcepted Document Error",e1);
 						}
 				    }
 					new SaveDocument(swingSession.getFrame(),
 							doc,
-							(FileExtensionFilter)ASUtils.SQL_FILE_FILTER);
+							(FileExtensionFilter)SPSUtils.SQL_FILE_FILTER);
 				}
 		    };
 		    Action copyAction = new AbstractAction("Copy to Clipboard") {

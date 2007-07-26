@@ -14,16 +14,16 @@ import javax.swing.UIManager;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.PlDotIni;
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.util.VersionFormatException;
 
 
@@ -229,7 +229,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 throw new RuntimeException("Can't start without a pl.ini file");
             } else if (choice == BROWSE) {
                 JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(ASUtils.INI_FILE_FILTER);
+                fc.setFileFilter(SPSUtils.INI_FILE_FILTER);
                 fc.setDialogTitle("Locate your PL.INI file");
                 int fcChoice = fc.showOpenDialog(null);       // blocking wait
                 if (fcChoice == JFileChooser.APPROVE_OPTION) {
@@ -273,7 +273,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             pld.read(pf);
             return pld;
         } catch (IOException e) {
-            ASUtils.showExceptionDialog("Could not read " + pf, e);
+            SPSUtils.showExceptionDialogNoReport("Could not read " + pf, e);
             return null;
         }
     }

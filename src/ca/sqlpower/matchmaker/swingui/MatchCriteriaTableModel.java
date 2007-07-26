@@ -3,7 +3,6 @@ package ca.sqlpower.matchmaker.swingui;
 import javax.swing.table.AbstractTableModel;
 
 import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;

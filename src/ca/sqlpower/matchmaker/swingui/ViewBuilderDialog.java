@@ -229,7 +229,7 @@ public class ViewBuilderDialog extends JDialog {
     Action cancelAction = new AbstractAction("Cancel"){
 
         public void actionPerformed(ActionEvent e) {
-        	// XXX should use ASutils.makeDialogCancellable and do something??
+        	// XXX should use SPSutils.makeDialogCancellable and do something??
         	ViewBuilderDialog.this.dispose();
         }
 

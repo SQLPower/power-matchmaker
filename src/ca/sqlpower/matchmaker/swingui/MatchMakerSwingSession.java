@@ -38,16 +38,10 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectSessionImpl;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.ArchitectFrame;
-import ca.sqlpower.architect.swingui.CommonCloseAction;
-import ca.sqlpower.architect.swingui.JDefaultButton;
-import ca.sqlpower.architect.swingui.action.SQLRunnerAction;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
@@ -72,6 +66,7 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersionFormatException;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.util.Version;
 
 /**
@@ -154,7 +149,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			// This is one of the few JDIalogs that can not get replaced
 			// with a call to ArchitectPanelBuilder, because an About
 			// box must have only ONE button...
-			final JDialog d = new JDialog(ArchitectFrame.getMainInstance(),
+			final JDialog d = new JDialog(getFrame(),
 										  "About MatchMaker");
 			JPanel cp = new JPanel(new BorderLayout(12,12));
 			cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
@@ -174,7 +169,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			buttonPanel.add(okButton);
 
 			cp.add(buttonPanel, BorderLayout.SOUTH);
-			ASUtils.makeJDialogCancellable(
+			SPSUtils.makeJDialogCancellable(
 					d, new CommonCloseAction(d));
 			d.getRootPane().setDefaultButton(okButton);
 			d.setContentPane(cp);
@@ -558,7 +553,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
                 final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
                 int ret = JOptionPane.showOptionDialog(
                         frame,
-                        String.format("Your %s has unsaved changes", ASUtils.niceClassName(oldPane)),
+                        String.format("Your %s has unsaved changes", SPSUtils.niceClassName(oldPane)),
                         "Warning", JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.QUESTION_MESSAGE, null, options,
                         options[0]);
@@ -630,7 +625,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
                                                             PreferencesManager.getRootNode());
                     context.showLoginDialog(null);
 		    	} catch (Exception ex) {
-		    		ASUtils.showExceptionDialog("Couldn't start application!", ex);
+		    		SPSUtils.showExceptionDialogNoReport("Couldn't start application!", ex);
                     System.exit(0);
 		    	}
 		    }

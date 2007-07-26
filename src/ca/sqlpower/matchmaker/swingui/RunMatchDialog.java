@@ -42,10 +42,7 @@ import javax.swing.text.StyleConstants;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.ProgressWatcher;
 import ca.sqlpower.architect.swingui.SaveDocument;
-import ca.sqlpower.architect.swingui.ASUtils.FileExtensionFilter;
 import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
@@ -57,7 +54,9 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.event.EngineEvent;
 import ca.sqlpower.matchmaker.event.EngineListener;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
-import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.swingui.ProgressWatcher;
+import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -476,7 +475,7 @@ public class RunMatchDialog extends JDialog {
 							new SaveDocument(
 									d,
 									engineOutputDoc,
-									(FileExtensionFilter) ASUtils.TEXT_FILE_FILTER);
+									(FileExtensionFilter) SPSUtils.TEXT_FILE_FILTER);
 						}
 					});
 				}
@@ -500,7 +499,7 @@ public class RunMatchDialog extends JDialog {
 										.getSystemClipboard();
 								clipboard.setContents(selection, selection);
 							} catch (BadLocationException e1) {
-								ASUtils.showExceptionDialog(d,
+								SPSUtils.showExceptionDialog(d,
 										"Document Copy Error", e1,
 										new MatchMakerQFAFactory());
 							}
@@ -646,12 +645,12 @@ public class RunMatchDialog extends JDialog {
 					try {
 						cmdDoc.insertString(0, cmd, att);
 					} catch (BadLocationException e1) {
-						ASUtils.showExceptionDialog(d,
+						SPSUtils.showExceptionDialog(d,
 								"Unknown Document Error", e1,
 								new MatchMakerQFAFactory());
 					}
 					new SaveDocument(d, cmdDoc,
-							(FileExtensionFilter) ASUtils.BATCH_FILE_FILTER);
+							(FileExtensionFilter) SPSUtils.BATCH_FILE_FILTER);
 				}
 			};
 			JButton saveAsButton = new JButton(saveAsAction);
@@ -681,7 +680,7 @@ public class RunMatchDialog extends JDialog {
 
 			pb.add(bbBuilder.getPanel(), cc.xy(2, 4));
 			d.add(pb.getPanel());
-			ASUtils.makeJDialogCancellable(d, null);
+			SPSUtils.makeJDialogCancellable(d, null);
 			d.pack();
 			d.setVisible(true);
 		}

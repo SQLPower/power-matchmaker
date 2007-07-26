@@ -22,16 +22,16 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.DatabaseListChangeEvent;
 import ca.sqlpower.architect.DatabaseListChangeListener;
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.architect.swingui.DBCSPanel;
 import ca.sqlpower.architect.swingui.DBConnectionCallBack;
 import ca.sqlpower.architect.swingui.action.DBCSOkAction;
 import ca.sqlpower.matchmaker.swingui.action.NewDatabaseConnectionAction;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -124,7 +124,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
                         dbcsOkAction.actionPerformed(e);
                         plDotIni.write();
                     } catch (Exception ex) {
-                        ASUtils.showExceptionDialog("Could not save PL.INI file", ex);
+                        SPSUtils.showExceptionDialogNoReport("Could not save PL.INI file", ex);
                     }
                 }
             };
@@ -243,7 +243,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
         d.getContentPane().add(panel);
         d.pack();
         d.setLocationRelativeTo(owner);
-        ASUtils.makeJDialogCancellable(d, closeAction);
+        SPSUtils.makeJDialogCancellable(d, closeAction);
         d.setVisible(true);
         d.requestFocus();
     }

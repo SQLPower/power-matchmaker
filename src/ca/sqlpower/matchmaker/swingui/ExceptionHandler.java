@@ -4,12 +4,11 @@ import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.swing.JFrame;
 
-import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.swingui.SPSUtils;
 
 /**
  * Just a bridge from Java's UncaughtExceptionHandler to our
- * ASUtils.showExceptionDialog.
+ * SPSUtils.showExceptionDialog.
  */
 public class ExceptionHandler implements UncaughtExceptionHandler {
 
@@ -20,7 +19,7 @@ public class ExceptionHandler implements UncaughtExceptionHandler {
 	}
 
 	public void uncaughtException(Thread t, Throwable e) {
-		ASUtils.showExceptionDialog(parentFrame, "Caught Background Exception", e, new MatchMakerQFAFactory());
+		SPSUtils.showExceptionDialog(parentFrame, "Caught Background Exception", e, new MatchMakerQFAFactory());
 	}
 
 }

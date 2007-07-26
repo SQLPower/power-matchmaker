@@ -25,14 +25,12 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.swingui.ASUtils;
-import ca.sqlpower.architect.swingui.table.TableUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.util.EditableJTable;
-import ca.sqlpower.matchmaker.util.MatchMakerQFAFactory;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -190,7 +188,7 @@ public class MergeTableRuleEditor implements EditorPane {
             try {
                 boolean ok = doSave();
             } catch (Exception ex) {
-                ASUtils.showExceptionDialog(swingSession.getFrame(),
+                SPSUtils.showExceptionDialog(swingSession.getFrame(),
                 		"Merge Interface Not Saved", ex, new MatchMakerQFAFactory());
             }
 		}

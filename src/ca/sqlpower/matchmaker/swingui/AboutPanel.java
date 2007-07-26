@@ -6,9 +6,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import ca.sqlpower.architect.swingui.ASUtils;
 import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.swingui.SPSUtils;
 
 public class AboutPanel extends JPanel implements ArchitectPanel {
 
@@ -23,7 +23,7 @@ public class AboutPanel extends JPanel implements ArchitectPanel {
 
         // Include the product's 128x128 Icon
         String realPath = "/icons/matchmaker_128.png";
-        java.net.URL imgURL = ASUtils.class.getResource(realPath);
+        java.net.URL imgURL = SPSUtils.class.getResource(realPath);
 
         if (imgURL != null) {
             ImageIcon imageIcon = new ImageIcon(imgURL, "MatchMaker Logo");
