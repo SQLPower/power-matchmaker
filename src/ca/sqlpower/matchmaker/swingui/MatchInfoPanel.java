@@ -11,15 +11,15 @@ import javax.swing.JPanel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.DateFormatAllowsNull;
-import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.swingui.DataEntryPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MatchInfoPanel implements ArchitectPanel {
+public class MatchInfoPanel implements DataEntryPanel {
 
 	private static final Logger logger = Logger.getLogger(MatchInfoPanel.class);
 	private Match match;

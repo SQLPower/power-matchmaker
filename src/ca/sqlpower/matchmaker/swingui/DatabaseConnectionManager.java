@@ -25,12 +25,9 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.architect.DatabaseListChangeEvent;
 import ca.sqlpower.architect.DatabaseListChangeListener;
-import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
-import ca.sqlpower.architect.swingui.DBCSPanel;
-import ca.sqlpower.architect.swingui.DBConnectionCallBack;
-import ca.sqlpower.architect.swingui.action.DBCSOkAction;
 import ca.sqlpower.matchmaker.swingui.action.NewDatabaseConnectionAction;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
@@ -137,11 +134,11 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 				}
 			};
 
-			JDialog dialog = ArchitectPanelBuilder.createArchitectPanelDialog(
+			JDialog dialog = DataEntryPanelBuilder.createArchitectPanelDialog(
 					dbcsPanel,
 					d,
 					"Edit Database Connection",
-					ArchitectPanelBuilder.OK_BUTTON_LABEL,
+					DataEntryPanelBuilder.OK_BUTTON_LABEL,
 					okAction, cancelAction);
 
 			setNewConnectionDialog(dialog);

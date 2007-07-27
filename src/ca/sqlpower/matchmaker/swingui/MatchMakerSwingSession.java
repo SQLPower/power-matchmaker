@@ -66,6 +66,8 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersionFormatException;
+import ca.sqlpower.swingui.CommonCloseAction;
+import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.util.Version;
 

@@ -17,8 +17,6 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
@@ -37,6 +35,7 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
 
 public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implements TreeSelectionListener {
 
@@ -141,8 +140,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         m.add(new JMenuItem(new AbstractAction("Audit Information") {
             public void actionPerformed(ActionEvent e) {
                 MatchInfoPanel p = new MatchInfoPanel(match);
-                JDialog d = ArchitectPanelBuilder
-                        .createSingleButtonArchitectPanelDialog(p, owningFrame,
+                JDialog d = DataEntryPanelBuilder
+                        .createSingleButtonDataEntryPanelDialog(p, owningFrame,
                                 "Audit Information", "OK");
                 d.pack();
                 d.setVisible(true);

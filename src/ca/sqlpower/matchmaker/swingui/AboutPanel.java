@@ -6,11 +6,11 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import ca.sqlpower.architect.swingui.ArchitectPanel;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
 
-public class AboutPanel extends JPanel implements ArchitectPanel {
+public class AboutPanel extends JPanel implements DataEntryPanel {
 
 	public JLabel content;
 

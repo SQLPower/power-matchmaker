@@ -8,13 +8,10 @@ import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
-import ca.sqlpower.architect.swingui.DBCSPanel;
-import ca.sqlpower.architect.swingui.DBConnectionCallBack;
-import ca.sqlpower.architect.swingui.action.DBCSOkAction;
 import ca.sqlpower.matchmaker.swingui.DBConnectionUniDialog;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
 
 public class NewDatabaseConnectionAction extends AbstractAction {
 
@@ -53,11 +50,11 @@ public class NewDatabaseConnectionAction extends AbstractAction {
 			}
 		};
 
-		JDialog d = ArchitectPanelBuilder.createArchitectPanelDialog(
+		JDialog d = DataEntryPanelBuilder.createDataEntryPanelDialog(
 				dbcsPanel, SwingUtilities.getWindowAncestor(
 						componentParent),
 						"New Database Connection",
-						ArchitectPanelBuilder.OK_BUTTON_LABEL,
+						DataEntryPanelBuilder.OK_BUTTON_LABEL,
 						okAction, cancelAction);
 
 		okAction.setConnectionDialog(d);
