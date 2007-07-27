@@ -27,11 +27,11 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.architect.swingui.CommonCloseAction;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;

@@ -16,13 +16,13 @@ import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.swingui.ArchitectPanel;
-import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerObjectComboBoxCellRenderer;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.validation.MatchNameValidator;
+import ca.sqlpower.swingui.DataEntryPanel;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
@@ -46,7 +46,7 @@ public class DuplicateMatchAction extends AbstractAction {
 		handler = new FormValidationHandler(status);
 	}
 	
-	private class DuplicatePanel implements ArchitectPanel {
+	private class DuplicatePanel implements DataEntryPanel {
 
 		
 		private final JPanel panel;
@@ -114,7 +114,7 @@ public class DuplicateMatchAction extends AbstractAction {
 			public void actionPerformed(ActionEvent e) {
 			}};
 			
-		dialog = ArchitectPanelBuilder.createArchitectPanelDialog(archPanel,
+		dialog = DataEntryPanelBuilder.createDataEntryPanelDialog(archPanel,
 				swingSession.getFrame(),
 				"Duplicate Match",
 				"OK",

@@ -50,8 +50,6 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.architect.swingui.ArchitectPanelBuilder;
-import ca.sqlpower.architect.swingui.SaveDocument;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
@@ -59,6 +57,7 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.validation.MatchNameValidator;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -248,7 +247,7 @@ public class MatchEditor implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 
 			MatchInfoPanel p = new MatchInfoPanel(match);
-			JDialog d = ArchitectPanelBuilder.createSingleButtonArchitectPanelDialog(
+			JDialog d = DataEntryPanelBuilder.createSingleButtonDataEntryPanelDialog(
 					p, getParentWindow(),
 					"Audit Information", "OK");
 			d.pack();
@@ -265,7 +264,7 @@ public class MatchEditor implements EditorPane {
 	private Action validationStatusAction = new AbstractAction("View Validation ValidateResult") {
 		public void actionPerformed(ActionEvent e) {
 			MatchValidationStatus p = new MatchValidationStatus(swingSession, match,
-                    ArchitectPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation Status"));
+					DataEntryPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation Status"));
 			p.pack();
 			p.setVisible(true);
 		}};
