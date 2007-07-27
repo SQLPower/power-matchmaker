@@ -13,7 +13,6 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
@@ -24,6 +23,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.swingui.SPSUtils.LabelValueBean;
+import ca.sqlpower.xml.UnescapingSaxParser;
 
 /**
  * this class imports match from xml export file.
@@ -45,7 +45,7 @@ public class MatchImportor {
 	public boolean load(Match match, InputStream in) 
 		throws ParserConfigurationException, SAXException, IOException {
 
-		SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+		SAXParser parser = new UnescapingSaxParser();
 		parser.parse(in,new MatchExportFileHandler(match));
 		SQLTable table = match.getSourceTable();
 		SQLIndex index = match.getSourceTableIndex();
