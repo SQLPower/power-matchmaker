@@ -24,11 +24,11 @@ import javax.swing.event.ListDataListener;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;

@@ -31,10 +31,10 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.architect.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
 import ca.sqlpower.architect.swingui.Populator;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
