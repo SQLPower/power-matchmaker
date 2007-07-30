@@ -79,7 +79,7 @@ public class DBTestUtil {
     	final String ssUrl ="jdbc:microsoft:sqlserver://deepthought:1433;SelectMethod=cursor;DatabaseName=plautotest";
     	
     	SPDataSource sqlServerDS = new SPDataSource();
-    	sqlServerDS.setDriverClass("com.microsoft.jdbc.sqlserver.SQLServerDriver");
+    	sqlServerDS.getParentType().setJdbcDriver("com.microsoft.jdbc.sqlserver.SQLServerDriver");
     	sqlServerDS.setName("Test SQLServer");
     	sqlServerDS.setUser(ssUserName);
     	sqlServerDS.setPass(ssPassword);
@@ -102,7 +102,7 @@ public class DBTestUtil {
         final String oracleUrl = "jdbc:oracle:thin:@arthur:1521:test";
         
         SPDataSource oracleDataSource = new SPDataSource();
-        oracleDataSource.setDriverClass("oracle.jdbc.driver.OracleDriver");
+        oracleDataSource.getParentType().setJdbcDriver("oracle.jdbc.driver.OracleDriver");
         oracleDataSource.setName("Test Oracle");
     
         oracleDataSource.setUser(oracleUserName);
@@ -123,7 +123,7 @@ public class DBTestUtil {
         final String hsqlUrl = "jdbc:hsqldb:mem:aname";
         
         SPDataSource hsqlDataSource = new SPDataSource();
-        hsqlDataSource.setDriverClass("org.hsqldb.jdbcDriver");
+        hsqlDataSource.getParentType().setJdbcDriver("org.hsqldb.jdbcDriver");
         hsqlDataSource.setName("In-memory HSQLDB");
     
         hsqlDataSource.setUser(hsqlUserName);

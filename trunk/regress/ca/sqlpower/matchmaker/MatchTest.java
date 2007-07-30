@@ -234,7 +234,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     
 	public void testResultTableExistsWhenTrue() throws Exception {
 		SPDataSource ds = new SPDataSource();
-		ds.setDriverClass("ca.sqlpower.util.MockJDBCDriver");
+		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
@@ -254,7 +254,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	 */
 	public void testResultTableExistsWhenFalse() throws Exception {
 		SPDataSource ds = new SPDataSource();
-		ds.setDriverClass("ca.sqlpower.util.MockJDBCDriver");
+		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
@@ -277,7 +277,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	public void testResultTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
 		SPDataSource ds = new SPDataSource();
-		ds.setDriverClass("ca.sqlpower.util.MockJDBCDriver");
+		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
@@ -292,7 +292,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	
 	public void testSourceTableExistsWhenTrue() throws Exception {
 		SPDataSource ds = new SPDataSource();
-		ds.setDriverClass("ca.sqlpower.util.MockJDBCDriver");
+		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
@@ -311,7 +311,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	 */
 	public void testSourceTableExistsWhenFalse() throws Exception {
 		SPDataSource ds = new SPDataSource();
-		ds.setDriverClass("ca.sqlpower.util.MockJDBCDriver");
+		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
@@ -334,7 +334,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	public void testSourceTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
 		SPDataSource ds = new SPDataSource();
-		ds.setDriverClass("ca.sqlpower.util.MockJDBCDriver");
+		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
 		ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Sc" +
 				"hema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");

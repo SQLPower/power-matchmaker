@@ -415,7 +415,7 @@ public class MatchMakerImportExportTest extends TestCase {
 
 	public void testSaveSourceTable() throws IOException, ParserConfigurationException, SAXException {
 		SPDataSource ds = new SPDataSource();
-	      ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
+	      ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
 	      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 	      ds.setUser("n/a");
 	      ds.setPass("n/a");
@@ -442,7 +442,7 @@ public class MatchMakerImportExportTest extends TestCase {
 
 	public void testSaveResultTable() throws IOException, ParserConfigurationException, SAXException {
 		SPDataSource ds = new SPDataSource();
-	      ds.setDriverClass("ca.sqlpower.architect.MockJDBCDriver");
+	      ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
 	      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 	      ds.setUser("n/a");
 	      ds.setPass("n/a");
