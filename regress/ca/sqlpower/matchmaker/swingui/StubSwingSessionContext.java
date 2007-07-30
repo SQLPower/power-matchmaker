@@ -8,9 +8,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
+import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.SPDataSource;
 
 /**
  * A stub of SwingSessionContext.  None of the methods return useful values, but they all

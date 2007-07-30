@@ -8,12 +8,12 @@ import junit.framework.TestCase;
 
 import org.hibernate.HibernateException;
 
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.architect.MockJDBCDriver;
-import ca.sqlpower.architect.MockJDBCResultSet;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLIndex.Column;
-import ca.sqlpower.architect.jdbc.MockJDBCPreparedStatement;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.util.MockJDBCDriver;
+import ca.sqlpower.util.MockJDBCPreparedStatement;
+import ca.sqlpower.util.MockJDBCResultSet;
 
 public class ListToSQLIndexTest extends TestCase {
 

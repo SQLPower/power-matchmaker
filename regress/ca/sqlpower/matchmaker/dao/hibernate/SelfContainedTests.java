@@ -5,13 +5,13 @@ import java.lang.reflect.Method;
 
 import org.apache.log4j.BasicConfigurator;
 
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.sql.PlDotIni;
+import ca.sqlpower.sql.SPDataSource;
 
 public class SelfContainedTests {
 

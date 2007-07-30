@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.architect.DataSourceCollection;
-import ca.sqlpower.architect.PlDotIni;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.PlDotIni;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.Version;
 
 public class HibernateSessionContextTest extends TestCase {

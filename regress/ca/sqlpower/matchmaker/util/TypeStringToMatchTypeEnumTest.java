@@ -5,11 +5,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import junit.framework.TestCase;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.architect.MockJDBCDriver;
-import ca.sqlpower.architect.MockJDBCResultSet;
-import ca.sqlpower.architect.jdbc.MockJDBCPreparedStatement;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.util.MockJDBCDriver;
+import ca.sqlpower.util.MockJDBCPreparedStatement;
+import ca.sqlpower.util.MockJDBCResultSet;
 
 public class TypeStringToMatchTypeEnumTest extends TestCase {
 
