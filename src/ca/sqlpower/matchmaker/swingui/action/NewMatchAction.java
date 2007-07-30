@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
