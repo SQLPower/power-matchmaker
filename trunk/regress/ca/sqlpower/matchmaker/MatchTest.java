@@ -417,7 +417,12 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	} catch (Exception e) {
 		}
     	
-    	DDLGenerator ddlg = DDLUtils.createDDLGenerator(ds);
+    	DDLGenerator ddlg = null;
+    	try {
+    		ddlg = DDLUtils.createDDLGenerator(ds);
+    	} catch (ClassNotFoundException e) {
+    		fail("DDLUtils.createDDLGenerator(SPDataSource ds) threw an exception!");
+    	}
     	assertNotNull("DDLGenerator error", ddlg);
 		ddlg.setTargetSchema(ds.getPlSchema());
 		
@@ -518,7 +523,12 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	} catch (Exception e) {
 		}
     	
-    	DDLGenerator ddlg = DDLUtils.createDDLGenerator(ds);
+    	DDLGenerator ddlg = null;
+    	try {
+    		DDLUtils.createDDLGenerator(ds);
+    	} catch (ClassNotFoundException e) {
+    		fail("DDLUtils.createDDLGenerator(SPDataSource) threw a ClassNotFoundException");
+    	}
     	assertNotNull("DDLGenerator error", ddlg);
 		ddlg.setTargetSchema(ds.getPlSchema());
 		
