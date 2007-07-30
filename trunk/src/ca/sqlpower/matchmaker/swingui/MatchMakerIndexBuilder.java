@@ -26,6 +26,7 @@ import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.RegExValidator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;

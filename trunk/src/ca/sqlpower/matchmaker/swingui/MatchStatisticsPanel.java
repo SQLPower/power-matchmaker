@@ -26,6 +26,11 @@ import javax.swing.table.TableColumnModel;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.table.DateTableCellRenderer;
+import ca.sqlpower.swingui.table.IndicatorCellRenderer;
+import ca.sqlpower.swingui.table.NumberAndIntegerTableCellRenderer;
+import ca.sqlpower.swingui.table.PercentTableCellRenderer;
+import ca.sqlpower.swingui.table.TableModelColumnAutofit;
 
 import com.sun.rowset.CachedRowSetImpl;
 import com.sun.rowset.JoinRowSetImpl;
