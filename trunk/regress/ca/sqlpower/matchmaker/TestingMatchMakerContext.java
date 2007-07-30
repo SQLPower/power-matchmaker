@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
+import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 
 public class TestingMatchMakerContext implements MatchMakerSessionContext {

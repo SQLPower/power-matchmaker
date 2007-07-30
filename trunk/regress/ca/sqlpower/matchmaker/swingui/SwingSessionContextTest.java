@@ -6,19 +6,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
+import java.util.prefs.PreferencesFactory;
 
 import junit.framework.TestCase;
-import prefs.PreferencesFactory;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.CoreUserSettings;
-import ca.sqlpower.architect.DataSourceCollection;
-import ca.sqlpower.architect.DatabaseListChangeListener;
-import ca.sqlpower.architect.JDBCClassLoader;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.security.PLSecurityException;
+import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.DatabaseListChangeListener;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.SPDataSourceType.JDBCClassLoader;
 
 public class SwingSessionContextTest extends TestCase {
 
