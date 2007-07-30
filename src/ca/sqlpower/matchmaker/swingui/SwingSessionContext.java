@@ -6,11 +6,11 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.architect.DataSourceCollection;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.security.PLSecurityException;
+import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.VersionFormatException;
 
 public interface SwingSessionContext extends MatchMakerSessionContext {
