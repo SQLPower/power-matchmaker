@@ -176,7 +176,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 			d.getRootPane().setDefaultButton(okButton);
 			d.setContentPane(cp);
 			d.pack();
-			d.setLocationRelativeTo(ArchitectFrame.getMainInstance());
+			d.setLocationRelativeTo(getFrame());
 			d.setVisible(true);
 		}
     };
