@@ -31,6 +31,7 @@ import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;

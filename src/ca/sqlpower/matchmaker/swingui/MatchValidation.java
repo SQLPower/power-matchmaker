@@ -42,6 +42,7 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.table.TableUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
