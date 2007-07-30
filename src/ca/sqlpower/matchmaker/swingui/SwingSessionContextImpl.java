@@ -70,7 +70,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * you will most likely prefer using the other constructor in real life.
      */
     public SwingSessionContextImpl(
-            
             Preferences prefsRootNode,
             MatchMakerSessionContext delegateContext) throws IOException {
         this.prefs = prefsRootNode;
