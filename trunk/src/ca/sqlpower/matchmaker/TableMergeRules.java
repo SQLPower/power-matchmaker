@@ -1,6 +1,5 @@
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
