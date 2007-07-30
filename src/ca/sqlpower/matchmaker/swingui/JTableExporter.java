@@ -12,6 +12,7 @@ import javax.swing.JTable;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
+import ca.sqlpower.xml.XMLHelper;
 
 public class JTableExporter extends JFileChooser {
 
@@ -79,31 +80,31 @@ public class JTableExporter extends JFileChooser {
 
 	protected void writeDocumentXml (Component owner, JTable table, File file) throws IOException {
 		PrintWriter out = new PrintWriter(file);
-		IOUtils ioo = new IOUtils();
+		XMLHelper xmlHelper = new XMLHelper();
 
-		ioo.println(out,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-		ioo.println(out,"<EXPORT TABLENAME=\""+
+		xmlHelper.println(out,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		xmlHelper.println(out,"<EXPORT TABLENAME=\""+
 				ArchitectUtils.escapeXML(table.getName())+"\">");
-        ioo.indent++;
+        xmlHelper.indent++;
 
         for ( int row=0; row<table.getRowCount(); row++ ) {
-        	ioo.println(out,"<row rowid=\"" + row + "\">");
-        	ioo.indent++;
+        	xmlHelper.println(out,"<row rowid=\"" + row + "\">");
+        	xmlHelper.indent++;
         	for ( int column=0; column<table.getColumnCount(); column++ ) {
         		Object o = table.getValueAt(row,column);
-        		ioo.print(out,"<col" + column + " name=\"" +
+        		xmlHelper.print(out,"<col" + column + " name=\"" +
         				ArchitectUtils.escapeXML(table.getColumnName(column))+
         				"\">");
         		if ( o != null ) {
-        			ioo.niprint(out,ArchitectUtils.escapeXML(o.toString()));
+        			xmlHelper.niprint(out,ArchitectUtils.escapeXML(o.toString()));
         		}
-        		ioo.niprintln(out,"</col" + column +">");
+        		xmlHelper.niprintln(out,"</col" + column +">");
         	}
-        	ioo.indent--;
-        	ioo.println(out,"</row>");
+        	xmlHelper.indent--;
+        	xmlHelper.println(out,"</row>");
         }
-        ioo.indent--;
-        ioo.println(out, "</EXPORT>");
+        xmlHelper.indent--;
+        xmlHelper.println(out, "</EXPORT>");
 
 
 		out.close();
