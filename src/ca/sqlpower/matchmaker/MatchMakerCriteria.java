@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker;
 
 import java.math.BigDecimal;
 
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 

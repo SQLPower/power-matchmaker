@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 
