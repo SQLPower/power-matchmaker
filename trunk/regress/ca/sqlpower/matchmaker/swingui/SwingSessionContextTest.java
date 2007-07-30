@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +10,6 @@ import java.util.prefs.Preferences;
 import java.util.prefs.PreferencesFactory;
 
 import junit.framework.TestCase;
-import ca.sqlpower.architect.ArchitectSession;
-import ca.sqlpower.architect.CoreUserSettings;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -18,7 +17,7 @@ import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.DatabaseListChangeListener;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SPDataSourceType.JDBCClassLoader;
+import ca.sqlpower.sql.SPDataSourceType;
 
 public class SwingSessionContextTest extends TestCase {
 
@@ -27,57 +26,18 @@ public class SwingSessionContextTest extends TestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        ArchitectSession archSession = new ArchitectSession() {
-
-            public boolean addDriverJar(String fullPath) {
-                // TODO Auto-generated method stub
-                return false;
-            }
-
-            public void clearDriverJarList() {
-                // TODO Auto-generated method stub
-                
-            }
-
-            public List<String> getDriverJarList() {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            public JDBCClassLoader getJDBCClassLoader() {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            public CoreUserSettings getUserSettings() {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-            public void removeAllDriverJars() {
-                // TODO Auto-generated method stub
-                
-            }
-
-            public boolean removeDriverJar(String fullPath) {
-                // TODO Auto-generated method stub
-                return false;
-            }
-
-            public void setUserSettings(CoreUserSettings argUserSettings) {
-                // TODO Auto-generated method stub
-                
-            }
-            
-        };
         final DataSourceCollection dsCollection = new DataSourceCollection() {
 
-            public void addDataSource(SPDataSource dbcs) {
-                System.out.println("Stub DSCollection.addDataSource()");
+            public void addDataSource(SPDataSource spds) {
+                System.out.println("Stub DSCollection.addDataSource("+spds+")");
             }
 
+			public void addDataSourceType(SPDataSourceType spdst) {
+                System.out.println("Stub DSCollection.addDataSourceType("+spdst+")");
+			}
+
             public void addDatabaseListChangeListener(DatabaseListChangeListener l) {
-                System.out.println("Stub DSCollection.addDatabaseListChangeListener()");
+                System.out.println("Stub DSCollection.addDatabaseListChangeListener("+l+")");
             }
 
             public List<SPDataSource> getConnections() {
@@ -87,25 +47,45 @@ public class SwingSessionContextTest extends TestCase {
                 return connections;
             }
 
+			public List<SPDataSourceType> getDataSourceTypes() {
+                System.out.println("Stub DSCollection.getConnections()");
+                List<SPDataSourceType> connectionTypes = new ArrayList<SPDataSourceType>();
+                connectionTypes.add(DBTestUtil.getOracleDS().getParentType());
+                return connectionTypes;
+			}
+
             public SPDataSource getDataSource(String name) {
-                System.out.println("Stub DSCollection.getDataSource()");
+                System.out.println("Stub DSCollection.getDataSource("+name+")");
                 return null;
             }
 
-            public void mergeDataSource(SPDataSource dbcs) {
-                System.out.println("Stub DSCollection.mergeDataSource()");
+            public void mergeDataSource(SPDataSource spds) {
+                System.out.println("Stub DSCollection.mergeDataSource("+spds+")");
+            }
+
+            public void mergeDataSourceType(SPDataSourceType spdst) {
+                System.out.println("Stub DSCollection.mergeDataSourceType("+spdst+")");
             }
 
             public void read(File location) throws IOException {
                 System.out.println("Stub DSCollection.read("+location+")");
             }
 
-            public void removeDataSource(SPDataSource dbcs) {
-                System.out.println("Stub DSCollection.removeDataSource()");
+            public void read(InputStream in) throws IOException {
+                System.out.println("Stub DSCollection.read("+in+")");
+            }
+            
+            public void removeDataSource(SPDataSource spds) {
+                System.out.println("Stub DSCollection.removeDataSource("+spds+")");
+            }
+            
+            public boolean removeDataSourceType(SPDataSourceType spdst) {
+                System.out.println("Stub DSCollection.removeDataSourceType("+spdst+")");
+                return false;
             }
 
             public void removeDatabaseListChangeListener(DatabaseListChangeListener l) {
-                System.out.println("Stub DSCollection.removeDatabaseListChangeListener()");
+                System.out.println("Stub DSCollection.removeDatabaseListChangeListener("+l+")");
             }
 
             public void write(File location) throws IOException {
@@ -113,9 +93,9 @@ public class SwingSessionContextTest extends TestCase {
             }
 
             public void write() throws IOException {
-                // TODO Auto-generated method stub          
+                System.out.println("Stub DSCollection.write()");
             }
-            
+
         };
         MatchMakerSessionContext stubContext = new MatchMakerSessionContext() {
 
@@ -145,9 +125,18 @@ public class SwingSessionContextTest extends TestCase {
 			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
-        PreferencesFactory stubPrefsFactory = new PreferencesFactory();
+        PreferencesFactory stubPrefsFactory = new PreferencesFactory(){
+			public Preferences systemRoot() {
+				System.out.println("stubPreferencesFactory.systemRoot() was called");
+				return null;
+			}
+			public Preferences userRoot() {
+				System.out.println("stubPreferencesFactory.userRoot() was called");
+				return null;
+			}
+        };
         Preferences memoryPrefs = stubPrefsFactory.userRoot();
-        context = new SwingSessionContextImpl(archSession, memoryPrefs, stubContext);
+        context = new SwingSessionContextImpl(memoryPrefs, stubContext);
     }
     
     public void testGetLastLogin(){                
