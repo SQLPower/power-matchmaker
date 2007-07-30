@@ -97,7 +97,7 @@ public class ListToSQLIndexTest extends TestCase {
 		MockJDBCDriver driver = new MockJDBCDriver();
 		SPDataSource ds = new SPDataSource();
 		String URL = "jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm,yard,zoo&schemas.farm=cow,pig&schemas.yard=cat,robin&schemas.zoo=lion,giraffe&tables.farm.cow=moo&tables.farm.pig=oink&tables.yard.cat=meow&tables.yard.robin=tweet&tables.zoo.lion=roar&tables.zoo.giraffe=***,^%%";
-		ds.setDriverClass(MockJDBCDriver.class.getCanonicalName());
+		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getCanonicalName());
 		ds.setName("a");
 		ds.setPass("a");
 		ds.setUrl(URL);
