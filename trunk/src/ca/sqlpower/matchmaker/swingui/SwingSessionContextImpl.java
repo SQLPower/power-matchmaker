@@ -15,13 +15,12 @@ import javax.swing.UIManager;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectSession;
-import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.architect.swingui.SwingUserSettings;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.util.VersionFormatException;
@@ -35,11 +34,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * The underlying context that will deal with Hibernate for us.
      */
     private final MatchMakerSessionContext context;
-
-    /**
-     * We'd rather not have one of these, but it's got something to do with prefs.
-     */
-    private final ArchitectSession architectSession;
 
     /**
      * The prefs node that we use for persisting all the basic user settings that are
@@ -65,8 +59,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * session context object based on information in the given prefs node, or failing that,
      * by prompting the user with a GUI.
      */
-    public SwingSessionContextImpl(ArchitectSession architectSession, Preferences prefsRootNode) throws IOException {
-        this(architectSession, prefsRootNode, createDelegateContext(prefsRootNode));
+    public SwingSessionContextImpl(Preferences prefsRootNode) throws IOException {
+        this(prefsRootNode, createDelegateContext(prefsRootNode));
     }
 
     /**
@@ -76,10 +70,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * you will most likely prefer using the other constructor in real life.
      */
     public SwingSessionContextImpl(
-            ArchitectSession architectSession,
+            
             Preferences prefsRootNode,
             MatchMakerSessionContext delegateContext) throws IOException {
-        this.architectSession = architectSession;
         this.prefs = prefsRootNode;
         this.context = delegateContext;
 
@@ -126,14 +119,14 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getLastImportExportAccessPath()
      */
     public String getLastImportExportAccessPath() {
-        return prefs.get(SwingUserSettings.LAST_IMPORT_EXPORT_PATH, null);
+        return prefs.get(MatchMakerSwingUserSettings.LAST_IMPORT_EXPORT_PATH, null);
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#setLastImportExportAccessPath(java.lang.String)
      */
     public void setLastImportExportAccessPath(String lastExportAccessPath) {
-        prefs.put(SwingUserSettings.LAST_IMPORT_EXPORT_PATH, lastExportAccessPath);
+        prefs.put(MatchMakerSwingUserSettings.LAST_IMPORT_EXPORT_PATH, lastExportAccessPath);
     }
 
     /* (non-Javadoc)
@@ -141,10 +134,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     public Rectangle getFrameBounds() {
         Rectangle bounds = new Rectangle();
-        bounds.x = prefs.getInt(SwingUserSettings.MAIN_FRAME_X, 100);
-        bounds.y = prefs.getInt(SwingUserSettings.MAIN_FRAME_Y, 100);
-        bounds.width = prefs.getInt(SwingUserSettings.MAIN_FRAME_WIDTH, 600);
-        bounds.height = prefs.getInt(SwingUserSettings.MAIN_FRAME_HEIGHT, 440);
+        bounds.x = prefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_X, 100);
+        bounds.y = prefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_Y, 100);
+        bounds.width = prefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_WIDTH, 600);
+        bounds.height = prefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_HEIGHT, 440);
         return bounds;
     }
 
@@ -152,24 +145,24 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#setFrameBounds(java.awt.Rectangle)
      */
     public void setFrameBounds(Rectangle bounds) {
-        prefs.putInt(SwingUserSettings.MAIN_FRAME_X, bounds.x);
-        prefs.putInt(SwingUserSettings.MAIN_FRAME_Y, bounds.y);
-        prefs.putInt(SwingUserSettings.MAIN_FRAME_WIDTH, bounds.width);
-        prefs.putInt(SwingUserSettings.MAIN_FRAME_HEIGHT, bounds.height);
+        prefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_X, bounds.x);
+        prefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_Y, bounds.y);
+        prefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_WIDTH, bounds.width);
+        prefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_HEIGHT, bounds.height);
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#setLastLoginDataSource(ca.sqlpower.sql.SPDataSource)
      */
     public void setLastLoginDataSource(SPDataSource dataSource) {
-        prefs.put(SwingUserSettings.LAST_LOGIN_DATA_SOURCE, dataSource.getName());
+        prefs.put(MatchMakerSwingUserSettings.LAST_LOGIN_DATA_SOURCE, dataSource.getName());
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getLastLoginDataSource()
      */
     public SPDataSource getLastLoginDataSource() {
-        String lastDSName = prefs.get(SwingUserSettings.LAST_LOGIN_DATA_SOURCE, null);
+        String lastDSName = prefs.get(MatchMakerSwingUserSettings.LAST_LOGIN_DATA_SOURCE, null);
         if (lastDSName == null) return null;
         for (SPDataSource ds : getDataSources()) {
             if (ds.getName().equals(lastDSName)) return ds;
@@ -202,6 +195,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     private static MatchMakerSessionContext createDelegateContext(Preferences prefs) throws IOException {
         DataSourceCollection plDotIni = null;
+        //XXX: We should NOT be using ArchitectSession for this
         String plDotIniPath = prefs.get(ArchitectSession.PREFS_PL_INI_PATH, null);
         while ((plDotIni = readPlDotIni(plDotIniPath)) == null) {
             logger.debug("readPlDotIni returns null, trying again...");
@@ -255,6 +249,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
             }
         }
+        //XXX: We should NOT be using ArchitectSession for this
         prefs.put(ArchitectSession.PREFS_PL_INI_PATH, plDotIniPath);
         return new MatchMakerHibernateSessionContext(plDotIni, plDotIniPath);
     }
