@@ -22,10 +22,10 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.DatabaseListChangeEvent;
-import ca.sqlpower.architect.DatabaseListChangeListener;
 import ca.sqlpower.matchmaker.swingui.action.NewDatabaseConnectionAction;
 import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.DatabaseListChangeEvent;
+import ca.sqlpower.sql.DatabaseListChangeListener;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
