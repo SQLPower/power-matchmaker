@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.architect.DataSourceCollection;
+import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
