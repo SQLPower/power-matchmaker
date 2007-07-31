@@ -6,14 +6,15 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.EnginePath;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
+import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.UnknownFreqCodeException;
 import ca.sqlpower.util.VersionFormatException;
 
@@ -67,7 +68,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     public MatchMakerSession createSession(
             SPDataSource ds, String username, String password)
     throws PLSecurityException, SQLException, 
-            VersionFormatException, PLSchemaException {
+            VersionFormatException, PLSchemaException, ArchitectException {
 
         // We create a copy of the data source and change the userID and password
         //and use that for the login attempt.  We do not want to change the

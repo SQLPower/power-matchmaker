@@ -17,7 +17,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -44,6 +45,7 @@ import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
 import ca.sqlpower.sql.DefaultParameters;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.UnknownFreqCodeException;
 import ca.sqlpower.util.Version;
 import ca.sqlpower.util.VersionFormatException;
@@ -115,12 +117,13 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     /**
      * XXX this is untestable unless you're connected to a database right now.
      *   It should be given a PLSecurityManager implementation rather than creating one.
+     *   @throws ArchitectException if there was a problem connecting to the database
      */
 	public MatchMakerHibernateSessionImpl(
             MatchMakerSessionContext context,
 			SPDataSource ds)
 		throws PLSecurityException, UnknownFreqCodeException,
-				SQLException, PLSchemaException, VersionFormatException {
+				SQLException, PLSchemaException, VersionFormatException, ArchitectException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
 
@@ -244,8 +247,15 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         }
     }
 
+    /**
+     * @throws ArchitectRuntimeException If it fails to connect to the database
+     */
     public Connection getConnection() {
-    	return database.getConnection();
+    	try {
+            return database.getConnection();
+        } catch (ArchitectException ex) {
+            throw new ArchitectRuntimeException(ex);
+        }
     }
 
     /**
@@ -360,7 +370,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         return plSchemaVersion;
     }
 
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) {
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
     	logger.debug("Session.findSQLTableByName:" +
     			catalog + "." + schema + "." + tableName);
     	if (tableName == null || tableName.length() == 0) return null;
@@ -378,11 +388,11 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
 
     public boolean tableExists(String catalog, String schema,
-    		String tableName) {
+    		String tableName) throws ArchitectException {
     	return (findPhysicalTableByName(catalog,schema,tableName) != null);
     }
 
-    public boolean tableExists(SQLTable table) {
+    public boolean tableExists(SQLTable table) throws ArchitectException {
     	if ( table == null ) return false;
     	return tableExists(table.getCatalogName(),
     			table.getSchemaName(),

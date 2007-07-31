@@ -38,6 +38,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSessionImpl;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
@@ -902,16 +903,16 @@ public class MatchMakerSwingSession implements MatchMakerSession {
         return sessionImpl.getPLSchemaVersion();
     }
 
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) {
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
     	return sessionImpl.findPhysicalTableByName(catalog, schema, tableName);
 	}
 
     public boolean tableExists(String catalog, String schema,
-    		String tableName) {
+    		String tableName) throws ArchitectException {
     	return sessionImpl.tableExists(catalog, schema, tableName);
 	}
 
-     public boolean tableExists(SQLTable table) {
+     public boolean tableExists(SQLTable table) throws ArchitectException {
          return sessionImpl.tableExists(table);
 	}
 
