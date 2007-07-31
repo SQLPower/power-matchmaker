@@ -1,5 +1,7 @@
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -92,10 +94,14 @@ public class TableMergeRules
 		newMergeStrategy.setTableName(getTableName());
 		newMergeStrategy.setCatalogName(getCatalogName());
 		newMergeStrategy.setSchemaName(getSchemaName());
-		if (tableIndex.isUserCreated()) {
-			newMergeStrategy.setTableIndex(new SQLIndex(getTableIndex()));
-		} else {
-			newMergeStrategy.setTableIndex(getTableIndex());
+		try {
+			if (tableIndex.isUserCreated()) {
+				newMergeStrategy.setTableIndex(new SQLIndex(getTableIndex()));
+			} else {
+				newMergeStrategy.setTableIndex(getTableIndex());
+			}
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
 		}
 
 		for (ColumnMergeRules c : getChildren()) {
@@ -169,7 +175,7 @@ public class TableMergeRules
 		return buf.toString();
 	}
 
-	public SQLIndex getTableIndex() {
+	public SQLIndex getTableIndex() throws ArchitectException {
 		return tableIndex.getTableIndex();
 	}
 

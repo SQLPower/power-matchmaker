@@ -69,7 +69,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 	
 	public MergeColumnRuleEditor(MatchMakerSwingSession swingSession,
 			Match match, TableMergeRules mergeRule, 
-			ColumnMergeRules selectedColumn) {
+			ColumnMergeRules selectedColumn) throws ArchitectException {
 		this.swingSession = swingSession;
 		this.match = match;
 		this.mergeRule = mergeRule;
@@ -225,7 +225,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private boolean reSetting = false;
 	private boolean tableHasChanges = false; 
 	
-	private void setDefaultSelections() {
+	private void setDefaultSelections() throws ArchitectException {
 		chooser.getCatalogComboBox().setSelectedItem(mergeRule.getSourceTable().getCatalog());
 		chooser.getSchemaComboBox().setSelectedItem(mergeRule.getSourceTable().getSchema());
 		chooser.getTableComboBox().setSelectedItem(mergeRule.getSourceTable());

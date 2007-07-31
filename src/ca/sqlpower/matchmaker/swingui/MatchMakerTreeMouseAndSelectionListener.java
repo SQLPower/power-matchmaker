@@ -17,6 +17,7 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
@@ -36,7 +37,13 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
+import ca.sqlpower.swingui.SPSUtils;
 
+/**
+ * This appears to be a mouse event listener for the MatchMaker tree component of the GUI.
+ * It creates pop-up menus when a popup event is triggered, (ex. right-clicking), and also
+ * changes the MatchMaker's main editor component according to the selected item in the tree
+ */
 public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implements TreeSelectionListener {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerTreeMouseAndSelectionListener.class);
@@ -164,6 +171,13 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         m.add(new JMenuItem(new DeletePlFolderAction(swingSession,"Delete Folder",folder)));
     }
 
+    /**
+     * This appears to set the editor component to the correct type of editor 
+     * depending on the component you have selected in the tree
+     * 
+     * This method should catch all exceptions and return gracefully. Otherwise 
+     * you may end up seeing unusual behaviour in the Swing UI. 
+     */
 	public void valueChanged(TreeSelectionEvent e) {
 
 		JTree tree = (JTree) e.getSource();
@@ -209,24 +223,34 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 					TableMergeRules f = (TableMergeRules)o;
 					Match m = (Match) f.getParentMatch();
 					
-					MergeColumnRuleEditor editor =
-						new MergeColumnRuleEditor(swingSession,m,f,null);
-					logger.debug("Created new merge column rules editor "
-							+ System.identityHashCode(editor));
-					swingSession.setCurrentEditorComponent(editor);
+					try {
+						MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession,m,f,null);
+						logger.debug("Created new merge column rules editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
+					} catch (ArchitectException e1) {
+						SPSUtils.showExceptionDialogNoReport(owningFrame, 
+								"An exception occured while creating the merge column rules editor", e1);
+					}
 				} else if ( o instanceof ColumnMergeRules ) {
 					TableMergeRules f = (TableMergeRules) ((ColumnMergeRules)o).getParent();
 					Match m = (Match) f.getParentMatch();
 					
-					MergeColumnRuleEditor editor =
-						new MergeColumnRuleEditor(swingSession,m,f,
-								(ColumnMergeRules)o);
-					logger.debug("Created new merge column rules editor "
-							+ System.identityHashCode(editor));
-					swingSession.setCurrentEditorComponent(editor);
+					try {
+						MergeColumnRuleEditor editor =
+							new MergeColumnRuleEditor(swingSession,m,f,
+									(ColumnMergeRules)o);
+						logger.debug("Created new merge column rules editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
+					} catch (ArchitectException e1) {
+						SPSUtils.showExceptionDialogNoReport(owningFrame, 
+								"An exception occured while creating the merge column rules editor", e1);
+					}
 				}
 			} catch (SQLException e1) {
-				throw new RuntimeException(e1);
+				SPSUtils.showExceptionDialogNoReport(owningFrame, 
+						"An SQL exception occured while setting the current editor component", e1);
 			}
 		}
 	}

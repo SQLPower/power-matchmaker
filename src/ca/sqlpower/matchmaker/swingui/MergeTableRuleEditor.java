@@ -22,6 +22,8 @@ import javax.swing.table.TableCellEditor;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
@@ -218,8 +220,12 @@ public class MergeTableRuleEditor implements EditorPane {
 				r2.setSeqNo(new Long(10*i));
 				r2.setDeleteDup(r1.isDeleteDup());
 				r2.setTable((SQLTable) mergeTableRuleTableModel.getSQLObjectChooser(i).getTableComboBox().getSelectedItem());
-				logger.debug("r2 table="+r2.getSourceTable());				
-				r2.setTableIndex(r1.getTableIndex());
+				logger.debug("r2 table="+r2.getSourceTable());
+				try {
+					r2.setTableIndex(r1.getTableIndex());
+				} catch (ArchitectException e) {
+					throw new ArchitectRuntimeException(e);
+				}
 				while (r2.getChildCount() > 0) {
 					r2.removeChild(r2.getChildren().get(0));
 				}
