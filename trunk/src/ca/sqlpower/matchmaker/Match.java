@@ -692,7 +692,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
-	public SQLIndex getSourceTableIndex() {
+	public SQLIndex getSourceTableIndex() throws ArchitectException {
 		return sourceTableIndex.getTableIndex();
 	}
 	public void setSourceTableIndex(SQLIndex index) {
