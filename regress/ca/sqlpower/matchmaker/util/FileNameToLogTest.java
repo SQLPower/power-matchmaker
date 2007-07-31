@@ -8,9 +8,9 @@ import java.sql.Statement;
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.util.MockJDBCDriver;
-import ca.sqlpower.util.MockJDBCPreparedStatement;
-import ca.sqlpower.util.MockJDBCResultSet;
+import ca.sqlpower.testutil.MockJDBCDriver;
+import ca.sqlpower.testutil.MockJDBCPreparedStatement;
+import ca.sqlpower.testutil.MockJDBCResultSet;
 
 
 public class FileNameToLogTest extends TestCase {
