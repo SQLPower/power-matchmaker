@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
@@ -8,6 +9,8 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
@@ -15,7 +18,16 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.SPSUtils;
 
+/**
+ * A set of Swing components that allow the user to select a
+ * particular database object, up to and including children of SQLTable.
+ * This class doesn't include an overall panel that ties all these
+ * components together, to it is up to client code to pick and choose
+ * the components it wants (you don't have to use all of them), and
+ * lay them out in a way that makes sense for the particular application.
+ */
 public class SQLObjectChooser {
 
 	private JComboBox dataSourceComboBox = new JComboBox();
@@ -49,8 +61,7 @@ public class SQLObjectChooser {
 	private SQLDatabase db;
 
 	/**
-	 * Creates a set of Swing components that allow the user to select a
-	 * particular database object, up to and including children of SQLTable.
+	 * Creates a new SQLObjectChooser component set.
 	 *
 	 * @param owningComponent
 	 *            the component that will house the sqlobject chooser components
@@ -82,43 +93,63 @@ public class SQLObjectChooser {
 		schemaTerm.setText("Schema");
 		schemaTerm.setEnabled(false);
 
-		if (db.isCatalogContainer()) {
-			List<SQLCatalog> catalogs = db.getChildren();
-			setComboBoxStateAndItem(catalogComboBox, catalogs, -1);
-			if ( catalogs != null && catalogs.size() > 0 ) {
-				catalogTerm.setText(catalogs.get(0).getNativeTerm());
-				catalogTerm.setEnabled(true);
-			}
-		} else if (db.isSchemaContainer()) {
+        try {
+            if (db.isCatalogContainer()) {
+                List<SQLCatalog> catalogs = db.getChildren();
+                setComboBoxStateAndItem(catalogComboBox, catalogs, -1);
+                if ( catalogs != null && catalogs.size() > 0 ) {
+                    catalogTerm.setText(catalogs.get(0).getNativeTerm());
+                    catalogTerm.setEnabled(true);
+                }
+            } else if (db.isSchemaContainer()) {
 
-			List<SQLSchema> schemas = db.getChildren();
-			setComboBoxStateAndItem(schemaComboBox, schemas, -1);
-			if ( schemas != null && schemas.size() > 0 ) {
-				schemaTerm.setText(schemas.get(0).getNativeTerm());
-				schemaTerm.setEnabled(true);
-			}
-		} else {
-			List<SQLTable> tables = db.getChildren();
-			setComboBoxStateAndItem(tableComboBox, tables, -1);
-		}
-
+                List<SQLSchema> schemas = db.getChildren();
+                setComboBoxStateAndItem(schemaComboBox, schemas, -1);
+                if ( schemas != null && schemas.size() > 0 ) {
+                    schemaTerm.setText(schemas.get(0).getNativeTerm());
+                    schemaTerm.setEnabled(true);
+                }
+            } else {
+                List<SQLTable> tables = db.getChildren();
+                setComboBoxStateAndItem(tableComboBox, tables, -1);
+            }
+        } catch (ArchitectException ex) {
+            throw new ArchitectRuntimeException(ex);
+        }
+        
 		ItemListener itemListener = new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				validate();
+                try {
+                    validate();
+                } catch (Exception ex) {
+                    SPSUtils.showExceptionDialogNoReport((Component) e.getSource(), "Failed to update", ex);
+                }
 			}
 		};
 
-		/**
-		 * data source is fixed now
+		
+        
+        /*
+         *  data source is fixed now
+         *  (what does this mean? should this code be deleted?)
 
 		dataSourceComboBox.addItemListener(itemListener);
-		*/
+		 */
+        
 		catalogComboBox.addItemListener(itemListener);
 		schemaComboBox.addItemListener(itemListener);
 		tableComboBox.addItemListener(itemListener);
 	}
 
-	private void validate() {
+    /**
+     * Updates all of the appropriate components after one of them has had a
+     * selection change. This method is really a subroutine of the anonymous
+     * ItemListener implementation defined in the constructor.
+     * 
+     * @throws ArchitectException
+     *             When any of the database access fails.
+     */
+	private void validate() throws ArchitectException {
 
 		if (dataSourceComboBox.getSelectedItem() == null) {
 			dataSource = null;
@@ -256,15 +287,22 @@ public class SQLObjectChooser {
 	}
 
 	/**
-	 * replace the combobox items and set the enable/disable state according to
-	 * the size of items, enable if the items size > 0. also set the selected item
-	 * if the selectedItem >= 0
-	 * we don't want to just reset the combobox model, because we may have
-	 * listener on the combobox.
-	 * @param comboBox   the JcomboBox, all item in it will be removed
-	 * @param items      List of the item that we want to put in the combobox
-	 * @param selectedIndex the selectedItem after new items in place.
-	 */
+     * Replaces the combo box items and sets the enable/disable state according
+     * to the size of items: Enable if the items size &gt; 0. Also sets the
+     * combo box's selected item if the selectedIndex &gt;= 0.
+     * <p>
+     * Doesn't just reset the combo box's model, because there could be
+     * listeners on the combobox.
+     * 
+     * @param comboBox
+     *            the combo box to operate on. All of its items will be replaced by the
+     *            items in the given list.
+     * @param items
+     *            The new list of items that the combo box should have.
+     * @param selectedIndex
+     *            the index that should be selected after the combo box's contents have
+     *            been replaced.
+     */
 	private void setComboBoxStateAndItem(JComboBox comboBox, List items, int selectedIndex) {
 		comboBox.removeAllItems();
 		comboBox.setEnabled(false);
