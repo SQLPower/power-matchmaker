@@ -2,10 +2,14 @@ package ca.sqlpower.matchmaker;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 
 public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,MatchMakerObject> {
+
+	private static final Logger logger = Logger.getLogger(ColumnMergeRules.class);
 
 	public enum MergeActionType {
 		UNKNOWN, IGNORE, AUGMENT, CONCAT, MIN, MAX, SUM, AVG;
@@ -69,9 +73,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 	}
 	
-	private static final Logger logger = Logger.getLogger(ColumnMergeRules.class);
-	
-	private Long oid;
 	
 	private boolean updateAction;
 	
@@ -153,7 +154,11 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 
 	public SQLColumn getColumn() {
-		return cachedColumn.getColumn();
+		try {
+			return cachedColumn.getColumn();
+		} catch (ArchitectException e){
+			throw new ArchitectRuntimeException(e);
+		}
 	}
 
 

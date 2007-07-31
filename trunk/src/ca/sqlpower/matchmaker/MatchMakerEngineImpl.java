@@ -7,11 +7,12 @@ import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.DefaultParameters;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SPDataSource;
 
 /**
  * Sets up and runs the C Match Maker engine
@@ -29,7 +30,7 @@ public class MatchMakerEngineImpl extends AbstractCEngine {
 		context = session.getContext();
 	}
 
-	public void checkPreconditions() throws EngineSettingException {
+	public void checkPreconditions() throws EngineSettingException, ArchitectException {
 		MatchMakerSession session = getSession();
         Match match = getMatch();
         final MatchMakerSessionContext context = session.getContext();
