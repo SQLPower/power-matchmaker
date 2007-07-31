@@ -401,7 +401,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
         matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(
         		new DefaultCellEditor(new JComboBox(
-        				new ColumnComboBoxModel(sourceTable,group))));
+        				new ColumnComboBoxModel(sourceTable))));
 
         int colIndex = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
         TableColumn col = matchCriteriaTable.getColumnModel().getColumn(colIndex);
@@ -577,7 +577,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         //This code is called since saving the match, under some circumstances, fires structure change
         //and that causes all the renderers and cell editors to be set to null.  Therefore it is 
         //required to re-hook up all the editors and renderers as a workaround.
-        setupColumnEditors(group, match.getSourceTable());
+		setupColumnEditors(group, match.getSourceTable());
 
         handler.resetHasValidated();
 		return true;
