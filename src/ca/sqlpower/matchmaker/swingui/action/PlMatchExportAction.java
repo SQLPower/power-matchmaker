@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.DateFormat;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -12,7 +11,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import ca.sqlpower.architect.ArchitectUtils;
-import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchExportor;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
@@ -20,8 +18,6 @@ import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 
 public class PlMatchExportAction extends AbstractAction {
-
-    private final DateFormat df = new DateFormatAllowsNull();
 
     private final MatchMakerSwingSession swingSession;
 	private final JFrame owningFrame;
@@ -96,10 +92,14 @@ public class PlMatchExportAction extends AbstractAction {
         	PrintWriter out;
         	try {
         		out = new PrintWriter(export);
-        		MatchExportor exportor = new MatchExportor();
-        		exportor.save(match,out, "UTF-8");
-        	} catch (IOException e1) {
-        		throw new RuntimeException("IO Error during save", e1);
+        		MatchExportor exporter = new MatchExportor();
+        		exporter.save(match,out, "UTF-8");
+        	} catch (IOException ioe) {
+        		SPSUtils.showExceptionDialogNoReport(owningFrame, 
+        				"There was an exception while writing to the file " + export.getName(), ioe);
+			} catch (Exception ex) {
+				SPSUtils.showExceptionDialogNoReport(owningFrame, 
+        				"There was an exception while doing the export", ex);
 			}
         }
 
