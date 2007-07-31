@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 
@@ -49,22 +50,30 @@ public abstract class CachableColumn {
      * Attempts to resolve the given column name to a column of the owning
      * Match object's source table.  This functionality is provided for the benefit of the
      * ORM layer, which has difficulty using the business model.
+     * <p>
+     * 
      * 
      * @throws NullPointerException if any of the business objects required for
      * resolving the column object are missing
-     * @throws ArchitectException if getColumnByName fails
+     * @throws ArchitectRuntimeException if getColumnByName fails
      */
-    public SQLColumn getColumn() throws ArchitectException {
+    public SQLColumn getColumn() {
         if (cachedColumn != null) return cachedColumn;
         if (columnName == null) return null;
         
-        SQLTable st = getTable();
-        if (st == null) throw new NullPointerException("The table owner has no source table specified");
-        SQLColumn newColumn = st.getColumnByName(columnName);
-        
-        // did we actually make it here?
-        setColumn(newColumn);
-        return newColumn;
+        try {
+            SQLTable st = getTable();
+            if (st == null) throw new NullPointerException("The table owner has no source table specified");
+            SQLColumn newColumn = st.getColumnByName(columnName);
+
+            // did we actually make it here?
+            setColumn(newColumn);
+
+            return newColumn;
+            
+        } catch (ArchitectException ex) {
+            throw new ArchitectRuntimeException(ex);
+        }
     }
 
 	public abstract SQLTable getTable();
