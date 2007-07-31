@@ -5,15 +5,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import junit.framework.TestCase;
-
-import org.hibernate.HibernateException;
-
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.util.MockJDBCDriver;
-import ca.sqlpower.util.MockJDBCPreparedStatement;
-import ca.sqlpower.util.MockJDBCResultSet;
+import ca.sqlpower.testutil.MockJDBCDriver;
+import ca.sqlpower.testutil.MockJDBCPreparedStatement;
+import ca.sqlpower.testutil.MockJDBCResultSet;
 
 public class ListToSQLIndexTest extends TestCase {
 
@@ -94,7 +91,6 @@ public class ListToSQLIndexTest extends TestCase {
 		index2.addChild(c28);
 		index2.addChild(c29);		
 		userType = new ListToSQLIndex();
-		MockJDBCDriver driver = new MockJDBCDriver();
 		SPDataSource ds = new SPDataSource();
 		String URL = "jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm,yard,zoo&schemas.farm=cow,pig&schemas.yard=cat,robin&schemas.zoo=lion,giraffe&tables.farm.cow=moo&tables.farm.pig=oink&tables.yard.cat=meow&tables.yard.robin=tweet&tables.zoo.lion=roar&tables.zoo.giraffe=***,^%%";
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getCanonicalName());
@@ -117,7 +113,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}
 	}
 
-	public void testDeepCopy() {
+	public void testDeepCopy() throws Exception {
 		SQLIndex testCopy = (SQLIndex) userType.deepCopy(index);
 		assertEquals("The test copy should have the same number of children",
 						testCopy.getChildCount(), index.getChildCount());
@@ -136,7 +132,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}		
 	}
 	
-	public void testNullGetWithAllValidColumns() throws SQLException {
+	public void testNullGetWithAllValidColumns() throws Exception {
 
 		String[] data = new String[11];
 		data[0] = "pkName";
@@ -156,7 +152,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}
 	}
 	
-	public void testNullGetWithNullsInList() throws HibernateException, SQLException {
+	public void testNullGetWithNullsInList() throws Exception {
 		String[] data = new String[11];
 		data[0] = "pkName";
 		for (int i=1; i<11;i++){
@@ -206,7 +202,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}		
 	}
 		
-	public void testEquals() {
+	public void testEquals() throws Exception {
 		assertTrue("The two indices are not equal, but should be",userType.equals(index,index2));
 		assertTrue("The two indices are not equal, but should be",userType.equals(index,userType.deepCopy(index)));
 		String oldName = index2.getName();
