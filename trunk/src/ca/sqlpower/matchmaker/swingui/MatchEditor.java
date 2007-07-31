@@ -41,6 +41,7 @@ import javax.swing.text.DefaultStyledDocument;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -332,7 +333,11 @@ public class MatchEditor implements EditorPane {
 						"You have to select a source table and save before picking columns" );
 				return;
 			}
-			new MatchMakerIndexBuilder(match,swingSession);
+			try {
+				new MatchMakerIndexBuilder(match,swingSession);
+			} catch (Exception ex) {
+				SPSUtils.showExceptionDialogNoReport(panel, "An exception occured while picking columns", ex);
+			}
 		}};
 
     private void buildUI() {
