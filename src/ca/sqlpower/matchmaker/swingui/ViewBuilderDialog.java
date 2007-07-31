@@ -16,6 +16,7 @@ import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLTable;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -56,7 +57,7 @@ public class ViewBuilderDialog extends JDialog {
     private JButton okButton;
 
     //TODO: the UI has been built but the functionality has not been done yet
-    public ViewBuilderDialog(MatchMakerSwingSession swingSession, JFrame parent, SQLTable viewTable) {
+    public ViewBuilderDialog(MatchMakerSwingSession swingSession, JFrame parent, SQLTable viewTable) throws ArchitectException {
         super(parent);
         this.swingSession = swingSession;
         this.viewTable = viewTable;

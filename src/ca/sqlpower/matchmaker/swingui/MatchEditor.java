@@ -296,10 +296,15 @@ public class MatchEditor implements EditorPane {
 						"Error",
 						JOptionPane.ERROR_MESSAGE);
 			} else {
-				d = new ViewBuilderDialog(swingSession, getParentFrame(), t);
-				d.pack();
-				d.setSize(800, d.getPreferredSize().height);
-				d.setVisible(true);
+				try {
+					d = new ViewBuilderDialog(swingSession, getParentFrame(), t);
+					d.pack();
+					d.setSize(800, d.getPreferredSize().height);
+					d.setVisible(true);
+				} catch (ArchitectException ex) {
+                    SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+                    		"Couldn't create view builder", ex);
+                }
             }
 		}};
 
