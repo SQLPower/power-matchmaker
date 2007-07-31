@@ -66,7 +66,7 @@ public class StubMatchMakerSession implements MatchMakerSession{
         return null;
     }
 
-    public Connection getConnection() {
+    public Connection getConnection(){
         logger.debug("Stub call: StubMatchMakerSession.getConnection()");
         return null;
     }

@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -151,8 +152,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     /**
      * Returns true if the current resultTable of this match exists
      * in the session's database; false otherwise.
+     * @throws ArchitectException If there are problems accessing the session's database
      */
-	public static boolean doesResultTableExist(MatchMakerSession session, Match match) {
+	public static boolean doesResultTableExist(MatchMakerSession session, Match match) throws ArchitectException {
 		return session.tableExists(
 							match.getResultTableCatalog(),
 							match.getResultTableSchema(),
@@ -163,7 +165,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * Returns true if the source table of this match exists in the
 	 * session's database; false otherwise.
 	 */
-	public static boolean doesSourceTableExist(MatchMakerSession session, Match match) {
+	public static boolean doesSourceTableExist(MatchMakerSession session, Match match) throws ArchitectException {
 		return session.tableExists(
 				match.getSourceTableCatalog(),
 				match.getSourceTableSchema(),
@@ -187,9 +189,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * <b>or</b>
 	 * <p>
 	 * If the source table property of this match is not set yet.
+	 * @throws ArchitectException If there is trouble working with the
 	 * source table.
 	 */
-	public SQLTable createResultTable() {
+	public SQLTable createResultTable() throws ArchitectException {
 		SQLIndex si = getSourceTableIndex();
 
 		if (si == null) {
@@ -271,8 +274,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * @param si The index to iterate over for type, precision, scale of the
 	 * new columns.
 	 * @param baseName The base name of the new columns.
+	 * @throws ArchitectException
 	 */
-	private void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) {
+	private void addResultTableColumns(SQLTable t, SQLIndex si, String baseName) throws ArchitectException {
 		for (int i = 0; i < si.getChildCount(); i++) {
 			SQLColumn idxCol = ((Column) si.getChild(i)).getColumn();
 			logger.debug("addColumn: i="+i+" idx="+si.getChild(i)+" idxcol="+idxCol);
@@ -321,7 +325,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 * <b>or</b>
 	 * <p>session and sql database have not been setup for the match
 	 */
-	public boolean vertifyResultTableStruct() {
+	public boolean vertifyResultTableStruct() throws ArchitectException {
 
 		MatchMakerSession session = getSession();
 		if ( session == null ) {

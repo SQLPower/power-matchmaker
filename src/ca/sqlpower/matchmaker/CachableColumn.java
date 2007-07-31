@@ -1,5 +1,6 @@
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 
@@ -51,8 +52,9 @@ public abstract class CachableColumn {
      * 
      * @throws NullPointerException if any of the business objects required for
      * resolving the column object are missing
+     * @throws ArchitectException if getColumnByName fails
      */
-    public SQLColumn getColumn() {
+    public SQLColumn getColumn() throws ArchitectException {
         if (cachedColumn != null) return cachedColumn;
         if (columnName == null) return null;
         

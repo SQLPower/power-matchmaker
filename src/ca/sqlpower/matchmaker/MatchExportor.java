@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.architect.SQLIndex;
@@ -16,7 +17,7 @@ public class MatchExportor {
 	private final static Logger logger = Logger.getLogger(MatchExportor.class);
 	private final DateFormat df = new DateFormatAllowsNull();
 
-	public void save(Match match, PrintWriter out, String encoding) {
+	public void save(Match match, PrintWriter out, String encoding) throws ArchitectException {
 
 		XMLHelper xmlHelper = new XMLHelper();
         xmlHelper.indent = 0;

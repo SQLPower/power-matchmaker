@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.event.EngineEvent;
 import ca.sqlpower.matchmaker.event.EngineListener;
 import ca.sqlpower.matchmaker.event.EngineEvent.EngineEventType;
@@ -27,7 +28,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	private Thread processMonitor;
 	private Integer engineExitCode;
 	
-	public abstract void checkPreconditions() throws EngineSettingException; 
+	public abstract void checkPreconditions() throws EngineSettingException, ArchitectException; 
 	
 		
 	protected Match getMatch() {
@@ -81,7 +82,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	/* (non-Javadoc)
 	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#run()
 	 */
-	public void run() throws EngineSettingException, IOException {
+	public void run() throws EngineSettingException, IOException, ArchitectException {
 		checkPreconditions();
 		if (proc!=null) throw new IllegalStateException("Engine has already been run");
 		String commandLine = createCommandLine(session,match,false);

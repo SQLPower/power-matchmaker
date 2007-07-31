@@ -3,11 +3,12 @@ package ca.sqlpower.matchmaker;
 import java.sql.Connection;
 import java.util.Date;
 
-import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.Version;
 
 /**
@@ -161,18 +162,18 @@ public interface MatchMakerSession {
      * @return SQLTable if found or null if not
      * session's database
      */
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName);
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException;
     
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
      */
-    public boolean tableExists(String catalog, String schema, String tableName);
+    public boolean tableExists(String catalog, String schema, String tableName) throws ArchitectException;
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
      */
-    public boolean tableExists(SQLTable table);
+    public boolean tableExists(SQLTable table) throws ArchitectException;
     
     /**
      * return true if the current user of session can select the sql table

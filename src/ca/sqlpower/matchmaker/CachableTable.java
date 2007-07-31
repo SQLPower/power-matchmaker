@@ -2,6 +2,8 @@ package ca.sqlpower.matchmaker;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
@@ -120,25 +122,29 @@ public class CachableTable {
         	return null;
         }
 
-        logger.debug("Match.getSourceTable("+catalogName+","+schemaName+","+tableName+")");
-        logger.debug("mmo.parent="+mmo.getParent());
-        SQLDatabase db = mmo.getSession().getDatabase();
-        if (ArchitectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
-        	SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
-        	if (table == null) {
-        		Match.logger.debug("     Not found.  Adding simulated...");
-        		table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
-        	} else {
-        		Match.logger.debug("     Found!");
-        	}
-        	cachedTable = table;
-        	return cachedTable;
-        } else {
-        	mmo.getSession().handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
-        			" in Match "+mmo.getName()+ " is not compatible with the "+db.getName() +" database. " +
-        	"The table selection has been reset to nothing");
-        	return null;
-        }
+        try {
+			logger.debug("Match.getSourceTable("+catalogName+","+schemaName+","+tableName+")");
+			logger.debug("mmo.parent="+mmo.getParent());
+			SQLDatabase db = mmo.getSession().getDatabase();
+			if (ArchitectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
+				SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
+				if (table == null) {
+					Match.logger.debug("     Not found.  Adding simulated...");
+					table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
+				} else {
+					Match.logger.debug("     Found!");
+				}
+				cachedTable = table;
+				return cachedTable;
+			} else {
+				mmo.getSession().handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
+						" in Match "+mmo.getName()+ " is not compatible with the "+db.getName() +" database. " +
+				"The table selection has been reset to nothing");
+				return null;
+			}
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
+		}
     }
 
     /**

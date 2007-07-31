@@ -1,7 +1,6 @@
 package ca.sqlpower.matchmaker.util;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 
 import junit.framework.TestCase;
@@ -177,7 +176,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}
 	}
 	
-	public void testNullSafeSetAtFirstIndex() throws SQLException{
+	public void testNullSafeSetAtFirstIndex() throws Exception{
 		MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(11);
 		userType.nullSafeSet(statements, index, 1);
         statements.checkAllParametersSet();
@@ -189,7 +188,7 @@ public class ListToSQLIndexTest extends TestCase {
 		}		
 	}
 	
-	public void testNullSafeSetAtIndexOtherThanFirst() throws SQLException{
+	public void testNullSafeSetAtIndexOtherThanFirst() throws Exception{
 		MockJDBCPreparedStatement statements = new MockJDBCPreparedStatement(18);
 		final int startPosition = 5;
         userType.nullSafeSet(statements, index, startPosition);

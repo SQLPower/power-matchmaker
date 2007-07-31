@@ -19,6 +19,7 @@ import junit.framework.TestCase;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
@@ -57,7 +58,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		super.tearDown();
 	}
 
-	protected abstract C getTarget();
+	protected abstract C getTarget() throws ArchitectException;
 
 	public void testDuplicate() throws Exception {
 		MatchMakerObject mmo = getTarget();
@@ -208,7 +209,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 
 	public void testAllSettersGenerateEvents()
 	throws IllegalArgumentException, IllegalAccessException,
-	InvocationTargetException, NoSuchMethodException, IOException {
+	InvocationTargetException, NoSuchMethodException, IOException,
+	ArchitectException {
 
 		MatchMakerObject mmo = getTarget();
 
@@ -442,14 +444,14 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
      * The child list should never be null for any Match Maker Object, even if
      * that object's type is childless.
      */
-    public void testChildrenNotNull() {
+    public void testChildrenNotNull() throws ArchitectException {
         assertNotNull(getTarget().getChildren());
     }
 
     /**
      * All objects should return false for .equals(null), not true or throw an exception.
      */
-    public void testNullEquality(){
+    public void testNullEquality() throws ArchitectException {
         assertFalse("equals(null) has to work, and return false",getTarget().equals(null));
     }
 

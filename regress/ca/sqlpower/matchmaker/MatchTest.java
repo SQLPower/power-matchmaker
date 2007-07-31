@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLColumn;
@@ -86,7 +87,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
     }
     
-    public void testCreateResultTable() {
+    public void testCreateResultTable() throws ArchitectException {
     	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
@@ -165,7 +166,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	assertEquals(i, idx.getChildCount()*8 + 7); // sanity check for the test
     }
     
-    public void testCreateResultTableIndex() {
+    public void testCreateResultTableIndex() throws ArchitectException {
     	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
@@ -347,7 +348,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		assertFalse(Match.doesSourceTableExist(session, match));
 	}
 	
-	public void testVertifyResultTableSS() throws SQLException, InstantiationException, IllegalAccessException {
+	public void testVertifyResultTableSS() throws SQLException, InstantiationException,
+											IllegalAccessException, ArchitectException {
 		
 		SPDataSource ds = DBTestUtil.getSqlServerDS();
 		SQLDatabase db = new SQLDatabase(ds);
@@ -453,7 +455,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		}
     }
 	
-	public void testVertifyResultTableORA() throws SQLException, InstantiationException, IllegalAccessException {
+	public void testVertifyResultTableORA() throws SQLException, InstantiationException,
+											IllegalAccessException, ArchitectException {
 		
 		SPDataSource ds = DBTestUtil.getOracleDS();
 		SQLDatabase db = new SQLDatabase(ds);
