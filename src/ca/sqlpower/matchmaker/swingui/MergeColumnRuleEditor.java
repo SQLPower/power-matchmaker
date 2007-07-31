@@ -27,6 +27,7 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
@@ -35,6 +36,7 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.util.EditableJTable;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -204,7 +206,11 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 	private Action deriveAction = new AbstractAction("Derive Collision Criteria") {
 		public void actionPerformed(ActionEvent e) {
-			ruleTableModel.deriveFromTable();
+			try {
+				ruleTableModel.deriveFromTable();
+			} catch (Exception ex) {
+				SPSUtils.showExceptionDialogNoReport(panel, "An exception occured while deriving collison criteria", ex);
+			}
 		}
 	};
 	
@@ -332,7 +338,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 				fireTableDataChanged();
 			}
 		}
-		public void deriveFromTable() {
+		public void deriveFromTable() throws ArchitectException {
 			List<SQLColumn> columns = new ArrayList<SQLColumn>(
 					((SQLTable) chooser.getTableComboBox().getSelectedItem()).getColumns()); 
 			for (SQLColumn column : columns) {
