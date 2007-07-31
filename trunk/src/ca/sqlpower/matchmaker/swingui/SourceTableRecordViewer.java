@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.SourceTableRecord;
@@ -24,13 +25,13 @@ public class SourceTableRecordViewer {
     private static final Logger logger = Logger.getLogger(SourceTableRecordViewer.class);
     
     public SourceTableRecordViewer(SourceTableRecord view, SourceTableRecord master, JButton masterButton, 
-            JButton noMatchButton) throws SQLException {
+            JButton noMatchButton) throws ArchitectException, SQLException {
         this.panel = createPanel(view, master, masterButton, noMatchButton);
     }
  
     // FIXME: get rid of throws clause when source table records are pre-populated by a join
     private final JPanel createPanel(SourceTableRecord view, SourceTableRecord master, JButton masterButton,
-            JButton noMatchButton) throws SQLException {
+            JButton noMatchButton) throws ArchitectException, SQLException {
         JPanel panel = new JPanel(new GridLayout(0, 1));
         panel.setBackground(Color.WHITE);
                 
@@ -81,7 +82,7 @@ public class SourceTableRecordViewer {
         return panel;
     }
         
-    public static JPanel headerPanel(Match match) {
+    public static JPanel headerPanel(Match match) throws ArchitectException {
         JPanel panel = new JPanel(new GridLayout(0,1));
         //Add a empty label because the first row is the master button
         //and the header should allign with the proper field
