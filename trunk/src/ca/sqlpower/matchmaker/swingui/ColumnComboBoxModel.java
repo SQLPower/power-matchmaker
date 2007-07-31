@@ -6,6 +6,7 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
@@ -15,25 +16,26 @@ public class ColumnComboBoxModel implements ComboBoxModel {
 
 	private List<SQLColumn> columnNames = new ArrayList<SQLColumn>();
 
+	// XXX: This field doesn't look like it's being used anymore. Delete it?
 	private MatchMakerCriteriaGroup group;
 
 	private SQLColumn selected;
 
 	public ColumnComboBoxModel(SQLTable table,
-			MatchMakerCriteriaGroup group) {
+			MatchMakerCriteriaGroup group) throws ArchitectException {
 		super();
 		ColumnComboBoxModelImpl(table, group);
 
 	}
 
-	public ColumnComboBoxModel(SQLTable table) {
+	public ColumnComboBoxModel(SQLTable table) throws ArchitectException {
 		super();
 		ColumnComboBoxModelImpl(table, null);
 
 	}
 
 	private void ColumnComboBoxModelImpl(SQLTable table,
-			MatchMakerCriteriaGroup group) {
+			MatchMakerCriteriaGroup group) throws ArchitectException {
 		this.group = group;
 		setTable(table);
 	}
@@ -81,7 +83,7 @@ public class ColumnComboBoxModel implements ComboBoxModel {
 		return table;
 	}
 
-	public void setTable(SQLTable table) {
+	public void setTable(SQLTable table) throws ArchitectException {
 		if (this.table != table) {
 			this.table = table;
 			if (table != null) {
