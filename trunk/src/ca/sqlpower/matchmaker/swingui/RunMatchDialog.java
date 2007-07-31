@@ -42,7 +42,6 @@ import javax.swing.text.StyleConstants;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.swingui.SaveDocument;
 import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
@@ -472,7 +471,7 @@ public class RunMatchDialog extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
-							new SaveDocument(
+							SPSUtils.saveDocument(
 									d,
 									engineOutputDoc,
 									(FileExtensionFilter) SPSUtils.TEXT_FILE_FILTER);
@@ -649,7 +648,7 @@ public class RunMatchDialog extends JDialog {
 								"Unknown Document Error", e1,
 								new MatchMakerQFAFactory());
 					}
-					new SaveDocument(d, cmdDoc,
+					SPSUtils.saveDocument(d, cmdDoc,
 							(FileExtensionFilter) SPSUtils.BATCH_FILE_FILTER);
 				}
 			};
