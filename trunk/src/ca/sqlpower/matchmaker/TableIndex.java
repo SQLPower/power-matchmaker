@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker;
 
 import java.util.List;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
@@ -24,7 +25,7 @@ public class TableIndex {
      * column names to actual SQLColumn references on the source table,
      * and then returns it!
      */
-    public SQLIndex getTableIndex() {
+    public SQLIndex getTableIndex() throws ArchitectException {
     	if (table.getSourceTable() != null && sourceTableIndex != null) {
     		sourceTableIndex.setParent(table.getSourceTable().getIndicesFolder());
     		resolveTableIndexColumns(sourceTableIndex);
@@ -37,7 +38,7 @@ public class TableIndex {
      * sourceTableColumns.  The UserType for SQLIndex can't do this because
      * the source table isn't populated yet when it's invoked.
      */
-    private void resolveTableIndexColumns(SQLIndex si) {
+    private void resolveTableIndexColumns(SQLIndex si) throws ArchitectException {
     	SQLTable st = table.getSourceTable();
     	for (SQLIndex.Column col : (List<SQLIndex.Column>) si.getChildren()) {
     		SQLColumn actualColumn = st.getColumnByName(col.getName());
@@ -57,7 +58,7 @@ public class TableIndex {
 	 * we check if the index is user created by if the parent
 	 * is null or dosn't contain the sql index.
 	 */
-	public boolean isUserCreated() {
+	public boolean isUserCreated() throws ArchitectException {
 		if (getTableIndex() == null) return false;
 		if (getTableIndex().getParent() == null ){ 
 			return true;
