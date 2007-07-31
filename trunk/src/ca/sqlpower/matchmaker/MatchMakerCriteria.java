@@ -2,8 +2,6 @@ package ca.sqlpower.matchmaker;
 
 import java.math.BigDecimal;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 
@@ -31,6 +29,7 @@ public class MatchMakerCriteria
     /**
      * Unique ID for this instance. Required by ORM tools.
      */
+    @SuppressWarnings("unused")
     private Long oid;
 
     /**
@@ -419,11 +418,7 @@ public class MatchMakerCriteria
 		MatchMakerCriteria criteria = new MatchMakerCriteria();
 		criteria.setAllowNullInd(isAllowNullInd());
 		criteria.setCaseSensitiveInd(isCaseSensitiveInd());
-		try {	
-			criteria.setColumn(getColumn());
-		} catch (ArchitectException e) {
-			throw new ArchitectRuntimeException(e);
-		}
+		criteria.setColumn(getColumn());
 		criteria.setColumnName(getColumnName());
 		criteria.setCountWordsInd(isCountWordsInd());
 		criteria.setFirstNChar(getFirstNChar());
@@ -450,7 +445,7 @@ public class MatchMakerCriteria
 		return criteria;
 	}
 
-	public SQLColumn getColumn() throws ArchitectException {
+	public SQLColumn getColumn() {
 		return cachableTable.getColumn();
 	}
 

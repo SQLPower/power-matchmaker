@@ -38,6 +38,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -180,7 +181,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 		public void actionPerformed(ActionEvent arg0) {
 			MatchMakerCriteria criteria = new MatchMakerCriteria();
 			group.addChild(criteria);
-			criteria.addMatchMakerListener(new MatchMakerListener() {
+			criteria.addMatchMakerListener(new MatchMakerListener<MatchMakerCriteria,MatchMakerObject>() {
 
 				public void mmChildrenInserted(MatchMakerEvent evt) {
 				}
