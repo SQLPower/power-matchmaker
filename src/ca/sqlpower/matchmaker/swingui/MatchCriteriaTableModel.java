@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.table.AbstractTableModel;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
@@ -12,7 +11,6 @@ import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.util.EditableJTable;
-import ca.sqlpower.swingui.SPSUtils;
 
 public class MatchCriteriaTableModel extends AbstractTableModel implements CleanupTableModel {
 
@@ -205,11 +203,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 			MatchMakerCriteria criteria) {
 		switch (column) {	
 		case COLUMN:
-			try {
-			    return criteria.getColumn();
-			} catch (ArchitectException e) {
-                SPSUtils.showExceptionDialogNoReport("Couldn't determine column for criteria", e);
-			}
+			return criteria.getColumn();
 		case ALLOW_NULL:             
 			return criteria.isAllowNullInd();
 		case CASE_SENSITIVE_IND:             
