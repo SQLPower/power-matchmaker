@@ -59,22 +59,25 @@ public class PlMatchImportAction extends AbstractAction {
 			BufferedInputStream in = null;
 			try {
 				in = new BufferedInputStream(new FileInputStream(importFile));
-				MatchImportor importor = new MatchImportor();
+				MatchImportor importer = new MatchImportor();
 				match = new Match();
 				match.setSession(swingSession);
-				importor.load(match,in);
+				importer.load(match,in);
 			} catch (FileNotFoundException e1) {
-				SPSUtils.showExceptionDialogNoReport(
-						"File Not Found", e1 );
+				SPSUtils.showExceptionDialogNoReport(owningFrame,
+						"The file " + importFile.getName() + " cannot be found", e1 );
 			} catch (IOException e1) {
-				SPSUtils.showExceptionDialogNoReport(
-						"IO Error", e1 );
+				SPSUtils.showExceptionDialogNoReport(owningFrame,
+						"There was an IO exception while reading the file " + importFile.getName(), e1 );
 			} catch (ParserConfigurationException e1) {
-				SPSUtils.showExceptionDialogNoReport(
-						"Parser Error", e1 );
+				SPSUtils.showExceptionDialogNoReport(owningFrame,
+						"There is an error with the XML parser configuration", e1 );
 			} catch (SAXException e1) {
-				SPSUtils.showExceptionDialogNoReport(
-						"XML Format Error", e1 );
+				SPSUtils.showExceptionDialogNoReport(owningFrame, 
+						"There was an error while parsing the XML import file", e1 );
+			} catch (Exception e1) {
+				SPSUtils.showExceptionDialogNoReport(owningFrame, 
+						"There was an exception while doing the import", e1);
 			}
 
 			if ( match == null ) {
