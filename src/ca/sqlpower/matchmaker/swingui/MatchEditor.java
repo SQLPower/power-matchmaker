@@ -1019,7 +1019,7 @@ public class MatchEditor implements EditorPane {
 							SPSUtils.showExceptionDialogNoReport("Unexcepted Document Error",e1);
 						}
 				    }
-					new SaveDocument(swingSession.getFrame(),
+					SPSUtils.saveDocument(swingSession.getFrame(),
 							doc,
 							(FileExtensionFilter)SPSUtils.SQL_FILE_FILTER);
 				}
