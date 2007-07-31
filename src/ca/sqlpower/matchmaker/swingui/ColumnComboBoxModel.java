@@ -7,59 +7,58 @@ import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 
+/**
+ * A combo box data model that treats the columns of a SQLTable as
+ * combo box list entries.
+ * <P>
+ * TODO this class does not currently listen to its SQLTable for changes
+ * to the columns, but it should!
+ */
 public class ColumnComboBoxModel implements ComboBoxModel {
-	private SQLTable table;
+    
+	private final SQLTable table;
 
-	private List<SQLColumn> columnNames = new ArrayList<SQLColumn>();
-
-	// XXX: This field doesn't look like it's being used anymore. Delete it?
-	private MatchMakerCriteriaGroup group;
+	private List<SQLColumn> columns = new ArrayList<SQLColumn>();
 
 	private SQLColumn selected;
 
-	public ColumnComboBoxModel(SQLTable table,
-			MatchMakerCriteriaGroup group) throws ArchitectException {
+    /**
+     * Creates a combo box model for the given table.  This combo box
+     * model will only work with this one table for its whole life.
+     * 
+     * @param table The table to use
+     * @throws ArchitectRuntimeException If the table column populate fails
+     */
+	public ColumnComboBoxModel(SQLTable table) {
 		super();
-		ColumnComboBoxModelImpl(table, group);
-
-	}
-
-	public ColumnComboBoxModel(SQLTable table) throws ArchitectException {
-		super();
-		ColumnComboBoxModelImpl(table, null);
-
-	}
-
-	private void ColumnComboBoxModelImpl(SQLTable table,
-			MatchMakerCriteriaGroup group) throws ArchitectException {
-		this.group = group;
-		setTable(table);
+        if (table == null) throw new NullPointerException("Null table not allowed");
+        this.table = table;
+        try {
+            for (SQLColumn c : table.getColumns()) {
+                columns.add(c);
+            }
+        } catch (ArchitectException ex) {
+            throw new ArchitectRuntimeException(ex);
+        }
 	}
 
 	public String getTableName() {
 		return table.getName();
 	}
 
-	public Object getElementAt(int index) {
-		List<SQLColumn> curElements = getAllUsableElement();
-		return curElements.get(index);
-
+	public SQLColumn getElementAt(int index) {
+		return columns.get(index);
 	}
 
 	public int getSize() {
-		List<SQLColumn> curElements = getAllUsableElement();
-		return curElements.size();
+		return columns.size();
 	}
-	private List<SQLColumn> getAllUsableElement() {
-		List<SQLColumn> curElements = new ArrayList<SQLColumn>(columnNames);
-		return curElements;
-	}
-
-	public Object getSelectedItem() {
+	
+    public SQLColumn getSelectedItem() {
 		return selected;
 	}
 
@@ -81,18 +80,6 @@ public class ColumnComboBoxModel implements ComboBoxModel {
 
 	public SQLTable getTable() {
 		return table;
-	}
-
-	public void setTable(SQLTable table) throws ArchitectException {
-		if (this.table != table) {
-			this.table = table;
-			if (table != null) {
-				columnNames.clear();
-				for (SQLColumn c : table.getColumns()) {
-					columnNames.add(c);
-				}
-			}
-		}
 	}
 
 }
