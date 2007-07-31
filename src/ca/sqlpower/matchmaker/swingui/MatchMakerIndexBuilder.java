@@ -19,6 +19,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
@@ -104,7 +105,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		this.tableModified = modified;
 	}
 
-	public MatchMakerIndexBuilder(Match match, MatchMakerSwingSession swingSession) {
+	public MatchMakerIndexBuilder(Match match, MatchMakerSwingSession swingSession) throws ArchitectException {
 		this.match = match;
 		this.swingSession = swingSession;
 
@@ -235,7 +236,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 
 		private List<CustomTableColumn> candidateColumns
 							= new ArrayList<CustomTableColumn>();
-		public IndexColumnTableModel(SQLTable sqlTable, SQLIndex oldIndex) {
+		public IndexColumnTableModel(SQLTable sqlTable, SQLIndex oldIndex) throws ArchitectException {
 
 			for ( SQLColumn column : sqlTable.getColumns()) {
                 int positionInIndex = oldIndex.getIndexOfChildByName(column.getName());
@@ -363,10 +364,16 @@ public class MatchMakerIndexBuilder implements EditorPane {
         }
 
 		SQLIndex index = new SQLIndex(indexName.getText(),true,null,IndexType.OTHER,null);
-		for ( CustomTableColumn column : selectedColumns ) {
-			index.addChild(index.new Column(column.getSQLColumn(),false,false));
+		try {
+			for ( CustomTableColumn column : selectedColumns ) {
+				index.addChild(index.new Column(column.getSQLColumn(),false,false));
+			}
+			logger.debug("Index columns after save: "+index.getChildren());
+		} catch (ArchitectException e) {
+			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+				            "Unexpected error when adding Column to the Index",
+				            e);
 		}
-		logger.debug("Index columns after save: "+index.getChildren());
 
 		match.setSourceTableIndex(index);
 		return true;
