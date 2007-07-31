@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
@@ -55,10 +56,11 @@ public interface MatchMakerSessionContext {
      * @throws IOException If any bootstrap init files are missing or unreadable.
      * @throws PLSchemaException If the version of the schema is not up to date or is missing
      * @throws VersionFormatException If the format of the version number is not in the form x.y.z
+     * @throws ArchitectException 
      */
     public MatchMakerSession createSession(SPDataSource ds,
             String username, String password) throws PLSecurityException,
-            SQLException, IOException, PLSchemaException, VersionFormatException;
+            SQLException, IOException, PLSchemaException, VersionFormatException, ArchitectException;
 
     /**
      * Returns the PlDotIni object that manages this context's list of data sources.
