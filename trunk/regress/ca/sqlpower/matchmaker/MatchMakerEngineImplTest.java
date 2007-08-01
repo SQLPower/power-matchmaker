@@ -11,6 +11,7 @@ import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.event.EngineEvent;
 import ca.sqlpower.matchmaker.event.EngineListener;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.TestingDefParamsObject;
 
 public class MatchMakerEngineImplTest extends TestCase {
@@ -236,19 +237,19 @@ public class MatchMakerEngineImplTest extends TestCase {
 	}
 	
 	public void testHasOdbcDsnNull(){
-		SPDataSource ds = new SPDataSource();
+		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.setOdbcDsn(null);
 		assertFalse("An empty dsn should be considered invalid",MatchMakerEngineImpl.hasODBCDSN(ds));
 	}
 	public void testHasOdbcDsnEmpty(){
-		SPDataSource ds = new SPDataSource();
+		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.setOdbcDsn("");
 		assertFalse("An empty dsn should be considered invalid",MatchMakerEngineImpl.hasODBCDSN(ds));
 	}
 	// Because we can't check to see if this is a valid odbc
 	// dsn we have to go on length of string
 	public void testHasOdbcDsnvalid(){
-		SPDataSource ds = new SPDataSource();
+		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.setOdbcDsn("Valid");
 		
 		assertTrue("Dsn should be considered valid",MatchMakerEngineImpl.hasODBCDSN(ds));
