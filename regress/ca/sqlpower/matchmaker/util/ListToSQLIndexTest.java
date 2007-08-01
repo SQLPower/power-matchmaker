@@ -6,6 +6,7 @@ import java.sql.Statement;
 import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLIndex.Column;
+import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.testutil.MockJDBCDriver;
 import ca.sqlpower.testutil.MockJDBCPreparedStatement;
@@ -90,7 +91,7 @@ public class ListToSQLIndexTest extends TestCase {
 		index2.addChild(c28);
 		index2.addChild(c29);		
 		userType = new ListToSQLIndex();
-		SPDataSource ds = new SPDataSource();
+		SPDataSource ds = new SPDataSource(new PlDotIni());
 		String URL = "jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm,yard,zoo&schemas.farm=cow,pig&schemas.yard=cat,robin&schemas.zoo=lion,giraffe&tables.farm.cow=moo&tables.farm.pig=oink&tables.yard.cat=meow&tables.yard.robin=tweet&tables.zoo.lion=roar&tables.zoo.giraffe=***,^%%";
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getCanonicalName());
 		ds.setName("a");

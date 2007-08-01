@@ -12,6 +12,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingConnection;
 
@@ -78,7 +79,7 @@ public class DBTestUtil {
     	final String ssPassword = "TIhR2Es0";
     	final String ssUrl ="jdbc:microsoft:sqlserver://deepthought:1433;SelectMethod=cursor;DatabaseName=plautotest";
     	
-    	SPDataSource sqlServerDS = new SPDataSource();
+    	SPDataSource sqlServerDS = new SPDataSource(new PlDotIni());
     	sqlServerDS.getParentType().setJdbcDriver("com.microsoft.jdbc.sqlserver.SQLServerDriver");
     	sqlServerDS.setName("Test SQLServer");
     	sqlServerDS.setUser(ssUserName);
@@ -101,7 +102,7 @@ public class DBTestUtil {
         final String oraclePassword = "cowmoo";
         final String oracleUrl = "jdbc:oracle:thin:@arthur:1521:test";
         
-        SPDataSource oracleDataSource = new SPDataSource();
+        SPDataSource oracleDataSource = new SPDataSource(new PlDotIni());
         oracleDataSource.getParentType().setJdbcDriver("oracle.jdbc.driver.OracleDriver");
         oracleDataSource.setName("Test Oracle");
     
@@ -122,7 +123,7 @@ public class DBTestUtil {
         final String hsqlPassword = "";
         final String hsqlUrl = "jdbc:hsqldb:mem:aname";
         
-        SPDataSource hsqlDataSource = new SPDataSource();
+        SPDataSource hsqlDataSource = new SPDataSource(new PlDotIni());
         hsqlDataSource.getParentType().setJdbcDriver("org.hsqldb.jdbcDriver");
         hsqlDataSource.setName("In-memory HSQLDB");
     

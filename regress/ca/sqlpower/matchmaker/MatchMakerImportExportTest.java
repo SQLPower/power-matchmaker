@@ -15,7 +15,9 @@ import org.xml.sax.SAXException;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.testutil.MockJDBCDriver;
 
 /**
  * note:
@@ -415,8 +417,8 @@ public class MatchMakerImportExportTest extends TestCase {
 	}
 
 	public void testSaveSourceTable() throws IOException, ParserConfigurationException, SAXException, ArchitectException {
-		SPDataSource ds = new SPDataSource();
-	      ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
+		SPDataSource ds = new SPDataSource(new PlDotIni());
+	      ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 	      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 	      ds.setUser("n/a");
 	      ds.setPass("n/a");
@@ -442,8 +444,8 @@ public class MatchMakerImportExportTest extends TestCase {
 	}
 
 	public void testSaveResultTable() throws IOException, ParserConfigurationException, SAXException, ArchitectException {
-		SPDataSource ds = new SPDataSource();
-	      ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
+		SPDataSource ds = new SPDataSource(new PlDotIni());
+	      ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 	      ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 	      ds.setUser("n/a");
 	      ds.setPass("n/a");

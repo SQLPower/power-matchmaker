@@ -8,7 +8,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLCatalog;
@@ -22,6 +21,9 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
+import ca.sqlpower.sql.PlDotIni;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.testutil.MockJDBCDriver;
 
 public class MatchTest extends MatchMakerTestCase<Match> {
 
@@ -234,8 +236,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     }
     
 	public void testResultTableExistsWhenTrue() throws Exception {
-		SPDataSource ds = new SPDataSource();
-		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
+		SPDataSource ds = new SPDataSource(new PlDotIni());
+		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
@@ -254,8 +256,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	 * to the Match object.
 	 */
 	public void testResultTableExistsWhenFalse() throws Exception {
-		SPDataSource ds = new SPDataSource();
-		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
+		SPDataSource ds = new SPDataSource(new PlDotIni());
+		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
@@ -277,8 +279,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	 */
 	public void testResultTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
-		SPDataSource ds = new SPDataSource();
-		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
+		SPDataSource ds = new SPDataSource(new PlDotIni());
+		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
@@ -292,8 +294,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	}
 	
 	public void testSourceTableExistsWhenTrue() throws Exception {
-		SPDataSource ds = new SPDataSource();
-		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
+		SPDataSource ds = new SPDataSource(new PlDotIni());
+		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
@@ -311,8 +313,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	 * to the Match object.
 	 */
 	public void testSourceTableExistsWhenFalse() throws Exception {
-		SPDataSource ds = new SPDataSource();
-		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
+		SPDataSource ds = new SPDataSource(new PlDotIni());
+		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds
 				.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
@@ -334,8 +336,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 	 */
 	public void testSourceTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
-		SPDataSource ds = new SPDataSource();
-		ds.getParentType().setJdbcDriver("ca.sqlpower.util.MockJDBCDriver");
+		SPDataSource ds = new SPDataSource(new PlDotIni());
+		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getName());
 		ds.setUrl("jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Sc" +
 				"hema&catalogs=farm&schemas.farm=cow&tables.farm.cow=moo");
 		ds.setUser("n/a");
