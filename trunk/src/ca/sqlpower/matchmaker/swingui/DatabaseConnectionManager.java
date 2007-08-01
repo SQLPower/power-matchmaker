@@ -22,12 +22,10 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.swingui.action.NewDatabaseConnectionAction;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.DatabaseListChangeEvent;
 import ca.sqlpower.sql.DatabaseListChangeListener;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.ButtonStackBuilder;
@@ -38,20 +36,24 @@ import com.jgoodies.forms.layout.FormLayout;
 
 
 /**
+ * The database connection manager is a GUI facility for managing a DataSourceCollection.
+ * It allows users to add, edit, and delete database connection specs.
+ * <p>
  * You won't need to create one of these on your own.
  * Use {@link SwingSessionContextImpl#showDatabaseConnectionManager()}.
- *
  */
-public class DatabaseConnectionManager
-implements DBConnectionCallBack, DBConnectionUniDialog {
+public class DatabaseConnectionManager {
 
 	private static Logger logger = Logger.getLogger(DatabaseConnectionManager.class);
 
 	/**
 	 * The session context that this dialog is managing connection properties for.
 	 */
-	private final SwingSessionContextImpl sessionContext;
-	private final NewDatabaseConnectionAction newDatabaseConnectionAction;
+	private final SwingSessionContext sessionContext;
+    
+    /**
+     * The GUI panel.  Lives inside the dialog {@link #d}.
+     */
     private final JPanel panel;
 
     /**
@@ -72,15 +74,6 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		}
 	};
 
-	private final Action auxLoginAction = new AbstractAction("Aux Login"){
-
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-            JOptionPane.showMessageDialog(d,
-            		"This action is not implemented yet.");
-		}
-	};
-
 	private final Action jdbcDriversAction = new AbstractAction("JDBC Drivers"){
 
 		public void actionPerformed(ActionEvent e) {
@@ -90,63 +83,48 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		}
 	};
 
-	private final Action editDatabaseConnectionAction = new AbstractAction("Edit") {
+    private final Action newDatabaseConnectionAction = new AbstractAction("New...") {
+
+        public void actionPerformed(ActionEvent e) {
+            final SPDataSource ds = new SPDataSource(getPlDotIni());
+            Runnable onOk = new Runnable() {
+                public void run() {
+                    plDotIni.addDataSource(ds);
+                }
+            };
+            MMSUtils.showDbcsDialog(d, ds, onOk);
+        }
+    };
+
+	private final Action editDatabaseConnectionAction = new AbstractAction("Edit...") {
 
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = dsTable.getSelectedRow();
-			if ( selectedRow == -1 ) {
+			if (selectedRow == -1) {
 				return;
 			}
-			if (getNewConnectionDialog() != null && getNewConnectionDialog().isVisible()) {
-				getNewConnectionDialog().requestFocus();
-				return;
-			}
-			SPDataSource dbcs = (SPDataSource) dsTable.getValueAt(selectedRow,0);
-
-			final DBCSPanel dbcsPanel = new DBCSPanel();
-			dbcsPanel.setDbcs(dbcs);
-
-            // This is super-ugly.  The DBCSOkAction should rot in hell.
-            // I don't know what it's for, so I'm invoking it anyway before
-            // saving the pl.ini file
-			final DBCSOkAction dbcsOkAction = new DBCSOkAction(
-                    dbcsPanel,
-			        false,
-			        sessionContext.getPlDotIni());
-			dbcsOkAction.setConnectionSelectionCallBack(DatabaseConnectionManager.this);
-            dbcsOkAction.setConnectionDialog(d);
-			Action okAction = new AbstractAction() {
-                public void actionPerformed(ActionEvent e) {
+			final SPDataSource ds = (SPDataSource) dsTable.getValueAt(selectedRow,0);
+			
+            Runnable onOk = new Runnable() {
+                public void run() {
                     try {
-                        dbcsOkAction.actionPerformed(e);
-                        plDotIni.write();
+                        for (int i = 0; i < dsTable.getRowCount(); i++) {
+                            if (dsTable.getValueAt(i, 0) == ds) {
+                                dsTable.setRowSelectionInterval(i, i);
+                                dsTable.scrollRectToVisible(dsTable.getCellRect(i, 0, true));
+                                break;
+                            }
+                        }
                     } catch (Exception ex) {
-                        SPSUtils.showExceptionDialogNoReport("Could not save PL.INI file", ex);
+                        SPSUtils.showExceptionDialogNoReport(
+                                d,
+                                "Unexpected exception while editing a database connection.",
+                                ex);
                     }
                 }
             };
 
-
-			Action cancelAction = new AbstractAction() {
-				public void actionPerformed(ActionEvent evt) {
-					dbcsPanel.discardChanges();
-					setNewConnectionDialog(null);
-				}
-			};
-
-			JDialog dialog = DataEntryPanelBuilder.createArchitectPanelDialog(
-					dbcsPanel,
-					d,
-					"Edit Database Connection",
-					DataEntryPanelBuilder.OK_BUTTON_LABEL,
-					okAction, cancelAction);
-
-			setNewConnectionDialog(dialog);
-
-            dialog.pack();
-			dialog.setLocationRelativeTo(d);
-			dialog.setVisible(true);
-			logger.debug("Editting existing DBCS on panel: "+dbcs);
+            MMSUtils.showDbcsDialog(d, ds, onOk);
 		}
 	};
 
@@ -154,7 +132,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = dsTable.getSelectedRow();
-			if ( selectedRow == -1 ) {
+			if (selectedRow == -1) {
 				return;
 			}
 			SPDataSource dbcs = (SPDataSource) dsTable.getValueAt(selectedRow,0);
@@ -163,7 +141,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 					"Do you want to delete this database connection? ["+dbcs.getName()+"]",
 					"Remove",
 					JOptionPane.YES_NO_OPTION);
-			if ( option != JOptionPane.YES_OPTION ) {
+			if (option != JOptionPane.YES_OPTION) {
 				return;
 			}
 			plDotIni.removeDataSource(dbcs);
@@ -174,7 +152,7 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = dsTable.getSelectedRow();
-			if ( selectedRow == -1 ) {
+			if (selectedRow == -1) {
 				return;
 			}
 			SPDataSource dbcs = (SPDataSource) dsTable.getValueAt(selectedRow,0);
@@ -183,27 +161,29 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		}
 	};
 
-	private final Action closeAction = new AbstractAction() {
+	private final Action closeAction = new AbstractAction("Close") {
 		public void actionPerformed(ActionEvent e) {
-			if ( getNewConnectionDialog() != null && getNewConnectionDialog().isVisible() )
-				return;
 			d.dispose();
 		}
 	};
 
-	private JDialog newConnectionDialog;
+    /**
+     * The table that contains the list of all data sources in the
+     * user's collection of data sources.
+     */
 	private JTable dsTable;
-	private DataSourceCollection plDotIni;
+    
+    /**
+     * The data source collection of the session context this connection
+     * manager belongs to.
+     */
+	private final DataSourceCollection plDotIni;
 
 	public DatabaseConnectionManager(SwingSessionContextImpl context) {
         this.sessionContext = context;
         this.plDotIni = context.getPlDotIni();
-        newDatabaseConnectionAction = new NewDatabaseConnectionAction(sessionContext, "Add");
-        newDatabaseConnectionAction.setCallBack(this);
-        newDatabaseConnectionAction.setParent(this);
 		panel = createPanel();
 	}
-
 
     /**
      * Makes sure this database connection manager is visible,
@@ -235,7 +215,6 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
         }
 
         currentOwner = owner;
-        newDatabaseConnectionAction.setComponentParent(d);
         d.setTitle("Database Connection Manager");
         d.getContentPane().add(panel);
         d.pack();
@@ -259,9 +238,9 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 		pb = new PanelBuilder(layout,p);
 		pb.setDefaultDialogBorder();
 
-		pb.add(new JLabel("Available Database Connection:"), cc.xy(2, 2));
+		pb.add(new JLabel("Available Database Connections:"), cc.xy(2, 2));
 
-		TableModel tm = new ConnectionTableModel(this.plDotIni);
+		TableModel tm = new ConnectionTableModel(plDotIni);
 		dsTable = new JTable(tm);
 		dsTable.setTableHeader(null);
 		dsTable.setShowGrid(false);
@@ -274,40 +253,24 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 		ButtonStackBuilder bsb = new ButtonStackBuilder();
 
-		JButton newButton = new JButton(newDatabaseConnectionAction);
-		newButton.setText("New");
-		bsb.addGridded(newButton);
+		bsb.addGridded(new JButton(newDatabaseConnectionAction));
 		bsb.addRelatedGap();
-		JButton editButton = new JButton(editDatabaseConnectionAction);
-		editButton.setText("Edit");
-		bsb.addGridded(editButton);
+		bsb.addGridded(new JButton(editDatabaseConnectionAction));
 		bsb.addRelatedGap();
-		JButton removeButton = new JButton(removeDatabaseConnectionAction);
-		removeButton.setText("Remove");
-		bsb.addGridded(removeButton);
+		bsb.addGridded(new JButton(removeDatabaseConnectionAction));
 
 		bsb.addUnrelatedGap();
 		JButton jdbcDriversButton = new JButton(jdbcDriversAction);
 		bsb.addGridded(jdbcDriversButton);
 
 		bsb.addUnrelatedGap();
-		JButton loginButton = new JButton(loginDatabaseConnectionAction);
-		loginButton.setText("Login");
-		bsb.addGridded(loginButton);
-		bsb.addRelatedGap();
-		JButton auxLoginButton = new JButton(auxLoginAction);
-		auxLoginButton.setText("Aux Login");
-		bsb.addGridded(auxLoginButton);
+		bsb.addGridded(new JButton(loginDatabaseConnectionAction));
 
 		bsb.addUnrelatedGap();
-		JButton helpButton = new JButton(helpAction);
-		helpButton.setText("Help");
-		bsb.addGridded(helpButton);
-		bsb.addRelatedGap();
+		bsb.addGridded(new JButton(helpAction));
 
-		JButton cancelButton = new JButton(closeAction);
-		cancelButton.setText("Close");
-		bsb.addGridded(cancelButton);
+        bsb.addUnrelatedGap();
+		bsb.addGridded(new JButton(closeAction));
 
 		pb.add(bsb.getPanel(), cc.xy(4,4));
 		return pb.getPanel();
@@ -326,8 +289,8 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 					public void databaseRemoved(DatabaseListChangeEvent e) {
 						fireTableDataChanged();
-					}});
-
+					}
+				});
 			}
 		}
 
@@ -360,30 +323,8 @@ implements DBConnectionCallBack, DBConnectionUniDialog {
 
 	}
 
-	public void selectDBConnection(SPDataSource ds) {
-		for ( int i=0; i<dsTable.getRowCount(); i++ ) {
-			if ( dsTable.getValueAt(i,0) == ds ) {
-				dsTable.setRowSelectionInterval(i,i);
-				dsTable.scrollRectToVisible(dsTable.getCellRect(i,0,true));
-				break;
-			}
-		}
-	}
-
-    public synchronized JDialog getNewConnectionDialog() {
-        return newConnectionDialog;
-    }
-
-    public synchronized void setNewConnectionDialog(JDialog d) {
-        newConnectionDialog = d;
-    }
-
 	public DataSourceCollection getPlDotIni() {
 		return plDotIni;
-	}
-
-	public void setPlDotIni(DataSourceCollection plDotIni) {
-		this.plDotIni = plDotIni;
 	}
 
 	private class DSTableMouseListener implements MouseListener {
