@@ -2,8 +2,15 @@ package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
+/**
+ * A collection of static methods that help with common operations
+ * in the core MatchMaker API.
+ */
 public class MatchMakerUtils {
 
+    /**
+     * You can't make instances of this class.
+     */
 	private MatchMakerUtils() {
 	}
 
