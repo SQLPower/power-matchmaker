@@ -222,7 +222,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action runMatchAction = new AbstractAction("Run Match") {
 
 		public void actionPerformed(ActionEvent e) {
-			Match match = ArchitectUtils.getTreeObject(getTree(),Match.class);
+			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
 			if ( match == null )
 				return;
 		    RunMatchDialog r = new RunMatchDialog(MatchMakerSwingSession.this, match, frame);
@@ -255,7 +255,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action showMatchStatisticInfoAction = new AbstractAction("Statistics") {
 
 		public void actionPerformed(ActionEvent e) {
-			Match match = ArchitectUtils.getTreeObject(getTree(),Match.class);
+			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
 			if ( match == null )
 				return;
 
@@ -365,7 +365,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
-		newMatchAction = new NewMatchAction(this, "New Match", null);
+		newMatchAction = new NewMatchAction(this, "New Match");
         JMenuBar menuBar = new JMenuBar();
 
 		//Settingup
@@ -500,7 +500,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			Match match = ArchitectUtils.getTreeObject(getTree(),Match.class);
+			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
 			if (match == null) return;
 
 			try {
