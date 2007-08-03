@@ -512,6 +512,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		}
 	}
 
+    /**
+     * A window listener which calls {@link #exit()}
+     */
 	class MatchMakerFrameWindowListener extends WindowAdapter {
 		@Override
 		public void windowClosing(WindowEvent e) {
@@ -529,12 +532,16 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	}
 
 	/**
-	 * Calling this method quits the application and terminates the
-	 * JVM.
+	 * Calling this method checks if there are any remaining SPSwingWorker threads
+	 * registered with this session. If there are, then it warns the user to wait 
+	 * for the threads to close first before exiting again. Otherwise, it quits 
+	 * the application and terminates the JVM.
 	 */
 	public void exit() {
-		saveSettings();
-	    System.exit(0);
+		if (close()){
+			saveSettings();
+			System.exit(0);
+		}
 	}
 
     /**
@@ -944,23 +951,27 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * running SPSwingWorker threads. If there are any remaining SPSwingWorker
 	 * threads, the GUI will warn the user that there are threads still
 	 * waiting to cancel, and to try closing again after the threads are finished.
+	 * @return Returns false if there are SPSwingWorker threads remaining.
+	 * 	In this case, the application should not close yet.
+	 * 	Otherwise, returns true.
 	 */
-	public void close() {
+	public boolean close() {
         // If we still have ArchitectSwingWorker threads running, 
         // tell them to cancel, and then ask the user to try again later.
         // Note that it is not safe to force threads to stop, so we will
         // have to wait until the threads stop themselves.
-        if (swingWorkers.size() > 0) {
+		if (swingWorkers.size() > 0) {
             for (SPSwingWorker currentWorker : swingWorkers) {
                 currentWorker.setCancelled(true);
             }
             
             JOptionPane.showMessageDialog(frame,
-                    "There are still unfinished tasks running on this project.\n" +
-                    "Please wait for them to finish, and then try again.",
+                    "There are still unfinished tasks running in the MatchMaker.\n" +
+                    "Please wait for them to finish, and then try closing again.",
                     "Warning", JOptionPane.WARNING_MESSAGE);
-            return;
+            return false;
         }
+		return true;
 	}
 
 }
