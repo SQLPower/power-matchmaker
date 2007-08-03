@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -52,7 +53,16 @@ public class LoginDialog implements SwingWorkerRegistry {
     private class LoginAction extends MonitorableWorker implements ActionListener {
 
         private boolean loginWasSuccessful = false;
+        
+        /**
+         * Indicates that the login process has begun.
+         */
         private boolean started;
+        
+        /**
+         * Indicated that the login process has terminated (with either
+         * success or failure).
+         */
         private boolean finished;
 
         public LoginAction(SwingWorkerRegistry registry) {
@@ -86,10 +96,13 @@ public class LoginDialog implements SwingWorkerRegistry {
             try {
                 session = sessionContext.createSession(dbSource,
                         userID.getText(), new String(password.getPassword()));
-                ProgressWatcher progressBarUpdater =
-                    new ProgressWatcher(progressBar, this);
+                
+                progressBar.setVisible(true);
+                new ProgressWatcher(progressBar, this);
 
+                new Thread(this).start();
                 // doStuff() will get invoked soon on the new thread
+                
             } catch (PLSchemaException ex) {
                 SPSUtils.showExceptionDialogNoReport(frame,
                         "PLSchema Exception",
@@ -107,6 +120,7 @@ public class LoginDialog implements SwingWorkerRegistry {
         @Override
         /** Called (once) by run() in superclass */
         public void doStuff() throws Exception {
+        	logger.debug("LoginAction.doStuff() was invoked!");
             loginWasSuccessful = false;
             started = true;
             session.getDatabase().populate();
@@ -116,6 +130,7 @@ public class LoginDialog implements SwingWorkerRegistry {
 
         @Override
         public void cleanup() {
+        	logger.debug("LoginAction.cleanup() starting");
             try {
                 if (getDoStuffException() != null) {
                     SPSUtils.showExceptionDialogNoReport(frame, "Login failed", getDoStuffException());
@@ -124,6 +139,7 @@ public class LoginDialog implements SwingWorkerRegistry {
                         session.getDatabase() != null &&
                         session.getDatabase().isPopulated() &&
                         loginWasSuccessful) {
+                	logger.debug("It looks like the login worked.");
                     sessionContext.setLastLoginDataSource(dbSource);
                     session.showGUI();
                     frame.dispose();
@@ -198,7 +214,14 @@ public class LoginDialog implements SwingWorkerRegistry {
 
     private ActionListener loginAction = new LoginAction(this);
 
-    private Set<SPSwingWorker> swingWorkers;
+    /**
+     * This action is an SPSwingWorker, which means it needs to register itself
+     * somewhere.  Normally, the registry would be on the session object, but
+     * in this case we're in the process of creating a session, so that won't
+     * work.  Instead, we just provide our own registry and register this worker
+     * with itself.
+     */
+    private final Set<SPSwingWorker> swingWorkers = new HashSet<SPSwingWorker>();
     
 	private ListDataListener connListener = new ListDataListener() {
 
@@ -343,11 +366,17 @@ public class LoginDialog implements SwingWorkerRegistry {
 		connectionModel.setSelectedItem(dbSource);
 	}
 
+	/**
+	 * Workaround for not yet having a session to register with.
+	 */
 	public void registerSwingWorker(SPSwingWorker worker) {
 		swingWorkers.add(worker);
 	}
 
+	/**
+	 * Workaround for not yet having a session to register with.
+	 */
 	public void removeSwingWorker(SPSwingWorker worker) {
-		swingWorkers.add(worker);
+		swingWorkers.remove(worker);
 	}
 }
