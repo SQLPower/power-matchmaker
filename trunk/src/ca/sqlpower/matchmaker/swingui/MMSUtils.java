@@ -45,8 +45,8 @@ public class MMSUtils {
      *            situation, just pass in null for this parameter.
      */
     public static JDialog showDbcsDialog(
-            Window parentWindow,
-            SPDataSource dataSource,
+            final Window parentWindow,
+            final SPDataSource dataSource,
             final Runnable onAccept) {
         
         final DataEntryPanel dbcsPanel = new MMDataSourcePanel(dataSource);
@@ -55,6 +55,11 @@ public class MMSUtils {
             public void actionPerformed(ActionEvent e) {
                 if (dbcsPanel.applyChanges()) {
                     if (onAccept != null) {
+                    	try {
+                    		dataSource.getParentCollection().write();
+                    	} catch (Exception ex) {
+                    		MMSUtils.showExceptionDialog(parentWindow, "Couldn't save connection information", ex);
+                    	}
                         onAccept.run();
                     }
                 }
