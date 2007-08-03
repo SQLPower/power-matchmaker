@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -24,12 +25,14 @@ import javax.swing.event.ListDataListener;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
-import ca.sqlpower.architect.swingui.Populator;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
+import ca.sqlpower.swingui.MonitorableWorker;
+import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SPSwingWorker;
+import ca.sqlpower.swingui.SwingWorkerRegistry;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -37,14 +40,23 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class LoginDialog {
+/**
+ * This class appears to contain the GUI for a login dialog for logging
+ * into a specific database selected from a list of database connections
+ * in a combobox.
+ */
+public class LoginDialog implements SwingWorkerRegistry {
 
 	private static Logger logger = Logger.getLogger(LoginDialog.class);
 
-    private class LoginAction extends Populator implements ActionListener {
+    private class LoginAction extends MonitorableWorker implements ActionListener {
 
         boolean loginWasSuccessful = false;
 
+        public LoginAction(SwingWorkerRegistry registry) {
+        	super(registry);
+        }
+        
         public void actionPerformed(ActionEvent e) {
             logger.debug("LoginAction.actionPerformed(): disabling login button");
             loginButton.setEnabled(false);
@@ -72,12 +84,9 @@ public class LoginDialog {
             try {
                 session = sessionContext.createSession(dbSource,
                         userID.getText(), new String(password.getPassword()));
-                ListerProgressBarUpdater progressBarUpdater =
-                    new ListerProgressBarUpdater(progressBar, this);
-                new javax.swing.Timer(100, progressBarUpdater).start();
+                ProgressWatcher progressBarUpdater =
+                    new ProgressWatcher(progressBar, this);
 
-                progressMonitor = session.getDatabase().getProgressMonitor();
-                new Thread(this).start();
                 // doStuff() will get invoked soon on the new thread
             } catch (PLSchemaException ex) {
                 SPSUtils.showExceptionDialogNoReport(frame,
@@ -105,7 +114,7 @@ public class LoginDialog {
         public void cleanup() {
             try {
                 if (getDoStuffException() != null) {
-                    SPSUtils.showExceptionDialog("Login failed", getDoStuffException());
+                    SPSUtils.showExceptionDialogNoReport(frame, "Login failed", getDoStuffException());
                 } else if (
                         session != null &&
                         session.getDatabase() != null &&
@@ -122,6 +131,28 @@ public class LoginDialog {
                 loginButton.setEnabled(true);
             }
         }
+
+		public Integer getJobSize() {
+			return null;
+		}
+
+		public String getMessage() {
+			return "Logging in...";
+		}
+
+		public int getProgress() {
+			return 0;
+		}
+
+		public boolean hasStarted() {
+			// FIXME
+			return false;
+		}
+
+		public boolean isFinished() {
+			// FIXME
+			return false;
+		}
     }
 
     private final Action cancelAction = new AbstractAction("Cancel") {
@@ -163,8 +194,10 @@ public class LoginDialog {
 	private ConnectionComboBoxModel connectionModel;
 	private JComponent panel;
 
-    private ActionListener loginAction = new LoginAction();
+    private ActionListener loginAction = new LoginAction(this);
 
+    private Set<SPSwingWorker> swingWorkers;
+    
 	private ListDataListener connListener = new ListDataListener() {
 
 		public void intervalAdded(ListDataEvent e) {
@@ -308,4 +341,11 @@ public class LoginDialog {
 		connectionModel.setSelectedItem(dbSource);
 	}
 
+	public void registerSwingWorker(SPSwingWorker worker) {
+		swingWorkers.add(worker);
+	}
+
+	public void removeSwingWorker(SPSwingWorker worker) {
+		swingWorkers.add(worker);
+	}
 }

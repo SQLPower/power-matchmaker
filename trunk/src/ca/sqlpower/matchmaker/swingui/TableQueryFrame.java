@@ -31,11 +31,12 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.architect.swingui.ListerProgressBarUpdater;
-import ca.sqlpower.architect.swingui.Populator;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
+import ca.sqlpower.swingui.MonitorableWorker;
+import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SwingWorkerRegistry;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -89,11 +90,15 @@ public class TableQueryFrame extends JFrame {
 	/**
 	 * Finds all the children of a database and puts them in the GUI.
 	 */
-	public class TablePopulator extends Populator implements
+	public class TablePopulator extends MonitorableWorker implements
 	ActionListener {
 
 		private SQLDatabase db;
 
+		public TablePopulator(SwingWorkerRegistry registry) {
+			super(registry);
+		}
+		 
 		/**
 		 * Checks the datasource selected in the databaseDropdown, and
 		 * starts a worker thread to read its contents if it exists.
@@ -106,7 +111,6 @@ public class TableQueryFrame extends JFrame {
 			db = getDatabase();
 
 			if (db != null) {
-				progressMonitor = db.getProgressMonitor();
 				new Thread(this).start();
 			} else {
 				tableDropdown.removeAllItems();
@@ -121,8 +125,8 @@ public class TableQueryFrame extends JFrame {
 		@Override
 		public void doStuff() /*throws Exception*/ {
 
-			ListerProgressBarUpdater progressBarUpdater =
-				new ListerProgressBarUpdater(progressBar, this);
+			ProgressWatcher progressBarUpdater =
+				new ProgressWatcher(progressBar, this);
 			new javax.swing.Timer(100, progressBarUpdater).start();
 			db.populate();
 		}
@@ -150,6 +154,26 @@ public class TableQueryFrame extends JFrame {
 				tableDropdown.addItem(table);
 			}
 			tableDropdown.setEnabled(true);
+		}
+
+		public Integer getJobSize() {
+			return null;
+		}
+
+		public String getMessage() {
+			return null;
+		}
+
+		public int getProgress() {
+			return 0;
+		}
+
+		public boolean hasStarted() {
+			return false;
+		}
+
+		public boolean isFinished() {
+			return false;
 		}
 	}
 
@@ -264,7 +288,7 @@ public class TableQueryFrame extends JFrame {
 		ConnectionComboBoxModel connectionModel =
             new ConnectionComboBoxModel(swingSession.getContext().getPlDotIni());
 		dbDropdown = new JComboBox(connectionModel);
-		dbDropdown.addActionListener(new TablePopulator());
+		dbDropdown.addActionListener(new TablePopulator(swingSession));
 
 
 		rowLimit = new JTextField(5);
