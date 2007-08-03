@@ -94,7 +94,9 @@ public class TableQueryFrame extends JFrame {
 	ActionListener {
 
 		private SQLDatabase db;
-
+		private boolean started;
+		private boolean finished;
+		
 		public TablePopulator(SwingWorkerRegistry registry) {
 			super(registry);
 		}
@@ -127,8 +129,9 @@ public class TableQueryFrame extends JFrame {
 
 			ProgressWatcher progressBarUpdater =
 				new ProgressWatcher(progressBar, this);
-			new javax.swing.Timer(100, progressBarUpdater).start();
+			started = true;
 			db.populate();
+			finished = true;
 		}
 
 		/**
@@ -161,7 +164,7 @@ public class TableQueryFrame extends JFrame {
 		}
 
 		public String getMessage() {
-			return null;
+			return "Populating table...";
 		}
 
 		public int getProgress() {
@@ -169,11 +172,11 @@ public class TableQueryFrame extends JFrame {
 		}
 
 		public boolean hasStarted() {
-			return false;
+			return started;
 		}
 
 		public boolean isFinished() {
-			return false;
+			return finished;
 		}
 	}
 
