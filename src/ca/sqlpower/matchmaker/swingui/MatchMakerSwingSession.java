@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -70,13 +71,15 @@ import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SPSwingWorker;
+import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.util.Version;
 
 /**
- * The Main Window for the Architect Application; contains a main() method that is
+ * The Main Window for the MatchMaker Application; contains a main() method that is
  * the conventional way to start the application running.
  */
-public class MatchMakerSwingSession implements MatchMakerSession {
+public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerRegistry {
 
 	private static Logger logger = Logger.getLogger(MatchMakerSwingSession.class);
 
@@ -137,6 +140,13 @@ public class MatchMakerSwingSession implements MatchMakerSession {
      */
     private TreePath lastTreePath;
 
+    /**
+     * A collection of SPSwingWorkers that are associated with this session.
+     * The session keeps track of them in order to cancel their threads
+     * when the session closes.
+     */
+    private Set<SPSwingWorker> swingWorkers;
+    
     private Action userPrefsAction = new AbstractAction("User Preferences...") {
 		public void actionPerformed(ActionEvent e) {
 			JOptionPane.showMessageDialog(MatchMakerSwingSession.this.frame,
@@ -620,8 +630,7 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 		    	try {
-		    		SwingSessionContext context = new SwingSessionContextImpl(ArchitectSessionImpl.getInstance(),
-                                                            PreferencesManager.getRootNode());
+		    		SwingSessionContext context = new SwingSessionContextImpl(PreferencesManager.getRootNode());
                     context.showLoginDialog(null);
 		    	} catch (Exception ex) {
 		    		SPSUtils.showExceptionDialogNoReport("Couldn't start application!", ex);
@@ -918,6 +927,40 @@ public class MatchMakerSwingSession implements MatchMakerSession {
       */
 	public boolean canSelectTable(SQLTable table) {
 	    return sessionImpl.canSelectTable(table);
+	}
+
+	// Documentation inherited from interface
+	public void registerSwingWorker(SPSwingWorker worker) {
+		swingWorkers.add(worker);
+	}
+
+	// Documentation inherited from interface
+	public void removeSwingWorker(SPSwingWorker worker) {
+		swingWorkers.remove(worker);
+	}
+
+	/**
+	 * Call this method to close the database connection and cancel
+	 * running SPSwingWorker threads. If there are any remaining SPSwingWorker
+	 * threads, the GUI will warn the user that there are threads still
+	 * waiting to cancel, and to try closing again after the threads are finished.
+	 */
+	public void close() {
+        // If we still have ArchitectSwingWorker threads running, 
+        // tell them to cancel, and then ask the user to try again later.
+        // Note that it is not safe to force threads to stop, so we will
+        // have to wait until the threads stop themselves.
+        if (swingWorkers.size() > 0) {
+            for (SPSwingWorker currentWorker : swingWorkers) {
+                currentWorker.setCancelled(true);
+            }
+            
+            JOptionPane.showMessageDialog(frame,
+                    "There are still unfinished tasks running on this project.\n" +
+                    "Please wait for them to finish, and then try again.",
+                    "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 	}
 
 }
