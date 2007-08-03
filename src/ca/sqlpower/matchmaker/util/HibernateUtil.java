@@ -3,9 +3,11 @@ package ca.sqlpower.matchmaker.util;
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
 
+import ca.sqlpower.sql.SPDataSourceType;
+
 
 /**
- * Some Utils to encapsulate common Hibernate operations.
+ * A collection of static methods that make it easier to work with Hibernate.
  */
 public class HibernateUtil {
 
@@ -21,24 +23,28 @@ public class HibernateUtil {
         throw new UnsupportedOperationException("You have to use MatchMakerSession now.");
     }
 
-	public static String plDbType2Dialect(String plType){
-		if (plType == null ) throw new IllegalArgumentException("No dialect for a null database");
-		String dbString = plType.toLowerCase();
+    /**
+     * This method shouldn't exist. We should put hibernate dialect information in the
+     * data source type section of the PL.INI, and not do any cross-referencing.
+     */
+	public static String guessHibernateDialect(SPDataSourceType dsType){
+		if (dsType == null ) throw new IllegalArgumentException("No dialect for a null database type");
+		String dbString = dsType.getName().toLowerCase();
 
-		if( dbString.equals("oracle")) {
+		if( dbString.startsWith("oracle")) {
 			return "org.hibernate.dialect.OracleDialect";
-		} else if (dbString.equals("sql server")) {
+		} else if (dbString.contains("sql server")) {
 			return "org.hibernate.dialect.SQLServerDialect";
-		} else if (dbString.equals("db2")) {
+		} else if (dbString.contains("db2")) {
 			return "org.hibernate.dialect.DB2Dialect";
-		} else if (dbString.equals("postgres")) {
+		} else if (dbString.startsWith("postgres")) {
 			return "org.hibernate.dialect.PostgreSQLDialect";
 		} else if (dbString.equals("hsqldb")) {
 			return "org.hibernate.dialect.HSQLDialect";
-		} else if (dbString.equals("derby")) {
+		} else if (dbString.contains("derby")) {
 			return "org.hibernate.dialect.DerbyDialect";
 		} else {
-			return "org.hibernate.dialect.DerbyDialect";
+			throw new IllegalArgumentException("I don't know the hibernate dialect for " + dbString);
 		}
 
 	}
