@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -145,7 +146,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * The session keeps track of them in order to cancel their threads
      * when the session closes.
      */
-    private Set<SPSwingWorker> swingWorkers;
+    private final Set<SPSwingWorker> swingWorkers = new HashSet<SPSwingWorker>();
     
     private Action userPrefsAction = new AbstractAction("User Preferences...") {
 		public void actionPerformed(ActionEvent e) {
