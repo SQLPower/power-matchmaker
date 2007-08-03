@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
@@ -40,7 +41,6 @@ import javax.swing.tree.TreeSelectionModel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectSessionImpl;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
@@ -410,7 +410,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		toolsMenu.setMnemonic('t');
 		toolsMenu.add(tableQueryAction);
 		toolsMenu.add(new EditTranslateAction(this, frame));
-        toolsMenu.add(new SQLRunnerAction(frame));
+		// We will add this back in if we need the SQLRunner later
+        //toolsMenu.add(new SQLRunnerAction(frame));
 		menuBar.add(toolsMenu);
 
         JMenu windowMenu = new JMenu("Window");
@@ -640,7 +641,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		    		SwingSessionContext context = new SwingSessionContextImpl(PreferencesManager.getRootNode());
                     context.showLoginDialog(null);
 		    	} catch (Exception ex) {
-		    		SPSUtils.showExceptionDialogNoReport("Couldn't start application!", ex);
+		    		JFrame f = new JFrame("Can't Start MatchMaker");
+		    		f.setSize(new Dimension(0, 0));
+		    		f.setVisible(true);
+		    		SPSUtils.showExceptionDialogNoReport(f, "Couldn't start application!", ex);
                     System.exit(0);
 		    	}
 		    }
@@ -860,6 +864,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * XXX Push this into the match maker session interface
 	 * @param mmo
 	 */
+	@SuppressWarnings("unchecked")
 	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
 		if (mmo.getParent() != null) {
 			
@@ -893,6 +898,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param objectToMove the object you want to move
 	 * @param destination the new parent object
 	 */
+	@SuppressWarnings("unchecked")
 	public void move(MatchMakerObject objectToMove, MatchMakerObject destination) {
 		if (!destination.allowsChildren()) throw new IllegalArgumentException("The destination object "+destination+" Does not support children");
 
