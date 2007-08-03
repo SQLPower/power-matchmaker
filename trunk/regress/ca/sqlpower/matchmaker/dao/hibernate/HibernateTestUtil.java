@@ -33,7 +33,7 @@ public class HibernateTestUtil {
 		cfg.setProperty("hibernate.default_schema", ds.getPlSchema());
 		cfg.setProperty("hibernate.show_sql", "true");
 		cfg.setProperty("hibernate.jdbc.batch_size", "0");
-		cfg.setProperty("hibernate.dialect", HibernateUtil.plDbType2Dialect(ds.getPlDbType()));
+		cfg.setProperty("hibernate.dialect", HibernateUtil.guessHibernateDialect(ds.getParentType()));
 		
 		// Create the SessionFactory from hibernate.cfg.xml
 		sessionFactory = cfg.buildSessionFactory();

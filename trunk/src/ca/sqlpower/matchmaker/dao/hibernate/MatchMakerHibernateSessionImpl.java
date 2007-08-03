@@ -287,7 +287,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
         // last-minute configuration overrides for stuff that can only be known at runtime
         cfg.setProperty("hibernate.default_schema",ds.getPlSchema());
-        cfg.setProperty("hibernate.dialect", HibernateUtil.plDbType2Dialect(ds.getPlDbType()));
+        cfg.setProperty("hibernate.dialect", HibernateUtil.guessHibernateDialect(ds.getParentType()));
         cfg.setProperty(
                 Environment.CONNECTION_PROVIDER,
                 MatchMakerHibernateSessionConnectionProvider.class.getName());
