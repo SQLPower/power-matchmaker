@@ -25,7 +25,6 @@ import javax.swing.table.TableColumnModel;
 
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.RowSetModel;
-import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.DateTableCellRenderer;
 import ca.sqlpower.swingui.table.IndicatorCellRenderer;
 import ca.sqlpower.swingui.table.NumberAndIntegerTableCellRenderer;
@@ -341,7 +340,7 @@ public class MatchStatisticsPanel extends JPanel {
 						new MatchGroupStatisticTableModel(rsmGroup));
 				setMatchGroupStatisticTableCellRenderer(matchGroupTable);
 			} catch (SQLException e1) {
-				SPSUtils.showExceptionDialog(MatchStatisticsPanel.this, "SQL Error", e1, new MatchMakerQFAFactory());
+				MMSUtils.showExceptionDialog(MatchStatisticsPanel.this, "SQL Error", e1);
 			}
         }
     }

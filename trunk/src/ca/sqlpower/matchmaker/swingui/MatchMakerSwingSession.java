@@ -490,16 +490,14 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 
 		public void actionPerformed(ActionEvent e) {
 			Match match = ArchitectUtils.getTreeObject(getTree(),Match.class);
-			if ( match == null )
-				return;
+			if (match == null) return;
 
-			MatchEditor me;
-			me = new MatchEditor(MatchMakerSwingSession.this,
-					match,(PlFolder<Match>)match.getParent());
 			try {
-				setCurrentEditorComponent(me);
-			} catch (SQLException ex) {
-				throw new RuntimeException(ex);
+				setCurrentEditorComponent(
+					new MatchEditor(MatchMakerSwingSession.this,
+						match,(PlFolder<Match>)match.getParent()));
+			} catch (Exception ex) {
+				MMSUtils.showExceptionDialog(frame, "Couldn't create match editor", ex);
 			}
 		}
 	}
@@ -612,8 +610,6 @@ public class MatchMakerSwingSession implements MatchMakerSession {
 	 * Creates a MatchMakerSwingSession and shows the login prompt. This method
 	 * is an acceptable way to launch the Swing GUI of the MatchMaker
 	 * application.
-	 *
-	 * XXX should move to LoginDialog or its own class, I think
 	 */
 	public static void main(String args[]) {
 

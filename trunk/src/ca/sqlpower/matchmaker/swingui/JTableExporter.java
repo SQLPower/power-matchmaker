@@ -73,8 +73,7 @@ public class JTableExporter extends JFileChooser {
 				throw new IllegalStateException("Unsupported File Type!");
 			}
 		} catch (IOException e1) {
-			SPSUtils.showExceptionDialog(owner,
-					"Save file Error!", e1, new MatchMakerQFAFactory());
+			MMSUtils.showExceptionDialog(owner, "Save file Error!", e1);
 		}
 	}
 

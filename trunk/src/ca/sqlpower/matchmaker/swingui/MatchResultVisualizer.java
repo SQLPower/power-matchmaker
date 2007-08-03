@@ -144,7 +144,7 @@ public class MatchResultVisualizer implements EditorPane {
                     recordViewerPanel.add(recordViewer);
                 }
             } catch (Exception ex) {
-                SPSUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex, new MatchMakerQFAFactory());
+                MMSUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex);
             }
             recordViewerPanel.revalidate();
         }     

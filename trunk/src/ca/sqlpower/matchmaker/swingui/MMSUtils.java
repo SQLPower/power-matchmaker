@@ -1,18 +1,29 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 
+import org.apache.log4j.Logger;
+
+import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.architect.ArchitectVersion;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPDataSourcePanel;
+import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.util.ExceptionReport;
 
 public class MMSUtils {
+	
+	private static final Logger logger = Logger.getLogger(MMSUtils.class);
+	
     /**
      * Pops up a dialog box that lets the user inspect and change the given db's
      * connection spec. This is very similar to the showDbcsDialog in the Architect's
@@ -67,5 +78,32 @@ public class MMSUtils {
     
         d.setVisible(true);
         return d;
+    }
+    
+    /**
+	 * Displays a dialog box with the given message and exception, allowing the
+	 * user to examine the stack trace.
+	 * <p>
+	 * Also attempts to post an anonymous description of the error to a central
+	 * reporting server.
+	 * 
+	 * @param parent
+	 *            The parent window to the error window that this method makes
+	 * @param message
+	 *            A user visible string that should describe the problem
+	 * @param t
+	 *            The exception that warranted a dialog
+	 */
+    public static void showExceptionDialog(Component parent, String message, Throwable t) {
+    	try {
+    		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION, ArchitectUtils.getAppUptime(), "MatchMaker");
+    		logger.debug(report.toString());
+    		report.send();
+    	} catch (Throwable seriousProblem) {
+    		logger.error("Couldn't generate and send exception report!  Note that this is not the primary problem; it's a side effect of trying to report the real problem.", seriousProblem);
+    		JOptionPane.showMessageDialog(null, "Error reporting failed: "+seriousProblem.getMessage()+"\nAdditional information is available in the application log.");
+    	} finally {
+    		SPSUtils.showExceptionDialogNoReport(parent, message, t);
+    	}
     }
 }
