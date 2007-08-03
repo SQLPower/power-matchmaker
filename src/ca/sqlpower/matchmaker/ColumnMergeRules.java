@@ -71,6 +71,11 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 	}
 	
+	/**
+	 * This object's unique ID.  Required by Hibernate.
+	 */
+	@SuppressWarnings("unused")
+	private long oid;
 	
 	private boolean updateAction;
 	
@@ -107,9 +112,12 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		return true;
 	}
 
-	
+	/**
+	 * Creates a copy of this instance.
+	 */
 	public ColumnMergeRules duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
+		logger.debug("Duplicating...");
 		ColumnMergeRules columnRule = new ColumnMergeRules();
 		columnRule.setParent(parent);
 		columnRule.setSession(session);
