@@ -12,6 +12,7 @@ import javax.swing.JTable;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
+import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.xml.XMLHelper;
 
 public class JTableExporter extends JFileChooser {
@@ -83,7 +84,7 @@ public class JTableExporter extends JFileChooser {
 
 		xmlHelper.println(out,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 		xmlHelper.println(out,"<EXPORT TABLENAME=\""+
-				ArchitectUtils.escapeXML(table.getName())+"\">");
+				SQLPowerUtils.escapeXML(table.getName())+"\">");
         xmlHelper.indent++;
 
         for ( int row=0; row<table.getRowCount(); row++ ) {
@@ -92,10 +93,10 @@ public class JTableExporter extends JFileChooser {
         	for ( int column=0; column<table.getColumnCount(); column++ ) {
         		Object o = table.getValueAt(row,column);
         		xmlHelper.print(out,"<col" + column + " name=\"" +
-        				ArchitectUtils.escapeXML(table.getColumnName(column))+
+        				SQLPowerUtils.escapeXML(table.getColumnName(column))+
         				"\">");
         		if ( o != null ) {
-        			xmlHelper.niprint(out,ArchitectUtils.escapeXML(o.toString()));
+        			xmlHelper.niprint(out,SQLPowerUtils.escapeXML(o.toString()));
         		}
         		xmlHelper.niprintln(out,"</col" + column +">");
         	}
