@@ -11,7 +11,6 @@ import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.ArchitectVersion;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanel;
@@ -96,7 +95,7 @@ public class MMSUtils {
 	 */
     public static void showExceptionDialog(Component parent, String message, Throwable t) {
     	try {
-    		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION, ArchitectUtils.getAppUptime(), "MatchMaker");
+    		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION, "MatchMaker");
     		logger.debug(report.toString());
     		report.send();
     	} catch (Throwable seriousProblem) {
