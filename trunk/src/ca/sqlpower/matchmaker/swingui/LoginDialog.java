@@ -51,7 +51,9 @@ public class LoginDialog implements SwingWorkerRegistry {
 
     private class LoginAction extends MonitorableWorker implements ActionListener {
 
-        boolean loginWasSuccessful = false;
+        private boolean loginWasSuccessful = false;
+        private boolean started;
+        private boolean finished;
 
         public LoginAction(SwingWorkerRegistry registry) {
         	super(registry);
@@ -106,8 +108,10 @@ public class LoginDialog implements SwingWorkerRegistry {
         /** Called (once) by run() in superclass */
         public void doStuff() throws Exception {
             loginWasSuccessful = false;
+            started = true;
             session.getDatabase().populate();
             loginWasSuccessful = true;
+            finished = true;
         }
 
         @Override
@@ -145,13 +149,11 @@ public class LoginDialog implements SwingWorkerRegistry {
 		}
 
 		public boolean hasStarted() {
-			// FIXME
-			return false;
+			return started;
 		}
 
 		public boolean isFinished() {
-			// FIXME
-			return false;
+			return finished;
 		}
     }
 
