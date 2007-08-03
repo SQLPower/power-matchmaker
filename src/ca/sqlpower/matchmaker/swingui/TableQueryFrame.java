@@ -9,6 +9,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -20,17 +21,18 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.ddl.DDLGenerator;
-import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.MonitorableWorker;
@@ -55,15 +57,12 @@ public class TableQueryFrame extends JFrame {
 	private JPanel buttonPanel;
 	private JComboBox dbDropdown;
 	private JComboBox tableDropdown;
-	private JTextField rowLimit;
+	private JSpinner rowLimit;
 	private JLabel recordsFound;
 	private JTextArea sqlStatement;
 	private JTable columnInformation;
 
-	private List<List> tableData;
-	private List<String> tableColumn;
 	private ResultTableModel model;
-	private DDLGenerator ddlg = null;
 
 	private SQLDatabase cachedDatabase;
 
@@ -72,16 +71,7 @@ public class TableQueryFrame extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			SQLTable table = (SQLTable) tableDropdown.getSelectedItem();
 			if ( table != null ) {
-				try {
-					ddlg = (DDLGenerator) DDLUtils.createDDLGenerator(
-							table.getParentDatabase().getDataSource());
-				} catch (InstantiationException e2) {
-					logger.debug("Error getting GenericDDLGenerator", e2);
-				} catch (IllegalAccessException e2) {
-					logger.debug("Error getting GenericDDLGenerator", e2);
-				}
-				ddlg.selectTable(table,null,null);
-				sqlStatement.setText(ddlg.getDdlStatements().get(0).getSQLText());
+				sqlStatement.setText("SELECT * FROM " + ArchitectUtils.toQualifiedName(table));
 				columnInformation.setName(sqlStatement.getText());
 			}
 		}
@@ -129,9 +119,14 @@ public class TableQueryFrame extends JFrame {
 
 			ProgressWatcher progressBarUpdater =
 				new ProgressWatcher(progressBar, this);
-			started = true;
-			db.populate();
-			finished = true;
+			try {
+			    started = true;
+				db.populate();
+			} catch (ArchitectException e) {
+				throw new ArchitectRuntimeException(e);
+			} finally {
+			    finished = true;
+			}
 		}
 
 		/**
@@ -152,7 +147,12 @@ public class TableQueryFrame extends JFrame {
 			tableDropdown.removeAllItems();
 			tableDropdown.setEnabled(false);
 
-			List<SQLTable> tables = (List <SQLTable>)db.getTables();
+			List<SQLTable> tables;
+			try {
+				tables = db.getTables();
+			} catch (ArchitectException e) {
+				throw new ArchitectRuntimeException(e);
+			}
 			for ( SQLTable table : tables ) {
 				tableDropdown.addItem(table);
 			}
@@ -203,73 +203,80 @@ public class TableQueryFrame extends JFrame {
 		}};
 
 
-	private Action executeAction = new AbstractAction() {
+		/**
+		 * Connects to the database returned by {@link #getDatabase()}, then executes the
+		 * SQL query string in the {@link #sqlStatement} text area.
+		 * <p>
+		 * Applies a limit to the number of rows returned by the query based on the current
+		 * value of the {@link #rowLimit} spinner.
+		 * Does not attempt to execute an empty or whitespace-only query string.
+		 */
+	private Action executeAction = new AbstractAction("Execute") {
 
 		public void actionPerformed(ActionEvent e) {
 			String sql = sqlStatement.getText();
 			sql = sql.trim();
-			if ( sql == null || sql.length() == 0 )
-				return;
+			if (sql == null || sql.length() == 0) return;
 			SQLDatabase db = getDatabase();
-			if ( db == null )
-				return;
+			if (db == null) return;
 			Statement stmt = null;
 	        ResultSet rs = null;
-	        Connection connection = null;
-	        tableData = new ArrayList<List>();
-	        tableColumn = new ArrayList<String>();
+	        Connection con = null;
+	        List<List<Object>> tableData = new ArrayList<List<Object>>();
+	        List<String> columnNames = new ArrayList<String>();
 	        try {
-	            connection = db.getConnection();
-				stmt = connection.createStatement();
-	            int limit = 0;
-	            if ( rowLimit.getText() != null && rowLimit.getText().length() > 0 ) {
-	            	try {
-	            		limit = Integer.valueOf(rowLimit.getText());
-	            	} catch (Exception e1) {
-	            	}
-				}
-	            stmt.setMaxRows(limit);
+	            con = db.getConnection();
+				stmt = con.createStatement();
+	            int limit = (Integer) rowLimit.getValue();
+	            if (limit > 0) {
+	            	stmt.setMaxRows(limit);
+	            }
 	            rs = stmt.executeQuery(sql.toString());
 
 	            ResultSetMetaData rsMeta = rs.getMetaData();
 	            for ( int i=0; i<rsMeta.getColumnCount(); i++ ) {
-	            	tableColumn.add(rsMeta.getColumnName(i+1));
+	            	columnNames.add(rsMeta.getColumnName(i+1));
 	            }
 	            while (rs.next()) {
 	            	List<Object> row = new ArrayList<Object>();
-	            	for ( int i=0; i<tableColumn.size(); i++ ) {
-	            		row.add(rs.getObject(i+1));
+	            	for (int i = 0; i < columnNames.size(); i++) {
+	            		row.add(rs.getObject(i + 1));
 	            	}
 	            	tableData.add(row);
 	            }
-	            model.fireTableStructureChanged();
-	            recordsFound.setText(String.valueOf(tableData.size())+
-	            		" row(s) found");
+	            
+	            model.setData(columnNames, tableData);
+	            
+	            String rows = tableData.size() == 1 ? "row" : "rows";
+	            recordsFound.setText(String.valueOf(tableData.size()) + " " + rows + " selected");
 
-			} catch (SQLException e1 ) {
+			} catch (SQLException ex) {
 				SPSUtils.showExceptionDialogNoReport(TableQueryFrame.this,
-						"Database Error while processing query", sql, e1);
+						"Database Error while processing query", sql, ex);
+			} catch (Exception ex) {
+				SPSUtils.showExceptionDialogNoReport(TableQueryFrame.this,
+						"Could not execute query", ex);
 			} finally {
 	        	try {
-	        		if (rs != null)
-	        			rs.close();
-	        		if (stmt != null)
-	        			stmt.close();
-	        		if ( connection != null )
-	        			connection.close();
-	        	} catch (SQLException e2) {
-	        		e2.printStackTrace();
+	        		if (rs != null) rs.close();
+	        		if (stmt != null) stmt.close();
+	        		if (con != null) con.close();
+	        	} catch (SQLException ex) {
+	        		logger.error("Cleanup after query execution failed! Squishing" +
+	        				" this exception to preserve possible original:", ex);
 	        	}
-
 	        }
+		}
+	};
 
-		}};
-
+	/**
+	 * Disposes this frame.
+	 */
 	private Action exitAction = new AbstractAction() {
-
 		public void actionPerformed(ActionEvent e) {
-			setVisible(false);
-		}};
+			dispose();
+		}
+	};
 
 	public JPanel getButtonPanel() {
 		return buttonPanel;
@@ -279,11 +286,12 @@ public class TableQueryFrame extends JFrame {
 		super();
         this.swingSession = swingSession;
 		setTitle("Display Database Tables");
-		tableData = new ArrayList<List>();
-        tableColumn = new ArrayList<String>();
 		getContentPane().add(createPanel());
 	}
 
+	/**
+	 * Creates the panel that makes up this frame's GUI.
+	 */
 	private JPanel createPanel() {
 
 		tableDropdown = new JComboBox();
@@ -294,8 +302,8 @@ public class TableQueryFrame extends JFrame {
 		dbDropdown.addActionListener(new TablePopulator(swingSession));
 
 
-		rowLimit = new JTextField(5);
-		rowLimit.setText("500");
+		rowLimit = new JSpinner();
+		rowLimit.setValue(new Integer(500));
 
 		model = new ResultTableModel();
 		columnInformation = new JTable(model);
@@ -342,7 +350,6 @@ public class TableQueryFrame extends JFrame {
 		bbBuilder.addGlue();
 
 		JButton executeButton = new JButton(executeAction);
-		executeButton.setText("Execute");
 		bbBuilder.addGridded (executeButton);
 		bbBuilder.addUnrelatedGap();
 		bbBuilder.addGlue();
@@ -363,14 +370,39 @@ public class TableQueryFrame extends JFrame {
 
 	}
 
+	/**
+	 * Simplistic class for representing SQL results.  I think we actually have a
+	 * better table model somewhere for RowSets, but this was already here and I
+	 * don't have time to rip it out.
+	 */
 	private class ResultTableModel extends AbstractTableModel {
 
+		private List<List<Object>> tableData = Collections.emptyList();
+		private List<String> tableColumns = Collections.emptyList();
+
+		/**
+		 * Replaces the current data set for this table model with the given
+		 * one.  Each list in the rows list must have exactly the same length
+		 * as the columnNames list.
+		 * <p>
+		 * This method doesn't copy the given lists, so if you modify them after
+		 * calling this method, this table model will malfunction.
+		 * 
+		 * @param columnNames The names of the columns in the result set.
+		 * @param rows The rows of data in the select list.
+		 */
+		public void setData(List<String> columnNames, List<List<Object>> rows) {
+			tableColumns = columnNames;
+			tableData = rows;
+			fireTableStructureChanged();
+		}
+		
 		public int getRowCount() {
 			return tableData.size();
 		}
 
 		public int getColumnCount() {
-			return tableColumn.size();
+			return tableColumns.size();
 		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
@@ -379,7 +411,7 @@ public class TableQueryFrame extends JFrame {
 
 		@Override
 		public String getColumnName(int column) {
-			return tableColumn.get(column);
+			return tableColumns.get(column);
 		}
 
 	}
