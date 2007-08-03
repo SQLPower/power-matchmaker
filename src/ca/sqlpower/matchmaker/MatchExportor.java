@@ -7,9 +7,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.xml.XMLHelper;
 
 public class MatchExportor {
@@ -31,53 +31,53 @@ public class MatchExportor {
             xmlHelper.println(out, "<PL_MATCH>");
             xmlHelper.indent++;
             xmlHelper.println(out, "<MATCH_ID>"+
-            		ArchitectUtils.escapeXML(match.getName())+
+            		SQLPowerUtils.escapeXML(match.getName())+
             		"</MATCH_ID>");
             xmlHelper.println(out, "<MATCH_DESC>"+
-            		ArchitectUtils.escapeXML(match.getMatchSettings().getDescription())+
+            		SQLPowerUtils.escapeXML(match.getMatchSettings().getDescription())+
             		"</MATCH_DESC>");
             xmlHelper.println(out, "<TABLE_CATALOG>"+
-            		ArchitectUtils.escapeXML(match.getSourceTableCatalog())+
+            		SQLPowerUtils.escapeXML(match.getSourceTableCatalog())+
             		"</TABLE_CATALOG>");
             xmlHelper.println(out, "<TABLE_OWNER>"+
-            		ArchitectUtils.escapeXML(match.getSourceTableSchema())+
+            		SQLPowerUtils.escapeXML(match.getSourceTableSchema())+
             		"</TABLE_OWNER>");
             xmlHelper.println(out, "<MATCH_TABLE>"+
-            		ArchitectUtils.escapeXML(match.getSourceTableName())+
+            		SQLPowerUtils.escapeXML(match.getSourceTableName())+
             		"</MATCH_TABLE>");
             if ( match.getSourceTableIndex() != null ) {
             	xmlHelper.println(out, "<PK_COLUMN>"+
-            			ArchitectUtils.escapeXML(match.getSourceTableIndex().getName())+
+            			SQLPowerUtils.escapeXML(match.getSourceTableIndex().getName())+
             			"</PK_COLUMN>");
             }
             xmlHelper.println(out, "<RESULTS_TABLE_CATALOG>"+
-            		ArchitectUtils.escapeXML(match.getResultTableCatalog())+
+            		SQLPowerUtils.escapeXML(match.getResultTableCatalog())+
             		"</RESULTS_TABLE_CATALOG>");
             xmlHelper.println(out, "<RESULTS_TABLE_OWNER>"+
-            		ArchitectUtils.escapeXML(match.getResultTableSchema())+
+            		SQLPowerUtils.escapeXML(match.getResultTableSchema())+
             		"</RESULTS_TABLE_OWNER>");
             xmlHelper.println(out, "<RESULTS_TABLE>"+
-            		ArchitectUtils.escapeXML(match.getResultTableName())+
+            		SQLPowerUtils.escapeXML(match.getResultTableName())+
             		"</RESULTS_TABLE>");
             xmlHelper.println(out, "<CREATE_DATE><DATE>"+
-            		ArchitectUtils.escapeXML(df.format(match.getMatchSettings().getCreateDate()))+
+            		SQLPowerUtils.escapeXML(df.format(match.getMatchSettings().getCreateDate()))+
             		"</DATE></CREATE_DATE>");
             xmlHelper.println(out, "<LAST_UPDATE_DATE><DATE>"+
-            		ArchitectUtils.escapeXML(df.format(match.getMatchSettings().getLastUpdateDate()))+
+            		SQLPowerUtils.escapeXML(df.format(match.getMatchSettings().getLastUpdateDate()))+
             		"</DATE></LAST_UPDATE_DATE>");
             xmlHelper.println(out, "<LAST_UPDATE_USER>"+
-            		ArchitectUtils.escapeXML(match.getMatchSettings().getLastUpdateAppUser())+
+            		SQLPowerUtils.escapeXML(match.getMatchSettings().getLastUpdateAppUser())+
             		"</LAST_UPDATE_USER>");
             xmlHelper.println(out, "<MATCH_LAST_RUN_DATE><DATE>"+
-            		ArchitectUtils.escapeXML(df.format(match.getMatchSettings().getLastRunDate()))+
+            		SQLPowerUtils.escapeXML(df.format(match.getMatchSettings().getLastRunDate()))+
             		"</DATE></MATCH_LAST_RUN_DATE>");
             if ( match.getMatchSettings().getLog() != null ) {
 	            xmlHelper.println(out, "<MATCH_LOG_FILE_NAME>"+
-	            		ArchitectUtils.escapeXML(match.getMatchSettings().getLog().toString())+
+	            		SQLPowerUtils.escapeXML(match.getMatchSettings().getLog().toString())+
 	            		"</MATCH_LOG_FILE_NAME>");
             }
            	xmlHelper.println(out, "<MATCH_APPEND_TO_LOG_IND>"+
-           			ArchitectUtils.escapeXML(match.getMatchSettings().getAppendToLog()?"Y":"N")+
+           			SQLPowerUtils.escapeXML(match.getMatchSettings().getAppendToLog()?"Y":"N")+
             		"</MATCH_APPEND_TO_LOG_IND>");
 
             xmlHelper.println(out, "<MATCH_PROCESS_CNT>"+
@@ -87,33 +87,33 @@ public class MatchExportor {
             		match.getMatchSettings().getShowProgressFreq()+
             		"</MATCH_SHOW_PROGRESS_FREQ>");
             xmlHelper.println(out, "<MATCH_TYPE>"+
-            		ArchitectUtils.escapeXML(match.getType().name())+
+            		SQLPowerUtils.escapeXML(match.getType().name())+
             		"</MATCH_TYPE>");
             xmlHelper.println(out, "<LAST_UPDATE_OS_USER>"+
-            		ArchitectUtils.escapeXML(match.getMatchSettings().getLastUpdateOSUser())+
+            		SQLPowerUtils.escapeXML(match.getMatchSettings().getLastUpdateOSUser())+
             		"</LAST_UPDATE_OS_USER>");
             xmlHelper.println(out, "<MATCH_SEND_EMAIL_IND>"+
-            		ArchitectUtils.escapeXML(match.getMatchSettings().getSendEmail()?"Y":"N")+
+            		SQLPowerUtils.escapeXML(match.getMatchSettings().getSendEmail()?"Y":"N")+
             		"</MATCH_SEND_EMAIL_IND>");
             xmlHelper.println(out, "<TRUNCATE_CAND_DUP_IND>"+
-            		ArchitectUtils.escapeXML(match.getMatchSettings().getTruncateCandDupe()?"Y":"N")+
+            		SQLPowerUtils.escapeXML(match.getMatchSettings().getTruncateCandDupe()?"Y":"N")+
             		"</TRUNCATE_CAND_DUP_IND>");
             xmlHelper.println(out, "<AUTO_MATCH_THRESHOLD>"+
             		match.getMatchSettings().getAutoMatchThreshold()+
             		"</AUTO_MATCH_THRESHOLD>");
             xmlHelper.println(out, "<MERGE_LAST_RUN_DATE><DATE>"+
-            		ArchitectUtils.escapeXML(df.format(match.getMergeSettings().getLastRunDate()))+
+            		SQLPowerUtils.escapeXML(df.format(match.getMergeSettings().getLastRunDate()))+
             		"</DATE></MERGE_LAST_RUN_DATE>");
             xmlHelper.println(out, "<MATCH_DEBUG_MODE_IND>"+
-            		ArchitectUtils.escapeXML(match.getMatchSettings().getDebug()?"Y":"N")+
+            		SQLPowerUtils.escapeXML(match.getMatchSettings().getDebug()?"Y":"N")+
             		"</MATCH_DEBUG_MODE_IND>");
             if (match.getMergeSettings().getLog() != null) {
             	xmlHelper.println(out, "<MERGE_LOG_FILE_NAME>"+
-            			ArchitectUtils.escapeXML(match.getMergeSettings().getLog().toString())+
+            			SQLPowerUtils.escapeXML(match.getMergeSettings().getLog().toString())+
             	"</MERGE_LOG_FILE_NAME>");
             }
             xmlHelper.println(out, "<MERGE_APPEND_TO_LOG_IND>"+
-            		ArchitectUtils.escapeXML(match.getMergeSettings().getAppendToLog()?"Y":"N")+
+            		SQLPowerUtils.escapeXML(match.getMergeSettings().getAppendToLog()?"Y":"N")+
             		"</MERGE_APPEND_TO_LOG_IND>");
             xmlHelper.println(out, "<MERGE_PROCESS_CNT>"+
             		match.getMergeSettings().getProcessCount()+
@@ -122,20 +122,20 @@ public class MatchExportor {
             		match.getMergeSettings().getShowProgressFreq()+
             		"</MERGE_SHOW_PROGRESS_FREQ>");
             xmlHelper.println(out, "<MERGE_AUGMENT_NULL_IND>"+
-            		ArchitectUtils.escapeXML(match.getMergeSettings().getAugmentNull()?"Y":"N")+
+            		SQLPowerUtils.escapeXML(match.getMergeSettings().getAugmentNull()?"Y":"N")+
             		"</MERGE_AUGMENT_NULL_IND>");
 
             if ( match.getSourceTableIndex()!= null ) {
             	List<SQLIndex.Column> indexColNames = match.getSourceTableIndex().getChildren();
             	for (int i = 0, n = indexColNames.size(); i < n; i++) {
             		xmlHelper.println(out, "<INDEX_COLUMN_NAME"+i+">"+
-            				ArchitectUtils.escapeXML(indexColNames.get(i).getName())+
+            				SQLPowerUtils.escapeXML(indexColNames.get(i).getName())+
             				"</INDEX_COLUMN_NAME"+i+">");
             	}
             }
 
             xmlHelper.println(out, "<MERGE_SEND_EMAIL_IND>"+
-            		ArchitectUtils.escapeXML(match.getMergeSettings().getSendEmail()?"Y":"N")+
+            		SQLPowerUtils.escapeXML(match.getMergeSettings().getSendEmail()?"Y":"N")+
             		"</MERGE_SEND_EMAIL_IND>");
 
             xmlHelper.indent--;
@@ -163,10 +163,10 @@ public class MatchExportor {
 		xmlHelper.println(out, "<PL_FOLDER>");
 		xmlHelper.indent++;
 		xmlHelper.println(out, "<FOLDER_NAME>"+
-        		ArchitectUtils.escapeXML(folder.getName())+
+        		SQLPowerUtils.escapeXML(folder.getName())+
         		"</FOLDER_NAME>");
 		xmlHelper.println(out, "<FOLDER_DESC>"+
-        		ArchitectUtils.escapeXML(folder.getFolderDesc())+
+        		SQLPowerUtils.escapeXML(folder.getFolderDesc())+
         		"</FOLDER_DESC>");
 		xmlHelper.indent--;
         xmlHelper.println(out, "</PL_FOLDER>");
@@ -175,13 +175,13 @@ public class MatchExportor {
         xmlHelper.println(out, "<PL_FOLDER_DETAIL>");
 		xmlHelper.indent++;
 		xmlHelper.println(out, "<FOLDER_NAME>"+
-        		ArchitectUtils.escapeXML(folder.getName())+
+        		SQLPowerUtils.escapeXML(folder.getName())+
         		"</FOLDER_NAME>");
 		xmlHelper.println(out, "<OBJECT_TYPE>"+
-        		ArchitectUtils.escapeXML("MATCH")+
+        		SQLPowerUtils.escapeXML("MATCH")+
         		"</OBJECT_TYPE>");
 		xmlHelper.println(out, "<OBJECT_NAME>"+
-        		ArchitectUtils.escapeXML(match.getName())+
+        		SQLPowerUtils.escapeXML(match.getName())+
         		"</OBJECT_NAME>");
 		xmlHelper.indent--;
         xmlHelper.println(out, "</PL_FOLDER_DETAIL>");
@@ -199,25 +199,25 @@ public class MatchExportor {
 			xmlHelper.indent++;
 
 			xmlHelper.println(out, "<MATCH_ID>"+
-					ArchitectUtils.escapeXML(match.getName())+
+					SQLPowerUtils.escapeXML(match.getName())+
 			"</MATCH_ID>");
 			xmlHelper.println(out, "<GROUP_ID>"+
-					ArchitectUtils.escapeXML(group.getName())+
+					SQLPowerUtils.escapeXML(group.getName())+
 			"</GROUP_ID>");
 			xmlHelper.println(out, "<MATCH_PERCENT>"+
 					group.getMatchPercent()+
 			"</MATCH_PERCENT>");
 			xmlHelper.println(out, "<LAST_UPDATE_DATE><DATE>"+
-					ArchitectUtils.escapeXML(df.format(group.getLastUpdateDate()))+
+					SQLPowerUtils.escapeXML(df.format(group.getLastUpdateDate()))+
 			"</DATE></LAST_UPDATE_DATE>");
 			xmlHelper.println(out, "<LAST_UPDATE_USER>"+
-					ArchitectUtils.escapeXML(group.getLastUpdateAppUser())+
+					SQLPowerUtils.escapeXML(group.getLastUpdateAppUser())+
 			"</LAST_UPDATE_USER>");
 			xmlHelper.println(out, "<ACTIVE_IND>"+
-					ArchitectUtils.escapeXML(group.getActive()?"Y":"N")+
+					SQLPowerUtils.escapeXML(group.getActive()?"Y":"N")+
 			"</ACTIVE_IND>");
 			xmlHelper.println(out, "<LAST_UPDATE_OS_USER>"+
-					ArchitectUtils.escapeXML(group.getLastUpdateOSUser())+
+					SQLPowerUtils.escapeXML(group.getLastUpdateOSUser())+
 			"</LAST_UPDATE_OS_USER>");
 			xmlHelper.indent--;
 			xmlHelper.println(out, "</PL_MATCH_GROUP>");
@@ -236,68 +236,68 @@ public class MatchExportor {
 			xmlHelper.println(out, "<PL_MATCH_CRITERIA>");
     		xmlHelper.indent++;
     		xmlHelper.println(out, "<MATCH_ID>"+
-            		ArchitectUtils.escapeXML(match.getName())+
+            		SQLPowerUtils.escapeXML(match.getName())+
             		"</MATCH_ID>");
     		xmlHelper.println(out, "<GROUP_ID>"+
-            		ArchitectUtils.escapeXML(group.getName())+
+            		SQLPowerUtils.escapeXML(group.getName())+
             		"</GROUP_ID>");
     		xmlHelper.println(out, "<COLUMN_NAME>"+
-            		ArchitectUtils.escapeXML(c.getColumnName())+
+            		SQLPowerUtils.escapeXML(c.getColumnName())+
             		"</COLUMN_NAME>");
     		xmlHelper.println(out, "<CASE_SENSITIVE_IND>"+
-            		ArchitectUtils.escapeXML(c.isCaseSensitiveInd()?"Y":"N")+
+            		SQLPowerUtils.escapeXML(c.isCaseSensitiveInd()?"Y":"N")+
             		"</CASE_SENSITIVE_IND>");
     		xmlHelper.println(out, "<SUPPRESS_CHAR>"+
-            		ArchitectUtils.escapeXML(c.getSuppressChar())+
+            		SQLPowerUtils.escapeXML(c.getSuppressChar())+
             		"</SUPPRESS_CHAR>");
     		xmlHelper.println(out, "<SOUND_IND>"+
-            		ArchitectUtils.escapeXML(c.isSoundInd()?"Y":"N")+
+            		SQLPowerUtils.escapeXML(c.isSoundInd()?"Y":"N")+
             		"</SOUND_IND>");
     		xmlHelper.println(out, "<FIRST_N_CHAR>"+
             		c.getFirstNChar()+
             		"</FIRST_N_CHAR>");
     		xmlHelper.println(out, "<LAST_UPDATE_DATE><DATE>"+
-            		ArchitectUtils.escapeXML(df.format(c.getLastUpdateDate()))+
+            		SQLPowerUtils.escapeXML(df.format(c.getLastUpdateDate()))+
             		"</DATE></LAST_UPDATE_DATE>");
     		xmlHelper.println(out, "<LAST_UPDATE_USER>"+
-            		ArchitectUtils.escapeXML(c.getLastUpdateAppUser())+
+            		SQLPowerUtils.escapeXML(c.getLastUpdateAppUser())+
             		"</LAST_UPDATE_USER>");
     		xmlHelper.println(out, "<MATCH_START>"+
-    				ArchitectUtils.escapeXML(c.isMatchStart()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(c.isMatchStart()?"Y":"N")+
             		"</MATCH_START>");
     		xmlHelper.println(out, "<MATCH_END>"+
-    				ArchitectUtils.escapeXML(c.isMatchEnd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(c.isMatchEnd()?"Y":"N")+
             		"</MATCH_END>");
     		xmlHelper.println(out, "<LAST_UPDATE_OS_USER>"+
-    				ArchitectUtils.escapeXML(c.getLastUpdateOSUser())+
+    				SQLPowerUtils.escapeXML(c.getLastUpdateOSUser())+
             		"</LAST_UPDATE_OS_USER>");
     		xmlHelper.println(out, "<ALLOW_NULL_IND>"+
-    				ArchitectUtils.escapeXML(c.isAllowNullInd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(c.isAllowNullInd()?"Y":"N")+
             		"</ALLOW_NULL_IND>");
     		xmlHelper.println(out, "<TRANSLATE_IND>"+
-    				ArchitectUtils.escapeXML("N")+		// XXX: we don't know
+    				SQLPowerUtils.escapeXML("N")+		// XXX: we don't know
             		"</TRANSLATE_IND>");
     		xmlHelper.println(out, "<PURGE_IND>"+
-    				ArchitectUtils.escapeXML("N")+		// XXX: we don't know
+    				SQLPowerUtils.escapeXML("N")+		// XXX: we don't know
             		"</PURGE_IND>");
     		xmlHelper.println(out, "<REMOVE_SPECIAL_CHARS>"+
-    				ArchitectUtils.escapeXML(c.isRemoveSpecialChars()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(c.isRemoveSpecialChars()?"Y":"N")+
             		"</REMOVE_SPECIAL_CHARS>");
     		xmlHelper.println(out, "<REORDER_IND>"+
-    				ArchitectUtils.escapeXML(c.isReorderInd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(c.isReorderInd()?"Y":"N")+
             		"</REORDER_IND>");
     		xmlHelper.println(out, "<FIRST_N_CHAR_BY_WORD_IND>"+
-    				ArchitectUtils.escapeXML(c.isFirstNCharByWordInd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(c.isFirstNCharByWordInd()?"Y":"N")+
             		"</FIRST_N_CHAR_BY_WORD_IND>");
     		xmlHelper.println(out, "<REPLACE_WITH_SPACE_IND>"+
-    				ArchitectUtils.escapeXML(c.isReplaceWithSpaceInd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(c.isReplaceWithSpaceInd()?"Y":"N")+
             		"</REPLACE_WITH_SPACE_IND>");
     		xmlHelper.println(out, "<MATCH_FIRST_PLUS_ONE_IND>"+
-    				ArchitectUtils.escapeXML(c.isMatchFirstPlusOneInd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(c.isMatchFirstPlusOneInd()?"Y":"N")+
             		"</MATCH_FIRST_PLUS_ONE_IND>");
     		if ( c.getTranslateGroup()!= null ) {
     			xmlHelper.println(out, "<TRANSLATE_GROUP_NAME>"+
-    					ArchitectUtils.escapeXML(c.getTranslateGroup().getName())+
+    					SQLPowerUtils.escapeXML(c.getTranslateGroup().getName())+
     			"</TRANSLATE_GROUP_NAME>");
     		}
     		xmlHelper.println(out, "<SEQ_NO>"+
