@@ -7,7 +7,7 @@
 	<classpathentry kind="lib" path="lib/forms-1.0.6.jar"/>
 	<classpathentry kind="lib" path="lib/darwinsys.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils.jar"/>
-	<classpathentry sourcepath="libsrc/hibernate3_src.jar" kind="lib" path="lib/hibernate3.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate3.jar" sourcepath="libsrc/hibernate3_src.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-tools.jar"/>
 	<classpathentry kind="lib" path="lib/freemarker.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>
@@ -25,7 +25,7 @@
 	<classpathentry kind="lib" path="buildlib/diasparsoftToolkit-0.24.jar"/>
 	<classpathentry kind="lib" path="lib/osx_adapter.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb.jar"/>
-	<classpathentry kind="lib" path="lib/architect_lib.jar"/>
+	<classpathentry kind="lib" path="lib/architect_lib.jar" sourcepath="/architect/src"/>
 	<classpathentry kind="src" path="regress"/>
 	<classpathentry kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="src" path="testbed"/>
