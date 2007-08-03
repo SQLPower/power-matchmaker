@@ -17,7 +17,6 @@ import ca.sqlpower.architect.ArchitectVersion;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
-import ca.sqlpower.swingui.SPDataSourcePanel;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.util.ExceptionReport;
 
@@ -50,7 +49,7 @@ public class MMSUtils {
             SPDataSource dataSource,
             final Runnable onAccept) {
         
-        final DataEntryPanel dbcsPanel = new SPDataSourcePanel(dataSource);
+        final DataEntryPanel dbcsPanel = new MMDataSourcePanel(dataSource);
         
         Action okAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
