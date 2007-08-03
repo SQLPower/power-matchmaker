@@ -10,9 +10,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchExportor;
+import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
@@ -45,7 +45,7 @@ public class PlMatchExportAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 
 	    Match match;  // the match we're exporting
-	    match = ArchitectUtils.getTreeObject(
+	    match = MMSUtils.getTreeObject(
 	            swingSession.getTree(),
 	            Match.class );
 

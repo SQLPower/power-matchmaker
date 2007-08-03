@@ -8,6 +8,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JTree;
+import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
@@ -105,4 +107,24 @@ public class MMSUtils {
     		SPSUtils.showExceptionDialogNoReport(parent, message, t);
     	}
     }
+    
+    /**
+	 * Searches the given tree's selection path for a Node of the given type.
+	 * Returns the first one encountered, or null if there are no selected
+	 * nodes of the given type.
+	 */
+	public static <T extends Object> T getTreeObject(JTree tree, Class<T> type) {
+		TreePath[] paths = tree.getSelectionPaths();
+		if (paths == null || paths.length == 0) {
+			return null;
+		}
+		for (int i = 0; i < paths.length; i++) {
+			TreePath path = paths[i];
+			for (Object o : path.getPath()) {
+				if (o.getClass().equals(type)) return (T) o;
+			}
+		}
+		return null;
+	}
+
 }

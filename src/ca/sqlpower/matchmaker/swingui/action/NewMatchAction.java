@@ -5,10 +5,10 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
-import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Match.MatchMode;
+import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchEditor;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
@@ -19,15 +19,12 @@ import ca.sqlpower.swingui.SPSUtils;
 public final class NewMatchAction extends AbstractAction {
 
     private final MatchMakerSwingSession swingSession;
-	private PlFolder<Match> folder;
 
 	public NewMatchAction(
             MatchMakerSwingSession swingSession,
-            String name,
-            PlFolder folder) {
+            String name) {
 		super(name);
         this.swingSession = swingSession;
-		this.folder = folder;
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -37,8 +34,8 @@ public final class NewMatchAction extends AbstractAction {
 			match.setSession(swingSession);
 			match.setType(MatchMode.FIND_DUPES);
 
-			folder = ArchitectUtils.getTreeObject(swingSession.getTree(),PlFolder.class);
-			if ( folder == null ) {
+			PlFolder<Match> folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
+			if (folder == null) {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
 						"Please select a folder first",
 						"Warning",
@@ -46,7 +43,7 @@ public final class NewMatchAction extends AbstractAction {
 				return;
 			}
 
-			me = new MatchEditor(swingSession,match,folder);
+			me = new MatchEditor(swingSession, match, folder);
 			swingSession.setCurrentEditorComponent(me);
 		} catch (Exception ex) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Couldn't create match", ex);
