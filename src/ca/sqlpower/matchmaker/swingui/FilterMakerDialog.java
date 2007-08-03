@@ -25,6 +25,8 @@ import javax.swing.text.BadLocationException;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -330,7 +332,11 @@ public class FilterMakerDialog extends JDialog {
             Statement stmt = null;
             ResultSet rs =  null;
             try {
-                con = matchSourceTable.getParentDatabase().getConnection();
+                try {
+					con = matchSourceTable.getParentDatabase().getConnection();
+				} catch (ArchitectException e1) {
+					throw new ArchitectRuntimeException(e1);
+				}
                 stmt = con.createStatement();
                 rs = stmt.executeQuery(sql.toString());
 
