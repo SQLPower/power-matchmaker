@@ -140,7 +140,6 @@ public class MatchEditor implements EditorPane {
     public MatchEditor(final MatchMakerSwingSession swingSession, Match match, PlFolder<Match> folder) throws ArchitectException {
         this.swingSession = swingSession;
         if (match == null) throw new NullPointerException("You can't edit a null plmatch");
-        if (match.getParent() != folder) throw new IllegalArgumentException("Oh, sometimes the match's parent folder is not the same as the given parent folder. Neat.");
         this.match = match;
         this.folder = folder;
         handler = new FormValidationHandler(status);
