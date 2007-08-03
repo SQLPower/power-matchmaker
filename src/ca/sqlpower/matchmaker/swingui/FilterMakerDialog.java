@@ -362,9 +362,9 @@ public class FilterMakerDialog extends JDialog {
             try {
                 filterText.getDocument().remove(0,filterText.getDocument().getLength());
             } catch (BadLocationException e1) {
-                SPSUtils.showExceptionDialog(
+                MMSUtils.showExceptionDialog(
                         FilterMakerDialog.this,
-                        "Unknown Document Error",e1, new MatchMakerQFAFactory());
+                        "Unknown Document Error",e1);
 
             }
         }};

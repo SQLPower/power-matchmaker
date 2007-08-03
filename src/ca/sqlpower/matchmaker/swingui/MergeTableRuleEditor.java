@@ -32,7 +32,6 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.util.EditableJTable;
-import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -189,10 +188,10 @@ public class MergeTableRuleEditor implements EditorPane {
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(final ActionEvent e) {
             try {
-                boolean ok = doSave();
+                doSave();
             } catch (Exception ex) {
-                SPSUtils.showExceptionDialog(swingSession.getFrame(),
-                		"Merge Interface Not Saved", ex, new MatchMakerQFAFactory());
+                MMSUtils.showExceptionDialog(swingSession.getFrame(),
+                		"Merge Interface Not Saved", ex);
             }
 		}
 	};
@@ -203,7 +202,6 @@ public class MergeTableRuleEditor implements EditorPane {
 
 		logger.debug("#1 children size="+match.getTableMergeRules().size());
 		
-		List<TableMergeRules> toBeDeleted = new ArrayList<TableMergeRules>();
 		for ( int i=0; ;i++) {
 			TableMergeRules r1,r2;
 			if (i < editingRules.size()) {

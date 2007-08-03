@@ -34,6 +34,8 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLTable;
@@ -41,7 +43,6 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.RowSetModel;
-import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -56,9 +57,21 @@ public class MatchValidation {
 
     private static final Logger logger = Logger.getLogger(MatchValidation.class);
 
-    private MatchMakerSwingSession swingSession;
-    private Match match;
-    private JFrame frame;
+    /**
+     * The session this component (and the {@link #match} object) belongs to.
+     */
+    private final MatchMakerSwingSession swingSession;
+    
+    /**
+     * The Match this validation interface is for.
+     */
+    private final Match match;
+    
+    /**
+     * The frame the GUI is in (this should probably go away since everything
+     * else is an editor component in the main frame).
+     */
+    private final JFrame frame;
 
     private RowSet fullResult;
     private List<String> allMatchGroup;
@@ -95,6 +108,7 @@ public class MatchValidation {
             }
             return -1;
         }
+        
         public void valueChanged(ListSelectionEvent e) {
 
 
@@ -111,40 +125,44 @@ public class MatchValidation {
             List <Object> params = new ArrayList<Object>();
 
             dupCandItems.append("MATCH_PERCENT");
-            for ( int i = 0; i<pk.getChildCount(); i++ ) {
-            	if ( i > 0 ) {
-            		dupCandWhereClause.append(" AND ");
-            	}
-            	dupCandItems.append(",dup_candidate_").append(i+10);
-            	dupCandItems.append(",dup_candidate_").append(i+20);
+            try {
+				for ( int i = 0; i<pk.getChildCount(); i++ ) {
+					if ( i > 0 ) {
+						dupCandWhereClause.append(" AND ");
+					}
+					dupCandItems.append(",dup_candidate_").append(i+10);
+					dupCandItems.append(",dup_candidate_").append(i+20);
 
-            	dupCandWhereClause.append("((current_candidate_").append(i+10);
-            	dupCandWhereClause.append(" IS NULL AND current_candidate_").append(i+20);
-            	dupCandWhereClause.append(" IS NOT NULL)");
-            	dupCandWhereClause.append(" OR ");
-            	dupCandWhereClause.append("(current_candidate_").append(i+10);
-            	dupCandWhereClause.append(" IS NOT NULL AND current_candidate_").append(i+20);
-            	dupCandWhereClause.append(" IS NULL)");
-            	dupCandWhereClause.append(" OR ");
-            	dupCandWhereClause.append("(current_candidate_").append(i+10);
-            	dupCandWhereClause.append(" <> current_candidate_").append(i+20).append("))");
+					dupCandWhereClause.append("((current_candidate_").append(i+10);
+					dupCandWhereClause.append(" IS NULL AND current_candidate_").append(i+20);
+					dupCandWhereClause.append(" IS NOT NULL)");
+					dupCandWhereClause.append(" OR ");
+					dupCandWhereClause.append("(current_candidate_").append(i+10);
+					dupCandWhereClause.append(" IS NOT NULL AND current_candidate_").append(i+20);
+					dupCandWhereClause.append(" IS NULL)");
+					dupCandWhereClause.append(" OR ");
+					dupCandWhereClause.append("(current_candidate_").append(i+10);
+					dupCandWhereClause.append(" <> current_candidate_").append(i+20).append("))");
 
 
-            	String columnName = pk.getChild(i).getName();
-            	int col = getColumnByName(sourceJTable,columnName);
-            	if ( col < 0 ) {
-            		SPSUtils.showExceptionDialog(frame,
-            				"column "+columnName+" not found",
-            				new IllegalStateException("column "+columnName+" not found"), new MatchMakerQFAFactory());
-            		return;
-            	}
-            	if ( sourceJTable.getValueAt(row,col) == null ) {
-            		where.append("dup_candidate_").append(i+20).append(" IS NULL");
-            	} else {
-            		where.append("dup_candidate_").append(i+20).append("=?");
-            		params.add(sourceJTable.getValueAt(row,col));
-            	}
-            }
+					String columnName = pk.getChild(i).getName();
+					int col = getColumnByName(sourceJTable,columnName);
+					if ( col < 0 ) {
+						MMSUtils.showExceptionDialog(frame,
+								"column "+columnName+" not found",
+								new IllegalStateException("column "+columnName+" not found"));
+						return;
+					}
+					if ( sourceJTable.getValueAt(row,col) == null ) {
+						where.append("dup_candidate_").append(i+20).append(" IS NULL");
+					} else {
+						where.append("dup_candidate_").append(i+20).append("=?");
+						params.add(sourceJTable.getValueAt(row,col));
+					}
+				}
+			} catch (ArchitectException e1) {
+				throw new ArchitectRuntimeException(e1);
+			}
 
             StringBuffer sql = new StringBuffer();
             sql.append("SELECT ").append(dupCandItems).append(" FROM ");
@@ -175,11 +193,15 @@ public class MatchValidation {
 
                 JoinRowSet jrs = new JoinRowSetImpl();
 
-                for ( i = 0; i<pk.getChildCount(); i++ ) {
-                    SQLObject col = pk.getChild(i);
-                    jrs.addRowSet(sourceTableRowSet,col.getName() );
-                    jrs.addRowSet(crset2, "DUP_CANDIDATE_"+(i+10) );
-                }
+                try {
+					for ( i = 0; i<pk.getChildCount(); i++ ) {
+					    SQLObject col = pk.getChild(i);
+					    jrs.addRowSet(sourceTableRowSet,col.getName() );
+					    jrs.addRowSet(crset2, "DUP_CANDIDATE_"+(i+10) );
+					}
+				} catch (ArchitectException e1) {
+					throw new ArchitectRuntimeException(e1);
+				}
 
                 final RowSetModel model = new RowSetModel(jrs);
                 candidateJTable.setModel(new ResultTableModel(model));
@@ -190,8 +212,7 @@ public class MatchValidation {
                 //       but this lower table has two extra columns in front
 
             } catch (SQLException e1) {
-                SPSUtils.showExceptionDialog(frame,
-                        "Unknown SQL Error:"+sql.toString(), e1, new MatchMakerQFAFactory());
+                MMSUtils.showExceptionDialog(frame, "Unknown SQL Error:"+sql.toString(), e1);
             } finally {
                 try {
                     if ( rs != null )
@@ -216,7 +237,9 @@ public class MatchValidation {
         }
     };
 
-    public MatchValidation(MatchMakerSwingSession swingSession, Match match) throws HeadlessException, SQLException {
+    public MatchValidation(MatchMakerSwingSession swingSession, Match match) 
+    	throws HeadlessException, SQLException, ArchitectException {
+    	
         frame = new JFrame("Validate Matches: " + match.getName());
         frame.setIconImage(swingSession.getSmallMMIcon().getImage());
         this.swingSession = swingSession;
@@ -277,7 +300,7 @@ public class MatchValidation {
      * get the source table content
      * @return
      */
-    private CachedRowSetImpl getMatchSourceTable(String filter) {
+    private CachedRowSetImpl getMatchSourceTable(String filter) throws ArchitectException {
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs =  null;
@@ -311,9 +334,8 @@ public class MatchValidation {
             return crset;
         } catch (SQLException e1) {
             crset = null;
-            SPSUtils.showExceptionDialog(frame,
-                    "SQL Error", "The SQL Statement that caused the error: " + lastSQL,
-                    e1, new MatchMakerQFAFactory());
+            MMSUtils.showExceptionDialog(frame,
+                    "SQL Error \nThe SQL Statement that caused the error: " + lastSQL, e1);
         } finally {
             try {
                 if ( rs != null )
@@ -342,7 +364,7 @@ public class MatchValidation {
 
 
 
-    private void setup() throws SQLException {
+    private void setup() throws SQLException, ArchitectException {
         fullResult = getMatchResult(match);
         allMatchGroup = new ArrayList<String>();
         allMatchPct = new ArrayList<String>();
@@ -533,16 +555,24 @@ public class MatchValidation {
             return model.getRowCount();
         }
         public int getColumnCount() {
-        	return matchSourceTable.getColumns().size();
+        	try {
+				return matchSourceTable.getColumns().size();
+			} catch (ArchitectException e) {
+				throw new ArchitectRuntimeException(e);
+			}
         }
         public Object getValueAt(int rowIndex, int columnIndex) {
             return model.getValueAt(rowIndex,columnIndex);
         }
         @Override
         public String getColumnName(int column) {
-        	if ( column < matchSourceTable.getColumns().size() ) {
-        		return matchSourceTable.getColumn(column).getName();
-        	}
+        	try {
+				if ( column < matchSourceTable.getColumns().size() ) {
+					return matchSourceTable.getColumn(column).getName();
+				}
+			} catch (ArchitectException e) {
+				throw new ArchitectRuntimeException(e);
+			}
         	return super.getColumnName(column);
         }
 
@@ -563,25 +593,32 @@ public class MatchValidation {
         }
         public Object getValueAt(int rowIndex, int columnIndex) {
 
-        	if ( columnIndex == 0 ) {
-        		return model.getValueAt(rowIndex,matchSourceTable.getColumns().size());
-        	} else if ( columnIndex < pk.getChildCount()+1 ) {
-        		return model.getValueAt(rowIndex,matchSourceTable.getColumns().size()+columnIndex);
-        	} else {
-        		return model.getValueAt(rowIndex,columnIndex-pk.getChildCount()-1);
+        	try {
+        		if ( columnIndex == 0 ) {
+        			return model.getValueAt(rowIndex,matchSourceTable.getColumns().size());
+        		} else if ( columnIndex < pk.getChildCount()+1 ) {
+        			return model.getValueAt(rowIndex,matchSourceTable.getColumns().size()+columnIndex);
+        		} else {
+        			return model.getValueAt(rowIndex,columnIndex-pk.getChildCount()-1);
+        		}
+        	} catch (ArchitectException e) {
+        		throw new ArchitectRuntimeException(e);
         	}
-        	return null;
         }
+        
         @Override
         public String getColumnName(int column) {
-        	if ( column == 0 ) {
-        		return "Match Percent";
-        	} else if ( column < pk.getChildCount()+1 ) {
-        		return "Current Target "+pk.getChild(column-1).getName();
-        	} else {
-        		return matchSourceTable.getColumn(column-1-pk.getChildCount()).getName();
+        	try {
+        		if ( column == 0 ) {
+        			return "Match Percent";
+        		} else if ( column < pk.getChildCount()+1 ) {
+        			return "Current Target "+pk.getChild(column-1).getName();
+        		} else {
+        			return matchSourceTable.getColumn(column-1-pk.getChildCount()).getName();
+        		}
+        	} catch (ArchitectException e) {
+        		throw new ArchitectRuntimeException(e);
         	}
-        	return super.getColumnName(column);
         }
 
     }
@@ -635,24 +672,28 @@ public class MatchValidation {
                 StringBuffer sql = new StringBuffer();
                 StringBuffer dupCandItems = new StringBuffer();
                 StringBuffer dupCandWhereClause = new StringBuffer();
-                for ( int i = 0; i<pk.getChildCount(); i++ ) {
-                    if ( i > 0 ) {
-                        dupCandItems.append(",");
-                        dupCandWhereClause.append(" AND ");
-                    }
-                    dupCandItems.append("dup_candidate_").append(i+10);
+                try {
+					for ( int i = 0; i<pk.getChildCount(); i++ ) {
+					    if ( i > 0 ) {
+					        dupCandItems.append(",");
+					        dupCandWhereClause.append(" AND ");
+					    }
+					    dupCandItems.append("dup_candidate_").append(i+10);
 
-                    dupCandWhereClause.append("((current_candidate_").append(i+10);
-                    dupCandWhereClause.append(" IS NULL AND current_candidate_").append(i+20);
-                    dupCandWhereClause.append(" IS NOT NULL)");
-                    dupCandWhereClause.append(" OR ");
-                    dupCandWhereClause.append("(current_candidate_").append(i+10);
-                    dupCandWhereClause.append(" IS NOT NULL AND current_candidate_").append(i+20);
-                    dupCandWhereClause.append(" IS NULL)");
-                    dupCandWhereClause.append(" OR ");
-                    dupCandWhereClause.append("(current_candidate_").append(i+10);
-                    dupCandWhereClause.append(" <> current_candidate_").append(i+20).append("))");
-                }
+					    dupCandWhereClause.append("((current_candidate_").append(i+10);
+					    dupCandWhereClause.append(" IS NULL AND current_candidate_").append(i+20);
+					    dupCandWhereClause.append(" IS NOT NULL)");
+					    dupCandWhereClause.append(" OR ");
+					    dupCandWhereClause.append("(current_candidate_").append(i+10);
+					    dupCandWhereClause.append(" IS NOT NULL AND current_candidate_").append(i+20);
+					    dupCandWhereClause.append(" IS NULL)");
+					    dupCandWhereClause.append(" OR ");
+					    dupCandWhereClause.append("(current_candidate_").append(i+10);
+					    dupCandWhereClause.append(" <> current_candidate_").append(i+20).append("))");
+					}
+				} catch (ArchitectException e1) {
+					throw new ArchitectRuntimeException(e1);
+				}
 
                 sql.append("SELECT DISTINCT ").append(dupCandItems);
                 sql.append(" FROM ");
@@ -676,15 +717,20 @@ public class MatchValidation {
                 crset2.populate(rs);
                 JoinRowSet jrs = new JoinRowSetImpl();
 
-                CachedRowSetImpl newSourceRowSet = getMatchSourceTable(columnFilter.getText().trim());
-                if ( newSourceRowSet != null ) {
-                    sourceTableRowSet = newSourceRowSet;
-                }
+                CachedRowSetImpl newSourceRowSet;
+                try {
+                	newSourceRowSet = getMatchSourceTable(columnFilter.getText().trim());
+                	if ( newSourceRowSet != null ) {
+                		sourceTableRowSet = newSourceRowSet;
+                	}
 
-                for ( i = 0; i<pk.getChildCount(); i++ ) {
-                    SQLObject col = pk.getChild(i);
-                    jrs.addRowSet(sourceTableRowSet,col.getName() );
-                    jrs.addRowSet(crset2, "DUP_CANDIDATE_"+(i+10) );
+                	for ( i = 0; i<pk.getChildCount(); i++ ) {
+                		SQLObject col = pk.getChild(i);
+                		jrs.addRowSet(sourceTableRowSet,col.getName() );
+                		jrs.addRowSet(crset2, "DUP_CANDIDATE_"+(i+10) );
+                	}
+                } catch (ArchitectException e1) {
+                	throw new ArchitectRuntimeException(e1);
                 }
 
 
@@ -695,8 +741,7 @@ public class MatchValidation {
                 output.getSelectionModel().setSelectionInterval(0,0);
                 TableUtils.fitColumnWidths(output, MAX_TABLE_COL_WIDTH);
             } catch (SQLException e1) {
-                SPSUtils.showExceptionDialog(frame,
-                        "Unknown SQL Error", e1, new MatchMakerQFAFactory());
+                MMSUtils.showExceptionDialog(frame, "Unknown SQL Error", e1);
             } finally {
                 try {
                     if ( rs != null )
@@ -754,8 +799,7 @@ public class MatchValidation {
                 searchAction.actionPerformed(null);
                 logger.debug("Apply Auto-match @"+pct.intValue()+"   "+rows+" Updated.");
             } catch (SQLException e1) {
-                SPSUtils.showExceptionDialog(frame,
-                        "Unknown SQL Error", e1, new MatchMakerQFAFactory());
+                MMSUtils.showExceptionDialog(frame, "Unknown SQL Error", e1);
             } finally {
                 try {
                     if ( rs != null )
@@ -810,8 +854,7 @@ public class MatchValidation {
                 searchAction.actionPerformed(null);
                 logger.debug("Reset Auto-match @"+pct.intValue()+"   "+rows+" Updated.");
             } catch (SQLException e1) {
-                SPSUtils.showExceptionDialog(frame,
-                        "Unknown SQL Error", e1, new MatchMakerQFAFactory());
+                MMSUtils.showExceptionDialog(frame, "Unknown SQL Error", e1);
             } finally {
                 try {
                     if ( rs != null )
@@ -894,8 +937,7 @@ public class MatchValidation {
                 // update all records in the bottom table to mark them duplicates of the new master
 
             } catch (Exception e1) {
-                SPSUtils.showExceptionDialog(frame,
-                        "Error While setting master record", e1, new MatchMakerQFAFactory());
+                MMSUtils.showExceptionDialog(frame, "Error While setting master record", e1);
             } finally {
                 try {
                     if ( rs != null )

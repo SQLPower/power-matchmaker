@@ -59,11 +59,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         this.owningFrame = swingSession.getFrame();
     }
 
-	private void itemSelected(TreeSelectionEvent e) {
-		
-	}
-	
-
     @Override
     public void mouseClicked(MouseEvent e) {
         makePopup(e);
@@ -248,9 +243,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 								"An exception occured while creating the merge column rules editor", e1);
 					}
 				}
-			} catch (SQLException e1) {
-				SPSUtils.showExceptionDialogNoReport(owningFrame, 
-						"An SQL exception occured while setting the current editor component", e1);
+			} catch (Exception ex) {
+				MMSUtils.showExceptionDialog(owningFrame, "Couldn't create editor for selected component", ex);
 			}
 		}
 	}

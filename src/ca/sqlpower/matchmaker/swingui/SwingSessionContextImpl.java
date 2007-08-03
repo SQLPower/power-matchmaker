@@ -24,6 +24,7 @@ import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.util.ExceptionReport;
 import ca.sqlpower.util.VersionFormatException;
 
 
@@ -62,6 +63,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     public SwingSessionContextImpl(Preferences prefsRootNode) throws IOException {
         this(prefsRootNode, createDelegateContext(prefsRootNode));
+        ExceptionReport.init();
     }
 
     /**

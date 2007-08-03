@@ -119,8 +119,6 @@ public class RunMatchDialog extends JDialog {
 
 	private final Action runEngineAction;
 
-	private final MatchMakerEngine engine;
-
 	public RunMatchDialog(MatchMakerSwingSession swingSession, Match match,
 			JFrame parentFrame) {
 		super(parentFrame, "Run Match:[" + match.getName() + "]");
@@ -137,7 +135,6 @@ public class RunMatchDialog extends JDialog {
 		});
 		buildUI();
 		setDefaultSelections(match);
-		engine = new MatchMakerEngineImpl(swingSession, match);
 
 	}
 
@@ -401,7 +398,6 @@ public class RunMatchDialog extends JDialog {
 
 		private DefaultStyledDocument engineOutputDoc;
 
-		private ProgressWatcher watcher;
 		private JProgressBar progressBar;
 
 		public RunEngineAction(MatchMakerSession session, Match match,
@@ -498,9 +494,8 @@ public class RunMatchDialog extends JDialog {
 										.getSystemClipboard();
 								clipboard.setContents(selection, selection);
 							} catch (BadLocationException e1) {
-								SPSUtils.showExceptionDialog(d,
-										"Document Copy Error", e1,
-										new MatchMakerQFAFactory());
+								MMSUtils.showExceptionDialog(d,
+										"Document Copy Error", e1);
 							}
 						}
 					});
@@ -557,7 +552,7 @@ public class RunMatchDialog extends JDialog {
 		}
 
 		public void engineStart(EngineEvent e) {
-			watcher = new ProgressWatcher(progressBar,matchEngine);
+			new ProgressWatcher(progressBar,matchEngine);
 			// any output?
 			StreamGobbler errorGobbler = new StreamGobbler(matchEngine
 					.getEngineErrorOutput(), "ERROR", engineOutputDoc,
@@ -644,9 +639,8 @@ public class RunMatchDialog extends JDialog {
 					try {
 						cmdDoc.insertString(0, cmd, att);
 					} catch (BadLocationException e1) {
-						SPSUtils.showExceptionDialog(d,
-								"Unknown Document Error", e1,
-								new MatchMakerQFAFactory());
+						MMSUtils.showExceptionDialog(d,
+								"Unknown Document Error", e1);
 					}
 					SPSUtils.saveDocument(d, cmdDoc,
 							(FileExtensionFilter) SPSUtils.BATCH_FILE_FILTER);

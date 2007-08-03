@@ -42,6 +42,7 @@ import javax.swing.text.DefaultStyledDocument;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -75,14 +76,27 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+/**
+ * The MatchEditor is the GUI for editing all aspects of a {@link Match} instance.
+ */
 public class MatchEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MatchEditor.class);
 
+	/**
+	 * The collection of combo boxes for choosing the match source table (or view).
+	 */
 	private SQLObjectChooser sourceChooser;
+	
+	/**
+	 * The collection of combo boxes for choosing the match result table.
+	 */
 	private SQLObjectChooser resultChooser;
 
-	private JPanel panel;
+	/**
+	 * The panel that holds this editor's GUI.
+	 */
+	private final JPanel panel;
 
 	StatusComponent status = new StatusComponent();
     private JTextField matchId = new JTextField();
@@ -119,23 +133,19 @@ public class MatchEditor implements EditorPane {
 	 * and give it the name of the old one, when we save it, we will remove
 	 * the backup from the folder, and insert the new one.
 	 * @param swingSession  -- a MatchMakerSession
-	 * @param match			-- a Match Object to be edited
-	 * @param folder		-- where the match is
-	 * @param newMatch		-- a flag indicates it's a new match or not
-	 * @throws HeadlessException
+	 * @param match the Match Object to be edited
+	 * @param folder the match's parent folder (XXX isn't this just match.getParent()?)
+	 * @param newMatch a flag that indicates if match is a new match or not
 	 */
-    public MatchEditor(final MatchMakerSwingSession swingSession, Match match,
-    		PlFolder<Match> folder) throws HeadlessException {
-    	super();
+    public MatchEditor(final MatchMakerSwingSession swingSession, Match match, PlFolder<Match> folder) throws ArchitectException {
         this.swingSession = swingSession;
-        if (match == null)
-        	throw new NullPointerException("You can't edit a null plmatch");
+        if (match == null) throw new NullPointerException("You can't edit a null plmatch");
+        if (match.getParent() != folder) throw new IllegalArgumentException("Oh, sometimes the match's parent folder is not the same as the given parent folder. Neat.");
         this.match = match;
         this.folder = folder;
         handler = new FormValidationHandler(status);
-        createResultTableAction =
-        	new CreateResultTableAction(swingSession, match);
-        buildUI();
+        createResultTableAction = new CreateResultTableAction(swingSession, match);
+        panel = buildUI();
         setDefaultSelections();
         handler.addPropertyChangeListener(new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -205,8 +215,8 @@ public class MatchEditor implements EditorPane {
                 			"Saved",JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (Exception ex) {
-                SPSUtils.showExceptionDialog(swingSession.getFrame(),
-                		"Match Interface Not Saved", ex, new MatchMakerQFAFactory());
+                MMSUtils.showExceptionDialog(swingSession.getFrame(),
+                		"Match Interface Not Saved", ex);
             }
 		}
 	};
@@ -260,7 +270,8 @@ public class MatchEditor implements EditorPane {
 			RunMatchDialog p = new RunMatchDialog(swingSession, match, getParentFrame());
 			p.pack();
 			p.setVisible(true);
-		}};
+		}
+	};
 
 	private Action validationStatusAction = new AbstractAction("View Validation ValidateResult") {
 		public void actionPerformed(ActionEvent e) {
@@ -268,7 +279,8 @@ public class MatchEditor implements EditorPane {
 					DataEntryPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation Status"));
 			p.pack();
 			p.setVisible(true);
-		}};
+		}
+	};
 
 	private Action validateMatchAction = new AbstractAction("Validate Match") {
 		public void actionPerformed(ActionEvent e) {
@@ -276,15 +288,13 @@ public class MatchEditor implements EditorPane {
                 if (getMatchValidation() == null){
                     matchValidation = new MatchValidation(swingSession, match);
                 }
-                    matchValidation.showGUI();
-			} catch (HeadlessException e1) {
-				SPSUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unknown Error", e1, new MatchMakerQFAFactory());
-			} catch (SQLException e1) {
-				SPSUtils.showExceptionDialog(swingSession.getFrame(),
-						"Unknown SQL Error", e1, new MatchMakerQFAFactory());
+                matchValidation.showGUI();
+			} catch (Exception ex) {
+				MMSUtils.showExceptionDialog(swingSession.getFrame(),
+						"Could not start Match Validation", ex);
 			}
-		}};
+		}
+	};
 
 	private Action viewBuilderAction = new AbstractAction("View Builder") {
 		public void actionPerformed(ActionEvent e) {
@@ -306,7 +316,8 @@ public class MatchEditor implements EditorPane {
                     		"Couldn't create view builder", ex);
                 }
             }
-		}};
+		}
+	};
 
 	private final Action createResultTableAction;
 
@@ -323,8 +334,7 @@ public class MatchEditor implements EditorPane {
                     matchResultVisualizer = new MatchResultVisualizer(match, swingSession);
                     swingSession.setCurrentEditorComponent(matchResultVisualizer);
                 } catch (Exception ex) {
-                    SPSUtils.showExceptionDialog(panel, "Couldn't create match result visualizer component",
-                            ex, new ArchitectExceptionReportFactory());
+                    MMSUtils.showExceptionDialog(panel, "Couldn't create match result visualizer component", ex);
 
                 }
             }
@@ -343,9 +353,10 @@ public class MatchEditor implements EditorPane {
 			} catch (Exception ex) {
 				SPSUtils.showExceptionDialogNoReport(panel, "An exception occured while picking columns", ex);
 			}
-		}};
+		}
+	};
 
-    private void buildUI() {
+    private JPanel buildUI() {
 
     	matchId.setName("Match ID");
 		sourceChooser = new SQLObjectChooser(swingSession);
@@ -456,11 +467,12 @@ public class MatchEditor implements EditorPane {
         bb.addGridded(matchResultVisualizerButton);
 
 		pb.add(bb.getPanel(), cc.xywh(8,4,1,16,"f,f"));
-		panel = pb.getPanel();
+		
+		return pb.getPanel();
     }
 
 
-    private void setDefaultSelections() {
+    private void setDefaultSelections() throws ArchitectException {
 
     	final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
     	final SQLDatabase loginDB = swingSession.getDatabase();
@@ -535,8 +547,13 @@ public class MatchEditor implements EditorPane {
         // listen to the table change
         sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent e) {
-        		refreshIndexComboBox(null,(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
-        	}});
+        		try {
+					refreshIndexComboBox(null,(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
+				} catch (ArchitectException e1) {
+					throw new ArchitectRuntimeException(e1);
+				}
+        	}
+        });
 
         // listen to the sourceTableIndex changes,
         // for update the index combobox selection
@@ -549,7 +566,11 @@ public class MatchEditor implements EditorPane {
 
         	public void mmPropertyChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {
         		if ( evt.getPropertyName().equals("sourceTableIndex")) {
-        			refreshIndexComboBox(match.getSourceTableIndex(),(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
+        			try {
+						refreshIndexComboBox(match.getSourceTableIndex(),(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
+					} catch (ArchitectException e) {
+						throw new ArchitectRuntimeException(e);
+					}
         		}
         	}
         	//don't care
@@ -585,7 +606,7 @@ public class MatchEditor implements EditorPane {
      * part of the table, we will add it to the combobox as well
      * @param newTable    the sqlTable contains unique index
      */
-	private void refreshIndexComboBox(SQLIndex newIndex, SQLTable newTable) {
+	private void refreshIndexComboBox(SQLIndex newIndex, SQLTable newTable) throws ArchitectException {
 
 		indexComboBox.removeAllItems();
 		if ( newTable != null ) {
@@ -616,6 +637,7 @@ public class MatchEditor implements EditorPane {
      * Copies all the values from the GUI components into the PlMatch
      * object this component is editing, then persists it to the database.
      * @return true if save OK
+     * @throws ArchitectRuntimeException if we cannot set the result table on a match
      */
     public boolean doSave() {
 
@@ -710,10 +732,15 @@ public class MatchEditor implements EditorPane {
         if(resultChooser.getSchemaComboBox().getSelectedItem() != null) {
         	match.setResultTableSchema( ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName());
         }
-        match.setResultTable(new SQLTable(resultTableParent,
-        		trimmedResultTableName,
-        		"MatchMaker result table",
-        		"TABLE", true));
+        
+        try {
+			match.setResultTable(new SQLTable(resultTableParent,
+					trimmedResultTableName,
+					"MatchMaker result table",
+					"TABLE", true));
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
+		}
 
         match.setFilter(filterPanel.getFilterTextArea().getText());
 
@@ -803,7 +830,11 @@ public class MatchEditor implements EditorPane {
 						"Match source table is required");
 			}
 			else {
-				value.populate();
+				try {
+					value.populate();
+				} catch (ArchitectException e) {
+					throw new ArchitectRuntimeException(e);
+				}
 				enableAction(true);
 
 				final String tableName = resultTableName.getText();
@@ -817,8 +848,13 @@ public class MatchEditor implements EditorPane {
 					if ( resultChooser.getSchemaComboBox().getSelectedItem() != null) {
 						schemaName = ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName();
 					}
-					SQLTable resultTable = swingSession.getDatabase().getTableByName(
-							catalogName, schemaName, tableName);
+					SQLTable resultTable;
+					try {
+						resultTable = swingSession.getDatabase().getTableByName(
+								catalogName, schemaName, tableName);
+					} catch (ArchitectException e) {
+						throw new ArchitectRuntimeException(e);
+					}
 					if ( value == resultTable ) {
 						return ValidateResult.createValidateResult(
 								Status.WARN,
@@ -893,8 +929,13 @@ public class MatchEditor implements EditorPane {
 					schemaName = ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName();
 				}
 
-				SQLTable resultTable = swingSession.getDatabase().getTableByName(
-						catalogName, schemaName, value);
+				SQLTable resultTable;
+				try {
+					resultTable = swingSession.getDatabase().getTableByName(
+							catalogName, schemaName, value);
+				} catch (ArchitectException e) {
+					throw new ArchitectRuntimeException(e);
+				}
 				if ( sourceTable == resultTable ) {
 					return ValidateResult.createValidateResult(Status.WARN,
 							"Match result table has the same name as the source table");
@@ -958,7 +999,7 @@ public class MatchEditor implements EditorPane {
 			try {
 				showSqlGui();
 			} catch (Exception ex) {
-				SPSUtils.showExceptionDialogNoReport("Couldn't create SQL Preview", ex);
+				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Couldn't create SQL Preview", ex);
 			}
 		}
 
@@ -969,7 +1010,7 @@ public class MatchEditor implements EditorPane {
 		 */
 		public void showSqlGui()
 			throws InstantiationException, IllegalAccessException,
-			HeadlessException, SQLException {
+			HeadlessException, SQLException, ArchitectException, ClassNotFoundException {
 
 			final DDLGenerator ddlg = DDLUtils.createDDLGenerator(
 					swingSession.getDatabase().getDataSource());
@@ -1016,7 +1057,7 @@ public class MatchEditor implements EditorPane {
 											null);
 							doc.insertString(doc.getLength(),";\n",null);
 						} catch (BadLocationException e1) {
-							SPSUtils.showExceptionDialogNoReport("Unexcepted Document Error",e1);
+							SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Unexcepted Document Error",e1);
 						}
 				    }
 					SPSUtils.saveDocument(swingSession.getFrame(),
