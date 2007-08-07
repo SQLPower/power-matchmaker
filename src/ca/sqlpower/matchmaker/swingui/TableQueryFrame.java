@@ -117,8 +117,7 @@ public class TableQueryFrame extends JFrame {
 		@Override
 		public void doStuff() /*throws Exception*/ {
 
-			ProgressWatcher progressBarUpdater =
-				new ProgressWatcher(progressBar, this);
+			ProgressWatcher.watchProgress(progressBar, this);
 			try {
 			    started = true;
 				db.populate();

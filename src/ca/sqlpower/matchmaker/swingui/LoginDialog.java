@@ -96,9 +96,8 @@ public class LoginDialog implements SwingWorkerRegistry {
             try {
                 session = sessionContext.createSession(dbSource,
                         userID.getText(), new String(password.getPassword()));
-                
                 progressBar.setVisible(true);
-                new ProgressWatcher(progressBar, this);
+                ProgressWatcher.watchProgress(progressBar, this);
 
                 new Thread(this).start();
                 // doStuff() will get invoked soon on the new thread
