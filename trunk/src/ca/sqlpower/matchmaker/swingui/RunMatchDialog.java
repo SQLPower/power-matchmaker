@@ -552,7 +552,7 @@ public class RunMatchDialog extends JDialog {
 		}
 
 		public void engineStart(EngineEvent e) {
-			new ProgressWatcher(progressBar,matchEngine);
+			ProgressWatcher.watchProgress(progressBar,matchEngine);
 			// any output?
 			StreamGobbler errorGobbler = new StreamGobbler(matchEngine
 					.getEngineErrorOutput(), "ERROR", engineOutputDoc,
