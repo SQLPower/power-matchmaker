@@ -296,9 +296,9 @@ public class MatchExportor {
     				SQLPowerUtils.escapeXML(c.isMatchFirstPlusOneInd()?"Y":"N")+
             		"</MATCH_FIRST_PLUS_ONE_IND>");
     		if ( c.getTranslateGroup()!= null ) {
-    			xmlHelper.println(out, "<TRANSLATE_GROUP_NAME>"+
+    			xmlHelper.println(out, "<GROUP_NAME>"+
     					SQLPowerUtils.escapeXML(c.getTranslateGroup().getName())+
-    			"</TRANSLATE_GROUP_NAME>");
+    			"</GROUP_NAME>");
     		}
     		xmlHelper.println(out, "<SEQ_NO>"+
     				c.getSeqNo()+
