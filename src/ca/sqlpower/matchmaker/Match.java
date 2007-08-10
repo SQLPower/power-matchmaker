@@ -71,10 +71,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     private MatchMode type;
 
 	/** The settings for the match engine */
-    private MatchSettings matchSettings = new MatchSettings();;
+    private MatchSettings matchSettings = new MatchSettings();
 
 	/** the settings for the merge engine */
-    private MergeSettings mergeSettings = new MergeSettings();;
+    private MergeSettings mergeSettings = new MergeSettings();
 
 	/** a filter for the tables that are matched */
     private String filter;
