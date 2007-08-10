@@ -74,10 +74,19 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         makePopup(e);
     }
     
+    /**
+	 * If the event is a pop-up trigger this method selects the tree node that
+	 * is clicked on and displays the pop-up menu.
+	 */
     private void makePopup(MouseEvent e) {
         if (e.isPopupTrigger()) {
+        	JTree t = (JTree) e.getSource();
+        	TreePath p = t.getPathForLocation(e.getX(), e.getY());
+        	if (!t.isPathSelected(p)) {
+        		t.setSelectionPath(p);
+        	}
+        	
             m = new JPopupMenu();
-            JTree t = (JTree) e.getSource();
             int row = t.getRowForLocation(e.getX(), e.getY());
             TreePath tp = t.getPathForRow(row);
             m.add(new JMenuItem(new Refresh(swingSession)));
