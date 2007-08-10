@@ -17,7 +17,7 @@
 
 
 		<property name="name" type="string">
-			<column name="GROUP_NAME" length="35"
+			<column name="TRANSLATE_GROUP_NAME" length="35"
 				unique="true" />
 		</property>
 		<bag name="children" lazy="false" order-by="seq_no" cascade="all,delete-orphan">
