@@ -7,6 +7,8 @@ import java.text.DateFormat;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import org.apache.log4j.Logger;
 
@@ -57,7 +59,9 @@ public class MatchInfoPanel implements DataEntryPanel {
 
 		pb.add(new JLabel(match.getName()), cc.xy(4,2));
 		pb.add(new JLabel(folderName), cc.xy(4,4));
-		pb.add(new JLabel(match.getMatchSettings().getDescription()), cc.xy(4,6,"f,f"));
+		JTextArea descriptionText = new JTextArea(match.getMatchSettings().getDescription(), 3, 3);
+		descriptionText.setEditable(false);
+		pb.add(new JScrollPane(descriptionText), cc.xy(4,6,"f,f"));
 		pb.add(new JLabel(match.getType().toString()), cc.xy(4,8));
 
 		pb.add(new JLabel("Logged on As:"), cc.xy(2,10,"r,c"));
