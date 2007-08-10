@@ -2,7 +2,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
@@ -642,11 +641,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		    		SwingSessionContext context = new SwingSessionContextImpl(PreferencesManager.getRootNode());
                     context.showLoginDialog(null);
 		    	} catch (Exception ex) {
-		    		JFrame f = new JFrame("Can't Start MatchMaker");
-		    		f.setSize(new Dimension(0, 0));
-		    		f.setVisible(true);
-		    		SPSUtils.showExceptionDialogNoReport(f, "Couldn't start application!", ex);
-                    System.exit(0);
+		    		JDialog d = SPSUtils.showExceptionDialogNoReport(null, "Couldn't start application!", ex);
+		    		d.addWindowListener(new WindowAdapter() {
+		    			public void windowClosing(WindowEvent e) {
+		    				System.exit(0);
+		    			}
+		    		});
 		    	}
 		    }
 		});
