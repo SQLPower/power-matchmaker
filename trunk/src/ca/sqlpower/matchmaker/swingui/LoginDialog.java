@@ -94,21 +94,10 @@ public class LoginDialog implements SwingWorkerRegistry {
             }
 
             try {
-                session = sessionContext.createSession(dbSource,
-                        userID.getText(), new String(password.getPassword()));
-                progressBar.setVisible(true);
+            	progressBar.setVisible(true);
                 ProgressWatcher.watchProgress(progressBar, this);
-
-                new Thread(this).start();
-                // doStuff() will get invoked soon on the new thread
                 
-            } catch (PLSchemaException ex) {
-                SPSUtils.showExceptionDialogNoReport(frame,
-                        "PLSchema Exception",
-                        "Existing version: "+ex.getCurrentVersion() +
-                        "\nRequired Version: "+ex.getRequiredVersion(),
-                        ex);
-                loginButton.setEnabled(true);
+                new Thread(this).start();
             } catch (Exception ex) {
                 SPSUtils.showExceptionDialogNoReport(frame,
                         "Connection Error", ex );
@@ -122,6 +111,8 @@ public class LoginDialog implements SwingWorkerRegistry {
         	logger.debug("LoginAction.doStuff() was invoked!");
             loginWasSuccessful = false;
             started = true;
+            session = sessionContext.createSession(dbSource,
+                    userID.getText(), new String(password.getPassword()));
             session.getDatabase().populate();
             loginWasSuccessful = true;
             finished = true;
@@ -132,7 +123,17 @@ public class LoginDialog implements SwingWorkerRegistry {
         	logger.debug("LoginAction.cleanup() starting");
             try {
                 if (getDoStuffException() != null) {
-                    SPSUtils.showExceptionDialogNoReport(frame, "Login failed", getDoStuffException());
+                	if (getDoStuffException() instanceof PLSchemaException) {
+                		PLSchemaException ex = (PLSchemaException) getDoStuffException();
+                		SPSUtils.showExceptionDialogNoReport(frame,
+                                "PLSchema Exception",
+                                "Existing version: "+ex.getCurrentVersion() +
+                                "\nRequired Version: "+ex.getRequiredVersion(),
+                                ex);
+                        loginButton.setEnabled(true);
+                	} else {
+                		SPSUtils.showExceptionDialogNoReport(frame, "Login failed", getDoStuffException());
+                	}
                 } else if (
                         session != null &&
                         session.getDatabase() != null &&
