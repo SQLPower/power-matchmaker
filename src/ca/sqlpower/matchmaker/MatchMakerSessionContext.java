@@ -56,11 +56,13 @@ public interface MatchMakerSessionContext {
      * @throws IOException If any bootstrap init files are missing or unreadable.
      * @throws PLSchemaException If the version of the schema is not up to date or is missing
      * @throws VersionFormatException If the format of the version number is not in the form x.y.z
-     * @throws ArchitectException 
+     * @throws ArchitectException If some SQLObject operations fail
+     * @throws MatchMakerConfigurationException  If there is a user-fixable configuration problem.
      */
     public MatchMakerSession createSession(SPDataSource ds,
             String username, String password) throws PLSecurityException,
-            SQLException, IOException, PLSchemaException, VersionFormatException, ArchitectException;
+            SQLException, IOException, PLSchemaException, VersionFormatException,
+            ArchitectException, MatchMakerConfigurationException;
 
     /**
      * Returns the PlDotIni object that manages this context's list of data sources.
