@@ -24,6 +24,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -117,13 +118,17 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     /**
      * XXX this is untestable unless you're connected to a database right now.
      *   It should be given a PLSecurityManager implementation rather than creating one.
-     *   @throws ArchitectException if there was a problem connecting to the database
+     *  
+     * @throws ArchitectException if there was a problem connecting to the database
+     * @throws MatchMakerConfigurationException If there are some user settings that are
+     * not set up properly. 
      */
 	public MatchMakerHibernateSessionImpl(
             MatchMakerSessionContext context,
 			SPDataSource ds)
 		throws PLSecurityException, UnknownFreqCodeException,
-				SQLException, PLSchemaException, VersionFormatException, ArchitectException {
+				SQLException, PLSchemaException, VersionFormatException, ArchitectException,
+                MatchMakerConfigurationException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
 
@@ -145,19 +150,20 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         } catch (SQLException e) {
             String plSchema = ds.getPlSchema();
             if (plSchema == null || plSchema.length() == 0) {
+                // this case is unlikely to happen because we have to check for null when setting up hibernate 
             	plSchema = "not set";
             }
 			SQLException exception = new SQLException(
-                    "Couldn't determine Power*Loader schema version for database " + ds.getDisplayName() + ".\n" +
-                    "Please check that you have set the PL Schema Owner correctly in the DataSource Configuration\n" +
-                    "(PL Schema Owner currently " + plSchema + ").");
+                    "Couldn't determine Repository schema version for database " + ds.getDisplayName() + ".\n" +
+                    "Please check that you have set the Repository Schema Owner correctly in the DataSource Configuration\n" +
+                    "(Repository Schema Owner currently " + plSchema + ").");
             exception.setNextException(e);
             throw exception;
         }
 
         if (plSchemaVersion.compareTo(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION) < 0) {
             throw new PLSchemaException(
-                    "The MatchMaker requires a newer version of the PL Schema" +
+                    "The MatchMaker requires a newer version of the Repository Schema" +
                     " than is installed in the "+ds.getDisplayName()+" database.",
                     plSchemaVersion.toString(), MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.toString());
         }
@@ -274,8 +280,11 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      *
      * @param ds The connection specification for the session factory you want.
      * @return A Hibernate SessionFactory for the given data source.
+     * 
+     * @throws MatchMakerConfigurationException If the given data source is not
+     * properly configured. 
      */
-    private SessionFactory buildHibernateSessionFactory(SPDataSource ds) {
+    private SessionFactory buildHibernateSessionFactory(SPDataSource ds) throws MatchMakerConfigurationException {
         SessionFactory factory;
         Configuration cfg = new Configuration();
 
@@ -286,6 +295,11 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         cfg.configure(configFile);
 
         // last-minute configuration overrides for stuff that can only be known at runtime
+        if (ds.getPlSchema() == null || ds.getPlSchema().trim().length() == 0) {
+            throw new MatchMakerConfigurationException(
+                    "Cannot connect to repository: Data source \"" + ds.getDisplayName() +
+                    "\" does not have the Repository Schema Owner set.");
+        }
         cfg.setProperty("hibernate.default_schema",ds.getPlSchema());
         cfg.setProperty("hibernate.dialect", HibernateUtil.guessHibernateDialect(ds.getParentType()));
         cfg.setProperty(

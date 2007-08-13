@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
+import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.security.PLSecurityException;
@@ -96,7 +97,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     public MatchMakerSwingSession createSession(
             SPDataSource ds, String username, String password)
-    throws PLSecurityException, SQLException, IOException, VersionFormatException, PLSchemaException, ArchitectException {
+    throws PLSecurityException, SQLException, IOException, VersionFormatException,
+            PLSchemaException, ArchitectException, MatchMakerConfigurationException {
         return new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     }
 
