@@ -24,6 +24,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
@@ -137,8 +138,15 @@ public class MatchResultVisualizer implements EditorPane {
                     recordViewer.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mousePressed(MouseEvent e) {
-                            viewer.setFocusedNode(str);
-                            viewer.scrollNodeToVisible(str);
+                            if (SwingUtilities.isLeftMouseButton(e)){
+                                if (e.getClickCount() == 1) {
+                                    viewer.setFocusedNode(str);
+                                    viewer.scrollNodeToVisible(str);
+                                } else if (e.getClickCount() == 2) {
+                                    viewer.setSelectedNode(str);
+                                    viewer.scrollNodeToVisible(str);
+                                }
+                            }
                         }
                     });
                     recordViewerPanel.add(recordViewer);
