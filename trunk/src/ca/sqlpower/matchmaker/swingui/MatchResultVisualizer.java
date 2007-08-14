@@ -3,7 +3,6 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -109,7 +108,7 @@ public class MatchResultVisualizer implements EditorPane {
         
         public void actionPerformed(ActionEvent e) {
             master.makeMaster(duplicate);
-            viewer.repaint();
+            graph.repaint();
         }
     }
     
@@ -118,12 +117,14 @@ public class MatchResultVisualizer implements EditorPane {
         public void nodeDeselected(SourceTableRecord node) {
             recordViewerPanel.removeAll();
             recordViewerPanel.revalidate();
+            recordViewerHeader.removeAll();
+            recordViewerHeader.revalidate();
         }
 
         public void nodeSelected(final SourceTableRecord node) {
             try {
                 recordViewerPanel.removeAll();
-                recordViewerPanel.add(SourceTableRecordViewer.headerPanel(match));
+                recordViewerHeader.removeAll();
                 BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
                     new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
                 List<SourceTableRecord> reachableNodes = bfs.performSearch(graphModel, node);
@@ -132,31 +133,34 @@ public class MatchResultVisualizer implements EditorPane {
                     
                     //XXX: fix the SetMasterAction with proper parameters, just put in str
                     //so it compiles for now
-                    JPanel recordViewer = new SourceTableRecordViewer(
+                    SourceTableRecordViewer recordViewer = 
+                        new SourceTableRecordViewer(
                             str, node, new JButton(new SetMasterAction(node, str)),
-                            new JButton(new SetNoMatchAction(node,str))).getPanel();
-                    recordViewer.addMouseListener(new MouseAdapter() {
+                            new JButton(new SetNoMatchAction(node,str)));
+                    recordViewer.getPanel().addMouseListener(new MouseAdapter() {
                         @Override
                         public void mousePressed(MouseEvent e) {
                             if (SwingUtilities.isLeftMouseButton(e)){
                                 if (e.getClickCount() == 1) {
-                                    viewer.setFocusedNode(str);
-                                    viewer.scrollNodeToVisible(str);
+                                    graph.setFocusedNode(str);
+                                    graph.scrollNodeToVisible(str);
                                 } else if (e.getClickCount() == 2) {
-                                    viewer.setSelectedNode(str);
-                                    viewer.scrollNodeToVisible(str);
+                                    graph.setSelectedNode(str);
+                                    graph.scrollNodeToVisible(str);
                                 }
                             }
                         }
                     });
-                    recordViewerPanel.add(recordViewer);
+                    recordViewerPanel.add(recordViewer.getPanel());
+                    recordViewerHeader.add(recordViewer.getButtonPanel());
                 }
             } catch (Exception ex) {
                 MMSUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex);
             }
             recordViewerPanel.revalidate();
+            recordViewerHeader.revalidate();
         }     
-    }
+    }    
     
     /**
      * This is the match whose result table we're visualizing.
@@ -177,9 +181,27 @@ public class MatchResultVisualizer implements EditorPane {
     /**
      * The visual component that actually displays the match results graph.
      */
-    private final GraphViewer<SourceTableRecord, PotentialMatchRecord> viewer;
+    private final GraphViewer<SourceTableRecord, PotentialMatchRecord> graph;
 
-    private final JPanel recordViewerPanel;
+    /**
+     * The component that is used to layout the RecordViewer objects
+     */
+    private final JPanel recordViewerPanel = new JPanel(new RecordViewerLayout(4));
+
+    /**
+     * The header component that is fixed above the record viewer panel (it
+     * has the match/no match buttons and stuff).
+     * <p>
+     * The layout strategy here is iffy. It would be better if this header and the
+     * recordViewerPanel itself were managed by the same LayoutManager instance,
+     * which would ingore all layout requests for this header, and set the sizes
+     * for both the record viewer body panel and related header component at the
+     * same time (when laying out the body).  The main problem with the current approach
+     * is that it's not possible to ensure there will be enough room for the buttons
+     * in the header when laying out the body, but we can't have the two layout
+     * managers wrestle each other.
+     */
+    private final JPanel recordViewerHeader = new JPanel(new RecordViewerLayout(0));
 
     private final MyGraphSelectionListener selectionListener = new MyGraphSelectionListener();
 
@@ -191,30 +213,43 @@ public class MatchResultVisualizer implements EditorPane {
         this.match = match;
         this.session = session;
 
-        // The top panel
-        JPanel topPanel = new JPanel(new FlowLayout());
-        topPanel.add(new JButton(exportDotFileAction));
-        topPanel.add(new JButton(viewerAutoLayoutAction));
+        JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanel.add(new JButton(exportDotFileAction));
+        buttonPanel.add(new JButton(viewerAutoLayoutAction));
 
         pool = new MatchPool(match);
         pool.findAll();
         graphModel = new MatchPoolGraphModel(pool);
-        viewer = new GraphViewer<SourceTableRecord, PotentialMatchRecord>(graphModel);
-        viewer.setNodeRenderer(new SourceTableNodeRenderer());
-        viewer.setEdgeRenderer(new PotentialMatchEdgeRenderer(viewer));
-        viewer.addSelectionListener(selectionListener );
+        graph = new GraphViewer<SourceTableRecord, PotentialMatchRecord>(graphModel);
+        graph.setNodeRenderer(new SourceTableNodeRenderer());
+        graph.setEdgeRenderer(new PotentialMatchEdgeRenderer(graph));
+        graph.addSelectionListener(selectionListener );
         
         doAutoLayout();
+
+        JPanel graphPanel = new JPanel(new BorderLayout());
+        graphPanel.add(new JScrollPane(graph), BorderLayout.CENTER);
+        graphPanel.add(buttonPanel, BorderLayout.SOUTH);
+                
+        final JScrollPane recordViewerScrollPane =
+            new JScrollPane(recordViewerPanel,
+                    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                    JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         
-        recordViewerPanel = new JPanel(new GridLayout(1, 0));
+        recordViewerScrollPane.getHorizontalScrollBar().setBlockIncrement(100);
+        recordViewerScrollPane.getHorizontalScrollBar().setUnitIncrement(15);
+        recordViewerScrollPane.getVerticalScrollBar().setBlockIncrement(100);
+        recordViewerScrollPane.getVerticalScrollBar().setUnitIncrement(15);
         
+        recordViewerScrollPane.setColumnHeaderView(recordViewerHeader);
+        recordViewerScrollPane.setRowHeaderView(SourceTableRecordViewer.headerPanel(match));
+
         // put it all together
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                new JScrollPane(viewer),
-                new JScrollPane(recordViewerPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                graphPanel,
+                recordViewerScrollPane);
         
         panel = new JPanel(new BorderLayout(12, 12));
-        panel.add(topPanel, BorderLayout.NORTH);
         panel.add(splitPane, BorderLayout.CENTER);
     }
     
@@ -223,11 +258,11 @@ public class MatchResultVisualizer implements EditorPane {
      * by this component.
      */
     public void doAutoLayout() {
-        final GraphModel<SourceTableRecord, PotentialMatchRecord> model = viewer.getModel();
-        final GraphNodeRenderer<SourceTableRecord> renderer = viewer.getNodeRenderer();
+        final GraphModel<SourceTableRecord, PotentialMatchRecord> model = graph.getModel();
+        final GraphNodeRenderer<SourceTableRecord> renderer = graph.getNodeRenderer();
         final int hgap = 10;
         final int vgap = 10;
-        final int targetHeight = viewer.getPreferredScrollableViewportSize().height;
+        final int targetHeight = graph.getPreferredGraphLayoutHeight();
         
         ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord> ccf =
             new ConnectedComponentFinder<SourceTableRecord, PotentialMatchRecord>();
@@ -276,14 +311,14 @@ public class MatchResultVisualizer implements EditorPane {
             for (SourceTableRecord node : component) {
                 final Rectangle bounds = componentNodeBounds.get(node);
                 bounds.translate(x + translate.x, y + translate.y);
-                viewer.setNodeBounds(node, bounds);
+                graph.setNodeBounds(node, bounds);
                 nextx = Math.max(nextx, bounds.x + bounds.width);
             }
             
             y += componentBounds.height + vgap;
         }
         
-        viewer.repaint();
+        graph.repaint();
     }
     
     
