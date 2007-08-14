@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -15,6 +16,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -250,7 +252,10 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         active = new JCheckBox();
         active.setSelected(true);
         colourPicker = new JComboBox(ColorScheme.BREWER_SET19);
-        colourPicker.setRenderer(new ColorCellRenderer());
+        ColorCellRenderer renderer = new ColorCellRenderer();
+        colourPicker.setRenderer(renderer);
+        renderer.setIcon(SPSUtils.createIcon("gear_16", ""));
+        
         
         newMatchCriterion = new JButton(newCriteria);
         newMatchCriterion.setName("New button for "+group.getName());
@@ -506,7 +511,36 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
             setBackground((Color) value);
             setOpaque(true);
             setPreferredSize(new Dimension(50, 50));
+            setIcon(new ColorIcon((Color) value));
             return this;
+        }
+    }
+    
+    /**
+     * This class converts a Color into an icon that has width and
+     * height of 50 pixels.
+     */
+    private class ColorIcon implements Icon
+    {
+        private int HEIGHT = 50;
+        private int WIDTH = 50;
+        private Color colour;
+     
+        public ColorIcon(Color colour) {
+            this.colour = colour;
+        }
+     
+        public int getIconHeight() {
+            return HEIGHT;
+        }
+     
+        public int getIconWidth() {
+            return WIDTH;
+        }
+     
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.setColor(colour);
+            g.fillRect(x, y, WIDTH - 1, HEIGHT - 1);
         }
     }
     
@@ -570,6 +604,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
         group.setActive(active.isSelected());
         
         group.setColour((Color) colourPicker.getSelectedItem());
+        logger.debug("The colour we are saving is " + ((Color) colourPicker.getSelectedItem()));
         
         MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
         dao.save(match);        
