@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
-import java.util.prefs.PreferencesFactory;
+import prefs.PreferencesFactory;
 
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.DBTestUtil;
@@ -125,16 +125,8 @@ public class SwingSessionContextTest extends TestCase {
 			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
-        PreferencesFactory stubPrefsFactory = new PreferencesFactory(){
-			public Preferences systemRoot() {
-				System.out.println("stubPreferencesFactory.systemRoot() was called");
-				return null;
-			}
-			public Preferences userRoot() {
-				System.out.println("stubPreferencesFactory.userRoot() was called");
-				return null;
-			}
-        };
+        PreferencesFactory stubPrefsFactory = new PreferencesFactory();
+
         Preferences memoryPrefs = stubPrefsFactory.userRoot();
         context = new SwingSessionContextImpl(memoryPrefs, stubContext);
     }

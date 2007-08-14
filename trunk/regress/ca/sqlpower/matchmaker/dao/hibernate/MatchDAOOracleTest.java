@@ -38,7 +38,7 @@ public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
     }
 
     @Override
-    protected long insertSampleMatchData(String matchName) throws Exception {
+    protected long insertSampleMatchData(String matchName, Long folderOid) throws Exception {
         final long time = System.currentTimeMillis();
         Connection con = null;
         Statement stmt = null;

@@ -1,5 +1,7 @@
 package ca.sqlpower.matchmaker;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Driver;
@@ -12,9 +14,9 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.dao.hibernate.TestingConnection;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.matchmaker.dao.hibernate.TestingConnection;
 
 /**
  * A collection of useful static methods that you will probably need when
@@ -75,19 +77,15 @@ public class DBTestUtil {
     	/*
     	 * Setup information for SQL Server
     	 */
-    	final String ssUserName = "plautotest";
-    	final String ssPassword = "TIhR2Es0";
-    	final String ssUrl ="jdbc:microsoft:sqlserver://deepthought:1433;SelectMethod=cursor;DatabaseName=plautotest";
+    	PlDotIni pl = new PlDotIni();
+    	try {
+    		pl.read(new File("testbed/pl.regression.ini"));
+    	} catch (IOException e) {
+    		throw new RuntimeException("Could not read from the pl.regression.ini file. " +
+    									"Did you remember to set the pl.regression.ini in the testbed folder?", e);
+    	}
     	
-    	SPDataSource sqlServerDS = new SPDataSource(new PlDotIni());
-    	sqlServerDS.getParentType().setJdbcDriver("com.microsoft.jdbc.sqlserver.SQLServerDriver");
-    	sqlServerDS.setName("Test SQLServer");
-    	sqlServerDS.setUser(ssUserName);
-    	sqlServerDS.setPass(ssPassword);
-    	sqlServerDS.setPlDbType("sql server");
-    	sqlServerDS.setPlSchema("plautotest");
-    	sqlServerDS.setUrl(ssUrl);
-    	return sqlServerDS;
+    	return pl.getDataSource("Test Sql Server");
     }
 
     /**
@@ -98,20 +96,16 @@ public class DBTestUtil {
         /*
          * Setup information for Oracle
          */
-        final String oracleUserName = "mm_test";
-        final String oraclePassword = "cowmoo";
-        final String oracleUrl = "jdbc:oracle:thin:@arthur:1521:test";
-        
-        SPDataSource oracleDataSource = new SPDataSource(new PlDotIni());
-        oracleDataSource.getParentType().setJdbcDriver("oracle.jdbc.driver.OracleDriver");
-        oracleDataSource.setName("Test Oracle");
-    
-        oracleDataSource.setUser(oracleUserName);
-        oracleDataSource.setPass(oraclePassword);
-        oracleDataSource.setPlDbType("ORACLE");
-        oracleDataSource.setPlSchema("mm_test");
-        oracleDataSource.setUrl(oracleUrl);
-        return oracleDataSource;
+    	PlDotIni pl = new PlDotIni();
+    	try {
+    		pl.read(new File("testbed/pl.regression.ini"));
+    	} catch (IOException e) {
+    		throw new RuntimeException("Could not read from the pl.regression.ini file", e);
+    	}
+    	
+    	logger.debug("data source type name for Test Oracle is " + pl.getDataSource("Test Oracle").getParentType().getName());
+    	
+    	return pl.getDataSource("Test Oracle");
     }
 
     /**

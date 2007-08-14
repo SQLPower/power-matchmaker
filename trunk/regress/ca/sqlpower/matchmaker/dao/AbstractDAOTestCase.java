@@ -140,6 +140,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 		List<T> all = dao.findAll();
 		assertNotNull("dao returning null list, it should be empty instead",dao.findAll());
 		for (T item: all) {
+			System.out.println("The item to delete is " + item.getName());
 			dao.delete(item);
 		}
 		assertEquals("There are still some objects of type "+item1.getClass()+" left",0,dao.findAll().size());
