@@ -530,7 +530,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	
     	DDLGenerator ddlg = null;
     	try {
-    		DDLUtils.createDDLGenerator(ds);
+    		ddlg = DDLUtils.createDDLGenerator(ds);
     	} catch (ClassNotFoundException e) {
     		fail("DDLUtils.createDDLGenerator(SPDataSource) threw a ClassNotFoundException");
     	}

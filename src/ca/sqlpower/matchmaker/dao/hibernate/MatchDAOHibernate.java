@@ -66,4 +66,12 @@ public class MatchDAOHibernate extends AbstractMatchMakerDAOHibernate<Match> imp
 		Long count = (Long)query.uniqueResult();
 		return count;
 	}
+	
+	@Override
+	public void save(Match saveMe) {
+		if (saveMe.getParent() == null) {
+			throw new RuntimeException("The match parent folder is null");
+		}
+		super.save(saveMe);
+	}
 }

@@ -12,7 +12,7 @@ public class PreferencesManager {
 
 	private static final Logger logger = Logger.getLogger(PreferencesManager.class);
 
-	private static final PreferencesManager singleton;
+	private static final PreferencesManager singleton = new PreferencesManager();
 
     private final static Preferences prefs =
     	// ArchitectSession is not a copy-and-paste error here:
@@ -21,10 +21,6 @@ public class PreferencesManager {
     private PreferencesManager() {
 		// private constructor, is a singleton
 		logger.info("Create PreferencesManager singleton");
-	}
-
-	static {
-		singleton = new PreferencesManager();
 	}
 
 	public static PreferencesManager getDefaultInstance() {

@@ -122,5 +122,7 @@ public class PlFolder<C extends MatchMakerObject>
 		return f;
 	}
 
-
+	public Long getOid() {
+		return oid;
+	}
 }

@@ -12,6 +12,9 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
+import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 
 public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Match,MatchDAO>  {
 
@@ -25,7 +28,12 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		try {
 			setAllSetters(match, getNonPersitingProperties());
 			match.setName("Match "+count);
-            match.setParent(null);
+			
+			PlFolder f = new PlFolder("test folder" + count);
+			PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+			plFolderDAO.save(f);
+			
+            match.setParent(f);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
@@ -59,6 +67,18 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
       
 		return nonPersistingProperties;
 	}
+	
+	public void testMatchRequiresFolder() throws Exception {
+		Match m = new Match();
+        m.setName("match no folder");
+		
+		try {
+			getDataAccessObject().save(m);
+			fail("The save did not throw an exception when we saved a match with no folder.");
+		} catch (RuntimeException e) {
+			// Expecting the method to throw a runtime exception because the folder is null
+		}
+	}
 
 	public void testIndexSave() throws Exception {
 		Match m = createNewObjectUnderTest();
@@ -76,7 +96,6 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		m.setSourceTableIndex(idx);
 		
 		table.addIndex(idx);
-		
 		getDataAccessObject().save(m);
 		resetSession();
         Connection con = null;
@@ -139,7 +158,13 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
     public void testIfChildrenLoadWorks() throws Exception {
         final long time = System.currentTimeMillis();
         final String matchName = "match_"+time;
-        final long matchOid = insertSampleMatchData(matchName);
+        
+        PlFolder f = new PlFolder();
+		f.setName("test folder");
+		PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+		plFolderDAO.save(f);
+        
+        final long matchOid = insertSampleMatchData(matchName, f.getOid());
         final long groupOid = insertSampleMatchCriteriaGroupData(matchOid, "group_"+time);
         insertSampleMatchCriteriaData(groupOid, "test_crit_"+time);
         
@@ -165,9 +190,16 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         
         Match oldMatch = new Match();
         oldMatch.setName("old");
+		PlFolder f = new PlFolder();
+		oldMatch.setParent(f);
+        
+		f.setName("test folder");
+		PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+		plFolderDAO.save(f);
         
         Match newMatch = new Match();
         newMatch.setName("new");
+		newMatch.setParent(f);
         
         oldMatch.addMatchCriteriaGroup(cg);
         MatchDAO dao = getDataAccessObject();
@@ -228,7 +260,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
      * @return The MATCH_OID value of the new match that was inserted.
      */
     protected abstract long insertSampleMatchData(
-            String matchName) throws Exception;
+            String matchName, Long folderOid) throws Exception;
     
     /**
      * Inserts a sample entry in PL_MATCH_GROUP, and returns its OID.  The group will

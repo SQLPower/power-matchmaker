@@ -8,18 +8,22 @@ import java.util.List;
 
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
+import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 
 public abstract class AbstractMatchMakerCriteriaGroupDAOTestCase extends AbstractDAOTestCase<MatchMakerCriteriaGroup,MatchCriteriaGroupDAO>  {
 
 	Long count=0L;
     Match match;
+    PlFolder folder;
     public AbstractMatchMakerCriteriaGroupDAOTestCase() {
         match= new Match();
         match.setName("Criteria Group Test Match");
         match.setType(Match.MatchMode.BUILD_XREF);
-        match.setParent(null);
+        folder = new PlFolder("main test folder");
+        match.setParent(folder);
         try {
             match.setSession(getSession());
         } catch (Exception e) {
@@ -32,6 +36,8 @@ public abstract class AbstractMatchMakerCriteriaGroupDAOTestCase extends Abstrac
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+		plFolderDAO.save(folder);
         MatchDAO matchDAO = new MatchDAOHibernate(getSession());
         matchDAO.save(match);
     }

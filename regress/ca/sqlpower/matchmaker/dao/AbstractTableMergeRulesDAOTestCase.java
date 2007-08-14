@@ -7,19 +7,23 @@ import java.sql.Statement;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
+import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 
 public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTestCase<TableMergeRules,TableMergeRuleDAO>  {
 
 	Long count=0L;
     Match match;
+    PlFolder folder;
     public AbstractTableMergeRulesDAOTestCase() throws Exception {
         match= new Match();
         match.setName("Merge Rules Test Match");
         match.setType(Match.MatchMode.BUILD_XREF);
-        match.setParent(null);
+        folder = new PlFolder("test folder");
+        match.setParent(folder);
         try {
             match.setSession(getSession());
         } catch (Exception e) {
@@ -32,6 +36,8 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+		plFolderDAO.save(folder);
         MatchDAO matchDAO = new MatchDAOHibernate(getSession());
         matchDAO.save(match);
     }

@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.prefs;
 
 import java.util.Date;
 import java.util.prefs.Preferences;
+import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 
 import junit.framework.TestCase;
 

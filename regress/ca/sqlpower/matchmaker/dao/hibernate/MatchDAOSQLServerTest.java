@@ -108,7 +108,7 @@ public class MatchDAOSQLServerTest extends AbstractPlMatchDAOTestCase {
     }
 
     @Override
-    protected long insertSampleMatchData(String matchName) throws Exception {
+    protected long insertSampleMatchData(String matchName, Long folderOid) throws Exception {
         Connection con = null;
         Statement stmt = null;
         ResultSet keysRS = null;
@@ -116,8 +116,8 @@ public class MatchDAOSQLServerTest extends AbstractPlMatchDAOTestCase {
             con = getSession().getConnection();
             stmt = con.createStatement();
             stmt.executeUpdate(
-                    "INSERT INTO pl_match (match_id, match_type) " +
-                    "VALUES ('"+matchName+"', '"+Match.MatchMode.FIND_DUPES+"')");
+                    "INSERT INTO pl_match (match_id, match_type, folder_oid) " +
+                    "VALUES ('"+matchName+"', '"+Match.MatchMode.FIND_DUPES+"', " + folderOid.longValue() + ")");
             
             keysRS = stmt.executeQuery("SELECT match_oid FROM pl_match WHERE match_id='"+matchName+"'");
             long matchOid;
