@@ -27,11 +27,6 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
     private static final int SCROLL_UNIT = 50;
 
 	private static final Logger logger = Logger.getLogger(GraphViewer.class);
-	
-	/**
-	 * The visual magnification factor for this graph.
-	 */
-	private double zoom = 1.0;
 
 	private GraphModel<V, E> model;
     private GraphNodeRenderer<V> nodeRenderer;
@@ -58,12 +53,25 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
     
     // don't support editing yet, but will have GraphNodeEditor and GraphEdgeEditor
 	private final GraphMouseListener mouseListener = new GraphMouseListener();
+
+    /**
+     * A hint for components performing the viaual graph layout: How many
+     * pixels tall should the graph be, at most?  The graph should always be
+     * laid out as compactly as possible, and this value just sets a limit
+     * for the overall height of the layout. Note that this hint defaults
+     * to Integer.MAX_VALUE, which does not mean we want the graph to take
+     * up that much space; just that we want the graph to be laid out in the
+     * shortest possible vertical strip (and never start a new column).
+     */
+    private int preferredGraphLayoutHeight = Integer.MAX_VALUE;
     
 	public GraphViewer(GraphModel<V, E> model) {
         super();
         this.model = model;
         this.layoutCache = new DefaultGraphLayoutCache<V, E>();
         addMouseListener(mouseListener);
+        setBackground(Color.WHITE);
+        logger.debug("Created new instance: " + System.identityHashCode(this));
     }
     
     public GraphEdgeRenderer<E> getEdgeRenderer() {
@@ -97,15 +105,14 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
     @Override
 	public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        //Save the default colour to be used later
-        Color defaultColor = g2.getColor();
         
-        //Set the colour to white and paint a rectangle so the GUI paints properly
-        g2.setColor(Color.WHITE);
-        //XXX: the x and y co-ordinate should be calculated instead of just using (0,0)
+        // TODO make antialias on/off a public property of this component
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        g2.setColor(getBackground());
         g2.fillRect(0, 0, getWidth(), getHeight());
-        g2.setColor(defaultColor);
+        
+        g2.setColor(getForeground());
         
         for (E edge : model.getEdges()) {
             JComponent er = edgeRenderer.getGraphEdgeRendererComponent(edge);
@@ -131,13 +138,12 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
 	@Override
 	public Dimension getPreferredSize() {
 		Rectangle g = layoutCache.getBounds();
-		Dimension d = new Dimension((int)(g.width*zoom), (int)(g.height*zoom));
-		return d;
+		return new Dimension(g.width, g.height);
 	}
 	
 	public Dimension getPreferredScrollableViewportSize() {
-        final int height = 400;
-		return new Dimension((int) (1.618 * height), height);
+        int width = getPreferredSize().width;
+		return new Dimension(width, (int) (1.618 * width));
 	}
 
 	public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
@@ -163,14 +169,6 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
     public GraphModel<V, E> getModel() {
         return model;
     }
-
-	public double getZoom() {
-		return zoom;
-	}
-
-	public void setZoom(double zoom) {
-		this.zoom = zoom;
-	}
 
     public Rectangle getNodeBounds(V node) {
         Rectangle nodeBounds = layoutCache.getNodeBounds(node);
@@ -246,5 +244,13 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
         //is at the centre of the screen as much as possible.
         scrollRectToVisible(new Rectangle(r.x-r.width*2, r.y-r.height*2, 
                 r.width * 5, r.height * 5));
+    }
+
+    /**
+     * A hint for components performing the viaual graph layout: How many
+     * pixels tall should the graph be, at most?
+     */
+    public int getPreferredGraphLayoutHeight() {
+        return preferredGraphLayoutHeight;
     }
 }
