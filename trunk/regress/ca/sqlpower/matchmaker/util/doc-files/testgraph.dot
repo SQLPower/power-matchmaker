@@ -1,0 +1,37 @@
+digraph cow
+	{
+
+a2 -> a1 [style=dashed arrowhead=none];
+a2 -> a3 [style=dashed arrowhead=none];
+
+b2 -> b1;
+b2 -> b3 [style=dashed arrowhead=none];
+
+c1 -> c2;
+c2 -> c3 [style=dashed arrowhead=none];
+
+d1 -> d2;
+d2 -> d3;
+
+e1 -> e2;
+e3 -> e2;
+
+f2 -> f1;
+f2 -> f3;
+
+g1 -> g2;
+g2 -> g3 [style=dashed arrowhead=none];
+g3 -> g4;
+
+h2 -> h1;
+h2 -> h3 [style=dashed arrowhead=none];
+h3 -> h4;
+
+cycle1 -> cycle2;
+cycle2 -> cycle3;
+cycle3 -> cycle1;
+
+unicycle -> unicycle;
+
+loner;
+	}
