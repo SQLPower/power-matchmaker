@@ -33,13 +33,17 @@ public class CachableTable {
     private SQLTable cachedTable;
 
     /**
-     * Create a new cachable table.
+     * Creates a new cachable table object that uses the database and
+     * session of the given mmo, and fires property change events on its
+     * behalf using the given property name.
      * 
-     * Requres and abstract match maker object for event generation and
-     * as a way to get the session and the database out of the session
-     * So these need to be accessable from the match maker object.
-     * 
-     * propertyName is the name the property change events use for events
+     * @param mmo The match maker object this cachable table acts on behalf
+     * of.  Unfortunately, we have to explicitly ask for an AbstractMatchMakerObject
+     * because this class needs to access its propertyChangeSupport object and
+     * its session reference (these things are not declared on the MatchMakerObject
+     * interface, and shouldn't be). 
+     * @param propertyName the property name that all property change events fired
+     * on behalf of mmo will report.
      */
     CachableTable(AbstractMatchMakerObject mmo,String propertyName) {
 		this.propertyName = propertyName;
