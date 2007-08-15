@@ -82,10 +82,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	/** an optional source for the match created from a view */
     private ViewSpec view;
 
-    /** foler name for merge rules (table) */
+    /** Folder name for merge rules (table). */
     public final String MATCH_FOLDER_MERGE = "Merge Rules";
     
-    /** foler name for match criteria group */
+    /** Folder name for match criteria group. */
     public final String MATCH_FOLDER_MATCH_CRITERIA_GROUP = "Match Rules";
     
     /**
