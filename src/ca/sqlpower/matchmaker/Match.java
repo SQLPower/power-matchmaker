@@ -86,7 +86,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public final String MATCH_FOLDER_MERGE = "Merge Rules";
     
     /** foler name for match criteria group */
-    public final String MATCH_FOLDER_MATCH_CRITERIA_GROUP = "Match Criteria Groups";
+    public final String MATCH_FOLDER_MATCH_CRITERIA_GROUP = "Match Rules";
     
     /**
      * Contains the match criteria and the match critera groups
