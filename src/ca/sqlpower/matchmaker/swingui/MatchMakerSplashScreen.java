@@ -25,12 +25,12 @@ public class MatchMakerSplashScreen {
 
 	private JPanel splashScreen;
 	private MatchMakerSession session;
-	public MatchMakerSplashScreen(MatchMakerSession session) throws SQLException {
+	public MatchMakerSplashScreen(MatchMakerSession session) {
 		this.session = session;
 		buildUI();
 	}
 
-	private void buildUI() throws SQLException{
+	private void buildUI() {
 
 		JLabel spgLogo = new JLabel(new ImageIcon(getClass().getResource("/icons/sqlpower_transparent.png")));
 		JLabel mmLogo = new JLabel(new ImageIcon(getClass().getResource("/icons/matchmaker_huge.png")));
@@ -38,11 +38,29 @@ public class MatchMakerSplashScreen {
 		Font f = welcome.getFont();
 		Font newf = new Font(f.getName(),f.getStyle(),f.getSize()*2);
 		welcome.setFont(newf);
+        
+        StringBuilder summary = new StringBuilder();
+        summary.append("<html><table><tr>");
+        summary.append("<td>Database:</td><td>").append(session.getDatabase().getName()).append("</td>");
+        summary.append("</tr><tr>");
+        summary.append("<td>Database User Name:</td><td>").append(session.getDBUser()).append("</td>");
+        summary.append("</tr><tr>");
+        
         Connection con = null;
-        DatabaseMetaData dbmd = null;
         try {
             con = session.getConnection();
-            dbmd = con.getMetaData();
+            DatabaseMetaData dbmd = con.getMetaData();
+            summary.append("<td>Database Product Name:</td><td>").append(dbmd.getDatabaseProductName()).append("</td>");
+            summary.append("</tr><tr>");
+            summary.append("<td>Database Product Version:</td><td>").append(dbmd.getDatabaseProductVersion()).append("</td>");
+            summary.append("</tr><tr>");
+            summary.append("<td>Database Driver Name:</td><td>").append(dbmd.getDriverName()).append("</td>");
+            summary.append("</tr><tr>");
+            summary.append("<td>Database Driver Version:</td><td>").append(dbmd.getDriverVersion()).append("</td>");
+        } catch (SQLException e) {
+            logger.error("Couldn't get database metadata!", e);
+            summary.append("<td colspan=2>Database information not available: ")
+                    .append(e.getMessage()).append("</td>");
         } finally {
             try {
                 if (con != null) {
@@ -52,26 +70,12 @@ public class MatchMakerSplashScreen {
                 logger.warn("Couldn't close connection", ex);
             }
         }
-		JLabel databaseLabel = new JLabel("Database:");
-		databaseLabel.setVerticalAlignment(JLabel.TOP);
-		JLabel databaseInfo = new JLabel("<html>" + session.getDatabase().getName()+"</html>");
-		JLabel dbUserLabel = new JLabel("Database Username:");
-		dbUserLabel.setVerticalAlignment(JLabel.TOP);
-		JLabel dbUserInfo = new JLabel("<html>" +session.getDBUser()+"</html>");
-		JLabel dbProdNameLabel = new JLabel("Database product name: ");
-		dbProdNameLabel.setVerticalAlignment(JLabel.TOP);
-		JLabel dbProdNameInfo = new JLabel("<html>" +dbmd.getDatabaseProductName()+"</html>");
-		JLabel dbProdVersionLabel = new JLabel("Database product version: ");
-		dbProdVersionLabel.setVerticalAlignment(JLabel.TOP);
-		JLabel dbProdVersionInfo = new JLabel("<html>" +dbmd.getDatabaseProductVersion()+"</html>");
-		JLabel dbDriverNameLabel = new JLabel("Database driver name: ");
-		dbDriverNameLabel.setVerticalAlignment(JLabel.TOP);
-		JLabel dbDriverNameInfo = new JLabel("<html>" +dbmd.getDriverName()+"</html>");
-		JLabel dbDriverVersionLabel = new JLabel("Database driver version: ");
-		dbDriverVersionLabel.setVerticalAlignment(JLabel.TOP);
-		JLabel dbDriverVersionInfo = new JLabel("<html>" +dbmd.getDriverVersion()+"</html>");
-        JLabel plSchemaVersionLabel = new JLabel("Power*Loader Schema Version: ");
-        JLabel plSchemaVersionInfo = new JLabel("<html>" +session.getPLSchemaVersion()+"</html>");
+        
+        summary.append("</tr><tr>");
+        summary.append("<td>Power*Loader Schema Version:</td><td>").append(session.getPLSchemaVersion()).append("</td>");
+        summary.append("</tr></table></html>");
+        JLabel summaryLabel = new JLabel(summary.toString());
+        
         JLabel sqlpower =
 			new JLabel("<html><div align='center'>SQL Power Group Inc.<br>http://www.sqlpower.ca/</div></html>");
 
@@ -80,7 +84,6 @@ public class MatchMakerSplashScreen {
 		int rowCount =0;
 		PanelBuilder pb = new PanelBuilder(layout);
 		CellConstraints c = new CellConstraints();
-		CellConstraints c2 = new CellConstraints();
 		pb.appendRow(new RowSpec("10dlu"));
 		rowCount++;
 		pb.appendRow(new RowSpec("pref"));
@@ -99,41 +102,8 @@ public class MatchMakerSplashScreen {
 		rowCount++;
 		pb.appendRow(new RowSpec("fill:pref"));
 		rowCount++;
-		pb.add(databaseLabel,c.xy(2, rowCount),databaseInfo,c2.xy(4, rowCount));
+		pb.add(summaryLabel,c.xyw(2, rowCount, 3));
 		pb.appendRow(new RowSpec("4dlu"));
-		rowCount++;
-		pb.appendRow(new RowSpec("fill:pref"));
-		rowCount++;
-		pb.add(dbUserLabel,c.xy(2, rowCount),dbUserInfo,c2.xy(4, rowCount));
-		pb.appendRow(new RowSpec("4dlu"));
-		rowCount++;
-		pb.appendRow(new RowSpec("fill:pref"));
-		rowCount++;
-		pb.add(dbProdNameLabel,c.xy(2, rowCount),dbProdNameInfo,c2.xy(4, rowCount));
-		pb.appendRow(new RowSpec("4dlu"));
-		rowCount++;
-		pb.appendRow(new RowSpec("fill:pref"));
-		rowCount++;
-		pb.add(dbProdVersionLabel,c.xy(2, rowCount),dbProdVersionInfo,c2.xy(4, rowCount));
-		pb.appendRow(new RowSpec("4dlu"));
-		rowCount++;
-
-		pb.appendRow(new RowSpec("fill:pref"));
-		rowCount++;
-		pb.add(dbDriverNameLabel,c.xy(2, rowCount),dbDriverNameInfo,c2.xy(4, rowCount));
-        pb.appendRow(new RowSpec("4dlu"));
-		rowCount++;
-
-		pb.appendRow(new RowSpec("fill:pref"));
-		rowCount++;
- 		pb.add(dbDriverVersionLabel,c.xy(2, rowCount),dbDriverVersionInfo,c2.xy(4, rowCount));
-		pb.appendRow(new RowSpec("4dlu"));
-		rowCount++;
-
-        pb.appendRow(new RowSpec("fill:pref"));
-        rowCount++;
-        pb.add(plSchemaVersionLabel,c.xy(2, rowCount), plSchemaVersionInfo,c2.xy(4, rowCount));
-        pb.appendRow(new RowSpec("4dlu"));
         rowCount++;
 
 		pb.appendRow(new RowSpec("pref:grow"));

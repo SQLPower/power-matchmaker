@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -107,6 +108,7 @@ public class MatchEditor implements EditorPane {
     private JTextField resultTableName = new JTextField();
     private JButton viewBuilder;
     private JButton createResultTable;
+    private JButton createIndexButton;
     private JButton saveMatch;
     
     // all of these buttons are now DOOOOOMED!
@@ -114,7 +116,6 @@ public class MatchEditor implements EditorPane {
     private JButton runMatch;
     private JButton validationStatus;
     private JButton matchResultVisualizerButton;
-    private JButton createIndexButton;
     
     private FilterComponents filterPanel;
     private MatchResultVisualizer matchResultVisualizer;
@@ -182,11 +183,7 @@ public class MatchEditor implements EditorPane {
         				logger.debug("we have to close the editor without saving");
         				handler.resetHasValidated();
         				panel.setVisible(false);
-        				try {
-							swingSession.setCurrentEditorComponent(null);
-						} catch (SQLException e) {
-							throw new RuntimeException(e);
-						}
+        				swingSession.setCurrentEditorComponent(null);
         				parentFolder.removeMatchMakerListener(this);
         			}
         		}
@@ -227,11 +224,7 @@ public class MatchEditor implements EditorPane {
 			editor = new MatchMakerCriteriaGroupEditor(swingSession,
 					match,
 					new MatchMakerCriteriaGroup());
-			try {
-				swingSession.setCurrentEditorComponent(editor);
-			} catch (SQLException e) {
-				throw new RuntimeException(e);
-			}
+			swingSession.setCurrentEditorComponent(editor);
 		}
 	};
 
@@ -434,9 +427,6 @@ public class MatchEditor implements EditorPane {
 		bb.addGridded(saveMatch);
 		bb.addRelatedGap();
 		bb.addRelatedGap();
-		bb.addGridded(new JButton(newMatchGroupAction));
-		bb.addRelatedGap();
-		bb.addRelatedGap();
 		bb.addGridded(showAuditInfo);
 		bb.addRelatedGap();
 		bb.addRelatedGap();
@@ -483,9 +473,7 @@ public class MatchEditor implements EditorPane {
         Validator v = new MatchNameValidator(swingSession,match);
         handler.addValidateObject(matchId,v);
 
-        List<Action> actionsToDisable = new ArrayList<Action>();
-        actionsToDisable.add(newMatchGroupAction);
-        Validator v2 = new MatchSourceTableValidator(actionsToDisable);
+        Validator v2 = new MatchSourceTableValidator(Collections.singletonList(saveAction));
         handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
 
         Validator v2a = new MatchSourceTableIndexValidator();

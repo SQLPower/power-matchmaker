@@ -460,11 +460,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         tree.setShowsRootHandles(true);
 
 		splitPane.setLeftComponent(new JScrollPane(tree));
-        try {
-			setCurrentEditorComponent(null);
-		} catch (SQLException e1) {
-			throw new RuntimeException(e1);
-		}
+		setCurrentEditorComponent(null);
 		cp.add(splitPane);
 
 		frame.setBounds(sessionContext.getFrameBounds());
@@ -553,7 +549,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 *            null, then no editor will be showing.
      * @throws SQLException
 	 */
-	public void setCurrentEditorComponent(EditorPane pane) throws SQLException {
+	public void setCurrentEditorComponent(EditorPane pane) {
 		if (pane == oldPane && pane != null) {
 			return;	// User clicked on same item, don't hassle them
 		}
