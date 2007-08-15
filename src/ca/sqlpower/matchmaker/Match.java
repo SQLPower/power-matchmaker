@@ -83,10 +83,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     private ViewSpec view;
 
     /** Folder name for merge rules (table). */
-    public final String MATCH_FOLDER_MERGE = "Merge Rules";
+    public static final String MERGE_RULES_FOLDER_NAME = "Merge Rules";
     
     /** Folder name for match criteria group. */
-    public final String MATCH_FOLDER_MATCH_CRITERIA_GROUP = "Match Rules";
+    public static final String MATCH_RULES_FOLDER_NAME = "Match Rules";
     
     /**
      * Contains the match criteria and the match critera groups
@@ -124,9 +124,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
 	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
 	    xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
-		matchCriteriaGroupFolder.setName(MATCH_FOLDER_MATCH_CRITERIA_GROUP);
+		matchCriteriaGroupFolder.setName(MATCH_RULES_FOLDER_NAME);
         this.addChild(matchCriteriaGroupFolder);
-		tableMergeRulesFolder.setName(MATCH_FOLDER_MERGE);
+		tableMergeRulesFolder.setName(MERGE_RULES_FOLDER_NAME);
         this.addChild(tableMergeRulesFolder);
         
         setType(MatchMode.FIND_DUPES);
