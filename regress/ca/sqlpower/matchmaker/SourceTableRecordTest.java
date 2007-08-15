@@ -22,7 +22,7 @@ public class SourceTableRecordTest extends TestCase {
     
     public void testNoNullKeyValuesAllowed() {
         try {
-            new SourceTableRecord(session, match, pool, null);
+            new SourceTableRecord(session, match, (List<Object>) null);
             fail("It allowed a null keyvalues list");
         } catch (NullPointerException ex) {
             // expected

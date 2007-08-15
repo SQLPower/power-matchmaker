@@ -2,6 +2,7 @@ package ca.sqlpower.matchmaker.graph;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -33,8 +34,11 @@ public class NonDirectedUserValidatedMatchPoolGraphModel implements
     
     private final MatchPool pool;
     
-    public NonDirectedUserValidatedMatchPoolGraphModel(MatchPool pool) {
+    private Set<PotentialMatchRecord> additionalPMRs;
+    
+    public NonDirectedUserValidatedMatchPoolGraphModel(MatchPool pool, Set<PotentialMatchRecord> additionalPMRs ) {
         this.pool = pool;
+        this.additionalPMRs = additionalPMRs;
     }
     
     /**
@@ -42,17 +46,21 @@ public class NonDirectedUserValidatedMatchPoolGraphModel implements
      * connecting the two nodes has a decided master SourceTableRecord 
      */
     public Collection<SourceTableRecord> getAdjacentNodes(SourceTableRecord node) {
-        Collection<SourceTableRecord> adjacentNodes = new ArrayList<SourceTableRecord>();
-        for (PotentialMatchRecord pmr : getEdges()){
-            if (pmr.getMaster() == node){
-                adjacentNodes.add(pmr.getDuplicate());
-            } else if (pmr.getDuplicate() == node){
-                adjacentNodes.add(pmr.getMaster());
-            } else {
-                // edge belongs to some other nodes in the graph
-            }
+    	Collection<SourceTableRecord> adjacentNodes = new ArrayList<SourceTableRecord>();
+    	logger.debug("The number of edges for this node is " + getEdges().size());
+    	for (PotentialMatchRecord pmr : getEdges()){
+    		if (pmr.getMaster() == node){
+    			adjacentNodes.add(pmr.getDuplicate());
+    		} else if (pmr.getDuplicate() == node){
+    			adjacentNodes.add(pmr.getMaster());
+    		} else if (additionalPMRs.contains(pmr) && pmr.getOriginalLhs() == node) {
+    			adjacentNodes.add(pmr.getOriginalRhs());
+    		} else if (additionalPMRs.contains(pmr) && pmr.getOriginalRhs() == node){
+    			adjacentNodes.add(pmr.getOriginalLhs());
+    		} else {
+    			// edge belongs to some other nodes in the graph
+    		}
         }
-        
         return adjacentNodes;
     }
 

@@ -192,12 +192,38 @@ public class MatchPool {
     private SourceTableRecord makeSourceTableRecord(List<Object> keyValues) {
         SourceTableRecord node = sourceTableRecords.get(keyValues);
         if (node == null) {
-            node = new SourceTableRecord(session, match, this, keyValues);
-            sourceTableRecords.put(keyValues, node);
+            node = new SourceTableRecord(session, match, keyValues);
+            addSourceTableRecord(node);
         }
         return node;
     }
+    
+    /**
+     * Adds the given source table record to this match pool.  This is normally only
+     * done from the test suite, which sets up various scenarios to test.  In real life,
+     * source table records get added to the match pool on demand, and they come directly
+     * from SQL SELECTs on the source table.  See {@link #findAll()} for details.
+     * 
+     * @param str The record to add. Its parent pool will be modified to point to
+     * this pool.
+     */
+    public void addSourceTableRecord(SourceTableRecord str) {
+    	str.setPool(this);
+        sourceTableRecords.put(str.getKeyValues(), str);
+    }
 
+    /**
+     * Adds the given potential match to this pool.  This is normally only
+     * done from the test suite, which sets up various scenarios to test.  In real life,
+     * source table records get added to the match pool via a
+     * SQL SELECT on the match result table.  See {@link #findAll()} for details.
+     * 
+     * @param pmr The record to add
+     */
+    public void addPotentialMatch(PotentialMatchRecord pmr) {
+    	potentialMatches.add(pmr);
+    }
+    
     /**
      * Returns the set of PotentialMatchRecords in this match pool.  
      * Before calling this, you should populate the pool by calling
