@@ -108,14 +108,15 @@ public class MatchEditor implements EditorPane {
     private JButton viewBuilder;
     private JButton createResultTable;
     private JButton saveMatch;
+    
+    // all of these buttons are now DOOOOOMED!
     private JButton showAuditInfo;
     private JButton runMatch;
     private JButton validationStatus;
-    private JButton validateMatch;
     private JButton matchResultVisualizerButton;
     private JButton createIndexButton;
+    
     private FilterComponents filterPanel;
-    private MatchValidation matchValidation;
     private MatchResultVisualizer matchResultVisualizer;
 
     private final MatchMakerSwingSession swingSession;
@@ -281,20 +282,6 @@ public class MatchEditor implements EditorPane {
 		}
 	};
 
-	private Action validateMatchAction = new AbstractAction("Validate Match") {
-		public void actionPerformed(ActionEvent e) {
-			try {
-                if (getMatchValidation() == null){
-                    matchValidation = new MatchValidation(swingSession, match);
-                }
-                matchValidation.showGUI();
-			} catch (Exception ex) {
-				MMSUtils.showExceptionDialog(swingSession.getFrame(),
-						"Could not start Match Validation", ex);
-			}
-		}
-	};
-
 	private Action viewBuilderAction = new AbstractAction("View Builder") {
 		public void actionPerformed(ActionEvent e) {
             SQLTable t = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
@@ -382,7 +369,6 @@ public class MatchEditor implements EditorPane {
     	showAuditInfo = new JButton(showAuditInfoAction);
     	runMatch= new JButton(runMatchAction);
     	validationStatus = new JButton(validationStatusAction);
-    	validateMatch = new JButton(validateMatchAction);
         matchResultVisualizerButton = new JButton(matchResultVisualizerAction);
         createIndexButton = new JButton(createIndexAction );
 
@@ -458,9 +444,6 @@ public class MatchEditor implements EditorPane {
 		bb.addRelatedGap();
 		bb.addRelatedGap();
 		bb.addGridded(validationStatus);
-        bb.addRelatedGap();
-        bb.addRelatedGap();
-        bb.addGridded(validateMatch);
         bb.addRelatedGap();
         bb.addRelatedGap();
         bb.addGridded(matchResultVisualizerButton);
@@ -942,14 +925,6 @@ public class MatchEditor implements EditorPane {
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
-    }
-
-    public MatchValidation getMatchValidation() {
-        return matchValidation;
-    }
-
-    public void setMatchValidation(MatchValidation matchValidation) {
-        this.matchValidation = matchValidation;
     }
 
 	public boolean hasUnsavedChanges() {
