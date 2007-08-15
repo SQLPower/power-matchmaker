@@ -159,7 +159,8 @@ public class MatchPool {
                 SourceTableRecord lhs = makeSourceTableRecord(lhsKeyValues);
                 SourceTableRecord rhs = makeSourceTableRecord(rhsKeyValues);
                 PotentialMatchRecord pmr =
-                    new PotentialMatchRecord(this, criteriaGroup, matchStatus, lhs, rhs);                
+                    new PotentialMatchRecord(criteriaGroup, matchStatus, lhs, rhs);
+                pmr.setPool(this);
                 potentialMatches.add(pmr);
                 lhs.addPotentialMatch(pmr);
                 rhs.addPotentialMatch(pmr);
@@ -221,6 +222,7 @@ public class MatchPool {
      * @param pmr The record to add
      */
     public void addPotentialMatch(PotentialMatchRecord pmr) {
+    	pmr.setPool(this);
     	potentialMatches.add(pmr);
     }
     
@@ -293,4 +295,20 @@ public class MatchPool {
         }
 
     }
+    
+    public SourceTableRecord getSourceTableRecord(List<Object> key) {
+    	return sourceTableRecords.get(key);
+    }
+
+	public void defineMaster(SourceTableRecord a1, SourceTableRecord a2) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchPool.defineMaster()");
+		
+	}
+
+	public void defineMasterOfAll(SourceTableRecord a1) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchPool.defineMasterOfAll()");
+		
+	}
 }

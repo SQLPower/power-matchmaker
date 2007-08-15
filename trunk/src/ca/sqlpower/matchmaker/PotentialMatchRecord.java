@@ -13,7 +13,7 @@ public class PotentialMatchRecord {
     /**
      * The pool of matches (graph) that this match record belongs to.
      */
-    private final MatchPool pool;
+    private MatchPool pool;
     
     /**
      * The group of criteria that caused the two source table records
@@ -108,12 +108,10 @@ public class PotentialMatchRecord {
      * @param originalRhs the other SourceTableRecord attached to this edge
      */
     public PotentialMatchRecord(
-            MatchPool pool,
             MatchMakerCriteriaGroup criteriaGroup,
             MatchType matchStatus,
             SourceTableRecord originalLhs,
             SourceTableRecord originalRhs) {
-        this.pool = pool;    
         this.criteriaGroup = criteriaGroup;
         this.matchStatus = matchStatus;
         this.originalLhs = originalLhs;
@@ -261,5 +259,9 @@ public class PotentialMatchRecord {
         "; matchStatus="+matchStatus+
         "; masterSide="+master;
     }
+
+	public void setPool(MatchPool matchPool) {
+		this.pool = matchPool;
+	}
     
 }
