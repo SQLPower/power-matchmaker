@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -63,9 +64,10 @@ public class SourceTableRecord {
         new HashSet<PotentialMatchRecord>();
 
     /**
-     * The match pool that this source table record belongs to.
+     * The match pool that this source table record belongs to.  The pool
+     * should set up this reference when this item is added to it.
      */
-    private final MatchPool pool;
+    private MatchPool pool;
     
     public List<Object> getKeyValues() {
         return keyValues;
@@ -77,6 +79,7 @@ public class SourceTableRecord {
      * 
      * @param session The MatchMakerSession of the given Match
      * @param match The Match this record is attached to
+     * @param pool The match pool that this record belongs to
      * @param keyValues The values of the unique index on the match's source
      * table.  These values must be specified in the same order as the match's
      * sourceTableIndex columns. Not allowed to be null.
@@ -84,16 +87,25 @@ public class SourceTableRecord {
     public SourceTableRecord(
             final MatchMakerSession session,
             final Match match,
-            final MatchPool pool,
             List<Object> keyValues) {
         super();
         this.session = session;
         this.match = match;
-        this.pool = pool;
         this.keyValues = Collections.unmodifiableList(new ArrayList<Object>(keyValues));
         this.computedHashCode = this.keyValues.hashCode();
     }
 
+    /**
+     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Match, MatchPool, List)}
+     * but takes key values as a variable length argument list.  Mostly useful in setting up test
+     * cases.
+     */
+    public SourceTableRecord(
+            final MatchMakerSession session,
+            final Match match,
+            Object ... keyValues) {
+    	this(session, match, Arrays.asList(keyValues));
+    }
 
     /**
      * Looks up and returns the column values for the row this object
@@ -262,16 +274,17 @@ public class SourceTableRecord {
             throw new IllegalArgumentException("Can't be my own master");
         }
         logger.debug("MakeMaster: this="+this+"; duplicate="+duplicate);
-        PotentialMatchRecord masterDupMatchRecord = 
-            getMatchRecordByOriginalAdjacentSourceTableRecord(duplicate);
         
         GraphModel<SourceTableRecord, PotentialMatchRecord> graph =
-            new NonDirectedUserValidatedMatchPoolGraphModel(pool);
+            new NonDirectedUserValidatedMatchPoolGraphModel(pool, new HashSet<PotentialMatchRecord>());
+        logger.debug("The size of the graph is " + graph.getNodes().size());
         BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
             new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
         
         Collection<SourceTableRecord> reachable = bfs.performSearch(graph, this);
+        logger.debug("There are " + reachable.size() + " node(s) to set the master to");
         for (SourceTableRecord node : reachable) {
+        	logger.debug("The node is " + node);
             if (node == this || node == duplicate) continue;
             PotentialMatchRecord pmr = 
                 node.getMatchRecordByOriginalAdjacentSourceTableRecord(this);
@@ -293,6 +306,21 @@ public class SourceTableRecord {
         logger.debug("Stub call: SourceTableRecord.makeNoMatch()");
         
     }
+    
+    /**
+     * Returns the pool that this source table record belongs to.
+     */
+    public MatchPool getPool() {
+		return pool;
+	}
+    
+    /**
+     * Changes which pool this source table thinks it belongs to.  Normally,
+     * only the pool itself should call this method.
+     */
+    public void setPool(MatchPool pool) {
+		this.pool = pool;
+	}
     
     @Override
     public String toString() {
