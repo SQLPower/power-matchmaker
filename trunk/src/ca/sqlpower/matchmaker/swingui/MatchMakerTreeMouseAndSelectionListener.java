@@ -3,7 +3,6 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.SQLException;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
@@ -32,6 +31,7 @@ import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
+import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
@@ -51,8 +51,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
     private final MatchMakerSwingSession swingSession;
 
     private final JFrame owningFrame;
-
-    private JPopupMenu m;
 
     public MatchMakerTreeMouseAndSelectionListener(MatchMakerSwingSession swingSession) {
         this.swingSession = swingSession;
@@ -79,6 +77,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 	 * is clicked on and displays the pop-up menu.
 	 */
     private void makePopup(MouseEvent e) {
+
         if (e.isPopupTrigger()) {
         	JTree t = (JTree) e.getSource();
         	TreePath p = t.getPathForLocation(e.getX(), e.getY());
@@ -86,7 +85,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         		t.setSelectionPath(p);
         	}
         	
-            m = new JPopupMenu();
+            JPopupMenu m = new JPopupMenu();
             int row = t.getRowForLocation(e.getX(), e.getY());
             TreePath tp = t.getPathForRow(row);
             m.add(new JMenuItem(new Refresh(swingSession)));
@@ -97,48 +96,47 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                 	int index = model.getIndexOfChild(model.getRoot(), o);
                 	/*** create folder under current only */
                 	if ( index == 0 ) {
-                		createNewFolderMenuItem();
+                		createNewFolderMenuItem(m);
                 	}
                 } else if (o instanceof PlFolder) {
-                    createFolderMenu((PlFolder) o);
+                    addFolderMenuItems(m, (PlFolder) o);
                 } else if (o instanceof Match) {
-                    createMatchMenu((Match) o);
+                    addMatchMenuItems(m, (Match) o);
                 } else if (o instanceof MatchMakerCriteriaGroup) {
-                    createMatchGroupMenu((MatchMakerCriteriaGroup) o);
+                    addMatchGroupMenuItems(m, (MatchMakerCriteriaGroup) o);
                 } else if (o instanceof MatchMakerCriteria) {
-                    createMatchCriteriaMenu((MatchMakerCriteria) o);
+                    addMatchCriteriaMenuItems(m, (MatchMakerCriteria) o);
                 }
             }
             m.show(t, e.getX(), e.getY());
         }
     }
 
-    private void createMatchCriteriaMenu(MatchMakerCriteria criteria) {
+    private void addMatchCriteriaMenuItems(JPopupMenu m, MatchMakerCriteria criteria) {
     	m.add(new JMenuItem(new DeleteMatchCriteria(swingSession,criteria)));
     }
 
-	private void createMatchGroupMenu(MatchMakerCriteriaGroup group) {
+	private void addMatchGroupMenuItems(JPopupMenu m, MatchMakerCriteriaGroup group) {
     	m.add(new JMenuItem(new DeleteMatchGroupAction(swingSession,group)));
     }
 
-    private void createNewFolderMenuItem() {
+    private void createNewFolderMenuItem(JPopupMenu m) {
     	m.add(new JMenuItem(new AbstractAction("New Folder") {
             public void actionPerformed(ActionEvent e) {
             	PlFolder<Match> folder = new PlFolder<Match>();
             	FolderEditor editor = new FolderEditor(swingSession,folder);
-            	try {
-					swingSession.setCurrentEditorComponent(editor);
-				} catch (SQLException e1) {
-					throw new RuntimeException(e1);
-				}
+            	swingSession.setCurrentEditorComponent(editor);
             }
         }));
     }
 
-    private void createMatchMenu(final Match match) {
+    private void addMatchMenuItems(JPopupMenu m, final Match match) {
 
+        m.addSeparator();
+        m.add(new JMenuItem(new NewMatchGroupAction(swingSession, match)));
+        
+        m.addSeparator();
         m.add(new JMenuItem(new AbstractAction("Run Match") {
-
             public void actionPerformed(ActionEvent e) {
                 RunMatchDialog f = new RunMatchDialog(swingSession, match,
                         owningFrame);
@@ -159,6 +157,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
             }
         }));
         m.add(new JMenuItem(new ShowMatchStatisticInfoAction(swingSession,match, owningFrame)));
+
         m.addSeparator();
         m.add(new JMenuItem(new PlMatchExportAction(swingSession, owningFrame)));
         m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
@@ -169,7 +168,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         
     }
 
-    private void createFolderMenu(final PlFolder folder) {
+    private void addFolderMenuItems(JPopupMenu m, final PlFolder folder) {
         m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match")));
         m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
         m.add(new JMenuItem(new DeletePlFolderAction(swingSession,"Delete Folder",folder)));
@@ -177,8 +176,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 
     /**
      * This appears to set the editor component to the correct type of editor 
-     * depending on the component you have selected in the tree
-     * 
+     * depending on the component you have selected in the tree.
+     * <p>
      * This method should catch all exceptions and return gracefully. Otherwise 
      * you may end up seeing unusual behaviour in the Swing UI. 
      */
