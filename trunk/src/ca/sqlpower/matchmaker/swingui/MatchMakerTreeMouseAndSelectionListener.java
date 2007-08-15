@@ -102,6 +102,11 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                     addFolderMenuItems(m, (PlFolder) o);
                 } else if (o instanceof Match) {
                     addMatchMenuItems(m, (Match) o);
+                } else if (o instanceof MatchMakerFolder<?>) {
+                    MatchMakerFolder<?> folder = (MatchMakerFolder<?>) o;
+                    if (folder.getName().equals(Match.MATCH_RULES_FOLDER_NAME)) {
+                        addMatchRulesFolderMenuItems(m, folder);
+                    }
                 } else if (o instanceof MatchMakerCriteriaGroup) {
                     addMatchGroupMenuItems(m, (MatchMakerCriteriaGroup) o);
                 } else if (o instanceof MatchMakerCriteria) {
@@ -112,8 +117,12 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         }
     }
 
+    private void addMatchRulesFolderMenuItems(JPopupMenu m, MatchMakerFolder<?> folder) {
+        m.add(new JMenuItem(new NewMatchGroupAction(swingSession, (Match) folder.getParent())));
+    }
+
     private void addMatchCriteriaMenuItems(JPopupMenu m, MatchMakerCriteria criteria) {
-    	m.add(new JMenuItem(new DeleteMatchCriteria(swingSession,criteria)));
+        m.add(new JMenuItem(new DeleteMatchCriteria(swingSession,criteria)));
     }
 
 	private void addMatchGroupMenuItems(JPopupMenu m, MatchMakerCriteriaGroup group) {
@@ -215,7 +224,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 					MatchMakerFolder f = (MatchMakerFolder)o;
 					Match m = (Match) f.getParent();
 					
-					if ( f.getName().equals(m.MATCH_FOLDER_MERGE) ) {
+					if ( f.getName().equals(m.MERGE_RULES_FOLDER_NAME) ) {
 						MergeTableRuleEditor editor = 
 							new MergeTableRuleEditor(swingSession,m);
 						logger.debug("Created new merge table rules editor "
