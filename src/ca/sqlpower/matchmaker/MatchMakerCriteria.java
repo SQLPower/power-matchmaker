@@ -33,20 +33,6 @@ public class MatchMakerCriteria
     private Long oid;
 
     /**
-     * The column that all criteria in this instance applies to.  There can only
-     * be one instance of MatchMakerCriteria per column in a MatchMakerCriteriaGroup.
-     * <p>
-     * This cached version of the column is populated on demand in getColumn().
-     */
-    private SQLColumn cachedColumn;
-
-    /**
-     * The column name of the column in the match's source table that these
-     * criteria refer to.
-     */
-    private String columnName;
-    
-    /**
      * True if the search should be case insensitive False if the search should
      * be case sensitive
      */
@@ -112,7 +98,7 @@ public class MatchMakerCriteria
      */
     @Override
     public String getName() {
-        return (cachedColumn == null ? columnName : cachedColumn.getName());
+        return getColumnName();
     }
     
     public boolean isAllowNullInd() {
@@ -375,37 +361,58 @@ public class MatchMakerCriteria
         throw new IllegalStateException("MatchMakerCriteria class does NOT allow child!");
     }
 
-
+    @Override
+    public String toString() {
+        return "MatchMakerCriteria for "+getColumnName();
+    }
+    
     @Override
     public int hashCode() {
         final int PRIME = 31;
         int result = 0;
-        result = PRIME * result + ((cachedColumn == null) ? 0 : cachedColumn.hashCode());
-        result = PRIME * result + ((getParent() == null) ? 0 : getParent().hashCode());
+        result = PRIME * result + ((oid == null) ? 0 : oid.hashCode());
+        result = PRIME * result + ((getColumnName() == null) ? 0 : getColumnName().hashCode());
 
         return result;
     }
 
 
+    /**
+     * Compares this MatchMakerCriteria to another one.  Equality is defined according
+     * to the following criteria (all must be true for the given object to be considered
+     * equal to this one):
+     * 
+     * <ul>
+     *  <li>The other object is also a MatchMakerCriteria (hence not null)
+     *  <li>The other object has the same oid, or both instances are oidless
+     *  <li>The other object references a column having the same name as this one
+     * </ul>
+     */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if(!(obj instanceof MatchMakerCriteria)) 
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (!(obj instanceof MatchMakerCriteria)) return false;
         final MatchMakerCriteria other = (MatchMakerCriteria) obj;
-        if (cachedColumn == null) {
-            if (other.cachedColumn != null)
-                return false;
-        } else if (!cachedColumn.equals(other.cachedColumn))
-            return false;
-        if (getParent() == null) {
-            if (other.getParent() != null)
-                return false;
-        } else if (!getParent().equals(other.getParent()))
-            return false;
+        
+        boolean same;
+        
+        same = (oid == null ? other.oid == null : oid.equals(other.oid));
+        if (!same) return false;
+        
+        // SQLColumn.equals() is only reference equality, so this comparison is self-serve.
+        String colName = getColumnName();
+        String otherColName = other.getColumnName();
+
+        // unfortunately, when using an Oracle backend, the ORM layer can't help but
+        // give back empty strings when the actual original value was null. So we
+        // have to consider them equivalent.
+        if ("".equals(colName)) colName = null;
+        if ("".equals(otherColName)) otherColName = null;
+
+        same = (colName == null ? otherColName == null : colName.equals(otherColName));
+        System.err.println("columns equal? \""+colName+"\" \""+otherColName+"\": "+same);
+        if (!same) return false;
+
         return true;
     }
 
