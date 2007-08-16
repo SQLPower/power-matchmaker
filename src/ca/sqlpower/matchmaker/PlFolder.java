@@ -38,15 +38,13 @@ public class PlFolder<C extends MatchMakerObject>
     /**
      * Creates a new folder with a null name.  You'll have to call setName()
      * before expecting the folder to do much useful stuff.
-     *
-     * @param appUserName The login name of the current user.
      */
 	public PlFolder() {
 		this(null);
 	}
 
 	/**
-	 * @param name The name of this folder.
+     * Creates a new folder with the specified name.
 	 */
 	public PlFolder(String name){
 		setName(name);
