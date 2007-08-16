@@ -92,7 +92,9 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	private String dbUser;
 	private Date sessionStartTime;
 
-	private FolderParent folders;
+    private FolderParent currentMatchFolderParent;
+    private FolderParent backupMatchFolderParent;
+
     private PlFolderDAO folderDAO;
     private MatchDAO matchDAO;
     private MatchCriteriaGroupDAO matchMakerCriteriaGroupDAO;
@@ -359,25 +361,34 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
 
     /**
-     * Get all the folders
+     * Retrieves all the PL Folders from the database, or returns the
+     * list that was previously retrieved by a call to this method.
      */
 	public FolderParent getCurrentFolderParent() {
-		if (folders == null) {
-			folders = new FolderParent(this);
+		if (currentMatchFolderParent == null) {
+			currentMatchFolderParent = new FolderParent(this);
+            currentMatchFolderParent.setName("Current Match/Merge Information");
 			PlFolderDAO folderDAO = (PlFolderDAO) getDAO(PlFolder.class);
 			for(PlFolder f :folderDAO.findAll()) {
-				folders.addChild(f);
+				currentMatchFolderParent.addChild(f);
 			}
 		}
-		return folders;
+		return currentMatchFolderParent;
 	}
 
 	/**
-	 * get all the folders that have backups.
-	 * TODO implement backups
-	 */
+     * Retrieves all the PL Folders from the database that have backed-up match
+     * transactions, or returns the list that was previously retrieved by a call
+     * to this method.
+     * <p>
+     * TODO implement backups
+     */
 	public FolderParent getBackupFolderParent() {
-		return new FolderParent(this);
+        if (backupMatchFolderParent == null) {
+            backupMatchFolderParent = new FolderParent(this);
+            backupMatchFolderParent.setName("Backup Match/Merge Information");
+        }
+		return backupMatchFolderParent;
 	}
 
     public Version getPLSchemaVersion() {
