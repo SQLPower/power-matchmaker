@@ -14,13 +14,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.tree.TreeModel;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MMTreeNode;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -165,9 +166,9 @@ public class FolderEditor implements EditorPane {
         logger.debug("Saving folder:" + folder.getName());
 
         if ( !swingSession.getCurrentFolderParent().getChildren().contains(folder) ) {
-            MMTreeNode parent = (MMTreeNode) ((MatchMakerTreeModel)swingSession.getTree().getModel()).getRoot();
-            MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();
-            if (treeModel.getIndexOfChild(parent, folder) == -1){
+            TreeModel treeModel = swingSession.getTree().getModel();
+            MatchMakerObject<?,?> root = (MatchMakerObject<?,?>) treeModel.getRoot();
+            if (treeModel.getIndexOfChild(root, folder) == -1){
                 swingSession.getCurrentFolderParent().addNewChild(folder);
             }
         }
