@@ -24,6 +24,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.swingui.table.DateTableCellRenderer;
 import ca.sqlpower.swingui.table.IndicatorCellRenderer;
@@ -36,11 +37,11 @@ import com.sun.rowset.JoinRowSetImpl;
 
 public class MatchStatisticsPanel extends JPanel {
 
-	private final MatchMakerSwingSession swingSession;
+	private final MatchMakerSession swingSession;
 	private Match match;
 	private Timestamp startDateTime;
 
-	public MatchStatisticsPanel(MatchMakerSwingSession swingSession, Match match)
+	public MatchStatisticsPanel(MatchMakerSession swingSession, Match match)
 		throws SQLException {
 		super(new BorderLayout());
 		this.match = match;

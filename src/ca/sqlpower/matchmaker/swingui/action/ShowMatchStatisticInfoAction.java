@@ -14,8 +14,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
-import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchStatisticsPanel;
 import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.SPSUtils;
@@ -24,11 +24,11 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 
 public class ShowMatchStatisticInfoAction extends AbstractAction {
 
-	private final MatchMakerSwingSession swingSession;
+	private final MatchMakerSession swingSession;
 	private Match match;
 	private JFrame parent;
 
-	public ShowMatchStatisticInfoAction(MatchMakerSwingSession swingSession,
+	public ShowMatchStatisticInfoAction(MatchMakerSession swingSession,
 			Match match, JFrame parent) {
 		super("Statistics");
 		this.match = match;
