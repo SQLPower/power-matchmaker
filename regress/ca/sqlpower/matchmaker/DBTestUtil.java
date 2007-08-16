@@ -4,13 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -50,19 +48,10 @@ public class DBTestUtil {
         
         if (connections.get(dataSource) == null) {
             logger.info("*** Connecting to Database: "+dataSource);
-            Driver driver = (Driver) Class.forName(dataSource.getDriverClass()).newInstance();
-            if (!driver.acceptsURL(dataSource.getUrl())) {
-                throw new SQLException("Couldn't connect to database:\n"
-                        +"JDBC Driver "+dataSource.getDriverClass()+"\n"
-                        +"does not accept the URL "+dataSource.getUrl());
-            }
-            Properties connectionProps = new Properties();
-            connectionProps.setProperty("user", dataSource.getUser());
-            connectionProps.setProperty("password", dataSource.getPass());
-            Connection mycon = driver.connect(dataSource.getUrl(), connectionProps);
+            Connection mycon = dataSource.createConnection();
             if (mycon == null) {
                 throw new SQLException("Couldn't connect to datasource " + dataSource +
-                        " (driver returned null connection)");
+                        " (data source returned null connection)");
             }
             connections.put(dataSource, mycon);
         }
