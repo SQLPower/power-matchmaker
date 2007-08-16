@@ -47,15 +47,19 @@ public abstract class CachableColumn {
     }
 
     /**
-     * Attempts to resolve the given column name to a column of the owning
-     * Match object's source table.  This functionality is provided for the benefit of the
-     * ORM layer, which has difficulty using the business model.
+     * Attempts to resolve the given column name to a column of the owning Match
+     * object's source table. This functionality is provided for the benefit of
+     * the ORM layer, which has difficulty using the business model.
      * <p>
+     * WARNING: This method has the side effect of calling setColumn() the first
+     * time you call it and columnName isn't null. The values of cachedColumn and
+     * columnName may be modified, and if so, a change event will be fired.
      * 
-     * 
-     * @throws NullPointerException if any of the business objects required for
-     * resolving the column object are missing
-     * @throws ArchitectRuntimeException if getColumnByName fails
+     * @throws NullPointerException
+     *             if any of the business objects required for resolving the
+     *             column object are missing
+     * @throws ArchitectRuntimeException
+     *             if getColumnByName fails
      */
     public SQLColumn getColumn() {
         if (cachedColumn != null) return cachedColumn;
