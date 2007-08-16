@@ -78,15 +78,35 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public Object getChild(Object parent, int index) {
-		return ((MatchMakerObject<?, ?>) parent).getChildren().get(index);
+        final MatchMakerObject<?, ?> mmoParent = (MatchMakerObject<?, ?>) parent;
+        final MatchMakerObject<?, ?> mmoChild = mmoParent.getChildren().get(index);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Child "+index+" of \""+mmoParent.getName()+"\" is "+
+                    mmoChild.getClass().getName()+"@"+System.identityHashCode(mmoChild)+
+                    " \""+mmoChild.getName()+"\"");
+        }
+		return (mmoChild);
 	}
 
 	public int getChildCount(Object parent) {
-		return ((MatchMakerObject<?, ?>) parent).getChildren().size();
+		final MatchMakerObject<?, ?> mmo = (MatchMakerObject<?, ?>) parent;
+        final int count = mmo.getChildren().size();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Child count of \""+mmo.getName()+"\" is "+count);
+        }
+        return count;
 	}
 
 	public int getIndexOfChild(Object parent, Object child) {
-		return ((MatchMakerObject<?, ?>) parent).getChildren().indexOf(child);
+        final MatchMakerObject<?, ?> mmoParent = (MatchMakerObject<?, ?>) parent;
+        final MatchMakerObject<?, ?> mmoChild = (MatchMakerObject<?, ?>) child;
+        final int index = mmoParent.getChildren().indexOf(mmoChild);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Index of child \""+mmoChild.getName()+"\" of \""+mmoParent.getName()+"\" is "+index);
+        }
+        
+        return index;
 	}
 
 	public Object getRoot() {
@@ -94,7 +114,16 @@ public class MatchMakerTreeModel implements TreeModel {
 	}
 
 	public boolean isLeaf(Object node) {
-		return !((MatchMakerObject<?, ?>) node).allowsChildren();
+        final MatchMakerObject<?, ?> mmoNode = (MatchMakerObject<?, ?>) node;
+        final boolean isLeaf = !mmoNode.allowsChildren();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Is "+
+                    mmoNode.getClass().getName()+"@"+System.identityHashCode(mmoNode)+
+                    " \""+mmoNode.getName()+"\" a leaf? " + isLeaf);
+        }
+        
+        return isLeaf;
 	}
 
 	public void valueForPathChanged(TreePath path, Object newValue) {
@@ -163,7 +192,10 @@ public class MatchMakerTreeModel implements TreeModel {
 
 	private class TreeModelEventAdapter<T extends MatchMakerObject, C extends MatchMakerObject>
 			implements MatchMakerListener<T, C> {
+        
 		public void mmPropertyChanged(MatchMakerEvent<T, C> evt) {
+            logger.debug("Got mmPropertyChanged event. property="+
+                    evt.getPropertyName()+"; source="+evt.getSource());
 			TreePath paths = getPathForNode(evt.getSource());
 			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths);
 			fireTreeNodesChanged(e);
@@ -233,6 +265,7 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 
 		public void mmStructureChanged(MatchMakerEvent<T, C> evt) {
+            logger.debug("Got mmObjectChanged event for " + evt.getSource());
 			TreePath paths = getPathForNode(evt.getSource());
 			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths);
 			fireTreeStructureChanged(e);
