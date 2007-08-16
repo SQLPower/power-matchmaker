@@ -389,21 +389,21 @@ public class MatchMakerImportExportTest extends TestCase {
 		Match match2 = new Match();
 		match2.setSession(session);
 		importor.load(match2,new FileInputStream(tmp));
-		assertEquals("the name is not right",match2.getName(),name);
-		assertTrue("reloaded match should equals to old match",match.equals(match2));
-		assertTrue("reloaded match parent should equals to old one",
-				match.getParent().equals(match2.getParent()));
+		assertEquals("the name is not right", name, match2.getName());
+		assertEquals("reloaded match should equals to old match", match, match2);
+		assertEquals("reloaded match parent should equals to old one",
+				match.getParent(), match2.getParent());
 		int groupCount = match2.getChildCount();
 		assertEquals("child count equals",groupCount,match.getChildCount());
 		for ( int i=0; i<groupCount; i++ ) {
-			MatchMakerCriteriaGroup g = match2.getMatchCriteriaGroups().get(i);
-			MatchMakerCriteriaGroup g2 = match.getMatchCriteriaGroups().get(i);
-			assertTrue("groups should be the same", g.equals(g2));
+			MatchMakerCriteriaGroup g = match.getMatchCriteriaGroups().get(i);
+			MatchMakerCriteriaGroup g2 = match2.getMatchCriteriaGroups().get(i);
+			assertEquals("groups should be the same", g, g2);
 
 			for ( int j=0; j<g.getChildCount(); j++) {
 				MatchMakerCriteria c = g.getChildren().get(j);
 				MatchMakerCriteria c2 = g2.getChildren().get(j);
-				assertTrue("criteria should be the same.", c.equals(c2));
+				assertEquals("criteria should be the same", c, c2);
 			}
 		}
 
