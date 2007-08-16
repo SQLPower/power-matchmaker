@@ -5,7 +5,6 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteri
 
 	private MatchMakerCriteria target;
 	final String appUserName = "Test User";
-	private MatchMakerObject child;
 
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -51,8 +50,8 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteri
 	
 	public void testAddChild() {
 		try {
-			target.addChild(child);
-			fail("MatchMakerCriteria class does not allow child!");
+			target.addChild(null);
+			fail("MatchMakerCriteria class should not allow child!");
 		} catch ( IllegalStateException e ) {
 			// this is what we excepted
 		}
@@ -61,4 +60,36 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteri
     public void testAssertDoesNotAllowChildren(){
         assertFalse(target.allowsChildren());
     }
+    
+    public void testTwoUninitializedInstancesEqual() {
+        MatchMakerCriteria other = new MatchMakerCriteria();
+        target.getParent().addChild(other);
+        assertTrue(target.equals(other));
+    }
+
+    public void testEqualsSelf() {
+        assertTrue(target.equals(target));
+    }
+    
+    public void testDifferentColumnNamesNotEqual() {
+        target.setColumnName("bar");
+
+        MatchMakerCriteria other = new MatchMakerCriteria();
+        other.setColumnName("foo");
+        target.getParent().addChild(other);
+
+        assertFalse(target.equals(other));
+    }
+
+    public void testSameColumnNamesEqual() {
+        target.setColumnName("bar");
+
+        MatchMakerCriteria other = new MatchMakerCriteria();
+        other.setColumnName("bar");
+        target.getParent().addChild(other);
+
+        assertTrue(other.equals(target));
+        assertTrue(target.equals(other));
+    }
+
 }
