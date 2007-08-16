@@ -1,7 +1,10 @@
 package ca.sqlpower.matchmaker.swingui;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -12,6 +15,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
@@ -27,8 +31,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
  */
 public class MatchMakerTreeModel implements TreeModel {
 
-	private static final Logger logger = Logger
-			.getLogger(MatchMakerTreeModel.class);
+	private static final Logger logger = Logger.getLogger(MatchMakerTreeModel.class);
 
     /**
      * A very simple MatchMakerObject implementation for the tree's root node object.
@@ -36,38 +39,135 @@ public class MatchMakerTreeModel implements TreeModel {
      * and "Backup Match/Merge" folders, which are in turn parents to the PLFolders
      * (hence, FolderParent).
      */
-	private static class MMRootNode extends AbstractMatchMakerObject<MMRootNode, FolderParent> {
+    private static class MMRootNode extends AbstractMatchMakerObject<MMRootNode, FolderParent> {
 
-	    public MMRootNode() {
-	        setName("Root Node");
-	    }
+        public MMRootNode() {
+            setName("Root Node");
+        }
 
         public boolean isRoot() {
-			return true;
-		}
+            return true;
+        }
 
-		@Override
-		public boolean equals(Object obj) {
-			return this == obj;
-		}
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
 
-		@Override
-		public int hashCode() {
-			return System.identityHashCode(this);
-		}
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
 
-		public MMRootNode duplicate(MatchMakerObject parent, MatchMakerSession session) {
-			throw new UnsupportedOperationException("MMTreeNodes cannot be duplicated");
-		}
+        public MMRootNode duplicate(MatchMakerObject parent, MatchMakerSession session) {
+            throw new UnsupportedOperationException("MMTreeNodes cannot be duplicated");
+        }
 
-	}
+    }
+
+    /**
+     * All the types of actions associated with each match in the tree.
+     */
+    public static enum MatchActionType {
+        
+        // TODO associate an icon with each enumerated value
+        
+        /**
+         * Shows the "run match" UI.
+         */
+        RUN_MATCH("Run Match"),
+        
+        /**
+         * Shows the "run merge" UI.
+         */
+        RUN_MERGE("Run Merge"),
+        
+        /**
+         * Shows the "validate matches" UI.
+         */
+        VALIDATE_MATCHES("Validate Matches"),
+        
+        /**
+         * Shows the "validation status" UI.
+         */
+        VALIDATION_STATUS("Validation Status");
+        
+        private final String name;
+        
+        private MatchActionType(String name) {
+            this.name = name;
+        }
+        
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+    
+    /**
+     * A simple MatchMakerObject that holds a single Swing Action.  We create
+     * these as extra children for the Match objects in the tree so the entire
+     * match workflow is represented in one place, with pretty pictures and
+     * everything.
+     */
+    private class MatchActionNode extends AbstractMatchMakerObject<Match, MatchActionNode> {
+
+        private final MatchActionType matchActionType;
+        private final Match match;
+        
+        public MatchActionNode(MatchActionType matchActionType, Match match) {
+            this.matchActionType = matchActionType;
+            this.match = match;
+            setName(matchActionType.toString());
+        }
+
+        public boolean isRoot() {
+            return false;
+        }
+        
+        @Override
+        public boolean allowsChildren() {
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
+        public Match duplicate(MatchMakerObject parent, MatchMakerSession session) {
+            throw new UnsupportedOperationException("A MatchActionNode cannot be duplicated");
+        }
+        
+        public MatchActionType getActionType() {
+            return matchActionType;
+        }
+    }
+    
+    /**
+     * The session this tree model belongs to.  For testing, it's acceptable
+     * for this to be just a stub, but you will not be able to call
+     * {@link MatchActionNode#performAction()} unless this is actually a
+     * MatchMakerSwingSession.
+     */
+    private final MatchMakerSession session;
 
     /**
      * This tree's root node.
      */
 	private final MMRootNode root = new MMRootNode();
 
-
+    /**
+     * The cache that is maintained by {@link #getActionNodes(Match)}. Don't ever access
+     * this map directly.  Use that method.
+     */
+	private Map<Match, List<MatchActionNode>> matchActionCache = new HashMap<Match, List<MatchActionNode>>();
+    
 	private FolderParent current;
 	private FolderParent backup;
 	
@@ -76,21 +176,63 @@ public class MatchMakerTreeModel implements TreeModel {
     /**
      * Creates a new tree model with two children of the root node (the given
      * current and backup FolderParent objects).
+     * 
+     * @param s
+     *            For testing, it's acceptable for this to be just a stub, but
+     *            you will not be able to call
+     *            {@link MatchActionNode#performAction()} unless this is
+     *            actually a MatchMakerSwingSession.
      */
 	public MatchMakerTreeModel(FolderParent current, FolderParent backup, MatchMakerSession s) {
-		root.setSession(s);
-		current.setName("Current Match/Merge Information");
+		session = s;
+        root.setSession(s);
+        
+        this.current = current;
 		root.addChild(current);
-		this.current = current;
-		backup.setName("Backup Match/Merge Information");
+
+        this.backup = backup;
 		root.addChild(backup);
-		this.backup = backup;
+        
 		MatchMakerUtils.listenToHierarchy(listener, root);
 	}
 
+    /**
+     * Returns (and possibly creates) the list of action nodes associated with the given match
+     * in this tree.  The responses from this method are cached, so once a list of
+     * actions has been returned for a particular match, the same list will be returned
+     * for all future requests.
+     * 
+     * @param match The match the action nodes belong to. (It's their parent in the tree)
+     * @return The unique list of action nodes for the given match.
+     */
+    private List<MatchActionNode> getActionNodes(Match match) {
+        List<MatchActionNode> actionNodes = matchActionCache.get(match);
+        if (actionNodes == null) {
+            actionNodes = new ArrayList<MatchActionNode>();
+            for (MatchActionType type : MatchActionType.values()) {
+                actionNodes.add(new MatchActionNode(type, match));
+            }
+            matchActionCache.put(match, actionNodes);
+        }
+        return actionNodes;
+    }
+    
 	public Object getChild(Object parent, int index) {
         final MatchMakerObject<?, ?> mmoParent = (MatchMakerObject<?, ?>) parent;
-        final MatchMakerObject<?, ?> mmoChild = mmoParent.getChildren().get(index);
+        final MatchMakerObject<?, ?> mmoChild;
+        if (mmoParent instanceof Match) {
+            Match match = (Match) mmoParent;
+            if (index == 0) {
+                mmoChild = match.getChildren().get(index);
+            } else if (index == 1) {
+                mmoChild = match.getChildren().get(index);
+            } else {
+                List<MatchActionNode> matchActions = getActionNodes(match);
+                mmoChild = matchActions.get(index - 2);
+            }
+        } else {
+            mmoChild = mmoParent.getChildren().get(index);
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("Child "+index+" of \""+mmoParent.getName()+"\" is "+
                     mmoChild.getClass().getName()+"@"+System.identityHashCode(mmoChild)+
@@ -101,7 +243,14 @@ public class MatchMakerTreeModel implements TreeModel {
 
 	public int getChildCount(Object parent) {
 		final MatchMakerObject<?, ?> mmo = (MatchMakerObject<?, ?>) parent;
-        final int count = mmo.getChildren().size();
+        final int count;
+        if (mmo instanceof Match) {
+            Match match = (Match) mmo;
+            List<MatchActionNode> matchActions = getActionNodes(match);
+            count = mmo.getChildren().size() + matchActions.size();
+        } else {
+            count = mmo.getChildren().size();
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("Child count of \""+mmo.getName()+"\" is "+count);
         }
