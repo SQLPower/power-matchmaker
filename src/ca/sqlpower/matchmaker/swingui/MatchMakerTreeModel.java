@@ -19,26 +19,31 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
+/**
+ * A tree model implementation that adapts a hierarchy of MatchMakerObjects
+ * to the Swing TreeModel interface.  It uses a simulated root node which
+ * should normally not be made visible for the user, since it adds no value
+ * or meaning to anything.
+ */
 public class MatchMakerTreeModel implements TreeModel {
 
 	private static final Logger logger = Logger
 			.getLogger(MatchMakerTreeModel.class);
 
-	protected static class MMTreeNode<C extends MatchMakerObject> extends
-			AbstractMatchMakerObject<MMTreeNode, C> {
+    /**
+     * A very simple MatchMakerObject implementation for the tree's root node object.
+     * Its children will be FolderParent objects, which are the "Current Match/Merge"
+     * and "Backup Match/Merge" folders, which are in turn parents to the PLFolders
+     * (hence, FolderParent).
+     */
+	private static class MMRootNode extends AbstractMatchMakerObject<MMRootNode, FolderParent> {
 
-		private boolean root;
-		public boolean isRoot() {
-			return root;
-		}
+	    public MMRootNode() {
+	        setName("Root Node");
+	    }
 
-		public void setRoot(boolean root) {
-			this.root = root;
-		}
-
-		public MMTreeNode(String name, boolean root) {
-			setName(name);
-			setRoot(root);
+        public boolean isRoot() {
+			return true;
 		}
 
 		@Override
@@ -51,14 +56,16 @@ public class MatchMakerTreeModel implements TreeModel {
 			return System.identityHashCode(this);
 		}
 
-		public MMTreeNode duplicate(MatchMakerObject parent, MatchMakerSession session) {
+		public MMRootNode duplicate(MatchMakerObject parent, MatchMakerSession session) {
 			throw new UnsupportedOperationException("MMTreeNodes cannot be duplicated");
 		}
 
 	}
 
-	private final MMTreeNode<FolderParent> root = new MMTreeNode<FolderParent>(
-			"root",true);
+    /**
+     * This tree's root node.
+     */
+	private final MMRootNode root = new MMRootNode();
 
 
 	private FolderParent current;
@@ -66,6 +73,10 @@ public class MatchMakerTreeModel implements TreeModel {
 	
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
 
+    /**
+     * Creates a new tree model with two children of the root node (the given
+     * current and backup FolderParent objects).
+     */
 	public MatchMakerTreeModel(FolderParent current, FolderParent backup, MatchMakerSession s) {
 		root.setSession(s);
 		current.setName("Current Match/Merge Information");
