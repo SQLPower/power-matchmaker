@@ -38,9 +38,9 @@ public class MMTestUtils {
 		pool.addSourceTableRecord(node3);
 		SourceTableRecord node4;
 		
-		PotentialMatchRecord pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2);
+		PotentialMatchRecord pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node1, node2);
 		pool.addPotentialMatch(pmr);
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node2, node3);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for b
@@ -54,7 +54,7 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2);
 		pmr.setMaster(node1);
 		pool.addPotentialMatch(pmr);
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node2, node3);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for c
@@ -68,7 +68,7 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2);
 		pmr.setMaster(node2);
 		pool.addPotentialMatch(pmr);
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node2, node3);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for d
@@ -129,7 +129,7 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2);
 		pmr.setMaster(node2);
 		pool.addPotentialMatch(pmr);
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node2, node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node3, node4);
 		pmr.setMaster(node4);
@@ -146,12 +146,12 @@ public class MMTestUtils {
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2);
-		pmr.setMaster(node2);
+		pmr.setMaster(node1);
 		pool.addPotentialMatch(pmr);
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node2, node3);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node3, node4);
-		pmr.setMaster(node3);
+		pmr.setMaster(node4);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for cycle
