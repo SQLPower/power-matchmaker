@@ -264,7 +264,7 @@ public class MatchPoolTest extends TestCase {
      * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
      * for details on the graph.
      */
-	public void testSetMasterOfAllWithNoMasters() {
+	public void testSetMasterOfAllWithNoMasters() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
 		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
@@ -299,7 +299,7 @@ public class MatchPoolTest extends TestCase {
 		
 		assertTrue(pmrA1ToA2.getMaster() == a1);
 		assertTrue(pmrA1ToA2.getDuplicate() == a2);
-		assertTrue(pmrA2ToA3.getMaster() == a1);
+		assertTrue(pmrA2ToA3.getMaster() == a2);
 		assertTrue(pmrA2ToA3.getDuplicate() == a3);
 	}
 	
@@ -663,7 +663,7 @@ public class MatchPoolTest extends TestCase {
      * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
      * for details on the graph.
      */
-	public void testSetDuplicateWithNoEdgeBetween() {
+	public void testSetDuplicate() {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("g2");
 		SourceTableRecord g2 = pool.getSourceTableRecord(keyList);
@@ -683,7 +683,6 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrG1ToG2 = null;
 		PotentialMatchRecord pmrG2ToG3 = null;
 		PotentialMatchRecord pmrG3ToG4 = null;
-		PotentialMatchRecord pmrG1ToG3 = null;
 		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
 			if (potentialMatch.getOriginalLhs() == g1 && potentialMatch.getOriginalRhs() == g2) {
 				pmrG1ToG2 = potentialMatch;
@@ -697,34 +696,28 @@ public class MatchPoolTest extends TestCase {
 				pmrG3ToG4 = potentialMatch;
 			} else if (potentialMatch.getOriginalLhs() == g4 && potentialMatch.getOriginalRhs() == g3) {
 				pmrG3ToG4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g1 && potentialMatch.getOriginalRhs() == g3) {
-				pmrG1ToG3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g3 && potentialMatch.getOriginalRhs() == g1) {
-				pmrG1ToG3 = potentialMatch;
 			}
 			
-			if (pmrG1ToG2 != null && pmrG2ToG3 != null && pmrG3ToG4 != null && pmrG1ToG3 != null) break;
+			if (pmrG1ToG2 != null && pmrG2ToG3 != null && pmrG3ToG4 != null) break;
 		}
 		
-		if (pmrG1ToG2 == null || pmrG2ToG3 == null || pmrG2ToG3 == null || pmrG1ToG3 == null) {
+		if (pmrG1ToG2 == null || pmrG2ToG3 == null || pmrG3ToG4 == null) {
 			fail("An edge no longer exists after we defined g1 as the master of g3.");
 		}
 		
 		assertTrue(pmrG1ToG2.getMaster() == g2);
 		assertTrue(pmrG1ToG2.getDuplicate() == g1);
-		assertTrue(pmrG2ToG3.getMaster() == null);
-		assertTrue(pmrG2ToG3.getDuplicate() == null);
+		assertTrue(pmrG2ToG3.getMaster() == g2);
+		assertTrue(pmrG2ToG3.getDuplicate() == g3);
 		assertTrue(pmrG3ToG4.getMaster() == g3);
 		assertTrue(pmrG3ToG4.getDuplicate() == g4);
-		assertTrue(pmrG1ToG3.getMaster() == g1);
-		assertTrue(pmrG1ToG3.getDuplicate() == g3);
-		fail("We need some way to test that the edge from g1 to g3 is synthetic!");
 	}
 	
 	/**
      * Sets the master of a node to a master when a cycle is involved. This is an unusual case and not something
      * that we will normally come across. Any paths that are not used to identify a master/duplicate relation
-     * will be set to undefined.
+     * will be set to undefined. In this test we cannot know which node was selected as the ultimate master
+     * in case the algorithm was changed to select a better ultimate master.
      * <p>
      * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
      * for details on the graph.
@@ -767,12 +760,131 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined cycle3 as the master of cycle2.");
 		}
 		
-		assertTrue(pmrCycle1ToCycle2.getMaster() == null);
-		assertTrue(pmrCycle1ToCycle2.getDuplicate() == null);
-		assertTrue(pmrCycle2ToCycle3.getMaster() == cycle3);
-		assertTrue(pmrCycle2ToCycle3.getDuplicate() == cycle2);
-		assertTrue(pmrCycle3ToCycle1.getMaster() == cycle3);
-		assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle1);
+		if (pmrCycle1ToCycle2.getMaster() == cycle1) {
+			assertTrue(pmrCycle1ToCycle2.getDuplicate() == cycle2);
+			assertTrue(pmrCycle2ToCycle3.getMaster() == null);
+			assertTrue(pmrCycle2ToCycle3.getDuplicate() == null);
+			assertTrue(pmrCycle3ToCycle1.getMaster() == cycle1);
+			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
+		} else if (pmrCycle1ToCycle2.getMaster() == cycle2){
+			assertTrue(pmrCycle1ToCycle2.getDuplicate() == cycle1);
+			assertTrue(pmrCycle2ToCycle3.getMaster() == cycle2);
+			assertTrue(pmrCycle2ToCycle3.getDuplicate() == cycle3);
+			assertTrue(pmrCycle3ToCycle1.getMaster() == null);
+			assertTrue(pmrCycle3ToCycle1.getDuplicate() == null);
+		} else {
+			//master of this loop was set to cycle3
+			assertTrue(pmrCycle1ToCycle2.getDuplicate() == null);
+			assertTrue(pmrCycle2ToCycle3.getMaster() == cycle3);
+			assertTrue(pmrCycle2ToCycle3.getDuplicate() == cycle2);
+			assertTrue(pmrCycle3ToCycle1.getMaster() == cycle3);
+			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle1);
+		}
+	}
+	
+	/**
+	 * Sets the master of a node to a master that will create a cycle in the
+	 * graph. The end result should have no cycles.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterToCreateACycle() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("i2");
+		SourceTableRecord i2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("i3");
+		SourceTableRecord i3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("i1");
+		SourceTableRecord i1 = pool.getSourceTableRecord(keyList);
+
+		pool.defineMaster(i1, i3);
+		
+		PotentialMatchRecord pmrI1ToI2 = null;
+		PotentialMatchRecord pmrI2ToI3 = null;
+		PotentialMatchRecord pmrI3ToI1 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == i1 && potentialMatch.getOriginalRhs() == i2) {
+				pmrI1ToI2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == i2 && potentialMatch.getOriginalRhs() == i1) {
+				pmrI1ToI2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == i3 && potentialMatch.getOriginalRhs() == i2) {
+				pmrI2ToI3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == i2 && potentialMatch.getOriginalRhs() == i3) {
+				pmrI2ToI3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == i3 && potentialMatch.getOriginalRhs() == i1) {
+				pmrI3ToI1 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == i1 && potentialMatch.getOriginalRhs() == i3) {
+				pmrI3ToI1 = potentialMatch;
+			}
+			
+			if (pmrI1ToI2 != null && pmrI2ToI3 != null && pmrI3ToI1 != null) break;
+		}
+		
+		if (pmrI1ToI2 == null || pmrI2ToI3 == null || pmrI2ToI3 == null) {
+			fail("An edge no longer exists after we defined cycle3 as the master of cycle2.");
+		}
+		
+		assertTrue(pmrI1ToI2.getMaster() == i2);
+		assertTrue(pmrI1ToI2.getDuplicate() == i1);
+		assertTrue(pmrI2ToI3.getMaster() == i2);
+		assertTrue(pmrI2ToI3.getDuplicate() == i3);
+		assertTrue(pmrI3ToI1.getMaster() == null);
+		assertTrue(pmrI3ToI1.getDuplicate() == null);
+	}
+	
+	/**
+     * Sets the master of a node in a graph when we need to make a synthetic edge
+     * <p>
+     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+     * for details on the graph.
+     */
+    public void testSetMasterCreatingASyntheticEdge() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("a2");
+		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("a1");
+		SourceTableRecord a1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("a3");
+		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineMaster(a3, a1);
+		
+		PotentialMatchRecord pmrA1ToA2 = null;
+		PotentialMatchRecord pmrA2ToA3 = null;
+		PotentialMatchRecord pmrA1ToA3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == a1 && potentialMatch.getOriginalRhs() == a2) {
+				pmrA1ToA2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a1) {
+				pmrA1ToA2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == a3 && potentialMatch.getOriginalRhs() == a2) {
+				pmrA2ToA3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a3) {
+				pmrA2ToA3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == a3 && potentialMatch.getOriginalRhs() == a1) {
+				pmrA1ToA3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == a1 && potentialMatch.getOriginalRhs() == a3) {
+				pmrA1ToA3 = potentialMatch;
+			}
+			
+			if (pmrA1ToA2 != null && pmrA2ToA3 != null && pmrA1ToA3 != null) break;
+		}
+		
+		if (pmrA1ToA2 == null || pmrA2ToA3 == null || pmrA1ToA3 == null) {
+			fail("An edge no longer exists after we defined a1 as the master.");
+		}
+		
+		assertTrue(pmrA1ToA2.getMaster() == null);
+		assertTrue(pmrA1ToA2.getDuplicate() == null);
+		assertTrue(pmrA2ToA3.getMaster() == null);
+		assertTrue(pmrA1ToA3.getMaster() == a3);
+		assertTrue(pmrA1ToA3.getDuplicate() == a1);
 	}
 
 }
