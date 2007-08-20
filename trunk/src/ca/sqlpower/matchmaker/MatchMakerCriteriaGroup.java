@@ -10,6 +10,14 @@ import java.awt.Color;
  */
 public class MatchMakerCriteriaGroup
 	extends AbstractMatchMakerObject<MatchMakerCriteriaGroup, MatchMakerCriteria> {
+	
+	/**
+	 * This is the name given to a criteria group made by the Match Maker
+	 * to identify any new {@link PotentialMatchRecord} that are also created by
+	 * the Match Maker when previously unconnected nodes are defined to be
+	 * related.
+	 */
+	public static final String SYNTHETIC_MATCHES = "Synthetic_matches";
 
 	private Long oid;
 	private String desc;

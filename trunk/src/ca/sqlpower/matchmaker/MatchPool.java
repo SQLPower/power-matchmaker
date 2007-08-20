@@ -24,6 +24,7 @@ import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
 import ca.sqlpower.matchmaker.graph.DijkstrasAlgorithm;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.GraphModel;
+import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 
 /**
@@ -163,12 +164,8 @@ public class MatchPool {
                 }
                 SourceTableRecord lhs = makeSourceTableRecord(lhsKeyValues);
                 SourceTableRecord rhs = makeSourceTableRecord(rhsKeyValues);
-                PotentialMatchRecord pmr =
-                    new PotentialMatchRecord(criteriaGroup, matchStatus, lhs, rhs);
-                pmr.setPool(this);
-                potentialMatches.add(pmr);
-                lhs.addPotentialMatch(pmr);
-                rhs.addPotentialMatch(pmr);
+                addPotentialMatch(
+                    new PotentialMatchRecord(criteriaGroup, matchStatus, lhs, rhs));
             }
             
         } catch (SQLException ex) {
@@ -229,6 +226,8 @@ public class MatchPool {
     public void addPotentialMatch(PotentialMatchRecord pmr) {
     	pmr.setPool(this);
     	potentialMatches.add(pmr);
+    	pmr.getOriginalLhs().addPotentialMatch(pmr);
+        pmr.getOriginalRhs().addPotentialMatch(pmr);
     }
     
     /**
@@ -386,6 +385,7 @@ public class MatchPool {
         //in the case of cycles.
         SourceTableRecord ultimateMaster = master;
         List<SourceTableRecord> nodesCrossed = new ArrayList<SourceTableRecord>();
+        nodesCrossed.add(duplicate); //Don't want to set the duplicate as the ultimate master if we can get here somehow.
         while (!considerGivenNodesGraph.getOutboundEdges(ultimateMaster).isEmpty()) {
         	logger.debug("The outbound edges for " + ultimateMaster + " is " + considerGivenNodesGraph.getOutboundEdges(ultimateMaster));
         	nodesCrossed.add(ultimateMaster);
@@ -417,8 +417,16 @@ public class MatchPool {
     	
     	if (masterMapping.get(duplicate) == null) {
     		logger.debug("We could not reach the duplicate from the ultimate master in the current graph. A synthetic edge will be created");
-    		//XXX we couldn't reach the duplicate from the ultimate master using dijkstra so we need to make a synthetic node from
-    		//the duplicate to the master and run dijkstra again.
+    		MatchMakerCriteriaGroup syntheticCriteria = match.getMatchCriteriaGroupByName(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES);
+    		if (syntheticCriteria == null) {
+    			syntheticCriteria = new MatchMakerCriteriaGroup();
+    			syntheticCriteria.setName(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES);
+    			match.addMatchCriteriaGroup(syntheticCriteria);
+    		}
+    		addPotentialMatch(
+                    new PotentialMatchRecord(syntheticCriteria, MatchType.UNMATCH, master, duplicate));
+    		//XXX we still need to store the new potential match in the database.
+    		masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, ultimateMaster);
     	}
     	
     	logger.debug("Removing all decided edges from the given graph");
@@ -437,9 +445,34 @@ public class MatchPool {
     	}
 	}
 
-	public void defineMasterOfAll(SourceTableRecord a1) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MatchPool.defineMasterOfAll()");
-		
+    /**
+	 * This method defines the given node to be the master of all nodes
+	 * reachable by either a defined or undefined path. We use Dijkstra's
+	 * algorithm to find the shortest path to the nodes and to make sure
+	 * that we have no cycles.
+	 */
+	public void defineMasterOfAll(SourceTableRecord master) {
+		GraphModel<SourceTableRecord, PotentialMatchRecord> poolGraph = new MatchPoolGraphModel(this);
+		BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
+            new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+        Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(poolGraph, master));
+        GraphModel<SourceTableRecord, PotentialMatchRecord> considerGivenNodesGraph =
+        	new GraphConsideringOnlyGivenNodes(this, reachable);
+        
+        DijkstrasAlgorithm da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
+    	Map<SourceTableRecord, SourceTableRecord> masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, master);
+    	
+    	for (PotentialMatchRecord pmr : potentialMatches) {
+    		if (considerGivenNodesGraph.getEdges().contains(pmr.getOriginalLhs()) && considerGivenNodesGraph.getEdges().contains(pmr.getOriginalRhs())) {
+    			pmr.setMaster(null);
+    		}
+    	}
+    	
+    	//XXX This is a fairly poor way of obtaining the potential match records. We should be able to make this faster.
+    	for (Map.Entry<SourceTableRecord, SourceTableRecord> nodeMasterPair : masterMapping.entrySet()) {
+    		logger.debug("Setting " + nodeMasterPair.getValue() + " to be the master of " + nodeMasterPair.getKey());
+    		PotentialMatchRecord matchRecord = getPotentialMatchFromOriginals(nodeMasterPair.getValue(), nodeMasterPair.getKey());
+   			matchRecord.setMaster(nodeMasterPair.getValue());
+    	}
 	}
 }
