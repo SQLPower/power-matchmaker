@@ -162,12 +162,12 @@ public class PotentialMatchRecord {
     }
 
     /**
-     * If the match status is no match, sets the master as undecided
+     * If the match status is no match or unmatch, sets the master as undecided
      * @param matchStatus the type of Match this represents
      */
     public void setMatchStatus(MatchType matchStatus) {
         this.matchStatus = matchStatus;
-        if (matchStatus == MatchType.NOMATCH){
+        if (matchStatus == MatchType.NOMATCH || matchStatus == MatchType.UNMATCH){
             master = MasterSide.NEITHER;
         }
     }

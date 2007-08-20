@@ -80,21 +80,30 @@ public class MatchResultVisualizer implements EditorPane {
         
     };
 
+    /**
+	 * When this action is fired the nodes will become unrelated.
+	 */
     private class SetNoMatchAction extends AbstractAction{
-        private final SourceTableRecord record1;
+        private final MatchPool pool;
+    	private final SourceTableRecord record1;
         private final SourceTableRecord record2;
         
-        protected SetNoMatchAction (SourceTableRecord record1, SourceTableRecord record2){
+        protected SetNoMatchAction (MatchPool pool, SourceTableRecord record1, SourceTableRecord record2){
             super("No Match");
+            this.pool = pool;
             this.record1 = record1;
             this.record2 = record2;
         }
         
         public void actionPerformed(ActionEvent e){
-            record1.makeNoMatch(record2);
+            pool.defineNoMatch(record1, record2);
         }
     }
     
+    /**
+	 * When this action is fired the master given to the constructor will become
+	 * the master of the given duplicate
+	 */
     private class SetMasterAction extends AbstractAction {
         
         private final SourceTableRecord master;
@@ -136,7 +145,7 @@ public class MatchResultVisualizer implements EditorPane {
                     SourceTableRecordViewer recordViewer = 
                         new SourceTableRecordViewer(
                             str, node, new JButton(new SetMasterAction(str, node)),
-                            new JButton(new SetNoMatchAction(node,str)));
+                            new JButton(new SetNoMatchAction(pool, node,str)));
                     recordViewer.getPanel().addMouseListener(new MouseAdapter() {
                         @Override
                         public void mousePressed(MouseEvent e) {
