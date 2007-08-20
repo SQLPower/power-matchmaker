@@ -20,6 +20,11 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
+import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
+import ca.sqlpower.matchmaker.graph.DijkstrasAlgorithm;
+import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
+import ca.sqlpower.matchmaker.graph.GraphModel;
+import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 
 /**
  * The MatchPool class represents the set of matching records for
@@ -240,6 +245,21 @@ public class MatchPool {
         return potentialMatches;
     }
     
+    /**
+	 * Gets the first PotentialMatchRecord in the pool that has the given nodes
+	 * as its original left and right nodes. Null is returned if no PotentialMatchRecord
+	 * is found.
+	 */
+    public PotentialMatchRecord getPotentialMatchFromOriginals(SourceTableRecord node1, SourceTableRecord node2) {
+    	for (PotentialMatchRecord pmr : potentialMatches) {
+    		if (pmr.getOriginalLhs() == node1 && pmr.getOriginalRhs() == node2 
+    				|| pmr.getOriginalLhs() == node2 && pmr.getOriginalRhs() == node1) {
+    			return pmr;
+    		}
+    	}
+    	return null;
+    }
+    
     public Collection<SourceTableRecord> getSourceTableRecords() {
         return Collections.unmodifiableCollection(sourceTableRecords.values());
     }
@@ -300,10 +320,121 @@ public class MatchPool {
     	return sourceTableRecords.get(key);
     }
 
-	public void defineMaster(SourceTableRecord a1, SourceTableRecord a2) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MatchPool.defineMaster()");
-		
+    /**
+	 * Locates all records which are currently reachable from this record and
+	 * the given (formerly potential) duplicate of it by user-validated matches,
+	 * and points them to this record as the master (all the reachable records
+	 * will be considered duplicates of this "offical version of the truth").
+	 * All nodes in the decided edges of the duplicate will have their master
+	 * set to the duplicate, or a duplicate of the duplicate, etc.
+	 * 
+	 * The graph used in this method should not have cycles in it as our output
+	 * is guaranteed to not have cycles.
+	 * 
+	 * This method is done in several steps.
+	 * <ol>
+	 * <li>Set the edge between the duplicate and master to be undecided or
+	 * unmatched if the match exists. This is for the case that the duplicate
+	 * was originally the master and we don't want to follow this path when
+	 * looking for the ultimate master.
+	 * <li>Find a graph of all the nodes reachable from the master and
+	 * duplicate along decided edges. The graph will include only these nodes
+	 * and only the edges connecting these nodes, whether they are decided or
+	 * not.
+	 * <li>Find the ultimate master, the master of the chain of nodes that has
+	 * no master itself, from the master node. Note: If there is a cycle in the
+	 * graph then the node decided to be the ultimate master may be surprising
+	 * for the user as it may not be the most obvious one but we guarantee that
+	 * there will be no cycles in the end result.
+	 * <li>Using Dijkstra's algorithm, using all edges in the graph, find the
+	 * shortest path to all nodes in the graph. If the duplicate cannot be
+	 * reached at this point then a synthetic edge is needed between the
+	 * duplicate and the master and Dijkstra's algorithm needs to be run again.
+	 * <li>Turn all of the edges walked using Dijkstra's algorithm into decided
+	 * edges pointing in the direction of the ultimate master. All other edges
+	 * will be undecided (or UNMATCH).
+	 * </ol>
+	 */
+    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate) {
+    	if (duplicate == master) {
+    		defineMasterOfAll(master);
+    		return;
+    	}
+
+    	logger.debug("DefineMaster: master="+master+"; duplicate="+duplicate);
+    	
+    	logger.debug("Remove the master from the edge between the master and duplicate if the master exists.");
+    	PotentialMatchRecord potentialMatch = getPotentialMatchFromOriginals(master, duplicate);
+    	if (potentialMatch != null) {
+    		potentialMatch.setMaster(null);
+    	}
+
+    	logger.debug("Create the graph that contains only nodes reachable by decided edges");
+    	GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
+    		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
+    	BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
+            new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+        Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, master));
+        reachable.addAll(bfs.performSearch(nonDirectedGraph, duplicate));
+
+        GraphModel<SourceTableRecord, PotentialMatchRecord> considerGivenNodesGraph =
+        	new GraphConsideringOnlyGivenNodes(this, reachable);
+        logger.debug("Graph contains " + considerGivenNodesGraph.getNodes() + " nodes.");
+
+        logger.debug("Find the ultimate master");
+        //We need to keep track of where we've been so we don't go back to old possible ultimate masters
+        //in the case of cycles.
+        SourceTableRecord ultimateMaster = master;
+        List<SourceTableRecord> nodesCrossed = new ArrayList<SourceTableRecord>();
+        while (!considerGivenNodesGraph.getOutboundEdges(ultimateMaster).isEmpty()) {
+        	logger.debug("The outbound edges for " + ultimateMaster + " is " + considerGivenNodesGraph.getOutboundEdges(ultimateMaster));
+        	nodesCrossed.add(ultimateMaster);
+        	
+        	SourceTableRecord newUltimateMaster = ultimateMaster;
+        	for (PotentialMatchRecord pmr : considerGivenNodesGraph.getOutboundEdges(ultimateMaster)) {
+        		if (pmr.getOriginalLhs() != ultimateMaster) {
+        			if (!nodesCrossed.contains(pmr.getOriginalLhs())) {
+        				newUltimateMaster = pmr.getOriginalLhs();
+        				break;
+        			}
+        		} else {
+        			if (!nodesCrossed.contains(pmr.getOriginalRhs())) {
+        				newUltimateMaster = pmr.getOriginalRhs();
+        				break;
+        			}
+        		}
+        	}
+        	if (newUltimateMaster == ultimateMaster) {
+        		break;
+        	}
+        	ultimateMaster = newUltimateMaster;
+        }
+        logger.debug("The ultimate master is " + ultimateMaster);
+        
+        logger.debug("Find the shortest path to all nodes in the graph");
+    	DijkstrasAlgorithm da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
+    	Map<SourceTableRecord, SourceTableRecord> masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, ultimateMaster);
+    	
+    	if (masterMapping.get(duplicate) == null) {
+    		logger.debug("We could not reach the duplicate from the ultimate master in the current graph. A synthetic edge will be created");
+    		//XXX we couldn't reach the duplicate from the ultimate master using dijkstra so we need to make a synthetic node from
+    		//the duplicate to the master and run dijkstra again.
+    	}
+    	
+    	logger.debug("Removing all decided edges from the given graph");
+    	for (PotentialMatchRecord pmr : potentialMatches) {
+    		if (considerGivenNodesGraph.getEdges().contains(pmr.getOriginalLhs()) && considerGivenNodesGraph.getEdges().contains(pmr.getOriginalRhs())) {
+    			pmr.setMaster(null);
+    		}
+    	}
+    	
+    	logger.debug("Setting the new decided edges for this graph of nodes");
+    	//XXX This is a fairly poor way of obtaining the potential match records. We should be able to make this faster.
+    	for (Map.Entry<SourceTableRecord, SourceTableRecord> nodeMasterPair : masterMapping.entrySet()) {
+    		logger.debug("Setting " + nodeMasterPair.getValue() + " to be the master of " + nodeMasterPair.getKey());
+    		PotentialMatchRecord matchRecord = getPotentialMatchFromOriginals(nodeMasterPair.getValue(), nodeMasterPair.getKey());
+   			matchRecord.setMaster(nodeMasterPair.getValue());
+    	}
 	}
 
 	public void defineMasterOfAll(SourceTableRecord a1) {
