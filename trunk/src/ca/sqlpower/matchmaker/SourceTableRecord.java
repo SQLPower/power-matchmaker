@@ -257,12 +257,6 @@ public class SourceTableRecord {
         }
         return null;
     }
-
-    public void makeNoMatch(SourceTableRecord record2) {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: SourceTableRecord.makeNoMatch()");
-        
-    }
     
     /**
      * Returns the pool that this source table record belongs to.

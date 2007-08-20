@@ -18,6 +18,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.SPDataSource;
@@ -886,5 +887,91 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrA1ToA3.getMaster() == a3);
 		assertTrue(pmrA1ToA3.getDuplicate() == a1);
 	}
+    
+    /**
+     * This test removes an undefined connection between two nodes.
+     */
+    public void testDefiningNoMatch() {
+    	List<Object> keyList = new ArrayList<Object>();
+		keyList.add("b2");
+		SourceTableRecord b2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("b3");
+		SourceTableRecord b3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("b1");
+		SourceTableRecord b1 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineNoMatch(b2, b3);
+		
+		PotentialMatchRecord pmrB1ToB2 = null;
+		PotentialMatchRecord pmrB2ToB3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1 && potentialMatch.getOriginalRhs() == b2) {
+				pmrB1ToB2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b1) {
+				pmrB1ToB2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b3 && potentialMatch.getOriginalRhs() == b2) {
+				pmrB2ToB3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b3) {
+				pmrB2ToB3 = potentialMatch;
+			}
+			
+			if (pmrB1ToB2 != null && pmrB2ToB3 != null) break;
+		}
+		
+		if (pmrB1ToB2 == null || pmrB2ToB3 == null) {
+			fail("An edge no longer exists after we defined b2 as the master of b3.");
+		}
+		
+		assertTrue(pmrB1ToB2.getMaster() == b1);
+		assertTrue(pmrB1ToB2.getDuplicate() == b2);
+		assertTrue(pmrB2ToB3.getMaster() == null);
+		assertTrue(pmrB2ToB3.getDuplicate() == null);
+		assertTrue(pmrB2ToB3.getMatchStatus() == MatchType.NOMATCH);
+    }
+    
+    /**
+     * This test removes a defined connection between two nodes.
+     */
+    public void testDefiningNoMatchFromMatched() {
+    	List<Object> keyList = new ArrayList<Object>();
+		keyList.add("b2");
+		SourceTableRecord b2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("b3");
+		SourceTableRecord b3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("b1");
+		SourceTableRecord b1 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineNoMatch(b2, b1);
+		
+		PotentialMatchRecord pmrB1ToB2 = null;
+		PotentialMatchRecord pmrB2ToB3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1 && potentialMatch.getOriginalRhs() == b2) {
+				pmrB1ToB2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b1) {
+				pmrB1ToB2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b3 && potentialMatch.getOriginalRhs() == b2) {
+				pmrB2ToB3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b3) {
+				pmrB2ToB3 = potentialMatch;
+			}
+			
+			if (pmrB1ToB2 != null && pmrB2ToB3 != null) break;
+		}
+		
+		if (pmrB1ToB2 == null || pmrB2ToB3 == null) {
+			fail("An edge no longer exists after we defined b2 as the master of b3.");
+		}
+		
+		assertTrue(pmrB1ToB2.getMaster() == null);
+		assertTrue(pmrB1ToB2.getDuplicate() == null);
+		assertTrue(pmrB2ToB3.getMaster() == null);
+		assertTrue(pmrB2ToB3.getDuplicate() == null);
+		assertTrue(pmrB1ToB2.getMatchStatus() == MatchType.NOMATCH);
+    }
 
 }

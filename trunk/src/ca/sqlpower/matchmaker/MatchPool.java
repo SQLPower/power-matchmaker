@@ -475,4 +475,14 @@ public class MatchPool {
    			matchRecord.setMaster(nodeMasterPair.getValue());
     	}
 	}
+	
+	/**
+	 * This sets the two given SourceTableRecords to have no match between them.
+	 */
+    public void defineNoMatch(SourceTableRecord record1, SourceTableRecord record2) {
+        PotentialMatchRecord pmr = getPotentialMatchFromOriginals(record1, record2);
+        if (pmr != null) {
+        	pmr.setMatchStatus(MatchType.NOMATCH);
+        }
+    }
 }
