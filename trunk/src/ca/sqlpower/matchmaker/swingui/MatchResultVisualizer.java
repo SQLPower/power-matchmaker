@@ -107,7 +107,7 @@ public class MatchResultVisualizer implements EditorPane {
         }
         
         public void actionPerformed(ActionEvent e) {
-            master.makeMaster(duplicate);
+            pool.defineMaster(master, duplicate);
             graph.repaint();
         }
     }
