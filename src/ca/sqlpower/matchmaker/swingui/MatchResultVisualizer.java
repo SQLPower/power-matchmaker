@@ -135,7 +135,7 @@ public class MatchResultVisualizer implements EditorPane {
                     //so it compiles for now
                     SourceTableRecordViewer recordViewer = 
                         new SourceTableRecordViewer(
-                            str, node, new JButton(new SetMasterAction(node, str)),
+                            str, node, new JButton(new SetMasterAction(str, node)),
                             new JButton(new SetNoMatchAction(node,str)));
                     recordViewer.getPanel().addMouseListener(new MouseAdapter() {
                         @Override
