@@ -154,6 +154,23 @@ public class MMTestUtils {
 		pmr.setMaster(node4);
 		pool.addPotentialMatch(pmr);
 		
+		//The graph for i
+		node1 = new SourceTableRecord(session, m, "i1");
+		pool.addSourceTableRecord(node1);
+		node2 = new SourceTableRecord(session, m, "i2");
+		pool.addSourceTableRecord(node2);
+		node3 = new SourceTableRecord(session, m, "i3");
+		pool.addSourceTableRecord(node3);
+		
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2);
+		pmr.setMaster(node2);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node2, node3);
+		pmr.setMaster(node3);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node3, node1);
+		pool.addPotentialMatch(pmr);
+		
 		//The graph for cycle
 		node1 = new SourceTableRecord(session, m, "cycle1");
 		pool.addSourceTableRecord(node1);
