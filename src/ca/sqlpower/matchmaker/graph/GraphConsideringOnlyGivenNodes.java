@@ -14,7 +14,9 @@ import ca.sqlpower.matchmaker.SourceTableRecord;
 
 /**
  * This graph takes a pool to select edges from and a set of nodes to create a
- * graph from based on the edges in the pool.
+ * graph from based on the edges in the pool. This graph is dependent on the nodes
+ * having a correct potentialMatches list. The potentialMatches list is the list of
+ * all PotentialMatchRecords that the node is connected to.
  */
 public class GraphConsideringOnlyGivenNodes implements
 	GraphModel<SourceTableRecord, PotentialMatchRecord> {
@@ -43,7 +45,7 @@ public class GraphConsideringOnlyGivenNodes implements
 		
 		//XXX We should be able to make this faster. Possibly store the edges and listen to
 		//the pool for changes in the potential matches to know when to update our edges.
-		for (PotentialMatchRecord pmr: pool.getPotentialMatches()) {
+		for (PotentialMatchRecord pmr: node.getOriginalMatchEdges()) {
 			if (pmr.getOriginalLhs() == node) {
 				if (nodes.contains(pmr.getOriginalRhs())) {
 					adjacentNodes.add(pmr.getOriginalRhs());
@@ -70,8 +72,8 @@ public class GraphConsideringOnlyGivenNodes implements
 
 	public Collection<PotentialMatchRecord> getInboundEdges(SourceTableRecord node) {
 		Set<PotentialMatchRecord> outboundEdges = new HashSet<PotentialMatchRecord>();
-		for (PotentialMatchRecord pmr : pool.getPotentialMatches()) {
-			if (pmr.getOriginalLhs() == node || pmr.getOriginalRhs() == node) {
+		for (PotentialMatchRecord pmr : node.getOriginalMatchEdges()) {
+			if ((pmr.getOriginalLhs() == node && nodes.contains(pmr.getOriginalRhs()) || (pmr.getOriginalRhs() == node && nodes.contains(pmr.getOriginalLhs())))) {
 				if (pmr.getMaster() == node) {
 					outboundEdges.add(pmr);
 				}
@@ -86,8 +88,8 @@ public class GraphConsideringOnlyGivenNodes implements
 
 	public Collection<PotentialMatchRecord> getOutboundEdges(SourceTableRecord node) {
 		Set<PotentialMatchRecord> outboundEdges = new HashSet<PotentialMatchRecord>();
-		for (PotentialMatchRecord pmr : pool.getPotentialMatches()) {
-			if (pmr.getOriginalLhs() == node || pmr.getOriginalRhs() == node) {
+		for (PotentialMatchRecord pmr : node.getOriginalMatchEdges()) {
+			if ((pmr.getOriginalLhs() == node && nodes.contains(pmr.getOriginalRhs()) || (pmr.getOriginalRhs() == node && nodes.contains(pmr.getOriginalLhs())))) {
 				if (pmr.getMaster() != null && pmr.getMaster() != node) {
 					outboundEdges.add(pmr);
 				}
