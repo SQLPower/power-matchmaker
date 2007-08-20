@@ -20,10 +20,6 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
-import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
-import ca.sqlpower.matchmaker.graph.GraphModel;
-import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.sql.SQL;
 
 public class SourceTableRecord {
@@ -260,45 +256,6 @@ public class SourceTableRecord {
             }
         }
         return null;
-    }
-    
-    /**
-     * Locates all records which are currently reachable from this record and the
-     * given (formerly potential) duplicate of it by
-     * user-validated matches, and points them to this record as the master  (all
-     * the reachable records will be considered duplicates of this "offical
-     * version of the truth").
-     */
-    public void makeMaster(SourceTableRecord duplicate) {
-        if (duplicate == this) {
-            throw new IllegalArgumentException("Can't be my own master");
-        }
-        logger.debug("MakeMaster: this="+this+"; duplicate="+duplicate);
-        
-        GraphModel<SourceTableRecord, PotentialMatchRecord> graph =
-            new NonDirectedUserValidatedMatchPoolGraphModel(pool, new HashSet<PotentialMatchRecord>());
-        logger.debug("The size of the graph is " + graph.getNodes().size());
-        BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
-            new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
-        
-        Collection<SourceTableRecord> reachable = bfs.performSearch(graph, this);
-        logger.debug("There are " + reachable.size() + " node(s) to set the master to");
-        for (SourceTableRecord node : reachable) {
-        	logger.debug("The node is " + node);
-            if (node == this || node == duplicate) continue;
-            PotentialMatchRecord pmr = 
-                node.getMatchRecordByOriginalAdjacentSourceTableRecord(this);
-            if (pmr == null) {
-                // not originally a direct potential match-- steal an edge
-                pmr = node.getOriginalMatchEdges().iterator().next();
-            }
-            pmr.setLhs(this);
-            pmr.setRhs(node);
-            pmr.setMaster(this);
-            pmr.setMatchStatus(MatchType.MATCH);
-            
-            logger.debug("after setMaster: "+pmr);
-        }
     }
 
     public void makeNoMatch(SourceTableRecord record2) {
