@@ -28,9 +28,10 @@ public class PotentialMatchRecord {
     private MatchType matchStatus;
     
     /**
-     * Indicates whether the left-hand, right-hand, or neither record is
-     * considered the "master."
-     */
+	 * Indicates whether the left-hand, right-hand, or neither record is
+	 * considered the "master." If the master is set to null or the match status
+	 * is no match then the neither state is used.
+	 */
     private MasterSide master;
     
     /**
@@ -45,14 +46,28 @@ public class PotentialMatchRecord {
 
     /**
      * One of the two records currently identified as a potential duplicate.
+     * This exists because the merge engine can only handle paths of length one.
+     * Once the merge engine has been rewritten to be in Java this should go away.
+     * Avoid using this unless you are going to start the merge engine. The C match
+     * engine may be using this as well.
      */
+    @Deprecated
     private SourceTableRecord lhs;
     
     /**
      * One of the two records currently identified as a potential duplicate.
+     * This exists because the merge engine can only handle paths of length one.
+     * Once the merge engine has been rewritten to be in Java this should go away.
+     * Avoid using this unless you are going to start the merge engine. The C match
+     * engine may be using this as well.
      */
+    @Deprecated
     private SourceTableRecord rhs;
 
+    /**
+     * The values that are used to keep track of which side of a record is
+     * the master.
+     */
     public static enum MasterSide {
         LEFT_HAND_SIDE,
         RIGHT_HAND_SIDE,
@@ -64,10 +79,33 @@ public class PotentialMatchRecord {
      * code names from the database.
      */
     public static enum MatchType {
+    	
+    	/**
+    	 * This should be set when we are using the auto match functionality.
+    	 */
         AUTOMATCH("AUTO_MATCH"),
+        
+        /**
+         * This appears to represent the case when the two nodes are not related.
+         */
         NOMATCH("NO_MATCH"),
+        
+        /**
+         * This appears to represent the case when one of the nodes is a master of
+         * the other.
+         */
         MATCH("MATCH"),
+        
+        /**
+		 * This should be the value for having been merged. This should be set
+		 * by the merge engine.
+		 */
         MERGED("MERGED"),
+        
+        /**
+         * This is the property that defines that no user setting of the match record
+         * has been done yet. This should be shown as a dashed line.
+         */
         UNMATCH("UNMATCH");
         
         /**
@@ -138,18 +176,46 @@ public class PotentialMatchRecord {
         return criteriaGroup;
     }
 
+    /**
+     * This exists because the merge engine can only handle paths of length one.
+     * Once the merge engine has been rewritten to be in Java this should go away.
+     * Avoid using this unless you are going to start the merge engine. The C match
+     * engine may be using this as well.
+     */
+    @Deprecated
     public SourceTableRecord getLhs() {
         return lhs;
     }
 
+    /**
+     * This exists because the merge engine can only handle paths of length one.
+     * Once the merge engine has been rewritten to be in Java this should go away.
+     * Avoid using this unless you are going to start the merge engine. The C match
+     * engine may be using this as well.
+     */
+    @Deprecated
     public void setLhs(SourceTableRecord lhs) {
         this.lhs = lhs;
     }
 
+    /**
+     * This exists because the merge engine can only handle paths of length one.
+     * Once the merge engine has been rewritten to be in Java this should go away.
+     * Avoid using this unless you are going to start the merge engine. The C match
+     * engine may be using this as well.
+     */
+    @Deprecated
     public SourceTableRecord getRhs() {
         return rhs;
     }
 
+    /**
+     * This exists because the merge engine can only handle paths of length one.
+     * Once the merge engine has been rewritten to be in Java this should go away.
+     * Avoid using this unless you are going to start the merge engine. The C match
+     * engine may be using this as well.
+     */
+    @Deprecated
     public void setRhs(SourceTableRecord rhs) {
         this.rhs = rhs;
     }
@@ -170,18 +236,23 @@ public class PotentialMatchRecord {
      * Set the master record to the source table record passed in.  If the
      * value passed is null it sets neither as the master record.  If 
      * newMaster is not in this potential match record it throws an
-     * illegal argument exception.
+     * illegal argument exception. The match status also gets set to match
+     * if the master is not null or unmatch if the master is null.
      * 
      * @param newMaster the source table record that is participating in this
      *                     potential match that you want to make the master.
      */
     public void setMaster(SourceTableRecord newMaster){
+    	
         if (newMaster== null){
             master = MasterSide.NEITHER;
-        } else if (rhs.equals(newMaster)) {
+            matchStatus = MatchType.UNMATCH;
+        } else if (originalRhs.equals(newMaster)) {
             master = MasterSide.RIGHT_HAND_SIDE;
-        } else if (lhs.equals(newMaster)) {
+            matchStatus = MatchType.MATCH;
+        } else if (originalLhs.equals(newMaster)) {
             master = MasterSide.LEFT_HAND_SIDE;
+            matchStatus = MatchType.MATCH;
         } else {
             throw new IllegalArgumentException("The source table record "+ newMaster + " is not part of this record");
         }  
@@ -221,9 +292,9 @@ public class PotentialMatchRecord {
         if(master == MasterSide.NEITHER){
             return null;
         } else if (master == MasterSide.LEFT_HAND_SIDE){
-            return lhs;
+            return originalLhs;
         } else if (master == MasterSide.RIGHT_HAND_SIDE){
-            return rhs;
+            return originalRhs;
         } else {
             throw new IllegalStateException("Invalid master state: " + master);
         }
@@ -241,9 +312,9 @@ public class PotentialMatchRecord {
             return null;
         } else {
             if (master == MasterSide.LEFT_HAND_SIDE){
-                return rhs;
+                return originalRhs;
             } else if (master == MasterSide.RIGHT_HAND_SIDE){
-                return lhs;
+                return originalLhs;
             } else {
                 throw new IllegalStateException("Invalid master state: " + master);
             }
