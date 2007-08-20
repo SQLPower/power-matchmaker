@@ -165,6 +165,7 @@ public class MatchPoolTest extends TestCase {
     
     /** Tests that findAll() does find all potential match records (graph edges) properly. */
     public void testFindAllPotentialMatches() throws Exception {
+    	MatchPool pool = new MatchPool(match);
         insertResultTableRecord(con, 1, 2, 15, "Group_One");
         pool.findAll();        
         Set<PotentialMatchRecord> matches = pool.getPotentialMatches();
@@ -180,6 +181,7 @@ public class MatchPoolTest extends TestCase {
     
     /** Tests that findAll() does find all source table records (graph nodes) properly. */
     public void testFindSourceTableRecords() throws Exception {
+    	MatchPool pool = new MatchPool(match);
         insertResultTableRecord(con, 1, 2, 15, "Group_One");
         insertResultTableRecord(con, 1, 3, 15, "Group_One");
         pool.findAll();
@@ -202,6 +204,7 @@ public class MatchPoolTest extends TestCase {
     
     /** Tests that findAll() hooks up inbound and outbound matches properly. */
     public void testFindAllEdgeHookup() throws Exception {
+    	MatchPool pool = new MatchPool(match);
         insertResultTableRecord(con, 1, 2, 15, "Group_One");
         insertResultTableRecord(con, 1, 3, 15, "Group_One");
         pool.findAll();
@@ -345,12 +348,14 @@ public class MatchPoolTest extends TestCase {
 	}
 	
 	/**
-     * Sets the master of a node that has two masters. This should not be a normal case.
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
-	public void testSetMasterWithTwoMasters() {
+	 * Sets the master of a node that has a duplicate which is also a duplicate
+	 * of the new master. This should not be a normal case.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterWithSameDuplicate() {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("f1");
 		SourceTableRecord f1 = pool.getSourceTableRecord(keyList);
@@ -362,6 +367,53 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord f2 = pool.getSourceTableRecord(keyList);
 		
 		pool.defineMaster(f3, f1);
+		
+		PotentialMatchRecord pmrF1ToF2 = null;
+		PotentialMatchRecord pmrF2ToF3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == f1 && potentialMatch.getOriginalRhs() == f2) {
+				pmrF1ToF2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == f2 && potentialMatch.getOriginalRhs() == f1) {
+				pmrF1ToF2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == f3 && potentialMatch.getOriginalRhs() == f2) {
+				pmrF2ToF3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == f2 && potentialMatch.getOriginalRhs() == f3) {
+				pmrF2ToF3 = potentialMatch;
+			}
+			
+			if (pmrF1ToF2 != null && pmrF2ToF3 != null) break;
+		}
+		
+		if (pmrF1ToF2 == null || pmrF2ToF3 == null) {
+			fail("An edge no longer exists after we defined f3 as the master of f1.");
+		}
+		
+		assertTrue(pmrF1ToF2.getMaster() == f2);
+		assertTrue(pmrF1ToF2.getDuplicate() == f1);
+		assertTrue(pmrF2ToF3.getMaster() == f3);
+		assertTrue(pmrF2ToF3.getDuplicate() == f2);
+	}
+	
+	/**
+	 * Sets the master of a node to be one of it's current duplicates that also
+	 * has another different master. This should not be a normal case.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterToCurrentDuplicate() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("f1");
+		SourceTableRecord f1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("f3");
+		SourceTableRecord f3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("f2");
+		SourceTableRecord f2 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineMaster(f2, f1);
 		
 		PotentialMatchRecord pmrF1ToF2 = null;
 		PotentialMatchRecord pmrF2ToF3 = null;
