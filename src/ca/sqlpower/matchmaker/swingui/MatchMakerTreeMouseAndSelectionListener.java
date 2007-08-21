@@ -5,7 +5,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -38,7 +37,6 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
-import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
 
 /**
@@ -158,12 +156,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         m.addSeparator();
         m.add(new JMenuItem(new AbstractAction("Audit Information") {
             public void actionPerformed(ActionEvent e) {
-                MatchInfoPanel p = new MatchInfoPanel(match);
-                JDialog d = DataEntryPanelBuilder
-                        .createSingleButtonDataEntryPanelDialog(p, owningFrame,
-                                "Audit Information", "OK");
-                d.pack();
-                d.setVisible(true);
+            	swingSession.setCurrentEditorComponent(new MatchInfoEditor(match));
             }
         }));
         m.add(new JMenuItem(new ShowMatchStatisticInfoAction(swingSession,match, owningFrame)));
@@ -264,6 +257,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 					MatchActionNode node = (MatchActionNode) o;
 					if (node.getActionType() == MatchActionType.RUN_MATCH) {
 						swingSession.setCurrentEditorComponent(new RunMatchEditor(swingSession, node.getMatch(), owningFrame));
+					} else if (node.getActionType() == MatchActionType.AUDIT_INFO) {
+						swingSession.setCurrentEditorComponent(new MatchInfoEditor(node.getMatch()));
 					}
 				}
 			} catch (Exception ex) {

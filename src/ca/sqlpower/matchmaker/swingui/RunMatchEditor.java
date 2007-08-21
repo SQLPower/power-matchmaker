@@ -650,8 +650,11 @@ public class RunMatchEditor implements EditorPane{
 	}
 
 	/**
-	 * Displays a dialog to the user that contains the text in
-	 * the log file denoted by logFilePath.
+	 * Displays a dialog to the user that contains the text in the log file
+	 * denoted by logFilePath.
+	 * 
+	 * XXX: WARNING! When this dialog is closed, the whole program exits as
+	 * well!
 	 */
 	private class ShowLogFileAction extends AbstractAction {
 
