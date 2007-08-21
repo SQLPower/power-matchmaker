@@ -1,6 +1,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -113,7 +114,6 @@ public class MatchEditor implements EditorPane {
     
     // all of these buttons are now DOOOOOMED!
     private JButton showAuditInfo;
-    private JButton runMatch;
     private JButton validationStatus;
     private JButton matchResultVisualizerButton;
     
@@ -260,9 +260,8 @@ public class MatchEditor implements EditorPane {
 
 	private Action runMatchAction = new AbstractAction("Run Match") {
 		public void actionPerformed(ActionEvent e) {
-			RunMatchDialog p = new RunMatchDialog(swingSession, match, getParentFrame());
-			p.pack();
-			p.setVisible(true);
+			RunMatchEditor p = new RunMatchEditor(swingSession, match, getParentFrame());
+			swingSession.setCurrentEditorComponent(p);
 		}
 	};
 
@@ -360,14 +359,13 @@ public class MatchEditor implements EditorPane {
     	createResultTable = new JButton(createResultTableAction);
     	saveMatch = new JButton(saveAction);
     	showAuditInfo = new JButton(showAuditInfoAction);
-    	runMatch= new JButton(runMatchAction);
     	validationStatus = new JButton(validationStatusAction);
-        matchResultVisualizerButton = new JButton(matchResultVisualizerAction);
+       matchResultVisualizerButton = new JButton(matchResultVisualizerAction);
         createIndexButton = new JButton(createIndexAction );
 
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,40dlu,4dlu,pref,   4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,  4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,40dlu,4dlu,pref,   4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,  4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
 
 		PanelBuilder pb;
 
@@ -422,15 +420,19 @@ public class MatchEditor implements EditorPane {
 		row+=2;
 		pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,c"));
 		pb.add(resultTableName, cc.xy(4,row));
+		row+=2;
+		// We don't want the save button to take up the whole column width
+		// so we wrap it in a JPanel with a FlowLayout. If there is a better
+		// way, please fix this.
+		JPanel savePanel = new JPanel(new FlowLayout());
+		savePanel.add(saveMatch);
+		pb.add(savePanel, cc.xy(4, row));
 
 		ButtonStackBuilder bb = new ButtonStackBuilder();
-		bb.addGridded(saveMatch);
+/*		bb.addGridded(saveMatch);
 		bb.addRelatedGap();
-		bb.addRelatedGap();
-		bb.addGridded(showAuditInfo);
-		bb.addRelatedGap();
-		bb.addRelatedGap();
-		bb.addGridded(runMatch);
+		bb.addRelatedGap(); */
+    	bb.addGridded(showAuditInfo);
 		bb.addRelatedGap();
 		bb.addRelatedGap();
 		bb.addGridded(validationStatus);
@@ -749,14 +751,10 @@ public class MatchEditor implements EditorPane {
     	ValidateResult worst = handler.getWorstValidationStatus();
     	saveAction.setEnabled(true);
 		newMatchGroupAction.setEnabled(true);
-		runMatchAction.setEnabled(true);
 
     	if ( worst.getStatus() == Status.FAIL ) {
     		saveAction.setEnabled(false);
     		newMatchGroupAction.setEnabled(false);
-    		runMatchAction.setEnabled(false);
-    	} else if ( worst.getStatus() == Status.WARN ) {
-    		runMatchAction.setEnabled(false);
     	}
     	if (sourceChooser.getTableComboBox().getSelectedItem() == null){
     		newMatchGroupAction.setEnabled(false);

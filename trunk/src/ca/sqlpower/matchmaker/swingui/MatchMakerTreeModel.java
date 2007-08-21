@@ -110,7 +110,7 @@ public class MatchMakerTreeModel implements TreeModel {
      * match workflow is represented in one place, with pretty pictures and
      * everything.
      */
-    private class MatchActionNode extends AbstractMatchMakerObject<Match, MatchActionNode> {
+    public class MatchActionNode extends AbstractMatchMakerObject<Match, MatchActionNode> {
 
         private final MatchActionType matchActionType;
         private final Match match;
@@ -146,6 +146,10 @@ public class MatchMakerTreeModel implements TreeModel {
         
         public MatchActionType getActionType() {
             return matchActionType;
+        }
+        
+        public Match getMatch() {
+        	return match;
         }
     }
     
