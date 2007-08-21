@@ -826,7 +826,7 @@ public class MatchPoolTest extends TestCase {
 		}
 		
 		if (pmrI1ToI2 == null || pmrI2ToI3 == null || pmrI2ToI3 == null) {
-			fail("An edge no longer exists after we defined cycle3 as the master of cycle2.");
+			fail("An edge no longer exists after we defined i1 as the master of i3.");
 		}
 		
 		assertTrue(pmrI1ToI2.getMaster() == i2);
@@ -878,7 +878,7 @@ public class MatchPoolTest extends TestCase {
 		}
 		
 		if (pmrA1ToA2 == null || pmrA2ToA3 == null || pmrA1ToA3 == null) {
-			fail("An edge no longer exists after we defined a1 as the master.");
+			fail("An edge no longer exists after we defined a3 as the master of a1.");
 		}
 		
 		assertTrue(pmrA1ToA2.getMaster() == null);
@@ -886,50 +886,8 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrA2ToA3.getMaster() == null);
 		assertTrue(pmrA1ToA3.getMaster() == a3);
 		assertTrue(pmrA1ToA3.getDuplicate() == a1);
+		assertTrue(pmrA1ToA3.isSynthetic());
 	}
-    
-    /**
-     * This test removes an undefined connection between two nodes.
-     */
-    public void testDefiningNoMatch() {
-    	List<Object> keyList = new ArrayList<Object>();
-		keyList.add("b2");
-		SourceTableRecord b2 = pool.getSourceTableRecord(keyList);
-		keyList.clear();
-		keyList.add("b3");
-		SourceTableRecord b3 = pool.getSourceTableRecord(keyList);
-		keyList.clear();
-		keyList.add("b1");
-		SourceTableRecord b1 = pool.getSourceTableRecord(keyList);
-		
-		pool.defineNoMatch(b2, b3);
-		
-		PotentialMatchRecord pmrB1ToB2 = null;
-		PotentialMatchRecord pmrB2ToB3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == b1 && potentialMatch.getOriginalRhs() == b2) {
-				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b1) {
-				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b3 && potentialMatch.getOriginalRhs() == b2) {
-				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b3) {
-				pmrB2ToB3 = potentialMatch;
-			}
-			
-			if (pmrB1ToB2 != null && pmrB2ToB3 != null) break;
-		}
-		
-		if (pmrB1ToB2 == null || pmrB2ToB3 == null) {
-			fail("An edge no longer exists after we defined b2 as the master of b3.");
-		}
-		
-		assertTrue(pmrB1ToB2.getMaster() == b1);
-		assertTrue(pmrB1ToB2.getDuplicate() == b2);
-		assertTrue(pmrB2ToB3.getMaster() == null);
-		assertTrue(pmrB2ToB3.getDuplicate() == null);
-		assertTrue(pmrB2ToB3.getMatchStatus() == MatchType.NOMATCH);
-    }
     
     /**
      * This test removes a defined connection between two nodes.
@@ -964,7 +922,7 @@ public class MatchPoolTest extends TestCase {
 		}
 		
 		if (pmrB1ToB2 == null || pmrB2ToB3 == null) {
-			fail("An edge no longer exists after we defined b2 as the master of b3.");
+			fail("An edge no longer exists after we defined no match between b2 and b1.");
 		}
 		
 		assertTrue(pmrB1ToB2.getMaster() == null);
@@ -973,5 +931,249 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrB2ToB3.getDuplicate() == null);
 		assertTrue(pmrB1ToB2.getMatchStatus() == MatchType.NOMATCH);
     }
+    
+    /**
+	 * Testing the defineNoMatchToAny method. The method should remove both the
+	 * match defining the source table record as a master and the match defining
+	 * it as a duplicate.
+	 */
+    public void testDefineNoMatchOfAny() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("cycle2");
+		SourceTableRecord cycle2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("cycle3");
+		SourceTableRecord cycle3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("cycle1");
+		SourceTableRecord cycle1 = pool.getSourceTableRecord(keyList);
 
+		pool.defineNoMatchOfAny(cycle2);
+		
+		PotentialMatchRecord pmrCycle1ToCycle2 = null;
+		PotentialMatchRecord pmrCycle2ToCycle3 = null;
+		PotentialMatchRecord pmrCycle3ToCycle1 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == cycle1 && potentialMatch.getOriginalRhs() == cycle2) {
+				pmrCycle1ToCycle2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == cycle2 && potentialMatch.getOriginalRhs() == cycle1) {
+				pmrCycle1ToCycle2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == cycle3 && potentialMatch.getOriginalRhs() == cycle2) {
+				pmrCycle2ToCycle3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == cycle2 && potentialMatch.getOriginalRhs() == cycle3) {
+				pmrCycle2ToCycle3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == cycle3 && potentialMatch.getOriginalRhs() == cycle1) {
+				pmrCycle3ToCycle1 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == cycle1 && potentialMatch.getOriginalRhs() == cycle3) {
+				pmrCycle3ToCycle1 = potentialMatch;
+			}
+			
+			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null && pmrCycle3ToCycle1 != null) break;
+		}
+		
+		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle2ToCycle3 == null) {
+			fail("An edge no longer exists after we defined cycle2 to not match any other connected nodes.");
+		}
+
+		assertTrue(pmrCycle1ToCycle2.getMaster() == null);
+		assertTrue(pmrCycle1ToCycle2.getDuplicate() == null);
+		assertTrue(pmrCycle1ToCycle2.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrCycle2ToCycle3.getMaster() == null);
+		assertTrue(pmrCycle2ToCycle3.getDuplicate() == null);
+		assertTrue(pmrCycle2ToCycle3.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrCycle3ToCycle1.getMaster() == cycle1);
+		assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
+    }
+    
+    /**
+	 * Sets the potential match record between two source table records that was
+	 * unmatched to be no match.
+	 */
+    public void testDefiningNoMatchFromUnmatched() {
+    	List<Object> keyList = new ArrayList<Object>();
+		keyList.add("b2");
+		SourceTableRecord b2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("b3");
+		SourceTableRecord b3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("b1");
+		SourceTableRecord b1 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineNoMatch(b2, b3);
+		
+		PotentialMatchRecord pmrB1ToB2 = null;
+		PotentialMatchRecord pmrB2ToB3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1 && potentialMatch.getOriginalRhs() == b2) {
+				pmrB1ToB2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b1) {
+				pmrB1ToB2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b3 && potentialMatch.getOriginalRhs() == b2) {
+				pmrB2ToB3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b3) {
+				pmrB2ToB3 = potentialMatch;
+			}
+			
+			if (pmrB1ToB2 != null && pmrB2ToB3 != null) break;
+		}
+		
+		if (pmrB1ToB2 == null || pmrB2ToB3 == null) {
+			fail("An edge no longer exists after we defined no match between b2 and b3.");
+		}
+		
+		assertTrue(pmrB1ToB2.getMaster() == b1);
+		assertTrue(pmrB1ToB2.getDuplicate() == b2);
+		assertTrue(pmrB2ToB3.getMaster() == null);
+		assertTrue(pmrB2ToB3.getDuplicate() == null);
+		assertTrue(pmrB2ToB3.getMatchStatus() == MatchType.NOMATCH);
+    }
+    
+    /**
+	 * This test defines two nodes that were not directly connected before to be
+	 * labeled as having no match between them.
+	 */
+    public void testDefiningNoMatchCreatingSynthetic() {
+    	List<Object> keyList = new ArrayList<Object>();
+		keyList.add("a2");
+		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("a1");
+		SourceTableRecord a1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("a3");
+		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineNoMatch(a3, a1);
+		
+		PotentialMatchRecord pmrA1ToA2 = null;
+		PotentialMatchRecord pmrA2ToA3 = null;
+		PotentialMatchRecord pmrA1ToA3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == a1 && potentialMatch.getOriginalRhs() == a2) {
+				pmrA1ToA2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a1) {
+				pmrA1ToA2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == a3 && potentialMatch.getOriginalRhs() == a2) {
+				pmrA2ToA3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a3) {
+				pmrA2ToA3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == a3 && potentialMatch.getOriginalRhs() == a1) {
+				pmrA1ToA3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == a1 && potentialMatch.getOriginalRhs() == a3) {
+				pmrA1ToA3 = potentialMatch;
+			}
+			
+			if (pmrA1ToA2 != null && pmrA2ToA3 != null && pmrA1ToA3 != null) break;
+		}
+		
+		if (pmrA1ToA2 == null || pmrA2ToA3 == null || pmrA1ToA3 == null) {
+			fail("An edge no longer exists after we defined no match between a1 and a3.");
+		}
+		
+		assertTrue(pmrA1ToA2.getMaster() == null);
+		assertTrue(pmrA1ToA2.getDuplicate() == null);
+		assertTrue(pmrA2ToA3.getMaster() == null);
+		assertTrue(pmrA1ToA3.getMaster() == null);
+		assertTrue(pmrA1ToA3.getDuplicate() == null);
+		assertTrue(pmrA1ToA3.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrA1ToA3.isSynthetic());
+    }
+    
+    /**
+	 * Testing the defineUnmatchAll method. The method should remove both the
+	 * match defining the source table record as a master and the match defining
+	 * it as a duplicate and set the edges to be unmatched.
+	 */
+    public void testDefineUnmatchAll() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("cycle2");
+		SourceTableRecord cycle2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("cycle3");
+		SourceTableRecord cycle3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("cycle1");
+		SourceTableRecord cycle1 = pool.getSourceTableRecord(keyList);
+
+		pool.defineUnmatchAll(cycle2);
+		
+		PotentialMatchRecord pmrCycle1ToCycle2 = null;
+		PotentialMatchRecord pmrCycle2ToCycle3 = null;
+		PotentialMatchRecord pmrCycle3ToCycle1 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == cycle1 && potentialMatch.getOriginalRhs() == cycle2) {
+				pmrCycle1ToCycle2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == cycle2 && potentialMatch.getOriginalRhs() == cycle1) {
+				pmrCycle1ToCycle2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == cycle3 && potentialMatch.getOriginalRhs() == cycle2) {
+				pmrCycle2ToCycle3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == cycle2 && potentialMatch.getOriginalRhs() == cycle3) {
+				pmrCycle2ToCycle3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == cycle3 && potentialMatch.getOriginalRhs() == cycle1) {
+				pmrCycle3ToCycle1 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == cycle1 && potentialMatch.getOriginalRhs() == cycle3) {
+				pmrCycle3ToCycle1 = potentialMatch;
+			}
+			
+			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null && pmrCycle3ToCycle1 != null) break;
+		}
+		
+		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle2ToCycle3 == null) {
+			fail("An edge no longer exists after we unmatched cycle2 from cycle1 and cycle3.");
+		}
+
+		assertTrue(pmrCycle1ToCycle2.getMaster() == null);
+		assertTrue(pmrCycle1ToCycle2.getDuplicate() == null);
+		assertTrue(pmrCycle1ToCycle2.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrCycle2ToCycle3.getMaster() == null);
+		assertTrue(pmrCycle2ToCycle3.getDuplicate() == null);
+		assertTrue(pmrCycle2ToCycle3.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrCycle3ToCycle1.getMaster() == cycle1);
+		assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
+    }
+
+    /**
+	 * Sets the potential match record between two source table records that was
+	 * matched to be unmatched.
+	 */
+    public void testDefiningUnmatchedForMatched() {
+    	List<Object> keyList = new ArrayList<Object>();
+		keyList.add("b2");
+		SourceTableRecord b2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("b3");
+		SourceTableRecord b3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("b1");
+		SourceTableRecord b1 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineUnmatched(b2, b1);
+		
+		PotentialMatchRecord pmrB1ToB2 = null;
+		PotentialMatchRecord pmrB2ToB3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1 && potentialMatch.getOriginalRhs() == b2) {
+				pmrB1ToB2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b1) {
+				pmrB1ToB2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b3 && potentialMatch.getOriginalRhs() == b2) {
+				pmrB2ToB3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b3) {
+				pmrB2ToB3 = potentialMatch;
+			}
+			
+			if (pmrB1ToB2 != null && pmrB2ToB3 != null) break;
+		}
+		
+		if (pmrB1ToB2 == null || pmrB2ToB3 == null) {
+			fail("An edge no longer exists after we unmatched b1 and b2.");
+		}
+		
+		assertTrue(pmrB1ToB2.getMaster() == null);
+		assertTrue(pmrB1ToB2.getDuplicate() == null);
+		assertTrue(pmrB2ToB3.getMaster() == null);
+		assertTrue(pmrB2ToB3.getDuplicate() == null);
+		assertTrue(pmrB1ToB2.getMatchStatus() == MatchType.UNMATCH);
+    }
 }
