@@ -165,7 +165,7 @@ public class MatchPool {
                 SourceTableRecord lhs = makeSourceTableRecord(lhsKeyValues);
                 SourceTableRecord rhs = makeSourceTableRecord(rhsKeyValues);
                 addPotentialMatch(
-                    new PotentialMatchRecord(criteriaGroup, matchStatus, lhs, rhs));
+                    new PotentialMatchRecord(criteriaGroup, matchStatus, lhs, rhs, false));
             }
             
         } catch (SQLException ex) {
@@ -417,15 +417,7 @@ public class MatchPool {
     	
     	if (masterMapping.get(duplicate) == null) {
     		logger.debug("We could not reach the duplicate from the ultimate master in the current graph. A synthetic edge will be created");
-    		MatchMakerCriteriaGroup syntheticCriteria = match.getMatchCriteriaGroupByName(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES);
-    		if (syntheticCriteria == null) {
-    			syntheticCriteria = new MatchMakerCriteriaGroup();
-    			syntheticCriteria.setName(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES);
-    			match.addMatchCriteriaGroup(syntheticCriteria);
-    		}
-    		addPotentialMatch(
-                    new PotentialMatchRecord(syntheticCriteria, MatchType.UNMATCH, master, duplicate));
-    		//XXX we still need to store the new potential match in the database.
+    		addSyntheticPotentialMatchRecord(master, duplicate);
     		masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, ultimateMaster);
     	}
     	
@@ -443,6 +435,37 @@ public class MatchPool {
     		PotentialMatchRecord matchRecord = getPotentialMatchFromOriginals(nodeMasterPair.getValue(), nodeMasterPair.getKey());
    			matchRecord.setMaster(nodeMasterPair.getValue());
     	}
+	}
+
+    /**
+	 * This method adds a match maker criteria group to the match in this pool
+	 * for synthetic edges if the criteria group does not already exist. Then a
+	 * new potential match record that is synthetic (created by the Match Maker)
+	 * is added to the pool under the synthetic criteria group. The match type
+	 * of the new potential match record is set to UNMATCH by default.
+	 * 
+	 * @param record1
+	 *            One of the source table records attached to the new potential
+	 *            match record.
+	 * @param record
+	 *            2 One of the source table records attached to the new
+	 *            potential match record.
+	 * @return The new potential match record that was added to the pool.
+	 */
+	private PotentialMatchRecord addSyntheticPotentialMatchRecord(SourceTableRecord record1,
+			SourceTableRecord record2) {
+		MatchMakerCriteriaGroup syntheticCriteria = match.getMatchCriteriaGroupByName(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES);
+		if (syntheticCriteria == null) {
+			syntheticCriteria = new MatchMakerCriteriaGroup();
+			syntheticCriteria.setName(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES);
+			match.addMatchCriteriaGroup(syntheticCriteria);
+		}
+		
+		PotentialMatchRecord pmr = new PotentialMatchRecord(syntheticCriteria, MatchType.UNMATCH, record1, record2, true);
+		addPotentialMatch(pmr);
+		
+		//XXX we still need to store the new potential match in the database.
+		return pmr;
 	}
 
     /**
@@ -478,11 +501,57 @@ public class MatchPool {
 	
 	/**
 	 * This sets the two given SourceTableRecords to have no match between them.
+	 * If the source table records are the same all potential match records
+	 * connected to the node will be set to no match. If no edge exists between
+	 * the nodes than an edge will be created to store the fact that there is
+	 * no match between the nodes for later use.
 	 */
     public void defineNoMatch(SourceTableRecord record1, SourceTableRecord record2) {
+    	if (record1 == record2) {
+    		defineNoMatchOfAny(record1);
+    	}
         PotentialMatchRecord pmr = getPotentialMatchFromOriginals(record1, record2);
         if (pmr != null) {
         	pmr.setMatchStatus(MatchType.NOMATCH);
+        } else {
+        	addSyntheticPotentialMatchRecord(record1, record2).setMatchStatus(MatchType.NOMATCH);
         }
     }
+
+    /**
+	 * This method sets all of the potential match records connecting the given
+	 * source table record to any other source table record to be no match.
+	 */
+	public void defineNoMatchOfAny(SourceTableRecord record1) {
+		for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
+			pmr.setMatchStatus(MatchType.NOMATCH);
+		}
+	}
+	
+	/**
+	 * Sets the potential match record between two source table records to
+	 * be an undefined match. If the source table records are the same all
+	 * potential match records connected to the node will be set as undefined.
+	 * If no potential match record exists between the two source table records
+	 * then no new potential match record will be created.
+	 */
+	public void defineUnmatched(SourceTableRecord record1, SourceTableRecord record2) {
+		if (record1 == record2) {
+    		defineUnmatchAll(record1);
+    	}
+        PotentialMatchRecord pmr = getPotentialMatchFromOriginals(record1, record2);
+        if (pmr != null) {
+        	pmr.setMatchStatus(MatchType.UNMATCH);
+        }
+	}
+
+	/**
+	 * Sets all potential match records connected to the given source table record
+	 * to be undefined matches.
+	 */
+	public void defineUnmatchAll(SourceTableRecord record1) {
+        for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
+        	pmr.setMatchStatus(MatchType.UNMATCH);
+        }
+	}
 }
