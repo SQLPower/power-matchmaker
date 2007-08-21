@@ -78,19 +78,25 @@ public class MatchMakerTreeModel implements TreeModel {
         RUN_MATCH("Run Match"),
         
         /**
-         * Shows the "run merge" UI.
-         */
-        RUN_MERGE("Run Merge"),
-        
-        /**
          * Shows the "validate matches" UI.
          */
         VALIDATE_MATCHES("Validate Matches"),
         
         /**
+         * Shows the "run merge" UI.
+         */
+        RUN_MERGE("Run Merge"),
+        
+        /**
          * Shows the "validation status" UI.
          */
-        VALIDATION_STATUS("Validation Status");
+        VALIDATION_STATUS("Validation Status"),
+        
+        /**
+         * Shows information about the parent match such as
+         * its ID, folder, description, type and history
+         */
+        AUDIT_INFO("Audit Information");
         
         private final String name;
         

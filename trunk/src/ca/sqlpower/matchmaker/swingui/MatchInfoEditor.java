@@ -14,24 +14,37 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.DateFormatAllowsNull;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.swingui.DataEntryPanel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MatchInfoPanel implements DataEntryPanel {
+/**
+ * The MatchInfoEditor is used to display information about a match such
+ * as its ID, type and history. Although this is called an editor and extends
+ * EditorPane, it does not currently handle editing. This might be nice to have
+ * but might not make sense either; this is an information panel, not an editor.
+ * <p>
+ * We only extend EditorPane so that this can be added to the right hand side
+ * and is called MatchInfo<i>Editor</i> to conform to the naming conventions
+ * for other editor panes eg. MatchEditor, RunMatchEditor etc.
+ */
+public class MatchInfoEditor implements EditorPane {
 
-	private static final Logger logger = Logger.getLogger(MatchInfoPanel.class);
+	private static final Logger logger = Logger.getLogger(MatchInfoEditor.class);
 	private Match match;
 	private JPanel panel;
 
-	public MatchInfoPanel(Match match) throws HeadlessException {
+	public MatchInfoEditor(Match match) throws HeadlessException {
 		this.match = match;
 		buildUI();
 	}
 
+	/**
+	 * Initializes panel to display all of the audit information that we have
+	 * about the parent match.
+	 */
 	private void buildUI() {
 
 		DateFormat df = new DateFormatAllowsNull();
@@ -83,22 +96,31 @@ public class MatchInfoPanel implements DataEntryPanel {
 		pb.add(new JLabel("Checked out date:"), cc.xy(2,22,"r,c"));
 		pb.add(new JLabel("Checked out user:"), cc.xy(2,24,"r,c"));
 		pb.add(new JLabel("Checked out osuser:"), cc.xy(2,26,"r,c"));
-
-
 	}
 
-	public boolean applyChanges() {
-		// we don't care
-		return false;
-	}
-
-	public void discardChanges() {
-		// we don't care
-
-	}
-
+	/**
+	 * Returns the panel that displays all of the audit information that we have
+	 * about the parent match
+	 */
 	public JComponent getPanel() {
 		return panel;
+	}
+
+	/**
+	 * Despite the warning in the interface's comment, we blindly return true.
+	 * This should be ok here as long as we never edit anything here (a feature
+	 * not expected to be implemented).
+	 */
+	public boolean doSave() {
+		return true;
+	}
+
+	/**
+	 * Returns false because we do not support, nor do we plan to support,
+	 * modifying values.
+	 */
+	public boolean hasUnsavedChanges() {
+		return false;
 	}
 
 

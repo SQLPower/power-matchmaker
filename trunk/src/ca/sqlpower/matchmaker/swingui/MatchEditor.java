@@ -113,7 +113,6 @@ public class MatchEditor implements EditorPane {
     private JButton saveMatch;
     
     // all of these buttons are now DOOOOOMED!
-    private JButton showAuditInfo;
     private JButton validationStatus;
     private JButton matchResultVisualizerButton;
     
@@ -247,24 +246,6 @@ public class MatchEditor implements EditorPane {
         else return null;
     }
 
-	private Action showAuditInfoAction = new AbstractAction("Show Audit Info") {
-		public void actionPerformed(ActionEvent e) {
-
-			MatchInfoPanel p = new MatchInfoPanel(match);
-			JDialog d = DataEntryPanelBuilder.createSingleButtonDataEntryPanelDialog(
-					p, getParentWindow(),
-					"Audit Information", "OK");
-			d.pack();
-			d.setVisible(true);
-		}};
-
-	private Action runMatchAction = new AbstractAction("Run Match") {
-		public void actionPerformed(ActionEvent e) {
-			RunMatchEditor p = new RunMatchEditor(swingSession, match, getParentFrame());
-			swingSession.setCurrentEditorComponent(p);
-		}
-	};
-
 	private Action validationStatusAction = new AbstractAction("View Validation ValidateResult") {
 		public void actionPerformed(ActionEvent e) {
 			MatchValidationStatus p = new MatchValidationStatus(swingSession, match,
@@ -358,9 +339,8 @@ public class MatchEditor implements EditorPane {
     	viewBuilder = new JButton(viewBuilderAction);
     	createResultTable = new JButton(createResultTableAction);
     	saveMatch = new JButton(saveAction);
-    	showAuditInfo = new JButton(showAuditInfoAction);
     	validationStatus = new JButton(validationStatusAction);
-       matchResultVisualizerButton = new JButton(matchResultVisualizerAction);
+        matchResultVisualizerButton = new JButton(matchResultVisualizerAction);
         createIndexButton = new JButton(createIndexAction );
 
     	FormLayout layout = new FormLayout(
@@ -432,9 +412,6 @@ public class MatchEditor implements EditorPane {
 /*		bb.addGridded(saveMatch);
 		bb.addRelatedGap();
 		bb.addRelatedGap(); */
-    	bb.addGridded(showAuditInfo);
-		bb.addRelatedGap();
-		bb.addRelatedGap();
 		bb.addGridded(validationStatus);
         bb.addRelatedGap();
         bb.addRelatedGap();
