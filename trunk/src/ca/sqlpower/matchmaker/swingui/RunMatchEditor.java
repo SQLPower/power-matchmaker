@@ -69,55 +69,115 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+/**
+ * An editor pane to allow the user to configure run and monitor the engine.
+ */
 public class RunMatchEditor implements EditorPane{
 
 	private static final Logger logger = Logger.getLogger(RunMatchEditor.class);
 
+	/**
+	 * The session this RunMatchEditor belongs to.
+	 */
 	private final MatchMakerSwingSession swingSession;
 
+	/**
+	 * The file path to which the engine logs will be written to.
+	 * Must be a valid file path that the user has write permissions on.
+	 */
 	private JTextField logFilePath;
 
 	private String lastAccessPath;
 
+	/**
+	 * A button to open up a file chooser so the user can select a file
+	 * instead of having to type in the whole file path by hand.
+	 */
 	private JButton browse;
 
+	/**
+	 * Denotes whether or not the log file should be overwritten or
+	 * appended to.
+	 */
 	private JCheckBox append;
 
+	/**
+	 * A field for the user to specify how many records they want the
+	 * engine to process.
+	 */
 	private JTextField recordsToProcess;
 
 	private JTextField minWord;
 
+	/**
+	 * A flag for the engine to run in debug mode or not.
+	 */
 	private JCheckBox debugMode;
 
 	private JCheckBox truncateCandDup;
 
+	/**
+	 * A flag for the engine to send emails or not.
+	 */
 	private JCheckBox sendEmail;
 
+	/**
+	 * Used to open a dialog that shows the user the log file
+	 * denoted by the {@link #logFilePath}.
+	 */
 	private JButton viewLogFile;
 
 	private JButton viewStats;
 
+	/**
+	 * Opens a dialog displaying the command-line command that
+	 * will be used to invoke the engine.
+	 */
 	private JButton showCommand;
 
+	/**
+	 * Saves the current configuration such as checkbox selection
+	 * and log filepath.
+	 */
 	private JButton save;
 
+	/**
+	 * Starts the engine. Disabled if engine preconditions are not met.
+	 */
 	private JButton runMatchEngineButton;
 
 	private JComboBox rollbackSegment;
 
+	/**
+	 * The frame that this editor lives in.
+	 */
 	private JFrame parentFrame;
 
+	/**
+	 * The match object the engine should run against.
+	 */
 	private Match match;
 	
 	/**
-	 * The panel that holds all components of this EditorPane
+	 * The panel that holds all components of this EditorPane.
 	 */
 	private JPanel panel;
 
-	StatusComponent status = new StatusComponent();
+	/**
+	 * Displays the validation status of the match engine preconditions.
+	 */
+	private StatusComponent status = new StatusComponent();
 
+	/**
+	 * The validation handler used to validate the configuration portion
+	 * of the editor pane.
+	 */
 	private FormValidationHandler handler;
 
+	/**
+	 * The action that is used to start the match engine as well
+	 * as provide information about the progress and status of the engine
+	 */
 	private final RunEngineAction runEngineAction;
 
 	public RunMatchEditor(MatchMakerSwingSession swingSession, Match match,
@@ -137,6 +197,11 @@ public class RunMatchEditor implements EditorPane{
 		setDefaultSelections(match);
 	}
 
+	/**
+	 * Performs a form validation on the configuration portion and sets the
+	 * status accordingly as well as diabling the button to run the engine if
+	 * necessary.
+	 */
 	private void refreshActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
 		runEngineAction.setEnabled(true);
@@ -146,6 +211,10 @@ public class RunMatchEditor implements EditorPane{
 		}
 	}
 
+	/**
+	 * Opens a file chooser for the user to select the log file they wish
+	 * to use for engine output.
+	 */
 	private Action browseFileAction = new AbstractAction("...") {
 
 		public void actionPerformed(ActionEvent e) {
@@ -158,10 +227,17 @@ public class RunMatchEditor implements EditorPane{
 				logFilePath.setText(file.getPath());
 				lastAccessPath = file.getAbsolutePath();
 			}
-
 		}
+
 	};
 
+	/**
+	 * Builds the UI for this editor pane. This is broken into two parts,
+	 * the configuration and output. Configuration is done in this method
+	 * while the output section is done in the RunEngineAction constructor
+	 * and retrieved when needed because the ouput section depends on some
+	 * things that only the action knows about.
+	 */
 	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,20dlu,pref,10dlu,pref,4dlu",
@@ -250,6 +326,11 @@ public class RunMatchEditor implements EditorPane{
 		return anotherPB.getPanel();
 	}
 
+	/**
+	 * Used to auto-populate check boxes and text fields using the MatchSettings
+	 * object in <code>match</code>. Also performs form validation to
+	 * intialize the status icon at the top of the configuration portion.
+	 */
 	private void setDefaultSelections(Match match) {
 
 		/*
@@ -315,6 +396,9 @@ public class RunMatchEditor implements EditorPane{
 		v2.validate(sendEmail.isSelected());
 	}
 
+	/**
+	 * Used to update the MatchSettings object in this RunMatchEditor's Match
+	 */
 	private void applyChange() {
 		refreshActionStatus();
 		MatchSettings settings = match.getMatchSettings();
@@ -382,6 +466,10 @@ public class RunMatchEditor implements EditorPane{
 		}
 	}
 
+	/**
+	 * This action is used to run the match engine. It also is responsible
+	 * for constructing the user interface that deals with engine ouput.
+	 */
 	private class RunEngineAction extends AbstractAction implements
 			EngineListener {
 
@@ -561,6 +649,10 @@ public class RunMatchEditor implements EditorPane{
 		}
 	}
 
+	/**
+	 * Displays a dialog to the user that contains the text in
+	 * the log file denoted by logFilePath.
+	 */
 	private class ShowLogFileAction extends AbstractAction {
 
 		public ShowLogFileAction() {
@@ -583,6 +675,10 @@ public class RunMatchEditor implements EditorPane{
 		}
 	}
 
+	/**
+	 * Displays a dialog to the user that contains the command-line command
+	 * that will be used to invoke the engine.
+	 */
 	private class ShowCommandAction extends AbstractAction {
 
 		private Match match;
@@ -673,10 +769,10 @@ public class RunMatchEditor implements EditorPane{
 
 	}
 
-	private JFrame getParentFrame() {
-		return parentFrame;
-	}
-	
+	/**
+	 * A Validator to ensure that the supplied log filepath is a valid
+	 * file and that the user has permission to write to it.
+	 */
 	private class LogFileNameValidator implements Validator {
 		public ValidateResult validate(Object contents) {
 			String name = (String) contents;
@@ -712,6 +808,9 @@ public class RunMatchEditor implements EditorPane{
 
 	}
 
+	/**
+	 * A Validator to check the preconditions of the engine.
+	 */
 	private class MatchAndMatchEngineValidator implements Validator {
 
 		private Match match;
@@ -739,6 +838,9 @@ public class RunMatchEditor implements EditorPane{
 
 	}
 	
+	private JFrame getParentFrame() {
+		return parentFrame;
+	}
 	
 	/*===================== EditorPane implementation ==================*/
 
