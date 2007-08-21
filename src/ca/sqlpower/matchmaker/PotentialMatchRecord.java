@@ -45,6 +45,13 @@ public class PotentialMatchRecord {
     private final SourceTableRecord originalRhs;
 
     /**
+     * This variable defines whether or not this potential match record is 
+     * synthetic. If an edge is synthetic then the Match Maker created the edge
+     * so it may needed to be handled differently (eg: reversing changes).
+     */
+    private final boolean synthetic;
+
+    /**
      * One of the two records currently identified as a potential duplicate.
      * This exists because the merge engine can only handle paths of length one.
      * Once the merge engine has been rewritten to be in Java this should go away.
@@ -149,11 +156,13 @@ public class PotentialMatchRecord {
             MatchMakerCriteriaGroup criteriaGroup,
             MatchType matchStatus,
             SourceTableRecord originalLhs,
-            SourceTableRecord originalRhs) {
+            SourceTableRecord originalRhs,
+            boolean synthetic) {
         this.criteriaGroup = criteriaGroup;
         this.matchStatus = matchStatus;
         this.originalLhs = originalLhs;
         this.originalRhs = originalRhs;
+        this.synthetic = synthetic;
         master = MasterSide.NEITHER;
     }
 
@@ -333,6 +342,10 @@ public class PotentialMatchRecord {
 
 	public void setPool(MatchPool matchPool) {
 		this.pool = matchPool;
+	}
+
+	public boolean isSynthetic() {
+		return synthetic;
 	}
     
 }
