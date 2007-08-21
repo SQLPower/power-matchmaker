@@ -27,6 +27,33 @@ h2 -> h1;
 h2 -> h3 [style=dashed arrowhead=none];
 h3 -> h4;
 
+i1 -> i2;
+i2 -> i3;
+i3 -> i1 [style=dashed arrowhead=none];
+
+j1 -> j2 [style=dashed arrowhead=none];
+j2 -> j3;
+j3 -> j4;
+j4 -> j2;
+
+k1 -> k2 [style=dashed arrowhead=none];
+k2 -> k3;
+k3 -> k4;
+k4 -> k5;
+k5 -> k3;
+
+l1 -> l2 [style=dashed arrowhead=none];
+l2 -> l3;
+l2 -> l4;
+
+m1 -> m2 [style=dashed arrowhead=none];
+m2 -> m3;
+m3 -> m5;
+m5 -> m6;
+m6 -> m4;
+m4 -> m3;
+m6 -> m7;
+
 cycle1 -> cycle2;
 cycle2 -> cycle3;
 cycle3 -> cycle1;

@@ -757,7 +757,7 @@ public class MatchPoolTest extends TestCase {
 			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null && pmrCycle3ToCycle1 != null) break;
 		}
 		
-		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle2ToCycle3 == null) {
+		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle3ToCycle1 == null) {
 			fail("An edge no longer exists after we defined cycle3 as the master of cycle2.");
 		}
 		
@@ -780,6 +780,381 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrCycle2ToCycle3.getDuplicate() == cycle2);
 			assertTrue(pmrCycle3ToCycle1.getMaster() == cycle3);
 			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle1);
+		}
+	}
+	
+	/**
+	 * Sets the master of a node to a master when a cycle is involved. This is
+	 * an unusual case and not something that we will normally come across. Any
+	 * paths that are not used to identify a master/duplicate relation will be
+	 * set to undefined. In this test we cannot know which node was selected as
+	 * the ultimate master in case the algorithm was changed to select a better
+	 * ultimate master. This is the case for setting a master when the master is
+	 * in a cycle.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterWithMasterInACycle() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("j1");
+		SourceTableRecord j1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("j2");
+		SourceTableRecord j2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("j3");
+		SourceTableRecord j3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("j4");
+		SourceTableRecord j4 = pool.getSourceTableRecord(keyList);
+
+		pool.defineMaster(j2, j1);
+		
+		PotentialMatchRecord pmrJ1ToJ2 = null;
+		PotentialMatchRecord pmrJ2ToJ3 = null;
+		PotentialMatchRecord pmrJ3ToJ4 = null;
+		PotentialMatchRecord pmrJ4ToJ2 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == j2 && potentialMatch.getOriginalRhs() == j1) {
+				pmrJ1ToJ2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == j1 && potentialMatch.getOriginalRhs() == j2) {
+				pmrJ1ToJ2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == j2 && potentialMatch.getOriginalRhs() == j3) {
+				pmrJ2ToJ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == j3 && potentialMatch.getOriginalRhs() == j2) {
+				pmrJ2ToJ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == j4 && potentialMatch.getOriginalRhs() == j3) {
+				pmrJ3ToJ4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == j3 && potentialMatch.getOriginalRhs() == j4) {
+				pmrJ3ToJ4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == j2 && potentialMatch.getOriginalRhs() == j4) {
+				pmrJ4ToJ2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == j4 && potentialMatch.getOriginalRhs() == j2) {
+				pmrJ4ToJ2 = potentialMatch;
+			}
+			
+			if (pmrJ1ToJ2 != null && pmrJ2ToJ3 != null && pmrJ3ToJ4 != null && pmrJ4ToJ2 != null) break;
+		}
+		
+		if (pmrJ1ToJ2 == null || pmrJ2ToJ3 == null || pmrJ3ToJ4 == null || pmrJ4ToJ2 == null) {
+			fail("An edge no longer exists after we defined j2 to be the master of j1.");
+		}
+		
+		assertTrue(pmrJ1ToJ2.getMaster() == j2);
+		assertTrue(pmrJ1ToJ2.getDuplicate() == j1);
+		if (pmrJ2ToJ3.getMaster() == j2) {
+			assertTrue(pmrJ2ToJ3.getDuplicate() == j3);
+			assertTrue(pmrJ3ToJ4.getMaster() == null);
+			assertTrue(pmrJ3ToJ4.getDuplicate() == null);
+			assertTrue(pmrJ4ToJ2.getMaster() == j2);
+			assertTrue(pmrJ4ToJ2.getDuplicate() == j4);
+		} else if (pmrJ2ToJ3.getMaster() == j3) {
+			assertTrue(pmrJ2ToJ3.getDuplicate() == j2);
+			assertTrue(pmrJ3ToJ4.getMaster() == j3);
+			assertTrue(pmrJ3ToJ4.getDuplicate() == j4);
+			assertTrue(pmrJ4ToJ2.getMaster() == null);
+			assertTrue(pmrJ4ToJ2.getDuplicate() == null);
+		} else {
+			//master of this loop was set to j4
+			assertTrue(pmrJ2ToJ3.getMaster() == null);
+			assertTrue(pmrJ2ToJ3.getDuplicate() == null);
+			assertTrue(pmrJ3ToJ4.getMaster() == j4);
+			assertTrue(pmrJ3ToJ4.getDuplicate() == j3);
+			assertTrue(pmrJ4ToJ2.getMaster() == j4);
+			assertTrue(pmrJ4ToJ2.getDuplicate() == j2);
+		}
+	}
+
+	/**
+	 * Sets the master of a node to a master when a cycle is involved. This is
+	 * an unusual case and not something that we will normally come across. Any
+	 * paths that are not used to identify a master/duplicate relation will be
+	 * set to undefined. In this test we cannot know which node was selected as
+	 * the ultimate master in case the algorithm was changed to select a better
+	 * ultimate master. This is the case for setting a master when the ultimate
+	 * master is in a cycle.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterWithUltimateMasterInACycle() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("k1");
+		SourceTableRecord k1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("k2");
+		SourceTableRecord k2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("k3");
+		SourceTableRecord k3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("k4");
+		SourceTableRecord k4 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("k5");
+		SourceTableRecord k5 = pool.getSourceTableRecord(keyList);
+
+		pool.defineMaster(k2, k1);
+		
+		PotentialMatchRecord pmrK1ToK2 = null;
+		PotentialMatchRecord pmrK2ToK3 = null;
+		PotentialMatchRecord pmrK3ToK4 = null;
+		PotentialMatchRecord pmrK4ToK5 = null;
+		PotentialMatchRecord pmrK5ToK3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == k2 && potentialMatch.getOriginalRhs() == k1) {
+				pmrK1ToK2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == k1 && potentialMatch.getOriginalRhs() == k2) {
+				pmrK1ToK2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == k2 && potentialMatch.getOriginalRhs() == k3) {
+				pmrK2ToK3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == k3 && potentialMatch.getOriginalRhs() == k2) {
+				pmrK2ToK3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == k4 && potentialMatch.getOriginalRhs() == k3) {
+				pmrK3ToK4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == k3 && potentialMatch.getOriginalRhs() == k4) {
+				pmrK3ToK4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == k5 && potentialMatch.getOriginalRhs() == k4) {
+				pmrK4ToK5 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == k4 && potentialMatch.getOriginalRhs() == k5) {
+				pmrK4ToK5 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == k5 && potentialMatch.getOriginalRhs() == k3) {
+				pmrK5ToK3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == k3 && potentialMatch.getOriginalRhs() == k5) {
+				pmrK5ToK3 = potentialMatch;
+			}
+			
+			if (pmrK1ToK2 != null && pmrK2ToK3 != null && pmrK3ToK4 != null && pmrK4ToK5 != null && pmrK5ToK3 != null) break;
+		}
+		
+		if (pmrK1ToK2 == null || pmrK2ToK3 == null || pmrK3ToK4 == null || pmrK4ToK5 == null || pmrK5ToK3 == null) {
+			fail("An edge no longer exists after we defined k2 to be the master of k1.");
+		}
+		
+		assertTrue(pmrK1ToK2.getMaster() == k2);
+		assertTrue(pmrK1ToK2.getDuplicate() == k1);
+		assertTrue(pmrK2ToK3.getMaster() == k3);
+		assertTrue(pmrK2ToK3.getDuplicate() == k2);
+		if (pmrK3ToK4.getMaster() == k3) {
+			assertTrue(pmrK3ToK4.getDuplicate() == k4);
+			assertTrue(pmrK4ToK5.getMaster() == null);
+			assertTrue(pmrK4ToK5.getDuplicate() == null);
+			assertTrue(pmrK5ToK3.getMaster() == k3);
+			assertTrue(pmrK5ToK3.getDuplicate() == k5);
+		} else if (pmrK3ToK4.getMaster() == k4) {
+			assertTrue(pmrK3ToK4.getDuplicate() == k3);
+			assertTrue(pmrK4ToK5.getMaster() == k4);
+			assertTrue(pmrK4ToK5.getDuplicate() == k5);
+			assertTrue(pmrK5ToK3.getMaster() == null);
+			assertTrue(pmrK5ToK3.getDuplicate() == null);
+		} else {
+			//master of this loop was set to k5
+			assertTrue(pmrK3ToK4.getMaster() == null);
+			assertTrue(pmrK3ToK4.getDuplicate() == null);
+			assertTrue(pmrK4ToK5.getMaster() == k5);
+			assertTrue(pmrK4ToK5.getDuplicate() == k4);
+			assertTrue(pmrK5ToK3.getMaster() == k5);
+			assertTrue(pmrK5ToK3.getDuplicate() == k3);
+		}
+	}
+	
+	/**
+	 * Sets the master of a node to a master that has two master. When this
+	 * matching has been completed each node should only have one master.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterWhereMasterHasTwoMasters() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("l1");
+		SourceTableRecord l1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("l2");
+		SourceTableRecord l2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("l3");
+		SourceTableRecord l3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("l4");
+		SourceTableRecord l4 = pool.getSourceTableRecord(keyList);
+
+		pool.defineMaster(l2, l1);
+		
+		PotentialMatchRecord pmrL1ToL2 = null;
+		PotentialMatchRecord pmrL2ToL3 = null;
+		PotentialMatchRecord pmrL2ToL4 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == l2 && potentialMatch.getOriginalRhs() == l1) {
+				pmrL1ToL2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == l1 && potentialMatch.getOriginalRhs() == l2) {
+				pmrL1ToL2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == l2 && potentialMatch.getOriginalRhs() == l3) {
+				pmrL2ToL3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == l3 && potentialMatch.getOriginalRhs() == l2) {
+				pmrL2ToL3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == l4 && potentialMatch.getOriginalRhs() == l2) {
+				pmrL2ToL4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == l2 && potentialMatch.getOriginalRhs() == l4) {
+				pmrL2ToL4 = potentialMatch;
+			}
+			
+			if (pmrL1ToL2 != null && pmrL2ToL3 != null && pmrL2ToL4 != null) break;
+		}
+		
+		if (pmrL1ToL2 == null || pmrL2ToL3 == null || pmrL2ToL4 == null) {
+			fail("An edge no longer exists after we defined l2 to be the master of l1.");
+		}
+		
+		assertTrue(pmrL1ToL2.getMaster() == l2);
+		assertTrue(pmrL1ToL2.getDuplicate() == l1);
+		if (pmrL2ToL3.getMaster() == l3) {
+			assertTrue(pmrL2ToL3.getDuplicate() == l2);
+			assertTrue(pmrL2ToL4.getMaster() == l2);
+			assertTrue(pmrL2ToL4.getDuplicate() == l4);
+		} else {
+			//master was set to l4
+			assertTrue(pmrL2ToL3.getMaster() == l2);
+			assertTrue(pmrL2ToL3.getDuplicate() == l3);
+			assertTrue(pmrL2ToL4.getMaster() == l4);
+			assertTrue(pmrL2ToL4.getDuplicate() == l2);
+		}
+	}
+	
+	/**
+	 * Sets the master of a node to a master when a cycle is involved. This is
+	 * an unusual case and not something that we will normally come across. Any
+	 * paths that are not used to identify a master/duplicate relation will be
+	 * set to undefined. In this test we cannot know which node was selected as
+	 * the ultimate master in case the algorithm was changed to select a better
+	 * ultimate master. This is the case for setting a master when the ultimate
+	 * master is on the other side of a cycle.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterWithUltimateMasterOutsideCycle() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("m1");
+		SourceTableRecord m1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("m2");
+		SourceTableRecord m2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("m3");
+		SourceTableRecord m3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("m4");
+		SourceTableRecord m4 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("m5");
+		SourceTableRecord m5 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("m6");
+		SourceTableRecord m6 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("m7");
+		SourceTableRecord m7 = pool.getSourceTableRecord(keyList);
+
+		pool.defineMaster(m2, m1);
+		
+		PotentialMatchRecord pmrM1ToM2 = null;
+		PotentialMatchRecord pmrM2ToM3 = null;
+		PotentialMatchRecord pmrM3ToM5 = null;
+		PotentialMatchRecord pmrM5ToM6 = null;
+		PotentialMatchRecord pmrM6ToM7 = null;
+		PotentialMatchRecord pmrM6ToM4 = null;
+		PotentialMatchRecord pmrM4ToM3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == m2 && potentialMatch.getOriginalRhs() == m1) {
+				pmrM1ToM2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m1 && potentialMatch.getOriginalRhs() == m2) {
+				pmrM1ToM2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m2 && potentialMatch.getOriginalRhs() == m3) {
+				pmrM2ToM3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m3 && potentialMatch.getOriginalRhs() == m2) {
+				pmrM2ToM3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m5 && potentialMatch.getOriginalRhs() == m3) {
+				pmrM3ToM5 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m3 && potentialMatch.getOriginalRhs() == m5) {
+				pmrM3ToM5 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m5 && potentialMatch.getOriginalRhs() == m6) {
+				pmrM5ToM6 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m6 && potentialMatch.getOriginalRhs() == m5) {
+				pmrM5ToM6 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m6 && potentialMatch.getOriginalRhs() == m7) {
+				pmrM6ToM7 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m7 && potentialMatch.getOriginalRhs() == m6) {
+				pmrM6ToM7 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m6 && potentialMatch.getOriginalRhs() == m4) {
+				pmrM6ToM4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m4 && potentialMatch.getOriginalRhs() == m6) {
+				pmrM6ToM4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m4 && potentialMatch.getOriginalRhs() == m3) {
+				pmrM4ToM3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == m3 && potentialMatch.getOriginalRhs() == m4) {
+				pmrM4ToM3 = potentialMatch;
+			}
+			
+			if (pmrM1ToM2 != null && pmrM2ToM3 != null && pmrM3ToM5 != null && pmrM5ToM6 != null && pmrM6ToM7 != null && pmrM6ToM4 != null && pmrM4ToM3 != null) break;
+		}
+		
+		if (pmrM1ToM2 == null || pmrM2ToM3 == null || pmrM3ToM5 == null || pmrM5ToM6 == null || pmrM6ToM7 == null || pmrM6ToM4 == null || pmrM4ToM3 == null) {
+			fail("An edge no longer exists after we defined m2 to be the master of m1.");
+		}
+		
+		assertTrue(pmrM1ToM2.getMaster() == m2);
+		assertTrue(pmrM1ToM2.getDuplicate() == m1);
+		assertTrue(pmrM2ToM3.getMaster() == m3);
+		assertTrue(pmrM2ToM3.getDuplicate() == m2);
+		if (pmrM3ToM5.getMaster() == m3 && pmrM4ToM3.getMaster() == m3) {
+			assertTrue(pmrM6ToM7.getMaster() == m6);
+			if (pmrM5ToM6.getMaster() == m5) {
+				assertTrue(pmrM6ToM4.getMaster() == null);
+			} else {
+				assertTrue(pmrM6ToM4.getMaster() == m4);
+				assertTrue(pmrM5ToM6.getMaster() == m5);
+			}
+		} else if (pmrM4ToM3.getMaster() == m4 && pmrM6ToM4.getMaster() == m4) {
+			assertTrue(pmrM6ToM7.getMaster() == m6);
+			if (pmrM3ToM5.getMaster() == m3) {
+				assertTrue(pmrM5ToM6.getMaster() == null);
+			} else {
+				assertTrue(pmrM5ToM6.getMaster() == m6);
+				assertTrue(pmrM3ToM5.getMaster() == null);
+			}
+			
+		} else if (pmrM5ToM6.getMaster() == m6 && pmrM6ToM4.getMaster() == m6 && pmrM6ToM7.getMaster() == m6) {
+			if (pmrM3ToM5.getMaster() == m5) {
+				assertTrue(pmrM4ToM3.getMaster() == null);
+			} else {
+				assertTrue(pmrM4ToM3.getMaster() == m4);
+				assertTrue(pmrM3ToM5.getMaster() == null);
+			}
+		} else if (pmrM3ToM5.getMaster() == m5 && pmrM5ToM6.getMaster() == m5) {
+			assertTrue(pmrM6ToM7.getMaster() == m6);
+			if (pmrM4ToM3.getMaster() == m3) {
+				assertTrue(pmrM6ToM4.getMaster() == null);
+			} else {
+				assertTrue(pmrM6ToM4.getMaster() == m6);
+				assertTrue(pmrM4ToM3.getMaster() == null);
+			}
+		} else if (pmrM6ToM7.getMaster() == m7) {
+			assertTrue(pmrM5ToM6.getMaster() == m6);
+			assertTrue(pmrM6ToM4.getMaster() == m6);
+			if (pmrM3ToM5.getMaster() == m5) {
+				assertTrue(pmrM4ToM3.getMaster() == null);
+			} else {
+				assertTrue(pmrM4ToM3.getMaster() == m4);
+				assertTrue(pmrM3ToM5.getMaster() == null);
+			}
+		} else {
+			fail("We don't know what happened to the master, but we know it's wrong!");
 		}
 	}
 	
