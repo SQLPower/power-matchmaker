@@ -114,10 +114,8 @@ public class MatchEditor implements EditorPane {
     
     // all of these buttons are now DOOOOOMED!
     private JButton validationStatus;
-    private JButton matchResultVisualizerButton;
     
     private FilterComponents filterPanel;
-    private MatchResultVisualizer matchResultVisualizer;
 
     private final MatchMakerSwingSession swingSession;
 
@@ -280,26 +278,6 @@ public class MatchEditor implements EditorPane {
 
 	private final Action createResultTableAction;
 
-	private Action matchResultVisualizerAction = new AbstractAction("Visualize Match Results") {
-        public void actionPerformed(ActionEvent e) {
-            if (match.getResultTable() == null){
-                JOptionPane.showMessageDialog(panel, "You have not ran the match engine",
-                        "No Data is Available", JOptionPane.OK_OPTION);
-                return;
-            }
-
-            if (matchResultVisualizer == null) {
-                try {
-                    matchResultVisualizer = new MatchResultVisualizer(match, swingSession);
-                    swingSession.setCurrentEditorComponent(matchResultVisualizer);
-                } catch (Exception ex) {
-                    MMSUtils.showExceptionDialog(panel, "Couldn't create match result visualizer component", ex);
-
-                }
-            }
-        }
-    };
-
 	private Action createIndexAction = new AbstractAction("Pick Columns"){
 		public void actionPerformed(ActionEvent e) {
 			if ( match.getSourceTable() == null ) {
@@ -340,7 +318,6 @@ public class MatchEditor implements EditorPane {
     	createResultTable = new JButton(createResultTableAction);
     	saveMatch = new JButton(saveAction);
     	validationStatus = new JButton(validationStatusAction);
-        matchResultVisualizerButton = new JButton(matchResultVisualizerAction);
         createIndexButton = new JButton(createIndexAction );
 
     	FormLayout layout = new FormLayout(
@@ -413,9 +390,6 @@ public class MatchEditor implements EditorPane {
 		bb.addRelatedGap();
 		bb.addRelatedGap(); */
 		bb.addGridded(validationStatus);
-        bb.addRelatedGap();
-        bb.addRelatedGap();
-        bb.addGridded(matchResultVisualizerButton);
 
 		pb.add(bb.getPanel(), cc.xywh(8,4,1,16,"f,f"));
 		
