@@ -483,10 +483,8 @@ public class MatchPool {
         DijkstrasAlgorithm da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
     	Map<SourceTableRecord, SourceTableRecord> masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, master);
     	
-    	for (PotentialMatchRecord pmr : potentialMatches) {
-    		if (considerGivenNodesGraph.getEdges().contains(pmr.getOriginalLhs()) && considerGivenNodesGraph.getEdges().contains(pmr.getOriginalRhs())) {
-    			pmr.setMaster(null);
-    		}
+    	for (PotentialMatchRecord pmr : considerGivenNodesGraph.getEdges()) {
+   			pmr.setMaster(null);
     	}
     	
     	//XXX This is a fairly poor way of obtaining the potential match records. We should be able to make this faster.
