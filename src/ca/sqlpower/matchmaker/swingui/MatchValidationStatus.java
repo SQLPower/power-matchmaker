@@ -30,8 +30,6 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.RowSetModel;
-import ca.sqlpower.matchmaker.util.HibernateUtil;
-import ca.sqlpower.swingui.CommonCloseAction;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -75,7 +73,7 @@ public class MatchValidationStatus extends JDialog {
     	ResultSet rs =  null;
 
     	try {
-    		con = HibernateUtil.primarySession().connection();
+    		con = swingSession.getConnection();
     		StringBuffer sql = new StringBuffer();
     		sql.append("SELECT GROUP_ID,MATCH_PERCENT,MATCH_STATUS");
     		sql.append(",COUNT(*)/2");
@@ -148,15 +146,16 @@ public class MatchValidationStatus extends JDialog {
 		final JComboBox matchComboBox = new JComboBox(model);
 		matchComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
 
-		folderComboBox.addItemListener(new ItemListener(){
+		folderComboBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				List <Match> matches = ((PlFolder)match.getParent()).getChildren();
+				List<Match> matches = ((PlFolder)match.getParent()).getChildren();
 				matchComboBox.removeAllItems();
 				for ( Match m : matches ) {
 					matchComboBox.addItem(m);
 				}
 				matchComboBox.setSelectedItem(null);
-			}});
+			}}
+		);
 
 		matchComboBox.addItemListener(new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {
@@ -198,17 +197,13 @@ public class MatchValidationStatus extends JDialog {
 
         JButton save = new JButton(new AbstractAction("Save"){
 			public void actionPerformed(ActionEvent e) {
-				new JTableExporter(MatchValidationStatus.this,status );
-			}});
-        JButton close = new JButton(new CommonCloseAction(MatchValidationStatus.this));
-        close.setText("Close");
+				new JTableExporter(MatchValidationStatus.this, status);
+			}
+		});
 
         ButtonBarBuilder bb1 = new ButtonBarBuilder();
         bb1.addRelatedGap();
         bb1.addGridded(save);
-        bb1.addRelatedGap();
-        bb1.addGlue();
-        bb1.addGridded(close);
         bb1.addRelatedGap();
         pb.add(bb1.getPanel(), cc.xy(2,12));
 
