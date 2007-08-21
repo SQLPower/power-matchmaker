@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.geom.Line2D;
 
 import javax.swing.JComponent;
 
@@ -111,12 +112,65 @@ public class PotentialMatchEdgeRenderer extends JComponent implements
 
         if (masterPosition != null && duplicatePosition != null) {
             g2.setStroke(CURRENT_EDGE_STROKE);
-            g2.drawLine(
-                masterPosition.x + masterPosition.width/2, masterPosition.y + masterPosition.height/2,
-                duplicatePosition.x + duplicatePosition.width/2, duplicatePosition.y + duplicatePosition.height/2);
+
+            int masterCentreX = masterPosition.x + masterPosition.width / 2;
+            int masterCentreY = masterPosition.y + masterPosition.height / 2;
+            int duplicateCentreX = duplicatePosition.x + duplicatePosition.width / 2;
+            int duplicateCentreY = duplicatePosition.y + duplicatePosition.height / 2;
             
-            // FIXME: we need an arrowhead, and we need to calculate where it intersects the rectangle
-            g2.fillOval(masterPosition.x - 7, masterPosition.y - 7, 14, 14);
+            
+            // Draw the solid Match line
+            Line2D matchLine = new Line2D.Double(masterCentreX, masterCentreY,
+            								duplicateCentreX, duplicateCentreY);
+            g2.draw(matchLine);
+
+            // Find the intersect coordinates of the match line with the master node
+            int masterIntersectX = masterCentreX;
+            int masterIntersectY = masterCentreY;
+
+            // Get the coefficients for the linear equation y = ax + b
+            // Calculate the slope of the line (a)
+            float deltaY = masterCentreY - duplicateCentreY;
+            float deltaX = masterCentreX - duplicateCentreX;
+            
+            // Set to max value (pseudo-infinity). If deltaX = 0, then calculate slope.
+            float a = Float.MAX_VALUE;
+            if (deltaX != 0) {
+            	a = deltaY / deltaX;
+            }
+            // Then calculate b
+            float b = masterCentreY - a * masterCentreX;
+    
+            // Find out which side of the node 'rectangle' that the line intersects, and then calculate it's intersection point.
+            if (matchLine.intersectsLine(masterPosition.x, masterPosition.y, masterPosition.x, masterPosition.y + masterPosition.height)) {
+            	// If it intersects the top side
+            	masterIntersectX = masterPosition.x;
+            	masterIntersectY = Math.round(a * masterIntersectX + b);
+            } else if (matchLine.intersectsLine(masterPosition.x, masterPosition.y, masterPosition.x + masterPosition.width, masterPosition.y)) {
+            	// If it intersects the left side
+            	masterIntersectY = masterPosition.y;
+            	if (deltaX != 0) {
+            		masterIntersectX = Math.round((masterIntersectY - b) / a);
+            	} else {
+            		masterIntersectX = masterCentreX;
+            	}
+            } else if (matchLine.intersectsLine(masterPosition.x + masterPosition.width, masterPosition.y, masterPosition.x + masterPosition.width, masterPosition.y + masterPosition.height)) {
+            	// If it intersects the bottom side
+            	masterIntersectX = masterPosition.x + masterPosition.width;
+            	masterIntersectY = Math.round(a * masterIntersectX + b);
+            } else { 
+            	// If it intersects the right side
+            	masterIntersectY = masterPosition.y + masterPosition.height;
+            	if (deltaX != 0) {
+            		masterIntersectX = Math.round((masterIntersectY - b) / a);
+            	} else {
+            		masterIntersectX = masterCentreX;
+            	}
+            }
+            
+            // Draw a small oval around the intersect point to mark which end is the master
+            // FIXME: Could draw an arrowhead instead, but is that actually better?
+            g2.fillOval(masterIntersectX - 5, masterIntersectY - 5, 10, 10);
         }
     }
 }
