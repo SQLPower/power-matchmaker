@@ -225,9 +225,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
 			if ( match == null )
 				return;
-		    RunMatchDialog r = new RunMatchDialog(MatchMakerSwingSession.this, match, frame);
-			r.pack();
-			r.setVisible(true);
+		    RunMatchEditor r = new RunMatchEditor(MatchMakerSwingSession.this, match, frame);
+		    setCurrentEditorComponent(r);
 		}
 	};
 

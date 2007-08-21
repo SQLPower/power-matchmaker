@@ -25,6 +25,8 @@ import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchCriteria;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
@@ -147,10 +149,9 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         m.addSeparator();
         m.add(new JMenuItem(new AbstractAction("Run Match") {
             public void actionPerformed(ActionEvent e) {
-                RunMatchDialog f = new RunMatchDialog(swingSession, match,
+                RunMatchEditor f = new RunMatchEditor(swingSession, match,
                         owningFrame);
-                f.pack();
-                f.setVisible(true);
+                swingSession.setCurrentEditorComponent(f);
             }
         }));
 
@@ -224,7 +225,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 					MatchMakerFolder f = (MatchMakerFolder)o;
 					Match m = (Match) f.getParent();
 					
-					if ( f.getName().equals(m.MERGE_RULES_FOLDER_NAME) ) {
+					if ( f.getName().equals(Match.MERGE_RULES_FOLDER_NAME) ) {
 						MergeTableRuleEditor editor = 
 							new MergeTableRuleEditor(swingSession,m);
 						logger.debug("Created new merge table rules editor "
@@ -258,6 +259,11 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 					} catch (ArchitectException e1) {
 						SPSUtils.showExceptionDialogNoReport(owningFrame, 
 								"An exception occured while creating the merge column rules editor", e1);
+					}
+				} else if (o instanceof MatchActionNode) {
+					MatchActionNode node = (MatchActionNode) o;
+					if (node.getActionType() == MatchActionType.RUN_MATCH) {
+						swingSession.setCurrentEditorComponent(new RunMatchEditor(swingSession, node.getMatch(), owningFrame));
 					}
 				}
 			} catch (Exception ex) {

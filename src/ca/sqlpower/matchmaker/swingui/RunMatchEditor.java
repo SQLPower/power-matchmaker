@@ -69,9 +69,9 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class RunMatchDialog extends JDialog {
+public class RunMatchEditor implements EditorPane{
 
-	private static final Logger logger = Logger.getLogger(RunMatchDialog.class);
+	private static final Logger logger = Logger.getLogger(RunMatchEditor.class);
 
 	private final MatchMakerSwingSession swingSession;
 
@@ -103,39 +103,38 @@ public class RunMatchDialog extends JDialog {
 
 	private JButton runMatchEngineButton;
 
-	private JButton exit;
-
 	private JComboBox rollbackSegment;
 
 	private JFrame parentFrame;
 
 	private Match match;
 	
-	
+	/**
+	 * The panel that holds all components of this EditorPane
+	 */
+	private JPanel panel;
 
 	StatusComponent status = new StatusComponent();
 
 	private FormValidationHandler handler;
 
-	private final Action runEngineAction;
+	private final RunEngineAction runEngineAction;
 
-	public RunMatchDialog(MatchMakerSwingSession swingSession, Match match,
+	public RunMatchEditor(MatchMakerSwingSession swingSession, Match match,
 			JFrame parentFrame) {
-		super(parentFrame, "Run Match:[" + match.getName() + "]");
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
 		this.match = match;
 		runEngineAction = new RunEngineAction(swingSession, match,
-				RunMatchDialog.this);
+				parentFrame);
 		handler = new FormValidationHandler(status);
 		handler.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshActionStatus();
 			}
 		});
-		buildUI();
+		panel = buildUI();
 		setDefaultSelections(match);
-
 	}
 
 	private void refreshActionStatus() {
@@ -153,7 +152,7 @@ public class RunMatchDialog extends JDialog {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setCurrentDirectory(new File(lastAccessPath));
 			fileChooser.setSelectedFile(new File(lastAccessPath));
-			int returnVal = fileChooser.showOpenDialog(RunMatchDialog.this);
+			int returnVal = fileChooser.showOpenDialog(parentFrame);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				final File file = fileChooser.getSelectedFile();
 				logFilePath.setText(file.getPath());
@@ -163,12 +162,12 @@ public class RunMatchDialog extends JDialog {
 		}
 	};
 
-	private void buildUI() {
+	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
-				"4dlu,fill:min(70dlu;pref),4dlu,fill:200dlu:grow, pref,20dlu,pref,10dlu,pref,4dlu",
-				// 1 2 3 4 5 6 7 8 9 10
+				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,20dlu,pref,10dlu,pref,4dlu",
+				//  1         2    3         4     5     6    7     8    9   10
 				"10dlu,pref,10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,30dlu,pref,4dlu,pref,4dlu");
-		// 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+		        //   1    2     3    4     5    6    7    8    9   10    11   12   13   14   15
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
 				: new JPanel(layout);
@@ -191,9 +190,7 @@ public class RunMatchDialog extends JDialog {
 				match, getParentFrame()));
 		viewStats.setText("Match Statistics");
 		showCommand = new JButton(new ShowCommandAction(match,
-				RunMatchDialog.this));
-
-		// might need more buttons here... (check VB app)
+				parentFrame));
 
 		save = new JButton(new AbstractAction("Save") {
 			public void actionPerformed(ActionEvent e) {
@@ -204,12 +201,6 @@ public class RunMatchDialog extends JDialog {
 		});
 
 		runMatchEngineButton = new JButton(runEngineAction);
-		exit = new JButton(new AbstractAction("Close") {
-			public void actionPerformed(ActionEvent e) {
-				RunMatchDialog.this.setVisible(false);
-				RunMatchDialog.this.dispose();
-			}
-		});
 
 		pb.add(status, cc.xy(4, 2, "l,c"));
 
@@ -244,11 +235,19 @@ public class RunMatchDialog extends JDialog {
 		bbpb.add(runMatchEngineButton, cc.xy(6, 2, "f,f"));
 		bbpb.add(viewStats, cc.xy(2, 4, "f,f"));
 		bbpb.add(save, cc.xy(4, 4, "f,f"));
-		bbpb.add(exit, cc.xy(6, 4, "f,f"));
 
 		pb.add(bbpb.getPanel(), cc.xyw(2, 12, 8));
 
-		getContentPane().add(pb.getPanel());
+		JPanel anotherP = logger.isDebugEnabled() ? new FormDebugPanel(layout)
+		: new JPanel(layout);
+		FormLayout anotherLayout = new FormLayout("4dlu,fill:pref:grow,4dlu", "4dlu,pref,pref,pref,pref");
+		PanelBuilder anotherPB = new PanelBuilder(anotherLayout, anotherP);
+		CellConstraints anotherCC = new CellConstraints();
+		anotherPB.addSeparator("Configuration", anotherCC.xy(2, 2));
+		anotherPB.add(pb.getPanel(), anotherCC.xy(2, 3));
+		anotherPB.addSeparator("Output", anotherCC.xy(2, 4));
+		anotherPB.add(runEngineAction.getPanel(), anotherCC.xy(2, 5));
+		return anotherPB.getPanel();
 	}
 
 	private void setDefaultSelections(Match match) {
@@ -317,7 +316,7 @@ public class RunMatchDialog extends JDialog {
 	}
 
 	private void applyChange() {
-
+		refreshActionStatus();
 		MatchSettings settings = match.getMatchSettings();
 		settings.setDebug(debugMode.isSelected());
 		settings.setTruncateCandDupe(truncateCandDup.isSelected());
@@ -386,7 +385,7 @@ public class RunMatchDialog extends JDialog {
 	private class RunEngineAction extends AbstractAction implements
 			EngineListener {
 
-		private final JDialog parent;
+		private final JFrame parent;
 
 		SimpleAttributeSet stdoutAtt = new SimpleAttributeSet();
 
@@ -395,13 +394,14 @@ public class RunMatchDialog extends JDialog {
 		private MatchMakerEngine matchEngine;
 		private MatchMakerSession session;
 		private Match match;
+		private JPanel thepanel;
 
 		private DefaultStyledDocument engineOutputDoc;
 
 		private JProgressBar progressBar;
 
 		public RunEngineAction(MatchMakerSession session, Match match,
-				JDialog parent) {
+				JFrame parent) {
 			super("Run Match Engine");
 			this.parent = parent;
 			this.session = session;
@@ -410,12 +410,14 @@ public class RunMatchDialog extends JDialog {
 			StyleConstants.setFontFamily(stdoutAtt, "Courier New");
 			StyleConstants.setForeground(stderrAtt, Color.red);
 			progressBar = new JProgressBar();
+			thepanel = initGUI();
+			thepanel.setVisible(true);
+			logger.debug("RunEngineAction instance created");
 		}
 
-		public void actionPerformed(ActionEvent e) {
-			applyChange();
+		private JPanel initGUI() {
 			GraphicsEnvironment ge = GraphicsEnvironment
-					.getLocalGraphicsEnvironment();
+			.getLocalGraphicsEnvironment();
 			Font[] fonts = ge.getAllFonts();
 			boolean courierNewExist = false;
 			for (int i = 0; i < fonts.length; i++) {
@@ -424,28 +426,25 @@ public class RunMatchDialog extends JDialog {
 					break;
 				}
 			}
-			final boolean courierNewExist2 = courierNewExist;
 			engineOutputDoc = new DefaultStyledDocument();
-			final JDialog d = new JDialog(parent);
-			d.setTitle("MatchMaker engine output:");
 
 			FormLayout layout = new FormLayout("4dlu,fill:pref:grow,4dlu", // columns
-					"4dlu,fill:pref:grow,4dlu,pref,4dlu,pref,4dlu"); // rows
+			"4dlu,pref,4dlu,pref,4dlu,pref,4dlu"); // rows
 
 			PanelBuilder pb;
 			JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
-					: new JPanel(layout);
+			: new JPanel(layout);
 			pb = new PanelBuilder(layout, p);
 			CellConstraints cc = new CellConstraints();
 
-			JTextArea cmdText = new JTextArea(35, 120);
+			JTextArea cmdText = new JTextArea(20, 80);
 			cmdText.setDocument(engineOutputDoc);
 			cmdText.setEditable(false);
 			cmdText.setWrapStyleWord(true);
 			cmdText.setLineWrap(true);
 			cmdText.setAutoscrolls(true);
 
-			if (courierNewExist2) {
+			if (courierNewExist) {
 				Font oldFont = cmdText.getFont();
 				Font f = new Font("Courier New", oldFont.getStyle(), oldFont
 						.getSize());
@@ -455,11 +454,11 @@ public class RunMatchDialog extends JDialog {
 
 			JScrollPane scrollPane = new JScrollPane(cmdText);
 			scrollPane
-					.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 			scrollPane.setAutoscrolls(true);
 			scrollPane.setWheelScrollingEnabled(true);
-			pb.add(scrollPane, cc.xy(2, 2, "f,f"));
-			pb.add(progressBar,cc.xy(2,4,"f,f"));
+			pb.add(scrollPane, cc.xy(2, 2));
+			pb.add(progressBar,cc.xy(2, 4));
 
 			ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
 
@@ -468,7 +467,7 @@ public class RunMatchDialog extends JDialog {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							SPSUtils.saveDocument(
-									d,
+									parentFrame,
 									engineOutputDoc,
 									(FileExtensionFilter) SPSUtils.TEXT_FILE_FILTER);
 						}
@@ -490,11 +489,11 @@ public class RunMatchDialog extends JDialog {
 										engineOutputDoc.getText(0,
 												engineOutputDoc.getLength()));
 								Clipboard clipboard = Toolkit
-										.getDefaultToolkit()
-										.getSystemClipboard();
+								.getDefaultToolkit()
+								.getSystemClipboard();
 								clipboard.setContents(selection, selection);
 							} catch (BadLocationException e1) {
-								MMSUtils.showExceptionDialog(d,
+								MMSUtils.showExceptionDialog(parentFrame,
 										"Document Copy Error", e1);
 							}
 						}
@@ -506,19 +505,17 @@ public class RunMatchDialog extends JDialog {
 			bbBuilder.addRelatedGap();
 			bbBuilder.addGlue();
 
-			JButton cancelButton = new JButton(new AbstractAction() {
-				public void actionPerformed(ActionEvent e) {
-					d.setVisible(false);
-					d.dispose();
-				}
-			});
-			cancelButton.setText("Close");
-			bbBuilder.addGridded(cancelButton);
-
 			pb.add(bbBuilder.getPanel(), cc.xy(2, 6));
-			d.add(pb.getPanel());
-			// don't display dialog until the process started
+			
+			return pb.getPanel();
+		}
 
+		public JPanel getPanel() {
+			return thepanel;
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			applyChange();
 			try {
 				matchEngine = new MatchMakerEngineImpl(session, match);
 				matchEngine.checkPreconditions();
@@ -533,10 +530,6 @@ public class RunMatchDialog extends JDialog {
 						"Engine error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-
-			d.pack();
-			d.setVisible(true);
-
 		}
 
 		public void engineEnd(EngineEvent e) {
@@ -594,9 +587,9 @@ public class RunMatchDialog extends JDialog {
 
 		private Match match;
 
-		private JDialog parent;
+		private JFrame parent;
 
-		public ShowCommandAction(Match match, JDialog parent) {
+		public ShowCommandAction(Match match, JFrame parent) {
 			super("Show Command");
 			this.match = match;
 			this.parent = parent;
@@ -683,7 +676,7 @@ public class RunMatchDialog extends JDialog {
 	private JFrame getParentFrame() {
 		return parentFrame;
 	}
-
+	
 	private class LogFileNameValidator implements Validator {
 		public ValidateResult validate(Object contents) {
 			String name = (String) contents;
@@ -744,5 +737,22 @@ public class RunMatchDialog extends JDialog {
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
 
+	}
+	
+	
+	/*===================== EditorPane implementation ==================*/
+
+	public JPanel getPanel() {
+		return panel;
+	}
+	
+	public boolean hasUnsavedChanges() {
+		//XXX This is stubbed for now
+		return false;
+	}
+	
+	public boolean doSave() {
+		
+		return true;
 	}
 }
