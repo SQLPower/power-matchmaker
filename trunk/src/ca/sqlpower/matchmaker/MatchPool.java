@@ -422,10 +422,8 @@ public class MatchPool {
     	}
     	
     	logger.debug("Removing all decided edges from the given graph");
-    	for (PotentialMatchRecord pmr : potentialMatches) {
-    		if (considerGivenNodesGraph.getEdges().contains(pmr.getOriginalLhs()) && considerGivenNodesGraph.getEdges().contains(pmr.getOriginalRhs())) {
-    			pmr.setMaster(null);
-    		}
+    	for (PotentialMatchRecord pmr : considerGivenNodesGraph.getEdges()) {
+   			pmr.setMaster(null);
     	}
     	
     	logger.debug("Setting the new decided edges for this graph of nodes");
