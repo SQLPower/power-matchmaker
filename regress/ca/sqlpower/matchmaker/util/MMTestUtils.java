@@ -168,10 +168,10 @@ public class MMTestUtils {
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2, false);
 		pmr.setMaster(node2);
 		pool.addPotentialMatch(pmr);
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node2, node3, false);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3, false);
 		pmr.setMaster(node3);
 		pool.addPotentialMatch(pmr);
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node3, node1, false);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node3, node1, false);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for j
@@ -184,7 +184,7 @@ public class MMTestUtils {
 		node4 = new SourceTableRecord(session, m, "j4");
 		pool.addSourceTableRecord(node4);
 		
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2, false);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node1, node2, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3, false);
 		pmr.setMaster(node3);
@@ -208,7 +208,7 @@ public class MMTestUtils {
 		node5 = new SourceTableRecord(session, m, "k5");
 		pool.addSourceTableRecord(node5);
 		
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2, false);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node1, node2, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3, false);
 		pmr.setMaster(node3);
@@ -233,7 +233,7 @@ public class MMTestUtils {
 		node4 = new SourceTableRecord(session, m, "l4");
 		pool.addSourceTableRecord(node4);
 		
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2, false);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node1, node2, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3, false);
 		pmr.setMaster(node3);
@@ -258,7 +258,7 @@ public class MMTestUtils {
 		node7 = new SourceTableRecord(session, m, "m7");
 		pool.addSourceTableRecord(node7);
 		
-		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2, false);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node1, node2, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3, false);
 		pmr.setMaster(node3);
@@ -277,6 +277,103 @@ public class MMTestUtils {
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node4, node3, false);
 		pmr.setMaster(node3);
+		pool.addPotentialMatch(pmr);
+		
+		node1 = new SourceTableRecord(session, m, "n1");
+		pool.addSourceTableRecord(node1);
+		node2 = new SourceTableRecord(session, m, "n2");
+		pool.addSourceTableRecord(node2);
+		node3 = new SourceTableRecord(session, m, "n3");
+		pool.addSourceTableRecord(node3);
+		node4 = new SourceTableRecord(session, m, "n4");
+		pool.addSourceTableRecord(node4);
+		
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2, false);
+		pmr.setMaster(node2);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3, false);
+		pmr.setMaster(node3);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node3, node4, false);
+		pmr.setMaster(node4);
+		pool.addPotentialMatch(pmr);
+		
+		node1 = new SourceTableRecord(session, m, "o1");
+		pool.addSourceTableRecord(node1);
+		node2 = new SourceTableRecord(session, m, "o2");
+		pool.addSourceTableRecord(node2);
+		node3 = new SourceTableRecord(session, m, "o3");
+		pool.addSourceTableRecord(node3);
+		
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.NOMATCH, node1, node3, false);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3, false);
+		pmr.setMaster(node3);
+		pool.addPotentialMatch(pmr);
+		
+		node1 = new SourceTableRecord(session, m, "p1");
+		pool.addSourceTableRecord(node1);
+		node2 = new SourceTableRecord(session, m, "p2");
+		pool.addSourceTableRecord(node2);
+		node3 = new SourceTableRecord(session, m, "p3");
+		pool.addSourceTableRecord(node3);
+		node4 = new SourceTableRecord(session, m, "p4");
+		pool.addSourceTableRecord(node4);
+		
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.NOMATCH, node1, node2, false);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3, false);
+		pmr.setMaster(node3);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node3, node4, false);
+		pmr.setMaster(node3);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node1, node4, false);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.NOMATCH, node3, node1, false);
+		pool.addPotentialMatch(pmr);
+		
+		node1 = new SourceTableRecord(session, m, "q1");
+		pool.addSourceTableRecord(node1);
+		node2 = new SourceTableRecord(session, m, "q2");
+		pool.addSourceTableRecord(node2);
+		node3 = new SourceTableRecord(session, m, "q3");
+		pool.addSourceTableRecord(node3);
+		node4 = new SourceTableRecord(session, m, "q4");
+		pool.addSourceTableRecord(node4);
+		
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.NOMATCH, node1, node2, false);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3, false);
+		pmr.setMaster(node3);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node3, node4, false);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node1, node4, false);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.NOMATCH, node3, node1, false);
+		pool.addPotentialMatch(pmr);
+		
+		node1 = new SourceTableRecord(session, m, "r1");
+		pool.addSourceTableRecord(node1);
+		node2 = new SourceTableRecord(session, m, "r2");
+		pool.addSourceTableRecord(node2);
+		node3 = new SourceTableRecord(session, m, "r3");
+		pool.addSourceTableRecord(node3);
+		node4 = new SourceTableRecord(session, m, "r4");
+		pool.addSourceTableRecord(node4);
+		
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node2, false);
+		pmr.setMaster(node2);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node2, node3, false);
+		pmr.setMaster(node3);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node3, node4, false);
+		pmr.setMaster(node4);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node1, node4, false);
+		pmr.setMaster(node1);
 		pool.addPotentialMatch(pmr);
 		
 		//The graph for cycle
