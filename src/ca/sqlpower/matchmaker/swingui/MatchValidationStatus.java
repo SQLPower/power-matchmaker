@@ -1,22 +1,16 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 
 import javax.sql.RowSet;
 import javax.swing.AbstractAction;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -28,7 +22,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.RowSetModel;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -39,35 +32,47 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.sun.rowset.CachedRowSetImpl;
 
 /**
- * A dialog box that shows a table of status information about one Match object.
+ * An EditorPane that shows a table of status information about one Match object.
  * If you want to see a status table for a different match, create a new one of these.
  */
-public class MatchValidationStatus extends JDialog {
+public class MatchValidationStatus implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MatchValidationStatus.class);
+	
+	/**
+	 * The Match object whose match validation status is this class' concern.
+	 */
 	private final Match match;
+	
+	/**
+	 * A table to display the validation status.
+	 */
 	private final JTable status = new JTable();
+	
+	/**
+	 * The session to which this EditorPane belongs.
+	 */
     private final MatchMakerSwingSession swingSession;
+    
+    /**
+     * The top-level panel that displays the validation status.
+     */
+    private JPanel panel;
 
-	public MatchValidationStatus(MatchMakerSwingSession swingSession, Match match, JFrame frameParent) {
-		super(frameParent,"View Match Validation Status");
-        this.swingSession = swingSession;
+	public MatchValidationStatus(MatchMakerSwingSession swingSession, Match match) {
+		this.swingSession = swingSession;
 		this.match = match;
-		createUI();
+		this.panel = createUI();
 	}
 
-    public MatchValidationStatus(MatchMakerSwingSession swingSession, Match match, JDialog dialogParent) {
-        super(dialogParent,"View Match Validation Status");
-        this.swingSession = swingSession;
-        this.match = match;
-        createUI();
-    }
-
-	public Match getMatch() {
-		return match;
-	}
-
-	private RowSet getMatchStats(Match match) throws SQLException {
+	/**
+	 * Queries the database to learn the validation status of <code>match</code>
+	 * and returns a RowSet that represents the information.
+	 * 
+	 * @throws SQLException If there was a problem with the database, most
+	 * likely connection refused or malformed SQL. 
+	 */
+	private RowSet getMatchStats() throws SQLException {
     	Connection con = null;
     	Statement stmt = null;
     	ResultSet rs =  null;
@@ -100,6 +105,12 @@ public class MatchValidationStatus extends JDialog {
     			con.close();
     	}
     }
+	
+	/**
+	 * A table model wrapper that represents a status table; just
+	 * names the first 4 columns and delegates to the table model
+	 * supplied in the constructor.
+	 */
 	private class MatchStatsTableModel extends AbstractTableModel {
 
 		private AbstractTableModel model;
@@ -135,51 +146,28 @@ public class MatchValidationStatus extends JDialog {
 		}
 	}
 
-
-	private void createUI() {
-
-		final JComboBox folderComboBox = new JComboBox(swingSession.getCurrentFolderParent().getChildren().toArray());
-		folderComboBox.setSelectedItem(match.getParent());
-		folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
-		List <Match> matches = ((PlFolder)match.getParent()).getChildren();
-		DefaultComboBoxModel model = new DefaultComboBoxModel(matches.toArray());
-		final JComboBox matchComboBox = new JComboBox(model);
-		matchComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
-
-		folderComboBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				List<Match> matches = ((PlFolder)match.getParent()).getChildren();
-				matchComboBox.removeAllItems();
-				for ( Match m : matches ) {
-					matchComboBox.addItem(m);
-				}
-				matchComboBox.setSelectedItem(null);
-			}}
-		);
-
-		matchComboBox.addItemListener(new ItemListener(){
-			public void itemStateChanged(ItemEvent e) {
-				Match selectedMatch = (Match) matchComboBox.getSelectedItem();
-				if ( selectedMatch == null ) return;
-				RowSetModel rsm = null;
-				try {
-					rsm = new RowSetModel(getMatchStats(selectedMatch));
-					MatchStatsTableModel model = new MatchStatsTableModel(rsm);
-					status.setModel(model);
-					SQLTable resultTable = selectedMatch.getResultTable();
-					status.setName(DDLUtils.toQualifiedName(
-							resultTable.getCatalogName(),
-							resultTable.getSchemaName(),
-							resultTable.getName()));
-				} catch (SQLException e1) {
-					MMSUtils.showExceptionDialog(MatchValidationStatus.this,
-							"Unknown SQL Error", e1);
-				}
-			}});
+	/**
+	 * Returns a panel that displays all the status information 
+	 */
+	private JPanel createUI() {
+		RowSetModel rsm = null;
+		try {
+			rsm = new RowSetModel(getMatchStats());
+			MatchStatsTableModel tableModel = new MatchStatsTableModel(rsm);
+			status.setModel(tableModel);
+			SQLTable resultTable = match.getResultTable();
+			status.setName(DDLUtils.toQualifiedName(
+					resultTable.getCatalogName(),
+					resultTable.getSchemaName(),
+					resultTable.getName()));
+		} catch (SQLException e1) {
+			MMSUtils.showExceptionDialog(getPanel(),
+					"Unknown SQL Error", e1);
+		}
 
 		FormLayout layout = new FormLayout(
                 "10dlu,fill:pref:grow, 10dlu",
-         //		 1    2                  3    4                 5     6     7    8     9     10    11    12   13
+         //		 1     2               3
                 "10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu,fill:pref:grow,4dlu,pref,4dlu");
         //		 1     2    3    4    5    6    7    8    9     10             11   12   13
         PanelBuilder pb;
@@ -188,16 +176,13 @@ public class MatchValidationStatus extends JDialog {
 
         CellConstraints cc = new CellConstraints();
 
-        pb.add(new JLabel("Folder:"), cc.xy(2,2,"l,c"));
-		pb.add(folderComboBox, cc.xy(2,4,"l,c"));
-        pb.add(new JLabel("Match:"), cc.xy(2,6,"l,c"));
-		pb.add(matchComboBox, cc.xy(2,8,"l,c"));
+        pb.add(new JLabel("Match: " + match.getName()), cc.xy(2,6,"l,c"));
 
-		pb.add(new JScrollPane(status), cc.xy(2,10,"f,f"));
+		pb.add(new JScrollPane(status), cc.xy(2,10));
 
         JButton save = new JButton(new AbstractAction("Save"){
 			public void actionPerformed(ActionEvent e) {
-				new JTableExporter(MatchValidationStatus.this, status);
+				new JTableExporter(getPanel(), status);
 			}
 		});
 
@@ -207,10 +192,34 @@ public class MatchValidationStatus extends JDialog {
         bb1.addRelatedGap();
         pb.add(bb1.getPanel(), cc.xy(2,12));
 
-        getContentPane().add(pb.getPanel());
-        if ( match != null ) {
-        	matchComboBox.setSelectedItem(match);
-        }
+        return pb.getPanel();
+	}
+
+	/*=============== Editor Pane Interface ============*/
+	
+	/**
+	 * Blindly returns true despite the interface's warning. This
+	 * is because we are not actually editing anything so we never
+	 * have to save changes.
+	 */
+	public boolean doSave() {
+		return true;
+	}
+
+	/**
+	 * Returns the top-level panel that holds all the components that this
+	 * EditorPane is responsible for.
+	 */
+	public JComponent getPanel() {
+		return panel;
+	}
+
+	/**
+	 * Returns false because, since we do not allow editing any information
+	 * on this EditorPane, there are never changes that could be unsaved.
+	 */
+	public boolean hasUnsavedChanges() {
+		return false;
 	}
 
 }

@@ -264,6 +264,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 			                throw new Exception("Match result table does not exist!");
 			            }
 			            swingSession.setCurrentEditorComponent(new MatchResultVisualizer(node.getMatch(), swingSession));
+					} else if (node.getActionType() == MatchActionType.VALIDATION_STATUS) {
+						swingSession.setCurrentEditorComponent(new MatchValidationStatus(swingSession, node.getMatch()));
 					}
 				}
 			} catch (Exception ex) {

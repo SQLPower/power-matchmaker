@@ -61,7 +61,6 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.validation.MatchNameValidator;
-import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -72,7 +71,6 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
-import com.jgoodies.forms.builder.ButtonStackBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -111,9 +109,6 @@ public class MatchEditor implements EditorPane {
     private JButton createResultTable;
     private JButton createIndexButton;
     private JButton saveMatch;
-    
-    // all of these buttons are now DOOOOOMED!
-    private JButton validationStatus;
     
     private FilterComponents filterPanel;
 
@@ -244,15 +239,6 @@ public class MatchEditor implements EditorPane {
         else return null;
     }
 
-	private Action validationStatusAction = new AbstractAction("View Validation ValidateResult") {
-		public void actionPerformed(ActionEvent e) {
-			MatchValidationStatus p = new MatchValidationStatus(swingSession, match,
-					DataEntryPanelBuilder.makeOwnedDialog(getPanel(),"View Match Validation Status"));
-			p.pack();
-			p.setVisible(true);
-		}
-	};
-
 	private Action viewBuilderAction = new AbstractAction("View Builder") {
 		public void actionPerformed(ActionEvent e) {
             SQLTable t = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
@@ -317,11 +303,10 @@ public class MatchEditor implements EditorPane {
     	viewBuilder = new JButton(viewBuilderAction);
     	createResultTable = new JButton(createResultTableAction);
     	saveMatch = new JButton(saveAction);
-    	validationStatus = new JButton(validationStatusAction);
         createIndexButton = new JButton(createIndexAction );
 
     	FormLayout layout = new FormLayout(
-				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,10dlu, pref,4dlu", // columns
+				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,4dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,40dlu,4dlu,pref,   4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,  4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
 
 		PanelBuilder pb;
@@ -385,14 +370,6 @@ public class MatchEditor implements EditorPane {
 		savePanel.add(saveMatch);
 		pb.add(savePanel, cc.xy(4, row));
 
-		ButtonStackBuilder bb = new ButtonStackBuilder();
-/*		bb.addGridded(saveMatch);
-		bb.addRelatedGap();
-		bb.addRelatedGap(); */
-		bb.addGridded(validationStatus);
-
-		pb.add(bb.getPanel(), cc.xywh(8,4,1,16,"f,f"));
-		
 		return pb.getPanel();
     }
 
