@@ -2131,7 +2131,7 @@ public class MatchPoolTest extends TestCase {
 		}
 		
 		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null) {
-			fail("An edge no longer exists after we defined no match between n2 and n4.");
+			fail("An edge no longer exists after we unmatch n2 and n4.");
 		}
 		
 		if (pmrN1ToN2.getMaster() == n1) {
@@ -2206,7 +2206,7 @@ public class MatchPoolTest extends TestCase {
 		}
 		
 		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null || (pmrN1ToN4 == null && pmrN2ToN4 == null)) {
-			fail("An edge no longer exists after we defined no match between n2 and n3.");
+			fail("An edge no longer exists after we unmatch n2 and n3.");
 		}
 		
 		if (pmrN1ToN4 != null && pmrN1ToN4 != null) {
@@ -2232,5 +2232,303 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrN4ToN3.getMaster() == null);
 		assertTrue(pmrN4ToN3.getDuplicate() == null);
 		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
+    }
+    
+    /**
+	 * This test confirms that master all takes only unmatched edges and leaves
+	 * no match edges alone
+	 */
+    public void testMatchAllDoesntTakeNoMatches() {
+    	List<Object> keyList = new ArrayList<Object>();
+		keyList.add("q2");
+		SourceTableRecord q2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("q3");
+		SourceTableRecord q3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("q1");
+		SourceTableRecord q1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("q4");
+		SourceTableRecord q4 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineMasterOfAll(q3);
+		
+		PotentialMatchRecord pmrQ1ToQ2 = null;
+		PotentialMatchRecord pmrQ1ToQ3 = null;
+		PotentialMatchRecord pmrQ1ToQ4 = null;
+		PotentialMatchRecord pmrQ2ToQ3 = null;
+		PotentialMatchRecord pmrQ4ToQ3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q3) {
+				pmrQ1ToQ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q1) {
+				pmrQ1ToQ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q2) {
+				pmrQ2ToQ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q3) {
+				pmrQ2ToQ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q2) {
+				pmrQ1ToQ2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q1) {
+				pmrQ1ToQ2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q4) {
+				pmrQ1ToQ4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q1) {
+				pmrQ1ToQ4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q4) {
+				pmrQ4ToQ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q3) {
+				pmrQ4ToQ3 = potentialMatch;
+			}
+			
+			if (pmrQ1ToQ3 != null && pmrQ2ToQ3 != null && pmrQ1ToQ2 != null && pmrQ1ToQ4 != null && pmrQ4ToQ3 != null) break;
+		}
+		
+		if (pmrQ1ToQ3 == null || pmrQ2ToQ3 == null || pmrQ1ToQ2 == null || pmrQ1ToQ4 == null || pmrQ4ToQ3 == null) {
+			fail("An edge no longer exists after we defined q3 to be the master of all.");
+		}
+		
+		assertTrue(pmrQ1ToQ2.getMaster() == null);
+		assertTrue(pmrQ1ToQ2.getDuplicate() == null);
+		assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrQ1ToQ3.getMaster() == null);
+		assertTrue(pmrQ1ToQ3.getDuplicate() == null);
+		assertTrue(pmrQ1ToQ3.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrQ1ToQ4.getMaster() == null);
+		assertTrue(pmrQ1ToQ4.getDuplicate() == null);
+		assertTrue(pmrQ1ToQ4.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrQ2ToQ3.getMaster() == q3);
+		assertTrue(pmrQ2ToQ3.getDuplicate() == q2);
+		assertTrue(pmrQ4ToQ3.getMaster() == q3);
+		assertTrue(pmrQ4ToQ3.getDuplicate() == q4);
+    }
+    
+    /**
+	 * This test confirms that no match all will not change already matched
+	 * edges.
+	 */
+    public void testNoMatchDoesNotModifyMatchedEdges() {
+    	List<Object> keyList = new ArrayList<Object>();
+		keyList.add("q2");
+		SourceTableRecord q2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("q3");
+		SourceTableRecord q3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("q1");
+		SourceTableRecord q1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("q4");
+		SourceTableRecord q4 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineNoMatchOfAny(q3);
+		
+		PotentialMatchRecord pmrQ1ToQ2 = null;
+		PotentialMatchRecord pmrQ1ToQ3 = null;
+		PotentialMatchRecord pmrQ1ToQ4 = null;
+		PotentialMatchRecord pmrQ2ToQ3 = null;
+		PotentialMatchRecord pmrQ4ToQ3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q3) {
+				pmrQ1ToQ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q1) {
+				pmrQ1ToQ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q2) {
+				pmrQ2ToQ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q3) {
+				pmrQ2ToQ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q2) {
+				pmrQ1ToQ2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q1) {
+				pmrQ1ToQ2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q4) {
+				pmrQ1ToQ4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q1) {
+				pmrQ1ToQ4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q4) {
+				pmrQ4ToQ3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q3) {
+				pmrQ4ToQ3 = potentialMatch;
+			}
+			
+			if (pmrQ1ToQ3 != null && pmrQ2ToQ3 != null && pmrQ1ToQ2 != null && pmrQ1ToQ4 != null && pmrQ4ToQ3 != null) break;
+		}
+		
+		if (pmrQ1ToQ3 == null || pmrQ2ToQ3 == null || pmrQ1ToQ2 == null || pmrQ1ToQ4 == null || pmrQ4ToQ3 == null) {
+			fail("An edge no longer exists after we defined q3 to not be the match of any undefined edges.");
+		}
+		
+		assertTrue(pmrQ1ToQ2.getMaster() == null);
+		assertTrue(pmrQ1ToQ2.getDuplicate() == null);
+		assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrQ1ToQ3.getMaster() == null);
+		assertTrue(pmrQ1ToQ3.getDuplicate() == null);
+		assertTrue(pmrQ1ToQ3.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrQ1ToQ4.getMaster() == null);
+		assertTrue(pmrQ1ToQ4.getDuplicate() == null);
+		assertTrue(pmrQ1ToQ4.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrQ2ToQ3.getMaster() == q3);
+		assertTrue(pmrQ2ToQ3.getDuplicate() == q2);
+		assertTrue(pmrQ4ToQ3.getMaster() == null);
+		assertTrue(pmrQ4ToQ3.getDuplicate() == null);
+		assertTrue(pmrQ4ToQ3.getMatchStatus() == MatchType.NOMATCH);
+    }
+    
+    /**
+	 * This test checks that the unmatch all will remove the node from
+	 * a chain of matches but keep the rest of the matches together.
+	 */
+    public void testUnmatchToAll() {
+    	List<Object> keyList = new ArrayList<Object>();
+		keyList.add("n2");
+		SourceTableRecord n2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("n3");
+		SourceTableRecord n3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("n1");
+		SourceTableRecord n1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("n4");
+		SourceTableRecord n4 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineUnmatchAll(n3);
+		
+		PotentialMatchRecord pmrN1ToN2 = null;
+		PotentialMatchRecord pmrN2ToN3 = null;
+		PotentialMatchRecord pmrN4ToN3 = null;
+		PotentialMatchRecord pmrN1ToN4 = null;
+		PotentialMatchRecord pmrN2ToN4 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n2) {
+				pmrN2ToN3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n3) {
+				pmrN2ToN3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == n1 && potentialMatch.getOriginalRhs() == n2) {
+				pmrN1ToN2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n1) {
+				pmrN1ToN2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n4) {
+				pmrN4ToN3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n3) {
+				pmrN4ToN3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == n1 && potentialMatch.getOriginalRhs() == n4) {
+				pmrN1ToN4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n1) {
+				pmrN1ToN4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n4) {
+				pmrN2ToN4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n2) {
+				pmrN2ToN4 = potentialMatch;
+			}
+			
+			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null && (pmrN1ToN4 != null || pmrN2ToN4 != null)) break;
+		}
+		
+		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null || (pmrN1ToN4 == null && pmrN2ToN4 == null)) {
+			fail("An edge no longer exists after we unmatched n3 from everything.");
+		}
+		
+		if (pmrN1ToN4 != null && pmrN2ToN4 != null) {
+			fail("We created two additional edges when only one was required");
+		}
+		
+		if (pmrN1ToN4 != null) {
+			assertTrue(pmrN1ToN4.getMaster() == n4);
+			assertTrue(pmrN1ToN4.getDuplicate() == n1);
+			assertTrue(pmrN1ToN2.getMaster() == n1);
+			assertTrue(pmrN1ToN2.getDuplicate() == n2);
+		} else {
+			//The synthetic edge was created through n2 to n4
+			assertTrue(pmrN2ToN4.getMaster() == n4);
+			assertTrue(pmrN2ToN4.getDuplicate() == n2);
+			assertTrue(pmrN1ToN2.getMaster() == n2);
+			assertTrue(pmrN1ToN2.getDuplicate() == n1);
+		}
+		
+		assertTrue(pmrN2ToN3.getMaster() == null);
+		assertTrue(pmrN2ToN3.getDuplicate() == null);
+		assertTrue(pmrN2ToN3.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrN4ToN3.getMaster() == null);
+		assertTrue(pmrN4ToN3.getDuplicate() == null);
+		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
+    }
+    
+    /**
+	 * This test unmatches no match and match edges and keeps duplicates,
+	 * that were dependent on the removed node, together.
+	 */
+    public void testUnmatchAllRemovesMatchAndNoMatch() {
+    	List<Object> keyList = new ArrayList<Object>();
+		keyList.add("p2");
+		SourceTableRecord p2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("p3");
+		SourceTableRecord p3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("p1");
+		SourceTableRecord p1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("p4");
+		SourceTableRecord p4 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineUnmatchAll(p3);
+		
+		PotentialMatchRecord pmrP1ToP2 = null;
+		PotentialMatchRecord pmrP1ToP3 = null;
+		PotentialMatchRecord pmrP1ToP4 = null;
+		PotentialMatchRecord pmrP2ToP3 = null;
+		PotentialMatchRecord pmrP2ToP4 = null;
+		PotentialMatchRecord pmrP4ToP3 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == p1 && potentialMatch.getOriginalRhs() == p3) {
+				pmrP1ToP3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p3 && potentialMatch.getOriginalRhs() == p1) {
+				pmrP1ToP3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p3 && potentialMatch.getOriginalRhs() == p2) {
+				pmrP2ToP3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p2 && potentialMatch.getOriginalRhs() == p3) {
+				pmrP2ToP3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p1 && potentialMatch.getOriginalRhs() == p2) {
+				pmrP1ToP2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p2 && potentialMatch.getOriginalRhs() == p1) {
+				pmrP1ToP2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p1 && potentialMatch.getOriginalRhs() == p4) {
+				pmrP1ToP4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p4 && potentialMatch.getOriginalRhs() == p1) {
+				pmrP1ToP4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p3 && potentialMatch.getOriginalRhs() == p4) {
+				pmrP4ToP3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p4 && potentialMatch.getOriginalRhs() == p3) {
+				pmrP4ToP3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p2 && potentialMatch.getOriginalRhs() == p4) {
+				pmrP2ToP4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == p4 && potentialMatch.getOriginalRhs() == p2) {
+				pmrP2ToP4 = potentialMatch;
+			}
+			
+			if (pmrP1ToP3 != null && pmrP2ToP3 != null && pmrP2ToP4 != null && pmrP1ToP2 != null && pmrP1ToP4 != null && pmrP4ToP3 != null) break;
+		}
+		
+		if (pmrP1ToP3 == null || pmrP2ToP3 == null || pmrP2ToP4 == null || pmrP1ToP2 == null || pmrP1ToP4 == null || pmrP4ToP3 == null) {
+			fail("An edge no longer exists after we unmatched p3 from everything.");
+		}
+		
+		assertTrue(pmrP1ToP2.getMaster() == null);
+		assertTrue(pmrP1ToP2.getDuplicate() == null);
+		assertTrue(pmrP1ToP2.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrP1ToP3.getMaster() == null);
+		assertTrue(pmrP1ToP3.getDuplicate() == null);
+		assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrP1ToP4.getMaster() == null);
+		assertTrue(pmrP1ToP4.getDuplicate() == null);
+		assertTrue(pmrP1ToP4.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrP2ToP3.getMaster() == null);
+		assertTrue(pmrP2ToP3.getDuplicate() == null);
+		assertTrue(pmrP2ToP3.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrP4ToP3.getMaster() == null);
+		assertTrue(pmrP4ToP3.getDuplicate() == null);
+		assertTrue(pmrP4ToP3.getMatchStatus() == MatchType.UNMATCH);
     }
 }

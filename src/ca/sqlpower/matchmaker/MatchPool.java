@@ -24,7 +24,6 @@ import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
 import ca.sqlpower.matchmaker.graph.DijkstrasAlgorithm;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.GraphModel;
-import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 
 /**
@@ -250,7 +249,7 @@ public class MatchPool {
 	 * is found.
 	 */
     public PotentialMatchRecord getPotentialMatchFromOriginals(SourceTableRecord node1, SourceTableRecord node2) {
-    	for (PotentialMatchRecord pmr : potentialMatches) {
+    	for (PotentialMatchRecord pmr : node1.getOriginalMatchEdges()) {
     		if (pmr.getOriginalLhs() == node1 && pmr.getOriginalRhs() == node2 
     				|| pmr.getOriginalLhs() == node2 && pmr.getOriginalRhs() == node1) {
     			return pmr;
@@ -437,10 +436,17 @@ public class MatchPool {
 	 * that we have no cycles.
 	 */
 	public void defineMasterOfAll(SourceTableRecord master) {
-		GraphModel<SourceTableRecord, PotentialMatchRecord> poolGraph = new MatchPoolGraphModel(this);
+		for (PotentialMatchRecord pmr : master.getOriginalMatchEdges()) {
+			if (pmr.getMatchStatus() == MatchType.UNMATCH) {
+				pmr.setMaster(master);
+			}
+		}
+		
+		GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
+    		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
 		BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
             new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
-        Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(poolGraph, master));
+        Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, master));
         GraphModel<SourceTableRecord, PotentialMatchRecord> considerGivenNodesGraph =
         	new GraphConsideringOnlyGivenNodes(this, reachable);
         
@@ -484,9 +490,9 @@ public class MatchPool {
 		for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
 			if (pmr.getMatchStatus() == MatchType.UNMATCH) {
 				if (pmr.getOriginalLhs() == record1) {
-	        		defineUnmatched(pmr.getOriginalRhs(), pmr.getOriginalLhs());
+	        		defineNoMatch(pmr.getOriginalRhs(), pmr.getOriginalLhs());
 	        	} else {
-	        		defineUnmatched(pmr.getOriginalRhs(), pmr.getOriginalLhs());
+	        		defineNoMatch(pmr.getOriginalLhs(), pmr.getOriginalRhs());
 	        	}
 			}
 		}
@@ -519,6 +525,7 @@ public class MatchPool {
 	 * </ol>
 	 */
 	public void defineUnmatched(SourceTableRecord lhs, SourceTableRecord rhs) {
+		logger.debug("Unmatching " + rhs + " from " + lhs);
 		if (lhs == rhs) {
     		defineUnmatchAll(lhs);
     	}
@@ -651,11 +658,12 @@ public class MatchPool {
 	 * to be undefined matches.
 	 */
 	public void defineUnmatchAll(SourceTableRecord record1) {
+		logger.debug("unmatching " + record1 + " from everything");
         for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
         	if (pmr.getOriginalLhs() == record1) {
         		defineUnmatched(pmr.getOriginalRhs(), pmr.getOriginalLhs());
         	} else {
-        		defineUnmatched(pmr.getOriginalRhs(), pmr.getOriginalLhs());
+        		defineUnmatched(pmr.getOriginalLhs(), pmr.getOriginalRhs());
         	}
         }
 	}
