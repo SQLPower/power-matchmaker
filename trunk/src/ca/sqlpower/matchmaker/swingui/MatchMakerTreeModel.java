@@ -75,7 +75,7 @@ public class MatchMakerTreeModel implements TreeModel {
         /**
          * Shows the "run match" UI.
          */
-        RUN_MATCH("Run Match"),
+        RUN_MATCH("Run Match Engine"),
         
         /**
          * Shows the "validate matches" UI.
@@ -83,14 +83,14 @@ public class MatchMakerTreeModel implements TreeModel {
         VALIDATE_MATCHES("Validate Matches"),
         
         /**
-         * Shows the "run merge" UI.
-         */
-        RUN_MERGE("Run Merge"),
-        
-        /**
          * Shows the "validation status" UI.
          */
         VALIDATION_STATUS("Validation Status"),
+        
+        /**
+         * Shows the "run merge" UI.
+         */
+        RUN_MERGE("Run Merge"),
         
         /**
          * Shows information about the parent match such as
