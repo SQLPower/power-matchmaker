@@ -105,7 +105,7 @@ public class DijkstrasAlgorithm<V, E> {
 	 */
 	private void initializeSingleSource(GraphModel<V, E> graph, V start) {
 		for(V v: graph.getNodes()) {
-			d.put(v, new Integer(Integer.MAX_VALUE));
+			d.put(v, new Integer(Integer.MAX_VALUE - 1));
 		}
 		d.put(start, new Integer(0));
 	}
