@@ -381,35 +381,10 @@ public class MatchPool {
         logger.debug("Graph contains " + considerGivenNodesGraph.getNodes() + " nodes.");
 
         logger.debug("Find the ultimate master");
-        //We need to keep track of where we've been so we don't go back to old possible ultimate masters
-        //in the case of cycles.
-        SourceTableRecord ultimateMaster = master;
-        List<SourceTableRecord> nodesCrossed = new ArrayList<SourceTableRecord>();
-        nodesCrossed.add(duplicate); //Don't want to set the duplicate as the ultimate master if we can get here somehow.
-        while (!considerGivenNodesGraph.getOutboundEdges(ultimateMaster).isEmpty()) {
-        	logger.debug("The outbound edges for " + ultimateMaster + " is " + considerGivenNodesGraph.getOutboundEdges(ultimateMaster));
-        	nodesCrossed.add(ultimateMaster);
-        	
-        	SourceTableRecord newUltimateMaster = ultimateMaster;
-        	for (PotentialMatchRecord pmr : considerGivenNodesGraph.getOutboundEdges(ultimateMaster)) {
-        		if (pmr.getOriginalLhs() != ultimateMaster) {
-        			if (!nodesCrossed.contains(pmr.getOriginalLhs())) {
-        				newUltimateMaster = pmr.getOriginalLhs();
-        				break;
-        			}
-        		} else {
-        			if (!nodesCrossed.contains(pmr.getOriginalRhs())) {
-        				newUltimateMaster = pmr.getOriginalRhs();
-        				break;
-        			}
-        		}
-        	}
-        	if (newUltimateMaster == ultimateMaster) {
-        		break;
-        	}
-        	ultimateMaster = newUltimateMaster;
-        }
-        logger.debug("The ultimate master is " + ultimateMaster);
+        List<SourceTableRecord> nodesToSkip = new ArrayList<SourceTableRecord>();
+        nodesToSkip.add(duplicate); //Don't want to set the duplicate as the ultimate master if we can get here somehow.
+        SourceTableRecord ultimateMaster = findUltimateMaster(considerGivenNodesGraph,
+				master, nodesToSkip);
         
         logger.debug("Find the shortest path to all nodes in the graph");
     	DijkstrasAlgorithm da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
@@ -421,18 +396,7 @@ public class MatchPool {
     		masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, ultimateMaster);
     	}
     	
-    	logger.debug("Removing all decided edges from the given graph");
-    	for (PotentialMatchRecord pmr : considerGivenNodesGraph.getEdges()) {
-   			pmr.setMaster(null);
-    	}
-    	
-    	logger.debug("Setting the new decided edges for this graph of nodes");
-    	//XXX This is a fairly poor way of obtaining the potential match records. We should be able to make this faster.
-    	for (Map.Entry<SourceTableRecord, SourceTableRecord> nodeMasterPair : masterMapping.entrySet()) {
-    		logger.debug("Setting " + nodeMasterPair.getValue() + " to be the master of " + nodeMasterPair.getKey());
-    		PotentialMatchRecord matchRecord = getPotentialMatchFromOriginals(nodeMasterPair.getValue(), nodeMasterPair.getKey());
-   			matchRecord.setMaster(nodeMasterPair.getValue());
-    	}
+    	defineMatchEdges(considerGivenNodesGraph, masterMapping);
 	}
 
     /**
@@ -483,34 +447,32 @@ public class MatchPool {
         DijkstrasAlgorithm da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
     	Map<SourceTableRecord, SourceTableRecord> masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, master);
     	
-    	for (PotentialMatchRecord pmr : considerGivenNodesGraph.getEdges()) {
-   			pmr.setMaster(null);
-    	}
-    	
-    	//XXX This is a fairly poor way of obtaining the potential match records. We should be able to make this faster.
-    	for (Map.Entry<SourceTableRecord, SourceTableRecord> nodeMasterPair : masterMapping.entrySet()) {
-    		logger.debug("Setting " + nodeMasterPair.getValue() + " to be the master of " + nodeMasterPair.getKey());
-    		PotentialMatchRecord matchRecord = getPotentialMatchFromOriginals(nodeMasterPair.getValue(), nodeMasterPair.getKey());
-   			matchRecord.setMaster(nodeMasterPair.getValue());
-    	}
+    	defineMatchEdges(considerGivenNodesGraph, masterMapping);
 	}
 	
 	/**
 	 * This sets the two given SourceTableRecords to have no match between them.
 	 * If the source table records are the same all potential match records
 	 * connected to the node will be set to no match. If no edge exists between
-	 * the nodes than an edge will be created to store the fact that there is
-	 * no match between the nodes for later use.
+	 * the nodes than an edge will be created to store the fact that there is no
+	 * match between the nodes for later use. If the records are connected
+	 * somehow the lhs and rhs will be separated as in the
+	 * {@link #defineUnmatched(SourceTableRecord, SourceTableRecord)} method.
 	 */
-    public void defineNoMatch(SourceTableRecord record1, SourceTableRecord record2) {
-    	if (record1 == record2) {
-    		defineNoMatchOfAny(record1);
+    public void defineNoMatch(SourceTableRecord lhs, SourceTableRecord rhs) {
+    	if (lhs == rhs) {
+    		defineNoMatchOfAny(lhs);
     	}
-        PotentialMatchRecord pmr = getPotentialMatchFromOriginals(record1, record2);
+        PotentialMatchRecord pmr = getPotentialMatchFromOriginals(lhs, rhs);
+        if (pmr != null && pmr.getMatchStatus() == MatchType.NOMATCH) {
+        	return;
+        } 
+        
+        defineUnmatched(lhs, rhs);
         if (pmr != null) {
         	pmr.setMatchStatus(MatchType.NOMATCH);
         } else {
-        	addSyntheticPotentialMatchRecord(record1, record2).setMatchStatus(MatchType.NOMATCH);
+        	addSyntheticPotentialMatchRecord(lhs, rhs).setMatchStatus(MatchType.NOMATCH);
         }
     }
 
@@ -520,25 +482,168 @@ public class MatchPool {
 	 */
 	public void defineNoMatchOfAny(SourceTableRecord record1) {
 		for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
-			pmr.setMatchStatus(MatchType.NOMATCH);
+			if (pmr.getMatchStatus() == MatchType.UNMATCH) {
+				if (pmr.getOriginalLhs() == record1) {
+	        		defineUnmatched(pmr.getOriginalRhs(), pmr.getOriginalLhs());
+	        	} else {
+	        		defineUnmatched(pmr.getOriginalRhs(), pmr.getOriginalLhs());
+	        	}
+			}
 		}
 	}
 	
 	/**
-	 * Sets the potential match record between two source table records to
-	 * be an undefined match. If the source table records are the same all
-	 * potential match records connected to the node will be set as undefined.
-	 * If no potential match record exists between the two source table records
-	 * then no new potential match record will be created.
+	 * Sets the potential match record between two source table records to be an
+	 * undefined match. If the source table records are the same then the
+	 * {@link #defineUnmatchAll(SourceTableRecord)} algorithm will be run
+	 * instead. If no potential match record exists between the two source table
+	 * records then no new potential match record will be created. If the nodes
+	 * are connected by decided edges then the rhs record will be removed from
+	 * the chain of matches.
+	 * <p>
+	 * The algorithm below is as follows:
+	 * <ol>
+	 * <li>Use bfs to check if the nodes are connected by decided edges.
+	 * <li>If the nodes are connected make a graph of all of the connected
+	 * edges.
+	 * <li>Find the ultimate master of all of the nodes. If the rhs record is
+	 * the ultimate master then set the ultimate master to be the previous
+	 * record as we will be removing the ultimate master from this chain.
+	 * <li>Remove the rhs record from the graph.
+	 * <li>Use Dijkstra to find the shortest path to all of the nodes in the
+	 * graph. If there is a node that was not reached in the graph after running
+	 * Dijkstra add a synthetic edge between the node and the ultimate master
+	 * and run this step again.
+	 * <li>Set all edges walked by Dijkstra to be decided edges and all other
+	 * edges to be undecided.
+	 * </ol>
 	 */
-	public void defineUnmatched(SourceTableRecord record1, SourceTableRecord record2) {
-		if (record1 == record2) {
-    		defineUnmatchAll(record1);
+	public void defineUnmatched(SourceTableRecord lhs, SourceTableRecord rhs) {
+		if (lhs == rhs) {
+    		defineUnmatchAll(lhs);
     	}
-        PotentialMatchRecord pmr = getPotentialMatchFromOriginals(record1, record2);
-        if (pmr != null) {
-        	pmr.setMatchStatus(MatchType.UNMATCH);
+		
+		PotentialMatchRecord possibleNoMatchEdge = getPotentialMatchFromOriginals(lhs, rhs);
+		if (possibleNoMatchEdge != null) {
+			if (possibleNoMatchEdge.getMatchStatus() == MatchType.NOMATCH) {
+				possibleNoMatchEdge.setMatchStatus(MatchType.UNMATCH);
+			}
+		}
+		
+    	GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
+    		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
+    	BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
+            new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+        Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, lhs));
+        if (!reachable.contains(rhs)) {
+        	logger.debug("The node " + lhs + " could not reach " + rhs + " already.");
+        	return;
         }
+
+        GraphModel<SourceTableRecord, PotentialMatchRecord> considerGivenNodesGraph =
+        	new GraphConsideringOnlyGivenNodes(this, reachable);
+        logger.debug("Graph contains " + considerGivenNodesGraph.getNodes().size() + " nodes.");
+
+        logger.debug("Find the ultimate master");
+        SourceTableRecord ultimateMaster = findUltimateMaster(considerGivenNodesGraph,
+				rhs, new ArrayList<SourceTableRecord>());
+        if (rhs == ultimateMaster) {
+        	List<SourceTableRecord> nodesToSkip = new ArrayList<SourceTableRecord>();
+        	nodesToSkip.add(rhs);
+        	ultimateMaster = findUltimateMaster(considerGivenNodesGraph, lhs, nodesToSkip);
+        }
+        
+        reachable.remove(rhs);
+        considerGivenNodesGraph = new GraphConsideringOnlyGivenNodes(this, reachable);
+        for (PotentialMatchRecord pmr : rhs.getOriginalMatchEdges()) {
+        	if (pmr.getMatchStatus() == MatchType.MATCH) {
+        		pmr.setMaster(null);
+        	}
+        }
+        logger.debug("Graph now contains " + considerGivenNodesGraph.getNodes().size() + " nodes.");
+        
+        logger.debug("Find the shortest path to all nodes in the graph");
+    	DijkstrasAlgorithm da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
+    	Map<SourceTableRecord, SourceTableRecord> masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, ultimateMaster);
+    	
+    	for (SourceTableRecord str : reachable) {
+    		if (masterMapping.get(str) == null && str != ultimateMaster) {
+    			logger.debug("We could not reach " + str + " from the ultimate master in the current graph. A synthetic edge will be created");
+    			addSyntheticPotentialMatchRecord(ultimateMaster, str);
+    			masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, ultimateMaster);
+    		}
+    	}
+    	
+    	defineMatchEdges(considerGivenNodesGraph, masterMapping);
+	}
+
+	/**
+	 * This method sets the edges defined by the <duplicate, master> pairs of
+	 * the map to be matched edges with the master the master node in the pair.
+	 * All other edges in the graph are set to be undefined.
+	 * 
+	 * @param graph
+	 *            The graph that contains the edges to modify.
+	 * @param masterMapping
+	 *            The mapping of all matched edges in the graph given in
+	 *            <duplicate, master> pairs.
+	 */
+	private void defineMatchEdges(
+			GraphModel<SourceTableRecord, PotentialMatchRecord> graph,
+			Map<SourceTableRecord, SourceTableRecord> masterMapping) {
+		logger.debug("Removing all decided edges from the given graph");
+    	for (PotentialMatchRecord pmr : graph.getEdges()) {
+   			pmr.setMaster(null);
+    	}
+    	
+    	logger.debug("Setting the new decided edges for this graph of nodes");
+    	//XXX This is a fairly poor way of obtaining the potential match records. We should be able to make this faster.
+    	for (Map.Entry<SourceTableRecord, SourceTableRecord> nodeMasterPair : masterMapping.entrySet()) {
+    		logger.debug("Setting " + nodeMasterPair.getValue() + " to be the master of " + nodeMasterPair.getKey());
+    		PotentialMatchRecord matchRecord = getPotentialMatchFromOriginals(nodeMasterPair.getValue(), nodeMasterPair.getKey());
+   			matchRecord.setMaster(nodeMasterPair.getValue());
+    	}
+	}
+
+	/**
+	 * This method finds the ultimate master, the master with no masters, of a given node on a given graph ignoring the
+	 * nodes already contained in the given list.
+	 * @param graph The graph to traverse to find the ultimate master.
+	 * @param startingPoint The starting point to travel from to find the ultimate master.
+	 * @param nodesToSkip A starting list of nodes that will not be crossed when looking for the ultimate master.
+	 * @return The source table record that represents the ultimate master
+	 */
+	private SourceTableRecord findUltimateMaster(
+			GraphModel<SourceTableRecord, PotentialMatchRecord> graph,
+			SourceTableRecord startingPoint,
+			List<SourceTableRecord> nodesToSkip) {
+		SourceTableRecord ultimateMaster = startingPoint;
+		List<SourceTableRecord> nodesCrossed = new ArrayList<SourceTableRecord>(nodesToSkip);
+		while (!graph.getOutboundEdges(ultimateMaster).isEmpty()) {
+        	logger.debug("The outbound edges for " + ultimateMaster + " is " + graph.getOutboundEdges(ultimateMaster));
+        	nodesCrossed.add(ultimateMaster);
+        	
+        	SourceTableRecord newUltimateMaster = ultimateMaster;
+        	for (PotentialMatchRecord pmr : graph.getOutboundEdges(ultimateMaster)) {
+        		if (pmr.getOriginalLhs() != ultimateMaster) {
+        			if (!nodesCrossed.contains(pmr.getOriginalLhs())) {
+        				newUltimateMaster = pmr.getOriginalLhs();
+        				break;
+        			}
+        		} else {
+        			if (!nodesCrossed.contains(pmr.getOriginalRhs())) {
+        				newUltimateMaster = pmr.getOriginalRhs();
+        				break;
+        			}
+        		}
+        	}
+        	if (newUltimateMaster == ultimateMaster) {
+        		break;
+        	}
+        	ultimateMaster = newUltimateMaster;
+        }
+        logger.debug("The ultimate master is " + ultimateMaster);
+		return ultimateMaster;
 	}
 
 	/**
@@ -547,7 +652,11 @@ public class MatchPool {
 	 */
 	public void defineUnmatchAll(SourceTableRecord record1) {
         for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
-        	pmr.setMatchStatus(MatchType.UNMATCH);
+        	if (pmr.getOriginalLhs() == record1) {
+        		defineUnmatched(pmr.getOriginalRhs(), pmr.getOriginalLhs());
+        	} else {
+        		defineUnmatched(pmr.getOriginalRhs(), pmr.getOriginalLhs());
+        	}
         }
 	}
 }

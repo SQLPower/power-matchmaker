@@ -1350,12 +1350,10 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we defined cycle2 to not match any other connected nodes.");
 		}
 
-		assertTrue(pmrCycle1ToCycle2.getMaster() == null);
-		assertTrue(pmrCycle1ToCycle2.getDuplicate() == null);
-		assertTrue(pmrCycle1ToCycle2.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrCycle2ToCycle3.getMaster() == null);
-		assertTrue(pmrCycle2ToCycle3.getDuplicate() == null);
-		assertTrue(pmrCycle2ToCycle3.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrCycle1ToCycle2.getMaster() == cycle2);
+		assertTrue(pmrCycle1ToCycle2.getDuplicate() == cycle1);
+		assertTrue(pmrCycle2ToCycle3.getMaster() == cycle3);
+		assertTrue(pmrCycle2ToCycle3.getDuplicate() == cycle2);
 		assertTrue(pmrCycle3ToCycle1.getMaster() == cycle1);
 		assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
     }
@@ -1504,8 +1502,12 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrCycle2ToCycle3.getMaster() == null);
 		assertTrue(pmrCycle2ToCycle3.getDuplicate() == null);
 		assertTrue(pmrCycle2ToCycle3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrCycle3ToCycle1.getMaster() == cycle1);
-		assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
+		if (pmrCycle3ToCycle1.getMaster() == cycle1) {
+			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
+		} else {
+			assertTrue(pmrCycle3ToCycle1.getMaster() == cycle3);
+			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle1);
+    	}
     }
 
     /**
@@ -1797,7 +1799,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("r4");
 		SourceTableRecord r4 = pool.getSourceTableRecord(keyList);
 		
-		pool.defineNoMatch(r3, r1);
+		pool.defineNoMatch(r1, r3);
 		
 		PotentialMatchRecord pmrR1ToR2 = null;
 		PotentialMatchRecord pmrR1ToR3 = null;
@@ -1879,7 +1881,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("r4");
 		SourceTableRecord r4 = pool.getSourceTableRecord(keyList);
 		
-		pool.defineUnmatched(r3, r1);
+		pool.defineUnmatched(r1, r3);
 		
 		PotentialMatchRecord pmrR1ToR2 = null;
 		PotentialMatchRecord pmrR1ToR4 = null;
@@ -2058,7 +2060,7 @@ public class MatchPoolTest extends TestCase {
 			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null && (pmrN1ToN4 != null || pmrN2ToN4 != null)) break;
 		}
 		
-		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null || (pmrN1ToN4 == null && pmrN1ToN4 == null)) {
+		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null || (pmrN1ToN4 == null && pmrN2ToN4 == null)) {
 			fail("An edge no longer exists after we defined no match between n2 and n3.");
 		}
 		
@@ -2066,7 +2068,8 @@ public class MatchPoolTest extends TestCase {
 			fail("We created two additional edges when only one was required");
 		}
 		
-		if (pmrN1ToN4.getMaster() != n4) {
+		if (pmrN1ToN4 != null) {
+			assertTrue(pmrN1ToN4.getMaster() != n4);
 			assertTrue(pmrN1ToN4.getDuplicate() == n1);
 			assertTrue(pmrN1ToN2.getMaster() == n1);
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
@@ -2202,7 +2205,7 @@ public class MatchPoolTest extends TestCase {
 			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null && (pmrN1ToN4 != null || pmrN2ToN4 != null)) break;
 		}
 		
-		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null || (pmrN1ToN4 == null && pmrN1ToN4 == null)) {
+		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null || (pmrN1ToN4 == null && pmrN2ToN4 == null)) {
 			fail("An edge no longer exists after we defined no match between n2 and n3.");
 		}
 		
@@ -2210,7 +2213,8 @@ public class MatchPoolTest extends TestCase {
 			fail("We created two additional edges when only one was required");
 		}
 		
-		if (pmrN1ToN4.getMaster() != n4) {
+		if (pmrN1ToN4 != null) {
+			assertTrue(pmrN1ToN4.getMaster() == n4);
 			assertTrue(pmrN1ToN4.getDuplicate() == n1);
 			assertTrue(pmrN1ToN2.getMaster() == n1);
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
