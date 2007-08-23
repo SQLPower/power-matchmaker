@@ -720,4 +720,47 @@ public class MatchPool {
         	}
         }
 	}
+	
+	/**
+	 * Performs the 'Auto-Match' function which is either for lazy people who
+	 * think their criteria group is perfect or for people who like to gamble.
+	 * Either way, we warn them heavily in the UI that this will make mistakes.
+	 * Our goal here is to make as many matches along edges in the supplied
+	 * criteria group without putting the graph into an illegal state or taking
+	 * forever. We do not claim, nor should we, that the total number of matches
+	 * created by this method is maximal or predictable.
+	 * <p>
+	 * NOTE: This depends on {@link #defineMaster(SourceTableRecord, SourceTableRecord)}.
+	 * to ALWAYS respect a NoMatch edge by leaving it the way it was found
+	 * and always leaving the graph in a non-illegal state
+	 * <p>
+	 * This is the current algorithm:
+	 * <ol>
+	 *  <li>
+	 *   Define a set of nodes called 'visited'. Add to it all nodes that
+	 *   are not incident with an edge that:
+	 *   <ul>
+	 *    <li>
+	 *     Is not a NoMatch edge and
+	 *    </li>
+	 *    <li>
+	 *     Belongs to the provided criteria group
+	 *    </li>
+	 *   </ul>
+	 *  </li>
+	 *  <li>
+	 *   Pick a node in the graph that is not in the 'visited' set, call it
+	 *   'selected' and add it to the 'visited' set.
+	 *  </li>
+	 *  <li>
+	 *   Make a list of nodes such that all nodes that are not in the visited set
+	 *   
+	 *  </li>
+	 * </ol>
+	 * 
+	 * @param criteria The name of the criteria along which to make matches
+	 */
+	public void doAutoMatch(String criteriaName) {
+		//stubbed
+	}
 }
