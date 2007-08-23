@@ -227,6 +227,9 @@ public class MatchPool {
     	potentialMatches.add(pmr);
     	pmr.getOriginalLhs().addPotentialMatch(pmr);
         pmr.getOriginalRhs().addPotentialMatch(pmr);
+        if (pmr.getMatchStatus() == null) {
+        	pmr.setMatchStatus(MatchType.UNMATCH);
+        }
     }
     
     /**
@@ -456,10 +459,10 @@ public class MatchPool {
         		}
         		if (noMatchNodes.contains(str)) continue;
         		logger.debug("Adding " + str + " to reachable nodes");
-        		reachable.add(str);
         		GraphModel<SourceTableRecord, PotentialMatchRecord> newNonDirectedGraph =
             		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
                 Set<SourceTableRecord> newReachableNodes = new HashSet<SourceTableRecord>(bfs.performSearch(newNonDirectedGraph, str));
+                reachable.addAll(newReachableNodes);
         		noMatchNodes.addAll(findNoMatchNodes(newReachableNodes));
         	}
         }
