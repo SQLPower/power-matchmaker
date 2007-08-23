@@ -403,7 +403,8 @@ public class MatchResultVisualizer implements EditorPane {
         
         actionsAllowed.add(new SetMasterAction("Master", rhs, lhs));
         actionsAllowed.add(new SetDuplicateAction("Duplicate", lhs, rhs));
-        if (pool.getPotentialMatchFromOriginals(lhs, rhs).getMatchStatus() == MatchType.NOMATCH) {
+        PotentialMatchRecord pmr = pool.getPotentialMatchFromOriginals(lhs, rhs);
+        if (pmr != null && pmr.getMatchStatus() == MatchType.NOMATCH) {
         	actionsAllowed.add(new SetUnmatchAction("Unmatch", lhs, rhs));
         } else {
         	actionsAllowed.add(new SetNoMatchAction("No Match", lhs, rhs));
