@@ -376,6 +376,27 @@ public class MMTestUtils {
 		pmr.setMaster(node1);
 		pool.addPotentialMatch(pmr);
 		
+		node1 = new SourceTableRecord(session, m, "s1");
+		pool.addSourceTableRecord(node1);
+		node2 = new SourceTableRecord(session, m, "s2");
+		pool.addSourceTableRecord(node2);
+		node3 = new SourceTableRecord(session, m, "s3");
+		pool.addSourceTableRecord(node3);
+		node4 = new SourceTableRecord(session, m, "s4");
+		pool.addSourceTableRecord(node4);
+		
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.NOMATCH, node1, node2, false);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node2, node3, false);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.MATCH, node3, node4, false);
+		pmr.setMaster(node4);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node1, node4, false);
+		pool.addPotentialMatch(pmr);
+		pmr = new PotentialMatchRecord(criteriaGroup, MatchType.UNMATCH, node1, node3, false);
+		pool.addPotentialMatch(pmr);
+		
 		//The graph for cycle
 		node1 = new SourceTableRecord(session, m, "cycle1");
 		pool.addSourceTableRecord(node1);
