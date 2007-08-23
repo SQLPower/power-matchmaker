@@ -10,7 +10,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,11 +34,13 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
 import ca.sqlpower.matchmaker.graph.ConnectedComponentFinder;
 import ca.sqlpower.matchmaker.graph.GraphModel;
 import ca.sqlpower.matchmaker.graph.MatchPoolDotExport;
 import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
+import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
@@ -84,19 +88,40 @@ public class MatchResultVisualizer implements EditorPane {
 	 * When this action is fired the nodes will become unrelated.
 	 */
     private class SetNoMatchAction extends AbstractAction{
-        private final MatchPool pool;
     	private final SourceTableRecord record1;
         private final SourceTableRecord record2;
         
-        protected SetNoMatchAction (MatchPool pool, SourceTableRecord record1, SourceTableRecord record2){
-            super("No Match");
-            this.pool = pool;
+        protected SetNoMatchAction (String name, SourceTableRecord record1, SourceTableRecord record2){
+            super(name);
             this.record1 = record1;
             this.record2 = record2;
         }
         
         public void actionPerformed(ActionEvent e){
             pool.defineNoMatch(record1, record2);
+            selectionListener.nodeSelected(record1);
+            graph.repaint();
+        }
+    }
+    
+    /**
+	 * When this action is fired the nodes will have the edge directly relating
+	 * them set to undecided if the edge exists.
+	 */
+    private class SetUnmatchAction extends AbstractAction{
+    	private final SourceTableRecord record1;
+        private final SourceTableRecord record2;
+        
+        protected SetUnmatchAction (String name, SourceTableRecord record1, SourceTableRecord record2){
+            super(name);
+            this.record1 = record1;
+            this.record2 = record2;
+        }
+        
+        public void actionPerformed(ActionEvent e){
+            pool.defineUnmatched(record1, record2);
+            selectionListener.nodeSelected(record1);
+            graph.repaint();
         }
     }
     
@@ -109,14 +134,37 @@ public class MatchResultVisualizer implements EditorPane {
         private final SourceTableRecord master;
         private final SourceTableRecord duplicate;
         
-        SetMasterAction(SourceTableRecord master, SourceTableRecord duplicate) {
-            super("Master");
+        SetMasterAction(String name, SourceTableRecord master, SourceTableRecord duplicate) {
+            super(name);
             this.master = master;
             this.duplicate = duplicate;
         }
         
         public void actionPerformed(ActionEvent e) {
             pool.defineMaster(master, duplicate);
+            selectionListener.nodeSelected(duplicate);
+            graph.repaint();
+        }
+    }
+    
+    /**
+	 * When this action is fired the master given to the constructor will become
+	 * the master of the given duplicate
+	 */
+    private class SetDuplicateAction extends AbstractAction {
+        
+        private final SourceTableRecord master;
+        private final SourceTableRecord duplicate;
+        
+        SetDuplicateAction(String name, SourceTableRecord master, SourceTableRecord duplicate) {
+            super(name);
+            this.master = master;
+            this.duplicate = duplicate;
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            pool.defineMaster(master, duplicate);
+            selectionListener.nodeSelected(master);
             graph.repaint();
         }
     }
@@ -144,8 +192,7 @@ public class MatchResultVisualizer implements EditorPane {
                     //so it compiles for now
                     SourceTableRecordViewer recordViewer = 
                         new SourceTableRecordViewer(
-                            str, node, new JButton(new SetMasterAction(str, node)),
-                            new JButton(new SetNoMatchAction(pool, node,str)));
+                            str, node, getActions(node, str));
                     recordViewer.getPanel().addMouseListener(new MouseAdapter() {
                         @Override
                         public void mousePressed(MouseEvent e) {
@@ -323,6 +370,47 @@ public class MatchResultVisualizer implements EditorPane {
         graph.repaint();
     }
     
+    /**
+	 * This method will return the actions allowed between the two given nodes
+	 * in a graph.
+	 * 
+	 * @param lhs
+	 *            The node that should be considered on the left for the methods
+	 *            that the actions will run.
+	 * @param rhs
+	 *            The node that should be considered on the right for the
+	 *            methods that the actions will run.
+	 */
+    public List<Action> getActions(SourceTableRecord lhs, SourceTableRecord rhs) {
+    	List<Action> actionsAllowed = new ArrayList<Action>();
+    	if (lhs == rhs) {
+    		actionsAllowed.add(new SetMasterAction("Master of All", lhs, rhs));
+    		actionsAllowed.add(new SetNoMatchAction("No Match to Any", lhs, rhs));
+    		actionsAllowed.add(new SetUnmatchAction("Unmatch All", lhs, rhs));
+    		return actionsAllowed;
+    	}
+    	
+    	GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
+    		new NonDirectedUserValidatedMatchPoolGraphModel(pool, new HashSet<PotentialMatchRecord>());
+		BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
+            new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+        Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, lhs));
+        if (reachable.contains(rhs)) {
+        	actionsAllowed.add(new SetUnmatchAction("Unmatch", lhs, rhs));
+        	actionsAllowed.add(new SetNoMatchAction("No Match", lhs, rhs));
+        	return actionsAllowed;
+        }
+        
+        actionsAllowed.add(new SetMasterAction("Master", rhs, lhs));
+        actionsAllowed.add(new SetDuplicateAction("Duplicate", lhs, rhs));
+        if (pool.getPotentialMatchFromOriginals(lhs, rhs).getMatchStatus() == MatchType.NOMATCH) {
+        	actionsAllowed.add(new SetUnmatchAction("Unmatch", lhs, rhs));
+        } else {
+        	actionsAllowed.add(new SetNoMatchAction("No Match", lhs, rhs));
+        }
+        	
+    	return actionsAllowed;
+    }
     
     // ======= EditorPane stuff ========
 
