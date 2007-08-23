@@ -3007,4 +3007,57 @@ public class MatchPoolTest extends TestCase {
 			}
 		}
     }
+    
+    /**
+	 * Check defining master of all on a node will set the new duplicate node's
+	 * old master to be a duplicate of the new master.
+	 */
+	public void testMasterOfAllTakesNewDuplicateDuplicates() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("h2");
+		SourceTableRecord h2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("h3");
+		SourceTableRecord h3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("h1");
+		SourceTableRecord h1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("h4");
+		SourceTableRecord h4 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineMasterOfAll(h3);
+		
+		PotentialMatchRecord pmrH1ToH2 = null;
+		PotentialMatchRecord pmrH2ToH3 = null;
+		PotentialMatchRecord pmrH3ToH4 = null;
+		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == h1 && potentialMatch.getOriginalRhs() == h2) {
+				pmrH1ToH2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == h2 && potentialMatch.getOriginalRhs() == h1) {
+				pmrH1ToH2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == h3 && potentialMatch.getOriginalRhs() == h2) {
+				pmrH2ToH3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == h2 && potentialMatch.getOriginalRhs() == h3) {
+				pmrH2ToH3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == h3 && potentialMatch.getOriginalRhs() == h4) {
+				pmrH3ToH4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == h4 && potentialMatch.getOriginalRhs() == h3) {
+				pmrH3ToH4 = potentialMatch;
+			}
+			
+			if (pmrH1ToH2 != null && pmrH2ToH3 != null && pmrH3ToH4 != null) break;
+		}
+		
+		if (pmrH1ToH2 == null || pmrH2ToH3 == null || pmrH2ToH3 == null) {
+			fail("An edge no longer exists after we defined h2 as the master of h3.");
+		}
+		
+		assertTrue(pmrH1ToH2.getMaster() == h2);
+		assertTrue(pmrH1ToH2.getDuplicate() == h1);
+		assertTrue(pmrH2ToH3.getMaster() == h3);
+		assertTrue(pmrH2ToH3.getDuplicate() == h2);
+		assertTrue(pmrH3ToH4.getMaster() == h3);
+		assertTrue(pmrH3ToH4.getDuplicate() == h4);
+	}
 }
