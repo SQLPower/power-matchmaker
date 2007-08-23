@@ -10,7 +10,6 @@ import java.sql.Statement;
 import javax.sql.RowSet;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -35,7 +34,7 @@ import com.sun.rowset.CachedRowSetImpl;
  * An EditorPane that shows a table of status information about one Match object.
  * If you want to see a status table for a different match, create a new one of these.
  */
-public class MatchValidationStatus implements EditorPane {
+public class MatchValidationStatus extends NoEditEditorPane {
 
 	private static final Logger logger = Logger.getLogger(MatchValidationStatus.class);
 	
@@ -54,15 +53,11 @@ public class MatchValidationStatus implements EditorPane {
 	 */
     private final MatchMakerSwingSession swingSession;
     
-    /**
-     * The top-level panel that displays the validation status.
-     */
-    private JPanel panel;
-
 	public MatchValidationStatus(MatchMakerSwingSession swingSession, Match match) {
+		super(null);
 		this.swingSession = swingSession;
 		this.match = match;
-		this.panel = createUI();
+		super.setPanel(createUI());
 	}
 
 	/**
@@ -194,32 +189,4 @@ public class MatchValidationStatus implements EditorPane {
 
         return pb.getPanel();
 	}
-
-	/*=============== Editor Pane Interface ============*/
-	
-	/**
-	 * Blindly returns true despite the interface's warning. This
-	 * is because we are not actually editing anything so we never
-	 * have to save changes.
-	 */
-	public boolean doSave() {
-		return true;
-	}
-
-	/**
-	 * Returns the top-level panel that holds all the components that this
-	 * EditorPane is responsible for.
-	 */
-	public JComponent getPanel() {
-		return panel;
-	}
-
-	/**
-	 * Returns false because, since we do not allow editing any information
-	 * on this EditorPane, there are never changes that could be unsaved.
-	 */
-	public boolean hasUnsavedChanges() {
-		return false;
-	}
-
 }

@@ -34,6 +34,10 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+/**
+ * An EditorPane for displaying and editing information about a folder such as
+ * its name and description.
+ */
 public class FolderEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MatchEditor.class);
@@ -70,7 +74,7 @@ public class FolderEditor implements EditorPane {
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
-    	//		 1     2    3    4    5    6    7    8    9    10      11    12   13   14  15   16       17    18     19  20    21   22    23   24    25
+    	//		 1     2    3    4    5    6    7    8    9
 
 		PanelBuilder pb;
 
@@ -116,12 +120,12 @@ public class FolderEditor implements EditorPane {
 	private Action saveAction = new AbstractAction("Save") {
 
 		public void actionPerformed(final ActionEvent e) {
-            /**
-             * It is essiental that doSave() does do all the saving work
-             * since doSave needs to return a the successfulness of the  
-             * saving process for the swing session to know if it needs
-             * to bring the panel back or not.                        
-             */
+            /*
+			 * It is essiental that doSave() does do all the saving work since
+			 * doSave needs to return a boolean representing the successfulness
+			 * of the saving process for the swing session to know if it needs
+			 * to bring the panel back or not.
+			 */
             doSave();
         }
 	};
@@ -210,6 +214,4 @@ public class FolderEditor implements EditorPane {
 	public boolean hasUnsavedChanges() {
 		return handler.hasPerformedValidation();
 	}
-
-
 }

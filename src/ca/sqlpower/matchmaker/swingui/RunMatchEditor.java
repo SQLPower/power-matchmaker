@@ -70,9 +70,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * An editor pane to allow the user to configure run and monitor the engine.
+ * An editor pane to allow the user to configure, run and monitor the engine.
  */
-public class RunMatchEditor implements EditorPane{
+public class RunMatchEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(RunMatchEditor.class);
 
@@ -852,12 +852,12 @@ public class RunMatchEditor implements EditorPane{
 	}
 	
 	public boolean hasUnsavedChanges() {
-		//XXX This is stubbed for now
+		//XXX This is stubbed for now, should look over the check boxes
+		//and text fields in the configuration section
 		return false;
 	}
 	
 	public boolean doSave() {
-		
 		return true;
 	}
 }
