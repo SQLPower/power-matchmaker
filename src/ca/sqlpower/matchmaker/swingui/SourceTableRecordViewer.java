@@ -8,7 +8,9 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.List;
 
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -29,17 +31,18 @@ public class SourceTableRecordViewer {
     private final JPanel panel;
     private static final Logger logger = Logger.getLogger(SourceTableRecordViewer.class);
 
-    public SourceTableRecordViewer(SourceTableRecord view, SourceTableRecord master, JButton masterButton, 
-            JButton noMatchButton) throws ArchitectException, SQLException {
-        this.panel = new JPanel(new GridLayout(0, 1));
+    public SourceTableRecordViewer(SourceTableRecord view, SourceTableRecord master, List<Action>buttonActions) 
+    	throws ArchitectException, SQLException {
+    	this.panel = new JPanel(new GridLayout(0, 1));
 
         logger.debug("Creating source table record viewer for " + master);
 
         panel.setBackground(Color.WHITE);
 
         ButtonBarBuilder bb = new ButtonBarBuilder();
-        bb.addGridded(masterButton);
-        bb.addGridded(noMatchButton);
+        for (Action a : buttonActions) {
+        	bb.addGridded(new JButton(a));
+        }
 
         buttonPanel = bb.getPanel();
         panel.addComponentListener(new ComponentListener() {

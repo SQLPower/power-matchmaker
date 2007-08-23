@@ -444,9 +444,10 @@ public class MatchPool {
             new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
         Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, master));
         Set<SourceTableRecord> noMatchNodes = findNoMatchNodes(reachable);
+        
         for (PotentialMatchRecord pmr : master.getOriginalMatchEdges()) {
-        	logger.debug("Looking at record " + pmr);
         	if (pmr.getMatchStatus() == MatchType.UNMATCH) {
+        		logger.debug("Looking at record " + pmr);
         		SourceTableRecord str;
         		if (pmr.getOriginalLhs() == master) {
         			str = pmr.getOriginalRhs();
@@ -515,6 +516,7 @@ public class MatchPool {
     public void defineNoMatch(SourceTableRecord lhs, SourceTableRecord rhs) {
     	if (lhs == rhs) {
     		defineNoMatchOfAny(lhs);
+    		return;
     	}
         PotentialMatchRecord pmr = getPotentialMatchFromOriginals(lhs, rhs);
         if (pmr != null && pmr.getMatchStatus() == MatchType.NOMATCH) {
@@ -535,11 +537,13 @@ public class MatchPool {
 	 */
 	public void defineNoMatchOfAny(SourceTableRecord record1) {
 		for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
-				if (pmr.getOriginalLhs() == record1) {
-	        		defineNoMatch(pmr.getOriginalRhs(), pmr.getOriginalLhs());
-	        	} else {
-	        		defineNoMatch(pmr.getOriginalLhs(), pmr.getOriginalRhs());
-	        	}
+			if (pmr.getOriginalLhs() == pmr.getOriginalRhs()) continue;
+			logger.debug("Setting no match between " + pmr.getOriginalLhs() + " and " + pmr.getOriginalRhs());
+			if (pmr.getOriginalLhs() == record1) {
+				defineNoMatch(pmr.getOriginalRhs(), pmr.getOriginalLhs());
+			} else {
+				defineNoMatch(pmr.getOriginalLhs(), pmr.getOriginalRhs());
+			}
 		}
 	}
 	
@@ -705,6 +709,7 @@ public class MatchPool {
 	public void defineUnmatchAll(SourceTableRecord record1) {
 		logger.debug("unmatching " + record1 + " from everything");
         for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
+        	if (pmr.getOriginalLhs() == pmr.getOriginalRhs()) continue;
         	if (pmr.getOriginalLhs() == record1) {
         		defineUnmatched(pmr.getOriginalRhs(), pmr.getOriginalLhs());
         	} else {
