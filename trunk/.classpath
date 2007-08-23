@@ -29,12 +29,8 @@
 	<classpathentry kind="src" path="regress"/>
 	<classpathentry kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="src" path="testbed"/>
-	<classpathentry kind="lib" path="lib/msbase.jar"/>
-	<classpathentry kind="lib" path="lib/mssqlserver.jar"/>
-	<classpathentry kind="lib" path="lib/msutil.jar"/>
 	<classpathentry kind="lib" path="lib/postgresql-8.1dev-401.jdbc3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-digester.jar"/>
-	<classpathentry kind="lib" path="lib/classes12.zip"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sqlpower_library"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
