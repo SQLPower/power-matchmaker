@@ -47,7 +47,7 @@ public class RecordViewerLayout implements LayoutManager {
     public void layoutContainer(Container parent) {
         if (parent.getComponentCount() < 1) return;
         final int height = Math.max(
-                parent.getComponent(1).getPreferredSize().height,
+                parent.getComponent(0).getPreferredSize().height,
                 parent.getHeight());
         int x = 0;
         for (Component c : parent.getComponents()) {
