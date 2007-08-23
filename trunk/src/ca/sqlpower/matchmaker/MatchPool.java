@@ -436,17 +436,32 @@ public class MatchPool {
 	 * that we have no cycles.
 	 */
 	public void defineMasterOfAll(SourceTableRecord master) {
-		for (PotentialMatchRecord pmr : master.getOriginalMatchEdges()) {
-			if (pmr.getMatchStatus() == MatchType.UNMATCH) {
-				pmr.setMaster(master);
-			}
-		}
-		
 		GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
     		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
 		BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
             new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
         Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, master));
+        Set<SourceTableRecord> noMatchNodes = findNoMatchNodes(reachable);
+        for (PotentialMatchRecord pmr : master.getOriginalMatchEdges()) {
+        	logger.debug("Looking at record " + pmr);
+        	if (pmr.getMatchStatus() == MatchType.UNMATCH) {
+        		SourceTableRecord str;
+        		if (pmr.getOriginalLhs() == master) {
+        			str = pmr.getOriginalRhs();
+        		} else {
+        			str = pmr.getOriginalLhs();
+        		}
+        		if (noMatchNodes.contains(str)) continue;
+        		logger.debug("Adding " + str + " to reachable nodes");
+        		reachable.add(str);
+        		GraphModel<SourceTableRecord, PotentialMatchRecord> newNonDirectedGraph =
+            		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
+                Set<SourceTableRecord> newReachableNodes = new HashSet<SourceTableRecord>(bfs.performSearch(newNonDirectedGraph, str));
+        		noMatchNodes.addAll(findNoMatchNodes(newReachableNodes));
+        	}
+        }
+        
+        
         GraphModel<SourceTableRecord, PotentialMatchRecord> considerGivenNodesGraph =
         	new GraphConsideringOnlyGivenNodes(this, reachable);
         
@@ -454,6 +469,36 @@ public class MatchPool {
     	Map<SourceTableRecord, SourceTableRecord> masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, master);
     	
     	defineMatchEdges(considerGivenNodesGraph, masterMapping);
+	}
+	
+	/**
+	 * This method finds all of the source table records that are connected to
+	 * the given node by a no match edge directly and all source table records
+	 * that are connected to a different node by a no match edge where the
+	 * different node is connected to the given node by matched edges.
+	 */
+	private Set<SourceTableRecord> findNoMatchNodes(Set<SourceTableRecord> strs) {
+		Set<SourceTableRecord> noMatchNodes = new HashSet<SourceTableRecord>();
+        for (SourceTableRecord reachableNode : strs) {
+        	for (PotentialMatchRecord pmr : reachableNode.getOriginalMatchEdges()) {
+        		if (pmr.getMatchStatus() == MatchType.NOMATCH) {
+        			SourceTableRecord str;
+        			if (pmr.getOriginalLhs() == reachableNode) {
+        				str =pmr.getOriginalRhs();
+        			} else {
+        				str = pmr.getOriginalLhs();
+        			}
+        			GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
+        	    		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
+        			BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
+        	            new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+        	        Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, str));
+        	        noMatchNodes.addAll(reachable);
+        		}
+        	}
+        }
+		
+		return noMatchNodes;
 	}
 	
 	/**
