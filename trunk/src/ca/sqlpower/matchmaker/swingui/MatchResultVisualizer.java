@@ -177,12 +177,6 @@ public class MatchResultVisualizer implements EditorPane {
     private final Match match;
     
     /**
-     * The session the match lives in.  Used as a source of database connections,
-     * and other session-y stuff.
-     */
-    private final MatchMakerSwingSession session;
-
-    /**
      * The panel that holds all the GUI components.
      */
     private final JPanel panel;
@@ -218,9 +212,8 @@ public class MatchResultVisualizer implements EditorPane {
 
     private final GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel;
     
-    public MatchResultVisualizer(Match match, MatchMakerSwingSession session) throws SQLException, ArchitectException {
+    public MatchResultVisualizer(Match match) throws SQLException, ArchitectException {
         this.match = match;
-        this.session = session;
 
         JPanel buttonPanel = new JPanel(new FlowLayout());
         buttonPanel.add(new JButton(exportDotFileAction));
