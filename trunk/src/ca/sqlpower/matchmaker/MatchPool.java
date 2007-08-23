@@ -334,23 +334,23 @@ public class MatchPool {
 	 * <li>Set the edge between the duplicate and master to be undecided or
 	 * unmatched if the match exists. This is for the case that the duplicate
 	 * was originally the master and we don't want to follow this path when
-	 * looking for the ultimate master.
+	 * looking for the ultimate master.</li>
 	 * <li>Find a graph of all the nodes reachable from the master and
 	 * duplicate along decided edges. The graph will include only these nodes
 	 * and only the edges connecting these nodes, whether they are decided or
-	 * not.
+	 * not.</li>
 	 * <li>Find the ultimate master, the master of the chain of nodes that has
 	 * no master itself, from the master node. Note: If there is a cycle in the
 	 * graph then the node decided to be the ultimate master may be surprising
 	 * for the user as it may not be the most obvious one but we guarantee that
-	 * there will be no cycles in the end result.
+	 * there will be no cycles in the end result.</li>
 	 * <li>Using Dijkstra's algorithm, using all edges in the graph, find the
 	 * shortest path to all nodes in the graph. If the duplicate cannot be
 	 * reached at this point then a synthetic edge is needed between the
-	 * duplicate and the master and Dijkstra's algorithm needs to be run again.
+	 * duplicate and the master and Dijkstra's algorithm needs to be run again.</li>
 	 * <li>Turn all of the edges walked using Dijkstra's algorithm into decided
 	 * edges pointing in the direction of the ultimate master. All other edges
-	 * will be undecided (or UNMATCH).
+	 * will be undecided (or UNMATCH).</li>
 	 * </ol>
 	 */
     public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate) {
@@ -380,10 +380,12 @@ public class MatchPool {
         logger.debug("Graph contains " + considerGivenNodesGraph.getNodes() + " nodes.");
 
         logger.debug("Find the ultimate master");
-        List<SourceTableRecord> nodesToSkip = new ArrayList<SourceTableRecord>();
-        nodesToSkip.add(duplicate); //Don't want to set the duplicate as the ultimate master if we can get here somehow.
         SourceTableRecord ultimateMaster = findUltimateMaster(considerGivenNodesGraph,
-				master, nodesToSkip);
+				master, new ArrayList<SourceTableRecord>());
+        
+        if (ultimateMaster == duplicate) {
+        	ultimateMaster = master;
+        }
         
         logger.debug("Find the shortest path to all nodes in the graph");
     	DijkstrasAlgorithm da = new DijkstrasAlgorithm<SourceTableRecord, PotentialMatchRecord>();
@@ -533,13 +535,11 @@ public class MatchPool {
 	 */
 	public void defineNoMatchOfAny(SourceTableRecord record1) {
 		for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
-			if (pmr.getMatchStatus() == MatchType.UNMATCH) {
 				if (pmr.getOriginalLhs() == record1) {
 	        		defineNoMatch(pmr.getOriginalRhs(), pmr.getOriginalLhs());
 	        	} else {
 	        		defineNoMatch(pmr.getOriginalLhs(), pmr.getOriginalRhs());
 	        	}
-			}
 		}
 	}
 	
@@ -554,19 +554,19 @@ public class MatchPool {
 	 * <p>
 	 * The algorithm below is as follows:
 	 * <ol>
-	 * <li>Use bfs to check if the nodes are connected by decided edges.
+	 * <li>Use bfs to check if the nodes are connected by decided edges.</li>
 	 * <li>If the nodes are connected make a graph of all of the connected
-	 * edges.
+	 * edges.</li>
 	 * <li>Find the ultimate master of all of the nodes. If the rhs record is
 	 * the ultimate master then set the ultimate master to be the previous
-	 * record as we will be removing the ultimate master from this chain.
-	 * <li>Remove the rhs record from the graph.
+	 * record as we will be removing the ultimate master from this chain.</li>
+	 * <li>Remove the rhs record from the graph.</li>
 	 * <li>Use Dijkstra to find the shortest path to all of the nodes in the
 	 * graph. If there is a node that was not reached in the graph after running
 	 * Dijkstra add a synthetic edge between the node and the ultimate master
-	 * and run this step again.
+	 * and run this step again.</li>
 	 * <li>Set all edges walked by Dijkstra to be decided edges and all other
-	 * edges to be undecided.
+	 * edges to be undecided.</li>
 	 * </ol>
 	 */
 	public void defineUnmatched(SourceTableRecord lhs, SourceTableRecord rhs) {

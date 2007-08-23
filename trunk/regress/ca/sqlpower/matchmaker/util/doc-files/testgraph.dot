@@ -86,6 +86,21 @@ s1 -> s3 [style=dashed arrowhead=none];
 s1 -> s4 [style=dashed arrowhead=none];
 s3 -> s4;
 
+t1 -> t2;
+t1 -> t3 [style=dashed arrowhead=none];
+t2 -> t3 [style=dotted arrowhead=none];
+t3 -> t4 [style=dashed arrowhead=none];
+
+u1 -> u2 [style=dashed arrowhead=none];
+u2 -> u3 [style=dashed arrowhead=none];
+u1 -> u3 [style=dotted arrowhead=none];
+
+v1 -> v2 [style=dotted arrowhead=none];
+v2 -> v3 [style=dashed arrowhead=none];
+v1 -> v3 [style=dashed arrowhead=none];
+v1 -> v4 [style=dashed arrowhead=none];
+v3 -> v4;
+
 cycle1 -> cycle2;
 cycle2 -> cycle3;
 cycle3 -> cycle1;
