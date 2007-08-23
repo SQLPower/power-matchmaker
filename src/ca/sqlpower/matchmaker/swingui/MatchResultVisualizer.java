@@ -20,8 +20,11 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -31,6 +34,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
@@ -216,7 +220,33 @@ public class MatchResultVisualizer implements EditorPane {
             recordViewerPanel.revalidate();
             recordViewerHeader.revalidate();
         }     
-    }    
+    }
+    
+    /**
+     * An action to get at the *shudder* Auto-Match feature.
+     */
+    private class AutoMatchAction extends AbstractAction {
+    	/**
+    	 * A message that expresses our concerns about the auto-layout feature
+    	 * to the user.
+    	 */
+    	private final String warningMessage = "WARNING: Performing an the auto-match "
+				+ "operation will create matches between all records that were matched "
+				+ "according to the selected criteria. It is imperative that you "
+				+ "review these matches carefully before merging records because this operation "
+				+ "does NOT rank records based on their perceived usefullness.";
+    	
+    	public AutoMatchAction(GraphModel<SourceTableRecord, PotentialMatchRecord> model) {
+    		super("Auto-Match");
+    	}
+    	
+		public void actionPerformed(ActionEvent e) {
+			int response = JOptionPane.showConfirmDialog(panel, warningMessage, "WARNING", JOptionPane.OK_CANCEL_OPTION);
+			if (response == JOptionPane.OK_OPTION) {
+				pool.doAutoMatch((String) criteriaComboBox.getSelectedItem());
+			}
+		}
+    }
     
     /**
      * This is the match whose result table we're visualizing.
@@ -259,6 +289,8 @@ public class MatchResultVisualizer implements EditorPane {
 
     private final GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel;
     
+    private JComboBox criteriaComboBox;
+    
     public MatchResultVisualizer(Match match) throws SQLException, ArchitectException {
         this.match = match;
 
@@ -276,9 +308,19 @@ public class MatchResultVisualizer implements EditorPane {
         
         doAutoLayout();
 
+        JPanel autoMatchPanel = new JPanel(new FlowLayout());
+        criteriaComboBox = new JComboBox();
+        for (MatchMakerCriteriaGroup criteria : match.getMatchCriteriaGroups()) {
+        	criteriaComboBox.addItem(criteria.getName());
+        }
+        autoMatchPanel.add(new JButton(new AutoMatchAction(graph.getModel())));
+        autoMatchPanel.add(new JLabel(":"));
+        autoMatchPanel.add(criteriaComboBox);
+        
         JPanel graphPanel = new JPanel(new BorderLayout());
+        graphPanel.add(buttonPanel, BorderLayout.NORTH);
         graphPanel.add(new JScrollPane(graph), BorderLayout.CENTER);
-        graphPanel.add(buttonPanel, BorderLayout.SOUTH);
+        graphPanel.add(autoMatchPanel, BorderLayout.SOUTH);
                 
         final JScrollPane recordViewerScrollPane =
             new JScrollPane(recordViewerPanel,
