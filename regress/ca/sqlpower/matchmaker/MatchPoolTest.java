@@ -678,8 +678,7 @@ public class MatchPoolTest extends TestCase {
 	}
 	
 	/**
-     * Sets the master of a node to a node that is not connected by master/duplicate edges. This will result in a 
-     * new "synthetic" edge being created.
+     * Sets the master of a node to a node that is not connected by master/duplicate edges.
      * <p>
      * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
      * for details on the graph.
@@ -3078,5 +3077,94 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrH2ToH3.getDuplicate() == h2);
 		assertTrue(pmrH3ToH4.getMaster() == h3);
 		assertTrue(pmrH3ToH4.getDuplicate() == h4);
+	}
+	
+	/**
+	 * This test confirms the reset pool method sets all edges to be unmatched.
+	 */
+    public void testResetPool() {
+    	List<Object> keyList = new ArrayList<Object>();
+		keyList.add("p2");
+		SourceTableRecord p2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("p3");
+		SourceTableRecord p3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("p1");
+		SourceTableRecord p1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("p4");
+		SourceTableRecord p4 = pool.getSourceTableRecord(keyList);
+		
+		pool.resetPool();
+		
+		PotentialMatchRecord pmrP1ToP2 = pool.getPotentialMatchFromOriginals(p1, p2);
+		PotentialMatchRecord pmrP1ToP3 = pool.getPotentialMatchFromOriginals(p1, p3);
+		PotentialMatchRecord pmrP1ToP4 = pool.getPotentialMatchFromOriginals(p1, p4);
+		PotentialMatchRecord pmrP2ToP3 = pool.getPotentialMatchFromOriginals(p3, p2);
+		PotentialMatchRecord pmrP2ToP4 = pool.getPotentialMatchFromOriginals(p4, p2);
+		PotentialMatchRecord pmrP4ToP3 = pool.getPotentialMatchFromOriginals(p4, p3);
+		
+		if (pmrP1ToP3 == null || pmrP2ToP3 == null || pmrP2ToP4 == null || pmrP1ToP2 == null || pmrP1ToP4 == null || pmrP4ToP3 == null) {
+			fail("An edge no longer exists after we reset the pool.");
+		}
+		
+		assertTrue(pmrP1ToP2.getMaster() == null);
+		assertTrue(pmrP1ToP2.getDuplicate() == null);
+		assertTrue(pmrP1ToP2.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrP1ToP3.getMaster() == null);
+		assertTrue(pmrP1ToP3.getDuplicate() == null);
+		assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrP1ToP4.getMaster() == null);
+		assertTrue(pmrP1ToP4.getDuplicate() == null);
+		assertTrue(pmrP1ToP4.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrP2ToP3.getMaster() == null);
+		assertTrue(pmrP2ToP3.getDuplicate() == null);
+		assertTrue(pmrP2ToP3.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrP4ToP3.getMaster() == null);
+		assertTrue(pmrP4ToP3.getDuplicate() == null);
+		assertTrue(pmrP4ToP3.getMatchStatus() == MatchType.UNMATCH);
+    }
+    
+    /**
+	 * Sets the master of a node to a node that is not connected by
+	 * master/duplicate edges. This will result in a new "synthetic" edge being
+	 * created. We then reset the pool to confirm that the synthetic edge has
+	 * been removed.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+    public void testResetPoolRemovesSynthetics() {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("a2");
+		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("a1");
+		SourceTableRecord a1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("a3");
+		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
+		
+		pool.defineMaster(a3, a1);
+		
+		PotentialMatchRecord pmrA1ToA2 = pool.getPotentialMatchFromOriginals(a1, a2);
+		PotentialMatchRecord pmrA2ToA3 = pool.getPotentialMatchFromOriginals(a3, a2);
+		PotentialMatchRecord pmrA1ToA3 = pool.getPotentialMatchFromOriginals(a1, a3);
+		
+		if (pmrA1ToA2 == null || pmrA2ToA3 == null || pmrA1ToA3 == null) {
+			fail("An edge no longer exists after we defined a3 as the master of a1.");
+		}
+		
+		assertTrue(pmrA1ToA3.getMaster() == a3);
+		assertTrue(pmrA1ToA3.getDuplicate() == a1);
+		assertTrue(pmrA1ToA3.isSynthetic());
+		
+		pool.resetPool();
+		
+		assertTrue(pmrA1ToA2.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrA2ToA3.getMatchStatus() == MatchType.UNMATCH);
+		assertFalse(pool.getPotentialMatches().contains(pmrA1ToA3));
 	}
 }
