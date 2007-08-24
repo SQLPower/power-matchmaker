@@ -741,6 +741,32 @@ public class MatchPool {
 	}
 	
 	/**
+	 * This resets all of the edges in the entire pool to be unmatched. Edges
+	 * that are synthetic as they were created by the MatchMaker will be
+	 * removed.
+	 */
+	public void resetPool() {
+		for (PotentialMatchRecord pmr : potentialMatches) {
+			if (pmr.isSynthetic()) {
+				removePotentialMatch(pmr);
+				continue;
+			}
+			pmr.setMatchStatus(MatchType.UNMATCH);
+		}
+	}
+	
+	/**
+	 * Removes a potential match record from this pool and the source table
+	 * records that the potential match connects.
+	 */
+	private void removePotentialMatch(PotentialMatchRecord pmr) {
+		if (potentialMatches.remove(pmr)) {
+			pmr.getOriginalLhs().addPotentialMatch(pmr);
+			pmr.getOriginalRhs().addPotentialMatch(pmr);
+		}
+	}
+
+	/**
 	 * Performs the 'Auto-Match' function which is either for lazy people who
 	 * think their criteria group is perfect or for people who like to gamble.
 	 * Either way, we warn them heavily in the UI that this will make mistakes.

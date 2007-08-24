@@ -98,6 +98,16 @@ public class MatchResultVisualizer implements EditorPane {
         }
     };
     
+    /**
+	 * This action calls the reset method on the pool. For more information
+	 * see {@link MatchPool#resetPool()}.
+	 */
+    private final Action resetPoolAction = new AbstractAction("Reset All") {
+    	public void actionPerformed(ActionEvent e) {
+    		pool.resetPool();
+    		graph.repaint();
+    	}
+    };
     
     private Action viewerAutoLayoutAction = new AbstractAction("Auto layout") {
         
@@ -316,6 +326,7 @@ public class MatchResultVisualizer implements EditorPane {
         JPanel buttonPanel = new JPanel(new FlowLayout());
         buttonPanel.add(new JButton(exportDotFileAction));
         buttonPanel.add(new JButton(viewerAutoLayoutAction));
+        buttonPanel.add(new JButton(resetPoolAction));
 
         pool = new MatchPool(match);
         pool.findAll();
