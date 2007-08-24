@@ -1,0 +1,17 @@
+The Power*MatchMaker program source code, documentation, and binary
+packages are Copyright 2007 SQL Power Group Inc. All rights reserved.
+
+The Power*MatchMaker relies on a number of third-party libraries, most
+of which are bundled with both the source and binary distributions.
+We redistribute those libraries under their own licensing terms,
+which are outlined in the user guide.  See the user guide (or its
+source file, doc/PowerMatchMakerUserGuide.xml) for details on the
+third-party libraries and their respective licences.
+
+The Power*MatchMaker code, documentation, and binary packages are made
+available under GNU General Public License, version 3. A copy of this
+license should have come with this software in the LICENSE file.
+
+The source distribution comes with a number of bundled third-party tools
+for testing, code analysis, packaging, and so on.  Acknowledgements and
+license terms for those tools are together with the copies we redistribute.
