@@ -551,7 +551,7 @@ public class MatchPoolTest extends TestCase {
 			if (pmrG1ToG2 != null && pmrG2ToG3 != null && pmrG3ToG4 != null) break;
 		}
 		
-		if (pmrG1ToG2 == null || pmrG2ToG3 == null || pmrG2ToG3 == null) {
+		if (pmrG1ToG2 == null || pmrG2ToG3 == null || pmrG3ToG4 == null) {
 			fail("An edge no longer exists after we defined g2 as the master of g3.");
 		}
 		
@@ -607,7 +607,7 @@ public class MatchPoolTest extends TestCase {
 			if (pmrH1ToH2 != null && pmrH2ToH3 != null && pmrH3ToH4 != null) break;
 		}
 		
-		if (pmrH1ToH2 == null || pmrH2ToH3 == null || pmrH2ToH3 == null) {
+		if (pmrH1ToH2 == null || pmrH2ToH3 == null || pmrH3ToH4 == null) {
 			fail("An edge no longer exists after we defined h2 as the master of h3.");
 		}
 		
@@ -665,7 +665,7 @@ public class MatchPoolTest extends TestCase {
 			if (pmrH1ToH2 != null && pmrH2ToH3 != null && pmrH3ToH4 != null) break;
 		}
 		
-		if (pmrH1ToH2 == null || pmrH2ToH3 == null || pmrH2ToH3 == null) {
+		if (pmrH1ToH2 == null || pmrH2ToH3 == null || pmrH3ToH4 == null) {
 			fail("An edge no longer exists after we defined h3 as the master of h2.");
 		}
 		
@@ -1220,7 +1220,7 @@ public class MatchPoolTest extends TestCase {
 			if (pmrI1ToI2 != null && pmrI2ToI3 != null && pmrI3ToI1 != null) break;
 		}
 		
-		if (pmrI1ToI2 == null || pmrI2ToI3 == null || pmrI2ToI3 == null) {
+		if (pmrI1ToI2 == null || pmrI2ToI3 == null || pmrI3ToI1 == null) {
 			fail("An edge no longer exists after we defined i1 as the master of i3.");
 		}
 		
@@ -1375,7 +1375,7 @@ public class MatchPoolTest extends TestCase {
 			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null && pmrCycle3ToCycle1 != null) break;
 		}
 		
-		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle2ToCycle3 == null) {
+		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle3ToCycle1 == null) {
 			fail("An edge no longer exists after we defined cycle2 to not match any other connected nodes.");
 		}
 
@@ -1523,7 +1523,7 @@ public class MatchPoolTest extends TestCase {
 			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null && pmrCycle3ToCycle1 != null) break;
 		}
 		
-		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle2ToCycle3 == null) {
+		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle3ToCycle1 == null) {
 			fail("An edge no longer exists after we unmatched cycle2 from cycle1 and cycle3.");
 		}
 
@@ -2315,7 +2315,7 @@ public class MatchPoolTest extends TestCase {
 			fail("An edge no longer exists after we unmatch n2 and n3.");
 		}
 		
-		if (pmrN1ToN4 != null && pmrN1ToN4 != null) {
+		if (pmrN1ToN4 != null && pmrN2ToN4 != null) {
 			fail("We created two additional edges when only one was required");
 		}
 		
