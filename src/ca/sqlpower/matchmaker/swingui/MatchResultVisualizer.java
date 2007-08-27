@@ -104,9 +104,14 @@ public class MatchResultVisualizer implements EditorPane {
 	 */
     private final Action resetPoolAction = new AbstractAction("Reset All") {
     	public void actionPerformed(ActionEvent e) {
-    		try {
+			if (JOptionPane.showConfirmDialog(panel,
+							"You are about to reset the entire match pool! Do you really wish to do this?",
+							"Reset Entire Match Pool",
+							JOptionPane.YES_NO_OPTION,
+							JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) return;
+			try {
 				pool.resetPool();
-    		} catch (SQLException ex) {
+    		} catch (Exception ex) {
     			MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to reset the match pool.", ex);
     		}
     		graph.repaint();
