@@ -3647,6 +3647,6 @@ public class MatchPoolTest extends TestCase {
 				+ DDLUtils.toQualifiedName(resultTable)
 				+ " WHERE DUP_CANDIDATE_10='a1' AND DUP_CANDIDATE_20='a2'");
 		rs.next();
-		assertEquals("NOMATCH", rs.getString(1));
+		assertEquals("NO_MATCH", rs.getString(1));
 	}
 }

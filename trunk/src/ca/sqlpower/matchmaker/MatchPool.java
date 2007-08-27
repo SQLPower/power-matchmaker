@@ -232,7 +232,7 @@ public class MatchPool {
             sql.append("UPDATE ");
             sql.append(DDLUtils.toQualifiedName(resultTable)); 
             sql.append("\n SET ");
-            sql.append("MATCH_STATUS=" + SQL.quote(pmr.getMatchStatus().toString()));
+            sql.append("MATCH_STATUS=" + SQL.quote(pmr.getMatchStatus().getCode()));
             sql.append(", MATCH_STATUS_DATE=" + SQL.escapeDateTime(con, new Date(System.currentTimeMillis())));
             sql.append(", MATCH_STATUS_USER=" + SQL.quote(session.getAppUser()));
             String masterInd;
@@ -875,7 +875,7 @@ public class MatchPool {
 	 * that are synthetic as they were created by the MatchMaker will be
 	 * removed.
 	 */
-	public void resetPool() throws SQLException {
+	public void resetPool() throws SQLException, ArchitectException {
 		for (int i = potentialMatches.size() - 1; i >= 0; i--) {
 			PotentialMatchRecord pmr = (PotentialMatchRecord) potentialMatches.toArray()[i];
 			if (pmr.isSynthetic()) {
@@ -883,7 +883,10 @@ public class MatchPool {
 				dropPotentialMatch(pmr);
 				continue;
 			}
-			pmr.setMatchStatus(MatchType.UNMATCH);
+			if (pmr.getMatchStatus() != MatchType.UNMATCH) {
+				pmr.setMatchStatus(MatchType.UNMATCH);
+				store(pmr);
+			}
 		}
 	}
 	
