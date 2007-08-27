@@ -104,7 +104,11 @@ public class MatchResultVisualizer implements EditorPane {
 	 */
     private final Action resetPoolAction = new AbstractAction("Reset All") {
     	public void actionPerformed(ActionEvent e) {
-    		pool.resetPool();
+    		try {
+				pool.resetPool();
+    		} catch (SQLException ex) {
+    			MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to reset the match pool.", ex);
+    		}
     		graph.repaint();
     	}
     };
@@ -131,7 +135,12 @@ public class MatchResultVisualizer implements EditorPane {
         }
         
         public void actionPerformed(ActionEvent e){
-            pool.defineNoMatch(record1, record2);
+            try {
+				pool.defineNoMatch(record1, record2);
+            } catch (Exception ex) {
+            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            			"define " + record1 + " and " + record2 + " to not be duplicates.", ex);
+            }
             selectionListener.nodeSelected(record1);
             graph.repaint();
         }
@@ -152,7 +161,12 @@ public class MatchResultVisualizer implements EditorPane {
         }
         
         public void actionPerformed(ActionEvent e){
-            pool.defineUnmatched(record1, record2);
+            try {
+				pool.defineUnmatched(record1, record2);
+			} catch (Exception ex) {
+				MMSUtils.showExceptionDialog(panel, "An exception occurred when trying to " +
+						"unmatch " + record1 + " and " + record2, ex);
+			}
             selectionListener.nodeSelected(record1);
             graph.repaint();
         }
@@ -174,7 +188,12 @@ public class MatchResultVisualizer implements EditorPane {
         }
         
         public void actionPerformed(ActionEvent e) {
-            pool.defineMaster(master, duplicate);
+            try {
+				pool.defineMaster(master, duplicate);
+			} catch (Exception ex) {
+				MMSUtils.showExceptionDialog(panel, "An exception occurred when trying " +
+						"to set " + master + " to be the master of " + duplicate, ex);
+			}
             selectionListener.nodeSelected(duplicate);
             graph.repaint();
         }
@@ -196,7 +215,12 @@ public class MatchResultVisualizer implements EditorPane {
         }
         
         public void actionPerformed(ActionEvent e) {
-            pool.defineMaster(master, duplicate);
+            try {
+				pool.defineMaster(master, duplicate);
+            } catch (Exception ex) {
+				MMSUtils.showExceptionDialog(panel, "An exception occurred when trying " +
+						"to set " + duplicate + " to be a duplicate of " + master, ex);
+			}
             selectionListener.nodeSelected(master);
             graph.repaint();
         }

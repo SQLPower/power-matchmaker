@@ -26,6 +26,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +45,7 @@ import ca.sqlpower.matchmaker.graph.DijkstrasAlgorithm;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.GraphModel;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
+import ca.sqlpower.sql.SQL;
 
 /**
  * The MatchPool class represents the set of matching records for
@@ -182,9 +184,78 @@ public class MatchPool {
                 }
                 SourceTableRecord lhs = makeSourceTableRecord(lhsKeyValues);
                 SourceTableRecord rhs = makeSourceTableRecord(rhsKeyValues);
-                addPotentialMatch(
-                    new PotentialMatchRecord(criteriaGroup, matchStatus, lhs, rhs, false));
+                PotentialMatchRecord pmr =
+                	new PotentialMatchRecord(criteriaGroup, matchStatus, lhs, rhs, false);
+                if (matchStatus == MatchType.MATCH || matchStatus == MatchType.AUTOMATCH) {
+                	if (SQL.decodeInd(rs.getString("DUP1_MASTER_IND"))) {
+                		pmr.setMaster(lhs);
+                	} else {
+                		pmr.setMaster(rhs);
+                	}
+                }
+                addPotentialMatch(pmr);
             }
+            
+        } catch (SQLException ex) {
+            logger.error("Error in query: "+lastSQL, ex);
+            session.handleWarning(
+                    "Error in SQL Query!" +
+                    "\nMessage: "+ex.getMessage() +
+                    "\nSQL State: "+ex.getSQLState() +
+                    "\nQuery: "+lastSQL);
+            throw ex;
+        } finally {
+            if (rs != null) try { rs.close(); } catch (SQLException ex) { logger.error("Couldn't close result set", ex); }
+            if (stmt != null) try { stmt.close(); } catch (SQLException ex) { logger.error("Couldn't close statement", ex); }
+            if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
+        }
+
+    }
+    
+    /**
+	 * This algorithm stores the given potential match record in the database if
+	 * it does not exist. Otherwise it updates the row that shares the same
+	 * match record keys for the potential match's left and right hand side
+	 * source table records.
+	 */
+    public void store(PotentialMatchRecord pmr) throws SQLException, ArchitectException {
+        
+        SQLTable resultTable = match.getResultTable();
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        String lastSQL = null;
+        try {
+            con = session.getConnection();
+            stmt = con.createStatement();
+            StringBuilder sql = new StringBuilder();
+            sql.append("UPDATE ");
+            sql.append(DDLUtils.toQualifiedName(resultTable)); 
+            sql.append("\n SET ");
+            sql.append("MATCH_STATUS=" + SQL.quote(pmr.getMatchStatus().toString()));
+            sql.append(", MATCH_STATUS_DATE=" + SQL.escapeDateTime(con, new Date(System.currentTimeMillis())));
+            sql.append(", MATCH_STATUS_USER=" + SQL.quote(session.getAppUser()));
+            String masterInd;
+            if (pmr.isLhsMaster()) {
+            	masterInd = "Y";
+            } else if (pmr.isRhsMaster()) {
+            	masterInd = "N";
+            } else {
+            	masterInd = null;
+            }
+            sql.append(", DUP1_MASTER_IND=" + (masterInd !=null?("'" + masterInd + "'"):"null") + " ");
+            sql.append("\n WHERE ");
+            List<Object> lhsKeyValues = pmr.getOriginalLhs().getKeyValues();
+            List<Object> rhsKeyValues = pmr.getOriginalRhs().getKeyValues();
+            for (int i = 0;; i++) {
+            	sql.append("DUP_CANDIDATE_1" + i + "=" + SQL.quote(lhsKeyValues.get(i).toString()));
+            	sql.append("AND DUP_CANDIDATE_2" + i + "=" + SQL.quote(rhsKeyValues.get(i).toString()));
+            	if (i + 1 >= lhsKeyValues.size()) break;
+            	sql.append("AND ");
+            }
+            lastSQL = sql.toString();
+            logger.debug("The SQL statement we are running is " + lastSQL);
+            rs = stmt.executeQuery(lastSQL);
             
         } catch (SQLException ex) {
             logger.error("Error in query: "+lastSQL, ex);
@@ -375,7 +446,7 @@ public class MatchPool {
 	 * will be undecided (or UNMATCH).</li>
 	 * </ol>
 	 */
-    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate) {
+    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate) throws SQLException, ArchitectException {
     	if (duplicate == master) {
     		defineMasterOfAll(master);
     		return;
@@ -427,7 +498,8 @@ public class MatchPool {
 	 * for synthetic edges if the criteria group does not already exist. Then a
 	 * new potential match record that is synthetic (created by the Match Maker)
 	 * is added to the pool under the synthetic criteria group. The match type
-	 * of the new potential match record is set to UNMATCH by default.
+	 * of the new potential match record is set to UNMATCH by default. A new row
+	 * is also added to the database to track this new potential match record.
 	 * 
 	 * @param record1
 	 *            One of the source table records attached to the new potential
@@ -438,7 +510,7 @@ public class MatchPool {
 	 * @return The new potential match record that was added to the pool.
 	 */
 	private PotentialMatchRecord addSyntheticPotentialMatchRecord(SourceTableRecord record1,
-			SourceTableRecord record2) {
+			SourceTableRecord record2) throws SQLException {
 		MatchMakerCriteriaGroup syntheticCriteria = match.getMatchCriteriaGroupByName(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES);
 		if (syntheticCriteria == null) {
 			syntheticCriteria = new MatchMakerCriteriaGroup();
@@ -446,6 +518,57 @@ public class MatchPool {
 			match.addMatchCriteriaGroup(syntheticCriteria);
 		}
 		
+		SQLTable resultTable = match.getResultTable();
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        String lastSQL = null;
+        try {
+            con = session.getConnection();
+            stmt = con.createStatement();
+            StringBuilder sql = new StringBuilder();
+            sql.append("INSERT INTO ").append(DDLUtils.toQualifiedName(resultTable)).append(" ");
+            sql.append("\n VALUES (");
+            String record1KeyValues = "";
+            String record2KeyValues = "";
+            for (Object o : record1.getKeyValues()) {
+            	record1KeyValues += "'" + o + "', ";
+            }
+            for (Object o : record2.getKeyValues()) {
+            	record2KeyValues += "'" + o + "', ";
+            }
+            sql.append(record1KeyValues).append(record2KeyValues);
+            sql.append(record1KeyValues).append(record2KeyValues);
+            
+            //This stores null for the DUP_ID, MASTER_ID, and CANDIDATE_MAPPED columns
+            //This will go away when the table is corrected after making new engines
+            for (int i = 0; i < record1.getKeyValues().size() * 4; i++) {
+            	sql.append("null, ");
+            }
+            sql.append("0, ");
+            sql.append(SQL.quote(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES)).append(", ");
+            sql.append(SQL.escapeDateTime(con, new Date(System.currentTimeMillis()))).append(", ");
+            sql.append("null, ");
+            sql.append(SQL.escapeDateTime(con, new Date(System.currentTimeMillis()))).append(", ");
+            sql.append(session.getAppUser()).append(", ");
+            sql.append("null)");
+            lastSQL = sql.toString();
+            logger.debug("The SQL statement we are running is " + lastSQL);
+            rs = stmt.executeQuery(lastSQL);
+        } catch (SQLException ex) {
+            logger.error("Error in query: "+lastSQL, ex);
+            session.handleWarning(
+                    "Error in SQL Query!" +
+                    "\nMessage: "+ex.getMessage() +
+                    "\nSQL State: "+ex.getSQLState() +
+                    "\nQuery: "+lastSQL);
+            throw ex;
+        } finally {
+            if (rs != null) try { rs.close(); } catch (SQLException ex) { logger.error("Couldn't close result set", ex); }
+            if (stmt != null) try { stmt.close(); } catch (SQLException ex) { logger.error("Couldn't close statement", ex); }
+            if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
+        }
+        
 		PotentialMatchRecord pmr = new PotentialMatchRecord(syntheticCriteria, MatchType.UNMATCH, record1, record2, true);
 		addPotentialMatch(pmr);
 		
@@ -459,7 +582,7 @@ public class MatchPool {
 	 * algorithm to find the shortest path to the nodes and to make sure
 	 * that we have no cycles.
 	 */
-	public void defineMasterOfAll(SourceTableRecord master) {
+	public void defineMasterOfAll(SourceTableRecord master) throws SQLException, ArchitectException {
 		GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
     		new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
 		BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
@@ -535,7 +658,7 @@ public class MatchPool {
 	 * somehow the lhs and rhs will be separated as in the
 	 * {@link #defineUnmatched(SourceTableRecord, SourceTableRecord)} method.
 	 */
-    public void defineNoMatch(SourceTableRecord lhs, SourceTableRecord rhs) {
+    public void defineNoMatch(SourceTableRecord lhs, SourceTableRecord rhs) throws SQLException, ArchitectException {
     	if (lhs == rhs) {
     		defineNoMatchOfAny(lhs);
     		return;
@@ -548,6 +671,7 @@ public class MatchPool {
         defineUnmatched(lhs, rhs);
         if (pmr != null) {
         	pmr.setMatchStatus(MatchType.NOMATCH);
+        	store(pmr);
         } else {
         	addSyntheticPotentialMatchRecord(lhs, rhs).setMatchStatus(MatchType.NOMATCH);
         }
@@ -557,7 +681,7 @@ public class MatchPool {
 	 * This method sets all of the potential match records connecting the given
 	 * source table record to any other source table record to be no match.
 	 */
-	public void defineNoMatchOfAny(SourceTableRecord record1) {
+	public void defineNoMatchOfAny(SourceTableRecord record1) throws SQLException, ArchitectException {
 		for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
 			if (pmr.getOriginalLhs() == pmr.getOriginalRhs()) continue;
 			logger.debug("Setting no match between " + pmr.getOriginalLhs() + " and " + pmr.getOriginalRhs());
@@ -595,7 +719,7 @@ public class MatchPool {
 	 * edges to be undecided.</li>
 	 * </ol>
 	 */
-	public void defineUnmatched(SourceTableRecord lhs, SourceTableRecord rhs) {
+	public void defineUnmatched(SourceTableRecord lhs, SourceTableRecord rhs) throws SQLException, ArchitectException {
 		logger.debug("Unmatching " + rhs + " from " + lhs);
 		if (lhs == rhs) {
     		defineUnmatchAll(lhs);
@@ -605,6 +729,7 @@ public class MatchPool {
 		if (possibleNoMatchEdge != null) {
 			if (possibleNoMatchEdge.getMatchStatus() == MatchType.NOMATCH) {
 				possibleNoMatchEdge.setMatchStatus(MatchType.UNMATCH);
+				store(possibleNoMatchEdge);
 			}
 		}
 		
@@ -636,6 +761,7 @@ public class MatchPool {
         for (PotentialMatchRecord pmr : rhs.getOriginalMatchEdges()) {
         	if (pmr.getMatchStatus() == MatchType.MATCH) {
         		pmr.setMaster(null);
+        		store(pmr);
         	}
         }
         logger.debug("Graph now contains " + considerGivenNodesGraph.getNodes().size() + " nodes.");
@@ -668,7 +794,7 @@ public class MatchPool {
 	 */
 	private void defineMatchEdges(
 			GraphModel<SourceTableRecord, PotentialMatchRecord> graph,
-			Map<SourceTableRecord, SourceTableRecord> masterMapping) {
+			Map<SourceTableRecord, SourceTableRecord> masterMapping) throws SQLException, ArchitectException {
 		logger.debug("Removing all decided edges from the given graph");
     	for (PotentialMatchRecord pmr : graph.getEdges()) {
    			pmr.setMaster(null);
@@ -680,6 +806,10 @@ public class MatchPool {
     		logger.debug("Setting " + nodeMasterPair.getValue() + " to be the master of " + nodeMasterPair.getKey());
     		PotentialMatchRecord matchRecord = getPotentialMatchFromOriginals(nodeMasterPair.getValue(), nodeMasterPair.getKey());
    			matchRecord.setMaster(nodeMasterPair.getValue());
+    	}
+    	
+    	for (PotentialMatchRecord pmr : graph.getEdges()) {
+    		store(pmr);
     	}
 	}
 
@@ -728,7 +858,7 @@ public class MatchPool {
 	 * Sets all potential match records connected to the given source table record
 	 * to be undefined matches.
 	 */
-	public void defineUnmatchAll(SourceTableRecord record1) {
+	public void defineUnmatchAll(SourceTableRecord record1) throws SQLException, ArchitectException {
 		logger.debug("unmatching " + record1 + " from everything");
         for (PotentialMatchRecord pmr : record1.getOriginalMatchEdges()) {
         	if (pmr.getOriginalLhs() == pmr.getOriginalRhs()) continue;
@@ -745,16 +875,59 @@ public class MatchPool {
 	 * that are synthetic as they were created by the MatchMaker will be
 	 * removed.
 	 */
-	public void resetPool() {
-		for (PotentialMatchRecord pmr : potentialMatches) {
+	public void resetPool() throws SQLException {
+		for (int i = potentialMatches.size() - 1; i >= 0; i--) {
+			PotentialMatchRecord pmr = (PotentialMatchRecord) potentialMatches.toArray()[i];
 			if (pmr.isSynthetic()) {
 				removePotentialMatch(pmr);
+				dropPotentialMatch(pmr);
 				continue;
 			}
 			pmr.setMatchStatus(MatchType.UNMATCH);
 		}
 	}
 	
+	/**
+	 * This method removes the given potential match record from the database.
+	 */
+	private void dropPotentialMatch(PotentialMatchRecord pmr) throws SQLException {
+		SQLTable resultTable = match.getResultTable();
+        Connection con = null;
+        Statement stmt = null;
+        ResultSet rs = null;
+        String lastSQL = null;
+        try {
+            con = session.getConnection();
+            stmt = con.createStatement();
+            StringBuilder sql = new StringBuilder();
+            sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
+            sql.append("\n WHERE ");
+            List<Object> lhsKeyValues = pmr.getOriginalLhs().getKeyValues();
+            List<Object> rhsKeyValues = pmr.getOriginalRhs().getKeyValues();
+            for (int i = 0;; i++) {
+            	sql.append("DUP_CANDIDATE_1" + i + "=" + SQL.quote(lhsKeyValues.get(i).toString()));
+            	sql.append("AND DUP_CANDIDATE_2" + i + "=" + SQL.quote(rhsKeyValues.get(i).toString()));
+            	if (i + 1 >= lhsKeyValues.size()) break;
+            	sql.append("AND ");
+            }
+            lastSQL = sql.toString();
+            logger.debug("The SQL statement we are running is " + lastSQL);
+            rs = stmt.executeQuery(lastSQL);
+        } catch (SQLException ex) {
+            logger.error("Error in query: "+lastSQL, ex);
+            session.handleWarning(
+                    "Error in SQL Query!" +
+                    "\nMessage: "+ex.getMessage() +
+                    "\nSQL State: "+ex.getSQLState() +
+                    "\nQuery: "+lastSQL);
+            throw ex;
+        } finally {
+            if (rs != null) try { rs.close(); } catch (SQLException ex) { logger.error("Couldn't close result set", ex); }
+            if (stmt != null) try { stmt.close(); } catch (SQLException ex) { logger.error("Couldn't close statement", ex); }
+            if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
+        }
+	}
+
 	/**
 	 * Removes a potential match record from this pool and the source table
 	 * records that the potential match connects.
