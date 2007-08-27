@@ -21,6 +21,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
@@ -38,6 +39,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
@@ -46,202 +48,195 @@ import ca.sqlpower.sql.SQL;
 
 public class MatchPoolTest extends TestCase {
 
-    /**
-     * The object under test.
-     */
-    private MatchPool pool;
-    
-    private Connection con;
-    private SQLDatabase db;
-    private SQLTable sourceTable;
-    private SQLTable resultTable;
-    private Match match;
-    
-    @Override
-    protected void setUp() throws Exception {
-        SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
-        db = new SQLDatabase(dataSource);
-        con = db.getConnection();
-        
-        createResultTable(con);
-        
-        SQLSchema plSchema = db.getSchemaByName("pl");
-        
-        resultTable = db.getTableByName(null, "pl", "match_results");
-        
-        sourceTable = new SQLTable(plSchema, "source_table", null, "TABLE", true);
-        sourceTable.addColumn(new SQLColumn(sourceTable, "PK1", Types.INTEGER, 10, 0));
-        sourceTable.addColumn(new SQLColumn(sourceTable, "FOO", Types.VARCHAR, 10, 0));
-        sourceTable.addColumn(new SQLColumn(sourceTable, "BAR", Types.VARCHAR, 10, 0));
-        
-        SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, IndexType.OTHER, null);
-        sourceTableIndex.addChild(sourceTableIndex.new Column(sourceTable.getColumn(0), false, false));
-        sourceTable.addIndex(sourceTableIndex);
-        
-        plSchema.addChild(sourceTable);
+	/**
+	 * The object under test.
+	 */
+	private MatchPool pool;
 
-        MatchMakerSession session = new StubMatchMakerSession() {
-            @Override
-            public Connection getConnection() {
-            	try {
-            		return db.getConnection();
-            	} catch (ArchitectException e) {
-            		throw new ArchitectRuntimeException(e);
-            	}
-            }
-        };
-        
-        match = new Match();
-        match.setSession(session);
-        match.setResultTable(resultTable);
-        match.setSourceTable(sourceTable);
-        match.setSourceTableIndex(sourceTableIndex);
-        
-        MatchMakerCriteriaGroup groupOne = new MatchMakerCriteriaGroup();
-        groupOne.setName("Group_One");
-        match.addMatchCriteriaGroup(groupOne);
-        
-        pool = MMTestUtils.createTestingPool(session, match, groupOne);
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        dropResultTable(con);
-        con.close();
-    }
-    
-    private static void createResultTable(Connection con) throws SQLException {
-        Statement stmt = con.createStatement();
-        stmt.executeUpdate("CREATE TABLE pl.match_results (" +
-                "\n DUP_CANDIDATE_10 integer not null," +
-                "\n DUP_CANDIDATE_20 integer not null," +
-                "\n CURRENT_CANDIDATE_10 integer," +
-                "\n CURRENT_CANDIDATE_20 integer," +
-                "\n DUP_ID0 integer," +
-                "\n MASTER_ID0 integer," +
-                "\n CANDIDATE_10_MAPPED varchar(1)," +
-                "\n CANDIDATE_20_MAPPED varchar(1)," +
-                "\n MATCH_PERCENT integer," +
-                "\n GROUP_ID varchar(60)," +
-                "\n MATCH_DATE timestamp," +
-                "\n MATCH_STATUS varchar(60)," +
-                "\n MATCH_STATUS_DATE timestamp," +
-                "\n MATCH_STATUS_USER varchar(60)," +
-                "\n DUP1_MASTER_IND  varchar(1)" +
-                "\n)");
-        stmt.close();
-    }
-    
-    private static void dropResultTable(Connection con) throws SQLException {
-        Statement stmt = con.createStatement();
-        stmt.executeUpdate("DROP TABLE pl.match_results");
-        stmt.close();
-    }
-    
-    /**
-     * Inserts the pair of match records described by the parameters (one row
-     * for LHS-RHS and another for RHS-LHS just like the enging does).
-     */
-    private static void insertResultTableRecord(
-            Connection con, int originalLhsKey, int originalRhsKey,
-            int matchPercent, String groupName) throws SQLException {
-        Statement stmt = con.createStatement();
-        stmt.executeUpdate("INSERT into pl.match_results VALUES (" +
-                originalLhsKey+"," +
-                originalRhsKey+"," +
-                originalLhsKey+","+
-                originalRhsKey+","+
-                "null,"+
-                "null," +
-                "null,"+
-                "null,"+
-                matchPercent+"," +
-                SQL.quote(groupName)+","+
-                "{ts '2006-11-30 17:01:06.0'},"+
-                "null,"+
-                "{ts '2006-11-30 17:01:06.0'},"+
-                "null," +
-                "null)"
-                );
-        stmt.executeUpdate("INSERT into pl.match_results VALUES (" +
-                originalRhsKey+"," +
-                originalLhsKey+"," +
-                originalRhsKey+","+
-                originalLhsKey+","+
-                "null,"+
-                "null," +
-                "null,"+
-                "null,"+
-                matchPercent+"," +
-                SQL.quote(groupName)+","+
-                "{ts '2006-11-30 17:01:06.0'},"+
-                "null,"+
-                "{ts '2006-11-30 17:01:06.0'},"+
-                "null," +
-                "null)"
-                );
-        stmt.close();
-        
-    }
-    
-    /** Tests that findAll() does find all potential match records (graph edges) properly. */
-    public void testFindAllPotentialMatches() throws Exception {
-    	MatchPool pool = new MatchPool(match);
-        insertResultTableRecord(con, 1, 2, 15, "Group_One");
-        pool.findAll();        
-        Set<PotentialMatchRecord> matches = pool.getPotentialMatches();
-        assertEquals(1, matches.size());
-        for (PotentialMatchRecord pmr : matches) {
-            assertNotNull(pmr);
-            assertNotNull(pmr.getOriginalLhs());
-            assertNotNull(pmr.getOriginalLhs().getKeyValues());
-            assertEquals(1, pmr.getOriginalLhs().getKeyValues().size());
-            assertEquals("Group_One", pmr.getCriteriaGroup().getName());
-        }
-    }
-    
-    /** Tests that findAll() does find all source table records (graph nodes) properly. */
-    public void testFindSourceTableRecords() throws Exception {
-    	MatchPool pool = new MatchPool(match);
-        insertResultTableRecord(con, 1, 2, 15, "Group_One");
-        insertResultTableRecord(con, 1, 3, 15, "Group_One");
-        pool.findAll();
-        Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
-        assertEquals(3, nodes.size());
-        
-        boolean foundOne = false;
-        boolean foundTwo = false;
-        boolean foundThree = false;
-        for (SourceTableRecord str : nodes) {
-            if (str.getKeyValues().get(0).equals(1)) foundOne = true;
-            if (str.getKeyValues().get(0).equals(2)) foundTwo = true;
-            if (str.getKeyValues().get(0).equals(3)) foundThree = true;
-        }
-        
-        assertTrue(foundOne);
-        assertTrue(foundTwo);
-        assertTrue(foundThree);
-    }
-    
-    /** Tests that findAll() hooks up inbound and outbound matches properly. */
-    public void testFindAllEdgeHookup() throws Exception {
-    	MatchPool pool = new MatchPool(match);
-        insertResultTableRecord(con, 1, 2, 15, "Group_One");
-        insertResultTableRecord(con, 1, 3, 15, "Group_One");
-        pool.findAll();
-        Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
-        assertEquals(3, nodes.size());
+	private Connection con;
+	private SQLDatabase db;
+	private SQLTable sourceTable;
+	private SQLTable resultTable;
+	private Match match;
 
-        //FIXME need to be able to retrieve a particular PMR by key values
-    }
-    
-    /**
-     * Sets the master of a node in a graph when no masters have been set.
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
-    public void testSetMasterWithNoMasters() {
+	@Override
+	protected void setUp() throws Exception {
+		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
+		db = new SQLDatabase(dataSource);
+		con = db.getConnection();
+
+		createResultTable(con);
+
+		SQLSchema plSchema = db.getSchemaByName("pl");
+
+		resultTable = db.getTableByName(null, "pl", "match_results");
+
+		sourceTable = new SQLTable(plSchema, "source_table", null, "TABLE",
+				true);
+		sourceTable.addColumn(new SQLColumn(sourceTable, "PK1", Types.INTEGER,
+				10, 0));
+		sourceTable.addColumn(new SQLColumn(sourceTable, "FOO", Types.VARCHAR,
+				10, 0));
+		sourceTable.addColumn(new SQLColumn(sourceTable, "BAR", Types.VARCHAR,
+				10, 0));
+
+		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null,
+				IndexType.OTHER, null);
+		sourceTableIndex.addChild(sourceTableIndex.new Column(sourceTable
+				.getColumn(0), false, false));
+		sourceTable.addIndex(sourceTableIndex);
+
+		plSchema.addChild(sourceTable);
+
+		MatchMakerSession session = new StubMatchMakerSession() {
+			@Override
+			public Connection getConnection() {
+				try {
+					return db.getConnection();
+				} catch (ArchitectException e) {
+					throw new ArchitectRuntimeException(e);
+				}
+			}
+		};
+
+		match = new Match();
+		match.setSession(session);
+		match.setResultTable(resultTable);
+		match.setSourceTable(sourceTable);
+		match.setSourceTableIndex(sourceTableIndex);
+
+		MatchMakerCriteriaGroup groupOne = new MatchMakerCriteriaGroup();
+		groupOne.setName("Group_One");
+		match.addMatchCriteriaGroup(groupOne);
+
+		pool = MMTestUtils.createTestingPool(session, match, groupOne);
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		dropResultTable(con);
+		con.close();
+	}
+
+	private static void createResultTable(Connection con) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("CREATE TABLE pl.match_results ("
+				+ "\n DUP_CANDIDATE_10 varchar(50) not null,"
+				+ "\n DUP_CANDIDATE_20 varchar(50) not null,"
+				+ "\n CURRENT_CANDIDATE_10 varchar(50),"
+				+ "\n CURRENT_CANDIDATE_20 varchar(50)," 
+				+ "\n DUP_ID0 varchar(50),"
+				+ "\n MASTER_ID0 varchar(50),"
+				+ "\n CANDIDATE_10_MAPPED varchar(1),"
+				+ "\n CANDIDATE_20_MAPPED varchar(1),"
+				+ "\n MATCH_PERCENT integer," 
+				+ "\n GROUP_ID varchar(60),"
+				+ "\n MATCH_DATE timestamp," 
+				+ "\n MATCH_STATUS varchar(60),"
+				+ "\n MATCH_STATUS_DATE timestamp,"
+				+ "\n MATCH_STATUS_USER varchar(60),"
+				+ "\n DUP1_MASTER_IND  varchar(1)" + "\n)");
+		stmt.close();
+	}
+
+	private static void dropResultTable(Connection con) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("DROP TABLE pl.match_results");
+		stmt.close();
+	}
+
+	/**
+	 * Inserts the pair of match records described by the parameters (one row
+	 * for LHS-RHS and another for RHS-LHS just like the enging does).
+	 */
+	private static void insertResultTableRecord(Connection con,
+			String originalLhsKey, String originalRhsKey, int matchPercent,
+			String groupName) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("INSERT into pl.match_results VALUES ("
+				+ SQL.quote(originalLhsKey) + "," + SQL.quote(originalRhsKey) + "," + SQL.quote(originalLhsKey)
+				+ "," + SQL.quote(originalRhsKey) + "," + "null," + "null," + "null,"
+				+ "null," + matchPercent + "," + SQL.quote(groupName) + ","
+				+ "{ts '2006-11-30 17:01:06.0'}," + "null,"
+				+ "{ts '2006-11-30 17:01:06.0'}," + "null," + "null)");
+		stmt.executeUpdate("INSERT into pl.match_results VALUES ("
+				+ SQL.quote(originalRhsKey) + "," + SQL.quote(originalLhsKey) + "," + SQL.quote(originalRhsKey)
+				+ "," + SQL.quote(originalLhsKey) + "," + "null," + "null," + "null,"
+				+ "null," + matchPercent + "," + SQL.quote(groupName) + ","
+				+ "{ts '2006-11-30 17:01:06.0'}," + "null,"
+				+ "{ts '2006-11-30 17:01:06.0'}," + "null," + "null)");
+		stmt.close();
+
+	}
+
+	/**
+	 * Tests that findAll() does find all potential match records (graph edges)
+	 * properly.
+	 */
+	public void testFindAllPotentialMatches() throws Exception {
+		MatchPool pool = new MatchPool(match);
+		insertResultTableRecord(con, "1", "2", 15, "Group_One");
+		pool.findAll();
+		Set<PotentialMatchRecord> matches = pool.getPotentialMatches();
+		assertEquals(1, matches.size());
+		for (PotentialMatchRecord pmr : matches) {
+			assertNotNull(pmr);
+			assertNotNull(pmr.getOriginalLhs());
+			assertNotNull(pmr.getOriginalLhs().getKeyValues());
+			assertEquals(1, pmr.getOriginalLhs().getKeyValues().size());
+			assertEquals("Group_One", pmr.getCriteriaGroup().getName());
+		}
+	}
+
+	/**
+	 * Tests that findAll() does find all source table records (graph nodes)
+	 * properly.
+	 */
+	public void testFindSourceTableRecords() throws Exception {
+		MatchPool pool = new MatchPool(match);
+		insertResultTableRecord(con, "1", "2", 15, "Group_One");
+		insertResultTableRecord(con, "1", "3", 15, "Group_One");
+		pool.findAll();
+		Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
+		assertEquals(3, nodes.size());
+
+		boolean foundOne = false;
+		boolean foundTwo = false;
+		boolean foundThree = false;
+		for (SourceTableRecord str : nodes) {
+			if (str.getKeyValues().get(0).equals("1"))
+				foundOne = true;
+			if (str.getKeyValues().get(0).equals("2"))
+				foundTwo = true;
+			if (str.getKeyValues().get(0).equals("3"))
+				foundThree = true;
+		}
+
+		assertTrue(foundOne);
+		assertTrue(foundTwo);
+		assertTrue(foundThree);
+	}
+
+	/** Tests that findAll() hooks up inbound and outbound matches properly. */
+	public void testFindAllEdgeHookup() throws Exception {
+		MatchPool pool = new MatchPool(match);
+		insertResultTableRecord(con, "1", "2", 15, "Group_One");
+		insertResultTableRecord(con, "1", "3", 15, "Group_One");
+		pool.findAll();
+		Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
+		assertEquals(3, nodes.size());
+
+		// FIXME need to be able to retrieve a particular PMR by key values
+	}
+
+	/**
+	 * Sets the master of a node in a graph when no masters have been set.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterWithNoMasters() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
 		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
@@ -251,40 +246,46 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("a3");
 		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(a1, a2);
-		
+
 		PotentialMatchRecord pmrA1ToA2 = null;
 		PotentialMatchRecord pmrA2ToA3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == a1 && potentialMatch.getOriginalRhs() == a2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a3 && potentialMatch.getOriginalRhs() == a2) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA2ToA3 = potentialMatch;
 			}
-			
-			if (pmrA1ToA2 != null && pmrA2ToA3 != null) break;
+
+			if (pmrA1ToA2 != null && pmrA2ToA3 != null)
+				break;
 		}
-		
+
 		if (pmrA1ToA2 == null || pmrA2ToA3 == null) {
 			fail("An edge no longer exists after we defined a1 as the master.");
 		}
-		
+
 		assertTrue(pmrA1ToA2.getMaster() == a1);
 		assertTrue(pmrA1ToA2.getDuplicate() == a2);
 		assertTrue(pmrA2ToA3.getMaster() == null);
 	}
-	
-    /**
-     * Sets the master everything to be a1.
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
+
+	/**
+	 * Sets the master everything to be a1.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
 	public void testSetMasterOfAllWithNoMasters() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
@@ -295,43 +296,49 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("a3");
 		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMasterOfAll(a1);
-		
+
 		PotentialMatchRecord pmrA1ToA2 = null;
 		PotentialMatchRecord pmrA2ToA3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == a1 && potentialMatch.getOriginalRhs() == a2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a3 && potentialMatch.getOriginalRhs() == a2) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA2ToA3 = potentialMatch;
 			}
-			
-			if (pmrA1ToA2 != null && pmrA2ToA3 != null) break;
+
+			if (pmrA1ToA2 != null && pmrA2ToA3 != null)
+				break;
 		}
-		
+
 		if (pmrA1ToA2 == null || pmrA2ToA3 == null) {
 			fail("An edge no longer exists after we defined a1 as the master of all");
 		}
-		
+
 		assertTrue(pmrA1ToA2.getMaster() == a1);
 		assertTrue(pmrA1ToA2.getDuplicate() == a2);
 		assertTrue(pmrA2ToA3.getMaster() == null);
 		assertTrue(pmrA2ToA3.getDuplicate() == null);
 		assertTrue(pmrA2ToA3.getMatchStatus() == MatchType.UNMATCH);
 	}
-	
+
 	/**
-     * Reverse the master/duplicate relationship
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
-	public void testSetMasterToDuplicate() {
+	 * Reverse the master/duplicate relationship
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterToDuplicate() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("c2");
 		SourceTableRecord c2 = pool.getSourceTableRecord(keyList);
@@ -341,34 +348,39 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("c3");
 		SourceTableRecord c3 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(c1, c2);
-		
+
 		PotentialMatchRecord pmrC1ToC2 = null;
 		PotentialMatchRecord pmrC2ToC3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == c1 && potentialMatch.getOriginalRhs() == c2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == c1
+					&& potentialMatch.getOriginalRhs() == c2) {
 				pmrC1ToC2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == c2 && potentialMatch.getOriginalRhs() == c1) {
+			} else if (potentialMatch.getOriginalLhs() == c2
+					&& potentialMatch.getOriginalRhs() == c1) {
 				pmrC1ToC2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == c3 && potentialMatch.getOriginalRhs() == c2) {
+			} else if (potentialMatch.getOriginalLhs() == c3
+					&& potentialMatch.getOriginalRhs() == c2) {
 				pmrC2ToC3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == c2 && potentialMatch.getOriginalRhs() == c3) {
+			} else if (potentialMatch.getOriginalLhs() == c2
+					&& potentialMatch.getOriginalRhs() == c3) {
 				pmrC2ToC3 = potentialMatch;
 			}
-			
-			if (pmrC1ToC2 != null && pmrC2ToC3 != null) break;
+
+			if (pmrC1ToC2 != null && pmrC2ToC3 != null)
+				break;
 		}
-		
+
 		if (pmrC1ToC2 == null || pmrC2ToC3 == null) {
 			fail("An edge no longer exists after we defined c1 as the master of c2");
 		}
-		
+
 		assertTrue(pmrC1ToC2.getMaster() == c1);
 		assertTrue(pmrC1ToC2.getDuplicate() == c2);
 		assertTrue(pmrC2ToC3.getMaster() == null);
 	}
-	
+
 	/**
 	 * Sets the master of a node that has a duplicate which is also a duplicate
 	 * of the new master. This should not be a normal case.
@@ -377,7 +389,7 @@ public class MatchPoolTest extends TestCase {
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
 	 * for details on the graph.
 	 */
-	public void testSetMasterWithSameDuplicate() {
+	public void testSetMasterWithSameDuplicate() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("f1");
 		SourceTableRecord f1 = pool.getSourceTableRecord(keyList);
@@ -387,35 +399,40 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("f2");
 		SourceTableRecord f2 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(f3, f1);
-		
+
 		PotentialMatchRecord pmrF1ToF2 = null;
 		PotentialMatchRecord pmrF2ToF3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == f1 && potentialMatch.getOriginalRhs() == f2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == f1
+					&& potentialMatch.getOriginalRhs() == f2) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == f2 && potentialMatch.getOriginalRhs() == f1) {
+			} else if (potentialMatch.getOriginalLhs() == f2
+					&& potentialMatch.getOriginalRhs() == f1) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == f3 && potentialMatch.getOriginalRhs() == f2) {
+			} else if (potentialMatch.getOriginalLhs() == f3
+					&& potentialMatch.getOriginalRhs() == f2) {
 				pmrF2ToF3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == f2 && potentialMatch.getOriginalRhs() == f3) {
+			} else if (potentialMatch.getOriginalLhs() == f2
+					&& potentialMatch.getOriginalRhs() == f3) {
 				pmrF2ToF3 = potentialMatch;
 			}
-			
-			if (pmrF1ToF2 != null && pmrF2ToF3 != null) break;
+
+			if (pmrF1ToF2 != null && pmrF2ToF3 != null)
+				break;
 		}
-		
+
 		if (pmrF1ToF2 == null || pmrF2ToF3 == null) {
 			fail("An edge no longer exists after we defined f3 as the master of f1.");
 		}
-		
+
 		assertTrue(pmrF1ToF2.getMaster() == f2);
 		assertTrue(pmrF1ToF2.getDuplicate() == f1);
 		assertTrue(pmrF2ToF3.getMaster() == f3);
 		assertTrue(pmrF2ToF3.getDuplicate() == f2);
 	}
-	
+
 	/**
 	 * Sets the master of a node to be one of it's current duplicates that also
 	 * has another different master. This should not be a normal case.
@@ -424,7 +441,7 @@ public class MatchPoolTest extends TestCase {
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
 	 * for details on the graph.
 	 */
-	public void testSetMasterToCurrentDuplicate() {
+	public void testSetMasterToCurrentDuplicate() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("f1");
 		SourceTableRecord f1 = pool.getSourceTableRecord(keyList);
@@ -434,42 +451,48 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("f2");
 		SourceTableRecord f2 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(f2, f1);
-		
+
 		PotentialMatchRecord pmrF1ToF2 = null;
 		PotentialMatchRecord pmrF2ToF3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == f1 && potentialMatch.getOriginalRhs() == f2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == f1
+					&& potentialMatch.getOriginalRhs() == f2) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == f2 && potentialMatch.getOriginalRhs() == f1) {
+			} else if (potentialMatch.getOriginalLhs() == f2
+					&& potentialMatch.getOriginalRhs() == f1) {
 				pmrF1ToF2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == f3 && potentialMatch.getOriginalRhs() == f2) {
+			} else if (potentialMatch.getOriginalLhs() == f3
+					&& potentialMatch.getOriginalRhs() == f2) {
 				pmrF2ToF3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == f2 && potentialMatch.getOriginalRhs() == f3) {
+			} else if (potentialMatch.getOriginalLhs() == f2
+					&& potentialMatch.getOriginalRhs() == f3) {
 				pmrF2ToF3 = potentialMatch;
 			}
-			
-			if (pmrF1ToF2 != null && pmrF2ToF3 != null) break;
+
+			if (pmrF1ToF2 != null && pmrF2ToF3 != null)
+				break;
 		}
-		
+
 		if (pmrF1ToF2 == null || pmrF2ToF3 == null) {
 			fail("An edge no longer exists after we defined f3 as the master of f1.");
 		}
-		
+
 		assertTrue(pmrF1ToF2.getMaster() == f2);
 		assertTrue(pmrF1ToF2.getDuplicate() == f1);
 		assertTrue(pmrF2ToF3.getMaster() == f3);
 		assertTrue(pmrF2ToF3.getDuplicate() == f2);
 	}
-	
+
 	/**
-     * Sets the master of a node with no master, but masters exist in the graph.
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
-	public void testSetMasterWithMaster() {
+	 * Sets the master of a node with no master, but masters exist in the graph.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterWithMaster() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("b2");
 		SourceTableRecord b2 = pool.getSourceTableRecord(keyList);
@@ -479,43 +502,49 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("b1");
 		SourceTableRecord b1 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(b2, b3);
-		
+
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == b1 && potentialMatch.getOriginalRhs() == b2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b1) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b3 && potentialMatch.getOriginalRhs() == b2) {
+			} else if (potentialMatch.getOriginalLhs() == b3
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b3) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
-			
-			if (pmrB1ToB2 != null && pmrB2ToB3 != null) break;
+
+			if (pmrB1ToB2 != null && pmrB2ToB3 != null)
+				break;
 		}
-		
+
 		if (pmrB1ToB2 == null || pmrB2ToB3 == null) {
 			fail("An edge no longer exists after we defined b2 as the master of b3.");
 		}
-		
+
 		assertTrue(pmrB1ToB2.getMaster() == b1);
 		assertTrue(pmrB1ToB2.getDuplicate() == b2);
 		assertTrue(pmrB2ToB3.getMaster() == b2);
 		assertTrue(pmrB2ToB3.getDuplicate() == b3);
 	}
-	
+
 	/**
-     * Sets the master of a node where the master is a master of another node and the duplicate node is
-     * a duplicate of a different node.
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
-	public void testSetMasterDupIsAMasterNewMasterHasMaster() {
+	 * Sets the master of a node where the master is a master of another node
+	 * and the duplicate node is a duplicate of a different node.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterDupIsAMasterNewMasterHasMaster() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("g2");
 		SourceTableRecord g2 = pool.getSourceTableRecord(keyList);
@@ -528,34 +557,41 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("g4");
 		SourceTableRecord g4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(g2, g3);
-		
+
 		PotentialMatchRecord pmrG1ToG2 = null;
 		PotentialMatchRecord pmrG2ToG3 = null;
 		PotentialMatchRecord pmrG3ToG4 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == g1 && potentialMatch.getOriginalRhs() == g2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == g1
+					&& potentialMatch.getOriginalRhs() == g2) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g2 && potentialMatch.getOriginalRhs() == g1) {
+			} else if (potentialMatch.getOriginalLhs() == g2
+					&& potentialMatch.getOriginalRhs() == g1) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g3 && potentialMatch.getOriginalRhs() == g2) {
+			} else if (potentialMatch.getOriginalLhs() == g3
+					&& potentialMatch.getOriginalRhs() == g2) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g2 && potentialMatch.getOriginalRhs() == g3) {
+			} else if (potentialMatch.getOriginalLhs() == g2
+					&& potentialMatch.getOriginalRhs() == g3) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g3 && potentialMatch.getOriginalRhs() == g4) {
+			} else if (potentialMatch.getOriginalLhs() == g3
+					&& potentialMatch.getOriginalRhs() == g4) {
 				pmrG3ToG4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g4 && potentialMatch.getOriginalRhs() == g3) {
+			} else if (potentialMatch.getOriginalLhs() == g4
+					&& potentialMatch.getOriginalRhs() == g3) {
 				pmrG3ToG4 = potentialMatch;
 			}
-			
-			if (pmrG1ToG2 != null && pmrG2ToG3 != null && pmrG3ToG4 != null) break;
+
+			if (pmrG1ToG2 != null && pmrG2ToG3 != null && pmrG3ToG4 != null)
+				break;
 		}
-		
+
 		if (pmrG1ToG2 == null || pmrG2ToG3 == null || pmrG3ToG4 == null) {
 			fail("An edge no longer exists after we defined g2 as the master of g3.");
 		}
-		
+
 		assertTrue(pmrG1ToG2.getMaster() == g2);
 		assertTrue(pmrG1ToG2.getDuplicate() == g1);
 		assertTrue(pmrG2ToG3.getMaster() == g2);
@@ -563,72 +599,17 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrG3ToG4.getMaster() == g3);
 		assertTrue(pmrG3ToG4.getDuplicate() == g4);
 	}
-	
+
 	/**
-     * Sets the master of a node to a node that is a duplicate of another node. The current duplicate being set to
-     * have a master is also defined as a duplicate of another node.
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
-	public void testSetMasterMasterHasMasterDupHasMaster() {
-		List<Object> keyList = new ArrayList<Object>();
-		keyList.add("h2");
-		SourceTableRecord h2 = pool.getSourceTableRecord(keyList);
-		keyList.clear();
-		keyList.add("h3");
-		SourceTableRecord h3 = pool.getSourceTableRecord(keyList);
-		keyList.clear();
-		keyList.add("h1");
-		SourceTableRecord h1 = pool.getSourceTableRecord(keyList);
-		keyList.clear();
-		keyList.add("h4");
-		SourceTableRecord h4 = pool.getSourceTableRecord(keyList);
-		
-		pool.defineMaster(h2, h3);
-		
-		PotentialMatchRecord pmrH1ToH2 = null;
-		PotentialMatchRecord pmrH2ToH3 = null;
-		PotentialMatchRecord pmrH3ToH4 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == h1 && potentialMatch.getOriginalRhs() == h2) {
-				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h2 && potentialMatch.getOriginalRhs() == h1) {
-				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h3 && potentialMatch.getOriginalRhs() == h2) {
-				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h2 && potentialMatch.getOriginalRhs() == h3) {
-				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h3 && potentialMatch.getOriginalRhs() == h4) {
-				pmrH3ToH4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h4 && potentialMatch.getOriginalRhs() == h3) {
-				pmrH3ToH4 = potentialMatch;
-			}
-			
-			if (pmrH1ToH2 != null && pmrH2ToH3 != null && pmrH3ToH4 != null) break;
-		}
-		
-		if (pmrH1ToH2 == null || pmrH2ToH3 == null || pmrH3ToH4 == null) {
-			fail("An edge no longer exists after we defined h2 as the master of h3.");
-		}
-		
-		assertTrue(pmrH1ToH2.getMaster() == h1);
-		assertTrue(pmrH1ToH2.getDuplicate() == h2);
-		assertTrue(pmrH2ToH3.getMaster() == h2);
-		assertTrue(pmrH2ToH3.getDuplicate() == h3);
-		assertTrue(pmrH3ToH4.getMaster() == h3);
-		assertTrue(pmrH3ToH4.getDuplicate() == h4);
-	}
-	
-	/**
-     * Sets the master of a node to a node that is a duplicate of another node. The current duplicate being set to
-     * have a master is also defined as a duplicate of another node. The way the master is defined in this case
-     * should be the same way a duplicate button is implemented in the UI.
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
-	public void testSetDuplicateMasterHasMasterDupHasMaster() {
+	 * Sets the master of a node to a node that is a duplicate of another node.
+	 * The current duplicate being set to have a master is also defined as a
+	 * duplicate of another node.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterMasterHasMasterDupHasMaster() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("h2");
 		SourceTableRecord h2 = pool.getSourceTableRecord(keyList);
@@ -642,34 +623,108 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("h4");
 		SourceTableRecord h4 = pool.getSourceTableRecord(keyList);
 
-		//Setting a duplicate is the same thing as setting a master but with reversed parameters.
-		pool.defineMaster(h3, h2);
-		
+		pool.defineMaster(h2, h3);
+
 		PotentialMatchRecord pmrH1ToH2 = null;
 		PotentialMatchRecord pmrH2ToH3 = null;
 		PotentialMatchRecord pmrH3ToH4 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == h1 && potentialMatch.getOriginalRhs() == h2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == h1
+					&& potentialMatch.getOriginalRhs() == h2) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h2 && potentialMatch.getOriginalRhs() == h1) {
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h1) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h3 && potentialMatch.getOriginalRhs() == h2) {
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h2) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h2 && potentialMatch.getOriginalRhs() == h3) {
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h3) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h3 && potentialMatch.getOriginalRhs() == h4) {
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h4) {
 				pmrH3ToH4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h4 && potentialMatch.getOriginalRhs() == h3) {
+			} else if (potentialMatch.getOriginalLhs() == h4
+					&& potentialMatch.getOriginalRhs() == h3) {
 				pmrH3ToH4 = potentialMatch;
 			}
-			
-			if (pmrH1ToH2 != null && pmrH2ToH3 != null && pmrH3ToH4 != null) break;
+
+			if (pmrH1ToH2 != null && pmrH2ToH3 != null && pmrH3ToH4 != null)
+				break;
 		}
-		
+
+		if (pmrH1ToH2 == null || pmrH2ToH3 == null || pmrH3ToH4 == null) {
+			fail("An edge no longer exists after we defined h2 as the master of h3.");
+		}
+
+		assertTrue(pmrH1ToH2.getMaster() == h1);
+		assertTrue(pmrH1ToH2.getDuplicate() == h2);
+		assertTrue(pmrH2ToH3.getMaster() == h2);
+		assertTrue(pmrH2ToH3.getDuplicate() == h3);
+		assertTrue(pmrH3ToH4.getMaster() == h3);
+		assertTrue(pmrH3ToH4.getDuplicate() == h4);
+	}
+
+	/**
+	 * Sets the master of a node to a node that is a duplicate of another node.
+	 * The current duplicate being set to have a master is also defined as a
+	 * duplicate of another node. The way the master is defined in this case
+	 * should be the same way a duplicate button is implemented in the UI.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetDuplicateMasterHasMasterDupHasMaster() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("h2");
+		SourceTableRecord h2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("h3");
+		SourceTableRecord h3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("h1");
+		SourceTableRecord h1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("h4");
+		SourceTableRecord h4 = pool.getSourceTableRecord(keyList);
+
+		// Setting a duplicate is the same thing as setting a master but with
+		// reversed parameters.
+		pool.defineMaster(h3, h2);
+
+		PotentialMatchRecord pmrH1ToH2 = null;
+		PotentialMatchRecord pmrH2ToH3 = null;
+		PotentialMatchRecord pmrH3ToH4 = null;
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == h1
+					&& potentialMatch.getOriginalRhs() == h2) {
+				pmrH1ToH2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h1) {
+				pmrH1ToH2 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h2) {
+				pmrH2ToH3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h3) {
+				pmrH2ToH3 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h4) {
+				pmrH3ToH4 = potentialMatch;
+			} else if (potentialMatch.getOriginalLhs() == h4
+					&& potentialMatch.getOriginalRhs() == h3) {
+				pmrH3ToH4 = potentialMatch;
+			}
+
+			if (pmrH1ToH2 != null && pmrH2ToH3 != null && pmrH3ToH4 != null)
+				break;
+		}
+
 		if (pmrH1ToH2 == null || pmrH2ToH3 == null || pmrH3ToH4 == null) {
 			fail("An edge no longer exists after we defined h3 as the master of h2.");
 		}
-		
+
 		assertTrue(pmrH1ToH2.getMaster() == h2);
 		assertTrue(pmrH1ToH2.getDuplicate() == h1);
 		assertTrue(pmrH2ToH3.getMaster() == h3);
@@ -677,14 +732,16 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrH3ToH4.getMaster() == h4);
 		assertTrue(pmrH3ToH4.getDuplicate() == h3);
 	}
-	
+
 	/**
-     * Sets the master of a node to a node that is not connected by master/duplicate edges.
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
-	public void testSetDuplicate() {
+	 * Sets the master of a node to a node that is not connected by
+	 * master/duplicate edges.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetDuplicate() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("g2");
 		SourceTableRecord g2 = pool.getSourceTableRecord(keyList);
@@ -697,35 +754,43 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("g4");
 		SourceTableRecord g4 = pool.getSourceTableRecord(keyList);
-		
-		//Setting a duplicate is the same thing as setting a master but with reversed parameters.
+
+		// Setting a duplicate is the same thing as setting a master but with
+		// reversed parameters.
 		pool.defineMaster(g1, g3);
-		
+
 		PotentialMatchRecord pmrG1ToG2 = null;
 		PotentialMatchRecord pmrG2ToG3 = null;
 		PotentialMatchRecord pmrG3ToG4 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == g1 && potentialMatch.getOriginalRhs() == g2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == g1
+					&& potentialMatch.getOriginalRhs() == g2) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g2 && potentialMatch.getOriginalRhs() == g1) {
+			} else if (potentialMatch.getOriginalLhs() == g2
+					&& potentialMatch.getOriginalRhs() == g1) {
 				pmrG1ToG2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g3 && potentialMatch.getOriginalRhs() == g2) {
+			} else if (potentialMatch.getOriginalLhs() == g3
+					&& potentialMatch.getOriginalRhs() == g2) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g2 && potentialMatch.getOriginalRhs() == g3) {
+			} else if (potentialMatch.getOriginalLhs() == g2
+					&& potentialMatch.getOriginalRhs() == g3) {
 				pmrG2ToG3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g3 && potentialMatch.getOriginalRhs() == g4) {
+			} else if (potentialMatch.getOriginalLhs() == g3
+					&& potentialMatch.getOriginalRhs() == g4) {
 				pmrG3ToG4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == g4 && potentialMatch.getOriginalRhs() == g3) {
+			} else if (potentialMatch.getOriginalLhs() == g4
+					&& potentialMatch.getOriginalRhs() == g3) {
 				pmrG3ToG4 = potentialMatch;
 			}
-			
-			if (pmrG1ToG2 != null && pmrG2ToG3 != null && pmrG3ToG4 != null) break;
+
+			if (pmrG1ToG2 != null && pmrG2ToG3 != null && pmrG3ToG4 != null)
+				break;
 		}
-		
+
 		if (pmrG1ToG2 == null || pmrG2ToG3 == null || pmrG3ToG4 == null) {
 			fail("An edge no longer exists after we defined g1 as the master of g3.");
 		}
-		
+
 		assertTrue(pmrG1ToG2.getMaster() == g2);
 		assertTrue(pmrG1ToG2.getDuplicate() == g1);
 		assertTrue(pmrG2ToG3.getMaster() == g2);
@@ -733,17 +798,20 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrG3ToG4.getMaster() == g3);
 		assertTrue(pmrG3ToG4.getDuplicate() == g4);
 	}
-	
+
 	/**
-     * Sets the master of a node to a master when a cycle is involved. This is an unusual case and not something
-     * that we will normally come across. Any paths that are not used to identify a master/duplicate relation
-     * will be set to undefined. In this test we cannot know which node was selected as the ultimate master
-     * in case the algorithm was changed to select a better ultimate master.
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
-	public void testSetMasterInACycle() {
+	 * Sets the master of a node to a master when a cycle is involved. This is
+	 * an unusual case and not something that we will normally come across. Any
+	 * paths that are not used to identify a master/duplicate relation will be
+	 * set to undefined. In this test we cannot know which node was selected as
+	 * the ultimate master in case the algorithm was changed to select a better
+	 * ultimate master.
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterInACycle() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("cycle2");
 		SourceTableRecord cycle2 = pool.getSourceTableRecord(keyList);
@@ -755,46 +823,55 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord cycle1 = pool.getSourceTableRecord(keyList);
 
 		pool.defineMaster(cycle3, cycle2);
-		
+
 		PotentialMatchRecord pmrCycle1ToCycle2 = null;
 		PotentialMatchRecord pmrCycle2ToCycle3 = null;
 		PotentialMatchRecord pmrCycle3ToCycle1 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == cycle1 && potentialMatch.getOriginalRhs() == cycle2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle2 && potentialMatch.getOriginalRhs() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle3 && potentialMatch.getOriginalRhs() == cycle2) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle2 && potentialMatch.getOriginalRhs() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle3 && potentialMatch.getOriginalRhs() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle3ToCycle1 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle1 && potentialMatch.getOriginalRhs() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle3ToCycle1 = potentialMatch;
 			}
-			
-			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null && pmrCycle3ToCycle1 != null) break;
+
+			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null
+					&& pmrCycle3ToCycle1 != null)
+				break;
 		}
-		
-		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle3ToCycle1 == null) {
+
+		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null
+				|| pmrCycle3ToCycle1 == null) {
 			fail("An edge no longer exists after we defined cycle3 as the master of cycle2.");
 		}
-		
+
 		if (pmrCycle1ToCycle2.getMaster() == cycle1) {
 			assertTrue(pmrCycle1ToCycle2.getDuplicate() == cycle2);
 			assertTrue(pmrCycle2ToCycle3.getMaster() == null);
 			assertTrue(pmrCycle2ToCycle3.getDuplicate() == null);
 			assertTrue(pmrCycle3ToCycle1.getMaster() == cycle1);
 			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
-		} else if (pmrCycle1ToCycle2.getMaster() == cycle2){
+		} else if (pmrCycle1ToCycle2.getMaster() == cycle2) {
 			assertTrue(pmrCycle1ToCycle2.getDuplicate() == cycle1);
 			assertTrue(pmrCycle2ToCycle3.getMaster() == cycle2);
 			assertTrue(pmrCycle2ToCycle3.getDuplicate() == cycle3);
 			assertTrue(pmrCycle3ToCycle1.getMaster() == null);
 			assertTrue(pmrCycle3ToCycle1.getDuplicate() == null);
 		} else {
-			//master of this loop was set to cycle3
+			// master of this loop was set to cycle3
 			assertTrue(pmrCycle1ToCycle2.getDuplicate() == null);
 			assertTrue(pmrCycle2ToCycle3.getMaster() == cycle3);
 			assertTrue(pmrCycle2ToCycle3.getDuplicate() == cycle2);
@@ -802,7 +879,7 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle1);
 		}
 	}
-	
+
 	/**
 	 * Sets the master of a node to a master when a cycle is involved. This is
 	 * an unusual case and not something that we will normally come across. Any
@@ -816,7 +893,7 @@ public class MatchPoolTest extends TestCase {
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
 	 * for details on the graph.
 	 */
-	public void testSetMasterWithMasterInACycle() {
+	public void testSetMasterWithMasterInACycle() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("j1");
 		SourceTableRecord j1 = pool.getSourceTableRecord(keyList);
@@ -831,37 +908,48 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord j4 = pool.getSourceTableRecord(keyList);
 
 		pool.defineMaster(j2, j1);
-		
+
 		PotentialMatchRecord pmrJ1ToJ2 = null;
 		PotentialMatchRecord pmrJ2ToJ3 = null;
 		PotentialMatchRecord pmrJ3ToJ4 = null;
 		PotentialMatchRecord pmrJ4ToJ2 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == j2 && potentialMatch.getOriginalRhs() == j1) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == j2
+					&& potentialMatch.getOriginalRhs() == j1) {
 				pmrJ1ToJ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == j1 && potentialMatch.getOriginalRhs() == j2) {
+			} else if (potentialMatch.getOriginalLhs() == j1
+					&& potentialMatch.getOriginalRhs() == j2) {
 				pmrJ1ToJ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == j2 && potentialMatch.getOriginalRhs() == j3) {
+			} else if (potentialMatch.getOriginalLhs() == j2
+					&& potentialMatch.getOriginalRhs() == j3) {
 				pmrJ2ToJ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == j3 && potentialMatch.getOriginalRhs() == j2) {
+			} else if (potentialMatch.getOriginalLhs() == j3
+					&& potentialMatch.getOriginalRhs() == j2) {
 				pmrJ2ToJ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == j4 && potentialMatch.getOriginalRhs() == j3) {
+			} else if (potentialMatch.getOriginalLhs() == j4
+					&& potentialMatch.getOriginalRhs() == j3) {
 				pmrJ3ToJ4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == j3 && potentialMatch.getOriginalRhs() == j4) {
+			} else if (potentialMatch.getOriginalLhs() == j3
+					&& potentialMatch.getOriginalRhs() == j4) {
 				pmrJ3ToJ4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == j2 && potentialMatch.getOriginalRhs() == j4) {
+			} else if (potentialMatch.getOriginalLhs() == j2
+					&& potentialMatch.getOriginalRhs() == j4) {
 				pmrJ4ToJ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == j4 && potentialMatch.getOriginalRhs() == j2) {
+			} else if (potentialMatch.getOriginalLhs() == j4
+					&& potentialMatch.getOriginalRhs() == j2) {
 				pmrJ4ToJ2 = potentialMatch;
 			}
-			
-			if (pmrJ1ToJ2 != null && pmrJ2ToJ3 != null && pmrJ3ToJ4 != null && pmrJ4ToJ2 != null) break;
+
+			if (pmrJ1ToJ2 != null && pmrJ2ToJ3 != null && pmrJ3ToJ4 != null
+					&& pmrJ4ToJ2 != null)
+				break;
 		}
-		
-		if (pmrJ1ToJ2 == null || pmrJ2ToJ3 == null || pmrJ3ToJ4 == null || pmrJ4ToJ2 == null) {
+
+		if (pmrJ1ToJ2 == null || pmrJ2ToJ3 == null || pmrJ3ToJ4 == null
+				|| pmrJ4ToJ2 == null) {
 			fail("An edge no longer exists after we defined j2 to be the master of j1.");
 		}
-		
+
 		assertTrue(pmrJ1ToJ2.getMaster() == j2);
 		assertTrue(pmrJ1ToJ2.getDuplicate() == j1);
 		if (pmrJ2ToJ3.getMaster() == j2) {
@@ -877,7 +965,7 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrJ4ToJ2.getMaster() == null);
 			assertTrue(pmrJ4ToJ2.getDuplicate() == null);
 		} else {
-			//master of this loop was set to j4
+			// master of this loop was set to j4
 			assertTrue(pmrJ2ToJ3.getMaster() == null);
 			assertTrue(pmrJ2ToJ3.getDuplicate() == null);
 			assertTrue(pmrJ3ToJ4.getMaster() == j4);
@@ -900,7 +988,7 @@ public class MatchPoolTest extends TestCase {
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
 	 * for details on the graph.
 	 */
-	public void testSetMasterWithUltimateMasterInACycle() {
+	public void testSetMasterWithUltimateMasterInACycle() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("k1");
 		SourceTableRecord k1 = pool.getSourceTableRecord(keyList);
@@ -918,42 +1006,55 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord k5 = pool.getSourceTableRecord(keyList);
 
 		pool.defineMaster(k2, k1);
-		
+
 		PotentialMatchRecord pmrK1ToK2 = null;
 		PotentialMatchRecord pmrK2ToK3 = null;
 		PotentialMatchRecord pmrK3ToK4 = null;
 		PotentialMatchRecord pmrK4ToK5 = null;
 		PotentialMatchRecord pmrK5ToK3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == k2 && potentialMatch.getOriginalRhs() == k1) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == k2
+					&& potentialMatch.getOriginalRhs() == k1) {
 				pmrK1ToK2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == k1 && potentialMatch.getOriginalRhs() == k2) {
+			} else if (potentialMatch.getOriginalLhs() == k1
+					&& potentialMatch.getOriginalRhs() == k2) {
 				pmrK1ToK2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == k2 && potentialMatch.getOriginalRhs() == k3) {
+			} else if (potentialMatch.getOriginalLhs() == k2
+					&& potentialMatch.getOriginalRhs() == k3) {
 				pmrK2ToK3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == k3 && potentialMatch.getOriginalRhs() == k2) {
+			} else if (potentialMatch.getOriginalLhs() == k3
+					&& potentialMatch.getOriginalRhs() == k2) {
 				pmrK2ToK3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == k4 && potentialMatch.getOriginalRhs() == k3) {
+			} else if (potentialMatch.getOriginalLhs() == k4
+					&& potentialMatch.getOriginalRhs() == k3) {
 				pmrK3ToK4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == k3 && potentialMatch.getOriginalRhs() == k4) {
+			} else if (potentialMatch.getOriginalLhs() == k3
+					&& potentialMatch.getOriginalRhs() == k4) {
 				pmrK3ToK4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == k5 && potentialMatch.getOriginalRhs() == k4) {
+			} else if (potentialMatch.getOriginalLhs() == k5
+					&& potentialMatch.getOriginalRhs() == k4) {
 				pmrK4ToK5 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == k4 && potentialMatch.getOriginalRhs() == k5) {
+			} else if (potentialMatch.getOriginalLhs() == k4
+					&& potentialMatch.getOriginalRhs() == k5) {
 				pmrK4ToK5 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == k5 && potentialMatch.getOriginalRhs() == k3) {
+			} else if (potentialMatch.getOriginalLhs() == k5
+					&& potentialMatch.getOriginalRhs() == k3) {
 				pmrK5ToK3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == k3 && potentialMatch.getOriginalRhs() == k5) {
+			} else if (potentialMatch.getOriginalLhs() == k3
+					&& potentialMatch.getOriginalRhs() == k5) {
 				pmrK5ToK3 = potentialMatch;
 			}
-			
-			if (pmrK1ToK2 != null && pmrK2ToK3 != null && pmrK3ToK4 != null && pmrK4ToK5 != null && pmrK5ToK3 != null) break;
+
+			if (pmrK1ToK2 != null && pmrK2ToK3 != null && pmrK3ToK4 != null
+					&& pmrK4ToK5 != null && pmrK5ToK3 != null)
+				break;
 		}
-		
-		if (pmrK1ToK2 == null || pmrK2ToK3 == null || pmrK3ToK4 == null || pmrK4ToK5 == null || pmrK5ToK3 == null) {
+
+		if (pmrK1ToK2 == null || pmrK2ToK3 == null || pmrK3ToK4 == null
+				|| pmrK4ToK5 == null || pmrK5ToK3 == null) {
 			fail("An edge no longer exists after we defined k2 to be the master of k1.");
 		}
-		
+
 		assertTrue(pmrK1ToK2.getMaster() == k2);
 		assertTrue(pmrK1ToK2.getDuplicate() == k1);
 		assertTrue(pmrK2ToK3.getMaster() == k3);
@@ -971,7 +1072,7 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrK5ToK3.getMaster() == null);
 			assertTrue(pmrK5ToK3.getDuplicate() == null);
 		} else {
-			//master of this loop was set to k5
+			// master of this loop was set to k5
 			assertTrue(pmrK3ToK4.getMaster() == null);
 			assertTrue(pmrK3ToK4.getDuplicate() == null);
 			assertTrue(pmrK4ToK5.getMaster() == k5);
@@ -980,7 +1081,7 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrK5ToK3.getDuplicate() == k3);
 		}
 	}
-	
+
 	/**
 	 * Sets the master of a node to a master that has two master. When this
 	 * matching has been completed each node should only have one master.
@@ -989,7 +1090,7 @@ public class MatchPoolTest extends TestCase {
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
 	 * for details on the graph.
 	 */
-	public void testSetMasterWhereMasterHasTwoMasters() {
+	public void testSetMasterWhereMasterHasTwoMasters() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("l1");
 		SourceTableRecord l1 = pool.getSourceTableRecord(keyList);
@@ -1004,32 +1105,39 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord l4 = pool.getSourceTableRecord(keyList);
 
 		pool.defineMaster(l2, l1);
-		
+
 		PotentialMatchRecord pmrL1ToL2 = null;
 		PotentialMatchRecord pmrL2ToL3 = null;
 		PotentialMatchRecord pmrL2ToL4 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == l2 && potentialMatch.getOriginalRhs() == l1) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == l2
+					&& potentialMatch.getOriginalRhs() == l1) {
 				pmrL1ToL2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == l1 && potentialMatch.getOriginalRhs() == l2) {
+			} else if (potentialMatch.getOriginalLhs() == l1
+					&& potentialMatch.getOriginalRhs() == l2) {
 				pmrL1ToL2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == l2 && potentialMatch.getOriginalRhs() == l3) {
+			} else if (potentialMatch.getOriginalLhs() == l2
+					&& potentialMatch.getOriginalRhs() == l3) {
 				pmrL2ToL3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == l3 && potentialMatch.getOriginalRhs() == l2) {
+			} else if (potentialMatch.getOriginalLhs() == l3
+					&& potentialMatch.getOriginalRhs() == l2) {
 				pmrL2ToL3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == l4 && potentialMatch.getOriginalRhs() == l2) {
+			} else if (potentialMatch.getOriginalLhs() == l4
+					&& potentialMatch.getOriginalRhs() == l2) {
 				pmrL2ToL4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == l2 && potentialMatch.getOriginalRhs() == l4) {
+			} else if (potentialMatch.getOriginalLhs() == l2
+					&& potentialMatch.getOriginalRhs() == l4) {
 				pmrL2ToL4 = potentialMatch;
 			}
-			
-			if (pmrL1ToL2 != null && pmrL2ToL3 != null && pmrL2ToL4 != null) break;
+
+			if (pmrL1ToL2 != null && pmrL2ToL3 != null && pmrL2ToL4 != null)
+				break;
 		}
-		
+
 		if (pmrL1ToL2 == null || pmrL2ToL3 == null || pmrL2ToL4 == null) {
 			fail("An edge no longer exists after we defined l2 to be the master of l1.");
 		}
-		
+
 		assertTrue(pmrL1ToL2.getMaster() == l2);
 		assertTrue(pmrL1ToL2.getDuplicate() == l1);
 		if (pmrL2ToL3.getMaster() == l3) {
@@ -1037,14 +1145,14 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrL2ToL4.getMaster() == l2);
 			assertTrue(pmrL2ToL4.getDuplicate() == l4);
 		} else {
-			//master was set to l4
+			// master was set to l4
 			assertTrue(pmrL2ToL3.getMaster() == l2);
 			assertTrue(pmrL2ToL3.getDuplicate() == l3);
 			assertTrue(pmrL2ToL4.getMaster() == l4);
 			assertTrue(pmrL2ToL4.getDuplicate() == l2);
 		}
 	}
-	
+
 	/**
 	 * Sets the master of a node to a master when a cycle is involved. This is
 	 * an unusual case and not something that we will normally come across. Any
@@ -1058,7 +1166,7 @@ public class MatchPoolTest extends TestCase {
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
 	 * for details on the graph.
 	 */
-	public void testSetMasterWithUltimateMasterOutsideCycle() {
+	public void testSetMasterWithUltimateMasterOutsideCycle() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("m1");
 		SourceTableRecord m1 = pool.getSourceTableRecord(keyList);
@@ -1082,7 +1190,7 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord m7 = pool.getSourceTableRecord(keyList);
 
 		pool.defineMaster(m2, m1);
-		
+
 		PotentialMatchRecord pmrM1ToM2 = null;
 		PotentialMatchRecord pmrM2ToM3 = null;
 		PotentialMatchRecord pmrM3ToM5 = null;
@@ -1090,44 +1198,63 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrM6ToM7 = null;
 		PotentialMatchRecord pmrM6ToM4 = null;
 		PotentialMatchRecord pmrM4ToM3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == m2 && potentialMatch.getOriginalRhs() == m1) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == m2
+					&& potentialMatch.getOriginalRhs() == m1) {
 				pmrM1ToM2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m1 && potentialMatch.getOriginalRhs() == m2) {
+			} else if (potentialMatch.getOriginalLhs() == m1
+					&& potentialMatch.getOriginalRhs() == m2) {
 				pmrM1ToM2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m2 && potentialMatch.getOriginalRhs() == m3) {
+			} else if (potentialMatch.getOriginalLhs() == m2
+					&& potentialMatch.getOriginalRhs() == m3) {
 				pmrM2ToM3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m3 && potentialMatch.getOriginalRhs() == m2) {
+			} else if (potentialMatch.getOriginalLhs() == m3
+					&& potentialMatch.getOriginalRhs() == m2) {
 				pmrM2ToM3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m5 && potentialMatch.getOriginalRhs() == m3) {
+			} else if (potentialMatch.getOriginalLhs() == m5
+					&& potentialMatch.getOriginalRhs() == m3) {
 				pmrM3ToM5 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m3 && potentialMatch.getOriginalRhs() == m5) {
+			} else if (potentialMatch.getOriginalLhs() == m3
+					&& potentialMatch.getOriginalRhs() == m5) {
 				pmrM3ToM5 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m5 && potentialMatch.getOriginalRhs() == m6) {
+			} else if (potentialMatch.getOriginalLhs() == m5
+					&& potentialMatch.getOriginalRhs() == m6) {
 				pmrM5ToM6 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m6 && potentialMatch.getOriginalRhs() == m5) {
+			} else if (potentialMatch.getOriginalLhs() == m6
+					&& potentialMatch.getOriginalRhs() == m5) {
 				pmrM5ToM6 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m6 && potentialMatch.getOriginalRhs() == m7) {
+			} else if (potentialMatch.getOriginalLhs() == m6
+					&& potentialMatch.getOriginalRhs() == m7) {
 				pmrM6ToM7 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m7 && potentialMatch.getOriginalRhs() == m6) {
+			} else if (potentialMatch.getOriginalLhs() == m7
+					&& potentialMatch.getOriginalRhs() == m6) {
 				pmrM6ToM7 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m6 && potentialMatch.getOriginalRhs() == m4) {
+			} else if (potentialMatch.getOriginalLhs() == m6
+					&& potentialMatch.getOriginalRhs() == m4) {
 				pmrM6ToM4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m4 && potentialMatch.getOriginalRhs() == m6) {
+			} else if (potentialMatch.getOriginalLhs() == m4
+					&& potentialMatch.getOriginalRhs() == m6) {
 				pmrM6ToM4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m4 && potentialMatch.getOriginalRhs() == m3) {
+			} else if (potentialMatch.getOriginalLhs() == m4
+					&& potentialMatch.getOriginalRhs() == m3) {
 				pmrM4ToM3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == m3 && potentialMatch.getOriginalRhs() == m4) {
+			} else if (potentialMatch.getOriginalLhs() == m3
+					&& potentialMatch.getOriginalRhs() == m4) {
 				pmrM4ToM3 = potentialMatch;
 			}
-			
-			if (pmrM1ToM2 != null && pmrM2ToM3 != null && pmrM3ToM5 != null && pmrM5ToM6 != null && pmrM6ToM7 != null && pmrM6ToM4 != null && pmrM4ToM3 != null) break;
+
+			if (pmrM1ToM2 != null && pmrM2ToM3 != null && pmrM3ToM5 != null
+					&& pmrM5ToM6 != null && pmrM6ToM7 != null
+					&& pmrM6ToM4 != null && pmrM4ToM3 != null)
+				break;
 		}
-		
-		if (pmrM1ToM2 == null || pmrM2ToM3 == null || pmrM3ToM5 == null || pmrM5ToM6 == null || pmrM6ToM7 == null || pmrM6ToM4 == null || pmrM4ToM3 == null) {
+
+		if (pmrM1ToM2 == null || pmrM2ToM3 == null || pmrM3ToM5 == null
+				|| pmrM5ToM6 == null || pmrM6ToM7 == null || pmrM6ToM4 == null
+				|| pmrM4ToM3 == null) {
 			fail("An edge no longer exists after we defined m2 to be the master of m1.");
 		}
-		
+
 		assertTrue(pmrM1ToM2.getMaster() == m2);
 		assertTrue(pmrM1ToM2.getDuplicate() == m1);
 		assertTrue(pmrM2ToM3.getMaster() == m3);
@@ -1148,8 +1275,9 @@ public class MatchPoolTest extends TestCase {
 				assertTrue(pmrM5ToM6.getMaster() == m6);
 				assertTrue(pmrM3ToM5.getMaster() == null);
 			}
-			
-		} else if (pmrM5ToM6.getMaster() == m6 && pmrM6ToM4.getMaster() == m6 && pmrM6ToM7.getMaster() == m6) {
+
+		} else if (pmrM5ToM6.getMaster() == m6 && pmrM6ToM4.getMaster() == m6
+				&& pmrM6ToM7.getMaster() == m6) {
 			if (pmrM3ToM5.getMaster() == m5) {
 				assertTrue(pmrM4ToM3.getMaster() == null);
 			} else {
@@ -1177,7 +1305,7 @@ public class MatchPoolTest extends TestCase {
 			fail("We don't know what happened to the master, but we know it's wrong!");
 		}
 	}
-	
+
 	/**
 	 * Sets the master of a node to a master that will create a cycle in the
 	 * graph. The end result should have no cycles.
@@ -1186,7 +1314,7 @@ public class MatchPoolTest extends TestCase {
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
 	 * for details on the graph.
 	 */
-	public void testSetMasterToCreateACycle() {
+	public void testSetMasterToCreateACycle() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("i2");
 		SourceTableRecord i2 = pool.getSourceTableRecord(keyList);
@@ -1198,32 +1326,39 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord i1 = pool.getSourceTableRecord(keyList);
 
 		pool.defineMaster(i1, i3);
-		
+
 		PotentialMatchRecord pmrI1ToI2 = null;
 		PotentialMatchRecord pmrI2ToI3 = null;
 		PotentialMatchRecord pmrI3ToI1 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == i1 && potentialMatch.getOriginalRhs() == i2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == i1
+					&& potentialMatch.getOriginalRhs() == i2) {
 				pmrI1ToI2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == i2 && potentialMatch.getOriginalRhs() == i1) {
+			} else if (potentialMatch.getOriginalLhs() == i2
+					&& potentialMatch.getOriginalRhs() == i1) {
 				pmrI1ToI2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == i3 && potentialMatch.getOriginalRhs() == i2) {
+			} else if (potentialMatch.getOriginalLhs() == i3
+					&& potentialMatch.getOriginalRhs() == i2) {
 				pmrI2ToI3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == i2 && potentialMatch.getOriginalRhs() == i3) {
+			} else if (potentialMatch.getOriginalLhs() == i2
+					&& potentialMatch.getOriginalRhs() == i3) {
 				pmrI2ToI3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == i3 && potentialMatch.getOriginalRhs() == i1) {
+			} else if (potentialMatch.getOriginalLhs() == i3
+					&& potentialMatch.getOriginalRhs() == i1) {
 				pmrI3ToI1 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == i1 && potentialMatch.getOriginalRhs() == i3) {
+			} else if (potentialMatch.getOriginalLhs() == i1
+					&& potentialMatch.getOriginalRhs() == i3) {
 				pmrI3ToI1 = potentialMatch;
 			}
-			
-			if (pmrI1ToI2 != null && pmrI2ToI3 != null && pmrI3ToI1 != null) break;
+
+			if (pmrI1ToI2 != null && pmrI2ToI3 != null && pmrI3ToI1 != null)
+				break;
 		}
-		
+
 		if (pmrI1ToI2 == null || pmrI2ToI3 == null || pmrI3ToI1 == null) {
 			fail("An edge no longer exists after we defined i1 as the master of i3.");
 		}
-		
+
 		assertTrue(pmrI3ToI1.getMaster() == i1);
 		assertTrue(pmrI3ToI1.getDuplicate() == i3);
 		if (pmrI1ToI2.getMaster() == i1) {
@@ -1232,7 +1367,7 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrI2ToI3.getDuplicate() == null);
 			assertTrue(pmrI2ToI3.getMatchStatus() == MatchType.UNMATCH);
 		} else {
-			//pmrI2ToI3's master is i3
+			// pmrI2ToI3's master is i3
 			assertTrue(pmrI2ToI3.getMaster() == i2);
 			assertTrue(pmrI2ToI3.getDuplicate() == i3);
 			assertTrue(pmrI1ToI2.getMaster() == null);
@@ -1240,14 +1375,16 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrI1ToI2.getMatchStatus() == MatchType.UNMATCH);
 		}
 	}
-	
+
 	/**
-     * Sets the master of a node in a graph when we need to make a synthetic edge
-     * <p>
-     * See the image for {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
-     * for details on the graph.
-     */
-    public void testSetMasterCreatingASyntheticEdge() {
+	 * Sets the master of a node in a graph when we need to make a synthetic
+	 * edge
+	 * <p>
+	 * See the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 */
+	public void testSetMasterCreatingASyntheticEdge() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
 		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
@@ -1257,34 +1394,41 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("a3");
 		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(a3, a1);
-		
+
 		PotentialMatchRecord pmrA1ToA2 = null;
 		PotentialMatchRecord pmrA2ToA3 = null;
 		PotentialMatchRecord pmrA1ToA3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == a1 && potentialMatch.getOriginalRhs() == a2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a3 && potentialMatch.getOriginalRhs() == a2) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a3 && potentialMatch.getOriginalRhs() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a1 && potentialMatch.getOriginalRhs() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA1ToA3 = potentialMatch;
 			}
-			
-			if (pmrA1ToA2 != null && pmrA2ToA3 != null && pmrA1ToA3 != null) break;
+
+			if (pmrA1ToA2 != null && pmrA2ToA3 != null && pmrA1ToA3 != null)
+				break;
 		}
-		
+
 		if (pmrA1ToA2 == null || pmrA2ToA3 == null || pmrA1ToA3 == null) {
 			fail("An edge no longer exists after we defined a3 as the master of a1.");
 		}
-		
+
 		assertTrue(pmrA1ToA2.getMaster() == null);
 		assertTrue(pmrA1ToA2.getDuplicate() == null);
 		assertTrue(pmrA2ToA3.getMaster() == null);
@@ -1292,12 +1436,12 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrA1ToA3.getDuplicate() == a1);
 		assertTrue(pmrA1ToA3.isSynthetic());
 	}
-    
-    /**
-     * This test removes a defined connection between two nodes.
-     */
-    public void testDefiningNoMatchFromMatched() {
-    	List<Object> keyList = new ArrayList<Object>();
+
+	/**
+	 * This test removes a defined connection between two nodes.
+	 */
+	public void testDefiningNoMatchFromMatched() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("b2");
 		SourceTableRecord b2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -1306,42 +1450,47 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("b1");
 		SourceTableRecord b1 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineNoMatch(b2, b1);
-		
+
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == b1 && potentialMatch.getOriginalRhs() == b2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b1) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b3 && potentialMatch.getOriginalRhs() == b2) {
+			} else if (potentialMatch.getOriginalLhs() == b3
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b3) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
-			
-			if (pmrB1ToB2 != null && pmrB2ToB3 != null) break;
+
+			if (pmrB1ToB2 != null && pmrB2ToB3 != null)
+				break;
 		}
-		
+
 		if (pmrB1ToB2 == null || pmrB2ToB3 == null) {
 			fail("An edge no longer exists after we defined no match between b2 and b1.");
 		}
-		
+
 		assertTrue(pmrB1ToB2.getMaster() == null);
 		assertTrue(pmrB1ToB2.getDuplicate() == null);
 		assertTrue(pmrB2ToB3.getMaster() == null);
 		assertTrue(pmrB2ToB3.getDuplicate() == null);
 		assertTrue(pmrB1ToB2.getMatchStatus() == MatchType.NOMATCH);
-    }
-    
-    /**
+	}
+
+	/**
 	 * Testing the defineNoMatchToAny method. The method should remove both the
 	 * match defining the source table record as a master and the match defining
 	 * it as a duplicate.
 	 */
-    public void testDefineNoMatchOfAny() {
+	public void testDefineNoMatchOfAny() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("cycle2");
 		SourceTableRecord cycle2 = pool.getSourceTableRecord(keyList);
@@ -1353,29 +1502,38 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord cycle1 = pool.getSourceTableRecord(keyList);
 
 		pool.defineNoMatchOfAny(cycle2);
-		
+
 		PotentialMatchRecord pmrCycle1ToCycle2 = null;
 		PotentialMatchRecord pmrCycle2ToCycle3 = null;
 		PotentialMatchRecord pmrCycle3ToCycle1 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == cycle1 && potentialMatch.getOriginalRhs() == cycle2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle2 && potentialMatch.getOriginalRhs() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle3 && potentialMatch.getOriginalRhs() == cycle2) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle2 && potentialMatch.getOriginalRhs() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle3 && potentialMatch.getOriginalRhs() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle3ToCycle1 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle1 && potentialMatch.getOriginalRhs() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle3ToCycle1 = potentialMatch;
 			}
-			
-			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null && pmrCycle3ToCycle1 != null) break;
+
+			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null
+					&& pmrCycle3ToCycle1 != null)
+				break;
 		}
-		
-		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle3ToCycle1 == null) {
+
+		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null
+				|| pmrCycle3ToCycle1 == null) {
 			fail("An edge no longer exists after we defined cycle2 to not match any other connected nodes.");
 		}
 
@@ -1387,14 +1545,14 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrCycle2ToCycle3.getMatchStatus() == MatchType.NOMATCH);
 		assertTrue(pmrCycle3ToCycle1.getMaster() == cycle1);
 		assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle3);
-    }
-    
-    /**
+	}
+
+	/**
 	 * Sets the potential match record between two source table records that was
 	 * unmatched to be no match.
 	 */
-    public void testDefiningNoMatchFromUnmatched() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testDefiningNoMatchFromUnmatched() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("b2");
 		SourceTableRecord b2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -1403,42 +1561,47 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("b1");
 		SourceTableRecord b1 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineNoMatch(b2, b3);
-		
+
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == b1 && potentialMatch.getOriginalRhs() == b2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b1) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b3 && potentialMatch.getOriginalRhs() == b2) {
+			} else if (potentialMatch.getOriginalLhs() == b3
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b3) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
-			
-			if (pmrB1ToB2 != null && pmrB2ToB3 != null) break;
+
+			if (pmrB1ToB2 != null && pmrB2ToB3 != null)
+				break;
 		}
-		
+
 		if (pmrB1ToB2 == null || pmrB2ToB3 == null) {
 			fail("An edge no longer exists after we defined no match between b2 and b3.");
 		}
-		
+
 		assertTrue(pmrB1ToB2.getMaster() == b1);
 		assertTrue(pmrB1ToB2.getDuplicate() == b2);
 		assertTrue(pmrB2ToB3.getMaster() == null);
 		assertTrue(pmrB2ToB3.getDuplicate() == null);
 		assertTrue(pmrB2ToB3.getMatchStatus() == MatchType.NOMATCH);
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test defines two nodes that were not directly connected before to be
 	 * labeled as having no match between them.
 	 */
-    public void testDefiningNoMatchCreatingSynthetic() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testDefiningNoMatchCreatingSynthetic() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
 		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -1447,34 +1610,41 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("a3");
 		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineNoMatch(a3, a1);
-		
+
 		PotentialMatchRecord pmrA1ToA2 = null;
 		PotentialMatchRecord pmrA2ToA3 = null;
 		PotentialMatchRecord pmrA1ToA3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == a1 && potentialMatch.getOriginalRhs() == a2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a3 && potentialMatch.getOriginalRhs() == a2) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a2) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a2 && potentialMatch.getOriginalRhs() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a2
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA2ToA3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a3 && potentialMatch.getOriginalRhs() == a1) {
+			} else if (potentialMatch.getOriginalLhs() == a3
+					&& potentialMatch.getOriginalRhs() == a1) {
 				pmrA1ToA3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == a1 && potentialMatch.getOriginalRhs() == a3) {
+			} else if (potentialMatch.getOriginalLhs() == a1
+					&& potentialMatch.getOriginalRhs() == a3) {
 				pmrA1ToA3 = potentialMatch;
 			}
-			
-			if (pmrA1ToA2 != null && pmrA2ToA3 != null && pmrA1ToA3 != null) break;
+
+			if (pmrA1ToA2 != null && pmrA2ToA3 != null && pmrA1ToA3 != null)
+				break;
 		}
-		
+
 		if (pmrA1ToA2 == null || pmrA2ToA3 == null || pmrA1ToA3 == null) {
 			fail("An edge no longer exists after we defined no match between a1 and a3.");
 		}
-		
+
 		assertTrue(pmrA1ToA2.getMaster() == null);
 		assertTrue(pmrA1ToA2.getDuplicate() == null);
 		assertTrue(pmrA2ToA3.getMaster() == null);
@@ -1482,14 +1652,14 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrA1ToA3.getDuplicate() == null);
 		assertTrue(pmrA1ToA3.getMatchStatus() == MatchType.NOMATCH);
 		assertTrue(pmrA1ToA3.isSynthetic());
-    }
-    
-    /**
+	}
+
+	/**
 	 * Testing the defineUnmatchAll method. The method should remove both the
 	 * match defining the source table record as a master and the match defining
 	 * it as a duplicate and set the edges to be unmatched.
 	 */
-    public void testDefineUnmatchAll() {
+	public void testDefineUnmatchAll() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("cycle2");
 		SourceTableRecord cycle2 = pool.getSourceTableRecord(keyList);
@@ -1501,29 +1671,38 @@ public class MatchPoolTest extends TestCase {
 		SourceTableRecord cycle1 = pool.getSourceTableRecord(keyList);
 
 		pool.defineUnmatchAll(cycle2);
-		
+
 		PotentialMatchRecord pmrCycle1ToCycle2 = null;
 		PotentialMatchRecord pmrCycle2ToCycle3 = null;
 		PotentialMatchRecord pmrCycle3ToCycle1 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == cycle1 && potentialMatch.getOriginalRhs() == cycle2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle2 && potentialMatch.getOriginalRhs() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle1ToCycle2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle3 && potentialMatch.getOriginalRhs() == cycle2) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle2) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle2 && potentialMatch.getOriginalRhs() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle2
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle2ToCycle3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle3 && potentialMatch.getOriginalRhs() == cycle1) {
+			} else if (potentialMatch.getOriginalLhs() == cycle3
+					&& potentialMatch.getOriginalRhs() == cycle1) {
 				pmrCycle3ToCycle1 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == cycle1 && potentialMatch.getOriginalRhs() == cycle3) {
+			} else if (potentialMatch.getOriginalLhs() == cycle1
+					&& potentialMatch.getOriginalRhs() == cycle3) {
 				pmrCycle3ToCycle1 = potentialMatch;
 			}
-			
-			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null && pmrCycle3ToCycle1 != null) break;
+
+			if (pmrCycle1ToCycle2 != null && pmrCycle2ToCycle3 != null
+					&& pmrCycle3ToCycle1 != null)
+				break;
 		}
-		
-		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null || pmrCycle3ToCycle1 == null) {
+
+		if (pmrCycle1ToCycle2 == null || pmrCycle2ToCycle3 == null
+				|| pmrCycle3ToCycle1 == null) {
 			fail("An edge no longer exists after we unmatched cycle2 from cycle1 and cycle3.");
 		}
 
@@ -1538,15 +1717,15 @@ public class MatchPoolTest extends TestCase {
 		} else {
 			assertTrue(pmrCycle3ToCycle1.getMaster() == cycle3);
 			assertTrue(pmrCycle3ToCycle1.getDuplicate() == cycle1);
-    	}
-    }
+		}
+	}
 
-    /**
+	/**
 	 * Sets the potential match record between two source table records that was
 	 * matched to be unmatched.
 	 */
-    public void testDefiningUnmatchedForMatched() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testDefiningUnmatchedForMatched() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("b2");
 		SourceTableRecord b2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -1555,42 +1734,47 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("b1");
 		SourceTableRecord b1 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineUnmatched(b2, b1);
-		
+
 		PotentialMatchRecord pmrB1ToB2 = null;
 		PotentialMatchRecord pmrB2ToB3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == b1 && potentialMatch.getOriginalRhs() == b2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == b1
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b1) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b1) {
 				pmrB1ToB2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b3 && potentialMatch.getOriginalRhs() == b2) {
+			} else if (potentialMatch.getOriginalLhs() == b3
+					&& potentialMatch.getOriginalRhs() == b2) {
 				pmrB2ToB3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == b2 && potentialMatch.getOriginalRhs() == b3) {
+			} else if (potentialMatch.getOriginalLhs() == b2
+					&& potentialMatch.getOriginalRhs() == b3) {
 				pmrB2ToB3 = potentialMatch;
 			}
-			
-			if (pmrB1ToB2 != null && pmrB2ToB3 != null) break;
+
+			if (pmrB1ToB2 != null && pmrB2ToB3 != null)
+				break;
 		}
-		
+
 		if (pmrB1ToB2 == null || pmrB2ToB3 == null) {
 			fail("An edge no longer exists after we unmatched b1 and b2.");
 		}
-		
+
 		assertTrue(pmrB1ToB2.getMaster() == null);
 		assertTrue(pmrB1ToB2.getDuplicate() == null);
 		assertTrue(pmrB2ToB3.getMaster() == null);
 		assertTrue(pmrB2ToB3.getDuplicate() == null);
 		assertTrue(pmrB1ToB2.getMatchStatus() == MatchType.UNMATCH);
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test sets a potential match record that was defined as a match to be
 	 * a no match.
 	 */
-    public void testNoMatchToMaster() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testNoMatchToMaster() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("e2");
 		SourceTableRecord e2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -1599,42 +1783,47 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("e1");
 		SourceTableRecord e1 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineNoMatch(e2, e1);
-		
+
 		PotentialMatchRecord pmrE1ToE2 = null;
 		PotentialMatchRecord pmrE2ToE3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == e1 && potentialMatch.getOriginalRhs() == e2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == e1
+					&& potentialMatch.getOriginalRhs() == e2) {
 				pmrE1ToE2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == e2 && potentialMatch.getOriginalRhs() == e1) {
+			} else if (potentialMatch.getOriginalLhs() == e2
+					&& potentialMatch.getOriginalRhs() == e1) {
 				pmrE1ToE2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == e3 && potentialMatch.getOriginalRhs() == e2) {
+			} else if (potentialMatch.getOriginalLhs() == e3
+					&& potentialMatch.getOriginalRhs() == e2) {
 				pmrE2ToE3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == e2 && potentialMatch.getOriginalRhs() == e3) {
+			} else if (potentialMatch.getOriginalLhs() == e2
+					&& potentialMatch.getOriginalRhs() == e3) {
 				pmrE2ToE3 = potentialMatch;
 			}
-			
-			if (pmrE1ToE2 != null && pmrE2ToE3 != null) break;
+
+			if (pmrE1ToE2 != null && pmrE2ToE3 != null)
+				break;
 		}
-		
+
 		if (pmrE1ToE2 == null || pmrE2ToE3 == null) {
 			fail("An edge no longer exists after we defined no match between e1 and e2.");
 		}
-		
+
 		assertTrue(pmrE1ToE2.getMaster() == null);
 		assertTrue(pmrE1ToE2.getDuplicate() == null);
 		assertTrue(pmrE2ToE3.getMaster() == e2);
 		assertTrue(pmrE2ToE3.getDuplicate() == e3);
 		assertTrue(pmrE1ToE2.getMatchStatus() == MatchType.NOMATCH);
-    }
-    
-    /**
-	 * This test sets a potential match record that was defined as a no match
-	 * to be a match.
+	}
+
+	/**
+	 * This test sets a potential match record that was defined as a no match to
+	 * be a match.
 	 */
-    public void testMatchReplacingNoMatch() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testMatchReplacingNoMatch() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("o2");
 		SourceTableRecord o2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -1643,43 +1832,48 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("o1");
 		SourceTableRecord o1 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(o2, o1);
-		
+
 		PotentialMatchRecord pmrO1ToO3 = null;
 		PotentialMatchRecord pmrO2ToO3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == o1 && potentialMatch.getOriginalRhs() == o3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == o1
+					&& potentialMatch.getOriginalRhs() == o3) {
 				pmrO1ToO3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == o3 && potentialMatch.getOriginalRhs() == o1) {
+			} else if (potentialMatch.getOriginalLhs() == o3
+					&& potentialMatch.getOriginalRhs() == o1) {
 				pmrO1ToO3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == o3 && potentialMatch.getOriginalRhs() == o2) {
+			} else if (potentialMatch.getOriginalLhs() == o3
+					&& potentialMatch.getOriginalRhs() == o2) {
 				pmrO2ToO3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == o2 && potentialMatch.getOriginalRhs() == o3) {
+			} else if (potentialMatch.getOriginalLhs() == o2
+					&& potentialMatch.getOriginalRhs() == o3) {
 				pmrO2ToO3 = potentialMatch;
 			}
-			
-			if (pmrO1ToO3 != null && pmrO2ToO3 != null) break;
+
+			if (pmrO1ToO3 != null && pmrO2ToO3 != null)
+				break;
 		}
-		
+
 		if (pmrO1ToO3 == null || pmrO2ToO3 == null) {
 			fail("An edge no longer exists after we defined a match between o1 and o2.");
 		}
-		
+
 		assertTrue(pmrO1ToO3.getMaster() == o3);
 		assertTrue(pmrO1ToO3.getDuplicate() == o1);
 		assertTrue(pmrO2ToO3.getMaster() == o3);
 		assertTrue(pmrO2ToO3.getDuplicate() == o2);
 		assertTrue(pmrO1ToO3.getMatchStatus() == MatchType.MATCH);
-    }
-    
-    /**
-	 * This test sets a potential match record that was defined as a no match
-	 * to be a match. This test is similar to the previous test of replacing
-	 * a no match with a match but it is more complex.
+	}
+
+	/**
+	 * This test sets a potential match record that was defined as a no match to
+	 * be a match. This test is similar to the previous test of replacing a no
+	 * match with a match but it is more complex.
 	 */
-    public void testMatchReplacingNoMatchComplex() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testMatchReplacingNoMatchComplex() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("p2");
 		SourceTableRecord p2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -1691,44 +1885,60 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("p4");
 		SourceTableRecord p4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(p4, p1);
-		
+
 		PotentialMatchRecord pmrP1ToP2 = null;
 		PotentialMatchRecord pmrP1ToP3 = null;
 		PotentialMatchRecord pmrP1ToP4 = null;
 		PotentialMatchRecord pmrP2ToP3 = null;
 		PotentialMatchRecord pmrP4ToP3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == p1 && potentialMatch.getOriginalRhs() == p3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p3 && potentialMatch.getOriginalRhs() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p3 && potentialMatch.getOriginalRhs() == p2) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p2) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p2 && potentialMatch.getOriginalRhs() == p3) {
+			} else if (potentialMatch.getOriginalLhs() == p2
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p1 && potentialMatch.getOriginalRhs() == p2) {
+			} else if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p2) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p2 && potentialMatch.getOriginalRhs() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p2
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p1 && potentialMatch.getOriginalRhs() == p4) {
+			} else if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p4) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p4 && potentialMatch.getOriginalRhs() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p4
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p3 && potentialMatch.getOriginalRhs() == p4) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p4) {
 				pmrP4ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p4 && potentialMatch.getOriginalRhs() == p3) {
+			} else if (potentialMatch.getOriginalLhs() == p4
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP4ToP3 = potentialMatch;
 			}
-			
-			if (pmrP1ToP3 != null && pmrP2ToP3 != null && pmrP1ToP2 != null && pmrP1ToP4 != null && pmrP4ToP3 != null) break;
+
+			if (pmrP1ToP3 != null && pmrP2ToP3 != null && pmrP1ToP2 != null
+					&& pmrP1ToP4 != null && pmrP4ToP3 != null)
+				break;
 		}
-		
-		if (pmrP1ToP3 == null || pmrP2ToP3 == null || pmrP1ToP2 == null || pmrP1ToP4 == null || pmrP4ToP3 == null) {
+
+		if (pmrP1ToP3 == null || pmrP2ToP3 == null || pmrP1ToP2 == null
+				|| pmrP1ToP4 == null || pmrP4ToP3 == null) {
 			fail("An edge no longer exists after we defined a match between p1 and p4.");
 		}
-		
+
+		// Not all branches of this test have been exercised. If this starts
+		// failing, think hard
+		// about whether the test makes sense.
 		if (pmrP2ToP3.getMaster() == p3) {
 			assertTrue(pmrP2ToP3.getDuplicate() == p2);
 			if (pmrP4ToP3.getMaster() == p3) {
@@ -1750,7 +1960,7 @@ public class MatchPoolTest extends TestCase {
 					assertTrue(pmrP1ToP4.getDuplicate() == null);
 					assertTrue(pmrP1ToP4.getMatchStatus() == MatchType.UNMATCH);
 				} else {
-					//pmrP1ToP4's master must be p4
+					// pmrP1ToP4's master must be p4
 					assertTrue(pmrP1ToP4.getMaster() == p4);
 					assertTrue(pmrP1ToP4.getDuplicate() == p1);
 					assertTrue(pmrP1ToP3.getMaster() == null);
@@ -1761,7 +1971,7 @@ public class MatchPoolTest extends TestCase {
 					assertTrue(pmrP1ToP2.getMatchStatus() == MatchType.UNMATCH);
 				}
 			} else {
-				//pmrP1ToP4's master must be p1
+				// pmrP1ToP4's master must be p1
 				assertTrue(pmrP1ToP4.getMaster() == p1);
 				assertTrue(pmrP1ToP4.getDuplicate() == p4);
 				assertTrue(pmrP4ToP3.getMaster() == null);
@@ -1773,7 +1983,7 @@ public class MatchPoolTest extends TestCase {
 					assertTrue(pmrP1ToP3.getDuplicate() == null);
 					assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
 				} else {
-					//pmrP1ToP3's master must be p3
+					// pmrP1ToP3's master must be p3
 					assertTrue(pmrP1ToP3.getMaster() == p3);
 					assertTrue(pmrP1ToP3.getDuplicate() == p1);
 					assertTrue(pmrP1ToP2.getMaster() == null);
@@ -1782,7 +1992,7 @@ public class MatchPoolTest extends TestCase {
 				}
 			}
 		} else {
-			//pmrP1ToP2's master must be p1
+			// pmrP1ToP2's master must be p1
 			assertTrue(pmrP1ToP2.getMaster() == p1);
 			assertTrue(pmrP1ToP2.getDuplicate() == p2);
 			assertTrue(pmrP2ToP3.getMaster() == null);
@@ -1796,7 +2006,7 @@ public class MatchPoolTest extends TestCase {
 					assertTrue(pmrP1ToP4.getDuplicate() == null);
 					assertTrue(pmrP1ToP4.getMatchStatus() == MatchType.UNMATCH);
 				} else {
-					//pmrP1ToP4's master must be p4
+					// pmrP1ToP4's master must be p4
 					assertTrue(pmrP1ToP4.getMaster() == p4);
 					assertTrue(pmrP1ToP4.getDuplicate() == p1);
 					assertTrue(pmrP1ToP3.getMaster() == null);
@@ -1804,7 +2014,7 @@ public class MatchPoolTest extends TestCase {
 					assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
 				}
 			} else {
-				//pmrP1ToP4's master must be p1
+				// pmrP1ToP4's master must be p1
 				assertTrue(pmrP1ToP4.getMaster() == p1);
 				assertTrue(pmrP1ToP4.getDuplicate() == p4);
 				assertTrue(pmrP4ToP3.getMaster() == null);
@@ -1814,15 +2024,15 @@ public class MatchPoolTest extends TestCase {
 				assertTrue(pmrP1ToP3.getDuplicate() == p1);
 			}
 		}
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test confirms that if a node is not a match of a different node
-	 * setting one of the nodes to be a master of a different node will not 
+	 * setting one of the nodes to be a master of a different node will not
 	 * affect the relationship.
 	 */
-    public void testMatchDoesNotModifyUnrelatedNoMatches() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testMatchDoesNotModifyUnrelatedNoMatches() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("q2");
 		SourceTableRecord q2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -1834,44 +2044,57 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("q4");
 		SourceTableRecord q4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(q3, q4);
-		
+
 		PotentialMatchRecord pmrQ1ToQ2 = null;
 		PotentialMatchRecord pmrQ1ToQ3 = null;
 		PotentialMatchRecord pmrQ1ToQ4 = null;
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
-			
-			if (pmrQ1ToQ3 != null && pmrQ2ToQ3 != null && pmrQ1ToQ2 != null && pmrQ1ToQ4 != null && pmrQ4ToQ3 != null) break;
+
+			if (pmrQ1ToQ3 != null && pmrQ2ToQ3 != null && pmrQ1ToQ2 != null
+					&& pmrQ1ToQ4 != null && pmrQ4ToQ3 != null)
+				break;
 		}
-		
-		if (pmrQ1ToQ3 == null || pmrQ2ToQ3 == null || pmrQ1ToQ2 == null || pmrQ1ToQ4 == null || pmrQ4ToQ3 == null) {
+
+		if (pmrQ1ToQ3 == null || pmrQ2ToQ3 == null || pmrQ1ToQ2 == null
+				|| pmrQ1ToQ4 == null || pmrQ4ToQ3 == null) {
 			fail("An edge no longer exists after we defined a match between q3 and q4.");
 		}
-		
+
 		assertTrue(pmrQ1ToQ2.getMaster() == null);
 		assertTrue(pmrQ1ToQ2.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
@@ -1885,14 +2108,14 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrQ2ToQ3.getDuplicate() == q2);
 		assertTrue(pmrQ4ToQ3.getMaster() == q3);
 		assertTrue(pmrQ4ToQ3.getDuplicate() == q4);
-    }
-    
-    /**
-	 * This test checks that if we define a no match within a cycle
-	 * then the cycle will be broken.
+	}
+
+	/**
+	 * This test checks that if we define a no match within a cycle then the
+	 * cycle will be broken.
 	 */
-    public void testNoMatchRemovesCycles() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testNoMatchRemovesCycles() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("r2");
 		SourceTableRecord r2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -1904,44 +2127,57 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("r4");
 		SourceTableRecord r4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineNoMatch(r1, r3);
-		
+
 		PotentialMatchRecord pmrR1ToR2 = null;
 		PotentialMatchRecord pmrR1ToR3 = null;
 		PotentialMatchRecord pmrR1ToR4 = null;
 		PotentialMatchRecord pmrR2ToR3 = null;
 		PotentialMatchRecord pmrR4ToR3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == r1 && potentialMatch.getOriginalRhs() == r3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == r1
+					&& potentialMatch.getOriginalRhs() == r3) {
 				pmrR1ToR3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r3 && potentialMatch.getOriginalRhs() == r1) {
+			} else if (potentialMatch.getOriginalLhs() == r3
+					&& potentialMatch.getOriginalRhs() == r1) {
 				pmrR1ToR3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r3 && potentialMatch.getOriginalRhs() == r2) {
+			} else if (potentialMatch.getOriginalLhs() == r3
+					&& potentialMatch.getOriginalRhs() == r2) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r2 && potentialMatch.getOriginalRhs() == r3) {
+			} else if (potentialMatch.getOriginalLhs() == r2
+					&& potentialMatch.getOriginalRhs() == r3) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r1 && potentialMatch.getOriginalRhs() == r2) {
+			} else if (potentialMatch.getOriginalLhs() == r1
+					&& potentialMatch.getOriginalRhs() == r2) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r2 && potentialMatch.getOriginalRhs() == r1) {
+			} else if (potentialMatch.getOriginalLhs() == r2
+					&& potentialMatch.getOriginalRhs() == r1) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r1 && potentialMatch.getOriginalRhs() == r4) {
+			} else if (potentialMatch.getOriginalLhs() == r1
+					&& potentialMatch.getOriginalRhs() == r4) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r4 && potentialMatch.getOriginalRhs() == r1) {
+			} else if (potentialMatch.getOriginalLhs() == r4
+					&& potentialMatch.getOriginalRhs() == r1) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r3 && potentialMatch.getOriginalRhs() == r4) {
+			} else if (potentialMatch.getOriginalLhs() == r3
+					&& potentialMatch.getOriginalRhs() == r4) {
 				pmrR4ToR3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r4 && potentialMatch.getOriginalRhs() == r3) {
+			} else if (potentialMatch.getOriginalLhs() == r4
+					&& potentialMatch.getOriginalRhs() == r3) {
 				pmrR4ToR3 = potentialMatch;
 			}
-			
-			if (pmrR1ToR3 != null && pmrR2ToR3 != null && pmrR1ToR2 != null && pmrR1ToR4 != null && pmrR4ToR3 != null) break;
+
+			if (pmrR1ToR3 != null && pmrR2ToR3 != null && pmrR1ToR2 != null
+					&& pmrR1ToR4 != null && pmrR4ToR3 != null)
+				break;
 		}
-		
-		if (pmrR1ToR3 == null || pmrR2ToR3 == null || pmrR1ToR2 == null || pmrR1ToR4 == null || pmrR4ToR3 == null) {
+
+		if (pmrR1ToR3 == null || pmrR2ToR3 == null || pmrR1ToR2 == null
+				|| pmrR1ToR4 == null || pmrR4ToR3 == null) {
 			fail("An edge no longer exists after we defined a match between p1 and p4.");
 		}
-		
+
 		if (pmrR1ToR2.getMaster() == r2) {
 			assertTrue(pmrR1ToR2.getDuplicate() == r1);
 			assertTrue(pmrR1ToR4.getMaster() == r1);
@@ -1951,13 +2187,13 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrR1ToR4.getMaster() == r1);
 			assertTrue(pmrR1ToR4.getDuplicate() == r4);
 		} else {
-			//r4 is the ultimate master
+			// r4 is the ultimate master
 			assertTrue(pmrR1ToR2.getMaster() == r1);
 			assertTrue(pmrR1ToR2.getDuplicate() == r2);
 			assertTrue(pmrR1ToR4.getMaster() == r4);
 			assertTrue(pmrR1ToR4.getDuplicate() == r1);
 		}
-		
+
 		assertTrue(pmrR1ToR3.getMaster() == null);
 		assertTrue(pmrR1ToR3.getDuplicate() == null);
 		assertTrue(pmrR1ToR3.getMatchStatus() == MatchType.NOMATCH);
@@ -1967,14 +2203,14 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrR4ToR3.getMaster() == null);
 		assertTrue(pmrR4ToR3.getDuplicate() == null);
 		assertTrue(pmrR4ToR3.getMatchStatus() == MatchType.UNMATCH);
-    }
-    
-    /**
-	 * This test checks that if we unmatch nodes within a cycle
-	 * then the cycle will be broken.
+	}
+
+	/**
+	 * This test checks that if we unmatch nodes within a cycle then the cycle
+	 * will be broken.
 	 */
-    public void testUnmatchRemovesCycles() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testUnmatchRemovesCycles() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("r2");
 		SourceTableRecord r2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -1986,39 +2222,50 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("r4");
 		SourceTableRecord r4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineUnmatched(r1, r3);
-		
+
 		PotentialMatchRecord pmrR1ToR2 = null;
 		PotentialMatchRecord pmrR1ToR4 = null;
 		PotentialMatchRecord pmrR2ToR3 = null;
 		PotentialMatchRecord pmrR4ToR3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == r3 && potentialMatch.getOriginalRhs() == r2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == r3
+					&& potentialMatch.getOriginalRhs() == r2) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r2 && potentialMatch.getOriginalRhs() == r3) {
+			} else if (potentialMatch.getOriginalLhs() == r2
+					&& potentialMatch.getOriginalRhs() == r3) {
 				pmrR2ToR3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r1 && potentialMatch.getOriginalRhs() == r2) {
+			} else if (potentialMatch.getOriginalLhs() == r1
+					&& potentialMatch.getOriginalRhs() == r2) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r2 && potentialMatch.getOriginalRhs() == r1) {
+			} else if (potentialMatch.getOriginalLhs() == r2
+					&& potentialMatch.getOriginalRhs() == r1) {
 				pmrR1ToR2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r1 && potentialMatch.getOriginalRhs() == r4) {
+			} else if (potentialMatch.getOriginalLhs() == r1
+					&& potentialMatch.getOriginalRhs() == r4) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r4 && potentialMatch.getOriginalRhs() == r1) {
+			} else if (potentialMatch.getOriginalLhs() == r4
+					&& potentialMatch.getOriginalRhs() == r1) {
 				pmrR1ToR4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r3 && potentialMatch.getOriginalRhs() == r4) {
+			} else if (potentialMatch.getOriginalLhs() == r3
+					&& potentialMatch.getOriginalRhs() == r4) {
 				pmrR4ToR3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == r4 && potentialMatch.getOriginalRhs() == r3) {
+			} else if (potentialMatch.getOriginalLhs() == r4
+					&& potentialMatch.getOriginalRhs() == r3) {
 				pmrR4ToR3 = potentialMatch;
 			}
-			
-			if (pmrR2ToR3 != null && pmrR1ToR2 != null && pmrR1ToR4 != null && pmrR4ToR3 != null) break;
+
+			if (pmrR2ToR3 != null && pmrR1ToR2 != null && pmrR1ToR4 != null
+					&& pmrR4ToR3 != null)
+				break;
 		}
-		
-		if (pmrR2ToR3 == null || pmrR1ToR2 == null || pmrR1ToR4 == null || pmrR4ToR3 == null) {
+
+		if (pmrR2ToR3 == null || pmrR1ToR2 == null || pmrR1ToR4 == null
+				|| pmrR4ToR3 == null) {
 			fail("An edge no longer exists after we defined a match between p1 and p4.");
 		}
-		
+
 		if (pmrR1ToR2.getMaster() == r2) {
 			assertTrue(pmrR1ToR2.getDuplicate() == r1);
 			assertTrue(pmrR1ToR4.getMaster() == r1);
@@ -2027,27 +2274,27 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrR1ToR2.getDuplicate() == r2);
 			assertTrue(pmrR1ToR4.getDuplicate() == r4);
 		} else {
-			//r4 is the ultimate master
+			// r4 is the ultimate master
 			assertTrue(pmrR1ToR2.getMaster() == r1);
 			assertTrue(pmrR1ToR2.getDuplicate() == r2);
 			assertTrue(pmrR1ToR4.getMaster() == r4);
 			assertTrue(pmrR1ToR4.getDuplicate() == r1);
 		}
-		
+
 		assertTrue(pmrR2ToR3.getMaster() == null);
 		assertTrue(pmrR2ToR3.getDuplicate() == null);
 		assertTrue(pmrR2ToR3.getMatchStatus() == MatchType.UNMATCH);
 		assertTrue(pmrR4ToR3.getMaster() == null);
 		assertTrue(pmrR4ToR3.getDuplicate() == null);
 		assertTrue(pmrR4ToR3.getMatchStatus() == MatchType.UNMATCH);
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test checks that an ultimate master will be removed from the decided
 	 * edges if it is set to be not matched to one of its duplicates.
 	 */
-    public void testNoMatchToUltimateMaster() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testNoMatchToUltimateMaster() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("n2");
 		SourceTableRecord n2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2059,39 +2306,50 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("n4");
 		SourceTableRecord n4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineNoMatch(n2, n4);
-		
+
 		PotentialMatchRecord pmrN1ToN2 = null;
 		PotentialMatchRecord pmrN2ToN3 = null;
 		PotentialMatchRecord pmrN4ToN3 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n1 && potentialMatch.getOriginalRhs() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN2ToN4 = potentialMatch;
 			}
-			
-			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null && pmrN2ToN4 != null) break;
+
+			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null
+					&& pmrN2ToN4 != null)
+				break;
 		}
-		
-		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null || pmrN2ToN4 == null) {
+
+		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null
+				|| pmrN2ToN4 == null) {
 			fail("An edge no longer exists after we defined no match between n2 and n4.");
 		}
-		
+
 		if (pmrN1ToN2.getMaster() == n1) {
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
 			assertTrue(pmrN2ToN3.getMaster() == n2);
@@ -2100,7 +2358,7 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 			assertTrue(pmrN2ToN3.getDuplicate() == n3);
 		} else {
-			//n3 is the ultimate master
+			// n3 is the ultimate master
 			assertTrue(pmrN1ToN2.getMaster() == n2);
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 			assertTrue(pmrN2ToN3.getMaster() == n3);
@@ -2112,15 +2370,15 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrN2ToN4.getMaster() == null);
 		assertTrue(pmrN2ToN4.getDuplicate() == null);
 		assertTrue(pmrN2ToN4.getMatchStatus() == MatchType.NOMATCH);
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test checks that a non master node can be removed from its ultimate
 	 * master if it is set to not be a match to another duplicate of the
 	 * ultimate master.
 	 */
-    public void testNoMatchToOtherDuplicate() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testNoMatchToOtherDuplicate() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("n2");
 		SourceTableRecord n2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2132,75 +2390,88 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("n4");
 		SourceTableRecord n4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineNoMatch(n2, n3);
-		
+
 		PotentialMatchRecord pmrN1ToN2 = null;
 		PotentialMatchRecord pmrN2ToN3 = null;
 		PotentialMatchRecord pmrN4ToN3 = null;
 		PotentialMatchRecord pmrN1ToN4 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n1 && potentialMatch.getOriginalRhs() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n1 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN4 = potentialMatch;
 			}
-			
-			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null && (pmrN1ToN4 != null || pmrN2ToN4 != null)) break;
+
+			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null
+					&& (pmrN1ToN4 != null || pmrN2ToN4 != null))
+				break;
 		}
-		
-		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null || (pmrN1ToN4 == null && pmrN2ToN4 == null)) {
+
+		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null
+				|| (pmrN1ToN4 == null && pmrN2ToN4 == null)) {
 			fail("An edge no longer exists after we defined no match between n2 and n3.");
 		}
-		
+
 		if (pmrN1ToN4 != null && pmrN1ToN4 != null) {
 			fail("We created two additional edges when only one was required");
 		}
-		
+
 		if (pmrN1ToN4 != null) {
 			assertTrue(pmrN1ToN4.getMaster() != n4);
 			assertTrue(pmrN1ToN4.getDuplicate() == n1);
 			assertTrue(pmrN1ToN2.getMaster() == n1);
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
 		} else {
-			//The synthetic edge was created through n2 to n4
+			// The synthetic edge was created through n2 to n4
 			assertTrue(pmrN2ToN4.getMaster() == n4);
 			assertTrue(pmrN2ToN4.getDuplicate() == n2);
 			assertTrue(pmrN1ToN2.getMaster() == n2);
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 		}
-		
+
 		assertTrue(pmrN2ToN3.getMaster() == null);
 		assertTrue(pmrN2ToN3.getDuplicate() == null);
 		assertTrue(pmrN2ToN3.getMatchStatus() == MatchType.NOMATCH);
 		assertTrue(pmrN4ToN3.getMaster() == null);
 		assertTrue(pmrN4ToN3.getDuplicate() == null);
 		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test checks that an ultimate master will be removed from the decided
 	 * edges if it is set to be unmatched to one of its duplicates.
 	 */
-    public void testUnmatchToUltimateMaster() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testUnmatchToUltimateMaster() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("n2");
 		SourceTableRecord n2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2212,34 +2483,41 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("n4");
 		SourceTableRecord n4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineUnmatched(n2, n4);
-		
+
 		PotentialMatchRecord pmrN1ToN2 = null;
 		PotentialMatchRecord pmrN2ToN3 = null;
 		PotentialMatchRecord pmrN4ToN3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n1 && potentialMatch.getOriginalRhs() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN4ToN3 = potentialMatch;
 			}
-			
-			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null) break;
+
+			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null)
+				break;
 		}
-		
+
 		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null) {
 			fail("An edge no longer exists after we unmatch n2 and n4.");
 		}
-		
+
 		if (pmrN1ToN2.getMaster() == n1) {
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
 			assertTrue(pmrN2ToN3.getMaster() == n2);
@@ -2248,7 +2526,7 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 			assertTrue(pmrN2ToN3.getDuplicate() == n3);
 		} else {
-			//n3 is the ultimate master
+			// n3 is the ultimate master
 			assertTrue(pmrN1ToN2.getMaster() == n2);
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 			assertTrue(pmrN2ToN3.getMaster() == n3);
@@ -2257,15 +2535,15 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrN4ToN3.getMaster() == null);
 		assertTrue(pmrN4ToN3.getDuplicate() == null);
 		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test checks that a non master node can be removed from its ultimate
-	 * master if it is set to be unmatched to another duplicate of the
-	 * ultimate master.
+	 * master if it is set to be unmatched to another duplicate of the ultimate
+	 * master.
 	 */
-    public void testUnmatchToOtherDuplicate() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testUnmatchToOtherDuplicate() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("n2");
 		SourceTableRecord n2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2277,75 +2555,88 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("n4");
 		SourceTableRecord n4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineUnmatched(n2, n3);
-		
+
 		PotentialMatchRecord pmrN1ToN2 = null;
 		PotentialMatchRecord pmrN2ToN3 = null;
 		PotentialMatchRecord pmrN4ToN3 = null;
 		PotentialMatchRecord pmrN1ToN4 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n1 && potentialMatch.getOriginalRhs() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n1 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN4 = potentialMatch;
 			}
-			
-			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null && (pmrN1ToN4 != null || pmrN2ToN4 != null)) break;
+
+			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null
+					&& (pmrN1ToN4 != null || pmrN2ToN4 != null))
+				break;
 		}
-		
-		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null || (pmrN1ToN4 == null && pmrN2ToN4 == null)) {
+
+		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null
+				|| (pmrN1ToN4 == null && pmrN2ToN4 == null)) {
 			fail("An edge no longer exists after we unmatch n2 and n3.");
 		}
-		
+
 		if (pmrN1ToN4 != null && pmrN2ToN4 != null) {
 			fail("We created two additional edges when only one was required");
 		}
-		
+
 		if (pmrN1ToN4 != null) {
 			assertTrue(pmrN1ToN4.getMaster() == n4);
 			assertTrue(pmrN1ToN4.getDuplicate() == n1);
 			assertTrue(pmrN1ToN2.getMaster() == n1);
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
 		} else {
-			//The synthetic edge was created through n2 to n4
+			// The synthetic edge was created through n2 to n4
 			assertTrue(pmrN2ToN4.getMaster() == n4);
 			assertTrue(pmrN2ToN4.getDuplicate() == n2);
 			assertTrue(pmrN1ToN2.getMaster() == n2);
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 		}
-		
+
 		assertTrue(pmrN2ToN3.getMaster() == null);
 		assertTrue(pmrN2ToN3.getDuplicate() == null);
 		assertTrue(pmrN2ToN3.getMatchStatus() == MatchType.UNMATCH);
 		assertTrue(pmrN4ToN3.getMaster() == null);
 		assertTrue(pmrN4ToN3.getDuplicate() == null);
 		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test confirms that master all takes only unmatched edges and leaves
 	 * no match edges alone
 	 */
-    public void testMatchAllDoesntTakeNoMatches() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testMatchAllDoesntTakeNoMatches() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("q2");
 		SourceTableRecord q2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2357,44 +2648,57 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("q4");
 		SourceTableRecord q4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMasterOfAll(q3);
-		
+
 		PotentialMatchRecord pmrQ1ToQ2 = null;
 		PotentialMatchRecord pmrQ1ToQ3 = null;
 		PotentialMatchRecord pmrQ1ToQ4 = null;
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
-			
-			if (pmrQ1ToQ3 != null && pmrQ2ToQ3 != null && pmrQ1ToQ2 != null && pmrQ1ToQ4 != null && pmrQ4ToQ3 != null) break;
+
+			if (pmrQ1ToQ3 != null && pmrQ2ToQ3 != null && pmrQ1ToQ2 != null
+					&& pmrQ1ToQ4 != null && pmrQ4ToQ3 != null)
+				break;
 		}
-		
-		if (pmrQ1ToQ3 == null || pmrQ2ToQ3 == null || pmrQ1ToQ2 == null || pmrQ1ToQ4 == null || pmrQ4ToQ3 == null) {
+
+		if (pmrQ1ToQ3 == null || pmrQ2ToQ3 == null || pmrQ1ToQ2 == null
+				|| pmrQ1ToQ4 == null || pmrQ4ToQ3 == null) {
 			fail("An edge no longer exists after we defined q3 to be the master of all.");
 		}
-		
+
 		assertTrue(pmrQ1ToQ2.getMaster() == null);
 		assertTrue(pmrQ1ToQ2.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
@@ -2408,13 +2712,13 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrQ2ToQ3.getDuplicate() == q2);
 		assertTrue(pmrQ4ToQ3.getMaster() == q3);
 		assertTrue(pmrQ4ToQ3.getDuplicate() == q4);
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test confirms that no match all will change any type of edge
 	 */
-    public void testNoMatchModifiesAllEdges() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testNoMatchModifiesAllEdges() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("q2");
 		SourceTableRecord q2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2426,44 +2730,57 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("q4");
 		SourceTableRecord q4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineNoMatchOfAny(q3);
-		
+
 		PotentialMatchRecord pmrQ1ToQ2 = null;
 		PotentialMatchRecord pmrQ1ToQ3 = null;
 		PotentialMatchRecord pmrQ1ToQ4 = null;
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
-			
-			if (pmrQ1ToQ3 != null && pmrQ2ToQ3 != null && pmrQ1ToQ2 != null && pmrQ1ToQ4 != null && pmrQ4ToQ3 != null) break;
+
+			if (pmrQ1ToQ3 != null && pmrQ2ToQ3 != null && pmrQ1ToQ2 != null
+					&& pmrQ1ToQ4 != null && pmrQ4ToQ3 != null)
+				break;
 		}
-		
-		if (pmrQ1ToQ3 == null || pmrQ2ToQ3 == null || pmrQ1ToQ2 == null || pmrQ1ToQ4 == null || pmrQ4ToQ3 == null) {
+
+		if (pmrQ1ToQ3 == null || pmrQ2ToQ3 == null || pmrQ1ToQ2 == null
+				|| pmrQ1ToQ4 == null || pmrQ4ToQ3 == null) {
 			fail("An edge no longer exists after we defined q3 to not be the match of any undefined edges.");
 		}
-		
+
 		assertTrue(pmrQ1ToQ2.getMaster() == null);
 		assertTrue(pmrQ1ToQ2.getDuplicate() == null);
 		assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
@@ -2479,14 +2796,14 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrQ4ToQ3.getMaster() == null);
 		assertTrue(pmrQ4ToQ3.getDuplicate() == null);
 		assertTrue(pmrQ4ToQ3.getMatchStatus() == MatchType.NOMATCH);
-    }
-    
-    /**
-	 * This test checks that the unmatch all will remove the node from
-	 * a chain of matches but keep the rest of the matches together.
+	}
+
+	/**
+	 * This test checks that the unmatch all will remove the node from a chain
+	 * of matches but keep the rest of the matches together.
 	 */
-    public void testUnmatchToAll() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testUnmatchToAll() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("n2");
 		SourceTableRecord n2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2498,75 +2815,88 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("n4");
 		SourceTableRecord n4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineUnmatchAll(n3);
-		
+
 		PotentialMatchRecord pmrN1ToN2 = null;
 		PotentialMatchRecord pmrN2ToN3 = null;
 		PotentialMatchRecord pmrN4ToN3 = null;
 		PotentialMatchRecord pmrN1ToN4 = null;
 		PotentialMatchRecord pmrN2ToN4 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN2ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n1 && potentialMatch.getOriginalRhs() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n3 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n3
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n3) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n3) {
 				pmrN4ToN3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n1 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n1
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n1) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n1) {
 				pmrN1ToN4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n2 && potentialMatch.getOriginalRhs() == n4) {
+			} else if (potentialMatch.getOriginalLhs() == n2
+					&& potentialMatch.getOriginalRhs() == n4) {
 				pmrN2ToN4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == n4 && potentialMatch.getOriginalRhs() == n2) {
+			} else if (potentialMatch.getOriginalLhs() == n4
+					&& potentialMatch.getOriginalRhs() == n2) {
 				pmrN2ToN4 = potentialMatch;
 			}
-			
-			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null && (pmrN1ToN4 != null || pmrN2ToN4 != null)) break;
+
+			if (pmrN2ToN3 != null && pmrN1ToN2 != null && pmrN4ToN3 != null
+					&& (pmrN1ToN4 != null || pmrN2ToN4 != null))
+				break;
 		}
-		
-		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null || (pmrN1ToN4 == null && pmrN2ToN4 == null)) {
+
+		if (pmrN2ToN3 == null || pmrN1ToN2 == null || pmrN4ToN3 == null
+				|| (pmrN1ToN4 == null && pmrN2ToN4 == null)) {
 			fail("An edge no longer exists after we unmatched n3 from everything.");
 		}
-		
+
 		if (pmrN1ToN4 != null && pmrN2ToN4 != null) {
 			fail("We created two additional edges when only one was required");
 		}
-		
+
 		if (pmrN1ToN4 != null) {
 			assertTrue(pmrN1ToN4.getMaster() == n4);
 			assertTrue(pmrN1ToN4.getDuplicate() == n1);
 			assertTrue(pmrN1ToN2.getMaster() == n1);
 			assertTrue(pmrN1ToN2.getDuplicate() == n2);
 		} else {
-			//The synthetic edge was created through n2 to n4
+			// The synthetic edge was created through n2 to n4
 			assertTrue(pmrN2ToN4.getMaster() == n4);
 			assertTrue(pmrN2ToN4.getDuplicate() == n2);
 			assertTrue(pmrN1ToN2.getMaster() == n2);
 			assertTrue(pmrN1ToN2.getDuplicate() == n1);
 		}
-		
+
 		assertTrue(pmrN2ToN3.getMaster() == null);
 		assertTrue(pmrN2ToN3.getDuplicate() == null);
 		assertTrue(pmrN2ToN3.getMatchStatus() == MatchType.UNMATCH);
 		assertTrue(pmrN4ToN3.getMaster() == null);
 		assertTrue(pmrN4ToN3.getDuplicate() == null);
 		assertTrue(pmrN4ToN3.getMatchStatus() == MatchType.UNMATCH);
-    }
-    
-    /**
-	 * This test unmatches no match and match edges and keeps duplicates,
-	 * that were dependent on the removed node, together.
+	}
+
+	/**
+	 * This test unmatches no match and match edges and keeps duplicates, that
+	 * were dependent on the removed node, together.
 	 */
-    public void testUnmatchAllRemovesMatchAndNoMatch() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testUnmatchAllRemovesMatchAndNoMatch() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("p2");
 		SourceTableRecord p2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2578,49 +2908,65 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("p4");
 		SourceTableRecord p4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineUnmatchAll(p3);
-		
+
 		PotentialMatchRecord pmrP1ToP2 = null;
 		PotentialMatchRecord pmrP1ToP3 = null;
 		PotentialMatchRecord pmrP1ToP4 = null;
 		PotentialMatchRecord pmrP2ToP3 = null;
 		PotentialMatchRecord pmrP2ToP4 = null;
 		PotentialMatchRecord pmrP4ToP3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == p1 && potentialMatch.getOriginalRhs() == p3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p3 && potentialMatch.getOriginalRhs() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p3 && potentialMatch.getOriginalRhs() == p2) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p2) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p2 && potentialMatch.getOriginalRhs() == p3) {
+			} else if (potentialMatch.getOriginalLhs() == p2
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP2ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p1 && potentialMatch.getOriginalRhs() == p2) {
+			} else if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p2) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p2 && potentialMatch.getOriginalRhs() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p2
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p1 && potentialMatch.getOriginalRhs() == p4) {
+			} else if (potentialMatch.getOriginalLhs() == p1
+					&& potentialMatch.getOriginalRhs() == p4) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p4 && potentialMatch.getOriginalRhs() == p1) {
+			} else if (potentialMatch.getOriginalLhs() == p4
+					&& potentialMatch.getOriginalRhs() == p1) {
 				pmrP1ToP4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p3 && potentialMatch.getOriginalRhs() == p4) {
+			} else if (potentialMatch.getOriginalLhs() == p3
+					&& potentialMatch.getOriginalRhs() == p4) {
 				pmrP4ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p4 && potentialMatch.getOriginalRhs() == p3) {
+			} else if (potentialMatch.getOriginalLhs() == p4
+					&& potentialMatch.getOriginalRhs() == p3) {
 				pmrP4ToP3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p2 && potentialMatch.getOriginalRhs() == p4) {
+			} else if (potentialMatch.getOriginalLhs() == p2
+					&& potentialMatch.getOriginalRhs() == p4) {
 				pmrP2ToP4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == p4 && potentialMatch.getOriginalRhs() == p2) {
+			} else if (potentialMatch.getOriginalLhs() == p4
+					&& potentialMatch.getOriginalRhs() == p2) {
 				pmrP2ToP4 = potentialMatch;
 			}
-			
-			if (pmrP1ToP3 != null && pmrP2ToP3 != null && pmrP2ToP4 != null && pmrP1ToP2 != null && pmrP1ToP4 != null && pmrP4ToP3 != null) break;
+
+			if (pmrP1ToP3 != null && pmrP2ToP3 != null && pmrP2ToP4 != null
+					&& pmrP1ToP2 != null && pmrP1ToP4 != null
+					&& pmrP4ToP3 != null)
+				break;
 		}
-		
-		if (pmrP1ToP3 == null || pmrP2ToP3 == null || pmrP2ToP4 == null || pmrP1ToP2 == null || pmrP1ToP4 == null || pmrP4ToP3 == null) {
+
+		if (pmrP1ToP3 == null || pmrP2ToP3 == null || pmrP2ToP4 == null
+				|| pmrP1ToP2 == null || pmrP1ToP4 == null || pmrP4ToP3 == null) {
 			fail("An edge no longer exists after we unmatched p3 from everything.");
 		}
-		
+
 		assertTrue(pmrP1ToP2.getMaster() == null);
 		assertTrue(pmrP1ToP2.getDuplicate() == null);
 		assertTrue(pmrP1ToP2.getMatchStatus() == MatchType.NOMATCH);
@@ -2636,15 +2982,16 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrP4ToP3.getMaster() == null);
 		assertTrue(pmrP4ToP3.getDuplicate() == null);
 		assertTrue(pmrP4ToP3.getMatchStatus() == MatchType.UNMATCH);
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test confirms that master all takes as many unmatched and matched
 	 * edges as possible but does not take an unmatched node if it is a no match
 	 * to an already taken node.
 	 */
-    public void testMatchAllDoesntTakeNoMatchesFromNewMatches() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testMatchAllDoesntTakeNoMatchesFromNewMatches()
+			throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("s2");
 		SourceTableRecord s2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2656,44 +3003,57 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("s4");
 		SourceTableRecord s4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMasterOfAll(s3);
-		
+
 		PotentialMatchRecord pmrS1ToS2 = null;
 		PotentialMatchRecord pmrS1ToS3 = null;
 		PotentialMatchRecord pmrS1ToS4 = null;
 		PotentialMatchRecord pmrS2ToS3 = null;
 		PotentialMatchRecord pmrS4ToS3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == s1 && potentialMatch.getOriginalRhs() == s3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == s1
+					&& potentialMatch.getOriginalRhs() == s3) {
 				pmrS1ToS3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == s3 && potentialMatch.getOriginalRhs() == s1) {
+			} else if (potentialMatch.getOriginalLhs() == s3
+					&& potentialMatch.getOriginalRhs() == s1) {
 				pmrS1ToS3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == s3 && potentialMatch.getOriginalRhs() == s2) {
+			} else if (potentialMatch.getOriginalLhs() == s3
+					&& potentialMatch.getOriginalRhs() == s2) {
 				pmrS2ToS3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == s2 && potentialMatch.getOriginalRhs() == s3) {
+			} else if (potentialMatch.getOriginalLhs() == s2
+					&& potentialMatch.getOriginalRhs() == s3) {
 				pmrS2ToS3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == s1 && potentialMatch.getOriginalRhs() == s2) {
+			} else if (potentialMatch.getOriginalLhs() == s1
+					&& potentialMatch.getOriginalRhs() == s2) {
 				pmrS1ToS2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == s2 && potentialMatch.getOriginalRhs() == s1) {
+			} else if (potentialMatch.getOriginalLhs() == s2
+					&& potentialMatch.getOriginalRhs() == s1) {
 				pmrS1ToS2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == s1 && potentialMatch.getOriginalRhs() == s4) {
+			} else if (potentialMatch.getOriginalLhs() == s1
+					&& potentialMatch.getOriginalRhs() == s4) {
 				pmrS1ToS4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == s4 && potentialMatch.getOriginalRhs() == s1) {
+			} else if (potentialMatch.getOriginalLhs() == s4
+					&& potentialMatch.getOriginalRhs() == s1) {
 				pmrS1ToS4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == s3 && potentialMatch.getOriginalRhs() == s4) {
+			} else if (potentialMatch.getOriginalLhs() == s3
+					&& potentialMatch.getOriginalRhs() == s4) {
 				pmrS4ToS3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == s4 && potentialMatch.getOriginalRhs() == s3) {
+			} else if (potentialMatch.getOriginalLhs() == s4
+					&& potentialMatch.getOriginalRhs() == s3) {
 				pmrS4ToS3 = potentialMatch;
 			}
-			
-			if (pmrS1ToS3 != null && pmrS2ToS3 != null && pmrS1ToS2 != null && pmrS1ToS4 != null && pmrS4ToS3 != null) break;
+
+			if (pmrS1ToS3 != null && pmrS2ToS3 != null && pmrS1ToS2 != null
+					&& pmrS1ToS4 != null && pmrS4ToS3 != null)
+				break;
 		}
-		
-		if (pmrS1ToS3 == null || pmrS2ToS3 == null || pmrS1ToS2 == null || pmrS1ToS4 == null || pmrS4ToS3 == null) {
+
+		if (pmrS1ToS3 == null || pmrS2ToS3 == null || pmrS1ToS2 == null
+				|| pmrS1ToS4 == null || pmrS4ToS3 == null) {
 			fail("An edge no longer exists after we defined q3 to be the master of all.");
 		}
-		
+
 		assertTrue(pmrS1ToS2.getMaster() == null);
 		assertTrue(pmrS1ToS2.getDuplicate() == null);
 		assertTrue(pmrS1ToS2.getMatchStatus() == MatchType.NOMATCH);
@@ -2714,15 +3074,15 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrS2ToS3.getDuplicate() == null);
 			assertTrue(pmrS2ToS3.getMatchStatus() == MatchType.UNMATCH);
 		}
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test confirms that if a node is not a match of a different node
-	 * setting one of the nodes to be the master of all nodes will not 
-	 * affect the relationship.
+	 * setting one of the nodes to be the master of all nodes will not affect
+	 * the relationship.
 	 */
-    public void testMatchAllDoesNotModifyUnrelatedNoMatches() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testMatchAllDoesNotModifyUnrelatedNoMatches() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("q2");
 		SourceTableRecord q2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2734,44 +3094,57 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("q4");
 		SourceTableRecord q4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMasterOfAll(q4);
-		
+
 		PotentialMatchRecord pmrQ1ToQ2 = null;
 		PotentialMatchRecord pmrQ1ToQ3 = null;
 		PotentialMatchRecord pmrQ1ToQ4 = null;
 		PotentialMatchRecord pmrQ2ToQ3 = null;
 		PotentialMatchRecord pmrQ4ToQ3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ2ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q2) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q2) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q2 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q2
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q1 && potentialMatch.getOriginalRhs() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q1
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q1) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q1) {
 				pmrQ1ToQ4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q3 && potentialMatch.getOriginalRhs() == q4) {
+			} else if (potentialMatch.getOriginalLhs() == q3
+					&& potentialMatch.getOriginalRhs() == q4) {
 				pmrQ4ToQ3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == q4 && potentialMatch.getOriginalRhs() == q3) {
+			} else if (potentialMatch.getOriginalLhs() == q4
+					&& potentialMatch.getOriginalRhs() == q3) {
 				pmrQ4ToQ3 = potentialMatch;
 			}
-			
-			if (pmrQ1ToQ3 != null && pmrQ2ToQ3 != null && pmrQ1ToQ2 != null && pmrQ1ToQ4 != null && pmrQ4ToQ3 != null) break;
+
+			if (pmrQ1ToQ3 != null && pmrQ2ToQ3 != null && pmrQ1ToQ2 != null
+					&& pmrQ1ToQ4 != null && pmrQ4ToQ3 != null)
+				break;
 		}
-		
-		if (pmrQ1ToQ3 == null || pmrQ2ToQ3 == null || pmrQ1ToQ2 == null || pmrQ1ToQ4 == null || pmrQ4ToQ3 == null) {
+
+		if (pmrQ1ToQ3 == null || pmrQ2ToQ3 == null || pmrQ1ToQ2 == null
+				|| pmrQ1ToQ4 == null || pmrQ4ToQ3 == null) {
 			fail("An edge no longer exists after we defined a match between q3 and q4.");
 		}
-		
+
 		if (pmrQ4ToQ3.getMaster() == q4) {
 			assertTrue(pmrQ1ToQ2.getMaster() == null);
 			assertTrue(pmrQ1ToQ2.getDuplicate() == null);
@@ -2786,7 +3159,7 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrQ2ToQ3.getDuplicate() == q2);
 			assertTrue(pmrQ4ToQ3.getDuplicate() == q3);
 		} else {
-			//q1 was matched to q4
+			// q1 was matched to q4
 			assertTrue(pmrQ1ToQ2.getMaster() == null);
 			assertTrue(pmrQ1ToQ2.getDuplicate() == null);
 			assertTrue(pmrQ1ToQ2.getMatchStatus() == MatchType.NOMATCH);
@@ -2801,15 +3174,16 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrQ4ToQ3.getDuplicate() == null);
 			assertTrue(pmrQ4ToQ3.getMatchStatus() == MatchType.UNMATCH);
 		}
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test confirms that the match all method does not match nodes that
 	 * are duplicates of nodes that are defined to not be a match to the node
 	 * being set to the master of all nodes.
 	 */
-    public void testMatchAllDoesNotModifyNodesWhoseParentIsNotAMatch() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testMatchAllDoesNotModifyNodesWhoseParentIsNotAMatch()
+			throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("t2");
 		SourceTableRecord t2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2821,39 +3195,50 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("t4");
 		SourceTableRecord t4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMasterOfAll(t3);
-		
+
 		PotentialMatchRecord pmrT1ToT2 = null;
 		PotentialMatchRecord pmrT1ToT3 = null;
 		PotentialMatchRecord pmrT2ToT3 = null;
 		PotentialMatchRecord pmrT4ToT3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == t1 && potentialMatch.getOriginalRhs() == t3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == t1
+					&& potentialMatch.getOriginalRhs() == t3) {
 				pmrT1ToT3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == t3 && potentialMatch.getOriginalRhs() == t1) {
+			} else if (potentialMatch.getOriginalLhs() == t3
+					&& potentialMatch.getOriginalRhs() == t1) {
 				pmrT1ToT3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == t3 && potentialMatch.getOriginalRhs() == t2) {
+			} else if (potentialMatch.getOriginalLhs() == t3
+					&& potentialMatch.getOriginalRhs() == t2) {
 				pmrT2ToT3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == t2 && potentialMatch.getOriginalRhs() == t3) {
+			} else if (potentialMatch.getOriginalLhs() == t2
+					&& potentialMatch.getOriginalRhs() == t3) {
 				pmrT2ToT3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == t1 && potentialMatch.getOriginalRhs() == t2) {
+			} else if (potentialMatch.getOriginalLhs() == t1
+					&& potentialMatch.getOriginalRhs() == t2) {
 				pmrT1ToT2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == t2 && potentialMatch.getOriginalRhs() == t1) {
+			} else if (potentialMatch.getOriginalLhs() == t2
+					&& potentialMatch.getOriginalRhs() == t1) {
 				pmrT1ToT2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == t3 && potentialMatch.getOriginalRhs() == t4) {
+			} else if (potentialMatch.getOriginalLhs() == t3
+					&& potentialMatch.getOriginalRhs() == t4) {
 				pmrT4ToT3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == t4 && potentialMatch.getOriginalRhs() == t3) {
+			} else if (potentialMatch.getOriginalLhs() == t4
+					&& potentialMatch.getOriginalRhs() == t3) {
 				pmrT4ToT3 = potentialMatch;
 			}
-			
-			if (pmrT1ToT3 != null && pmrT2ToT3 != null && pmrT1ToT2 != null && pmrT4ToT3 != null) break;
+
+			if (pmrT1ToT3 != null && pmrT2ToT3 != null && pmrT1ToT2 != null
+					&& pmrT4ToT3 != null)
+				break;
 		}
-		
-		if (pmrT1ToT3 == null || pmrT2ToT3 == null || pmrT1ToT2 == null || pmrT4ToT3 == null) {
+
+		if (pmrT1ToT3 == null || pmrT2ToT3 == null || pmrT1ToT2 == null
+				|| pmrT4ToT3 == null) {
 			fail("An edge no longer exists after we defined t3 to be the master of all.");
 		}
-		
+
 		assertTrue(pmrT1ToT2.getMaster() == t2);
 		assertTrue(pmrT1ToT2.getDuplicate() == t1);
 		assertTrue(pmrT1ToT3.getMaster() == null);
@@ -2864,15 +3249,15 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrT2ToT3.getMatchStatus() == MatchType.NOMATCH);
 		assertTrue(pmrT4ToT3.getMaster() == t3);
 		assertTrue(pmrT4ToT3.getDuplicate() == t4);
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test confirms that match all does not take two nodes that are both
 	 * undecided but are defined to be different records (ie: no match between
 	 * them)
 	 */
-    public void testMatchAllDoesNotModifyNoMatchesSimpleCase() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testMatchAllDoesNotModifyNoMatchesSimpleCase() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("u2");
 		SourceTableRecord u2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2881,34 +3266,41 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("u1");
 		SourceTableRecord u1 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMasterOfAll(u2);
-		
+
 		PotentialMatchRecord pmrU1ToU2 = null;
 		PotentialMatchRecord pmrU1ToU3 = null;
 		PotentialMatchRecord pmrU2ToU3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == u1 && potentialMatch.getOriginalRhs() == u3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == u1
+					&& potentialMatch.getOriginalRhs() == u3) {
 				pmrU1ToU3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == u3 && potentialMatch.getOriginalRhs() == u1) {
+			} else if (potentialMatch.getOriginalLhs() == u3
+					&& potentialMatch.getOriginalRhs() == u1) {
 				pmrU1ToU3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == u3 && potentialMatch.getOriginalRhs() == u2) {
+			} else if (potentialMatch.getOriginalLhs() == u3
+					&& potentialMatch.getOriginalRhs() == u2) {
 				pmrU2ToU3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == u2 && potentialMatch.getOriginalRhs() == u3) {
+			} else if (potentialMatch.getOriginalLhs() == u2
+					&& potentialMatch.getOriginalRhs() == u3) {
 				pmrU2ToU3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == u1 && potentialMatch.getOriginalRhs() == u2) {
+			} else if (potentialMatch.getOriginalLhs() == u1
+					&& potentialMatch.getOriginalRhs() == u2) {
 				pmrU1ToU2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == u2 && potentialMatch.getOriginalRhs() == u1) {
+			} else if (potentialMatch.getOriginalLhs() == u2
+					&& potentialMatch.getOriginalRhs() == u1) {
 				pmrU1ToU2 = potentialMatch;
 			}
-			
-			if (pmrU1ToU3 != null && pmrU2ToU3 != null && pmrU1ToU2 != null) break;
+
+			if (pmrU1ToU3 != null && pmrU2ToU3 != null && pmrU1ToU2 != null)
+				break;
 		}
-		
+
 		if (pmrU1ToU3 == null || pmrU2ToU3 == null || pmrU1ToU2 == null) {
 			fail("An edge no longer exists after we defined u2 to be the master of all.");
 		}
-		
+
 		assertTrue(pmrU1ToU3.getMaster() == null);
 		assertTrue(pmrU1ToU3.getDuplicate() == null);
 		assertTrue(pmrU1ToU3.getMatchStatus() == MatchType.NOMATCH);
@@ -2918,22 +3310,23 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrU2ToU3.getDuplicate() == null);
 			assertTrue(pmrU2ToU3.getMatchStatus() == MatchType.UNMATCH);
 		} else {
-			//u3 was matched to u2 instead of u1
+			// u3 was matched to u2 instead of u1
 			assertTrue(pmrU1ToU2.getMaster() == null);
 			assertTrue(pmrU1ToU2.getDuplicate() == null);
 			assertTrue(pmrU1ToU2.getMatchStatus() == MatchType.UNMATCH);
 			assertTrue(pmrU2ToU3.getMaster() == u2);
 			assertTrue(pmrU2ToU3.getDuplicate() == u3);
 		}
-    }
-    
-    /**
+	}
+
+	/**
 	 * This test confirms that match all does not take two nodes that are both
 	 * undecided but are defined to be different records (ie: no match between
 	 * them). This is similar to the above case but it is more complex.
 	 */
-    public void testMatchAllDoesNotModifyNoMatchesComplexCase() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testMatchAllDoesNotModifyNoMatchesComplexCase()
+			throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("v2");
 		SourceTableRecord v2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -2945,44 +3338,57 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("v4");
 		SourceTableRecord v4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMasterOfAll(v3);
-		
+
 		PotentialMatchRecord pmrV1ToV2 = null;
 		PotentialMatchRecord pmrV1ToV3 = null;
 		PotentialMatchRecord pmrV1ToV4 = null;
 		PotentialMatchRecord pmrV2ToV3 = null;
 		PotentialMatchRecord pmrV4ToV3 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == v1 && potentialMatch.getOriginalRhs() == v3) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == v1
+					&& potentialMatch.getOriginalRhs() == v3) {
 				pmrV1ToV3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == v3 && potentialMatch.getOriginalRhs() == v1) {
+			} else if (potentialMatch.getOriginalLhs() == v3
+					&& potentialMatch.getOriginalRhs() == v1) {
 				pmrV1ToV3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == v3 && potentialMatch.getOriginalRhs() == v2) {
+			} else if (potentialMatch.getOriginalLhs() == v3
+					&& potentialMatch.getOriginalRhs() == v2) {
 				pmrV2ToV3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == v2 && potentialMatch.getOriginalRhs() == v3) {
+			} else if (potentialMatch.getOriginalLhs() == v2
+					&& potentialMatch.getOriginalRhs() == v3) {
 				pmrV2ToV3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == v1 && potentialMatch.getOriginalRhs() == v2) {
+			} else if (potentialMatch.getOriginalLhs() == v1
+					&& potentialMatch.getOriginalRhs() == v2) {
 				pmrV1ToV2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == v2 && potentialMatch.getOriginalRhs() == v1) {
+			} else if (potentialMatch.getOriginalLhs() == v2
+					&& potentialMatch.getOriginalRhs() == v1) {
 				pmrV1ToV2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == v1 && potentialMatch.getOriginalRhs() == v4) {
+			} else if (potentialMatch.getOriginalLhs() == v1
+					&& potentialMatch.getOriginalRhs() == v4) {
 				pmrV1ToV4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == v4 && potentialMatch.getOriginalRhs() == v1) {
+			} else if (potentialMatch.getOriginalLhs() == v4
+					&& potentialMatch.getOriginalRhs() == v1) {
 				pmrV1ToV4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == v3 && potentialMatch.getOriginalRhs() == v4) {
+			} else if (potentialMatch.getOriginalLhs() == v3
+					&& potentialMatch.getOriginalRhs() == v4) {
 				pmrV4ToV3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == v4 && potentialMatch.getOriginalRhs() == v3) {
+			} else if (potentialMatch.getOriginalLhs() == v4
+					&& potentialMatch.getOriginalRhs() == v3) {
 				pmrV4ToV3 = potentialMatch;
 			}
-			
-			if (pmrV1ToV3 != null && pmrV2ToV3 != null && pmrV1ToV2 != null && pmrV1ToV4 != null && pmrV4ToV3 != null) break;
+
+			if (pmrV1ToV3 != null && pmrV2ToV3 != null && pmrV1ToV2 != null
+					&& pmrV1ToV4 != null && pmrV4ToV3 != null)
+				break;
 		}
-		
-		if (pmrV1ToV3 == null || pmrV2ToV3 == null || pmrV1ToV2 == null || pmrV1ToV4 == null || pmrV4ToV3 == null) {
+
+		if (pmrV1ToV3 == null || pmrV2ToV3 == null || pmrV1ToV2 == null
+				|| pmrV1ToV4 == null || pmrV4ToV3 == null) {
 			fail("An edge no longer exists after we defined v3 to be the master of all.");
 		}
-		
+
 		assertTrue(pmrV1ToV2.getMaster() == null);
 		assertTrue(pmrV1ToV2.getDuplicate() == null);
 		assertTrue(pmrV1ToV2.getMatchStatus() == MatchType.NOMATCH);
@@ -2997,7 +3403,7 @@ public class MatchPoolTest extends TestCase {
 			assertTrue(pmrV1ToV4.getDuplicate() == null);
 			assertTrue(pmrV1ToV4.getMatchStatus() == MatchType.UNMATCH);
 		} else {
-			//v2 was not selected to have v3 as it's ultimate master.
+			// v2 was not selected to have v3 as it's ultimate master.
 			assertTrue(pmrV2ToV3.getMaster() == null);
 			assertTrue(pmrV2ToV3.getDuplicate() == null);
 			assertTrue(pmrV2ToV3.getMatchStatus() == MatchType.UNMATCH);
@@ -3025,13 +3431,13 @@ public class MatchPoolTest extends TestCase {
 				assertTrue(pmrV1ToV3.getDuplicate() == v1);
 			}
 		}
-    }
-    
-    /**
+	}
+
+	/**
 	 * Check defining master of all on a node will set the new duplicate node's
 	 * old master to be a duplicate of the new master.
 	 */
-	public void testMasterOfAllTakesNewDuplicateDuplicates() {
+	public void testMasterOfAllTakesNewDuplicateDuplicates() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("h2");
 		SourceTableRecord h2 = pool.getSourceTableRecord(keyList);
@@ -3044,34 +3450,41 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("h4");
 		SourceTableRecord h4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMasterOfAll(h3);
-		
+
 		PotentialMatchRecord pmrH1ToH2 = null;
 		PotentialMatchRecord pmrH2ToH3 = null;
 		PotentialMatchRecord pmrH3ToH4 = null;
-		for (PotentialMatchRecord potentialMatch: pool.getPotentialMatches()) {
-			if (potentialMatch.getOriginalLhs() == h1 && potentialMatch.getOriginalRhs() == h2) {
+		for (PotentialMatchRecord potentialMatch : pool.getPotentialMatches()) {
+			if (potentialMatch.getOriginalLhs() == h1
+					&& potentialMatch.getOriginalRhs() == h2) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h2 && potentialMatch.getOriginalRhs() == h1) {
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h1) {
 				pmrH1ToH2 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h3 && potentialMatch.getOriginalRhs() == h2) {
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h2) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h2 && potentialMatch.getOriginalRhs() == h3) {
+			} else if (potentialMatch.getOriginalLhs() == h2
+					&& potentialMatch.getOriginalRhs() == h3) {
 				pmrH2ToH3 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h3 && potentialMatch.getOriginalRhs() == h4) {
+			} else if (potentialMatch.getOriginalLhs() == h3
+					&& potentialMatch.getOriginalRhs() == h4) {
 				pmrH3ToH4 = potentialMatch;
-			} else if (potentialMatch.getOriginalLhs() == h4 && potentialMatch.getOriginalRhs() == h3) {
+			} else if (potentialMatch.getOriginalLhs() == h4
+					&& potentialMatch.getOriginalRhs() == h3) {
 				pmrH3ToH4 = potentialMatch;
 			}
-			
-			if (pmrH1ToH2 != null && pmrH2ToH3 != null && pmrH3ToH4 != null) break;
+
+			if (pmrH1ToH2 != null && pmrH2ToH3 != null && pmrH3ToH4 != null)
+				break;
 		}
-		
+
 		if (pmrH1ToH2 == null || pmrH2ToH3 == null || pmrH2ToH3 == null) {
 			fail("An edge no longer exists after we defined h2 as the master of h3.");
 		}
-		
+
 		assertTrue(pmrH1ToH2.getMaster() == h2);
 		assertTrue(pmrH1ToH2.getDuplicate() == h1);
 		assertTrue(pmrH2ToH3.getMaster() == h3);
@@ -3079,12 +3492,12 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrH3ToH4.getMaster() == h3);
 		assertTrue(pmrH3ToH4.getDuplicate() == h4);
 	}
-	
+
 	/**
 	 * This test confirms the reset pool method sets all edges to be unmatched.
 	 */
-    public void testResetPool() {
-    	List<Object> keyList = new ArrayList<Object>();
+	public void testResetPool() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("p2");
 		SourceTableRecord p2 = pool.getSourceTableRecord(keyList);
 		keyList.clear();
@@ -3096,20 +3509,26 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("p4");
 		SourceTableRecord p4 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.resetPool();
-		
-		PotentialMatchRecord pmrP1ToP2 = pool.getPotentialMatchFromOriginals(p1, p2);
-		PotentialMatchRecord pmrP1ToP3 = pool.getPotentialMatchFromOriginals(p1, p3);
-		PotentialMatchRecord pmrP1ToP4 = pool.getPotentialMatchFromOriginals(p1, p4);
-		PotentialMatchRecord pmrP2ToP3 = pool.getPotentialMatchFromOriginals(p3, p2);
-		PotentialMatchRecord pmrP2ToP4 = pool.getPotentialMatchFromOriginals(p4, p2);
-		PotentialMatchRecord pmrP4ToP3 = pool.getPotentialMatchFromOriginals(p4, p3);
-		
-		if (pmrP1ToP3 == null || pmrP2ToP3 == null || pmrP2ToP4 == null || pmrP1ToP2 == null || pmrP1ToP4 == null || pmrP4ToP3 == null) {
-			fail("An edge no longer exists after we reset the pool.");
-		}
-		
+
+		PotentialMatchRecord pmrP1ToP2 = pool.getPotentialMatchFromOriginals(
+				p1, p2);
+		PotentialMatchRecord pmrP1ToP3 = pool.getPotentialMatchFromOriginals(
+				p1, p3);
+		PotentialMatchRecord pmrP1ToP4 = pool.getPotentialMatchFromOriginals(
+				p1, p4);
+		PotentialMatchRecord pmrP2ToP3 = pool.getPotentialMatchFromOriginals(
+				p3, p2);
+		PotentialMatchRecord pmrP4ToP3 = pool.getPotentialMatchFromOriginals(
+				p4, p3);
+
+		assertNotNull(pmrP1ToP3);
+		assertNotNull(pmrP2ToP3);
+		assertNotNull(pmrP1ToP2);
+		assertNotNull(pmrP1ToP4);
+		assertNotNull(pmrP4ToP3);
+
 		assertTrue(pmrP1ToP2.getMaster() == null);
 		assertTrue(pmrP1ToP2.getDuplicate() == null);
 		assertTrue(pmrP1ToP2.getMatchStatus() == MatchType.UNMATCH);
@@ -3125,9 +3544,9 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrP4ToP3.getMaster() == null);
 		assertTrue(pmrP4ToP3.getDuplicate() == null);
 		assertTrue(pmrP4ToP3.getMatchStatus() == MatchType.UNMATCH);
-    }
-    
-    /**
+	}
+
+	/**
 	 * Sets the master of a node to a node that is not connected by
 	 * master/duplicate edges. This will result in a new "synthetic" edge being
 	 * created. We then reset the pool to confirm that the synthetic edge has
@@ -3137,7 +3556,7 @@ public class MatchPoolTest extends TestCase {
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
 	 * for details on the graph.
 	 */
-    public void testResetPoolRemovesSynthetics() {
+	public void testResetPoolRemovesSynthetics() throws Exception {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
 		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
@@ -3147,25 +3566,87 @@ public class MatchPoolTest extends TestCase {
 		keyList.clear();
 		keyList.add("a3");
 		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
-		
+
 		pool.defineMaster(a3, a1);
-		
-		PotentialMatchRecord pmrA1ToA2 = pool.getPotentialMatchFromOriginals(a1, a2);
-		PotentialMatchRecord pmrA2ToA3 = pool.getPotentialMatchFromOriginals(a3, a2);
-		PotentialMatchRecord pmrA1ToA3 = pool.getPotentialMatchFromOriginals(a1, a3);
-		
+
+		PotentialMatchRecord pmrA1ToA2 = pool.getPotentialMatchFromOriginals(
+				a1, a2);
+		PotentialMatchRecord pmrA2ToA3 = pool.getPotentialMatchFromOriginals(
+				a3, a2);
+		PotentialMatchRecord pmrA1ToA3 = pool.getPotentialMatchFromOriginals(
+				a1, a3);
+
 		if (pmrA1ToA2 == null || pmrA2ToA3 == null || pmrA1ToA3 == null) {
 			fail("An edge no longer exists after we defined a3 as the master of a1.");
 		}
-		
+
 		assertTrue(pmrA1ToA3.getMaster() == a3);
 		assertTrue(pmrA1ToA3.getDuplicate() == a1);
 		assertTrue(pmrA1ToA3.isSynthetic());
-		
+
 		pool.resetPool();
-		
+
 		assertTrue(pmrA1ToA2.getMatchStatus() == MatchType.UNMATCH);
 		assertTrue(pmrA2ToA3.getMatchStatus() == MatchType.UNMATCH);
 		assertFalse(pool.getPotentialMatches().contains(pmrA1ToA3));
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
+				+ DDLUtils.toQualifiedName(resultTable)
+				+ " WHERE DUP_CANDIDATE_10='a3' AND DUP_CANDIDATE_20='a1'");
+		assertFalse(rs.next());
+	}
+
+	/**
+	 * This test defines two records to be a match and checks that it is stored
+	 * in the database.
+	 */
+	public void testStoreUpdatesOnMatch() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("a2");
+		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("a1");
+		SourceTableRecord a1 = pool.getSourceTableRecord(keyList);
+		PotentialMatchRecord pmrA1ToA2 = pool.getPotentialMatchFromOriginals(
+				a1, a2);
+		pmrA1ToA2.setMaster(a1);
+
+		insertResultTableRecord(con, "a1", "a2", 15, "Group_One");
+		
+		pool.store(pmrA1ToA2);
+
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
+				+ DDLUtils.toQualifiedName(resultTable)
+				+ " WHERE DUP_CANDIDATE_10='a1' AND DUP_CANDIDATE_20='a2'");
+		rs.next();
+		assertEquals("MATCH", rs.getString(1));
+	}
+
+	/**
+	 * This test defines two records to not be a match and checks that it is
+	 * stored in the database.
+	 */
+	public void testStoreUpdatesOnNOMatch() throws Exception {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("a2");
+		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("a1");
+		SourceTableRecord a1 = pool.getSourceTableRecord(keyList);
+		PotentialMatchRecord pmrA1ToA2 = pool.getPotentialMatchFromOriginals(
+				a1, a2);
+		pmrA1ToA2.setMatchStatus(MatchType.NOMATCH);
+
+		insertResultTableRecord(con, "a1", "a2", 15, "Group_One");
+		
+		pool.store(pmrA1ToA2);
+
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
+				+ DDLUtils.toQualifiedName(resultTable)
+				+ " WHERE DUP_CANDIDATE_10='a1' AND DUP_CANDIDATE_20='a2'");
+		rs.next();
+		assertEquals("NOMATCH", rs.getString(1));
 	}
 }
