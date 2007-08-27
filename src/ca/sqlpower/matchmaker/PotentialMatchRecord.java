@@ -161,16 +161,23 @@ public class PotentialMatchRecord {
     }
     
     /**
-     * Sets up a PotentialMatchRecord which is the business model of an edge in the 
-     * MatchValidation graph.  It requires two SourceTableRecord to be identified as the LHS 
-     * and RHS of the edge.  By default, the master is not set.
-     * 
-     * @param pool the MatchPool that this PotentialMatchRecord is in
-     * @param criteriaGroup the MatchMakerCriteriaGroup that makes this edge exist
-     * @param matchStatus the status of the relationship
-     * @param originalLhs one of the SourceTableRecordd attached to this edge
-     * @param originalRhs the other SourceTableRecord attached to this edge
-     */
+	 * Sets up a PotentialMatchRecord which is the business model of an edge in
+	 * the MatchValidation graph. It requires two SourceTableRecord to be
+	 * identified as the LHS and RHS of the edge. By default, the master is not
+	 * set.
+	 * 
+	 * @param criteriaGroup
+	 *            the MatchMakerCriteriaGroup that makes this edge exist
+	 * @param matchStatus
+	 *            the status of the relationship
+	 * @param originalLhs
+	 *            one of the SourceTableRecordd attached to this edge
+	 * @param originalRhs
+	 *            the other SourceTableRecord attached to this edge
+	 * @param synthetic
+	 *            a flag that denotes whether or not this edge was created by
+	 *            the engine; true means NOT created by the engine
+	 */
     public PotentialMatchRecord(
             MatchMakerCriteriaGroup criteriaGroup,
             MatchType matchStatus,
@@ -366,5 +373,4 @@ public class PotentialMatchRecord {
 	public boolean isSynthetic() {
 		return synthetic;
 	}
-    
 }
