@@ -1,4 +1,4 @@
 # A user-specific file to configure the MatchMaker build script
 
 # SQL Power Library project directory (set this to the sqlpower-library project directory)
-sqlpower.library.home=C:\\Documents and Settings\\Thomas McKee\\workspace\\sqlpower_library\\
+# sqlpower.library.home=/path/to/sqlpower_library/
