@@ -109,7 +109,11 @@ public class MatchPoolTest extends TestCase {
 		groupOne.setName("Group_One");
 		match.addMatchCriteriaGroup(groupOne);
 
-		pool = MMTestUtils.createTestingPool(session, match, groupOne);
+		MatchMakerCriteriaGroup groupTwo = new MatchMakerCriteriaGroup();
+		groupOne.setName("Group_Two");
+		match.addMatchCriteriaGroup(groupOne);
+		
+		pool = MMTestUtils.createTestingPool(session, match, groupOne, groupTwo);
 	}
 
 	@Override
@@ -3648,5 +3652,338 @@ public class MatchPoolTest extends TestCase {
 				+ " WHERE DUP_CANDIDATE_10='a1' AND DUP_CANDIDATE_20='a2'");
 		rs.next();
 		assertEquals("NO_MATCH", rs.getString(1));
+	}
+    
+	//======================== Auto-Match Tests ==========================
+    
+    /**
+     * Tests the basic case for auto-match; that all possible matches
+     * are made, no synthetic edges are created and that the graph is
+     * left in a legal state.
+	 * <p>
+	 * See graph 'a' in the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+     * @throws ArchitectException 
+     * @throws SQLException 
+     */
+	public void testAutoMatchBasic() throws SQLException, ArchitectException {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("a1");
+		SourceTableRecord a1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("a2");
+		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("a3");
+		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
+		
+		pool.doAutoMatch("Group_One");
+		
+		PotentialMatchRecord pmrA1ToA2 = pool.getPotentialMatchFromOriginals(a1, a2);
+		PotentialMatchRecord pmrA1ToA3 = pool.getPotentialMatchFromOriginals(a1, a3);
+		PotentialMatchRecord pmrA2ToA3 = pool.getPotentialMatchFromOriginals(a2, a3);
+		
+		assertNull(pmrA1ToA3);
+		assertTrue(pmrA1ToA2.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrA2ToA3.getMatchStatus() == MatchType.MATCH);
+		
+		//Checks to see if a2 has two masters
+		assertFalse(pmrA1ToA2.getMaster() == a1 && pmrA2ToA3.getMaster() == a3);
+	}
+	
+	/**
+	 * Tests that NoMatch edges are left alone by the auto-match.
+	 * <p>
+	 * See graph 'o' in the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 * @throws ArchitectException 
+	 * @throws SQLException 
+     */
+	public void testAutoMatchNoMatchLeftAlone() throws SQLException, ArchitectException {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("o1");
+		SourceTableRecord o1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("o2");
+		SourceTableRecord o2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("o3");
+		SourceTableRecord o3 = pool.getSourceTableRecord(keyList);
+		
+		pool.doAutoMatch("Group_One");
+		
+		PotentialMatchRecord pmrO1ToO2 = pool.getPotentialMatchFromOriginals(o1, o2);
+		PotentialMatchRecord pmrO1ToO3 = pool.getPotentialMatchFromOriginals(o1, o3);
+		PotentialMatchRecord pmrO2ToO3 = pool.getPotentialMatchFromOriginals(o2, o3);
+		
+		assertNull(pmrO1ToO2);
+		assertTrue(pmrO1ToO3.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrO2ToO3.getMatchStatus() == MatchType.MATCH);
+		
+	}
+	
+	/**
+	 * Tests to make sure that NoMatch edges are left alone and used to 
+	 * prevent illegal states in the graph.
+	 * <p>
+	 * See graph 'u' in the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 * @throws ArchitectException 
+	 * @throws SQLException 
+	 */
+	public void testAutoMatchRespected() throws SQLException, ArchitectException {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("u1");
+		SourceTableRecord u1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("u2");
+		SourceTableRecord u2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("u3");
+		SourceTableRecord u3 = pool.getSourceTableRecord(keyList);
+		
+		pool.doAutoMatch("Group_One");
+		
+		PotentialMatchRecord pmrU1ToU2 = pool.getPotentialMatchFromOriginals(u1, u2);
+		PotentialMatchRecord pmrU1ToU3 = pool.getPotentialMatchFromOriginals(u1, u3);
+		PotentialMatchRecord pmrU2ToU3 = pool.getPotentialMatchFromOriginals(u2, u3);
+		
+		assertTrue(pmrU1ToU3.getMatchStatus() == MatchType.NOMATCH);
+		
+		// Makes sure that one of the edges is decided, but not both
+		// direction does not matter
+		assertTrue(pmrU1ToU2.getMatchStatus() == MatchType.MATCH ^
+				pmrU2ToU3.getMatchStatus() == MatchType.MATCH);
+	}
+	
+	/**
+	 * This test makes sure that when auto-match is run on a cycle, the
+	 * result is a legal graph.
+	 * <p>
+	 * See graph 'cycle' in the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 * @throws ArchitectException 
+	 * @throws SQLException 
+	 */
+	public void testAutoMatchOnCycle() throws SQLException, ArchitectException {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("cycle1");
+		SourceTableRecord cycle1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("cycle2");
+		SourceTableRecord cycle2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("cycle3");
+		SourceTableRecord cycle3 = pool.getSourceTableRecord(keyList);
+		
+		pool.doAutoMatch("Group_One");
+		
+		PotentialMatchRecord pmrCyc1ToCyc2 = pool.getPotentialMatchFromOriginals(cycle1, cycle2);
+		PotentialMatchRecord pmrCyc1ToCyc3 = pool.getPotentialMatchFromOriginals(cycle1, cycle3);
+		PotentialMatchRecord pmrCyc2ToCyc3 = pool.getPotentialMatchFromOriginals(cycle2, cycle3);
+		
+		//make sure no nodes have 2 parents
+		assertFalse(pmrCyc1ToCyc2.getMaster() == cycle2 
+				&& pmrCyc1ToCyc3.getMaster() == cycle3);
+		assertFalse(pmrCyc1ToCyc2.getMaster() == cycle1 
+				&& pmrCyc2ToCyc3.getMaster() == cycle3);
+		assertFalse(pmrCyc1ToCyc3.getMaster() == cycle1 
+				&& pmrCyc2ToCyc3.getMaster() == cycle2);
+		
+		//make sure there is no cycle
+		assertFalse(pmrCyc1ToCyc2.getMaster() == cycle2
+					&& pmrCyc2ToCyc3.getMaster() == cycle3
+					&& pmrCyc1ToCyc3.getMaster() == cycle1);
+		assertFalse(pmrCyc1ToCyc2.getMaster() == cycle1
+				&& pmrCyc2ToCyc3.getMaster() == cycle2
+				&& pmrCyc1ToCyc3.getMaster() == cycle3);
+	}
+	
+	/**
+	 * This test makes sure that auto-match does not fail and leaves the
+	 * graph in a legal state if it is given a graph that has a node with
+	 * two masters.
+	 * <p>
+	 * See graph 'f' in the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 * @throws ArchitectException 
+	 * @throws SQLException 
+	 */
+	public void testAutoMatchOnTwoMasters() throws SQLException, ArchitectException {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("f1");
+		SourceTableRecord f1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("f2");
+		SourceTableRecord f2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("f3");
+		SourceTableRecord f3 = pool.getSourceTableRecord(keyList);
+		
+		pool.doAutoMatch("Group_One");
+		
+		PotentialMatchRecord pmrF1ToF2 = pool.getPotentialMatchFromOriginals(f1, f2);
+		PotentialMatchRecord pmrF1ToF3 = pool.getPotentialMatchFromOriginals(f1, f3);
+		PotentialMatchRecord pmrF2ToF3 = pool.getPotentialMatchFromOriginals(f2, f3);
+		
+		assertNull(pmrF1ToF3);
+		assertTrue(pmrF1ToF2.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrF2ToF3.getMatchStatus() == MatchType.MATCH);
+		assertFalse(pmrF1ToF2.getMaster() == f1 && pmrF2ToF3.getMaster() == f3);
+	}
+	
+	/**
+	 * This tests whether or not auto-match only matches on the supplied
+	 * criteria group.
+	 * <p>
+	 * See graph 'w' in the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 * @throws ArchitectException 
+	 * @throws SQLException 
+	 */
+	public void testAutoMatchBasicTwoCriteria() throws SQLException, ArchitectException {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("w1");
+		SourceTableRecord w1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("w2");
+		SourceTableRecord w2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("w3");
+		SourceTableRecord w3 = pool.getSourceTableRecord(keyList);
+		
+		pool.doAutoMatch("Group_One");
+		
+		PotentialMatchRecord pmrW1ToW2 = pool.getPotentialMatchFromOriginals(w1, w2);
+		PotentialMatchRecord pmrW1ToW3 = pool.getPotentialMatchFromOriginals(w1, w3);
+		PotentialMatchRecord pmrW2ToW3 = pool.getPotentialMatchFromOriginals(w2, w3);
+		
+		assertNull(pmrW1ToW3);
+		assertTrue(pmrW1ToW2.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrW2ToW3.getMatchStatus() == MatchType.MATCH);
+	}
+	
+	/**
+	 * This method tests whether or not the auto-match function can
+	 * make matches on all subgraphs that have edges in the provided
+	 * criteria group. 
+	 * <p>
+	 * See graphs 'x' and 'y' in the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 * @throws ArchitectException 
+	 * @throws SQLException 
+	 */
+	public void testAutoMatchPropogation() throws SQLException, ArchitectException {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("x1");
+		SourceTableRecord x1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("x2");
+		SourceTableRecord x2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("x3");
+		SourceTableRecord x3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("x4");
+		SourceTableRecord x4 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("y1");
+		SourceTableRecord y1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("y2");
+		SourceTableRecord y2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("y3");
+		SourceTableRecord y3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("y4");
+		SourceTableRecord y4 = pool.getSourceTableRecord(keyList);
+
+		pool.doAutoMatch("Group_One");
+		
+		PotentialMatchRecord pmrX1ToX2 = pool.getPotentialMatchFromOriginals(x1, x2);
+		PotentialMatchRecord pmrX1ToX3 = pool.getPotentialMatchFromOriginals(x1, x3);
+		PotentialMatchRecord pmrX1ToX4 = pool.getPotentialMatchFromOriginals(x1, x4);
+		PotentialMatchRecord pmrX2ToX3 = pool.getPotentialMatchFromOriginals(x2, x3);
+		PotentialMatchRecord pmrX2ToX4 = pool.getPotentialMatchFromOriginals(x2, x4);
+		PotentialMatchRecord pmrX3ToX4 = pool.getPotentialMatchFromOriginals(x3, x4);
+		
+		PotentialMatchRecord pmrY1ToY2 = pool.getPotentialMatchFromOriginals(y1, y2);
+		PotentialMatchRecord pmrY1ToY3 = pool.getPotentialMatchFromOriginals(y1, y3);
+		PotentialMatchRecord pmrY1ToY4 = pool.getPotentialMatchFromOriginals(y1, y4);
+		PotentialMatchRecord pmrY2ToY3 = pool.getPotentialMatchFromOriginals(y2, y3);
+		PotentialMatchRecord pmrY2ToY4 = pool.getPotentialMatchFromOriginals(y2, y4);
+		PotentialMatchRecord pmrY3ToY4 = pool.getPotentialMatchFromOriginals(y3, y4);
+		
+		assertNull(pmrX1ToX3);
+		assertNull(pmrX1ToX4);
+		assertNull(pmrX2ToX4);
+		
+		assertTrue(pmrX1ToX2.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrX2ToX3.getMatchStatus() == MatchType.UNMATCH);
+		assertTrue(pmrX3ToX4.getMatchStatus() == MatchType.MATCH);
+		
+		assertNull(pmrY1ToY3);
+		assertNull(pmrY1ToY4);
+		assertNull(pmrY2ToY4);
+		
+		assertTrue(pmrY1ToY2.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrY2ToY3.getMatchStatus() == MatchType.NOMATCH);
+		assertTrue(pmrY3ToY4.getMatchStatus() == MatchType.MATCH);
+	}
+	
+	/**
+	 * This test makes sure that auto-match is 'aware' of edges that need to
+	 * change and are in other criteria groups so that the end result is a legal
+	 * state.
+	 * <p>
+	 * See graph 'z' in the image for
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * for details on the graph.
+	 * @throws ArchitectException 
+	 * @throws SQLException 
+	 */
+	public void testAutoMatchPreservesLegalState() throws SQLException, ArchitectException {
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("z1");
+		SourceTableRecord z1 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("z2");
+		SourceTableRecord z2 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("z3");
+		SourceTableRecord z3 = pool.getSourceTableRecord(keyList);
+		keyList.clear();
+		keyList.add("z4");
+		SourceTableRecord z4 = pool.getSourceTableRecord(keyList);
+		
+		pool.doAutoMatch("Group_One");
+		
+		PotentialMatchRecord pmrZ1ToZ2 = pool.getPotentialMatchFromOriginals(z1, z2);
+		PotentialMatchRecord pmrZ1ToZ3 = pool.getPotentialMatchFromOriginals(z1, z3);
+		PotentialMatchRecord pmrZ1ToZ4 = pool.getPotentialMatchFromOriginals(z1, z4);
+		PotentialMatchRecord pmrZ2ToZ3 = pool.getPotentialMatchFromOriginals(z2, z3);
+		PotentialMatchRecord pmrZ2ToZ4 = pool.getPotentialMatchFromOriginals(z2, z4);
+		PotentialMatchRecord pmrZ3ToZ4 = pool.getPotentialMatchFromOriginals(z3, z4);
+	
+		assertNull(pmrZ1ToZ3);
+		assertNull(pmrZ1ToZ4);
+		assertNull(pmrZ2ToZ4);
+		
+		assertTrue(pmrZ1ToZ2.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrZ2ToZ3.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrZ3ToZ4.getMatchStatus() == MatchType.MATCH);
+		
+		assertFalse(pmrZ1ToZ2.getMaster() == z1
+				&& pmrZ2ToZ3.getMaster() == z3);
+		assertFalse(pmrZ2ToZ3.getMaster() == z2
+				&& pmrZ3ToZ4.getMaster() == z4);
 	}
 }

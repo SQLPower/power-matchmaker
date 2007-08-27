@@ -108,4 +108,22 @@ cycle3 -> cycle1;
 unicycle -> unicycle;
 
 loner;
-	}
+"Black edges are in 'Group_One'" -> "Red edges are in 'Group_Two'" [style=invis];
+
+
+w2 -> w1 [style=dashed arrowhead=none color="red"];
+w2 -> w3 [style=dashed arrowhead=none];
+
+x2 -> x1 [style=dashed arrowhead=none];
+x2 -> x3 [style=dashed arrowhead=none color="red"];
+x3 -> x4 [style=dashed arrowhead=none];
+
+y2 -> y1 [style=dashed arrowhead=none];
+y2 -> y3 [style=dotted arrowhead=none];
+y3 -> y4 [style=dashed arrowhead=none];
+
+z2 -> z1 [color="red"];
+z2 -> z3 [style=dashed arrowhead=none];
+z3 -> z4 [color="red"];
+
+}

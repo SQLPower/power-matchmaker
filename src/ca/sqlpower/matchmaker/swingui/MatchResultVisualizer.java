@@ -301,7 +301,11 @@ public class MatchResultVisualizer implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 			int response = JOptionPane.showConfirmDialog(panel, warningMessage, "WARNING", JOptionPane.OK_CANCEL_OPTION);
 			if (response == JOptionPane.OK_OPTION) {
-				pool.doAutoMatch((String) criteriaComboBox.getSelectedItem());
+				try {
+					pool.doAutoMatch((String) criteriaComboBox.getSelectedItem());
+				} catch (Exception ex) {
+					MMSUtils.showExceptionDialog(panel, "Auto-Match failed, most likely a database connection error", ex);
+				}
 			}
 		}
     }
