@@ -953,7 +953,7 @@ public class MatchPool {
 	 * <p>
 	 * NOTE: This depends on {@link #defineMaster(SourceTableRecord, SourceTableRecord)}.
 	 * to ALWAYS respect a NoMatch edge by leaving it the way it was found
-	 * and always leaving the graph in a non-illegal state
+	 * and always leaving the graph in a legal state.
 	 * <p>
 	 * This is the current algorithm:
 	 * <ol>
@@ -974,14 +974,86 @@ public class MatchPool {
 	 *   'selected' and add it to the 'visited' set.
 	 *  </li>
 	 *  <li>
-	 *   Make a list of nodes such that all nodes that are not in the visited set
-	 *   
+	 *   Find all edges incident with the selected node that are in the criteria
+	 *   group and are not NoMatch edges. Add the nodes that are incident with
+	 *   the edges we just found and are not in the visited set to a list.
+	 *  </li>
+	 *  <li>
+	 *   Set the selected node to be the master of each node in the newly created
+	 *   list via the {@link #defineMaster(SourceTableRecord, SourceTableRecord)}
+	 *   to ensure that the graph's state is kept legal.
+	 *  </li>
+	 *  <li>
+	 *   For each node in the list, call one of them 'selected', add it to the
+	 *   visited set and go to 3
 	 *  </li>
 	 * </ol>
 	 * 
 	 * @param criteria The name of the criteria along which to make matches
+	 * @throws ArchitectException 
+	 * @throws SQLException 
 	 */
-	public void doAutoMatch(String criteriaName) {
-		//stubbed
+	public void doAutoMatch(String criteriaName) throws SQLException, ArchitectException {
+		MatchMakerCriteriaGroup criteriaGroup = match.getMatchCriteriaGroupByName(criteriaName);
+		if (criteriaGroup == null) {
+			throw new IllegalArgumentException("Auto-Match invoked with an " +
+					"invalid criteria group name: " + criteriaName);
+		}
+		Collection<SourceTableRecord> records = sourceTableRecords.values();
+		
+		Set<SourceTableRecord> visited = new HashSet<SourceTableRecord>();
+		SourceTableRecord selected = null;
+		for (SourceTableRecord record : records) {
+			boolean addToVisited = true;
+			for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
+				if (pmr.getMatchStatus() != MatchType.NOMATCH
+						&& pmr.getCriteriaGroup() == criteriaGroup) {
+					addToVisited = false;
+				}
+			}
+			if (addToVisited) {
+				visited.add(record);
+			} else {
+				// rather than iterating through all the records again, looking
+				// for one that isn't in visited...
+				selected = record;
+			}
+		}
+
+		Set<SourceTableRecord> neighbours = findAutoMatchNeighbours(criteriaGroup, selected, visited);
+		makeAutoMatches(criteriaGroup, selected, neighbours, visited);
+	}
+
+	private void makeAutoMatches(MatchMakerCriteriaGroup criteriaGroup,
+								SourceTableRecord selected,
+								Set<SourceTableRecord> neighbours,
+								Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
+		visited.add(selected);
+		for (SourceTableRecord record : neighbours) {
+			defineMaster(selected, record);
+		}
+		for (SourceTableRecord record : neighbours) {
+			if (!visited.contains(record)) {
+				makeAutoMatches(criteriaGroup, record, findAutoMatchNeighbours(criteriaGroup, record, visited), visited);
+			}
+		}
+	}
+
+	private Set<SourceTableRecord> findAutoMatchNeighbours(MatchMakerCriteriaGroup criteriaGroup,
+															SourceTableRecord record,
+															Set<SourceTableRecord> visited) {
+		Set<SourceTableRecord> ret = new HashSet<SourceTableRecord>();
+		for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
+			if (pmr.getCriteriaGroup() == criteriaGroup 
+					&& pmr.getMatchStatus() != MatchType.NOMATCH) {
+				if (record == pmr.getOriginalLhs() && !visited.contains(pmr.getOriginalRhs())) {
+					ret.add(pmr.getOriginalRhs());
+				} else if (!visited.contains(pmr.getOriginalLhs())) {
+					ret.add(pmr.getOriginalRhs());
+				}
+			}
+		}
+		logger.debug("findAutoMatchNeighbours");
+		return ret;
 	}
 }
