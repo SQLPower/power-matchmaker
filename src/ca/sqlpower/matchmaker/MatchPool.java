@@ -954,55 +954,47 @@ public class MatchPool {
 	 * forever. We do not claim, nor should we, that the total number of matches
 	 * created by this method is maximal or predictable.
 	 * <p>
-	 * NOTE: This depends on {@link #defineMaster(SourceTableRecord, SourceTableRecord)}.
-	 * to ALWAYS respect a NoMatch edge by leaving it the way it was found
-	 * and always leaving the graph in a legal state.
+	 * NOTE: This depends on {@link #findNoMatchNodes(Set)} to return the set
+	 * of nodes that should never be matched to any node in the provided set
+	 * because of the current no-match and match edge configuration
 	 * <p>
 	 * This is the current algorithm:
 	 * <ol>
-	 *  <li>
-	 *   Define a set of nodes called 'visited'. Add to it all nodes that
-	 *   are not incident with an edge that:
-	 *   <ul>
-	 *    <li>
-	 *     Is not a NoMatch edge and
-	 *    </li>
-	 *    <li>
-	 *     Belongs to the provided criteria group
-	 *    </li>
-	 *   </ul>
-	 *  </li>
-	 *  <li>
-	 *   Pick a node in the graph that is not in the 'visited' set, call it
-	 *   'selected' and add it to the 'visited' set.
-	 *  </li>
-	 *  <li>
-	 *   Find all edges incident with the selected node that are in the criteria
-	 *   group and are not NoMatch edges. Add the nodes that are incident with
-	 *   the edges we just found and are not in the visited set to a list.
-	 *  </li>
-	 *  <li>
-	 *   Set the selected node to be the master of each node in the newly created
-	 *   list via the {@link #defineMaster(SourceTableRecord, SourceTableRecord)}
-	 *   to ensure that the graph's state is kept legal.
-	 *  </li>
-	 *  <li>
-	 *   For each node in the list, call one of them 'selected', add it to the
-	 *   visited set and go to 3
-	 *  </li>
+	 * <li> Define a set of nodes called 'visited'. Add to it all nodes that are
+	 * not incident with an edge that:
+	 * <ul>
+	 * <li> Is not a NoMatch edge and </li>
+	 * <li> Belongs to the provided criteria group </li>
+	 * </ul>
+	 * </li>
+	 * <li> Pick a node in the graph that is not in the 'visited' set, call it
+	 * 'selected' and add it to the 'visited' set. </li>
+	 * <li> Find all edges incident with the selected node that are in the
+	 * criteria group and are not NoMatch edges. Add the nodes that are incident
+	 * with the edges we just found and are not in the visited set to a list.
+	 * </li>
+	 * <li> Set the selected node to be the master of each node in the newly
+	 * created list via the
+	 * {@link #defineMaster(SourceTableRecord, SourceTableRecord)} to ensure
+	 * that the graph's state is kept legal. </li>
+	 * <li> For each node in the list, call one of them 'selected', add it to
+	 * the visited set and go to 3 </li>
 	 * </ol>
 	 * 
-	 * @param criteria The name of the criteria along which to make matches
-	 * @throws ArchitectException 
-	 * @throws SQLException 
+	 * @param criteria
+	 *            The name of the criteria along which to make matches
+	 * @throws ArchitectException
+	 * @throws SQLException
 	 */
 	public void doAutoMatch(String criteriaName) throws SQLException, ArchitectException {
-		MatchRuleSet criteriaGroup = match.getMatchCriteriaGroupByName(criteriaName);
-		if (criteriaGroup == null) {
+		MatchRuleSet ruleSet = match.getMatchCriteriaGroupByName(criteriaName);
+		if (ruleSet == null) {
 			throw new IllegalArgumentException("Auto-Match invoked with an " +
 					"invalid criteria group name: " + criteriaName);
 		}
 		Collection<SourceTableRecord> records = sourceTableRecords.values();
+		
+		logger.debug("Auto-Matching with " + records.size() + " records.");
 		
 		Set<SourceTableRecord> visited = new HashSet<SourceTableRecord>();
 		SourceTableRecord selected = null;
@@ -1010,7 +1002,7 @@ public class MatchPool {
 			boolean addToVisited = true;
 			for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
 				if (pmr.getMatchStatus() != MatchType.NOMATCH
-						&& pmr.getCriteriaGroup() == criteriaGroup) {
+						&& pmr.getCriteriaGroup() == ruleSet) {
 					addToVisited = false;
 				}
 			}
@@ -1022,18 +1014,50 @@ public class MatchPool {
 				selected = record;
 			}
 		}
+		
+		logger.debug("The size of visited is " + visited.size());
 
-		Set<SourceTableRecord> neighbours = findAutoMatchNeighbours(criteriaGroup, selected, visited);
-		makeAutoMatches(criteriaGroup, selected, neighbours, visited);
+		Set<SourceTableRecord> neighbours = findAutoMatchNeighbours(ruleSet, selected, visited);
+		makeAutoMatches(ruleSet, selected, neighbours, visited);
+		//If we haven't visited all the nodes, we are not done!
+		while (visited.size() != records.size()) {
+			SourceTableRecord temp = null;
+			for (SourceTableRecord record : records) {
+				if (!visited.contains(record)) {
+					temp = record;
+					break;
+				}
+			}
+			neighbours = findAutoMatchNeighbours(ruleSet, temp, visited);
+			makeAutoMatches(ruleSet, temp, neighbours, visited);
+		}
 	}
 
+	/**
+	 * Creates the matches necessary in an auto-match while maintaining the
+	 * 'visted' set and propogating the algorithm to neighbours of selected
+	 * nodes.
+	 */
 	private void makeAutoMatches(MatchRuleSet criteriaGroup,
-								SourceTableRecord selected,
-								Set<SourceTableRecord> neighbours,
-								Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
+			SourceTableRecord selected,
+			Set<SourceTableRecord> neighbours,
+			Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
+		logger.debug("makeAutoMatches called, selected's key values = " + selected.getKeyValues());
 		visited.add(selected);
+		GraphModel<SourceTableRecord, PotentialMatchRecord> nonDirectedGraph =
+			new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
+		BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
+			new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+		Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, selected));
+		Set<SourceTableRecord> noMatchNodes = findNoMatchNodes(reachable);
 		for (SourceTableRecord record : neighbours) {
-			defineMaster(selected, record);
+			if (!noMatchNodes.contains(record)) {
+				defineMaster(selected, record);
+				nonDirectedGraph = new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
+				bfs = new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+				reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, selected));
+				noMatchNodes = findNoMatchNodes(reachable);
+			}
 		}
 		for (SourceTableRecord record : neighbours) {
 			if (!visited.contains(record)) {
@@ -1042,21 +1066,27 @@ public class MatchPool {
 		}
 	}
 
+	/**
+	 * Finds all the neighbours that auto-match worries about as explained in
+	 * the comment for doAutoMatch in the context that 'record' is selected in
+	 * step 3
+	 */
 	private Set<SourceTableRecord> findAutoMatchNeighbours(MatchRuleSet criteriaGroup,
-															SourceTableRecord record,
-															Set<SourceTableRecord> visited) {
+			SourceTableRecord record,
+			Set<SourceTableRecord> visited) {
+		logger.debug("The size of visited is " + visited.size());
 		Set<SourceTableRecord> ret = new HashSet<SourceTableRecord>();
 		for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
 			if (pmr.getCriteriaGroup() == criteriaGroup 
 					&& pmr.getMatchStatus() != MatchType.NOMATCH) {
 				if (record == pmr.getOriginalLhs() && !visited.contains(pmr.getOriginalRhs())) {
 					ret.add(pmr.getOriginalRhs());
-				} else if (!visited.contains(pmr.getOriginalLhs())) {
-					ret.add(pmr.getOriginalRhs());
+				} else if (record == pmr.getOriginalRhs() && !visited.contains(pmr.getOriginalLhs())) {
+					ret.add(pmr.getOriginalLhs());
 				}
 			}
 		}
-		logger.debug("findAutoMatchNeighbours");
+		logger.debug("findAutoMatchNeighbours: The neighbours to automatch for " + record + " are " + ret);
 		return ret;
 	}
 }
