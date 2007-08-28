@@ -126,7 +126,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				if(oldVal == null) {
 					throw new NullPointerException("We forgot to set "+property.getName());
 				} else {
-					assertEquals("The two values for property "+property.getDisplayName()+" should be the same",oldVal,copyVal);
+					assertEquals("The two values for property "+property.getDisplayName() + " in " + mmo.getClass().getName() + " should be the same",oldVal,copyVal);
 					copyVal = modifyObject(property, copyVal);
 					assertFalse("The two values are the same mutable object for property "+property.getDisplayName() + " was "+oldVal+ " and " + copyVal,oldVal.equals(copyVal));
 				}
