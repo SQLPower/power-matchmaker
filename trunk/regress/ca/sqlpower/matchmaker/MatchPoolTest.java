@@ -110,8 +110,8 @@ public class MatchPoolTest extends TestCase {
 		match.addMatchCriteriaGroup(groupOne);
 
 		MatchRuleSet groupTwo = new MatchRuleSet();
-		groupOne.setName("Group_Two");
-		match.addMatchCriteriaGroup(groupOne);
+		groupTwo.setName("Group_Two");
+		match.addMatchCriteriaGroup(groupTwo);
 		
 		pool = MMTestUtils.createTestingPool(session, match, groupOne, groupTwo);
 	}

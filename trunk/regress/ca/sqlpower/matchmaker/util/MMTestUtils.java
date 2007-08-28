@@ -556,13 +556,13 @@ public class MMTestUtils {
 		pool.addSourceTableRecord(node2);
 		node3 = new SourceTableRecord(session, m, "z3");
 		pool.addSourceTableRecord(node3);
-		node4 = new SourceTableRecord(session, m, "z");
+		node4 = new SourceTableRecord(session, m, "z4");
 		pool.addSourceTableRecord(node4);
 		
 		pmr = new PotentialMatchRecord(groupTwo, MatchType.MATCH, node1, node2, false);
 		pmr.setMaster(node1);
 		pool.addPotentialMatch(pmr);
-		pmr = new PotentialMatchRecord(groupOne, MatchType.NOMATCH, node2, node3, false);
+		pmr = new PotentialMatchRecord(groupOne, MatchType.MATCH, node2, node3, false);
 		pool.addPotentialMatch(pmr);
 		pmr = new PotentialMatchRecord(groupTwo, MatchType.MATCH, node3, node4, false);
 		pmr.setMaster(node4);
