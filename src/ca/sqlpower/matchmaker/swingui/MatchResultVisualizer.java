@@ -264,8 +264,6 @@ public class MatchResultVisualizer implements EditorPane {
                 for (SourceTableRecord rec : reachableNodes) {
                     final SourceTableRecord str = rec;
                     
-                    //XXX: fix the SetMasterAction with proper parameters, just put in str
-                    //so it compiles for now
                     SourceTableRecordViewer recordViewer = 
                         new SourceTableRecordViewer(
                             str, node, getActions(node, str));
