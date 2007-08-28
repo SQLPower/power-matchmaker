@@ -38,6 +38,8 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -53,8 +55,8 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchPool;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
@@ -77,6 +79,14 @@ public class MatchResultVisualizer implements EditorPane {
     
     private static final Logger logger = Logger.getLogger(MatchResultVisualizer.class);
 
+    /**
+     * Icons used for the match validation actions.
+     */
+	final private Icon masterIcon = new ImageIcon(getClass().getResource("/icons/master.png"));
+	final private Icon duplicateIcon = new ImageIcon(getClass().getResource("/icons/duplicate.png"));
+	final private Icon nomatchIcon = new ImageIcon(getClass().getResource("/icons/nomatch.png"));
+	final private Icon unmatchIcon = new ImageIcon(getClass().getResource("/icons/unmatch.png"));
+    
     /**
      * Pops up a save dialog and saves the match pool to the chosen DOT file.
      */
@@ -134,7 +144,8 @@ public class MatchResultVisualizer implements EditorPane {
         private final SourceTableRecord record2;
         
         protected SetNoMatchAction (String name, SourceTableRecord record1, SourceTableRecord record2){
-            super(name);
+            super("", nomatchIcon);
+            super.putValue(AbstractAction.SHORT_DESCRIPTION, name);
             this.record1 = record1;
             this.record2 = record2;
         }
@@ -160,7 +171,8 @@ public class MatchResultVisualizer implements EditorPane {
         private final SourceTableRecord record2;
         
         protected SetUnmatchAction (String name, SourceTableRecord record1, SourceTableRecord record2){
-            super(name);
+            super("", unmatchIcon);
+            super.putValue(AbstractAction.SHORT_DESCRIPTION, name);
             this.record1 = record1;
             this.record2 = record2;
         }
@@ -187,7 +199,8 @@ public class MatchResultVisualizer implements EditorPane {
         private final SourceTableRecord duplicate;
         
         SetMasterAction(String name, SourceTableRecord master, SourceTableRecord duplicate) {
-            super(name);
+            super("", masterIcon);
+            super.putValue(AbstractAction.SHORT_DESCRIPTION, name);
             this.master = master;
             this.duplicate = duplicate;
         }
@@ -214,7 +227,8 @@ public class MatchResultVisualizer implements EditorPane {
         private final SourceTableRecord duplicate;
         
         SetDuplicateAction(String name, SourceTableRecord master, SourceTableRecord duplicate) {
-            super(name);
+            super("", duplicateIcon);
+            super.putValue(AbstractAction.SHORT_DESCRIPTION, name);
             this.master = master;
             this.duplicate = duplicate;
         }
