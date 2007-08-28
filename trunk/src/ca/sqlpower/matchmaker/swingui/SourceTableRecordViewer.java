@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
@@ -65,6 +66,8 @@ public class SourceTableRecordViewer {
         }
 
         buttonPanel = bb.getPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+       
         panel.addComponentListener(new ComponentListener() {
 
             void syncSize(int width) {
