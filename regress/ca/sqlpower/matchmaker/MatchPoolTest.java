@@ -105,11 +105,11 @@ public class MatchPoolTest extends TestCase {
 		match.setSourceTable(sourceTable);
 		match.setSourceTableIndex(sourceTableIndex);
 
-		MatchMakerCriteriaGroup groupOne = new MatchMakerCriteriaGroup();
+		MatchRuleSet groupOne = new MatchRuleSet();
 		groupOne.setName("Group_One");
 		match.addMatchCriteriaGroup(groupOne);
 
-		MatchMakerCriteriaGroup groupTwo = new MatchMakerCriteriaGroup();
+		MatchRuleSet groupTwo = new MatchRuleSet();
 		groupOne.setName("Group_Two");
 		match.addMatchCriteriaGroup(groupOne);
 		
@@ -237,7 +237,7 @@ public class MatchPoolTest extends TestCase {
 	 * Sets the master of a node in a graph when no masters have been set.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithNoMasters() throws Exception {
@@ -287,7 +287,7 @@ public class MatchPoolTest extends TestCase {
 	 * Sets the master everything to be a1.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterOfAllWithNoMasters() throws Exception {
@@ -339,7 +339,7 @@ public class MatchPoolTest extends TestCase {
 	 * Reverse the master/duplicate relationship
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterToDuplicate() throws Exception {
@@ -390,7 +390,7 @@ public class MatchPoolTest extends TestCase {
 	 * of the new master. This should not be a normal case.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithSameDuplicate() throws Exception {
@@ -442,7 +442,7 @@ public class MatchPoolTest extends TestCase {
 	 * has another different master. This should not be a normal case.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterToCurrentDuplicate() throws Exception {
@@ -493,7 +493,7 @@ public class MatchPoolTest extends TestCase {
 	 * Sets the master of a node with no master, but masters exist in the graph.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithMaster() throws Exception {
@@ -545,7 +545,7 @@ public class MatchPoolTest extends TestCase {
 	 * and the duplicate node is a duplicate of a different node.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterDupIsAMasterNewMasterHasMaster() throws Exception {
@@ -610,7 +610,7 @@ public class MatchPoolTest extends TestCase {
 	 * duplicate of another node.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterMasterHasMasterDupHasMaster() throws Exception {
@@ -676,7 +676,7 @@ public class MatchPoolTest extends TestCase {
 	 * should be the same way a duplicate button is implemented in the UI.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetDuplicateMasterHasMasterDupHasMaster() throws Exception {
@@ -742,7 +742,7 @@ public class MatchPoolTest extends TestCase {
 	 * master/duplicate edges.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetDuplicate() throws Exception {
@@ -812,7 +812,7 @@ public class MatchPoolTest extends TestCase {
 	 * ultimate master.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterInACycle() throws Exception {
@@ -894,7 +894,7 @@ public class MatchPoolTest extends TestCase {
 	 * in a cycle.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithMasterInACycle() throws Exception {
@@ -989,7 +989,7 @@ public class MatchPoolTest extends TestCase {
 	 * master is in a cycle.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithUltimateMasterInACycle() throws Exception {
@@ -1091,7 +1091,7 @@ public class MatchPoolTest extends TestCase {
 	 * matching has been completed each node should only have one master.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWhereMasterHasTwoMasters() throws Exception {
@@ -1167,7 +1167,7 @@ public class MatchPoolTest extends TestCase {
 	 * master is on the other side of a cycle.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithUltimateMasterOutsideCycle() throws Exception {
@@ -1315,7 +1315,7 @@ public class MatchPoolTest extends TestCase {
 	 * graph. The end result should have no cycles.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterToCreateACycle() throws Exception {
@@ -1385,7 +1385,7 @@ public class MatchPoolTest extends TestCase {
 	 * edge
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterCreatingASyntheticEdge() throws Exception {
@@ -3557,7 +3557,7 @@ public class MatchPoolTest extends TestCase {
 	 * been removed.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 */
 	public void testResetPoolRemovesSynthetics() throws Exception {
@@ -3662,7 +3662,7 @@ public class MatchPoolTest extends TestCase {
      * left in a legal state.
 	 * <p>
 	 * See graph 'a' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
      * @throws ArchitectException 
      * @throws SQLException 
@@ -3696,7 +3696,7 @@ public class MatchPoolTest extends TestCase {
 	 * Tests that NoMatch edges are left alone by the auto-match.
 	 * <p>
 	 * See graph 'o' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3729,7 +3729,7 @@ public class MatchPoolTest extends TestCase {
 	 * prevent illegal states in the graph.
 	 * <p>
 	 * See graph 'u' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3764,7 +3764,7 @@ public class MatchPoolTest extends TestCase {
 	 * result is a legal graph.
 	 * <p>
 	 * See graph 'cycle' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3809,7 +3809,7 @@ public class MatchPoolTest extends TestCase {
 	 * two masters.
 	 * <p>
 	 * See graph 'f' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3842,7 +3842,7 @@ public class MatchPoolTest extends TestCase {
 	 * criteria group.
 	 * <p>
 	 * See graph 'w' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3875,7 +3875,7 @@ public class MatchPoolTest extends TestCase {
 	 * criteria group. 
 	 * <p>
 	 * See graphs 'x' and 'y' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3945,7 +3945,7 @@ public class MatchPoolTest extends TestCase {
 	 * state.
 	 * <p>
 	 * See graph 'z' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 

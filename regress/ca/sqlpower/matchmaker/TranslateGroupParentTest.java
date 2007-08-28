@@ -28,7 +28,7 @@ import junit.framework.TestCase;
 public class TranslateGroupParentTest extends TestCase {
     PlFolder<MatchMakerObject> folder;
     Match match;
-    MatchMakerCriteriaGroup cg;
+    MatchRuleSet cg;
     MatchRule c;
     TranslateGroupParent tgp;
     TestingMatchMakerSession session;
@@ -37,7 +37,7 @@ public class TranslateGroupParentTest extends TestCase {
         folder = new PlFolder<MatchMakerObject>();
         match = new Match();
         folder.addChild(match);
-        cg = new MatchMakerCriteriaGroup();
+        cg = new MatchRuleSet();
         match.addMatchCriteriaGroup(cg);
         c = new MatchRule();
         cg.addChild(c);

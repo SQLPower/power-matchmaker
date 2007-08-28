@@ -53,7 +53,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
@@ -373,7 +373,7 @@ public class MatchResultVisualizer implements EditorPane {
 
         JPanel autoMatchPanel = new JPanel(new FlowLayout());
         criteriaComboBox = new JComboBox();
-        for (MatchMakerCriteriaGroup criteria : match.getMatchCriteriaGroups()) {
+        for (MatchRuleSet criteria : match.getMatchCriteriaGroups()) {
         	criteriaComboBox.addItem(criteria.getName());
         }
         autoMatchPanel.add(new JButton(new AutoMatchAction(graph.getModel())));

@@ -116,7 +116,7 @@ public class MatchImportor {
 				if ( qName.equalsIgnoreCase("PL_MATCH")) {
 					setMatchMaketProperties(match,match,properties);
 				} else if ( qName.equalsIgnoreCase("PL_MATCH_GROUP")) {
-					setMatchMaketProperties(match,new MatchMakerCriteriaGroup(),properties);
+					setMatchMaketProperties(match,new MatchRuleSet(),properties);
 				} else if ( qName.equalsIgnoreCase("PL_MATCH_CRITERIA")) {
 					setMatchMaketProperties(match,new MatchRule(),properties);
 				} else if ( qName.equalsIgnoreCase("PL_FOLDER")) {
@@ -293,8 +293,8 @@ public class MatchImportor {
 						match.setSourceTableIndex(idx);
 					 */
 				}
-			} else if ( mmo instanceof MatchMakerCriteriaGroup ) {
-				MatchMakerCriteriaGroup group = (MatchMakerCriteriaGroup) mmo;
+			} else if ( mmo instanceof MatchRuleSet ) {
+				MatchRuleSet group = (MatchRuleSet) mmo;
 				for ( LabelValueBean bean : properties ) {
 					logger.debug("setting:["+bean.getLabel()+"] to ["+ bean.getValue()+"]");
 					if ( bean.getLabel().equalsIgnoreCase("DESCRIPTION")) {
@@ -329,7 +329,7 @@ public class MatchImportor {
 							"]",
 							0);
 				}
-				MatchMakerCriteriaGroup group = parentMatch.getMatchCriteriaGroupByName(groupName);
+				MatchRuleSet group = parentMatch.getMatchCriteriaGroupByName(groupName);
 				if (group == null ) {
 					throw new ParseException(
 							"Group ID [" +

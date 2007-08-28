@@ -38,7 +38,7 @@ public class PotentialMatchRecord {
      * The group of criteria that caused the two source table records
      * identified here to be considered as potential matches.
      */
-    private final MatchMakerCriteriaGroup criteriaGroup;
+    private final MatchRuleSet criteriaGroup;
     
     /**
      * The current status of this potential match (unexamined, confirmed correct,
@@ -167,7 +167,7 @@ public class PotentialMatchRecord {
 	 * set.
 	 * 
 	 * @param criteriaGroup
-	 *            the MatchMakerCriteriaGroup that makes this edge exist
+	 *            the MatchRuleSet that makes this edge exist
 	 * @param matchStatus
 	 *            the status of the relationship
 	 * @param originalLhs
@@ -179,7 +179,7 @@ public class PotentialMatchRecord {
 	 *            the engine; true means NOT created by the engine
 	 */
     public PotentialMatchRecord(
-            MatchMakerCriteriaGroup criteriaGroup,
+            MatchRuleSet criteriaGroup,
             MatchType matchStatus,
             SourceTableRecord originalLhs,
             SourceTableRecord originalRhs,
@@ -207,7 +207,7 @@ public class PotentialMatchRecord {
         }
     }
 
-    public MatchMakerCriteriaGroup getCriteriaGroup() {
+    public MatchRuleSet getCriteriaGroup() {
         return criteriaGroup;
     }
 

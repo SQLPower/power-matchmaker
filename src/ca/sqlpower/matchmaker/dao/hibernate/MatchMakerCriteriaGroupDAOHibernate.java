@@ -19,23 +19,23 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
 
-public class MatchMakerCriteriaGroupDAOHibernate extends AbstractMatchMakerDAOHibernate<MatchMakerCriteriaGroup> implements
+public class MatchMakerCriteriaGroupDAOHibernate extends AbstractMatchMakerDAOHibernate<MatchRuleSet> implements
 		MatchCriteriaGroupDAO {
 
 	public MatchMakerCriteriaGroupDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
 		super(matchMakerSession);
 	}
 
-	public Class<MatchMakerCriteriaGroup> getBusinessClass() {
-		return MatchMakerCriteriaGroup.class;
+	public Class<MatchRuleSet> getBusinessClass() {
+		return MatchRuleSet.class;
 	}
 	
 	@Override
-	public void delete(MatchMakerCriteriaGroup deleteMe) {
+	public void delete(MatchRuleSet deleteMe) {
 		
 		MatchMakerObject parent = deleteMe.getParent();
 		if (parent != null ){

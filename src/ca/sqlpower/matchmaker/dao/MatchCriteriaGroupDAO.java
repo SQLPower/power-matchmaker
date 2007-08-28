@@ -19,7 +19,7 @@
 
 package ca.sqlpower.matchmaker.dao;
 
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 
 /**
  * The Data access interface for match criteria group objects
@@ -29,6 +29,6 @@ import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
  *
  * Remember to program to this interface rather than an implemenation
  */
-public interface MatchCriteriaGroupDAO extends MatchMakerDAO<MatchMakerCriteriaGroup> {
+public interface MatchCriteriaGroupDAO extends MatchMakerDAO<MatchRuleSet> {
 
 }

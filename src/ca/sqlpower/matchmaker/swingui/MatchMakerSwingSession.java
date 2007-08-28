@@ -67,7 +67,7 @@ import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchRule;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -863,9 +863,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		} else if (mmo instanceof PlFolder){
 			PlFolderDAO dao = (PlFolderDAO) getDAO(PlFolder.class);
 			dao.save((PlFolder) mmo);
-		} else if (mmo instanceof MatchMakerCriteriaGroup) {
-			MatchMakerCriteriaGroup cg = (MatchMakerCriteriaGroup)mmo;
-			MatchCriteriaGroupDAO dao = (MatchCriteriaGroupDAO) getDAO(MatchMakerCriteriaGroup.class);
+		} else if (mmo instanceof MatchRuleSet) {
+			MatchRuleSet cg = (MatchRuleSet)mmo;
+			MatchCriteriaGroupDAO dao = (MatchCriteriaGroupDAO) getDAO(MatchRuleSet.class);
 			dao.save(cg);
 		} else {
 			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");

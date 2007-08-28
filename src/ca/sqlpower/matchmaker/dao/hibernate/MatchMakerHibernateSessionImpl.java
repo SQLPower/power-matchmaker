@@ -44,7 +44,7 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -263,7 +263,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             return (MatchMakerDAO<T>) folderDAO;
         } else if (businessClass == Match.class) {
             return (MatchMakerDAO<T>) matchDAO;
-        } else if (businessClass == MatchMakerCriteriaGroup.class){
+        } else if (businessClass == MatchRuleSet.class){
             return (MatchMakerDAO<T>) matchMakerCriteriaGroupDAO;
         } else if (businessClass == MatchMakerTranslateGroup.class){
             return (MatchMakerDAO<T>) matchMakerTranslateGroupDAO;

@@ -39,7 +39,7 @@ import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchRule;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -126,8 +126,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                     if (folder.getName().equals(Match.MATCH_RULES_FOLDER_NAME)) {
                         addMatchRulesFolderMenuItems(m, folder);
                     }
-                } else if (o instanceof MatchMakerCriteriaGroup) {
-                    addMatchGroupMenuItems(m, (MatchMakerCriteriaGroup) o);
+                } else if (o instanceof MatchRuleSet) {
+                    addMatchGroupMenuItems(m, (MatchRuleSet) o);
                 } else if (o instanceof MatchRule) {
                     addMatchCriteriaMenuItems(m, (MatchRule) o);
                 }
@@ -144,7 +144,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         m.add(new JMenuItem(new DeleteMatchCriteria(swingSession,criteria)));
     }
 
-	private void addMatchGroupMenuItems(JPopupMenu m, MatchMakerCriteriaGroup group) {
+	private void addMatchGroupMenuItems(JPopupMenu m, MatchRuleSet group) {
     	m.add(new JMenuItem(new DeleteMatchGroupAction(swingSession,group)));
     }
 
@@ -226,10 +226,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 
 					swingSession.setCurrentEditorComponent(me);
 
-				} else if (o instanceof MatchMakerCriteriaGroup) {
-					Match m = ((MatchMakerCriteriaGroup) o).getParentMatch();
+				} else if (o instanceof MatchRuleSet) {
+					Match m = ((MatchRuleSet) o).getParentMatch();
 					MatchMakerCriteriaGroupEditor editor = new MatchMakerCriteriaGroupEditor(
-							swingSession, m, (MatchMakerCriteriaGroup) o);
+							swingSession, m, (MatchRuleSet) o);
 					logger.debug("Created new match group editor "
 							+ System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);

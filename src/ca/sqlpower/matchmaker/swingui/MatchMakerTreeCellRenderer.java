@@ -33,7 +33,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
@@ -56,8 +56,8 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
 		if (value instanceof Match) {
 			setIcon(matchIcon);
-		} else if (value instanceof MatchMakerCriteriaGroup) {
-            MatchMakerCriteriaGroup group = (MatchMakerCriteriaGroup) value;
+		} else if (value instanceof MatchRuleSet) {
+            MatchRuleSet group = (MatchRuleSet) value;
             if (group.getColour() == null) {
                 setIcon(groupIcon);
             } else {

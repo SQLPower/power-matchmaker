@@ -43,8 +43,8 @@ import org.apache.log4j.Logger;
  * try {
  *     Match match = getDataAccessObject().findByName(matchName);
  *     ((TestingMatchMakerHibernateSession) getSession()).setConnectionDisabled(true);
- *     List&lt;MatchMakerCriteriaGroup&gt; cglist = match.getMatchCriteriaGroups();
- *     for (MatchMakerCriteriaGroup cg : cglist) {
+ *     List&lt;MatchRuleSet&gt; cglist = match.getMatchCriteriaGroups();
+ *     for (MatchRuleSet cg : cglist) {
  *         System.out.println("Match child: "+cg);  // this will fail if the DAO doesn't cascade the retrieval properly
  *     }
  * } finally {

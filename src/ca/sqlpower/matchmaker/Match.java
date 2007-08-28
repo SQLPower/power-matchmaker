@@ -110,8 +110,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     /**
      * Contains the match criteria and the match critera groups
      */
-    private MatchMakerFolder<MatchMakerCriteriaGroup> matchCriteriaGroupFolder =
-    	new MatchMakerFolder<MatchMakerCriteriaGroup>();
+    private MatchMakerFolder<MatchRuleSet> matchCriteriaGroupFolder =
+    	new MatchMakerFolder<MatchRuleSet>();
     
     /** 
      * Container for the TableMergeRules 
@@ -478,13 +478,13 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	}
 
 
-	public List<MatchMakerCriteriaGroup> getMatchGroups() {
+	public List<MatchRuleSet> getMatchGroups() {
 		return getMatchCriteriaGroupFolder().getChildren();
 	}
 
-	public MatchMakerCriteriaGroup getMatchCriteriaGroupByName(String name) {
-		List <MatchMakerCriteriaGroup> groups = getMatchCriteriaGroups();
-		for ( MatchMakerCriteriaGroup g : groups) {
+	public MatchRuleSet getMatchCriteriaGroupByName(String name) {
+		List <MatchRuleSet> groups = getMatchCriteriaGroups();
+		for ( MatchRuleSet g : groups) {
 			if ( g.getName() != null && g.getName().equals(name)) {
 				return g;
 			}
@@ -577,7 +577,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      *
      * @param criteriaGroup
      */
-    public void addMatchCriteriaGroup(MatchMakerCriteriaGroup criteriaGroup) {
+    public void addMatchCriteriaGroup(MatchRuleSet criteriaGroup) {
         // The folder will fire the child inserted event
         matchCriteriaGroupFolder.addChild(criteriaGroup);
     }
@@ -587,20 +587,20 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      *
      * @param criteriaGroup
      */
-    public void removeMatchCriteriaGroup(MatchMakerCriteriaGroup criteriaGroup) {
+    public void removeMatchCriteriaGroup(MatchRuleSet criteriaGroup) {
         // The folder will fire the child removed event
         matchCriteriaGroupFolder.removeChild(criteriaGroup);
     }
 
-    public List<MatchMakerCriteriaGroup> getMatchCriteriaGroups(){
+    public List<MatchRuleSet> getMatchCriteriaGroups(){
         return matchCriteriaGroupFolder.getChildren();
     }
 
-    public void setMatchCriteriaGroups(List<MatchMakerCriteriaGroup> groups){
+    public void setMatchCriteriaGroups(List<MatchRuleSet> groups){
         matchCriteriaGroupFolder.setChildren(groups);
     }
 
-    public MatchMakerFolder<MatchMakerCriteriaGroup> getMatchCriteriaGroupFolder() {
+    public MatchMakerFolder<MatchRuleSet> getMatchCriteriaGroupFolder() {
         return matchCriteriaGroupFolder;
     }
 
@@ -624,8 +624,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		newMatch.setView(getView()==null?null:getView().duplicate());
 		newMatch.setSession(s);
 		
-		for (MatchMakerCriteriaGroup g : getMatchCriteriaGroups()) {
-			MatchMakerCriteriaGroup newGroup = g.duplicate(newMatch,s);
+		for (MatchRuleSet g : getMatchCriteriaGroups()) {
+			MatchRuleSet newGroup = g.duplicate(newMatch,s);
 			newMatch.addMatchCriteriaGroup(newGroup);
 		}
 	

@@ -23,7 +23,7 @@ package ca.sqlpower.matchmaker.util;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
@@ -48,8 +48,8 @@ public class MMTestUtils {
 	 */
 	public static MatchPool createTestingPool(MatchMakerSession session,
 			Match m,
-			MatchMakerCriteriaGroup groupOne,
-			MatchMakerCriteriaGroup groupTwo) {
+			MatchRuleSet groupOne,
+			MatchRuleSet groupTwo) {
 		
 		MatchPool pool = new MatchPool(m);
 		
