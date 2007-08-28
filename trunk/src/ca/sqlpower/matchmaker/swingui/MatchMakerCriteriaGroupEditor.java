@@ -58,7 +58,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchRule;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
@@ -82,7 +82,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	private static final Logger logger = Logger.getLogger(MatchMakerCriteriaGroupEditor.class);
 
     private final MatchMakerSwingSession swingSession;
-    private MatchMakerCriteriaGroup group;
+    private MatchRuleSet group;
     private Match match;
 
     private JPanel panel;
@@ -112,7 +112,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	 */
 	public MatchMakerCriteriaGroupEditor(MatchMakerSwingSession swingSession,
 			Match match,
-			MatchMakerCriteriaGroup group) {
+			MatchRuleSet group) {
 		super();
         this.swingSession = swingSession;
         this.match = match;
@@ -344,7 +344,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	 *
 	 * @param criteria the new MatchGroup to edit.
 	 */
-	private void setDefaultSelection(MatchMakerCriteriaGroup group,
+	private void setDefaultSelection(MatchRuleSet group,
 			Match match ) {
 
 		matches.setText(match.getName());
@@ -421,7 +421,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
      * @param group the MatchCriteriaGroup the editors will be setting up for
      * @param sourceTable the source table of the match
 	 */
-    private void setupColumnEditors(MatchMakerCriteriaGroup group, SQLTable sourceTable) {
+    private void setupColumnEditors(MatchRuleSet group, SQLTable sourceTable) {
         int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
         matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(
         		new DefaultCellEditor(new JComboBox(

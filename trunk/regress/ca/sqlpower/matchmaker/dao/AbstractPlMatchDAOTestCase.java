@@ -30,7 +30,7 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
@@ -189,10 +189,10 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         insertSampleMatchCriteriaData(groupOid, "test_crit_"+time);
         
         Match match = getDataAccessObject().findByName(matchName);
-            List<MatchMakerCriteriaGroup> groups = match.getMatchCriteriaGroups();
+            List<MatchRuleSet> groups = match.getMatchCriteriaGroups();
 		assertEquals("There should be one criteria group", 1, groups.size());
 
-		MatchMakerCriteriaGroup group = groups.get(0);
+		MatchRuleSet group = groups.get(0);
 		assertEquals("Wrong Group name", "group_" + time, group.getName());
 
 		List<MatchRule> crits = group.getChildren();
@@ -205,7 +205,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
     }
     
     public void testCriteriaGroupMove() throws Exception {
-        MatchMakerCriteriaGroup cg = new MatchMakerCriteriaGroup();
+        MatchRuleSet cg = new MatchRuleSet();
         cg.setName("criteria group");
         
         Match oldMatch = new Match();

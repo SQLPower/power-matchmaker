@@ -27,13 +27,13 @@ import java.sql.Statement;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 
-public abstract class AbstractMatchMakerCriteriaGroupDAOTestCase extends AbstractDAOTestCase<MatchMakerCriteriaGroup,MatchCriteriaGroupDAO>  {
+public abstract class AbstractMatchMakerCriteriaGroupDAOTestCase extends AbstractDAOTestCase<MatchRuleSet,MatchCriteriaGroupDAO>  {
 
 	Long count=0L;
     Match match;
@@ -63,9 +63,9 @@ public abstract class AbstractMatchMakerCriteriaGroupDAOTestCase extends Abstrac
     }
 
 	@Override
-	public MatchMakerCriteriaGroup createNewObjectUnderTest() throws Exception {
+	public MatchRuleSet createNewObjectUnderTest() throws Exception {
 		count++;
-		MatchMakerCriteriaGroup criteriaGroup = new MatchMakerCriteriaGroup();
+		MatchRuleSet criteriaGroup = new MatchRuleSet();
         criteriaGroup.setSession(getSession());
 		try {
 			setAllSetters(criteriaGroup, getNonPersitingProperties());
@@ -99,7 +99,7 @@ public abstract class AbstractMatchMakerCriteriaGroupDAOTestCase extends Abstrac
         Statement stmt = null;
         try {
 
-            MatchMakerCriteriaGroup group = match.getMatchCriteriaGroups().get(0);
+            MatchRuleSet group = match.getMatchCriteriaGroups().get(0);
             String groupId = group.getName();
 
             MatchCriteriaGroupDAO dao = getDataAccessObject();

@@ -24,9 +24,9 @@ import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 
 
-public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchMakerCriteriaGroup> {
+public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchRuleSet> {
 
-	MatchMakerCriteriaGroup target;
+	MatchRuleSet target;
 	final String appUserName = "test user";
 
     public MatchMakerCriteriaGroupTest() {
@@ -36,14 +36,14 @@ public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchMakerCr
     }
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchMakerCriteriaGroup();
+		target = new MatchRuleSet();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);
 	}
 
 	@Override
-	protected MatchMakerCriteriaGroup getTarget() {
+	protected MatchRuleSet getTarget() {
 		return target;
 	}
 
@@ -51,7 +51,7 @@ public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchMakerCr
     public void testSetParentMatch(){
         Match match = new Match();
         MatchMakerEventCounter listener = new MatchMakerEventCounter();
-        MatchMakerCriteriaGroup group = new MatchMakerCriteriaGroup();
+        MatchRuleSet group = new MatchRuleSet();
 
         group.addMatchMakerListener(listener);
         group.setParentMatch(match);

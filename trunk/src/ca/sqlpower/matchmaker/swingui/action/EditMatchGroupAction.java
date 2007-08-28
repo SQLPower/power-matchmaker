@@ -24,7 +24,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 /**
@@ -33,12 +33,12 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 public class EditMatchGroupAction extends AbstractAction {
 
     private final MatchMakerSwingSession swingSession;
-    private final MatchMakerCriteriaGroup matchGroup;
+    private final MatchRuleSet matchGroup;
 	private final Window window;
 
 	public EditMatchGroupAction(
             MatchMakerSwingSession swingSession,
-            MatchMakerCriteriaGroup matchGroup,
+            MatchRuleSet matchGroup,
             Window parentWindow) {
 		super("Edit Match Group");
         this.swingSession = swingSession;

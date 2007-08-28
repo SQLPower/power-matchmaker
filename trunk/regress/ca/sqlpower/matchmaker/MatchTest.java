@@ -103,7 +103,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     public void testMatchMakerFolderFiresEventForMatchCriteriaGroups(){
         MatchMakerEventCounter l = new MatchMakerEventCounter();
         match.getMatchCriteriaGroupFolder().addMatchMakerListener(l);
-        List<MatchMakerCriteriaGroup> mmoList = new ArrayList<MatchMakerCriteriaGroup>();
+        List<MatchRuleSet> mmoList = new ArrayList<MatchRuleSet>();
         match.setMatchCriteriaGroups(mmoList);
         assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
         assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());

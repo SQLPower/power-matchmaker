@@ -28,7 +28,7 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchRule> {
 	protected void setUp() throws Exception {
 		super.setUp();
 		target = new MatchRule();
-		MatchMakerCriteriaGroup g = new MatchMakerCriteriaGroup();
+		MatchRuleSet g = new MatchRuleSet();
 		g.addChild(target);
 		Match match = new Match();
 		match.setSession(new TestingMatchMakerSession());

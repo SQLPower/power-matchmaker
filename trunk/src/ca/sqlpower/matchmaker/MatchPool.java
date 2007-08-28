@@ -107,7 +107,7 @@ public class MatchPool {
      * @param matchGroupName
      * @return a list of potential match records that belong to the match critieria group
      */
-    public List<PotentialMatchRecord> getAllPotentialMatchByMatchCriteriaGroup(MatchMakerCriteriaGroup criteriaGroup) {
+    public List<PotentialMatchRecord> getAllPotentialMatchByMatchCriteriaGroup(MatchRuleSet criteriaGroup) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : potentialMatches){
@@ -159,7 +159,7 @@ public class MatchPool {
             lastSQL = sql.toString();
             rs = stmt.executeQuery(lastSQL);
             while (rs.next()) {
-                MatchMakerCriteriaGroup criteriaGroup = match.getMatchCriteriaGroupByName(rs.getString("GROUP_ID"));
+                MatchRuleSet criteriaGroup = match.getMatchCriteriaGroupByName(rs.getString("GROUP_ID"));
                 if (criteriaGroup == null) {
                     session.handleWarning(
                             "Found a match record that refers to the " +
@@ -512,10 +512,10 @@ public class MatchPool {
 	 */
 	private PotentialMatchRecord addSyntheticPotentialMatchRecord(SourceTableRecord record1,
 			SourceTableRecord record2) throws SQLException {
-		MatchMakerCriteriaGroup syntheticCriteria = match.getMatchCriteriaGroupByName(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES);
+		MatchRuleSet syntheticCriteria = match.getMatchCriteriaGroupByName(MatchRuleSet.SYNTHETIC_MATCHES);
 		if (syntheticCriteria == null) {
-			syntheticCriteria = new MatchMakerCriteriaGroup();
-			syntheticCriteria.setName(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES);
+			syntheticCriteria = new MatchRuleSet();
+			syntheticCriteria.setName(MatchRuleSet.SYNTHETIC_MATCHES);
 			match.addMatchCriteriaGroup(syntheticCriteria);
 		}
 		
@@ -543,7 +543,7 @@ public class MatchPool {
             	sql.append("?, ");
             }
             sql.append("0, ");
-            sql.append(SQL.quote(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES)).append(", ");
+            sql.append(SQL.quote(MatchRuleSet.SYNTHETIC_MATCHES)).append(", ");
             sql.append(SQL.escapeDateTime(con, new Date(System.currentTimeMillis()))).append(", ");
             sql.append(SQL.escapeDateTime(con, new Date(System.currentTimeMillis()))).append(", ");
             sql.append(SQL.quote(session.getAppUser())).append(")");
@@ -997,7 +997,7 @@ public class MatchPool {
 	 * @throws SQLException 
 	 */
 	public void doAutoMatch(String criteriaName) throws SQLException, ArchitectException {
-		MatchMakerCriteriaGroup criteriaGroup = match.getMatchCriteriaGroupByName(criteriaName);
+		MatchRuleSet criteriaGroup = match.getMatchCriteriaGroupByName(criteriaName);
 		if (criteriaGroup == null) {
 			throw new IllegalArgumentException("Auto-Match invoked with an " +
 					"invalid criteria group name: " + criteriaName);
@@ -1027,7 +1027,7 @@ public class MatchPool {
 		makeAutoMatches(criteriaGroup, selected, neighbours, visited);
 	}
 
-	private void makeAutoMatches(MatchMakerCriteriaGroup criteriaGroup,
+	private void makeAutoMatches(MatchRuleSet criteriaGroup,
 								SourceTableRecord selected,
 								Set<SourceTableRecord> neighbours,
 								Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
@@ -1042,7 +1042,7 @@ public class MatchPool {
 		}
 	}
 
-	private Set<SourceTableRecord> findAutoMatchNeighbours(MatchMakerCriteriaGroup criteriaGroup,
+	private Set<SourceTableRecord> findAutoMatchNeighbours(MatchRuleSet criteriaGroup,
 															SourceTableRecord record,
 															Set<SourceTableRecord> visited) {
 		Set<SourceTableRecord> ret = new HashSet<SourceTableRecord>();

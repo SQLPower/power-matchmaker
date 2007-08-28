@@ -35,7 +35,7 @@ public class MatchRule
 		
 		public SQLTable getTable() {
 			
-			MatchMakerCriteriaGroup group = (MatchMakerCriteriaGroup) eventSource.getParent();
+			MatchRuleSet group = (MatchRuleSet) eventSource.getParent();
 	        if (group == null) throw new NullPointerException("Not attached to a parent");
 	        Match match = (Match) group.getParentMatch();
 	        if (group == null) throw new NullPointerException("Not attached to a grandparent");
@@ -107,8 +107,8 @@ public class MatchRule
      * Overridden to narrow the return type.
      */
     @Override
-    public MatchMakerCriteriaGroup getParent() {
-        return (MatchMakerCriteriaGroup) super.getParent();
+    public MatchRuleSet getParent() {
+        return (MatchRuleSet) super.getParent();
     }
     
     /**

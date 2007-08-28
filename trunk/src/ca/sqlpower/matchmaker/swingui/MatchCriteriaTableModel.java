@@ -22,7 +22,7 @@ package ca.sqlpower.matchmaker.swingui;
 import javax.swing.table.AbstractTableModel;
 
 import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
@@ -34,16 +34,16 @@ import ca.sqlpower.matchmaker.util.EditableJTable;
 public class MatchCriteriaTableModel extends AbstractTableModel implements CleanupTableModel {
 
 	private final class TableModelEventAdapter
-		implements MatchMakerListener<MatchMakerCriteriaGroup, MatchRule> {
+		implements MatchMakerListener<MatchRuleSet, MatchRule> {
 
-		public void mmChildrenInserted(MatchMakerEvent<MatchMakerCriteriaGroup, MatchRule> evt) {
+		public void mmChildrenInserted(MatchMakerEvent<MatchRuleSet, MatchRule> evt) {
 			fireTableRowsInserted(evt.getChangeIndices()[0], evt.getChangeIndices()[0]);
 			for ( MatchMakerObject c : evt.getChildren() ) {
 				MatchMakerUtils.listenToHierarchy(this, c);
 			}
 		}
 
-		public void mmChildrenRemoved(MatchMakerEvent<MatchMakerCriteriaGroup, MatchRule> evt) {
+		public void mmChildrenRemoved(MatchMakerEvent<MatchRuleSet, MatchRule> evt) {
 			fireTableRowsDeleted(evt.getChangeIndices()[0], evt.getChangeIndices()[0]);
 			for ( MatchMakerObject c : evt.getChildren() ) {
 				MatchMakerUtils.unlistenToHierarchy(this, c);
@@ -60,10 +60,10 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	}
 	
 
-	private final MatchMakerCriteriaGroup group;
+	private final MatchRuleSet group;
 	private final TableModelEventAdapter tableModelEventAdapter;
 
-	public MatchMakerCriteriaGroup getGroup() {
+	public MatchRuleSet getGroup() {
 		return group;
 	}
 
@@ -82,7 +82,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	 * 
 	 * @param matchGroup The Match Group to use for table data.  Must be non-null.
 	 */
-	public MatchCriteriaTableModel(MatchMakerCriteriaGroup matchGroup) {
+	public MatchCriteriaTableModel(MatchRuleSet matchGroup) {
 		this.group = matchGroup;
 		tableModelEventAdapter = new TableModelEventAdapter();
 		MatchMakerUtils.listenToHierarchy(tableModelEventAdapter, group);

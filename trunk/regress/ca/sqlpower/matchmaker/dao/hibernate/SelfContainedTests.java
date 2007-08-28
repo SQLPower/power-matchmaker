@@ -27,7 +27,7 @@ import org.apache.log4j.BasicConfigurator;
 
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.sql.PlDotIni;
@@ -50,7 +50,7 @@ public class SelfContainedTests {
         Method meth = Match.class.getDeclaredMethod("getOid", null);
         Object oid = meth.invoke(match, null);
         System.out.println("The password is "+oid);
-        MatchMakerCriteriaGroup cg = new MatchMakerCriteriaGroup();
+        MatchRuleSet cg = new MatchRuleSet();
         
         File plIniFile = new File(System.getProperty("user.home"), "pl.ini");
         PlDotIni plIni = new PlDotIni();
@@ -62,7 +62,7 @@ public class SelfContainedTests {
         s.getDAO(Match.class).save(match);
         cg.setSession(s);
         match.addMatchCriteriaGroup(cg);
-        s.getDAO(MatchMakerCriteriaGroup.class).save(cg);
+        s.getDAO(MatchRuleSet.class).save(cg);
     }
 
     private static void testJUnitTest() throws Exception {

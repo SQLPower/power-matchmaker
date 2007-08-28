@@ -74,7 +74,7 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
@@ -234,7 +234,7 @@ public class MatchEditor implements EditorPane {
 			MatchMakerCriteriaGroupEditor editor = null;
 			editor = new MatchMakerCriteriaGroupEditor(swingSession,
 					match,
-					new MatchMakerCriteriaGroup());
+					new MatchRuleSet());
 			swingSession.setCurrentEditorComponent(editor);
 		}
 	};

@@ -27,8 +27,8 @@ import java.awt.Color;
  *
  * @param <C>
  */
-public class MatchMakerCriteriaGroup
-	extends AbstractMatchMakerObject<MatchMakerCriteriaGroup, MatchRule> {
+public class MatchRuleSet
+	extends AbstractMatchMakerObject<MatchRuleSet, MatchRule> {
 	
 	/**
 	 * This is the name given to a criteria group made by the Match Maker
@@ -69,7 +69,7 @@ public class MatchMakerCriteriaGroup
 	/**
      * Constructor that sets up a default match group.
 	 */
-	public MatchMakerCriteriaGroup() {
+	public MatchRuleSet() {
 	}
 
     public Long getOid() {
@@ -166,9 +166,9 @@ public class MatchMakerCriteriaGroup
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!(obj instanceof MatchMakerCriteriaGroup))
+		if (!(obj instanceof MatchRuleSet))
 			return false;
-		final MatchMakerCriteriaGroup other = (MatchMakerCriteriaGroup) obj;
+		final MatchRuleSet other = (MatchRuleSet) obj;
 		if (getName() == null) {
 			if (other.getName() != null)
 				return false;
@@ -202,8 +202,8 @@ public class MatchMakerCriteriaGroup
 	 * @return new matchmaker group object with the same properties
 	 * and children
 	 */
-	public MatchMakerCriteriaGroup duplicate(MatchMakerObject parent, MatchMakerSession s){
-		MatchMakerCriteriaGroup group = new MatchMakerCriteriaGroup();
+	public MatchRuleSet duplicate(MatchMakerObject parent, MatchMakerSession s){
+		MatchRuleSet group = new MatchRuleSet();
 		group.setActive(getActive());
 		group.setDesc(getDesc()==null?null:new String(getDesc()));
 		group.setFilter(getFilter()==null?null:new String(getFilter()));

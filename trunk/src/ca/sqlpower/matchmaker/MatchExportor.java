@@ -213,7 +213,7 @@ public class MatchExportor {
 	}
 
 	private void saveMatchGroup(XMLHelper xmlHelper, PrintWriter out, Match match) {
-		for ( MatchMakerCriteriaGroup group : match.getMatchCriteriaGroups()) {
+		for ( MatchRuleSet group : match.getMatchCriteriaGroups()) {
 			xmlHelper.println(out, "<PL_MATCH_GROUP>");
 			xmlHelper.indent++;
 
@@ -242,13 +242,13 @@ public class MatchExportor {
 			xmlHelper.println(out, "</PL_MATCH_GROUP>");
 		}
 
-		for ( MatchMakerCriteriaGroup group : match.getMatchCriteriaGroups()) {
+		for ( MatchRuleSet group : match.getMatchCriteriaGroups()) {
 			saveMatchCriteria(xmlHelper,out,match,group);
 		}
 	}
 
 	private void saveMatchCriteria(XMLHelper xmlHelper,
-				PrintWriter out, Match match, MatchMakerCriteriaGroup group) {
+				PrintWriter out, Match match, MatchRuleSet group) {
 
 		List <MatchRule> criterias = group.getChildren();
 		for ( MatchRule c : criterias ) {

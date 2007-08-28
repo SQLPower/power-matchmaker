@@ -84,7 +84,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
         }
         if ( mmo instanceof Match ){
             Match matchChild = (Match) mmo;
-            for (MatchMakerCriteriaGroup critGroup : matchChild.getMatchCriteriaGroups()){
+            for (MatchRuleSet critGroup : matchChild.getMatchCriteriaGroups()){
                 if (checkMMOContainsTranslateGroup(critGroup, tg)) return true;
             }
         } else {
