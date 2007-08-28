@@ -76,8 +76,8 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
      * @return true if tg is used by mmo or a decendent false otherwise.
      */
     private boolean checkMMOContainsTranslateGroup(MatchMakerObject mmo,MatchMakerTranslateGroup tg){
-        if (mmo instanceof MatchMakerCriteria){
-            MatchMakerCriteria criteria = (MatchMakerCriteria) mmo;
+        if (mmo instanceof MatchRule){
+            MatchRule criteria = (MatchRule) mmo;
             if(tg.equals(criteria.getTranslateGroup())){
                 return true;
             }

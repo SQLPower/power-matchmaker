@@ -28,7 +28,7 @@ import java.awt.Color;
  * @param <C>
  */
 public class MatchMakerCriteriaGroup
-	extends AbstractMatchMakerObject<MatchMakerCriteriaGroup, MatchMakerCriteria> {
+	extends AbstractMatchMakerObject<MatchMakerCriteriaGroup, MatchRule> {
 	
 	/**
 	 * This is the name given to a criteria group made by the Match Maker
@@ -187,8 +187,8 @@ public class MatchMakerCriteriaGroup
         return name.toString();
     }
 
-	private MatchMakerCriteria getCriteriaByName(String name) {
-		for ( MatchMakerCriteria c : getChildren() ) {
+	private MatchRule getCriteriaByName(String name) {
+		for ( MatchRule c : getChildren() ) {
 			if ( c.getName().equals(name))
 				return c;
         }
@@ -212,8 +212,8 @@ public class MatchMakerCriteriaGroup
 		group.setName(getName()==null?null:new String(getName()));
 		group.setSession(s);
 		
-		for ( MatchMakerCriteria criteria : getChildren()) {
-			MatchMakerCriteria newCriteria = criteria.duplicate(group,s);
+		for ( MatchRule criteria : getChildren()) {
+			MatchRule newCriteria = criteria.duplicate(group,s);
 			group.addChild(newCriteria);
 		}
 		return group;

@@ -24,13 +24,13 @@ import java.math.BigDecimal;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 
-public class MatchMakerCriteria 
-    extends AbstractMatchMakerObject<MatchMakerCriteria, MatchMakerObject> {
+public class MatchRule 
+    extends AbstractMatchMakerObject<MatchRule, MatchMakerObject> {
 
 	
 	public class MatchMakerCriteriaCachableTable extends CachableColumn {
 		public MatchMakerCriteriaCachableTable() {
-			super(MatchMakerCriteria.this, "column");
+			super(MatchRule.this, "column");
 		}
 		
 		public SQLTable getTable() {
@@ -100,7 +100,7 @@ public class MatchMakerCriteria
 
     private MatchMakerCriteriaCachableTable cachableTable = new MatchMakerCriteriaCachableTable();
     
-    public MatchMakerCriteria( ) {
+    public MatchRule( ) {
     }
 
     /**
@@ -377,12 +377,12 @@ public class MatchMakerCriteria
 
     @Override
     public void addChild(MatchMakerObject child) {
-        throw new IllegalStateException("MatchMakerCriteria class does NOT allow child!");
+        throw new IllegalStateException("MatchRule class does NOT allow child!");
     }
 
     @Override
     public String toString() {
-        return "MatchMakerCriteria for "+getColumnName();
+        return "MatchRule for "+getColumnName();
     }
     
     @Override
@@ -397,12 +397,12 @@ public class MatchMakerCriteria
 
 
     /**
-     * Compares this MatchMakerCriteria to another one.  Equality is defined according
+     * Compares this MatchRule to another one.  Equality is defined according
      * to the following criteria (all must be true for the given object to be considered
      * equal to this one):
      * 
      * <ul>
-     *  <li>The other object is also a MatchMakerCriteria (hence not null)
+     *  <li>The other object is also a MatchRule (hence not null)
      *  <li>The other object has the same oid, or both instances are oidless
      *  <li>The other object references a column having the same name as this one
      * </ul>
@@ -410,8 +410,8 @@ public class MatchMakerCriteria
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof MatchMakerCriteria)) return false;
-        final MatchMakerCriteria other = (MatchMakerCriteria) obj;
+        if (!(obj instanceof MatchRule)) return false;
+        final MatchRule other = (MatchRule) obj;
         
         boolean same;
         
@@ -440,8 +440,8 @@ public class MatchMakerCriteria
      * @return new MatchmakerCriteria object with all original 
      * properties except parent and oid
      */
-	public MatchMakerCriteria duplicate(MatchMakerObject parent,MatchMakerSession s){
-		MatchMakerCriteria criteria = new MatchMakerCriteria();
+	public MatchRule duplicate(MatchMakerObject parent,MatchMakerSession s){
+		MatchRule criteria = new MatchRule();
 		criteria.setAllowNullInd(isAllowNullInd());
 		criteria.setCaseSensitiveInd(isCaseSensitiveInd());
 		criteria.setColumn(getColumn());
