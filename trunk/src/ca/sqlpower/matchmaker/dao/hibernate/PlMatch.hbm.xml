@@ -212,7 +212,7 @@
 				<column name="MATCH_OID" not-null="true" />
 			</key>
 			<one-to-many
-				class="ca.sqlpower.matchmaker.MatchMakerCriteriaGroup" />
+				class="ca.sqlpower.matchmaker.MatchRuleSet" />
 		</bag>
 
 		<many-to-one name="parent"
