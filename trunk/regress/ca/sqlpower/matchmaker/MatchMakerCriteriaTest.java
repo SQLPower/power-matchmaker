@@ -20,14 +20,14 @@
 package ca.sqlpower.matchmaker;
 
 
-public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteria> {
+public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchRule> {
 
-	private MatchMakerCriteria target;
+	private MatchRule target;
 	final String appUserName = "Test User";
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchMakerCriteria();
+		target = new MatchRule();
 		MatchMakerCriteriaGroup g = new MatchMakerCriteriaGroup();
 		g.addChild(target);
 		Match match = new Match();
@@ -54,7 +54,7 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteri
 	}
 
 	@Override
-	protected MatchMakerCriteria getTarget() {
+	protected MatchRule getTarget() {
 		return target;
 	}
     
@@ -81,7 +81,7 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteri
     }
     
     public void testTwoUninitializedInstancesEqual() {
-        MatchMakerCriteria other = new MatchMakerCriteria();
+        MatchRule other = new MatchRule();
         target.getParent().addChild(other);
         assertTrue(target.equals(other));
     }
@@ -93,7 +93,7 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteri
     public void testDifferentColumnNamesNotEqual() {
         target.setColumnName("bar");
 
-        MatchMakerCriteria other = new MatchMakerCriteria();
+        MatchRule other = new MatchRule();
         other.setColumnName("foo");
         target.getParent().addChild(other);
 
@@ -103,7 +103,7 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchMakerCriteri
     public void testSameColumnNamesEqual() {
         target.setColumnName("bar");
 
-        MatchMakerCriteria other = new MatchMakerCriteria();
+        MatchRule other = new MatchRule();
         other.setColumnName("bar");
         target.getParent().addChild(other);
 

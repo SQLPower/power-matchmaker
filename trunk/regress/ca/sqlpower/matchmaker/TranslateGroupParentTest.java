@@ -29,7 +29,7 @@ public class TranslateGroupParentTest extends TestCase {
     PlFolder<MatchMakerObject> folder;
     Match match;
     MatchMakerCriteriaGroup cg;
-    MatchMakerCriteria c;
+    MatchRule c;
     TranslateGroupParent tgp;
     TestingMatchMakerSession session;
 
@@ -39,7 +39,7 @@ public class TranslateGroupParentTest extends TestCase {
         folder.addChild(match);
         cg = new MatchMakerCriteriaGroup();
         match.addMatchCriteriaGroup(cg);
-        c = new MatchMakerCriteria();
+        c = new MatchRule();
         cg.addChild(c);
         session = new TestingMatchMakerSession(); 
         List<PlFolder> folders = new ArrayList<PlFolder>();

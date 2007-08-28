@@ -57,7 +57,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
+import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -200,9 +200,9 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 
 	private Action newCriteria = new AbstractAction("New Criteria") {
 		public void actionPerformed(ActionEvent arg0) {
-			MatchMakerCriteria criteria = new MatchMakerCriteria();
+			MatchRule criteria = new MatchRule();
 			group.addChild(criteria);
-			criteria.addMatchMakerListener(new MatchMakerListener<MatchMakerCriteria,MatchMakerObject>() {
+			criteria.addMatchMakerListener(new MatchMakerListener<MatchRule,MatchMakerObject>() {
 
 				public void mmChildrenInserted(MatchMakerEvent evt) {
 				}
@@ -211,7 +211,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 				}
 
 				public void mmPropertyChanged(MatchMakerEvent evt) {
-					MatchMakerCriteria criteria = (MatchMakerCriteria) evt.getSource();
+					MatchRule criteria = (MatchRule) evt.getSource();
 					if ( criteria.getColumn() != null ) {
 						criteria.setName(criteria.getColumn().getName());
 					}
@@ -227,7 +227,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	    public void actionPerformed(ActionEvent e) {
 	        int selectedRow = matchCriteriaTable.getSelectedRow();
 	        if ( selectedRow == -1 ) return;
-	        MatchMakerCriteria c = matchCriteriaTableModel.getRow(selectedRow);
+	        MatchRule c = matchCriteriaTableModel.getRow(selectedRow);
 	        
 	        /* Note, this is a temporary workaround.  Deleting a criteria set will have
 	         * the side effect of saving all other sets in the group.
@@ -453,7 +453,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 
 			List<String> columnNames = new ArrayList<String>();
 			for ( int i=0; i<model.getRowCount(); i++ ) {
-				MatchMakerCriteria c = model.getRow(i);
+				MatchRule c = model.getRow(i);
 				if ( c.getColumn() == null ||
 						c.getColumn().getName() == null ||
 						c.getColumn().getName().length() == 0 ) {

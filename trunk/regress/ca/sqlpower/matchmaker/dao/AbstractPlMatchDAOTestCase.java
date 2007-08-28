@@ -30,8 +30,8 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
+import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
@@ -195,11 +195,11 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		MatchMakerCriteriaGroup group = groups.get(0);
 		assertEquals("Wrong Group name", "group_" + time, group.getName());
 
-		List<MatchMakerCriteria> crits = group.getChildren();
+		List<MatchRule> crits = group.getChildren();
 		assertEquals("There is only one set of column criteria", 1, crits
 				.size());
 
-		MatchMakerCriteria crit = crits.get(0);
+		MatchRule crit = crits.get(0);
 		assertEquals("Wrong criteria last update user",
                     "test_crit_"+time, crit.getLastUpdateAppUser());
     }
