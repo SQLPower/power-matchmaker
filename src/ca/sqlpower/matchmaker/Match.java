@@ -529,9 +529,12 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
         sb.append("Match@").append(System.identityHashCode(this));
         sb.append(": oid=").append(oid);
         sb.append("; type=").append(type);
-        sb.append("; sourceTable=").append(getSourceTable());
-        sb.append("; resultTable=").append(getResultTable());
-        sb.append("; xrefTable=").append(getXrefTable());
+        
+        // Important: don't call get*Table() here because they have side effects
+        sb.append("; sourceTableName=").append(getSourceTableName());
+        sb.append("; resultTableName=").append(getResultTableName());
+        sb.append("; xrefTableName=").append(getXrefTableName());
+        
         sb.append("; matchSettings=").append(matchSettings);
         sb.append("; mergeSettings=").append(mergeSettings);
         sb.append("; filter=").append(filter);
