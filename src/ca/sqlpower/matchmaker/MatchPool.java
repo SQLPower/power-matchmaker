@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -520,41 +521,44 @@ public class MatchPool {
 		
 		SQLTable resultTable = match.getResultTable();
         Connection con = null;
-        Statement stmt = null;
-        ResultSet rs = null;
+        PreparedStatement ps = null;
         String lastSQL = null;
         try {
             con = session.getConnection();
-            stmt = con.createStatement();
             StringBuilder sql = new StringBuilder();
             sql.append("INSERT INTO ").append(DDLUtils.toQualifiedName(resultTable)).append(" ");
+            sql.append("(");
+            for (int i = 0; i < record1.getKeyValues().size(); i++) {
+            	sql.append("DUP_CANDIDATE_1").append(i).append(", ");
+            	sql.append("DUP_CANDIDATE_2").append(i).append(", ");
+            }
+            sql.append("MATCH_PERCENT, ");
+            sql.append("GROUP_ID, ");
+            sql.append("MATCH_DATE, ");
+            sql.append("MATCH_STATUS_DATE, ");
+            sql.append("MATCH_STATUS_USER)");
             sql.append("\n VALUES (");
-            String record1KeyValues = "";
-            String record2KeyValues = "";
-            for (Object o : record1.getKeyValues()) {
-            	record1KeyValues += "'" + o + "', ";
-            }
-            for (Object o : record2.getKeyValues()) {
-            	record2KeyValues += "'" + o + "', ";
-            }
-            sql.append(record1KeyValues).append(record2KeyValues);
-            sql.append(record1KeyValues).append(record2KeyValues);
             
-            //This stores null for the DUP_ID, MASTER_ID, and CANDIDATE_MAPPED columns
-            //This will go away when the table is corrected after making new engines
-            for (int i = 0; i < record1.getKeyValues().size() * 4; i++) {
-            	sql.append("null, ");
+            for (int i = 0; i < record1.getKeyValues().size() * 2; i++) {
+            	sql.append("?, ");
             }
             sql.append("0, ");
             sql.append(SQL.quote(MatchMakerCriteriaGroup.SYNTHETIC_MATCHES)).append(", ");
             sql.append(SQL.escapeDateTime(con, new Date(System.currentTimeMillis()))).append(", ");
-            sql.append("null, ");
             sql.append(SQL.escapeDateTime(con, new Date(System.currentTimeMillis()))).append(", ");
-            sql.append(session.getAppUser()).append(", ");
-            sql.append("null)");
+            sql.append(SQL.quote(session.getAppUser())).append(")");
             lastSQL = sql.toString();
             logger.debug("The SQL statement we are running is " + lastSQL);
-            rs = stmt.executeQuery(lastSQL);
+            
+            
+            ps = con.prepareStatement(lastSQL);
+            
+            for (int i = 0; i < record1.getKeyValues().size(); i++) {
+            	ps.setObject(i * 2 + 1, record1.getKeyValues().get(i));
+            	ps.setObject(i * 2 + 2, record2.getKeyValues().get(i));
+            }
+            
+            ps.executeUpdate();
         } catch (SQLException ex) {
             logger.error("Error in query: "+lastSQL, ex);
             session.handleWarning(
@@ -564,8 +568,7 @@ public class MatchPool {
                     "\nQuery: "+lastSQL);
             throw ex;
         } finally {
-            if (rs != null) try { rs.close(); } catch (SQLException ex) { logger.error("Couldn't close result set", ex); }
-            if (stmt != null) try { stmt.close(); } catch (SQLException ex) { logger.error("Couldn't close statement", ex); }
+            if (ps != null) try { ps.close(); } catch (SQLException ex) { logger.error("Couldn't close prepared statement", ex); }
             if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
         }
         
