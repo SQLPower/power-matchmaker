@@ -22,7 +22,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ComponentEvent;
@@ -48,13 +47,46 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 
 public class SourceTableRecordViewer {
 
+	/**
+	 * A panel whose preferred width is never less than
+	 * {@link #buttonPanelPrefWidth}.
+	 */
+	private class RecordViewerPanel extends JPanel {
+		@Override
+		public Dimension getPreferredSize() {
+			Dimension ps = super.getPreferredSize();
+			
+			ps.width = Math.max(buttonPanelPrefWidth, ps.width);
+			
+			return ps;
+		}
+	}
+	
+	/**
+	 * The panel of buttons associated with this record.  Its width
+	 * tracks the current width of {@link #panel}.
+	 */
     private final JPanel buttonPanel;
-    private final JPanel panel;
+
+    /**
+     * The panel that contains all the column values of a single
+     * record from the match's source table.
+     */
+    private final RecordViewerPanel panel;
+    
+    /**
+     * The natural preferred width of this record viewer's button panel.
+     * This is our minimum preferred width constraint for the source table
+     * record panel itself.
+     */
+	private int buttonPanelPrefWidth;
+	
     private static final Logger logger = Logger.getLogger(SourceTableRecordViewer.class);
 
     public SourceTableRecordViewer(SourceTableRecord view, SourceTableRecord master, List<Action>buttonActions) 
     	throws ArchitectException, SQLException {
-    	this.panel = new JPanel(new GridLayout(0, 1));
+    	panel = new RecordViewerPanel();
+    	panel.setLayout(new GridLayout(0, 1));
 
         logger.debug("Creating source table record viewer for " + master);
 
@@ -66,8 +98,10 @@ public class SourceTableRecordViewer {
         }
 
         buttonPanel = bb.getPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-       
+        buttonPanelPrefWidth = buttonPanel.getPreferredSize().width;
+        
+        logger.debug("buttonPanel preferred width is " + buttonPanelPrefWidth);
+        
         panel.addComponentListener(new ComponentListener() {
 
             void syncSize(int width) {
@@ -140,7 +174,11 @@ public class SourceTableRecordViewer {
     public JPanel getButtonPanel() {
         return buttonPanel;
     }
-        
+    
+    /**
+     * Creates the panel of column names that should appear along
+     * the left-hand side of a grid of SourceTableRecord panels.
+     */
     public static JPanel headerPanel(Match match) throws ArchitectException {
         JPanel panel = new JPanel(new GridLayout(0,1));
         panel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK));
