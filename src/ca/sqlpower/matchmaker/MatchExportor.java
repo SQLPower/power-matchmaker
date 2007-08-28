@@ -250,8 +250,8 @@ public class MatchExportor {
 	private void saveMatchCriteria(XMLHelper xmlHelper,
 				PrintWriter out, Match match, MatchMakerCriteriaGroup group) {
 
-		List <MatchMakerCriteria> criterias = group.getChildren();
-		for ( MatchMakerCriteria c : criterias ) {
+		List <MatchRule> criterias = group.getChildren();
+		for ( MatchRule c : criterias ) {
 			xmlHelper.println(out, "<PL_MATCH_CRITERIA>");
     		xmlHelper.indent++;
     		xmlHelper.println(out, "<MATCH_ID>"+

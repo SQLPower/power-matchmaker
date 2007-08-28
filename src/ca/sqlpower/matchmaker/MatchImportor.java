@@ -118,7 +118,7 @@ public class MatchImportor {
 				} else if ( qName.equalsIgnoreCase("PL_MATCH_GROUP")) {
 					setMatchMaketProperties(match,new MatchMakerCriteriaGroup(),properties);
 				} else if ( qName.equalsIgnoreCase("PL_MATCH_CRITERIA")) {
-					setMatchMaketProperties(match,new MatchMakerCriteria(),properties);
+					setMatchMaketProperties(match,new MatchRule(),properties);
 				} else if ( qName.equalsIgnoreCase("PL_FOLDER")) {
 					setMatchMaketProperties(match,new PlFolder<Match>(),properties);
 				} else {
@@ -311,8 +311,8 @@ public class MatchImportor {
 				}
 
 				parentMatch.addMatchCriteriaGroup(group);
-			} else if ( mmo instanceof MatchMakerCriteria ) {
-				MatchMakerCriteria criteria = (MatchMakerCriteria) mmo;
+			} else if ( mmo instanceof MatchRule ) {
+				MatchRule criteria = (MatchRule) mmo;
 				String groupName = null;
 				String criteriaName = null;
 				for ( LabelValueBean bean : properties ) {
