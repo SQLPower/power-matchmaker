@@ -360,7 +360,7 @@ public class MatchMakerImportExportTest extends TestCase {
 			match.addMatchCriteriaGroup(group);
 
 			for ( int n=0; n<10; n++) {
-				final MatchMakerCriteria matchMakerCriteria = new MatchMakerCriteria();
+				final MatchRule matchMakerCriteria = new MatchRule();
 				matchMakerCriteria.setName("criteria_"+i+"_"+n);
 				group.addChild(matchMakerCriteria);
 			}
@@ -390,7 +390,7 @@ public class MatchMakerImportExportTest extends TestCase {
 			match.addMatchCriteriaGroup(group);
 
 			for ( int n=0; n<10; n++) {
-				final MatchMakerCriteria matchMakerCriteria = new MatchMakerCriteria();
+				final MatchRule matchMakerCriteria = new MatchRule();
 				matchMakerCriteria.setName("criteria_"+i+"_"+n);
 				group.addChild(matchMakerCriteria);
 			}
@@ -420,8 +420,8 @@ public class MatchMakerImportExportTest extends TestCase {
 			assertEquals("groups should be the same", g, g2);
 
 			for ( int j=0; j<g.getChildCount(); j++) {
-				MatchMakerCriteria c = g.getChildren().get(j);
-				MatchMakerCriteria c2 = g2.getChildren().get(j);
+				MatchRule c = g.getChildren().get(j);
+				MatchRule c2 = g2.getChildren().get(j);
 				assertEquals("criteria should be the same", c, c2);
 			}
 		}

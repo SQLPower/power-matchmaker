@@ -38,7 +38,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
+import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -128,8 +128,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                     }
                 } else if (o instanceof MatchMakerCriteriaGroup) {
                     addMatchGroupMenuItems(m, (MatchMakerCriteriaGroup) o);
-                } else if (o instanceof MatchMakerCriteria) {
-                    addMatchCriteriaMenuItems(m, (MatchMakerCriteria) o);
+                } else if (o instanceof MatchRule) {
+                    addMatchCriteriaMenuItems(m, (MatchRule) o);
                 }
             }
             m.show(t, e.getX(), e.getY());
@@ -140,7 +140,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         m.add(new JMenuItem(new NewMatchGroupAction(swingSession, (Match) folder.getParent())));
     }
 
-    private void addMatchCriteriaMenuItems(JPopupMenu m, MatchMakerCriteria criteria) {
+    private void addMatchCriteriaMenuItems(JPopupMenu m, MatchRule criteria) {
         m.add(new JMenuItem(new DeleteMatchCriteria(swingSession,criteria)));
     }
 

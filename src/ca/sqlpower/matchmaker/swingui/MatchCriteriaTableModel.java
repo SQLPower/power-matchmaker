@@ -22,11 +22,11 @@ package ca.sqlpower.matchmaker.swingui;
 import javax.swing.table.AbstractTableModel;
 
 import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
+import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.util.EditableJTable;
@@ -34,16 +34,16 @@ import ca.sqlpower.matchmaker.util.EditableJTable;
 public class MatchCriteriaTableModel extends AbstractTableModel implements CleanupTableModel {
 
 	private final class TableModelEventAdapter
-		implements MatchMakerListener<MatchMakerCriteriaGroup, MatchMakerCriteria> {
+		implements MatchMakerListener<MatchMakerCriteriaGroup, MatchRule> {
 
-		public void mmChildrenInserted(MatchMakerEvent<MatchMakerCriteriaGroup, MatchMakerCriteria> evt) {
+		public void mmChildrenInserted(MatchMakerEvent<MatchMakerCriteriaGroup, MatchRule> evt) {
 			fireTableRowsInserted(evt.getChangeIndices()[0], evt.getChangeIndices()[0]);
 			for ( MatchMakerObject c : evt.getChildren() ) {
 				MatchMakerUtils.listenToHierarchy(this, c);
 			}
 		}
 
-		public void mmChildrenRemoved(MatchMakerEvent<MatchMakerCriteriaGroup, MatchMakerCriteria> evt) {
+		public void mmChildrenRemoved(MatchMakerEvent<MatchMakerCriteriaGroup, MatchRule> evt) {
 			fireTableRowsDeleted(evt.getChangeIndices()[0], evt.getChangeIndices()[0]);
 			for ( MatchMakerObject c : evt.getChildren() ) {
 				MatchMakerUtils.unlistenToHierarchy(this, c);
@@ -107,7 +107,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		return getFieldFromCriteria(
                 MatchCriteriaColumn.values()[columnIndex],
-                (MatchMakerCriteria)group.getChildren().get(rowIndex));
+                (MatchRule)group.getChildren().get(rowIndex));
 	}
 	
 	/**
@@ -121,8 +121,8 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 			return -1;
 		}
 		for (int i=0; i < getRowCount(); i++){			
-			MatchMakerCriteria criterion = 
-				(MatchMakerCriteria) group.getChildren().get(i);
+			MatchRule criterion = 
+				(MatchRule) group.getChildren().get(i);
 			if (criterion.equals(translate_group_name)){
 				return i;
 			}
@@ -133,8 +133,8 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		MatchCriteriaColumn column = MatchCriteriaColumn.values()[columnIndex];
-		MatchMakerCriteria criterion = 
-			(MatchMakerCriteria) group.getChildren().get(rowIndex);
+		MatchRule criterion = 
+			(MatchRule) group.getChildren().get(rowIndex);
 		
 		switch (column) {	
 		case COLUMN:
@@ -203,8 +203,8 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 		}
 	}
 	
-	public MatchMakerCriteria getRow(int row){
-		return (MatchMakerCriteria) group.getChildren().get(row);
+	public MatchRule getRow(int row){
+		return (MatchRule) group.getChildren().get(row);
 	}
 	
 	@Override
@@ -219,7 +219,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	}
 	
 	private static Object getFieldFromCriteria(MatchCriteriaColumn column,
-			MatchMakerCriteria criteria) {
+			MatchRule criteria) {
 		switch (column) {	
 		case COLUMN:
 			return criteria.getColumn();

@@ -66,7 +66,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerCriteria;
+import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.MatchMakerCriteriaGroup;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -884,7 +884,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		if (mmo.getParent() != null) {
 			
 			mmo.getParent().removeChild(mmo);
-            if (mmo instanceof MatchMakerCriteria) {
+            if (mmo instanceof MatchRule) {
                 // XXX Criteria are special because they don't have a DAO of their own
                 MatchMakerObject criteriaGroup = mmo.getParent();
                 MatchMakerDAO dao = getDAO(criteriaGroup.getClass());
