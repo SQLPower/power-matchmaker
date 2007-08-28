@@ -22,7 +22,7 @@ package ca.sqlpower.matchmaker;
 import java.awt.Color;
 
 /**
- * group of matchmaker criteria, the child type is MatchmakerCriteria
+ * group of matchmaker criteria, the child type is MatchRule
  * matchPercent can be NULL, and it's NULL when the object just create(default constructor)
  *
  * @param <C>
@@ -196,7 +196,7 @@ public class MatchRuleSet
 	}
 
 	/**
-	 * duplicate all the properties of the matchmakerCriteria group 
+	 * duplicate all the properties of the MatchRule group 
 	 * and it's children, except oid and parent
      * 
 	 * @return new matchmaker group object with the same properties

@@ -437,7 +437,7 @@ public class MatchRule
 
     /**
      * duplicate all criteria properties except parent and oid
-     * @return new MatchmakerCriteria object with all original 
+     * @return new MatchRule bject with all original 
      * properties except parent and oid
      */
 	public MatchRule duplicate(MatchMakerObject parent,MatchMakerSession s){
