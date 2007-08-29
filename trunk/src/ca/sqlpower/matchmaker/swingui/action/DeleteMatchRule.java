@@ -26,12 +26,12 @@ import javax.swing.AbstractAction;
 import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
-public class DeleteMatchCriteria extends AbstractAction {
+public class DeleteMatchRule extends AbstractAction {
 	MatchRule criteria;
 	MatchMakerSwingSession swingSession;
 	
-	public DeleteMatchCriteria(MatchMakerSwingSession swingSession, MatchRule criteria) {
-		super("Delete Criteria");
+	public DeleteMatchRule(MatchMakerSwingSession swingSession, MatchRule criteria) {
+		super("Delete Rule");
 		this.criteria = criteria;
 		this.swingSession = swingSession;
 	}

@@ -360,9 +360,9 @@ public class MatchMakerImportExportTest extends TestCase {
 			match.addMatchCriteriaGroup(group);
 
 			for ( int n=0; n<10; n++) {
-				final MatchRule matchMakerCriteria = new MatchRule();
-				matchMakerCriteria.setName("criteria_"+i+"_"+n);
-				group.addChild(matchMakerCriteria);
+				final MatchRule matchRule = new MatchRule();
+				matchRule.setName("criteria_"+i+"_"+n);
+				group.addChild(matchRule);
 			}
 		}
 		match.setParent(new PlFolder(folderName));
@@ -390,9 +390,9 @@ public class MatchMakerImportExportTest extends TestCase {
 			match.addMatchCriteriaGroup(group);
 
 			for ( int n=0; n<10; n++) {
-				final MatchRule matchMakerCriteria = new MatchRule();
-				matchMakerCriteria.setName("criteria_"+i+"_"+n);
-				group.addChild(matchMakerCriteria);
+				final MatchRule matchRule = new MatchRule();
+				matchRule.setName("criteria_"+i+"_"+n);
+				group.addChild(matchRule);
 			}
 		}
 		match.setParent(new PlFolder(folderName));

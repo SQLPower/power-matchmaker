@@ -28,8 +28,8 @@ public class MatchRule
     extends AbstractMatchMakerObject<MatchRule, MatchMakerObject> {
 
 	
-	public class MatchMakerCriteriaCachableTable extends CachableColumn {
-		public MatchMakerCriteriaCachableTable() {
+	public class MatchRuleCachableTable extends CachableColumn {
+		public MatchRuleCachableTable() {
 			super(MatchRule.this, "column");
 		}
 		
@@ -98,7 +98,7 @@ public class MatchRule
     private boolean matchFirstPlusOneInd;
 
 
-    private MatchMakerCriteriaCachableTable cachableTable = new MatchMakerCriteriaCachableTable();
+    private MatchRuleCachableTable cachableTable = new MatchRuleCachableTable();
     
     public MatchRule( ) {
     }
