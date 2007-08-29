@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -39,9 +40,11 @@ import java.io.InputStreamReader;
 import javax.sql.RowSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -259,9 +262,9 @@ public class RunMatchEditor implements EditorPane {
 	 */
 	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
-				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,20dlu,pref,10dlu,pref,4dlu",
-				//  1         2    3         4     5     6    7     8    9   10
-				"10dlu,pref,10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,30dlu,pref,4dlu,pref,4dlu");
+				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,20dlu,pref,10dlu",
+				//  1         2    3         4     5     6    7     8
+				"10dlu,pref,10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		        //   1    2     3    4     5    6    7    8    9   10    11   12   13   14   15
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
@@ -273,13 +276,13 @@ public class RunMatchEditor implements EditorPane {
 		logFilePath = new JTextField();
 		rollbackSegment = new JComboBox();
 		browse = new JButton(browseFileAction);
-		append = new JCheckBox();
+		append = new JCheckBox("Append to old Log File?");
 		recordsToProcess = new JTextField(5);
 		minWord = new JTextField(5);
 		minWord.setText("0");
-		debugMode = new JCheckBox();
-		truncateCandDup = new JCheckBox();
-		sendEmail = new JCheckBox();
+		debugMode = new JCheckBox("Debug Mode?");
+		truncateCandDup = new JCheckBox("Clear match pool?");
+		sendEmail = new JCheckBox("Send E-mails?");
 		viewLogFile = new JButton(new ShowLogFileAction());
 		viewStats = new JButton(new ShowMatchStatisticInfoAction(swingSession,
 				match, getParentFrame()));
@@ -297,19 +300,12 @@ public class RunMatchEditor implements EditorPane {
 
 		runMatchEngineButton = new JButton(runEngineAction);
 
-		pb.add(status, cc.xy(4, 2, "l,c"));
+		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
 		pb.add(new JLabel("Log File:"), cc.xy(2, 4, "r,f"));
 		pb.add(logFilePath, cc.xy(4, 4, "f,f"));
 		pb.add(browse, cc.xy(5, 4, "r,f"));
-		pb.add(new JLabel("Append to old Log File?"), cc.xy(7, 4, "r,f"));
-		pb.add(append, cc.xy(9, 4, "r,f"));
-		pb.add(new JLabel("Debug Mode?"), cc.xy(7, 6, "r,c"));
-		pb.add(debugMode, cc.xy(9, 6, "r,c"));
-		pb.add(new JLabel("Truncate Cand Dup?"), cc.xy(7, 8, "r,c"));
-		pb.add(truncateCandDup, cc.xy(9, 8, "r,c"));
-		pb.add(new JLabel("Send E-mails?"), cc.xy(7, 10, "r,c"));
-		pb.add(sendEmail, cc.xy(9, 10, "r,c"));
+		pb.add(append, cc.xy(7, 4, "l,f"));
 
 		pb.add(new JLabel("Rollback Segment:"), cc.xy(2, 6, "r,c"));
 		pb.add(rollbackSegment, cc.xy(4, 6));
@@ -317,6 +313,9 @@ public class RunMatchEditor implements EditorPane {
 		pb.add(recordsToProcess, cc.xy(4, 8, "l,c"));
 		pb.add(new JLabel("Min Word Count Freq:"), cc.xy(2, 10, "r,c"));
 		pb.add(minWord, cc.xy(4, 10, "l,c"));
+		pb.add(debugMode, cc.xy(4, 12, "l,c"));
+		pb.add(truncateCandDup, cc.xy(4, 14, "l,c"));
+		pb.add(sendEmail, cc.xy(4, 16, "l,c"));
 
 		FormLayout bbLayout = new FormLayout(
 				"4dlu,pref,10dlu:grow,pref,10dlu:grow,pref,4dlu",
@@ -331,18 +330,19 @@ public class RunMatchEditor implements EditorPane {
 		bbpb.add(viewStats, cc.xy(2, 4, "f,f"));
 		bbpb.add(save, cc.xy(4, 4, "f,f"));
 
-		pb.add(bbpb.getPanel(), cc.xyw(2, 12, 8));
+		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6));
 
-		JPanel anotherP = logger.isDebugEnabled() ? new FormDebugPanel(layout)
-		: new JPanel(layout);
-		FormLayout anotherLayout = new FormLayout("4dlu,fill:pref:grow,4dlu", "4dlu,pref,pref,pref,pref");
-		PanelBuilder anotherPB = new PanelBuilder(anotherLayout, anotherP);
-		CellConstraints anotherCC = new CellConstraints();
-		anotherPB.addSeparator("Configuration", anotherCC.xy(2, 2));
-		anotherPB.add(pb.getPanel(), anotherCC.xy(2, 3));
-		anotherPB.addSeparator("Output", anotherCC.xy(2, 4));
-		anotherPB.add(runEngineAction.getPanel(), anotherCC.xy(2, 5));
-		return anotherPB.getPanel();
+		JPanel engineAccessoryPanel = new JPanel(new BorderLayout());
+		engineAccessoryPanel.add(runEngineAction.getProgressBar(), BorderLayout.NORTH);
+		engineAccessoryPanel.add(runEngineAction.getButtonBar(), BorderLayout.SOUTH);
+		
+		JPanel anotherP = new JPanel(new BorderLayout(12, 12));
+		anotherP.add(pb.getPanel(), BorderLayout.NORTH);
+		anotherP.add(runEngineAction.getOutputComponent(), BorderLayout.CENTER);
+		anotherP.add(engineAccessoryPanel, BorderLayout.SOUTH);
+		anotherP.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+		
+		return anotherP;
 	}
 
 	/**
@@ -501,10 +501,22 @@ public class RunMatchEditor implements EditorPane {
 		private MatchMakerEngine matchEngine;
 		private MatchMakerSession session;
 		private Match match;
-		private JPanel thepanel;
+		
+		/**
+		 * A bar of buttons related to the match engine output textfield.
+		 */
+		private JPanel buttonBar;
 
+		/**
+		 * The actual document that contains the engine's output.
+		 */
 		private DefaultStyledDocument engineOutputDoc;
-
+		
+		/**
+		 * The component that houses the engine output field.
+		 */
+		private JScrollPane outputComponent;
+		
 		private JProgressBar progressBar;
 
 		public RunEngineAction(MatchMakerSession session, Match match,
@@ -513,16 +525,19 @@ public class RunMatchEditor implements EditorPane {
 			this.parent = parent;
 			this.session = session;
 			this.match = match;
+			initGUI();
+			logger.debug("RunEngineAction instance created");
+		}
+
+		/**
+		 * Sets up all the GUI components.
+		 */
+		private void initGUI() {
 			StyleConstants.setForeground(stdoutAtt, Color.black);
 			StyleConstants.setFontFamily(stdoutAtt, "Courier New");
 			StyleConstants.setForeground(stderrAtt, Color.red);
 			progressBar = new JProgressBar();
-			thepanel = initGUI();
-			thepanel.setVisible(true);
-			logger.debug("RunEngineAction instance created");
-		}
 
-		private JPanel initGUI() {
 			GraphicsEnvironment ge = GraphicsEnvironment
 			.getLocalGraphicsEnvironment();
 			Font[] fonts = ge.getAllFonts();
@@ -535,37 +550,24 @@ public class RunMatchEditor implements EditorPane {
 			}
 			engineOutputDoc = new DefaultStyledDocument();
 
-			FormLayout layout = new FormLayout("4dlu,fill:pref:grow,4dlu", // columns
-			"4dlu,pref,4dlu,pref,4dlu,pref,4dlu"); // rows
-
-			PanelBuilder pb;
-			JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
-			: new JPanel(layout);
-			pb = new PanelBuilder(layout, p);
-			CellConstraints cc = new CellConstraints();
-
-			JTextArea cmdText = new JTextArea(20, 80);
-			cmdText.setDocument(engineOutputDoc);
-			cmdText.setEditable(false);
-			cmdText.setWrapStyleWord(true);
-			cmdText.setLineWrap(true);
-			cmdText.setAutoscrolls(true);
+			JTextArea outputTextArea = new JTextArea(20, 80);
+			outputTextArea.setDocument(engineOutputDoc);
+			outputTextArea.setEditable(false);
+			outputTextArea.setWrapStyleWord(true);
+			outputTextArea.setLineWrap(true);
+			outputTextArea.setAutoscrolls(true);
 
 			if (courierNewExist) {
-				Font oldFont = cmdText.getFont();
+				Font oldFont = outputTextArea.getFont();
 				Font f = new Font("Courier New", oldFont.getStyle(), oldFont
 						.getSize());
-				cmdText.setFont(f);
-
+				outputTextArea.setFont(f);
 			}
 
-			JScrollPane scrollPane = new JScrollPane(cmdText);
-			scrollPane
-			.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			scrollPane.setAutoscrolls(true);
-			scrollPane.setWheelScrollingEnabled(true);
-			pb.add(scrollPane, cc.xy(2, 2));
-			pb.add(progressBar,cc.xy(2, 4));
+			outputComponent = new JScrollPane(outputTextArea);
+			outputComponent.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			outputComponent.setAutoscrolls(true);
+			outputComponent.setWheelScrollingEnabled(true);
 
 			ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
 
@@ -612,13 +614,20 @@ public class RunMatchEditor implements EditorPane {
 			bbBuilder.addRelatedGap();
 			bbBuilder.addGlue();
 
-			pb.add(bbBuilder.getPanel(), cc.xy(2, 6));
+			buttonBar = bbBuilder.getPanel();
 			
-			return pb.getPanel();
 		}
 
-		public JPanel getPanel() {
-			return thepanel;
+		public JProgressBar getProgressBar() {
+			return progressBar;
+		}
+		
+		public JPanel getButtonBar() {
+			return buttonBar;
+		}
+		
+		public JComponent getOutputComponent() {
+			return outputComponent;
 		}
 		
 		public void actionPerformed(ActionEvent e) {
