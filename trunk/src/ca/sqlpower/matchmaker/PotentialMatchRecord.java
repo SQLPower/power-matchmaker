@@ -69,26 +69,12 @@ public class PotentialMatchRecord {
      * so it may needed to be handled differently (eg: reversing changes).
      */
     private final boolean synthetic;
-
-    /**
-     * One of the two records currently identified as a potential duplicate.
-     * This exists because the merge engine can only handle paths of length one.
-     * Once the merge engine has been rewritten to be in Java this should go away.
-     * Avoid using this unless you are going to start the merge engine. The C match
-     * engine may be using this as well.
-     */
-    @Deprecated
-    private SourceTableRecord lhs;
     
     /**
-     * One of the two records currently identified as a potential duplicate.
-     * This exists because the merge engine can only handle paths of length one.
-     * Once the merge engine has been rewritten to be in Java this should go away.
-     * Avoid using this unless you are going to start the merge engine. The C match
-     * engine may be using this as well.
+     * This parameter keeps track of which state the record is in so we know when we
+     * need to update its information in the database.
      */
-    @Deprecated
-    private SourceTableRecord rhs;
+    private StoreState storeState;
 
     /**
      * The values that are used to keep track of which side of a record is
@@ -161,6 +147,44 @@ public class PotentialMatchRecord {
     }
     
     /**
+	 * An enumeration to note if this record has been modified or not, or if it
+	 * has been recently created or if it has been marked for deletion. This
+	 * information will be used to decide how the information in the database
+	 * this record represents will be updated.
+	 */
+    public static enum StoreState {
+    	
+    	/**
+		 * This is the property to denote that no changes have occurred to this
+		 * record since it was last retrieved from or stored into the database.
+		 */
+    	CLEAN("CLEAN"),
+    	
+    	/**
+		 * This is the property to denote that changes have occurred to this
+		 * record since it was last retrieved from or stored into the database.
+		 */
+    	DIRTY("DIRTY"),
+    	
+    	/**
+		 * This is the property to denote that this record has been recently
+		 * created and has not been added to the database.
+		 */
+    	NEW("NEW");
+    	
+    	private final String code;
+        
+        StoreState(String code) {
+            this.code = code;
+        }
+        
+        public String getCode() {
+            return code;
+        }
+    	
+    }
+    
+    /**
 	 * Sets up a PotentialMatchRecord which is the business model of an edge in
 	 * the MatchValidation graph. It requires two SourceTableRecord to be
 	 * identified as the LHS and RHS of the edge. By default, the master is not
@@ -190,6 +214,35 @@ public class PotentialMatchRecord {
         this.originalRhs = originalRhs;
         this.synthetic = synthetic;
         master = MasterSide.NEITHER;
+        this.storeState = StoreState.NEW;
+    }
+
+    /**
+	 * The current storage state of this match record. Exposed as
+	 * package-private because both the match pool and unit tests need
+	 * to know.
+	 */
+    StoreState getStoreState() {
+    	return storeState;
+    }
+
+    /**
+	 * Modifies the current storage state of this match record. Exposed as
+	 * package-private because both the match pool and unit tests need
+	 * to be able to change it.
+	 */
+    void setStoreState(StoreState newState) {
+    	storeState = newState;
+    }
+    
+    /**
+     * Sets the store state to dirty only if it was already clean.  If it was
+     * new or deleted, it will be left alone.
+     */
+    private void markDirty() {
+    	if (storeState == StoreState.CLEAN) {
+    		setStoreState(StoreState.DIRTY);
+    	}
     }
 
     public MatchType getMatchStatus() {
@@ -201,58 +254,16 @@ public class PotentialMatchRecord {
      * @param matchStatus the type of Match this represents
      */
     public void setMatchStatus(MatchType matchStatus) {
-        this.matchStatus = matchStatus;
+        if (this.matchStatus == matchStatus) return;
+    	this.matchStatus = matchStatus;
         if (matchStatus == MatchType.NOMATCH || matchStatus == MatchType.UNMATCH){
             master = MasterSide.NEITHER;
         }
+        markDirty();
     }
 
     public MatchRuleSet getCriteriaGroup() {
         return criteriaGroup;
-    }
-
-    /**
-     * This exists because the merge engine can only handle paths of length one.
-     * Once the merge engine has been rewritten to be in Java this should go away.
-     * Avoid using this unless you are going to start the merge engine. The C match
-     * engine may be using this as well.
-     */
-    @Deprecated
-    public SourceTableRecord getLhs() {
-        return lhs;
-    }
-
-    /**
-     * This exists because the merge engine can only handle paths of length one.
-     * Once the merge engine has been rewritten to be in Java this should go away.
-     * Avoid using this unless you are going to start the merge engine. The C match
-     * engine may be using this as well.
-     */
-    @Deprecated
-    public void setLhs(SourceTableRecord lhs) {
-        this.lhs = lhs;
-    }
-
-    /**
-     * This exists because the merge engine can only handle paths of length one.
-     * Once the merge engine has been rewritten to be in Java this should go away.
-     * Avoid using this unless you are going to start the merge engine. The C match
-     * engine may be using this as well.
-     */
-    @Deprecated
-    public SourceTableRecord getRhs() {
-        return rhs;
-    }
-
-    /**
-     * This exists because the merge engine can only handle paths of length one.
-     * Once the merge engine has been rewritten to be in Java this should go away.
-     * Avoid using this unless you are going to start the merge engine. The C match
-     * engine may be using this as well.
-     */
-    @Deprecated
-    public void setRhs(SourceTableRecord rhs) {
-        this.rhs = rhs;
     }
 
     public SourceTableRecord getOriginalLhs() {
@@ -268,29 +279,39 @@ public class PotentialMatchRecord {
     }
 
     /**
-     * Set the master record to the source table record passed in.  If the
-     * value passed is null it sets neither as the master record.  If 
-     * newMaster is not in this potential match record it throws an
-     * illegal argument exception. The match status also gets set to match
-     * if the master is not null or unmatch if the master is null.
-     * 
-     * @param newMaster the source table record that is participating in this
-     *                     potential match that you want to make the master.
-     */
+	 * Sets the master record to the source table record passed in and modifies
+	 * the match status to the correct value (left-hand master, right-hand
+	 * master, or no master). If the value passed is null it sets neither as the
+	 * master record. If newMaster is not in this potential match record it
+	 * throws an illegal argument exception. The match status also gets set to
+	 * match if the master is not null or unmatch if the master is null.
+	 * <p>
+	 * This object's persistence state will only change to dirty as a result of
+	 * this call if either the master or matchType property values actually
+	 * changed.
+	 * 
+	 * @param newMaster
+	 *            the source table record that is participating in this
+	 *            potential match that you want to make the master.
+	 */
     public void setMaster(SourceTableRecord newMaster){
-    	
-        if (newMaster== null){
+    	MasterSide oldMaster = master;
+        if (newMaster == null){
             master = MasterSide.NEITHER;
-            matchStatus = MatchType.UNMATCH;
+            setMatchStatus(MatchType.UNMATCH);
         } else if (originalRhs.equals(newMaster)) {
             master = MasterSide.RIGHT_HAND_SIDE;
-            matchStatus = MatchType.MATCH;
+            setMatchStatus(MatchType.MATCH);
         } else if (originalLhs.equals(newMaster)) {
             master = MasterSide.LEFT_HAND_SIDE;
-            matchStatus = MatchType.MATCH;
+            setMatchStatus(MatchType.MATCH);
         } else {
             throw new IllegalArgumentException("The source table record "+ newMaster + " is not part of this record");
-        }  
+        }
+        
+        if (master != oldMaster) {
+        	markDirty();
+        }
     }
     
     public boolean isRhsMaster() {
@@ -360,8 +381,6 @@ public class PotentialMatchRecord {
     public String toString() {
         return "PotentialMatch: origLhs="+originalLhs+
         "; origRhs="+originalRhs+
-        "; lhs="+lhs+
-        "; rhs="+rhs+
         "; matchStatus="+matchStatus+
         "; masterSide="+master;
     }
