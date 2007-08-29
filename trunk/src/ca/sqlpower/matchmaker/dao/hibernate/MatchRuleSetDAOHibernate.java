@@ -17,18 +17,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker.dao;
+package ca.sqlpower.matchmaker.dao.hibernate;
 
 import ca.sqlpower.matchmaker.MatchRuleSet;
+import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
 
-/**
- * The Data access interface for match criteria group objects
- *
- * At this point this interface only extends the base DAO interface
- * and is put in for future expansion. 
- *
- * Remember to program to this interface rather than an implemenation
- */
-public interface MatchCriteriaGroupDAO extends MatchMakerDAO<MatchRuleSet> {
+public class MatchRuleSetDAOHibernate extends AbstractMatchMakerDAOHibernate<MatchRuleSet> implements
+		MatchRuleSetDAO {
+
+	public MatchRuleSetDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
+		super(matchMakerSession);
+	}
+
+	public Class<MatchRuleSet> getBusinessClass() {
+		return MatchRuleSet.class;
+	}
+	
+	@Override
+	public void delete(MatchRuleSet deleteMe) {
+		
+		MatchMakerObject parent = deleteMe.getParent();
+		if (parent != null ){
+			parent.removeChild(deleteMe);
+		}
+		super.delete(deleteMe);
+		
+	}
 
 }

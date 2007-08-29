@@ -24,12 +24,12 @@ import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 
 
-public class MatchMakerCriteriaGroupTest extends MatchMakerTestCase<MatchRuleSet> {
+public class MatchRuleSetTest extends MatchMakerTestCase<MatchRuleSet> {
 
 	MatchRuleSet target;
 	final String appUserName = "test user";
 
-    public MatchMakerCriteriaGroupTest() {
+    public MatchRuleSetTest() {
         super();
         propertiesToIgnoreForEventGeneration.add("parentMatch");
         propertiesThatDifferOnSetAndGet.add("parent");

@@ -66,7 +66,7 @@ public class SelfContainedTests {
     }
 
     private static void testJUnitTest() throws Exception {
-        MatchMakerCriteriaGroupDAOOracleTest t = new MatchMakerCriteriaGroupDAOOracleTest();
+        MatchRuleSetDAOOracleTest t = new MatchRuleSetDAOOracleTest();
         t.setUp();
         t.testSave();
     }
