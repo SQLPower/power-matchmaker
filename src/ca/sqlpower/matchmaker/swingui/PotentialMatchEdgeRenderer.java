@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphEdgeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
 
@@ -56,8 +57,14 @@ public class PotentialMatchEdgeRenderer extends JComponent implements
      * because the user verified and validated the nodes as being related for real.
      * This is a solid line.
      */
-    private static final Stroke CURRENT_EDGE_STROKE = new BasicStroke(1.2f);
+    private static final Stroke MATCH_EDGE_STROKE = new BasicStroke(1.2f);
 
+    /**
+     * The line style used for an edge between two SourceTableRecords that
+     * are marked as a 'No Match'.
+     */
+    private static final Stroke NO_MATCH_EDGE_STROKE = new BasicStroke(1.2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 0f, new float[] {1.2f, 5f}, 0f);
+    
     private Rectangle origLhsPosition;
     private Rectangle origRhsPosition;
     
@@ -123,14 +130,20 @@ public class PotentialMatchEdgeRenderer extends JComponent implements
         }
         g2.setColor(edgeColor);
 
-        // always draw original edge
-        g2.setStroke(ORIGINAL_EDGE_STROKE);
-        g2.drawLine(
-                origLhsPosition.x + origLhsPosition.width/2, origLhsPosition.y + origLhsPosition.height/2,
-                origRhsPosition.x + origRhsPosition.width/2, origRhsPosition.y + origRhsPosition.height/2);
-
-        if (masterPosition != null && duplicatePosition != null) {
-            g2.setStroke(CURRENT_EDGE_STROKE);
+        if (edge.getMatchStatus() == MatchType.NOMATCH) {
+        	g2.setStroke(NO_MATCH_EDGE_STROKE);
+        	g2.drawLine(origLhsPosition.x + origLhsPosition.width/2, 
+        				origLhsPosition.y + origLhsPosition.height/2,
+        				origRhsPosition.x + origRhsPosition.width/2, 
+        				origRhsPosition.y + origRhsPosition.height/2);
+        } else if (masterPosition == null || duplicatePosition == null) {
+        	g2.setStroke(ORIGINAL_EDGE_STROKE);
+        	g2.drawLine(origLhsPosition.x + origLhsPosition.width/2, 
+        				origLhsPosition.y + origLhsPosition.height/2,
+        				origRhsPosition.x + origRhsPosition.width/2, 
+        				origRhsPosition.y + origRhsPosition.height/2);
+        } else {
+            g2.setStroke(MATCH_EDGE_STROKE);
 
             int masterCentreX = masterPosition.x + masterPosition.width / 2;
             int masterCentreY = masterPosition.y + masterPosition.height / 2;
