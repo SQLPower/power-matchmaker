@@ -121,9 +121,11 @@ public class MatchResultVisualizer implements EditorPane {
 							JOptionPane.WARNING_MESSAGE) == JOptionPane.NO_OPTION) return;
 			try {
 				pool.resetPool();
-    		} catch (Exception ex) {
-    			MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to reset the match pool.", ex);
-    		}
+				pool.store();
+    		}catch (SQLException ex) {
+            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            			"store changes to the database.", ex);
+            }
     		graph.repaint();
     	}
     };
@@ -153,9 +155,13 @@ public class MatchResultVisualizer implements EditorPane {
         public void actionPerformed(ActionEvent e){
             try {
 				pool.defineNoMatch(record1, record2);
-            } catch (Exception ex) {
+				pool.store();
+            } catch (ArchitectException ex) {
             	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
             			"define " + record1 + " and " + record2 + " to not be duplicates.", ex);
+            } catch (SQLException ex) {
+            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            			"store changes to the database.", ex);
             }
             selectionListener.nodeSelected(record1);
             graph.repaint();
@@ -180,10 +186,14 @@ public class MatchResultVisualizer implements EditorPane {
         public void actionPerformed(ActionEvent e){
             try {
 				pool.defineUnmatched(record1, record2);
-			} catch (Exception ex) {
+				pool.store();
+			} catch (ArchitectException ex) {
 				MMSUtils.showExceptionDialog(panel, "An exception occurred when trying to " +
 						"unmatch " + record1 + " and " + record2, ex);
-			}
+			} catch (SQLException ex) {
+            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            			"store changes to the database.", ex);
+            }
             selectionListener.nodeSelected(record1);
             graph.repaint();
         }
@@ -208,10 +218,14 @@ public class MatchResultVisualizer implements EditorPane {
         public void actionPerformed(ActionEvent e) {
             try {
 				pool.defineMaster(master, duplicate);
-			} catch (Exception ex) {
+				pool.store();
+			} catch (ArchitectException ex) {
 				MMSUtils.showExceptionDialog(panel, "An exception occurred when trying " +
 						"to set " + master + " to be the master of " + duplicate, ex);
-			}
+			} catch (SQLException ex) {
+            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            			"store changes to the database.", ex);
+            }
             selectionListener.nodeSelected(duplicate);
             graph.repaint();
         }
@@ -236,10 +250,14 @@ public class MatchResultVisualizer implements EditorPane {
         public void actionPerformed(ActionEvent e) {
             try {
 				pool.defineMaster(master, duplicate);
-            } catch (Exception ex) {
+				pool.store();
+            } catch (ArchitectException ex) {
 				MMSUtils.showExceptionDialog(panel, "An exception occurred when trying " +
 						"to set " + duplicate + " to be a duplicate of " + master, ex);
-			}
+			} catch (SQLException ex) {
+            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            			"store changes to the database.", ex);
+            }
             selectionListener.nodeSelected(master);
             graph.repaint();
         }
