@@ -77,9 +77,9 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MatchMakerCriteriaGroupEditor implements EditorPane {
+public class MatchRuleSetEditor implements EditorPane {
 
-	private static final Logger logger = Logger.getLogger(MatchMakerCriteriaGroupEditor.class);
+	private static final Logger logger = Logger.getLogger(MatchRuleSetEditor.class);
 
     private final MatchMakerSwingSession swingSession;
     private MatchRuleSet group;
@@ -110,7 +110,7 @@ public class MatchMakerCriteriaGroupEditor implements EditorPane {
 	 * This is the default constructor
 	 * the validation will be triggered before the end of this constructor
 	 */
-	public MatchMakerCriteriaGroupEditor(MatchMakerSwingSession swingSession,
+	public MatchRuleSetEditor(MatchMakerSwingSession swingSession,
 			Match match,
 			MatchRuleSet group) {
 		super();
