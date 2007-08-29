@@ -75,7 +75,7 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
+import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
@@ -865,7 +865,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			dao.save((PlFolder) mmo);
 		} else if (mmo instanceof MatchRuleSet) {
 			MatchRuleSet cg = (MatchRuleSet)mmo;
-			MatchCriteriaGroupDAO dao = (MatchCriteriaGroupDAO) getDAO(MatchRuleSet.class);
+			MatchRuleSetDAO dao = (MatchRuleSetDAO) getDAO(MatchRuleSet.class);
 			dao.save(cg);
 		} else {
 			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");
