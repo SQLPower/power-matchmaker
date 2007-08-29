@@ -20,6 +20,10 @@
 
 package ca.sqlpower.matchmaker.util;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Match;
@@ -569,5 +573,41 @@ public class MMTestUtils {
 		pool.addPotentialMatch(pmr);
 		
 		return pool;
+	}
+
+	/**
+	 * Creates the result table used to store information about the graphs
+	 * created by
+	 * {@link #createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup, MatchMakerCriteriaGroup)}.
+	 * This table is only required if we want to test against a database.
+	 */
+	public static void createResultTable(Connection con) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("CREATE TABLE pl.match_results ("
+				+ "\n DUP_CANDIDATE_10 varchar(50) not null,"
+				+ "\n DUP_CANDIDATE_20 varchar(50) not null,"
+				+ "\n CURRENT_CANDIDATE_10 varchar(50),"
+				+ "\n CURRENT_CANDIDATE_20 varchar(50)," 
+				+ "\n DUP_ID0 varchar(50),"
+				+ "\n MASTER_ID0 varchar(50),"
+				+ "\n CANDIDATE_10_MAPPED varchar(1),"
+				+ "\n CANDIDATE_20_MAPPED varchar(1),"
+				+ "\n MATCH_PERCENT integer," 
+				+ "\n GROUP_ID varchar(60),"
+				+ "\n MATCH_DATE timestamp," 
+				+ "\n MATCH_STATUS varchar(60),"
+				+ "\n MATCH_STATUS_DATE timestamp,"
+				+ "\n MATCH_STATUS_USER varchar(60),"
+				+ "\n DUP1_MASTER_IND  varchar(1)" + "\n)");
+		stmt.close();
+	}
+
+	/**
+	 * Removes the result table created by {@link #createResultTable(Connection)}.
+	 */
+	public static void dropResultTable(Connection con) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("DROP TABLE pl.match_results");
+		stmt.close();
 	}
 }

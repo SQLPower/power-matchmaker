@@ -228,6 +228,10 @@ public class SourceTableRecord {
         potentialMatches.add(pmr);
     }
     
+    public boolean removePotentialMatch(PotentialMatchRecord pmr){
+        return potentialMatches.remove(pmr);
+    }
+    
     /**
      * Returns a list of all the PotentialMatchRecords that were originally associtated
      * with this source table record by the match engine.  The original associations are

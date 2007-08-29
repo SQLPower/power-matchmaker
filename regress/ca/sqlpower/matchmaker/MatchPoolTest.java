@@ -27,6 +27,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -59,13 +60,15 @@ public class MatchPoolTest extends TestCase {
 	private SQLTable resultTable;
 	private Match match;
 
+	private MatchRuleSet groupOne;
+
 	@Override
 	protected void setUp() throws Exception {
 		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
 		db = new SQLDatabase(dataSource);
 		con = db.getConnection();
 
-		createResultTable(con);
+		MMTestUtils.createResultTable(con);
 
 		SQLSchema plSchema = db.getSchemaByName("pl");
 
@@ -105,7 +108,7 @@ public class MatchPoolTest extends TestCase {
 		match.setSourceTable(sourceTable);
 		match.setSourceTableIndex(sourceTableIndex);
 
-		MatchRuleSet groupOne = new MatchRuleSet();
+		groupOne = new MatchRuleSet();
 		groupOne.setName("Group_One");
 		match.addMatchCriteriaGroup(groupOne);
 
@@ -118,35 +121,8 @@ public class MatchPoolTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		dropResultTable(con);
+		MMTestUtils.dropResultTable(con);
 		con.close();
-	}
-
-	private static void createResultTable(Connection con) throws SQLException {
-		Statement stmt = con.createStatement();
-		stmt.executeUpdate("CREATE TABLE pl.match_results ("
-				+ "\n DUP_CANDIDATE_10 varchar(50) not null,"
-				+ "\n DUP_CANDIDATE_20 varchar(50) not null,"
-				+ "\n CURRENT_CANDIDATE_10 varchar(50),"
-				+ "\n CURRENT_CANDIDATE_20 varchar(50)," 
-				+ "\n DUP_ID0 varchar(50),"
-				+ "\n MASTER_ID0 varchar(50),"
-				+ "\n CANDIDATE_10_MAPPED varchar(1),"
-				+ "\n CANDIDATE_20_MAPPED varchar(1),"
-				+ "\n MATCH_PERCENT integer," 
-				+ "\n GROUP_ID varchar(60),"
-				+ "\n MATCH_DATE timestamp," 
-				+ "\n MATCH_STATUS varchar(60),"
-				+ "\n MATCH_STATUS_DATE timestamp,"
-				+ "\n MATCH_STATUS_USER varchar(60),"
-				+ "\n DUP1_MASTER_IND  varchar(1)" + "\n)");
-		stmt.close();
-	}
-
-	private static void dropResultTable(Connection con) throws SQLException {
-		Statement stmt = con.createStatement();
-		stmt.executeUpdate("DROP TABLE pl.match_results");
-		stmt.close();
 	}
 
 	/**
@@ -3535,7 +3511,7 @@ public class MatchPoolTest extends TestCase {
 
 		assertTrue(pmrP1ToP2.getMaster() == null);
 		assertTrue(pmrP1ToP2.getDuplicate() == null);
-		assertTrue(pmrP1ToP2.getMatchStatus() == MatchType.UNMATCH);
+		assertSame(pmrP1ToP2.getMatchStatus(), MatchType.UNMATCH);
 		assertTrue(pmrP1ToP3.getMaster() == null);
 		assertTrue(pmrP1ToP3.getDuplicate() == null);
 		assertTrue(pmrP1ToP3.getMatchStatus() == MatchType.UNMATCH);
@@ -3593,11 +3569,6 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrA1ToA2.getMatchStatus() == MatchType.UNMATCH);
 		assertTrue(pmrA2ToA3.getMatchStatus() == MatchType.UNMATCH);
 		assertFalse(pool.getPotentialMatches().contains(pmrA1ToA3));
-		Statement stmt = con.createStatement();
-		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
-				+ DDLUtils.toQualifiedName(resultTable)
-				+ " WHERE DUP_CANDIDATE_10='a3' AND DUP_CANDIDATE_20='a1'");
-		assertFalse(rs.next());
 	}
 
 	/**
@@ -3605,6 +3576,8 @@ public class MatchPoolTest extends TestCase {
 	 * in the database.
 	 */
 	public void testStoreUpdatesOnMatch() throws Exception {
+		pool.store();
+		
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
 		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
@@ -3615,9 +3588,7 @@ public class MatchPoolTest extends TestCase {
 				a1, a2);
 		pmrA1ToA2.setMaster(a1);
 
-		insertResultTableRecord(con, "a1", "a2", 15, "Group_One");
-		
-		pool.store(pmrA1ToA2);
+		pool.store();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3631,7 +3602,9 @@ public class MatchPoolTest extends TestCase {
 	 * This test defines two records to not be a match and checks that it is
 	 * stored in the database.
 	 */
-	public void testStoreUpdatesOnNOMatch() throws Exception {
+	public void testStoreUpdatesOnNoMatch() throws Exception {
+		pool.store();
+		
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("a2");
 		SourceTableRecord a2 = pool.getSourceTableRecord(keyList);
@@ -3642,9 +3615,7 @@ public class MatchPoolTest extends TestCase {
 				a1, a2);
 		pmrA1ToA2.setMatchStatus(MatchType.NOMATCH);
 
-		insertResultTableRecord(con, "a1", "a2", 15, "Group_One");
-		
-		pool.store(pmrA1ToA2);
+		pool.store();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
@@ -3652,6 +3623,82 @@ public class MatchPoolTest extends TestCase {
 				+ " WHERE DUP_CANDIDATE_10='a1' AND DUP_CANDIDATE_20='a2'");
 		rs.next();
 		assertEquals("NO_MATCH", rs.getString(1));
+	}
+	
+	/**
+	 * This test defines two records to be unmatched and checks that it is
+	 * stored in the database.
+	 */
+	public void testStoreUpdatesOnUnmatch() throws Exception {
+		pool.store();
+		
+		SourceTableRecord b1 = pool.getSourceTableRecord(Collections.singletonList("b1"));
+		SourceTableRecord b2 = pool.getSourceTableRecord(Collections.singletonList("b2"));
+		PotentialMatchRecord b1b2 = pool.getPotentialMatchFromOriginals(
+				b1, b2);
+		b1b2.setMatchStatus(MatchType.UNMATCH);
+
+		pool.store();
+
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
+				+ DDLUtils.toQualifiedName(resultTable)
+				+ " WHERE DUP_CANDIDATE_10='b1' AND DUP_CANDIDATE_20='b2'");
+		rs.next();
+		assertEquals("UNMATCH", rs.getString(1));
+	}
+	
+	/**
+	 * This test removes potential matches from the pool to check that they will also be
+	 * removed from the database.
+	 */
+	public void testStoreDropsRemovedRecords() throws Exception {
+		pool.store();
+		
+		SourceTableRecord a1 = pool.getSourceTableRecord(Collections.singletonList("a1"));
+		SourceTableRecord a2 = pool.getSourceTableRecord(Collections.singletonList("a2"));
+		SourceTableRecord a3 = pool.getSourceTableRecord(Collections.singletonList("a3"));
+		PotentialMatchRecord a1a2 = pool.getPotentialMatchFromOriginals(
+				a1, a2);
+		PotentialMatchRecord a2a3 = pool.getPotentialMatchFromOriginals(
+				a2, a3);
+		pool.removePotentialMatch(a1a2);
+		pool.removePotentialMatch(a2a3);
+
+		pool.store();
+
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
+				+ DDLUtils.toQualifiedName(resultTable)
+				+ " WHERE DUP_CANDIDATE_10='a1' AND DUP_CANDIDATE_20='a2'");
+		assertFalse(rs.next());
+		
+		rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
+				+ DDLUtils.toQualifiedName(resultTable)
+				+ " WHERE DUP_CANDIDATE_10='a2' AND DUP_CANDIDATE_20='a3'");
+		assertFalse(rs.next());
+	}
+	
+	/**
+	 * This test defines two records to be unmatched and checks that a new
+	 * potential record is stored in the database.
+	 */
+	public void testStoreNewRecordMatched() throws Exception {
+		SourceTableRecord a1 = pool.getSourceTableRecord(Collections.singletonList("a1"));
+		SourceTableRecord a3 = pool.getSourceTableRecord(Collections.singletonList("a3"));
+		PotentialMatchRecord a1a3 = new PotentialMatchRecord(groupOne, MatchType.UNMATCH, 
+				a1, a3, false);
+		a1a3.setMatchStatus(MatchType.MATCH);
+		pool.addPotentialMatch(a1a3);
+
+		pool.store();
+
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT MATCH_STATUS FROM "
+				+ DDLUtils.toQualifiedName(resultTable)
+				+ " WHERE DUP_CANDIDATE_10='a1' AND DUP_CANDIDATE_20='a3'");
+		rs.next();
+		assertEquals("MATCH", rs.getString(1));
 	}
     
 	//======================== Auto-Match Tests ==========================
