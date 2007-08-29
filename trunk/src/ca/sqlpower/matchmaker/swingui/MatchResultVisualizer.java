@@ -139,7 +139,7 @@ public class MatchResultVisualizer implements EditorPane {
     /**
 	 * When this action is fired the nodes will become unrelated.
 	 */
-    private class SetNoMatchAction extends AbstractAction{
+    class SetNoMatchAction extends AbstractAction{
     	private final SourceTableRecord record1;
         private final SourceTableRecord record2;
         
@@ -166,7 +166,7 @@ public class MatchResultVisualizer implements EditorPane {
 	 * When this action is fired the nodes will have the edge directly relating
 	 * them set to undecided if the edge exists.
 	 */
-    private class SetUnmatchAction extends AbstractAction{
+    class SetUnmatchAction extends AbstractAction{
     	private final SourceTableRecord record1;
         private final SourceTableRecord record2;
         
@@ -193,7 +193,7 @@ public class MatchResultVisualizer implements EditorPane {
 	 * When this action is fired the master given to the constructor will become
 	 * the master of the given duplicate
 	 */
-    private class SetMasterAction extends AbstractAction {
+    class SetMasterAction extends AbstractAction {
         
         private final SourceTableRecord master;
         private final SourceTableRecord duplicate;
@@ -221,7 +221,7 @@ public class MatchResultVisualizer implements EditorPane {
 	 * When this action is fired the master given to the constructor will become
 	 * the master of the given duplicate
 	 */
-    private class SetDuplicateAction extends AbstractAction {
+    class SetDuplicateAction extends AbstractAction {
         
         private final SourceTableRecord master;
         private final SourceTableRecord duplicate;
@@ -512,7 +512,13 @@ public class MatchResultVisualizer implements EditorPane {
 		BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
             new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
         Set<SourceTableRecord> reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, lhs));
+        
+        logger.debug("lhs record is " + lhs.toString());
+        logger.debug("rhs record is " + rhs.toString());
+        
+        PotentialMatchRecord pmr = pool.getPotentialMatchFromOriginals(lhs, rhs);
         if (reachable.contains(rhs)) {
+        	logger.debug("reachable contains rhs");
         	actionsAllowed.add(new SetUnmatchAction("Unmatch", lhs, rhs));
         	actionsAllowed.add(new SetNoMatchAction("No Match", lhs, rhs));
         	return actionsAllowed;
@@ -520,7 +526,6 @@ public class MatchResultVisualizer implements EditorPane {
         
         actionsAllowed.add(new SetMasterAction("Master", rhs, lhs));
         actionsAllowed.add(new SetDuplicateAction("Duplicate", lhs, rhs));
-        PotentialMatchRecord pmr = pool.getPotentialMatchFromOriginals(lhs, rhs);
         if (pmr != null && pmr.getMatchStatus() == MatchType.NOMATCH) {
         	actionsAllowed.add(new SetUnmatchAction("Unmatch", lhs, rhs));
         } else {
@@ -547,4 +552,8 @@ public class MatchResultVisualizer implements EditorPane {
         logger.debug("Stub call: MatchResultVisualizer.hasUnsavedChanges()");
         return false;
     }
+
+	MatchPool getPool() {
+		return pool;
+	}
 }
