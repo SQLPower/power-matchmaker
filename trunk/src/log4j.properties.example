@@ -125,7 +125,6 @@ log4j.rootLogger=INFO, R, C
 #log4j.logger.ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction=debug
 #log4j.logger.ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction=debug
 #log4j.logger.ca.sqlpower.matchmaker.swingui.action.DuplicateMatchAction=debug
-#log4j.logger.ca.sqlpower.matchmaker.swingui.action.EditMatchGroupAction=debug
 #log4j.logger.ca.sqlpower.matchmaker.swingui.action.EditTranslateAction=debug
 #log4j.logger.ca.sqlpower.matchmaker.swingui.action.NewDatabaseConnectionAction=debug
 #log4j.logger.ca.sqlpower.matchmaker.swingui.action.NewMatchAction=debug
