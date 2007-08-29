@@ -17,32 +17,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
+
+
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import ca.sqlpower.matchmaker.MatchRuleSet;
-import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
+import ca.sqlpower.matchmaker.dao.AbstractMatchRuleSetDAOTestCase;
+import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
 
-public class MatchMakerCriteriaGroupDAOHibernate extends AbstractMatchMakerDAOHibernate<MatchRuleSet> implements
-		MatchCriteriaGroupDAO {
 
-	public MatchMakerCriteriaGroupDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
-		super(matchMakerSession);
+public class MatchRuleSetDAOOracleTest extends AbstractMatchRuleSetDAOTestCase {
+    
+    private MatchRuleSet ruleSet;
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        ruleSet = createNewObjectUnderTest();
+    }
+    @Override
+	public void resetSession() throws Exception {
+		((TestingMatchMakerHibernateSession) getSession()).resetSession();
 	}
-
-	public Class<MatchRuleSet> getBusinessClass() {
-		return MatchRuleSet.class;
-	}
-	
+    
 	@Override
-	public void delete(MatchRuleSet deleteMe) {
-		
-		MatchMakerObject parent = deleteMe.getParent();
-		if (parent != null ){
-			parent.removeChild(deleteMe);
-		}
-		super.delete(deleteMe);
-		
+	public MatchRuleSetDAO getDataAccessObject() throws Exception {
+		return new MatchRuleSetDAOHibernate(getSession());
 	}
 
+    @Override
+    public MatchMakerHibernateSession getSession() throws Exception {
+        return HibernateTestUtil.getOracleHibernateSession();
+    }
 }

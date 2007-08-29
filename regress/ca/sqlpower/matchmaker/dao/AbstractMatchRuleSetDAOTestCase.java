@@ -33,12 +33,12 @@ import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 
-public abstract class AbstractMatchMakerCriteriaGroupDAOTestCase extends AbstractDAOTestCase<MatchRuleSet,MatchCriteriaGroupDAO>  {
+public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCase<MatchRuleSet,MatchRuleSetDAO>  {
 
 	Long count=0L;
     Match match;
     PlFolder folder;
-    public AbstractMatchMakerCriteriaGroupDAOTestCase() {
+    public AbstractMatchRuleSetDAOTestCase() {
         match= new Match();
         match.setName("Criteria Group Test Match");
         match.setType(Match.MatchMode.BUILD_XREF);
@@ -102,7 +102,7 @@ public abstract class AbstractMatchMakerCriteriaGroupDAOTestCase extends Abstrac
             MatchRuleSet group = match.getMatchCriteriaGroups().get(0);
             String groupId = group.getName();
 
-            MatchCriteriaGroupDAO dao = getDataAccessObject();
+            MatchRuleSetDAO dao = getDataAccessObject();
             dao.save(group);
             
             stmt = con.createStatement();

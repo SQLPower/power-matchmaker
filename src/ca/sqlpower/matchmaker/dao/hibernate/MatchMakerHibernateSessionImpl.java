@@ -53,7 +53,7 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
+import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
@@ -116,7 +116,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     private PlFolderDAO folderDAO;
     private MatchDAO matchDAO;
-    private MatchCriteriaGroupDAO matchMakerCriteriaGroupDAO;
+    private MatchRuleSetDAO matchMakerCriteriaGroupDAO;
     private MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO;
     private TableMergeRuleDAO tableMergeRulesDAO;
 
@@ -199,7 +199,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		hSession = hibernateSessionFactory.openSession();
         folderDAO = new PlFolderDAOHibernate(this);
         matchDAO = new MatchDAOHibernate(this);
-        matchMakerCriteriaGroupDAO = new MatchMakerCriteriaGroupDAOHibernate(this);
+        matchMakerCriteriaGroupDAO = new MatchRuleSetDAOHibernate(this);
         matchMakerTranslateGroupDAO = new MatchMakerTranslateGroupDAOHibernate(this);
         tableMergeRulesDAO = new TableMergeRulesDAOHibernate(this);
         con.close();

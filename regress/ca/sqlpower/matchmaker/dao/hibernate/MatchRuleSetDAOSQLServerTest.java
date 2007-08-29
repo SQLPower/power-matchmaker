@@ -22,18 +22,18 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import ca.sqlpower.matchmaker.MatchRuleSet;
-import ca.sqlpower.matchmaker.dao.AbstractMatchMakerCriteriaGroupDAOTestCase;
-import ca.sqlpower.matchmaker.dao.MatchCriteriaGroupDAO;
+import ca.sqlpower.matchmaker.dao.AbstractMatchRuleSetDAOTestCase;
+import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
 
 
-public class MatchMakerCriteriaGroupDAOSQLServerTest extends AbstractMatchMakerCriteriaGroupDAOTestCase {
+public class MatchRuleSetDAOSQLServerTest extends AbstractMatchRuleSetDAOTestCase {
     
-    private MatchRuleSet criteriaGroup;
+    private MatchRuleSet ruleSet;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        criteriaGroup = createNewObjectUnderTest();
+        ruleSet = createNewObjectUnderTest();
     }
     
     @Override
@@ -42,8 +42,8 @@ public class MatchMakerCriteriaGroupDAOSQLServerTest extends AbstractMatchMakerC
 	}
     
 	@Override
-	public MatchCriteriaGroupDAO getDataAccessObject() throws Exception {
-		return new MatchMakerCriteriaGroupDAOHibernate(getSession());
+	public MatchRuleSetDAO getDataAccessObject() throws Exception {
+		return new MatchRuleSetDAOHibernate(getSession());
 	}
 
     @Override
