@@ -84,7 +84,8 @@ public class PreMergeDataFudger {
 		if (fudgeRuleSet == null) {
 			fudgeRuleSet = new MatchRuleSet();
 			fudgeRuleSet.setName(FUDGE_RULE_SET_NAME);
-			match.addMatchCriteriaGroup(fudgeRuleSet);
+			match.getMatchCriteriaGroupFolder().addChild(fudgeRuleSet);
+			session.getDAO(Match.class).save(match);
 		}
 		ruleSet = fudgeRuleSet;
 	}
@@ -114,6 +115,7 @@ public class PreMergeDataFudger {
 	        pool.addPotentialMatch(pmr);
 	        pmr.setMaster(ultimateMaster);
 		}
+		pool.store();
 	}
 	
 	/**

@@ -32,6 +32,8 @@ import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.SPDataSource;
@@ -57,6 +59,11 @@ public class PreMergeDataFudgerTest extends TestCase {
 				throw new ArchitectRuntimeException(e);
 			}
 		}
+		
+		@Override
+		public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
+	        return new StubMatchMakerDAO<T>(businessClass);
+	    }
 	};
 
 	private PreMergeDataFudger fudger;
