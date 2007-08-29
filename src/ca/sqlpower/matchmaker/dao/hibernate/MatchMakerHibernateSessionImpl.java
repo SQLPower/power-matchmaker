@@ -116,7 +116,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     private PlFolderDAO folderDAO;
     private MatchDAO matchDAO;
-    private MatchRuleSetDAO matchMakerCriteriaGroupDAO;
+    private MatchRuleSetDAO matchRuleSetDAO;
     private MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO;
     private TableMergeRuleDAO tableMergeRulesDAO;
 
@@ -199,7 +199,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		hSession = hibernateSessionFactory.openSession();
         folderDAO = new PlFolderDAOHibernate(this);
         matchDAO = new MatchDAOHibernate(this);
-        matchMakerCriteriaGroupDAO = new MatchRuleSetDAOHibernate(this);
+        matchRuleSetDAO = new MatchRuleSetDAOHibernate(this);
         matchMakerTranslateGroupDAO = new MatchMakerTranslateGroupDAOHibernate(this);
         tableMergeRulesDAO = new TableMergeRulesDAOHibernate(this);
         con.close();
@@ -264,7 +264,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         } else if (businessClass == Match.class) {
             return (MatchMakerDAO<T>) matchDAO;
         } else if (businessClass == MatchRuleSet.class){
-            return (MatchMakerDAO<T>) matchMakerCriteriaGroupDAO;
+            return (MatchMakerDAO<T>) matchRuleSetDAO;
         } else if (businessClass == MatchMakerTranslateGroup.class){
             return (MatchMakerDAO<T>) matchMakerTranslateGroupDAO;
         } else if (businessClass == TableMergeRules.class) {

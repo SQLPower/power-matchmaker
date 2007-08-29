@@ -46,7 +46,7 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
-import ca.sqlpower.matchmaker.swingui.action.DeleteMatchCriteria;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMatchRule;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateMatchAction;
@@ -141,7 +141,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
     }
 
     private void addMatchCriteriaMenuItems(JPopupMenu m, MatchRule criteria) {
-        m.add(new JMenuItem(new DeleteMatchCriteria(swingSession,criteria)));
+        m.add(new JMenuItem(new DeleteMatchRule(swingSession,criteria)));
     }
 
 	private void addMatchGroupMenuItems(JPopupMenu m, MatchRuleSet group) {

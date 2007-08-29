@@ -578,7 +578,7 @@ public class MMTestUtils {
 	/**
 	 * Creates the result table used to store information about the graphs
 	 * created by
-	 * {@link #createTestingPool(MatchMakerSession, Match, MatchMakerCriteriaGroup, MatchMakerCriteriaGroup)}.
+	 * {@link #createTestingPool(MatchMakerSession, Match, MatchRuleSet, MatchRuleSet)}.
 	 * This table is only required if we want to test against a database.
 	 */
 	public static void createResultTable(Connection con) throws SQLException {
