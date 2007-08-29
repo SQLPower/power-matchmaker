@@ -66,6 +66,22 @@ public class MergeSettings extends MatchMakerSettings {
 	 */
 	boolean augmentNull;
 
+	/* Parameters the engine says it accepts
+	match id
+	username
+	password
+	debug
+	commit freq
+	log file
+	error file
+	process count
+	user prompt
+	show progress
+	rollback segment name
+	append to log ind
+	send email
+	*/
+	
 	public boolean getBackUp() {
 		return backUp;
 	}
