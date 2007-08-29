@@ -20,7 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 
-public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchRule> {
+public class MatchRuleTest extends MatchMakerTestCase<MatchRule> {
 
 	private MatchRule target;
 	final String appUserName = "Test User";
@@ -70,7 +70,7 @@ public class MatchMakerCriteriaTest extends MatchMakerTestCase<MatchRule> {
 	public void testAddChild() {
 		try {
 			target.addChild(null);
-			fail("MatchMakerCriteria class should not allow child!");
+			fail("MatchRule class should not allow child!");
 		} catch ( IllegalStateException e ) {
 			// this is what we excepted
 		}
