@@ -43,6 +43,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
 import ca.sqlpower.matchmaker.graph.DijkstrasAlgorithm;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
@@ -296,6 +297,14 @@ public class MatchPool {
             sql.append(", MATCH_DATE");
             sql.append(", MATCH_STATUS_DATE");
             sql.append(", MATCH_STATUS_USER");
+            
+            //These fields are only used for the old merge engine and will be removed when
+            //the merging is rewritten in Java
+            for (int i = 0; i < numKeyValues; i++) {
+            	sql.append(", DUP_ID").append(i);
+            	sql.append(", MASTER_ID").append(i);
+            }
+            
             sql.append(")");
             sql.append("\n VALUES (");
             
@@ -308,7 +317,11 @@ public class MatchPool {
             sql.append("?, ");
             sql.append(SQL.escapeDateTime(con, new Date(System.currentTimeMillis()))).append(", ");
             sql.append(SQL.escapeDateTime(con, new Date(System.currentTimeMillis()))).append(", ");
-            sql.append(SQL.quote(session.getAppUser())).append(")");
+            sql.append(SQL.quote(session.getAppUser()));
+            for (int i = 0; i < numKeyValues * 2; i++) {
+            	sql.append(", ?");
+            }
+            sql.append(")");
             lastSQL = sql.toString();
             logger.debug("The SQL statement we are running is " + lastSQL);
             
@@ -324,13 +337,32 @@ public class MatchPool {
             		ps.setObject(numKeyValues * 2 + 1, pmr.getCriteriaGroup().getMatchPercent());
             		ps.setObject(numKeyValues * 2 + 2, pmr.getCriteriaGroup().getName());
             		ps.setObject(numKeyValues * 2 + 3, pmr.getMatchStatus().getCode());
+            		
+            		SourceTableRecord duplicate;
+            		SourceTableRecord master;
             		if (pmr.isLhsMaster()) {
             			ps.setObject(numKeyValues * 2 + 4, "Y");
+            			duplicate = pmr.getOriginalRhs();
+            			master = pmr.getOriginalLhs();
                     } else if (pmr.isRhsMaster()) {
                     	ps.setObject(numKeyValues * 2 + 4, "N");
+                    	duplicate = pmr.getOriginalLhs();
+            			master = pmr.getOriginalRhs();
                     } else {
                     	ps.setObject(numKeyValues * 2 + 4, null);
+                    	duplicate = null;
+            			master = null;
                     }
+            		
+            		//These fields are only used for the old merge engine and will be removed when
+                    //the merging is rewritten in Java
+            		if (duplicate != null && master != null) {
+            			for (int i = 0; i < numKeyValues; i++) {
+            				int baseParamIndex = (numKeyValues + i) * 2;
+							ps.setObject(baseParamIndex + 5, duplicate.getKeyValues().get(i));
+            				ps.setObject(baseParamIndex + 6, master.getKeyValues().get(i));
+            			}
+            		}
             		
             		ps.executeUpdate();
             		pmr.setStoreState(StoreState.CLEAN);
@@ -599,11 +631,20 @@ public class MatchPool {
 
     /**
 	 * This method adds a match maker criteria group to the match in this pool
-	 * for synthetic edges if the criteria group does not already exist. Then a
+	 * for synthetic edges if the criteria group does not already exist.
+	 * IMPORTANT NOTE: In the case that the new match group for synthetic edges
+	 * had to be created, this pool's match object will be saved using the current
+	 * Match DAO from the session.  This is a bit of a strange side effect of this
+	 * method, so be careful!
+	 * <p>
+	 * Once the match group for synthetic edges has been located or created, a
 	 * new potential match record that is synthetic (created by the Match Maker)
-	 * is added to the pool under the synthetic criteria group. The match type
-	 * of the new potential match record is set to UNMATCH by default. A new row
-	 * is also added to the database to track this new potential match record.
+	 * is added to the pool. This edge (which is a potential match record) belongs
+	 * to the special synthetic edges criteria group. The match type
+	 * of the new potential match record is set to UNMATCH by default.
+	 * <p>
+	 * This new potential match record will be stored back to the match result table
+	 * in the database next time you call the {@link #store()} method on this pool.
 	 * 
 	 * @param record1
 	 *            One of the source table records attached to the new potential
@@ -619,7 +660,9 @@ public class MatchPool {
 		if (syntheticCriteria == null) {
 			syntheticCriteria = new MatchRuleSet();
 			syntheticCriteria.setName(MatchRuleSet.SYNTHETIC_MATCHES);
-			match.addMatchCriteriaGroup(syntheticCriteria);
+			match.getMatchCriteriaGroupFolder().addChild(syntheticCriteria);
+			MatchMakerDAO<Match> dao = session.getDAO(Match.class);
+			dao.save(match);
 		}
 		
 		PotentialMatchRecord pmr = new PotentialMatchRecord(syntheticCriteria, MatchType.UNMATCH, record1, record2, true);

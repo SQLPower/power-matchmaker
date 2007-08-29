@@ -42,6 +42,8 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.SPDataSource;
@@ -100,6 +102,11 @@ public class MatchPoolTest extends TestCase {
 					throw new ArchitectRuntimeException(e);
 				}
 			}
+			
+			@Override
+			public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
+		        return new StubMatchMakerDAO<T>(businessClass);
+		    }
 		};
 
 		match = new Match();
