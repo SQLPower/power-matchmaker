@@ -231,8 +231,8 @@ public class MatchEditor implements EditorPane {
 
 	private Action newMatchGroupAction = new AbstractAction("New Match Group") {
 		public void actionPerformed(ActionEvent arg0) {
-			MatchMakerCriteriaGroupEditor editor = null;
-			editor = new MatchMakerCriteriaGroupEditor(swingSession,
+			MatchRuleSetEditor editor = null;
+			editor = new MatchRuleSetEditor(swingSession,
 					match,
 					new MatchRuleSet());
 			swingSession.setCurrentEditorComponent(editor);

@@ -228,7 +228,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 
 				} else if (o instanceof MatchRuleSet) {
 					Match m = ((MatchRuleSet) o).getParentMatch();
-					MatchMakerCriteriaGroupEditor editor = new MatchMakerCriteriaGroupEditor(
+					MatchRuleSetEditor editor = new MatchRuleSetEditor(
 							swingSession, m, (MatchRuleSet) o);
 					logger.debug("Created new match group editor "
 							+ System.identityHashCode(editor));
