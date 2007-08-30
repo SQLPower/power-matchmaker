@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -232,7 +234,7 @@ public class MatchEngineImpl extends AbstractCEngine {
 		}
 	}
 
-	public String createCommandLine(MatchMakerSession session, Match match, boolean userPrompt) {
+	public String[] createCommandLine(MatchMakerSession session, Match match, boolean userPrompt) {
 		/*
 		 * command line sample:
 		 * "M:\Program Files\Power Loader Suite\Match_Oracle.exe"
@@ -241,39 +243,33 @@ public class MatchEngineImpl extends AbstractCEngine {
 		 * LOG_FILE="M:\Program Files\Power Loader Suite\Power Loader\script\MATCH_MATCH_CTV_ORGS.log"
 		 * SHOW_PROGRESS=10 PROCESS_CNT=1
 		 */
-		StringBuffer command = new StringBuffer();
+		List<String> command = new ArrayList<String>();
 		final SQLDatabase db = session.getDatabase();
 		final MatchSettings settings = match.getMatchSettings();
 
-		command.append("\"").append(context.getMatchEngineLocation()).append("\"");
+		command.add(context.getMatchEngineLocation());
 		if ( logger.isDebugEnabled() ) {
-			command.append(" -k ");
+			command.add(" -k ");
 		}
-		command.append(" MATCH=\"").append(match.getName()).append("\"");
-		command.append(" USER=");
-		command.append(db.getDataSource().getUser());
-		command.append("/").append(db.getDataSource().getPass());
-		command.append("@").append(db.getDataSource().getName());
-
-		command.append(" DEBUG=").append(settings.getDebug() ? "Y" : "N");
-		command.append(" TRUNCATE_CAND_DUP=").append(
-				settings.getTruncateCandDupe() ? "Y" : "N");
-		command.append(" SEND_EMAIL=").append(
-				settings.getSendEmail() ? "Y" : "N");
-		command.append(" APPEND_TO_LOG_IND=").append(
-				settings.getAppendToLog() ? "Y" : "N");
-		command.append(" LOG_FILE=\"").append(
-				settings.getLog().getPath()).append("\"");
+		command.add("MATCH=" + match.getName());
+		command.add("USER=" + db.getDataSource().getUser() +
+				"/" + db.getDataSource().getPass() +
+				"@" + db.getDataSource().getName());
+		command.add("DEBUG=" + (settings.getDebug() ? "Y" : "N"));
+		command.add("TRUNCATE_CAND_DUP=" + (settings.getTruncateCandDupe() ? "Y" : "N"));
+		command.add("SEND_EMAIL=" + (settings.getSendEmail() ? "Y" : "N"));
+		command.add("APPEND_TO_LOG_IND=" + (settings.getAppendToLog() ? "Y" : "N"));
+		command.add("LOG_FILE=" + settings.getLog().getPath());
 		if ( settings.getShowProgressFreq() != null ) {
-			command.append(" SHOW_PROGRESS=").append(settings.getShowProgressFreq());
+			command.add("SHOW_PROGRESS=" + settings.getShowProgressFreq());
 		}
 		if ( settings.getProcessCount() != null ) {
-			command.append(" PROCESS_CNT=").append(settings.getProcessCount());
+			command.add("PROCESS_CNT=" + settings.getProcessCount());
 		}
 		if ( !userPrompt ) {
-			command.append(" USER_PROMPT=N");
+			command.add("USER_PROMPT=N");
 		}
-		return command.toString();
+		return command.toArray(new String[0]);
 	}
 
 	

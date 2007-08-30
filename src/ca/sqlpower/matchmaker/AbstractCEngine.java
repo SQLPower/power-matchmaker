@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -104,9 +105,9 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	public void run() throws EngineSettingException, IOException, ArchitectException {
 		checkPreconditions();
 		if (proc!=null) throw new IllegalStateException("Engine has already been run");
-		String commandLine = createCommandLine(session,match,false);
+		String[] commandLine = createCommandLine(session,match,false);
 		Runtime rt = Runtime.getRuntime();
-		logger.debug("Executing " + commandLine);
+		logger.debug("Executing " + Arrays.asList(commandLine));
 		proc = rt.exec(commandLine);
 		fireEngineStart();
 		processMonitor = new Thread(new Runnable(){

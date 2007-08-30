@@ -615,13 +615,13 @@ public class MatchEnginePanel implements EditorPane {
 				matchEngine.checkPreconditions();
 				matchEngine.addEngineListener(this);
 				matchEngine.run();
+				ProgressWatcher.watchProgress(progressBar,matchEngine);
 			} catch (EngineSettingException ese) {
 				JOptionPane.showMessageDialog(parent, ese.getMessage(),
 						"Engine error", JOptionPane.ERROR_MESSAGE);
 				return;
 			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(parent, ex.getMessage(),
-						"Engine error", JOptionPane.ERROR_MESSAGE);
+				MMSUtils.showExceptionDialog(parent, "Engine error", ex);
 				return;
 			}
 		}
@@ -635,11 +635,9 @@ public class MatchEnginePanel implements EditorPane {
 				throw new RuntimeException(e1);
 			}
 			matchEngine.removeEngineListener(this);
-			progressBar.setVisible(false);
 		}
 
 		public void engineStart(EngineEvent e) {
-			ProgressWatcher.watchProgress(progressBar,matchEngine);
 			// any output?
 			StreamGobbler errorGobbler = new StreamGobbler(matchEngine
 					.getEngineErrorOutput(), "ERROR", engineOutputDoc,
@@ -704,8 +702,7 @@ public class MatchEnginePanel implements EditorPane {
 			doSave();
 			MatchMakerEngine engine = new MatchEngineImpl(swingSession,
 					match);
-			final String cmd = engine.createCommandLine(swingSession, match,
-					false);
+			final String[] cmd = engine.createCommandLine(swingSession, match, false);
 			final JDialog d = new JDialog(parent,
 					"MatchMaker Engine Command Line");
 
@@ -720,7 +717,18 @@ public class MatchEnginePanel implements EditorPane {
 			pb = new PanelBuilder(layout, p);
 			CellConstraints cc = new CellConstraints();
 
-			JTextArea cmdText = new JTextArea(cmd, 15, 120);
+			final JTextArea cmdText = new JTextArea(15, 120);
+			for (String arg : cmd) {
+				boolean hasSpace = arg.contains(" ");
+				if (hasSpace) {
+					cmdText.append("\"");
+				}
+				cmdText.append(arg);
+				if (hasSpace) {
+					cmdText.append("\"");
+				}
+				cmdText.append(" ");
+			}
 			cmdText.setEditable(false);
 			cmdText.setWrapStyleWord(true);
 			cmdText.setLineWrap(true);
@@ -730,17 +738,7 @@ public class MatchEnginePanel implements EditorPane {
 
 			Action saveAsAction = new AbstractAction("Save As...") {
 				public void actionPerformed(ActionEvent e) {
-					final DefaultStyledDocument cmdDoc = new DefaultStyledDocument();
-					SimpleAttributeSet att = new SimpleAttributeSet();
-					StyleConstants.setForeground(att, Color.black);
-
-					try {
-						cmdDoc.insertString(0, cmd, att);
-					} catch (BadLocationException e1) {
-						MMSUtils.showExceptionDialog(d,
-								"Unknown Document Error", e1);
-					}
-					SPSUtils.saveDocument(d, cmdDoc,
+					SPSUtils.saveDocument(d, cmdText.getDocument(),
 							(FileExtensionFilter) SPSUtils.BATCH_FILE_FILTER);
 				}
 			};
@@ -751,7 +749,7 @@ public class MatchEnginePanel implements EditorPane {
 			JButton copyButton = new JButton(new AbstractAction(
 					"Copy to Clipboard") {
 				public void actionPerformed(ActionEvent e) {
-					StringSelection selection = new StringSelection(cmd);
+					StringSelection selection = new StringSelection(cmdText.getText());
 					Clipboard clipboard = Toolkit.getDefaultToolkit()
 							.getSystemClipboard();
 					clipboard.setContents(selection, selection);
