@@ -1,8 +1,25 @@
+/*
+ * Copyright (c) 2007, SQL Power Group Inc.
+ *
+ * This file is part of Power*MatchMaker.
+ *
+ * Power*MatchMaker is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Power*MatchMaker is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ */
+
 package ca.sqlpower.matchmaker.swingui;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +53,7 @@ import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetDuplicateAction;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetMasterAction;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetNoMatchAction;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetUnmatchAction;
+import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.SPDataSource;
 
 public class MatchResultVisualizerTest extends TestCase {
@@ -56,7 +74,7 @@ public class MatchResultVisualizerTest extends TestCase {
 		db = new SQLDatabase(dataSource);
 		con = db.getConnection();
 		
-		createResultTable(con);
+		MMTestUtils.createResultTable(con);
 
 		SQLSchema plSchema = db.getSchemaByName("pl");
 
@@ -123,16 +141,10 @@ public class MatchResultVisualizerTest extends TestCase {
 	}
 	
 	protected void tearDown() throws Exception {
-		dropResultTable(con);
+		MMTestUtils.dropResultTable(con);
 		con.close();
 	}
 
-	private static void dropResultTable(Connection con) throws SQLException {
-		Statement stmt = con.createStatement();
-		stmt.executeUpdate("DROP TABLE pl.match_results");
-		stmt.close();
-	}
-	
 	/**
 	 * This test ensures that the correct list of actions is returned when
 	 * looking for the actions needed on the LHS record.
@@ -140,7 +152,6 @@ public class MatchResultVisualizerTest extends TestCase {
 	public void testLHSGetActions() {
 		List<Action> actions = visualizer.getActions(lhs, lhs);
 		
-		assertEquals("There should be 3 actions for this case", 3, actions.size());
 		
 		boolean setMasterExists = false;
 		boolean setNoMatchExists = false;
@@ -164,6 +175,7 @@ public class MatchResultVisualizerTest extends TestCase {
 		assertTrue(setMasterExists);
 		assertTrue(setNoMatchExists);
 		assertTrue(setUnmatchExists);
+		assertEquals("There should be 3 actions for this case", 3, actions.size());
 	}
 
 	/**
@@ -194,6 +206,7 @@ public class MatchResultVisualizerTest extends TestCase {
 		assertTrue(masterExists);
 		assertTrue(noMatchExists);
 		assertTrue(duplicateExists);
+		assertEquals("There should be 3 actions for this case", 3, actions.size());
 	}
 	
 	/**
@@ -221,6 +234,8 @@ public class MatchResultVisualizerTest extends TestCase {
 		
 		assertTrue(unMatchExists);
 		assertTrue(noMatchExists);
+		assertEquals("There should be 2 actions for this case", 2, actions.size());
+
 	}
 
 	/**
@@ -248,6 +263,7 @@ public class MatchResultVisualizerTest extends TestCase {
 		
 		assertTrue(unMatchExists);
 		assertTrue(noMatchExists);
+		assertEquals("There should be 2 actions for this case", 2, actions.size());
 	}
 	
 	/**
@@ -279,27 +295,6 @@ public class MatchResultVisualizerTest extends TestCase {
 		assertTrue(masterExists);
 		assertTrue(duplicateExists);
 		assertTrue(unMatchExists);
-		
-	}
-	
-	private static void createResultTable(Connection con) throws SQLException {
-		Statement stmt = con.createStatement();
-		stmt.executeUpdate("CREATE TABLE pl.match_results ("
-				+ "\n DUP_CANDIDATE_10 varchar(50) not null,"
-				+ "\n DUP_CANDIDATE_20 varchar(50) not null,"
-				+ "\n CURRENT_CANDIDATE_10 varchar(50),"
-				+ "\n CURRENT_CANDIDATE_20 varchar(50)," 
-				+ "\n DUP_ID0 varchar(50),"
-				+ "\n MASTER_ID0 varchar(50),"
-				+ "\n CANDIDATE_10_MAPPED varchar(1),"
-				+ "\n CANDIDATE_20_MAPPED varchar(1),"
-				+ "\n MATCH_PERCENT integer," 
-				+ "\n GROUP_ID varchar(60),"
-				+ "\n MATCH_DATE timestamp," 
-				+ "\n MATCH_STATUS varchar(60),"
-				+ "\n MATCH_STATUS_DATE timestamp,"
-				+ "\n MATCH_STATUS_USER varchar(60),"
-				+ "\n DUP1_MASTER_IND  varchar(1)" + "\n)");
-		stmt.close();
+		assertEquals("There should be 3 actions for this case", 3, actions.size());		
 	}
 }
