@@ -166,7 +166,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         m.addSeparator();
         m.add(new JMenuItem(new AbstractAction("Run Match") {
             public void actionPerformed(ActionEvent e) {
-                RunMatchEditor f = new RunMatchEditor(swingSession, match,
+                MatchEnginePanel f = new MatchEnginePanel(swingSession, match,
                         owningFrame);
                 swingSession.setCurrentEditorComponent(f);
             }
@@ -275,7 +275,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 				} else if (o instanceof MatchActionNode) {
 					MatchActionNode node = (MatchActionNode) o;
 					if (node.getActionType() == MatchActionType.RUN_MATCH) {
-						swingSession.setCurrentEditorComponent(new RunMatchEditor(swingSession, node.getMatch(), owningFrame));
+						swingSession.setCurrentEditorComponent(new MatchEnginePanel(swingSession, node.getMatch(), owningFrame));
 					} else if (node.getActionType() == MatchActionType.AUDIT_INFO) {
 						swingSession.setCurrentEditorComponent(new MatchInfoEditor(node.getMatch()));
 					} else if (node.getActionType() == MatchActionType.VALIDATE_MATCHES) {

@@ -94,9 +94,9 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * An editor pane to allow the user to configure, run and monitor the engine.
  */
-public class RunMatchEditor implements EditorPane {
+public class MatchEnginePanel implements EditorPane {
 
-	private static final Logger logger = Logger.getLogger(RunMatchEditor.class);
+	private static final Logger logger = Logger.getLogger(MatchEnginePanel.class);
 
 	/**
 	 * The session this RunMatchEditor belongs to.
@@ -202,7 +202,7 @@ public class RunMatchEditor implements EditorPane {
 	 */
 	private final RunEngineAction runEngineAction;
 
-	public RunMatchEditor(MatchMakerSwingSession swingSession, Match match,
+	public MatchEnginePanel(MatchMakerSwingSession swingSession, Match match,
 			JFrame parentFrame) {
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
