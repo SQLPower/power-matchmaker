@@ -41,81 +41,81 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	private MatchMakerSession session;
 	private Match match;
 	private Process proc;
-	private Thread processMonitor;
-	private Integer engineExitCode;
 	
-	public abstract void checkPreconditions() throws EngineSettingException, ArchitectException; 
+	/**
+	 * Gets set to true when the process has started.
+	 */
+	private boolean started = false;
 	
-		
+	/**
+	 * Gets set to true when the process has terminated.
+	 */
+	private boolean finished = false;
+	
+	/**
+	 * Gets set to true when the user attempts to cancel the engine run.
+	 */
+	private boolean cancelled;
+	
 	protected Match getMatch() {
 		return match;
 	}
-
 
 	protected void setMatch(Match match) {
 		this.match = match;
 	}
 
-
 	protected MatchMakerSession getSession() {
 		return session;
 	}
-
 
 	protected void setSession(MatchMakerSession session) {
 		this.session = session;
 	}
 
-	/* (non-Javadoc)
-	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#getEngineReturnCode()
-	 */
-	public Integer getEngineReturnCode() {
-		return engineExitCode;
-	}
+	public EngineInvocationResult call() throws EngineSettingException, IOException {
+		try {
+			try {
+				checkPreconditions();
+			} catch (ArchitectException e) {
+				throw new RuntimeException(e);
+			}
+			
+			if (proc!=null) throw new IllegalStateException("Engine has already been run");
+			String[] commandLine = createCommandLine(session,match,false);
+			Runtime rt = Runtime.getRuntime();
+			logger.debug("Executing " + Arrays.asList(commandLine));
+			proc = rt.exec(commandLine);
+			started = true;
 
-	/* (non-Javadoc)
-	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#isRunning()
-	 */
-	public boolean isRunning() {
-		if (processMonitor == null) {
-			return false;
-		} else {
-			return processMonitor.isAlive();
+			StreamLogger errorGobbler = new StreamLogger(proc.getErrorStream(), getLogger(), Level.ERROR);
+			StreamLogger outputGobbler = new StreamLogger(proc.getInputStream(), getLogger(), Level.INFO);
+			errorGobbler.start();
+			outputGobbler.start();
+
+			for (;;) {
+				try {
+					proc.waitFor();
+					break;
+				} catch (InterruptedException e) {
+					if (cancelled) return EngineInvocationResult.ABORTED;
+				}
+			}
+			
+			int engineExitCode = proc.exitValue();
+			getLogger().info("Engine process completed with status " + engineExitCode);
+			if (engineExitCode == 0) {
+				return EngineInvocationResult.SUCCESS;
+			} else {
+				return EngineInvocationResult.FAILURE;
+			}
+		} finally {
+			finished = true;
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#run()
-	 */
-	public void run() throws EngineSettingException, IOException, ArchitectException {
-		checkPreconditions();
-		if (proc!=null) throw new IllegalStateException("Engine has already been run");
-		String[] commandLine = createCommandLine(session,match,false);
-		Runtime rt = Runtime.getRuntime();
-		logger.debug("Executing " + Arrays.asList(commandLine));
-		proc = rt.exec(commandLine);
-		
-		StreamLogger errorGobbler = new StreamLogger(proc.getErrorStream(), getLogger(), Level.ERROR);
-		StreamLogger outputGobbler = new StreamLogger(proc.getInputStream(), getLogger(), Level.INFO);
-		errorGobbler.start();
-		outputGobbler.start();
-		
-		processMonitor = new Thread(new Runnable(){
-
-					public void run() {
-						try {
-							proc.waitFor();
-							engineExitCode = proc.exitValue();
-							getLogger().info("Engine process completed with status " + engineExitCode);
-						} catch (InterruptedException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				});
-		processMonitor.start();
-	}
-
-	///////// Monitorabe support ///////////
+	///////// Monitorable support ///////////
+	
 	/**
 	 * Right now the job size is always indeterminant
 	 */
@@ -124,7 +124,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	}
 
 	public String getMessage() {
-		if(isRunning()){
+		if(started && !finished){
 			return "Running MatchMaker Engine";
 		} else {
 			return "";
@@ -137,19 +137,16 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	}
 
 	public boolean hasStarted() {
-		return isRunning() || getEngineReturnCode() != null;
+		return started;
 	}
 	
 	// The engine is done when it has an exit code
 	public boolean isFinished() {
-		if (getEngineReturnCode() != null){
-			return true;
-		} else {
-			return false;
-		}
+		return finished;
 	}
 
-	public void setCancelled(boolean cancelled) {
+	public synchronized void setCancelled(boolean cancelled) {
+		this.cancelled = cancelled;
 		if (cancelled && proc != null) {
 			proc.destroy();
 			proc = null;

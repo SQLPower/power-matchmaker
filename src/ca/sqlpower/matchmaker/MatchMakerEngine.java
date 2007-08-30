@@ -17,12 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-/**
- * 
- */
 package ca.sqlpower.matchmaker;
 
 import java.io.IOException;
+import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
@@ -33,28 +31,20 @@ import ca.sqlpower.util.Monitorable;
  * The matchmaker engine interface is a generic way of controlling a
  * process which does some time-consuming operation on a Match.  Currently,
  * there are two major implementations: The Match Engine and Merge Engine.
- * <p>
- * You can only start a particular instance of MatchMakerEngine once.  If
- * you want to do multiple runs create a new instance.
- * TODO reconsider that design decision: is it necessary and reasonable?
  */
-public interface MatchMakerEngine extends Monitorable {
+public interface MatchMakerEngine extends Monitorable, Callable<EngineInvocationResult> {
 
 	/**
-	 * Starts the engine. Note that you can only call this method once per
-	 * instance of a MatchMakerEngine. XXX: maybe we can remove this restriction.
+	 * Starts the engine.  This method returns once the engine run has
+	 * completed, so if you're running the engine within a Swing GUI, it
+	 * is almost always necessary to call this method on a separate worker
+	 * thread.
 	 *   
-	 * @throws EngineSettingException if not all the preconditions met
-	 * @throws IOException 
-	 * @throws ArchitectException 
+	 * @throws EngineSettingException When the preconditions for running the
+	 * engine are not met.
+	 * @throws IOException for any I/O problems 
 	 */
-	public void run() throws EngineSettingException, IOException, ArchitectException;
-	
-	/**
-	 * returns the engine exit code, null if the engine has not been run yet.
-	 * @throws InterruptedException 
-	 */
-	public Integer getEngineReturnCode();
+	public EngineInvocationResult call() throws EngineSettingException, IOException;
 	
 	/**
 	 * Makes an effort to verify all the assumptions that the engine makes
@@ -65,7 +55,7 @@ public interface MatchMakerEngine extends Monitorable {
 	 * @throws EngineSettingException If there is a precondition to running
      * the engine which is not currently met.
 	 * @throws ArchitectException If there are errors encountered while attempting
-     * to check the precondidions (this is a more severe case than a precondition
+     * to check the preconditions (this is a more severe case than a precondition
      * failure, because it means there's something wrong with the MatchMaker too).
 	 */
 	public void checkPreconditions() throws EngineSettingException, ArchitectException;

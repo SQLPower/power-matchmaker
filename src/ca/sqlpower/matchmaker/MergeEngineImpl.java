@@ -26,7 +26,6 @@ public class MergeEngineImpl extends AbstractCEngine {
 
 	private static final Logger logger = Logger.getLogger(MergeEngineImpl.class);
 	
-	@Override
 	public void checkPreconditions() throws EngineSettingException {
 		throw new EngineSettingException("Merge engine integration is not implemented");
 	}

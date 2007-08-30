@@ -46,7 +46,6 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
@@ -55,11 +54,17 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.spi.LoggingEvent;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
@@ -71,6 +76,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -201,8 +207,7 @@ public class MatchEnginePanel implements EditorPane {
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
 		this.match = match;
-		runEngineAction = new RunEngineAction(swingSession, match,
-				parentFrame);
+		runEngineAction = new RunEngineAction();
 		handler = new FormValidationHandler(status);
 		handler.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -416,21 +421,100 @@ public class MatchEnginePanel implements EditorPane {
 	}
 
 	/**
+	 * A log4j appender which prints logging messages into a Swing document.
+	 */
+	private static class DocumentAppender extends AppenderSkeleton {
+
+		/**
+		 * The document to add logging messages to.
+		 */
+		private final Document doc;
+
+		/**
+		 * The visual appearance attributes of the text we put into doc.
+		 */
+		private final SimpleAttributeSet attributes = new SimpleAttributeSet();
+		
+		/**
+		 * Creates a Log4J appender that writes into the given Swing Document.
+		 */
+		public DocumentAppender(Document doc) {
+			this.doc = doc;
+			StyleConstants.setForeground(attributes, Color.BLACK);
+			layout = new PatternLayout("%d %p %m\n");
+		}
+		
+		/**
+		 * Appends the log message to the target document.
+		 */
+		@Override
+		protected void append(LoggingEvent evt) {
+			try {
+				doc.insertString(doc.getLength(), layout.format(evt), attributes);
+			} catch (BadLocationException e) {
+				e.printStackTrace();
+			}
+		}
+
+		/**
+		 * This is a no-op.
+		 */
+		public void close() {
+			// nothing to do
+		}
+
+		/**
+		 * I'm not sure if this should return true.
+		 */
+		public boolean requiresLayout() {
+			return true;
+		}
+		
+	};
+	
+	/**
+	 * A worker implementation that runs a MatchMakerEngine.
+	 */
+	private class EngineWorker extends SPSwingWorker {
+
+		private final MatchMakerEngine matchEngine;
+		
+		private Appender appender;
+		
+		private final Document engineOutputDoc;
+		
+		EngineWorker(Document engineOutputDoc, JProgressBar progressBar) throws EngineSettingException, ArchitectException {
+			super(swingSession);
+			matchEngine = new MatchEngineImpl(swingSession, match);
+			matchEngine.checkPreconditions();
+			this.engineOutputDoc = engineOutputDoc;
+			ProgressWatcher.watchProgress(progressBar,matchEngine);
+		}
+		
+		@Override
+		public void doStuff() throws EngineSettingException, IOException {
+			appender = new DocumentAppender(engineOutputDoc);
+			matchEngine.getLogger().addAppender(appender);
+			matchEngine.call();
+		}
+
+		@Override
+		public void cleanup() throws Exception {
+			if (getDoStuffException() != null) {
+				MMSUtils.showExceptionDialog(parentFrame, "Error during engine run", getDoStuffException());
+				matchEngine.getLogger().error("Error during engine run", getDoStuffException());
+			}
+			matchEngine.getLogger().removeAppender(appender);
+		}
+		
+	}
+	
+	/**
 	 * This action is used to run the match engine. It also is responsible
 	 * for constructing the user interface that deals with engine ouput.
 	 */
 	private class RunEngineAction extends AbstractAction {
 
-		private final JFrame parent;
-
-		SimpleAttributeSet stdoutAtt = new SimpleAttributeSet();
-
-		SimpleAttributeSet stderrAtt = new SimpleAttributeSet();
-
-		private MatchMakerEngine matchEngine;
-		private MatchMakerSession session;
-		private Match match;
-		
 		/**
 		 * A bar of buttons related to the match engine output textfield.
 		 */
@@ -448,12 +532,8 @@ public class MatchEnginePanel implements EditorPane {
 		
 		private JProgressBar progressBar;
 
-		public RunEngineAction(MatchMakerSession session, Match match,
-				JFrame parent) {
+		public RunEngineAction() {
 			super("Run Match Engine");
-			this.parent = parent;
-			this.session = session;
-			this.match = match;
 			initGUI();
 			logger.debug("RunEngineAction instance created");
 		}
@@ -462,9 +542,6 @@ public class MatchEnginePanel implements EditorPane {
 		 * Sets up all the GUI components.
 		 */
 		private void initGUI() {
-			StyleConstants.setForeground(stdoutAtt, Color.black);
-			StyleConstants.setFontFamily(stdoutAtt, "Courier New");
-			StyleConstants.setForeground(stderrAtt, Color.red);
 			progressBar = new JProgressBar();
 
 			GraphicsEnvironment ge = GraphicsEnvironment
@@ -562,16 +639,10 @@ public class MatchEnginePanel implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 			doSave();
 			try {
-				matchEngine = new MatchEngineImpl(session, match);
-				matchEngine.checkPreconditions();
-				matchEngine.run();
-				ProgressWatcher.watchProgress(progressBar,matchEngine);
-			} catch (EngineSettingException ese) {
-				JOptionPane.showMessageDialog(parent, ese.getMessage(),
-						"Engine error", JOptionPane.ERROR_MESSAGE);
-				return;
+				EngineWorker w = new EngineWorker(engineOutputDoc, progressBar);
+				new Thread(w).start();
 			} catch (Exception ex) {
-				MMSUtils.showExceptionDialog(parent, "Engine error", ex);
+				MMSUtils.showExceptionDialog(parentFrame, "Engine error", ex);
 				return;
 			}
 		}
