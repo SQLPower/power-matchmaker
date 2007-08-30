@@ -30,34 +30,25 @@ import ca.sqlpower.matchmaker.event.EngineListener;
 import ca.sqlpower.util.Monitorable;
 
 /**
- * the matchmaker engine interface represents the contexts that required 
- * to run an engine, the engine now is a C program uses ODBC to connect
- * to database as we create this interface. we may change it to java base
- * in the future.
- * 
- * 
- * This interface is not reentrant.  If you want to do multiple runs
- * create a new instance.
- *  
+ * The matchmaker engine interface is a generic way of controlling a
+ * process which does some time-consuming operation on a Match.  Currently,
+ * there are two major implementations: The Match Engine and Merge Engine.
+ * <p>
+ * You can only start a particular instance of MatchMakerEngine once.  If
+ * you want to do multiple runs create a new instance.
+ * TODO reconsider that design decision: is it necessary and reasonable?
  */
-public interface MatchMakerEngine extends Monitorable{
+public interface MatchMakerEngine extends Monitorable {
 
 	/**
-	 * start the engine!
-	 * 
-	 * Note this is not reentrant.  
+	 * Starts the engine. Note that you can only call this method once per
+	 * instance of a MatchMakerEngine. XXX: maybe we can remove this restriction.
+	 *   
 	 * @throws EngineSettingException if not all the preconditions met
 	 * @throws IOException 
 	 * @throws ArchitectException 
 	 */
 	public void run() throws EngineSettingException, IOException, ArchitectException;
-	
-	public boolean isRunning();
-	
-	/**
-	 * stop the engine
-	 */
-	public void abort();
 	
 	/**
 	 * returns the engine exit code, null if the engine has not been run yet.
@@ -80,14 +71,19 @@ public interface MatchMakerEngine extends Monitorable{
 	public void checkPreconditions() throws EngineSettingException, ArchitectException;
 	
 	/**
-	 * Create the command line to run the match engine or for display
-	 * @param session -- the session that contains the database that we are 
+	 * Creates the command line to run the match engine, based on the
+	 * current engine settings for the appropriate engine. 
+	 * 
+	 * @param session the session that contains the database that we are 
 	 * going to run engine on 
-	 * @param match  -- the match object that we want to create command line for
-	 * @param userPrompt -- true if you want to append USER_PARAMPT=Y to the command line
-	 * @return the string of the command line
+	 * @param match the match object that we want to create command line for
+	 * @param userPrompt true if you want to append USER_PROMPT=Y to the command line
+	 * @return The command line for running the engine. Each command line parameter
+	 * is a separate item in the array, and the first item in the array is the program
+	 * name itself.  All characters stand for their literal value. There are no escaping
+	 * or quoting characters.
 	 */
-	public String createCommandLine(MatchMakerSession session, Match match, boolean userPrompt);
+	public String[] createCommandLine(MatchMakerSession session, Match match, boolean userPrompt);
 	
 	/**
 	 * returns the standard error of the engine, if it's running, otherwise returns null

@@ -27,8 +27,7 @@ public class MergeEngineImpl extends AbstractCEngine {
 		throw new EngineSettingException("Merge engine integration is not implemented");
 	}
 
-	public String createCommandLine(MatchMakerSession session, Match match, boolean userPrompt) {
-		// TODO Auto-generated method stub
-		return null;
+	public String[] createCommandLine(MatchMakerSession session, Match match, boolean userPrompt) {
+		return new String[0];
 	}
 }
