@@ -262,7 +262,7 @@ public class RunMatchEditor implements EditorPane {
 	 */
 	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
-				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,20dlu,pref,10dlu",
+				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,4dlu,pref,4dlu",
 				//  1         2    3         4     5     6    7     8
 				"10dlu,pref,10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		        //   1    2     3    4     5    6    7    8    9   10    11   12   13   14   15
@@ -318,7 +318,7 @@ public class RunMatchEditor implements EditorPane {
 		pb.add(sendEmail, cc.xy(4, 16, "l,c"));
 
 		FormLayout bbLayout = new FormLayout(
-				"4dlu,pref,10dlu:grow,pref,10dlu:grow,pref,4dlu",
+				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu",
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		PanelBuilder bbpb;
 		JPanel bbp = logger.isDebugEnabled() ? new FormDebugPanel(bbLayout)
@@ -330,7 +330,7 @@ public class RunMatchEditor implements EditorPane {
 		bbpb.add(viewStats, cc.xy(2, 4, "f,f"));
 		bbpb.add(save, cc.xy(4, 4, "f,f"));
 
-		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6));
+		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
 
 		JPanel engineAccessoryPanel = new JPanel(new BorderLayout());
 		engineAccessoryPanel.add(runEngineAction.getProgressBar(), BorderLayout.NORTH);
@@ -570,6 +570,7 @@ public class RunMatchEditor implements EditorPane {
 			outputComponent.setWheelScrollingEnabled(true);
 
 			ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
+			bbBuilder.addGlue();
 
 			Action saveAsAction = new AbstractAction() {
 				public void actionPerformed(ActionEvent e) {
@@ -612,7 +613,6 @@ public class RunMatchEditor implements EditorPane {
 			copyButton.setText("Copy to Clipboard");
 			bbBuilder.addGridded(copyButton);
 			bbBuilder.addRelatedGap();
-			bbBuilder.addGlue();
 
 			buttonBar = bbBuilder.getPanel();
 			
