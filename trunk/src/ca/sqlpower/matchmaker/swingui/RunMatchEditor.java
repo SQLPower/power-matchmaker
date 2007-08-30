@@ -292,9 +292,7 @@ public class RunMatchEditor implements EditorPane {
 
 		save = new JButton(new AbstractAction("Save") {
 			public void actionPerformed(ActionEvent e) {
-				applyChange();
-				MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
-				dao.save(match);
+				doSave();
 			}
 		});
 
@@ -413,26 +411,6 @@ public class RunMatchEditor implements EditorPane {
 		
 		/* trigger the validator */
 		v2.validate(sendEmail.isSelected());
-	}
-
-	/**
-	 * Used to update the MatchSettings object in this RunMatchEditor's Match
-	 */
-	private void applyChange() {
-		refreshActionStatus();
-		MatchSettings settings = match.getMatchSettings();
-		settings.setDebug(debugMode.isSelected());
-		settings.setTruncateCandDupe(truncateCandDup.isSelected());
-		settings.setSendEmail(sendEmail.isSelected());
-		settings.setLog(new File(logFilePath.getText()));
-		settings.setAppendToLog(append.isSelected());
-		if (recordsToProcess.getText() == null
-				|| recordsToProcess.getText().length() == 0) {
-			settings.setProcessCount(null);
-		} else {
-			settings.setProcessCount(Integer
-					.valueOf(recordsToProcess.getText()));
-		}
 	}
 
 	public class StatsTableMOdel extends RowSetModel {
@@ -631,7 +609,7 @@ public class RunMatchEditor implements EditorPane {
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			applyChange();
+			doSave();
 			try {
 				matchEngine = new MatchMakerEngineImpl(session, match);
 				matchEngine.checkPreconditions();
@@ -723,7 +701,7 @@ public class RunMatchEditor implements EditorPane {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			applyChange();
+			doSave();
 			MatchMakerEngine engine = new MatchMakerEngineImpl(swingSession,
 					match);
 			final String cmd = engine.createCommandLine(swingSession, match,
@@ -885,7 +863,29 @@ public class RunMatchEditor implements EditorPane {
 		return false;
 	}
 	
+	/**
+	 * Updates the engine settings in the match based on the current values in
+	 * the GUI, then stores the match using its DAO.
+	 */
 	public boolean doSave() {
+		refreshActionStatus();
+		MatchSettings settings = match.getMatchSettings();
+		settings.setDebug(debugMode.isSelected());
+		settings.setTruncateCandDupe(truncateCandDup.isSelected());
+		settings.setSendEmail(sendEmail.isSelected());
+		settings.setLog(new File(logFilePath.getText()));
+		settings.setAppendToLog(append.isSelected());
+		if (recordsToProcess.getText() == null
+				|| recordsToProcess.getText().length() == 0) {
+			settings.setProcessCount(null);
+		} else {
+			settings.setProcessCount(Integer
+					.valueOf(recordsToProcess.getText()));
+		}
+		
+		MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
+		dao.save(match);
+
 		return true;
 	}
 }
