@@ -25,72 +25,20 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import junit.framework.TestCase;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
-import ca.sqlpower.matchmaker.event.EngineEvent;
-import ca.sqlpower.matchmaker.event.EngineListener;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.PlDotIni;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.TestingDefParamsObject;
 
 public class MatchMakerEngineImplTest extends TestCase {
 
-	private class CountingEngineListener implements EngineListener {
-		int ends;
-		int starts;
-		boolean removeMe;
-		
-		public boolean isRemoveMe() {
-			return removeMe;
-		}
-
-		public void setRemoveMe(boolean removeMe) {
-			this.removeMe = removeMe;
-		}
-
-		public void engineEnd(EngineEvent e) {
-			ends++;
-			if (removeMe){
-				e.getSource().removeEngineListener(this);
-			}
-		}
-
-		public void engineStart(EngineEvent e) {
-			starts++;
-			if (removeMe){
-				e.getSource().removeEngineListener(this);
-			}
-		}
-
-		public int getAllEvents(){
-			return ends+starts;
-		}
-		public int getEnds() {
-			return ends;
-		}
-
-		public void setEnds(int ends) {
-			this.ends = ends;
-		}
-
-		public int getStarts() {
-			return starts;
-		}
-
-		public void setStarts(int starts) {
-			this.starts = starts;
-		}
-		
-	}
-	
 	Match match;
 	MatchEngineImpl matchMakerEngine;
 	private TestingMatchMakerHibernateSession session;
 	private TestingMatchMakerContext context;
 	private TestingDefParamsObject def;
-	private CountingEngineListener l1;
-	private CountingEngineListener l2;
 	
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -104,10 +52,6 @@ public class MatchMakerEngineImplTest extends TestCase {
 		context.setMatchEngineLocation("fakeMatchEngine");
 		session.setContext(context);
 		def = new TestingDefParamsObject(session);
-		l1 = new CountingEngineListener();
-		l2 = new CountingEngineListener();
-		matchMakerEngine.addEngineListener(l1);
-		matchMakerEngine.addEngineListener(l2);
 	}
 
 	protected void tearDown() throws Exception {
@@ -220,40 +164,6 @@ public class MatchMakerEngineImplTest extends TestCase {
 		assertFalse(fakeEngine.canRead());
 		assertFalse(matchMakerEngine.canExecuteMatchEngine(context));
 		fakeEngine.delete();
-	}
-	
-	public void testEndEventsFire(){
-		matchMakerEngine.fireEngineEnd();
-		assertEquals("Wrong number of events received",1,l1.getAllEvents());
-		assertEquals("Wrong number of events received",1,l2.getAllEvents());
-		assertEquals("Wrong type of events received",1,l1.ends);
-		assertEquals("Wrong type of events received",1,l2.ends);
-	}
-	
-	public void testEndEventsFireWhenOneListenerIsRemoved(){
-		matchMakerEngine.fireEngineEnd();
-		l2.setRemoveMe(true);
-		assertEquals("Wrong number of events received",1,l1.getAllEvents());
-		assertEquals("Wrong number of events received",1,l2.getAllEvents());
-		assertEquals("Wrong type of events received",1,l1.ends);
-		assertEquals("Wrong type of events received",1,l2.ends);
-	}
-	
-	public void testStartEventsFire(){
-		matchMakerEngine.fireEngineStart();
-		assertEquals("Wrong number of events received",1,l1.getAllEvents());
-		assertEquals("Wrong number of events received",1,l2.getAllEvents());
-		assertEquals("Wrong type of events received",1,l1.getStarts());
-		assertEquals("Wrong type of events received",1,l2.getStarts());
-	}
-	
-	public void testStartEventsFireWhenOneListenerIsRemoved(){
-		matchMakerEngine.fireEngineStart();
-		l2.setRemoveMe(true);
-		assertEquals("Wrong number of events received",1,l1.getAllEvents());
-		assertEquals("Wrong number of events received",1,l2.getAllEvents());
-		assertEquals("Wrong type of events received",1,l1.getStarts());
-		assertEquals("Wrong type of events received",1,l2.getStarts());
 	}
 	
 	public void testHasOdbcDsnNull(){

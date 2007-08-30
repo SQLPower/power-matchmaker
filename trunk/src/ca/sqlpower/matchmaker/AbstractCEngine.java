@@ -20,17 +20,13 @@
 package ca.sqlpower.matchmaker;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.event.EngineEvent;
-import ca.sqlpower.matchmaker.event.EngineListener;
-import ca.sqlpower.matchmaker.event.EngineEvent.EngineEventType;
+import ca.sqlpower.util.StreamLogger;
 /**
  * Common ground for all C engines.  This class handles events
  * output capture, monitoring and starting and stoping the engine. 
@@ -70,17 +66,6 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 		this.session = session;
 	}
 
-
-	/* (non-Javadoc)
-	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#abort()
-	 */
-	public void abort() {
-		if ( proc != null ) {
-			proc.destroy();
-			proc = null;
-		}
-	}
-
 	/* (non-Javadoc)
 	 * @see ca.sqlpower.matchmaker.MatchMakerEngine#getEngineReturnCode()
 	 */
@@ -109,59 +94,25 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 		Runtime rt = Runtime.getRuntime();
 		logger.debug("Executing " + Arrays.asList(commandLine));
 		proc = rt.exec(commandLine);
-		fireEngineStart();
+		
+		StreamLogger errorGobbler = new StreamLogger(proc.getErrorStream(), getLogger(), Level.ERROR);
+		StreamLogger outputGobbler = new StreamLogger(proc.getInputStream(), getLogger(), Level.INFO);
+		errorGobbler.start();
+		outputGobbler.start();
+		
 		processMonitor = new Thread(new Runnable(){
 
 					public void run() {
 						try {
 							proc.waitFor();
 							engineExitCode = proc.exitValue();
-							fireEngineEnd();
+							getLogger().info("Engine process completed with status " + engineExitCode);
 						} catch (InterruptedException e) {
 							throw new RuntimeException(e);
 						}
 					}
 				});
 		processMonitor.start();
-	}
-
-	public InputStream getEngineErrorOutput() {
-		if ( proc != null ) {
-			return proc.getErrorStream();
-		}
-		return null;
-	}
-
-	public InputStream getEngineStandardOutput() {
-		if ( proc != null ) {
-			return proc.getInputStream();
-		}
-		return null;
-	}
-
-	/** ENGINE EVENT SUPPORT **/
-	private List<EngineListener> engineListeners = new ArrayList<EngineListener>();
-	
-	public void addEngineListener(EngineListener l){
-		if (l == null) throw new NullPointerException();
-		engineListeners.add(l);
-	}
-	public void removeEngineListener(EngineListener l){
-		engineListeners.remove(l);
-	}
-	
-	void fireEngineStart() {
-		for (int i = engineListeners.size()-1; i >= 0; i--){
-			EngineEvent e = new EngineEvent(this,EngineEventType.ENGINE_START,match);
-			engineListeners.get(i).engineStart(e);
-		}
-	}
-
-	void fireEngineEnd() {
-		for (int i = engineListeners.size()-1; i >= 0; i--){
-			EngineEvent e = new EngineEvent(this,EngineEventType.ENGINE_START,match);
-			engineListeners.get(i).engineEnd(e);
-		}
 	}
 
 	///////// Monitorabe support ///////////
@@ -199,6 +150,9 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	}
 
 	public void setCancelled(boolean cancelled) {
-		abort();
+		if (cancelled && proc != null) {
+			proc.destroy();
+			proc = null;
+		}
 	}
 }

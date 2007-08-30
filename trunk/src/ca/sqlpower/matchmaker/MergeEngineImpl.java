@@ -19,9 +19,13 @@
 
 package ca.sqlpower.matchmaker;
 
+import org.apache.log4j.Logger;
+
 
 public class MergeEngineImpl extends AbstractCEngine {
 
+	private static final Logger logger = Logger.getLogger(MergeEngineImpl.class);
+	
 	@Override
 	public void checkPreconditions() throws EngineSettingException {
 		throw new EngineSettingException("Merge engine integration is not implemented");
@@ -30,4 +34,12 @@ public class MergeEngineImpl extends AbstractCEngine {
 	public String[] createCommandLine(MatchMakerSession session, Match match, boolean userPrompt) {
 		return new String[0];
 	}
+	
+	/**
+	 * Returns the logger for the MergeEngineImpl class.
+	 */
+	public Logger getLogger() {
+		return logger;
+	}
+
 }
