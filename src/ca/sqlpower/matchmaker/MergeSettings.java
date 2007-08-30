@@ -70,15 +70,17 @@ public class MergeSettings extends MatchMakerSettings {
 	match id
 	username
 	password
-	debug
 	commit freq
-	log file
 	error file
-	process count
 	user prompt
 	show progress
-	rollback segment name
+
+		MatchMakerSettings contains these which the engine accepts
+	debug
 	append to log ind
+	log file
+	process count
+	rollback segment name
 	send email
 	*/
 	
