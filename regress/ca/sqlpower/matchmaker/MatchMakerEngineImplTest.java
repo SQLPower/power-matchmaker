@@ -85,7 +85,7 @@ public class MatchMakerEngineImplTest extends TestCase {
 	}
 	
 	Match match;
-	MatchMakerEngineImpl matchMakerEngine;
+	MatchEngineImpl matchMakerEngine;
 	private TestingMatchMakerHibernateSession session;
 	private TestingMatchMakerContext context;
 	private TestingDefParamsObject def;
@@ -98,7 +98,7 @@ public class MatchMakerEngineImplTest extends TestCase {
 		session = new TestingMatchMakerHibernateSession(DBTestUtil.getOracleDS());
 		session.setDatabase(new SQLDatabase());
 		match.setSession(session);
-		matchMakerEngine = new MatchMakerEngineImpl(session,match);
+		matchMakerEngine = new MatchEngineImpl(session,match);
 		context = new TestingMatchMakerContext();
 		context.setEmailEngineLocation("fakeEmailEngine");
 		context.setMatchEngineLocation("fakeMatchEngine");
@@ -259,12 +259,12 @@ public class MatchMakerEngineImplTest extends TestCase {
 	public void testHasOdbcDsnNull(){
 		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.setOdbcDsn(null);
-		assertFalse("An empty dsn should be considered invalid",MatchMakerEngineImpl.hasODBCDSN(ds));
+		assertFalse("An empty dsn should be considered invalid",MatchEngineImpl.hasODBCDSN(ds));
 	}
 	public void testHasOdbcDsnEmpty(){
 		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.setOdbcDsn("");
-		assertFalse("An empty dsn should be considered invalid",MatchMakerEngineImpl.hasODBCDSN(ds));
+		assertFalse("An empty dsn should be considered invalid",MatchEngineImpl.hasODBCDSN(ds));
 	}
 	// Because we can't check to see if this is a valid odbc
 	// dsn we have to go on length of string
@@ -272,6 +272,6 @@ public class MatchMakerEngineImplTest extends TestCase {
 		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.setOdbcDsn("Valid");
 		
-		assertTrue("Dsn should be considered valid",MatchMakerEngineImpl.hasODBCDSN(ds));
+		assertTrue("Dsn should be considered valid",MatchEngineImpl.hasODBCDSN(ds));
 	}
 }

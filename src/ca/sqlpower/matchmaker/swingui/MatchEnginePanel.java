@@ -67,7 +67,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
-import ca.sqlpower.matchmaker.MatchMakerEngineImpl;
+import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.RowSetModel;
@@ -611,7 +611,7 @@ public class MatchEnginePanel implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 			doSave();
 			try {
-				matchEngine = new MatchMakerEngineImpl(session, match);
+				matchEngine = new MatchEngineImpl(session, match);
 				matchEngine.checkPreconditions();
 				matchEngine.addEngineListener(this);
 				matchEngine.run();
@@ -702,7 +702,7 @@ public class MatchEnginePanel implements EditorPane {
 
 		public void actionPerformed(ActionEvent e) {
 			doSave();
-			MatchMakerEngine engine = new MatchMakerEngineImpl(swingSession,
+			MatchMakerEngine engine = new MatchEngineImpl(swingSession,
 					match);
 			final String cmd = engine.createCommandLine(swingSession, match,
 					false);
@@ -831,7 +831,7 @@ public class MatchEnginePanel implements EditorPane {
 		}
 
 		public ValidateResult validate(Object contents) {
-			MatchMakerEngineImpl matchEngine = new MatchMakerEngineImpl(session, match);
+			MatchEngineImpl matchEngine = new MatchEngineImpl(session, match);
 			try {
 				matchEngine.checkPreconditions();
 			} catch (EngineSettingException ex) {

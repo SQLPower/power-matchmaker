@@ -36,14 +36,14 @@ import ca.sqlpower.sql.SPDataSource;
 /**
  * Sets up and runs the C Match Maker engine
  */
-public class MatchMakerEngineImpl extends AbstractCEngine {
+public class MatchEngineImpl extends AbstractCEngine {
 
-	private static final Logger logger = Logger.getLogger(MatchMakerEngineImpl.class);
+	private static final Logger logger = Logger.getLogger(MatchEngineImpl.class);
 
 	private final MatchMakerSessionContext context;
 
 	
-	public MatchMakerEngineImpl(MatchMakerSession session, Match match) {
+	public MatchEngineImpl(MatchMakerSession session, Match match) {
 		this.setSession(session);
 		this.setMatch(match);
 		context = session.getContext();
