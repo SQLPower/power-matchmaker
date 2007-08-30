@@ -21,8 +21,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -41,7 +39,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -51,9 +48,7 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -163,11 +158,6 @@ public class MatchEnginePanel implements EditorPane {
 	 */
 	private JButton save;
 
-	/**
-	 * Starts the engine. Disabled if engine preconditions are not met.
-	 */
-	private JButton runMatchEngineButton;
-
 	private JComboBox rollbackSegment;
 
 	/**
@@ -196,39 +186,33 @@ public class MatchEnginePanel implements EditorPane {
 	 */
 	private FormValidationHandler handler;
 
-	/**
-	 * The action that is used to start the match engine as well
-	 * as provide information about the progress and status of the engine
-	 */
-	private final RunEngineAction runEngineAction;
-
 	public MatchEnginePanel(MatchMakerSwingSession swingSession, Match match,
 			JFrame parentFrame) {
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
 		this.match = match;
-		runEngineAction = new RunEngineAction();
 		handler = new FormValidationHandler(status);
 		handler.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshActionStatus();
 			}
 		});
+		engineOutputPanel = new EngineOutputPanel(parentFrame);
 		panel = buildUI();
 		setDefaultSelections(match);
 	}
 
 	/**
 	 * Performs a form validation on the configuration portion and sets the
-	 * status accordingly as well as diabling the button to run the engine if
+	 * status accordingly as well as disabling the button to run the engine if
 	 * necessary.
 	 */
 	private void refreshActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
-		runEngineAction.setEnabled(true);
+		engineAction.setEnabled(true);
 
 		if (worst.getStatus() == Status.FAIL) {
-			runEngineAction.setEnabled(false);
+			engineAction.setEnabled(false);
 		}
 	}
 
@@ -255,9 +239,8 @@ public class MatchEnginePanel implements EditorPane {
 	/**
 	 * Builds the UI for this editor pane. This is broken into two parts,
 	 * the configuration and output. Configuration is done in this method
-	 * while the output section is done in the RunEngineAction constructor
-	 * and retrieved when needed because the ouput section depends on some
-	 * things that only the action knows about.
+	 * while the output section is handled by the EngineOutputPanel and
+	 * this method simply lays out the components that class provides.
 	 */
 	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
@@ -295,8 +278,6 @@ public class MatchEnginePanel implements EditorPane {
 			}
 		});
 
-		runMatchEngineButton = new JButton(runEngineAction);
-
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
 		pb.add(new JLabel("Log File:"), cc.xy(2, 4, "r,f"));
@@ -323,19 +304,19 @@ public class MatchEnginePanel implements EditorPane {
 		bbpb = new PanelBuilder(bbLayout, bbp);
 		bbpb.add(viewLogFile, cc.xy(2, 2, "f,f"));
 		bbpb.add(showCommand, cc.xy(4, 2, "f,f"));
-		bbpb.add(runMatchEngineButton, cc.xy(6, 2, "f,f"));
+		bbpb.add(new JButton(engineAction), cc.xy(6, 2, "f,f"));
 		bbpb.add(viewStats, cc.xy(2, 4, "f,f"));
 		bbpb.add(save, cc.xy(4, 4, "f,f"));
 
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
 
 		JPanel engineAccessoryPanel = new JPanel(new BorderLayout());
-		engineAccessoryPanel.add(runEngineAction.getProgressBar(), BorderLayout.NORTH);
-		engineAccessoryPanel.add(runEngineAction.getButtonBar(), BorderLayout.SOUTH);
+		engineAccessoryPanel.add(engineOutputPanel.getProgressBar(), BorderLayout.NORTH);
+		engineAccessoryPanel.add(engineOutputPanel.getButtonBar(), BorderLayout.SOUTH);
 		
 		JPanel anotherP = new JPanel(new BorderLayout(12, 12));
 		anotherP.add(pb.getPanel(), BorderLayout.NORTH);
-		anotherP.add(runEngineAction.getOutputComponent(), BorderLayout.CENTER);
+		anotherP.add(engineOutputPanel.getOutputComponent(), BorderLayout.CENTER);
 		anotherP.add(engineAccessoryPanel, BorderLayout.SOUTH);
 		anotherP.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 		
@@ -509,144 +490,25 @@ public class MatchEnginePanel implements EditorPane {
 		
 	}
 	
+	private final EngineOutputPanel engineOutputPanel;
+	
 	/**
 	 * This action is used to run the match engine. It also is responsible
 	 * for constructing the user interface that deals with engine ouput.
 	 */
-	private class RunEngineAction extends AbstractAction {
+	private Action engineAction = new AbstractAction("Run Match Engine") {
 
-		/**
-		 * A bar of buttons related to the match engine output textfield.
-		 */
-		private JPanel buttonBar;
-
-		/**
-		 * The actual document that contains the engine's output.
-		 */
-		private DefaultStyledDocument engineOutputDoc;
-		
-		/**
-		 * The component that houses the engine output field.
-		 */
-		private JScrollPane outputComponent;
-		
-		private JProgressBar progressBar;
-
-		public RunEngineAction() {
-			super("Run Match Engine");
-			initGUI();
-			logger.debug("RunEngineAction instance created");
-		}
-
-		/**
-		 * Sets up all the GUI components.
-		 */
-		private void initGUI() {
-			progressBar = new JProgressBar();
-
-			GraphicsEnvironment ge = GraphicsEnvironment
-			.getLocalGraphicsEnvironment();
-			Font[] fonts = ge.getAllFonts();
-			boolean courierNewExist = false;
-			for (int i = 0; i < fonts.length; i++) {
-				if (fonts[i].getFamily().equalsIgnoreCase("Courier New")) {
-					courierNewExist = true;
-					break;
-				}
-			}
-			engineOutputDoc = new DefaultStyledDocument();
-
-			JTextArea outputTextArea = new JTextArea(20, 80);
-			outputTextArea.setDocument(engineOutputDoc);
-			outputTextArea.setEditable(false);
-			outputTextArea.setWrapStyleWord(true);
-			outputTextArea.setLineWrap(true);
-			outputTextArea.setAutoscrolls(true);
-
-			if (courierNewExist) {
-				Font oldFont = outputTextArea.getFont();
-				Font f = new Font("Courier New", oldFont.getStyle(), oldFont
-						.getSize());
-				outputTextArea.setFont(f);
-			}
-
-			outputComponent = new JScrollPane(outputTextArea);
-			outputComponent.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			outputComponent.setAutoscrolls(true);
-			outputComponent.setWheelScrollingEnabled(true);
-
-			ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
-			bbBuilder.addGlue();
-
-			Action saveAsAction = new AbstractAction() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							SPSUtils.saveDocument(
-									parentFrame,
-									engineOutputDoc,
-									(FileExtensionFilter) SPSUtils.TEXT_FILE_FILTER);
-						}
-					});
-				}
-			};
-			JButton saveAsButton = new JButton(saveAsAction);
-			saveAsButton.setText("Save As...");
-			bbBuilder.addGridded(saveAsButton);
-			bbBuilder.addRelatedGap();
-
-			JButton copyButton = new JButton(new AbstractAction() {
-				public void actionPerformed(ActionEvent e) {
-					SwingUtilities.invokeLater(new Runnable() {
-
-						public void run() {
-							try {
-								StringSelection selection = new StringSelection(
-										engineOutputDoc.getText(0,
-												engineOutputDoc.getLength()));
-								Clipboard clipboard = Toolkit
-								.getDefaultToolkit()
-								.getSystemClipboard();
-								clipboard.setContents(selection, selection);
-							} catch (BadLocationException e1) {
-								MMSUtils.showExceptionDialog(parentFrame,
-										"Document Copy Error", e1);
-							}
-						}
-					});
-				}
-			});
-			copyButton.setText("Copy to Clipboard");
-			bbBuilder.addGridded(copyButton);
-			bbBuilder.addRelatedGap();
-
-			buttonBar = bbBuilder.getPanel();
-			
-		}
-
-		public JProgressBar getProgressBar() {
-			return progressBar;
-		}
-		
-		public JPanel getButtonBar() {
-			return buttonBar;
-		}
-		
-		public JComponent getOutputComponent() {
-			return outputComponent;
-		}
-		
 		public void actionPerformed(ActionEvent e) {
 			doSave();
 			try {
-				EngineWorker w = new EngineWorker(engineOutputDoc, progressBar);
+				EngineWorker w = new EngineWorker(engineOutputPanel.getOutputDocument(), engineOutputPanel.getProgressBar());
 				new Thread(w).start();
 			} catch (Exception ex) {
 				MMSUtils.showExceptionDialog(parentFrame, "Engine error", ex);
 				return;
 			}
 		}
-	}
+	};
 
 	/**
 	 * Displays a dialog to the user that contains the text in the log file
