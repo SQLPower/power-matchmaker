@@ -31,11 +31,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import javax.sql.RowSet;
 import javax.swing.AbstractAction;
@@ -56,7 +53,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
@@ -66,14 +62,12 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
+import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.event.EngineEvent;
-import ca.sqlpower.matchmaker.event.EngineListener;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
@@ -421,54 +415,11 @@ public class MatchEnginePanel implements EditorPane {
 
 	}
 
-	public class StreamGobbler extends Thread {
-		InputStream is;
-
-		String type;
-
-		AbstractDocument output;
-
-		SimpleAttributeSet att;
-
-		StreamGobbler(InputStream is, String type, AbstractDocument output,
-				SimpleAttributeSet att) {
-			this.is = is;
-			this.type = type;
-			this.output = output;
-			this.att = att;
-		}
-
-		public void run() {
-			try {
-				InputStreamReader isr = new InputStreamReader(is);
-				BufferedReader br = new BufferedReader(isr);
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					logger.debug(type + ">" + line);
-					final String fLine = line;
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							try {
-								output.insertString(output.getLength(), fLine
-										+ "\n", att);
-							} catch (BadLocationException e) {
-								e.printStackTrace();
-							}
-						}
-					});
-				}
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			}
-		}
-	}
-
 	/**
 	 * This action is used to run the match engine. It also is responsible
 	 * for constructing the user interface that deals with engine ouput.
 	 */
-	private class RunEngineAction extends AbstractAction implements
-			EngineListener {
+	private class RunEngineAction extends AbstractAction {
 
 		private final JFrame parent;
 
@@ -613,7 +564,6 @@ public class MatchEnginePanel implements EditorPane {
 			try {
 				matchEngine = new MatchEngineImpl(session, match);
 				matchEngine.checkPreconditions();
-				matchEngine.addEngineListener(this);
 				matchEngine.run();
 				ProgressWatcher.watchProgress(progressBar,matchEngine);
 			} catch (EngineSettingException ese) {
@@ -624,32 +574,6 @@ public class MatchEnginePanel implements EditorPane {
 				MMSUtils.showExceptionDialog(parent, "Engine error", ex);
 				return;
 			}
-		}
-
-		public void engineEnd(EngineEvent e) {
-			int exitVal = matchEngine.getEngineReturnCode();
-			try {
-				engineOutputDoc.insertString(engineOutputDoc.getLength(),
-						"\nExecutable Return Code: " + exitVal + "\n", stderrAtt);
-			} catch (BadLocationException e1) {
-				throw new RuntimeException(e1);
-			}
-			matchEngine.removeEngineListener(this);
-		}
-
-		public void engineStart(EngineEvent e) {
-			// any output?
-			StreamGobbler errorGobbler = new StreamGobbler(matchEngine
-					.getEngineErrorOutput(), "ERROR", engineOutputDoc,
-					stderrAtt);
-
-			StreamGobbler outputGobbler = new StreamGobbler(matchEngine
-					.getEngineStandardOutput(), "OUTPUT", engineOutputDoc,
-					stdoutAtt);
-
-			// kick them off
-			errorGobbler.start();
-			outputGobbler.start();
 		}
 	}
 

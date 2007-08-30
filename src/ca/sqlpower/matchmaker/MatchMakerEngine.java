@@ -23,10 +23,10 @@
 package ca.sqlpower.matchmaker;
 
 import java.io.IOException;
-import java.io.InputStream;
+
+import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.event.EngineListener;
 import ca.sqlpower.util.Monitorable;
 
 /**
@@ -84,26 +84,10 @@ public interface MatchMakerEngine extends Monitorable {
 	 * or quoting characters.
 	 */
 	public String[] createCommandLine(MatchMakerSession session, Match match, boolean userPrompt);
-	
-	/**
-	 * returns the standard error of the engine, if it's running, otherwise returns null
-	 */
-	public InputStream getEngineErrorOutput();
 
 	/**
-	 * returns the standard output of the engine, if it's running, otherwise returns null
+	 * Returns the logger instance that all engine messages are logged to.  Engine messages
+	 * are logged at any combination of the standard Log4J logging levels.
 	 */
-	public InputStream getEngineStandardOutput();
-	
-	/**
-	 * Add a engine listener to this engine.  Note the listener cannot be null
-	 * @param l EngineListener not null
-	 */
-	public void addEngineListener(EngineListener l);
-	
-	/**
-	 * Removes a engine listener from this engine.  Note the listener cannot be null
-	 * @param l EngineListener not null
-	 */
-	public void removeEngineListener(EngineListener l);
+	public Logger getLogger();
 }

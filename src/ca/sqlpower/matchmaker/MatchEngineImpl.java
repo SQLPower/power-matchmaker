@@ -272,5 +272,11 @@ public class MatchEngineImpl extends AbstractCEngine {
 		return command.toArray(new String[0]);
 	}
 
+	/**
+	 * Returns the logger for the MatchEngineImpl class.
+	 */
+	public Logger getLogger() {
+		return logger;
+	}
 	
 }
