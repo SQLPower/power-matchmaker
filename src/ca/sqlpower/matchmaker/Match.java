@@ -61,7 +61,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		}
 
 		/**
-		 * Get the MatchType that corrisponds to the type string.
+		 * Get the MatchType that corresponds to the type string.
 		 *
 		 * in the old version export, we have type like 'FIND DUPLICATES', etc...
 		 * @param type a string detailing the type you want to get
