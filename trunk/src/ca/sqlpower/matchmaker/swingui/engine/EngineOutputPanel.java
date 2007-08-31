@@ -1,4 +1,4 @@
-package ca.sqlpower.matchmaker.swingui;
+package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -23,6 +23,7 @@ import javax.swing.text.Document;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 

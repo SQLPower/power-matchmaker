@@ -56,6 +56,7 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
+import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
 import ca.sqlpower.swingui.SPSUtils;
 
 /**

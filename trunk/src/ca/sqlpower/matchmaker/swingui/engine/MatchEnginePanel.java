@@ -17,10 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker.swingui;
+package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -32,7 +31,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 
-import javax.sql.RowSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -48,16 +46,10 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 
 import org.apache.log4j.Appender;
-import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.spi.LoggingEvent;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.EngineSettingException;
@@ -66,8 +58,10 @@ import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchSettings;
-import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.swingui.EditorPane;
+import ca.sqlpower.matchmaker.swingui.MMSUtils;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
@@ -393,66 +387,6 @@ public class MatchEnginePanel implements EditorPane {
 		v2.validate(sendEmail.isSelected());
 	}
 
-	public class StatsTableMOdel extends RowSetModel {
-
-		public StatsTableMOdel(RowSet set) {
-			super(set);
-		}
-
-	}
-
-	/**
-	 * A log4j appender which prints logging messages into a Swing document.
-	 */
-	private static class DocumentAppender extends AppenderSkeleton {
-
-		/**
-		 * The document to add logging messages to.
-		 */
-		private final Document doc;
-
-		/**
-		 * The visual appearance attributes of the text we put into doc.
-		 */
-		private final SimpleAttributeSet attributes = new SimpleAttributeSet();
-		
-		/**
-		 * Creates a Log4J appender that writes into the given Swing Document.
-		 */
-		public DocumentAppender(Document doc) {
-			this.doc = doc;
-			StyleConstants.setForeground(attributes, Color.BLACK);
-			layout = new PatternLayout("%d %p %m\n");
-		}
-		
-		/**
-		 * Appends the log message to the target document.
-		 */
-		@Override
-		protected void append(LoggingEvent evt) {
-			try {
-				doc.insertString(doc.getLength(), layout.format(evt), attributes);
-			} catch (BadLocationException e) {
-				e.printStackTrace();
-			}
-		}
-
-		/**
-		 * This is a no-op.
-		 */
-		public void close() {
-			// nothing to do
-		}
-
-		/**
-		 * I'm not sure if this should return true.
-		 */
-		public boolean requiresLayout() {
-			return true;
-		}
-		
-	};
-	
 	/**
 	 * A worker implementation that runs a MatchMakerEngine.
 	 */
