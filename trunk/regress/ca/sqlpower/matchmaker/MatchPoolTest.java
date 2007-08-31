@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,19 +70,21 @@ public class MatchPoolTest extends TestCase {
 		con = db.getConnection();
 
 		MMTestUtils.createResultTable(con);
+		MMTestUtils.createSourceTable(con);
 
 		SQLSchema plSchema = db.getSchemaByName("pl");
 
 		resultTable = db.getTableByName(null, "pl", "match_results");
-
-		sourceTable = new SQLTable(plSchema, "source_table", null, "TABLE",
-				true);
-		sourceTable.addColumn(new SQLColumn(sourceTable, "PK1", Types.INTEGER,
-				10, 0));
-		sourceTable.addColumn(new SQLColumn(sourceTable, "FOO", Types.VARCHAR,
-				10, 0));
-		sourceTable.addColumn(new SQLColumn(sourceTable, "BAR", Types.VARCHAR,
-				10, 0));
+		sourceTable = db.getTableByName(null, "pl", "source_table");
+		
+//		sourceTable = new SQLTable(plSchema, "source_table", null, "TABLE",
+//				true);
+//		sourceTable.addColumn(new SQLColumn(sourceTable, "PK1", Types.INTEGER,
+//				10, 0));
+//		sourceTable.addColumn(new SQLColumn(sourceTable, "FOO", Types.VARCHAR,
+//				10, 0));
+//		sourceTable.addColumn(new SQLColumn(sourceTable, "BAR", Types.VARCHAR,
+//				10, 0));
 
 		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null,
 				IndexType.OTHER, null);
@@ -129,6 +130,7 @@ public class MatchPoolTest extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		MMTestUtils.dropResultTable(con);
+		MMTestUtils.dropSourceTable(con);
 		con.close();
 	}
 
@@ -155,6 +157,13 @@ public class MatchPoolTest extends TestCase {
 		stmt.close();
 
 	}
+	
+	private static void insertSourceTableRecord(Connection con, String originalKey) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("INSERT into pl.source_table VALUES ("
+				+ SQL.quote(originalKey) + ", 'foo', 'bar')");
+		stmt.close();
+	}
 
 	/**
 	 * Tests that findAll() does find all potential match records (graph edges)
@@ -163,7 +172,9 @@ public class MatchPoolTest extends TestCase {
 	public void testFindAllPotentialMatches() throws Exception {
 		MatchPool pool = new MatchPool(match);
 		insertResultTableRecord(con, "1", "2", 15, "Group_One");
-		pool.findAll();
+		insertSourceTableRecord(con, "1");
+		insertSourceTableRecord(con, "2");
+		pool.findAll(new ArrayList<SQLColumn>());
 		Set<PotentialMatchRecord> matches = pool.getPotentialMatches();
 		assertEquals(1, matches.size());
 		for (PotentialMatchRecord pmr : matches) {
@@ -183,7 +194,10 @@ public class MatchPoolTest extends TestCase {
 		MatchPool pool = new MatchPool(match);
 		insertResultTableRecord(con, "1", "2", 15, "Group_One");
 		insertResultTableRecord(con, "1", "3", 15, "Group_One");
-		pool.findAll();
+		insertSourceTableRecord(con, "1");
+		insertSourceTableRecord(con, "2");
+		insertSourceTableRecord(con, "3");
+		pool.findAll(new ArrayList<SQLColumn>());
 		Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
 		assertEquals(3, nodes.size());
 
@@ -209,7 +223,10 @@ public class MatchPoolTest extends TestCase {
 		MatchPool pool = new MatchPool(match);
 		insertResultTableRecord(con, "1", "2", 15, "Group_One");
 		insertResultTableRecord(con, "1", "3", 15, "Group_One");
-		pool.findAll();
+		insertSourceTableRecord(con, "1");
+		insertSourceTableRecord(con, "2");
+		insertSourceTableRecord(con, "3");
+		pool.findAll(new ArrayList<SQLColumn>());
 		Collection<SourceTableRecord> nodes = pool.getSourceTableRecords();
 		assertEquals(3, nodes.size());
 

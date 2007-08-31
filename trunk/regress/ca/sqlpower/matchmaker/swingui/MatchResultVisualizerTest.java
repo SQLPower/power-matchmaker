@@ -20,7 +20,6 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.sql.Connection;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +31,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
@@ -75,19 +73,21 @@ public class MatchResultVisualizerTest extends TestCase {
 		con = db.getConnection();
 		
 		MMTestUtils.createResultTable(con);
+		MMTestUtils.createSourceTable(con);
 
 		SQLSchema plSchema = db.getSchemaByName("pl");
 
 		SQLTable resultTable = db.getTableByName(null, "pl", "match_results");
-
-		SQLTable sourceTable = new SQLTable(plSchema, "source_table", null, "TABLE",
-				true);
-		sourceTable.addColumn(new SQLColumn(sourceTable, "PK1", Types.INTEGER,
-				10, 0));
-		sourceTable.addColumn(new SQLColumn(sourceTable, "FOO", Types.VARCHAR,
-				10, 0));
-		sourceTable.addColumn(new SQLColumn(sourceTable, "BAR", Types.VARCHAR,
-				10, 0));
+		SQLTable sourceTable = db.getTableByName(null, "pl", "source_table");
+		
+//		SQLTable sourceTable = new SQLTable(plSchema, "source_table", null, "TABLE",
+//				true);
+//		sourceTable.addColumn(new SQLColumn(sourceTable, "PK1", Types.INTEGER,
+//				10, 0));
+//		sourceTable.addColumn(new SQLColumn(sourceTable, "FOO", Types.VARCHAR,
+//				10, 0));
+//		sourceTable.addColumn(new SQLColumn(sourceTable, "BAR", Types.VARCHAR,
+//				10, 0));
 
 		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null,
 				IndexType.OTHER, null);
@@ -142,6 +142,7 @@ public class MatchResultVisualizerTest extends TestCase {
 	
 	protected void tearDown() throws Exception {
 		MMTestUtils.dropResultTable(con);
+		MMTestUtils.dropSourceTable(con);
 		con.close();
 	}
 
