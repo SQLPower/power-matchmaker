@@ -27,9 +27,10 @@ import java.sql.Statement;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchPool;
+import ca.sqlpower.matchmaker.MatchPoolTest;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
@@ -608,6 +609,29 @@ public class MMTestUtils {
 	public static void dropResultTable(Connection con) throws SQLException {
 		Statement stmt = con.createStatement();
 		stmt.executeUpdate("DROP TABLE pl.match_results");
+		stmt.close();
+	}
+	
+	/**
+	 * Creates the source table for testing the MatchPool. See
+	 * ({@link MatchPoolTest})
+	 * This table is only required if we want to test against a database.
+	 */
+	public static void createSourceTable(Connection con) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("CREATE TABLE pl.source_table ("
+				+ "\n PK1 integer not null,"
+				+ "\n FOO varchar(10),"
+				+ "\n BAR  varchar(10)" + "\n)");
+		stmt.close();
+	}
+	
+	/**
+	 * Removes the source table created by {@link #createSourceTable(Connection)}.
+	 */
+	public static void dropSourceTable(Connection con) throws SQLException {
+		Statement stmt = con.createStatement();
+		stmt.executeUpdate("DROP TABLE pl.source_table");
 		stmt.close();
 	}
 }
