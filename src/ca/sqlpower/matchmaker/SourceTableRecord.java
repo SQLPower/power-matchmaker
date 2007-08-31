@@ -65,7 +65,13 @@ public class SourceTableRecord {
     private final List<Object> keyValues;
     
     /**
-     * The computed hash code for this object.  It is based on the unmidifiable
+     * The values of the columns that we wish to display for each
+     * SourceTableRecord node in the match validation screen graphs.
+     */
+    private List<Object> displayValues;
+    
+    /**
+     * The computed hash code for this object.  It is based on the unmodifiable
      * keyValues list, and is computed only once.  We determined by profiling
      * that most of the time spent in graph layout was in recomputing this
      * hash code over and over.
@@ -95,6 +101,7 @@ public class SourceTableRecord {
      * @param session The MatchMakerSession of the given Match
      * @param match The Match this record is attached to
      * @param pool The match pool that this record belongs to
+     * @param displayValues The values used to display this record in the UI
      * @param keyValues The values of the unique index on the match's source
      * table.  These values must be specified in the same order as the match's
      * sourceTableIndex columns. Not allowed to be null.
@@ -102,10 +109,12 @@ public class SourceTableRecord {
     public SourceTableRecord(
             final MatchMakerSession session,
             final Match match,
+            List<Object> displayValues,
             List<Object> keyValues) {
         super();
         this.session = session;
         this.match = match;
+        this.displayValues = displayValues;
         this.keyValues = Collections.unmodifiableList(new ArrayList<Object>(keyValues));
         this.computedHashCode = this.keyValues.hashCode();
     }
@@ -119,7 +128,7 @@ public class SourceTableRecord {
             final MatchMakerSession session,
             final Match match,
             Object ... keyValues) {
-    	this(session, match, Arrays.asList(keyValues));
+    	this(session, match, new ArrayList<Object>(),Arrays.asList(keyValues));
     }
 
     /**
@@ -300,4 +309,12 @@ public class SourceTableRecord {
     public String toString() {
         return "SourceTableRecord@"+System.identityHashCode(this)+" key="+keyValues;
     }
+
+	public List<Object> getDisplayValues() {
+		return displayValues;
+	}
+
+	public void setDisplayValues(List<Object> displayValues) {
+		this.displayValues = displayValues;
+	}
 }

@@ -20,8 +20,10 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -43,6 +45,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -53,7 +56,10 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
+import com.jgoodies.forms.factories.ButtonBarFactory;
+
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.MatchRuleSet;
@@ -130,7 +136,7 @@ public class MatchResultVisualizer implements EditorPane {
     	}
     };
     
-    private Action viewerAutoLayoutAction = new AbstractAction("Auto layout") {
+    private final Action viewerAutoLayoutAction = new AbstractAction("Auto layout") {
         
         public void actionPerformed(ActionEvent e) {
             doAutoLayout();
@@ -138,6 +144,57 @@ public class MatchResultVisualizer implements EditorPane {
         
     };
 
+    /**
+     * Warning! Will throw a ClassCastException if the node renderer in graph
+     * is not a SourceTableRecordRenderer.
+     */
+    private final Action chooseDisplayedValueAction = new AbstractAction("Choose Displayed Value") {
+    	
+    	private JDialog dialog;    	
+    	private DisplayedNodeValueChooser chooser;
+    	
+    	private final AbstractAction okAction = new AbstractAction("OK") {
+    		public void actionPerformed(ActionEvent e) {
+    			try {
+    				chooser.getRenderer().setDisplayColumns(chooser.getChosenColumns());
+    				MatchResultVisualizer.this.getPool().findAll(chooser.getChosenColumns());
+    				MatchResultVisualizer.this.getPanel().repaint();
+    				MatchResultVisualizer.this.doAutoLayout();
+    			} catch (ArchitectException ex) {
+    				MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
+    			} catch (SQLException sqlEx) {
+    				MMSUtils.showExceptionDialog((Component) e.getSource(), sqlEx.getMessage(), sqlEx);
+    			} finally {
+    				dialog.dispose();
+    			}
+    		}
+    	};
+    	
+    	private final AbstractAction cancelAction = new AbstractAction("Cancel") {
+    		public void actionPerformed(ActionEvent e) {
+    			dialog.dispose();
+    		}
+    	};
+    	
+    	public void actionPerformed(ActionEvent e) {
+    		try {
+    			dialog = SPSUtils.makeOwnedDialog(panel, "Select Graph Display Values");
+				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer)graph.getNodeRenderer(), match, MatchResultVisualizer.this);
+				JPanel tablePanel = chooser.makeGUI();
+				JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(new JButton(okAction), new JButton(cancelAction));
+				JPanel panel = new JPanel(new BorderLayout());
+				panel.add(tablePanel, BorderLayout.CENTER);
+				panel.add(buttonPanel, BorderLayout.SOUTH);
+				dialog.getContentPane().add(panel);
+    			dialog.pack();
+    			dialog.setLocationRelativeTo((Component) e.getSource());
+    			dialog.setVisible(true);
+    		} catch (ArchitectException ex) {
+    			MMSUtils.showExceptionDialog((Component) e.getSource(), ex.getMessage(), ex);
+    		}
+    	}
+    };
+    
     /**
 	 * When this action is fired the nodes will become unrelated.
 	 */
@@ -383,19 +440,26 @@ public class MatchResultVisualizer implements EditorPane {
     
     private JComboBox criteriaComboBox;
     
+    /**
+     * A list of the SQLColumns that we want to display in each SourceTableRecord
+     * node in the match validation graph.
+     */
+    private List<SQLColumn> displayColumns = new ArrayList<SQLColumn>();
+    
     public MatchResultVisualizer(Match match) throws SQLException, ArchitectException {
         this.match = match;
 
-        JPanel buttonPanel = new JPanel(new FlowLayout());
+        JPanel buttonPanel = new JPanel(new GridLayout(2,2));
         buttonPanel.add(new JButton(exportDotFileAction));
         buttonPanel.add(new JButton(viewerAutoLayoutAction));
         buttonPanel.add(new JButton(resetPoolAction));
+        buttonPanel.add(new JButton(chooseDisplayedValueAction));
 
         pool = new MatchPool(match);
-        pool.findAll();
+        pool.findAll(displayColumns);
         graphModel = new MatchPoolGraphModel(pool);
         graph = new GraphViewer<SourceTableRecord, PotentialMatchRecord>(graphModel);
-        graph.setNodeRenderer(new SourceTableNodeRenderer());
+        graph.setNodeRenderer(new SourceTableNodeRenderer(displayColumns));
         graph.setEdgeRenderer(new PotentialMatchEdgeRenderer(graph));
         graph.addSelectionListener(selectionListener );
         
@@ -502,7 +566,7 @@ public class MatchResultVisualizer implements EditorPane {
             y += componentBounds.height + vgap;
         }
         
-        graph.repaint();
+        graph.revalidate();
     }
     
     /**
