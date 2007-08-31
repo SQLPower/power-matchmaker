@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -200,7 +201,6 @@ public class MatchPool {
                 SourceTableRecord rhs = makeSourceTableRecord(rhsKeyValues);
                 PotentialMatchRecord pmr =
                 	new PotentialMatchRecord(criteriaGroup, matchStatus, lhs, rhs, false);
-                pmr.setStoreState(StoreState.CLEAN);
                 if (matchStatus == MatchType.MATCH || matchStatus == MatchType.AUTOMATCH) {
                 	if (SQL.decodeInd(rs.getString("DUP1_MASTER_IND"))) {
                 		pmr.setMaster(lhs);
@@ -208,6 +208,10 @@ public class MatchPool {
                 		pmr.setMaster(rhs);
                 	}
                 }
+                if (pmr.getMatchStatus() == null) {
+                	pmr.setMatchStatus(MatchType.UNMATCH);
+                }
+                pmr.setStoreState(StoreState.CLEAN);
                 addPotentialMatch(pmr);
             }
             
@@ -235,7 +239,7 @@ public class MatchPool {
 	 * from the database. If the record is clean it will not be modified in any way.
 	 */
     public void store() throws SQLException {
-        
+        logger.debug("Starting to store");
         SQLTable resultTable = match.getResultTable();
         Connection con = null;
         String lastSQL = null;
@@ -272,7 +276,7 @@ public class MatchPool {
                     } else if (pmr.isRhsMaster()) {
                     	ps.setObject(2, "N");
                     } else {
-                    	ps.setObject(2, null);
+                    	ps.setNull(2, Types.VARCHAR);
                     }
             		for (int i = 0; i < pmr.getOriginalLhs().getKeyValues().size(); i++) {
             			ps.setObject(i * 2 + 3, pmr.getOriginalLhs().getKeyValues().get(i));
