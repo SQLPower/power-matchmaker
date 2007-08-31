@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
@@ -138,17 +139,23 @@ public class MatchPool {
     
     /**
      * Executes SQL statements to initialize nodes {@link SourceTableRecord} and 
-     * edges {@link PotentialMatchRecord}.
+     * edges {@link PotentialMatchRecord}. It is also used to update the display
+     * column values for the SourceTableRecord, which is done by passing in a 
+     * List of SQLColumns which represent the columns that you wish to display
      * <p>
      * IMPORTANT NOTE ABOUT SIDE EFFECTS: before searching the table, this method will
      * attempt to remove redundant records from the match result table.  Its name implies
      * that it only reads the database.  This is not the case.  For details, see
      * {@link #deleteRedundantMatchRecords()}.
      * 
+     * @param displayColumns A list of which SQLColumns to use to represent a SourceTableRecord
+     * in the user interface. If null or empty, then the default will be the SourceTableRecord's 
+     * primary key.
+     * 
      * @throws SQLException if an unexpected error occurred running the SQL statements
      * @throws ArchitectException if SQLObjects fail to populate its children
      */
-    public void findAll() throws SQLException, ArchitectException {
+    public void findAll(List<SQLColumn> displayColumns) throws SQLException, ArchitectException {
         
         deleteRedundantMatchRecords();
         
@@ -164,17 +171,62 @@ public class MatchPool {
             sql.append("SELECT ");
             boolean first = true;
             for (SQLColumn col : resultTable.getColumns()) {
-                if (!first) sql.append(", ");
+                if (!first) sql.append(",\n");
+                sql.append(" result.");
                 sql.append(col.getName());
                 first = false;
             }
+            if (displayColumns == null || displayColumns.size() == 0) {
+            	displayColumns = new ArrayList<SQLColumn>();
+            	for (SQLIndex.Column col: (List<SQLIndex.Column>)match.getSourceTableIndex().getChildren()) {
+            		displayColumns.add(col.getColumn());
+            	}
+            }
+            for (SQLColumn col : displayColumns) {
+            	sql.append(",\n");
+            	sql.append(" source1.");
+            	sql.append(col.getName());
+            	sql.append(" as disp1" + displayColumns.indexOf(col));
+            	
+            	sql.append(",\n");
+            	sql.append(" source2.");
+            	sql.append(col.getName());
+            	sql.append(" as disp2" + displayColumns.indexOf(col));
+            }
+            
             sql.append("\n FROM ");
-            sql.append(DDLUtils.toQualifiedName(resultTable));           
+            sql.append(DDLUtils.toQualifiedName(resultTable));
+            sql.append(" result,");
+            SQLTable sourceTable = match.getSourceTable();
+			sql.append(DDLUtils.toQualifiedName(sourceTable));
+            sql.append(" source1,");
+            sql.append(DDLUtils.toQualifiedName(sourceTable));
+            sql.append(" source2");
+            int index = 0;
+            for (SQLIndex.Column col: (List<SQLIndex.Column>)match.getSourceTableIndex().getChildren()) {
+            	if (index == 0) { 
+            		sql.append("\n WHERE");
+            	} else {
+            		sql.append(" AND");
+            	}
+            	sql.append(" result.");
+            	sql.append("DUP_CANDIDATE_1"+index);
+            	sql.append("=");
+            	sql.append("source1." + col.getColumn().getName());
+            	sql.append(" AND");
+            	sql.append(" result.");
+            	sql.append("DUP_CANDIDATE_2"+index);
+            	sql.append("=");
+            	sql.append("source2." + col.getColumn().getName());
+            	index++;
+            }
+            
             lastSQL = sql.toString();
+            logger.debug("MatchPool's findAll method SQL: \n" + lastSQL);
             rs = stmt.executeQuery(lastSQL);
             while (rs.next()) {
-                MatchRuleSet criteriaGroup = match.getMatchCriteriaGroupByName(rs.getString("GROUP_ID"));
-                if (criteriaGroup == null) {
+                MatchRuleSet ruleSet = match.getMatchCriteriaGroupByName(rs.getString("GROUP_ID"));
+                if (ruleSet == null) {
                     session.handleWarning(
                             "Found a match record that refers to the " +
                             "non-existant criteria group \""+rs.getString("GROUP_ID")+
@@ -197,10 +249,16 @@ public class MatchPool {
                     lhsKeyValues.add(rs.getObject("DUP_CANDIDATE_1"+i));
                     rhsKeyValues.add(rs.getObject("DUP_CANDIDATE_2"+i));
                 }
-                SourceTableRecord lhs = makeSourceTableRecord(lhsKeyValues);
-                SourceTableRecord rhs = makeSourceTableRecord(rhsKeyValues);
+                List<Object> lhsDisplayValues = new ArrayList<Object>();
+                List<Object> rhsDisplayValues = new ArrayList<Object>();
+                for (int i = 0; i < displayColumns.size(); i++) {
+                    lhsDisplayValues.add(rs.getObject("disp1"+i));
+                    rhsDisplayValues.add(rs.getObject("disp2"+i));
+                }
+                SourceTableRecord lhs = makeSourceTableRecord(lhsDisplayValues, lhsKeyValues);
+                SourceTableRecord rhs = makeSourceTableRecord(rhsDisplayValues, rhsKeyValues);
                 PotentialMatchRecord pmr =
-                	new PotentialMatchRecord(criteriaGroup, matchStatus, lhs, rhs, false);
+                	new PotentialMatchRecord(ruleSet, matchStatus, lhs, rhs, false);
                 if (matchStatus == MatchType.MATCH || matchStatus == MatchType.AUTOMATCH) {
                 	if (SQL.decodeInd(rs.getString("DUP1_MASTER_IND"))) {
                 		pmr.setMaster(lhs);
@@ -213,6 +271,7 @@ public class MatchPool {
                 }
                 pmr.setStoreState(StoreState.CLEAN);
                 addPotentialMatch(pmr);
+                logger.debug("Number of PotentialMatchRecords is now" + potentialMatches.size());
             }
             
         } catch (SQLException ex) {
@@ -417,15 +476,18 @@ public class MatchPool {
      * Attempts to look up the existing SourceTableRecord instance in
      * the cache, but makes a new one and puts it in the cache if not found.
      * 
+     * @param diplayValues The values used to display this record in the UI
      * @param keyValues The values for this record's unique index
      * @return The source table record that corresponds with the given key values.
      * The return value is never null.
      */
-    private SourceTableRecord makeSourceTableRecord(List<Object> keyValues) {
+    private SourceTableRecord makeSourceTableRecord(List<Object> displayValues, List<Object> keyValues) {
         SourceTableRecord node = sourceTableRecords.get(keyValues);
         if (node == null) {
-            node = new SourceTableRecord(session, match, keyValues);
+            node = new SourceTableRecord(session, match, displayValues, keyValues);
             addSourceTableRecord(node);
+        } else {
+        	node.setDisplayValues(displayValues);
         }
         return node;
     }
