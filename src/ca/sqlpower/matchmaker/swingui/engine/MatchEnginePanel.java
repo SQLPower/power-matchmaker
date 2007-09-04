@@ -581,12 +581,11 @@ public class MatchEnginePanel implements EditorPane {
 			if (log.exists()) {
 				if (!log.isFile()) {
 					return ValidateResult.createValidateResult(Status.FAIL,
-							"Log file name is invalidate.");
+							"Log file name is invalid.");
 				}
-				if (!log.canWrite()) {
-					return ValidateResult.createValidateResult(Status.FAIL,
-							"Log file is not writable.");
-				}
+
+				// can't reliably check if file is writable on Windows,
+				// so we'll just assume it is.
 			} else {
 				try {
 					if (!log.createNewFile()) {
