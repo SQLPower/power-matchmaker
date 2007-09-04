@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -192,8 +193,27 @@ public class MatchEngineImpl extends AbstractCEngine {
 	 * returns true if the log file of this match is writable.
 	 */
 	static boolean canWriteLogFile(MatchMakerSettings settings) {
-        // See java bug 4939819 (File.canWrite doesn't work properly on windows)
-        return true;
+        File file = settings.getLog();
+        if (file == null) {
+        	logger.debug("file is null.");
+        	return false;
+        }
+        if (file.exists()) {
+            return file.canWrite();
+        } else {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                logger.debug("IOException thrown when testing write assuming failure");
+                return false;
+            }
+            // See java bug 4939819 (File.canWrite doesn't work properly on windows,
+            // so we would have to assume that the file is writable at this point)
+            // boolean canWrite = file.canWrite();
+            boolean canWrite = true;
+            file.delete();
+            return canWrite;
+        }
 	}
 
 	/**
