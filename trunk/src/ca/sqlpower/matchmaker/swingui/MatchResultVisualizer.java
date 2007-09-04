@@ -375,11 +375,11 @@ public class MatchResultVisualizer implements EditorPane {
     	 * A message that expresses our concerns about the auto-layout feature
     	 * to the user.
     	 */
-    	private final String warningMessage = "WARNING: Performing an the auto-match "
-				+ "operation will create matches between all records that were matched "
-				+ "according to the selected criteria. It is imperative that you "
-				+ "review these matches carefully before merging records because this operation "
-				+ "does NOT rank records based on their perceived usefullness.";
+    	private final String warningMessage = "WARNING: Performing an the auto-match operation will create\n"
+											+ "matches between all records that were matched according to the\n"
+											+ "selected criteria. It is imperative that you review these\n"
+											+ "matches carefully before merging records because this operation\n"
+											+ "does NOT rank records based on their perceived usefulness.";
     	
     	public AutoMatchAction(GraphModel<SourceTableRecord, PotentialMatchRecord> model) {
     		super("Auto-Match");
@@ -390,6 +390,7 @@ public class MatchResultVisualizer implements EditorPane {
 			if (response == JOptionPane.OK_OPTION) {
 				try {
 					pool.doAutoMatch((String) criteriaComboBox.getSelectedItem());
+					graph.repaint();
 				} catch (Exception ex) {
 					MMSUtils.showExceptionDialog(panel, "Auto-Match failed, most likely a database connection error", ex);
 				}
