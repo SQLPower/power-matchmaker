@@ -392,4 +392,39 @@ public class PotentialMatchRecord {
 	public boolean isSynthetic() {
 		return synthetic;
 	}
+	
+	/**
+	 * This override of the equals method evaluates equality on PotentialMatchRecords based on
+	 * their criteriaGroup, originalLhs, and originalRhs. We also considered including the 
+	 * match pool in the evaluation, however, we feel that the usefulness of a 'Query by example'
+	 * feature, (which would search for PotentialMatchRecords based on an example PotentialMatchRecord
+	 * which may not include the match pool) is enough to leave it out. Also, for now, each match
+	 * does not use multiple MatchPools anyway, although if that changes, we may have to re-evaluate
+	 * this implementation of the equals method. 
+	 */
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof PotentialMatchRecord)) {
+			return false;
+		}
+		PotentialMatchRecord other = (PotentialMatchRecord)obj;
+		if ((criteriaGroup == null ? other.criteriaGroup == null : criteriaGroup.equals(other.criteriaGroup))
+				&& (originalLhs == null ? other.originalLhs == null : originalLhs.equals(other.originalLhs))
+				&& (originalRhs == null ? other.originalRhs == null : originalRhs.equals(other.originalRhs))) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 37*result + (criteriaGroup == null ? 0 : criteriaGroup.hashCode());
+		result = 37*result + (originalLhs == null ? 0 : originalLhs.hashCode());
+		result = 37*result + (originalRhs == null ? 0 : originalRhs.hashCode());
+		return result;
+	}
 }
