@@ -22,12 +22,16 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Rectangle;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -63,6 +67,23 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * the same for all MatchMaker sessions.
      */
     private final Preferences prefs;
+    
+    /**
+     * Action that implements an extra button we put on the database connection manager
+     * dialog. It hides that dialog, then shows the login dialog, where the connection
+     * that was selected in the connection manager is made into the current selection.
+     */
+    private final Action loginDatabaseConnectionAction = new AbstractAction("Login") {
+
+		public void actionPerformed(ActionEvent e) {
+			SPDataSource dbcs = dbConnectionManager.getSelectedConnection();
+			if (dbcs == null) {
+				return;
+			}
+			dbConnectionManager.closeDialog();
+            showLoginDialog(dbcs);
+		}
+	};
 
     /**
      * The database connection manager GUI for this session context (because all sessions
@@ -106,7 +127,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         	logger.error("Unable to set native look and feel. Continuing with default.", ex);
         }
         
-        dbConnectionManager = new DatabaseConnectionManager(this);
+        dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), Collections.singletonList(loginDatabaseConnectionAction));
         loginDialog = new LoginDialog(this);
     }
 

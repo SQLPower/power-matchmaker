@@ -25,6 +25,8 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -57,19 +59,11 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * The database connection manager is a GUI facility for managing a DataSourceCollection.
  * It allows users to add, edit, and delete database connection specs.
- * <p>
- * You won't need to create one of these on your own.
- * Use {@link SwingSessionContextImpl#showDatabaseConnectionManager()}.
  */
 public class DatabaseConnectionManager {
 
 	private static Logger logger = Logger.getLogger(DatabaseConnectionManager.class);
 
-	/**
-	 * The session context that this dialog is managing connection properties for.
-	 */
-	private final SwingSessionContext sessionContext;
-    
     /**
      * The GUI panel.  Lives inside the dialog {@link #d}.
      */
@@ -84,14 +78,6 @@ public class DatabaseConnectionManager {
      * The current owner of the dialog.  Gets updated in the showDialog() method.
      */
     private Window currentOwner;
-
-	private final Action helpAction = new AbstractAction("Help"){
-
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-            JOptionPane.showMessageDialog(d, "Help is not available yet.");
-		}
-	};
 
 	private final Action jdbcDriversAction = new AbstractAction("JDBC Drivers"){
 
@@ -108,7 +94,7 @@ public class DatabaseConnectionManager {
             final SPDataSource ds = new SPDataSource(getPlDotIni());
             Runnable onOk = new Runnable() {
                 public void run() {
-                    plDotIni.addDataSource(ds);
+                    dsCollection.addDataSource(ds);
                 }
             };
             MMSUtils.showDbcsDialog(d, ds, onOk);
@@ -163,22 +149,11 @@ public class DatabaseConnectionManager {
 			if (option != JOptionPane.YES_OPTION) {
 				return;
 			}
-			plDotIni.removeDataSource(dbcs);
+			dsCollection.removeDataSource(dbcs);
 		}
 	};
 
-	private final Action loginDatabaseConnectionAction = new AbstractAction("Login") {
-
-		public void actionPerformed(ActionEvent e) {
-			int selectedRow = dsTable.getSelectedRow();
-			if (selectedRow == -1) {
-				return;
-			}
-			SPDataSource dbcs = (SPDataSource) dsTable.getValueAt(selectedRow,0);
-			closeAction.actionPerformed(null);
-            sessionContext.showLoginDialog(dbcs);
-		}
-	};
+	
 
 	private final Action closeAction = new AbstractAction("Close") {
 		public void actionPerformed(ActionEvent e) {
@@ -196,12 +171,23 @@ public class DatabaseConnectionManager {
      * The data source collection of the session context this connection
      * manager belongs to.
      */
-	private final DataSourceCollection plDotIni;
+	private final DataSourceCollection dsCollection;
 
-	public DatabaseConnectionManager(SwingSessionContextImpl context) {
-        this.sessionContext = context;
-        this.plDotIni = context.getPlDotIni();
-		panel = createPanel();
+	/**
+	 * Creates a new database connection manager with the default set of action buttons, plus
+	 * those supplied in the given list.
+	 */
+	public DatabaseConnectionManager(DataSourceCollection dsCollection, List<Action> additionalActions) {
+        this.dsCollection = dsCollection;
+		panel = createPanel(additionalActions);
+	}
+
+	/**
+	 * Creates a new database connection manager with the default set of action buttons.
+	 */
+	@SuppressWarnings("unchecked")
+	public DatabaseConnectionManager(DataSourceCollection dsCollection) {
+		this(dsCollection, Collections.EMPTY_LIST);
 	}
 
     /**
@@ -243,7 +229,17 @@ public class DatabaseConnectionManager {
         d.requestFocus();
     }
 
-	private JPanel createPanel() {
+    /**
+     * Closes the current dialog. It is safe to call this even if the dialog is not visible.
+     */
+	public void closeDialog() {
+		if (d != null) {
+			d.dispose();
+		}
+	}
+	
+	
+	private JPanel createPanel(List<Action> additionalActions) {
 
 		FormLayout layout = new FormLayout(
 				"6dlu, fill:min(160dlu;default):grow, 6dlu, pref, 6dlu", // columns
@@ -259,7 +255,7 @@ public class DatabaseConnectionManager {
 
 		pb.add(new JLabel("Available Database Connections:"), cc.xy(2, 2));
 
-		TableModel tm = new ConnectionTableModel(plDotIni);
+		TableModel tm = new ConnectionTableModel(dsCollection);
 		dsTable = new JTable(tm);
 		dsTable.setTableHeader(null);
 		dsTable.setShowGrid(false);
@@ -282,11 +278,10 @@ public class DatabaseConnectionManager {
 		JButton jdbcDriversButton = new JButton(jdbcDriversAction);
 		bsb.addGridded(jdbcDriversButton);
 
-		bsb.addUnrelatedGap();
-		bsb.addGridded(new JButton(loginDatabaseConnectionAction));
-
-		bsb.addUnrelatedGap();
-		bsb.addGridded(new JButton(helpAction));
+		for (Action a : additionalActions) {
+			bsb.addUnrelatedGap();
+			bsb.addGridded(new JButton(a));
+		}
 
         bsb.addUnrelatedGap();
 		bsb.addGridded(new JButton(closeAction));
@@ -314,7 +309,7 @@ public class DatabaseConnectionManager {
 		}
 
 		public int getRowCount() {
-			return plDotIni == null?0:plDotIni.getConnections().size();
+			return dsCollection == null?0:dsCollection.getConnections().size();
 		}
 
 		public int getColumnCount() {
@@ -337,13 +332,13 @@ public class DatabaseConnectionManager {
 		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			return plDotIni == null?null:plDotIni.getConnections().get(rowIndex);
+			return dsCollection == null?null:dsCollection.getConnections().get(rowIndex);
 		}
 
 	}
 
 	public DataSourceCollection getPlDotIni() {
-		return plDotIni;
+		return dsCollection;
 	}
 
 	private class DSTableMouseListener implements MouseListener {
@@ -371,4 +366,17 @@ public class DatabaseConnectionManager {
 		}
 
 	}
+	/**
+	 * Returns the first selected spdatasource object from the list.
+	 * Returns null if there are not any selected data sources
+	 */
+	public SPDataSource getSelectedConnection() {
+		int selectedRow = dsTable.getSelectedRow();
+		if (selectedRow == -1) {
+			return null;
+		}
+		return (SPDataSource) dsTable.getValueAt(selectedRow,0);
+	}
+
+
 }
