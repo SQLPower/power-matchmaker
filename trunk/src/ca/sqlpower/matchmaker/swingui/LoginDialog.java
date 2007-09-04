@@ -40,6 +40,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
@@ -63,7 +64,9 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * This class appears to contain the GUI for a login dialog for logging
  * into a specific database selected from a list of database connections
- * in a combobox.
+ * in a combobox. Note that even though the class is called 'LoginDialog',
+ * it doesn't actually extend or even use JDialog. Rather, it contains a
+ * JFrame which it uses to display the Login screen.
  */
 public class LoginDialog implements SwingWorkerRegistry {
 
@@ -278,6 +281,7 @@ public class LoginDialog implements SwingWorkerRegistry {
         frame.getContentPane().add(panel);
         SPSUtils.makeJDialogCancellable(frame, cancelAction);
         frame.addWindowListener(optimizationManager);
+        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}
 
     /**
