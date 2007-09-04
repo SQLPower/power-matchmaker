@@ -32,6 +32,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
@@ -49,6 +50,8 @@ import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.db.DataSourceDialogFactory;
+import ca.sqlpower.swingui.db.DatabaseConnectionManager;
 import ca.sqlpower.util.ExceptionReport;
 import ca.sqlpower.util.VersionFormatException;
 
@@ -92,6 +95,18 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     private final DatabaseConnectionManager dbConnectionManager;
 
     /**
+     * This factory just passes the request through to the {@link MMSUtils#showDbcsDialog(Window, SPDataSource, Runnable)}
+     * method.
+     */
+    private final DataSourceDialogFactory dsDialogFactory = new DataSourceDialogFactory() {
+
+		public JDialog showDialog(Window parentWindow, SPDataSource dataSource,	Runnable onAccept) {
+			return MMSUtils.showDbcsDialog(parentWindow, dataSource, onAccept);
+		}
+    	
+    };
+    
+    /**
      * The login dialog for this app.  The session context will only create one login
      * dialog.
      */
@@ -105,7 +120,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     public SwingSessionContextImpl(Preferences prefsRootNode) throws IOException {
         this(prefsRootNode, createDelegateContext(prefsRootNode));
-        ExceptionReport.init();
     }
 
     /**
@@ -119,6 +133,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             MatchMakerSessionContext delegateContext) throws IOException {
         this.prefs = prefsRootNode;
         this.context = delegateContext;
+        ExceptionReport.init();
 
         try {
             UIManager.setLookAndFeel(
@@ -127,7 +142,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         	logger.error("Unable to set native look and feel. Continuing with default.", ex);
         }
         
-        dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), Collections.singletonList(loginDatabaseConnectionAction));
+        dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), dsDialogFactory, Collections.singletonList(loginDatabaseConnectionAction));
         loginDialog = new LoginDialog(this);
     }
 
