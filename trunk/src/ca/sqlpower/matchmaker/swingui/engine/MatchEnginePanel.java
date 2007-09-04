@@ -56,7 +56,6 @@ import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
@@ -606,36 +605,6 @@ public class MatchEnginePanel implements EditorPane {
 
 	}
 
-	/**
-	 * A Validator to check the preconditions of the engine.
-	 */
-	private class MatchAndMatchEngineValidator implements Validator {
-
-		private Match match;
-		private MatchMakerSession session;
-
-		public MatchAndMatchEngineValidator(MatchMakerSession session, Match match) {
-			this.match = match;
-			this.session = session;
-		}
-
-		public ValidateResult validate(Object contents) {
-			MatchEngineImpl matchEngine = new MatchEngineImpl(session, match);
-			try {
-				matchEngine.checkPreconditions();
-			} catch (EngineSettingException ex) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						ex.getMessage());
-			} catch (Exception ex) {
-                logger.warn("Unexpected exception while checking engine preconditions", ex);
-                return ValidateResult.createValidateResult(Status.FAIL,
-                        "Unexpected exception: "+ex.getMessage());
-            }
-			return ValidateResult.createValidateResult(Status.OK, "");
-		}
-
-	}
-	
 	private JFrame getParentFrame() {
 		return parentFrame;
 	}
