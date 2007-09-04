@@ -77,15 +77,6 @@ public class MatchPoolTest extends TestCase {
 		resultTable = db.getTableByName(null, "pl", "match_results");
 		sourceTable = db.getTableByName(null, "pl", "source_table");
 		
-//		sourceTable = new SQLTable(plSchema, "source_table", null, "TABLE",
-//				true);
-//		sourceTable.addColumn(new SQLColumn(sourceTable, "PK1", Types.INTEGER,
-//				10, 0));
-//		sourceTable.addColumn(new SQLColumn(sourceTable, "FOO", Types.VARCHAR,
-//				10, 0));
-//		sourceTable.addColumn(new SQLColumn(sourceTable, "BAR", Types.VARCHAR,
-//				10, 0));
-
 		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null,
 				IndexType.OTHER, null);
 		sourceTableIndex.addChild(sourceTableIndex.new Column(sourceTable
@@ -184,6 +175,11 @@ public class MatchPoolTest extends TestCase {
 			assertEquals(1, pmr.getOriginalLhs().getKeyValues().size());
 			assertEquals("Group_One", pmr.getCriteriaGroup().getName());
 		}
+		int originalMatchCount = matches.size();
+		
+		// Now we test if subsequent calls to findAll adds duplicate PotentialMatchRecords
+		pool.findAll(new ArrayList<SQLColumn>());
+		assertEquals("Number of PotentialMatchRecords should be the same", originalMatchCount, matches.size());
 	}
 
 	/**
