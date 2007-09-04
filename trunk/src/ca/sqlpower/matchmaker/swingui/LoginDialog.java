@@ -114,13 +114,16 @@ public class LoginDialog implements SwingWorkerRegistry {
 
             try {
             	progressBar.setVisible(true);
-                ProgressWatcher.watchProgress(progressBar, this);
-                
+            	logger.debug("Progress Bar has been set to visible");
+            	ProgressWatcher watcher = new ProgressWatcher(progressBar, this);
+            	watcher.setHideProgressBarWhenFinished(true);
+            	watcher.start();
                 new Thread(this).start();
             } catch (Exception ex) {
                 SPSUtils.showExceptionDialogNoReport(frame,
                         "Connection Error", ex );
                 loginButton.setEnabled(true);
+                this.finished = true;
             }
         }
 
@@ -134,7 +137,6 @@ public class LoginDialog implements SwingWorkerRegistry {
                     userID.getText(), new String(password.getPassword()));
             session.getDatabase().populate();
             loginWasSuccessful = true;
-            finished = true;
         }
 
         @Override
@@ -149,10 +151,10 @@ public class LoginDialog implements SwingWorkerRegistry {
                                 "Existing version: "+ex.getCurrentVersion() +
                                 "\nRequired Version: "+ex.getRequiredVersion(),
                                 ex);
-                        loginButton.setEnabled(true);
                 	} else {
                 		SPSUtils.showExceptionDialogNoReport(frame, "Login failed", getDoStuffException());
                 	}
+                	
                 } else if (
                         session != null &&
                         session.getDatabase() != null &&
@@ -168,6 +170,8 @@ public class LoginDialog implements SwingWorkerRegistry {
             } finally {
                 logger.debug("LoginAction.actionPerformed(): enabling login button (login has either failed or not; dialog might still be showing)");
                 loginButton.setEnabled(true);
+                logger.debug("Progress bar has been set to NOT visible");
+                finished = true;
             }
         }
 
