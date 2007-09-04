@@ -565,7 +565,7 @@ public class MatchResultVisualizer implements EditorPane {
             
             y += componentBounds.height + vgap;
         }
-        
+        graph.repaint();
         graph.revalidate();
     }
     
