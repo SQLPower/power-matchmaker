@@ -199,6 +199,23 @@ public class LoginDialog implements SwingWorkerRegistry {
 		}
     }
 
+    /**
+     * The Login button gets disabled if a null database is selected.
+     * If the user selects an actually database connection, then the login
+     * button will be enabled. If the user somehow selects a null database
+     * connection, then the login button should get disabled again.
+     */
+    private class DBListListener implements ActionListener {
+    	public void actionPerformed(ActionEvent e) {
+    		JComboBox list = (JComboBox) e.getSource();
+    		if (list.getSelectedItem() != null) {
+    			LoginDialog.this.loginButton.setEnabled(true);
+    		} else {
+    			LoginDialog.this.loginButton.setEnabled(false);
+    		}
+    	}
+    }
+    
     private final Action cancelAction = new AbstractAction("Cancel") {
         public void actionPerformed(ActionEvent e) {
             frame.dispose();
@@ -338,6 +355,8 @@ public class LoginDialog implements SwingWorkerRegistry {
 		connectionModel = new ConnectionComboBoxModel(sessionContext.getPlDotIni());
 		connectionModel.addListDataListener(connListener);
 		dbList = new JComboBox(connectionModel);
+		dbList.addActionListener(new DBListListener());
+		
 		JLabel dbSourceName1 = new JLabel("Database source name:");
 
 		connectionModel.setSelectedItem(sessionContext.getLastLoginDataSource());
@@ -345,6 +364,9 @@ public class LoginDialog implements SwingWorkerRegistry {
 		JButton connectionManagerButton = new JButton(connectionManagerAction);
 		loginButton.addActionListener(loginAction);
 		loginButton.setText("Login");
+		if (connectionModel.getSelectedItem() == null) {
+			loginButton.setEnabled(false);
+		}
 		JButton cancelButton = new JButton(cancelAction);
 
 		ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
