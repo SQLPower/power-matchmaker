@@ -94,13 +94,21 @@ public interface MatchMakerSessionContext {
     public DataSourceCollection getPlDotIni();
 
     /**
-     * The location of the matchmaker engine
+     * Returns the location of the matchmaker engine.
+     * 
      * @return the path to the engine
      */
     public String getMatchEngineLocation();
 
     /**
-     * The location of the email sender engine
+     * Sets the location of the matchmaker engine.  This location
+     * will be remembered between runs of the MatchMaker.
+     */
+    public void setMatchEngineLocation(String path);
+
+    /**
+     * Returns the location of the email sender engine.
+     * 
      * @return the path to the engine
      */
     public String getEmailEngineLocation();

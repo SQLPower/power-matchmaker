@@ -92,18 +92,27 @@ public class MatchEnginePanel implements EditorPane {
 	private final MatchMakerSwingSession swingSession;
 
 	/**
+	 * The file path to where the match engine is located.
+	 */
+	private JTextField enginePath;
+
+	/**
 	 * The file path to which the engine logs will be written to.
 	 * Must be a valid file path that the user has write permissions on.
 	 */
 	private JTextField logFilePath;
 
-	private String lastAccessPath;
+	/**
+	 * Opens a file chooser for the user to select the log file they wish
+	 * to use for engine output.
+	 */
+	private BrowseFileAction browseLogFileAction;
 
 	/**
-	 * A button to open up a file chooser so the user can select a file
-	 * instead of having to type in the whole file path by hand.
+	 * Opens a file chooser for the user to select the engine they want
+	 * to use.
 	 */
-	private JButton browse;
+	private BrowseFileAction browseEngineFileAction;
 
 	/**
 	 * Denotes whether or not the log file should be overwritten or
@@ -209,25 +218,34 @@ public class MatchEnginePanel implements EditorPane {
 		}
 	}
 
-	/**
-	 * Opens a file chooser for the user to select the log file they wish
-	 * to use for engine output.
-	 */
-	private Action browseFileAction = new AbstractAction("...") {
+	private class BrowseFileAction extends AbstractAction {
+		
+		/**
+		 * The field to use for the file path.
+		 */
+		private final JTextField field;
 
+		BrowseFileAction(JTextField field) {
+			super("...");
+			if (field == null) throw new NullPointerException("You have to specify a field");
+			this.field = field;
+		}
+		
 		public void actionPerformed(ActionEvent e) {
 			JFileChooser fileChooser = new JFileChooser();
-			fileChooser.setCurrentDirectory(new File(lastAccessPath));
-			fileChooser.setSelectedFile(new File(lastAccessPath));
+			if (field.getText() != null && field.getText().length() > 0) {
+				File defaultFile = new File(field.getText());
+				fileChooser.setCurrentDirectory(defaultFile);
+				fileChooser.setSelectedFile(defaultFile);
+			}
 			int returnVal = fileChooser.showOpenDialog(parentFrame);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				final File file = fileChooser.getSelectedFile();
-				logFilePath.setText(file.getPath());
-				lastAccessPath = file.getAbsolutePath();
+				field.setText(file.getPath());
 			}
 		}
-
-	};
+		
+	}
 
 	/**
 	 * Builds the UI for this editor pane. This is broken into two parts,
@@ -239,8 +257,8 @@ public class MatchEnginePanel implements EditorPane {
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,4dlu,pref,4dlu",
 				//  1         2    3         4     5     6    7     8
-				"10dlu,pref,10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
-		        //   1    2     3    4     5    6    7    8    9   10    11   12   13   14   15
+				"10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
+		        //   1    2     3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
 				: new JPanel(layout);
@@ -249,8 +267,10 @@ public class MatchEnginePanel implements EditorPane {
 		CellConstraints cc = new CellConstraints();
 
 		logFilePath = new JTextField();
+		browseLogFileAction = new BrowseFileAction(logFilePath);
+		enginePath = new JTextField();
+		browseEngineFileAction = new BrowseFileAction(enginePath);
 		rollbackSegment = new JComboBox();
-		browse = new JButton(browseFileAction);
 		append = new JCheckBox("Append to old Log File?");
 		recordsToProcess = new JTextField(5);
 		minWord = new JTextField(5);
@@ -273,20 +293,37 @@ public class MatchEnginePanel implements EditorPane {
 
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
-		pb.add(new JLabel("Log File:"), cc.xy(2, 4, "r,f"));
-		pb.add(logFilePath, cc.xy(4, 4, "f,f"));
-		pb.add(browse, cc.xy(5, 4, "r,f"));
-		pb.add(append, cc.xy(7, 4, "l,f"));
+		int y = 4;
+		pb.add(new JLabel("Engine Location:"), cc.xy(2, y, "r,f"));
+		pb.add(enginePath, cc.xy(4, y, "f,f"));
+		pb.add(new JButton(browseEngineFileAction), cc.xy(5, y, "r,f"));
+		
+		y += 2;
+		pb.add(new JLabel("Log File:"), cc.xy(2, y, "r,f"));
+		pb.add(logFilePath, cc.xy(4, y, "f,f"));
+		pb.add(new JButton(browseLogFileAction), cc.xy(5, y, "r,f"));
+		pb.add(append, cc.xy(7, y, "l,f"));
 
-		pb.add(new JLabel("Rollback Segment:"), cc.xy(2, 6, "r,c"));
-		pb.add(rollbackSegment, cc.xy(4, 6));
-		pb.add(new JLabel("Records to Process:"), cc.xy(2, 8, "r,c"));
-		pb.add(recordsToProcess, cc.xy(4, 8, "l,c"));
-		pb.add(new JLabel("Min Word Count Freq:"), cc.xy(2, 10, "r,c"));
-		pb.add(minWord, cc.xy(4, 10, "l,c"));
-		pb.add(debugMode, cc.xy(4, 12, "l,c"));
-		pb.add(truncateCandDup, cc.xy(4, 14, "l,c"));
-		pb.add(sendEmail, cc.xy(4, 16, "l,c"));
+		y += 2;
+		pb.add(new JLabel("Rollback Segment:"), cc.xy(2, y, "r,c"));
+		pb.add(rollbackSegment, cc.xy(4, y));
+		
+		y += 2;
+		pb.add(new JLabel("Records to Process:"), cc.xy(2, y, "r,c"));
+		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
+		
+		y += 2;
+		pb.add(new JLabel("Min Word Count Freq:"), cc.xy(2, y, "r,c"));
+		pb.add(minWord, cc.xy(4, y, "l,c"));
+		
+		y += 2;
+		pb.add(debugMode, cc.xy(4, y, "l,c"));
+
+		y += 2;
+		pb.add(truncateCandDup, cc.xy(4, y, "l,c"));
+		
+		y += 2;
+		pb.add(sendEmail, cc.xy(4, y, "l,c"));
 
 		FormLayout bbLayout = new FormLayout(
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu",
@@ -317,9 +354,9 @@ public class MatchEnginePanel implements EditorPane {
 	}
 
 	/**
-	 * Used to auto-populate check boxes and text fields using the MatchSettings
+	 * Auto-populates check boxes and text fields using the MatchSettings
 	 * object in <code>match</code>. Also performs form validation to
-	 * intialize the status icon at the top of the configuration portion.
+	 * initialize the status icon at the top of the configuration portion.
 	 */
 	private void setDefaultSelections(Match match) {
 
@@ -330,29 +367,18 @@ public class MatchEnginePanel implements EditorPane {
 		Validator v1 = new LogFileNameValidator();
 		handler.addValidateObject(logFilePath, v1);
 
-		Validator v2 = new MatchAndMatchEngineValidator(swingSession, match);
-		handler.addValidateObject(sendEmail, v2);
+		Validator v2 = new FileExistsValidator("Match engine");
+		handler.addValidateObject(enginePath, v2);
 
 		MatchSettings settings = match.getMatchSettings();
-		String logFileName;
-		if ( settings.getLog() != null ) {
-			logFileName = (settings.getLog().getPath());
-		} else {
-			logFileName = match.getName() + ".log";
+		
+		if (settings.getLog() == null) {
+			settings.setLog(new File(match.getName() + ".log"));
 		}
-		File file;
-		if (lastAccessPath != null && lastAccessPath.length() > 0) {
-			file = new File(lastAccessPath, logFileName);
-		} else {
-			file = new File(logFileName);
-		}
-		if ( match.getMatchSettings().getLog() == null) {
-			match.getMatchSettings().setLog(file);
-		}
-		lastAccessPath = file.getAbsolutePath();
-		if (logFileName != null) {
-			logFilePath.setText(logFileName);
-		}
+		File logFile = settings.getLog();
+		logFilePath.setText(logFile.getAbsolutePath());
+		
+		enginePath.setText(swingSession.getContext().getMatchEngineLocation());
 
 		Boolean appendToLog = settings.getAppendToLog();
 		append.setSelected(appendToLog);
@@ -383,7 +409,7 @@ public class MatchEnginePanel implements EditorPane {
 		});
 		
 		/* trigger the validator */
-		v2.validate(sendEmail.isSelected());
+//		v2.validate(sendEmail.isSelected());
 	}
 
 	/**
@@ -630,6 +656,7 @@ public class MatchEnginePanel implements EditorPane {
 		settings.setDebug(debugMode.isSelected());
 		settings.setTruncateCandDupe(truncateCandDup.isSelected());
 		settings.setSendEmail(sendEmail.isSelected());
+		swingSession.getContext().setMatchEngineLocation(enginePath.getText());
 		settings.setLog(new File(logFilePath.getText()));
 		settings.setAppendToLog(append.isSelected());
 		if (recordsToProcess.getText() == null

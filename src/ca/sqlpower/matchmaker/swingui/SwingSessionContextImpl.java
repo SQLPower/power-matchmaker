@@ -346,4 +346,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     public String getEmailEngineLocation() {
         return context.getEmailEngineLocation();
     }
+
+	public void setMatchEngineLocation(String path) {
+		context.setMatchEngineLocation(path);
+	}
 }
