@@ -43,6 +43,8 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.RowSetModel;
@@ -57,6 +59,8 @@ import com.sun.rowset.JoinRowSetImpl;
 
 public class MatchStatisticsPanel extends JPanel {
 
+	private static final Logger logger = Logger.getLogger(MatchStatisticsPanel.class);
+	
 	private final MatchMakerSession swingSession;
 	private Match match;
 	private Timestamp startDateTime;
@@ -111,6 +115,7 @@ public class MatchStatisticsPanel extends JPanel {
     	Connection con = null;
     	Statement stmt = null;
     	ResultSet rs =  null;
+    	String lastSql = null;
     	try {
     		con = swingSession.getConnection();
     		StringBuffer sql = new StringBuffer();
@@ -121,7 +126,8 @@ public class MatchStatisticsPanel extends JPanel {
     		sql.append(" FROM PL_STATS WHERE OBJECT_TYPE=? ");
     		sql.append(" AND OBJECT_NAME=? ");
     		sql.append(" ORDER BY TRANS_RUN_NO DESC, START_DATE_TIME DESC");
-    		PreparedStatement pstmt = con.prepareStatement(sql.toString());
+    		lastSql = sql.toString();
+    		PreparedStatement pstmt = con.prepareStatement(lastSql);
     		pstmt.setString(1, "MATCH");
     		pstmt.setString(2, match.getName());
     		rs = pstmt.executeQuery();
@@ -130,6 +136,9 @@ public class MatchStatisticsPanel extends JPanel {
     		crset.setReadOnly(true);
     		crset.populate(rs);
     		return crset;
+    	} catch (SQLException e) {
+    		logger.error("SQL Exception caused by:\n" + lastSql, e);
+    		throw e;
     	} finally {
     		if ( rs != null )
     			rs.close();
