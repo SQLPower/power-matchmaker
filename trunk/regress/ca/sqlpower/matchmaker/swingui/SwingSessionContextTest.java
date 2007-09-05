@@ -143,6 +143,10 @@ public class SwingSessionContextTest extends TestCase {
 				System.out.println("Stub call: .getEmailEngineLocation()");
 				return FAKE_ENGINE_LOCATION;
 			}
+
+			public void setMatchEngineLocation(String path) {
+				System.out.println("Stub call: .setMatchEngineLocation()");
+			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
         PreferencesFactory stubPrefsFactory = new PreferencesFactory();

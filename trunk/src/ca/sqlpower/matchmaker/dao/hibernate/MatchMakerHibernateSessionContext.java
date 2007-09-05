@@ -22,11 +22,13 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.EnginePath;
+import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -50,7 +52,9 @@ import ca.sqlpower.util.VersionFormatException;
  */
 public class MatchMakerHibernateSessionContext implements MatchMakerSessionContext {
 
-    private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionContext.class);
+    private static final String MATCH_ENGINE_LOCATION = "match_engine_location";
+
+	private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionContext.class);
 
     /**
      * The list of database connections that this session context knows about.  This
@@ -109,15 +113,37 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         return plDotIni;
     }
 
+    /**
+     * Attempts to retrieve the engine location from the user preferences,
+     * but defaults to the same directory as the pl.ini file if the preference
+     * has not yet been set.
+     */
     public String getMatchEngineLocation() {
-        EnginePath p = EnginePath.MATCHMAKER;
-        if (plIniPath == null) {
-            return null;
-        }
-        File plDotIniFile = new File(plIniPath);
-        File programDir = plDotIniFile.getParentFile();
-        File programPath = new File(programDir, p.getProgName());
-        return programPath.toString();
+    	Preferences prefNode = Preferences.userNodeForPackage(MatchEngineImpl.class);
+    	
+    	String path = prefNode.get(MATCH_ENGINE_LOCATION, null);
+    	
+    	if (path == null) {
+    		EnginePath p = EnginePath.MATCHMAKER;
+    		if (plIniPath == null) {
+    			return null;
+    		}
+    		File plDotIniFile = new File(plIniPath);
+    		File programDir = plDotIniFile.getParentFile();
+    		File programPath = new File(programDir, p.getProgName());
+    		path = programPath.toString();
+    	}
+    	
+    	return path;
+    }
+
+    /**
+     * Stores the given path name as the user preference for the
+     * location of the match engine.
+     */
+    public void setMatchEngineLocation(String path) {
+    	Preferences prefNode = Preferences.userNodeForPackage(MatchEngineImpl.class);
+    	prefNode.put(MATCH_ENGINE_LOCATION, path);
     }
     
     public String getEmailEngineLocation() {

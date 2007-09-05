@@ -98,4 +98,8 @@ public class StubSwingSessionContext implements SwingSessionContext {
 		logger.debug("Stub call: StubSwingSessionContext.getEmailEngineLocation()");
 		return null;
 	}
+
+	public void setMatchEngineLocation(String path) {
+		logger.debug("Stub call: StubSwingSessionContext.setMatchEngineLocation()");
+	}
 }
