@@ -91,6 +91,9 @@ public class TranslatePanel implements DataEntryPanel {
 		translationGroup = new JComboBox();
 		translationGroup.setModel(new TranslationComboBoxModel(swingSession.getTranslations()));
         
+		createWord = new JButton(createWordsAction);
+        deleteWord = new JButton(deleteWordsAction);
+        
 		if (translationGroup.getModel().getSize() > 0) {
 		    translationGroup.setSelectedIndex(0);
 		    matchMakerTranslateGroup = (MatchMakerTranslateGroup) translationGroup.getSelectedItem();
@@ -122,8 +125,7 @@ public class TranslatePanel implements DataEntryPanel {
 		createGroup = new JButton(createGroupAction);
         createGroupAction.setEnabled(false);
 		deleteGroup = new JButton(deleteGroupAction);
-        createWord = new JButton(createWordsAction);
-        deleteWord = new JButton(deleteWordsAction);
+        
 		saveGroup = new JButton(saveGroupAction);
 		moveItemUp = new JButton(moveItemUpAction);
 		moveItemDown = new JButton(moveItemDownAction);
