@@ -255,14 +255,6 @@ public class DisplayedNodeValueChooser {
 	private SourceTableNodeRenderer renderer;
 
 	/**
-	 * The visualizer that contains all the nodes whose label values are decided by
-	 * this chooser.
-	 */
-	private MatchResultVisualizer visualizer;
-
-	private JPanel panel;
-	
-	/**
 	 * Creates a dialog that allows the user to make a selection of
 	 * columns in the provided match's result table. This selection is
 	 * ordered and will be used for the display value of each node in the
@@ -272,12 +264,10 @@ public class DisplayedNodeValueChooser {
 	 * 						in the source table of the match
 	 */
 	public DisplayedNodeValueChooser(SourceTableNodeRenderer renderer,
-									Match match,
-									MatchResultVisualizer visualizer)
+									Match match)
 									throws ArchitectException {
 		super();
 		this.renderer = renderer;
-		this.visualizer = visualizer;
 		this.match = match;
 	}
 	
