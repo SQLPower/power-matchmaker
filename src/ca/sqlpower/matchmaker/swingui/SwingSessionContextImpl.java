@@ -138,7 +138,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	            okButton.addActionListener(new ActionListener() {
 	                    public void actionPerformed(ActionEvent evt) {
 	                        editor.applyChanges();
-	                        d.setVisible(false);
+	                        d.dispose();
 	                    }
 	                });
 	        
