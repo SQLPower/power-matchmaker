@@ -20,9 +20,11 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -32,9 +34,12 @@ import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import org.apache.log4j.Logger;
@@ -49,11 +54,17 @@ import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
+import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.db.DataSourceDialogFactory;
+import ca.sqlpower.swingui.db.DataSourceTypeDialogFactory;
+import ca.sqlpower.swingui.db.DataSourceTypeEditor;
 import ca.sqlpower.swingui.db.DatabaseConnectionManager;
 import ca.sqlpower.util.ExceptionReport;
 import ca.sqlpower.util.VersionFormatException;
+
+import com.jgoodies.forms.factories.ButtonBarFactory;
 
 
 public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingSessionContext {
@@ -107,6 +118,55 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     };
     
     /**
+     * Implementation of DataSourceTypeDialogFactory that will display a DataSourceTypeEditor dialog
+     */
+    private final DataSourceTypeDialogFactory dsTypeDialogFactory = new DataSourceTypeDialogFactory() {
+        
+    	private JDialog d; 
+    	private DataSourceTypeEditor editor;
+    	
+    	public Window showDialog(Window owner) {
+        	if (d == null) {
+	    		d = SPSUtils.makeOwnedDialog(owner, "JDBC Drivers");
+	        	editor = new DataSourceTypeEditor(context.getPlDotIni());
+	        	
+	        	JPanel cp = new JPanel(new BorderLayout(12,12));
+	            cp.add(editor.getPanel(), BorderLayout.CENTER);
+	            cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
+	        	
+	        	JDefaultButton okButton = new JDefaultButton(DataEntryPanelBuilder.OK_BUTTON_LABEL);
+	            okButton.addActionListener(new ActionListener() {
+	                    public void actionPerformed(ActionEvent evt) {
+	                        editor.applyChanges();
+	                        d.setVisible(false);
+	                    }
+	                });
+	        
+	            Action cancelAction = new AbstractAction() {
+	                    public void actionPerformed(ActionEvent evt) {
+	                        editor.discardChanges();
+	                        d.dispose();
+	                    }
+	            };
+	            cancelAction.putValue(Action.NAME, DataEntryPanelBuilder.CANCEL_BUTTON_LABEL);
+	            JButton cancelButton = new JButton(cancelAction);
+	    
+	            JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, cancelButton);
+	    
+	            SPSUtils.makeJDialogCancellable(d, cancelAction);
+	            d.getRootPane().setDefaultButton(okButton);
+	            cp.add(buttonPanel, BorderLayout.SOUTH);
+	        	
+	        	d.setContentPane(cp);
+	        	d.pack();
+	        	d.setLocationRelativeTo(owner);
+        	}
+        	d.setVisible(true);
+            return d;
+        }
+    };
+    
+    /**
      * The login dialog for this app.  The session context will only create one login
      * dialog.
      */
@@ -142,7 +202,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         	logger.error("Unable to set native look and feel. Continuing with default.", ex);
         }
         
-        dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), dsDialogFactory, Collections.singletonList(loginDatabaseConnectionAction));
+        dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), dsDialogFactory,dsTypeDialogFactory, Collections.singletonList(loginDatabaseConnectionAction));
         loginDialog = new LoginDialog(this);
     }
 
