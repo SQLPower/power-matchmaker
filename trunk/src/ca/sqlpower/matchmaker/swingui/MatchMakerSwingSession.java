@@ -604,6 +604,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 case O_DISCARD:
                     save = false;
                     doit = true;
+                    // TODO refresh the objects in question from the database (to cancel user edits)
                     break;
                 case O_CANCEL:
                     save = false;

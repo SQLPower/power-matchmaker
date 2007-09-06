@@ -429,8 +429,9 @@ public class MatchRuleSetEditor implements EditorPane {
 
         int colIndex = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
         TableColumn col = matchCriteriaTable.getColumnModel().getColumn(colIndex);
-        final JComboBox translateComboBox = new JComboBox(
-                    					new TranslationComboBoxModel(swingSession.getTranslations()));
+        TranslationComboBoxModel model = new TranslationComboBoxModel(swingSession.getTranslations());
+        model.setFirstItemNull(true);
+		final JComboBox translateComboBox = new JComboBox(model);
         col.setCellEditor(new DefaultCellEditor(translateComboBox));
         translateComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
         
