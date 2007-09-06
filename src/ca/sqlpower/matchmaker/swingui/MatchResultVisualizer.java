@@ -179,7 +179,7 @@ public class MatchResultVisualizer implements EditorPane {
     	public void actionPerformed(ActionEvent e) {
     		try {
     			dialog = SPSUtils.makeOwnedDialog(panel, "Select Graph Display Values");
-				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer)graph.getNodeRenderer(), match, MatchResultVisualizer.this);
+				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer)graph.getNodeRenderer(), match);
 				JPanel tablePanel = chooser.makeGUI();
 				JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(new JButton(okAction), new JButton(cancelAction));
 				JPanel panel = new JPanel(new BorderLayout());
