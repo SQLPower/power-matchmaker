@@ -33,6 +33,11 @@ import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
+/**
+ * Provides the glue that allows a combo box to display the list of translation
+ * groups.  The first item in this list is always null, which allows users of the
+ * combo box to choose not to use a translation group.
+ */
 public class TranslationComboBoxModel implements ComboBoxModel, MatchMakerListener<TranslateGroupParent, MatchMakerTranslateGroup> {
 
     private static final Logger logger = Logger
@@ -40,6 +45,13 @@ public class TranslationComboBoxModel implements ComboBoxModel, MatchMakerListen
 	private TranslateGroupParent tgp;
     private MatchMakerTranslateGroup selectedItem;
 	
+    /**
+     * Controls the "first item null" feature, which keeps a null-valued item at the
+     * beginning of the list of items.  Such an item lets users select no translation
+     * group.
+     */
+    private boolean firstItemNull = false;
+    
     List<ListDataListener> listeners = new ArrayList<ListDataListener>();
     
 	public TranslationComboBoxModel(TranslateGroupParent tgp) {
@@ -48,11 +60,22 @@ public class TranslationComboBoxModel implements ComboBoxModel, MatchMakerListen
 	}
 	
 	public Object getElementAt(int index) {
-		return tgp.getChildren().get(index);
+		if (firstItemNull) {
+			index--;
+		}
+		if (index == -1) {
+			return null;
+		} else {
+			return tgp.getChildren().get(index);
+		}
 	}
 
 	public int getSize() {
-		return tgp.getChildren().size();
+		if (firstItemNull) {
+			return tgp.getChildren().size() + 1;
+		} else {
+			return tgp.getChildren().size();
+		}
 	}
 
 	public Object getSelectedItem() {
@@ -72,29 +95,59 @@ public class TranslationComboBoxModel implements ComboBoxModel, MatchMakerListen
 		listeners.remove(l);
 	}
 
-    public void fireIntervalAdded(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt){
-        sendOffListEvent(new ListDataEvent(this,ListDataEvent.INTERVAL_ADDED,evt.getChangeIndices()[0],evt.getChangeIndices()[0]));
+    private void fireIntervalAdded(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt){
+    	int correction;
+    	if (firstItemNull) {
+    		correction = 1;
+    	} else {
+    		correction = 0;
+    	}
+        sendOffListEvent(new ListDataEvent(
+        		this,
+        		ListDataEvent.INTERVAL_ADDED,
+        		evt.getChangeIndices()[0] + correction,
+        		evt.getChangeIndices()[0] + correction));
     }
     
-    public void fireIntervalRemoved(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt){
-        sendOffListEvent(new ListDataEvent(this,ListDataEvent.INTERVAL_REMOVED,evt.getChangeIndices()[0],evt.getChangeIndices()[0]));
+    private void fireIntervalRemoved(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt){
+    	int correction;
+    	if (firstItemNull) {
+    		correction = 1;
+    	} else {
+    		correction = 0;
+    	}
+        sendOffListEvent(new ListDataEvent(
+        		this,
+        		ListDataEvent.INTERVAL_REMOVED,
+        		evt.getChangeIndices()[0] + correction,
+        		evt.getChangeIndices()[0] + correction));
     }
     
-    public void fireChanged(){
-        sendOffListEvent(new ListDataEvent(this,ListDataEvent.CONTENTS_CHANGED,0,tgp.getChildCount()-1));
+    private void fireChanged() {
+    	int correction;
+    	if (firstItemNull) {
+    		correction = 1;
+    	} else {
+    		correction = 0;
+    	}
+        sendOffListEvent(new ListDataEvent(
+        		this,
+        		ListDataEvent.CONTENTS_CHANGED,
+        		0,
+        		tgp.getChildCount() - 1 + correction));
     }
     
     
     private void sendOffListEvent(ListDataEvent lde) {
         logger.debug("Firing an event");
         for (int i = listeners.size()-1; i>=0; i--){
-            if (lde.getType() == lde.CONTENTS_CHANGED){
+            if (lde.getType() == ListDataEvent.CONTENTS_CHANGED){
                 logger.debug("Firing contents Changed");
                 listeners.get(i).contentsChanged(lde);
-            } else if (lde.getType() == lde.INTERVAL_ADDED) {
+            } else if (lde.getType() == ListDataEvent.INTERVAL_ADDED) {
                 logger.debug("Firing Interval Added");
                 listeners.get(i).intervalAdded(lde);
-            } else if (lde.getType() == lde.INTERVAL_REMOVED){
+            } else if (lde.getType() == ListDataEvent.INTERVAL_REMOVED){
                 logger.debug("Firing Interval Removed");
                 listeners.get(i).intervalRemoved(lde);
             } else {
@@ -125,6 +178,12 @@ public class TranslationComboBoxModel implements ComboBoxModel, MatchMakerListen
         fireChanged();
     }
 
+	public boolean isFirstItemNull() {
+		return firstItemNull;
+	}
 
+	public void setFirstItemNull(boolean firstItemNull) {
+		this.firstItemNull = firstItemNull;
+	}
 
 }

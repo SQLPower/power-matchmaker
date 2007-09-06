@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Color;
 import java.awt.Component;
 
 import javax.swing.DefaultListCellRenderer;
@@ -28,16 +29,37 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
 
+/**
+ * General-purpose cell renderer that deals with all types of MatchMakerObjects
+ * by printing their name, or a customizable string if the object itself is null.
+ */
 public class MatchMakerObjectComboBoxCellRenderer extends DefaultListCellRenderer {
 	Logger logger = Logger.getLogger(MatchMakerObjectComboBoxCellRenderer.class);
 
+	/**
+	 * The string to display when the value to render is null.  Defaults
+	 * to <tt>"(none)"</tt>.
+	 */
+	private String nullValueString = "(none)";
+	
 	public Component getListCellRendererComponent(JList list, Object value,
 			int index, boolean isSelected, boolean cellHasFocus) {
 
 		super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-		if ( value != null ) {
+		if (value == null) {
+			setText(nullValueString);
+			setForeground(Color.GRAY);
+		} else {
 			setText(((MatchMakerObject)value).getName());
 		}
 		return this;
+	}
+
+	public String getNullValueString() {
+		return nullValueString;
+	}
+
+	public void setNullValueString(String nullValueString) {
+		this.nullValueString = nullValueString;
 	}
 }
