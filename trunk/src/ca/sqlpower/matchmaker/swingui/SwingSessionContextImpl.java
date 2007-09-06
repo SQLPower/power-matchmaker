@@ -92,6 +92,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		public void actionPerformed(ActionEvent e) {
 			SPDataSource dbcs = dbConnectionManager.getSelectedConnection();
 			if (dbcs == null) {
+				logger.debug("getSelectedConnection returned null");
 				return;
 			}
 			dbConnectionManager.closeDialog();
@@ -201,6 +202,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         } catch (Exception ex) {
         	logger.error("Unable to set native look and feel. Continuing with default.", ex);
         }
+        // Set a login action property so that if there is no connection selected 
+        // in the dbConnectionManager GUI, the corresponding button will be disabled.
+        loginDatabaseConnectionAction.putValue(DatabaseConnectionManager.DISABLE_IF_NO_CONNECTION_SELECTED, Boolean.TRUE);
         
         dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), dsDialogFactory,dsTypeDialogFactory, Collections.singletonList(loginDatabaseConnectionAction));
         loginDialog = new LoginDialog(this);
