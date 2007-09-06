@@ -45,46 +45,52 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
 
     /**
      * Deletes the translate group as well as adding it to the child list and 
-     * firing the proper events.  If the group is in use it gives a warning to the session.
+     * firing the proper events.  If the group is in use, it will not be deleted
+     * and an IllegalStateException will be thrown.
+     * <p>
+     * To check if a group is in use before attempting to delete it, use
+     * {@link #isInUseInBusinessModel(MatchMakerTranslateGroup)}.
      */
     public void removeAndDeleteChild(MatchMakerTranslateGroup child) {
-        if(!isInUseInBusinessModel(child)) {
-            this.session.getDAO(MatchMakerTranslateGroup.class).delete(child);
-            super.removeChild(child);
-        } else {
-            this.session.handleWarning("Sorry the translate group "+child.getName()+" is in use and can't be deleted");
+        if(isInUseInBusinessModel(child)) {
+        	throw new IllegalStateException("The translate group \""+child.getName()+"\" is in use and can't be deleted");
         }
+        this.session.getDAO(MatchMakerTranslateGroup.class).delete(child);
+        super.removeChild(child);
     }
 
     /**
-     * check and see if the translate group tg exists in the folder hierachy.
+     * Checks if the given translate group exists in the folder hierarchy.
+     * 
      * @param tg the translate group.
-     * @return true if tg exists in the folder hierachy false if it dosn't.
+     * @return true if <tt>tg</tt> exists in the folder hierarchy; false if it doesn't.
      */
     public boolean isInUseInBusinessModel(MatchMakerTranslateGroup tg) {
-        for (MatchMakerObject mmo :this.session.getCurrentFolderParent().getChildren()){
-            // found the translate group
-            if(checkMMOContainsTranslateGroup(mmo,tg) == true) return true;
+        for (MatchMakerObject mmo : session.getCurrentFolderParent().getChildren()){
+            if (checkMMOContainsTranslateGroup(mmo,tg)) {
+            	return true;
+            }
         }
         return false;
     }
 
     /**
-     * recursivly check and see if there is a criterion with the passed in translate group. 
-     * @param mmo the object and decendents we want to check.
-     * @param tg the translate group that we want to know if it is used.
-     * @return true if tg is used by mmo or a decendent false otherwise.
+     * Recursively searches for a match rule using the given translate group.
+     *  
+     * @param mmo the object and descendants we want to check.
+     * @param tg the translate group to search for. Must not be null.
+     * @return true if <tt>tg</tt> is used by <tt>mmo</tt> or one of its descendants; false otherwise.
      */
     private boolean checkMMOContainsTranslateGroup(MatchMakerObject mmo,MatchMakerTranslateGroup tg){
         if (mmo instanceof MatchRule){
             MatchRule criteria = (MatchRule) mmo;
-            if(tg.equals(criteria.getTranslateGroup())){
+            if (tg.equals(criteria.getTranslateGroup())) {
                 return true;
             }
         }
-        if ( mmo instanceof Match ){
+        if (mmo instanceof Match) {
             Match matchChild = (Match) mmo;
-            for (MatchRuleSet critGroup : matchChild.getMatchCriteriaGroups()){
+            for (MatchRuleSet critGroup : matchChild.getMatchCriteriaGroups()) {
                 if (checkMMOContainsTranslateGroup(critGroup, tg)) return true;
             }
         } else {

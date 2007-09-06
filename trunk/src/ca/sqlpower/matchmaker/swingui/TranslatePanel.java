@@ -33,6 +33,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -239,7 +240,10 @@ public class TranslatePanel implements DataEntryPanel {
 
 		public void actionPerformed(ActionEvent e) {
 			MatchMakerTranslateGroup tg = (MatchMakerTranslateGroup) translationGroup.getSelectedItem();
-			if (tg != null){
+			if (swingSession.getTranslations().isInUseInBusinessModel(tg)) {
+				JOptionPane.showMessageDialog(translatePanel,
+						"This translation group is in use, and cannot be deleted.");
+			} else {
                 swingSession.getTranslations().removeAndDeleteChild(tg);
 			}
 		}
