@@ -45,7 +45,8 @@ public class EditTranslateAction extends AbstractAction {
 	
 	public void actionPerformed(ActionEvent e) {
 		JDialog dialog = DataEntryPanelBuilder.createSingleButtonDataEntryPanelDialog(
-                new TranslatePanel(swingSession), parentWindow, "Words in Translate","Close");
+                new TranslatePanel(swingSession), parentWindow, "Translation Group Manager", "Close");
+		dialog.setLocationRelativeTo(parentWindow);
 		dialog.setVisible(true);
 	}
 
