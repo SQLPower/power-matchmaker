@@ -21,6 +21,8 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,9 +38,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
+import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
@@ -75,6 +79,9 @@ public class MergeTableRuleEditor implements EditorPane {
 	private JTable mergeRulesTable;
 	MergeTableRuleTableModel mergeTableRuleTableModel;
 	private JScrollPane mergeRulesScrollPane;
+	
+	private JTree menuTree;
+	private TreePath menuPath;
 
 	private final MatchMakerSwingSession swingSession;
 	private Match match;
@@ -93,17 +100,47 @@ public class MergeTableRuleEditor implements EditorPane {
         buildUI();
         setDefaultSelections();
         handler.resetHasValidated(); // avoid false hits when newly created
+        
+        //finds the tree and menu path with that will allow the the double click
+        //button to open the editor windows
+		menuTree = MergeTableRuleEditor.this.swingSession.getTree();
+		menuPath = menuTree.getSelectionPath();
 	}
 	
 	private void setupRulesTable(MatchMakerSwingSession swingSession, Match match) {
 		mergeTableRuleTableModel = new MergeTableRuleTableModel(match,swingSession);
 		mergeRulesTable = new TableMergeRulesTable(mergeTableRuleTableModel);
         mergeRulesTable.setName("Merge Tables");
+        
+        
+        //adds an action listener that looks for a double click, that opens the selected 
+        //merge rule editor pane  
+        mergeRulesTable.addMouseListener(new MouseAdapter() {
+
+			public void mouseClicked(MouseEvent e) {
+				
+				if (e.getClickCount() == 2) {
+					int row = MergeTableRuleEditor.this.mergeRulesTable.getSelectedRow();
+					
+					Object parent = menuPath.getLastPathComponent();
+					Object child = menuTree.getModel().getChild(parent, row);
+					menuTree.setSelectionPath(menuPath.pathByAddingChild(child));
+				}
+			}		
+        });
 
         mergeRulesTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
         mergeRulesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		TableUtils.fitColumnWidths(mergeRulesTable, 15);
 	}
+	
+	//returns the editor pane for the requested merge rule
+	/*private EditorPane getMergeRule(int num)
+	{
+		 = swingSession.getTree();
+		System.out.println(ep);
+		return null;
+	}*/
 
 	private void buildUI() {
 		
@@ -365,7 +402,7 @@ public class MergeTableRuleEditor implements EditorPane {
 				return chooser.getCatalogComboBox().isEnabled();
 			} else if (columnIndex == 1) {
 				return chooser.getSchemaComboBox().isEnabled();
-			} 
+			}
 			return true;
 		}
 		
@@ -392,7 +429,7 @@ public class MergeTableRuleEditor implements EditorPane {
 			} else if (columnIndex == 2) {
 				return "Name";
 			} else if ( columnIndex == 3) {
-				return "Delete Dup?";
+				return "Delete Duplicates?";
 			}
 			return null;
 		}
