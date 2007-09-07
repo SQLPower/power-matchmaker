@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker;
 
 import java.util.Collections;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
 
@@ -28,6 +30,8 @@ import junit.framework.TestCase;
 
 public class PotentialMatchRecordTest extends TestCase {
 
+	private static final Logger logger = Logger.getLogger(PotentialMatchRecordTest.class);
+	
 	PotentialMatchRecord pmr;
 	
 	@Override
@@ -65,5 +69,43 @@ public class PotentialMatchRecordTest extends TestCase {
 		pmr.setMaster(pmr.getOriginalLhs());
 		pmr.setMaster(pmr.getOriginalRhs());
 		assertSame(StoreState.NEW, pmr.getStoreState());
+	}
+	
+	public void testIsMatch() {
+		pmr.setMaster(pmr.getOriginalLhs());
+		pmr.setMatchStatus(MatchType.MATCH);
+		assertTrue(pmr.isMatch());
+		
+		pmr.setMatchStatus(MatchType.AUTOMATCH);
+		assertTrue(pmr.isMatch());
+		
+		pmr.setMaster(pmr.getOriginalRhs());
+		assertTrue(pmr.isMatch());
+		
+		pmr.setMatchStatus(MatchType.MATCH);
+		assertTrue(pmr.isMatch());
+		
+		pmr.setMaster(null);
+		pmr.setMatchStatus(MatchType.UNMATCH);
+		assertFalse(pmr.isMatch());
+		
+		pmr.setMatchStatus(MatchType.NOMATCH);
+		assertFalse(pmr.isMatch());
+		
+		pmr.setMatchStatus(MatchType.MATCH);
+		try {
+			pmr.isMatch();
+			fail("isMatch should have thrown an IllegalStateException!");
+		} catch (IllegalStateException e) {
+			// Do nothing
+		}
+		
+		pmr.setMatchStatus(MatchType.AUTOMATCH);
+		try {
+			pmr.isMatch();
+			fail("isMatch should have thrown an IllegalStateException!");
+		} catch (IllegalStateException e) {
+			// Do nothing
+		}
 	}
 }
