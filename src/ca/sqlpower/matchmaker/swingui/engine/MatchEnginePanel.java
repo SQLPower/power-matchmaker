@@ -118,7 +118,7 @@ public class MatchEnginePanel implements EditorPane {
 	 * Denotes whether or not the log file should be overwritten or
 	 * appended to.
 	 */
-	private JCheckBox append;
+	private JCheckBox appendToLog;
 
 	/**
 	 * A field for the user to specify how many records they want the
@@ -126,14 +126,15 @@ public class MatchEnginePanel implements EditorPane {
 	 */
 	private JTextField recordsToProcess;
 
-	private JTextField minWord;
-
 	/**
 	 * A flag for the engine to run in debug mode or not.
 	 */
 	private JCheckBox debugMode;
 
-	private JCheckBox truncateCandDup;
+	/**
+	 * A flag for telling the engine to delete all the records from the match result table before running the match
+	 */
+	private JCheckBox clearMatchPool;
 
 	/**
 	 * A flag for the engine to send emails or not.
@@ -146,6 +147,9 @@ public class MatchEnginePanel implements EditorPane {
 	 */
 	private JButton viewLogFile;
 
+	/** 
+	 * Opens a dialog which shows the match statistics
+	 */
 	private JButton viewStats;
 
 	/**
@@ -160,6 +164,12 @@ public class MatchEnginePanel implements EditorPane {
 	 */
 	private JButton save;
 
+	/**
+	 * Select which Oracle rollback segment to store the data necessary
+	 * to preform a rollback.
+	 * FIXME: This only makes sense for Oracle, so once the engine supports other platforms, this
+	 * should be hidden or disabled
+	 */
 	private JComboBox rollbackSegment;
 
 	/**
@@ -271,12 +281,10 @@ public class MatchEnginePanel implements EditorPane {
 		enginePath = new JTextField();
 		browseEngineFileAction = new BrowseFileAction(enginePath);
 		rollbackSegment = new JComboBox();
-		append = new JCheckBox("Append to old Log File?");
+		appendToLog = new JCheckBox("Append to old Log File?");
 		recordsToProcess = new JTextField(5);
-		minWord = new JTextField(5);
-		minWord.setText("0");
 		debugMode = new JCheckBox("Debug Mode?");
-		truncateCandDup = new JCheckBox("Clear match pool?");
+		clearMatchPool = new JCheckBox("Clear match pool?");
 		sendEmail = new JCheckBox("Send E-mails?");
 		viewLogFile = new JButton(new ShowLogFileAction());
 		viewStats = new JButton(new ShowMatchStatisticInfoAction(swingSession,
@@ -302,7 +310,7 @@ public class MatchEnginePanel implements EditorPane {
 		pb.add(new JLabel("Log File:"), cc.xy(2, y, "r,f"));
 		pb.add(logFilePath, cc.xy(4, y, "f,f"));
 		pb.add(new JButton(browseLogFileAction), cc.xy(5, y, "r,f"));
-		pb.add(append, cc.xy(7, y, "l,f"));
+		pb.add(appendToLog, cc.xy(7, y, "l,f"));
 
 		y += 2;
 		pb.add(new JLabel("Rollback Segment:"), cc.xy(2, y, "r,c"));
@@ -313,14 +321,10 @@ public class MatchEnginePanel implements EditorPane {
 		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
 		
 		y += 2;
-		pb.add(new JLabel("Min Word Count Freq:"), cc.xy(2, y, "r,c"));
-		pb.add(minWord, cc.xy(4, y, "l,c"));
-		
-		y += 2;
 		pb.add(debugMode, cc.xy(4, y, "l,c"));
 
 		y += 2;
-		pb.add(truncateCandDup, cc.xy(4, y, "l,c"));
+		pb.add(clearMatchPool, cc.xy(4, y, "l,c"));
 		
 		y += 2;
 		pb.add(sendEmail, cc.xy(4, y, "l,c"));
@@ -380,8 +384,7 @@ public class MatchEnginePanel implements EditorPane {
 		
 		enginePath.setText(swingSession.getContext().getMatchEngineLocation());
 
-		Boolean appendToLog = settings.getAppendToLog();
-		append.setSelected(appendToLog);
+		appendToLog.setSelected(settings.getAppendToLog());
 		if (settings.getProcessCount() == null) {
 			recordsToProcess.setText("");
 		} else {
@@ -389,20 +392,20 @@ public class MatchEnginePanel implements EditorPane {
 					.setText(String.valueOf(settings.getProcessCount()));
 		}
 		
-		logger.debug("append to log? "+append);
+		logger.debug("append to log? "+appendToLog);
 		debugMode.setSelected(settings.getDebug());
-		truncateCandDup.setSelected(settings.getTruncateCandDupe());
+		clearMatchPool.setSelected(settings.getTruncateCandDupe());
 		sendEmail.setSelected(settings.getSendEmail());
 
-		// TODO add roll back segment
+		// TODO add support for selecting the Oracle rollback segment
 		rollbackSegment.setSelectedItem(settings.getRollbackSegmentName());
 		debugMode.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (((JCheckBox) e.getSource()).isSelected()) {
-					truncateCandDup.setSelected(true);
+					clearMatchPool.setSelected(true);
 					recordsToProcess.setText("1");
 				} else {
-					truncateCandDup.setSelected(false);
+					clearMatchPool.setSelected(false);
 					recordsToProcess.setText("0");
 				}
 			}
@@ -654,11 +657,11 @@ public class MatchEnginePanel implements EditorPane {
 		refreshActionStatus();
 		MatchSettings settings = match.getMatchSettings();
 		settings.setDebug(debugMode.isSelected());
-		settings.setTruncateCandDupe(truncateCandDup.isSelected());
+		settings.setTruncateCandDupe(clearMatchPool.isSelected());
 		settings.setSendEmail(sendEmail.isSelected());
 		swingSession.getContext().setMatchEngineLocation(enginePath.getText());
 		settings.setLog(new File(logFilePath.getText()));
-		settings.setAppendToLog(append.isSelected());
+		settings.setAppendToLog(appendToLog.isSelected());
 		if (recordsToProcess.getText() == null
 				|| recordsToProcess.getText().length() == 0) {
 			settings.setProcessCount(null);
