@@ -26,6 +26,7 @@ import java.sql.SQLException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -46,6 +47,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 	private final MatchMakerSession swingSession;
 	private Match match;
 	private JFrame parent;
+	private JDialog d;
 
 	public ShowMatchStatisticInfoAction(MatchMakerSession swingSession,
 			Match match, JFrame parent) {
@@ -81,49 +83,58 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 			return;
 		}
 
-		JDialog d = new JDialog(parent);
-		JPanel panel = new JPanel(new BorderLayout());
-		final MatchStatisticsPanel p2 = p;
-
-		JButton deleteAllButton = new JButton(new AbstractAction("Delete All"){
-			public void actionPerformed(ActionEvent e) {
-				try {
-					p2.deleteAllStatistics();
-				} catch (SQLException e1) {
-					MMSUtils.showExceptionDialog(parent,
-							"Could not delete match statistics information", e1);
+		if (d == null) {
+			d = new JDialog(parent);
+			JPanel panel = new JPanel(new BorderLayout());
+			final MatchStatisticsPanel p2 = p;
+			JButton deleteAllButton = new JButton(new AbstractAction(
+					"Delete All") {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						p2.deleteAllStatistics();
+					} catch (SQLException e1) {
+						MMSUtils
+								.showExceptionDialog(
+										parent,
+										"Could not delete match statistics information",
+										e1);
+					}
 				}
-			}});
-		JButton deleteBackwardButton = new JButton(new AbstractAction("Delete Backward"){
-			public void actionPerformed(ActionEvent e) {
-				try {
-					p2.deleteBackwardStatistics();
-				} catch (SQLException e1) {
-					MMSUtils.showExceptionDialog(parent,
-							"Could not delete match statistics information", e1);
+			});
+			JButton deleteBackwardButton = new JButton(new AbstractAction(
+					"Delete Backward") {
+				public void actionPerformed(ActionEvent e) {
+					try {
+						p2.deleteBackwardStatistics();
+					} catch (SQLException e1) {
+						MMSUtils
+								.showExceptionDialog(
+										parent,
+										"Could not delete match statistics information",
+										e1);
+					}
 				}
-			}});
-		Action closeAction = new CommonCloseAction(d);
-		closeAction.putValue(Action.NAME, "Close");
-		JButton closeButton = new JButton(closeAction);
-
-		ButtonBarBuilder bbb = new ButtonBarBuilder();
-		bbb.addRelatedGap();
-		bbb.addGridded(deleteAllButton);
-		bbb.addRelatedGap();
-		bbb.addGridded(deleteBackwardButton);
-		bbb.addGlue();
-		bbb.addGridded(closeButton);
-		bbb.addRelatedGap();
-		panel.add(bbb.getPanel(),BorderLayout.SOUTH);
-		SPSUtils.makeJDialogCancellable(d,closeAction);
-
-		panel.add(p,BorderLayout.CENTER);
-		d.add(panel);
-		d.setPreferredSize(new Dimension(800,600));
-		d.pack();
+			});
+			Action closeAction = new CommonCloseAction(d);
+			closeAction.putValue(Action.NAME, "Close");
+			JButton closeButton = new JButton(closeAction);
+			ButtonBarBuilder bbb = new ButtonBarBuilder();
+			bbb.addRelatedGap();
+			bbb.addGridded(deleteAllButton);
+			bbb.addRelatedGap();
+			bbb.addGridded(deleteBackwardButton);
+			bbb.addGlue();
+			bbb.addGridded(closeButton);
+			bbb.addRelatedGap();
+			panel.add(bbb.getPanel(), BorderLayout.SOUTH);
+			SPSUtils.makeJDialogCancellable(d, closeAction);
+			panel.add(p, BorderLayout.CENTER);
+			panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+			d.add(panel);
+			d.setTitle("Match Statistics");
+			d.setPreferredSize(new Dimension(800, 600));
+			d.pack();
+		}
 		d.setVisible(true);
-
 	}
-
 }
