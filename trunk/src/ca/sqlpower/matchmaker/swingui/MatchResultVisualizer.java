@@ -390,6 +390,7 @@ public class MatchResultVisualizer implements EditorPane {
 			if (response == JOptionPane.OK_OPTION) {
 				try {
 					pool.doAutoMatch((String) criteriaComboBox.getSelectedItem());
+					pool.store();
 					graph.repaint();
 				} catch (Exception ex) {
 					MMSUtils.showExceptionDialog(panel, "Auto-Match failed, most likely a database connection error", ex);
