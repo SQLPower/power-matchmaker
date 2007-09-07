@@ -19,6 +19,10 @@
 
 package ca.sqlpower.matchmaker;
 
+import org.apache.log4j.Logger;
+
+import ca.sqlpower.architect.ArchitectException;
+
 
 /**
  * This object represents one row in a Match Source Table, which is half of
@@ -29,6 +33,8 @@ package ca.sqlpower.matchmaker;
  */
 public class PotentialMatchRecord {
 
+	private static final Logger logger = Logger.getLogger(PotentialMatchRecord.class);
+	
     /**
      * The pool of matches (graph) that this match record belongs to.
      */
@@ -245,6 +251,12 @@ public class PotentialMatchRecord {
     	}
     }
 
+    /**
+     * Gets the matchStatus. If you are using this to determine whether the PotentialMatchRecord
+     * is a match edge or not, use {@link #isMatch()} instead, as it will cover both MATCH and
+     * AUTOMATCH edge cases, as well as detect if the PotentialMatchRecord is in an inconsistent state
+     * (such as being set as a Match edge but not have a master defined)
+     */
     public MatchType getMatchStatus() {
         return matchStatus;
     }
@@ -256,6 +268,7 @@ public class PotentialMatchRecord {
     public void setMatchStatus(MatchType matchStatus) {
         if (this.matchStatus == matchStatus) return;
     	this.matchStatus = matchStatus;
+    	logger.debug("matchStatus was set to " + matchStatus);
         if (matchStatus == MatchType.NOMATCH || matchStatus == MatchType.UNMATCH){
             master = MasterSide.NEITHER;
         }
@@ -289,22 +302,36 @@ public class PotentialMatchRecord {
 	 * This object's persistence state will only change to dirty as a result of
 	 * this call if either the master or matchType property values actually
 	 * changed.
+	 * <p>
+	 * Additionally, there is an isAutoMatch boolean flag that should be set
+	 * to true only if this method is being called from the AutoMatch feature.
 	 * 
 	 * @param newMaster
 	 *            the source table record that is participating in this
 	 *            potential match that you want to make the master.
+	 * @param isAutoMatch
+	 * 			  Should be set to true if this method is being called from
+	 * 			  an AutoMatch method. Otherwise, set to false.
 	 */
-    public void setMaster(SourceTableRecord newMaster){
+    public void setMaster(SourceTableRecord newMaster, boolean isAutoMatch){
     	MasterSide oldMaster = master;
         if (newMaster == null){
             master = MasterSide.NEITHER;
             setMatchStatus(MatchType.UNMATCH);
         } else if (originalRhs.equals(newMaster)) {
             master = MasterSide.RIGHT_HAND_SIDE;
-            setMatchStatus(MatchType.MATCH);
+            if (!isAutoMatch) {
+            	setMatchStatus(MatchType.MATCH);
+            } else {
+            	setMatchStatus(MatchType.AUTOMATCH);
+            }
         } else if (originalLhs.equals(newMaster)) {
             master = MasterSide.LEFT_HAND_SIDE;
-            setMatchStatus(MatchType.MATCH);
+            if (!isAutoMatch) {
+            	setMatchStatus(MatchType.MATCH);
+            } else {
+            	setMatchStatus(MatchType.AUTOMATCH);
+            }
         } else {
             throw new IllegalArgumentException("The source table record "+ newMaster + " is not part of this record");
         }
@@ -312,6 +339,15 @@ public class PotentialMatchRecord {
         if (master != oldMaster) {
         	markDirty();
         }
+    }
+    
+    /** 
+     * Similar to {@link #setMaster(SourceTableRecord, boolean)} except the isAutoMatch
+     * boolean flag is set to false by default. DO NOT use this version if you are performing an AutoMatch!
+     * @throws ArchitectException
+     */
+    public void setMaster(SourceTableRecord newMaster) {
+    	setMaster(newMaster, false);
     }
     
     public boolean isRhsMaster() {
@@ -338,6 +374,37 @@ public class PotentialMatchRecord {
         }
     }
 
+    /**
+     * Returns true if this PotentialMatchRecord is a match edge, which is true if the matchStatus
+     * is MatchType.MATCH or MatchType.AUTOMATCH, and if master is not MasterSide.NEITHER.
+     * <p>
+     * Otherwise, it returns false if master is set to MasterSide.NEITHER, and the matchStatus is
+     * neither MatchType.MATCH or MatchType.AUTOMATCH.
+     * <p>
+     * It will throw an IllegalStateException if the PotentialMatchRecord has a master set but
+     * its matchStatus is neither MatchType.MATCH or MatchType.AUTOMATCH, or if the master is set to 
+     * MasterSide.NEITHER and matchStatus is set to MasterType.MATCH or MasterType.AUTOMATCH
+     * @return
+     */
+    public boolean isMatch() {
+    	logger.debug("master is " + master);
+    	if (master != MasterSide.NEITHER) {
+    		logger.debug("matchStatus is " + matchStatus);
+    		if (matchStatus == MatchType.AUTOMATCH || matchStatus == MatchType.MATCH) {
+    			return true;
+    		} else {
+    			throw new IllegalStateException("PotentialMatchRecord is marked as a match but has no master.");
+    		}
+    	} else {
+    		logger.debug("matchStatus is " + matchStatus);
+    		if (matchStatus != MatchType.AUTOMATCH && matchStatus != MatchType.MATCH) {
+    			return false;
+    		} else {
+    			throw new IllegalStateException("PotentialMatchRecord has a master but is not marked as a match.");
+    		}
+    	}
+    }
+    
     /**
      * Returns the SourceTableRecord that is the master indicated by this record.
      *  

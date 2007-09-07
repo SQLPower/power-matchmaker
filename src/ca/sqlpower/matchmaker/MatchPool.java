@@ -647,8 +647,16 @@ public class MatchPool {
 	 * edges pointing in the direction of the ultimate master. All other edges
 	 * will be undecided (or UNMATCH).</li>
 	 * </ol>
+	 * <p>
+	 * Additionally, there is an isAutoMatch boolean flag that should be used when
+	 * the method is being called by the AutoMatch feature. In this case, all of the
+	 * PotentialMatchRecords will have their match status set to AUTOMATCH, and the
+	 * respective records in the match result table will also be updated as AUTOMATCH 
+	 * @param master The SourceTableRecord that we are defining as the master
+	 * @param duplicate The SourceTableRecord that we are defining as a duplicate of the master
+	 * @param isAutoMatch Indicate that this method is being used by the AutoMatch feature
 	 */
-    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate) throws ArchitectException {
+    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate, boolean isAutoMatch) throws ArchitectException {
     	if (duplicate == master) {
     		defineMasterOfAll(master);
     		return;
@@ -692,8 +700,17 @@ public class MatchPool {
     		masterMapping = da.calculateShortestPaths(considerGivenNodesGraph, ultimateMaster);
     	}
     	
-    	defineMatchEdges(considerGivenNodesGraph, masterMapping);
+    	defineMatchEdges(considerGivenNodesGraph, masterMapping, isAutoMatch);
 	}
+    
+    /**
+     * Similar to {@link #defineMaster(SourceTableRecord, SourceTableRecord, boolean)} except the isAutoMatch
+     * boolean flag is set to false by default. DO NOT use this version if you are performing an AutoMatch!
+     * @throws ArchitectException
+     */
+    public void defineMaster(SourceTableRecord master, SourceTableRecord duplicate) throws ArchitectException {
+    	defineMaster(master, duplicate, false);
+    }
 
     /**
 	 * This method adds a match maker criteria group to the match in this pool
@@ -919,7 +936,7 @@ public class MatchPool {
         reachable.remove(rhs);
         considerGivenNodesGraph = new GraphConsideringOnlyGivenNodes(this, reachable);
         for (PotentialMatchRecord pmr : rhs.getOriginalMatchEdges()) {
-        	if (pmr.getMatchStatus() == MatchType.MATCH) {
+        	if (pmr.isMatch()) {
         		pmr.setMaster(null);
         	}
         }
@@ -944,16 +961,23 @@ public class MatchPool {
 	 * This method sets the edges defined by the <duplicate, master> pairs of
 	 * the map to be matched edges with the master the master node in the pair.
 	 * All other edges in the graph are set to be undefined.
+	 * <p>
+	 * Additionally, there is an isAutoMatch boolean flag that should be used when
+	 * the method is being called by the AutoMatch feature. In this case, all of the
+	 * PotentialMatchRecords will have their match status set to AUTOMATCH, and the
+	 * respective records in the match result table will also be updated as AUTOMATCH 
 	 * 
 	 * @param graph
 	 *            The graph that contains the edges to modify.
 	 * @param masterMapping
 	 *            The mapping of all matched edges in the graph given in
 	 *            <duplicate, master> pairs.
+	 @param isAutoMatch Indicate that this method is being used by the AutoMatch feature
 	 */
 	private void defineMatchEdges(
 			GraphModel<SourceTableRecord, PotentialMatchRecord> graph,
-			Map<SourceTableRecord, SourceTableRecord> masterMapping) throws ArchitectException {
+			Map<SourceTableRecord, SourceTableRecord> masterMapping,
+			boolean isAutoMatch) throws ArchitectException {
 		logger.debug("Removing all decided edges from the given graph");
     	for (PotentialMatchRecord pmr : graph.getEdges()) {
    			pmr.setMaster(null);
@@ -964,8 +988,19 @@ public class MatchPool {
     	for (Map.Entry<SourceTableRecord, SourceTableRecord> nodeMasterPair : masterMapping.entrySet()) {
     		logger.debug("Setting " + nodeMasterPair.getValue() + " to be the master of " + nodeMasterPair.getKey());
     		PotentialMatchRecord matchRecord = getPotentialMatchFromOriginals(nodeMasterPair.getValue(), nodeMasterPair.getKey());
-   			matchRecord.setMaster(nodeMasterPair.getValue());
+   			matchRecord.setMaster(nodeMasterPair.getValue(), isAutoMatch);
     	}
+	}
+	
+	/**
+	 * Similar to {@link #defineMatchEdges(GraphModel, Map, boolean)} except the isAutoMatch
+	 * boolean flag is set to false by default. DO NOT use this version if you are performing an AutoMatch!
+	 * @throws ArchitectException
+	 */
+	private void defineMatchEdges(
+			GraphModel<SourceTableRecord, PotentialMatchRecord> graph,
+			Map<SourceTableRecord, SourceTableRecord> masterMapping) throws ArchitectException {
+		defineMatchEdges(graph, masterMapping, false);
 	}
 
 	/**
@@ -1174,7 +1209,7 @@ public class MatchPool {
 		Set<SourceTableRecord> noMatchNodes = findNoMatchNodes(reachable);
 		for (SourceTableRecord record : neighbours) {
 			if (!noMatchNodes.contains(record)) {
-				defineMaster(selected, record);
+				defineMaster(selected, record, true);
 				nonDirectedGraph = new NonDirectedUserValidatedMatchPoolGraphModel(this, new HashSet<PotentialMatchRecord>());
 				bfs = new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
 				reachable = new HashSet<SourceTableRecord>(bfs.performSearch(nonDirectedGraph, selected));

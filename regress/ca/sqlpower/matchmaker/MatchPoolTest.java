@@ -1864,7 +1864,7 @@ public class MatchPoolTest extends TestCase {
 		assertTrue(pmrO1ToO3.getDuplicate() == o1);
 		assertTrue(pmrO2ToO3.getMaster() == o3);
 		assertTrue(pmrO2ToO3.getDuplicate() == o2);
-		assertTrue(pmrO1ToO3.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrO1ToO3.isMatch());
 	}
 
 	/**
@@ -3752,8 +3752,8 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrA2ToA3 = pool.getPotentialMatchFromOriginals(a2, a3);
 		
 		assertNull(pmrA1ToA3);
-		assertTrue(pmrA1ToA2.getMatchStatus() == MatchType.MATCH);
-		assertTrue(pmrA2ToA3.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrA1ToA2.getMatchStatus() == MatchType.AUTOMATCH);
+		assertTrue(pmrA2ToA3.getMatchStatus() == MatchType.AUTOMATCH);
 		
 		//Checks to see if a2 has two masters
 		assertFalse(pmrA1ToA2.getMaster() == a1 && pmrA2ToA3.getMaster() == a3);
@@ -3787,8 +3787,7 @@ public class MatchPoolTest extends TestCase {
 		
 		assertNull(pmrO1ToO2);
 		assertTrue(pmrO1ToO3.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrO2ToO3.getMatchStatus() == MatchType.MATCH);
-		
+		assertTrue(pmrO2ToO3.getMatchStatus() == MatchType.AUTOMATCH);		
 	}
 	
 	/**
@@ -3822,8 +3821,8 @@ public class MatchPoolTest extends TestCase {
 		
 		// Makes sure that one of the edges is decided, but not both
 		// direction does not matter
-		assertTrue(pmrU1ToU2.getMatchStatus() == MatchType.MATCH ^
-				pmrU2ToU3.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrU1ToU2.getMatchStatus() == MatchType.AUTOMATCH ^
+				pmrU2ToU3.getMatchStatus() == MatchType.AUTOMATCH);
 	}
 	
 	/**
@@ -3899,8 +3898,8 @@ public class MatchPoolTest extends TestCase {
 		PotentialMatchRecord pmrF2ToF3 = pool.getPotentialMatchFromOriginals(f2, f3);
 		
 		assertNull(pmrF1ToF3);
-		assertTrue(pmrF1ToF2.getMatchStatus() == MatchType.MATCH);
-		assertTrue(pmrF2ToF3.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrF1ToF2.getMatchStatus() == MatchType.AUTOMATCH);
+		assertTrue(pmrF2ToF3.getMatchStatus() == MatchType.AUTOMATCH);
 		assertFalse(pmrF1ToF2.getMaster() == f1 && pmrF2ToF3.getMaster() == f3);
 	}
 	
@@ -3933,7 +3932,7 @@ public class MatchPoolTest extends TestCase {
 		
 		assertNull(pmrW1ToW3);
 		assertTrue(pmrW1ToW2.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrW2ToW3.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrW2ToW3.getMatchStatus() == MatchType.AUTOMATCH);
 	}
 	
 	/**
@@ -3993,17 +3992,17 @@ public class MatchPoolTest extends TestCase {
 		assertNull(pmrX1ToX4);
 		assertNull(pmrX2ToX4);
 		
-		assertTrue(pmrX1ToX2.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrX1ToX2.getMatchStatus() == MatchType.AUTOMATCH);
 		assertTrue(pmrX2ToX3.getMatchStatus() == MatchType.UNMATCH);
-		assertTrue(pmrX3ToX4.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrX3ToX4.getMatchStatus() == MatchType.AUTOMATCH);
 		
 		assertNull(pmrY1ToY3);
 		assertNull(pmrY1ToY4);
 		assertNull(pmrY2ToY4);
 		
-		assertTrue(pmrY1ToY2.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrY1ToY2.getMatchStatus() == MatchType.AUTOMATCH);
 		assertTrue(pmrY2ToY3.getMatchStatus() == MatchType.NOMATCH);
-		assertTrue(pmrY3ToY4.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrY3ToY4.getMatchStatus() == MatchType.AUTOMATCH);
 	}
 	
 	/**
@@ -4044,9 +4043,9 @@ public class MatchPoolTest extends TestCase {
 		assertNull(pmrZ1ToZ4);
 		assertNull(pmrZ2ToZ4);
 		
-		assertTrue(pmrZ1ToZ2.getMatchStatus() == MatchType.MATCH);
-		assertTrue(pmrZ2ToZ3.getMatchStatus() == MatchType.MATCH);
-		assertTrue(pmrZ3ToZ4.getMatchStatus() == MatchType.MATCH);
+		assertTrue(pmrZ1ToZ2.getMatchStatus() == MatchType.AUTOMATCH);
+		assertTrue(pmrZ2ToZ3.getMatchStatus() == MatchType.AUTOMATCH);
+		assertTrue(pmrZ3ToZ4.getMatchStatus() == MatchType.AUTOMATCH);
 		
 		assertFalse(pmrZ1ToZ2.getMaster() == z1
 				&& pmrZ2ToZ3.getMaster() == z3);
