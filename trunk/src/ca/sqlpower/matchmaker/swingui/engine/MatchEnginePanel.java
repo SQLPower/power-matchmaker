@@ -72,7 +72,6 @@ import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
-import com.darwinsys.notepad.Notepad;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
@@ -290,7 +289,7 @@ public class MatchEnginePanel implements EditorPane {
 		JPanel bbp = logger.isDebugEnabled() ? new FormDebugPanel(bbLayout)
 				: new JPanel(bbLayout);
 		bbpb = new PanelBuilder(bbLayout, bbp);
-		bbpb.add(new JButton(new ShowLogFileAction()), cc.xy(2, 2, "f,f"));
+		bbpb.add(new JButton(new ShowLogFileAction(logFilePath)), cc.xy(2, 2, "f,f"));
 		bbpb.add(new JButton(new ShowCommandAction(match, parentFrame)), cc.xy(4, 2, "f,f"));
 		bbpb.add(new JButton(engineAction), cc.xy(6, 2, "f,f"));
 		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
@@ -422,32 +421,6 @@ public class MatchEnginePanel implements EditorPane {
 			}
 		}
 	};
-
-	/**
-	 * Displays a dialog to the user that contains the text in the log file
-	 * denoted by logFilePath.
-	 * 
-	 * XXX: WARNING! When this dialog is closed, the whole program exits as
-	 * well!
-	 */
-	private class ShowLogFileAction extends AbstractAction {
-
-		public ShowLogFileAction() {
-			super("Show Log File");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			String logFileName = logFilePath.getText();
-			try {
-				Notepad notepad = new Notepad(false);
-				notepad.doLoad(logFileName);
-			} catch (IOException e1) {
-				throw new RuntimeException("Unable to view log file "
-						+ logFileName, e1);
-			}
-
-		}
-	}
 
 	/**
 	 * Displays a dialog to the user that contains the command-line command
