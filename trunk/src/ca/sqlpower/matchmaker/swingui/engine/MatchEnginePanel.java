@@ -37,27 +37,19 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-import javax.swing.text.Document;
 
-import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchSettings;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
-import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.swingui.BrowseFileAction;
-import ca.sqlpower.swingui.ProgressWatcher;
-import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -170,7 +162,21 @@ public class MatchEnginePanel implements EditorPane {
 	 */
 	private final EngineOutputPanel engineOutputPanel;
 	
+	/**
+	 * An action to run the engine and print the output to the engineOutputPanel
+	 */
+	private Action runEngineAction;
 
+	/**
+	 * The match engine for this panel
+	 */
+	private MatchMakerEngine engine;
+	
+	/**
+	 * @param swingSession The application Swing session
+	 * @param match The Match that this panel is running the engine on
+	 * @param parentFrame The JFrame that contains this panel
+	 */
 	public MatchEnginePanel(MatchMakerSwingSession swingSession, Match match,
 			JFrame parentFrame) {
 		this.swingSession = swingSession;
@@ -183,6 +189,8 @@ public class MatchEnginePanel implements EditorPane {
 			}
 		});
 		engineOutputPanel = new EngineOutputPanel(parentFrame);
+		engine = new MatchEngineImpl(swingSession, match);
+		runEngineAction = new RunEngineAction(swingSession, engine, "Run Match Engine", engineOutputPanel, this);
 		panel = buildUI();
 		setDefaultSelections(match);
 	}
@@ -194,10 +202,10 @@ public class MatchEnginePanel implements EditorPane {
 	 */
 	private void refreshActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
-		engineAction.setEnabled(true);
+		runEngineAction.setEnabled(true);
 
 		if (worst.getStatus() == Status.FAIL) {
-			engineAction.setEnabled(false);
+			runEngineAction.setEnabled(false);
 		}
 	}
 
@@ -281,8 +289,8 @@ public class MatchEnginePanel implements EditorPane {
 				: new JPanel(bbLayout);
 		bbpb = new PanelBuilder(bbLayout, bbp);
 		bbpb.add(new JButton(new ShowLogFileAction(logFilePath)), cc.xy(2, 2, "f,f"));
-		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, new MatchEngineImpl(swingSession, match))), cc.xy(4, 2, "f,f"));
-		bbpb.add(new JButton(engineAction), cc.xy(6, 2, "f,f"));
+		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, engine)), cc.xy(4, 2, "f,f"));
+		bbpb.add(new JButton(runEngineAction), cc.xy(6, 2, "f,f"));
 		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
 				match, getParentFrame())), cc.xy(2, 4, "f,f"));
 		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
@@ -357,61 +365,6 @@ public class MatchEnginePanel implements EditorPane {
 		});
 		
 	}
-
-	/**
-	 * A worker implementation that runs a MatchMakerEngine.
-	 */
-	private class EngineWorker extends SPSwingWorker {
-
-		private final MatchMakerEngine matchEngine;
-		
-		private Appender appender;
-		
-		private final Document engineOutputDoc;
-		
-		EngineWorker(Document engineOutputDoc, JProgressBar progressBar) throws EngineSettingException, ArchitectException {
-			super(swingSession);
-			matchEngine = new MatchEngineImpl(swingSession, match);
-			matchEngine.checkPreconditions();
-			this.engineOutputDoc = engineOutputDoc;
-			ProgressWatcher.watchProgress(progressBar,matchEngine);
-		}
-		
-		@Override
-		public void doStuff() throws EngineSettingException, IOException {
-			appender = new DocumentAppender(engineOutputDoc);
-			matchEngine.getLogger().addAppender(appender);
-			matchEngine.call();
-		}
-
-		@Override
-		public void cleanup() throws Exception {
-			if (getDoStuffException() != null) {
-				MMSUtils.showExceptionDialog(parentFrame, "Error during engine run", getDoStuffException());
-				matchEngine.getLogger().error("Error during engine run", getDoStuffException());
-			}
-			matchEngine.getLogger().removeAppender(appender);
-		}
-		
-	}
-	
-	/**
-	 * This action is used to run the match engine. It also is responsible
-	 * for constructing the user interface that deals with engine ouput.
-	 */
-	private Action engineAction = new AbstractAction("Run Match Engine") {
-
-		public void actionPerformed(ActionEvent e) {
-			doSave();
-			try {
-				EngineWorker w = new EngineWorker(engineOutputPanel.getOutputDocument(), engineOutputPanel.getProgressBar());
-				new Thread(w).start();
-			} catch (Exception ex) {
-				MMSUtils.showExceptionDialog(parentFrame, "Engine error", ex);
-				return;
-			}
-		}
-	};
 
 	/**
 	 * A Validator to ensure that the supplied log filepath is a valid
