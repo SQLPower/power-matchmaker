@@ -25,6 +25,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 /**
@@ -34,14 +35,26 @@ public class DeleteMatchAction extends AbstractAction {
 
 	private MatchMakerSwingSession swingSession;
 	private Match match;
+	private boolean calledFromTopMenu;
+	
+	public DeleteMatchAction(MatchMakerSwingSession swingSession) {
+		super("Delete Match");
+		this.swingSession = swingSession;
+		this.calledFromTopMenu = true;
+	}
 	
 	public DeleteMatchAction(MatchMakerSwingSession swingSession, Match match) {
 		super("Delete Match");
 		this.swingSession = swingSession;
 		this.match = match;
+		this.calledFromTopMenu = false;
 	}
 	
 	public void actionPerformed(ActionEvent e) {
+		if (calledFromTopMenu) {
+			this.match = MMSUtils.getTreeObject(this.swingSession.getTree(),Match.class);
+			if (match == null) return;
+		}
 		int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
 				"Are you sure you want to delete the match [" +
 				match.getName() + "]?",
