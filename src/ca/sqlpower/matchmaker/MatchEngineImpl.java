@@ -237,7 +237,7 @@ public class MatchEngineImpl extends AbstractCEngine {
 		}
 	}
 
-	public String[] createCommandLine(MatchMakerSession session, Match match, boolean userPrompt) {
+	public String[] createCommandLine(boolean userPrompt) {
 		/*
 		 * command line sample:
 		 * "M:\Program Files\Power Loader Suite\Match_Oracle.exe"
@@ -247,14 +247,14 @@ public class MatchEngineImpl extends AbstractCEngine {
 		 * SHOW_PROGRESS=10 PROCESS_CNT=1
 		 */
 		List<String> command = new ArrayList<String>();
-		final SQLDatabase db = session.getDatabase();
-		final MatchSettings settings = match.getMatchSettings();
+		final SQLDatabase db = getSession().getDatabase();
+		final MatchSettings settings = getMatch().getMatchSettings();
 
 		command.add(context.getMatchEngineLocation());
 		if ( logger.isDebugEnabled() ) {
 			command.add(" -k ");
 		}
-		command.add("MATCH=" + match.getName());
+		command.add("MATCH=" + getMatch().getName());
 		command.add("USER=" + db.getDataSource().getUser() +
 				"/" + db.getDataSource().getPass() +
 				"@" + db.getDataSource().getName());
