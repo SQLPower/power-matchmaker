@@ -36,7 +36,9 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 
 import org.apache.log4j.Logger;
 
@@ -51,7 +53,6 @@ import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
-import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
@@ -105,7 +106,7 @@ public class MatchEnginePanel implements EditorPane {
 	 * A field for the user to specify how many records they want the
 	 * engine to process.
 	 */
-	private JTextField recordsToProcess;
+	private JSpinner recordsToProcess;
 
 	/**
 	 * A flag for the engine to run in debug mode or not.
@@ -191,7 +192,6 @@ public class MatchEnginePanel implements EditorPane {
 		engine = new MatchEngineImpl(swingSession, match);
 		runEngineAction = new RunEngineAction(swingSession, engine, "Run Match Engine", engineOutputPanel, this);
 		panel = buildUI();
-		setDefaultSelections(match);
 	}
 
 	/**
@@ -240,16 +240,44 @@ public class MatchEnginePanel implements EditorPane {
 
 		CellConstraints cc = new CellConstraints();
 
-		logFilePath = new JTextField();
+		MatchSettings settings = match.getMatchSettings();
+		
+		if (settings.getLog() == null) {
+			settings.setLog(new File(match.getName() + ".log"));
+		}
+		File logFile = settings.getLog();
+		logFilePath = new JTextField(logFile.getAbsolutePath());
+		handler.addValidateObject(logFilePath, new LogFileNameValidator());
+		
 		browseLogFileAction = new BrowseFileAction(parentFrame, logFilePath);
-		enginePath = new JTextField();
+		
+		enginePath = new JTextField(swingSession.getContext().getMatchEngineLocation());
+		handler.addValidateObject(enginePath, new FileExistsValidator("Match engine"));
+		
 		browseEngineFileAction = new BrowseFileAction(parentFrame, enginePath);
 		rollbackSegment = new JComboBox();
-		appendToLog = new JCheckBox("Append to old Log File?");
-		recordsToProcess = new JTextField(5);
-		debugMode = new JCheckBox("Debug Mode?");
-		clearMatchPool = new JCheckBox("Clear match pool?");
-		sendEmail = new JCheckBox("Send E-mails?");
+		rollbackSegment.setSelectedItem(settings.getRollbackSegmentName());
+		appendToLog = new JCheckBox("Append to old Log File?", settings.getAppendToLog());
+		
+		recordsToProcess = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 100));
+		if (settings.getProcessCount() != null) {
+			recordsToProcess.setValue(settings.getProcessCount());
+		}
+		
+		debugMode = new JCheckBox("Debug Mode?", settings.getDebug());
+		debugMode.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (((JCheckBox) e.getSource()).isSelected()) {
+					clearMatchPool.setSelected(true);
+					recordsToProcess.setValue(new Integer(1));
+				} else {
+					clearMatchPool.setSelected(false);
+					recordsToProcess.setValue(new Integer(0));
+				}
+			}
+		});
+		clearMatchPool = new JCheckBox("Clear match pool?", settings.getTruncateCandDupe());
+		sendEmail = new JCheckBox("Send E-mails?", settings.getSendEmail());
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
 		int y = 4;
@@ -268,7 +296,7 @@ public class MatchEnginePanel implements EditorPane {
 		pb.add(rollbackSegment, cc.xy(4, y));
 		
 		y += 2;
-		pb.add(new JLabel("Records to Process:"), cc.xy(2, y, "r,c"));
+		pb.add(new JLabel("Records to Process (0 for no limit):"), cc.xy(2, y, "r,c"));
 		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
 		
 		y += 2;
@@ -309,62 +337,6 @@ public class MatchEnginePanel implements EditorPane {
 		return anotherP;
 	}
 
-	/**
-	 * Auto-populates check boxes and text fields using the MatchSettings
-	 * object in <code>match</code>. Also performs form validation to
-	 * initialize the status icon at the top of the configuration portion.
-	 */
-	private void setDefaultSelections(Match match) {
-
-		/*
-		 * we put the validators here because we want to validate the form right
-		 * after it being loaded
-		 */
-		Validator v1 = new LogFileNameValidator();
-		handler.addValidateObject(logFilePath, v1);
-
-		Validator v2 = new FileExistsValidator("Match engine");
-		handler.addValidateObject(enginePath, v2);
-
-		MatchSettings settings = match.getMatchSettings();
-		
-		if (settings.getLog() == null) {
-			settings.setLog(new File(match.getName() + ".log"));
-		}
-		File logFile = settings.getLog();
-		logFilePath.setText(logFile.getAbsolutePath());
-		
-		enginePath.setText(swingSession.getContext().getMatchEngineLocation());
-
-		appendToLog.setSelected(settings.getAppendToLog());
-		if (settings.getProcessCount() == null) {
-			recordsToProcess.setText("");
-		} else {
-			recordsToProcess
-					.setText(String.valueOf(settings.getProcessCount()));
-		}
-		
-		logger.debug("append to log? "+appendToLog);
-		debugMode.setSelected(settings.getDebug());
-		clearMatchPool.setSelected(settings.getTruncateCandDupe());
-		sendEmail.setSelected(settings.getSendEmail());
-
-		// TODO add support for selecting the Oracle rollback segment
-		rollbackSegment.setSelectedItem(settings.getRollbackSegmentName());
-		debugMode.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				if (((JCheckBox) e.getSource()).isSelected()) {
-					clearMatchPool.setSelected(true);
-					recordsToProcess.setText("1");
-				} else {
-					clearMatchPool.setSelected(false);
-					recordsToProcess.setText("0");
-				}
-			}
-		});
-		
-	}
-
 	private JFrame getParentFrame() {
 		return parentFrame;
 	}
@@ -394,12 +366,10 @@ public class MatchEnginePanel implements EditorPane {
 		swingSession.getContext().setMatchEngineLocation(enginePath.getText());
 		settings.setLog(new File(logFilePath.getText()));
 		settings.setAppendToLog(appendToLog.isSelected());
-		if (recordsToProcess.getText() == null
-				|| recordsToProcess.getText().length() == 0) {
+		if (recordsToProcess.getValue().equals(new Integer(0))) {
 			settings.setProcessCount(null);
 		} else {
-			settings.setProcessCount(Integer
-					.valueOf(recordsToProcess.getText()));
+			settings.setProcessCount((Integer) recordsToProcess.getValue());
 		}
 		
 		MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
