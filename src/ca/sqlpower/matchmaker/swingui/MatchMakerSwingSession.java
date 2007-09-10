@@ -54,6 +54,7 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -66,20 +67,21 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRule;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchRule;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
@@ -238,6 +240,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 	private Action newMatchAction = null;
 	private Action editMatchAction = new EditMatchAction("Edit");
+	private Action deleteMatchAction = new DeleteMatchAction(this);
 
 	private Action runMatchAction = new AbstractAction("Run Match") {
 
@@ -407,7 +410,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		matchesMenu.setMnemonic('M');
 		matchesMenu.add(newMatchAction);
 		matchesMenu.add(editMatchAction);
-		matchesMenu.add(new DummyAction(frame, "Delete"));
+		matchesMenu.add(deleteMatchAction);
 		matchesMenu.addSeparator();
 		matchesMenu.add(runMatchAction);
 		matchesMenu.add(showMatchStatisticInfoAction);
@@ -515,13 +518,14 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
+			JTree menuTree = getTree();
+			TreePath menuPath;
+			Match match = MMSUtils.getTreeObject(menuTree,Match.class);
 			if (match == null) return;
 
 			try {
-				setCurrentEditorComponent(
-					new MatchEditor(MatchMakerSwingSession.this,
-						match,(PlFolder<Match>)match.getParent()));
+				menuPath = menuTree.getNextMatch(match.toString(), 1, Position.Bias.Forward);
+				menuTree.setSelectionPath(menuPath);
 			} catch (Exception ex) {
 				MMSUtils.showExceptionDialog(frame, "Couldn't create match editor", ex);
 			}
