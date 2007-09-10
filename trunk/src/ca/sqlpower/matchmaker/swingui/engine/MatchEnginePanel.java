@@ -38,7 +38,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -62,6 +61,7 @@ import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
+import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
@@ -87,7 +87,7 @@ public class MatchEnginePanel implements EditorPane {
 	private static final Logger logger = Logger.getLogger(MatchEnginePanel.class);
 
 	/**
-	 * The session this RunMatchEditor belongs to.
+	 * The session this MatchEnginePanel belongs to.
 	 */
 	private final MatchMakerSwingSession swingSession;
 
@@ -140,29 +140,6 @@ public class MatchEnginePanel implements EditorPane {
 	 * A flag for the engine to send emails or not.
 	 */
 	private JCheckBox sendEmail;
-
-	/**
-	 * Used to open a dialog that shows the user the log file
-	 * denoted by the {@link #logFilePath}.
-	 */
-	private JButton viewLogFile;
-
-	/** 
-	 * Opens a dialog which shows the match statistics
-	 */
-	private JButton viewStats;
-
-	/**
-	 * Opens a dialog displaying the command-line command that
-	 * will be used to invoke the engine.
-	 */
-	private JButton showCommand;
-
-	/**
-	 * Saves the current configuration such as checkbox selection
-	 * and log filepath.
-	 */
-	private JButton save;
 
 	/**
 	 * Select which Oracle rollback segment to store the data necessary
@@ -228,33 +205,14 @@ public class MatchEnginePanel implements EditorPane {
 		}
 	}
 
-	private class BrowseFileAction extends AbstractAction {
-		
-		/**
-		 * The field to use for the file path.
-		 */
-		private final JTextField field;
+	private final class SaveAction extends AbstractAction {
+		private SaveAction(String name) {
+			super(name);
+		}
 
-		BrowseFileAction(JTextField field) {
-			super("...");
-			if (field == null) throw new NullPointerException("You have to specify a field");
-			this.field = field;
-		}
-		
 		public void actionPerformed(ActionEvent e) {
-			JFileChooser fileChooser = new JFileChooser();
-			if (field.getText() != null && field.getText().length() > 0) {
-				File defaultFile = new File(field.getText());
-				fileChooser.setCurrentDirectory(defaultFile);
-				fileChooser.setSelectedFile(defaultFile);
-			}
-			int returnVal = fileChooser.showOpenDialog(parentFrame);
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				final File file = fileChooser.getSelectedFile();
-				field.setText(file.getPath());
-			}
+			doSave();
 		}
-		
 	}
 
 	/**
@@ -277,28 +235,15 @@ public class MatchEnginePanel implements EditorPane {
 		CellConstraints cc = new CellConstraints();
 
 		logFilePath = new JTextField();
-		browseLogFileAction = new BrowseFileAction(logFilePath);
+		browseLogFileAction = new BrowseFileAction(parentFrame, logFilePath);
 		enginePath = new JTextField();
-		browseEngineFileAction = new BrowseFileAction(enginePath);
+		browseEngineFileAction = new BrowseFileAction(parentFrame, enginePath);
 		rollbackSegment = new JComboBox();
 		appendToLog = new JCheckBox("Append to old Log File?");
 		recordsToProcess = new JTextField(5);
 		debugMode = new JCheckBox("Debug Mode?");
 		clearMatchPool = new JCheckBox("Clear match pool?");
 		sendEmail = new JCheckBox("Send E-mails?");
-		viewLogFile = new JButton(new ShowLogFileAction());
-		viewStats = new JButton(new ShowMatchStatisticInfoAction(swingSession,
-				match, getParentFrame()));
-		viewStats.setText("Match Statistics");
-		showCommand = new JButton(new ShowCommandAction(match,
-				parentFrame));
-
-		save = new JButton(new AbstractAction("Save") {
-			public void actionPerformed(ActionEvent e) {
-				doSave();
-			}
-		});
-
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
 		int y = 4;
@@ -336,11 +281,13 @@ public class MatchEnginePanel implements EditorPane {
 		JPanel bbp = logger.isDebugEnabled() ? new FormDebugPanel(bbLayout)
 				: new JPanel(bbLayout);
 		bbpb = new PanelBuilder(bbLayout, bbp);
-		bbpb.add(viewLogFile, cc.xy(2, 2, "f,f"));
-		bbpb.add(showCommand, cc.xy(4, 2, "f,f"));
+		bbpb.add(new JButton(new ShowLogFileAction()), cc.xy(2, 2, "f,f"));
+		bbpb.add(new JButton(new ShowCommandAction(match,
+				parentFrame)), cc.xy(4, 2, "f,f"));
 		bbpb.add(new JButton(engineAction), cc.xy(6, 2, "f,f"));
-		bbpb.add(viewStats, cc.xy(2, 4, "f,f"));
-		bbpb.add(save, cc.xy(4, 4, "f,f"));
+		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
+				match, getParentFrame())), cc.xy(2, 4, "f,f"));
+		bbpb.add(new JButton(new SaveAction("Save")), cc.xy(4, 4, "f,f"));
 
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
 
