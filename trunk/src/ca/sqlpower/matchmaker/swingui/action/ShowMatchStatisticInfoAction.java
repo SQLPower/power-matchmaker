@@ -51,7 +51,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 
 	public ShowMatchStatisticInfoAction(MatchMakerSession swingSession,
 			Match match, JFrame parent) {
-		super("Statistics");
+		super("Match Statistics...");
 		this.match = match;
 		this.parent = parent;
 		this.swingSession = swingSession;
