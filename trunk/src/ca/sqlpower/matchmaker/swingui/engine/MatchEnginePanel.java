@@ -20,9 +20,6 @@
 package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.BorderLayout;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -37,13 +34,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.Document;
 
@@ -63,16 +57,13 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.swingui.ProgressWatcher;
-import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
-import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -290,7 +281,7 @@ public class MatchEnginePanel implements EditorPane {
 				: new JPanel(bbLayout);
 		bbpb = new PanelBuilder(bbLayout, bbp);
 		bbpb.add(new JButton(new ShowLogFileAction(logFilePath)), cc.xy(2, 2, "f,f"));
-		bbpb.add(new JButton(new ShowCommandAction(match, parentFrame)), cc.xy(4, 2, "f,f"));
+		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, new MatchEngineImpl(swingSession, match))), cc.xy(4, 2, "f,f"));
 		bbpb.add(new JButton(engineAction), cc.xy(6, 2, "f,f"));
 		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
 				match, getParentFrame())), cc.xy(2, 4, "f,f"));
@@ -421,100 +412,6 @@ public class MatchEnginePanel implements EditorPane {
 			}
 		}
 	};
-
-	/**
-	 * Displays a dialog to the user that contains the command-line command
-	 * that will be used to invoke the engine.
-	 */
-	private class ShowCommandAction extends AbstractAction {
-
-		private Match match;
-
-		private JFrame parent;
-
-		public ShowCommandAction(Match match, JFrame parent) {
-			super("Show Command");
-			this.match = match;
-			this.parent = parent;
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			doSave();
-			MatchMakerEngine engine = new MatchEngineImpl(swingSession,
-					match);
-			final String[] cmd = engine.createCommandLine(swingSession, match, false);
-			final JDialog d = new JDialog(parent,
-					"MatchMaker Engine Command Line");
-
-			FormLayout layout = new FormLayout(
-					"4dlu,fill:min(pref;200dlu):grow,4dlu", // columns
-					"4dlu,fill:min(pref;200dlu):grow,4dlu,pref,4dlu"); // rows
-			// 1 2 3 4 5
-
-			PanelBuilder pb;
-			JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
-					: new JPanel(layout);
-			pb = new PanelBuilder(layout, p);
-			CellConstraints cc = new CellConstraints();
-
-			final JTextArea cmdText = new JTextArea(15, 120);
-			for (String arg : cmd) {
-				boolean hasSpace = arg.contains(" ");
-				if (hasSpace) {
-					cmdText.append("\"");
-				}
-				cmdText.append(arg);
-				if (hasSpace) {
-					cmdText.append("\"");
-				}
-				cmdText.append(" ");
-			}
-			cmdText.setEditable(false);
-			cmdText.setWrapStyleWord(true);
-			cmdText.setLineWrap(true);
-			pb.add(new JScrollPane(cmdText), cc.xy(2, 2, "f,f"));
-
-			ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
-
-			Action saveAsAction = new AbstractAction("Save As...") {
-				public void actionPerformed(ActionEvent e) {
-					SPSUtils.saveDocument(d, cmdText.getDocument(),
-							(FileExtensionFilter) SPSUtils.BATCH_FILE_FILTER);
-				}
-			};
-			JButton saveAsButton = new JButton(saveAsAction);
-			bbBuilder.addGridded(saveAsButton);
-			bbBuilder.addRelatedGap();
-
-			JButton copyButton = new JButton(new AbstractAction(
-					"Copy to Clipboard") {
-				public void actionPerformed(ActionEvent e) {
-					StringSelection selection = new StringSelection(cmdText.getText());
-					Clipboard clipboard = Toolkit.getDefaultToolkit()
-							.getSystemClipboard();
-					clipboard.setContents(selection, selection);
-				}
-			});
-			bbBuilder.addGridded(copyButton);
-			bbBuilder.addRelatedGap();
-			bbBuilder.addGlue();
-
-			JButton cancelButton = new JButton(new AbstractAction() {
-				public void actionPerformed(ActionEvent e) {
-					d.setVisible(false);
-				}
-			});
-			cancelButton.setText("Close");
-			bbBuilder.addGridded(cancelButton);
-
-			pb.add(bbBuilder.getPanel(), cc.xy(2, 4));
-			d.add(pb.getPanel());
-			SPSUtils.makeJDialogCancellable(d, null);
-			d.pack();
-			d.setVisible(true);
-		}
-
-	}
 
 	/**
 	 * A Validator to ensure that the supplied log filepath is a valid

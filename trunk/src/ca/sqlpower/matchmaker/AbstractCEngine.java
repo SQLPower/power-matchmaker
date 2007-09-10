@@ -82,7 +82,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 			}
 			
 			if (proc!=null) throw new IllegalStateException("Engine has already been run");
-			String[] commandLine = createCommandLine(session,match,false);
+			String[] commandLine = createCommandLine(false);
 			Runtime rt = Runtime.getRuntime();
 			logger.debug("Executing " + Arrays.asList(commandLine));
 			proc = rt.exec(commandLine);
