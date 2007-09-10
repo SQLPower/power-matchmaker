@@ -175,6 +175,12 @@ public class MatchEnginePanel implements EditorPane {
 	 */
 	private FormValidationHandler handler;
 
+	/**
+	 * The collection of components that show the user what the engine is doing.
+	 */
+	private final EngineOutputPanel engineOutputPanel;
+	
+
 	public MatchEnginePanel(MatchMakerSwingSession swingSession, Match match,
 			JFrame parentFrame) {
 		this.swingSession = swingSession;
@@ -205,9 +211,12 @@ public class MatchEnginePanel implements EditorPane {
 		}
 	}
 
+	/**
+	 * An action that just calls {@link #doSave}.
+	 */
 	private final class SaveAction extends AbstractAction {
-		private SaveAction(String name) {
-			super(name);
+		private SaveAction() {
+			super("Save");
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -282,12 +291,11 @@ public class MatchEnginePanel implements EditorPane {
 				: new JPanel(bbLayout);
 		bbpb = new PanelBuilder(bbLayout, bbp);
 		bbpb.add(new JButton(new ShowLogFileAction()), cc.xy(2, 2, "f,f"));
-		bbpb.add(new JButton(new ShowCommandAction(match,
-				parentFrame)), cc.xy(4, 2, "f,f"));
+		bbpb.add(new JButton(new ShowCommandAction(match, parentFrame)), cc.xy(4, 2, "f,f"));
 		bbpb.add(new JButton(engineAction), cc.xy(6, 2, "f,f"));
 		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
 				match, getParentFrame())), cc.xy(2, 4, "f,f"));
-		bbpb.add(new JButton(new SaveAction("Save")), cc.xy(4, 4, "f,f"));
+		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
 
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
 
@@ -358,8 +366,6 @@ public class MatchEnginePanel implements EditorPane {
 			}
 		});
 		
-		/* trigger the validator */
-//		v2.validate(sendEmail.isSelected());
 	}
 
 	/**
@@ -399,8 +405,6 @@ public class MatchEnginePanel implements EditorPane {
 		
 	}
 	
-	private final EngineOutputPanel engineOutputPanel;
-	
 	/**
 	 * This action is used to run the match engine. It also is responsible
 	 * for constructing the user interface that deals with engine ouput.
@@ -435,11 +439,8 @@ public class MatchEnginePanel implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 			String logFileName = logFilePath.getText();
 			try {
-				/**
-				 * Notepad has its own frame and should be modified to allow an
-				 * icon argument in the constructor
-				 */
-				new Notepad().doLoad(logFileName);
+				Notepad notepad = new Notepad(false);
+				notepad.doLoad(logFileName);
 			} catch (IOException e1) {
 				throw new RuntimeException("Unable to view log file "
 						+ logFileName, e1);
