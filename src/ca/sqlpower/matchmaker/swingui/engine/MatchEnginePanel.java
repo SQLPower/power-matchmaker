@@ -26,7 +26,6 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -364,44 +363,6 @@ public class MatchEnginePanel implements EditorPane {
 			}
 		});
 		
-	}
-
-	/**
-	 * A Validator to ensure that the supplied log filepath is a valid
-	 * file and that the user has permission to write to it.
-	 */
-	private class LogFileNameValidator implements Validator {
-		public ValidateResult validate(Object contents) {
-			String name = (String) contents;
-			if (name == null || name.length() == 0) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						"Log file is required.");
-			}
-			File log = new File(name);
-			if (log.exists()) {
-				if (!log.isFile()) {
-					return ValidateResult.createValidateResult(Status.FAIL,
-							"Log file name is invalid.");
-				}
-
-				// can't reliably check if file is writable on Windows,
-				// so we'll just assume it is.
-			} else {
-				try {
-					if (!log.createNewFile()) {
-						return ValidateResult.createValidateResult(Status.FAIL,
-								"Log file can not be created.");
-					}
-				} catch (IOException e) {
-					return ValidateResult.createValidateResult(Status.FAIL,
-							"Log file can not be created.");
-				} finally {
-					log.delete();
-				}
-			}
-			return ValidateResult.createValidateResult(Status.OK, "");
-		}
-
 	}
 
 	private JFrame getParentFrame() {
