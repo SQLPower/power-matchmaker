@@ -23,12 +23,10 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -41,7 +39,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
@@ -263,32 +260,6 @@ public class MergeTableRuleEditor implements EditorPane {
 		return false;
 	}
 
-	private class TableMergeRuleRow {
-		private final TableMergeRules rules;
-		private final SQLObjectChooser chooser;
-		public TableMergeRuleRow(TableMergeRules rules, 
-				MatchMakerSwingSession swingSession) {
-			this.rules = rules;
-			this.chooser = new SQLObjectChooser(swingSession);
-			chooser.getCatalogComboBox().setSelectedItem(
-					(rules.getSourceTable()==null?null:rules.getSourceTable().getCatalog()));
-			chooser.getSchemaComboBox().setSelectedItem(
-					(rules.getSourceTable()==null?null:rules.getSourceTable().getSchema()));
-			chooser.getTableComboBox().setSelectedItem(
-					rules.getSourceTable());
-			TableMergeRulesValidator v1 = new TableMergeRulesValidator(chooser);
-			handler.addValidateObject(chooser.getCatalogComboBox(), v1);
-			handler.addValidateObject(chooser.getSchemaComboBox(), v1);
-			handler.addValidateObject(chooser.getTableComboBox(), v1);
-		}
-		public SQLObjectChooser getChooser() {
-			return chooser;
-		}
-		public TableMergeRules getRules() {
-			return rules;
-		}
-		
-	}
 	/**
 	 * table model for the merge table rules, it shows the merge tables
 	 * in a JTable, allows user add/delete/reorder merge tables
@@ -301,7 +272,7 @@ public class MergeTableRuleEditor implements EditorPane {
 	 */
 	private class MergeTableRuleTableModel extends AbstractTableModel {
 
-		private List<TableMergeRuleRow> rows;
+		private List<TableMergeRules> rows;
 		private SQLObjectChooser chooser;
 		private MatchMakerSwingSession swingSession;
 		
@@ -309,10 +280,7 @@ public class MergeTableRuleEditor implements EditorPane {
 				MatchMakerSwingSession swingSession) {
 			this.swingSession = swingSession;
 			this.chooser = new SQLObjectChooser(swingSession);
-			rows = new ArrayList<TableMergeRuleRow>();
-			for (TableMergeRules r : match.getTableMergeRules()) {
-				rows.add(new TableMergeRuleRow(r,swingSession));
-			}
+			rows = match.getTableMergeRules();
 		}
 		
 		public int getColumnCount() {
@@ -325,13 +293,13 @@ public class MergeTableRuleEditor implements EditorPane {
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
 			if (columnIndex == 0) {
-				return rows.get(rowIndex).getChooser().getCatalogComboBox().getSelectedItem();
+				return rows.get(rowIndex).getCatalogName();
 			} else if (columnIndex == 1) {
-				return rows.get(rowIndex).getChooser().getSchemaComboBox().getSelectedItem();
+				return rows.get(rowIndex).getSchemaName();
 			} else if (columnIndex == 2) {
-				return rows.get(rowIndex).getChooser().getTableComboBox().getSelectedItem();
+				return rows.get(rowIndex).getTableName();
 			} else if ( columnIndex == 3) {
-				return rows.get(rowIndex).getRules().isDeleteDup();
+				return rows.get(rowIndex).isDeleteDup() ? "Yes" : "No";
 			} else {
 				return null;
 			}
@@ -339,12 +307,7 @@ public class MergeTableRuleEditor implements EditorPane {
 
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			if (columnIndex == 0) {
-				return chooser.getCatalogComboBox().isEnabled();
-			} else if (columnIndex == 1) {
-				return chooser.getSchemaComboBox().isEnabled();
-			}
-			return true;
+			return false;
 		}
 		
 		@Override
@@ -356,7 +319,7 @@ public class MergeTableRuleEditor implements EditorPane {
 			} else if (columnIndex == 2) {
 				return SQLTable.class;
 			} else if ( columnIndex == 3) {
-				return Boolean.class;
+				return String.class;
 			}
 			return super.getColumnClass(columnIndex);
 		}
@@ -374,55 +337,31 @@ public class MergeTableRuleEditor implements EditorPane {
 			}
 			return null;
 		}
-		
-		@Override
-		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			TableMergeRules r = rows.get(rowIndex).getRules();
-			if (columnIndex == 0) {
-				setValueAt(null, rowIndex, 1);
-			} else if (columnIndex == 1) {
-				setValueAt(null, rowIndex, 2);
-			} else if (columnIndex == 2) {
-				r.setTable((SQLTable) aValue );
-			} else if ( columnIndex == 3) {
-				r.setDeleteDup(((Boolean) aValue).booleanValue());
-			}
-			fireTableDataChanged();
-		}
 
 		public List<TableMergeRules> getMergeRules() {
-			List<TableMergeRules> list = new ArrayList<TableMergeRules>();
-			for ( TableMergeRuleRow r : rows) {
-				list.add(r.getRules());
-			}
-			return list;
+			return rows;
 		}
 		
-		public SQLObjectChooser getSQLObjectChooser(int row) {
-			return rows.get(row).getChooser();
-		}
-		
-
 		public void newRules() {
-			rows.add(new TableMergeRuleRow(new TableMergeRules(),swingSession));
+			rows.add(new TableMergeRules());
 			fireTableDataChanged();
 		}
 		
 		public void removeRules(int index) {
-			rows.remove(index);
+			swingSession.delete(rows.get(index));
 			fireTableDataChanged();
 		}
 		
 		public void moveRuleUp(int index) {
-			TableMergeRuleRow selectedRow = rows.get(index);
-			TableMergeRuleRow targetRow = rows.get(index-1);
+			TableMergeRules selectedRow = rows.get(index);
+			TableMergeRules targetRow = rows.get(index-1);
 			rows.remove(targetRow);
 			rows.add(rows.indexOf(selectedRow)+1, targetRow);
 			fireTableDataChanged();
 		}
 		public void moveRuleDown(int index) {
-			TableMergeRuleRow selectedRow = rows.get(index);
-			TableMergeRuleRow targetRow = rows.get(index+1);
+			TableMergeRules selectedRow = rows.get(index);
+			TableMergeRules targetRow = rows.get(index+1);
 			rows.remove(targetRow);
 			rows.add(rows.indexOf(selectedRow), targetRow);
 			fireTableDataChanged();
@@ -437,23 +376,6 @@ public class MergeTableRuleEditor implements EditorPane {
 			this.mergeTableRuleTableModel = mergeTableRuleTableModel;
 		}
 
-		@Override
-		public TableCellEditor getCellEditor(int row, int column) {
-			if (column == 3) {
-				return super.getCellEditor(row, column);
-			} else {
-				SQLObjectChooser chooser =  mergeTableRuleTableModel.getSQLObjectChooser(row);
-				if (column == 0) {
-					return new DefaultCellEditor(chooser.getCatalogComboBox());
-				} else if (column == 1) {
-					return new DefaultCellEditor(chooser.getSchemaComboBox());
-				} else if (column == 2) {
-					return new DefaultCellEditor(chooser.getTableComboBox());
-				} else {
-					throw new RuntimeException("Unexpected column index:"+column);
-				}
-			}
-		}
 	}
 	
 	private class TableMergeRulesValidator implements Validator {
