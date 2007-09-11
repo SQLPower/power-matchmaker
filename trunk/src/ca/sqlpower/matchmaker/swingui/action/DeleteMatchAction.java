@@ -35,21 +35,34 @@ public class DeleteMatchAction extends AbstractAction {
 
 	private MatchMakerSwingSession swingSession;
 	private Match match;
-	private boolean calledFromTopMenu;
+	private boolean calledFromTopMenu = true;
 	
+    /**
+     * Creates a new instance of this action which is parented by the given swingSession.
+     * match is null when an instance is created with this constructor and will be 
+     * configured to decide which Match to delete by checking for the selected item 
+     * in the tree.
+     * @param swingSession The GUI session this action lives in.
+     */
 	public DeleteMatchAction(MatchMakerSwingSession swingSession) {
 		super("Delete Match");
 		this.swingSession = swingSession;
-		this.calledFromTopMenu = true;
 	}
 	
+    /**
+     * Creates a new instance of this action with a call to the above constructor. In
+     * addition, this match is set to the given parameter.
+     * @param swingSession The GUI session this action lives in.
+     */
 	public DeleteMatchAction(MatchMakerSwingSession swingSession, Match match) {
-		super("Delete Match");
-		this.swingSession = swingSession;
+		this(swingSession);
 		this.match = match;
 		this.calledFromTopMenu = false;
 	}
 	
+	/**
+	 * Performs the delete action if a Match is selected.
+	 */
 	public void actionPerformed(ActionEvent e) {
 		if (calledFromTopMenu) {
 			this.match = MMSUtils.getTreeObject(this.swingSession.getTree(),Match.class);

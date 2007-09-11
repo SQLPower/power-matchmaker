@@ -38,20 +38,21 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.MatchRuleSet;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
-import ca.sqlpower.matchmaker.swingui.action.DeleteMatchRule;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMatchRule;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
@@ -127,6 +128,9 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                     if (folder.getName().equals(Match.MATCH_RULES_FOLDER_NAME)) {
                         addMatchRulesFolderMenuItems(m, folder);
                     }
+                    else if (folder.getName().equals(Match.MERGE_RULES_FOLDER_NAME)) {
+                    	addMergeRulesFolderMenuItems(m, folder);
+                    }
                 } else if (o instanceof MatchRuleSet) {
                     addMatchGroupMenuItems(m, (MatchRuleSet) o);
                 } else if (o instanceof MatchRule) {
@@ -137,14 +141,42 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         }
     }
 
+    /**
+     * Attaches a menu item for the actions of a match group.
+     * 
+     * @param m The popup menu that the menu item would be attached onto.
+     * @param folder The current folder being right-clicked on.
+     */
     private void addMatchRulesFolderMenuItems(JPopupMenu m, MatchMakerFolder<?> folder) {
         m.add(new JMenuItem(new NewMatchGroupAction(swingSession, (Match) folder.getParent())));
     }
 
+    /**
+     * Attaches a menu item for the actions of a merge rule.
+     * 
+     * @param m The popup menu that the menu item would be attached onto.
+     * @param folder The current folder being right-clicked on.
+     */
+    private void addMergeRulesFolderMenuItems(JPopupMenu m, MatchMakerFolder<?> folder) {
+        m.add(new JMenuItem(new NewMergeRuleAction(swingSession, (Match) folder.getParent())));
+    }
+
+    /**
+     * Attaches a menu item for the actions of a match criteria.
+     * 
+     * @param m The popup menu that the menu item would be attached onto.
+     * @param criteria The current folder being right-clicked on.
+     */
     private void addMatchCriteriaMenuItems(JPopupMenu m, MatchRule criteria) {
         m.add(new JMenuItem(new DeleteMatchRule(swingSession,criteria)));
     }
 
+    /**
+     * Attaches a menu item for the actions of a match rule set.
+     * 
+     * @param m The popup menu that the menu item would be attached onto.
+     * @param group The current folder being right-clicked on.
+     */
 	private void addMatchGroupMenuItems(JPopupMenu m, MatchRuleSet group) {
     	m.add(new JMenuItem(new DeleteMatchGroupAction(swingSession,group)));
     }
