@@ -34,6 +34,7 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	List<SPDataSource> dataSources;
 	String emailEngineLocation;
 	String matchEngineLocation;
+	String mergeEngineLocation;
 	DataSourceCollection plDotIni;
 	MatchMakerSession session;
 	
@@ -82,6 +83,14 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 			SQLException, IOException,
 			SchemaVersionFormatException, PLSchemaException {
 		return session;
+	}
+
+	public String getMergeEngineLocation() {
+		return mergeEngineLocation;
+	}
+
+	public void setMergeEngineLocation(String mergeEngineLocation) {
+		this.mergeEngineLocation = mergeEngineLocation;
 	}
 
 

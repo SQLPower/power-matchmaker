@@ -94,14 +94,14 @@ public interface MatchMakerSessionContext {
     public DataSourceCollection getPlDotIni();
 
     /**
-     * Returns the location of the matchmaker engine.
+     * Returns the location of the match engine.
      * 
      * @return the path to the engine
      */
     public String getMatchEngineLocation();
 
     /**
-     * Sets the location of the matchmaker engine.  This location
+     * Sets the location of the match engine.  This location
      * will be remembered between runs of the MatchMaker.
      */
     public void setMatchEngineLocation(String path);
@@ -112,4 +112,17 @@ public interface MatchMakerSessionContext {
      * @return the path to the engine
      */
     public String getEmailEngineLocation();
+
+    /**
+     * Returns the location of the merge engine.
+     * 
+     * @return the path to the engine
+     */
+	public String getMergeEngineLocation();
+	
+    /**
+     * Sets the location of the merge engine.  This location
+     * will be remembered between runs of the MatchMaker.
+     */
+    public void setMergeEngineLocation(String path);
 }

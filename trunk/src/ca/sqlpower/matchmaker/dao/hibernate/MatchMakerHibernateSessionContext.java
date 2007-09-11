@@ -32,6 +32,7 @@ import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
@@ -54,6 +55,8 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 
     private static final String MATCH_ENGINE_LOCATION = "match_engine_location";
 
+    private static final String MERGE_ENGINE_LOCATION = "merge_engine_location";
+    
 	private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionContext.class);
 
     /**
@@ -156,4 +159,28 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         File programPath = new File(programDir, p.getProgName());
         return programPath.toString();
     }
+
+	public String getMergeEngineLocation() {
+		Preferences prefNode = Preferences.userNodeForPackage(MergeEngineImpl.class);
+    	
+    	String path = prefNode.get(MERGE_ENGINE_LOCATION, null);
+    	
+    	if (path == null) {
+    		EnginePath p = EnginePath.MERGEENGINE;
+    		if (plIniPath == null) {
+    			return null;
+    		}
+    		File plDotIniFile = new File(plIniPath);
+    		File programDir = plDotIniFile.getParentFile();
+    		File programPath = new File(programDir, p.getProgName());
+    		path = programPath.toString();
+    	}
+    	
+    	return path;
+	}
+
+	public void setMergeEngineLocation(String path) {
+		Preferences prefNode = Preferences.userNodeForPackage(MergeEngineImpl.class);
+    	prefNode.put(MERGE_ENGINE_LOCATION, path);
+	}
 }

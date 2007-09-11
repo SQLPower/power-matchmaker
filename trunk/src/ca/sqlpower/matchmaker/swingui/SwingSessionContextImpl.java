@@ -414,4 +414,12 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	public void setMatchEngineLocation(String path) {
 		context.setMatchEngineLocation(path);
 	}
+
+	public String getMergeEngineLocation() {
+		return context.getMergeEngineLocation();
+	}
+
+	public void setMergeEngineLocation(String path) {
+		context.setMergeEngineLocation(path);
+	}
 }
