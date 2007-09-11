@@ -94,6 +94,8 @@ public class LoginDialog implements SwingWorkerRegistry {
         public void actionPerformed(ActionEvent e) {
             logger.debug("LoginAction.actionPerformed(): disabling login button");
             loginButton.setEnabled(false);
+            userID.setEnabled(false);
+            password.setEnabled(false);
             if (dbSource == null) {
                 JOptionPane.showMessageDialog(frame,
                         "Please select a database connection first!",
@@ -101,6 +103,8 @@ public class LoginDialog implements SwingWorkerRegistry {
                         JOptionPane.ERROR_MESSAGE);
                 logger.debug("LoginAction.actionPerformed(): enabling login button (connection not specified)");
                 loginButton.setEnabled(true);
+                userID.setEnabled(true);
+                password.setEnabled(true);
                 return;
             }
 
@@ -112,6 +116,8 @@ public class LoginDialog implements SwingWorkerRegistry {
                         JOptionPane.ERROR_MESSAGE);
                 logger.debug("LoginAction.actionPerformed(): enabling login button (connection has no driver class");
                 loginButton.setEnabled(true);
+                userID.setEnabled(true);
+                password.setEnabled(true);
                 return;
             }
 
@@ -126,6 +132,8 @@ public class LoginDialog implements SwingWorkerRegistry {
                 SPSUtils.showExceptionDialogNoReport(frame,
                         "Connection Error", ex );
                 loginButton.setEnabled(true);
+                userID.setEnabled(true);
+                password.setEnabled(true);
                 this.finished = true;
             }
         }
@@ -173,6 +181,8 @@ public class LoginDialog implements SwingWorkerRegistry {
             } finally {
                 logger.debug("LoginAction.actionPerformed(): enabling login button (login has either failed or not; dialog might still be showing)");
                 loginButton.setEnabled(true);
+                userID.setEnabled(true);
+                password.setEnabled(true);
                 logger.debug("Progress bar has been set to NOT visible");
                 finished = true;
             }
