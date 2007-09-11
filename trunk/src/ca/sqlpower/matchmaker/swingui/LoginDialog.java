@@ -96,6 +96,7 @@ public class LoginDialog implements SwingWorkerRegistry {
             loginButton.setEnabled(false);
             userID.setEnabled(false);
             password.setEnabled(false);
+            dbList.setEnabled(false);
             if (dbSource == null) {
                 JOptionPane.showMessageDialog(frame,
                         "Please select a database connection first!",
@@ -105,6 +106,7 @@ public class LoginDialog implements SwingWorkerRegistry {
                 loginButton.setEnabled(true);
                 userID.setEnabled(true);
                 password.setEnabled(true);
+                dbList.setEnabled(true);
                 return;
             }
 
@@ -118,6 +120,7 @@ public class LoginDialog implements SwingWorkerRegistry {
                 loginButton.setEnabled(true);
                 userID.setEnabled(true);
                 password.setEnabled(true);
+                dbList.setEnabled(true);
                 return;
             }
 
@@ -134,6 +137,7 @@ public class LoginDialog implements SwingWorkerRegistry {
                 loginButton.setEnabled(true);
                 userID.setEnabled(true);
                 password.setEnabled(true);
+                dbList.setEnabled(true);
                 this.finished = true;
             }
         }
@@ -183,6 +187,7 @@ public class LoginDialog implements SwingWorkerRegistry {
                 loginButton.setEnabled(true);
                 userID.setEnabled(true);
                 password.setEnabled(true);
+                dbList.setEnabled(true);
                 logger.debug("Progress bar has been set to NOT visible");
                 finished = true;
             }
