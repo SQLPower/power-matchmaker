@@ -58,6 +58,7 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
+import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
 import ca.sqlpower.swingui.SPSUtils;
 
 /**
@@ -204,6 +205,13 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                 swingSession.setCurrentEditorComponent(f);
             }
         }));
+        m.add(new JMenuItem(new AbstractAction("Run Merge") {
+            public void actionPerformed(ActionEvent e) {
+                MergeEnginePanel f = new MergeEnginePanel(swingSession, match,
+                        owningFrame);
+                swingSession.setCurrentEditorComponent(f);
+            }
+        }));
 
         m.addSeparator();
         m.add(new JMenuItem(new AbstractAction("Audit Information") {
@@ -318,6 +326,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 			            swingSession.setCurrentEditorComponent(new MatchResultVisualizer(node.getMatch()));
 					} else if (node.getActionType() == MatchActionType.VALIDATION_STATUS) {
 						swingSession.setCurrentEditorComponent(new MatchValidationStatus(swingSession, node.getMatch()));
+					} else if (node.getActionType() == MatchActionType.RUN_MERGE) {
+						swingSession.setCurrentEditorComponent(new MergeEnginePanel(swingSession, node.getMatch(), owningFrame));
 					}
 				}
 			} catch (Exception ex) {

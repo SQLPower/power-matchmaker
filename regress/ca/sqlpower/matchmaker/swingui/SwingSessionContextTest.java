@@ -147,6 +147,15 @@ public class SwingSessionContextTest extends TestCase {
 			public void setMatchEngineLocation(String path) {
 				System.out.println("Stub call: .setMatchEngineLocation()");
 			}
+
+			public String getMergeEngineLocation() {
+				System.out.println("Stub call: .getMergeEngineLocation()");
+				return FAKE_ENGINE_LOCATION;
+			}
+
+			public void setMergeEngineLocation(String path) {
+				System.out.println("Stub call: .setMergeEngineLocation()");
+			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
         PreferencesFactory stubPrefsFactory = new PreferencesFactory();

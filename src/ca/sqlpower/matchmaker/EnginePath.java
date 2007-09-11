@@ -26,6 +26,7 @@ public enum EnginePath {
 
 	POWERLOADER("ploader_NOT_RIGHT_YET"),
 	MATCHMAKER("Match_ODBC"),
+	MERGEENGINE("Merge_ODBC"),
 	EMAILNOTIFICATION("Mailsender_ODBC");
 
 	private String progName;
