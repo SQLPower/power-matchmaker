@@ -537,13 +537,16 @@ public class MatchRuleSetEditor implements EditorPane {
     }
     
     /**
-     * This class converts a Color into an icon that has width and
-     * height of 50 pixels.
+     * This class converts a Color into an icon that has width of 85 pixels
+     * and height of 50 pixels.
      */
     private class ColorIcon implements Icon
     {
         private int HEIGHT = 50;
-        private int WIDTH = 50;
+        
+        // width of 50 would make sense as the cell has dimensions 50x50 but
+        // the cell would only fill with the color icon if width is 85.
+        private int WIDTH = 85;
         private Color colour;
      
         public ColorIcon(Color colour) {
