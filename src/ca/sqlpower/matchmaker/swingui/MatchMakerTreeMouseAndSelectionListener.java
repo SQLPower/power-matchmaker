@@ -47,7 +47,8 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
-import ca.sqlpower.matchmaker.swingui.action.DeleteMatchRule;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMatchRuleAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
@@ -136,6 +137,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                     addMatchGroupMenuItems(m, (MatchRuleSet) o);
                 } else if (o instanceof MatchRule) {
                     addMatchCriteriaMenuItems(m, (MatchRule) o);
+                } else if (o instanceof TableMergeRules) {
+                	addMergeRulesMenuItems(m, (TableMergeRules) o);
                 }
             }
             m.show(t, e.getX(), e.getY());
@@ -153,7 +156,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
     }
 
     /**
-     * Attaches a menu item for the actions of a merge rule.
+     * Attaches a menu item for the actions of a merge rules folder.
      * 
      * @param m The popup menu that the menu item would be attached onto.
      * @param folder The current folder being right-clicked on.
@@ -163,13 +166,23 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
     }
 
     /**
+     * Attaches a menu item for the actions of a merge rule.
+     * 
+     * @param m The popup menu that the menu item would be attached onto.
+     * @param folder The current folder being right-clicked on.
+     */
+    private void addMergeRulesMenuItems(JPopupMenu m, TableMergeRules mergeRule) {
+        m.add(new JMenuItem(new DeleteMergeRuleAction(swingSession, mergeRule)));
+    }
+    
+    /**
      * Attaches a menu item for the actions of a match criteria.
      * 
      * @param m The popup menu that the menu item would be attached onto.
      * @param criteria The current folder being right-clicked on.
      */
     private void addMatchCriteriaMenuItems(JPopupMenu m, MatchRule criteria) {
-        m.add(new JMenuItem(new DeleteMatchRule(swingSession,criteria)));
+        m.add(new JMenuItem(new DeleteMatchRuleAction(swingSession,criteria)));
     }
 
     /**

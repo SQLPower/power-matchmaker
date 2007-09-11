@@ -35,6 +35,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.TableMergeRules;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
@@ -63,6 +64,8 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
             } else {
                 setIcon(new ColoredIcon(groupIcon, group.getColour()));
             }
+		} else if (value instanceof TableMergeRules) {
+			setIcon(groupIcon);
 		}
 		return this;
 	}
