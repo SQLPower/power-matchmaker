@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.swingui.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.tree.TreePath;
 
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchRuleSet;
@@ -47,7 +48,8 @@ public class NewMatchGroupAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		MatchRuleSet g = new MatchRuleSet();
 		parent.getMatchCriteriaGroupFolder().addChild(g);
-        
+		TreePath treePath = swingSession.getTree().getSelectionPath().pathByAddingChild(g);
+		swingSession.getTree().setSelectionPath(treePath);
         swingSession.setCurrentEditorComponent(new MatchRuleSetEditor(swingSession, parent, g));
 	}
 
