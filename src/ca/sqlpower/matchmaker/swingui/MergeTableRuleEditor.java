@@ -46,15 +46,12 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
@@ -133,14 +130,6 @@ public class MergeTableRuleEditor implements EditorPane {
         mergeRulesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		TableUtils.fitColumnWidths(mergeRulesTable, 15);
 	}
-	
-	//returns the editor pane for the requested merge rule
-	/*private EditorPane getMergeRule(int num)
-	{
-		 = swingSession.getTree();
-		System.out.println(ep);
-		return null;
-	}*/
 
 	private void buildUI() {
 		
@@ -177,7 +166,8 @@ public class MergeTableRuleEditor implements EditorPane {
 		bsb.addGridded(new JButton(moveDown));
 		pb.add(bsb.getPanel(), cc.xy(6,row,"c,c"));
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
-		bbb.addGridded(new JButton(newRule));
+		//new actions for delete and save should be extracted and be put into its own file.
+		bbb.addGridded(new JButton(new NewMergeRuleAction(swingSession, match)));
 		bbb.addRelatedGap();
 		bbb.addGridded(new JButton(deleteRule));
 		bbb.addRelatedGap();
@@ -232,13 +222,6 @@ public class MergeTableRuleEditor implements EditorPane {
 		}
 	};
 	
-	private Action newRule = new AbstractAction("New") {
-		public void actionPerformed(ActionEvent e) {
-			logger.debug("creating new merge rule:");
-			mergeTableRuleTableModel.newRules();
-		}
-	};
-	
 	/**
      * Saves the list in table model to merge rules
      */
@@ -254,52 +237,10 @@ public class MergeTableRuleEditor implements EditorPane {
 	};
 	
 	public boolean doSave() {
-		final List<TableMergeRules> editingRules = 
-			mergeTableRuleTableModel.getMergeRules();
 
 		logger.debug("#1 children size="+match.getTableMergeRules().size());
-		
-		for ( int i=0; ;i++) {
-			TableMergeRules r1,r2;
-			if (i < editingRules.size()) {
-				r1 = editingRules.get(i);
-			} else {
-				r1 = null;
-			}
-			if (i < match.getTableMergeRules().size()) {
-				r2 = match.getTableMergeRules().get(i);
-			} else {
-				r2 = null;
-			}
-			if (r1 != null && r2 != null) {
-				r2.setSeqNo(new Long(10*i));
-				r2.setDeleteDup(r1.isDeleteDup());
-				r2.setTable((SQLTable) mergeTableRuleTableModel.getSQLObjectChooser(i).getTableComboBox().getSelectedItem());
-				logger.debug("r2 table="+r2.getSourceTable());
-				try {
-					r2.setTableIndex(r1.getTableIndex());
-				} catch (ArchitectException e) {
-					throw new ArchitectRuntimeException(e);
-				}
-				while (r2.getChildCount() > 0) {
-					r2.removeChild(r2.getChildren().get(0));
-				}
-				for (ColumnMergeRules cr : r1.getChildren()) {
-					r2.addChild(cr);
-				}
-				swingSession.save(match);
-			} else if ( r1 != null && r2 == null ) {
-				r1.setSeqNo(new Long(10*i));
-				match.addTableMergeRule(r1);
-				swingSession.save(match);
-			} else if ( r1 == null && r2 != null ) {
-				swingSession.delete(r2);
-			} else {
-				break;
-			}
-		}
-		
-		logger.debug("#3 children size="+match.getTableMergeRules().size());
+		swingSession.save(match);
+	
 		return true;
 	}
 
@@ -327,7 +268,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		private final SQLObjectChooser chooser;
 		public TableMergeRuleRow(TableMergeRules rules, 
 				MatchMakerSwingSession swingSession) {
-			this.rules = rules.duplicate(new MatchMakerFolder<TableMergeRules>(), swingSession);
+			this.rules = rules;
 			this.chooser = new SQLObjectChooser(swingSession);
 			chooser.getCatalogComboBox().setSelectedItem(
 					(rules.getSourceTable()==null?null:rules.getSourceTable().getCatalog()));

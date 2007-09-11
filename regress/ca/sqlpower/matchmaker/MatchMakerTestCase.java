@@ -126,9 +126,16 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				if(oldVal == null) {
 					throw new NullPointerException("We forgot to set "+property.getName());
 				} else {
-					assertEquals("The two values for property "+property.getDisplayName() + " in " + mmo.getClass().getName() + " should be the same",oldVal,copyVal);
-					copyVal = modifyObject(property, copyVal);
-					assertFalse("The two values are the same mutable object for property "+property.getDisplayName() + " was "+oldVal+ " and " + copyVal,oldVal.equals(copyVal));
+					assertEquals("The two values for property "+property.getDisplayName() + " in " + mmo.getClass().getName() + " should be equal",oldVal,copyVal);
+					
+					// Ok, the duplicate object's property value compared equal.
+					// Now we want to make sure if we modify that property on the original,
+					// it won't affect the copy.
+					Object newCopyVal = modifyObject(property, copyVal);
+
+					assertFalse(
+							"The two values are the same mutable object for property "+property.getDisplayName() + " was "+oldVal+ " and " + copyVal,
+							oldVal.equals(newCopyVal));
 				}
 			} catch (NoSuchMethodException e) {
 				System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());

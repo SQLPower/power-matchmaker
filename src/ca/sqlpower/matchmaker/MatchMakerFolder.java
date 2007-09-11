@@ -42,37 +42,35 @@ public class MatchMakerFolder<C extends MatchMakerObject>
 
 	@Override
 	public int hashCode() {
-		final int PRIME = 31;
-		int result = 0;
-		result = PRIME * result + ((getName() == null) ? 0 : getName().hashCode());
-		result = PRIME * result + ((getParent() == null) ? 0 : getParent().hashCode());
-		return result;
+		return (getName() == null) ? 0 : getName().hashCode();
+	}
+
+	/**
+	 * Compares to another folder by folder name only.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if ( !(obj instanceof MatchMakerFolder) ) {
+			return false;
+		}
+		final MatchMakerFolder other = (MatchMakerFolder) obj;
+		return (getName() == null) ?
+				other.getName() == null :
+				getName().equals(other.getName());
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		final MatchMakerFolder other = (MatchMakerFolder) obj;
-		if (getParent() == null) {
-			if (other.getParent() != null)
-				return false;
-		} else if (!getParent().equals(other.getParent()))
-			return false;
-		if (getName() == null) {
-			if (other.getName() != null)
-				return false;
-		} else if (!getName().equals(other.getName()))
-			return false;
-		return true;
+	public String toString() {
+		return "Folder \""+getName()+"\"";
 	}
-
+	
+	/**
+	 * This method should not be used.  The match object is expected to perform
+	 * the duplication of its match folders.
+	 */
 	public MatchMakerFolder duplicate(MatchMakerObject parent, MatchMakerSession s) {
-		throw new IllegalAccessError("The match maker folder should never be duplicated.  It should be managed by the Match object");
+		throw new RuntimeException("The match maker folder should never be duplicated.  It should be managed by the Match object");
 	}
 
 

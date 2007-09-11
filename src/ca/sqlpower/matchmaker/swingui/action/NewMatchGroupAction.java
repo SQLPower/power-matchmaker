@@ -28,6 +28,10 @@ import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.swingui.MatchRuleSetEditor;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
+/**
+ * A simple action to adds a new match group to the swing session and
+ * opens up the editor for the new match group.
+ */
 public class NewMatchGroupAction extends AbstractAction {
     
     private final MatchMakerSwingSession swingSession;

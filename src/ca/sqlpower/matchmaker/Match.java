@@ -628,10 +628,15 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		newMatch.setSession(s);
 		
 		for (MatchRuleSet g : getMatchCriteriaGroups()) {
-			MatchRuleSet newGroup = g.duplicate(newMatch,s);
+			MatchRuleSet newGroup = g.duplicate(newMatch.getMatchCriteriaGroupFolder(),s);
 			newMatch.addMatchCriteriaGroup(newGroup);
 		}
-	
+
+		for (TableMergeRules g : getTableMergeRules()) {
+			TableMergeRules newMergeRule = g.duplicate(newMatch.getTableMergeRulesFolder(),s);
+			newMatch.addTableMergeRule(newMergeRule);
+		}
+		
 		return newMatch;
 	}
 	

@@ -246,10 +246,12 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private boolean tableHasChanges = false; 
 	
 	private void setDefaultSelections() throws ArchitectException {
-		chooser.getCatalogComboBox().setSelectedItem(mergeRule.getSourceTable().getCatalog());
-		chooser.getSchemaComboBox().setSelectedItem(mergeRule.getSourceTable().getSchema());
-		chooser.getTableComboBox().setSelectedItem(mergeRule.getSourceTable());
-		chooser.getUniqueKeyComboBox().setSelectedItem(mergeRule.getTableIndex());
+		if (mergeRule.getSourceTable() != null){
+			chooser.getCatalogComboBox().setSelectedItem(mergeRule.getSourceTable().getCatalog());
+			chooser.getSchemaComboBox().setSelectedItem(mergeRule.getSourceTable().getSchema());
+			chooser.getTableComboBox().setSelectedItem(mergeRule.getSourceTable());
+			chooser.getUniqueKeyComboBox().setSelectedItem(mergeRule.getTableIndex());
+		}
 		deleteDup.setSelected(mergeRule.isDeleteDup());
 		
 		chooser.getTableComboBox().addItemListener(new ItemListener(){
