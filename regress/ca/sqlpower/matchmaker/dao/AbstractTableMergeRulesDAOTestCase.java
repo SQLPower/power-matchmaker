@@ -93,12 +93,18 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
         nonPersistingProperties.add("name");
 		return nonPersistingProperties;
 	}
-
+	
 	public void testTableParentIsTheCorrectObject() throws Exception {
 		createNewObjectUnderTest();
 		TableMergeRules mergeRules = match.getTableMergeRules().get(0);
 		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",match.getTableMergeRulesFolder(),mergeRules.getParent());
-		
+	}
+
+	public void testTableParentIsTheCorrectObjectAfterDAOSave() throws Exception {
+		createNewObjectUnderTest();
+		new MatchDAOHibernate(getSession()).save(match);
+		TableMergeRules mergeRules = match.getTableMergeRules().get(0);
+		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",match.getTableMergeRulesFolder(),mergeRules.getParent());
 	}
 	
     public void testDelete() throws Exception {
