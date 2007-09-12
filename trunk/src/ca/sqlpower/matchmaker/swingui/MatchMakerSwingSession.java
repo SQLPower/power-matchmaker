@@ -240,7 +240,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	};
 
 	private Action newMatchAction = null;
-	private Action editMatchAction = new EditMatchAction("Edit");
+	private Action editMatchAction = new EditMatchAction("Edit Match");
 	private Action deleteMatchAction = new DeleteMatchAction(this);
 
 	private Action runMatchAction = new AbstractAction("Run Match") {
@@ -423,15 +423,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		matchesMenu.add(deleteMatchAction);
 		matchesMenu.addSeparator();
 		matchesMenu.add(runMatchAction);
+		matchesMenu.add(runMergeAction);
 		matchesMenu.add(showMatchStatisticInfoAction);
 		matchesMenu.addSeparator();
         matchesMenu.add(new JMenuItem(new PlMatchImportAction(this, frame)));
 		matchesMenu.add(new JMenuItem(new PlMatchExportAction(this, frame)));
 		menuBar.add(matchesMenu);
-
-		JMenu mergeMenu = new JMenu("Merges");
-		mergeMenu.add(newMatchAction);
-		menuBar.add(mergeMenu);
 
 		JMenu folderMenu = new JMenu("Folders");
 		folderMenu.setMnemonic('F');
