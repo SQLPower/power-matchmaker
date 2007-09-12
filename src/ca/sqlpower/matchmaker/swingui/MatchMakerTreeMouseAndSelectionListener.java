@@ -208,6 +208,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 
         m.addSeparator();
         m.add(new JMenuItem(new NewMatchGroupAction(swingSession, match)));
+        m.add(new JMenuItem(new NewMergeRuleAction(swingSession, match)));
         
         m.addSeparator();
         m.add(new JMenuItem(new AbstractAction("Run Match") {
