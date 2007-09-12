@@ -129,8 +129,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                     MatchMakerFolder<?> folder = (MatchMakerFolder<?>) o;
                     if (folder.getName().equals(Match.MATCH_RULES_FOLDER_NAME)) {
                         addMatchRulesFolderMenuItems(m, folder);
-                    }
-                    else if (folder.getName().equals(Match.MERGE_RULES_FOLDER_NAME)) {
+                    } else if (folder.getName().equals(Match.MERGE_RULES_FOLDER_NAME)) {
                     	addMergeRulesFolderMenuItems(m, folder);
                     }
                 } else if (o instanceof MatchRuleSet) {

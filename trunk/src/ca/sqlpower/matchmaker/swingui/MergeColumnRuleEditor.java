@@ -246,7 +246,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private boolean tableHasChanges = false; 
 	
 	private void setDefaultSelections() throws ArchitectException {
-		if (mergeRule.getSourceTable() != null){
+		if (mergeRule.getSourceTable() != null) {
 			chooser.getCatalogComboBox().setSelectedItem(mergeRule.getSourceTable().getCatalog());
 			chooser.getSchemaComboBox().setSelectedItem(mergeRule.getSourceTable().getSchema());
 			chooser.getTableComboBox().setSelectedItem(mergeRule.getSourceTable());
