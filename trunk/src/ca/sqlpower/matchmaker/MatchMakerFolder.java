@@ -33,7 +33,14 @@ public class MatchMakerFolder<C extends MatchMakerObject>
 	public String getFolderDesc() {
 		return folderDesc;
 	}
-
+	
+	/**
+	 * Fires the event for a structure change if children order has been changed.
+	 */
+	public void childrenOrderChanged() {
+		getEventSupport().fireStructureChanged();
+	}
+	
 	public void setFolderDesc(String folderDesc) {
 		String oldValue = this.folderDesc;
 		this.folderDesc = folderDesc;

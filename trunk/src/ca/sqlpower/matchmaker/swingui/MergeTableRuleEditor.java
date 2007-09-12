@@ -233,11 +233,24 @@ public class MergeTableRuleEditor implements EditorPane {
 		}
 	};
 	
+	/**
+	 * Saves the order of the tableMergeRules.  Modifies tree UI if the order
+	 * of any children has been changed.
+	 */
 	public boolean doSave() {
-
 		logger.debug("#1 children size="+match.getTableMergeRules().size());
+		long count = 0;
+		boolean orderChanged = false;
+		for (TableMergeRules t : mergeTableRuleTableModel.getMergeRules()){
+			if (!orderChanged && t.getSeqNo()!= count){
+				orderChanged = true;
+			}
+			t.setSeqNo(count++);
+		}
 		swingSession.save(match);
-	
+		if (orderChanged){
+			match.getTableMergeRulesFolder().childrenOrderChanged();
+		}
 		return true;
 	}
 
@@ -245,17 +258,16 @@ public class MergeTableRuleEditor implements EditorPane {
 		return panel;
 	}
 
+	/**
+	 * Checks for unsaved changes by checking the ordering of the tableMergeRules.
+	 */
 	public boolean hasUnsavedChanges() {
-		final List<TableMergeRules> editingRules = 
-			mergeTableRuleTableModel.getMergeRules();
-		if (editingRules.size() != match.getTableMergeRules().size()) return true;
-		for (int i=0; i<editingRules.size(); i++ ) {
-			TableMergeRules r1 = editingRules.get(i);
-			TableMergeRules r2 = match.getTableMergeRules().get(i);
-			if ( r1.getSourceTable() != r2.getSourceTable() ||
-					r1.isDeleteDup() != r2.isDeleteDup()) {
+		long count = 0;
+		for (TableMergeRules t : mergeTableRuleTableModel.getMergeRules()){
+			if ( t.getSeqNo()!= count){
 				return true;
 			}
+			count++;
 		}
 		return false;
 	}

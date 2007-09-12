@@ -200,13 +200,14 @@
 		</property>
 		-->
 
-		<bag name="tableMergeRules" inverse="true" lazy="true" fetch="subselect" cascade="all">
+		<list name="tableMergeRules" inverse="true" lazy="true" fetch="subselect" cascade="all">
 			<key>
 				<column name="MATCH_OID" not-null="true" />
 			</key>
+			<index column="SEQ_NO" />
 			<one-to-many
 				class="ca.sqlpower.matchmaker.TableMergeRules" />
-		</bag>
+		</list>
 		<bag name="matchCriteriaGroups" inverse="true" lazy="true" fetch="subselect" cascade="all">
 			<key>
 				<column name="MATCH_OID" not-null="true" />
