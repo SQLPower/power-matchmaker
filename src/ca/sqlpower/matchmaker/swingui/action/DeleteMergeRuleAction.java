@@ -27,6 +27,7 @@ import javax.swing.tree.TreePath;
 
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
 /**
  * A simple action for deleting a merge rule.
@@ -46,7 +47,8 @@ public class DeleteMergeRuleAction extends AbstractAction {
 		"Are you sure you want to delete the merge rule?");
 		if (responds != JOptionPane.YES_OPTION)
 			return;
-		TreePath treePath = swingSession.getTree().getSelectionPath().getParentPath();
+		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+		TreePath treePath = treeModel.getPathForNode(mergeRule.getParent());
 		swingSession.getTree().setSelectionPath(treePath);
 		swingSession.delete(mergeRule);
 	}

@@ -176,6 +176,10 @@ public class MatchMakerTreeModel implements TreeModel {
         public Match getMatch() {
         	return match;
         }
+        
+        public Match getParent() {
+        	return match;
+        }
     }
     
     /**
@@ -461,7 +465,7 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 	}
 
-	private TreePath getPathForNode(MatchMakerObject<?, ?> source) {
+	public TreePath getPathForNode(MatchMakerObject<?, ?> source) {
 		List<MatchMakerObject> path = new LinkedList<MatchMakerObject>();
 		while (source != null) {
 			path.add(0, source);

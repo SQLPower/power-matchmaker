@@ -27,6 +27,7 @@ import javax.swing.tree.TreePath;
 
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
 
 public class DeleteMatchGroupAction extends AbstractAction {
@@ -45,7 +46,8 @@ public class DeleteMatchGroupAction extends AbstractAction {
 		"Are you sure you want to delete the match group?");
 		if (responds != JOptionPane.YES_OPTION)
 			return;
-		TreePath treePath = swingSession.getTree().getSelectionPath().getParentPath();
+		MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();
+		TreePath treePath = treeModel.getPathForNode(matchGroup.getParent());
 		swingSession.getTree().setSelectionPath(treePath);
 		swingSession.delete(matchGroup);
 		swingSession.setCurrentEditorComponent(null);
