@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.swingui.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -51,7 +52,8 @@ public class NewMergeRuleAction extends AbstractAction {
 		long seqNo = parent.getTableMergeRulesFolder().getChildCount();
 		parent.addTableMergeRule(g);
 		g.setSeqNo(seqNo);
-		TreePath treePath = swingSession.getTree().getSelectionPath().pathByAddingChild(g);
+		TreePath matchTreePath = swingSession.getTree().getNextMatch(parent.toString(), 1,Position.Bias.Forward);
+		TreePath treePath = matchTreePath.pathByAddingChild(parent.getTableMergeRulesFolder()).pathByAddingChild(g);
 		swingSession.getTree().setSelectionPath(treePath);
         try {
 			swingSession.setCurrentEditorComponent(new MergeColumnRuleEditor(swingSession, parent, g, null));
