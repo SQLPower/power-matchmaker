@@ -54,7 +54,6 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Position;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -87,8 +86,6 @@ import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
-import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
-import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.swingui.CommonCloseAction;
@@ -249,8 +246,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
 			if ( match == null )
 				return;
-		    MatchEnginePanel r = new MatchEnginePanel(MatchMakerSwingSession.this, match, frame);
-		    setCurrentEditorComponent(r);
+			MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+		    TreePath treePath = 
+		    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,2));
+		    getTree().setSelectionPath(treePath);
 		}
 	};
 
@@ -260,8 +259,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
 			if ( match == null )
 				return;
-		    MergeEnginePanel r = new MergeEnginePanel(MatchMakerSwingSession.this, match, frame);
-		    setCurrentEditorComponent(r);
+			MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+		    TreePath treePath = 
+		    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,5));
+		    getTree().setSelectionPath(treePath);
 		}
 	};
 
@@ -531,7 +532,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			if (match == null) return;
 
 			try {
-				menuPath = menuTree.getNextMatch(match.toString(), 1, Position.Bias.Forward);
+				menuPath = ((MatchMakerTreeModel)menuTree.getModel()).getPathForNode(match);
 				menuTree.setSelectionPath(menuPath);
 			} catch (Exception ex) {
 				MMSUtils.showExceptionDialog(frame, "Couldn't create match editor", ex);
