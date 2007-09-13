@@ -203,6 +203,10 @@ public class MergeTableRuleEditor implements EditorPane {
 	private Action deleteRule = new AbstractAction("Delete") {
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = mergeRulesTable.getSelectedRow();
+			int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
+			"Are you sure you want to delete the merge rule?");
+			if (responds != JOptionPane.YES_OPTION)
+				return;
 			logger.debug("deleting merge rule:"+selectedRow);
 			if ( selectedRow >= 0 && selectedRow < mergeRulesTable.getRowCount()) {
 				mergeTableRuleTableModel.removeRules(selectedRow);
