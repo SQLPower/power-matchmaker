@@ -357,7 +357,7 @@ public class MatchResultVisualizer implements EditorPane {
                         }
                     });
                     recordViewerPanel.add(recordViewer.getPanel());
-                    recordViewerHeader.add(recordViewer.getButtonPanel());
+                    recordViewerHeader.add(recordViewer.getToolBar());
                 }
             } catch (Exception ex) {
                 MMSUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex);
