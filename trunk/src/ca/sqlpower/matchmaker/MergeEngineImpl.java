@@ -21,7 +21,15 @@ package ca.sqlpower.matchmaker;
 
 import org.apache.log4j.Logger;
 
-
+/**
+ *  <pre>
+ *  e.g.:merge_odbc.exe MERGE=xxx USER=xx/xx
+ *      DEBUG=[N/Y] COMMIT_FREQ=100 LOG_FILE=xxx ERR_FILE=xxx
+ *      PROCESS_CNT=0 USER_PROMPT=[Y/N] SHOW_PROGRESS=0
+ *      ROLLBACK_SEGMENT_NAME=[ROLLBACK_SEGMENT_NAME]
+ *      APPEND_TO_LOG_IND=[N/Y] SEND_EMAIL=[Y/N]
+ *  </pre>
+ */
 public class MergeEngineImpl extends AbstractCEngine {
 
 	private static final Logger logger = Logger.getLogger(MergeEngineImpl.class);
