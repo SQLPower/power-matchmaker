@@ -431,11 +431,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		matchesMenu.add(new JMenuItem(new PlMatchExportAction(this, frame)));
 		menuBar.add(matchesMenu);
 
-		JMenu folderMenu = new JMenu("Folders");
-		folderMenu.setMnemonic('F');
-		folderMenu.add(newMatchAction);
-		menuBar.add(folderMenu);
-
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
 		toolsMenu.add(tableQueryAction);
