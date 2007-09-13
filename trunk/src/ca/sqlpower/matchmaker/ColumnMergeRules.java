@@ -55,7 +55,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		public String toString() {
 			switch (this) {
 			case IGNORE:
-				return "Ignore";
+				return "IGNORE";
 			case AUGMENT:
 				return "AUGMENT";
 			case CONCAT:
