@@ -45,6 +45,7 @@ import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.DataEntryPanel;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
@@ -289,7 +290,7 @@ public class TranslatePanel implements DataEntryPanel {
         
     };
     
-	Action moveItemUpAction = new AbstractAction("^"){
+	Action moveItemUpAction = new AbstractAction("", SPSUtils.createIcon("chevrons_up1", "Move Up")){
 		public void actionPerformed(ActionEvent e){
 			final int index = getTranslateTable().getSelectedRow();
 			if (index >=0 && index < translateTable.getRowCount() ){
@@ -303,7 +304,7 @@ public class TranslatePanel implements DataEntryPanel {
 		}
 	};
 	
-	Action moveItemDownAction = new AbstractAction("v"){
+	Action moveItemDownAction = new AbstractAction("", SPSUtils.createIcon("chevrons_down1", "Move Down")){
 		public void actionPerformed(ActionEvent e) {
 			final int index = getTranslateTable().getSelectedRow();
 			if (index >=0 && index < translateTable.getRowCount() ){
@@ -318,7 +319,7 @@ public class TranslatePanel implements DataEntryPanel {
 		}	
 	};
 	
-	Action moveItemTopAction = new AbstractAction("^^"){
+	Action moveItemTopAction = new AbstractAction("", SPSUtils.createIcon("chevrons_up2", "Move To Top")){
 		public void actionPerformed(ActionEvent e){
 			final int index = getTranslateTable().getSelectedRow();
 			if (index >=0 && index < translateTable.getRowCount() ){
@@ -334,7 +335,7 @@ public class TranslatePanel implements DataEntryPanel {
 		}
 	};
 	
-	Action moveItemBottomAction = new AbstractAction("vv"){
+	Action moveItemBottomAction = new AbstractAction("", SPSUtils.createIcon("chevrons_down2", "Move To Bottom")){
 		public void actionPerformed(ActionEvent e) {
 			final int index = getTranslateTable().getSelectedRow();
 			if (index >=0 && index < translateTable.getRowCount() ){
