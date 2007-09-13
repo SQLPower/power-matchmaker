@@ -32,9 +32,9 @@ import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JToolBar;
 
 import org.apache.log4j.Logger;
 
@@ -43,20 +43,18 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
-
 public class SourceTableRecordViewer {
 
 	/**
 	 * A panel whose preferred width is never less than
-	 * {@link #buttonPanelPrefWidth}.
+	 * {@link #toolBarPrefWidth}.
 	 */
 	private class RecordViewerPanel extends JPanel {
 		@Override
 		public Dimension getPreferredSize() {
 			Dimension ps = super.getPreferredSize();
 			
-			ps.width = Math.max(buttonPanelPrefWidth, ps.width);
+			ps.width = Math.max(toolBarPrefWidth, ps.width);
 			
 			return ps;
 		}
@@ -66,7 +64,7 @@ public class SourceTableRecordViewer {
 	 * The panel of buttons associated with this record.  Its width
 	 * tracks the current width of {@link #panel}.
 	 */
-    private final JPanel buttonPanel;
+    private final JToolBar toolBar;
 
     /**
      * The panel that contains all the column values of a single
@@ -79,7 +77,7 @@ public class SourceTableRecordViewer {
      * This is our minimum preferred width constraint for the source table
      * record panel itself.
      */
-	private int buttonPanelPrefWidth;
+	private int toolBarPrefWidth;
 	
     private static final Logger logger = Logger.getLogger(SourceTableRecordViewer.class);
 
@@ -92,20 +90,21 @@ public class SourceTableRecordViewer {
 
         panel.setBackground(Color.WHITE);
 
-        ButtonBarBuilder bb = new ButtonBarBuilder();
+        toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+        
         for (Action a : buttonActions) {
-        	bb.addGridded(new JButton(a));
+        	toolBar.add(a);
         }
 
-        buttonPanel = bb.getPanel();
-        buttonPanelPrefWidth = buttonPanel.getPreferredSize().width;
+        toolBarPrefWidth = toolBar.getPreferredSize().width;
         
-        logger.debug("buttonPanel preferred width is " + buttonPanelPrefWidth);
+        logger.debug("toolBar preferred width is " + toolBarPrefWidth);
         
         panel.addComponentListener(new ComponentListener() {
 
             void syncSize(int width) {
-                buttonPanel.setPreferredSize(new Dimension(panel.getWidth(), buttonPanel.getPreferredSize().height));
+                toolBar.setPreferredSize(new Dimension(panel.getWidth(), toolBar.getPreferredSize().height));
             }
             public void componentHidden(ComponentEvent e) {
                 syncSize(panel.getWidth());
@@ -171,8 +170,8 @@ public class SourceTableRecordViewer {
         return panel;
     }
     
-    public JPanel getButtonPanel() {
-        return buttonPanel;
+    public JToolBar getToolBar() {
+        return toolBar;
     }
     
     /**
