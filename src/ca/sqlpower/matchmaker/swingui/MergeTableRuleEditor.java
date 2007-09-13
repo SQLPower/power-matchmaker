@@ -50,6 +50,7 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.util.EditableJTable;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -178,7 +179,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		desc.setText(match.getTableMergeRulesFolder().getFolderDesc());
 	}
 	
-	private Action moveUp = new AbstractAction("^") {
+	private Action moveUp = new AbstractAction("", SPSUtils.createIcon("chevrons_up1", "Move Up")) {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" up");
@@ -189,7 +190,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		}
 	};
 	
-	private Action moveDown = new AbstractAction("v") {
+	private Action moveDown = new AbstractAction("", SPSUtils.createIcon("chevrons_down1", "Move Down")) {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" down");
