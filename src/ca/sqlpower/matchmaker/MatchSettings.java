@@ -66,9 +66,6 @@ public class MatchSettings extends MatchMakerSettings {
         return true;
     }
 
-	public MatchSettings( ) {
-	}
-
 	/**
 	 * The threshold above which matches are automatically resolved
 	 */
@@ -161,7 +158,6 @@ public class MatchSettings extends MatchMakerSettings {
 		settings.setLog(getLog()==null?null:new File(getLog().getPath()));
 		settings.setName(getName()==null?null:new String(getName()));
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
-		settings.setRollbackSegmentName(getRollbackSegmentName()==null?null:new String(getRollbackSegmentName()));
 		settings.setSendEmail(getSendEmail());
 		settings.setSession(s);
 		settings.setShowProgressFreq(getShowProgressFreq()==null?null:new Long(getShowProgressFreq()));
