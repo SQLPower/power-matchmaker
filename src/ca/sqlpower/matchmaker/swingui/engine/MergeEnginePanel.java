@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -30,12 +32,13 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 
 import org.apache.log4j.Logger;
 
@@ -43,6 +46,7 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.MergeSettings;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
@@ -57,6 +61,10 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+/**
+ * A panel that provides a GUI for setting the parameters for running the Merge engine,
+ * as well as running the Merge engine itself and displaying its output on the GUI.
+ */
 public class MergeEnginePanel implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MergeEnginePanel.class);
@@ -78,11 +86,23 @@ public class MergeEnginePanel implements EditorPane {
 	private JTextField logFilePath;
 
 	/**
+	 * The file path to which error logs will be written to.
+	 * Must be a valid file path that the user has write permissions on.
+	 */
+	private JTextField errorLogFilePath;
+	
+	/**
 	 * Opens a file chooser for the user to select the log file they wish
 	 * to use for engine output.
 	 */
 	private BrowseFileAction browseLogFileAction;
 
+	/**
+	 * Opens a file chooser for the user to select the log file they wish
+	 * to use for engine error output.
+	 */
+	private BrowseFileAction browseErrorLogFileAction;
+	
 	/**
 	 * Opens a file chooser for the user to select the engine they want
 	 * to use.
@@ -96,17 +116,21 @@ public class MergeEnginePanel implements EditorPane {
 	private JCheckBox appendToLog;
 	
 	/**
+	 * A field for the user to specify how many records they want the
+	 * engine to process.
+	 */
+	private JSpinner recordsToProcess;
+	
+	/**
+	 * A field for the user to specify how many records for the engine
+	 * to process between each commit.
+	 */
+	private JSpinner commitFrequency;
+	
+	/**
 	 * A flag for the engine to run in debug mode or not.
 	 */
 	private JCheckBox debugMode;
-	
-	/**
-	 * Select which Oracle rollback segment to store the data necessary
-	 * to preform a rollback.
-	 * FIXME: This only makes sense for Oracle, so once the engine supports other platforms, this
-	 * should be hidden or disabled
-	 */
-	private JComboBox rollbackSegment;
 	
 	/**
 	 * The frame that this editor lives in.
@@ -160,7 +184,7 @@ public class MergeEnginePanel implements EditorPane {
 			}
 		});
 		this.engineOutputPanel = new EngineOutputPanel(parentFrame);
-		this.engine = new MergeEngineImpl();
+		this.engine = new MergeEngineImpl(swingSession, match);
 		this.runEngineAction = new RunEngineAction(swingSession, engine, "Run Merge Engine", engineOutputPanel, this);
 		this.panel = buildUI();
 	}
@@ -216,22 +240,49 @@ public class MergeEnginePanel implements EditorPane {
 		if (settings.getLog() == null) {
 			settings.setLog(new File(match.getName() + ".log"));
 		}
+		
 		File logFile = settings.getLog();
 		logFilePath = new JTextField(logFile.getAbsolutePath());
 		handler.addValidateObject(logFilePath, new LogFileNameValidator());
 		
+		if (settings.getErrorLogFile() == null) {
+			settings.setErrorLogFile(new File(match.getName() + ".error.log"));
+		}
+		File errorLogFile = settings.getErrorLogFile();
+		errorLogFilePath = new JTextField(errorLogFile.getAbsolutePath());
+		handler.addValidateObject(errorLogFilePath, new LogFileNameValidator());
+		
 		browseLogFileAction = new BrowseFileAction(parentFrame, logFilePath);
+		browseErrorLogFileAction = new BrowseFileAction(parentFrame, errorLogFilePath);
 		
 		enginePath = new JTextField(swingSession.getContext().getMergeEngineLocation());
 		handler.addValidateObject(enginePath, new FileExistsValidator("Merge engine"));
 		
 		browseEngineFileAction = new BrowseFileAction(parentFrame, enginePath);
-		rollbackSegment = new JComboBox();
-		rollbackSegment.setSelectedItem(settings.getRollbackSegmentName());
 		appendToLog = new JCheckBox("Append to old Log File?", settings.getAppendToLog());
 		
+		recordsToProcess = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 100));
+		if (settings.getProcessCount() != null) {
+			recordsToProcess.setValue(settings.getProcessCount());
+		}
+		
+		commitFrequency = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 100));
+		if (settings.getCommitFrequency() != null) {
+			logger.debug("commitFrequency's value is " + settings.getCommitFrequency());
+			commitFrequency.setValue(settings.getCommitFrequency());
+		}
+		
 		debugMode = new JCheckBox("Debug Mode?", settings.getDebug());
-
+		debugMode.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (((JCheckBox) e.getSource()).isSelected()) {
+					recordsToProcess.setValue(new Integer(1));
+				} else {
+					recordsToProcess.setValue(new Integer(0));
+				}
+			}
+		});
+		
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
 		int y = 4;
@@ -246,8 +297,17 @@ public class MergeEnginePanel implements EditorPane {
 		pb.add(appendToLog, cc.xy(7, y, "l,f"));
 
 		y += 2;
-		pb.add(new JLabel("Rollback Segment:"), cc.xy(2, y, "r,c"));
-		pb.add(rollbackSegment, cc.xy(4, y));
+		pb.add(new JLabel("Error Log File:"), cc.xy(2, y, "r,f"));
+		pb.add(new JButton(browseErrorLogFileAction), cc.xy(5, y, "r,f"));
+		pb.add(errorLogFilePath, cc.xy(4, y, "f,f"));
+		
+		y += 2;
+		pb.add(new JLabel("Records to Process (0 for no limit):"), cc.xy(2, y, "r,c"));
+		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
+		
+		y += 2;
+		pb.add(new JLabel("Commit Frequency (0 for no limit):"), cc.xy(2, y, "r,c"));
+		pb.add(commitFrequency, cc.xy(4, y, "l,c"));
 		
 		y += 2;
 		pb.add(debugMode, cc.xy(4, y, "l,c"));
@@ -281,14 +341,36 @@ public class MergeEnginePanel implements EditorPane {
 		return anotherP;
 	}
 	
+	/**
+	 * Runs the form validation, and then saves the merge settings into the database.
+	 */
 	public boolean doSave() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MergeEnginePanel.doSave()");
-		return false;
+		logger.debug("doSave called");
+		refreshActionStatus();
+		MergeSettings mergeSettings = match.getMergeSettings();
+		mergeSettings.setAppendToLog(appendToLog.isSelected());
+		mergeSettings.setErrorLogFile(new File(errorLogFilePath.getText()));
+		mergeSettings.setLog(new File(logFilePath.getText()));
+		if (recordsToProcess.getValue().equals(new Integer(0))) {
+			mergeSettings.setProcessCount(null);
+		} else {
+			mergeSettings.setProcessCount((Integer) recordsToProcess.getValue());
+		}
+		if (commitFrequency.getValue().equals(new Integer(0))) {
+			mergeSettings.setCommitFrequency(null);
+		} else {
+			mergeSettings.setCommitFrequency((Integer) commitFrequency.getValue());
+		}
+		mergeSettings.setDebug(debugMode.isSelected());
+		swingSession.getContext().setMergeEngineLocation(enginePath.getText());
+		
+		MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
+		dao.save(match);
+		
+		return true;
 	}
 
 	public JComponent getPanel() {
-		
 		return panel;
 	}
 

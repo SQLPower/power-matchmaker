@@ -97,9 +97,6 @@
 			<property name="description" type="string">
 				<column name="MATCH_DESC" length="2000" />
 			</property>
- 			<property name="rollbackSegmentName" type="string">
-				<column name="MATCH_ROLLBACK_SEGMENT_NAME" length="30" />
-			</property>
 			<property name="debug"
 				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="MATCH_DEBUG_MODE_IND" length="1" />
@@ -140,9 +137,6 @@
 			<property name="showProgressFreq" type="long">
 				<column name="MERGE_SHOW_PROGRESS_FREQ" precision="18"
 					scale="0" />
-			</property>
-			<property name="rollbackSegmentName" type="string">
-				<column name="MERGE_ROLLBACK_SEGMENT_NAME" length="30" />
 			</property>
 			<property name="augmentNull"
 				type="ca.sqlpower.matchmaker.util.CustomBooleanType">

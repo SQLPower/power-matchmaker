@@ -102,7 +102,7 @@ public class MatchMakerEngineImplTest extends TestCase {
         log.createNewFile();
         log.setReadOnly();
         assertFalse(log.canWrite());
-        assertFalse(matchMakerEngine.canWriteLogFile(settings));
+        assertFalse(AbstractCEngine.canWriteLogFile(settings));
         log.delete();
     }
     
@@ -113,7 +113,7 @@ public class MatchMakerEngineImplTest extends TestCase {
         settings.setLog(log);
         log.createNewFile();
         assertTrue(log.canWrite());
-        assertTrue(matchMakerEngine.canWriteLogFile(settings));
+        assertTrue(AbstractCEngine.canWriteLogFile(settings));
         log.delete();
     }
     
@@ -125,7 +125,7 @@ public class MatchMakerEngineImplTest extends TestCase {
         log.createNewFile();
         assertTrue(log.canWrite());
         log.delete();
-        assertTrue(matchMakerEngine.canWriteLogFile(settings));
+        assertTrue(AbstractCEngine.canWriteLogFile(settings));
     }
     
     
@@ -136,7 +136,7 @@ public class MatchMakerEngineImplTest extends TestCase {
         settings.setLog(log);
         log.createNewFile();
         assertTrue(log.canWrite());
-        assertTrue(matchMakerEngine.canReadLogFile(settings));
+        assertTrue(AbstractCEngine.canReadLogFile(settings));
         log.delete();
     }
     
@@ -147,7 +147,7 @@ public class MatchMakerEngineImplTest extends TestCase {
         settings.setLog(log);
         // this is an unreadable file (I hope)
         log.mkdir();
-        assertTrue(matchMakerEngine.canReadLogFile(settings));
+        assertTrue(AbstractCEngine.canReadLogFile(settings));
         log.delete();
     }
     
@@ -169,12 +169,12 @@ public class MatchMakerEngineImplTest extends TestCase {
 	public void testHasOdbcDsnNull(){
 		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.setOdbcDsn(null);
-		assertFalse("An empty dsn should be considered invalid",MatchEngineImpl.hasODBCDSN(ds));
+		assertFalse("An empty dsn should be considered invalid",AbstractCEngine.hasODBCDSN(ds));
 	}
 	public void testHasOdbcDsnEmpty(){
 		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.setOdbcDsn("");
-		assertFalse("An empty dsn should be considered invalid",MatchEngineImpl.hasODBCDSN(ds));
+		assertFalse("An empty dsn should be considered invalid",AbstractCEngine.hasODBCDSN(ds));
 	}
 	// Because we can't check to see if this is a valid odbc
 	// dsn we have to go on length of string
@@ -182,6 +182,6 @@ public class MatchMakerEngineImplTest extends TestCase {
 		SPDataSource ds = new SPDataSource(new PlDotIni());
 		ds.setOdbcDsn("Valid");
 		
-		assertTrue("Dsn should be considered valid",MatchEngineImpl.hasODBCDSN(ds));
+		assertTrue("Dsn should be considered valid",AbstractCEngine.hasODBCDSN(ds));
 	}
 }
