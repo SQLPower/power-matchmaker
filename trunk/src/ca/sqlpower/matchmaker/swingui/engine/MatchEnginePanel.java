@@ -32,7 +32,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -122,14 +121,6 @@ public class MatchEnginePanel implements EditorPane {
 	 * A flag for the engine to send emails or not.
 	 */
 	private JCheckBox sendEmail;
-
-	/**
-	 * Select which Oracle rollback segment to store the data necessary
-	 * to preform a rollback.
-	 * FIXME: This only makes sense for Oracle, so once the engine supports other platforms, this
-	 * should be hidden or disabled
-	 */
-	private JComboBox rollbackSegment;
 
 	/**
 	 * The frame that this editor lives in.
@@ -241,7 +232,7 @@ public class MatchEnginePanel implements EditorPane {
 		CellConstraints cc = new CellConstraints();
 
 		MatchSettings settings = match.getMatchSettings();
-		
+
 		if (settings.getLog() == null) {
 			settings.setLog(new File(match.getName() + ".log"));
 		}
@@ -255,8 +246,6 @@ public class MatchEnginePanel implements EditorPane {
 		handler.addValidateObject(enginePath, new FileExistsValidator("Match engine"));
 		
 		browseEngineFileAction = new BrowseFileAction(parentFrame, enginePath);
-		rollbackSegment = new JComboBox();
-		rollbackSegment.setSelectedItem(settings.getRollbackSegmentName());
 		appendToLog = new JCheckBox("Append to old Log File?", settings.getAppendToLog());
 		
 		recordsToProcess = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 100));
@@ -291,10 +280,6 @@ public class MatchEnginePanel implements EditorPane {
 		pb.add(new JButton(browseLogFileAction), cc.xy(5, y, "r,f"));
 		pb.add(appendToLog, cc.xy(7, y, "l,f"));
 
-		y += 2;
-		pb.add(new JLabel("Rollback Segment:"), cc.xy(2, y, "r,c"));
-		pb.add(rollbackSegment, cc.xy(4, y));
-		
 		y += 2;
 		pb.add(new JLabel("Records to Process (0 for no limit):"), cc.xy(2, y, "r,c"));
 		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
