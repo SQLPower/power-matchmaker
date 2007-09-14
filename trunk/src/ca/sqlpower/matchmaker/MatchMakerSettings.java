@@ -47,7 +47,6 @@ public abstract class MatchMakerSettings extends
         result = PRIME * result + ((lastRunDate == null) ? 0 : lastRunDate.hashCode());
         result = PRIME * result + ((log == null) ? 0 : log.hashCode());
         result = PRIME * result + ((processCount == null) ? 0 : processCount.hashCode());
-        result = PRIME * result + ((rollbackSegmentName == null) ? 0 : rollbackSegmentName.hashCode());
         result = PRIME * result + ((sendEmail == true) ? 4567 : 5678);
         result = PRIME * result + ((showProgressFreq == null) ? 0 : showProgressFreq.hashCode());
         return result;
@@ -99,12 +98,6 @@ public abstract class MatchMakerSettings extends
             return false;
         }
 
-        if (rollbackSegmentName == null) {
-            if (other.rollbackSegmentName != null) return false;
-        } else if (!rollbackSegmentName.equals(other.rollbackSegmentName)) {
-            return false;
-        }
-
         if (sendEmail != other.sendEmail ) return false;
 
         if (showProgressFreq == null) {
@@ -115,9 +108,6 @@ public abstract class MatchMakerSettings extends
 
         return true;
     }
-
-	public MatchMakerSettings( ) {
-	}
 
 	/**
 	 * Enable the debug mode of the engine
@@ -137,15 +127,17 @@ public abstract class MatchMakerSettings extends
 	private Long showProgressFreq;
 
 	/**
-	 * rollback segment name
-	 */
-	private String rollbackSegmentName;
-	/**
-	 * Describe the process
+	 * Description of the process
 	 */
 	private String description;
+	
 	/**
-	 * if showProgressFreq is true, process processCount records before a
+	 * The number of records the Match engine will process.
+	 * The default value is 0, which is used to mean unlimited.
+	 * This field is usually used for debugging purposes where the
+	 * engine is run on a limited number of records for testing purposes.
+     *
+	 * Also, if showProgressFreq is true, process processCount records before a
 	 * progress message is printed
 	 */
 	private Integer processCount;
@@ -228,16 +220,6 @@ public abstract class MatchMakerSettings extends
 		getEventSupport().firePropertyChange("description", oldValue, this.description);
 	}
 
-	public String getRollbackSegmentName() {
-		return rollbackSegmentName;
-	}
-
-	public void setRollbackSegmentName(String rollbackSegmentName) {
-		String oldValue = this.rollbackSegmentName;
-		this.rollbackSegmentName = rollbackSegmentName;
-		getEventSupport().firePropertyChange("rollbackSegmentName", oldValue, this.rollbackSegmentName);
-	}
-
 	public Date getLastRunDate() {
 		return lastRunDate;
 	}
@@ -263,7 +245,6 @@ public abstract class MatchMakerSettings extends
         buf.append("lastRunDate->"+lastRunDate +", ");
         buf.append("log->"+log+", ");
         buf.append("processCount->"+processCount+", ");
-        buf.append("rollbackSegmentName->"+rollbackSegmentName+", ");
         buf.append("sendEmail->"+sendEmail+", ");
         buf.append("showProgressFreq->"+showProgressFreq +"]");
         return buf.toString();

@@ -114,13 +114,13 @@ public class MatchImportor {
 
 			try {
 				if ( qName.equalsIgnoreCase("PL_MATCH")) {
-					setMatchMaketProperties(match,match,properties);
+					setMatchMakerProperties(match,match,properties);
 				} else if ( qName.equalsIgnoreCase("PL_MATCH_GROUP")) {
-					setMatchMaketProperties(match,new MatchRuleSet(),properties);
+					setMatchMakerProperties(match,new MatchRuleSet(),properties);
 				} else if ( qName.equalsIgnoreCase("PL_MATCH_CRITERIA")) {
-					setMatchMaketProperties(match,new MatchRule(),properties);
+					setMatchMakerProperties(match,new MatchRule(),properties);
 				} else if ( qName.equalsIgnoreCase("PL_FOLDER")) {
-					setMatchMaketProperties(match,new PlFolder<Match>(),properties);
+					setMatchMakerProperties(match,new PlFolder<Match>(),properties);
 				} else {
 
 					if ( qName.equalsIgnoreCase("DATE")) {
@@ -148,7 +148,7 @@ public class MatchImportor {
 			}
 		}
 
-		private void setMatchMaketProperties(Match parentMatch,
+		private void setMatchMakerProperties(Match parentMatch,
 				MatchMakerObject mmo,List<LabelValueBean> properties) throws ParseException, ArchitectException {
 			if ( mmo instanceof Match ) {
 				Match match = (Match) mmo;
@@ -192,8 +192,6 @@ public class MatchImportor {
 						match.getMatchSettings().setShowProgressFreq(MyLong.parseLong(value));
 					} else if ( bean.getLabel().equalsIgnoreCase("MATCH_DEBUG_MODE_IND")) {
 						match.getMatchSettings().setDebug((value).equalsIgnoreCase("y"));
-					} else if ( bean.getLabel().equalsIgnoreCase("MATCH_ROLLBACK_SEGMENT_NAME")) {
-						match.getMatchSettings().setRollbackSegmentName(value);
 					} else if ( bean.getLabel().equalsIgnoreCase("MERGE_LOG_FILE_NAME")) {
 						match.getMergeSettings().setLog(new File(value));
 					} else if ( bean.getLabel().equalsIgnoreCase("MERGE_APPEND_TO_LOG_IND")) {
@@ -204,8 +202,6 @@ public class MatchImportor {
 						match.getMergeSettings().setShowProgressFreq(MyLong.parseLong(value));
 					} else if ( bean.getLabel().equalsIgnoreCase("MERGE_DEBUG_MODE_IND")) {
 						match.getMergeSettings().setDebug((value).equalsIgnoreCase("y"));
-					} else if ( bean.getLabel().equalsIgnoreCase("MERGE_ROLLBACK_SEGMENT_NAME")) {
-						match.getMergeSettings().setRollbackSegmentName(value);
 					} else if ( bean.getLabel().equalsIgnoreCase("MERGE_AUGMENT_NULL_IND")) {
 						match.getMergeSettings().setAugmentNull((value).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("MERGE_LAST_RUN_DATE")) {

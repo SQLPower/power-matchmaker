@@ -19,8 +19,6 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,7 +31,6 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.DefaultParameters;
 import ca.sqlpower.sql.PLSchemaException;
-import ca.sqlpower.sql.SPDataSource;
 
 /**
  * Sets up and runs the C Match Maker engine
@@ -42,13 +39,9 @@ public class MatchEngineImpl extends AbstractCEngine {
 
 	private static final Logger logger = Logger.getLogger(MatchEngineImpl.class);
 
-	private final MatchMakerSessionContext context;
-
-	
 	public MatchEngineImpl(MatchMakerSession session, Match match) {
 		this.setSession(session);
 		this.setMatch(match);
-		context = session.getContext();
 	}
 
 	public void checkPreconditions() throws EngineSettingException, ArchitectException {
@@ -135,19 +128,7 @@ public class MatchEngineImpl extends AbstractCEngine {
                 }
             }
         }
-        
-        if (!Match.doesSourceTableExist(session, match)) {
-            throw new EngineSettingException("Source table does not exist!");
-        }
-        if (!Match.doesResultTableExist(session, match)) {
-            throw new EngineSettingException("Result table does not exist!");
-        }
-        
-        
-        if (!canReadLogFile(settings)) {
-            throw new EngineSettingException("The log file is not readable.");
-        }
-        
+                
         if (!canWriteLogFile(settings)) {
             throw new EngineSettingException("The log file is not writable.");
         }
@@ -169,16 +150,6 @@ public class MatchEngineImpl extends AbstractCEngine {
 		return validate;
 	}
 
-	/**
-	 * returns true if the given file exists and executable, false otherwise.
-	 * @param fileName  the name of the file you want to check.
-	 */
-	static boolean canExecuteFile(String fileName) {
-		final File file = new File(fileName);
-		// TODO: switch to file.canExecute when we have java 1.6
-		return file.exists() && file.canRead();
-	}
-
 	static boolean canExecuteMatchEngine(MatchMakerSessionContext context) {
 		return canExecuteFile(
 				context.getMatchEngineLocation());
@@ -189,68 +160,20 @@ public class MatchEngineImpl extends AbstractCEngine {
 				context.getEmailEngineLocation());
 	}
 
-	/**
-	 * returns true if the log file of this match is writable.
-	 */
-	static boolean canWriteLogFile(MatchMakerSettings settings) {
-        File file = settings.getLog();
-        if (file == null) {
-        	logger.debug("file is null.");
-        	return false;
-        }
-        if (file.exists()) {
-            return file.canWrite();
-        } else {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                logger.debug("IOException thrown when testing write assuming failure");
-                return false;
-            }
-            // See java bug 4939819 (File.canWrite doesn't work properly on windows,
-            // so we would have to assume that the file is writable at this point)
-            // boolean canWrite = file.canWrite();
-            boolean canWrite = true;
-            file.delete();
-            return canWrite;
-        }
-	}
-
-	/**
-	 * returns true if the log file of this match is readable.
-	 */
-	static boolean canReadLogFile(MatchMakerSettings settings) {
-		return true;
-	}
-
-	/**
-	 * check the DSN setting for the current database connection,
-	 * that's required by the matchmaker odbc engine, since we will not
-	 * use this odbc engine forever, check for not null is acceptable for now.
-	 */
-	protected static boolean hasODBCDSN(SPDataSource dataSource) {
-		final String odbcDsn = dataSource.getOdbcDsn();
-		if ( odbcDsn == null || odbcDsn.length() == 0 ) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
 	public String[] createCommandLine(boolean userPrompt) {
 		/*
 		 * command line sample:
 		 * "M:\Program Files\Power Loader Suite\Match_Oracle.exe"
-		 * MATCH="MATCH_CTV_ORGS" USER=PL/pl@arthur_test DEBUG=Y
+		 * MATCH="MATCH_ORGS" USER=PL/pl@arthur_test DEBUG=Y
 		 * TRUNCATE_CAND_DUP=N SEND_EMAIL=N APPEND_TO_LOG_IND=N
-		 * LOG_FILE="M:\Program Files\Power Loader Suite\Power Loader\script\MATCH_MATCH_CTV_ORGS.log"
+		 * LOG_FILE="M:\Program Files\Power Loader Suite\Power Loader\script\MATCH_ORGS.log"
 		 * SHOW_PROGRESS=10 PROCESS_CNT=1
 		 */
 		List<String> command = new ArrayList<String>();
 		final SQLDatabase db = getSession().getDatabase();
 		final MatchSettings settings = getMatch().getMatchSettings();
 
-		command.add(context.getMatchEngineLocation());
+		command.add(getSession().getContext().getMatchEngineLocation());
 		if ( logger.isDebugEnabled() ) {
 			command.add(" -k ");
 		}

@@ -109,7 +109,7 @@ public class MatchMakerTreeModel implements TreeModel {
         /**
          * Shows the "run merge" UI.
          */
-        RUN_MERGE("Run Merge"),
+        RUN_MERGE("Run Merge Engine"),
         
         /**
          * Shows information about the parent match such as

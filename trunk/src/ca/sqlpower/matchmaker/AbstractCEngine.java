@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -26,6 +27,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.StreamLogger;
 /**
  * Common ground for all C engines.  This class handles events
@@ -151,5 +153,67 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 			proc.destroy();
 			proc = null;
 		}
+	}
+
+	/**
+	 * check the DSN setting for the current database connection,
+	 * that's required by the matchmaker odbc engine, since we will not
+	 * use this odbc engine forever, check for not null is acceptable for now.
+	 */
+	protected static boolean hasODBCDSN(SPDataSource dataSource) {
+		final String odbcDsn = dataSource.getOdbcDsn();
+		if ( odbcDsn == null || odbcDsn.length() == 0 ) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	/**
+	 * returns true if the log file of this match is readable.
+	 */
+	public static boolean canReadLogFile(MatchMakerSettings settings) {
+		File file = settings.getLog();
+		
+		if (file == null) return false;
+		
+		return file.canRead();
+	}
+
+	/**
+	 * returns true if the log file of this match is writable.
+	 */
+	public static boolean canWriteLogFile(MatchMakerSettings settings) {
+	    File file = settings.getLog();
+	    if (file == null) {
+	    	logger.debug("file is null.");
+	    	return false;
+	    }
+	    if (file.exists()) {
+	        return file.canWrite();
+	    } else {
+	        try {
+	            file.createNewFile();
+	        } catch (IOException e) {
+	            logger.debug("IOException thrown when testing write assuming failure");
+	            return false;
+	        }
+	        // See java bug 4939819 (File.canWrite doesn't work properly on windows,
+	        // so we would have to assume that the file is writable at this point)
+	        // boolean canWrite = file.canWrite();
+	        boolean canWrite = true;
+	        file.delete();
+	        return canWrite;
+	    }
+	}
+
+	/**
+	 * returns true if the given file exists and executable, false otherwise.
+	 * @param fileName  the name of the file you want to check.
+	 */
+	public static boolean canExecuteFile(String fileName) {
+		final File file = new File(fileName);
+		// TODO: switch to file.canExecute when we have java 1.6
+		return file.exists() && file.canRead();
 	}
 }
