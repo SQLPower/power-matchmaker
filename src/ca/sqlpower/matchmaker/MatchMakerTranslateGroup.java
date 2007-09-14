@@ -23,7 +23,8 @@ package ca.sqlpower.matchmaker;
 
 
 public class MatchMakerTranslateGroup
-	extends AbstractMatchMakerObject<MatchMakerTranslateGroup, MatchMakerTranslateWord> {
+	extends AbstractMatchMakerObject<MatchMakerTranslateGroup, MatchMakerTranslateWord> 
+	implements Comparable <MatchMakerTranslateGroup> {
 
 	private Long oid;
 
@@ -100,5 +101,9 @@ public class MatchMakerTranslateGroup
 			g.addChild(w.duplicate(g,s));
 		}
 		return g;
+	}
+
+	public int compareTo(MatchMakerTranslateGroup o) {
+		return getName().compareTo(((MatchMakerTranslateGroup) o).getName());
 	}
 }

@@ -26,6 +26,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.matchmaker.swingui.TranslateGroupsEditor;
 import ca.sqlpower.matchmaker.swingui.TranslatePanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 
@@ -48,6 +49,7 @@ public class EditTranslateAction extends AbstractAction {
                 new TranslatePanel(swingSession), parentWindow, "Translation Group Manager", "Close");
 		dialog.setLocationRelativeTo(parentWindow);
 		dialog.setVisible(true);
+		swingSession.setCurrentEditorComponent(new TranslateGroupsEditor(swingSession));
 	}
 
 }
