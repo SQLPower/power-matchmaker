@@ -38,13 +38,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.validation.Status;
+import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
@@ -64,7 +66,6 @@ public class TranslateWordsEditor implements EditorPane {
 	
 	private JPanel panel;
 	private JScrollPane translateWordsScrollPane;
-	TranslateWordsTableModel translateWordsTableModel;
 	private JTable translateWordsTable;
 	private JTextField from;
 	private JTextField to;
@@ -88,9 +89,9 @@ public class TranslateWordsEditor implements EditorPane {
 	}
 
 	private void setupTable() {
-		translateWordsTableModel = new TranslateWordsTableModel(swingSession, group);
-		translateWordsTable = new JTable(translateWordsTableModel);
+		translateWordsTable = new EditableJTable();
         translateWordsTable.setName("Translate Words");
+        translateWordsTable.setModel(new MatchTranslateTableModel(group));
         
         //adds an action listener that looks for a double click, that opens the selected 
         //merge rule editor pane  
@@ -121,6 +122,7 @@ public class TranslateWordsEditor implements EditorPane {
 		CellConstraints cc = new CellConstraints();
 
 		int row = 2;
+		handler = new FormValidationHandler(status);
 		internalPB.add(status, cc.xy(4,row));
 		
 		row += 2;
@@ -175,6 +177,17 @@ public class TranslateWordsEditor implements EditorPane {
 		externalPB.add(bbb.getPanel(), bbcc.xy(4,row,"c,c"));
 		
 		externalPB.add(internalPB.getPanel(), cc.xyw(2,2,4,"f,f"));
+		
+        List<Action> groupActions = new ArrayList<Action>();
+        groupActions.add(saveGroupAction);
+        MMODuplicateValidator mmoValidator = new MMODuplicateValidator(swingSession.getTranslations(),
+                                    groupActions, "translate group name", 35, group);
+        handler.addValidateObject(groupName, mmoValidator);
+        List<Action> wordsActions = new ArrayList<Action>();
+        wordsActions.add(saveGroupAction);
+        TranslateWordValidator wordValidator = new TranslateWordValidator(translateWordsTable,wordsActions);
+        handler.addValidateObject(translateWordsTable, wordValidator);
+        
 		panel = externalPB.getPanel();
 	}
 	
@@ -218,7 +231,6 @@ public class TranslateWordsEditor implements EditorPane {
             from.setText("");
             to.setText("");
             from.requestFocus();
-            ((TranslateWordsTableModel) (translateWordsTable.getModel())).updateModel();
         }       
     };
     
@@ -232,13 +244,21 @@ public class TranslateWordsEditor implements EditorPane {
             for (int i=selectedIndeces.size()-1;i >= 0; i--){
                 group.removeChild(group.getChildren().get((int)selectedIndeces.get(i)));
             }
-            ((TranslateWordsTableModel) (translateWordsTable.getModel())).updateModel();
         }        
     };
     
 	Action saveGroupAction = new AbstractAction("Save Group"){
 
 		public void actionPerformed(ActionEvent e) {
+			ValidateResult result = handler.getWorstValidationStatus();
+			if ( result.getStatus() == Status.FAIL) {
+				JOptionPane.showMessageDialog(swingSession.getFrame(),
+						"You have to fix the error before you can save the translation group",
+						"Save",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			
 			if (group.getName() == null || !group.getName().equals(groupName.getText())) {
 				group.setName(groupName.getText());
 			}
@@ -314,83 +334,5 @@ public class TranslateWordsEditor implements EditorPane {
 				}
 			}
 		}
-
-			
 	};
-
-	/**
-	 * table model for the translation words, it shows the translation words
-	 * in a JTable, allows user add/delete/reorder translation words
-	 * it has 2 column:
-	 * 		from	 -- original words
-	 *      to		 -- replaced words 
-	 */
-	private class TranslateWordsTableModel extends AbstractTableModel {
-
-		private List<MatchMakerTranslateWord> rows;
-		private MatchMakerSwingSession swingSession;
-		private MatchMakerTranslateGroup group;
-		
-		public TranslateWordsTableModel(MatchMakerSwingSession swingSession, 
-				MatchMakerTranslateGroup group) {
-			this.swingSession = swingSession;
-			rows = group.getChildren();
-		}
-		
-		public int getColumnCount() {
-			return 2;
-		}
-
-		public int getRowCount() {
-			return rows.size();
-		}
-
-		public Object getValueAt(int rowIndex, int columnIndex) {
-			if (columnIndex == 0) {
-				return rows.get(rowIndex).getFrom();
-			} else if (columnIndex == 1) {
-				return rows.get(rowIndex).getTo();
-			} else {
-				return null;
-			}
-		}
-
-		@Override
-		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			return true;
-		}
-		
-		@Override
-		public Class<?> getColumnClass(int columnIndex) {
-			return String.class;
-		}
-		
-		@Override
-		public String getColumnName(int columnIndex) {
-			if (columnIndex == 0) {
-				return "From";
-			} else if (columnIndex == 1) {
-				return "To";
-			}
-			return null;
-		}
-
-		public List<MatchMakerTranslateWord> getTranslateWords() {
-			return rows;
-		}
-		
-		public void updateModel() {
-			fireTableDataChanged();
-		}
-		
-		public void removeRules(int index) {
-			if (swingSession.getTranslations().isInUseInBusinessModel(group)) {
-				JOptionPane.showMessageDialog(swingSession.getFrame(),
-					"The parent translation group is in use, and cannot be modified.");
-			} else {
-				group.removeChild(group.getChildren().get(index));
-				fireTableDataChanged();
-			}
-		}
-	}
 }

@@ -26,6 +26,8 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JTable;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -39,6 +41,8 @@ import ca.sqlpower.validation.Validator;
  */
 public class TranslateWordValidator implements Validator {
 
+    private static final Logger logger = Logger.getLogger(TranslateWordValidator.class);
+	
     private JTable table;
     private List<Action> actions;
     
@@ -57,6 +61,16 @@ public class TranslateWordValidator implements Validator {
             return ValidateResult.createValidateResult(Status.FAIL, 
                     "No Duplicate Translations Allowed");
         } 
+        
+        for (int x = 0; x<model.getRowCount();x++) {
+        	String val = (String) model.getValueAt(x, 0);
+        	if (val.equals("")) {
+        		setComponentsEnabled(false);
+                return ValidateResult.createValidateResult(Status.FAIL, 
+                        "The from field can not be empty");
+        	}
+        	
+        }
         setComponentsEnabled(true);
         return ValidateResult.createValidateResult(Status.OK, "");
     }
@@ -64,9 +78,9 @@ public class TranslateWordValidator implements Validator {
     private void setComponentsEnabled(boolean enable){
         if (actions != null){
             for (Action c : actions){
+            	logger.debug(c + ".enable(" + enable);
                 c.setEnabled(enable);
             }
         }
     }
-
 }
