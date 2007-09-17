@@ -20,6 +20,8 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -178,4 +180,15 @@ public class PreMergeDataFudgerTest extends TestCase {
 		assertNull(o1o2);
 	}
 
+	public void testFlipCandidates() throws Exception {
+		fudger.fudge();
+		
+		Statement stmt = con.createStatement();
+		
+		ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM pl.match_results WHERE " +
+										"(MATCH_STATUS='MATCH' OR MATCH_STATUS='AUTO-MATCH') AND " +
+										"(DUP1_MASTER_IND='N')");
+		assertTrue(rs.next());
+		assertEquals(0, rs.getInt(1));
+	}
 }

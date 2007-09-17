@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,6 +28,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
@@ -94,6 +96,10 @@ public class PreMergeDataFudger {
 	 * This method creates entries in the result table for merging using the C
 	 * engine. Once the merging has been implemented in java this should never
 	 * be used.
+	 * <p>
+	 * WARNING: The Match pool will not be in a consistent state after calling
+	 * this method. If you wish to use the Match pool after calling this fudge
+	 * method, you should call the {@link MatchPool#findAll(java.util.List)}
 	 */
 	public void fudge() throws SQLException {
 		for (SourceTableRecord str : pool.getSourceTableRecords()) {
@@ -116,6 +122,22 @@ public class PreMergeDataFudger {
 	        pmr.setMaster(ultimateMaster);
 		}
 		pool.store();
+		
+		Statement stmt = null;
+		
+		try {
+			stmt = session.getConnection().createStatement();
+			stmt.executeUpdate("update " + 
+								DDLUtils.toQualifiedName(pool.getMatch().getResultTable()) +
+								"\n set dup1_master_ind='Y'," +
+								"\n dup_candidate_10=dup_candidate_20," +
+								"\n dup_candidate_20=dup_candidate_10," +
+								"\n current_candidate_10=current_candidate_20,"+
+								"\n current_candidate_20=current_candidate_10" +
+								"\n where dup1_master_ind='N'");
+		} finally {
+			stmt.close();
+		}
 	}
 	
 	/**
