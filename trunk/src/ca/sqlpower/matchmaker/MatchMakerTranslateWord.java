@@ -71,6 +71,11 @@ public class MatchMakerTranslateWord
 	}
 
 	@Override
+	public String getName() {
+		return from + " \u2192 " + to;
+	}
+	
+	@Override
 	public void addChild(MatchMakerObject child) {
 		throw new IllegalStateException("MatchMakerTranslateWord does not allow child!");
 	}

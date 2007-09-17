@@ -434,7 +434,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
 		toolsMenu.add(tableQueryAction);
-		toolsMenu.add(new EditTranslateAction(this, frame));
+		toolsMenu.add(new EditTranslateAction(this));
 		// We will add this back in if we need the SQLRunner later
         //toolsMenu.add(new SQLRunnerAction(frame));
 		menuBar.add(toolsMenu);
@@ -475,7 +475,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
-		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent(),this));
+		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent(),getTranslateGroupParent(), this));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
 		tree.addMouseListener(matchMakerTreeMouseAndSelectionListener);
@@ -502,6 +502,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		FolderParent current = sessionImpl.getCurrentFolderParent();
         logger.debug("getCurrentFolderParent(): Found folder list: "+current.getChildren());
         return current;
+	}
+	
+	public TranslateGroupParent getTranslateGroupParent() {
+		TranslateGroupParent translate = sessionImpl.getTranslations();
+        logger.debug("getTranslateGroupParent(): Found folder list: "+translate.getChildren());
+        return translate;
 	}
 
     /**

@@ -33,6 +33,10 @@ public class MatchMakerTranslateWordTest
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);
+		
+		// Ignoring because the getName() has been changed to enable
+		// naming the node on the tree.
+		propertiesThatDifferOnSetAndGet.add("name");
 	}
 
 	@Override

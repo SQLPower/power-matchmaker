@@ -35,7 +35,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.tree.TreePath;
@@ -64,7 +63,6 @@ public class TranslateGroupsEditor implements EditorPane {
 	TranslateGroupsTableModel translateGroupsTableModel;
 	private JTable translateGroupsTable;
 	
-	private JTree menuTree;
 	private TreePath menuPath;
 
 	private final MatchMakerSwingSession swingSession;
@@ -82,8 +80,9 @@ public class TranslateGroupsEditor implements EditorPane {
         handler = new FormValidationHandler(status);
         handler.resetHasValidated();
 		
-        //TODO: finish adding it to the tree
-        menuTree = swingSession.getTree();
+		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+		menuPath = treeModel.getPathForNode(swingSession.getTranslations());
+		swingSession.getTree().setSelectionPath(menuPath);
 	}
 	
 	private void setupTable() {
@@ -163,6 +162,9 @@ public class TranslateGroupsEditor implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
             MatchMakerTranslateGroup tg = new MatchMakerTranslateGroup();
             swingSession.setCurrentEditorComponent(new TranslateWordsEditor(swingSession, tg));
+            
+            TreePath childPath = menuPath.pathByAddingChild(tg);
+            swingSession.getTree().setSelectionPath(childPath);
 		}		
 	};
 	
@@ -178,7 +180,7 @@ public class TranslateGroupsEditor implements EditorPane {
 			logger.debug("deleting translate group:"+selectedRow);
 			
 			if ( selectedRow >= 0 && selectedRow < translateGroupsTable.getRowCount()) {
-				translateGroupsTableModel.removeRules(selectedRow);
+				translateGroupsTableModel.removeGroup(selectedRow);
 				if (selectedRow >= translateGroupsTable.getRowCount()) {
 					selectedRow = translateGroupsTable.getRowCount() - 1;
 				}
@@ -187,7 +189,7 @@ public class TranslateGroupsEditor implements EditorPane {
 				}
 			} else {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"Please select one merge rule to delete");
+						"Please select one translate group to delete");
 			}
 		}
 	};
@@ -248,12 +250,12 @@ public class TranslateGroupsEditor implements EditorPane {
 			return rows;
 		}
 		
-		public void removeRules(int index) {
+		public void removeGroup(int index) {
 			if (swingSession.getTranslations().isInUseInBusinessModel(rows.get(index))) {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
 					"This translation group is in use, and cannot be deleted.");
 			} else {
-				swingSession.getTranslations().removeAndDeleteChild(rows.get(index));
+				swingSession.delete(rows.get(index));
 				fireTableDataChanged();
 			}
 		}

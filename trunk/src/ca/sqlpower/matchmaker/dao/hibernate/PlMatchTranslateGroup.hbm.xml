@@ -20,22 +20,15 @@
 			<column name="TRANSLATE_GROUP_NAME" length="35"
 				unique="true" />
 		</property>
-		<bag name="children" lazy="false" order-by="seq_no" cascade="all,delete-orphan">
+		
+		<bag name="children" cascade="all-delete-orphan"
+			order-by="seq_no" inverse="true" lazy="false" fetch="subselect">
 			<key>
-				<column name="TRANSLATE_GROUP_OID" precision="22"
-					scale="0" />
+				<column name="TRANSLATE_GROUP_OID" not-null="true" />
 			</key>
 			<one-to-many
 				class="ca.sqlpower.matchmaker.MatchMakerTranslateWord" />
 		</bag>
-		<!--bag name="plMatchCriterias" inverse="true">
-			<key>
-				<column name="TRANSLATE_GROUP_OID" precision="22"
-					scale="0" />
-			</key>
-			<one-to-many
-				class="ca.sqlpower.matchmaker.hibernate.PlMatchCriterion" />
-		</bag-->
 
 	</class>
 </hibernate-mapping>

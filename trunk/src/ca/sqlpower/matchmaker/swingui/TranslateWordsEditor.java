@@ -86,7 +86,7 @@ public class TranslateWordsEditor implements EditorPane {
 		setupTable();
 		buildUI();
 	}
-	
+
 	private void setupTable() {
 		translateWordsTableModel = new TranslateWordsTableModel(swingSession, group);
 		translateWordsTable = new JTable(translateWordsTableModel);
@@ -98,10 +98,6 @@ public class TranslateWordsEditor implements EditorPane {
 
 			public void mouseClicked(MouseEvent e) {
 					int row = TranslateWordsEditor.this.translateWordsTable.getSelectedRow();
-					
-//					Object parent = menuPath.getLastPathComponent();
-//					Object child = menuTree.getModel().getChild(parent, row);
-//					menuTree.setSelectionPath(menuPath.pathByAddingChild(child));
 			}		
         });
 	}
@@ -243,12 +239,16 @@ public class TranslateWordsEditor implements EditorPane {
 	Action saveGroupAction = new AbstractAction("Save Group"){
 
 		public void actionPerformed(ActionEvent e) {
-			group.setName(groupName.getText());
+			if (group.getName() == null || !group.getName().equals(groupName.getText())) {
+				group.setName(groupName.getText());
+			}
 			if (!swingSession.getTranslations().getChildren().contains(group)) {
 				swingSession.getTranslations().addNewChild(group);
 			}
-			group.syncChildrenSeqNo();
-			swingSession.getDAO(MatchMakerTranslateGroup.class).save(group);
+			if (group != null) {
+				group.syncChildrenSeqNo();
+				swingSession.getDAO(MatchMakerTranslateGroup.class).save(group);
+			}
 		}
 		
 	};

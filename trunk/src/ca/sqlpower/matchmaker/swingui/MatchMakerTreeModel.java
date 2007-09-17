@@ -39,6 +39,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -58,7 +59,8 @@ public class MatchMakerTreeModel implements TreeModel {
      * and "Backup Match/Merge" folders, which are in turn parents to the PLFolders
      * (hence, FolderParent).
      */
-    private static class MMRootNode extends AbstractMatchMakerObject<MMRootNode, FolderParent> {
+    private static class MMRootNode <C extends MatchMakerObject> 
+    	extends AbstractMatchMakerObject<MMRootNode, C> {
 
         public MMRootNode() {
             setName("Root Node");
@@ -203,6 +205,7 @@ public class MatchMakerTreeModel implements TreeModel {
     
 	private FolderParent current;
 	private FolderParent backup;
+	private TranslateGroupParent translate;
 	
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
 
@@ -216,7 +219,8 @@ public class MatchMakerTreeModel implements TreeModel {
      *            {@link MatchActionNode#performAction()} unless this is
      *            actually a MatchMakerSwingSession.
      */
-	public MatchMakerTreeModel(FolderParent current, FolderParent backup, MatchMakerSession s) {
+	public MatchMakerTreeModel(FolderParent current, FolderParent backup,
+			TranslateGroupParent translate, MatchMakerSession s) {
 		session = s;
         root.setSession(s);
         
@@ -225,6 +229,9 @@ public class MatchMakerTreeModel implements TreeModel {
 
         this.backup = backup;
 		root.addChild(backup);
+		
+		this.translate = translate;
+		root.addChild(translate);
         
 		MatchMakerUtils.listenToHierarchy(listener, root);
 	}
@@ -262,7 +269,7 @@ public class MatchMakerTreeModel implements TreeModel {
             } else {
                 List<MatchActionNode> matchActions = getActionNodes(match);
                 mmoChild = matchActions.get(index - 2);
-            }
+            }      
         } else {
             mmoChild = mmoParent.getChildren().get(index);
         }

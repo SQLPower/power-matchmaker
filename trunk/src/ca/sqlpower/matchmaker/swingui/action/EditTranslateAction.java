@@ -19,16 +19,13 @@
 
 package ca.sqlpower.matchmaker.swingui.action;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.JDialog;
+import javax.swing.tree.TreePath;
 
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.TranslateGroupsEditor;
-import ca.sqlpower.matchmaker.swingui.TranslatePanel;
-import ca.sqlpower.swingui.DataEntryPanelBuilder;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
 /**
  * This action creates a TranslatePanel and puts it in a popup dialog with an OK button.
@@ -36,20 +33,16 @@ import ca.sqlpower.swingui.DataEntryPanelBuilder;
 public class EditTranslateAction extends AbstractAction {
 
     private final MatchMakerSwingSession swingSession;
-	private final Window parentWindow;
 
-	public EditTranslateAction(MatchMakerSwingSession swingSession, Window parentWindow) {
+	public EditTranslateAction(MatchMakerSwingSession swingSession) {
 		super("Translate Words Manager");
         this.swingSession = swingSession;
-		this.parentWindow = parentWindow;
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		JDialog dialog = DataEntryPanelBuilder.createSingleButtonDataEntryPanelDialog(
-                new TranslatePanel(swingSession), parentWindow, "Translation Group Manager", "Close");
-		dialog.setLocationRelativeTo(parentWindow);
-		dialog.setVisible(true);
-		swingSession.setCurrentEditorComponent(new TranslateGroupsEditor(swingSession));
+		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+		TreePath menuPath = treeModel.getPathForNode(swingSession.getTranslations());
+		swingSession.getTree().setSelectionPath(menuPath);
 	}
 
 }

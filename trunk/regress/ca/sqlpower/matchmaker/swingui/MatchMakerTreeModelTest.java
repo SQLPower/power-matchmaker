@@ -31,6 +31,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
 
 public class MatchMakerTreeModelTest extends TestCase {
 
@@ -47,7 +48,8 @@ public class MatchMakerTreeModelTest extends TestCase {
 		counter = new MatchMakerTreeEventCounter();
 		FolderParent current = new FolderParent(new TestingMatchMakerSession());
 		FolderParent backup = new FolderParent(new TestingMatchMakerSession());
-		treeModel = new MatchMakerTreeModel(current,backup,new TestingMatchMakerSession());
+		TranslateGroupParent translate  = new TranslateGroupParent(new TestingMatchMakerSession());
+		treeModel = new MatchMakerTreeModel(current,backup,translate,new TestingMatchMakerSession());
 		currentFoldersNode = (MatchMakerObject<MatchMakerObject, PlFolder>) treeModel.getChild(treeModel.getRoot(), 0);
 		currentFoldersNode.addChild(folder);
 	}
