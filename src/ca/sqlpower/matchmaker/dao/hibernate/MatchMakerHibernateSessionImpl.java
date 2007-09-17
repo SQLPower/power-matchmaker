@@ -372,6 +372,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
             List<MatchMakerTranslateGroup> groups = matchMakerTranslateGroupDAO.findAll();
             tgp = new TranslateGroupParent(this);
+            tgp.setName("Translation Groups");
             for (MatchMakerTranslateGroup g: groups) {
                 tgp.addChild(g);
             }

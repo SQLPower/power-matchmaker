@@ -113,7 +113,6 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
     	stmt = con.createStatement();
     	oidRs = stmt.executeQuery("select translate_group_oid from pl_match_translate_group where translate_group_name='parent'");
     	oidRs.next();
-    	Long oid = oidRs.getLong("translate_group_oid"); 
     	
     	rs = stmt.executeQuery("select * from pl_match_translate order by seq_no");
     	assertTrue("There should be 3 children not 0",rs.next());
@@ -147,5 +146,126 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
     	}
     
     	
+    }
+    
+    public void testChildrenDeletePersists() throws Exception {
+    	MatchMakerTranslateGroup group = new MatchMakerTranslateGroup();
+    	group.setName("parent");
+    	
+    	MatchMakerTranslateWord word1 = new MatchMakerTranslateWord();
+    	word1.setFrom("1");
+    	MatchMakerTranslateWord word2 = new MatchMakerTranslateWord();
+    	word2.setFrom("2");
+    	MatchMakerTranslateWord word3 = new MatchMakerTranslateWord();
+    	word3.setFrom("3");
+    	
+    	group.addChild(word1);
+    	group.addChild(word2);
+    	group.addChild(word3);
+    	
+    	getDataAccessObject().save(group);
+    	group.removeChild(word1);
+    	group.removeChild(word2);
+    	group.removeChild(word3);
+       	getDataAccessObject().save(group);
+    	
+       	Connection con = getSession().getConnection();
+    	Statement stmt =null;
+    	ResultSet oidRs = null;
+    	ResultSet rs = null;
+    	try {
+    	stmt = con.createStatement();
+    	oidRs = stmt.executeQuery("select translate_group_oid from pl_match_translate_group where translate_group_name='parent'");
+    	oidRs.next();
+    	
+    	rs = stmt.executeQuery("select * from pl_match_translate order by seq_no");
+    	assertTrue("There should be 0 children",!rs.next());
+    	} finally {
+    		try {
+                if (oidRs != null)
+                	oidRs.close();
+            } catch (Exception e) {
+                System.err.println("Couldn't close oid result set ");
+                e.printStackTrace();
+            }
+            try {
+                if (rs != null)
+                    rs.close();
+            } catch (Exception e) {
+                System.err.println("Couldn't close result set for translate groups");
+                e.printStackTrace();
+            }
+            try {
+                if (stmt != null)
+                    stmt.close();
+            } catch (Exception e) {
+                System.err.println("Couldn't close statement");
+                e.printStackTrace();
+            }
+    	}
+    }
+    
+    /**Test case to identify a bug where if the user added several items 
+     * then saved the data then removed the ones at the end of the list
+     * and added several more without saving. This caused the seq_number 
+     * to be reused too early
+     * 
+     */
+    public void testChildrenDeleteAddCombo() throws Exception {
+    	MatchMakerTranslateGroup group = new MatchMakerTranslateGroup();
+    	group.setName("parent");
+    	
+    	MatchMakerTranslateWord word1 = new MatchMakerTranslateWord();
+    	word1.setFrom("1");
+    	MatchMakerTranslateWord word2 = new MatchMakerTranslateWord();
+    	word2.setFrom("2");
+    	MatchMakerTranslateWord word3 = new MatchMakerTranslateWord();
+    	word3.setFrom("3");
+    	
+    	group.addChild(word1);
+    	group.addChild(word2);
+    	group.addChild(word3);
+    	
+    	getDataAccessObject().save(group);
+    	group.removeChild(word3);
+    	group.removeChild(word2);
+
+    	group.addChild(word1);
+    	getDataAccessObject().save(group);
+    	
+       	Connection con = getSession().getConnection();
+    	Statement stmt =null;
+    	ResultSet oidRs = null;
+    	ResultSet rs = null;
+    	try {
+    	stmt = con.createStatement();
+    	oidRs = stmt.executeQuery("select translate_group_oid from pl_match_translate_group where translate_group_name='parent'");
+    	oidRs.next();
+    	
+    	rs = stmt.executeQuery("select * from pl_match_translate order by seq_no");
+    	assertTrue("There should be 0 children",!rs.next());
+    	} finally {
+    		try {
+                if (oidRs != null)
+                	oidRs.close();
+            } catch (Exception e) {
+                System.err.println("Couldn't close oid result set ");
+                e.printStackTrace();
+            }
+            try {
+                if (rs != null)
+                    rs.close();
+            } catch (Exception e) {
+                System.err.println("Couldn't close result set for translate groups");
+                e.printStackTrace();
+            }
+            try {
+                if (stmt != null)
+                    stmt.close();
+            } catch (Exception e) {
+                System.err.println("Couldn't close statement");
+                e.printStackTrace();
+            }
+    	}
     }
 }

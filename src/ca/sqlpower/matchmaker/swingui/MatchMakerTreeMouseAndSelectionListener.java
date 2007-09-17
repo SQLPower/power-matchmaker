@@ -39,10 +39,13 @@ import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
@@ -342,7 +345,17 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 					} else if (node.getActionType() == MatchActionType.RUN_MERGE) {
 						swingSession.setCurrentEditorComponent(new MergeEnginePanel(swingSession, node.getMatch(), owningFrame));
 					}
+				} else if (o instanceof TranslateGroupParent) {
+					swingSession.setCurrentEditorComponent(new TranslateGroupsEditor(swingSession));
+				} else if (o instanceof MatchMakerTranslateGroup) {
+					MatchMakerTranslateGroup group = (MatchMakerTranslateGroup) o;
+					swingSession.setCurrentEditorComponent(new TranslateWordsEditor(swingSession, group));
+				} else if (o instanceof MatchMakerTranslateWord) {
+					MatchMakerTranslateWord word = (MatchMakerTranslateWord) o;
+					MatchMakerTranslateGroup group = (MatchMakerTranslateGroup) word.getParent();
+					swingSession.setCurrentEditorComponent(new TranslateWordsEditor(swingSession, group));
 				}
+				
 			} catch (Exception ex) {
 				MMSUtils.showExceptionDialog(owningFrame, "Couldn't create editor for selected component", ex);
 			}
