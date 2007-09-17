@@ -35,6 +35,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.StubMatchMakerObject;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.Validator;
@@ -128,7 +129,7 @@ public class MMODuplicateValidatorDemo {
         pb.add(new JScrollPane(area), cc.xyw(2,6,5));
         pb.add(exit, cc.xy(6,8));
         
-        Validator v1 = new MMODuplicateValidator(obj, null, "Cannot have Duplicate Name");
+        Validator v1 = new MMODuplicateValidator(obj, null, "Cannot have Duplicate Name", new MatchMakerTranslateGroup());
         form.addValidateObject(field, v1);
         d.getContentPane().add(pb.getPanel());
         

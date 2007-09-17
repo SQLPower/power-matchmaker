@@ -27,6 +27,7 @@ import javax.swing.Action;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -62,6 +63,11 @@ public class MMODuplicateValidator implements Validator {
      */
     private final int maxCharacters;
     
+    /**
+     * The name of the current group to avoid duplicate name issues 
+     */
+    private MatchMakerTranslateGroup group;
+    
 
     /**
      * This validator works by checking if the input is a duplicate of any child's name of
@@ -76,8 +82,8 @@ public class MMODuplicateValidator implements Validator {
      * specify a negative number
      */
     public MMODuplicateValidator(MatchMakerObject parent, List<Action> actionsToDisable,
-            String fieldName){
-        this(parent, actionsToDisable, fieldName, -1);
+            String fieldName, MatchMakerTranslateGroup group){
+        this(parent, actionsToDisable, fieldName, -1, group);
     }
     
     /**
@@ -92,8 +98,9 @@ public class MMODuplicateValidator implements Validator {
      * specify a negative number
      */
     public MMODuplicateValidator(MatchMakerObject parent, List<Action> actionsToDisable,
-            String fieldName, final int maxCharacters){
-        this.parent = parent;
+            String fieldName, final int maxCharacters, MatchMakerTranslateGroup group){
+        this.group = group;
+    	this.parent = parent;
         this.actionsToDisable = actionsToDisable;
         this.fieldName = fieldName;
         this.maxCharacters = maxCharacters;
@@ -104,8 +111,8 @@ public class MMODuplicateValidator implements Validator {
         String value = (String)contents;
         if (value==null || value.trim().length() ==0){
             setComponentsEnabled(false);
-            return ValidateResult.createValidateResult(Status.OK, 
-                    "");
+            return ValidateResult.createValidateResult(Status.FAIL, 
+                    "Group must have a name");
         }
 
         if (maxCharacters > 0){
@@ -120,7 +127,7 @@ public class MMODuplicateValidator implements Validator {
                     "Cannot add children to "+parent.getClass());
         }        
         for (MatchMakerObject mmo : (List<MatchMakerObject>)parent.getChildren()){
-            if (mmo.getName().equals(value)){
+        	if (mmo.getName().equals(value) && !value.equals(group.getName())){
                 setComponentsEnabled(false);
                 return ValidateResult.createValidateResult(Status.FAIL, 
                         "Cannot have duplicate " + fieldName);
