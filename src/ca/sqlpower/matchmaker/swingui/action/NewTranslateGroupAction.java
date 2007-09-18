@@ -22,37 +22,27 @@ package ca.sqlpower.matchmaker.swingui.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.tree.TreePath;
 
-import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
+import ca.sqlpower.matchmaker.swingui.TranslateWordsEditor;
 
 /**
- * A simple action that adds a new merge rule to the swing session and
- * opens the editor for the new merge rule.
+ * A simple action to adds a new match group to the swing session and
+ * opens up the editor for the new match group.
  */
-public class NewMergeRuleAction extends AbstractAction {
+public class NewTranslateGroupAction extends AbstractAction {
     
     private final MatchMakerSwingSession swingSession;
-	private final Match parent;
 
-	public NewMergeRuleAction(MatchMakerSwingSession swingSession, Match parent) {
-	    super("New Merge Rule");
+	public NewTranslateGroupAction(MatchMakerSwingSession swingSession) {
+	    super("New Translate Group");
         this.swingSession = swingSession;
-        this.parent = parent;
-        if (parent == null) throw new IllegalArgumentException("Parent must be non null");
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		TableMergeRules g = new TableMergeRules();
-		long seqNo = parent.getTableMergeRulesFolder().getChildCount();
-		parent.getTableMergeRulesFolder().addChild(g);
-		g.setSeqNo(seqNo);
-		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-		TreePath treePath = treeModel.getPathForNode(g);
-		swingSession.getTree().setSelectionPath(treePath);
+		MatchMakerTranslateGroup tg = new MatchMakerTranslateGroup();
+		swingSession.setCurrentEditorComponent(new TranslateWordsEditor(swingSession, tg));
 	}
 
 }

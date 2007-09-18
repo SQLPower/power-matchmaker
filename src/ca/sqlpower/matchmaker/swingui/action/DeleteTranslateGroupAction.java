@@ -22,37 +22,40 @@ package ca.sqlpower.matchmaker.swingui.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 import javax.swing.tree.TreePath;
 
-import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
-/**
- * A simple action that adds a new merge rule to the swing session and
- * opens the editor for the new merge rule.
- */
-public class NewMergeRuleAction extends AbstractAction {
-    
+
+public class DeleteTranslateGroupAction extends AbstractAction {
+
     private final MatchMakerSwingSession swingSession;
-	private final Match parent;
+    private final MatchMakerTranslateGroup group;
 
-	public NewMergeRuleAction(MatchMakerSwingSession swingSession, Match parent) {
-	    super("New Merge Rule");
+	public DeleteTranslateGroupAction(MatchMakerSwingSession swingSession,
+			MatchMakerTranslateGroup group) {
+		super("Delete Translate Group");
         this.swingSession = swingSession;
-        this.parent = parent;
-        if (parent == null) throw new IllegalArgumentException("Parent must be non null");
-	}
-	
-	public void actionPerformed(ActionEvent e) {
-		TableMergeRules g = new TableMergeRules();
-		long seqNo = parent.getTableMergeRulesFolder().getChildCount();
-		parent.getTableMergeRulesFolder().addChild(g);
-		g.setSeqNo(seqNo);
-		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-		TreePath treePath = treeModel.getPathForNode(g);
-		swingSession.getTree().setSelectionPath(treePath);
+		this.group = group;
 	}
 
+	public void actionPerformed(ActionEvent e) {
+		int response = JOptionPane.showConfirmDialog(swingSession.getFrame(),
+		"Are you sure you want to delete the translate group?");
+		if (response != JOptionPane.YES_OPTION)
+			return;
+		
+		if (swingSession.getTranslations().isInUseInBusinessModel(group)) {
+			JOptionPane.showMessageDialog(swingSession.getFrame(),
+				"This translation group is in use, and cannot be deleted.");
+		} else {
+			MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();
+			TreePath treePath = treeModel.getPathForNode(swingSession.getTranslations());
+			swingSession.getTree().setSelectionPath(treePath);
+			swingSession.delete(group);
+		}
+	}
 }

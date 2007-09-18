@@ -22,9 +22,11 @@ package ca.sqlpower.matchmaker.swingui.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.tree.TreePath;
 
 import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
 /**
  * A simple action for deleting a match rule.
@@ -40,6 +42,9 @@ public class DeleteMatchRuleAction extends AbstractAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+		TreePath treePath = treeModel.getPathForNode(criteria.getParent());
+		swingSession.getTree().setSelectionPath(treePath);
 		swingSession.delete(criteria);
 	}
 
