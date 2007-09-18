@@ -42,6 +42,7 @@ import javax.swing.tree.TreePath;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
@@ -98,10 +99,7 @@ public class TranslateGroupsEditor implements EditorPane {
 				
 				if (e.getClickCount() == 2) {
 					int row = TranslateGroupsEditor.this.translateGroupsTable.getSelectedRow();
-					TranslateWordsEditor wordsEditor = new TranslateWordsEditor(swingSession,
-							translateGroups.get(row));
-					swingSession.setCurrentEditorComponent(wordsEditor);
-//					menuTree.setSelectionPath(menuPath.pathByAddingChild(child));
+					swingSession.getTree().setSelectionPath(menuPath.pathByAddingChild(translateGroups.get(row)));
 				}
 			}		
         });
@@ -134,7 +132,7 @@ public class TranslateGroupsEditor implements EditorPane {
 		
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
 		//new actions for delete and save should be extracted and be put into its own file.
-		bbb.addGridded(new JButton(createGroupAction));
+		bbb.addGridded(new JButton(new NewTranslateGroupAction(swingSession)));
 		bbb.addRelatedGap();
 		bbb.addGridded(new JButton(deleteGroupAction));
 
@@ -157,16 +155,6 @@ public class TranslateGroupsEditor implements EditorPane {
 		logger.debug("Has unsaved changes: Not implemented :(");
 		return false;
 	}
-	
-	Action createGroupAction = new AbstractAction("Create Group") {
-		public void actionPerformed(ActionEvent e) {
-            MatchMakerTranslateGroup tg = new MatchMakerTranslateGroup();
-            swingSession.setCurrentEditorComponent(new TranslateWordsEditor(swingSession, tg));
-            
-            TreePath childPath = menuPath.pathByAddingChild(tg);
-            swingSession.getTree().setSelectionPath(childPath);
-		}		
-	};
 	
 	Action deleteGroupAction = new AbstractAction("Delete Group") {
 		public void actionPerformed(ActionEvent e) {

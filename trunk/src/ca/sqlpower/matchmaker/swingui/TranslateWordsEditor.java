@@ -21,8 +21,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
@@ -91,16 +90,7 @@ public class TranslateWordsEditor implements EditorPane {
 	private void setupTable() {
 		translateWordsTable = new EditableJTable();
         translateWordsTable.setName("Translate Words");
-        translateWordsTable.setModel(new MatchTranslateTableModel(group));
-        
-        //adds an action listener that looks for a double click, that opens the selected 
-        //merge rule editor pane  
-        translateWordsTable.addMouseListener(new MouseAdapter() {
-
-			public void mouseClicked(MouseEvent e) {
-					int row = TranslateWordsEditor.this.translateWordsTable.getSelectedRow();
-			}		
-        });
+        translateWordsTable.setModel (new MatchTranslateTableModel(group));
 	}
 	
 	private void buildUI() {
@@ -268,6 +258,10 @@ public class TranslateWordsEditor implements EditorPane {
 			if (group != null) {
 				group.syncChildrenSeqNo();
 				swingSession.getDAO(MatchMakerTranslateGroup.class).save(group);
+		 		
+				MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+				TreePath menuPath = treeModel.getPathForNode(group);
+		        swingSession.getTree().setSelectionPath(menuPath);
 			}
 		}
 		

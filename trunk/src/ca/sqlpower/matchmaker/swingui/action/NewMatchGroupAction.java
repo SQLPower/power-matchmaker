@@ -28,7 +28,6 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
-import ca.sqlpower.matchmaker.swingui.MatchRuleSetEditor;
 
 /**
  * A simple action to adds a new match group to the swing session and
@@ -52,7 +51,6 @@ public class NewMatchGroupAction extends AbstractAction {
 		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
 		TreePath treePath = treeModel.getPathForNode(g);
 		swingSession.getTree().setSelectionPath(treePath);
-        swingSession.setCurrentEditorComponent(new MatchRuleSetEditor(swingSession, parent, g));
 	}
 
 }

@@ -39,6 +39,7 @@ public class DeletePlFolderAction extends AbstractAction {
 
 	public void actionPerformed(ActionEvent e) {
 		DeleteFolderDialog d = new DeleteFolderDialog(folder,session.getFrame(),session);
+		session.setCurrentEditorComponent(null);
 	}
 
 }

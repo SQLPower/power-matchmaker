@@ -53,10 +53,12 @@ import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
+import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
@@ -141,6 +143,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                     addMatchCriteriaMenuItems(m, (MatchRule) o);
                 } else if (o instanceof TableMergeRules) {
                 	addMergeRulesMenuItems(m, (TableMergeRules) o);
+                } else if (o instanceof TranslateGroupParent) {
+                	addTranslateMenuItems(m, (TranslateGroupParent) o);
+                } else if (o instanceof MatchMakerTranslateGroup) {
+                	addTranslateGroupMenuItems(m, (MatchMakerTranslateGroup) o);
                 }
             }
             m.show(t, e.getX(), e.getY());
@@ -251,6 +257,26 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
         m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match")));
         m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
         m.add(new JMenuItem(new DeletePlFolderAction(swingSession,"Delete Folder",folder)));
+    }
+    
+    /**
+     * Attaches a menu item for the actions of a translate group parent.
+     * 
+     * @param m The popup menu that the menu item would be attached onto.
+     * @param folder The current folder being right-clicked on.
+     */
+    private void addTranslateMenuItems(JPopupMenu m, TranslateGroupParent translate) {
+        m.add(new JMenuItem(new NewTranslateGroupAction(swingSession)));
+    }
+    
+    /**
+     * Attaches a menu item for the actions of a translate group.
+     * 
+     * @param m The popup menu that the menu item would be attached onto.
+     * @param folder The current folder being right-clicked on.
+     */
+    private void addTranslateGroupMenuItems(JPopupMenu m, MatchMakerTranslateGroup group) {
+        m.add(new JMenuItem(new DeleteTranslateGroupAction(swingSession, group)));
     }
 
     /**
