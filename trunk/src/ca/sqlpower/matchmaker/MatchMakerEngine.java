@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
@@ -43,8 +44,9 @@ public interface MatchMakerEngine extends Monitorable, Callable<EngineInvocation
 	 * @throws EngineSettingException When the preconditions for running the
 	 * engine are not met.
 	 * @throws IOException for any I/O problems 
+	 * @throws SQLException if PreMergeDataFudger fails
 	 */
-	public EngineInvocationResult call() throws EngineSettingException, IOException;
+	public EngineInvocationResult call() throws EngineSettingException, IOException, SQLException;
 	
 	/**
 	 * Makes an effort to verify all the assumptions that the engine makes

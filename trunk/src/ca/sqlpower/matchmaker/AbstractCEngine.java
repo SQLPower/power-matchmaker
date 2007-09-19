@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 import org.apache.log4j.Level;
@@ -75,7 +76,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 		this.session = session;
 	}
 
-	public EngineInvocationResult call() throws EngineSettingException, IOException {
+	public EngineInvocationResult call() throws EngineSettingException, IOException, SQLException {
 		try {
 			try {
 				checkPreconditions();
@@ -84,6 +85,10 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 			}
 			
 			if (proc!=null) throw new IllegalStateException("Engine has already been run");
+
+			PreMergeDataFudger fudger = new PreMergeDataFudger(session, new MatchPool(match));
+			fudger.fudge();
+			
 			String[] commandLine = createCommandLine(false);
 			Runtime rt = Runtime.getRuntime();
 			logger.debug("Executing " + Arrays.asList(commandLine));
@@ -106,6 +111,13 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 			
 			int engineExitCode = proc.exitValue();
 			getLogger().info("Engine process completed with status " + engineExitCode);
+			
+			try {
+				fudger.unfudge();
+			} catch (ArchitectException e) {
+				throw new RuntimeException(e);
+			}
+			
 			if (engineExitCode == 0) {
 				return EngineInvocationResult.SUCCESS;
 			} else {
