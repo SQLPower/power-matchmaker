@@ -55,7 +55,7 @@ public class FilterComponents{
 
 	private void buildUI() {
         filterTextArea = new JTextArea();
-        editButton = new JButton(new AbstractAction("Edit"){
+        editButton = new JButton(new AbstractAction("Edit Filter"){
 
             public void actionPerformed(ActionEvent e) {
                 FilterMakerDialog filterMaker = null;
