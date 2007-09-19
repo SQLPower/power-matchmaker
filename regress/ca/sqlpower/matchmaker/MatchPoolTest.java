@@ -3669,6 +3669,20 @@ public class MatchPoolTest extends TestCase {
 	}
 	
 	/**
+	 * This test is to make sure that the store method doesn't throw
+	 * an exception if the MatchPool contains no SourceTableRecords.
+	 */
+	public void testStoreOnEmptyMatchPool() throws Exception {
+		MatchPool emptyPool = new MatchPool(match);
+		try {
+			emptyPool.store();
+		} catch (ArrayIndexOutOfBoundsException e) {
+			// Expecting no exception to get thrown
+			fail("store() threw ArrayIndexOutOfBoundsException on an empty MatchPool");
+		}
+	}
+	
+	/**
 	 * This test removes potential matches from the pool to check that they will also be
 	 * removed from the database.
 	 */

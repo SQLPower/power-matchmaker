@@ -303,7 +303,8 @@ public class MatchPool {
         Connection con = null;
         String lastSQL = null;
         PreparedStatement ps = null;
-        int numKeyValues = ((SourceTableRecord)sourceTableRecords.values().toArray()[1]).getKeyValues().size();
+        if (sourceTableRecords.size() == 0) return;
+        int numKeyValues = ((SourceTableRecord)sourceTableRecords.values().toArray()[0]).getKeyValues().size();
         try {
             con = session.getConnection();
             StringBuilder sql = new StringBuilder();

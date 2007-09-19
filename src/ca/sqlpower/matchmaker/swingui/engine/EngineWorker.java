@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.sql.SQLException;
 
 import javax.swing.JProgressBar;
 import javax.swing.text.Document;
@@ -78,7 +79,7 @@ class EngineWorker extends SPSwingWorker {
 	}
 	
 	@Override
-	public void doStuff() throws EngineSettingException, IOException {
+	public void doStuff() throws EngineSettingException, IOException, SQLException {
 		appender = new DocumentAppender(engineOutputDoc);
 		engine.getLogger().addAppender(appender);
 		engine.call();
