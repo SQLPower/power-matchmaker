@@ -57,9 +57,9 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.MatchRuleSet;
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -74,6 +74,7 @@ import ca.sqlpower.validation.swingui.StatusComponent;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -105,6 +106,7 @@ public class MatchRuleSetEditor implements EditorPane {
     private JButton newMatchCriterion;
     private JButton deleteMatchCriterion;
 	private JButton saveMatchCriterion;
+	private JButton chooseCustomColour;
 
 	/**
 	 * This is the default constructor
@@ -192,7 +194,7 @@ public class MatchRuleSetEditor implements EditorPane {
 		}
 	}
 
-	private Action save = new AbstractAction("Save") {
+	private Action save = new AbstractAction("Save Match Group") {
 		public void actionPerformed(final ActionEvent e) {
 		    doSave();
 		}
@@ -223,7 +225,7 @@ public class MatchRuleSetEditor implements EditorPane {
 		}
 	};
 
-	private Action deleteCriteria = new AbstractAction("Delete") {
+	private Action deleteCriteria = new AbstractAction("Delete Criteria") {
 	    public void actionPerformed(ActionEvent e) {
 	        int selectedRow = matchCriteriaTable.getSelectedRow();
 	        if ( selectedRow == -1 ) return;
@@ -253,6 +255,16 @@ public class MatchRuleSetEditor implements EditorPane {
 
 	    }
 	};
+	
+	private Action customColour = new AbstractAction("Custom Colour") {
+		public void actionPerformed(ActionEvent arg0) {
+			Color colour = swingSession.getCustomColour(group.getColour());
+		    if (colour != null) {
+		    	colourPicker.addItem(colour);
+		    	colourPicker.setSelectedItem(colour);
+		    }
+		}
+	};
 
 	/**
 	 * Creates the GUI components and lays them out.
@@ -281,10 +293,14 @@ public class MatchRuleSetEditor implements EditorPane {
         deleteMatchCriterion = new JButton(deleteCriteria);
         saveMatchCriterion = new JButton(save);
         saveMatchCriterion.setName("Save button for "+group.getName());
+        chooseCustomColour = new JButton(customColour);
+        chooseCustomColour.setName("Custom Color");
 
 		// group header
 		FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, fill:pref:grow, 10dlu, pref,5dlu,pref,3dlu");
-		PanelBuilder pb = new PanelBuilder(formLayout);
+		JPanel p = logger.isDebugEnabled() ? 
+				new FormDebugPanel(formLayout) : new JPanel(formLayout);
+		PanelBuilder pb = new PanelBuilder(formLayout,p);
 		pb.setDefaultDialogBorder();
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("pref");
@@ -304,7 +320,8 @@ public class MatchRuleSetEditor implements EditorPane {
 		pb.appendRow("40dlu");
 		pb.add(new JLabel("Filter Criteria"), cl.xy(2,8));
         pb.add(new JScrollPane(filterPanel.getFilterTextArea()), cc.xy(4,8, "f,f"));
-        pb.add(filterPanel.getEditButton(), cc.xy(6,8));
+        pb.add(filterPanel.getEditButton(), cc.xy(6,8,"l,b"));
+        pb.add(chooseCustomColour, cc.xy(8,8, "c,t"));
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("pref");
 		groupEditPanel = pb.getPanel();
@@ -357,6 +374,16 @@ public class MatchRuleSetEditor implements EditorPane {
         filterPanel.getFilterTextArea().setText(group.getFilter());
        	active.setSelected(group.getActive());
 
+       	boolean hasColour = false;
+       	for (int i = 0; i < colourPicker.getItemCount(); i++) {
+       		if (colourPicker.getItemAt(i).equals(group.getColour())) {
+       			hasColour = true;
+       			break;
+       		}
+       	}
+       	if (!hasColour) {
+   	       	colourPicker.addItem(group.getColour());
+       	}
         colourPicker.setSelectedItem(group.getColour());
         
         SQLTable sourceTable;
@@ -528,6 +555,9 @@ public class MatchRuleSetEditor implements EditorPane {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus);
+            if (value == null) {
+            	value = Color.BLACK;
+            }
             setBackground((Color) value);
             setOpaque(true);
             setPreferredSize(new Dimension(50, 50));

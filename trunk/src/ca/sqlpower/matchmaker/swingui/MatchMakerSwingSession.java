@@ -20,12 +20,15 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -40,6 +43,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -166,6 +170,13 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * when the session closes.
      */
     private final Set<SPSwingWorker> swingWorkers = new HashSet<SPSwingWorker>();
+    
+    /**
+     * A colour chooser used by the MatchRuleSetEditor to set custom colours.
+     * It has been created within a swing session to share recent colours amongst
+     * different match rule sets.
+     */
+    private final JColorChooser colourChooser = new JColorChooser();
     
     private Action userPrefsAction = new AbstractAction("User Preferences...") {
 		public void actionPerformed(ActionEvent e) {
@@ -950,7 +961,45 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     public Version getPLSchemaVersion() {
         return sessionImpl.getPLSchemaVersion();
     }
+    
+    /**
+     * Opens a dialog for the user to choose a custom colour.
+     * Returns the choosen colour.
+     */
+    public Color getCustomColour(Color initial) {
+    	if (initial == null) {
+    		initial = Color.BLACK;
+    	}
+    	colourChooser.setColor(initial);
+    	ColorTracker ok = new ColorTracker(colourChooser);
+        JDialog dialog = JColorChooser.createDialog(getFrame(), "Choose a custom colour", true, colourChooser, ok, null);
 
+        dialog.setVisible(true); 
+
+        return ok.getColor();
+
+    }
+    
+    /**
+     * Action Listener used by the custom colour dialog.
+     */
+    class ColorTracker implements ActionListener, Serializable {
+        JColorChooser chooser;
+        Color color;
+
+        public ColorTracker(JColorChooser c) {
+            chooser = c;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            color = chooser.getColor();
+        }
+
+        public Color getColor() {
+            return color;
+        }
+    }
+    
     public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
     	return sessionImpl.findPhysicalTableByName(catalog, schema, tableName);
 	}
