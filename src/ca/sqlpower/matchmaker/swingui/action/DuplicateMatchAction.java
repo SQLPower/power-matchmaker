@@ -22,9 +22,9 @@ package ca.sqlpower.matchmaker.swingui.action;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -53,8 +53,8 @@ public class DuplicateMatchAction extends AbstractAction {
 
 	private MatchMakerSwingSession swingSession;
 	private Match match;
-	private Action okAction;
-	private Action cancelAction;
+	private Callable<Boolean> okCall;
+	private Callable<Boolean> cancelCall;
 	private JComboBox folderComboBox;
 	private FormValidationHandler handler;
 	
@@ -116,9 +116,9 @@ public class DuplicateMatchAction extends AbstractAction {
 		folderComboBox.setSelectedItem(match.getParent());
 		
 		final DuplicatePanel archPanel = new DuplicatePanel(newName,folderComboBox);
-        
-		okAction = new AbstractAction("OK") {
-			public void actionPerformed(ActionEvent e) {
+
+		okCall = new Callable<Boolean>() {
+			public Boolean call() {
 				String newName = archPanel.getDupName();
 				PlFolder<Match> folder = (PlFolder<Match>) folderComboBox
 				.getSelectedItem();
@@ -126,19 +126,20 @@ public class DuplicateMatchAction extends AbstractAction {
 				newmatch.setName(newName);
 				folder.addChild(newmatch);
 				swingSession.save(newmatch);
-			
+				return new Boolean(true);
 			}};
 			
-		cancelAction = new AbstractAction("Cancel") {
-			public void actionPerformed(ActionEvent e) {
+		cancelCall = new Callable<Boolean>() {
+			public Boolean call() {
+				return new Boolean(true);
 			}};
 			
 		dialog = DataEntryPanelBuilder.createDataEntryPanelDialog(archPanel,
 				swingSession.getFrame(),
 				"Duplicate Match",
 				"OK",
-				okAction,
-				cancelAction);
+				okCall,
+				cancelCall);
 		
 		dialog.pack();
 		dialog.setLocationRelativeTo(swingSession.getFrame());
