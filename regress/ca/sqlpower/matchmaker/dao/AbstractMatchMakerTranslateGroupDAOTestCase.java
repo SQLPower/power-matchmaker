@@ -66,14 +66,16 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
         Connection con = null;
         Statement stmt = null;
         try {
-            con = getSession().getConnection();
+        	con = getSession().getConnection();
             stmt = con.createStatement();
             stmt.executeUpdate(
                     "INSERT INTO pl_match_translate_group (translate_group_oid, translate_group_name) " +
                     "VALUES ("+time+", '"+translateGroupName+"')");
+            
             stmt.executeUpdate(
-                    "INSERT INTO pl_match_translate (translate_group_oid, match_translate_oid) " +
-                    "VALUES ("+time+", "+time+")");
+                    "INSERT INTO pl_match_translate (translate_group_oid,match_translate_oid,seq_no) " +
+                    "VALUES ("+time+", "+time+", 1)");
+            
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it
@@ -89,13 +91,10 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
     	
     	MatchMakerTranslateWord word1 = new MatchMakerTranslateWord();
     	word1.setFrom("1");
-    	word1.setLocation(1L);
     	MatchMakerTranslateWord word2 = new MatchMakerTranslateWord();
     	word2.setFrom("2");
-    	word2.setLocation(2L);
     	MatchMakerTranslateWord word3 = new MatchMakerTranslateWord();
     	word3.setFrom("3");
-    	word3.setLocation(3L);
     	
     	group.addChild(word1);
     	group.addChild(word2);
@@ -103,6 +102,7 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
     	
     	getDataAccessObject().save(group);
     	Collections.swap(group.getChildren(), 1, 2);
+    	group.syncChildrenSeqNo();
     	getDataAccessObject().save(group);
     	
     	Connection con = getSession().getConnection();
@@ -162,8 +162,8 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
     	group.addChild(word1);
     	group.addChild(word2);
     	group.addChild(word3);
-    	
     	getDataAccessObject().save(group);
+    	
     	group.removeChild(word1);
     	group.removeChild(word2);
     	group.removeChild(word3);
@@ -225,12 +225,14 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
     	group.addChild(word1);
     	group.addChild(word2);
     	group.addChild(word3);
-    	
+    	group.syncChildrenSeqNo();
     	getDataAccessObject().save(group);
+    	
     	group.removeChild(word3);
     	group.removeChild(word2);
 
-    	group.addChild(word1);
+    	group.addChild(word3);
+    	group.syncChildrenSeqNo();
     	getDataAccessObject().save(group);
     	
        	Connection con = getSession().getConnection();
@@ -243,7 +245,10 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
     	oidRs.next();
     	
     	rs = stmt.executeQuery("select * from pl_match_translate order by seq_no");
-    	assertTrue("There should be 0 children",!rs.next());
+    	assertTrue("There should be 2 children not 0",rs.next());
+    	assertEquals("Wrong child in position 1","1",rs.getObject("from_word"));
+    	assertTrue("There should be 2 children not 1",rs.next());
+    	assertEquals("Wrong child in position 2","3",rs.getObject("from_word"));
     	} finally {
     		try {
                 if (oidRs != null)
@@ -267,5 +272,35 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
                 e.printStackTrace();
             }
     	}
+    }
+    
+    /**
+     * Tests a case where a translate group's children is set while the seq_no's
+     * are not correct. 
+     */
+    public void testIfNullChildrenLoadWorks() throws Exception {
+        final long time = System.currentTimeMillis();
+        final String translateGroupName = "translateGroup_"+time;
+        Connection con = null;
+        Statement stmt = null;
+        try {
+        	con = getSession().getConnection();
+            stmt = con.createStatement();
+            stmt.executeUpdate(
+                    "INSERT INTO pl_match_translate_group (translate_group_oid, translate_group_name) " +
+                    "VALUES ("+time+", '"+translateGroupName+"')");
+            
+            stmt.executeUpdate(
+                    "INSERT INTO pl_match_translate (translate_group_oid,match_translate_oid,seq_no) " +
+                    "VALUES ("+time+", "+time+", 1)");
+            
+        } finally {
+            try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
+            // connection didn't come from a pool so we can't close it
+        }
+        
+        MatchMakerTranslateGroup translateGroup = getDataAccessObject().findByName(translateGroupName);
+        translateGroup.getChildren(); // this could fail if the DAO doesn't cascade the retrieval properly
+        assertNotNull("Null child not removed from group.", translateGroup.getChildren().get(0));
     }
 }

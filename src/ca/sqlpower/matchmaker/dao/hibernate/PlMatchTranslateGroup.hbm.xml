@@ -21,14 +21,15 @@
 				unique="true" />
 		</property>
 		
-		<bag name="children" cascade="all-delete-orphan"
-			order-by="seq_no" inverse="true" lazy="false" fetch="subselect">
+		<list name="children" cascade="all-delete-orphan"
+			inverse="true" lazy="false" fetch="subselect">
 			<key>
 				<column name="TRANSLATE_GROUP_OID" not-null="true" />
 			</key>
+			<index column="SEQ_NO" />
 			<one-to-many
 				class="ca.sqlpower.matchmaker.MatchMakerTranslateWord" />
-		</bag>
+		</list>
 
 	</class>
 </hibernate-mapping>

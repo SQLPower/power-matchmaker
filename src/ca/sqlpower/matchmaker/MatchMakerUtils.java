@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
 /**
@@ -26,6 +28,8 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
  * in the core MatchMaker API.
  */
 public class MatchMakerUtils {
+	
+	private static final Logger logger = Logger.getLogger(MatchMakerUtils.class);
 
     /**
      * You can't make instances of this class.
@@ -47,6 +51,8 @@ public class MatchMakerUtils {
 	public static <T extends MatchMakerObject, C extends MatchMakerObject>
 		void listenToHierarchy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root) {
 		root.addMatchMakerListener(listener);
+		logger.debug("listenToHierarchy: \"" + root.getName() + "\" (" +
+				root.getClass().getName() + ") children: " + root.getChildren());
 		for (MatchMakerObject<T,C> obj : root.getChildren()) {
 			listenToHierarchy(listener, obj);
 		}
