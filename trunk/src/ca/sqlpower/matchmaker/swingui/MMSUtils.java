@@ -22,10 +22,8 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Component;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
+import java.util.concurrent.Callable;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
@@ -71,8 +69,8 @@ public class MMSUtils {
         
         final DataEntryPanel dbcsPanel = new MMDataSourcePanel(dataSource);
         
-        Action okAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
+        Callable<Boolean> okCall = new Callable<Boolean>() {
+            public Boolean call() {
                 if (dbcsPanel.applyChanges()) {
                     if (onAccept != null) {
                     	try {
@@ -82,13 +80,16 @@ public class MMSUtils {
                     	}
                         onAccept.run();
                     }
+                    return new Boolean(true);
                 }
+                return new Boolean(false);
             }
         };
     
-        Action cancelAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
+        Callable<Boolean> cancelCall = new Callable<Boolean>() {
+            public Boolean call() {
                 dbcsPanel.discardChanges();
+                return new Boolean(true);
             }
         };
     
@@ -96,7 +97,7 @@ public class MMSUtils {
                 dbcsPanel, parentWindow,
                 "Database Connection: " + dataSource.getDisplayName(),
                 DataEntryPanelBuilder.OK_BUTTON_LABEL,
-                okAction, cancelAction);
+                okCall, cancelCall);
     
         d.pack();
         d.setLocationRelativeTo(parentWindow);
