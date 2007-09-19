@@ -213,9 +213,10 @@ public class TranslateWordsEditor implements EditorPane {
 
         public void actionPerformed(ActionEvent e) {
         	MatchMakerTranslateWord word = new MatchMakerTranslateWord();
-            group.addChild(word);
             word.setFrom(from.getText());
             word.setTo(to.getText());
+            word.setLocation((long)group.getChildCount());
+            group.addChild(word);
             translateWordsTable.scrollRectToVisible(translateWordsTable.getCellRect(group.getChildCount()-1,
             		0, true).getBounds());
             from.setText("");
@@ -256,9 +257,11 @@ public class TranslateWordsEditor implements EditorPane {
 				swingSession.getTranslations().addNewChild(group);
 			}
 			if (group != null) {
-				group.syncChildrenSeqNo();
+				boolean orderChanged = group.syncChildrenSeqNo();
+				if (orderChanged){
+					swingSession.getTranslations().childrenOrderChanged();
+				}
 				swingSession.getDAO(MatchMakerTranslateGroup.class).save(group);
-		 		
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
 				TreePath menuPath = treeModel.getPathForNode(group);
 		        swingSession.getTree().setSelectionPath(menuPath);

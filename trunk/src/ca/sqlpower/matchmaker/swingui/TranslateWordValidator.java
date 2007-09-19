@@ -19,16 +19,13 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.JTable;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -52,16 +49,6 @@ public class TranslateWordValidator implements Validator {
     }
     public ValidateResult validate(Object contents) {
         MatchTranslateTableModel model = (MatchTranslateTableModel)table.getModel();
-        Set<MatchMakerObject> childrenSet = new HashSet<MatchMakerObject>();
-        for (int i =0; i < model.getRowCount(); i++){
-            childrenSet.add(model.getMatchMakerObject(i));
-        }
-        if (childrenSet.size() != model.getRowCount()){
-            setComponentsEnabled(false);
-            return ValidateResult.createValidateResult(Status.FAIL, 
-                    "No Duplicate Translations Allowed");
-        } 
-        
         for (int x = 0; x<model.getRowCount();x++) {
         	String val = (String) model.getValueAt(x, 0);
         	if (val.equals("")) {

@@ -55,36 +55,20 @@ public class MatchMakerTranslateGroup
 	}
     
     /** 
-     * Set the translate words to a monitonly increasing form in the order of the parent
-     * and add any newly created children to this translation group
-     * 
-     * Because you can get update collisions if you change the 
-     * sequence numbers to one that already exists in the database, we
-     * have to use a non-overlapping set.  To avoid marchig off 
-     * to infinity.  We start from zero if there is enough space
-     * before the current lowest sequence number to fit all words.
-     * 
-     * 
+     * Sets the seq_no of the translate words in the group starting from 0.
+     * Returns a boolean indicating whether there was a change from the original
+     * seq_no's.
      */
-    public void syncChildrenSeqNo(){
-    	long minSeqNo = Long.MAX_VALUE;
-    	long maxSeqNo = 0;
-    	for (MatchMakerTranslateWord w: getChildren()) {
-    		if (w.getLocation() != null){
-    			minSeqNo = Math.min(minSeqNo, w.getLocation());
-    			maxSeqNo = Math.max(maxSeqNo, w.getLocation());
-    		}
-    	}
-    	long startNumber;
-    	if (minSeqNo > getChildCount()){
-    		startNumber = 0;
-    	} else {
-    		startNumber = maxSeqNo+1;
-    	}
-        for (Long i = 0L; i < getChildCount(); i++){
-            MatchMakerTranslateWord child = getChildren().get(i.intValue());
-            child.setLocation(i+startNumber);
-        }
+    public boolean syncChildrenSeqNo(){
+		long count = 0;
+		boolean orderChanged = false;
+		for (MatchMakerTranslateWord word : getChildren()) {
+			if (word.getLocation() == null || !orderChanged && word.getLocation()!= count){
+				orderChanged = true;
+			}
+			word.setLocation(count++);
+		}
+		return orderChanged;
     }
 
 	@Override

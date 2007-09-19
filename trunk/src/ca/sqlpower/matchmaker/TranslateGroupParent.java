@@ -33,7 +33,14 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
         this.session = session;
         
     }
-    
+	
+    /**
+	 * Fires the event for a structure change if children order has been changed.
+	 */
+	public void childrenOrderChanged() {
+		getEventSupport().fireStructureChanged();
+	}
+	
     /**
      * Persists the translate group as well as adding it to the child list and 
      * firing the proper events 
