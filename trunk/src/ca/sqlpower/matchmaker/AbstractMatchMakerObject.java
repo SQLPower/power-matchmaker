@@ -61,10 +61,15 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	}
 
 	/**
-	 * anyone who going to overwrite this method should fire the childrenInserted
-	 * event in the overwriten method
-	 * @param child
-	 */
+     * Adds the given child object to the end of this MatchMakerObject's child
+     * list, then fires an event indicating the insertion took place.
+     * <p>
+     * Note to subclassers: If you override this method, you must fire the
+     * childrenInserted event yourself!
+     * 
+     * @param child
+     *            The child object to add. Must not be null.
+     */
 	public void addChild(C child) {
         logger.debug("addChild: children collection is a "+children.getClass().getName());
         if(child== null) throw new NullPointerException("Cannot add a null child");
@@ -76,11 +81,20 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	}
 
 	/**
-	 * adds child to position index, use for change position of children
-	 * anyone who going to overwrite this method should fire the childrenInserted
-	 * event in the overwriten method
-	 * @param child
-	 */
+     * Inserts the given child object at the given position of this
+     * MatchMakerObject's child list, then fires an event indicating the
+     * insertion took place.
+     * <p>
+     * Note to subclassers: If you override this method, you must fire the
+     * childrenInserted event yourself!
+     * 
+     * @param index
+     *            The position to insert the child at. 0 inserts the child at
+     *            the beginning of the list. The given index must be at least 0
+     *            but not more than the current child count of this object.
+     * @param child
+     *            The child object to add. Must not be null.
+     */
 	public void addChild(int index, C child) {
         logger.debug("addChild: children collection is a "+children.getClass().getName());
         if(child== null) throw new NullPointerException("Cannot add a null child");
@@ -91,16 +105,31 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		eventSupport.fireChildrenInserted("children",new int[] {index},insertedChildren);
 	}
 
+    /**
+     * Returns the number of children in this MatchMakerObject. For those
+     * objects that do not allow children, always returns 0.
+     */
 	public int getChildCount() {
 		return children.size();
 	}
 
+    /**
+     * Returns the list of children in this object.  The returned list must not
+     * be modified by client code (this is not enforced, but the MatchMaker will
+     * not work properly if the client code modifies this list directly).  See
+     * {@link #addChild(int, MatchMakerObject)} and {@link #removeChild(MatchMakerObject)}
+     * for the correct way to manipulate the child list.
+     * <p>
+     * MatchMakerObjects that do not support children always return an empty
+     * list (never null).
+     */
 	public List<C> getChildren() {
 		return children;
 	}
+
     /**
      * Replaces the list of children with the passed in list.
-     *
+     * <p>
      * This is intentionaly package private because it is only supposed to be used in methods that
      * support the ORM.
      *
@@ -116,10 +145,11 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * given child is not present in this object, calling this method has
      * no effect (no children are removed and no events are fired).
      * <p>
-	 * Anyone who is going to override this method should fire the ChildrenRemoved
-	 * event in the overridden method.
+	 * Note to subclassers: If you override this method, you must fire the
+     * ChildrenRemoved yourself.
      *
-	 * @param child
+	 * @param child The child object to remove.  If it is not present in this
+     * object's child list, this method call has no effect.
 	 */
 	public void removeChild(C child) {
 		int childIndex = children.indexOf(child);
@@ -140,8 +170,15 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	public Date getLastUpdateDate() {
 		return lastUpdateDate;
 	}
+    
 	/**
-	 * Register an update if the object is participating in a session
+	 * Responds to an update by updating the audit information (last update user and date), but
+     * only if the object is participating in an ORM session.  The reasons for only doing this
+     * in the context of an ORM session are:
+     * <ol>
+     *  <li>The application username is a property of the ORM session
+     *  <li>Updating these properties during unit testing complicates some of the automatic tests
+     * </ol>
 	 */
 	public void registerUpdate() {
 		// FIXME Change this to be handled by the daos
@@ -168,7 +205,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	}
 
 	/**
-	 * Returns this object's session, if it has one, otherwise defers
+	 * Returns this object's session, if it has one. Otherwise, defers
 	 * to the parent's getSession() method.
 	 */
     public MatchMakerSession getSession() {
@@ -210,8 +247,14 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		eventSupport.firePropertyChange("name", oldValue, this.name);
 	}
 
+    /**
+     * Declared abstract here to force subclasses to implement equals().
+     */
 	public abstract boolean equals(Object obj);
 
+    /**
+     * Declared abstract here to force subclasses to implement hashCode().
+     */
 	public abstract int hashCode();
 
 
