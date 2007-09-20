@@ -50,6 +50,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
@@ -469,6 +470,22 @@ public class MergeColumnRuleEditor implements EditorPane {
 			if (chooser.getTableComboBox().getSelectedItem() == null) {
 				return ValidateResult.createValidateResult(Status.FAIL,
 						"Merge table is required");
+				
+			// Checks if an existing merge rule is already set to operate on 
+			// the chosen schema and table.
+			} else if (chooser.getTableComboBox().isEnabled()){
+				List<TableMergeRules> mergeRules = match.getTableMergeRules();
+				String schemaName = ((SQLSchema)chooser.getSchemaComboBox().getSelectedItem()).getName();
+				String tableName = ((SQLTable)chooser.getTableComboBox().getSelectedItem()).getName();
+				
+				for (TableMergeRules rule: mergeRules) {
+					if (rule != mergeRule &&
+							rule.getSchemaName().equals(schemaName) &&
+							rule.getTableName().equals(tableName)) {
+						return ValidateResult.createValidateResult(Status.FAIL,
+								"Only one merge rule can operate on an individual table");
+					}
+				}
 			}
 			if (chooser.getUniqueKeyComboBox().getSelectedItem() == null) {
 				return ValidateResult.createValidateResult(Status.FAIL,
