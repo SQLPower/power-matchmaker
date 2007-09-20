@@ -49,7 +49,7 @@ import ca.sqlpower.swingui.SPSUtils;
  * lay them out in a way that makes sense for the particular application.
  */
 public class SQLObjectChooser {
-
+	
 	private JComboBox dataSourceComboBox = new JComboBox();
 
 	private JComboBox catalogComboBox = new JComboBox();
@@ -124,6 +124,7 @@ public class SQLObjectChooser {
             } else if (db.isSchemaContainer()) {
 
                 List<SQLSchema> schemas = db.getChildren();
+                
                 setComboBoxStateAndItem(schemaComboBox, schemas, -1);
                 if ( schemas != null && schemas.size() > 0 ) {
                     schemaTerm.setText(schemas.get(0).getNativeTerm());
@@ -142,7 +143,7 @@ public class SQLObjectChooser {
                 try {
                     validate();
                 } catch (Exception ex) {
-                    SPSUtils.showExceptionDialogNoReport((Component) e.getSource(), "Failed to update", ex);
+                    SPSUtils.showExceptionDialogNoReport((Component) e.getSource(), "Database Error", ex);
                 }
 			}
 		};
