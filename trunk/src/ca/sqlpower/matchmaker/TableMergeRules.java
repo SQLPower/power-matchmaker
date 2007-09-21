@@ -216,7 +216,7 @@ public class TableMergeRules
     }
 
     /**
-     * Sets the parent of this object to be the table merge rules group folder of the given match object
+     * Sets the parent of this object to be the match rule set folder of the given match object
      *
      * this will fire a <b>parent</b> changed event not a parent match event
      */

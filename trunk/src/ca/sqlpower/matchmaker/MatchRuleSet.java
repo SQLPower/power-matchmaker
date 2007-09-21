@@ -22,7 +22,7 @@ package ca.sqlpower.matchmaker;
 import java.awt.Color;
 
 /**
- * group of matchmaker criteria, the child type is MatchRule
+ * A set of match rules, the child type is MatchRule
  * matchPercent can be NULL, and it's NULL when the object just create(default constructor)
  *
  * @param <C>
@@ -31,7 +31,7 @@ public class MatchRuleSet
 	extends AbstractMatchMakerObject<MatchRuleSet, MatchRule> {
 	
 	/**
-	 * This is the name given to a criteria group made by the Match Maker
+	 * This is the name given to a rule set made by the Match Maker
 	 * to identify any new {@link PotentialMatchRecord} that are also created by
 	 * the Match Maker when previously unconnected nodes are defined to be
 	 * related.
@@ -42,14 +42,14 @@ public class MatchRuleSet
 	private String desc;
     
     /**
-     * The user's confidence that this group of match criteria produces
+     * The user's confidence that this group of match rule produces
      * actual matches.  Will usually be NULL or in the range 0-100, but
      * this range is not enforced.
      */
 	private Short matchPercent;
     
     /**
-     * A SQL Where fragment that restricts this set of criteria to a subset
+     * A SQL Where fragment that restricts this set of rules to a subset
      * of the whole match table.
      */
 	private String filter;
@@ -61,7 +61,7 @@ public class MatchRuleSet
 	private boolean active = true;
     
     /**
-     * The colour associated with this group of criteria by the user.  Useful
+     * The colour associated with this group of rule by the user.  Useful
      * in the GUI.
      */
 	private Color colour;
@@ -94,7 +94,7 @@ public class MatchRuleSet
     }
 
     /**
-     * Sets the parent of this object to be the matach criteria group folder of the given match object
+     * Sets the parent of this object to be the rule set folder of the given match object
      *
      * this will fire a <b>parent</b> changed event not a parent match event
      */
@@ -102,7 +102,7 @@ public class MatchRuleSet
         if (grandparent == null) {
             setParent(null);
         } else {
-            setParent(grandparent.getMatchCriteriaGroupFolder());
+            setParent(grandparent.getMatchRuleSetFolder());
         }
     }
 
@@ -179,15 +179,15 @@ public class MatchRuleSet
 
 	public String createNewUniqueName() {
 
-        StringBuffer name = new StringBuffer("new criteria");
+        StringBuffer name = new StringBuffer("new rule");
         int i = 1;
-        while ( getCriteriaByName(name.toString()) != null ) {
-        	name = new StringBuffer("new criteria").append(i++);
+        while ( getRuleByName(name.toString()) != null ) {
+        	name = new StringBuffer("new rule").append(i++);
         }
         return name.toString();
     }
 
-	private MatchRule getCriteriaByName(String name) {
+	private MatchRule getRuleByName(String name) {
 		for ( MatchRule c : getChildren() ) {
 			if ( c.getName().equals(name))
 				return c;
@@ -212,9 +212,9 @@ public class MatchRuleSet
 		group.setName(getName()==null?null:new String(getName()));
 		group.setSession(s);
 		
-		for ( MatchRule criteria : getChildren()) {
-			MatchRule newCriteria = criteria.duplicate(group,s);
-			group.addChild(newCriteria);
+		for ( MatchRule rule : getChildren()) {
+			MatchRule newRule = rule.duplicate(group,s);
+			group.addChild(newRule);
 		}
 		return group;
 	}

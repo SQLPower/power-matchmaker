@@ -32,20 +32,20 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
  * A simple action for deleting a match rule.
  */
 public class DeleteMatchRuleAction extends AbstractAction {
-	MatchRule criteria;
+	MatchRule rule;
 	MatchMakerSwingSession swingSession;
 	
-	public DeleteMatchRuleAction(MatchMakerSwingSession swingSession, MatchRule criteria) {
+	public DeleteMatchRuleAction(MatchMakerSwingSession swingSession, MatchRule rule) {
 		super("Delete Rule");
-		this.criteria = criteria;
+		this.rule = rule;
 		this.swingSession = swingSession;
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-		TreePath treePath = treeModel.getPathForNode(criteria.getParent());
+		TreePath treePath = treeModel.getPathForNode(rule.getParent());
 		swingSession.getTree().setSelectionPath(treePath);
-		swingSession.delete(criteria);
+		swingSession.delete(rule);
 	}
 
 }

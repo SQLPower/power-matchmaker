@@ -31,7 +31,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 
-public class MatchCriteriaTableModel extends AbstractTableModel implements CleanupTableModel {
+public class MatchRuleTableModel extends AbstractTableModel implements CleanupTableModel {
 
 	private final class TableModelEventAdapter
 		implements MatchMakerListener<MatchRuleSet, MatchRule> {
@@ -70,7 +70,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	/**
 	 * Creates a new TableModel for the given match group.  If you want a
 	 * table model for a different match group, you have to create a new
-	 * instance of MatchCriteriaTableModel.
+	 * instance of MatchRuleTableModel.
 	 * <p>
 	 * Note, it is important to call cleanup() when you are done with this
 	 * table model, because it listens to the matchGroup and its children,
@@ -82,7 +82,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	 * 
 	 * @param matchGroup The Match Group to use for table data.  Must be non-null.
 	 */
-	public MatchCriteriaTableModel(MatchRuleSet matchGroup) {
+	public MatchRuleTableModel(MatchRuleSet matchGroup) {
 		this.group = matchGroup;
 		tableModelEventAdapter = new TableModelEventAdapter();
 		MatchMakerUtils.listenToHierarchy(tableModelEventAdapter, group);
@@ -97,7 +97,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	}
 	
 	public int getColumnCount() {
-		return MatchCriteriaColumn.values().length;
+		return MatchRuleColumn.values().length;
 	}
 
 	public int getRowCount() {
@@ -105,8 +105,8 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		return getFieldFromCriteria(
-                MatchCriteriaColumn.values()[columnIndex],
+		return getFieldFromRule(
+                MatchRuleColumn.values()[columnIndex],
                 (MatchRule)group.getChildren().get(rowIndex));
 	}
 	
@@ -115,7 +115,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	 * @param translate_group_name
 	 * @return
 	 */
-	public int getIndexOfClass(MatchCriteriaColumn translate_group_name){
+	public int getIndexOfClass(MatchRuleColumn translate_group_name){
 		//Things have not been setup yet
 		if (group.getChildren()==null || group.getChildren().size() ==0){
 			return -1;
@@ -132,7 +132,7 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		MatchCriteriaColumn column = MatchCriteriaColumn.values()[columnIndex];
+		MatchRuleColumn column = MatchRuleColumn.values()[columnIndex];
 		MatchRule criterion = 
 			(MatchRule) group.getChildren().get(rowIndex);
 		
@@ -209,55 +209,55 @@ public class MatchCriteriaTableModel extends AbstractTableModel implements Clean
 	
 	@Override
 	public String getColumnName(int column) {
-		return MatchCriteriaColumn.values()[column].getName();
+		return MatchRuleColumn.values()[column].getName();
 	}
 	
 	@Override
 	public Class<?> getColumnClass(int columnIndex) {
-		return MatchCriteriaColumn.values()[columnIndex].getColumnClass();
+		return MatchRuleColumn.values()[columnIndex].getColumnClass();
 		
 	}
 	
-	private static Object getFieldFromCriteria(MatchCriteriaColumn column,
-			MatchRule criteria) {
+	private static Object getFieldFromRule(MatchRuleColumn column,
+			MatchRule rule) {
 		switch (column) {	
 		case COLUMN:
-			return criteria.getColumn();
+			return rule.getColumn();
 		case ALLOW_NULL:             
-			return criteria.isAllowNullInd();
+			return rule.isAllowNullInd();
 		case CASE_SENSITIVE_IND:             
-			return criteria.isCaseSensitiveInd();         
+			return rule.isCaseSensitiveInd();         
 		case SUPPRESS_CHAR:
-			return criteria.getSuppressChar();
+			return rule.getSuppressChar();
 		case FIRST_N_CHAR:
-			return criteria.getFirstNChar();         
+			return rule.getFirstNChar();         
 		case MATCH_START:
-			return criteria.isMatchStart();
+			return rule.isMatchStart();
 		case SOUND_IND:          
-			return criteria.isSoundInd();
+			return rule.isSoundInd();
 		case TRANSLATE_GROUP:        
-			if ( criteria.getTranslateGroup() != null) {
-				return criteria.getTranslateGroup();
+			if ( rule.getTranslateGroup() != null) {
+				return rule.getTranslateGroup();
 			} else {
 				return "";
 			}
 			
 		case REMOVE_SPECIAL_CHARS:        
-			return criteria.isRemoveSpecialChars();
+			return rule.isRemoveSpecialChars();
 		case COUNT_WORDS_IND:         
-			return criteria.isCountWordsInd();  
+			return rule.isCountWordsInd();  
 		case REPLACE_WITH_SPACE_IND:      
-			return criteria.isReplaceWithSpaceInd(); 
+			return rule.isReplaceWithSpaceInd(); 
 		case REPLACE_WITH_SPACE:  
-			return criteria.getReplaceWithSpace();			
+			return rule.getReplaceWithSpace();			
 		case REORDER_IND:   
-			return criteria.isReorderInd();
+			return rule.isReorderInd();
 		case FIRST_N_CHARS_BY_WORD:     
-			return criteria.getFirstNCharByWord(); 
+			return rule.getFirstNCharByWord(); 
 		case MIN_WORDS_IN_COMMON:
-			return criteria.getMinWordsInCommon();
+			return rule.getMinWordsInCommon();
 		case MATCH_FIRST_PLUS_ONE_IND:
-			return criteria.isMatchFirstPlusOneInd();
+			return rule.isMatchFirstPlusOneInd();
 		default:
 			throw new IllegalArgumentException("Invalid column");
 		}

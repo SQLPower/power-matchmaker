@@ -202,7 +202,7 @@
 			<one-to-many
 				class="ca.sqlpower.matchmaker.TableMergeRules" />
 		</list>
-		<bag name="matchCriteriaGroups" inverse="true" lazy="true" fetch="subselect" cascade="all">
+		<bag name="matchRuleSets" inverse="true" lazy="true" fetch="subselect" cascade="all">
 			<key>
 				<column name="MATCH_OID" not-null="true" />
 			</key>

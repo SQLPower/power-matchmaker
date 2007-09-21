@@ -140,7 +140,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                 } else if (o instanceof MatchRuleSet) {
                     addMatchGroupMenuItems(m, (MatchRuleSet) o);
                 } else if (o instanceof MatchRule) {
-                    addMatchCriteriaMenuItems(m, (MatchRule) o);
+                    addMatchRuleMenuItems(m, (MatchRule) o);
                 } else if (o instanceof TableMergeRules) {
                 	addMergeRulesMenuItems(m, (TableMergeRules) o);
                 } else if (o instanceof TranslateGroupParent) {
@@ -184,13 +184,13 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
     }
     
     /**
-     * Attaches a menu item for the actions of a match criteria.
+     * Attaches a menu item for the actions of a match rule.
      * 
      * @param m The popup menu that the menu item would be attached onto.
-     * @param criteria The current folder being right-clicked on.
+     * @param rule The current folder being right-clicked on.
      */
-    private void addMatchCriteriaMenuItems(JPopupMenu m, MatchRule criteria) {
-        m.add(new JMenuItem(new DeleteMatchRuleAction(swingSession,criteria)));
+    private void addMatchRuleMenuItems(JPopupMenu m, MatchRule rule) {
+        m.add(new JMenuItem(new DeleteMatchRuleAction(swingSession, rule)));
     }
 
     /**

@@ -53,7 +53,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     protected void setUp() throws Exception {
     	// The following two are ignored because they are to be used only by hibernate
     	// so they don't throw events
-        propertiesToIgnoreForEventGeneration.add("matchCriteriaGroups");
+        propertiesToIgnoreForEventGeneration.add("matchRuleSets");
         propertiesToIgnoreForEventGeneration.add("tableMergeRules");
         // Ignored because they are delegates to support functions for the chached table class
         propertiesToIgnoreForEventGeneration.add("sourceTableCatalog");
@@ -100,11 +100,11 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		assertTrue("Match1 should equals match2", m1.equals(m2) );
 	}
 
-    public void testMatchMakerFolderFiresEventForMatchCriteriaGroups(){
+    public void testMatchMakerFolderFiresEventForMatchRuleSets(){
         MatchMakerEventCounter l = new MatchMakerEventCounter();
-        match.getMatchCriteriaGroupFolder().addMatchMakerListener(l);
+        match.getMatchRuleSetFolder().addMatchMakerListener(l);
         List<MatchRuleSet> mmoList = new ArrayList<MatchRuleSet>();
-        match.setMatchCriteriaGroups(mmoList);
+        match.setMatchRuleSets(mmoList);
         assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
         assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
     }

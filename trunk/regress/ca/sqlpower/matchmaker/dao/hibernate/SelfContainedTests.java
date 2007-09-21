@@ -61,7 +61,7 @@ public class SelfContainedTests {
         match.setSession(s);
         s.getDAO(Match.class).save(match);
         cg.setSession(s);
-        match.addMatchCriteriaGroup(cg);
+        match.addMatchRuleSet(cg);
         s.getDAO(MatchRuleSet.class).save(cg);
     }
 

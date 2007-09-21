@@ -40,7 +40,7 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
     PlFolder folder;
     public AbstractMatchRuleSetDAOTestCase() {
         match= new Match();
-        match.setName("Criteria Group Test Match");
+        match.setName("Rule Set Test Match");
         match.setType(Match.MatchMode.BUILD_XREF);
         folder = new PlFolder("main test folder");
         match.setParent(folder);
@@ -65,18 +65,18 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
 	@Override
 	public MatchRuleSet createNewObjectUnderTest() throws Exception {
 		count++;
-		MatchRuleSet criteriaGroup = new MatchRuleSet();
-        criteriaGroup.setSession(getSession());
+		MatchRuleSet ruleSet = new MatchRuleSet();
+        ruleSet.setSession(getSession());
 		try {
-			setAllSetters(criteriaGroup, getNonPersitingProperties());
-            criteriaGroup.setName("Group "+count);
-            match.addMatchCriteriaGroup(criteriaGroup);
+			setAllSetters(ruleSet, getNonPersitingProperties());
+            ruleSet.setName("Group "+count);
+            match.addMatchRuleSet(ruleSet);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
-		return criteriaGroup;
+		return ruleSet;
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
         Statement stmt = null;
         try {
 
-            MatchRuleSet group = match.getMatchCriteriaGroups().get(0);
+            MatchRuleSet group = match.getMatchRuleSets().get(0);
             String groupId = group.getName();
 
             MatchRuleSetDAO dao = getDataAccessObject();

@@ -77,7 +77,7 @@ public class MatchSettings extends MatchMakerSettings {
 	private Long lastBackupNo;
 
 	/**
-	 * Breakup the match after each criteria group
+	 * Breakup the match after each rule set
 	 */
 	private boolean breakUpMatch = false;
 	/**

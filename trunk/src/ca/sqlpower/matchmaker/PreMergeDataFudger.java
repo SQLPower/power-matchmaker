@@ -82,11 +82,11 @@ public class PreMergeDataFudger {
 		this.pool = pool;
 		
 		Match match = pool.getMatch();
-		MatchRuleSet fudgeRuleSet = match.getMatchCriteriaGroupByName(FUDGE_RULE_SET_NAME);
+		MatchRuleSet fudgeRuleSet = match.getMatchRuleSetByName(FUDGE_RULE_SET_NAME);
 		if (fudgeRuleSet == null) {
 			fudgeRuleSet = new MatchRuleSet();
 			fudgeRuleSet.setName(FUDGE_RULE_SET_NAME);
-			match.getMatchCriteriaGroupFolder().addChild(fudgeRuleSet);
+			match.getMatchRuleSetFolder().addChild(fudgeRuleSet);
 			session.getDAO(Match.class).save(match);
 		}
 		ruleSet = fudgeRuleSet;
@@ -146,7 +146,7 @@ public class PreMergeDataFudger {
 	public void unfudge() throws SQLException, ArchitectException {
 		for (int i = pool.getPotentialMatches().size() - 1; i >= 0; i--) {
 			PotentialMatchRecord pmr = (PotentialMatchRecord) pool.getPotentialMatches().toArray()[i];
-			if (pmr.getCriteriaGroup() == ruleSet) {
+			if (pmr.getRuleSet() == ruleSet) {
 				pool.removePotentialMatch(pmr);
 			}
 		}

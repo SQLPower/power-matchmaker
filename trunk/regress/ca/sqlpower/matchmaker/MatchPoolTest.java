@@ -109,11 +109,11 @@ public class MatchPoolTest extends TestCase {
 
 		groupOne = new MatchRuleSet();
 		groupOne.setName("Group_One");
-		match.addMatchCriteriaGroup(groupOne);
+		match.addMatchRuleSet(groupOne);
 
 		MatchRuleSet groupTwo = new MatchRuleSet();
 		groupTwo.setName("Group_Two");
-		match.addMatchCriteriaGroup(groupTwo);
+		match.addMatchRuleSet(groupTwo);
 		
 		pool = MMTestUtils.createTestingPool(session, match, groupOne, groupTwo);
 	}
@@ -173,7 +173,7 @@ public class MatchPoolTest extends TestCase {
 			assertNotNull(pmr.getOriginalLhs());
 			assertNotNull(pmr.getOriginalLhs().getKeyValues());
 			assertEquals(1, pmr.getOriginalLhs().getKeyValues().size());
-			assertEquals("Group_One", pmr.getCriteriaGroup().getName());
+			assertEquals("Group_One", pmr.getRuleSet().getName());
 		}
 		int originalMatchCount = matches.size();
 		
@@ -3919,7 +3919,7 @@ public class MatchPoolTest extends TestCase {
 	
 	/**
 	 * This tests whether or not auto-match only matches on the supplied
-	 * criteria group.
+	 * rule set.
 	 * <p>
 	 * See graph 'w' in the image for
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
@@ -3927,7 +3927,7 @@ public class MatchPoolTest extends TestCase {
 	 * @throws ArchitectException 
 	 * @throws SQLException 
 	 */
-	public void testAutoMatchBasicTwoCriteria() throws SQLException, ArchitectException {
+	public void testAutoMatchBasicTwoRules() throws SQLException, ArchitectException {
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("w1");
 		SourceTableRecord w1 = pool.getSourceTableRecord(keyList);
@@ -3952,7 +3952,7 @@ public class MatchPoolTest extends TestCase {
 	/**
 	 * This method tests whether or not the auto-match function can
 	 * make matches on all subgraphs that have edges in the provided
-	 * criteria group. 
+	 * rule set. 
 	 * <p>
 	 * See graphs 'x' and 'y' in the image for
 	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MatchRuleSet)}
@@ -4021,7 +4021,7 @@ public class MatchPoolTest extends TestCase {
 	
 	/**
 	 * This test makes sure that auto-match is 'aware' of edges that need to
-	 * change and are in other criteria groups so that the end result is a legal
+	 * change and are in other rule sets so that the end result is a legal
 	 * state.
 	 * <p>
 	 * See graph 'z' in the image for

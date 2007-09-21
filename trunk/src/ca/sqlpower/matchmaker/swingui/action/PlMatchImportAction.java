@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchImportor;
+import ca.sqlpower.matchmaker.MatchImporter;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
@@ -78,7 +78,7 @@ public class PlMatchImportAction extends AbstractAction {
 			BufferedInputStream in = null;
 			try {
 				in = new BufferedInputStream(new FileInputStream(importFile));
-				MatchImportor importer = new MatchImportor();
+				MatchImporter importer = new MatchImporter();
 				match = new Match();
 				match.setSession(swingSession);
 				importer.load(match,in);

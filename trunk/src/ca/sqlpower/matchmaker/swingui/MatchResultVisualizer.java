@@ -377,7 +377,7 @@ public class MatchResultVisualizer implements EditorPane {
     	 */
     	private final String warningMessage = "WARNING: Performing an the auto-match operation will create\n"
 											+ "matches between all records that were matched according to the\n"
-											+ "selected criteria. It is imperative that you review these\n"
+											+ "selected rule set. It is imperative that you review these\n"
 											+ "matches carefully before merging records because this operation\n"
 											+ "does NOT rank records based on their perceived usefulness.";
     	
@@ -389,7 +389,7 @@ public class MatchResultVisualizer implements EditorPane {
 			int response = JOptionPane.showConfirmDialog(panel, warningMessage, "WARNING", JOptionPane.OK_CANCEL_OPTION);
 			if (response == JOptionPane.OK_OPTION) {
 				try {
-					pool.doAutoMatch((String) criteriaComboBox.getSelectedItem());
+					pool.doAutoMatch((String) ruleSetComboBox.getSelectedItem());
 					pool.store();
 					graph.repaint();
 				} catch (Exception ex) {
@@ -440,7 +440,7 @@ public class MatchResultVisualizer implements EditorPane {
 
     private final GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel;
     
-    private JComboBox criteriaComboBox;
+    private JComboBox ruleSetComboBox;
     
     /**
      * A list of the SQLColumns that we want to display in each SourceTableRecord
@@ -468,13 +468,13 @@ public class MatchResultVisualizer implements EditorPane {
         doAutoLayout();
 
         JPanel autoMatchPanel = new JPanel(new FlowLayout());
-        criteriaComboBox = new JComboBox();
-        for (MatchRuleSet criteria : match.getMatchCriteriaGroups()) {
-        	criteriaComboBox.addItem(criteria.getName());
+        ruleSetComboBox = new JComboBox();
+        for (MatchRuleSet ruleSet : match.getMatchRuleSets()) {
+        	ruleSetComboBox.addItem(ruleSet.getName());
         }
         autoMatchPanel.add(new JButton(new AutoMatchAction(graph.getModel())));
         autoMatchPanel.add(new JLabel(":"));
-        autoMatchPanel.add(criteriaComboBox);
+        autoMatchPanel.add(ruleSetComboBox);
         
         JPanel graphPanel = new JPanel(new BorderLayout());
         graphPanel.add(buttonPanel, BorderLayout.NORTH);

@@ -112,8 +112,8 @@ public class MatchRule
     }
     
     /**
-     * Overridden because match criteria don't really have names.  This
-     * method returns the column name which this set of criteria is associated with.
+     * Overridden because match rules don't really have names.  This
+     * method returns the column name which this rule is associated with.
      */
     @Override
     public String getName() {
@@ -436,39 +436,39 @@ public class MatchRule
     }
 
     /**
-     * duplicate all criteria properties except parent and oid
+     * duplicate all rule properties except parent and oid
      * @return new MatchRule bject with all original 
      * properties except parent and oid
      */
 	public MatchRule duplicate(MatchMakerObject parent,MatchMakerSession s){
-		MatchRule criteria = new MatchRule();
-		criteria.setAllowNullInd(isAllowNullInd());
-		criteria.setCaseSensitiveInd(isCaseSensitiveInd());
-		criteria.setColumn(getColumn());
-		criteria.setColumnName(getColumnName());
-		criteria.setCountWordsInd(isCountWordsInd());
-		criteria.setFirstNChar(getFirstNChar());
-		criteria.setFirstNCharByWord(getFirstNCharByWord());
-		criteria.setFirstNCharByWordInd(isFirstNCharByWordInd());
-		criteria.setMatchEnd(isMatchEnd());
-		criteria.setMatchFirstPlusOneInd(isMatchFirstPlusOneInd());
-		criteria.setMatchStart(isMatchStart());
-		criteria.setMinWordsInCommon(getMinWordsInCommon());
-		criteria.setName(getName());
-		criteria.setRemoveSpecialChars(isRemoveSpecialChars());
-		criteria.setReorderInd(isReorderInd());
-		criteria.setReplaceWithSpace(getReplaceWithSpace());
-		criteria.setReplaceWithSpaceInd(isReplaceWithSpaceInd());
-		criteria.setSeqNo(getSeqNo());
-		criteria.setSession(s);
-		criteria.setSoundInd(isSoundInd());
-		criteria.setSuppressChar(getSuppressChar());
-		criteria.setTranslateGroup(getTranslateGroup());
-		criteria.setVarianceAmt(getVarianceAmt());
-		criteria.setVarianceType(getVarianceType());
-		criteria.setWordsInCommonNumWords(getWordsInCommonNumWords());
+		MatchRule rule = new MatchRule();
+		rule.setAllowNullInd(isAllowNullInd());
+		rule.setCaseSensitiveInd(isCaseSensitiveInd());
+		rule.setColumn(getColumn());
+		rule.setColumnName(getColumnName());
+		rule.setCountWordsInd(isCountWordsInd());
+		rule.setFirstNChar(getFirstNChar());
+		rule.setFirstNCharByWord(getFirstNCharByWord());
+		rule.setFirstNCharByWordInd(isFirstNCharByWordInd());
+		rule.setMatchEnd(isMatchEnd());
+		rule.setMatchFirstPlusOneInd(isMatchFirstPlusOneInd());
+		rule.setMatchStart(isMatchStart());
+		rule.setMinWordsInCommon(getMinWordsInCommon());
+		rule.setName(getName());
+		rule.setRemoveSpecialChars(isRemoveSpecialChars());
+		rule.setReorderInd(isReorderInd());
+		rule.setReplaceWithSpace(getReplaceWithSpace());
+		rule.setReplaceWithSpaceInd(isReplaceWithSpaceInd());
+		rule.setSeqNo(getSeqNo());
+		rule.setSession(s);
+		rule.setSoundInd(isSoundInd());
+		rule.setSuppressChar(getSuppressChar());
+		rule.setTranslateGroup(getTranslateGroup());
+		rule.setVarianceAmt(getVarianceAmt());
+		rule.setVarianceType(getVarianceType());
+		rule.setWordsInCommonNumWords(getWordsInCommonNumWords());
 
-		return criteria;
+		return rule;
 	}
 
 	public SQLColumn getColumn() {

@@ -83,7 +83,7 @@ public class MatchRuleSetEditor implements EditorPane {
 	private static final Logger logger = Logger.getLogger(MatchRuleSetEditor.class);
 
     private final MatchMakerSwingSession swingSession;
-    private MatchRuleSet group;
+    private MatchRuleSet ruleSet;
     private Match match;
 
     private JPanel panel;
@@ -92,8 +92,8 @@ public class MatchRuleSetEditor implements EditorPane {
     private FormValidationHandler handler;
 
     private JSplitPane jSplitPane;
-	private final JTable matchCriteriaTable;
-	private MatchCriteriaTableModel matchCriteriaTableModel;
+	private final JTable matchRuleTable;
+	private MatchRuleTableModel matchRuleTableModel;
 	private JPanel groupEditPanel;
     private JTextField groupId;
     private JLabel matches;
@@ -114,68 +114,68 @@ public class MatchRuleSetEditor implements EditorPane {
 	 */
 	public MatchRuleSetEditor(MatchMakerSwingSession swingSession,
 			Match match,
-			MatchRuleSet group) {
+			MatchRuleSet ruleSet) {
 		super();
         this.swingSession = swingSession;
         this.match = match;
-		this.group = group;
+		this.ruleSet = ruleSet;
 
 		handler = new FormValidationHandler(status);
-		matchCriteriaTableModel = new MatchCriteriaTableModel(group);
-		matchCriteriaTable = new EditableJTable(matchCriteriaTableModel);
+		matchRuleTableModel = new MatchRuleTableModel(ruleSet);
+		matchRuleTable = new EditableJTable(matchRuleTableModel);
 		buildUI();
-		setDefaultSelection(group,match);
+		setDefaultSelection(ruleSet,match);
 		handler.addPropertyChangeListener(new PropertyChangeListener(){
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshActionStatus();
 			}
         });
-		save.putValue("mm_name", "save action for "+group.getName()+"@"+System.identityHashCode(group));
+		save.putValue("mm_name", "save action for "+ruleSet.getName()+"@"+System.identityHashCode(ruleSet));
         
 		/* Now trigger form validation so the validation status starts up correctly,
          * then reset the validation handler so we don't think there are unsaved changes
          * to start with.
 		 */
-		matchCriteriaTableModel.fireTableChanged(new TableModelEvent(matchCriteriaTableModel));
+		matchRuleTableModel.fireTableChanged(new TableModelEvent(matchRuleTableModel));
         handler.resetHasValidated();
 	}
 
-	private class MatchGroupNameValidator implements Validator {
-		private static final int MAX_GROUP_NAME_CHAR = 30;
+	private class MatchRuleSetNameValidator implements Validator {
+		private static final int MAX_RULE_SET_NAME_CHAR = 30;
         public ValidateResult validate(Object contents) {
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						"Match group name is required");
-			} else if ( !value.equals(group.getName()) &&
-					match.getMatchCriteriaGroupByName(groupId.getText()) != null ) {
+						"Match ruleSet name is required");
+			} else if ( !value.equals(ruleSet.getName()) &&
+					match.getMatchRuleSetByName(groupId.getText()) != null ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						"Match group name is invalid or already exists.");
-			} else if (value.length() > MAX_GROUP_NAME_CHAR){
+						"Match ruleSet name is invalid or already exists.");
+			} else if (value.length() > MAX_RULE_SET_NAME_CHAR){
 			    return ValidateResult.createValidateResult(Status.FAIL, 
-                        "Match group name cannot be more than " + MAX_GROUP_NAME_CHAR + " characters long");
+                        "Match ruleSet name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
             }
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
 
-	private class MatchGroupPctValidator implements Validator {
+	private class MatchRuleSetPercentValidator implements Validator {
 		public ValidateResult validate(Object contents) {
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.WARN,
-						"Match group percentage is required");
+						"Match ruleSet percentage is required");
 			} else {
 				int pct = -1;
 				try {
 					pct = Integer.parseInt(value);
 				} catch ( NumberFormatException e ) {
 					return ValidateResult.createValidateResult(Status.FAIL,
-						"Match group percentage is invalid.");
+						"Match ruleSet percentage is invalid.");
 				}
 				if ( pct > 100 || pct < 0 ) {
 					return ValidateResult.createValidateResult(Status.WARN,
-							"Match group percentage range is invalid.");
+							"Match ruleSet percentage range is invalid.");
 				}
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
@@ -186,11 +186,11 @@ public class MatchRuleSetEditor implements EditorPane {
 		ValidateResult worst = handler.getWorstValidationStatus();
 		save.setEnabled(true);
 		logger.debug("Setting "+save.getValue("mm_name")+" enabled to "+true);
-		newCriteria.setEnabled(true);
+		newRule.setEnabled(true);
 		if ( worst.getStatus() == Status.FAIL ) {
 			save.setEnabled(false);
 			logger.debug("Setting "+save.getValue("mm_name")+" enabled to "+false);
-			newCriteria.setEnabled(false);
+			newRule.setEnabled(false);
 		}
 	}
 
@@ -200,11 +200,11 @@ public class MatchRuleSetEditor implements EditorPane {
 		}
 	};
 
-	private Action newCriteria = new AbstractAction("New Criteria") {
+	private Action newRule = new AbstractAction("New Rule") {
 		public void actionPerformed(ActionEvent arg0) {
-			MatchRule criteria = new MatchRule();
-			group.addChild(criteria);
-			criteria.addMatchMakerListener(new MatchMakerListener<MatchRule,MatchMakerObject>() {
+			MatchRule rule = new MatchRule();
+			ruleSet.addChild(rule);
+			rule.addMatchMakerListener(new MatchMakerListener<MatchRule,MatchMakerObject>() {
 
 				public void mmChildrenInserted(MatchMakerEvent evt) {
 				}
@@ -213,9 +213,9 @@ public class MatchRuleSetEditor implements EditorPane {
 				}
 
 				public void mmPropertyChanged(MatchMakerEvent evt) {
-					MatchRule criteria = (MatchRule) evt.getSource();
-					if ( criteria.getColumn() != null ) {
-						criteria.setName(criteria.getColumn().getName());
+					MatchRule rule = (MatchRule) evt.getSource();
+					if ( rule.getColumn() != null ) {
+						rule.setName(rule.getColumn().getName());
 					}
 				}
 
@@ -225,31 +225,31 @@ public class MatchRuleSetEditor implements EditorPane {
 		}
 	};
 
-	private Action deleteCriteria = new AbstractAction("Delete Criteria") {
+	private Action deleteRule = new AbstractAction("Delete Rule") {
 	    public void actionPerformed(ActionEvent e) {
-	        int selectedRow = matchCriteriaTable.getSelectedRow();
+	        int selectedRow = matchRuleTable.getSelectedRow();
 	        if ( selectedRow == -1 ) return;
-	        MatchRule c = matchCriteriaTableModel.getRow(selectedRow);
+	        MatchRule c = matchRuleTableModel.getRow(selectedRow);
 	        
-	        /* Note, this is a temporary workaround.  Deleting a criteria set will have
-	         * the side effect of saving all other sets in the group.
+	        /* Note, this is a temporary workaround.  Deleting a rule set will have
+	         * the side effect of saving all other sets in the ruleSet.
 	         * 
 	         * We'd prefer to be able to do one of the following (in order of preference):
 	         * 
-	         * 1. Make it so when you delete a criteria row and don't save, the
-	         *    row reappears next time you come to this group editor
-	         * 2. Make the delete permanently and immediately delete the one criteria set
-	         *    we just removed, but not save the group or any other criteria
-	         *    (this would require having a working MatchMakerCriteriaDAO, which we don't)
+	         * 1. Make it so when you delete a rule row and don't save, the
+	         *    row reappears next time you come to this ruleSet editor
+	         * 2. Make the delete permanently and immediately delete the one rule set
+	         *    we just removed, but not save the ruleSet or any other rules
+	         *    (this would require having a working MatchMakerRuleDAO, which we don't)
 	         */
             
             //For now we catch the exception as an additional workaround, we add the child back 
             //and give the user a message
 	        try {
-	            group.removeChild(c);
+	            ruleSet.removeChild(c);
 	            swingSession.save(match);
 	        } catch (Exception ex){
-	            group.addChild(c);     
+	            ruleSet.addChild(c);     
                 SPSUtils.showExceptionDialogNoReport("Delete operation failed!", ex);
 	        }
 
@@ -258,7 +258,7 @@ public class MatchRuleSetEditor implements EditorPane {
 	
 	private Action customColour = new AbstractAction("Custom Colour") {
 		public void actionPerformed(ActionEvent arg0) {
-			Color colour = swingSession.getCustomColour(group.getColour());
+			Color colour = swingSession.getCustomColour(ruleSet.getColour());
 		    if (colour != null) {
 		    	colourPicker.addItem(colour);
 		    	colourPicker.setSelectedItem(colour);
@@ -288,15 +288,15 @@ public class MatchRuleSetEditor implements EditorPane {
         renderer.setIcon(SPSUtils.createIcon("gear_16", ""));
         
         
-        newMatchCriterion = new JButton(newCriteria);
-        newMatchCriterion.setName("New button for "+group.getName());
-        deleteMatchCriterion = new JButton(deleteCriteria);
+        newMatchCriterion = new JButton(newRule);
+        newMatchCriterion.setName("New button for "+ruleSet.getName());
+        deleteMatchCriterion = new JButton(deleteRule);
         saveMatchCriterion = new JButton(save);
-        saveMatchCriterion.setName("Save button for "+group.getName());
+        saveMatchCriterion.setName("Save button for "+ruleSet.getName());
         chooseCustomColour = new JButton(customColour);
         chooseCustomColour.setName("Custom Color");
 
-		// group header
+		// ruleSet header
 		FormLayout formLayout = new FormLayout("3dlu, pref, 5dlu, fill:pref:grow, 10dlu, pref,5dlu,pref,3dlu");
 		JPanel p = logger.isDebugEnabled() ? 
 				new FormDebugPanel(formLayout) : new JPanel(formLayout);
@@ -318,7 +318,7 @@ public class MatchRuleSetEditor implements EditorPane {
         pb.add(new JLabel("Colour"), cl.xy(6,6), colourPicker, cc.xy(8,6));
 		pb.appendRelatedComponentsGapRow();
 		pb.appendRow("40dlu");
-		pb.add(new JLabel("Filter Criteria"), cl.xy(2,8));
+		pb.add(new JLabel("Filter Rule"), cl.xy(2,8));
         pb.add(new JScrollPane(filterPanel.getFilterTextArea()), cc.xy(4,8, "f,f"));
         pb.add(filterPanel.getEditButton(), cc.xy(6,8,"l,b"));
         pb.add(chooseCustomColour, cc.xy(8,8, "c,t"));
@@ -338,14 +338,14 @@ public class MatchRuleSetEditor implements EditorPane {
 
 
 
-		// group detail (match criteria)
-		matchCriteriaTable.setName("Match Criteria Editor for "+group.getName());
-		matchCriteriaTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		matchCriteriaTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
+		// set detail (match rule)
+		matchRuleTable.setName("Match Rule Editor for "+ruleSet.getName());
+		matchRuleTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		matchRuleTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
 
 		jSplitPane = new JSplitPane();
         jSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        jSplitPane.setBottomComponent(new JScrollPane(matchCriteriaTable));
+        jSplitPane.setBottomComponent(new JScrollPane(matchRuleTable));
         jSplitPane.setTopComponent(groupEditPanel);
 
         panel = new JPanel();
@@ -357,56 +357,57 @@ public class MatchRuleSetEditor implements EditorPane {
 
 
 	/**
-	 * Switches this component to edit a different match group.
+	 * Switches this component to edit a different match ruleSet.
 	 *
-	 * @param criteria the new MatchGroup to edit.
+	 * @param ruleSet the new MatchGroup to edit.
+	 * @param match the match to edit
 	 */
-	private void setDefaultSelection(MatchRuleSet group,
+	private void setDefaultSelection(MatchRuleSet ruleSet,
 			Match match ) {
 
 		matches.setText(match.getName());
-		groupId.setText(group.getName());
-        description.setText(group.getDesc());
+		groupId.setText(ruleSet.getName());
+        description.setText(ruleSet.getDesc());
 
-        if ( group.getMatchPercent() != null ) {
-        	matchPercent.setText(group.getMatchPercent().toString());
+        if ( ruleSet.getMatchPercent() != null ) {
+        	matchPercent.setText(ruleSet.getMatchPercent().toString());
         }
-        filterPanel.getFilterTextArea().setText(group.getFilter());
-       	active.setSelected(group.getActive());
+        filterPanel.getFilterTextArea().setText(ruleSet.getFilter());
+       	active.setSelected(ruleSet.getActive());
 
        	boolean hasColour = false;
        	for (int i = 0; i < colourPicker.getItemCount(); i++) {
-       		if (colourPicker.getItemAt(i).equals(group.getColour())) {
+       		if (colourPicker.getItemAt(i).equals(ruleSet.getColour())) {
        			hasColour = true;
        			break;
        		}
        	}
        	if (!hasColour) {
-   	       	colourPicker.addItem(group.getColour());
+   	       	colourPicker.addItem(ruleSet.getColour());
        	}
-        colourPicker.setSelectedItem(group.getColour());
+        colourPicker.setSelectedItem(ruleSet.getColour());
         
         SQLTable sourceTable;
-        newCriteria.setEnabled(false);
+        newRule.setEnabled(false);
         if ( match.getSourceTable() != null ) {
         	sourceTable = match.getSourceTable();
         	if ( sourceTable != null ) {
         	    logger.debug("sourceTable isn't null.  Creating filterPanel, column chooser, and translation chooser.");
 
-                newCriteria.setEnabled(true);
+                newRule.setEnabled(true);
 
                 filterPanel.setTable(sourceTable);
 
-        		setupColumnEditors(group, sourceTable);
+        		setupColumnEditors(ruleSet, sourceTable);
         	} else {
                 logger.debug("sourceTable is null.  not setting up editors.");
             }
         }
 
-        Validator v1 = new MatchGroupNameValidator();
+        Validator v1 = new MatchRuleSetNameValidator();
         handler.addValidateObject(groupId,v1);
 
-        Validator v2 = new MatchGroupPctValidator();
+        Validator v2 = new MatchRuleSetPercentValidator();
         handler.addValidateObject(matchPercent,v2);
 
         Validator v3 = new AlwaysOKValidator();
@@ -415,8 +416,8 @@ public class MatchRuleSetEditor implements EditorPane {
         handler.addValidateObject(colourPicker, v3);
         handler.addValidateObject(active, v3);
         
-        Validator v4 = new CriteriaTableValidator(matchCriteriaTable);
-        handler.addValidateObject(matchCriteriaTable,v4);
+        Validator v4 = new RuleTableValidator(matchRuleTable);
+        handler.addValidateObject(matchRuleTable,v4);
 
 
         //These three fields are not really needed as the table cells automatically
@@ -424,45 +425,45 @@ public class MatchRuleSetEditor implements EditorPane {
         //validators act as an insurance in case the invalid text does get
         //bypassed.
 
-        Validator v5 = new NumberValidatorAllowingNull(matchCriteriaTable,
-        		MatchCriteriaColumn.FIRST_N_CHAR);
-        handler.addValidateObject(matchCriteriaTable,v5);
+        Validator v5 = new NumberValidatorAllowingNull(matchRuleTable,
+        		MatchRuleColumn.FIRST_N_CHAR);
+        handler.addValidateObject(matchRuleTable,v5);
 
 
-        Validator v6 = new NumberValidatorAllowingNull(matchCriteriaTable,
-        		MatchCriteriaColumn.FIRST_N_CHARS_BY_WORD);
-        handler.addValidateObject(matchCriteriaTable,v6);
+        Validator v6 = new NumberValidatorAllowingNull(matchRuleTable,
+        		MatchRuleColumn.FIRST_N_CHARS_BY_WORD);
+        handler.addValidateObject(matchRuleTable,v6);
 
-        Validator v7 = new NumberValidatorAllowingNull(matchCriteriaTable,
-        		MatchCriteriaColumn.MIN_WORDS_IN_COMMON);
-        handler.addValidateObject(matchCriteriaTable,v7);
+        Validator v7 = new NumberValidatorAllowingNull(matchRuleTable,
+        		MatchRuleColumn.MIN_WORDS_IN_COMMON);
+        handler.addValidateObject(matchRuleTable,v7);
 
     }
 
 
 	/**
-     * Sets up all the renderers and listeners that the match criteria table needs
+     * Sets up all the renderers and listeners that the match rule table needs
      * in order to display the GUI properly (ie a ColumnComboBoxModel for Translate
      * Words dropdown)
      * 
-     * @param group the MatchCriteriaGroup the editors will be setting up for
+     * @param ruleSet the MatchRuleSet the editors will be setting up for
      * @param sourceTable the source table of the match
 	 */
-    private void setupColumnEditors(MatchRuleSet group, SQLTable sourceTable) {
-        int columnColumn = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.COLUMN);
-        matchCriteriaTable.getColumnModel().getColumn(columnColumn).setCellEditor(
+    private void setupColumnEditors(MatchRuleSet ruleSet, SQLTable sourceTable) {
+        int columnColumn = MatchRuleColumn.getIndex(MatchRuleColumn.COLUMN);
+        matchRuleTable.getColumnModel().getColumn(columnColumn).setCellEditor(
         		new DefaultCellEditor(new JComboBox(
         				new ColumnComboBoxModel(sourceTable))));
 
-        int colIndex = MatchCriteriaColumn.getIndex(MatchCriteriaColumn.TRANSLATE_GROUP);
-        TableColumn col = matchCriteriaTable.getColumnModel().getColumn(colIndex);
+        int colIndex = MatchRuleColumn.getIndex(MatchRuleColumn.TRANSLATE_GROUP);
+        TableColumn col = matchRuleTable.getColumnModel().getColumn(colIndex);
         TranslationComboBoxModel model = new TranslationComboBoxModel(swingSession.getTranslations());
         model.setFirstItemNull(true);
 		final JComboBox translateComboBox = new JComboBox(model);
         col.setCellEditor(new DefaultCellEditor(translateComboBox));
         translateComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
         
-        matchCriteriaTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        matchRuleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
 
@@ -471,11 +472,11 @@ public class MatchRuleSetEditor implements EditorPane {
 		return panel;
 	}
 
-	private class CriteriaTableValidator implements Validator {
+	private class RuleTableValidator implements Validator {
 
-		private MatchCriteriaTableModel model;
-		public CriteriaTableValidator(JTable table) {
-			this.model = (MatchCriteriaTableModel) table.getModel();
+		private MatchRuleTableModel model;
+		public RuleTableValidator(JTable table) {
+			this.model = (MatchRuleTableModel) table.getModel();
 		}
 		public ValidateResult validate(Object contents) {
 
@@ -506,17 +507,17 @@ public class MatchRuleSetEditor implements EditorPane {
 	private class NumberValidatorAllowingNull implements Validator{
 
 		private JTable table;
-		private MatchCriteriaColumn translate_group_name;
+		private MatchRuleColumn translate_group_name;
 
 		public NumberValidatorAllowingNull(JTable table,
-				MatchCriteriaColumn translate_group_name){
+				MatchRuleColumn translate_group_name){
 			this.table = table;
 			this.translate_group_name = translate_group_name;
 		}
 
 		Pattern pattern = Pattern.compile("\\d+");
 		public ValidateResult validate(Object contents) {
-			int colIndex = ((MatchCriteriaTableModel) table.getModel()).
+			int colIndex = ((MatchRuleTableModel) table.getModel()).
 							getIndexOfClass(translate_group_name);
 
 			//If it does not exist, the columns have not been setup yet
@@ -609,7 +610,7 @@ public class MatchRuleSetEditor implements EditorPane {
             JOptionPane.showMessageDialog(swingSession.getFrame(),
                     "You have to fix these errors before saving:\n"+
                     failMessage.toString(),
-                    "Match group error",
+                    "Match ruleSet error",
                     JOptionPane.ERROR_MESSAGE);
             return false;
         } else if ( warn.size() > 0 ) {
@@ -618,22 +619,22 @@ public class MatchRuleSetEditor implements EditorPane {
                 warnMessage.append(w).append("\n");
             }
             JOptionPane.showMessageDialog(swingSession.getFrame(),
-                    "Warning: match group will be saved, " +
+                    "Warning: match ruleSet will be saved, " +
                     "but you may not be able to run it, because of these wanings:\n"+
                     warnMessage.toString(),
                     "Match warning",
                     JOptionPane.INFORMATION_MESSAGE);
         }
-        if ( !groupId.getText().equals(group.getName()) ) {
-            if ( match.getMatchCriteriaGroupByName(groupId.getText()) != null ) {
+        if ( !groupId.getText().equals(ruleSet.getName()) ) {
+            if ( match.getMatchRuleSetByName(groupId.getText()) != null ) {
                 JOptionPane.showMessageDialog(getPanel(),
-                        "Match group name \""+groupId.getText()+
-                        "\" exist or invalid. The match group can not be saved",
-                        "Match group name invalid",
+                        "Match ruleSet name \""+groupId.getText()+
+                        "\" exist or invalid. The match ruleSet can not be saved",
+                        "Match ruleSet name invalid",
                         JOptionPane.ERROR_MESSAGE);
                 return false;
             }
-            group.setName(groupId.getText());
+            ruleSet.setName(groupId.getText());
         }
         
 
@@ -643,20 +644,20 @@ public class MatchRuleSetEditor implements EditorPane {
         //here since the Validation handles them and won't allow the user to save
         //if there's a failure.
         if (matchPercent.getText().trim().length() == 0) {
-            group.setMatchPercent(null);
+            ruleSet.setMatchPercent(null);
         } else {
             int pct = Integer.parseInt(matchPercent.getText());
-            group.setMatchPercent((short)pct);
+            ruleSet.setMatchPercent((short)pct);
         }
-        group.setDesc(description.getText());
-        group.setFilter(filterPanel.getFilterTextArea().getText());
-        if ( !match.getMatchCriteriaGroups().contains(group)) {
-            match.addMatchCriteriaGroup(group);
+        ruleSet.setDesc(description.getText());
+        ruleSet.setFilter(filterPanel.getFilterTextArea().getText());
+        if ( !match.getMatchRuleSets().contains(ruleSet)) {
+            match.addMatchRuleSet(ruleSet);
         }
         
-        group.setActive(active.isSelected());
+        ruleSet.setActive(active.isSelected());
         
-        group.setColour((Color) colourPicker.getSelectedItem());
+        ruleSet.setColour((Color) colourPicker.getSelectedItem());
         logger.debug("The colour we are saving is " + ((Color) colourPicker.getSelectedItem()));
         
         MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
@@ -665,7 +666,7 @@ public class MatchRuleSetEditor implements EditorPane {
         //This code is called since saving the match, under some circumstances, fires structure change
         //and that causes all the renderers and cell editors to be set to null.  Therefore it is 
         //required to re-hook up all the editors and renderers as a workaround.
-		setupColumnEditors(group, match.getSourceTable());
+		setupColumnEditors(ruleSet, match.getSourceTable());
 
         handler.resetHasValidated();
 		return true;

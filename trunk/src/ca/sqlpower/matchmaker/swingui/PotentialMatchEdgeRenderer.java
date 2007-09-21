@@ -82,7 +82,7 @@ public class PotentialMatchEdgeRenderer extends JComponent implements
     
     public JComponent getGraphEdgeRendererComponent(PotentialMatchRecord edge) {
         this.edge = edge;
-        edgeColor = edge.getCriteriaGroup().getColour();
+        edgeColor = edge.getRuleSet().getColour();
         
         // original edge
         SourceTableRecord origLHS = edge.getOriginalLhs();

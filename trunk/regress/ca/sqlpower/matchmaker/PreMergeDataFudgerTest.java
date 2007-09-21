@@ -88,11 +88,11 @@ public class PreMergeDataFudgerTest extends TestCase {
 		
 		MatchRuleSet groupOne = new MatchRuleSet();
 		groupOne.setName("Group_One");
-		match.addMatchCriteriaGroup(groupOne);
+		match.addMatchRuleSet(groupOne);
 
 		MatchRuleSet groupTwo = new MatchRuleSet();
 		groupOne.setName("Group_Two");
-		match.addMatchCriteriaGroup(groupTwo);
+		match.addMatchRuleSet(groupTwo);
 		
 		pool = MMTestUtils.createTestingPool(session, match, groupOne, groupTwo);
 		
@@ -114,18 +114,18 @@ public class PreMergeDataFudgerTest extends TestCase {
 		
 		PotentialMatchRecord n1n4 = n1.getMatchRecordByValidatedSourceTableRecord(n4);
 		assertNotNull(n1n4);
-		assertSame(n1n4.getCriteriaGroup(), fudger.getRuleSet());
+		assertSame(n1n4.getRuleSet(), fudger.getRuleSet());
 
 		PotentialMatchRecord n2n4 = n2.getMatchRecordByValidatedSourceTableRecord(n4);
 		assertNotNull(n2n4);
-		assertSame(n2n4.getCriteriaGroup(), fudger.getRuleSet());
+		assertSame(n2n4.getRuleSet(), fudger.getRuleSet());
 
 		// this one's different because there is also a direct user-validated edge belonging to GroupOne
 		Collection<PotentialMatchRecord> n3Edges = n3.getOriginalMatchEdges();
 		assertEquals(3, n3Edges.size());
 		PotentialMatchRecord n3n4 = null;
 		for (PotentialMatchRecord edge : n3Edges) {
-			if (edge.getCriteriaGroup() == fudger.getRuleSet()) {
+			if (edge.getRuleSet() == fudger.getRuleSet()) {
 				assertNull("Only one fudged edge should exist on n3", n3n4);
 				n3n4 = edge;
 			}
@@ -144,7 +144,7 @@ public class PreMergeDataFudgerTest extends TestCase {
 		
 		PotentialMatchRecord n1n4 = n1.getMatchRecordByValidatedSourceTableRecord(n4);
 		assertNotNull(n1n4);
-		assertSame(n1n4.getCriteriaGroup(), fudger.getRuleSet());
+		assertSame(n1n4.getRuleSet(), fudger.getRuleSet());
 		
 		fudger.unfudge();
 		

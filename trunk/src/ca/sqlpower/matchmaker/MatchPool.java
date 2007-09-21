@@ -99,12 +99,18 @@ public class MatchPool {
         return match;
     }
    
-    public List<PotentialMatchRecord> getAllPotentialMatchByMatchCriteriaGroup
+    /**
+     * Finds all the potential match record (edges in the graph) that belongs to the
+     * particular match group
+     * @param matchGroupName
+     * @return a list of potential match records that belong to the match critieria group
+     */
+    public List<PotentialMatchRecord> getAllPotentialMatchByMatchRuleSet
                         (String matchGroupName) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : potentialMatches){
-            if (pmr.getCriteriaGroup().getName().equals(matchGroupName)){
+            if (pmr.getRuleSet().getName().equals(matchGroupName)){
                 matchList.add(pmr);
             }
         }
@@ -114,14 +120,14 @@ public class MatchPool {
     /**
      * Finds all the potential match record (edges in the graph) that belongs to the
      * particular match group
-     * @param matchGroupName
+     * @param ruleSet
      * @return a list of potential match records that belong to the match critieria group
      */
-    public List<PotentialMatchRecord> getAllPotentialMatchByMatchCriteriaGroup(MatchRuleSet criteriaGroup) {
+    public List<PotentialMatchRecord> getAllPotentialMatchByMatchRuleSet(MatchRuleSet ruleSet) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : potentialMatches){
-            if (pmr.getCriteriaGroup() == criteriaGroup){
+            if (pmr.getRuleSet() == ruleSet){
                 matchList.add(pmr);
             }
         }
@@ -134,7 +140,7 @@ public class MatchPool {
 	 * it connects. Nor does this modify the database.
 	 */
     public void removePotentialMatchesInMatchGroup(String groupName){
-        potentialMatches.removeAll(getAllPotentialMatchByMatchCriteriaGroup(groupName));        
+        potentialMatches.removeAll(getAllPotentialMatchByMatchRuleSet(groupName));        
     }
     
     /**
@@ -225,11 +231,11 @@ public class MatchPool {
             logger.debug("MatchPool's findAll method SQL: \n" + lastSQL);
             rs = stmt.executeQuery(lastSQL);
             while (rs.next()) {
-                MatchRuleSet ruleSet = match.getMatchCriteriaGroupByName(rs.getString("GROUP_ID"));
+                MatchRuleSet ruleSet = match.getMatchRuleSetByName(rs.getString("GROUP_ID"));
                 if (ruleSet == null) {
                     session.handleWarning(
                             "Found a match record that refers to the " +
-                            "non-existant criteria group \""+rs.getString("GROUP_ID")+
+                            "non-existant rule set \""+rs.getString("GROUP_ID")+
                             "\". Ignoring it.");
                     continue;
                 }
@@ -398,8 +404,8 @@ public class MatchPool {
             			ps.setObject(i * 2 + 1, pmr.getOriginalLhs().getKeyValues().get(i));
             			ps.setObject(i * 2 + 2, pmr.getOriginalRhs().getKeyValues().get(i));
             		}
-            		ps.setObject(numKeyValues * 2 + 1, pmr.getCriteriaGroup().getMatchPercent());
-            		ps.setObject(numKeyValues * 2 + 2, pmr.getCriteriaGroup().getName());
+            		ps.setObject(numKeyValues * 2 + 1, pmr.getRuleSet().getMatchPercent());
+            		ps.setObject(numKeyValues * 2 + 2, pmr.getRuleSet().getName());
             		ps.setObject(numKeyValues * 2 + 3, pmr.getMatchStatus().getCode());
             		
             		SourceTableRecord duplicate;
@@ -714,8 +720,8 @@ public class MatchPool {
     }
 
     /**
-	 * This method adds a match maker criteria group to the match in this pool
-	 * for synthetic edges if the criteria group does not already exist.
+	 * This method adds a match rule set to the match in this pool
+	 * for synthetic edges if the rule set does not already exist.
 	 * IMPORTANT NOTE: In the case that the new match group for synthetic edges
 	 * had to be created, this pool's match object will be saved using the current
 	 * Match DAO from the session.  This is a bit of a strange side effect of this
@@ -724,7 +730,7 @@ public class MatchPool {
 	 * Once the match group for synthetic edges has been located or created, a
 	 * new potential match record that is synthetic (created by the Match Maker)
 	 * is added to the pool. This edge (which is a potential match record) belongs
-	 * to the special synthetic edges criteria group. The match type
+	 * to the special synthetic edges rule set. The match type
 	 * of the new potential match record is set to UNMATCH by default.
 	 * <p>
 	 * This new potential match record will be stored back to the match result table
@@ -740,16 +746,16 @@ public class MatchPool {
 	 */
 	private PotentialMatchRecord addSyntheticPotentialMatchRecord(SourceTableRecord record1,
 			SourceTableRecord record2) {
-		MatchRuleSet syntheticCriteria = match.getMatchCriteriaGroupByName(MatchRuleSet.SYNTHETIC_MATCHES);
-		if (syntheticCriteria == null) {
-			syntheticCriteria = new MatchRuleSet();
-			syntheticCriteria.setName(MatchRuleSet.SYNTHETIC_MATCHES);
-			match.getMatchCriteriaGroupFolder().addChild(syntheticCriteria);
+		MatchRuleSet syntheticRuleSet = match.getMatchRuleSetByName(MatchRuleSet.SYNTHETIC_MATCHES);
+		if (syntheticRuleSet == null) {
+			syntheticRuleSet = new MatchRuleSet();
+			syntheticRuleSet.setName(MatchRuleSet.SYNTHETIC_MATCHES);
+			match.getMatchRuleSetFolder().addChild(syntheticRuleSet);
 			MatchMakerDAO<Match> dao = session.getDAO(Match.class);
 			dao.save(match);
 		}
 		
-		PotentialMatchRecord pmr = new PotentialMatchRecord(syntheticCriteria, MatchType.UNMATCH, record1, record2, true);
+		PotentialMatchRecord pmr = new PotentialMatchRecord(syntheticRuleSet, MatchType.UNMATCH, record1, record2, true);
 		addPotentialMatch(pmr);
 		
 		return pmr;
@@ -1105,10 +1111,10 @@ public class MatchPool {
 
 	/**
 	 * Performs the 'Auto-Match' function which is either for lazy people who
-	 * think their criteria group is perfect or for people who like to gamble.
+	 * think their rule set is perfect or for people who like to gamble.
 	 * Either way, we warn them heavily in the UI that this will make mistakes.
 	 * Our goal here is to make as many matches along edges in the supplied
-	 * criteria group without putting the graph into an illegal state or taking
+	 * rule set without putting the graph into an illegal state or taking
 	 * forever. We do not claim, nor should we, that the total number of matches
 	 * created by this method is maximal or predictable.
 	 * <p>
@@ -1122,13 +1128,13 @@ public class MatchPool {
 	 * not incident with an edge that:
 	 * <ul>
 	 * <li> Is not a NoMatch edge and </li>
-	 * <li> Belongs to the provided criteria group </li>
+	 * <li> Belongs to the provided rule set </li>
 	 * </ul>
 	 * </li>
 	 * <li> Pick a node in the graph that is not in the 'visited' set, call it
 	 * 'selected' and add it to the 'visited' set. </li>
 	 * <li> Find all edges incident with the selected node that are in the
-	 * criteria group and are not NoMatch edges. Add the nodes that are incident
+	 * rule set and are not NoMatch edges. Add the nodes that are incident
 	 * with the edges we just found and are not in the visited set to a list.
 	 * </li>
 	 * <li> Set the selected node to be the master of each node in the newly
@@ -1139,16 +1145,16 @@ public class MatchPool {
 	 * the visited set and go to 3 </li>
 	 * </ol>
 	 * 
-	 * @param criteria
-	 *            The name of the criteria along which to make matches
+	 * @param rule
+	 *            The name of the rule along which to make matches
 	 * @throws ArchitectException
 	 * @throws SQLException
 	 */
-	public void doAutoMatch(String criteriaName) throws SQLException, ArchitectException {
-		MatchRuleSet ruleSet = match.getMatchCriteriaGroupByName(criteriaName);
+	public void doAutoMatch(String ruleName) throws SQLException, ArchitectException {
+		MatchRuleSet ruleSet = match.getMatchRuleSetByName(ruleName);
 		if (ruleSet == null) {
 			throw new IllegalArgumentException("Auto-Match invoked with an " +
-					"invalid criteria group name: " + criteriaName);
+					"invalid rule group name: " + ruleName);
 		}
 		Collection<SourceTableRecord> records = sourceTableRecords.values();
 		
@@ -1160,7 +1166,7 @@ public class MatchPool {
 			boolean addToVisited = true;
 			for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
 				if (pmr.getMatchStatus() != MatchType.NOMATCH
-						&& pmr.getCriteriaGroup() == ruleSet) {
+						&& pmr.getRuleSet() == ruleSet) {
 					addToVisited = false;
 				}
 			}
@@ -1193,10 +1199,10 @@ public class MatchPool {
 
 	/**
 	 * Creates the matches necessary in an auto-match while maintaining the
-	 * 'visted' set and propogating the algorithm to neighbours of selected
+	 * 'visited' set and propagating the algorithm to neighbours of selected
 	 * nodes.
 	 */
-	private void makeAutoMatches(MatchRuleSet criteriaGroup,
+	private void makeAutoMatches(MatchRuleSet ruleSet,
 			SourceTableRecord selected,
 			Set<SourceTableRecord> neighbours,
 			Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
@@ -1219,7 +1225,7 @@ public class MatchPool {
 		}
 		for (SourceTableRecord record : neighbours) {
 			if (!visited.contains(record)) {
-				makeAutoMatches(criteriaGroup, record, findAutoMatchNeighbours(criteriaGroup, record, visited), visited);
+				makeAutoMatches(ruleSet, record, findAutoMatchNeighbours(ruleSet, record, visited), visited);
 			}
 		}
 	}
@@ -1229,13 +1235,13 @@ public class MatchPool {
 	 * the comment for doAutoMatch in the context that 'record' is selected in
 	 * step 3
 	 */
-	private Set<SourceTableRecord> findAutoMatchNeighbours(MatchRuleSet criteriaGroup,
+	private Set<SourceTableRecord> findAutoMatchNeighbours(MatchRuleSet ruleSet,
 			SourceTableRecord record,
 			Set<SourceTableRecord> visited) {
 		logger.debug("The size of visited is " + visited.size());
 		Set<SourceTableRecord> ret = new HashSet<SourceTableRecord>();
 		for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
-			if (pmr.getCriteriaGroup() == criteriaGroup 
+			if (pmr.getRuleSet() == ruleSet 
 					&& pmr.getMatchStatus() != MatchType.NOMATCH) {
 				if (record == pmr.getOriginalLhs() && !visited.contains(pmr.getOriginalRhs())) {
 					ret.add(pmr.getOriginalRhs());

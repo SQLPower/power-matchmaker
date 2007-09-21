@@ -47,7 +47,7 @@ public class NewMatchGroupAction extends AbstractAction {
 	
 	public void actionPerformed(ActionEvent e) {
 		MatchRuleSet g = new MatchRuleSet();
-		parent.getMatchCriteriaGroupFolder().addChild(g);
+		parent.getMatchRuleSetFolder().addChild(g);
 		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
 		TreePath treePath = treeModel.getPathForNode(g);
 		swingSession.getTree().setSelectionPath(treePath);

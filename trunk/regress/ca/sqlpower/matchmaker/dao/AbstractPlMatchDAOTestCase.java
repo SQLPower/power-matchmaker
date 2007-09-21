@@ -67,7 +67,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		List<String> nonPersistingProperties = super.getNonPersitingProperties();
 		nonPersistingProperties.add("lastUpdateDate");
 		nonPersistingProperties.add("session");
-        nonPersistingProperties.add("matchCriteriaGroups");
+        nonPersistingProperties.add("matchRuleSets");
         nonPersistingProperties.add("tableMergeRules");
         
         // tested explicitly elsewhere
@@ -185,28 +185,28 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		plFolderDAO.save(f);
         
         final long matchOid = insertSampleMatchData(matchName, f.getOid());
-        final long groupOid = insertSampleMatchCriteriaGroupData(matchOid, "group_"+time);
-        insertSampleMatchCriteriaData(groupOid, "test_crit_"+time);
+        final long groupOid = insertSampleMatchRuleSetData(matchOid, "group_"+time);
+        insertSampleMatchRuleData(groupOid, "test_rule_"+time);
         
         Match match = getDataAccessObject().findByName(matchName);
-            List<MatchRuleSet> groups = match.getMatchCriteriaGroups();
-		assertEquals("There should be one criteria group", 1, groups.size());
+            List<MatchRuleSet> groups = match.getMatchRuleSets();
+		assertEquals("There should be one rule set", 1, groups.size());
 
 		MatchRuleSet group = groups.get(0);
 		assertEquals("Wrong Group name", "group_" + time, group.getName());
 
-		List<MatchRule> crits = group.getChildren();
-		assertEquals("There is only one set of column criteria", 1, crits
+		List<MatchRule> ruleSets = group.getChildren();
+		assertEquals("There is only one set of column rules", 1, ruleSets
 				.size());
 
-		MatchRule crit = crits.get(0);
-		assertEquals("Wrong criteria last update user",
-                    "test_crit_"+time, crit.getLastUpdateAppUser());
+		MatchRule rule = ruleSets.get(0);
+		assertEquals("Wrong rule last update user",
+                    "test_rule_"+time, rule.getLastUpdateAppUser());
     }
     
-    public void testCriteriaGroupMove() throws Exception {
+    public void testRuleSetMove() throws Exception {
         MatchRuleSet cg = new MatchRuleSet();
-        cg.setName("criteria group");
+        cg.setName("rule set");
         
         Match oldMatch = new Match();
         oldMatch.setName("old");
@@ -221,7 +221,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         newMatch.setName("new");
 		newMatch.setParent(f);
         
-        oldMatch.addMatchCriteriaGroup(cg);
+        oldMatch.addMatchRuleSet(cg);
         MatchDAO dao = getDataAccessObject();
         
         dao.save(oldMatch);
@@ -246,8 +246,8 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
                 try { rs.close(); } catch (Exception e) { System.err.println("Couldn't close result set"); e.printStackTrace(); }
             }
             
-            oldMatch.removeMatchCriteriaGroup(cg);
-            newMatch.addMatchCriteriaGroup(cg);
+            oldMatch.removeMatchRuleSet(cg);
+            newMatch.addMatchRuleSet(cg);
             dao.save(newMatch);
             dao.save(oldMatch);
             try { 
@@ -292,13 +292,13 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
      * 
      * @return The GROUP_OID value of the new match group that was inserted.
      */
-    protected abstract long insertSampleMatchCriteriaGroupData(
+    protected abstract long insertSampleMatchRuleSetData(
             long parentMatchOid, String groupName) throws Exception;
 
     /**
-     * Inserts a sample entry in PL_MATCH_CRITERIA, and returns its OID.  The criteria will
+     * Inserts a sample entry in PL_MATCH_CRITERIA, and returns its OID.  The rule will
      * have its LAST_UPDATE_USER set to the given string value (it doesn't use the name
-     * because criteria groups don't have names).  This is useful for
+     * because rule sets don't have names).  This is useful for
      * verifying that you are retrieving the same record that this method inserted.
      * <p>
      * This method is abstract because the OID columns have to be handled
@@ -306,6 +306,6 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
      * 
      * @return The GROUP_OID value of the new match group that was inserted.
      */
-    protected abstract long insertSampleMatchCriteriaData(
+    protected abstract long insertSampleMatchRuleData(
             long parentGroupOid, String lastUpdateUser) throws Exception;
 }

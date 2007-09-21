@@ -49,9 +49,9 @@ import ca.sqlpower.xml.UnescapingSaxParser;
 /**
  * this class imports match from xml export file.
  */
-public class MatchImportor {
+public class MatchImporter {
 
-	private final static Logger logger = Logger.getLogger(MatchImportor.class);
+	private final static Logger logger = Logger.getLogger(MatchImporter.class);
 
 	/**
 	 * import match from xml export file.
@@ -306,26 +306,26 @@ public class MatchImportor {
 					}
 				}
 
-				parentMatch.addMatchCriteriaGroup(group);
+				parentMatch.addMatchRuleSet(group);
 			} else if ( mmo instanceof MatchRule ) {
-				MatchRule criteria = (MatchRule) mmo;
+				MatchRule rule = (MatchRule) mmo;
 				String groupName = null;
-				String criteriaName = null;
+				String ruleName = null;
 				for ( LabelValueBean bean : properties ) {
 					if ( bean.getLabel().equalsIgnoreCase("GROUP_ID")) {
 						groupName = (String) bean.getValue();
 					} else if ( bean.getLabel().equalsIgnoreCase("COLUMN_NAME")) {
-						criteriaName = (String) bean.getValue();
+						ruleName = (String) bean.getValue();
 					}
 				}
 				if (groupName == null) {
 					throw new ParseException(
-							"Group ID is missing from the match criteria [" +
-							criteriaName +
+							"Group ID is missing from the match rule [" +
+							ruleName +
 							"]",
 							0);
 				}
-				MatchRuleSet group = parentMatch.getMatchCriteriaGroupByName(groupName);
+				MatchRuleSet group = parentMatch.getMatchRuleSetByName(groupName);
 				if (group == null ) {
 					throw new ParseException(
 							"Group ID [" +
@@ -335,61 +335,61 @@ public class MatchImportor {
 							"]",
 							0);
 				}
-				group.addChild(criteria);
-				criteria.setParent(group);
+				group.addChild(rule);
+				rule.setParent(group);
 
 				for ( LabelValueBean bean : properties ) {
 					logger.debug("setting:["+bean.getLabel()+"] to ["+ bean.getValue()+"]");
 					if ( bean.getLabel().equalsIgnoreCase("ALLOW_NULL_IND")) {
-						criteria.setAllowNullInd(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setAllowNullInd(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("CASE_SENSITIVE_IND")) {
-						criteria.setCaseSensitiveInd(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setCaseSensitiveInd(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("FIRST_N_CHAR_BY_WORD_IND")) {
-						criteria.setFirstNCharByWordInd(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setFirstNCharByWordInd(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("MATCH_END")) {
-						criteria.setMatchEnd(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setMatchEnd(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("MATCH_FIRST_PLUS_ONE_IND")) {
-						criteria.setMatchFirstPlusOneInd(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setMatchFirstPlusOneInd(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("MATCH_START")) {
-						criteria.setMatchStart(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setMatchStart(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("REORDER_IND")) {
-						criteria.setReorderInd(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setReorderInd(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("COUNT_WORDS_IND")) {
-						criteria.setCountWordsInd(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setCountWordsInd(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("SOUND_IND")) {
-						criteria.setSoundInd(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setSoundInd(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("COLUMN_NAME")) {
-						criteria.setName((String) bean.getValue());
-						criteria.setColumnName((String) bean.getValue());
+						rule.setName((String) bean.getValue());
+						rule.setColumnName((String) bean.getValue());
 					} else if ( bean.getLabel().equalsIgnoreCase("REMOVE_SPECIAL_CHARS")) {
-						criteria.setRemoveSpecialChars(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setRemoveSpecialChars(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("FIRST_N_CHAR")) {
 						if ( bean.getValue() != null && ((String) bean.getValue()).length() > 0 ) {
-							criteria.setFirstNChar(MyLong.parseLong((String) bean.getValue()));
+							rule.setFirstNChar(MyLong.parseLong((String) bean.getValue()));
 						}
 					} else if ( bean.getLabel().equalsIgnoreCase("FIRST_N_CHAR_BY_WORD")) {
-						criteria.setFirstNCharByWord(MyLong.parseLong((String) bean.getValue()));
+						rule.setFirstNCharByWord(MyLong.parseLong((String) bean.getValue()));
 					} else if ( bean.getLabel().equalsIgnoreCase("MIN_WORDS_IN_COMMON")) {
-						criteria.setMinWordsInCommon(MyLong.parseLong((String) bean.getValue()));
+						rule.setMinWordsInCommon(MyLong.parseLong((String) bean.getValue()));
 					} else if ( bean.getLabel().equalsIgnoreCase("SEQ_NO")) {
 						Long x = MyLong.parseLong((String) bean.getValue());
 						if ( x != null ) {
-							criteria.setSeqNo(new BigDecimal(x));
+							rule.setSeqNo(new BigDecimal(x));
 						}
 					} else if ( bean.getLabel().equalsIgnoreCase("REPLACE_WITH_SPACE")) {
-						criteria.setReplaceWithSpace((String) bean.getValue());
+						rule.setReplaceWithSpace((String) bean.getValue());
 					} else if ( bean.getLabel().equalsIgnoreCase("REPLACE_WITH_SPACE_IND")) {
-						criteria.setReplaceWithSpaceInd(((String) bean.getValue()).equalsIgnoreCase("y"));
+						rule.setReplaceWithSpaceInd(((String) bean.getValue()).equalsIgnoreCase("y"));
 					} else if ( bean.getLabel().equalsIgnoreCase("SUPPRESS_CHAR")) {
-						criteria.setSuppressChar((String) bean.getValue());
+						rule.setSuppressChar((String) bean.getValue());
 					} else if ( bean.getLabel().equalsIgnoreCase("WORDS_IN_COMMON_NUM_WORDS")) {
-						criteria.setWordsInCommonNumWords(MyLong.parseLong((String) bean.getValue()));
+						rule.setWordsInCommonNumWords(MyLong.parseLong((String) bean.getValue()));
 					} else if ( bean.getLabel().equalsIgnoreCase("VARIANCE_TYPE")) {
-						criteria.setVarianceType((String) bean.getValue());
+						rule.setVarianceType((String) bean.getValue());
 					} else if ( bean.getLabel().equalsIgnoreCase("VARIANCE_AMT")) {
 						Long x = MyLong.parseLong((String) bean.getValue());
 						if ( x != null ) {
-							criteria.setVarianceAmt(new BigDecimal(x));
+							rule.setVarianceAmt(new BigDecimal(x));
 						}
 					}
 				}
