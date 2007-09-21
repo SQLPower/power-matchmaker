@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -398,6 +399,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	void showGUI() {
 	    buildGUI();
         frame.setVisible(true);
+		splitPane.setDividerLocation(0.2);
     }
 
     private void buildGUI() {
@@ -495,7 +497,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
 
-		splitPane.setLeftComponent(new JScrollPane(tree));
+        JScrollPane treePane = new JScrollPane(tree);
+        treePane.setMinimumSize(new Dimension(5,5));
+        treePane.setPreferredSize(new Dimension(1,1));
+		splitPane.setLeftComponent(treePane);
 		setCurrentEditorComponent(null);
 		cp.add(splitPane);
 
@@ -652,12 +657,23 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 //Remebers the treepath to the last node that it clicked on
                 if (pane != null){
                     lastTreePath = tree.getSelectionPath();
+                    // If this line is not here, the divider would refuse to
+                    // move and the left component would not be visible.
+                    pane.getPanel().setMinimumSize(new Dimension(5,5));
                     splitPane.setRightComponent(pane.getPanel());
                     oldPane = pane;
                 } else {
-                    splitPane.setRightComponent(splashScreen.getPanel());
+                    // If this line is not here, the divider would refuse to
+                    // move and the left component would not be visible.
+                    splashScreen.getPanel().setMinimumSize(new Dimension(5,5));
+                	splitPane.setRightComponent(splashScreen.getPanel());
                     oldPane = splashScreen;
                 }
+                
+                // If this line was not here, the left component would get 
+                // forced to its minimum size. This sets the divider to remain
+                // at the location that has been set before the editor change.
+    			splitPane.setDividerLocation(splitPane.getDividerLocation());
             }
         } finally {
             editorComponentUpdateInProgress = false;
