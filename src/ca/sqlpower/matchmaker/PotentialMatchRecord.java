@@ -41,10 +41,10 @@ public class PotentialMatchRecord {
     private MatchPool pool;
     
     /**
-     * The group of criteria that caused the two source table records
+     * The set of rules that caused the two source table records
      * identified here to be considered as potential matches.
      */
-    private final MatchRuleSet criteriaGroup;
+    private final MatchRuleSet ruleSet;
     
     /**
      * The current status of this potential match (unexamined, confirmed correct,
@@ -196,7 +196,7 @@ public class PotentialMatchRecord {
 	 * identified as the LHS and RHS of the edge. By default, the master is not
 	 * set.
 	 * 
-	 * @param criteriaGroup
+	 * @param ruleSet
 	 *            the MatchRuleSet that makes this edge exist
 	 * @param matchStatus
 	 *            the status of the relationship
@@ -209,12 +209,12 @@ public class PotentialMatchRecord {
 	 *            the engine; true means NOT created by the engine
 	 */
     public PotentialMatchRecord(
-            MatchRuleSet criteriaGroup,
+            MatchRuleSet ruleSet,
             MatchType matchStatus,
             SourceTableRecord originalLhs,
             SourceTableRecord originalRhs,
             boolean synthetic) {
-        this.criteriaGroup = criteriaGroup;
+        this.ruleSet = ruleSet;
         this.matchStatus = matchStatus;
         this.originalLhs = originalLhs;
         this.originalRhs = originalRhs;
@@ -275,8 +275,8 @@ public class PotentialMatchRecord {
         markDirty();
     }
 
-    public MatchRuleSet getCriteriaGroup() {
-        return criteriaGroup;
+    public MatchRuleSet getRuleSet() {
+        return ruleSet;
     }
 
     public SourceTableRecord getOriginalLhs() {
@@ -462,7 +462,7 @@ public class PotentialMatchRecord {
 	
 	/**
 	 * This override of the equals method evaluates equality on PotentialMatchRecords based on
-	 * their criteriaGroup, originalLhs, and originalRhs. We also considered including the 
+	 * their ruleSet, originalLhs, and originalRhs. We also considered including the 
 	 * match pool in the evaluation, however, we feel that the usefulness of a 'Query by example'
 	 * feature, (which would search for PotentialMatchRecords based on an example PotentialMatchRecord
 	 * which may not include the match pool) is enough to leave it out. Also, for now, each match
@@ -477,7 +477,7 @@ public class PotentialMatchRecord {
 			return false;
 		}
 		PotentialMatchRecord other = (PotentialMatchRecord)obj;
-		if ((criteriaGroup == null ? other.criteriaGroup == null : criteriaGroup.equals(other.criteriaGroup))
+		if ((ruleSet == null ? other.ruleSet == null : ruleSet.equals(other.ruleSet))
 				&& (originalLhs == null ? other.originalLhs == null : originalLhs.equals(other.originalLhs))
 				&& (originalRhs == null ? other.originalRhs == null : originalRhs.equals(other.originalRhs))) {
 			return true;
@@ -489,7 +489,7 @@ public class PotentialMatchRecord {
 	@Override
 	public int hashCode() {
 		int result = 17;
-		result = 37*result + (criteriaGroup == null ? 0 : criteriaGroup.hashCode());
+		result = 37*result + (ruleSet == null ? 0 : ruleSet.hashCode());
 		result = 37*result + (originalLhs == null ? 0 : originalLhs.hashCode());
 		result = 37*result + (originalRhs == null ? 0 : originalRhs.hashCode());
 		return result;

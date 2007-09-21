@@ -30,7 +30,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchExportor;
+import ca.sqlpower.matchmaker.MatchExporter;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
@@ -111,7 +111,7 @@ public class PlMatchExportAction extends AbstractAction {
         	PrintWriter out;
         	try {
         		out = new PrintWriter(export);
-        		MatchExportor exporter = new MatchExportor();
+        		MatchExporter exporter = new MatchExporter();
         		exporter.save(match,out, "UTF-8");
         	} catch (IOException ioe) {
         		SPSUtils.showExceptionDialogNoReport(owningFrame, 

@@ -32,7 +32,7 @@ public class MatchRuleTest extends MatchMakerTestCase<MatchRule> {
 		g.addChild(target);
 		Match match = new Match();
 		match.setSession(new TestingMatchMakerSession());
-		match.addMatchCriteriaGroup(g);
+		match.addMatchRuleSet(g);
 		match.setSourceTableCatalog("cat");
 		match.setSourceTableName("name");
 		match.setSourceTableSchema("schema");

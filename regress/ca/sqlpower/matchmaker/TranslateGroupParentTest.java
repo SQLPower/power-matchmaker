@@ -38,7 +38,7 @@ public class TranslateGroupParentTest extends TestCase {
         match = new Match();
         folder.addChild(match);
         cg = new MatchRuleSet();
-        match.addMatchCriteriaGroup(cg);
+        match.addMatchRuleSet(cg);
         c = new MatchRule();
         cg.addChild(c);
         session = new TestingMatchMakerSession(); 

@@ -31,9 +31,9 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.util.SQLPowerUtils;
 import ca.sqlpower.xml.XMLHelper;
 
-public class MatchExportor {
+public class MatchExporter {
 
-	private final static Logger logger = Logger.getLogger(MatchExportor.class);
+	private final static Logger logger = Logger.getLogger(MatchExporter.class);
 	private final DateFormat df = new DateFormatAllowsNull();
 
 	public void save(Match match, PrintWriter out, String encoding) throws ArchitectException {
@@ -160,9 +160,9 @@ public class MatchExportor {
             xmlHelper.indent--;
             xmlHelper.println(out, "</PL_MATCH>");
 
-            saveMatchGroup(xmlHelper, out, match);
-            saveMergeCriteria(xmlHelper, out, match);
-            saveMergeCriteria(xmlHelper, out, match);
+            saveMatchRuleSet(xmlHelper, out, match);
+            saveMergeRule(xmlHelper, out, match);
+            saveMergeRule(xmlHelper, out, match);
             saveFolder(xmlHelper, out, match);
 
             xmlHelper.indent--;
@@ -206,14 +206,14 @@ public class MatchExportor {
         xmlHelper.println(out, "</PL_FOLDER_DETAIL>");
 	}
 
-	private void saveMergeCriteria(XMLHelper ioo, PrintWriter out, Match match) {
+	private void saveMergeRule(XMLHelper ioo, PrintWriter out, Match match) {
 		// TODO Auto-generated method stub
-		logger.debug("Stub call: MatchExportor.saveMergeCriteria()");
+		logger.debug("Stub call: MatchExporter.saveMergeRule()");
 
 	}
 
-	private void saveMatchGroup(XMLHelper xmlHelper, PrintWriter out, Match match) {
-		for ( MatchRuleSet group : match.getMatchCriteriaGroups()) {
+	private void saveMatchRuleSet(XMLHelper xmlHelper, PrintWriter out, Match match) {
+		for ( MatchRuleSet group : match.getMatchRuleSets()) {
 			xmlHelper.println(out, "<PL_MATCH_GROUP>");
 			xmlHelper.indent++;
 
@@ -242,16 +242,16 @@ public class MatchExportor {
 			xmlHelper.println(out, "</PL_MATCH_GROUP>");
 		}
 
-		for ( MatchRuleSet group : match.getMatchCriteriaGroups()) {
-			saveMatchCriteria(xmlHelper,out,match,group);
+		for ( MatchRuleSet group : match.getMatchRuleSets()) {
+			saveMatchRule(xmlHelper,out,match,group);
 		}
 	}
 
-	private void saveMatchCriteria(XMLHelper xmlHelper,
+	private void saveMatchRule(XMLHelper xmlHelper,
 				PrintWriter out, Match match, MatchRuleSet group) {
 
-		List <MatchRule> criterias = group.getChildren();
-		for ( MatchRule c : criterias ) {
+		List <MatchRule> rules = group.getChildren();
+		for ( MatchRule r : rules ) {
 			xmlHelper.println(out, "<PL_MATCH_CRITERIA>");
     		xmlHelper.indent++;
     		xmlHelper.println(out, "<MATCH_ID>"+
@@ -261,37 +261,37 @@ public class MatchExportor {
             		SQLPowerUtils.escapeXML(group.getName())+
             		"</GROUP_ID>");
     		xmlHelper.println(out, "<COLUMN_NAME>"+
-            		SQLPowerUtils.escapeXML(c.getColumnName())+
+            		SQLPowerUtils.escapeXML(r.getColumnName())+
             		"</COLUMN_NAME>");
     		xmlHelper.println(out, "<CASE_SENSITIVE_IND>"+
-            		SQLPowerUtils.escapeXML(c.isCaseSensitiveInd()?"Y":"N")+
+            		SQLPowerUtils.escapeXML(r.isCaseSensitiveInd()?"Y":"N")+
             		"</CASE_SENSITIVE_IND>");
     		xmlHelper.println(out, "<SUPPRESS_CHAR>"+
-            		SQLPowerUtils.escapeXML(c.getSuppressChar())+
+            		SQLPowerUtils.escapeXML(r.getSuppressChar())+
             		"</SUPPRESS_CHAR>");
     		xmlHelper.println(out, "<SOUND_IND>"+
-            		SQLPowerUtils.escapeXML(c.isSoundInd()?"Y":"N")+
+            		SQLPowerUtils.escapeXML(r.isSoundInd()?"Y":"N")+
             		"</SOUND_IND>");
     		xmlHelper.println(out, "<FIRST_N_CHAR>"+
-            		c.getFirstNChar()+
+            		r.getFirstNChar()+
             		"</FIRST_N_CHAR>");
     		xmlHelper.println(out, "<LAST_UPDATE_DATE><DATE>"+
-            		SQLPowerUtils.escapeXML(df.format(c.getLastUpdateDate()))+
+            		SQLPowerUtils.escapeXML(df.format(r.getLastUpdateDate()))+
             		"</DATE></LAST_UPDATE_DATE>");
     		xmlHelper.println(out, "<LAST_UPDATE_USER>"+
-            		SQLPowerUtils.escapeXML(c.getLastUpdateAppUser())+
+            		SQLPowerUtils.escapeXML(r.getLastUpdateAppUser())+
             		"</LAST_UPDATE_USER>");
     		xmlHelper.println(out, "<MATCH_START>"+
-    				SQLPowerUtils.escapeXML(c.isMatchStart()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(r.isMatchStart()?"Y":"N")+
             		"</MATCH_START>");
     		xmlHelper.println(out, "<MATCH_END>"+
-    				SQLPowerUtils.escapeXML(c.isMatchEnd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(r.isMatchEnd()?"Y":"N")+
             		"</MATCH_END>");
     		xmlHelper.println(out, "<LAST_UPDATE_OS_USER>"+
-    				SQLPowerUtils.escapeXML(c.getLastUpdateOSUser())+
+    				SQLPowerUtils.escapeXML(r.getLastUpdateOSUser())+
             		"</LAST_UPDATE_OS_USER>");
     		xmlHelper.println(out, "<ALLOW_NULL_IND>"+
-    				SQLPowerUtils.escapeXML(c.isAllowNullInd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(r.isAllowNullInd()?"Y":"N")+
             		"</ALLOW_NULL_IND>");
     		xmlHelper.println(out, "<TRANSLATE_IND>"+
     				SQLPowerUtils.escapeXML("N")+		// XXX: we don't know
@@ -300,27 +300,27 @@ public class MatchExportor {
     				SQLPowerUtils.escapeXML("N")+		// XXX: we don't know
             		"</PURGE_IND>");
     		xmlHelper.println(out, "<REMOVE_SPECIAL_CHARS>"+
-    				SQLPowerUtils.escapeXML(c.isRemoveSpecialChars()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(r.isRemoveSpecialChars()?"Y":"N")+
             		"</REMOVE_SPECIAL_CHARS>");
     		xmlHelper.println(out, "<REORDER_IND>"+
-    				SQLPowerUtils.escapeXML(c.isReorderInd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(r.isReorderInd()?"Y":"N")+
             		"</REORDER_IND>");
     		xmlHelper.println(out, "<FIRST_N_CHAR_BY_WORD_IND>"+
-    				SQLPowerUtils.escapeXML(c.isFirstNCharByWordInd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(r.isFirstNCharByWordInd()?"Y":"N")+
             		"</FIRST_N_CHAR_BY_WORD_IND>");
     		xmlHelper.println(out, "<REPLACE_WITH_SPACE_IND>"+
-    				SQLPowerUtils.escapeXML(c.isReplaceWithSpaceInd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(r.isReplaceWithSpaceInd()?"Y":"N")+
             		"</REPLACE_WITH_SPACE_IND>");
     		xmlHelper.println(out, "<MATCH_FIRST_PLUS_ONE_IND>"+
-    				SQLPowerUtils.escapeXML(c.isMatchFirstPlusOneInd()?"Y":"N")+
+    				SQLPowerUtils.escapeXML(r.isMatchFirstPlusOneInd()?"Y":"N")+
             		"</MATCH_FIRST_PLUS_ONE_IND>");
-    		if ( c.getTranslateGroup()!= null ) {
+    		if ( r.getTranslateGroup()!= null ) {
     			xmlHelper.println(out, "<GROUP_NAME>"+
-    					SQLPowerUtils.escapeXML(c.getTranslateGroup().getName())+
+    					SQLPowerUtils.escapeXML(r.getTranslateGroup().getName())+
     			"</GROUP_NAME>");
     		}
     		xmlHelper.println(out, "<SEQ_NO>"+
-    				c.getSeqNo()+
+    				r.getSeqNo()+
             		"</SEQ_NO>");
 
     		xmlHelper.indent--;

@@ -41,7 +41,7 @@ public class PotentialMatchRecordTest extends TestCase {
 		match.setSession(session);
 		MatchRuleSet ruleSet = new MatchRuleSet();
 		ruleSet.setName("ruleset");
-		match.getMatchCriteriaGroupFolder().addChild(ruleSet);
+		match.getMatchRuleSetFolder().addChild(ruleSet);
 		MatchPool pool = new MatchPool(match);
 		SourceTableRecord str1 = new SourceTableRecord(session, match, Collections.singletonList("str1"));
 		SourceTableRecord str2 = new SourceTableRecord(session, match, Collections.singletonList("str2"));

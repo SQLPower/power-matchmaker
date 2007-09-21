@@ -76,7 +76,7 @@ public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
     }
 
     @Override
-    protected long insertSampleMatchCriteriaData(long parentGroupOid, String lastUpdateUser) throws Exception {
+    protected long insertSampleMatchRuleData(long parentGroupOid, String lastUpdateUser) throws Exception {
         final long time = System.currentTimeMillis();
         Connection con = null;
         Statement stmt = null;
@@ -94,7 +94,7 @@ public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
     }
 
     @Override
-    protected long insertSampleMatchCriteriaGroupData(long parentMatchOid, String groupName) throws Exception {
+    protected long insertSampleMatchRuleSetData(long parentMatchOid, String groupName) throws Exception {
         final long time = System.currentTimeMillis();
         Connection con = null;
         Statement stmt = null;

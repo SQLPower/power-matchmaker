@@ -304,8 +304,8 @@ public class MatchMakerImportExportTest extends TestCase {
 			"</EXPORT>" +
 			"";
 
-	private MatchExportor exportor;
-	private MatchImportor importor;
+	private MatchExporter exportor;
+	private MatchImporter importor;
 
 	private static final String ENCODING="UTF-8";
 	private boolean deleteOnExit = true;
@@ -316,8 +316,8 @@ public class MatchMakerImportExportTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		exportor = new MatchExportor();
-		importor = new MatchImportor();
+		exportor = new MatchExporter();
+		importor = new MatchImporter();
 
 		match = new Match();
         session = new TestingMatchMakerSession();
@@ -335,18 +335,18 @@ public class MatchMakerImportExportTest extends TestCase {
 
 
 		assertNotNull("match is not created.",match);
-		assertEquals("match should have 0 group!",0,match.getMatchCriteriaGroups().size());
+		assertEquals("match should have 0 group!",0,match.getMatchRuleSets().size());
 		importor.load(match,r);
 
 		assertEquals("match name mismatch!","MATCH_PT_COMPANY",match.getName());
-		assertEquals("match should have 4 groups!",4,match.getMatchCriteriaGroups().size());
+		assertEquals("match should have 4 groups!",4,match.getMatchRuleSets().size());
 		assertEquals("match folder name is not right!","JOHNSON_TEST",match.getParent().getName());
 
 		int count = 0;
-		for ( MatchRuleSet g : match.getMatchCriteriaGroups()) {
+		for ( MatchRuleSet g : match.getMatchRuleSets()) {
 			count += g.getChildCount();
 		}
-		assertEquals("we should have total 6 criteria in the match",count,6);
+		assertEquals("we should have total 6 rules in the match",count,6);
 	}
 
 	public void testSaveFile() throws IOException, ArchitectException {
@@ -357,11 +357,11 @@ public class MatchMakerImportExportTest extends TestCase {
 		for ( int i=0; i<10; i++ ) {
 			MatchRuleSet group = new MatchRuleSet();
 			group.setName("group"+i);
-			match.addMatchCriteriaGroup(group);
+			match.addMatchRuleSet(group);
 
 			for ( int n=0; n<10; n++) {
 				final MatchRule matchRule = new MatchRule();
-				matchRule.setName("criteria_"+i+"_"+n);
+				matchRule.setName("rule_"+i+"_"+n);
 				group.addChild(matchRule);
 			}
 		}
@@ -387,11 +387,11 @@ public class MatchMakerImportExportTest extends TestCase {
 		for ( int i=0; i<10; i++ ) {
 			MatchRuleSet group = new MatchRuleSet();
 			group.setName("group"+i);
-			match.addMatchCriteriaGroup(group);
+			match.addMatchRuleSet(group);
 
 			for ( int n=0; n<10; n++) {
 				final MatchRule matchRule = new MatchRule();
-				matchRule.setName("criteria_"+i+"_"+n);
+				matchRule.setName("rule_"+i+"_"+n);
 				group.addChild(matchRule);
 			}
 		}
@@ -415,14 +415,14 @@ public class MatchMakerImportExportTest extends TestCase {
 		int groupCount = match2.getChildCount();
 		assertEquals("child count equals",groupCount,match.getChildCount());
 		for ( int i=0; i<groupCount; i++ ) {
-			MatchRuleSet g = match.getMatchCriteriaGroups().get(i);
-			MatchRuleSet g2 = match2.getMatchCriteriaGroups().get(i);
+			MatchRuleSet g = match.getMatchRuleSets().get(i);
+			MatchRuleSet g2 = match2.getMatchRuleSets().get(i);
 			assertEquals("groups should be the same", g, g2);
 
 			for ( int j=0; j<g.getChildCount(); j++) {
-				MatchRule c = g.getChildren().get(j);
-				MatchRule c2 = g2.getChildren().get(j);
-				assertEquals("criteria should be the same", c, c2);
+				MatchRule r = g.getChildren().get(j);
+				MatchRule r2 = g2.getChildren().get(j);
+				assertEquals("rules should be the same", r, r2);
 			}
 		}
 

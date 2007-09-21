@@ -90,14 +90,14 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
      */
     private boolean checkMMOContainsTranslateGroup(MatchMakerObject mmo,MatchMakerTranslateGroup tg){
         if (mmo instanceof MatchRule){
-            MatchRule criteria = (MatchRule) mmo;
-            if (tg.equals(criteria.getTranslateGroup())) {
+            MatchRule rule = (MatchRule) mmo;
+            if (tg.equals(rule.getTranslateGroup())) {
                 return true;
             }
         }
         if (mmo instanceof Match) {
             Match matchChild = (Match) mmo;
-            for (MatchRuleSet critGroup : matchChild.getMatchCriteriaGroups()) {
+            for (MatchRuleSet critGroup : matchChild.getMatchRuleSets()) {
                 if (checkMMOContainsTranslateGroup(critGroup, tg)) return true;
             }
         } else {

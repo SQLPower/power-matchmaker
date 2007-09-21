@@ -104,13 +104,13 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     /** Folder name for merge rules (table). */
     public static final String MERGE_RULES_FOLDER_NAME = "Merge Rules";
     
-    /** Folder name for match criteria group. */
+    /** Folder name for match rule set. */
     public static final String MATCH_RULES_FOLDER_NAME = "Match Rules";
     
     /**
-     * Contains the match criteria and the match critera groups
+     * Contains the match rules and the match rule sets
      */
-    private MatchMakerFolder<MatchRuleSet> matchCriteriaGroupFolder =
+    private MatchMakerFolder<MatchRuleSet> matchRuleSetFolder =
     	new MatchMakerFolder<MatchRuleSet>();
     
     /** 
@@ -143,8 +143,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
 	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
 	    xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
-		matchCriteriaGroupFolder.setName(MATCH_RULES_FOLDER_NAME);
-        this.addChild(matchCriteriaGroupFolder);
+		matchRuleSetFolder.setName(MATCH_RULES_FOLDER_NAME);
+        this.addChild(matchRuleSetFolder);
 		tableMergeRulesFolder.setName(MERGE_RULES_FOLDER_NAME);
         this.addChild(tableMergeRulesFolder);
         
@@ -479,11 +479,11 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 
 
 	public List<MatchRuleSet> getMatchGroups() {
-		return getMatchCriteriaGroupFolder().getChildren();
+		return getMatchRuleSetFolder().getChildren();
 	}
 
-	public MatchRuleSet getMatchCriteriaGroupByName(String name) {
-		List <MatchRuleSet> groups = getMatchCriteriaGroups();
+	public MatchRuleSet getMatchRuleSetByName(String name) {
+		List <MatchRuleSet> groups = getMatchRuleSets();
 		for ( MatchRuleSet g : groups) {
 			if ( g.getName() != null && g.getName().equals(name)) {
 				return g;
@@ -576,35 +576,35 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     }
     
     /**
-     * Adds a match criteria group to the criteria group folder of this match
+     * Adds a match rule set to the rule set folder of this match
      *
-     * @param criteriaGroup
+     * @param ruleSet
      */
-    public void addMatchCriteriaGroup(MatchRuleSet criteriaGroup) {
+    public void addMatchRuleSet(MatchRuleSet ruleSet) {
         // The folder will fire the child inserted event
-        matchCriteriaGroupFolder.addChild(criteriaGroup);
+        matchRuleSetFolder.addChild(ruleSet);
     }
 
     /**
-     * Removes the match criteria group from the criteria group folder of this match
+     * Removes the match rule set from the rule set folder of this match
      *
-     * @param criteriaGroup
+     * @param ruleSet
      */
-    public void removeMatchCriteriaGroup(MatchRuleSet criteriaGroup) {
+    public void removeMatchRuleSet(MatchRuleSet ruleSet) {
         // The folder will fire the child removed event
-        matchCriteriaGroupFolder.removeChild(criteriaGroup);
+        matchRuleSetFolder.removeChild(ruleSet);
     }
 
-    public List<MatchRuleSet> getMatchCriteriaGroups(){
-        return matchCriteriaGroupFolder.getChildren();
+    public List<MatchRuleSet> getMatchRuleSets(){
+        return matchRuleSetFolder.getChildren();
     }
 
-    public void setMatchCriteriaGroups(List<MatchRuleSet> groups){
-        matchCriteriaGroupFolder.setChildren(groups);
+    public void setMatchRuleSets(List<MatchRuleSet> groups){
+        matchRuleSetFolder.setChildren(groups);
     }
 
-    public MatchMakerFolder<MatchRuleSet> getMatchCriteriaGroupFolder() {
-        return matchCriteriaGroupFolder;
+    public MatchMakerFolder<MatchRuleSet> getMatchRuleSetFolder() {
+        return matchRuleSetFolder;
     }
 
     /**
@@ -627,9 +627,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		newMatch.setView(getView()==null?null:getView().duplicate());
 		newMatch.setSession(s);
 		
-		for (MatchRuleSet g : getMatchCriteriaGroups()) {
-			MatchRuleSet newGroup = g.duplicate(newMatch.getMatchCriteriaGroupFolder(),s);
-			newMatch.addMatchCriteriaGroup(newGroup);
+		for (MatchRuleSet g : getMatchRuleSets()) {
+			MatchRuleSet newGroup = g.duplicate(newMatch.getMatchRuleSetFolder(),s);
+			newMatch.addMatchRuleSet(newGroup);
 		}
 
 		for (TableMergeRules g : getTableMergeRules()) {

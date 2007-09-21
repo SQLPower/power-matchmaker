@@ -510,7 +510,7 @@ public class MMTestUtils {
 		node1 = new SourceTableRecord(session, m, "loner");
 		pool.addSourceTableRecord(node1);
 		
-		//Here is where AutoMatch graphs start. Criteria groups matter in these ones.
+		//Here is where AutoMatch graphs start. Rule Sets matter in these ones.
 		node1 = new SourceTableRecord(session, m, "w1");
 		pool.addSourceTableRecord(node1);
 		node2 = new SourceTableRecord(session, m, "w2");

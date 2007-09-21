@@ -927,10 +927,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			
 			mmo.getParent().removeChild(mmo);
             if (mmo instanceof MatchRule) {
-                // XXX Criteria are special because they don't have a DAO of their own
-                MatchMakerObject criteriaGroup = mmo.getParent();
-                MatchMakerDAO dao = getDAO(criteriaGroup.getClass());
-                dao.save(criteriaGroup);
+                // XXX Rules are special because they don't have a DAO of their own
+                MatchMakerObject ruleSet = mmo.getParent();
+                MatchMakerDAO dao = getDAO(ruleSet.getClass());
+                dao.save(ruleSet);
             } else if ( mmo instanceof ColumnMergeRules) {
             	// XXX so are column merge rules
             	MatchMakerObject tableMergeRules = mmo.getParent();
@@ -940,8 +940,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 MatchMakerDAO dao = getDAO(mmo.getClass());
                 dao.delete(mmo);
             }
-
-
         } else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
         }

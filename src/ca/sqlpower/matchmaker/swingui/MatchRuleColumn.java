@@ -24,7 +24,7 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 
 
-public enum MatchCriteriaColumn {
+public enum MatchRuleColumn {
 	COLUMN("Column",SQLColumn.class),
 	ALLOW_NULL("Match Nulls", Boolean.class),
     CASE_SENSITIVE_IND("Case Insensitive", Boolean.class),
@@ -46,7 +46,7 @@ public enum MatchCriteriaColumn {
     String name;
     Class columnClass;
 
-    MatchCriteriaColumn(String name, Class t)  {
+    MatchRuleColumn(String name, Class t)  {
         this.name = name;
         this.columnClass = t;
     }
@@ -62,8 +62,8 @@ public enum MatchCriteriaColumn {
 	}
 
 
-	public static int getIndex(MatchCriteriaColumn translate_group_name) {
-		MatchCriteriaColumn array[] =values();
+	public static int getIndex(MatchRuleColumn translate_group_name) {
+		MatchRuleColumn array[] =values();
 		for (int i =0;i< array.length;i++){
 			if (translate_group_name == array[i]){
 				return i;
