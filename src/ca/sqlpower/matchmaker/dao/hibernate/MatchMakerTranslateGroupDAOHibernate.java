@@ -38,7 +38,6 @@ public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOH
 
     @Override
     public void save(MatchMakerTranslateGroup saveMe) {
-    	saveMe.syncChildrenSeqNo();
     	super.save(saveMe);
     }
 

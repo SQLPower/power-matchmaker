@@ -25,11 +25,10 @@ public class MatchMakerTranslateWord
 	private Long oid;
 	private String from ="";
 	private String to="";
-    private Long location;
 
 	public MatchMakerTranslateWord() {
 	}
-
+    
 	/**
 	 * Return the from value.  
 	 * If the from value is null return "" if it dosn't 
@@ -119,15 +118,6 @@ public class MatchMakerTranslateWord
         return true;
     }
 
-    public Long getLocation() {
-        return location;
-    }
-
-    public void setLocation(Long location) {
-        final Long oldValue = this.location;
-        this.location = location;
-        getEventSupport().firePropertyChange("location", oldValue, this.location);
-    }
     @Override
     public String toString() {
     	StringBuffer buf = new StringBuffer();
@@ -135,7 +125,6 @@ public class MatchMakerTranslateWord
     	buf.append(" Parent: ").append(this.getParent());
     	buf.append(" From:").append(getFrom());
     	buf.append("->To:").append(getTo());
-    	buf.append(". Priority: ").append(location);
     	return buf.toString();
     }
     
@@ -144,7 +133,6 @@ public class MatchMakerTranslateWord
     	w.setName(getName());
     	w.setFrom(getFrom());
     	w.setTo(getTo());
-    	w.setLocation(getLocation());
     	w.setParent(parent);
     	w.setSession(session);
     	return w;

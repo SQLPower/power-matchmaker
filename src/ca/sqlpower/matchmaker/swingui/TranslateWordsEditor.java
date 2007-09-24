@@ -182,9 +182,30 @@ public class TranslateWordsEditor implements EditorPane {
 	}
 	
 	public boolean doSave() {
-		// TODO Auto-generated method stub
-		logger.debug("DO SAVE: NOT implemented");
-		return false;
+        ValidateResult result = handler.getWorstValidationStatus();
+        if ( result.getStatus() == Status.FAIL) {
+            JOptionPane.showMessageDialog(swingSession.getFrame(),
+                    "You have to fix the error before you can save the translation group",
+                    "Save",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
+        if (group.getName() == null || !group.getName().equals(groupName.getText())) {
+            group.setName(groupName.getText());
+        }
+        if (!swingSession.getTranslations().getChildren().contains(group)) {
+            swingSession.getTranslations().addNewChild(group);
+        }
+        
+        // XXX should be handled by appropriate events when items are reordered
+        swingSession.getTranslations().childrenOrderChanged();
+        
+        swingSession.getDAO(MatchMakerTranslateGroup.class).save(group);
+        MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+        TreePath menuPath = treeModel.getPathForNode(group);
+        swingSession.getTree().setSelectionPath(menuPath);
+        return true;
 	}
 
 	public JComponent getPanel() {
@@ -192,8 +213,8 @@ public class TranslateWordsEditor implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
-		logger.debug("has unsaved changes: NOT IMPLEMENTED");
-		return false;
+        // FIXME need a listener on the matchmaker objects that tracks saved vs unsaved status
+		return true;
 	}
 	
 	/**
@@ -215,7 +236,6 @@ public class TranslateWordsEditor implements EditorPane {
         	MatchMakerTranslateWord word = new MatchMakerTranslateWord();
             word.setFrom(from.getText());
             word.setTo(to.getText());
-            word.setLocation((long)group.getChildCount());
             group.addChild(word);
             translateWordsTable.scrollRectToVisible(translateWordsTable.getCellRect(group.getChildCount()-1,
             		0, true).getBounds());
@@ -241,31 +261,7 @@ public class TranslateWordsEditor implements EditorPane {
 	Action saveGroupAction = new AbstractAction("Save Group"){
 
 		public void actionPerformed(ActionEvent e) {
-			ValidateResult result = handler.getWorstValidationStatus();
-			if ( result.getStatus() == Status.FAIL) {
-				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"You have to fix the error before you can save the translation group",
-						"Save",
-						JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-			
-			if (group.getName() == null || !group.getName().equals(groupName.getText())) {
-				group.setName(groupName.getText());
-			}
-			if (!swingSession.getTranslations().getChildren().contains(group)) {
-				swingSession.getTranslations().addNewChild(group);
-			}
-			if (group != null) {
-				boolean orderChanged = group.syncChildrenSeqNo();
-				if (orderChanged){
-					swingSession.getTranslations().childrenOrderChanged();
-				}
-				swingSession.getDAO(MatchMakerTranslateGroup.class).save(group);
-				MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-				TreePath menuPath = treeModel.getPathForNode(group);
-		        swingSession.getTree().setSelectionPath(menuPath);
-			}
+            doSave();
 		}
 		
 	};
