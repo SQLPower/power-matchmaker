@@ -48,9 +48,7 @@
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType" >
 			<column name="DELETE_DUP_IND" length="1" />
 		</property>
-		<property name="seqNo" type="long">
-			<column name="SEQ_NO" precision="18" scale="0" />
-		</property>
+
 		<property name="lastUpdateOsUser" type="string" access="field">
 			<column name="LAST_update_OS_USER" length="30" />
 		</property>

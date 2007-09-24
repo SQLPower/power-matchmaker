@@ -52,9 +52,6 @@ import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
-import ca.sqlpower.validation.Status;
-import ca.sqlpower.validation.ValidateResult;
-import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
@@ -104,7 +101,7 @@ public class MergeTableRuleEditor implements EditorPane {
 	
 	private void setupRulesTable(MatchMakerSwingSession swingSession, Match match) {
 		mergeTableRuleTableModel = new MergeTableRuleTableModel(match,swingSession);
-		mergeRulesTable = new TableMergeRulesTable(mergeTableRuleTableModel);
+		mergeRulesTable = new EditableJTable(mergeTableRuleTableModel);
         mergeRulesTable.setName("Merge Tables");
         
         
@@ -244,16 +241,10 @@ public class MergeTableRuleEditor implements EditorPane {
 	 */
 	public boolean doSave() {
 		logger.debug("#1 children size="+match.getTableMergeRules().size());
-		long count = 0;
 		boolean orderChanged = false;
-		for (TableMergeRules t : mergeTableRuleTableModel.getMergeRules()){
-			if (!orderChanged && t.getSeqNo()!= count){
-				orderChanged = true;
-			}
-			t.setSeqNo(count++);
-		}
 		swingSession.save(match);
 		if (orderChanged){
+            // XXX this should be handled by remove and add events in the table model and/or mmo events
 			match.getTableMergeRulesFolder().childrenOrderChanged();
 		}
 		return true;
@@ -264,28 +255,24 @@ public class MergeTableRuleEditor implements EditorPane {
 	}
 
 	/**
-	 * Checks for unsaved changes by checking the ordering of the tableMergeRules.
+	 * Returns true if there are changes that have not been saved.
 	 */
 	public boolean hasUnsavedChanges() {
-		long count = 0;
-		for (TableMergeRules t : mergeTableRuleTableModel.getMergeRules()){
-			if ( t.getSeqNo()!= count){
-				return true;
-			}
-			count++;
-		}
-		return false;
+        // FIXME need a mmo listener that notices when the children have been modified or shuffled
+		return true;
 	}
 
 	/**
-	 * table model for the merge table rules, it shows the merge tables
-	 * in a JTable, allows user add/delete/reorder merge tables
-	 * it has 4 columns:
-	 * 		table catalog    -- merge table catalog in a combo box
-	 * 		table schema    -- merge table schema in a combo box
-	 * 		table name    -- merge table name in a combo box
-	 * 		delete dup ind     -- merge table delete dup ind in a check box
-	 *
+	 * A Table model for the merge table rules. Shows the merge tables
+	 * in a JTable and allows user add/delete/reorder merge tables.
+     * <p>
+	 * It has 4 columns:
+     * <dl>
+	 * 		<dt>table catalog   <dd> merge table catalog in a combo box
+	 * 		<dt>table schema    <dd> merge table schema in a combo box
+	 * 		<dt>table name      <dd> merge table name in a combo box
+	 * 		<dt>delete dup ind  <dd> merge table delete dup ind in a check box
+	 * </dl>
 	 */
 	private class MergeTableRuleTableModel extends AbstractTableModel {
 
@@ -384,30 +371,4 @@ public class MergeTableRuleEditor implements EditorPane {
 			fireTableDataChanged();
 		}
 	}
-	
-	private class TableMergeRulesTable extends EditableJTable {
-
-		private MergeTableRuleTableModel mergeTableRuleTableModel;
-		public TableMergeRulesTable(MergeTableRuleTableModel mergeTableRuleTableModel) {
-			super(mergeTableRuleTableModel);
-			this.mergeTableRuleTableModel = mergeTableRuleTableModel;
-		}
-
-	}
-	
-	private class TableMergeRulesValidator implements Validator {
-
-		private SQLObjectChooser chooser;
-		public TableMergeRulesValidator(SQLObjectChooser chooser) {
-			this.chooser = chooser;
-		}
-		
-		public ValidateResult validate(Object contents) {
-			if (chooser.getTableComboBox().getSelectedItem() == null) {
-				return ValidateResult.createValidateResult(Status.WARN,
-						"Merge table is required");
-			}
-			return ValidateResult.createValidateResult(Status.OK, "");
-		}
-    }
 }

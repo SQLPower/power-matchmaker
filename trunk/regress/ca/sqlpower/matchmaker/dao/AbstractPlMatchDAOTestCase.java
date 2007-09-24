@@ -30,8 +30,8 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchRule;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
@@ -205,8 +205,12 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
     }
     
     public void testRuleSetMove() throws Exception {
-        MatchRuleSet cg = new MatchRuleSet();
-        cg.setName("rule set");
+        MatchRuleSet ruleSet = new MatchRuleSet();
+        ruleSet.setName("criteria group");
+        
+        MatchRule matchRule = new MatchRule();
+        matchRule.setColumnName("cows");
+        ruleSet.addChild(matchRule);
         
         Match oldMatch = new Match();
         oldMatch.setName("old");
@@ -221,7 +225,8 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         newMatch.setName("new");
 		newMatch.setParent(f);
         
-        oldMatch.addMatchRuleSet(cg);
+        oldMatch.addMatchRuleSet(ruleSet);
+
         MatchDAO dao = getDataAccessObject();
         
         dao.save(oldMatch);
@@ -235,10 +240,10 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
             stmt = con.createStatement();
             try { 
                 rs = stmt.executeQuery(
-                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+cg.getName()+"'");
+                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+ruleSet.getName()+"'");
             
                 if (!rs.next()) {
-                    fail("No results found for match "+cg.getName());
+                    fail("No results found for match "+ruleSet.getName());
                 }
             
                 assertEquals("The setup failed to work","old", rs.getString("match_id"));
@@ -246,16 +251,18 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
                 try { rs.close(); } catch (Exception e) { System.err.println("Couldn't close result set"); e.printStackTrace(); }
             }
             
-            oldMatch.removeMatchRuleSet(cg);
-            newMatch.addMatchRuleSet(cg);
-            dao.save(newMatch);
+            oldMatch.removeMatchRuleSet(ruleSet);
             dao.save(oldMatch);
+            
+            newMatch.addMatchRuleSet(ruleSet);
+            dao.save(newMatch);
+            
             try { 
                 rs = stmt.executeQuery(
-                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+cg.getName()+"'");
+                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+ruleSet.getName()+"'");
             
                 if (!rs.next()) {
-                    fail("No results found for match "+cg.getName());
+                    fail("No results found for match "+ruleSet.getName());
                 }
             
                 assertEquals("move failed to work","new", rs.getString("match_id"));
