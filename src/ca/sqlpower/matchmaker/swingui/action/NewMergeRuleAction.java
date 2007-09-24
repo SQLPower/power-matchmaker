@@ -47,9 +47,7 @@ public class NewMergeRuleAction extends AbstractAction {
 	
 	public void actionPerformed(ActionEvent e) {
 		TableMergeRules g = new TableMergeRules();
-		long seqNo = parent.getTableMergeRulesFolder().getChildCount();
 		parent.getTableMergeRulesFolder().addChild(g);
-		g.setSeqNo(seqNo);
 		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
 		TreePath treePath = treeModel.getPathForNode(g);
 		swingSession.getTree().setSelectionPath(treePath);
