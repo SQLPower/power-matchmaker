@@ -444,7 +444,9 @@ public class MatchRule
 		MatchRule rule = new MatchRule();
 		rule.setAllowNullInd(isAllowNullInd());
 		rule.setCaseSensitiveInd(isCaseSensitiveInd());
-		rule.setColumn(getColumn());
+		if (this.cachableTable.getTable() != null) {
+			rule.setColumn(getColumn());
+		}
 		rule.setColumnName(getColumnName());
 		rule.setCountWordsInd(isCountWordsInd());
 		rule.setFirstNChar(getFirstNChar());
