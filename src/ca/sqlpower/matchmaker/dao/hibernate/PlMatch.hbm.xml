@@ -194,7 +194,7 @@
 		</property>
 		-->
 
-		<list name="tableMergeRules" inverse="true" lazy="true" fetch="subselect" cascade="all">
+		<list name="tableMergeRules" inverse="true" lazy="true" fetch="subselect" cascade="all-delete-orphan">
 			<key>
 				<column name="MATCH_OID" not-null="true" />
 			</key>
@@ -202,7 +202,7 @@
 			<one-to-many
 				class="ca.sqlpower.matchmaker.TableMergeRules" />
 		</list>
-		<bag name="matchRuleSets" inverse="true" lazy="true" fetch="subselect" cascade="all">
+		<bag name="matchRuleSets" inverse="true" lazy="true" fetch="subselect" cascade="all-delete-orphan">
 			<key>
 				<column name="MATCH_OID" not-null="true" />
 			</key>

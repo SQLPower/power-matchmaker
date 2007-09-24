@@ -36,12 +36,6 @@ public class TableMergeRules
 	private Long oid;
 
 	/**
-	 * The order in which this strategy is run relative to other
-	 * Strategies in the table
-	 */
-	private Long seqNo;
-	
-	/**
 	 * Whether or not we should delete the duplicate row 
 	 */
 	private boolean deleteDup;
@@ -109,7 +103,6 @@ public class TableMergeRules
 		newMergeStrategy.setName(getName());
 		newMergeStrategy.setSession(session);
 		newMergeStrategy.setDeleteDup(isDeleteDup());
-		newMergeStrategy.setSeqNo(getSeqNo());
 		newMergeStrategy.setTableName(getTableName());
 		newMergeStrategy.setCatalogName(getCatalogName());
 		newMergeStrategy.setSchemaName(getSchemaName());
@@ -174,22 +167,11 @@ public class TableMergeRules
 		getEventSupport().firePropertyChange("deleteDup", oldValue, this.deleteDup);
 	}
 
-	public Long getSeqNo() {
-		return seqNo;
-	}
-
-	public void setSeqNo(Long seqNo) {
-		Long oldValue = this.seqNo;
-		this.seqNo = seqNo;
-		getEventSupport().firePropertyChange("seqNo", oldValue, this.seqNo);
-	}
-
 	@Override
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Merge Strategy@"+System.identityHashCode(this)+"->'").append(getName()).append("' ");
 		buf.append("Parent->'").append(getParent()).append("' ");
-		buf.append("Seq No->'").append(getSeqNo()).append("' ");
 		buf.append("isDeletedDup()->'").append(isDeleteDup()).append("' ");
 		return buf.toString();
 	}
