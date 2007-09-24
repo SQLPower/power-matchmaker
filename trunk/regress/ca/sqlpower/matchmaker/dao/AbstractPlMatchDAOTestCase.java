@@ -254,7 +254,10 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
             oldMatch.removeMatchRuleSet(ruleSet);
             dao.save(oldMatch);
             
-            newMatch.addMatchRuleSet(ruleSet);
+            //A temporary fix for moving match rulesets. This makes a copy of the ruleSet and 
+            //adds it to the newMatch.
+            MatchRuleSet ruleSet2 = ruleSet.duplicate(newMatch, getSession());
+            newMatch.addMatchRuleSet(ruleSet2);
             dao.save(newMatch);
             
             try { 
