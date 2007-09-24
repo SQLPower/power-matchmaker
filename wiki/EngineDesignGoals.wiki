@@ -1,8 +1,8 @@
 Engine Requirements
 
-- Ability to handle millions of records
-- Easy API for contributing new match rule
-    - Divide into steps (lego pieces) 
+  * Ability to handle millions of records
+  * Easy API for contributing new match rule
+    * Divide into steps (lego pieces) 
     - Support custom Java Script and Regular Expressions
 - Data-types we would support for munging:
     - Boolean
@@ -28,3 +28,4 @@ Overall Match Engine Process
 - Walk through list
 - Match validation
 - Store results back to match result table
+ 
