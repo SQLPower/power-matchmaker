@@ -1,0 +1,30 @@
+Engine Requirements
+
+- Ability to handle millions of records
+- Easy API for contributing new match rule
+    - Divide into steps (lego pieces) 
+    - Support custom Java Script and Regular Expressions
+- Data-types we would support for munging:
+    - Boolean
+    - String
+    - Number
+    - Date/Time
+    - Time interval
+- Design the engines so that the work can be distributed across network nodes
+- Engines' incremental process should have:
+    - A progress bar
+    - A show details option (i.e. current record)
+    - Ability to cancel the process
+- Use filters on match steps so it only applies to specific records
+    - Initial filters to use where clauses in query
+    - i.e. Dealing with postal codes from Canada, U.S., other countries
+
+Overall Match Engine Process
+
+- Columns <- key columns + all columns referenced by match rule sets
+- Select columns from table for each rule set
+- Munge
+- Sort
+- Walk through list
+- Match validation
+- Store results back to match result table
