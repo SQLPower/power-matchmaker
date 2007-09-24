@@ -128,6 +128,9 @@ public class MatchMakerTranslateGroupDAOSQLServerTest extends AbstractMatchMaker
         
         MatchMakerTranslateGroup translateGroup = getDataAccessObject().findByName(translateGroupName);
         translateGroup.getChildren(); // this could fail if the DAO doesn't cascade the retrieval properly
+        
+        // We've changed our minds: we will no longer allow gaps in the sequence, but the
+        // business model or DAO layer should produce a good exception explaining the problem
         assertNotNull("Null child not removed from group.", translateGroup.getChildren().get(0));
     }
 }

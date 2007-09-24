@@ -26,6 +26,10 @@ public class MatchMakerTranslateGroup
 	extends AbstractMatchMakerObject<MatchMakerTranslateGroup, MatchMakerTranslateWord> 
 	implements Comparable <MatchMakerTranslateGroup> {
 
+    /**
+     * Object identifier. Required for the persistence layer.
+     */
+    @SuppressWarnings("unused")
 	private Long oid;
 
 	@Override
@@ -53,23 +57,6 @@ public class MatchMakerTranslateGroup
 
 	public MatchMakerTranslateGroup() {
 	}
-    
-    /** 
-     * Sets the seq_no of the translate words in the group starting from 0.
-     * Returns a boolean indicating whether there was a change from the original
-     * seq_no's.
-     */
-    public boolean syncChildrenSeqNo(){
-		long count = 0;
-		boolean orderChanged = false;
-		for (MatchMakerTranslateWord word : getChildren()) {
-			if (word.getLocation() == null || !orderChanged && word.getLocation()!= count){
-				orderChanged = true;
-			}
-			word.setLocation(count++);
-		}
-		return orderChanged;
-    }
 
 	@Override
 	public String toString() {

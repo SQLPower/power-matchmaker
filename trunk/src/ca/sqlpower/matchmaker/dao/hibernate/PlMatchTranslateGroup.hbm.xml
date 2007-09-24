@@ -9,7 +9,7 @@
 	<class name="ca.sqlpower.matchmaker.MatchMakerTranslateGroup"
 		table="PL_MATCH_TRANSLATE_GROUP">
 		<id name="oid" type="long" access="field">
-			<column name="TRANSLATE_GROUP_OID" precision="22" scale="0" />
+			<column name="translate_group_oid" precision="22" scale="0" />
 			<generator class="native">
 				<param name="sequence">match_translate_group_oid_seq</param>
 			</generator>
@@ -21,15 +21,13 @@
 				unique="true" />
 		</property>
 		
-		<list name="children" cascade="all-delete-orphan"
-			inverse="true" lazy="false" fetch="subselect">
-			<key>
-				<column name="TRANSLATE_GROUP_OID" not-null="true" />
-			</key>
+		<list name="children" lazy="true" table="pl_match_translate" cascade="all-delete-orphan">
+		    <!--  	inverse="true" fetch="subselect"> -->
+			<key column="TRANSLATE_GROUP_OID"/>
 			<index column="SEQ_NO" />
-			<one-to-many
-				class="ca.sqlpower.matchmaker.MatchMakerTranslateWord" />
+			<one-to-many class="ca.sqlpower.matchmaker.MatchMakerTranslateWord" />
 		</list>
+
 
 	</class>
 </hibernate-mapping>

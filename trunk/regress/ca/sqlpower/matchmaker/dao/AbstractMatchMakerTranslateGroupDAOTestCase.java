@@ -102,7 +102,6 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
     	
     	getDataAccessObject().save(group);
     	Collections.swap(group.getChildren(), 1, 2);
-    	group.syncChildrenSeqNo();
     	getDataAccessObject().save(group);
     	
     	Connection con = getSession().getConnection();
@@ -221,18 +220,17 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
     	word2.setFrom("2");
     	MatchMakerTranslateWord word3 = new MatchMakerTranslateWord();
     	word3.setFrom("3");
-    	
+        
     	group.addChild(word1);
-    	group.addChild(word2);
-    	group.addChild(word3);
-    	group.syncChildrenSeqNo();
+        group.addChild(word2);
+        group.addChild(word3);
+    	
     	getDataAccessObject().save(group);
     	
     	group.removeChild(word3);
     	group.removeChild(word2);
 
     	group.addChild(word3);
-    	group.syncChildrenSeqNo();
     	getDataAccessObject().save(group);
     	
        	Connection con = getSession().getConnection();
@@ -249,6 +247,9 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
     	assertEquals("Wrong child in position 1","1",rs.getObject("from_word"));
     	assertTrue("There should be 2 children not 1",rs.next());
     	assertEquals("Wrong child in position 2","3",rs.getObject("from_word"));
+        
+        assertFalse("There should only be two children", rs.next());
+        
     	} finally {
     		try {
                 if (oidRs != null)
