@@ -194,7 +194,7 @@
 		</property>
 		-->
 
-		<list name="tableMergeRules" inverse="true" lazy="true" fetch="subselect" cascade="all-delete-orphan">
+		<list name="tableMergeRules" lazy="true" fetch="subselect" cascade="all-delete-orphan">
 			<key>
 				<column name="MATCH_OID" not-null="true" />
 			</key>
