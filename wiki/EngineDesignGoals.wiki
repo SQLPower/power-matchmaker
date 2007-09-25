@@ -25,6 +25,16 @@ Engine Requirements
     * String permutation relevance to percentage of match
   * Rough sets could be used in place of exact match process (steps 4, 5)
     * Other matching methods would also be placed in this block
+  * Use predecessor search to order the steps so that each step need to be run only once
+    * First use a depth search to eliminate the nodes that do nothing first
+  * Steps we want
+    * Sort all the letters to find transpositions
+  * We need a row type so that is can be passed into a list (it will just hold an array of objects)
+  * Munge preview
+    * While your working choose either a random table row, or user entered test data and show a preview of what the munge will do to it.
+  * Threading
+    * Allow the user to specify the number of threads to be run
+    * Each thread will process individual rows in the database
  
 Overall Match Engine Process
 
