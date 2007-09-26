@@ -36,7 +36,7 @@ import java.util.concurrent.Callable;
  * as equivalent.  In terms of conforming data, a munge step might format a North
  * American telephone number or Canadian postal code.
  */
-public interface MungeStep extends MatchMakerObject<MungeStep, MungeStep>, Callable<List<MungeStepOutput>> {
+public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>, Callable<List<MungeStepOutput>> {
 
 	/**
 	 * Returns the parent to this step, which is a MatchRuleSet object.
