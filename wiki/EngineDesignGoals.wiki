@@ -5,7 +5,23 @@ Engine Requirements
     * Divide into steps (lego pieces) 
       * Allow creation of custom steps and custom groups of steps
       * _Transformation of steps into SQL functions_
-    * Support custom Java Script and Regular Expressions
+    * Support Regular Expressions
+  * Munging steps
+    * Sort all the letters to find transpositions
+    * Sort all the words to find transpositions
+    * Consider nulls are equal
+    * Convert to upper and lower case
+    * String substitution (list of characters)
+    * Retain characters
+    * Translate words
+    * Substring by word
+    * Substring
+    * Soundex
+    * Enhanced soundex
+    * Word count
+    * String concatenation
+    * Address validation
+    * Custom Javascript
   * Data-types we would support for munging:
     * Boolean
     * String
@@ -29,19 +45,6 @@ Engine Requirements
     * Comparing by words in common
   * Use predecessor search to order the steps so that each step need to be run only once
     * First use a depth search to eliminate the nodes that do nothing first
-  * Steps we want
-    * Sort all the letters to find transpositions
-    * Sort all the words to find transpositions
-    * Consider nulls are equal
-    * Convert to upper and lower case
-    * String substitution (list of characters)
-    * Retain characters
-    * Translate words
-    * Substring by word
-    * Substring
-    * Soundex
-    * Enhanced soundex
-    * Word count
   * We need a row type so that is can be passed into a list (it will just hold an array of objects)
   * Munge preview
     * While your working choose either a random table row, or user entered test data and show a preview of what the munge will do to it.
