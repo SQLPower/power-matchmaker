@@ -17,10 +17,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker;
+package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchRuleSet;
 
 /**
  * Defines a special type of MatchMakerObject which is capable of being part of a
@@ -60,7 +63,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * step implementation.
 	 * @param value The value to associate with the named parameter.
 	 */
-	void setParameter(String name, String value);
+	void setParameter(String name, String newValue);
 
 	/**
 	 * Adds the given input (which is an output from another step) to this step.
@@ -93,15 +96,6 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * @return A non-modifiable list of the current inputs to this step.
 	 */
 	List<MungeStepOutput> getInputs();
-
-	/**
-	 * Returns the list of outputs. Outputs are usually fixed for the life of a
-	 * step, although the name of the output may change over time to reflect its
-	 * current expected value.
-	 * 
-	 * @return A non-modifiable list of this step's outputs.
-	 */
-	List<MungeStepOutput> getOutputs();
 	
 	/**
 	 * Causes this munge step to evaluate its current input values and produce
