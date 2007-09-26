@@ -22,6 +22,9 @@ Engine Requirements
     * String concatenation
     * Address validation
     * Custom Javascript
+  * Library routines by default
+    * Proper formatting of postal code and phone numbers
+    * Proper casing of names
   * Data-types we would support for munging:
     * Boolean
     * String
