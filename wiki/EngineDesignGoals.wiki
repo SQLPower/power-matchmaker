@@ -23,7 +23,7 @@ Engine Requirements
   * Machine learning
     * Add change listener on match validation step
     * String permutation relevance to percentage of match
-  * Methods of matching could be used in match process (steps 4, 5)
+  * Methods of matching (steps 4, 5)
     * Exact match
     * Rough sets
     * Comparing by words in common
