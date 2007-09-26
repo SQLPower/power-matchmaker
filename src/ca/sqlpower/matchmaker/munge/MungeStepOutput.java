@@ -17,7 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker;
+package ca.sqlpower.matchmaker.munge;
+
+import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 
 /**
  * MungeStepOutput instances represent an output connection point of a MungeStep
@@ -81,7 +85,7 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	 * Overridden to declare the correct parent type.
 	 */
 	@Override
-	public MungeStep getParent() {
+	public MatchMakerObject getParent() {
 		return (MungeStep) super.getParent();
 	}
 	
