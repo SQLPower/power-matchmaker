@@ -35,11 +35,11 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 
-import ca.sqlpower.matchmaker.AbstractMungeStep;
-import ca.sqlpower.matchmaker.MungeStep;
-import ca.sqlpower.matchmaker.MungeStepOutput;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
 public class MungeComponent extends JPanel {
 
@@ -84,7 +84,7 @@ public class MungeComponent extends JPanel {
 	}
 	
 	public Point getInputPosition(int inputNum) {
-		int inputs = step.getMaxInputs();
+		int inputs = step.getInputCount();
 		
 		if (inputs == MungeStep.UNLIMITED_INPUTS) {
 			inputs = step.getInputs().size() + 1;
@@ -117,7 +117,7 @@ public class MungeComponent extends JPanel {
 		setBounds(getX(), getY(), getPreferredSize().width, getPreferredSize().height);
 		
 		int outputs = step.getChildren().size();
-		int maxInputs = step.getMaxInputs();
+		int maxInputs = step.getInputCount();
 		if (maxInputs == MungeStep.UNLIMITED_INPUTS) {
 			maxInputs = step.getInputs().size() +1;
 		}
@@ -128,15 +128,18 @@ public class MungeComponent extends JPanel {
 			Point top = getInputPosition(x);
 			g.drawLine((int)top.getX(), (int)top.getY(), (int)top.getX(), border.top);
 			
-			//g.setColor(getColor(step.getInputType(x)));
+			g.setColor(getColor(step.getInputType(x)));
 			g.fillOval(top.x-2, top.y, 4, 4);
-			//g.setColor(Color.BLACK);
+			g.setColor(Color.BLACK);
 		}
 		
 		for (int x= 0;x<outputs;x++){
 			Point bottom = getOutputPosition(x);
 			g.drawLine((int)bottom.getX(), (int)bottom.getY(), (int)bottom.getX(), (int)bottom.getY() - border.bottom);
+
+			g.setColor(getColor(step.getChildren().get(x).getType()));
 			g.fillOval(bottom.x-2, bottom.y-5, 4, 4);
+			g.setColor(Color.BLACK);
 		}
 
 		g = g.create(border.left, border.top, getWidth()-border.right, getHeight()-border.bottom);
@@ -156,8 +159,15 @@ public class MungeComponent extends JPanel {
 	}
 	
 	
-	public Color getColor(Class c) {
-		return Color.BLACK;
+	public static Color getColor(Class c) {
+		if (c.equals(String.class)) {
+			return Color.red;
+		} else if (c.equals(Boolean.class)) {
+			return Color.BLUE;
+		} else if (c.equals(Integer.class)){
+			return Color.MAGENTA;
+		}
+		return Color.PINK;
 	}
 	
 	public JPopupMenu getPopupMenu() {
@@ -197,6 +207,21 @@ public class MungeComponent extends JPanel {
 		public int getMaxInputs() {
 			return -1;
 		}
+
+		public int getInputCount() {
+			// TODO Auto-generated method stub
+			return 3;
+		}
+
+		public Class getInputType(int inputNumber) {
+			switch (inputNumber) {
+			case 0:
+				return String.class;
+			case 1:
+				return Integer.class;
+			}
+			return Boolean.class;
+		}
 		
 		
 	}
@@ -216,12 +241,12 @@ public class MungeComponent extends JPanel {
 		
 		MungeStep parent = new MungeStepTest(2);
 		
-		MungeStep child = new MungeStepTest(10);
+		MungeStep child = new MungeStepTest(55);
 		
 		MungeStep child2 = new MungeStepTest(2);
 		
-		child2.addInput(parent.getChildren().get(0));
 		child.addInput(parent.getChildren().get(1));
+		child2.addInput(parent.getChildren().get(0));
 		child2.addInput(child.getChildren().get(0));
 		
 		parent.setName("parent");

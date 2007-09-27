@@ -45,7 +45,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * A constant to return for get Number of inputs indicating that there is no limit
 	 * too the number of inputs.
 	 */
-	int UNLIMITED_INPUTS = -1;
+	public static final int UNLIMITED_INPUTS = -1;
 
 	/**
 	 * Returns the parent to this step, which is a MatchRuleSet object.

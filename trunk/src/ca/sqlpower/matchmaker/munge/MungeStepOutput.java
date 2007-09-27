@@ -90,7 +90,7 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	}
 	
 	/**
-	 * Determines if this step output is equal to the other based on refrence
+	 * Determines if this step output is equal to the other based on reference
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -98,16 +98,11 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	}
 
 	/**
-	 * Calculates hash code based on name and type.
+	 * @return The identity hash code
 	 */
 	@Override
 	public int hashCode() {
-		int hashCode = 31;
-		
-		hashCode += hashCode * getName().hashCode();
-		hashCode += hashCode * type.hashCode();
-		
-		return hashCode;
+		return System.identityHashCode(this);
 	}
 
 	/**
