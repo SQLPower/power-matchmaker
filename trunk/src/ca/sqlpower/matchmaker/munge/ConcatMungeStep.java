@@ -58,4 +58,12 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		}
 		return getChildren();
 	}
+
+	public int getInputCount() {
+		return MungeStep.UNLIMITED_INPUTS;
+	}
+
+	public Class getInputType(int inputNumber) {
+		return String.class;
+	}
 }

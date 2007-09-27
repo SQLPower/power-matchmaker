@@ -90,24 +90,11 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	}
 	
 	/**
-	 * Determines if this step output is equal to the other based on name
-	 * and type.
+	 * Determines if this step output is equal to the other based on refrence
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof MungeStepOutput)) {
-			return false;
-		}
-		
-		MungeStepOutput<?> other = (MungeStepOutput<?>) obj;
-
-		boolean same;
-		
-		same = (other.getName() == null ? this.getName() == null : other.getName().equals(this.getName()));
-		if (!same) return false;
-		
-		same = (other.type == null ? this.type == null : other.type.equals(this.type));
-		return same;
+		return this == obj;
 	}
 
 	/**

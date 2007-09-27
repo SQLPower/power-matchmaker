@@ -20,7 +20,6 @@
 package ca.sqlpower.matchmaker.munge;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.TestingAbstractMungeStep;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 public class AbstractMungeStepTest extends TestCase {
