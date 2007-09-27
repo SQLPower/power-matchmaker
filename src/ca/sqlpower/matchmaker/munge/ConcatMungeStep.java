@@ -32,22 +32,32 @@ public class ConcatMungeStep extends AbstractMungeStep {
 	public ConcatMungeStep() {
 		out = new MungeStepOutput<String>("concatOutput", String.class);
 		addChild(out);
+		InputDescriptor desc1 = new InputDescriptor("concat1", String.class);
+		InputDescriptor desc2 = new InputDescriptor("concat2", String.class);
+		super.addInput(desc1);
+		super.addInput(desc2);
 	}
 	
-	@Override
-	public void addInput(MungeStepOutput o) {
-		if (o.getType() != String.class) {
+	public int addInput(InputDescriptor desc) {
+		return super.addInput(desc);
+	}
+	
+	public void connectInput(int index, MungeStepOutput o) {
+		if (index >= getInputs().size()) {
+			throw new IndexOutOfBoundsException("There is no input at the given index");
+		} else if (o.getType() != getInputDescriptor(index).getType()) {
 			throw new UnexpectedDataTypeException(
-					"Concatenate munge step does not accept non-String inputs");
+				"Concatenate munge step does not accept non-String inputs");
+		} else {
+			super.connectInput(index, o);
 		}
-		super.addInput(o);
 	}
 	
 	public List<MungeStepOutput> call() throws Exception {
 		boolean allNulls = true;
 		StringBuilder data = new StringBuilder();
 		for (MungeStepOutput<String> in: getInputs()) {
-			if (in.getData() != null) {
+			if (in != null && in.getData() != null) {
 				data.append(in.getData());
 				allNulls = false;
 			}
@@ -59,11 +69,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		return getChildren();
 	}
 
-	public int getInputCount() {
-		return MungeStep.UNLIMITED_INPUTS;
-	}
-
-	public Class getInputType(int inputNumber) {
-		return String.class;
+	public boolean canAddInput() {
+		return true;
 	}
 }

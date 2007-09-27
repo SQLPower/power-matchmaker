@@ -21,42 +21,62 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
-
 import junit.framework.TestCase;
 
-public class UpperCaseMungeStepTest extends TestCase {
+public class StringSubstitutionMungeStepTest extends TestCase {
 
-	private UpperCaseMungeStep step;
+	private StringSubstitutionMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new UpperCaseMungeStep();
+		step = new StringSubstitutionMungeStep();
 	}
 
-	public void testCallonLowerCaseString() throws Exception {
+	/**
+	 * This tests the case where the target string is not present, the output
+	 * should just be the same as before the call. 
+	 */
+	public void testCallonNoOccurence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
 		step.connectInput(0, testInput);
+		step.setParameter(step.FROM_PARAMETER_NAME, "h");
+		step.setParameter(step.TO_PARAMETER_NAME, "123");
 		List<MungeStepOutput> results = step.call();
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
-		assertEquals("ABCDEFG", result);
+		assertEquals("abcdefg", result);
 	}
 
-	public void testCallonMixedString() throws Exception {
+	public void testCallonMultipleOccurences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
-		testInput.setData("abcDEF!@#$%^&*");
+		testInput.setData("abcABCabc");
 		step.connectInput(0, testInput);
+		step.setParameter(step.FROM_PARAMETER_NAME, "abc");
+		step.setParameter(step.TO_PARAMETER_NAME, "123");
 		List<MungeStepOutput> results = step.call();
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
-		assertEquals("ABCDEF!@#$%^&*", result);
+		assertEquals("123ABC123", result);
 	}
 
+	/**
+	 * This tests the case where the regular expression option is enabled.
+	 */
+	public void testCallonUsingRegex() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData("aabfooaabfooabfoob");
+		step.connectInput(0, testInput);
+		step.setParameter(step.USE_REGEX_PARAMETER_NAME, "true");
+		step.setParameter(step.FROM_PARAMETER_NAME, "a*b");
+		step.setParameter(step.TO_PARAMETER_NAME, "-");
+		List<MungeStepOutput> results = step.call();
+		MungeStepOutput output = results.get(0);
+		String result = (String)output.getData();
+		assertEquals("-foo-foo-foo-", result);
+	}
 	
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
