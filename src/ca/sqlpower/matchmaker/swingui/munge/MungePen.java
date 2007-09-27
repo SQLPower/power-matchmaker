@@ -31,8 +31,8 @@ import java.util.Map;
 import javax.swing.JLayeredPane;
 import javax.swing.JPopupMenu;
 
-import ca.sqlpower.matchmaker.MungeStep;
-import ca.sqlpower.matchmaker.MungeStepOutput;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
 public class MungePen extends JLayeredPane {
 	
