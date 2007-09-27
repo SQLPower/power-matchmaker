@@ -40,6 +40,7 @@ public class MatchPoolGraphModel implements GraphModel<SourceTableRecord, Potent
     private final MatchPool pool;
     
     public MatchPoolGraphModel(MatchPool pool) {
+        logger.debug("Creating new instance");
         this.pool = pool;
     }
     
