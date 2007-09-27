@@ -107,6 +107,9 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * Causes this munge step to evaluate its current input values and produce
 	 * the corresponding output values, which are then stored in this step's
 	 * outputs.
+     * <p>
+     * You have to open a MungeStep before invoking this method on it.  Open
+     * a step by calling {@link #open()}.
 	 * 
 	 * @return The outputs of this step, which now contain the newly calculated
 	 *         output values.
@@ -127,4 +130,17 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * 		no limit. 
 	 */
 	int getInputCount();
+    
+    /**
+     * Allocates any resources this step requires while processing its data.
+     * Once this method has been called on a MungeStep, it is required that
+     * the {@link #close()} method is also called in the future.
+     */
+    void open() throws Exception;
+    
+    /**
+     * Closes any resources allocated by the {@link open()} method.  It is mandatory
+     * to call this method after the {@link #open()} method has been called.
+     */
+    void close() throws Exception;
 }

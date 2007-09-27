@@ -116,4 +116,22 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	public int hashCode() {
 		return System.identityHashCode(this);
 	}
+
+    /**
+     * Does nothing, because most steps do not need to allocate any resources.
+     * If your step needs to allocate resources (perform a database query, open
+     * a file, connect to a server, and so on), you should override this method.
+     */
+    public void open() throws Exception {
+        // no op
+    }
+
+    /**
+     * Does nothing, because most steps do not need to allocate any resources.
+     * If you override the {@link #open()} method, you should override this method
+     * too and clean up the resources.
+     */
+    public void close() throws Exception {
+        // no op
+    }
 }
