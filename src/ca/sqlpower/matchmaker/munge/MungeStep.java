@@ -42,6 +42,12 @@ import ca.sqlpower.matchmaker.MatchRuleSet;
 public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>, Callable<List<MungeStepOutput>> {
 
 	/**
+	 * A constant to return for get Number of inputs indicating that there is no limit
+	 * too the number of inputs.
+	 */
+	int UNLIMITED_INPUTS = -1;
+
+	/**
 	 * Returns the parent to this step, which is a MatchRuleSet object.
 	 */
 	MatchRuleSet getParent();
@@ -106,4 +112,19 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 *         output values.
 	 */
 	List<MungeStepOutput> call() throws Exception;
+	
+	/**
+	 *  Returns what type is expected for the given input number.
+	 *  
+	 *  @Return The expected type for the input, or NULL if the given number is out of bounds
+	 */
+	Class getInputType(int inputNumber);
+	
+	/**
+	 * Returns the number of inputs the step is expecting.
+	 * 
+	 * @return Either the number of steps or UNLIMITED_INPUTS if there is 
+	 * 		no limit. 
+	 */
+	int getInputCount();
 }

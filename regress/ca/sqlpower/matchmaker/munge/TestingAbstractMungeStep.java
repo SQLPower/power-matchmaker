@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker;
+package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
@@ -41,6 +41,14 @@ public class TestingAbstractMungeStep extends AbstractMungeStep {
 	}
 
 	public List<MungeStepOutput> call() throws Exception {
+		return null;
+	}
+
+	public int getInputCount() {
+		return 0;
+	}
+
+	public Class getInputType(int inputNumber) {
 		return null;
 	}
 

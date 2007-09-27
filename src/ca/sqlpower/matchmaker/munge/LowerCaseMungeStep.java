@@ -54,4 +54,15 @@ public class LowerCaseMungeStep extends AbstractMungeStep {
 		}
 		return getChildren();
 	}
+
+	public int getInputCount() {
+		return 1;
+	}
+
+	public Class getInputType(int inputNumber) {
+		if (inputNumber == 0) {
+			return String.class;
+		}
+		return null;
+	}
 }
