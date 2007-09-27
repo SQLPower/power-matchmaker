@@ -40,7 +40,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 	public void testCallonUpperCaseString() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("ABCDEFG");
-		step.addInput(testInput);
+		step.connectInput(0, testInput);
 		List<MungeStepOutput> results = step.call();
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
@@ -50,7 +50,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 	public void testCallonMixedString() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcDEF!@#$%^&*");
-		step.addInput(testInput);
+		step.connectInput(0, testInput);
 		List<MungeStepOutput> results = step.call();
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
@@ -61,7 +61,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
-		step.addInput(testInput);
+		step.connectInput(0, testInput);
 		List<MungeStepOutput> results = step.call();
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
@@ -72,7 +72,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<Integer>("test", Integer.class);
 		testInput.setData(new Integer(1));
 		try {
-			step.addInput(testInput);
+			step.connectInput(0, testInput);
 			fail("UnexpectedDataTypeException was not thrown as expected");
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected

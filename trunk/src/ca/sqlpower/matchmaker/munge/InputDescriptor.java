@@ -19,36 +19,27 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.List;
-
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
-import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
 /**
- * A bare bones test implementation of an AbstractMungeStep for
- * unit testing purposes only.
+ * This class contains the attributes of a particular MungeStep input. If there are
+ * additional attributes to describe MungeStep input, it should be added to this class.
+ * The attributes should all be immutable. 
  */
-public class TestingAbstractMungeStep extends AbstractMungeStep {
-
-	@Override
-	public boolean equals(Object obj) {
-		return this == obj;
+public class InputDescriptor {
+	
+	private final Class type;
+	private final String name;
+	
+	InputDescriptor(String name, Class type) {
+		this.type = type;
+		this.name = name;
 	}
-
-	@Override
-	public int hashCode() {
-		return 0;
+	
+	public Class getType() {
+		return type;
 	}
-
-	public List<MungeStepOutput> call() throws Exception {
-		return null;
+	
+	public String getName() {
+		return name;
 	}
-
-	public boolean canAddInput() {
-		return false;
-	}
-
-	public void connectInput(int index, MungeStepOutput o) {
-	}
-
 }

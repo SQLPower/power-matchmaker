@@ -42,12 +42,6 @@ import ca.sqlpower.matchmaker.MatchRuleSet;
 public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>, Callable<List<MungeStepOutput>> {
 
 	/**
-	 * A constant to return for get Number of inputs indicating that there is no limit
-	 * too the number of inputs.
-	 */
-	public static final int UNLIMITED_INPUTS = -1;
-
-	/**
 	 * Returns the parent to this step, which is a MatchRuleSet object.
 	 */
 	MatchRuleSet getParent();
@@ -72,29 +66,42 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	void setParameter(String name, String newValue);
 
 	/**
-	 * Adds the given input (which is an output from another step) to this step.
-	 * This method is normally only useful at munging algorithm design time, not
-	 * at run time when the data is being processed.
-	 * 
-	 * @param o
-	 *            The output of another step which should be the input to this
-	 *            one.
+	 * Adds a IOConnectors with the given InputDescriptor.
+	 * Any class that extends AbstractMungeStep that is expecting 
+	 * particular data types in its input will specify the expectation in their
+	 * InputDescriptor.
+	 * <p>
+	 * Additionally, this method fires a property change event using the
+	 * {@ MatchMakerEventSupport#firePropertyChange(String, Object, Object)
+	 * , with property name of "inputs" and old and new values.
+	 * <p>
+	 * Note that this method may throw {@link UnsupportedOperationException)
+	 * if the munge step does not allow adding new IOConnectors.
 	 */
-	void addInput(MungeStepOutput o);
+	int addInput(InputDescriptor desc);
 
 	/**
-	 * Removes the given input source from this step.  This method is normally
+	 * Removes the IOConnectors at given index from this step.  This method is normally
 	 * only useful at munging algorithm design time, not at run time when the
 	 * data is being processed.
 	 * 
-	 * @param o
-	 *            The input source to remove. If this object was not already an
-	 *            input to this step, the method call has no effect.
-	 * @return true if the given step was removed from the list; false if it
-	 *         wasn't (because o was not an input to this step).
+	 * @param index
+	 *            The index of the IOConnect to remove. The method call will
+	 *            throw an {@link IndexOutOfBoundsException} if the given index does
+	 *            not exist.
+	 * @return true if the given IOConnector was removed from the step; false if it
+	 *         wasn't.
 	 */
-	boolean removeInput(MungeStepOutput o);
-	
+	void removeInput(int index);
+
+	/**
+	 * Connects the input at index to the given MungeStepOutput which would be
+	 * an output of another MungeStep. This method will throw 
+	 * {@link UnexpectedDataTypeException} if the give output is not of correct
+	 * type or {@link IndexOutOfBoundsException} if given index does not exist.
+	 */
+	void connectInput(int index, MungeStepOutput o);
+
 	/**
 	 * Returns the list of input sources for this step. These items are actually
 	 * outputs that belong to other steps.
@@ -117,19 +124,17 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	List<MungeStepOutput> call() throws Exception;
 	
 	/**
-	 *  Returns what type is expected for the given input number.
+	 *  Returns an InputDescriptor containing the expected attributes for inputs
+	 *  for the given input number.
 	 *  
-	 *  @Return The expected type for the input, or NULL if the given number is out of bounds
+	 *  @Return The InputDescriptor for the input, or NULL if the given number is out of bounds
 	 */
-	Class getInputType(int inputNumber);
+	InputDescriptor getInputDescriptor(int inputNumber);
 	
 	/**
-	 * Returns the number of inputs the step is expecting.
-	 * 
-	 * @return Either the number of steps or UNLIMITED_INPUTS if there is 
-	 * 		no limit. 
-	 */
-	int getInputCount();
+	 * This returns true if this munge step allows for adding new inputs; false if otherwise.
+	 */	
+	boolean canAddInput();
     
     /**
      * Allocates any resources this step requires while processing its data.

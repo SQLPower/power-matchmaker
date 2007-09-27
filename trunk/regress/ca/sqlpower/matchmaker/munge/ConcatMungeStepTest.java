@@ -37,11 +37,11 @@ public class ConcatMungeStepTest extends TestCase {
 	public void testCallConcatTwoStrings() throws Exception {
 		testInput = new MungeStepOutput<String>("test1", String.class);
 		testInput.setData("abc");
-		step.addInput(testInput);
+		step.connectInput(0, testInput);
 		
 		testInput = new MungeStepOutput<String>("test2", String.class);
 		testInput.setData("123");
-		step.addInput(testInput);
+		step.connectInput(1, testInput);
 		
 		List<MungeStepOutput> results = step.call();
 		
@@ -54,11 +54,11 @@ public class ConcatMungeStepTest extends TestCase {
 	public void testCallOneStringAndOneNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test1", String.class);
 		testInput.setData("abc");
-		step.addInput(testInput);
+		step.connectInput(0, testInput);
 		
 		testInput = new MungeStepOutput<String>("test2", String.class);
 		testInput.setData(null);
-		step.addInput(testInput);
+		step.connectInput(1, testInput);
 		
 		List<MungeStepOutput> results = step.call();
 		
@@ -70,7 +70,7 @@ public class ConcatMungeStepTest extends TestCase {
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
-		step.addInput(testInput);
+		step.connectInput(0, testInput);
 		List<MungeStepOutput> results = step.call();
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
@@ -81,7 +81,7 @@ public class ConcatMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<Integer>("test", Integer.class);
 		testInput.setData(new Integer(1));
 		try {
-			step.addInput(testInput);
+			step.connectInput(0, testInput);
 			fail("UnexpectedDataTypeException was not thrown as expected");
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected

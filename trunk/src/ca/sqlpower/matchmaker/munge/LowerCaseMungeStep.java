@@ -33,36 +33,44 @@ public class LowerCaseMungeStep extends AbstractMungeStep {
 	public LowerCaseMungeStep() {
 		out = new MungeStepOutput<String>("lowerCaseOutput", String.class);
 		addChild(out);
+		InputDescriptor desc = new InputDescriptor("lowerCase", String.class);
+		super.addInput(desc);
 	}
 	
 	@Override
-	public void addInput(MungeStepOutput o) {
-		if (o.getType() != String.class) {
-			throw new UnexpectedDataTypeException(
-					"Lower case munge step does not accept non-String inputs");
-		}
-		super.addInput(o);
+	public int addInput(InputDescriptor desc) {
+		throw new UnsupportedOperationException(
+			"Lower case munge step does not support addInput()");
+	}
+	
+	@Override
+	public void removeInput(int index) {
+		throw new UnsupportedOperationException(
+			"Lower case munge step does not support removeInput()");
 	}
 
-	public List<MungeStepOutput> call() throws Exception {
-		for (MungeStepOutput<String> in: getInputs()) {
-			String data = in.getData();
-			if (in.getData() != null) {
-				data = data.toLowerCase();
-			}
-			out.setData(data);
+	public void connectInput(int index, MungeStepOutput o) {
+		if (index >= getInputs().size()) {
+			throw new IndexOutOfBoundsException("There is no input at the given index");
+		} else if (o.getType() != getInputDescriptor(index).getType()) {
+			throw new UnexpectedDataTypeException(
+				"Lower case munge step does not accept non-String inputs");
+		} else {
+			super.connectInput(index, o);
 		}
+	}
+	
+	public List<MungeStepOutput> call() throws Exception {
+		MungeStepOutput<String> in = getInputs().get(0);
+		String data = in.getData();
+		if (in.getData() != null) {
+			data = data.toLowerCase();
+		}
+		out.setData(data);
 		return getChildren();
 	}
 
-	public int getInputCount() {
-		return 1;
-	}
-
-	public Class getInputType(int inputNumber) {
-		if (inputNumber == 0) {
-			return String.class;
-		}
-		return null;
+	public boolean canAddInput() {
+		return false;
 	}
 }

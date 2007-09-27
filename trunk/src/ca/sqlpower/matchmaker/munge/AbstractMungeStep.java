@@ -41,7 +41,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 * A list of MungeStepOutput objects that the parent MungeStep
 	 * has output, which this MungeStep will use for its input.
 	 */
-	private List<MungeStepOutput> inputs = new ArrayList<MungeStepOutput>();
+	private List<Input> inputs = new ArrayList<Input>();
 	
 	/**
 	 * A map of configuration parameters for this MungeStep.
@@ -49,44 +49,41 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	private Map<String,String> parameters = new HashMap<String, String>();
 	
 	/**
-	 * The MatchClass that this MungeStep belongs to
+	 * The MatchClass that this MungeStep belongs to.
 	 */
 	private MatchRuleSet parent;
 	
 	public List<MungeStepOutput> getInputs() {
-		return inputs;
-	}
-
-	/**
-	 * Adds the given MungeStepOuput as in input for this MungeStep.
-	 * Any class that extends AbstractMungeStep that is expecting 
-	 * particular data types in its input should override this method,
-	 * as this implementation does not do any type checking on the input.
-	 * <p>
-	 * Additionally, this method fires a property change event using the
-	 * {@ MatchMakerEventSupport#firePropertyChange(String, Object, Object)
-	 * , with property name of "inputs" and old and new values set to null.
-	 * <p>
-	 * Note that this method may throw unchecked exceptions if the 
-	 * input's data type does not match what the munge step expects
-	 */
-	public void addInput(MungeStepOutput o) {
-		inputs.add(o);
-		getEventSupport().firePropertyChange("inputs", null, o);
-	}
-
-	public boolean removeInput(MungeStepOutput o) {
-		if (!o.equals(null)) {
-			getEventSupport().firePropertyChange("inputs", o, null);
-			return inputs.remove(o);
+		List<MungeStepOutput> values = new ArrayList<MungeStepOutput>();
+		for (Input in: inputs) {
+			values.add(in.current);
 		}
-		return false;
+		return values;
+	}
+	
+	public void connectInput(int index, MungeStepOutput o) {
+		inputs.get(index).current = o;
+	}
+
+	public int addInput(InputDescriptor desc) {
+		Input in = new Input(null, desc);
+		inputs.add(in);
+		getEventSupport().firePropertyChange("inputs", null, in);
+		return inputs.size()-1;
+	}
+
+	public void removeInput(int index) {
+		if (index >= inputs.size()) {
+			throw new IndexOutOfBoundsException(
+			"There is no IOConnector at the give index.");
+		}
+		getEventSupport().firePropertyChange("inputs", inputs.get(index), null);
+		inputs.remove(index);
 	}
 
 	public String getParameter(String name) {
 		return parameters.get(name);
 	}
-
 
 	public void setParameter(String name, String newValue) {
 		String oldValue = parameters.get(name);
@@ -115,6 +112,33 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	@Override
 	public int hashCode() {
 		return System.identityHashCode(this);
+	}
+	
+	public InputDescriptor getInputDescriptor(int inputNumber) {
+		return inputs.get(inputNumber).descriptor;
+	}
+	
+	/**
+	 * This is the pairing between a MungeStepOutput value and its InputDescriptor.
+	 * The reason for this class is to avoid maintaining two separate collections of
+	 * MungeStepOutputs and their InputDescriptors.
+	 */
+	private class Input{
+		
+		/**
+		 * The MungeStepOutput containing the value of this input.
+		 */
+		MungeStepOutput current;
+		
+		/**
+		 * The attributes of this input.
+		 */
+		InputDescriptor descriptor;
+		
+		Input(MungeStepOutput current, InputDescriptor descriptor) {
+			this.current = current;
+			this.descriptor = descriptor;
+		}
 	}
 
     /**
