@@ -19,10 +19,9 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.List;
-
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.TestingAbstractMungeStep;
+import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
 public class AbstractMungeStepTest extends TestCase {
 
@@ -33,41 +32,48 @@ public class AbstractMungeStepTest extends TestCase {
 		mungeStep = new TestingAbstractMungeStep();
 	}
 
+	/**
+	 * Test to ensure that add input adds the MungeStepOuput, and 
+	 * that it fires a property changed event
+	 */
 	public void testAddInput() {
 		MungeStepOutput out = new MungeStepOutput<Object>("test", Object.class);
+		MatchMakerEventCounter<MungeStep, MungeStepOutput> mml =
+			new MatchMakerEventCounter<MungeStep, MungeStepOutput>();
+		mungeStep.addMatchMakerListener(mml);
 		mungeStep.addInput(out);
 		assertTrue(mungeStep.getInputs().contains(out));
+		assertEquals("Did not get any events",1,mml.getPropertyChangedCount());
+		mungeStep.removeMatchMakerListener(mml);
+		mungeStep.addInput(out);
+		assertEquals("Got extra events",1,mml.getAllEventCounts());
 	}
 
-	public void testGetInputs() {
-		fail("Not yet implemented");
-	}
-
-	public void testGetOutputs() {
-		List<MungeStepOutput> list = mungeStep.getChildren();
-		try {
-			list.add(new MungeStepOutput<Object>("test", Object.class));
-			fail("Trying to modify output list should have thrown an exception");
-		} catch (UnsupportedOperationException ex) {
-			// UnsupportedOperationException thrown as expected
-		}
-		
-	}
-
-	public void testGetParameter() {
-		fail("Not yet implemented");
-	}
-
+	/**
+	 * Test to ensure that remove input removes the MungeStepOutput, and 
+	 * that it fires a property changed event
+	 */
 	public void testRemoveInput() {
-		fail("Not yet implemented");
+		MungeStepOutput out = new MungeStepOutput<Object>("test", Object.class);
+		mungeStep.addInput(out);
+		MatchMakerEventCounter<MungeStep, MungeStepOutput> mml =
+			new MatchMakerEventCounter<MungeStep, MungeStepOutput>();
+		mungeStep.addMatchMakerListener(mml);
+		mungeStep.removeInput(out);
+		assertFalse(mungeStep.getInputs().contains(out));
+		assertEquals("Did not get any events",1,mml.getPropertyChangedCount());
 	}
 
+	/**
+	 * Test to ensure setParameter properly sets a munge step parameter, and 
+	 * that it fires a property changed event
+	 */
 	public void testSetParameter() {
-		fail("Not yet implemented");
+		MatchMakerEventCounter<MungeStep, MungeStepOutput> mml =
+			new MatchMakerEventCounter<MungeStep, MungeStepOutput>();
+		mungeStep.addMatchMakerListener(mml);
+		mungeStep.setParameter("test", "test");
+		assertEquals("Did not get any events",1,mml.getPropertyChangedCount());
+		assertEquals("Parameter cannot be found", "test", mungeStep.getParameter("test"));
 	}
-
-	public void testGetParent() {
-		fail("Not yet implemented");
-	}
-
 }
