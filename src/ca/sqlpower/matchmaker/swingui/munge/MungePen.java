@@ -176,7 +176,6 @@ public class MungePen extends JLayeredPane {
 		public void mouseReleased(MouseEvent e) {
 			findSelected(e);
 			checkForIOConnectors(e);
-			selectedMove = null;
 			diff = null;
 			start = null;
 			finish = null;
@@ -184,11 +183,13 @@ public class MungePen extends JLayeredPane {
 			mouseX = e.getX();
 			mouseY = e.getY();
 			
+			findSelected(e);
 			maybeShowPopup(e);
 			getParent().repaint();
 		}
 		
 		public void mouseClicked(MouseEvent e) {
+			findSelected(e);
 			maybeShowPopup(e);
 		}
 
