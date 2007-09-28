@@ -23,7 +23,6 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -38,14 +37,10 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
@@ -81,6 +76,9 @@ public class MergeTableRuleEditor implements EditorPane {
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
 	
+	//keeps track of whether the editor pane has unsaved changes
+	private CustomTableModelListener tableListener;
+	
 	public MergeTableRuleEditor(MatchMakerSwingSession swingSession,Match match) {
 		this.swingSession = swingSession;
 		this.match = match;
@@ -101,9 +99,11 @@ public class MergeTableRuleEditor implements EditorPane {
 	
 	private void setupRulesTable(MatchMakerSwingSession swingSession, Match match) {
 		mergeTableRuleTableModel = new MergeTableRuleTableModel(match,swingSession);
+		tableListener = new CustomTableModelListener();
+		mergeTableRuleTableModel.addTableModelListener(tableListener);
+		
 		mergeRulesTable = new EditableJTable(mergeTableRuleTableModel);
         mergeRulesTable.setName("Merge Tables");
-        
         
         //adds an action listener that looks for a double click, that opens the selected 
         //merge rule editor pane  
@@ -181,7 +181,7 @@ public class MergeTableRuleEditor implements EditorPane {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" up");
 			if ( selectedRow > 0 &&	selectedRow < mergeRulesTable.getRowCount()) {
-				mergeTableRuleTableModel.moveRuleUp(selectedRow);
+				match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow-1);
 				mergeRulesTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
 			}
 		}
@@ -192,7 +192,7 @@ public class MergeTableRuleEditor implements EditorPane {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" down");
 			if ( selectedRow >= 0 && selectedRow < mergeRulesTable.getRowCount()-1) {
-				mergeTableRuleTableModel.moveRuleDown(selectedRow);
+				match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow+1);
 				mergeRulesTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
 			}
 		}
@@ -207,7 +207,8 @@ public class MergeTableRuleEditor implements EditorPane {
 				return;
 			logger.debug("deleting merge rule:"+selectedRow);
 			if ( selectedRow >= 0 && selectedRow < mergeRulesTable.getRowCount()) {
-				mergeTableRuleTableModel.removeRules(selectedRow);
+				TableMergeRules rule = match.getTableMergeRules().get(selectedRow);
+				match.removeTableMergeRule(rule);
 				if (selectedRow >= mergeRulesTable.getRowCount()) {
 					selectedRow = mergeRulesTable.getRowCount() - 1;
 				}
@@ -241,12 +242,8 @@ public class MergeTableRuleEditor implements EditorPane {
 	 */
 	public boolean doSave() {
 		logger.debug("#1 children size="+match.getTableMergeRules().size());
-		boolean orderChanged = false;
 		swingSession.save(match);
-		if (orderChanged){
-            // XXX this should be handled by remove and add events in the table model and/or mmo events
-			match.getTableMergeRulesFolder().childrenOrderChanged();
-		}
+		this.tableListener.setModified(false);
 		return true;
 	}
 
@@ -258,117 +255,8 @@ public class MergeTableRuleEditor implements EditorPane {
 	 * Returns true if there are changes that have not been saved.
 	 */
 	public boolean hasUnsavedChanges() {
-        // FIXME need a mmo listener that notices when the children have been modified or shuffled
-		return true;
+        return this.tableListener.isModified();
 	}
 
-	/**
-	 * A Table model for the merge table rules. Shows the merge tables
-	 * in a JTable and allows user add/delete/reorder merge tables.
-     * <p>
-	 * It has 4 columns:
-     * <dl>
-	 * 		<dt>table catalog   <dd> merge table catalog in a combo box
-	 * 		<dt>table schema    <dd> merge table schema in a combo box
-	 * 		<dt>table name      <dd> merge table name in a combo box
-	 * 		<dt>delete dup ind  <dd> merge table delete dup ind in a check box
-	 * </dl>
-	 */
-	private class MergeTableRuleTableModel extends AbstractTableModel {
-
-		private List<TableMergeRules> rows;
-		private SQLObjectChooser chooser;
-		private MatchMakerSwingSession swingSession;
-		
-		public MergeTableRuleTableModel(Match match, 
-				MatchMakerSwingSession swingSession) {
-			this.swingSession = swingSession;
-			this.chooser = new SQLObjectChooser(swingSession);
-			rows = match.getTableMergeRules();
-		}
-		
-		public int getColumnCount() {
-			return 4;
-		}
-
-		public int getRowCount() {
-			return rows.size();
-		}
-
-		public Object getValueAt(int rowIndex, int columnIndex) {
-			if (columnIndex == 0) {
-				return rows.get(rowIndex).getCatalogName();
-			} else if (columnIndex == 1) {
-				return rows.get(rowIndex).getSchemaName();
-			} else if (columnIndex == 2) {
-				return rows.get(rowIndex).getTableName();
-			} else if ( columnIndex == 3) {
-				return rows.get(rowIndex).isDeleteDup() ? "Yes" : "No";
-			} else {
-				return null;
-			}
-		}
-
-		@Override
-		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			return false;
-		}
-		
-		@Override
-		public Class<?> getColumnClass(int columnIndex) {
-			if (columnIndex == 0) {
-				return SQLCatalog.class;
-			} else if (columnIndex == 1) {
-				return SQLSchema.class;
-			} else if (columnIndex == 2) {
-				return SQLTable.class;
-			} else if ( columnIndex == 3) {
-				return String.class;
-			}
-			return super.getColumnClass(columnIndex);
-		}
-		
-		@Override
-		public String getColumnName(int columnIndex) {
-			if (columnIndex == 0) {
-				return chooser.getCatalogTerm().getText();
-			} else if (columnIndex == 1) {
-				return chooser.getSchemaTerm().getText();
-			} else if (columnIndex == 2) {
-				return "Name";
-			} else if ( columnIndex == 3) {
-				return "Delete Duplicates?";
-			}
-			return null;
-		}
-
-		public List<TableMergeRules> getMergeRules() {
-			return rows;
-		}
-		
-		public void newRules() {
-			rows.add(new TableMergeRules());
-			fireTableDataChanged();
-		}
-		
-		public void removeRules(int index) {
-			swingSession.delete(rows.get(index));
-			fireTableDataChanged();
-		}
-		
-		public void moveRuleUp(int index) {
-			TableMergeRules selectedRow = rows.get(index);
-			TableMergeRules targetRow = rows.get(index-1);
-			rows.remove(targetRow);
-			rows.add(rows.indexOf(selectedRow)+1, targetRow);
-			fireTableDataChanged();
-		}
-		public void moveRuleDown(int index) {
-			TableMergeRules selectedRow = rows.get(index);
-			TableMergeRules targetRow = rows.get(index+1);
-			rows.remove(targetRow);
-			rows.add(rows.indexOf(selectedRow), targetRow);
-			fireTableDataChanged();
-		}
-	}
+	
 }
