@@ -43,6 +43,7 @@ public class ConcatMungeStepTest extends TestCase {
 		testInput.setData("123");
 		step.connectInput(1, testInput);
 		
+		step.open();
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		
@@ -61,6 +62,7 @@ public class ConcatMungeStepTest extends TestCase {
 		testInput.setData(null);
 		step.connectInput(1, testInput);
 		
+		step.open();
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		
@@ -73,6 +75,7 @@ public class ConcatMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
+		step.open();
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);

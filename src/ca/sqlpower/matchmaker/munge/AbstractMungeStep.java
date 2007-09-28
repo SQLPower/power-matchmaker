@@ -54,6 +54,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 */
 	private MatchRuleSet parent;
 	
+	/**
+	 * This refers to whether a open() call has been made on this munge step.
+	 */
+	private boolean opened;
+	
 	public List<MungeStepOutput> getInputs() {
 		List<MungeStepOutput> values = new ArrayList<MungeStepOutput>();
 		for (Input in: inputs) {
@@ -66,17 +71,17 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		if (index >= getInputs().size()) {
 			throw new IndexOutOfBoundsException("There is no input at the given index");
 		}
-		if (o != null) {
-			getEventSupport().firePropertyChange("inputs", null, o);
-		} else {
-			getEventSupport().firePropertyChange("inputs",
-				inputs.get(index).current, null);
-		}
+		getEventSupport().firePropertyChange("inputs", null, o);
 		inputs.get(index).current = o;
 	}
 
 	public void disconnectInput(int index) {
-		connectInput(index, null);
+		if (index >= getInputs().size()) {
+			throw new IndexOutOfBoundsException("There is no input at the given index");
+		}
+		getEventSupport().firePropertyChange("inputs",
+				inputs.get(index).current, null);
+		inputs.get(index).current = null;
 	}
 	
 	public int addInput(InputDescriptor desc) {
@@ -161,7 +166,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
      * a file, connect to a server, and so on), you should override this method.
      */
     public void open() throws Exception {
-        // no op
+        opened = true;
     }
 
     /**
@@ -170,6 +175,18 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
      * too and clean up the resources.
      */
     public void close() throws Exception {
-        // no op
+        opened = false;
+    }
+    
+    /** 
+     * Any implementation of this class that implements call() must call super.call()
+     * as this validates that the step has been opened before the call. This will throw
+     * an {@link IllegalStateException} if the munge step has not be opened.
+     */
+    public Boolean call() throws Exception {
+    	if (!opened) {
+    		throw new IllegalStateException("A munge step must be opened before called.");
+    	}
+    	return true;
     }
 }

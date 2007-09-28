@@ -76,6 +76,8 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	}
 	
 	public Boolean call() throws Exception {
+		super.call();
+
 		String from = getParameter(FROM_PARAMETER_NAME);
 		String to = getParameter(TO_PARAMETER_NAME);
 		String useRegex = getParameter(USE_REGEX_PARAMETER_NAME);

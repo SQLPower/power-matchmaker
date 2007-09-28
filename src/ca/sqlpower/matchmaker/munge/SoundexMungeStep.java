@@ -55,6 +55,8 @@ public class SoundexMungeStep extends AbstractMungeStep {
 	}
 	
 	public Boolean call() throws Exception {
+		super.call();
+
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
 		out.setData(new Soundex().soundex(data));
