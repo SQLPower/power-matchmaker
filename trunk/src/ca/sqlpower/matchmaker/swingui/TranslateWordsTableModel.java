@@ -31,12 +31,12 @@ import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
-public class MatchTranslateTableModel extends AbstractTableModel implements MatchMakerListener {
+public class TranslateWordsTableModel extends AbstractTableModel implements MatchMakerListener {
     
     
 	MatchMakerTranslateGroup translate;
 	
-	public  MatchTranslateTableModel(MatchMakerTranslateGroup translate){ 
+	public  TranslateWordsTableModel(MatchMakerTranslateGroup translate){ 
 		super();
 		this.translate = translate; 
         translate.addMatchMakerListener(this);
@@ -114,7 +114,7 @@ public class MatchTranslateTableModel extends AbstractTableModel implements Matc
 			break;
 		default:
 			throw new IndexOutOfBoundsException("Invalid column index");
-		}
+		}	
 	}
 	
 	public MatchMakerTranslateWord getRow(int rowIndex) {

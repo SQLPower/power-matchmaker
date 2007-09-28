@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -161,6 +162,19 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		eventSupport.fireChildrenRemoved("children",removedIndices,removedChildren);
 	}
 
+	/**
+     * Swaps the elements at the specified positions.
+     * (If the specified positions are equal, invoking this method leaves
+     * the list unchanged.)
+     *
+     * @param i the index of one element to be swapped.
+     * @param j the index of the other element to be swapped.
+     */
+	public void swapChildren(int i, int j) {
+		Collections.swap(getChildren(), i, j);
+		eventSupport.fireStructureChanged();
+	}
+	
 	public String getLastUpdateAppUser() {
 		return lastUpdateAppUser;
 	}
@@ -271,5 +285,4 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	protected MatchMakerEventSupport<T, C> getEventSupport() {
 		return eventSupport;
 	}
-
 }
