@@ -44,7 +44,7 @@ public class DeleteTranslateGroupAction extends AbstractAction {
 
 	public void actionPerformed(ActionEvent e) {
 		int response = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-		"Are you sure you want to delete the translate group?");
+		"Are you sure you want to delete the translate group \"" + group.getName() + "\"?");
 		if (response != JOptionPane.YES_OPTION)
 			return;
 		
@@ -52,10 +52,10 @@ public class DeleteTranslateGroupAction extends AbstractAction {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
 				"This translation group is in use, and cannot be deleted.");
 		} else {
+			swingSession.delete(group);
 			MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();
 			TreePath treePath = treeModel.getPathForNode(swingSession.getTranslations());
 			swingSession.getTree().setSelectionPath(treePath);
-			swingSession.delete(group);
 		}
 	}
 }

@@ -159,6 +159,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		List<C> removedChildren = new ArrayList<C>();
 		removedChildren.add(child);
 		children.remove(child);
+		child.setParent(null);
 		eventSupport.fireChildrenRemoved("children",removedIndices,removedChildren);
 	}
 
