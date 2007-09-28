@@ -87,6 +87,26 @@ public class SQLInputStepTest extends TestCase {
         step.close();
     }
     
+    public void testNoCallWhenNotYetOpen() throws Exception {
+        try {
+            step.call();
+            fail("call() succeeded when the step was not yet open");
+        } catch (IllegalStateException ex) {
+            // good
+        }
+    }
+
+    public void testNoCallAfterClose() throws Exception {
+        try {
+            step.open();
+            step.close();
+            step.call();
+            fail("call() succeeded after the step was closed");
+        } catch (IllegalStateException ex) {
+            // good
+        }
+    }
+
     public void testCallReturnsCorrectValues() throws Exception {
         step.open();
         assertTrue(step.call());
