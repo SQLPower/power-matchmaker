@@ -30,7 +30,7 @@ public class InputDescriptor {
 	private final Class type;
 	private final String name;
 	
-	InputDescriptor(String name, Class type) {
+	public InputDescriptor(String name, Class type) {
 		this.type = type;
 		this.name = name;
 	}
