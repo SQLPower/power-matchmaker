@@ -103,6 +103,12 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	void connectInput(int index, MungeStepOutput o);
 
 	/**
+	 * Disconnects the input at the given index by removing the 
+	 * MungeStepOutput at that index
+	 */
+	void disconnectInput(int index);
+	
+	/**
 	 * Returns the list of input sources for this step. These items are actually
 	 * outputs that belong to other steps.
 	 * 
