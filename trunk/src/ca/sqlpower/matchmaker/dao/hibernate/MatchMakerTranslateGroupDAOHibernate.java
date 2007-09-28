@@ -70,6 +70,28 @@ public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOH
 		}
 	}
 	
+	public MatchMakerTranslateGroup findByOID(long oid) {
+		Session session = getHibernateSession();
+		Query query = session.createQuery("from MatchMakerTranslateGroup translateGroup where translateGroup.oid = :oid");
+		query.setParameter("oid", oid);
+		List matches = query.list();
+		if (matches.size() == 0) {
+			return null;
+		} else {
+			MatchMakerTranslateGroup translateGroup = (MatchMakerTranslateGroup) matches.get(0);
+			translateGroup.setSession(getMatchMakerSession());
+			boolean tgChanged = false;
+			for (MatchMakerTranslateWord tw : translateGroup.getChildren()) {
+				if (tw == null) {
+					translateGroup.removeChild(tw);
+					tgChanged = true;
+				}
+			}
+			if (tgChanged) save(translateGroup);
+			return translateGroup;
+		}
+	}
+	
 	@Override
 	public List<MatchMakerTranslateGroup> findAll() {
 		List<MatchMakerTranslateGroup> results = super.findAll();
@@ -86,5 +108,4 @@ public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOH
 		}
 		return results;
 	}
-
 }
