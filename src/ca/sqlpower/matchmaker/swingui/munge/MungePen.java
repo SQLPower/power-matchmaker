@@ -22,9 +22,12 @@ package ca.sqlpower.matchmaker.swingui.munge;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
@@ -39,11 +42,15 @@ import java.util.Map;
 
 import javax.swing.JLayeredPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JViewport;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
-public class MungePen extends JLayeredPane {
+public class MungePen extends JLayeredPane implements Scrollable {
 	
 	//The selected component for moving
 	Component selectedMove;
@@ -81,8 +88,8 @@ public class MungePen extends JLayeredPane {
 		addFocusListener(new FocusAdapter(){
 			@Override
 			public void focusLost(FocusEvent e) {
-				selectedLine = null;
-				selectedMove = null;
+				unselectLine();
+				unselectCom();
 			}
 		});
 	}
@@ -105,6 +112,61 @@ public class MungePen extends JLayeredPane {
 		remove(com);
 		add(com,0);
 	}
+	
+	/**
+	 * Selects the given line
+	 * 
+	 * @param line The line to select
+	 */
+	private void selectLine(IOConnector line) {
+		selectedLine = line;
+	}
+	
+	/**
+	 * Unselects a line if there is one selected, else does nothing 
+	 */
+	private void unselectLine() {
+		selectedLine = null;
+	}
+	
+	/**
+	 * Selects the given MungeComponent
+	 * 
+	 * @param mcom The MingeComponent to select
+	 */
+	private void selectCom(Component com) {
+		boolean redraw = selectedMove != com;
+		selectedMove = com;
+		if (com instanceof MungeComponent) {
+			((MungeComponent)com).setSelect(true);
+		}
+		if (redraw) {
+			repaint();
+		}
+	}
+	
+	/**
+	 * Unselects a MungeComponent if there is one selected, else does nothing 
+	 */
+	private void unselectCom() {
+		if (selectedMove instanceof MungeComponent) {
+			((MungeComponent)selectedMove).setSelect(false);
+		}
+		selectedMove = null;
+		diff = null;
+		repaint();
+	}
+	
+	
+	private IOConnector getSelectedLine() {
+		return selectedLine;
+	}
+	
+	private Component getSelectedComponent() {
+		return selectedMove;
+	}
+	
+
 	
 	//over ridden to add any Component 
 	@Override
@@ -143,7 +205,7 @@ public class MungePen extends JLayeredPane {
 						g.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
 						
 						IOConnector curr = new IOConnector(parent,parentNum,child,x);
-						if (curr.equals(selectedLine)) {
+						if (curr.equals(getSelectedLine())) {
 							Graphics2D g2d = (Graphics2D)g;
 							
 							int width = 2;
@@ -151,7 +213,7 @@ public class MungePen extends JLayeredPane {
 							g2d.setStroke(new BasicStroke(width));
 							g2d.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
 							g2d.setStroke(new BasicStroke(1));
-							selectedLine = curr;
+							selectLine(curr);
 						}
 						lines.add(curr);
 					}
@@ -176,13 +238,13 @@ public class MungePen extends JLayeredPane {
 	
 	class MungePenMouseListener extends MouseAdapter {
 		public void mousePressed(MouseEvent e) {
-			requestFocusInWindow();
-			
+	
+			requestFocusInWindow();			
 			//finds if the user has selected a line
-			selectedLine = null;
+			unselectLine();
 			for (IOConnector line : lines) {
 				if (line.clicked(e.getPoint())) {
-					selectedLine = line;
+					selectLine(line);
 					break;
 				}
 			}
@@ -195,7 +257,9 @@ public class MungePen extends JLayeredPane {
 		
 		public void mouseReleased(MouseEvent e) {
 			findSelected(e);
+
 			checkForIOConnectors(e);
+			
 			diff = null;
 			start = null;
 			finish = null;
@@ -203,27 +267,26 @@ public class MungePen extends JLayeredPane {
 			mouseX = e.getX();
 			mouseY = e.getY();
 			
-			findSelected(e);
 			maybeShowPopup(e);
-			getParent().repaint();
+			revalidate();
 		}
 		
 		public void mouseClicked(MouseEvent e) {
-			findSelected(e);
 			maybeShowPopup(e);
 		}
 		
 		public boolean maybeShowPopup(MouseEvent e) {
 			if (e.isPopupTrigger()) {
-				if (selectedMove != null && selectedMove instanceof MungeComponent) {
-					JPopupMenu popup = ((MungeComponent) selectedMove).getPopupMenu();
+				findSelected(e);
+				if (getSelectedComponent() != null && getSelectedComponent() instanceof MungeComponent) {
+					JPopupMenu popup = ((MungeComponent) getSelectedComponent()).getPopupMenu();
 					if (popup != null) {
 						popup.show(MungePen.this, e.getX(), e.getY());
-						selectedMove = null;
+						unselectCom();
 						return true;
 					}
-				} else if (selectedLine != null && e.isPopupTrigger()) {
-					JPopupMenu popup = selectedLine.getPopup();
+				} else if (getSelectedLine() != null && e.isPopupTrigger()) {
+					JPopupMenu popup = getSelectedLine().getPopup();
 					getParent().repaint();
 					popup.show(MungePen.this,e.getX(),e.getY());
 					return true;
@@ -233,15 +296,15 @@ public class MungePen extends JLayeredPane {
 		}
 
 		public void findSelected(MouseEvent e) {
-			selectedMove = null;
+			unselectCom();
 			for (Component com : MungePen.this.getComponents()) {
 				if (com.getBounds().contains(e.getPoint())) {
 					
-					if (selectedMove == null || getLayer(com) < getLayer(selectedMove))
+					if (getSelectedComponent() == null || getLayer(com) < getLayer(getSelectedComponent()))
 					{
 						bringToFront(com);
-						selectedMove = com;
-						selectedLine = null;
+						selectCom(com);
+						unselectLine();
 						diff = new Point(e.getX() - com.getX(), e.getY()-com.getY());
 					}
 				}
@@ -252,8 +315,8 @@ public class MungePen extends JLayeredPane {
 			//used to define the range of which a hit is counted as
 			int tolerance = 15;
 
-			if (selectedMove instanceof MungeComponent) {
-				MungeComponent mcom = (MungeComponent) selectedMove;
+			if (getSelectedComponent() instanceof MungeComponent) {
+				MungeComponent mcom = (MungeComponent) getSelectedComponent();
 				int inputs = mcom.getStep().getInputs().size();
 
 				for (int x = 0;x<inputs;x++) {
@@ -275,9 +338,8 @@ public class MungePen extends JLayeredPane {
 		}
 		
 		public void connectionHit(MungeComponent mcom, int connectionNum, boolean inputHit) {
-			selectedMove = null;
-			diff = null;
-			selectedLine = null;
+			unselectLine();
+			unselectCom();
 			
 			getParent().repaint();
 
@@ -318,8 +380,8 @@ public class MungePen extends JLayeredPane {
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			if (getBounds().contains(e.getPoint())) {
-				if (selectedMove != null) {
-					selectedMove.setLocation(new Point((int)(e.getX() - diff.getX()),(int)(e.getY() - diff.getY())));
+				if (getSelectedComponent() != null) {
+					getSelectedComponent().setLocation(new Point((int)(e.getX() - diff.getX()),(int)(e.getY() - diff.getY())));
 					getParent().repaint();
 				} else if (start != null || finish != null) {
 					getParent().repaint();
@@ -340,11 +402,98 @@ public class MungePen extends JLayeredPane {
 	class MungePenKeyListener extends KeyAdapter {
 		//passes key press to selected components
 		public void keyPressed(KeyEvent e) {
-			if (selectedLine != null) {
-				selectedLine.keyPressed(e);
-			} else if (selectedMove != null && selectedMove instanceof MungeComponent) {
-				((MungeComponent)selectedMove).keyPressed(e);
+			if (getSelectedLine() != null) {
+				getSelectedLine().keyPressed(e);
+			} else if (getSelectedComponent() != null && getSelectedComponent() instanceof MungeComponent) {
+				((MungeComponent)getSelectedComponent()).keyPressed(e);
 			}
+		}
+	}
+	
+	
+	
+	/////////////////////////////////////////////////////////////////
+	//        Code to handle the scrollPane                       //
+	//         Most of it was taken from the playpen             //
+	//////////////////////////////////////////////////////////////
+	/**
+	 * Calculates the smallest rectangle that will completely
+	 * enclose the visible components.
+	 *
+	 * This is then compared to the viewport size, one dimension
+	 * at a time.  To ensure the whole playpen is "live", always
+	 * choose the larger number in each Dimension.
+	 */
+	public Dimension getPreferredSize() {
+
+		Dimension usedSpace = getUsedArea();
+		Dimension vpSize = getViewportSize();
+		Dimension ppSize = null;
+
+		// viewport seems to never come back as null, but protect anyways...
+		if (vpSize != null) {
+			ppSize = new Dimension(Math.max(usedSpace.width, vpSize.width),
+					Math.max(usedSpace.height, vpSize.height));
+		}
+
+		if (ppSize != null) {
+			return ppSize;
+		} else {
+			return usedSpace;
+		}
+	}
+	
+	// get the size of the viewport that we are sitting in (return null if there isn't one);
+	public Dimension getViewportSize() {
+		Container c = SwingUtilities.getAncestorOfClass(JViewport.class, this);
+		if (c != null) {
+			JViewport jvp = (JViewport) c;
+			return jvp.getSize();
+		} else {
+			return null;
+		}
+	}
+	
+	public Dimension getUsedArea() {
+		Rectangle cbounds = null;
+		int minx = 0, miny = 0, maxx = 0, maxy = 0;
+		for (int i = 0; i < getComponentCount(); i++) {
+			Component c = getComponent(i);
+			cbounds = c.getBounds(cbounds);
+			minx = Math.min(cbounds.x, minx);
+			miny = Math.min(cbounds.y, miny);
+			maxx = Math.max(cbounds.x + cbounds.width , maxx);
+			maxy = Math.max(cbounds.y + cbounds.height, maxy);
+		}
+		return new Dimension(Math.max(maxx - minx, getMinimumSize().width), Math.max(maxy - miny, getMinimumSize().height));
+	}
+
+ 	public Dimension getPreferredScrollableViewportSize() {
+		// return getPreferredSize();
+		return new Dimension(800,600);
+	}
+
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+		if (orientation == SwingConstants.HORIZONTAL) {
+			return visibleRect.width;
+		} else { // SwingConstants.VERTICAL
+			return visibleRect.height;
+		}
+	}
+
+	public boolean getScrollableTracksViewportHeight() {
+		return false;
+	}
+
+    public boolean getScrollableTracksViewportWidth() {
+		return false;
+	}
+
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+		if (orientation == SwingConstants.HORIZONTAL) {
+			return visibleRect.width/5;
+		} else { // SwingConstants.VERTICAL
+			return visibleRect.height/5;
 		}
 	}
 }

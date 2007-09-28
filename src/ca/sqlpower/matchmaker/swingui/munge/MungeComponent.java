@@ -19,9 +19,11 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -37,6 +39,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -78,6 +81,7 @@ public class MungeComponent extends JPanel {
 	
 	private final Color bg;
 	private final Color borderColour;
+	boolean selected;
 	
 	/**
 	 * Creates a MungeComponent for the given step that will be in the munge pen.
@@ -101,6 +105,7 @@ public class MungeComponent extends JPanel {
 		setBounds(0, 0, ps.width, ps.height);
 		
 		add(new JLabel(step.getName()));
+		selected = false;
 	}
 	
 	/**
@@ -113,6 +118,12 @@ public class MungeComponent extends JPanel {
 		this(step, Color.BLACK,Color.WHITE);
 	}
 	
+	/**
+	 * Sets if the component is selected in the munge pen
+	 */
+	public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
 	
 	/**
 	 * Returns the point where the IOConnector's top part is, for the specified input number.
@@ -194,7 +205,14 @@ public class MungeComponent extends JPanel {
 		g.setColor(bg);
 		g.fillRect(0, 0, (int)dim.getWidth()-1, (int)dim.getHeight()-1);
 		g.setColor(borderColour);
+		if (selected) {
+			((Graphics2D)g).setStroke(new BasicStroke(3));
+		}
 		g.drawRect(0, 0, (int)dim.getWidth()-1, (int)dim.getHeight()-1);
+		if (selected) {
+			((Graphics2D)g).setStroke(new BasicStroke(1));
+		}
+		
 	}
 	
 	/**
@@ -280,6 +298,10 @@ public class MungeComponent extends JPanel {
 		getParent().remove(this);
 	}
 	
+	public void setSelect(boolean sel) {
+		selected = sel;
+	}
+
 	
 	static class AddInputAction extends AbstractAction {
 		private final MungeComponent com;
@@ -334,6 +356,7 @@ public class MungeComponent extends JPanel {
 	
 	public static void createAndShowGUI() {
 		MungePen p = new MungePen();
+	//	p.setLayout(new FlowLayout());
 		
 		MungeStep ms1 = new ConcatMungeStep();
 		ms1.setName("CAT");
@@ -354,15 +377,19 @@ public class MungeComponent extends JPanel {
 		
 		p.add(com1);
 		p.add(com2);
-		
-		p.setPreferredSize(new Dimension(500, 500));
+				
 		p.setBackground(Color.WHITE);
 		p.setOpaque(true);
+		
 		JFrame f = new JFrame("Frame");
 		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		f.setContentPane(p);
+		
+		
+		JScrollPane sp = new JScrollPane(p);
+		f.setContentPane(sp);
 		f.pack();
 		f.setVisible(true);
+		Insets bord = sp.getBorder().getBorderInsets(sp);
 	}	
 }
 
