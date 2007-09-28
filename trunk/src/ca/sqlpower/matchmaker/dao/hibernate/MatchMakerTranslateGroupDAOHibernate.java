@@ -27,6 +27,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 
 public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOHibernate<MatchMakerTranslateGroup> implements MatchMakerTranslateGroupDAO {
@@ -55,10 +56,35 @@ public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOH
 		} else if (matches.size() == 1) {
             MatchMakerTranslateGroup translateGroup = (MatchMakerTranslateGroup) matches.get(0);
 			translateGroup.setSession(getMatchMakerSession());
+			boolean tgChanged = false;
+			for (MatchMakerTranslateWord tw : translateGroup.getChildren()) {
+				if (tw == null) {
+					translateGroup.removeChild(tw);
+					tgChanged = true;
+				}
+			}
+			if (tgChanged) save(translateGroup);
 			return translateGroup;
 		} else {
 			throw new IllegalStateException("More than one Translate Group with name \""+name+"\"");
 		}
+	}
+	
+	@Override
+	public List<MatchMakerTranslateGroup> findAll() {
+		List<MatchMakerTranslateGroup> results = super.findAll();
+		boolean tgChanged;
+		for (MatchMakerTranslateGroup tg : results) {
+			tgChanged = false;
+			for (MatchMakerTranslateWord tw : tg.getChildren()) {
+				if (tw == null) {
+					tg.removeChild(tw);
+					tgChanged = true;
+				}
+			}
+			if (tgChanged) save(tg);
+		}
+		return results;
 	}
 
 }
