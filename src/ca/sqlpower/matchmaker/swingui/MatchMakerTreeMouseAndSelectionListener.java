@@ -34,7 +34,6 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
@@ -65,7 +64,6 @@ import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
 import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
-import ca.sqlpower.swingui.SPSUtils;
 
 /**
  * This appears to be a mouse event listener for the MatchMaker tree component of the GUI.
@@ -331,30 +329,20 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 					TableMergeRules f = (TableMergeRules)o;
 					Match m = (Match) f.getParentMatch();
 					
-					try {
-						MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession,m,f,null);
-						logger.debug("Created new merge column rules editor "
-								+ System.identityHashCode(editor));
-						swingSession.setCurrentEditorComponent(editor);
-					} catch (ArchitectException e1) {
-						SPSUtils.showExceptionDialogNoReport(owningFrame, 
-								"An exception occured while creating the merge column rules editor", e1);
-					}
+					MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession,m,f,null);
+					logger.debug("Created new merge column rules editor "
+							+ System.identityHashCode(editor));
+					swingSession.setCurrentEditorComponent(editor);
 				} else if ( o instanceof ColumnMergeRules ) {
 					TableMergeRules f = (TableMergeRules) ((ColumnMergeRules)o).getParent();
 					Match m = (Match) f.getParentMatch();
 					
-					try {
-						MergeColumnRuleEditor editor =
-							new MergeColumnRuleEditor(swingSession,m,f,
-									(ColumnMergeRules)o);
-						logger.debug("Created new merge column rules editor "
-								+ System.identityHashCode(editor));
-						swingSession.setCurrentEditorComponent(editor);
-					} catch (ArchitectException e1) {
-						SPSUtils.showExceptionDialogNoReport(owningFrame, 
-								"An exception occured while creating the merge column rules editor", e1);
-					}
+					MergeColumnRuleEditor editor =
+						new MergeColumnRuleEditor(swingSession,m,f,
+								(ColumnMergeRules)o);
+					logger.debug("Created new merge column rules editor "
+							+ System.identityHashCode(editor));
+					swingSession.setCurrentEditorComponent(editor);
 				} else if (o instanceof MatchActionNode) {
 					MatchActionNode node = (MatchActionNode) o;
 					if (node.getActionType() == MatchActionType.RUN_MATCH) {
