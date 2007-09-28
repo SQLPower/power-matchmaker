@@ -27,7 +27,8 @@ import java.util.regex.Pattern;
  * on a given delimiter string. By default, the delimiter is interpreted as a list
  * of delimiter characters. Optionally, the step can also interpret the delimiter
  * input as a regular expression, as long as the {@link #USE_REGEX_PARAMETER_NAME}
- * parameter is set to "true".
+ * parameter is set to "true". The output data in the MungeStepOutput will be of type 
+ * {@link BigDecimal}.
  * <p>
  * Using the regular expression option will behave similarly to getting the array
  * size of the String[] result from calling {@link String#split} with the 
