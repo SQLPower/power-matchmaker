@@ -19,7 +19,6 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.util.List;
 
 
 
@@ -79,15 +78,5 @@ public class MatchMakerTranslateGroup
 	public int compareTo(MatchMakerTranslateGroup o) {
 		return getName().compareTo(((MatchMakerTranslateGroup) o).getName());
 	}
-	
-	@Override
-	public List<MatchMakerTranslateWord> getChildren() {
-		List<MatchMakerTranslateWord> children = super.getChildren();
-		for (MatchMakerTranslateWord tw : children) {
-			if (tw == null){
-				throw new NullPointerException("Translate word has not been populated correctly.");
-			}
-		}
-		return children;
-	}
+
 }
