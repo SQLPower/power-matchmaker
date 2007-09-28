@@ -25,10 +25,12 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,7 +70,7 @@ public class MungePen extends JLayeredPane {
 	List<IOConnector> lines = new ArrayList<IOConnector>(); 
 
 	/**
-	 * Creates a new empty mungepen
+	 * Creates a new empty mungepen.
 	 * 
 	 */
 	MungePen() {
@@ -76,6 +78,22 @@ public class MungePen extends JLayeredPane {
 		addMouseListener(new MungePenMouseListener());
 		addMouseMotionListener(new MungePenMouseMotionListener());
 		addKeyListener(new MungePenKeyListener());
+		addFocusListener(new FocusAdapter(){
+			@Override
+			public void focusLost(FocusEvent e) {
+				selectedLine = null;
+				selectedMove = null;
+			}
+		});
+	}
+
+	/**
+	 * Returns the list of IOCs that represents the connections.
+	 * 
+	 * @return The list
+	 */
+	public List<IOConnector> getConnectors() {
+		return lines;
 	}
 	
 	/**
@@ -156,8 +174,10 @@ public class MungePen extends JLayeredPane {
 		}
 	}
 	
-	class MungePenMouseListener implements MouseListener {
+	class MungePenMouseListener extends MouseAdapter {
 		public void mousePressed(MouseEvent e) {
+			requestFocusInWindow();
+			
 			//finds if the user has selected a line
 			selectedLine = null;
 			for (IOConnector line : lines) {
@@ -190,14 +210,6 @@ public class MungePen extends JLayeredPane {
 		
 		public void mouseClicked(MouseEvent e) {
 			findSelected(e);
-			maybeShowPopup(e);
-		}
-
-		public void mouseEntered(MouseEvent e) {
-			maybeShowPopup(e);
-		}
-
-		public void mouseExited(MouseEvent e) {
 			maybeShowPopup(e);
 		}
 		
@@ -335,5 +347,4 @@ public class MungePen extends JLayeredPane {
 			}
 		}
 	}
-
 }

@@ -23,9 +23,11 @@
 package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Line2D;
 
+import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
@@ -79,8 +81,13 @@ public class IOConnector {
 	 */
 	public JPopupMenu getPopup() {
 		JPopupMenu pop = new JPopupMenu();
-		JMenuItem test = new JMenuItem("Test");
-		pop.add(test);
+		JMenuItem remove = new JMenuItem(new AbstractAction(){
+			public void actionPerformed(ActionEvent e) {
+				remove();
+			}
+		});
+		remove.setText("Delete (del)");
+		pop.add(remove);
 		return pop;
 	}
 	
@@ -113,5 +120,23 @@ public class IOConnector {
 	public void remove() {
 		child.getStep().disconnectInput(childNumber);
 		child.getParent().repaint();
+	}
+
+
+	public MungeComponent getParent() {
+		return parent;
+	}
+
+	public MungeComponent getChild() {
+		return child;
+	}
+
+
+	public int getParentNumber() {
+		return parentNumber;
+	}
+
+	public int getChildNumber() {
+		return childNumber;
 	}
 }
