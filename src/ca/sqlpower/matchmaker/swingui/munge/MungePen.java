@@ -27,8 +27,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -156,9 +156,7 @@ public class MungePen extends JLayeredPane {
 		}
 	}
 	
-	
-	class MungePenMouseListener extends MouseAdapter {
-		@Override
+	class MungePenMouseListener implements MouseListener {
 		public void mousePressed(MouseEvent e) {
 			//finds if the user has selected a line
 			selectedLine = null;
@@ -169,28 +167,12 @@ public class MungePen extends JLayeredPane {
 				}
 			}
 	
-			//find if a munge component is clicked on
 			findSelected(e);
-	
-			//find if a popup is needed
-			if (e.isPopupTrigger()) {
-				if (selectedMove != null && selectedMove instanceof MungeComponent) {
-					JPopupMenu popup = ((MungeComponent) selectedMove).getPopupMenu();
-					if (popup != null) {
-						popup.show(MungePen.this, e.getX(), e.getY());
-					}
-				} else if (selectedLine != null && e.isPopupTrigger()) {
-					JPopupMenu popup = selectedLine.getPopup();
-					getParent().repaint();
-					popup.show(MungePen.this,e.getX(),e.getY());
-				}
-			} else {
+			if (!maybeShowPopup(e)) {
 				checkForIOConnectors(e);
 			}
 		}
-
 		
-		@Override
 		public void mouseReleased(MouseEvent e) {
 			findSelected(e);
 			checkForIOConnectors(e);
@@ -202,7 +184,39 @@ public class MungePen extends JLayeredPane {
 			mouseX = e.getX();
 			mouseY = e.getY();
 			
+			maybeShowPopup(e);
 			getParent().repaint();
+		}
+		
+		public void mouseClicked(MouseEvent e) {
+			maybeShowPopup(e);
+		}
+
+		public void mouseEntered(MouseEvent e) {
+			maybeShowPopup(e);
+		}
+
+		public void mouseExited(MouseEvent e) {
+			maybeShowPopup(e);
+		}
+		
+		public boolean maybeShowPopup(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				if (selectedMove != null && selectedMove instanceof MungeComponent) {
+					JPopupMenu popup = ((MungeComponent) selectedMove).getPopupMenu();
+					if (popup != null) {
+						popup.show(MungePen.this, e.getX(), e.getY());
+						selectedMove = null;
+						return true;
+					}
+				} else if (selectedLine != null && e.isPopupTrigger()) {
+					JPopupMenu popup = selectedLine.getPopup();
+					getParent().repaint();
+					popup.show(MungePen.this,e.getX(),e.getY());
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public void findSelected(MouseEvent e) {
@@ -285,8 +299,6 @@ public class MungePen extends JLayeredPane {
 				finish = null;
 			}
 		}
-		
-		
 	}
 	 
 	class MungePenMouseMotionListener extends MouseMotionAdapter {
