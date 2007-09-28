@@ -22,7 +22,6 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -76,8 +75,10 @@ public class TranslateWordsEditor implements EditorPane {
 	private FormValidationHandler handler;
 	StatusComponent status = new StatusComponent();
 
-	private static final Logger logger = Logger.getLogger(TranslateWordsEditor.class);
+	//keeps track of whether the editor pane has unsaved changes
+	private CustomTableModelListener tableListener;
 	
+	private static final Logger logger = Logger.getLogger(TranslateWordsEditor.class);
 	
 	public TranslateWordsEditor(MatchMakerSwingSession swingSession,
 			MatchMakerTranslateGroup group) {
@@ -90,7 +91,10 @@ public class TranslateWordsEditor implements EditorPane {
 	private void setupTable() {
 		translateWordsTable = new EditableJTable();
         translateWordsTable.setName("Translate Words");
-        translateWordsTable.setModel (new MatchTranslateTableModel(group));
+        tableListener = new CustomTableModelListener();
+        TranslateWordsTableModel tm = new TranslateWordsTableModel(group);
+        tm.addTableModelListener(tableListener);
+        translateWordsTable.setModel (tm);
 	}
 	
 	private void buildUI() {
@@ -196,15 +200,14 @@ public class TranslateWordsEditor implements EditorPane {
         }
         if (!swingSession.getTranslations().getChildren().contains(group)) {
             swingSession.getTranslations().addNewChild(group);
+	        MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+	        TreePath menuPath = treeModel.getPathForNode(group);
+	        swingSession.getTree().setSelectionPath(menuPath);
         }
         
-        // XXX should be handled by appropriate events when items are reordered
-        swingSession.getTranslations().childrenOrderChanged();
-        
         swingSession.getDAO(MatchMakerTranslateGroup.class).save(group);
-        MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-        TreePath menuPath = treeModel.getPathForNode(group);
-        swingSession.getTree().setSelectionPath(menuPath);
+        tableListener.setModified(false);
+
         return true;
 	}
 
@@ -213,8 +216,7 @@ public class TranslateWordsEditor implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
-        // FIXME need a listener on the matchmaker objects that tracks saved vs unsaved status
-		return true;
+		return tableListener.isModified();
 	}
 	
 	/**
@@ -242,7 +244,8 @@ public class TranslateWordsEditor implements EditorPane {
             from.setText("");
             to.setText("");
             from.requestFocus();
-        }       
+        }
+        
     };
     
     Action deleteWordsAction = new AbstractAction("Delete Selected Translations"){
@@ -255,7 +258,7 @@ public class TranslateWordsEditor implements EditorPane {
             for (int i=selectedIndeces.size()-1;i >= 0; i--){
                 group.removeChild(group.getChildren().get((int)selectedIndeces.get(i)));
             }
-        }        
+        }
     };
     
 	Action saveGroupAction = new AbstractAction("Save Group"){
@@ -270,9 +273,8 @@ public class TranslateWordsEditor implements EditorPane {
 		public void actionPerformed(ActionEvent e){
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
-				if (translateWordsTable.getSelectedRowCount() == 1 && index > 0){						
-					Collections.swap(group.getChildren()
-									, (index - 1), index);
+				if (translateWordsTable.getSelectedRowCount() == 1 && index > 0){
+					group.swapChildren(index, index-1);
 					translateWordsTable.setRowSelectionInterval(index-1, index-1);
 					scrollToSelected(index-1);
 				}
@@ -285,9 +287,7 @@ public class TranslateWordsEditor implements EditorPane {
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index < (translateWordsTable.getRowCount() -1) ){						
-					Collections.swap( group.getChildren()
-									, (index + 1), index);
-
+					group.swapChildren(index+1, index);
 					translateWordsTable.setRowSelectionInterval(index+1, index+1);
 				 	scrollToSelected(index+1);
 				}
@@ -300,11 +300,11 @@ public class TranslateWordsEditor implements EditorPane {
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index > 0){
-					List<MatchMakerTranslateWord> translateList = group.getChildren();
-                    MatchMakerTranslateWord selectedTranslate=translateList.get(index);
-					
-                    translateList.remove(index);
-					translateList.add(0, selectedTranslate);
+
+                    MatchMakerTranslateWord selectedTranslate=group.getChildren().get(index);
+                    group.removeChild(selectedTranslate);
+                    group.addChild(0, selectedTranslate);
+
 					translateWordsTable.setRowSelectionInterval(0,0);
 					scrollToSelected(0);
 				}
@@ -317,13 +317,13 @@ public class TranslateWordsEditor implements EditorPane {
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index < (translateWordsTable.getRowCount() -1) ){						
-					List <MatchMakerTranslateWord> translateList = group.getChildren();
-                    MatchMakerTranslateWord selectedTranslate=translateList.get(index);
-					
-                    translateList.remove(index);
-					translateList.add(translateList.size(), selectedTranslate);
-					translateWordsTable.setRowSelectionInterval(translateList.size()-1,translateList.size()-1);
-					scrollToSelected(translateList.size()-1);
+
+                    MatchMakerTranslateWord selectedTranslate=group.getChildren().get(index);
+                    group.removeChild(selectedTranslate);
+                    group.addChild(selectedTranslate);
+
+ 					translateWordsTable.setRowSelectionInterval(group.getChildCount()-1,group.getChildCount()-1);
+					scrollToSelected(group.getChildCount()-1);
 				}
 			}
 		}

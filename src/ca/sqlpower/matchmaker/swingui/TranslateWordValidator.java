@@ -48,7 +48,7 @@ public class TranslateWordValidator implements Validator {
         this.actions = actions;
     }
     public ValidateResult validate(Object contents) {
-        MatchTranslateTableModel model = (MatchTranslateTableModel)table.getModel();
+        TranslateWordsTableModel model = (TranslateWordsTableModel)table.getModel();
         for (int x = 0; x<model.getRowCount();x++) {
         	String val = (String) model.getValueAt(x, 0);
         	if (val.equals("")) {

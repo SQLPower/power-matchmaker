@@ -58,7 +58,7 @@ public class MatchTranslateTableModelTest extends TestCase {
     
     
     private JTable table;
-    private MatchTranslateTableModel model;
+    private TranslateWordsTableModel model;
     private MatchMakerTranslateGroup translateGroup;
     private MatchMakerTranslateWord tw;
     private TableModelEventCounter ec;
@@ -66,7 +66,7 @@ public class MatchTranslateTableModelTest extends TestCase {
     protected void setUp() throws Exception {
         table = new JTable();
         translateGroup = new MatchMakerTranslateGroup();
-        model = new MatchTranslateTableModel(translateGroup);
+        model = new TranslateWordsTableModel(translateGroup);
         tw = new MatchMakerTranslateWord();
         tw.setFrom("TW1");
         translateGroup.addChild(tw);
