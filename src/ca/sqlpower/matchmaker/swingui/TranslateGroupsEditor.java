@@ -22,7 +22,6 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -197,7 +196,6 @@ public class TranslateGroupsEditor implements EditorPane {
 		public TranslateGroupsTableModel(MatchMakerSwingSession swingSession) {
 			this.swingSession = swingSession;
 			rows = swingSession.getTranslations().getChildren();
-			Collections.sort(rows);
 		}
 		
 		public int getColumnCount() {

@@ -35,15 +35,6 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
         this.session = session;
         
     }
-	
-    /**
-     * Persists the translate group as well as adding it to the child list and 
-     * firing the proper events 
-     */
-    public void addNewChild(MatchMakerTranslateGroup child) {
-        this.session.getDAO(MatchMakerTranslateGroup.class).save(child);
-        super.addChild(child);
-    }
 
     /**
      * Deletes the translate group as well as adding it to the child list and 

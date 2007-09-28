@@ -78,6 +78,9 @@ public class TranslateWordsEditor implements EditorPane {
 	//keeps track of whether the editor pane has unsaved changes
 	private CustomTableModelListener tableListener;
 	
+	//keeps track of whether this is a new translate group
+	private boolean newTranslateGroup = false;
+	
 	private static final Logger logger = Logger.getLogger(TranslateWordsEditor.class);
 	
 	public TranslateWordsEditor(MatchMakerSwingSession swingSession,
@@ -86,6 +89,11 @@ public class TranslateWordsEditor implements EditorPane {
 		this.group = group;
 		setupTable();
 		buildUI();
+		if (!swingSession.getTranslations().getChildren().contains(group)) {
+			//new group...has unsaved changes...
+			newTranslateGroup = true;
+			tableListener.setModified(true);
+		}
 	}
 
 	private void setupTable() {
@@ -198,11 +206,9 @@ public class TranslateWordsEditor implements EditorPane {
         if (group.getName() == null || !group.getName().equals(groupName.getText())) {
             group.setName(groupName.getText());
         }
-        if (!swingSession.getTranslations().getChildren().contains(group)) {
-            swingSession.getTranslations().addNewChild(group);
-	        MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-	        TreePath menuPath = treeModel.getPathForNode(group);
-	        swingSession.getTree().setSelectionPath(menuPath);
+        if (newTranslateGroup) {
+        	// add the new node to the parent
+            swingSession.getTranslations().addChild(group);
         }
         
         swingSession.getDAO(MatchMakerTranslateGroup.class).save(group);
@@ -265,6 +271,13 @@ public class TranslateWordsEditor implements EditorPane {
 
 		public void actionPerformed(ActionEvent e) {
             doSave();
+            if (newTranslateGroup) {
+            	// Selects the new node after save
+    	        MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+    	        TreePath menuPath = treeModel.getPathForNode(group);
+    	        swingSession.getTree().setSelectionPath(menuPath);
+    	        newTranslateGroup = false;
+            }
 		}
 		
 	};
