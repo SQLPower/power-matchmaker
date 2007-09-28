@@ -44,6 +44,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
+import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
@@ -90,7 +91,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 	
 	public MergeColumnRuleEditor(MatchMakerSwingSession swingSession,
 			Match match, TableMergeRules mergeRule, 
-			ColumnMergeRules selectedColumn) throws ArchitectException {
+			ColumnMergeRules selectedColumn) {
 		this.swingSession = swingSession;
 		this.match = match;
 		this.mergeRule = mergeRule;
@@ -246,12 +247,17 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private boolean reSetting = false;
 	private boolean tableHasChanges = false; 
 	
-	private void setDefaultSelections() throws ArchitectException {
+	private void setDefaultSelections() {
 		if (mergeRule.getSourceTable() != null) {
 			chooser.getCatalogComboBox().setSelectedItem(mergeRule.getSourceTable().getCatalog());
 			chooser.getSchemaComboBox().setSelectedItem(mergeRule.getSourceTable().getSchema());
 			chooser.getTableComboBox().setSelectedItem(mergeRule.getSourceTable());
-			chooser.getUniqueKeyComboBox().setSelectedItem(mergeRule.getTableIndex());
+			try {
+				chooser.getUniqueKeyComboBox().setSelectedItem(mergeRule.getTableIndex());
+			} catch (ArchitectException e1) {
+				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
+						"An exception occured while creating the merge column rules editor", e1);
+			}
 		}
 		deleteDup.setSelected(mergeRule.isDeleteDup());
 		
@@ -312,6 +318,14 @@ public class MergeColumnRuleEditor implements EditorPane {
 		for (ColumnMergeRules columnMergeRules : toBeDeleteList) {
 			swingSession.delete(columnMergeRules);
 		}
+        
+		if (!match.getTableMergeRules().contains(mergeRule)) {
+			match.getTableMergeRulesFolder().addChild(mergeRule);
+	        MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+	        TreePath menuPath = treeModel.getPathForNode(mergeRule);
+	        swingSession.getTree().setSelectionPath(menuPath);
+        }
+        
 		swingSession.save(match);
 		tableHasChanges  = false;
 		return true;
