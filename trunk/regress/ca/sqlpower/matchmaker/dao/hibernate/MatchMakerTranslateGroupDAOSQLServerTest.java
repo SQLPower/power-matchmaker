@@ -81,7 +81,7 @@ public class MatchMakerTranslateGroupDAOSQLServerTest extends AbstractMatchMaker
             
             stmt.executeUpdate(
                     "INSERT INTO pl_match_translate (translate_group_oid,seq_no) " +
-                    "VALUES ("+oid+",1)");
+                    "VALUES ("+oid+",0)");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it
@@ -127,10 +127,12 @@ public class MatchMakerTranslateGroupDAOSQLServerTest extends AbstractMatchMaker
         }
         
         MatchMakerTranslateGroup translateGroup = getDataAccessObject().findByName(translateGroupName);
-        translateGroup.getChildren(); // this could fail if the DAO doesn't cascade the retrieval properly
         
-        // We've changed our minds: we will no longer allow gaps in the sequence, but the
-        // business model or DAO layer should produce a good exception explaining the problem
-        assertNotNull("Null child not removed from group.", translateGroup.getChildren().get(0));
-    }
+        try {
+        	translateGroup.getChildren(); // this could fail if the DAO doesn't cascade the retrieval properly
+        	assertTrue("getChildren should fail because there are null children in the list", false);
+       } catch (NullPointerException e){
+        	assertEquals("Wrong exception caught", e.getMessage(),"Translate word has not been populated correctly.");
+        }
+     }
 }

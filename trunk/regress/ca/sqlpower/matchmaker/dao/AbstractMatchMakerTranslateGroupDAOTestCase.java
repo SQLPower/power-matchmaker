@@ -74,7 +74,7 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
             
             stmt.executeUpdate(
                     "INSERT INTO pl_match_translate (translate_group_oid,match_translate_oid,seq_no) " +
-                    "VALUES ("+time+", "+time+", 1)");
+                    "VALUES ("+time+", "+time+", 0)");
             
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
@@ -301,7 +301,12 @@ public abstract class AbstractMatchMakerTranslateGroupDAOTestCase extends Abstra
         }
         
         MatchMakerTranslateGroup translateGroup = getDataAccessObject().findByName(translateGroupName);
-        translateGroup.getChildren(); // this could fail if the DAO doesn't cascade the retrieval properly
-        assertNotNull("Null child not removed from group.", translateGroup.getChildren().get(0));
+        try {
+        	translateGroup.getChildren(); // this could fail if the DAO doesn't cascade the retrieval properly
+        	assertTrue("getChildren should fail because there are null children in the list", false);
+       } catch (NullPointerException e){
+        	assertEquals("Wrong exception caught", e.getMessage(),"Translate word has not been populated correctly.");
+        }
+        
     }
 }
