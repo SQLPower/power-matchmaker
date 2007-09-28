@@ -24,25 +24,32 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JTextField;
 
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
+import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
 public class MungeComponent extends JPanel {
-
+	
+	
+	/**
+	 * A Set of listeners that detect changes in the MungeSteps and redraws them
+	 */
 	private final MatchMakerListener<MungeStep, MungeStepOutput> stepEventHandler = new MatchMakerListener<MungeStep, MungeStepOutput>() {
 
 		public void mmChildrenInserted(
@@ -72,6 +79,14 @@ public class MungeComponent extends JPanel {
 	private final Color bg;
 	private final Color borderColour;
 	
+	/**
+	 * Creates a MungeComponent for the given step that will be in the munge pen.
+	 * Sets the background and border colours to given colours.
+	 * 
+	 * @param step The step connected to the UI
+	 * @param border The colour for the border around the rectangle
+	 * @param bg The background colour to the rectangle
+	 */
 	public MungeComponent(MungeStep step, Color border, Color bg) {
 		this.borderColour = border;
 		this.bg = bg;
@@ -83,17 +98,40 @@ public class MungeComponent extends JPanel {
 		setFocusable(true);
 	}
 	
+	/**
+	 * Creates a MungeComponent for the given step that will be in the munge pen, 
+	 * setting default colours
+	 * 
+	 * @param step The step connecting to the UI
+	 */
+	public MungeComponent(MungeStep step) {
+		this(step, Color.BLACK,Color.WHITE);
+	}
+	
+	
+	/**
+	 * Returns the point where the IOConnector's top part is, for the specified input number.
+	 * This point is given relitive to this MungeComponet, to the MungePen
+	 * use the translate method of the point to correct it.
+	 * 
+	 * @param inputNum The number of the IOConnector to find the position of 
+	 * @return Point where the IOC is
+	 */
 	public Point getInputPosition(int inputNum) {
-		int inputs = step.getInputCount();
-		
-		if (inputs == MungeStep.UNLIMITED_INPUTS) {
-			inputs = step.getInputs().size() + 1;
-		}
+		int inputs = step.getInputs().size();
 		
 		int xPos = (int) (((double)(inputNum+1)/((double)inputs+1))*getWidth());
 		return new Point(xPos,0);
 	}
 	
+	/**
+	 * Returns the point where the IOConnector's top part is, for the specified output number.
+	 * This point is given relitive to this MungeComponet, to the MungePen
+	 * use the translate method of the point to correct it.
+	 * 
+	 * @param inputNum The number of the IOConnector to find the position of 
+	 * @return Point where the IOC is
+	 */
 	public Point getOutputPosition(int outputNum) {
 		int outputs = step.getChildren().size();
 		int xPos = (int) (((double)(outputNum+1)/((double)outputs+1))*getWidth());
@@ -101,11 +139,10 @@ public class MungeComponent extends JPanel {
 		
 	}
 	
-	
-	public MungeComponent(MungeStep step) {
-		this(step, Color.BLACK,Color.WHITE);
-	}
-	
+	/**
+	 * Returns the step connected to the UI.
+	 * @return The step
+	 */
 	public MungeStep getStep() {
 		return step;
 	}
@@ -114,21 +151,22 @@ public class MungeComponent extends JPanel {
 	protected void paintComponent(Graphics g) {
 		g.setColor(Color.BLACK);
 		
-		setBounds(getX(), getY(), getPreferredSize().width, getPreferredSize().height);
+		if (getPreferredSize().width != getWidth() || getPreferredSize().height != getHeight()) {
+			setBounds(getX(), getY(), getPreferredSize().width, getPreferredSize().height);
+			revalidate();
+		}
 		
 		int outputs = step.getChildren().size();
-		int maxInputs = step.getInputCount();
-		if (maxInputs == MungeStep.UNLIMITED_INPUTS) {
-			maxInputs = step.getInputs().size() +1;
-		}
+		int inputs = step.getInputs().size();
 		
 		Insets border = getBorder().getBorderInsets(this);
 		
-		for (int x= 0;x<maxInputs;x++){
+		for (int x= 0;x<inputs;x++){
 			Point top = getInputPosition(x);
 			g.drawLine((int)top.getX(), (int)top.getY(), (int)top.getX(), border.top);
 			
-			g.setColor(getColor(step.getInputType(x)));
+
+			g.setColor(getColor(step.getInputDescriptor(x).getType()));
 			g.fillOval(top.x-2, top.y, 4, 4);
 			g.setColor(Color.BLACK);
 		}
@@ -154,22 +192,48 @@ public class MungeComponent extends JPanel {
 		g.drawRect(0, 0, (int)dim.getWidth()-1, (int)dim.getHeight()-1);
 	}
 	
+	/**
+	 * Returns the list for Inputs from the step object.
+	 * 
+	 * @return the list
+	 */
 	public List<MungeStepOutput> getInputs() {
 		return step.getInputs();
 	}
 	
+	/**
+	 * Returns the list for Outputs from the step object.
+	 * 
+	 * @return the list
+	 */
+	public List<MungeStepOutput> getOutputs() {
+		return step.getChildren();
+	}
 	
+	
+	/**
+	 * Returns the appropriate colour for the given type.
+	 * This is used to colour code lines and the IOCs.
+	 * 
+	 * @param c The type of connection
+	 * @return The correct colour
+	 */
 	public static Color getColor(Class c) {
 		if (c.equals(String.class)) {
 			return Color.red;
 		} else if (c.equals(Boolean.class)) {
 			return Color.BLUE;
 		} else if (c.equals(Integer.class)){
-			return Color.MAGENTA;
+			return Color.GREEN;
 		}
 		return Color.PINK;
 	}
 	
+	/**
+	 * Returns the popup munu to display when this componet is right clicked on.
+	 * 
+	 * @return The popup menu
+	 */
 	public JPopupMenu getPopupMenu() {
 		JPopupMenu ret = new JPopupMenu();
 		ret.add(new JMenuItem("HELLO"));
@@ -179,54 +243,15 @@ public class MungeComponent extends JPanel {
 		return ret;
 	}
 	
-	
-	
-	
-	static class MungeStepTest extends AbstractMungeStep {
-
-		public MungeStepTest(int numOutputs) {
-			for (int i = 0; i < numOutputs; i++) {
-				addChild(new MungeStepOutput<String>("Output", String.class));
-			}
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			return this == obj;
-		}
-
-		@Override
-		public int hashCode() {
-			return System.identityHashCode(this);
-		}
-
-		public List<MungeStepOutput> call() throws Exception {
-			return null;
-		}
-
-		public int getMaxInputs() {
-			return -1;
-		}
-
-		public int getInputCount() {
-			// TODO Auto-generated method stub
-			return 3;
-		}
-
-		public Class getInputType(int inputNumber) {
-			switch (inputNumber) {
-			case 0:
-				return String.class;
-			case 1:
-				return Integer.class;
-			}
-			return Boolean.class;
-		}
-		
+	/**
+	 * Passes a key event to the MungeComponent, this is only passed if this
+	 * MungeComponent is selected.
+	 * 
+	 * @param e The event
+	 */
+	public void keyPressed(KeyEvent e) {
 		
 	}
-	
-	
 	
 	public static void main(String[] args) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -239,49 +264,28 @@ public class MungeComponent extends JPanel {
 	public static void createAndShowGUI() {
 		MungePen p = new MungePen();
 		
-		MungeStep parent = new MungeStepTest(2);
+		MungeStep cat = new ConcatMungeStep();
+		MungeStep cat2 = new ConcatMungeStep();
 		
-		MungeStep child = new MungeStepTest(55);
+		MungeComponent com1 = new MungeComponent(cat);
+		MungeComponent com2 = new MungeComponent(cat2);
 		
-		MungeStep child2 = new MungeStepTest(2);
+		com1.add(new JLabel("Concat 1"));
+		com2.add(new JLabel("Concat 2"));
 		
-		child.addInput(parent.getChildren().get(1));
-		child2.addInput(parent.getChildren().get(0));
-		child2.addInput(child.getChildren().get(0));
+		Action addInput = new AddInputAction(cat);
 		
-		parent.setName("parent");
-		child.setName("child");
-		MungeComponent mc = new MungeComponent(parent,Color.BLACK,Color.RED);
-		MungeComponent mc2 = new MungeComponent(child,Color.BLACK,Color.BLUE);
-		mc.add(new JLabel("parent"));
-		mc.add(new JTextField("Cow"));
-		mc.add(new JCheckBox("Moo"));
-		mc.add(new JCheckBox("Work Properly", true));
+		JButton add = new JButton(addInput);
+		com1.add(add);
 		
-		p.add(mc);
+		p.add(com1);
+		p.add(com2);
 		
-		MungeComponent mc3 = new MungeComponent(child2, Color.BLACK,Color.GREEN);
-		mc3.add(new JLabel("child2"));
-		mc3.add(new JTextField("Cow"));
-		mc3.add(new JCheckBox("Moo"));
-		mc3.add(new JCheckBox("Work Properly", true));
-		p.add(mc3);
-
-		mc2.add(new JLabel("child"));
-		mc2.add(new JTextField("Cow"));
-		mc2.add(new JCheckBox("Moo"));
-		mc2.add(new JCheckBox("Work Properly", true));
-		p.add(mc2);
+		Dimension ps = com1.getPreferredSize();
+		com1.setBounds(0, 0, ps.width, ps.height);
 		
-		
-		Dimension ps = mc.getPreferredSize();
-		mc.setBounds(0, 0, ps.width, ps.height);
-		
-		ps = mc2.getPreferredSize();
-		mc2.setBounds(0, 0, ps.width, ps.height);
-		
-		ps = mc3.getPreferredSize();
-		mc3.setBounds(0, 0, ps.width, ps.height);
+		ps = com2.getPreferredSize();
+		com2.setBounds(0, 0, ps.width, ps.height);
 		
 		p.setPreferredSize(new Dimension(500, 500));
 		p.setBackground(Color.WHITE);
@@ -291,10 +295,22 @@ public class MungeComponent extends JPanel {
 		f.setContentPane(p);
 		f.pack();
 		f.setVisible(true);
-		mc.repaint();
 	}
+	
+	static class AddInputAction extends AbstractAction {
+		private final MungeStep step;
+		
+		public AddInputAction(MungeStep step) {
+			super("Add Input");
+			this.step = step;
+		}
 
-	public List<MungeStepOutput> getOutputs() {
-		return step.getChildren();
+		public void actionPerformed(ActionEvent e) {
+			step.addInput(step.getInputDescriptor(0));
+		}
+		
+		
 	}
+	
 }
+
