@@ -49,6 +49,8 @@ public class ConcatMungeStep extends AbstractMungeStep {
 	}
 	
 	public Boolean call() throws Exception {
+		super.call();
+
 		boolean allNulls = true;
 		StringBuilder data = new StringBuilder();
 		for (MungeStepOutput<String> in: getInputs()) {

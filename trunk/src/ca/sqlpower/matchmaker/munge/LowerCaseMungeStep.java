@@ -56,6 +56,8 @@ public class LowerCaseMungeStep extends AbstractMungeStep {
 	}
 	
 	public Boolean call() throws Exception {
+		super.call();
+
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
 		if (in.getData() != null) {
