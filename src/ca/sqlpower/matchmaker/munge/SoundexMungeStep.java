@@ -46,9 +46,7 @@ public class SoundexMungeStep extends AbstractMungeStep {
 	}
 	
 	public void connectInput(int index, MungeStepOutput o) {
-		if (index >= getInputs().size()) {
-			throw new IndexOutOfBoundsException("There is no input at the given index");
-		} else if (o.getType() != getInputDescriptor(index).getType()) {
+		if (o.getType() != getInputDescriptor(index).getType()) {
 			throw new UnexpectedDataTypeException(
 				"Soundex munge step does not accept non-String inputs");
 		} else {
