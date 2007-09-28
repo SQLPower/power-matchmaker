@@ -19,13 +19,20 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.regex.Pattern;
+
 
 
 /**
- * This munge step will return a substring that begins at the specified beginIndex
- * and extends to the character at index endIndex - 1.
+ * This munge step will return a output string containing the substrings 
+ * of each of the individual words in the input. The words are defined by
+ * given delimiter strings. Optionally, the step can also interpret the delimiter
+ * input as a regular expression, as long as the {@link #USE_REGEX_PARAMETER_NAME}
+ * parameter is set to "true". Each substring begins at the specified beginIndex
+ * and extends to the character at index endIndex - 1 of the input words.
+ * The substrings in the output are separated by {@link #RESULT_DELIM_PARAMETER_NAME}.
  */
-public class SubstringMungeStep extends AbstractMungeStep {
+public class SubstringByWordMungeStep extends AbstractMungeStep {
 
 	private MungeStepOutput<String> out;
 	
@@ -39,7 +46,29 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	 */
 	public static final String END_PARAMETER_NAME = "endIndex";
 	
-	public SubstringMungeStep() {
+	/**
+	 * This is the name of the parameter that decides whether this step will use
+	 * regular expression to interpret the delimiter. The only values accepted by 
+	 * the parameter are "true" and "false".
+	 */
+	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
+	
+	/**
+	 * The value of the String that will be used as the delimiter to determine
+	 * what is used to divide the String into words
+	 */
+	public static final String DELIMITER_PARAMETER_NAME = "delimiter";
+	
+	/**
+	 * This is the name of the parameter with the value of the delimiter to use
+	 * to separate words in the output.
+	 */
+	public static final String RESULT_DELIM_PARAMETER_NAME = "resultDelim";
+	
+	public SubstringByWordMungeStep() {
+		setParameter(DELIMITER_PARAMETER_NAME, " ");
+		setParameter(USE_REGEX_PARAMETER_NAME, "false");
+		setParameter(RESULT_DELIM_PARAMETER_NAME, " ");
 		out = new MungeStepOutput<String>("substringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("substring", String.class);
@@ -75,21 +104,45 @@ public class SubstringMungeStep extends AbstractMungeStep {
 		int beginIndex = Integer.valueOf(getParameter(BEGIN_PARAMETER_NAME));
 		int endIndex = Integer.valueOf(getParameter(END_PARAMETER_NAME));
 		
+		String delimiter = getParameter(DELIMITER_PARAMETER_NAME);
+		String useRegex = getParameter(USE_REGEX_PARAMETER_NAME);
+		String resultDelim = getParameter(RESULT_DELIM_PARAMETER_NAME);
+				
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
+		StringBuilder results = new StringBuilder("");
 		if (data != null) {
 			if (beginIndex < 0) {
 				throw new IndexOutOfBoundsException(
 					"The begin index can not be less than 0.");
 			}
-			if (beginIndex >= data.length()) {
-				out.setData("");
-			} else {
-				if (endIndex > data.length()) {
-					endIndex = data.length();
+			
+			// This block separates the input into an array of words.
+			if (useRegex.equals("false")) {
+				delimiter = "[" + delimiter + "]+";
+			} 
+			Pattern p = Pattern.compile(delimiter);
+			String [] words = p.split(data);
+			
+			// This for loop performs the substring on each word
+			for (String word : words) {
+				if (beginIndex >= word.length()) {
+					results.append("");
+				} else {
+					if (endIndex > word.length()) {
+						endIndex = word.length();
+					}
+					results.append(word.substring(beginIndex, endIndex));
+					
+					// This prevents adding a separator to the end of the output.
+					if (data.lastIndexOf(word)!= data.length()-word.length()){
+						results.append(resultDelim);
+					}
 				}
-				out.setData(data.substring(beginIndex, endIndex));
 			}
+			out.setData(results.toString());
+		} else {
+			out.setData(null);
 		}
 		return true;
 	}
