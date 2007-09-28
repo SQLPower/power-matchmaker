@@ -96,6 +96,11 @@ public class MungeComponent extends JPanel {
 		setBorder(BorderFactory.createEmptyBorder(15,1,15,1));
 		setOpaque(false);
 		setFocusable(true);
+		
+		Dimension ps = getPreferredSize();
+		setBounds(0, 0, ps.width, ps.height);
+		
+		add(new JLabel(step.getName()));
 	}
 	
 	/**
@@ -236,10 +241,16 @@ public class MungeComponent extends JPanel {
 	 */
 	public JPopupMenu getPopupMenu() {
 		JPopupMenu ret = new JPopupMenu();
-		ret.add(new JMenuItem("HELLO"));
-		ret.add(new JMenuItem("HELLO"));
-		ret.add(new JMenuItem("HELLO"));
-		ret.add(new JMenuItem("HELLO"));
+		JMenuItem rm = new JMenuItem(new AbstractAction(){
+
+			public void actionPerformed(ActionEvent e) {
+				remove();
+			}
+			
+		});
+		
+		rm.setText("Delete (del)");
+		ret.add(rm);
 		return ret;
 	}
 	
@@ -250,7 +261,67 @@ public class MungeComponent extends JPanel {
 	 * @param e The event
 	 */
 	public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+			remove();
+		}
+	}
+	
+	/**
+	 * removes the this MC and all connected lines
+	 */
+	public void remove() {
+		List<IOConnector> cons = ((MungePen)getParent()).getConnectors();
+		for (IOConnector ioc : cons) {
+			if (ioc.getParent() == this || ioc.getChild() == this) {
+				ioc.remove();
+			}
+		}
+		getParent().repaint();
+		getParent().remove(this);
+	}
+	
+	
+	static class AddInputAction extends AbstractAction {
+		private final MungeComponent com;
 		
+		public AddInputAction(MungeComponent com) {
+			super("Add Input");
+			this.com = com;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			com.getStep().addInput(com.getStep().getInputDescriptor(0));
+			com.getParent().repaint();
+		}
+	}
+	
+	static class RemoveUnusedInputAction extends AbstractAction {
+		private final MungeComponent com;
+		
+		RemoveUnusedInputAction(MungeComponent com) {
+			super("Remove UnusedInput");
+			this.com = com;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			MungeStep step = com.getStep();
+			
+			for (int x = 0; x< step.getInputs().size();x++) {
+				int y;
+				for (y=x-1; y>=0 && step.getInputs().get(y) == null; y--);
+				y++;
+				if (y != x) {
+					step.connectInput(y, step.getInputs().get(x));
+					step.disconnectInput(x);
+				}
+			}
+			
+			for (int x = step.getInputs().size()-1;x>0 && step.getInputs().get(x) == null;x--) {
+				step.removeInput(x);
+			}
+			
+			com.getParent().repaint();
+		}
 	}
 	
 	public static void main(String[] args) {
@@ -264,28 +335,25 @@ public class MungeComponent extends JPanel {
 	public static void createAndShowGUI() {
 		MungePen p = new MungePen();
 		
-		MungeStep cat = new ConcatMungeStep();
-		MungeStep cat2 = new ConcatMungeStep();
+		MungeStep ms1 = new ConcatMungeStep();
+		ms1.setName("CAT");
 		
-		MungeComponent com1 = new MungeComponent(cat);
-		MungeComponent com2 = new MungeComponent(cat2);
+		MungeStep ms2 = new ConcatMungeStep();
+		ms2.setName("CATAGAIN");
 		
-		com1.add(new JLabel("Concat 1"));
-		com2.add(new JLabel("Concat 2"));
+		MungeComponent com1 = new MungeComponent(ms1);
+		MungeComponent com2 = new MungeComponent(ms2);
 		
-		Action addInput = new AddInputAction(cat);
-		
+		Action addInput = new AddInputAction(com1);
+		Action removeAction = new RemoveUnusedInputAction(com1);
+		JButton remove = new JButton(removeAction);
 		JButton add = new JButton(addInput);
+		
 		com1.add(add);
+		com1.add(remove);
 		
 		p.add(com1);
 		p.add(com2);
-		
-		Dimension ps = com1.getPreferredSize();
-		com1.setBounds(0, 0, ps.width, ps.height);
-		
-		ps = com2.getPreferredSize();
-		com2.setBounds(0, 0, ps.width, ps.height);
 		
 		p.setPreferredSize(new Dimension(500, 500));
 		p.setBackground(Color.WHITE);
@@ -295,22 +363,6 @@ public class MungeComponent extends JPanel {
 		f.setContentPane(p);
 		f.pack();
 		f.setVisible(true);
-	}
-	
-	static class AddInputAction extends AbstractAction {
-		private final MungeStep step;
-		
-		public AddInputAction(MungeStep step) {
-			super("Add Input");
-			this.step = step;
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			step.addInput(step.getInputDescriptor(0));
-		}
-		
-		
-	}
-	
+	}	
 }
 
