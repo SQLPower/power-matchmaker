@@ -79,11 +79,18 @@ public class SubstringMungeStep extends AbstractMungeStep {
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
 		if (data != null) {
-			if (beginIndex < 0 || endIndex > data.length()) {
+			if (beginIndex < 0) {
 				throw new IndexOutOfBoundsException(
 						"The given indices were not in range of the input.");
 			}
-			out.setData(data.substring(beginIndex, endIndex));
+			if (beginIndex >= data.length()) {
+				out.setData("");
+			} else {
+				if (endIndex > data.length()) {
+					endIndex = data.length();
+				}
+				out.setData(data.substring(beginIndex, endIndex));
+			}
 		}
 		return true;
 	}

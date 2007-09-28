@@ -48,6 +48,40 @@ public class SubstringMungeStepTest extends TestCase {
 		assertEquals("ABCabc", result);
 	}
 	
+	public void testCallonIndexOutofBounds() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData("abcABCabc");
+		step.connectInput(0, testInput);
+		
+		step.setParameter(step.BEGIN_PARAMETER_NAME, "3");
+		step.setParameter(step.END_PARAMETER_NAME, "100");
+		step.open();
+		step.call();
+		List<MungeStepOutput> results = step.getChildren(); 
+		MungeStepOutput output = results.get(0);
+		String result = (String)output.getData();
+		assertEquals("ABCabc", result);
+		
+		step.setParameter(step.BEGIN_PARAMETER_NAME, "90");
+		step.setParameter(step.END_PARAMETER_NAME, "100");
+		step.open();
+		step.call();
+		results = step.getChildren(); 
+		output = results.get(0);
+		result = (String)output.getData();
+		assertEquals("", result);
+		
+		step.setParameter(step.BEGIN_PARAMETER_NAME, "-100");
+		step.setParameter(step.END_PARAMETER_NAME, "100");
+		step.open();
+		try {
+			step.call();
+			fail("IndexOutofBoundsException was not thrown as expected");
+		} catch (IndexOutOfBoundsException ex) {
+			// IndexOutOfBoundsException was thrown as expected
+		}
+	}
+	
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
