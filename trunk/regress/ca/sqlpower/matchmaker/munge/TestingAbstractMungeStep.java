@@ -41,10 +41,6 @@ public class TestingAbstractMungeStep extends AbstractMungeStep {
 	}
 
 	public boolean canAddInput() {
-		return false;
+		return true;
 	}
-
-	public void connectInput(int index, MungeStepOutput o) {
-	}
-
 }

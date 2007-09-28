@@ -73,4 +73,32 @@ public class AbstractMungeStepTest extends TestCase {
 		assertEquals("Did not get any events",1,mml.getPropertyChangedCount());
 		assertEquals("Parameter cannot be found", "test", mungeStep.getParameter("test"));
 	}
+	
+	public void testConnectInput() {
+		MatchMakerEventCounter<MungeStep, MungeStepOutput> mml =
+			new MatchMakerEventCounter<MungeStep, MungeStepOutput>();
+		mungeStep.addMatchMakerListener(mml);
+		InputDescriptor desc = new InputDescriptor("test", String.class);
+		mungeStep.addInput(desc);
+		assertEquals("Did not get event for adding input",1,mml.getPropertyChangedCount());
+		MungeStepOutput o = new MungeStepOutput<String>("test", String.class);
+		mungeStep.connectInput(0, o);
+		assertEquals("Did not get event for connecting input",2,mml.getPropertyChangedCount());
+		assertTrue("Munge step output did not get connected", mungeStep.getInputs().contains(o));
+	}
+	
+	public void testDisconnectInput() {
+		MatchMakerEventCounter<MungeStep, MungeStepOutput> mml =
+			new MatchMakerEventCounter<MungeStep, MungeStepOutput>();
+		mungeStep.addMatchMakerListener(mml);
+		InputDescriptor desc = new InputDescriptor("test", String.class);
+		mungeStep.addInput(desc);
+		assertEquals("Did not get event for adding input",1,mml.getPropertyChangedCount());
+		MungeStepOutput o = new MungeStepOutput<String>("test", String.class);
+		mungeStep.connectInput(0, o);
+		assertEquals("Did not get event for connecting input",2,mml.getPropertyChangedCount());
+		mungeStep.disconnectInput(0);
+		assertEquals("Did not get any event for disconnecting input",3,mml.getPropertyChangedCount());
+		assertFalse("Munge step output did not get disconnected", mungeStep.getInputs().contains(o));
+	}
 }

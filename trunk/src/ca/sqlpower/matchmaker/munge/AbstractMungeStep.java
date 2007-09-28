@@ -38,8 +38,9 @@ import ca.sqlpower.matchmaker.MatchRuleSet;
 public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeStep, MungeStepOutput> implements MungeStep {
 	
 	/**
-	 * A list of MungeStepOutput objects that the parent MungeStep
-	 * has output, which this MungeStep will use for its input.
+	 * A list of Input objects, each containing a MungeStepOutput
+	 * that the parent MungeStep has output, which this MungeStep 
+	 * will use for its input.
 	 */
 	private List<Input> inputs = new ArrayList<Input>();
 	
@@ -64,6 +65,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	public void connectInput(int index, MungeStepOutput o) {
 		if (index >= getInputs().size()) {
 			throw new IndexOutOfBoundsException("There is no input at the given index");
+		}
+		if (o != null) {
+			getEventSupport().firePropertyChange("inputs", null, o);
+		} else {
+			getEventSupport().firePropertyChange("inputs",
+				inputs.get(index).current, null);
 		}
 		inputs.get(index).current = o;
 	}
