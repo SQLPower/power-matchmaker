@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
+
 
 /** 
  * A holder for translate groups
@@ -82,10 +84,14 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
      * @return true if <tt>tg</tt> is used by <tt>mmo</tt> or one of its descendants; false otherwise.
      */
     private boolean checkMMOContainsTranslateGroup(MatchMakerObject mmo,MatchMakerTranslateGroup tg){
-        if (mmo instanceof MatchRule){
-            MatchRule rule = (MatchRule) mmo;
-            if (tg.equals(rule.getTranslateGroup())) {
-                return true;
+        if (mmo instanceof TranslateWordMungeStep) {
+            TranslateWordMungeStep step = (TranslateWordMungeStep) mmo;
+            String oidStr = step.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME);
+            if (oidStr != null) {
+                Long oid = new Long(oidStr);
+                if (tg.getOid().equals(oid)) {
+                    return true;
+                }
             }
         }
         if (mmo instanceof Match) {

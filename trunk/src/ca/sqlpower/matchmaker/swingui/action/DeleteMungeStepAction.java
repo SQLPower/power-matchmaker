@@ -24,28 +24,28 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.tree.TreePath;
 
-import ca.sqlpower.matchmaker.MatchRule;
+import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
 /**
  * A simple action for deleting a match rule.
  */
-public class DeleteMatchRuleAction extends AbstractAction {
-	MatchRule rule;
+public class DeleteMungeStepAction extends AbstractAction {
+	MungeStep step;
 	MatchMakerSwingSession swingSession;
 	
-	public DeleteMatchRuleAction(MatchMakerSwingSession swingSession, MatchRule rule) {
+	public DeleteMungeStepAction(MatchMakerSwingSession swingSession, MungeStep step) {
 		super("Delete Rule");
-		this.rule = rule;
+		this.step = step;
 		this.swingSession = swingSession;
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-		TreePath treePath = treeModel.getPathForNode(rule.getParent());
+		TreePath treePath = treeModel.getPathForNode(step.getParent());
 		swingSession.getTree().setSelectionPath(treePath);
-		swingSession.delete(rule);
+		swingSession.delete(step);
 	}
 
 }

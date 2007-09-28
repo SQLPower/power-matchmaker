@@ -75,7 +75,6 @@ import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
@@ -84,6 +83,7 @@ import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
+import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
@@ -926,13 +926,13 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		if (mmo.getParent() != null) {
 			
 			mmo.getParent().removeChild(mmo);
-            if (mmo instanceof MatchRule) {
-                // XXX Rules are special because they don't have a DAO of their own
+            if (mmo instanceof MungeStep) {
+                // Munge Steps are special because they don't have a DAO of their own
                 MatchMakerObject ruleSet = mmo.getParent();
                 MatchMakerDAO dao = getDAO(ruleSet.getClass());
                 dao.save(ruleSet);
             } else if ( mmo instanceof ColumnMergeRules) {
-            	// XXX so are column merge rules
+            	// so are column merge rules
             	MatchMakerObject tableMergeRules = mmo.getParent();
                 MatchMakerDAO dao = getDAO(tableMergeRules.getClass());
                 dao.save(tableMergeRules);

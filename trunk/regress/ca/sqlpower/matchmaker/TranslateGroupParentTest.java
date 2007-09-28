@@ -23,13 +23,14 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
+
 import junit.framework.TestCase;
 
 public class TranslateGroupParentTest extends TestCase {
     PlFolder<MatchMakerObject> folder;
     Match match;
     MatchRuleSet cg;
-    MatchRule c;
     TranslateGroupParent tgp;
     TestingMatchMakerSession session;
 
@@ -39,8 +40,6 @@ public class TranslateGroupParentTest extends TestCase {
         folder.addChild(match);
         cg = new MatchRuleSet();
         match.addMatchRuleSet(cg);
-        c = new MatchRule();
-        cg.addChild(c);
         session = new TestingMatchMakerSession(); 
         List<PlFolder> folders = new ArrayList<PlFolder>();
         folders.add(folder);
@@ -53,9 +52,12 @@ public class TranslateGroupParentTest extends TestCase {
     }
 
     public void testIsUseInBusinessModelTGFound() {
-        MatchMakerTranslateGroup tg = new MatchMakerTranslateGroup();
+        MatchMakerTranslateGroup tg = new MatchMakerTranslateGroup(new Long(1234));
         tg.setName("tg");
-        c.setTranslateGroup(tg);
+        TranslateWordMungeStep twMungeStep;
+        twMungeStep = new TranslateWordMungeStep(session);
+        twMungeStep.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME, String.valueOf(tg.getOid()));
+        cg.addChild(twMungeStep);
         assertTrue("Couldn't find the translate group in the business model",tgp.isInUseInBusinessModel(tg));
     }
     

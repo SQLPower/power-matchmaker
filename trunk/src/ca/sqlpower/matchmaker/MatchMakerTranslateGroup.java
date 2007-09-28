@@ -32,6 +32,15 @@ public class MatchMakerTranslateGroup
      */
     @SuppressWarnings("unused")
 	private Long oid;
+    
+    /**
+     * Returns this translate group's peristent Object Identifier.  This get method
+     * should probably be declared in the AbstractMatchMakerObject, but I just need it
+     * here right now.
+     */
+    public Long getOid() {
+        return oid;
+    }
 
 	@Override
 	public int hashCode() {
@@ -58,6 +67,17 @@ public class MatchMakerTranslateGroup
 
 	public MatchMakerTranslateGroup() {
 	}
+    
+    /**
+     * Constructor that is only useful for unit tests which require a translate
+     * group with a non-null OID.  If you use this in the real app, it will probably
+     * break the ORM layer.
+     * 
+     * @param initialOid The initial OID to assign to the new instance.
+     */
+    MatchMakerTranslateGroup(Long initialOid) {
+        this.oid = initialOid;
+    }
 
 	@Override
 	public String toString() {

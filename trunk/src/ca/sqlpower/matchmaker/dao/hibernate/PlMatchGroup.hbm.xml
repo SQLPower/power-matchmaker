@@ -47,14 +47,8 @@
 		<property name="colour" type="ca.sqlpower.matchmaker.dao.hibernate.CustomColourType">
 			<column name="colour"/>
 		</property>
-		<bag name="children" cascade="all-delete-orphan"
-			inverse="true" lazy="false" fetch="subselect">
-			<key>
-				<column name="GROUP_OID" not-null="true" />
-			</key>
-			<one-to-many
-				class="ca.sqlpower.matchmaker.MatchRule" />
-		</bag>
+
+		<!-- TODO map the munge step children -->
 
 	</class>
 </hibernate-mapping>

@@ -20,6 +20,8 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,6 +102,10 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		inputs.remove(index);
 	}
 
+    public Collection<String> getParameterNames() {
+        return Collections.unmodifiableSet(parameters.keySet());
+    }
+    
 	public String getParameter(String name) {
 		return parameters.get(name);
 	}
@@ -112,7 +118,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 
 	public MungeStep duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
-		throw new UnsupportedOperationException("Duplicate is not supported");
+		throw new UnsupportedOperationException("Duplicate is not supported yet");
 	}
 	
 	public MatchRuleSet getParent() {

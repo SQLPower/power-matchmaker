@@ -30,7 +30,6 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
@@ -195,22 +194,12 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		MatchRuleSet group = groups.get(0);
 		assertEquals("Wrong Group name", "group_" + time, group.getName());
 
-		List<MatchRule> ruleSets = group.getChildren();
-		assertEquals("There is only one set of column rules", 1, ruleSets
-				.size());
-
-		MatchRule rule = ruleSets.get(0);
-		assertEquals("Wrong rule last update user",
-                    "test_rule_"+time, rule.getLastUpdateAppUser());
+        // TODO check that the munge rules were retrieved
     }
     
     public void testRuleSetMove() throws Exception {
         MatchRuleSet ruleSet = new MatchRuleSet();
         ruleSet.setName("criteria group");
-        
-        MatchRule matchRule = new MatchRule();
-        matchRule.setColumnName("cows");
-        ruleSet.addChild(matchRule);
         
         Match oldMatch = new Match();
         oldMatch.setName("old");

@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -65,6 +66,11 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 */
 	void setParameter(String name, String newValue);
 
+    /**
+     * Enumerates the list of all parameter names currently in place in this munge step.
+     */
+    Collection<String> getParameterNames();
+    
 	/**
 	 * Adds a IOConnectors with the given InputDescriptor.
 	 * Any class that extends AbstractMungeStep that is expecting 
