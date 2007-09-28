@@ -41,7 +41,8 @@ public class UpperCaseMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
 		step.connectInput(0, testInput);
-		List<MungeStepOutput> results = step.call();
+		step.call();
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("ABCDEFG", result);
@@ -51,7 +52,8 @@ public class UpperCaseMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcDEF!@#$%^&*");
 		step.connectInput(0, testInput);
-		List<MungeStepOutput> results = step.call();
+		step.call();
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("ABCDEF!@#$%^&*", result);
@@ -62,7 +64,8 @@ public class UpperCaseMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
-		List<MungeStepOutput> results = step.call();
+		step.call();
+		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals(null, result);
