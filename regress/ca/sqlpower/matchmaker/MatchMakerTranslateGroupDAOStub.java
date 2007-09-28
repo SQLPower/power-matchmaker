@@ -63,4 +63,21 @@ public class MatchMakerTranslateGroupDAOStub implements
 
     }
 
+	public MatchMakerTranslateGroup findByOID(long oid) {
+		MatchMakerTranslateGroup translateGroup = new MatchMakerTranslateGroup();
+		MatchMakerTranslateWord test = new MatchMakerTranslateWord();
+		test.setFrom("ab");
+		test.setTo("12");
+		translateGroup.addChild(test);
+		MatchMakerTranslateWord test2 = new MatchMakerTranslateWord();
+		test2.setFrom("cd");
+		test2.setTo("34");
+		translateGroup.addChild(test2);
+		MatchMakerTranslateWord test3 = new MatchMakerTranslateWord();
+		test3.setFrom("x*y");
+		test3.setTo("-");
+		translateGroup.addChild(test3);
+		return translateGroup;
+	}
+
 }

@@ -31,10 +31,18 @@ import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
  */
 public interface MatchMakerTranslateGroupDAO extends MatchMakerDAO<MatchMakerTranslateGroup> {
     /**
-     * Finds the Translte Group having the given name (case sensitive).
+     * Finds the Translate Group having the given name (case sensitive).
      * @param name The name of the translate group to look for
      * @return The translate group object with the given name, or null if there
      * is no such translate group.
      */
     public MatchMakerTranslateGroup findByName(String name);
+    
+    /**
+     * Finds the Translate Group having the given oid.
+     * @param oid The oid of the translate group to look for
+     * @return The translate group object with the given name, or null if there
+     * is no such translate group.
+     */
+    public MatchMakerTranslateGroup findByOID(long oid);
 }
