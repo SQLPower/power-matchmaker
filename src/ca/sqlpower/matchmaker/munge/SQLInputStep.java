@@ -130,6 +130,9 @@ public class SQLInputStep extends AbstractMungeStep {
     }
 
     public Boolean call() throws Exception {
+        if (rs == null) {
+            throw new IllegalStateException("Step is not open");
+        }
         if (!rs.next()) {
             for (int i = 0; i < table.getColumns().size(); i++) {
                 MungeStepOutput<?> o = getChildren().get(i);
@@ -199,6 +202,7 @@ public class SQLInputStep extends AbstractMungeStep {
     public void close() throws Exception {
         Statement stmt = rs.getStatement();
         rs.close();
+        rs = null;
         stmt.close();
     }
 
