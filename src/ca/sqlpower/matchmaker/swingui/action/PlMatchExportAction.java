@@ -29,8 +29,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchExporter;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
@@ -38,6 +39,8 @@ import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 
 public class PlMatchExportAction extends AbstractAction {
 
+    private final static Logger logger = Logger.getLogger(PlMatchExportAction.class);
+    
     private final MatchMakerSwingSession swingSession;
 	private final JFrame owningFrame;
 
@@ -51,10 +54,10 @@ public class PlMatchExportAction extends AbstractAction {
      * determined by the current selection in the Swing Session's tree.
      */
 	public PlMatchExportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
-		// FIXME: We need an icon for this.
 		super("Export",
 				SPSUtils.createIcon( "general/Export",
 						"Export"));
+        logger.debug("Creating new match export action");
 		putValue(SHORT_DESCRIPTION, "Export Match");
         this.swingSession = swingSession;
 		this.owningFrame = owningFrame;
@@ -108,18 +111,19 @@ public class PlMatchExportAction extends AbstractAction {
 		}
 
 		if ( export != null ) {
-        	PrintWriter out;
+        	PrintWriter out = null;
         	try {
         		out = new PrintWriter(export);
-        		MatchExporter exporter = new MatchExporter();
-        		exporter.save(match,out, "UTF-8");
+                throw new RuntimeException("Export is not currently implemented.");
         	} catch (IOException ioe) {
         		SPSUtils.showExceptionDialogNoReport(owningFrame, 
         				"There was an exception while writing to the file " + export.getName(), ioe);
 			} catch (Exception ex) {
 				SPSUtils.showExceptionDialogNoReport(owningFrame, 
         				"There was an exception while doing the export", ex);
-			}
+			} finally {
+			    if (out != null) out.close();
+            }
         }
 
 	}

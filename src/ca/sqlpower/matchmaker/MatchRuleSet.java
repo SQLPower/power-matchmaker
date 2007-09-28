@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker;
 
 import java.awt.Color;
 
+import ca.sqlpower.matchmaker.munge.MungeStep;
+
 /**
  * A set of match rules, the child type is MatchRule
  * matchPercent can be NULL, and it's NULL when the object just create(default constructor)
@@ -28,7 +30,7 @@ import java.awt.Color;
  * @param <C>
  */
 public class MatchRuleSet
-	extends AbstractMatchMakerObject<MatchRuleSet, MatchRule> {
+	extends AbstractMatchMakerObject<MatchRuleSet, MungeStep> {
 	
 	/**
 	 * This is the name given to a rule set made by the Match Maker
@@ -177,24 +179,6 @@ public class MatchRuleSet
 		return true;
 	}
 
-	public String createNewUniqueName() {
-
-        StringBuffer name = new StringBuffer("new rule");
-        int i = 1;
-        while ( getRuleByName(name.toString()) != null ) {
-        	name = new StringBuffer("new rule").append(i++);
-        }
-        return name.toString();
-    }
-
-	private MatchRule getRuleByName(String name) {
-		for ( MatchRule c : getChildren() ) {
-			if ( c.getName().equals(name))
-				return c;
-        }
-		return null;
-	}
-
 	/**
 	 * duplicate all the properties of the MatchRule group 
 	 * and it's children, except oid and parent
@@ -212,9 +196,9 @@ public class MatchRuleSet
 		group.setName(getName()==null?null:new String(getName()));
 		group.setSession(s);
 		
-		for ( MatchRule rule : getChildren()) {
-			MatchRule newRule = rule.duplicate(group,s);
-			group.addChild(newRule);
+		for ( MungeStep step : getChildren()) {
+            MungeStep newStep = step.duplicate(group,s);
+			group.addChild(newStep);
 		}
 		return group;
 	}

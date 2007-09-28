@@ -49,6 +49,10 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 */
 	private MatchMakerSession session;
 	
+    /**
+     * The name of the parameter that specifies the OID of the translate group used
+     * by this step.
+     */
 	public static final String TRANSLATE_GROUP_PARAMETER_NAME = "translateGroupOid";
 	
 	/**

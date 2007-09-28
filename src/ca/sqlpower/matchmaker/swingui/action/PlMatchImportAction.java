@@ -31,13 +31,10 @@ import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
-import org.xml.sax.SAXException;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchImporter;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
@@ -45,12 +42,11 @@ import ca.sqlpower.swingui.SPSUtils;
 public class PlMatchImportAction extends AbstractAction {
 
 	private static final Logger logger = Logger.getLogger(PlMatchImportAction.class);
+    
     private final MatchMakerSwingSession swingSession;
-
 	private JFrame owningFrame;
 
 	public PlMatchImportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
-		// FIXME: We need an icon for this
 		super("Import",
 				SPSUtils.createIcon( "general/Import",
                 "Import"));
@@ -78,26 +74,22 @@ public class PlMatchImportAction extends AbstractAction {
 			BufferedInputStream in = null;
 			try {
 				in = new BufferedInputStream(new FileInputStream(importFile));
-				MatchImporter importer = new MatchImporter();
-				match = new Match();
-				match.setSession(swingSession);
-				importer.load(match,in);
+                throw new RuntimeException("Import is not currently implemented");
 			} catch (FileNotFoundException e1) {
 				SPSUtils.showExceptionDialogNoReport(owningFrame,
 						"The file " + importFile.getName() + " cannot be found", e1 );
-			} catch (IOException e1) {
-				SPSUtils.showExceptionDialogNoReport(owningFrame,
-						"There was an IO exception while reading the file " + importFile.getName(), e1 );
-			} catch (ParserConfigurationException e1) {
-				SPSUtils.showExceptionDialogNoReport(owningFrame,
-						"There is an error with the XML parser configuration", e1 );
-			} catch (SAXException e1) {
-				SPSUtils.showExceptionDialogNoReport(owningFrame, 
-						"There was an error while parsing the XML import file", e1 );
 			} catch (Exception e1) {
 				SPSUtils.showExceptionDialogNoReport(owningFrame, 
 						"There was an exception while doing the import", e1);
-			}
+			} finally {
+			    try {
+			        if (in != null) in.close();
+			    } catch (IOException ex) {
+			        logger.error(
+                            "Couldn't close input file. Swallowing this " +
+                            "exception to preserve the possible original one", ex);
+			    }         
+            }
 
 			if ( match == null ) {
 				JOptionPane.showConfirmDialog(null,

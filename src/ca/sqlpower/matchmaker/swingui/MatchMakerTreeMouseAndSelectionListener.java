@@ -40,16 +40,16 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
-import ca.sqlpower.matchmaker.MatchRule;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
-import ca.sqlpower.matchmaker.swingui.action.DeleteMatchRuleAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMungeStepAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteTranslateGroupAction;
@@ -137,8 +137,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
                     }
                 } else if (o instanceof MatchRuleSet) {
                     addMatchGroupMenuItems(m, (MatchRuleSet) o);
-                } else if (o instanceof MatchRule) {
-                    addMatchRuleMenuItems(m, (MatchRule) o);
+                } else if (o instanceof MungeStep) {
+                    addMatchRuleMenuItems(m, (MungeStep) o);
                 } else if (o instanceof TableMergeRules) {
                 	addMergeRulesMenuItems(m, (TableMergeRules) o);
                 } else if (o instanceof TranslateGroupParent) {
@@ -187,8 +187,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
      * @param m The popup menu that the menu item would be attached onto.
      * @param rule The current folder being right-clicked on.
      */
-    private void addMatchRuleMenuItems(JPopupMenu m, MatchRule rule) {
-        m.add(new JMenuItem(new DeleteMatchRuleAction(swingSession, rule)));
+    private void addMatchRuleMenuItems(JPopupMenu m, MungeStep step) {
+        m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
     }
 
     /**
@@ -309,9 +309,9 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 
 				} else if (o instanceof MatchRuleSet) {
 					Match m = ((MatchRuleSet) o).getParentMatch();
-					MatchRuleSetEditor editor = new MatchRuleSetEditor(
+					MungeProcessEditor editor = new MungeProcessEditor(
 							swingSession, m, (MatchRuleSet) o);
-					logger.debug("Created new match group editor "
+					logger.debug("Created new munge process editor "
 							+ System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 				} else if ( o instanceof MatchMakerFolder ) {

@@ -73,7 +73,7 @@ public class MungePen extends JLayeredPane {
 	 * Creates a new empty mungepen.
 	 * 
 	 */
-	MungePen() {
+	public MungePen() {
 		setFocusable(true);
 		addMouseListener(new MungePenMouseListener());
 		addMouseMotionListener(new MungePenMouseMotionListener());
