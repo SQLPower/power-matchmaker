@@ -19,9 +19,6 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.List;
-
-
 /**
  * This munge step will concat all alphabetical string inputs.
  */
@@ -53,7 +50,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	public List<MungeStepOutput> call() throws Exception {
+	public Boolean call() throws Exception {
 		boolean allNulls = true;
 		StringBuilder data = new StringBuilder();
 		for (MungeStepOutput<String> in: getInputs()) {
@@ -66,7 +63,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		if (allNulls) {
 			out.setData(null);
 		}
-		return getChildren();
+		return true;
 	}
 
 	public boolean canAddInput() {

@@ -19,10 +19,7 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.List;
-
 import org.apache.commons.codec.language.Soundex;
-
 
 /**
  * This munge step will output the soundex code of the given input.
@@ -59,11 +56,11 @@ public class SoundexMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	public List<MungeStepOutput> call() throws Exception {
+	public Boolean call() throws Exception {
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
 		out.setData(new Soundex().soundex(data));
-		return getChildren();
+		return true;
 	}
 
 	public boolean canAddInput() {

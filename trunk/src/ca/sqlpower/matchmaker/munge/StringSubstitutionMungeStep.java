@@ -19,14 +19,13 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 /**
  * This munge step will substitute all occurences of a given string to another for
- *  all alphabetical string inputs. This step supports using regular expressions as
+ *  a alphabetical string inputs. This step supports using regular expressions as
  *  an option for the target string.
  */
 public class StringSubstitutionMungeStep extends AbstractMungeStep {
@@ -78,7 +77,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	public List<MungeStepOutput> call() throws Exception {
+	public Boolean call() throws Exception {
 		String from = getParameter(FROM_PARAMETER_NAME);
 		String to = getParameter(TO_PARAMETER_NAME);
 		String useRegex = getParameter(USE_REGEX_PARAMETER_NAME);
@@ -95,7 +94,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 			}
 			out.setData(data);
 		}
-		return getChildren();
+		return true;
 	}
 
 	public boolean canAddInput() {

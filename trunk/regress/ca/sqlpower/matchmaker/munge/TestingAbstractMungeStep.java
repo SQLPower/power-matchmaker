@@ -19,10 +19,6 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.List;
-
-import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
-import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
 /**
  * A bare bones test implementation of an AbstractMungeStep for
@@ -40,8 +36,8 @@ public class TestingAbstractMungeStep extends AbstractMungeStep {
 		return 0;
 	}
 
-	public List<MungeStepOutput> call() throws Exception {
-		return null;
+	public Boolean call() throws Exception {
+		return true;
 	}
 
 	public boolean canAddInput() {

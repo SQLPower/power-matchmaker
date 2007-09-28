@@ -19,11 +19,10 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.util.List;
 
 
 /**
- * This munge step will convert all alphabetical string inputs
+ * This munge step will convert a alphabetical string input
  * to upper case.
  */
 public class UpperCaseMungeStep extends AbstractMungeStep {
@@ -58,14 +57,14 @@ public class UpperCaseMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	public List<MungeStepOutput> call() throws Exception {
+	public Boolean call() throws Exception {
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
 		if (in.getData() != null) {
 			data = data.toUpperCase();
 		}
 		out.setData(data);
-		return getChildren();
+		return true;
 	}
 
 	public boolean canAddInput() {

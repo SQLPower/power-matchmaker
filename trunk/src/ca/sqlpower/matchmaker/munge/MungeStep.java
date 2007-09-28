@@ -39,7 +39,7 @@ import ca.sqlpower.matchmaker.MatchRuleSet;
  * as equivalent.  In terms of conforming data, a munge step might format a North
  * American telephone number or Canadian postal code.
  */
-public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>, Callable<List<MungeStepOutput>> {
+public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>, Callable<Boolean> {
 
 	/**
 	 * Returns the parent to this step, which is a MatchRuleSet object.
@@ -118,10 +118,10 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * You have to open a MungeStep before invoking this method on it.  Open
      * a step by calling {@link #open()}.
 	 * 
-	 * @return The outputs of this step, which now contain the newly calculated
-	 *         output values.
+	 * @return A Boolean object with value set to true if the munging process
+	 * should continue after this step. Otherwise, return false. 
 	 */
-	List<MungeStepOutput> call() throws Exception;
+	Boolean call() throws Exception;
 	
 	/**
 	 *  Returns an InputDescriptor containing the expected attributes for inputs
