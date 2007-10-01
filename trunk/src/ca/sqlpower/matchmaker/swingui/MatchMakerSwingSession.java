@@ -1072,5 +1072,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         }
 		return true;
 	}
+	
+	/**
+	 * @return Returns the original editor pane.
+	 */
+	public EditorPane getOldPane() {
+		return oldPane;
+	}
 
 }

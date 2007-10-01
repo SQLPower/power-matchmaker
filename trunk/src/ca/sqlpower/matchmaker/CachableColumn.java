@@ -90,7 +90,9 @@ public abstract class CachableColumn {
             SQLColumn newColumn = st.getColumnByName(columnName);
 
             // did we actually make it here?
-            setColumn(newColumn);
+            SQLColumn oldVal = this.cachedColumn;
+            this.cachedColumn = newColumn;
+            this.columnName = (newColumn == null ? null : newColumn.getName());
 
             return newColumn;
             

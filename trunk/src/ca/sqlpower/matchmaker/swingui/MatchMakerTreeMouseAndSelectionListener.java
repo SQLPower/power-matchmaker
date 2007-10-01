@@ -326,23 +326,45 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 						swingSession.setCurrentEditorComponent(editor);
 					}
 				} else if ( o instanceof TableMergeRules ) {
-					TableMergeRules f = (TableMergeRules)o;
-					Match m = (Match) f.getParentMatch();
-					
-					MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession,m,f,null);
-					logger.debug("Created new merge column rules editor "
-							+ System.identityHashCode(editor));
-					swingSession.setCurrentEditorComponent(editor);
+					boolean doNothing = false;
+					//Checks if the original pane is the same as the new one
+					if (swingSession.getOldPane() instanceof MergeColumnRuleEditor) {
+						MergeColumnRuleEditor originalPane = (MergeColumnRuleEditor) swingSession.getOldPane();
+						if (originalPane.getMergeRule() == o) {
+							doNothing = true;
+						}
+					}
+					if (!doNothing) {
+						TableMergeRules f = (TableMergeRules)o;
+						Match m = (Match) f.getParentMatch();
+
+						MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession,m,f);
+						logger.debug("Created new merge column rules editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
+					}
 				} else if ( o instanceof ColumnMergeRules ) {
-					TableMergeRules f = (TableMergeRules) ((ColumnMergeRules)o).getParent();
-					Match m = (Match) f.getParentMatch();
-					
-					MergeColumnRuleEditor editor =
-						new MergeColumnRuleEditor(swingSession,m,f,
-								(ColumnMergeRules)o);
-					logger.debug("Created new merge column rules editor "
-							+ System.identityHashCode(editor));
-					swingSession.setCurrentEditorComponent(editor);
+					boolean doNothing = false;
+					//Checks if the original pane is the same as the new one
+					if (swingSession.getOldPane() instanceof MergeColumnRuleEditor) {
+						MergeColumnRuleEditor originalPane = (MergeColumnRuleEditor) swingSession.getOldPane();
+						if (originalPane.getMergeRule() == ((ColumnMergeRules) o).getParent()) {
+							doNothing = true;
+							originalPane.setSelectedColumn((ColumnMergeRules) o);
+						}
+					}
+					if (!doNothing) {
+						TableMergeRules f = (TableMergeRules) ((ColumnMergeRules)o).getParent();
+						Match m = (Match) f.getParentMatch();
+						
+						MergeColumnRuleEditor editor =
+							new MergeColumnRuleEditor(swingSession,m,f);
+						logger.debug("Created new merge column rules editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
+						editor.setSelectedColumn((ColumnMergeRules) o);
+					}
+
 				} else if (o instanceof MatchActionNode) {
 					MatchActionNode node = (MatchActionNode) o;
 					if (node.getActionType() == MatchActionType.RUN_MATCH) {
