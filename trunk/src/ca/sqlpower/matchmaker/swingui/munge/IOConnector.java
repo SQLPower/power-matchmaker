@@ -22,6 +22,9 @@
  */
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.BasicStroke;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -30,6 +33,8 @@ import java.awt.geom.Line2D;
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
 /**
  *Used to store a line between the IOConnections.
@@ -41,6 +46,8 @@ public class IOConnector {
 	MungeComponent child;
 	int parentNumber;
 	int childNumber;
+	
+	boolean selected;
 	
 	/**
 	 * Creates a new IOConnector that represents a connection line in the mungePen
@@ -55,6 +62,7 @@ public class IOConnector {
 		this.child = child;
 		parentNumber = parentNum;
 		childNumber = childNum;
+		selected = false;
 	}
 	
 	
@@ -115,11 +123,45 @@ public class IOConnector {
 	}
 
 	/**
+	 * paints this IOC as a line on the specified Graphics
+	 * 
+	 * @param g The place to paint
+	 */
+	public void paint(Graphics g) {
+		if (selected) {
+			((Graphics2D)g).setStroke(new BasicStroke(2));
+		}
+		
+		Point bottom = child.getInputPosition(childNumber);
+		Point top = parent.getOutputPosition(parentNumber);
+		
+		top.translate(parent.getX(), parent.getY());
+		bottom.translate(child.getX(), child.getY());
+		
+		MungeStepOutput link = child.getInputs().get(childNumber);
+		g.setColor(MungeComponent.getColor(link.getType()));
+		
+		g.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
+		
+		if (selected) {
+			((Graphics2D)g).setStroke(new BasicStroke(1));
+		}
+	}
+	
+	/**
+	 * Sets this IOC to be selected so that it can be drawn diffrently
+	 * 
+	 * @param sel Set to true to select this component, false otherwise 
+	 */
+	public void setSelected(boolean sel) {
+		selected = sel;
+	}
+	
+	/**
 	 * deletes this IOC and the link in the mungeSteps 
 	 */
 	public void remove() {
 		child.getStep().disconnectInput(childNumber);
-		child.getParent().repaint();
 	}
 
 

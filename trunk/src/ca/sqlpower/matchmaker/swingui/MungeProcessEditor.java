@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchRuleSet;
@@ -52,7 +53,7 @@ public class MungeProcessEditor implements EditorPane {
     /**
      * The actual GUI component that provides the editing interface.
      */
-    private final MungePen panel;
+    private final JScrollPane panel;
     
     /**
      * The instance that monitors the subtree we're editing for changes (so we know
@@ -77,7 +78,7 @@ public class MungeProcessEditor implements EditorPane {
         this.swingSession = swingSession;
         this.parentMatch = match;
         this.process = process;
-        this.panel = new MungePen();
+        this.panel = new JScrollPane(new MungePen(process));
         this.changeHandler = new MMOChangeWatcher<MatchRuleSet, MungeStep>(process);
         
         if (process.getParentMatch() != null && process.getParentMatch() != parentMatch) {
