@@ -341,4 +341,24 @@ public class TranslateWordsEditor implements EditorPane {
 			}
 		}
 	};
+
+	/**
+	 * @return Returns the MatchMakerTranslateGroup that this editor pane is editing
+	 */
+	public MatchMakerTranslateGroup getGroup() {
+		return group;
+	}
+	
+	/**
+	 * Sets the selected row for the table.
+	 * @param selectedWord The word to be selected.
+	 */
+	public void setSelectedWord(MatchMakerTranslateWord selectedWord) {
+		if (selectedWord != null) {
+			int selected = group.getChildren().indexOf(selectedWord);			
+			if (selected >= 0 && selected<translateWordsTable.getRowCount()) {
+				translateWordsTable.setRowSelectionInterval(selected, selected);
+			}
+		}
+	}
 }

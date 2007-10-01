@@ -66,228 +66,267 @@ import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
 import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
 
 /**
- * This appears to be a mouse event listener for the MatchMaker tree component of the GUI.
- * It creates pop-up menus when a popup event is triggered, (ex. right-clicking), and also
- * changes the MatchMaker's main editor component according to the selected item in the tree
+ * This appears to be a mouse event listener for the MatchMaker tree component
+ * of the GUI. It creates pop-up menus when a popup event is triggered, (ex.
+ * right-clicking), and also changes the MatchMaker's main editor component
+ * according to the selected item in the tree
  */
-public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implements TreeSelectionListener {
+public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
+		implements TreeSelectionListener {
 
-	private static final Logger logger = Logger.getLogger(MatchMakerTreeMouseAndSelectionListener.class);
+	private static final Logger logger = Logger
+			.getLogger(MatchMakerTreeMouseAndSelectionListener.class);
 
-    private final MatchMakerSwingSession swingSession;
+	private final MatchMakerSwingSession swingSession;
 
-    private final JFrame owningFrame;
+	private final JFrame owningFrame;
 
-    public MatchMakerTreeMouseAndSelectionListener(MatchMakerSwingSession swingSession) {
-        this.swingSession = swingSession;
-        this.owningFrame = swingSession.getFrame();
-    }
+	public MatchMakerTreeMouseAndSelectionListener(
+			MatchMakerSwingSession swingSession) {
+		this.swingSession = swingSession;
+		this.owningFrame = swingSession.getFrame();
+	}
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        makePopup(e);
-    }
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		makePopup(e);
+	}
 
-    @Override
-    public void mousePressed(MouseEvent e) {
-        makePopup(e);
-    }
+	@Override
+	public void mousePressed(MouseEvent e) {
+		makePopup(e);
+	}
 
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        makePopup(e);
-    }
-    
-    /**
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		makePopup(e);
+	}
+
+	/**
 	 * If the event is a pop-up trigger this method selects the tree node that
 	 * is clicked on and displays the pop-up menu.
 	 */
-    private void makePopup(MouseEvent e) {
+	private void makePopup(MouseEvent e) {
 
-        if (e.isPopupTrigger()) {
-        	JTree t = (JTree) e.getSource();
-        	TreePath p = t.getPathForLocation(e.getX(), e.getY());
-        	if (!t.isPathSelected(p)) {
-        		t.setSelectionPath(p);
-        	}
-        	
-            JPopupMenu m = new JPopupMenu();
-            int row = t.getRowForLocation(e.getX(), e.getY());
-            TreePath tp = t.getPathForRow(row);
-            m.add(new JMenuItem(new Refresh(swingSession)));
-            if (tp != null) {
-                Object o = tp.getLastPathComponent();
-                if (o instanceof FolderParent ) {
-                	MatchMakerTreeModel model = (MatchMakerTreeModel)t.getModel();
-                	int index = model.getIndexOfChild(model.getRoot(), o);
-                	/*** create folder under current only */
-                	if ( index == 0 ) {
-                		createNewFolderMenuItem(m);
-                	}
-                } else if (o instanceof PlFolder) {
-                    addFolderMenuItems(m, (PlFolder) o);
-                } else if (o instanceof Match) {
-                    addMatchMenuItems(m, (Match) o);
-                } else if (o instanceof MatchMakerFolder<?>) {
-                    MatchMakerFolder<?> folder = (MatchMakerFolder<?>) o;
-                    if (folder.getName().equals(Match.MATCH_RULES_FOLDER_NAME)) {
-                        addMatchRulesFolderMenuItems(m, folder);
-                    } else if (folder.getName().equals(Match.MERGE_RULES_FOLDER_NAME)) {
-                    	addMergeRulesFolderMenuItems(m, folder);
-                    }
-                } else if (o instanceof MatchRuleSet) {
-                    addMatchGroupMenuItems(m, (MatchRuleSet) o);
-                } else if (o instanceof MungeStep) {
-                    addMatchRuleMenuItems(m, (MungeStep) o);
-                } else if (o instanceof TableMergeRules) {
-                	addMergeRulesMenuItems(m, (TableMergeRules) o);
-                } else if (o instanceof TranslateGroupParent) {
-                	addTranslateMenuItems(m, (TranslateGroupParent) o);
-                } else if (o instanceof MatchMakerTranslateGroup) {
-                	addTranslateGroupMenuItems(m, (MatchMakerTranslateGroup) o);
-                }
-            }
-            m.show(t, e.getX(), e.getY());
-        }
-    }
+		if (e.isPopupTrigger()) {
+			JTree t = (JTree) e.getSource();
+			TreePath p = t.getPathForLocation(e.getX(), e.getY());
+			if (!t.isPathSelected(p)) {
+				t.setSelectionPath(p);
+			}
 
-    /**
-     * Attaches a menu item for the actions of a match group.
-     * 
-     * @param m The popup menu that the menu item would be attached onto.
-     * @param folder The current folder being right-clicked on.
-     */
-    private void addMatchRulesFolderMenuItems(JPopupMenu m, MatchMakerFolder<?> folder) {
-        m.add(new JMenuItem(new NewMatchGroupAction(swingSession, (Match) folder.getParent())));
-    }
+			JPopupMenu m = new JPopupMenu();
+			int row = t.getRowForLocation(e.getX(), e.getY());
+			TreePath tp = t.getPathForRow(row);
+			m.add(new JMenuItem(new Refresh(swingSession)));
+			if (tp != null) {
+				Object o = tp.getLastPathComponent();
+				if (o instanceof FolderParent) {
+					MatchMakerTreeModel model = (MatchMakerTreeModel) t
+							.getModel();
+					int index = model.getIndexOfChild(model.getRoot(), o);
+					/** * create folder under current only */
+					if (index == 0) {
+						createNewFolderMenuItem(m);
+					}
+				} else if (o instanceof PlFolder) {
+					addFolderMenuItems(m, (PlFolder) o);
+				} else if (o instanceof Match) {
+					addMatchMenuItems(m, (Match) o);
+				} else if (o instanceof MatchMakerFolder<?>) {
+					MatchMakerFolder<?> folder = (MatchMakerFolder<?>) o;
+					if (folder.getName().equals(Match.MATCH_RULES_FOLDER_NAME)) {
+						addMatchRulesFolderMenuItems(m, folder);
+					} else if (folder.getName().equals(
+							Match.MERGE_RULES_FOLDER_NAME)) {
+						addMergeRulesFolderMenuItems(m, folder);
+					}
+				} else if (o instanceof MatchRuleSet) {
+					addMatchGroupMenuItems(m, (MatchRuleSet) o);
+				} else if (o instanceof MungeStep) {
+					addMatchRuleMenuItems(m, (MungeStep) o);
+				} else if (o instanceof TableMergeRules) {
+					addMergeRulesMenuItems(m, (TableMergeRules) o);
+				} else if (o instanceof TranslateGroupParent) {
+					addTranslateMenuItems(m, (TranslateGroupParent) o);
+				} else if (o instanceof MatchMakerTranslateGroup) {
+					addTranslateGroupMenuItems(m, (MatchMakerTranslateGroup) o);
+				}
+			}
+			m.show(t, e.getX(), e.getY());
+		}
+	}
 
-    /**
-     * Attaches a menu item for the actions of a merge rules folder.
-     * 
-     * @param m The popup menu that the menu item would be attached onto.
-     * @param folder The current folder being right-clicked on.
-     */
-    private void addMergeRulesFolderMenuItems(JPopupMenu m, MatchMakerFolder<?> folder) {
-        m.add(new JMenuItem(new NewMergeRuleAction(swingSession, (Match) folder.getParent())));
-    }
+	/**
+	 * Attaches a menu item for the actions of a match group.
+	 * 
+	 * @param m
+	 *            The popup menu that the menu item would be attached onto.
+	 * @param folder
+	 *            The current folder being right-clicked on.
+	 */
+	private void addMatchRulesFolderMenuItems(JPopupMenu m,
+			MatchMakerFolder<?> folder) {
+		m.add(new JMenuItem(new NewMatchGroupAction(swingSession,
+				(Match) folder.getParent())));
+	}
 
-    /**
-     * Attaches a menu item for the actions of a merge rule.
-     * 
-     * @param m The popup menu that the menu item would be attached onto.
-     * @param folder The current folder being right-clicked on.
-     */
-    private void addMergeRulesMenuItems(JPopupMenu m, TableMergeRules mergeRule) {
-        m.add(new JMenuItem(new DeleteMergeRuleAction(swingSession, mergeRule)));
-    }
-    
-    /**
-     * Attaches a menu item for the actions of a match rule.
-     * 
-     * @param m The popup menu that the menu item would be attached onto.
-     * @param rule The current folder being right-clicked on.
-     */
-    private void addMatchRuleMenuItems(JPopupMenu m, MungeStep step) {
-        m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
-    }
+	/**
+	 * Attaches a menu item for the actions of a merge rules folder.
+	 * 
+	 * @param m
+	 *            The popup menu that the menu item would be attached onto.
+	 * @param folder
+	 *            The current folder being right-clicked on.
+	 */
+	private void addMergeRulesFolderMenuItems(JPopupMenu m,
+			MatchMakerFolder<?> folder) {
+		m.add(new JMenuItem(new NewMergeRuleAction(swingSession, (Match) folder
+				.getParent())));
+	}
 
-    /**
-     * Attaches a menu item for the actions of a match rule set.
-     * 
-     * @param m The popup menu that the menu item would be attached onto.
-     * @param group The current folder being right-clicked on.
-     */
+	/**
+	 * Attaches a menu item for the actions of a merge rule.
+	 * 
+	 * @param m
+	 *            The popup menu that the menu item would be attached onto.
+	 * @param folder
+	 *            The current folder being right-clicked on.
+	 */
+	private void addMergeRulesMenuItems(JPopupMenu m, TableMergeRules mergeRule) {
+		m
+				.add(new JMenuItem(new DeleteMergeRuleAction(swingSession,
+						mergeRule)));
+	}
+
+	/**
+	 * Attaches a menu item for the actions of a match rule.
+	 * 
+	 * @param m
+	 *            The popup menu that the menu item would be attached onto.
+	 * @param rule
+	 *            The current folder being right-clicked on.
+	 */
+	private void addMatchRuleMenuItems(JPopupMenu m, MungeStep step) {
+		m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
+	}
+
+	/**
+	 * Attaches a menu item for the actions of a match rule set.
+	 * 
+	 * @param m
+	 *            The popup menu that the menu item would be attached onto.
+	 * @param group
+	 *            The current folder being right-clicked on.
+	 */
 	private void addMatchGroupMenuItems(JPopupMenu m, MatchRuleSet group) {
-    	m.add(new JMenuItem(new DeleteMatchGroupAction(swingSession,group)));
-    }
+		m.add(new JMenuItem(new DeleteMatchGroupAction(swingSession, group)));
+	}
 
-    private void createNewFolderMenuItem(JPopupMenu m) {
-    	m.add(new JMenuItem(new AbstractAction("New Folder") {
-            public void actionPerformed(ActionEvent e) {
-            	PlFolder<Match> folder = new PlFolder<Match>();
-            	FolderEditor editor = new FolderEditor(swingSession,folder);
-            	swingSession.setCurrentEditorComponent(editor);
-            }
-        }));
-    }
+	private void createNewFolderMenuItem(JPopupMenu m) {
+		m.add(new JMenuItem(new AbstractAction("New Folder") {
+			public void actionPerformed(ActionEvent e) {
+				PlFolder<Match> folder = new PlFolder<Match>();
+				FolderEditor editor = new FolderEditor(swingSession, folder);
+				swingSession.setCurrentEditorComponent(editor);
+			}
+		}));
+	}
 
-    private void addMatchMenuItems(JPopupMenu m, final Match match) {
+	private void addMatchMenuItems(JPopupMenu m, final Match match) {
 
-        m.addSeparator();
-        m.add(new JMenuItem(new NewMatchGroupAction(swingSession, match)));
-        m.add(new JMenuItem(new NewMergeRuleAction(swingSession, match)));
-        
-        m.addSeparator();
-        m.add(new JMenuItem(new AbstractAction("Run Match") {
-            public void actionPerformed(ActionEvent e) {
-                MatchEnginePanel f = new MatchEnginePanel(swingSession, match,
-                        owningFrame);
-                swingSession.setCurrentEditorComponent(f);
-            }
-        }));
-        m.add(new JMenuItem(new AbstractAction("Run Merge") {
-            public void actionPerformed(ActionEvent e) {
-                MergeEnginePanel f = new MergeEnginePanel(swingSession, match,
-                        owningFrame);
-                swingSession.setCurrentEditorComponent(f);
-            }
-        }));
+		m.addSeparator();
+		m.add(new JMenuItem(new NewMatchGroupAction(swingSession, match)));
+		m.add(new JMenuItem(new NewMergeRuleAction(swingSession, match)));
 
-        m.addSeparator();
-        m.add(new JMenuItem(new AbstractAction("Audit Information") {
-            public void actionPerformed(ActionEvent e) {
-            	swingSession.setCurrentEditorComponent(new MatchInfoEditor(match));
-            }
-        }));
-        m.add(new JMenuItem(new ShowMatchStatisticInfoAction(swingSession,match, owningFrame)));
+		m.addSeparator();
+		m.add(new JMenuItem(new AbstractAction("Run Match") {
+			public void actionPerformed(ActionEvent e) {
+				MatchEnginePanel f = new MatchEnginePanel(swingSession, match,
+						owningFrame);
+				swingSession.setCurrentEditorComponent(f);
+			}
+		}));
+		m.add(new JMenuItem(new AbstractAction("Run Merge") {
+			public void actionPerformed(ActionEvent e) {
+				MergeEnginePanel f = new MergeEnginePanel(swingSession, match,
+						owningFrame);
+				swingSession.setCurrentEditorComponent(f);
+			}
+		}));
 
-        m.addSeparator();
-        m.add(new JMenuItem(new PlMatchExportAction(swingSession, owningFrame)));
-        m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
+		m.addSeparator();
+		m.add(new JMenuItem(new AbstractAction("Audit Information") {
+			public void actionPerformed(ActionEvent e) {
+				swingSession.setCurrentEditorComponent(new MatchInfoEditor(
+						match));
+			}
+		}));
+		m.add(new JMenuItem(new ShowMatchStatisticInfoAction(swingSession,
+				match, owningFrame)));
 
-        m.addSeparator();
-        m.add(new JMenuItem(new DeleteMatchAction(swingSession,match)));
-        m.add(new JMenuItem(new DuplicateMatchAction(swingSession,match)));
-        
-    }
+		m.addSeparator();
+		m
+				.add(new JMenuItem(new PlMatchExportAction(swingSession,
+						owningFrame)));
+		m
+				.add(new JMenuItem(new PlMatchImportAction(swingSession,
+						owningFrame)));
 
-    private void addFolderMenuItems(JPopupMenu m, final PlFolder folder) {
-        m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match")));
-        m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
-        m.add(new JMenuItem(new DeletePlFolderAction(swingSession,"Delete Folder",folder)));
-    }
-    
-    /**
-     * Attaches a menu item for the actions of a translate group parent.
-     * 
-     * @param m The popup menu that the menu item would be attached onto.
-     * @param folder The current folder being right-clicked on.
-     */
-    private void addTranslateMenuItems(JPopupMenu m, TranslateGroupParent translate) {
-        m.add(new JMenuItem(new NewTranslateGroupAction(swingSession)));
-    }
-    
-    /**
-     * Attaches a menu item for the actions of a translate group.
-     * 
-     * @param m The popup menu that the menu item would be attached onto.
-     * @param folder The current folder being right-clicked on.
-     */
-    private void addTranslateGroupMenuItems(JPopupMenu m, MatchMakerTranslateGroup group) {
-        m.add(new JMenuItem(new DeleteTranslateGroupAction(swingSession, group)));
-    }
+		m.addSeparator();
+		m.add(new JMenuItem(new DeleteMatchAction(swingSession, match)));
+		m.add(new JMenuItem(new DuplicateMatchAction(swingSession, match)));
 
-    /**
-     * This appears to set the editor component to the correct type of editor 
-     * depending on the component you have selected in the tree.
-     * <p>
-     * This method should catch all exceptions and return gracefully. Otherwise 
-     * you may end up seeing unusual behaviour in the Swing UI. 
-     */
+	}
+
+	private void addFolderMenuItems(JPopupMenu m, final PlFolder folder) {
+		m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match")));
+		m
+				.add(new JMenuItem(new PlMatchImportAction(swingSession,
+						owningFrame)));
+		m.add(new JMenuItem(new DeletePlFolderAction(swingSession,
+				"Delete Folder", folder)));
+	}
+
+	/**
+	 * Attaches a menu item for the actions of a translate group parent.
+	 * 
+	 * @param m
+	 *            The popup menu that the menu item would be attached onto.
+	 * @param folder
+	 *            The current folder being right-clicked on.
+	 */
+	private void addTranslateMenuItems(JPopupMenu m,
+			TranslateGroupParent translate) {
+		m.add(new JMenuItem(new NewTranslateGroupAction(swingSession)));
+	}
+
+	/**
+	 * Attaches a menu item for the actions of a translate group.
+	 * 
+	 * @param m
+	 *            The popup menu that the menu item would be attached onto.
+	 * @param folder
+	 *            The current folder being right-clicked on.
+	 */
+	private void addTranslateGroupMenuItems(JPopupMenu m,
+			MatchMakerTranslateGroup group) {
+		m
+				.add(new JMenuItem(new DeleteTranslateGroupAction(swingSession,
+						group)));
+	}
+
+	/**
+	 * This appears to set the editor component to the correct type of editor
+	 * depending on the component you have selected in the tree.
+	 * <p>
+	 * This method should catch all exceptions and return gracefully. Otherwise
+	 * you may end up seeing unusual behaviour in the Swing UI.
+	 */
 	public void valueChanged(TreeSelectionEvent e) {
 
 		JTree tree = (JTree) e.getSource();
-		if ( tree.getSelectionPath() == null ) {
+		if (tree.getSelectionPath() == null) {
 			logger.debug("Nothing selected, so return.");
 			return;
 		}
@@ -314,90 +353,114 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter implem
 					logger.debug("Created new munge process editor "
 							+ System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
-				} else if ( o instanceof MatchMakerFolder ) {
-					MatchMakerFolder f = (MatchMakerFolder)o;
+				} else if (o instanceof MatchMakerFolder) {
+					MatchMakerFolder f = (MatchMakerFolder) o;
 					Match m = (Match) f.getParent();
-					
-					if ( f.getName().equals(Match.MERGE_RULES_FOLDER_NAME) ) {
-						MergeTableRuleEditor editor = 
-							new MergeTableRuleEditor(swingSession,m);
+
+					if (f.getName().equals(Match.MERGE_RULES_FOLDER_NAME)) {
+						MergeTableRuleEditor editor = new MergeTableRuleEditor(
+								swingSession, m);
 						logger.debug("Created new merge table rules editor "
 								+ System.identityHashCode(editor));
 						swingSession.setCurrentEditorComponent(editor);
 					}
-				} else if ( o instanceof TableMergeRules ) {
-					boolean doNothing = false;
-					//Checks if the original pane is the same as the new one
+				} else if (o instanceof TableMergeRules) {
+					// Checks if the original pane is the same as the new one
 					if (swingSession.getOldPane() instanceof MergeColumnRuleEditor) {
 						MergeColumnRuleEditor originalPane = (MergeColumnRuleEditor) swingSession.getOldPane();
 						if (originalPane.getMergeRule() == o) {
-							doNothing = true;
+							return;
 						}
 					}
-					if (!doNothing) {
-						TableMergeRules f = (TableMergeRules)o;
-						Match m = (Match) f.getParentMatch();
-
-						MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession,m,f);
-						logger.debug("Created new merge column rules editor "
-								+ System.identityHashCode(editor));
-						swingSession.setCurrentEditorComponent(editor);
-					}
-				} else if ( o instanceof ColumnMergeRules ) {
-					boolean doNothing = false;
-					//Checks if the original pane is the same as the new one
+					TableMergeRules f = (TableMergeRules) o;
+					Match m = (Match) f.getParentMatch();
+					MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession, m, f);
+					logger.debug("Created new merge column rules editor " + System.identityHashCode(editor));
+					swingSession.setCurrentEditorComponent(editor);
+				} else if (o instanceof ColumnMergeRules) {
+					ColumnMergeRules columnMergeRule = (ColumnMergeRules) o;
+					// Checks if the original pane is the same as the new one
 					if (swingSession.getOldPane() instanceof MergeColumnRuleEditor) {
 						MergeColumnRuleEditor originalPane = (MergeColumnRuleEditor) swingSession.getOldPane();
-						if (originalPane.getMergeRule() == ((ColumnMergeRules) o).getParent()) {
-							doNothing = true;
-							originalPane.setSelectedColumn((ColumnMergeRules) o);
+						if (originalPane.getMergeRule() == columnMergeRule.getParent()) {
+							originalPane.setSelectedColumn(columnMergeRule);
+							return;
 						}
 					}
-					if (!doNothing) {
-						TableMergeRules f = (TableMergeRules) ((ColumnMergeRules)o).getParent();
-						Match m = (Match) f.getParentMatch();
-						
-						MergeColumnRuleEditor editor =
-							new MergeColumnRuleEditor(swingSession,m,f);
-						logger.debug("Created new merge column rules editor "
-								+ System.identityHashCode(editor));
-						swingSession.setCurrentEditorComponent(editor);
-						editor.setSelectedColumn((ColumnMergeRules) o);
-					}
-
+					TableMergeRules f = (TableMergeRules) ((ColumnMergeRules) o).getParent();
+					Match m = (Match) f.getParentMatch();
+					MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession, m, f);
+					logger.debug("Created new merge column rules editor " + System.identityHashCode(editor));
+					swingSession.setCurrentEditorComponent(editor);
+					editor.setSelectedColumn(columnMergeRule);
 				} else if (o instanceof MatchActionNode) {
 					MatchActionNode node = (MatchActionNode) o;
 					if (node.getActionType() == MatchActionType.RUN_MATCH) {
-						swingSession.setCurrentEditorComponent(new MatchEnginePanel(swingSession, node.getMatch(), owningFrame));
+						swingSession
+								.setCurrentEditorComponent(new MatchEnginePanel(
+										swingSession, node.getMatch(),
+										owningFrame));
 					} else if (node.getActionType() == MatchActionType.AUDIT_INFO) {
-						swingSession.setCurrentEditorComponent(new MatchInfoEditor(node.getMatch()));
+						swingSession
+								.setCurrentEditorComponent(new MatchInfoEditor(
+										node.getMatch()));
 					} else if (node.getActionType() == MatchActionType.VALIDATE_MATCHES) {
-			            if (node.getMatch().getResultTable() == null){
-			                throw new Exception("Match result table does not exist!");
-			            }
-			            swingSession.setCurrentEditorComponent(new MatchResultVisualizer(node.getMatch()));
+						if (node.getMatch().getResultTable() == null) {
+							throw new Exception(
+									"Match result table does not exist!");
+						}
+						swingSession
+								.setCurrentEditorComponent(new MatchResultVisualizer(
+										node.getMatch()));
 					} else if (node.getActionType() == MatchActionType.VALIDATION_STATUS) {
-						swingSession.setCurrentEditorComponent(new MatchValidationStatus(swingSession, node.getMatch()));
+						swingSession
+								.setCurrentEditorComponent(new MatchValidationStatus(
+										swingSession, node.getMatch()));
 					} else if (node.getActionType() == MatchActionType.RUN_MERGE) {
-						swingSession.setCurrentEditorComponent(new MergeEnginePanel(swingSession, node.getMatch(), owningFrame));
+						swingSession
+								.setCurrentEditorComponent(new MergeEnginePanel(
+										swingSession, node.getMatch(),
+										owningFrame));
 					}
 				} else if (o instanceof TranslateGroupParent) {
-					swingSession.setCurrentEditorComponent(new TranslateGroupsEditor(swingSession));
+					swingSession
+							.setCurrentEditorComponent(new TranslateGroupsEditor(
+									swingSession));
 				} else if (o instanceof MatchMakerTranslateGroup) {
+					// Checks if the original pane is the same as the new one
+					if (swingSession.getOldPane() instanceof TranslateWordsEditor) {
+						TranslateWordsEditor originalPane = (TranslateWordsEditor) swingSession.getOldPane();
+						if (originalPane.getGroup() == o) {
+							return;
+						}
+					}
 					MatchMakerTranslateGroup group = (MatchMakerTranslateGroup) o;
-					swingSession.setCurrentEditorComponent(new TranslateWordsEditor(swingSession, group));
+					TranslateWordsEditor editor = new TranslateWordsEditor(swingSession, group);
+					logger.debug("Created new translate word editor " + System.identityHashCode(editor));
+					swingSession.setCurrentEditorComponent(editor);
 				} else if (o instanceof MatchMakerTranslateWord) {
 					MatchMakerTranslateWord word = (MatchMakerTranslateWord) o;
+					// Checks if the original pane is the same as the new one
+					if (swingSession.getOldPane() instanceof TranslateWordsEditor) {
+						TranslateWordsEditor originalPane = (TranslateWordsEditor) swingSession.getOldPane();
+						if (originalPane.getGroup() == word.getParent()) {
+							originalPane.setSelectedWord(word);
+							return;
+						}
+					}
 					MatchMakerTranslateGroup group = (MatchMakerTranslateGroup) word.getParent();
-					swingSession.setCurrentEditorComponent(new TranslateWordsEditor(swingSession, group));
+					TranslateWordsEditor editor = new TranslateWordsEditor(swingSession, group);
+					logger.debug("Created new translate word editor " + System.identityHashCode(editor));
+					swingSession.setCurrentEditorComponent(editor);
+					editor.setSelectedWord(word);
+
 				}
-				
+
 			} catch (Exception ex) {
-				MMSUtils.showExceptionDialog(owningFrame, "Couldn't create editor for selected component", ex);
+				MMSUtils.showExceptionDialog(owningFrame,
+						"Couldn't create editor for selected component", ex);
 			}
 		}
 	}
-
-	
 
 }
