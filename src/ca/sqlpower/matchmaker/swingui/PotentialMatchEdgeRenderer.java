@@ -24,7 +24,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.Line2D;
@@ -38,7 +37,6 @@ import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphEdgeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
-import ca.sqlpower.swingui.SPSUtils;
 
 public class PotentialMatchEdgeRenderer extends JComponent implements
         GraphEdgeRenderer<PotentialMatchRecord> {
@@ -202,10 +200,9 @@ public class PotentialMatchEdgeRenderer extends JComponent implements
             	}
             }
             
-            //  Draw a small arrowhead at the intersect point to mark which end is the master
-            Polygon arrowhead = SPSUtils.createArrowhead(masterIntersectX, masterIntersectY, duplicateCentreX, duplicateCentreY, 10, 10);
-            if (logger.isDebugEnabled()) logger.debug("Drawing arrowhead: " + arrowhead);
-            g2.drawPolygon(arrowhead);
+            // Draw a small oval around the intersect point to mark which end is the master
+            // There is a version that draws an arrowhead in r1036, but the arrowhead maker isn't quite working properly yet
+            g2.fillOval(masterIntersectX - 5, masterIntersectY - 5, 10, 10);
         }
     }
 }
