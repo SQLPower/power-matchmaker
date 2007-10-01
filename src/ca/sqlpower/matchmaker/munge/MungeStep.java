@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 
 /**
  * Defines a special type of MatchMakerObject which is capable of being part of a
@@ -42,10 +41,6 @@ import ca.sqlpower.matchmaker.MatchRuleSet;
  */
 public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>, Callable<Boolean> {
 
-	/**
-	 * Returns the parent to this step, which is a MatchRuleSet object.
-	 */
-	MatchRuleSet getParent();
 	
 	/**
 	 * Returns the parameter value associated with the given name.
