@@ -28,6 +28,7 @@ import javax.swing.table.AbstractTableModel;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -39,10 +40,7 @@ public class TranslateWordsTableModel extends AbstractTableModel implements Matc
 	public  TranslateWordsTableModel(MatchMakerTranslateGroup translate){ 
 		super();
 		this.translate = translate; 
-        translate.addMatchMakerListener(this);
-        for (MatchMakerTranslateWord word:translate.getChildren()){
-            word.addMatchMakerListener(this);
-        }
+		MatchMakerUtils.listenToHierarchy(this, this.translate);
 	}
 
 	public int getColumnCount() {		

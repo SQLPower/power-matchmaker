@@ -30,6 +30,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -53,6 +54,7 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
 			MatchMakerSwingSession swingSession) {
 		this.chooser = new SQLObjectChooser(swingSession);
 		this.match = match;
+		MatchMakerUtils.listenToHierarchy(this, this.match);
 	}
 	
 	public int getColumnCount() {

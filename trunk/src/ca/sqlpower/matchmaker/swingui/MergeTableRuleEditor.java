@@ -183,6 +183,7 @@ public class MergeTableRuleEditor implements EditorPane {
 			if ( selectedRow > 0 &&	selectedRow < mergeRulesTable.getRowCount()) {
 				match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow-1);
 				mergeRulesTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
+				TableUtils.fitColumnWidths(mergeRulesTable, 15);
 			}
 		}
 	};
@@ -194,6 +195,7 @@ public class MergeTableRuleEditor implements EditorPane {
 			if ( selectedRow >= 0 && selectedRow < mergeRulesTable.getRowCount()-1) {
 				match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow+1);
 				mergeRulesTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
+				TableUtils.fitColumnWidths(mergeRulesTable, 15);
 			}
 		}
 	};
@@ -215,6 +217,7 @@ public class MergeTableRuleEditor implements EditorPane {
 				if (selectedRow >= 0) {
 					mergeRulesTable.setRowSelectionInterval(selectedRow, selectedRow);
 				}
+				TableUtils.fitColumnWidths(mergeRulesTable, 15);
 			} else {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
 						"Please select one merge rule to delete");
