@@ -57,6 +57,7 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	 * munge step as defaults.
 	 */
 	public RetainCharactersMungeStep() {
+		setName("Retain Chars");
 		out = new MungeStepOutput<String>("retainCharactersOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("retainCharacters", String.class);

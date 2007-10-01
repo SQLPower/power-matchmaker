@@ -66,6 +66,7 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	public static final String RESULT_DELIM_PARAMETER_NAME = "resultDelim";
 	
 	public SubstringByWordMungeStep() {
+		setName("Substring by Word");
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
 		setParameter(USE_REGEX_PARAMETER_NAME, "false");
 		setParameter(RESULT_DELIM_PARAMETER_NAME, " ");

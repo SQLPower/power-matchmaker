@@ -27,6 +27,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
 	private MungeStepOutput<String> out;
 	
 	public ConcatMungeStep() {
+		setName("Concat");
 		out = new MungeStepOutput<String>("concatOutput", String.class);
 		addChild(out);
 		InputDescriptor desc1 = new InputDescriptor("concat1", String.class);

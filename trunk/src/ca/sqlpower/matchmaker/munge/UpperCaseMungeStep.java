@@ -30,6 +30,7 @@ public class UpperCaseMungeStep extends AbstractMungeStep {
 	private MungeStepOutput<String> out;
 
 	public UpperCaseMungeStep() {
+		setName("Upper Case");
 		out = new MungeStepOutput<String>("upperCaseOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("upperCase", String.class);

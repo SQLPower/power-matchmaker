@@ -63,6 +63,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
 	
 	public TranslateWordMungeStep(MatchMakerSession session) {
+		setName("Translate Words");
 		this.session = session;
 		out = new MungeStepOutput<String>("translateWordOutput", String.class);
 		addChild(out);

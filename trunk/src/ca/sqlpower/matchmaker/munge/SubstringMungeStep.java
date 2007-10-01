@@ -40,6 +40,7 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	public static final String END_PARAMETER_NAME = "endIndex";
 	
 	public SubstringMungeStep() {
+		setName("Substring");
 		out = new MungeStepOutput<String>("substringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("substring", String.class);
