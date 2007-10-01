@@ -92,16 +92,4 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      */
     public void showLoginDialog(SPDataSource selectedDataSource);
 
-    /**
-     * Gets the path of where the matchmaker engine is located base on CoreUserSettings
-     * @return a string of the path of where the engine is located, if not found, returns null 
-     */
-    public String getMatchEngineLocation();
-    
-    /**
-     * Gets the path of where the email sender engine is located base on CoreUserSettings
-     * @return a string of the path of where the engine is located, if not found, returns null 
-     */
-    public String getEmailEngineLocation();
-
 }

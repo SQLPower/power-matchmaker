@@ -19,20 +19,15 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.EnginePath;
-import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
@@ -53,10 +48,6 @@ import ca.sqlpower.util.VersionFormatException;
  */
 public class MatchMakerHibernateSessionContext implements MatchMakerSessionContext {
 
-    private static final String MATCH_ENGINE_LOCATION = "match_engine_location";
-
-    private static final String MERGE_ENGINE_LOCATION = "merge_engine_location";
-    
 	private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionContext.class);
 
     /**
@@ -67,19 +58,13 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     private final DataSourceCollection plDotIni;
     
     /**
-     * The location of the PL.INI file that populated the {@link #plDotIni} collection.
-     */
-    private final String plIniPath;
-    
-    /**
      * Creates a new session context that uses the Hibernate DAO's to interact with the PL Schema.
      * 
      * @param plIni The data source collection that this context will use.
-     * @param plIniPath The file system location of the pl.ini file that plIni came from.
      */
-    public MatchMakerHibernateSessionContext(DataSourceCollection plIni, String plIniPath) {
+    public MatchMakerHibernateSessionContext(DataSourceCollection plIni) {
+        logger.debug("Creating new session context");
         this.plDotIni = plIni;
-        this.plIniPath = plIniPath;
     }
 
     /* (non-Javadoc)
@@ -116,71 +101,4 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         return plDotIni;
     }
 
-    /**
-     * Attempts to retrieve the engine location from the user preferences,
-     * but defaults to the same directory as the pl.ini file if the preference
-     * has not yet been set.
-     */
-    public String getMatchEngineLocation() {
-    	Preferences prefNode = Preferences.userNodeForPackage(MatchEngineImpl.class);
-    	
-    	String path = prefNode.get(MATCH_ENGINE_LOCATION, null);
-    	
-    	if (path == null) {
-    		EnginePath p = EnginePath.MATCHMAKER;
-    		if (plIniPath == null) {
-    			return null;
-    		}
-    		File plDotIniFile = new File(plIniPath);
-    		File programDir = plDotIniFile.getParentFile();
-    		File programPath = new File(programDir, p.getProgName());
-    		path = programPath.toString();
-    	}
-    	
-    	return path;
-    }
-
-    /**
-     * Stores the given path name as the user preference for the
-     * location of the match engine.
-     */
-    public void setMatchEngineLocation(String path) {
-    	Preferences prefNode = Preferences.userNodeForPackage(MatchEngineImpl.class);
-    	prefNode.put(MATCH_ENGINE_LOCATION, path);
-    }
-    
-    public String getEmailEngineLocation() {
-        EnginePath p = EnginePath.EMAILNOTIFICATION;
-        if (plIniPath == null) {
-            return null;
-        }
-        File plDotIniFile = new File(plIniPath);
-        File programDir = plDotIniFile.getParentFile();
-        File programPath = new File(programDir, p.getProgName());
-        return programPath.toString();
-    }
-
-	public String getMergeEngineLocation() {
-		Preferences prefNode = Preferences.userNodeForPackage(MergeEngineImpl.class);
-    	
-    	String path = prefNode.get(MERGE_ENGINE_LOCATION, null);
-    	
-    	if (path == null) {
-    		EnginePath p = EnginePath.MERGEENGINE;
-    		if (plIniPath == null) {
-    			return null;
-    		}
-    		File plDotIniFile = new File(plIniPath);
-    		File programDir = plDotIniFile.getParentFile();
-    		File programPath = new File(programDir, p.getProgName());
-    		path = programPath.toString();
-    	}
-    	
-    	return path;
-	}
-
-	public void setMergeEngineLocation(String path) {
-		Preferences prefNode = Preferences.userNodeForPackage(MergeEngineImpl.class);
-    	prefNode.put(MERGE_ENGINE_LOCATION, path);
-	}
 }

@@ -73,11 +73,6 @@ public class MatchEnginePanel implements EditorPane {
 	private final MatchMakerSwingSession swingSession;
 
 	/**
-	 * The file path to where the match engine is located.
-	 */
-	private JTextField enginePath;
-
-	/**
 	 * The file path to which the engine logs will be written to.
 	 * Must be a valid file path that the user has write permissions on.
 	 */
@@ -88,12 +83,6 @@ public class MatchEnginePanel implements EditorPane {
 	 * to use for engine output.
 	 */
 	private BrowseFileAction browseLogFileAction;
-
-	/**
-	 * Opens a file chooser for the user to select the engine they want
-	 * to use.
-	 */
-	private BrowseFileAction browseEngineFileAction;
 
 	/**
 	 * Denotes whether or not the log file should be overwritten or
@@ -222,8 +211,8 @@ public class MatchEnginePanel implements EditorPane {
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,4dlu,pref,4dlu",
 				//  1         2    3         4     5     6    7     8
-				"10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
-		        //   1    2     3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21   22   23
+				"10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
+		        //   1    2     3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
 				: new JPanel(layout);
@@ -242,10 +231,6 @@ public class MatchEnginePanel implements EditorPane {
 		
 		browseLogFileAction = new BrowseFileAction(parentFrame, logFilePath);
 		
-		enginePath = new JTextField(swingSession.getContext().getMatchEngineLocation());
-		handler.addValidateObject(enginePath, new FileExistsValidator("Match engine"));
-		
-		browseEngineFileAction = new BrowseFileAction(parentFrame, enginePath);
 		appendToLog = new JCheckBox("Append to old Log File?", settings.getAppendToLog());
 		
 		recordsToProcess = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 100));
@@ -270,11 +255,6 @@ public class MatchEnginePanel implements EditorPane {
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
 		int y = 4;
-		pb.add(new JLabel("Engine Location:"), cc.xy(2, y, "r,f"));
-		pb.add(enginePath, cc.xy(4, y, "f,f"));
-		pb.add(new JButton(browseEngineFileAction), cc.xy(5, y, "r,f"));
-		
-		y += 2;
 		pb.add(new JLabel("Log File:"), cc.xy(2, y, "r,f"));
 		pb.add(logFilePath, cc.xy(4, y, "f,f"));
 		pb.add(new JButton(browseLogFileAction), cc.xy(5, y, "r,f"));
@@ -348,7 +328,6 @@ public class MatchEnginePanel implements EditorPane {
 		settings.setDebug(debugMode.isSelected());
 		settings.setTruncateCandDupe(clearMatchPool.isSelected());
 		settings.setSendEmail(sendEmail.isSelected());
-		swingSession.getContext().setMatchEngineLocation(enginePath.getText());
 		settings.setLog(new File(logFilePath.getText()));
 		settings.setAppendToLog(appendToLog.isSelected());
 		if (recordsToProcess.getValue().equals(new Integer(0))) {

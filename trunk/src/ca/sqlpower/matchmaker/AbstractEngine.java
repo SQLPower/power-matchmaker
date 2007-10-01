@@ -22,28 +22,29 @@ package ca.sqlpower.matchmaker;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.util.StreamLogger;
 /**
  * Common ground for all C engines.  This class handles events
  * output capture, monitoring and starting and stoping the engine. 
  *
  */
-public abstract class AbstractCEngine implements MatchMakerEngine {
+public abstract class AbstractEngine implements MatchMakerEngine {
 
-	private final static Logger logger = Logger.getLogger(AbstractCEngine.class);
-	/**
-	 * the session that we are currently connectting to
+	private final static Logger logger = Logger.getLogger(AbstractEngine.class);
+
+    /**
+	 * The session that this engine operates in.
 	 */
 	private MatchMakerSession session;
+    
+    /**
+     * The match project this engine operates on.
+     */
 	private Match match;
-	private Process proc;
 	
 	/**
 	 * Gets set to true when the process has started.
@@ -84,45 +85,12 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 				throw new RuntimeException(e);
 			}
 			
-			if (proc!=null) throw new IllegalStateException("Engine has already been run");
-
-			PreMergeDataFudger fudger = new PreMergeDataFudger(session, new MatchPool(match));
-			fudger.fudge();
-			
-			String[] commandLine = createCommandLine(false);
-			Runtime rt = Runtime.getRuntime();
-			logger.debug("Executing " + Arrays.asList(commandLine));
-			proc = rt.exec(commandLine);
+            finished = false;
 			started = true;
 
-			StreamLogger errorGobbler = new StreamLogger(proc.getErrorStream(), getLogger(), Level.ERROR);
-			StreamLogger outputGobbler = new StreamLogger(proc.getInputStream(), getLogger(), Level.INFO);
-			errorGobbler.start();
-			outputGobbler.start();
-
-			for (;;) {
-				try {
-					proc.waitFor();
-					break;
-				} catch (InterruptedException e) {
-					if (cancelled) return EngineInvocationResult.ABORTED;
-				}
-			}
+			getLogger().info("Engine process completed normally.");
 			
-			int engineExitCode = proc.exitValue();
-			getLogger().info("Engine process completed with status " + engineExitCode);
-			
-			try {
-				fudger.unfudge();
-			} catch (ArchitectException e) {
-				throw new RuntimeException(e);
-			}
-			
-			if (engineExitCode == 0) {
-				return EngineInvocationResult.SUCCESS;
-			} else {
-				return EngineInvocationResult.FAILURE;
-			}
+			return EngineInvocationResult.SUCCESS;
 		} finally {
 			finished = true;
 		}
@@ -161,10 +129,7 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 
 	public synchronized void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
-		if (cancelled && proc != null) {
-			proc.destroy();
-			proc = null;
-		}
+        // TODO interrupt the engine thread
 	}
 
 	/**
@@ -218,14 +183,14 @@ public abstract class AbstractCEngine implements MatchMakerEngine {
 	        return canWrite;
 	    }
 	}
-
-	/**
-	 * returns true if the given file exists and executable, false otherwise.
-	 * @param fileName  the name of the file you want to check.
-	 */
-	public static boolean canExecuteFile(String fileName) {
-		final File file = new File(fileName);
-		// TODO: switch to file.canExecute when we have java 1.6
-		return file.exists() && file.canRead();
-	}
+    
+    public String[] createCommandLine() {
+        String javaHome = System.getProperty("java.home");
+        String sep = System.getProperty("file.separator");
+        String javaPath = javaHome + sep + "bin" + sep + "java";
+        String className = getClass().getName();
+        Long matchOid = match.getOid();
+        
+        return new String[] { javaPath, className, "match_oid=" + matchOid };
+    }
 }

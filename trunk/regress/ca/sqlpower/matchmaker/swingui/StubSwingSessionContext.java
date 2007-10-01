@@ -93,22 +93,4 @@ public class StubSwingSessionContext implements SwingSessionContext {
     public void showLoginDialog(SPDataSource selectedDataSource) {
         logger.debug("Stub call: StubSwingSessionContext.showLoginDialog()");
     }
-
-	public String getEmailEngineLocation() {
-		logger.debug("Stub call: StubSwingSessionContext.getEmailEngineLocation()");
-		return null;
-	}
-
-	public void setMatchEngineLocation(String path) {
-		logger.debug("Stub call: StubSwingSessionContext.setMatchEngineLocation()");
-	}
-
-	public String getMergeEngineLocation() {
-		logger.debug("Stub call: StubSwingSessionContext.getMergeEngineLocation()");
-		return null;
-	}
-
-	public void setMergeEngineLocation(String path) {
-		logger.debug("Stub call: StubSwingSessionContext.setMergeEngineLocation()");
-	}
 }

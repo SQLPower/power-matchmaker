@@ -21,21 +21,20 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.DefaultParameters;
 import ca.sqlpower.sql.PLSchemaException;
 
 /**
- * Sets up and runs the C Match Maker engine
+ * The MatchMaker's matching engine.  Runs all of the munge steps in the correct
+ * order for each row of input, then sorts the list of output results from the munging,
+ * and searches for duplicates in those results.
  */
-public class MatchEngineImpl extends AbstractCEngine {
+public class MatchEngineImpl extends AbstractEngine {
 
 	private static final Logger logger = Logger.getLogger(MatchEngineImpl.class);
 
@@ -71,13 +70,6 @@ public class MatchEngineImpl extends AbstractCEngine {
                     "\" doesn't have the ODBC DSN set.");
         }
         
-        if (!canExecuteMatchEngine(session.getContext())) {
-        	throw new EngineSettingException(
-        			"The Matchmaker engine executable at "+
-                    session.getContext().getMatchEngineLocation()+" is either " +
-                    "missing or not accessible");
-        }
-        
         if (!Match.doesSourceTableExist(session, match)) {
             throw new EngineSettingException(
                     "Your match source table \""+
@@ -101,11 +93,6 @@ public class MatchEngineImpl extends AbstractCEngine {
         }
         
         if (settings.getSendEmail()) {
-            if (!canExecuteEmailEngine(session.getContext())) {
-                throw new EngineSettingException(
-                        "The email notification executable is not found.\n" +
-                " It should be in the directory of pl.ini");
-            }
         
             Connection con = null;
             try {
@@ -148,54 +135,6 @@ public class MatchEngineImpl extends AbstractCEngine {
 					smtpServer != null &&
 					smtpServer.length() > 0;
 		return validate;
-	}
-
-	static boolean canExecuteMatchEngine(MatchMakerSessionContext context) {
-		return canExecuteFile(
-				context.getMatchEngineLocation());
-	}
-
-	static boolean canExecuteEmailEngine(MatchMakerSessionContext context) {
-		return canExecuteFile(
-				context.getEmailEngineLocation());
-	}
-
-	public String[] createCommandLine(boolean userPrompt) {
-		/*
-		 * command line sample:
-		 * "M:\Program Files\Power Loader Suite\Match_Oracle.exe"
-		 * MATCH="MATCH_ORGS" USER=PL/pl@arthur_test DEBUG=Y
-		 * TRUNCATE_CAND_DUP=N SEND_EMAIL=N APPEND_TO_LOG_IND=N
-		 * LOG_FILE="M:\Program Files\Power Loader Suite\Power Loader\script\MATCH_ORGS.log"
-		 * SHOW_PROGRESS=10 PROCESS_CNT=1
-		 */
-		List<String> command = new ArrayList<String>();
-		final SQLDatabase db = getSession().getDatabase();
-		final MatchSettings settings = getMatch().getMatchSettings();
-
-		command.add(getSession().getContext().getMatchEngineLocation());
-		if ( logger.isDebugEnabled() ) {
-			command.add(" -k ");
-		}
-		command.add("MATCH=" + getMatch().getName());
-		command.add("USER=" + db.getDataSource().getUser() +
-				"/" + db.getDataSource().getPass() +
-				"@" + db.getDataSource().getName());
-		command.add("DEBUG=" + (settings.getDebug() ? "Y" : "N"));
-		command.add("TRUNCATE_CAND_DUP=" + (settings.getTruncateCandDupe() ? "Y" : "N"));
-		command.add("SEND_EMAIL=" + (settings.getSendEmail() ? "Y" : "N"));
-		command.add("APPEND_TO_LOG_IND=" + (settings.getAppendToLog() ? "Y" : "N"));
-		command.add("LOG_FILE=" + settings.getLog().getPath());
-		if ( settings.getShowProgressFreq() != null ) {
-			command.add("SHOW_PROGRESS=" + settings.getShowProgressFreq());
-		}
-		if ( settings.getProcessCount() != null ) {
-			command.add("PROCESS_CNT=" + settings.getProcessCount());
-		}
-		if ( !userPrompt ) {
-			command.add("USER_PROMPT=N");
-		}
-		return command.toArray(new String[0]);
 	}
 
 	/**

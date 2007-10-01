@@ -41,7 +41,6 @@ import ca.sqlpower.sql.SPDataSourceType;
 
 public class SwingSessionContextTest extends TestCase {
 
-    private static final String FAKE_ENGINE_LOCATION = "you found the delegate's engine location!";
     SwingSessionContextImpl context;
     
     protected void setUp() throws Exception {
@@ -129,33 +128,10 @@ public class SwingSessionContextTest extends TestCase {
                 return dsCollection.getConnections();
             }
 
-            public String getMatchEngineLocation() {
-                System.out.println("Stub MMSContext.getEngineLocation()");
-                return FAKE_ENGINE_LOCATION;
-            }
-
             public DataSourceCollection getPlDotIni() {
                 System.out.println("Stub MMSContext.getPlDotIni()");
                 return dsCollection;
             }
-
-			public String getEmailEngineLocation() {
-				System.out.println("Stub call: .getEmailEngineLocation()");
-				return FAKE_ENGINE_LOCATION;
-			}
-
-			public void setMatchEngineLocation(String path) {
-				System.out.println("Stub call: .setMatchEngineLocation()");
-			}
-
-			public String getMergeEngineLocation() {
-				System.out.println("Stub call: .getMergeEngineLocation()");
-				return FAKE_ENGINE_LOCATION;
-			}
-
-			public void setMergeEngineLocation(String path) {
-				System.out.println("Stub call: .setMergeEngineLocation()");
-			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
         PreferencesFactory stubPrefsFactory = new PreferencesFactory();
@@ -169,14 +145,6 @@ public class SwingSessionContextTest extends TestCase {
         context.setLastLoginDataSource(ds);        
         SPDataSource actualDS = context.getLastLoginDataSource();
         assertEquals("Did not remember the last login", ds, actualDS);
-    }
-    
-    public void testGetEngineLocation() {
-        assertEquals(FAKE_ENGINE_LOCATION, context.getMatchEngineLocation());        
-    }
-    
-    public void testGetEmailEngineLocation() {
-        assertEquals(FAKE_ENGINE_LOCATION, context.getEmailEngineLocation());        
     }
     
     public void testGetLastImportExportAccessPath(){
