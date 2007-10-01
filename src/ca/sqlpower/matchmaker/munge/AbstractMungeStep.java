@@ -73,8 +73,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		if (index >= getInputs().size()) {
 			throw new IndexOutOfBoundsException("There is no input at the given index");
 		}
-		getEventSupport().firePropertyChange("inputs", null, o);
 		inputs.get(index).current = o;
+		getEventSupport().firePropertyChange("inputs", null, o);
 	}
 
 	public void disconnectInput(int index) {
