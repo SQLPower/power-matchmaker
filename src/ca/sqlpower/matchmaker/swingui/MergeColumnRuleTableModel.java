@@ -109,7 +109,9 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
                     return;
                 }
             }
-
+            for (Object columnMergeRule:evt.getChildren()){
+                ((ColumnMergeRules) columnMergeRule).addMatchMakerListener(this);
+            }
             fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
         }
     }
@@ -128,7 +130,9 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
                     return;
                 }
             }
-
+            for (Object columnMergeRule:evt.getChildren()) {
+                ((ColumnMergeRules) columnMergeRule).removeMatchMakerListener(this);
+            }
             fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
         }
     }

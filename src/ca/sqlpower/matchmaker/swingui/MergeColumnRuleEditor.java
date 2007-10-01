@@ -81,8 +81,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private FormValidationHandler handler;
 	private final SQLObjectChooser chooser;
 	private final JCheckBox deleteDup = new JCheckBox();
-	private List<ColumnMergeRules> toBeDeleteList = new ArrayList<ColumnMergeRules>();
-	
+
 	private MergeColumnRuleTableModel ruleTableModel;
 	private ColumnMergeRulesTable ruleTable;
 	//keeps track of whether the table has unsaved changes
@@ -262,6 +261,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 						ColumnMergeRules newRules = newColumnRule();
 						newRules.setColumn(column);
 					}
+					
 				}
 			} catch (Exception ex) {
 				SPSUtils.showExceptionDialogNoReport(panel, "An exception occured while deriving collison criteria", ex);
@@ -345,9 +345,10 @@ public class MergeColumnRuleEditor implements EditorPane {
 		mergeRule.setTable((SQLTable) chooser.getTableComboBox().getSelectedItem());
 		mergeRule.setTableIndex((SQLIndex) chooser.getUniqueKeyComboBox().getSelectedItem());
 		mergeRule.setDeleteDup(deleteDup.isSelected());
-		for (ColumnMergeRules columnMergeRules : toBeDeleteList) {
-			swingSession.delete(columnMergeRules);
-		}
+		
+//		for (ColumnMergeRules columnMergeRules : toBeDeleteList) {
+//			swingSession.delete(columnMergeRules);
+//		}
         
 		if (!match.getTableMergeRules().contains(mergeRule)) {
 			match.getTableMergeRulesFolder().addChild(mergeRule);
