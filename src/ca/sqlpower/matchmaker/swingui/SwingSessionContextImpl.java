@@ -375,7 +375,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         }
         //XXX: We should NOT be using ArchitectSession for this
         prefs.put(ArchitectSession.PREFS_PL_INI_PATH, plDotIniPath);
-        return new MatchMakerHibernateSessionContext(plDotIni, plDotIniPath);
+        return new MatchMakerHibernateSessionContext(plDotIni);
     }
 
     private static DataSourceCollection readPlDotIni(String plDotIniPath) {
@@ -396,30 +396,4 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             return null;
         }
     }
-
-    /* (non-Javadoc)
-     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getMatchEngineLocation()
-     */
-    public String getMatchEngineLocation() {
-        return context.getMatchEngineLocation();
-    }
-    
-    /* (non-Javadoc)
-     * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getEmailEngineLocation()
-     */
-    public String getEmailEngineLocation() {
-        return context.getEmailEngineLocation();
-    }
-
-	public void setMatchEngineLocation(String path) {
-		context.setMatchEngineLocation(path);
-	}
-
-	public String getMergeEngineLocation() {
-		return context.getMergeEngineLocation();
-	}
-
-	public void setMergeEngineLocation(String path) {
-		context.setMergeEngineLocation(path);
-	}
 }

@@ -46,22 +46,6 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 		this.dataSources = dataSources;
 	}
 
-	public String getEmailEngineLocation() {
-		return emailEngineLocation;
-	}
-
-	public void setEmailEngineLocation(String emailEngineLocation) {
-		this.emailEngineLocation = emailEngineLocation;
-	}
-
-	public String getMatchEngineLocation() {
-		return matchEngineLocation;
-	}
-
-	public void setMatchEngineLocation(String matchEngineLocation) {
-		this.matchEngineLocation = matchEngineLocation;
-	}
-
 	public DataSourceCollection getPlDotIni() {
 		return plDotIni;
 	}
@@ -84,14 +68,5 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 			SchemaVersionFormatException, PLSchemaException {
 		return session;
 	}
-
-	public String getMergeEngineLocation() {
-		return mergeEngineLocation;
-	}
-
-	public void setMergeEngineLocation(String mergeEngineLocation) {
-		this.mergeEngineLocation = mergeEngineLocation;
-	}
-
 
 }

@@ -19,21 +19,15 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.ddl.DDLUtils;
 
 /**
- * This class is used to run the C implementation of the Merge engine. It can be used
- * to check preconditions for successful running of the engine, as well as generating
- * the necessary command to run the engine.
+ * Implements the merging and purging functionality of the MatchMaker.
  */
-public class MergeEngineImpl extends AbstractCEngine {
+public class MergeEngineImpl extends AbstractEngine {
 
 	private static final Logger logger = Logger.getLogger(MergeEngineImpl.class);
 	
@@ -77,13 +71,6 @@ public class MergeEngineImpl extends AbstractCEngine {
                     "\" doesn't have the ODBC DSN set.");
         }
         
-        if (!canExecuteMergeEngine(session.getContext())) {
-        	throw new EngineSettingException(
-        			"The Merge engine executable at "+
-                    session.getContext().getMatchEngineLocation()+" is either " +
-                    "missing or not accessible");
-        }
-        
         if (!Match.doesSourceTableExist(session, match)) {
             throw new EngineSettingException(
                     "Your match source table \""+
@@ -116,55 +103,8 @@ public class MergeEngineImpl extends AbstractCEngine {
 	 * from the given context can be executed by the user. 
 	 */
 	static boolean canExecuteMergeEngine(MatchMakerSessionContext context) {
-		return canExecuteFile(
-				context.getMergeEngineLocation());
-	}
-	
-	/**
-	 * Generates the command-line command necessary to run the Merge engine
-	 * with the settings set in the GUI.
-	 * <p>
-	 * The format for the command to run the current implementation of the engine
-	 * is like this.
-	 * <p>
-	 * <pre>
-	 *  e.g.:merge_odbc.exe MERGE=xxx USER=xx/xx
-	 *      DEBUG=[N/Y] COMMIT_FREQ=100 LOG_FILE=xxx ERR_FILE=xxx
-	 *      PROCESS_CNT=0 USER_PROMPT=[Y/N] SHOW_PROGRESS=0
-	 *      ROLLBACK_SEGMENT_NAME=[ROLLBACK_SEGMENT_NAME]
-	 *      APPEND_TO_LOG_IND=[N/Y] SEND_EMAIL=[Y/N]
-	 * </pre>
-	 */
-	public String[] createCommandLine(boolean userPrompt) {
-		List<String> command = new ArrayList<String>();
-		final SQLDatabase db = getSession().getDatabase();
-		final MergeSettings settings = getMatch().getMergeSettings();
-
-		command.add(getSession().getContext().getMergeEngineLocation());
-		if ( logger.isDebugEnabled() ) {
-			command.add(" -k ");
-		}
-		command.add("MERGE=" + getMatch().getName());
-		command.add("USER=" + db.getDataSource().getUser() +
-				"/" + db.getDataSource().getPass() +
-				"@" + db.getDataSource().getName());
-		command.add("DEBUG=" + (settings.getDebug() ? "Y" : "N"));
-		if (settings.getCommitFrequency() != null) {
-			command.add("COMMIT_FREQ=" + settings.getCommitFrequency());
-		}
-		command.add("LOG_FILE=" + settings.getLog().getPath());
-		command.add("ERR_FILE=" + settings.getErrorLogFile().getPath());
-		if ( settings.getProcessCount() != null ) {
-			command.add("PROCESS_CNT=" + settings.getProcessCount());
-		}
-		if ( !userPrompt ) {
-			command.add("USER_PROMPT=N");
-		}
-		if ( settings.getShowProgressFreq() != null ) {
-			command.add("SHOW_PROGRESS=" + settings.getShowProgressFreq());
-		}
-		command.add("APPEND_TO_LOG_IND=" + (settings.getAppendToLog() ? "Y" : "N"));
-		return command.toArray(new String[0]);
+        // TODO check things
+        return true;
 	}
 	
 	/**

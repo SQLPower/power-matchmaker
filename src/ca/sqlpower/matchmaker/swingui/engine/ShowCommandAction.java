@@ -90,7 +90,7 @@ class ShowCommandAction extends AbstractAction {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		editor.doSave();
-		final String[] cmd = engine.createCommandLine(false);
+		final String[] cmd = engine.createCommandLine();
 		final JDialog d = new JDialog(parent,
 				"MatchMaker Engine Command Line");
 

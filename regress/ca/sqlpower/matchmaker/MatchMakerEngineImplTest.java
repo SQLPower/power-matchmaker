@@ -28,8 +28,6 @@ import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
 import ca.sqlpower.sql.PLSchemaException;
-import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.TestingDefParamsObject;
 
 public class MatchMakerEngineImplTest extends TestCase {
@@ -48,8 +46,6 @@ public class MatchMakerEngineImplTest extends TestCase {
 		match.setSession(session);
 		matchMakerEngine = new MatchEngineImpl(session,match);
 		context = new TestingMatchMakerContext();
-		context.setEmailEngineLocation("fakeEmailEngine");
-		context.setMatchEngineLocation("fakeMatchEngine");
 		session.setContext(context);
 		def = new TestingDefParamsObject(session);
 	}
@@ -78,22 +74,6 @@ public class MatchMakerEngineImplTest extends TestCase {
 		assertFalse("The email is valid without a server name",matchMakerEngine.validateEmailSetting(def));
 	}
 
-	
-	public void testCanExecuteEmailEngineExists() throws IOException{
-		File fakeEngine = new File("fakeEmailEngine");
-		fakeEngine.createNewFile();
-		assertTrue(fakeEngine.canRead());
-		assertTrue(matchMakerEngine.canExecuteEmailEngine(context));
-		fakeEngine.delete();
-	}
-	
-	public void testCanExecuteEmailEngineNonExistant() throws IOException{
-		File fakeEngine = new File("fakeEmailEngine");
-		assertFalse(fakeEngine.canRead());
-		assertFalse(matchMakerEngine.canExecuteEmailEngine(context));
-		fakeEngine.delete();
-	}
-	
 	//   check for unwriteable file
     public void testLogCantWrite() throws IOException{
         MatchMakerSettings settings = new MatchSettings(); 
@@ -102,7 +82,7 @@ public class MatchMakerEngineImplTest extends TestCase {
         log.createNewFile();
         log.setReadOnly();
         assertFalse(log.canWrite());
-        assertFalse(AbstractCEngine.canWriteLogFile(settings));
+        assertFalse(AbstractEngine.canWriteLogFile(settings));
         log.delete();
     }
     
@@ -113,7 +93,7 @@ public class MatchMakerEngineImplTest extends TestCase {
         settings.setLog(log);
         log.createNewFile();
         assertTrue(log.canWrite());
-        assertTrue(AbstractCEngine.canWriteLogFile(settings));
+        assertTrue(AbstractEngine.canWriteLogFile(settings));
         log.delete();
     }
     
@@ -125,7 +105,7 @@ public class MatchMakerEngineImplTest extends TestCase {
         log.createNewFile();
         assertTrue(log.canWrite());
         log.delete();
-        assertTrue(AbstractCEngine.canWriteLogFile(settings));
+        assertTrue(AbstractEngine.canWriteLogFile(settings));
     }
     
     
@@ -136,7 +116,7 @@ public class MatchMakerEngineImplTest extends TestCase {
         settings.setLog(log);
         log.createNewFile();
         assertTrue(log.canWrite());
-        assertTrue(AbstractCEngine.canReadLogFile(settings));
+        assertTrue(AbstractEngine.canReadLogFile(settings));
         log.delete();
     }
     
@@ -147,41 +127,9 @@ public class MatchMakerEngineImplTest extends TestCase {
         settings.setLog(log);
         // this is an unreadable file (I hope)
         log.mkdir();
-        assertTrue(AbstractCEngine.canReadLogFile(settings));
+        assertTrue(AbstractEngine.canReadLogFile(settings));
         log.delete();
     }
     
-	public void testCanExecuteMatchEngineExists() throws IOException{
-		File fakeEngine = new File("fakeMatchEngine");
-		fakeEngine.createNewFile();
-		assertTrue(fakeEngine.canRead());
-		assertTrue(matchMakerEngine.canExecuteMatchEngine(context));
-		fakeEngine.delete();
-	}
-	
-	public void testCanExecuteMatchEngineNonExistant() throws IOException{
-		File fakeEngine = new File("fakeMatchEngine");
-		assertFalse(fakeEngine.canRead());
-		assertFalse(matchMakerEngine.canExecuteMatchEngine(context));
-		fakeEngine.delete();
-	}
-	
-	public void testHasOdbcDsnNull(){
-		SPDataSource ds = new SPDataSource(new PlDotIni());
-		ds.setOdbcDsn(null);
-		assertFalse("An empty dsn should be considered invalid",AbstractCEngine.hasODBCDSN(ds));
-	}
-	public void testHasOdbcDsnEmpty(){
-		SPDataSource ds = new SPDataSource(new PlDotIni());
-		ds.setOdbcDsn("");
-		assertFalse("An empty dsn should be considered invalid",AbstractCEngine.hasODBCDSN(ds));
-	}
-	// Because we can't check to see if this is a valid odbc
-	// dsn we have to go on length of string
-	public void testHasOdbcDsnvalid(){
-		SPDataSource ds = new SPDataSource(new PlDotIni());
-		ds.setOdbcDsn("Valid");
-		
-		assertTrue("Dsn should be considered valid",AbstractCEngine.hasODBCDSN(ds));
-	}
+
 }
