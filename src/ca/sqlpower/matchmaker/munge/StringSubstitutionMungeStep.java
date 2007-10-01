@@ -49,6 +49,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
 	
 	public StringSubstitutionMungeStep() {
+		setName("String Substitution");
 		out = new MungeStepOutput<String>("stringSubstitutionOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("stringSubstitution", String.class);

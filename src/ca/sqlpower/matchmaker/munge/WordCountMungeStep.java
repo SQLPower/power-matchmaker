@@ -52,6 +52,7 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
 	
 	public WordCountMungeStep() {
+		setName("Word Count");
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
 		setParameter(USE_REGEX_PARAMETER_NAME, "false");
 		

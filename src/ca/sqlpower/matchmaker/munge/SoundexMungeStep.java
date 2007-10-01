@@ -29,6 +29,7 @@ public class SoundexMungeStep extends AbstractMungeStep {
 	private MungeStepOutput<String> out;
 	
 	public SoundexMungeStep() {
+		setName("Soundex");
 		out = new MungeStepOutput<String>("soundexOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("soundex", String.class);

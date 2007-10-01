@@ -28,6 +28,7 @@ public class LowerCaseMungeStep extends AbstractMungeStep {
 	private MungeStepOutput<String> out;
 	
 	public LowerCaseMungeStep() {
+		setName("Lower Case");
 		out = new MungeStepOutput<String>("lowerCaseOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("lowerCase", String.class);
