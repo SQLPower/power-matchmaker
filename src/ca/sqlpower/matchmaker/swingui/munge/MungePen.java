@@ -19,7 +19,6 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -28,8 +27,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -40,20 +37,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import org.apache.log4j.Logger;
+
+import ca.sqlpower.matchmaker.MatchRuleSet;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 
 public class MungePen extends JLayeredPane implements Scrollable {
 	
-	//The selected component for moving
-	Component selectedMove;
+	private static  final Logger logger = Logger.getLogger(MungePen.class); 
+	
+	final MatchRuleSet process;
+	
+	//The selected component for temp use before the request focus has kicked in
+	//only use right after a call to findSelected
+	Component recentlySelected;
 	// The offset from the corner of the component to where the mouse clicked
 	Point diff;
 	
@@ -72,6 +82,9 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	//the currurrently selected line
 	IOConnector selectedLine;
 	
+	MungePenMungeStepListener mungeStepListener;
+	
+	
 	
 	Map<MungeStep,MungeComponent> modelMap = new HashMap<MungeStep, MungeComponent>();
 	List<IOConnector> lines = new ArrayList<IOConnector>(); 
@@ -80,18 +93,59 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 * Creates a new empty mungepen.
 	 * 
 	 */
-	public MungePen() {
+	public MungePen(MatchRuleSet process) {
+		
+		process.addChild(new UpperCaseMungeStep());
+		process.addChild(new UpperCaseMungeStep());
+		
+		process.addMatchMakerListener(new MungePenMatchRuleSetListeren());
+		mungeStepListener = new MungePenMungeStepListener();
+		
 		setFocusable(true);
 		addMouseListener(new MungePenMouseListener());
 		addMouseMotionListener(new MungePenMouseMotionListener());
 		addKeyListener(new MungePenKeyListener());
-		addFocusListener(new FocusAdapter(){
+		/*addFocusListener(new FocusAdapter(){
 			@Override
 			public void focusLost(FocusEvent e) {
+				logger.debug("Focus Losst");
 				unselectLine();
 				unselectCom();
 			}
-		});
+		});*/
+		
+		setBackground(Color.WHITE);
+		setOpaque(true);
+		this.process = process;
+		buildComponents(process);
+		
+	}
+	
+	/**
+	 * Translates the process' children into the mungePem
+	 * 
+	 * @param Process
+	 */
+	private void buildComponents(MatchRuleSet process) {
+		for (MungeStep ms : process.getChildren()) {
+			ms.addMatchMakerListener(mungeStepListener);
+			MungeComponent mcom = MungeComponentFactory.getMungeComponent(ms);
+			modelMap.put(ms, mcom);
+			add(mcom);
+		}
+		
+		//This is done in an other loop to ensure that all the MungeComponets have been mapped
+		for (MungeStep ms : process.getChildren()) {
+			for (int x = 0; x < ms.getChildren().size(); x++) {
+				MungeStepOutput link = ms.getInputs().get(x);
+				if (link != null) {
+					MungeStep parent = (MungeStep)link.getParent();
+					int parNum = parent.getChildren().indexOf(link);
+					IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(ms),x);
+					lines.add(ioc);
+				}
+			}
+		}
 	}
 
 	/**
@@ -120,12 +174,16 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 */
 	private void selectLine(IOConnector line) {
 		selectedLine = line;
+		line.setSelected(true);
 	}
 	
 	/**
 	 * Unselects a line if there is one selected, else does nothing 
 	 */
 	private void unselectLine() {
+		if (selectedLine != null) {
+			selectedLine.setSelected(false);
+		}
 		selectedLine = null;
 	}
 	
@@ -134,27 +192,29 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 * 
 	 * @param mcom The MingeComponent to select
 	 */
-	private void selectCom(Component com) {
-		boolean redraw = selectedMove != com;
-		selectedMove = com;
+	public void selectCom(Component com) {
+	/*	logger.debug("Component select: " + com);
+		boolean redraw = recentlySelected != com;
+		recentlySelected = com;
 		if (com instanceof MungeComponent) {
 			((MungeComponent)com).setSelect(true);
 		}
 		if (redraw) {
 			repaint();
-		}
+		}*/
 	}
 	
 	/**
 	 * Unselects a MungeComponent if there is one selected, else does nothing 
 	 */
-	private void unselectCom() {
-		if (selectedMove instanceof MungeComponent) {
-			((MungeComponent)selectedMove).setSelect(false);
+	public void unselectCom() {
+		/*logger.debug("Component unselect");
+		if (recentlySelected  != null && recentlySelected instanceof MungeComponent) {
+			((MungeComponent)recentlySelected).setSelect(false);
 		}
-		selectedMove = null;
+		recentlySelected = null;
 		diff = null;
-		repaint();
+		repaint();*/
 	}
 	
 	
@@ -163,10 +223,13 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	}
 	
 	private Component getSelectedComponent() {
-		return selectedMove;
+		for (Component com : getComponents()) {
+			if (com.hasFocus()) {
+				return com;
+			}
+		}
+		return null;
 	}
-	
-
 	
 	//over ridden to add any Component 
 	@Override
@@ -181,47 +244,25 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		lines.clear();
-		for (Component com : getComponents()) {
-			
-			if (com instanceof MungeComponent) {
-				MungeComponent child = (MungeComponent)com;
-				
-				for (int x = 0; x< child.getInputs().size();x++) {
-					Point bottom = child.getInputPosition(x);
-					
-					MungeStepOutput link = child.getInputs().get(x);
-					if (link != null) {
-						MungeComponent parent = modelMap.get(link.getParent());
-						
-						int parentNum = parent.getOutputs().indexOf(link);					
-						
-						Point top = parent.getOutputPosition(parentNum);
-						
-						top.translate(parent.getX(), parent.getY());
-						bottom.translate(child.getX(), child.getY());
-						
-						g.setColor(MungeComponent.getColor(link.getType()));
-						g.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
-						
-						IOConnector curr = new IOConnector(parent,parentNum,child,x);
-						if (curr.equals(getSelectedLine())) {
-							Graphics2D g2d = (Graphics2D)g;
-							
-							int width = 2;
-							
-							g2d.setStroke(new BasicStroke(width));
-							g2d.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
-							g2d.setStroke(new BasicStroke(1));
-							selectLine(curr);
-						}
-						lines.add(curr);
-					}
-				}
+		
+		if (false && logger.isDebugEnabled()) {
+			Graphics2D g2 = (Graphics2D)g;
+			Rectangle clip = g2.getClipBounds();
+			if (clip != null) {
+				g2.setColor(Color.green);
+				clip.width--;
+				clip.height--;
+				g2.draw(clip);
+				g2.setColor(getForeground());
+				logger.debug("Clipping region: "+g2.getClip());
+			} else {
+				logger.debug("Null clipping region");
 			}
-			
 		}
-		g.setColor(Color.BLACK);
+		
+		for (IOConnector con : lines) {
+			con.paint(g);
+		}
 		
 		if (start != null || finish != null) {
 			Point fixed;
@@ -236,10 +277,64 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
 	
+	public void removeMungeStep(MungeStep ms) {
+		
+		List<IOConnector> killed = new ArrayList<IOConnector>();
+		
+		for (int x = 0;x <lines.size();x++) {
+			IOConnector ioc = lines.get(x);
+			if (ioc.getParent().getStep().equals(ms) || ioc.getChild().getStep().equals(ms)) {
+				killed.add(ioc);
+			}
+		}		
+		for (IOConnector ioc : killed) {
+			lines.remove(ioc);
+			ioc.remove();
+		}
+		process.removeChild(ms);
+	}
+	
+	/**
+	 * Removes a munge step and connects the inputs to the output.
+	 *  Only call this if there is one input and output
+	 *  
+	 * @param ms mungestep to delete
+	 */
+	public void removeMungeStepSingles(MungeStep ms) {
+		
+		List<IOConnector> killed = new ArrayList<IOConnector>();
+		MungeStep parent = null;
+		int parNum = 0;
+		MungeStep child = null;
+		int childNum = 0;
+		
+		for (int x = 0;x <lines.size();x++) {
+			IOConnector ioc = lines.get(x);
+			if (ioc.getParent().getStep().equals(ms) || ioc.getChild().getStep().equals(ms)) {
+				killed.add(ioc);
+				if (ioc.getParent().getStep().equals(ms)) {
+					child = ioc.getChild().getStep();
+					childNum = ioc.getChildNumber();
+				} else {
+					parent = ioc.getParent().getStep();
+					parNum = ioc.getParentNumber();
+				}
+			}
+		}		
+		for (IOConnector ioc : killed) {
+			lines.remove(ioc);
+			ioc.remove();
+		}
+		process.removeChild(ms);
+		
+		if (parent != null && child != null) {
+			child.connectInput(childNum, parent.getChildren().get(parNum));
+		}
+	}
+	
 	class MungePenMouseListener extends MouseAdapter {
 		public void mousePressed(MouseEvent e) {
-	
-			requestFocusInWindow();			
+			logger.debug("Mouse PRess");
 			//finds if the user has selected a line
 			unselectLine();
 			for (IOConnector line : lines) {
@@ -256,8 +351,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 		
 		public void mouseReleased(MouseEvent e) {
-			findSelected(e);
-
+			logger.debug("Mouse released");
 			checkForIOConnectors(e);
 			
 			diff = null;
@@ -272,6 +366,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 		
 		public void mouseClicked(MouseEvent e) {
+			logger.debug("Mouse Click");
 			maybeShowPopup(e);
 		}
 		
@@ -297,26 +392,44 @@ public class MungePen extends JLayeredPane implements Scrollable {
 
 		public void findSelected(MouseEvent e) {
 			unselectCom();
+			recentlySelected = null;
 			for (Component com : MungePen.this.getComponents()) {
 				if (com.getBounds().contains(e.getPoint())) {
 					
-					if (getSelectedComponent() == null || getLayer(com) < getLayer(getSelectedComponent()))
+					if (recentlySelected == null || getLayer(com) < getLayer(recentlySelected))
 					{
 						bringToFront(com);
-						selectCom(com);
+						if (!com.hasFocus()) {
+							com.requestFocusInWindow();
+						}
+						recentlySelected = com;
 						unselectLine();
 						diff = new Point(e.getX() - com.getX(), e.getY()-com.getY());
 					}
 				}
+			}
+			if (recentlySelected == null) {
+				requestFocusInWindow();
 			}
 		}
 		
 		public void checkForIOConnectors(MouseEvent e) {
 			//used to define the range of which a hit is counted as
 			int tolerance = 15;
+			
+			recentlySelected = null;
+			
+			for (Component com : MungePen.this.getComponents()) {
+				if (com.getBounds().contains(e.getPoint())) {
+					if (getSelectedComponent() == null || getLayer(com) < getLayer(getSelectedComponent()))
+					{
+						recentlySelected = com;
+					}
+				}
+			}
 
-			if (getSelectedComponent() instanceof MungeComponent) {
-				MungeComponent mcom = (MungeComponent) getSelectedComponent();
+			if (recentlySelected instanceof MungeComponent) {
+				MungeComponent mcom = (MungeComponent) recentlySelected;
 				int inputs = mcom.getStep().getInputs().size();
 
 				for (int x = 0;x<inputs;x++) {
@@ -338,6 +451,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 		
 		public void connectionHit(MungeComponent mcom, int connectionNum, boolean inputHit) {
+			logger.debug("Connection hit");
+			
 			unselectLine();
 			unselectCom();
 			
@@ -363,16 +478,12 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				Class finishWants = finish.getStep().getInputDescriptor(finishNum).getType();
 				if (startHas.equals(finishWants)) {
 					finish.getStep().connectInput(finishNum,start.getStep().getChildren().get(startNum));
-				} else {
-					if (inputHit) {
-						finish = null;
-					} else {
-						start = null;
-					}
 				}
 				start = null;
 				finish = null;
 			}
+			
+			requestFocusInWindow();
 		}
 	}
 	 
@@ -382,9 +493,9 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			if (getBounds().contains(e.getPoint())) {
 				if (getSelectedComponent() != null) {
 					getSelectedComponent().setLocation(new Point((int)(e.getX() - diff.getX()),(int)(e.getY() - diff.getY())));
-					getParent().repaint();
+					repaint();
 				} else if (start != null || finish != null) {
-					getParent().repaint();
+					repaint();
 				}
 			}
 			mouseX = e.getX();
@@ -407,6 +518,11 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			} else if (getSelectedComponent() != null && getSelectedComponent() instanceof MungeComponent) {
 				((MungeComponent)getSelectedComponent()).keyPressed(e);
 			}
+			
+			if (e.getKeyCode() == KeyEvent.VK_0) {
+				process.addChild(new UpperCaseMungeStep());
+			}
+			
 		}
 	}
 	
@@ -496,4 +612,111 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			return visibleRect.height/5;
 		}
 	}
+    
+    static class MungeComponentFactory {
+    	public static  MungeComponent getMungeComponent(MungeStep ms) {
+    		return new MungeComponent(ms){
+
+				protected void buildUI(JPanel content) {
+					content.add(new JLabel("Test Component"));
+				}
+    			
+    		};
+    	}
+    }
+
+
+    ///////////////////////////Listener for MatchMaker Rule Set /////////////////////////////////
+
+    class MungePenMatchRuleSetListeren implements MatchMakerListener<MatchRuleSet, MungeStep> {
+		public void mmChildrenInserted(MatchMakerEvent<MatchRuleSet, MungeStep> evt) {
+			
+			for (int x : evt.getChangeIndices()) {
+				evt.getSource().getChildren().get(x).addMatchMakerListener(mungeStepListener);
+				MungeComponent mcom = MungeComponentFactory.getMungeComponent(evt.getSource().getChildren().get(x));
+				modelMap.put(evt.getSource().getChildren().get(x), mcom);
+				add(mcom);
+			}
+			
+			//This is done in an other loop to ensure that all the MungeComponets have been mapped
+			for (int y : evt.getChangeIndices()) {
+				MungeStep ms = evt.getSource().getChildren().get(y);
+				for (int x = 0; x < ms.getChildren().size(); x++) {
+					MungeStepOutput link = ms.getInputs().get(x);
+					if (link != null) {
+						MungeStep parent = (MungeStep)link.getParent();
+						int parNum = parent.getChildren().indexOf(link);
+						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(ms),x);
+						lines.add(ioc);
+					}
+				}
+			}
+		}
+	
+		public void mmChildrenRemoved(MatchMakerEvent<MatchRuleSet, MungeStep> evt) {
+			
+			for (MungeStep ms : evt.getChildren()) {
+				MungeComponent mcom = modelMap.remove(ms);
+				ms.removeMatchMakerListener(mungeStepListener);
+				remove(mcom);
+			}
+			
+			repaint();
+		}
+	
+		public void mmPropertyChanged(MatchMakerEvent<MatchRuleSet, MungeStep> evt) {
+			repaint();
+		}
+	
+		public void mmStructureChanged(MatchMakerEvent<MatchRuleSet, MungeStep> evt) {
+			repaint();
+		}
+    }
+	///////////////////////////////////// Listener for the MungeStep /////////////////////////
+    
+    class MungePenMungeStepListener implements MatchMakerListener<MungeStep, MungeStepOutput> {
+
+		public void mmChildrenInserted(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
+
+		}
+
+		public void mmChildrenRemoved(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
+			
+		}
+
+		public void mmPropertyChanged(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
+			if (evt.getPropertyName().equals("inputs")) {
+				//changed indices =
+				if (evt.getOldValue() == null && evt.getNewValue() != null) {
+					//connected and input
+					MungeStepOutput mso = (MungeStepOutput)evt.getNewValue();
+					MungeStep child = evt.getSource();
+					MungeStep parent = (MungeStep)mso.getParent();
+					int parNum = parent.getChildren().indexOf(mso);
+					int childNum = child.getInputs().indexOf(mso);
+					
+					
+					IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
+					lines.add(ioc);
+					
+				} else if (evt.getNewValue() == null && evt.getOldValue() != null) {
+					//disconnect input
+					MungeStepOutput mso = (MungeStepOutput)evt.getOldValue();
+					MungeStep child = evt.getSource();
+					MungeStep parent = (MungeStep)mso.getParent();
+					int parNum = parent.getChildren().indexOf(mso);
+					int childNum = child.getInputs().indexOf(mso);
+					
+					IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
+					lines.remove(ioc);
+				} 
+			}
+			repaint();
+		}
+
+		public void mmStructureChanged(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
+			repaint();
+		}
+    }
+	
 }

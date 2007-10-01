@@ -20,35 +20,44 @@
 package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 
+import org.apache.log4j.Logger;
+
+import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
-public class MungeComponent extends JPanel {
+public abstract class MungeComponent extends JPanel {
 	
+	
+	private static  final Logger logger = org.apache.log4j.Logger.getLogger(MungeComponent.class); 
 	
 	/**
 	 * A Set of listeners that detect changes in the MungeSteps and redraws them
@@ -77,6 +86,9 @@ public class MungeComponent extends JPanel {
 		
 	};
 	
+	protected JPanel content;
+	private JPanel root;
+	
 	private final MungeStep step;
 	
 	private final Color bg;
@@ -92,6 +104,7 @@ public class MungeComponent extends JPanel {
 	 * @param bg The background colour to the rectangle
 	 */
 	public MungeComponent(MungeStep step, Color border, Color bg) {
+		setFocusable(true);
 		this.borderColour = border;
 		this.bg = bg;
 		this.step = step;
@@ -103,10 +116,67 @@ public class MungeComponent extends JPanel {
 		
 		Dimension ps = getPreferredSize();
 		setBounds(0, 0, ps.width, ps.height);
-		
-		add(new JLabel(step.getName()));
 		selected = false;
+		
+		root = new JPanel();
+		root.setLayout(new BorderLayout());
+		JPanel tmp = new JPanel( new FlowLayout());
+		tmp.add(new JLabel(step.getName()));
+		JToolBar tb =new JToolBar();
+		tb.add(new HideShowAction());
+		tb.setFloatable(false);
+
+		tmp.add(tb);
+		root.add(tmp,BorderLayout.NORTH);
+		add(root);
+		content = new JPanel();
+		
+		root.setBackground(bg);
+		tmp.setBackground(bg);
+		content.setBackground(bg);
+				
+		root.addComponentListener(new ComponentListener(){
+
+			public void componentHidden(ComponentEvent e) {
+				// TODO Auto-generated method stub
+				logger.debug("Stub call: .componentHidden()");
+				
+			}
+
+			public void componentMoved(ComponentEvent e) {
+				// TODO Auto-generated method stub
+				logger.debug("moved");
+			}
+
+			public void componentResized(ComponentEvent e) {
+				getParent().repaint();
+				logger.debug("Componet resized");
+			}
+
+			public void componentShown(ComponentEvent e) {
+				// TODO Auto-generated method stub
+				logger.debug("Stub call: .componentShown()");
+				
+			}
+			
+		});
+		
+		addFocusListener(new FocusListener(){
+			public void focusGained(FocusEvent e) {
+				logger.debug("Gained focus");
+				repaint();
+			}
+			public void focusLost(FocusEvent e) {
+				logger.debug("Lost focus");
+				repaint();
+			}
+			
+		});
+		
+		buildUI(content);
 	}
+	
+	protected abstract void buildUI(JPanel content);
 	
 	/**
 	 * Creates a MungeComponent for the given step that will be in the munge pen, 
@@ -165,6 +235,7 @@ public class MungeComponent extends JPanel {
 	
 	@Override
 	protected void paintComponent(Graphics g) {
+		//logger.debug("MungeComponent Repaint");
 		g.setColor(Color.BLACK);
 		
 		if (getPreferredSize().width != getWidth() || getPreferredSize().height != getHeight()) {
@@ -205,11 +276,11 @@ public class MungeComponent extends JPanel {
 		g.setColor(bg);
 		g.fillRect(0, 0, (int)dim.getWidth()-1, (int)dim.getHeight()-1);
 		g.setColor(borderColour);
-		if (selected) {
+		if (hasFocus()) {
 			((Graphics2D)g).setStroke(new BasicStroke(3));
 		}
 		g.drawRect(0, 0, (int)dim.getWidth()-1, (int)dim.getHeight()-1);
-		if (selected) {
+		if (hasFocus()) {
 			((Graphics2D)g).setStroke(new BasicStroke(1));
 		}
 		
@@ -288,18 +359,32 @@ public class MungeComponent extends JPanel {
 	 * removes the this MC and all connected lines
 	 */
 	public void remove() {
-		List<IOConnector> cons = ((MungePen)getParent()).getConnectors();
-		for (IOConnector ioc : cons) {
-			if (ioc.getParent() == this || ioc.getChild() == this) {
-				ioc.remove();
-			}
-		}
-		getParent().repaint();
-		getParent().remove(this);
+		((MungePen)getParent()).removeMungeStepSingles(getStep());
 	}
 	
 	public void setSelect(boolean sel) {
 		selected = sel;
+	}
+	
+	
+	class HideShowAction extends AbstractAction {
+		
+		public HideShowAction() {
+			super("+");
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			if (e.getActionCommand().equals("+")) {
+				putValue(NAME, "-");
+				root.add(content,BorderLayout.CENTER);
+			} else {
+				putValue(NAME, "+");
+				root.remove(content);
+			}
+			validate();
+			getParent().repaint();
+			logger.debug("Repainted");
+		}	
 	}
 
 	
@@ -355,31 +440,11 @@ public class MungeComponent extends JPanel {
 	}
 	
 	public static void createAndShowGUI() {
-		MungePen p = new MungePen();
-	//	p.setLayout(new FlowLayout());
+		MungePen p = new MungePen(new MatchRuleSet());
 		
-		MungeStep ms1 = new ConcatMungeStep();
-		ms1.setName("CAT");
 		
-		MungeStep ms2 = new ConcatMungeStep();
-		ms2.setName("CATAGAIN");
 		
-		MungeComponent com1 = new MungeComponent(ms1);
-		MungeComponent com2 = new MungeComponent(ms2);
-		
-		Action addInput = new AddInputAction(com1);
-		Action removeAction = new RemoveUnusedInputAction(com1);
-		JButton remove = new JButton(removeAction);
-		JButton add = new JButton(addInput);
-		
-		com1.add(add);
-		com1.add(remove);
-		
-		p.add(com1);
-		p.add(com2);
-				
-		p.setBackground(Color.WHITE);
-		p.setOpaque(true);
+	
 		
 		JFrame f = new JFrame("Frame");
 		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -389,7 +454,6 @@ public class MungeComponent extends JPanel {
 		f.setContentPane(sp);
 		f.pack();
 		f.setVisible(true);
-		Insets bord = sp.getBorder().getBorderInsets(sp);
 	}	
 }
 
