@@ -29,7 +29,6 @@ import java.util.Map;
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 
 /**
  * An abstract implementation of the MungeStep interface. The only
@@ -51,10 +50,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 */
 	private Map<String,String> parameters = new HashMap<String, String>();
 	
-	/**
-	 * The MatchClass that this MungeStep belongs to.
-	 */
-	private MatchRuleSet parent;
 	
 	/**
 	 * This refers to whether a open() call has been made on this munge step.
@@ -119,10 +114,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	public MungeStep duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
 		throw new UnsupportedOperationException("Duplicate is not supported yet");
-	}
-	
-	public MatchRuleSet getParent() {
-		return parent;
 	}
 	
 	// TODO: Investigate whether this will break Hibernate 
