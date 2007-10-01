@@ -27,7 +27,6 @@ import javax.swing.table.AbstractTableModel;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -126,8 +125,8 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
                     return;
                 }
             }
-            for (Object columnMergeRule:evt.getChildren()){
-                ((ColumnMergeRules) columnMergeRule).addMatchMakerListener(this);
+            for (Object tableMergeRule:evt.getChildren()){
+                ((TableMergeRules) tableMergeRule).addMatchMakerListener(this);
             }
             fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
         }
@@ -147,8 +146,8 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
                     return;
                 }
             }
-            for (Object columnMergeRule:evt.getChildren()) {
-                ((ColumnMergeRules) columnMergeRule).removeMatchMakerListener(this);
+            for (Object tableMergeRule:evt.getChildren()) {
+                ((TableMergeRules) tableMergeRule).removeMatchMakerListener(this);
             }
             fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
         }
