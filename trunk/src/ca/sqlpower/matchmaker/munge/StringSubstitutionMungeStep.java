@@ -84,7 +84,9 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 		
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
-		if (from != null && to != null) {
+		if (in.getData() == null) {
+			out.setData(null);
+		} else if (from != null && to != null) {
 			if (useRegex.equals("true")) {
 				Pattern p = Pattern.compile(from);
 				Matcher m = p.matcher(data);
@@ -94,6 +96,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 			}
 			out.setData(data);
 		}
+
 		return true;
 	}
 

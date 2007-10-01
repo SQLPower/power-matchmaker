@@ -90,6 +90,8 @@ public class SubstringMungeStep extends AbstractMungeStep {
 				}
 				out.setData(data.substring(beginIndex, endIndex));
 			}
+		} else {
+			out.setData(null);
 		}
 		return true;
 	}

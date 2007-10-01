@@ -59,7 +59,11 @@ public class SoundexMungeStep extends AbstractMungeStep {
 
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
-		out.setData(new Soundex().soundex(data));
+		if (data != null) {
+			out.setData(new Soundex().soundex(data));
+		} else {
+			out.setData(null);
+		}
 		return true;
 	}
 
