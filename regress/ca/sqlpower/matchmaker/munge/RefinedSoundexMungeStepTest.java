@@ -23,15 +23,15 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-public class SoundexMungeStepTest extends TestCase {
+public class RefinedSoundexMungeStepTest extends TestCase {
 
-	private SoundexMungeStep step;
+	private RefinedSoundexMungeStep step;
 	
 	private MungeStepOutput testInput;
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new SoundexMungeStep();
+		step = new RefinedSoundexMungeStep();
 	}
 
 	public void testCallonNormalString() throws Exception {
@@ -43,7 +43,7 @@ public class SoundexMungeStepTest extends TestCase {
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
-		assertEquals("F160", result);
+		assertEquals("F20109", result);
 	}
 	
 	public void testCallonNull() throws Exception {
