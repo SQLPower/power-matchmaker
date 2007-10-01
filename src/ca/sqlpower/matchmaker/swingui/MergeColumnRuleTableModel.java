@@ -22,98 +22,81 @@ package ca.sqlpower.matchmaker.swingui;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 
-import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
 /**
- * A Table model for the merge table rules. Shows the merge tables
- * in a JTable and allows user add/delete/reorder merge tables.
- * <p>
- * It has 4 columns:
- * <dl>
- * 		<dt>table catalog   <dd> merge table catalog in a combo box
- * 		<dt>table schema    <dd> merge table schema in a combo box
- * 		<dt>table name      <dd> merge table name in a combo box
- * 		<dt>delete dup ind  <dd> merge table delete dup ind in a check box
- * </dl>
+ * table model of the column merge rules that belongs to the table merge rule.
+ * columns are column name, action type
+ * row count = children count of table merge rule.
  */
-public class MergeTableRuleTableModel extends AbstractTableModel implements MatchMakerListener {
 
-	private Match match;
-	private SQLObjectChooser chooser;
-	public MergeTableRuleTableModel(Match match, 
-			MatchMakerSwingSession swingSession) {
-		this.chooser = new SQLObjectChooser(swingSession);
-		this.match = match;
-		MatchMakerUtils.listenToHierarchy(this, this.match);
+public class MergeColumnRuleTableModel extends AbstractTableModel implements MatchMakerListener {
+
+	private TableMergeRules mergeRule;
+
+	public MergeColumnRuleTableModel(TableMergeRules mergeRule) {
+		this.mergeRule = mergeRule;
+		MatchMakerUtils.listenToHierarchy(this, this.mergeRule);
 	}
 	
 	public int getColumnCount() {
-		return 4;
+		return 2;
 	}
 
 	public int getRowCount() {
-		return match.getTableMergeRules().size();
+		return mergeRule.getChildren().size();
+	}
+
+	@Override
+	public String getColumnName(int column) {
+		if (column == 0) {
+			return "Column";
+		} else if (column == 1) {
+			return "Action";
+		} else {
+			throw new RuntimeException("getColumnName: Unexcepted column index:"+column);
+		}
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		if (columnIndex == 0) {
-			return match.getTableMergeRules().get(rowIndex).getCatalogName();
+			return mergeRule.getChildren().get(rowIndex).getColumn();
 		} else if (columnIndex == 1) {
-			return match.getTableMergeRules().get(rowIndex).getSchemaName();
-		} else if (columnIndex == 2) {
-			return match.getTableMergeRules().get(rowIndex).getTableName();
-		} else if ( columnIndex == 3) {
-			return match.getTableMergeRules().get(rowIndex).isDeleteDup() ? "Yes" : "No";
+			return mergeRule.getChildren().get(rowIndex).getActionType();
 		} else {
-			return null;
-		}
+			throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
+		}		
 	}
-
+	
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return false;
+		return true;
 	}
 	
 	@Override
-	public Class<?> getColumnClass(int columnIndex) {
+	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+		ColumnMergeRules rule = mergeRule.getChildren().get(rowIndex);
 		if (columnIndex == 0) {
-			return SQLCatalog.class;
+			rule.setColumn((SQLColumn) aValue);
 		} else if (columnIndex == 1) {
-			return SQLSchema.class;
-		} else if (columnIndex == 2) {
-			return SQLTable.class;
-		} else if ( columnIndex == 3) {
-			return String.class;
+			rule.setActionType((MergeActionType) aValue);
+		} else {
+			throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
 		}
-		return super.getColumnClass(columnIndex);
-	}
-	
-	@Override
-	public String getColumnName(int columnIndex) {
-		if (columnIndex == 0) {
-			return chooser.getCatalogTerm().getText();
-		} else if (columnIndex == 1) {
-			return chooser.getSchemaTerm().getText();
-		} else if (columnIndex == 2) {
-			return "Name";
-		} else if ( columnIndex == 3) {
-			return "Delete Duplicates?";
-		}
-		return null;
+		fireTableChanged(new TableModelEvent(this,rowIndex));
 	}
 
     public void mmChildrenInserted(MatchMakerEvent evt) {
-        if(evt.getSource() instanceof Match || evt.getSource() == match.getTableMergeRulesFolder()){
+        if(evt.getSource() == mergeRule){
             int[] changed = evt.getChangeIndices();
             ArrayList<Integer> changedIndices = new ArrayList<Integer>();
             for (int selectedRowIndex:changed){
@@ -126,15 +109,13 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
                     return;
                 }
             }
-            for (Object columnMergeRule:evt.getChildren()){
-                ((ColumnMergeRules) columnMergeRule).addMatchMakerListener(this);
-            }
+
             fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
         }
     }
 
     public void mmChildrenRemoved(MatchMakerEvent evt) {
-        if(evt.getSource() instanceof Match || evt.getSource() == match.getTableMergeRulesFolder()) {
+        if(evt.getSource() == mergeRule) {
             int[] changed = evt.getChangeIndices();
             ArrayList<Integer> changedIndices = new ArrayList<Integer>();
             for (int selectedRowIndex:changed){
@@ -147,16 +128,14 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
                     return;
                 }
             }
-            for (Object columnMergeRule:evt.getChildren()) {
-                ((ColumnMergeRules) columnMergeRule).removeMatchMakerListener(this);
-            }
+
             fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
         }
     }
 
     public void mmPropertyChanged(MatchMakerEvent evt) { 
-        if(evt.getSource() instanceof TableMergeRules) {
-            fireTableRowsUpdated(match.getTableMergeRules().indexOf(evt.getSource()), match.getTableMergeRules().indexOf(evt.getSource()));
+        if(evt.getSource() instanceof ColumnMergeRules) {
+            fireTableRowsUpdated(mergeRule.getChildren().indexOf(evt.getSource()), mergeRule.getChildren().indexOf(evt.getSource()));
         }
     }
 
