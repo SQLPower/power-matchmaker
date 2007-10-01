@@ -46,7 +46,7 @@ public class NewMergeRuleAction extends AbstractAction {
 	
 	public void actionPerformed(ActionEvent e) {
 		TableMergeRules mergeRule = new TableMergeRules();
-		swingSession.setCurrentEditorComponent(new MergeColumnRuleEditor(swingSession,parent,mergeRule,null));
+		swingSession.setCurrentEditorComponent(new MergeColumnRuleEditor(swingSession,parent,mergeRule));
 	}
 
 }
