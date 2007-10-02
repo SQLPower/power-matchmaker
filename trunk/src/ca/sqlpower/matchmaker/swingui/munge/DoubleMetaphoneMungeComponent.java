@@ -28,6 +28,10 @@ import javax.swing.JPanel;
 import ca.sqlpower.matchmaker.munge.DoubleMetaphoneMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 
+/**
+ * This is the component for a double metaphone munge step. It has only one option,
+ * a checkbox to decide whether to use regular expressions.
+ */
 public class DoubleMetaphoneMungeComponent extends AbstractMungeComponent {
 
 	private JCheckBox useAlt;

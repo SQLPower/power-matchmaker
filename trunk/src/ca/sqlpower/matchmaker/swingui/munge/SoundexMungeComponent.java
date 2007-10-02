@@ -24,6 +24,9 @@ import javax.swing.JPanel;
 
 import ca.sqlpower.matchmaker.munge.MungeStep;
 
+/**
+ * This is a component for a soundex munge step. It has no options at all.
+ */
 public class SoundexMungeComponent extends AbstractMungeComponent {
 
 	public SoundexMungeComponent(MungeStep step) {

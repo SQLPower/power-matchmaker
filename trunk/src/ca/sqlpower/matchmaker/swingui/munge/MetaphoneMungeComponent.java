@@ -24,6 +24,9 @@ import javax.swing.JPanel;
 
 import ca.sqlpower.matchmaker.munge.MungeStep;
 
+/**
+ * This is a component for a metaphone munge step. It has no options at all.
+ */
 public class MetaphoneMungeComponent extends AbstractMungeComponent {
 
 	public MetaphoneMungeComponent(MungeStep step) {
