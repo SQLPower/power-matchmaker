@@ -59,6 +59,7 @@ import ca.sqlpower.matchmaker.munge.RefinedSoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.RetainCharactersMungeStep;
 import ca.sqlpower.matchmaker.munge.SoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.StringSubstitutionMungeStep;
+import ca.sqlpower.matchmaker.munge.SubstringByWordMungeStep;
 import ca.sqlpower.matchmaker.munge.SubstringMungeStep;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
@@ -93,6 +94,8 @@ class MungeComponentFactory {
 			return new SubstringMungeComponent(ms);
 		} else if(ms instanceof RetainCharactersMungeStep) {
 			return new RetainCharactersMungeComponent(ms);
+		} else if(ms instanceof SubstringByWordMungeStep) {
+			return new SubstringByWordMungeComponent(ms);
 		} else if (ms instanceof ConcatMungeStep) {
 			return new ConcatMungeComponent(ms);
 		} else {
@@ -548,6 +551,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				process.addChild(new SubstringMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_0) {
 				process.addChild(new RetainCharactersMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_E) {
+				process.addChild(new SubstringByWordMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_W) {
 				process.addChild(new ConcatMungeStep());
 			}
