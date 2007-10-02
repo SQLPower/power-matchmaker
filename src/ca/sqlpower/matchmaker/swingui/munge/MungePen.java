@@ -49,6 +49,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
 import ca.sqlpower.matchmaker.munge.DoubleMetaphoneMungeStep;
 import ca.sqlpower.matchmaker.munge.LowerCaseMungeStep;
 import ca.sqlpower.matchmaker.munge.MetaphoneMungeStep;
@@ -92,6 +93,8 @@ class MungeComponentFactory {
 			return new SubstringMungeComponent(ms);
 		} else if(ms instanceof RetainCharactersMungeStep) {
 			return new RetainCharactersMungeComponent(ms);
+		} else if (ms instanceof ConcatMungeStep) {
+			return new ConcatMungeComponent(ms);
 		} else {
 			return null;
 		}
@@ -545,6 +548,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				process.addChild(new SubstringMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_0) {
 				process.addChild(new RetainCharactersMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_W) {
+				process.addChild(new ConcatMungeStep());
 			}
 		}
 	}
