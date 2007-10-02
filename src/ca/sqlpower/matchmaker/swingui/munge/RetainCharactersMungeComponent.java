@@ -22,7 +22,9 @@ package ca.sqlpower.matchmaker.swingui.munge;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
+import javax.swing.Action;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -32,6 +34,7 @@ import javax.swing.event.DocumentListener;
 
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.RetainCharactersMungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
  * This is the component for a retain characters munge step. It has three options,
@@ -44,9 +47,12 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 	private JCheckBox useRegex;
 	private JCheckBox caseSensitive;
 	private JTextField delimiters;
-
-	public RetainCharactersMungeComponent(MungeStep step) {
+	private FormValidationHandler handler;
+	public RetainCharactersMungeComponent(MungeStep step, FormValidationHandler handler) {
 		super(step);
+		this.handler = handler;
+		RegexValidator validator = new RegexValidator(new ArrayList<Action>());
+		handler.addValidateObject(delimiters, useRegex, validator);
 	}
 
 	@Override

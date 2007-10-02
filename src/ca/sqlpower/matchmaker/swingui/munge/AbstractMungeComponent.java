@@ -54,6 +54,8 @@ import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
+import ca.sqlpower.validation.swingui.StatusComponent;
 
 public abstract class AbstractMungeComponent extends JPanel {
 	
@@ -497,7 +499,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	public static void createAndShowGUI() {
-		MungePen p = new MungePen(new MatchRuleSet());
+		MungePen p = new MungePen(new MatchRuleSet(), new FormValidationHandler(new StatusComponent()));
 		JFrame f = new JFrame("Frame");
 		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		JScrollPane sp = new JScrollPane(p);
