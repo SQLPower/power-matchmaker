@@ -56,6 +56,7 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.RefinedSoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.SoundexMungeStep;
+import ca.sqlpower.matchmaker.munge.StringSubstitutionMungeStep;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
@@ -81,6 +82,8 @@ class MungeComponentFactory {
 			return new DoubleMetaphoneMungeComponent(ms);
 		} else if (ms instanceof WordCountMungeStep) {
 			return new WordCountMungeComponent(ms);
+		} else if (ms instanceof StringSubstitutionMungeStep) {
+			return new StringSubstitutionMungeComponent(ms);
 		} else if (ms instanceof TranslateWordMungeStep) {
 			return new TranslateWordMungeComponent(ms);
 		} else {
@@ -530,6 +533,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				process.addChild(new WordCountMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_8) {
 				process.addChild(new TranslateWordMungeStep(process.getSession()));
+			} else if (e.getKeyCode() == KeyEvent.VK_9) {
+				process.addChild(new StringSubstitutionMungeStep());
 			}
 		}
 	}
