@@ -69,14 +69,14 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 			throw new IndexOutOfBoundsException("There is no input at the given index");
 		}
 		inputs.get(index).current = o;
-		getEventSupport().firePropertyChange("inputs", null, o);
+		getEventSupport().firePropertyChange("inputs", index, null, o);
 	}
 
 	public void disconnectInput(int index) {
 		if (index >= getInputs().size()) {
 			throw new IndexOutOfBoundsException("There is no input at the given index");
 		}
-		getEventSupport().firePropertyChange("inputs",
+		getEventSupport().firePropertyChange("inputs", index,
 				inputs.get(index).current, null);
 		inputs.get(index).current = null;
 	}
@@ -84,8 +84,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	public int addInput(InputDescriptor desc) {
 		Input in = new Input(null, desc);
 		inputs.add(in);
-		getEventSupport().firePropertyChange("inputs", null, in);
-		return inputs.size()-1;
+		int index = inputs.size()-1;
+		getEventSupport().firePropertyChange("inputs", index, null, in);
+		return index;
 	}
 
 	public void removeInput(int index) {
@@ -93,7 +94,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 			throw new IndexOutOfBoundsException(
 			"There is no IOConnector at the give index.");
 		}
-		getEventSupport().firePropertyChange("inputs", inputs.get(index), null);
+		getEventSupport().firePropertyChange("inputs", index,
+				inputs.get(index), null);
 		inputs.remove(index);
 	}
 

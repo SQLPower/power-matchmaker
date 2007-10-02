@@ -128,6 +128,36 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
             listeners.get(i).mmPropertyChanged(evt);
 		}
 	}
+	
+	/**
+	 * Fires a mmPropertyChanged event to all listeners unless the oldValue and newValue are
+	 * the same. The event includes an index which is used if it was stored in an indexed 
+	 * collection. This should only be used for properties in this case, otherwise, use 
+	 * {@link #firePropertyChange(String, Object, Object)}.
+	 *
+	 * @param propertyName The JavaBeans name of the property that might have changed.
+	 * @param oldValue The value before the property change.  Can be null.
+	 * @param newValue The value after the change. Can be null.
+	 * @param changedIndex The index of the property that might have changed.
+	 */
+	public void firePropertyChange(String propertyName, int changedIndex, Object oldValue, Object newValue) {
+		if (propertyName == null) throw new NullPointerException("Null property name is not allowed");
+		if ( (oldValue == null && newValue == null) ||
+			 (oldValue != null && oldValue.equals(newValue))) {
+			return;
+		}
+		MatchMakerEvent<T, C> evt = new MatchMakerEvent<T, C>();
+		evt.setSource(source);
+		evt.setOldValue(oldValue);
+		evt.setNewValue(newValue);
+		evt.setPropertyName(propertyName);
+		evt.setChangeIndices(new int[] {changedIndex});
+
+		// see class-level comment A
+		for (int i = listeners.size() - 1; i >= 0; i--) {
+            listeners.get(i).mmPropertyChanged(evt);
+		}
+	}
 
 	/**
 	 * Fires a mmChildrenInserted event to all listeners.
