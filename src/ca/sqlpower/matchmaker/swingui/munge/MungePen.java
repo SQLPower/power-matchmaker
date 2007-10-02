@@ -37,9 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
@@ -51,8 +49,13 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.munge.DoubleMetaphoneMungeStep;
+import ca.sqlpower.matchmaker.munge.LowerCaseMungeStep;
+import ca.sqlpower.matchmaker.munge.MetaphoneMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.munge.RefinedSoundexMungeStep;
+import ca.sqlpower.matchmaker.munge.SoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 
 /**
@@ -62,17 +65,24 @@ import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
  */
 class MungeComponentFactory {
 	public static  AbstractMungeComponent getMungeComponent(MungeStep ms) {
-		return new AbstractMungeComponent(ms){
-			protected JPanel buildUI() {
-				JPanel content = new JPanel();
-				content.add(new JLabel("Test Component"));
-				return content;
-			}
+		if (ms instanceof UpperCaseMungeStep) {
+			return new UpperCaseMungeComponent(ms);
+		} else if (ms instanceof LowerCaseMungeStep) {
+			return new LowerCaseMungeComponent(ms);
+		} else if (ms instanceof SoundexMungeStep) {
+			return new SoundexMungeComponent(ms);
+		} else if (ms instanceof RefinedSoundexMungeStep) {
+			return new RefinedSoundexMungeComponent(ms);
+		} else if (ms instanceof MetaphoneMungeStep) {
+			return new MetaphoneMungeComponent(ms);
+		} else if (ms instanceof DoubleMetaphoneMungeStep) {
+			return new DoubleMetaphoneMungeComponent(ms);
+		} else {
+			return null;
+		}
 			
-		};
 	}
 }
-
 
 public class MungePen extends JLayeredPane implements Scrollable {
 	
@@ -498,8 +508,18 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				((AbstractMungeComponent)getSelectedComponent()).keyPressed(e);
 			}
 			
-			if (e.getKeyCode() == KeyEvent.VK_0) {
+			if (e.getKeyCode() == KeyEvent.VK_1) {
 				process.addChild(new UpperCaseMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_2) {
+				process.addChild(new LowerCaseMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_3) {
+				process.addChild(new SoundexMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_4) {
+				process.addChild(new RefinedSoundexMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_5) {
+				process.addChild(new MetaphoneMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_6) {
+				process.addChild(new DoubleMetaphoneMungeStep());
 			}
 			
 		}
