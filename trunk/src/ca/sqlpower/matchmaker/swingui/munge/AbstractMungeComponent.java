@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.swingui.munge;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -93,7 +94,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private final Color bg;
 	private final Color borderColour;
-	boolean selected;
 	
 	/**
 	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen.
@@ -103,38 +103,46 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param border The colour for the border around the rectangle
 	 * @param bg The background colour to the rectangle
 	 */
-	public AbstractMungeComponent(MungeStep step, Color border, Color bg) {
-		setFocusable(true);
+	private AbstractMungeComponent(MungeStep step, Color border, Color bg) {
 		this.borderColour = border;
 		this.bg = bg;
 		this.step = step;
+		
+		
 		step.addMatchMakerListener(stepEventHandler);
 		setName(step.getName());
+		
 		setBorder(BorderFactory.createEmptyBorder(15,1,15,1));
 		setOpaque(false);
 		setFocusable(true);
 		
 		Dimension ps = getPreferredSize();
 		setBounds(0, 0, ps.width, ps.height);
-		selected = false;
+
 		
 		root = new JPanel();
 		root.setLayout(new BorderLayout());
 		JPanel tmp = new JPanel( new FlowLayout());
 		tmp.add(new JLabel(step.getName()));
-		JToolBar tb =new JToolBar();
-		tb.add(new HideShowAction());
-		tb.setFloatable(false);
+		
+		content = buildUI();
+		
+		//returning null will prevent the +/- button form showing up
+		if (content != null) {
+			JToolBar tb =new JToolBar();
+			tb.add(new HideShowAction());
+			tb.setFloatable(false);
+			tmp.add(tb);
+			content.setBackground(bg);
+		}
 
-		tmp.add(tb);
 		root.add(tmp,BorderLayout.NORTH);
 		add(root);
-		content = new JPanel();
 		
 		root.setBackground(bg);
 		tmp.setBackground(bg);
-		content.setBackground(bg);
 				
+
 		root.addComponentListener(new ComponentListener(){
 
 			public void componentHidden(ComponentEvent e) {
@@ -151,6 +159,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 			public void componentResized(ComponentEvent e) {
 				getParent().repaint();
 				logger.debug("Componet resized");
+				//getParent().requestFocusInWindow();
 			}
 
 			public void componentShown(ComponentEvent e) {
@@ -160,7 +169,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 			
 		});
-		
+
 		addFocusListener(new FocusListener(){
 			public void focusGained(FocusEvent e) {
 				logger.debug("Gained focus");
@@ -173,9 +182,15 @@ public abstract class AbstractMungeComponent extends JPanel {
 			
 		});
 		
-		content = buildUI();
 	}
 	
+	
+	/**
+	 * This returns the options for the munge step. This must be set individualy for each munge step.
+	 * If null is returned no options will be show and there will be no +/- button
+	 * 
+	 * @return The option panel or null
+	 */
 	protected abstract JPanel buildUI();
 	
 	/**
@@ -186,13 +201,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public AbstractMungeComponent(MungeStep step) {
 		this(step, Color.BLACK,Color.WHITE);
-	}
-	
-	/**
-	 * Sets if the component is selected in the munge pen
-	 */
-	public void setSelected(boolean selected) {
-		this.selected = selected;
 	}
 	
 	/**
@@ -235,7 +243,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		//logger.debug("AbstractMungeComponent Repaint");
+		logger.debug("AbstractMungeComponent Repaint");
 		g.setColor(Color.BLACK);
 		
 		if (getPreferredSize().width != getWidth() || getPreferredSize().height != getHeight()) {
@@ -356,17 +364,23 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	/**
-	 * removes the this MC and all connected lines
+	 * Removes the this MC and all connected lines. And connects the ends.
+	 * This should only be called of there is one input and one output 
 	 */
-	public void remove() {
+	public void removeSingle() {
 		((MungePen)getParent()).removeMungeStepSingles(getStep());
 	}
 	
-	public void setSelect(boolean sel) {
-		selected = sel;
+	/** 
+	 * Removes this munge step and disconnects all input and output IOCs
+	 */
+	public void remove() {
+		((MungePen)getParent()).removeMungeStep(getStep());
 	}
 	
-	
+	/**
+	 * The action to control the +/- button
+	 */
 	private class HideShowAction extends AbstractAction {
 		public HideShowAction() {
 			super("+");
@@ -382,13 +396,23 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 			validate();
 			getParent().repaint();
+			((Component)e.getSource()).requestFocusInWindow();
 			logger.debug("Repainted");
 		}	
 	}
 
 	
+	/**
+	 * An action that can be added to the JPanel in buildUI that will add an input to the mungeStep.
+	 * This should only be used if there is a variable number of inputs allowed
+	 */
 	protected class AddInputAction extends AbstractAction {
 		
+		/**
+		 * Constructs the action.
+		 * 
+		 * @param title The string on the button
+		 */
 		public AddInputAction(String title) {
 			super(title);
 		}
@@ -399,8 +423,17 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 	}
 	
+	/**
+	 * An action that can be added to the JPanel in buildUI that will remove all unused outputs from the mungeStep.
+	 * This should only be used if there is a variable number of inputs allowed
+	 */
 	protected class RemoveUnusedInputAction extends AbstractAction {
 		
+		/**
+		 * Constructs the action.
+		 * 
+		 * @param title The string on the button
+		 */
 		RemoveUnusedInputAction(String title) {
 			super(title);
 		}
@@ -436,15 +469,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	public static void createAndShowGUI() {
 		MungePen p = new MungePen(new MatchRuleSet());
-		
-		
-		
-	
-		
 		JFrame f = new JFrame("Frame");
 		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		
-		
 		JScrollPane sp = new JScrollPane(p);
 		f.setContentPane(sp);
 		f.pack();
