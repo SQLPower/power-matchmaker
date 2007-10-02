@@ -64,6 +64,7 @@ import ca.sqlpower.matchmaker.munge.SubstringMungeStep;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
  * This is a temp spot for generating the Munge step components.
@@ -71,7 +72,7 @@ import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
  * add there own mappings. 
  */
 class MungeComponentFactory {
-	public static  AbstractMungeComponent getMungeComponent(MungeStep ms) {
+	public static  AbstractMungeComponent getMungeComponent(MungeStep ms, FormValidationHandler handler) {
 		if (ms instanceof UpperCaseMungeStep) {
 			return new UpperCaseMungeComponent(ms);
 		} else if (ms instanceof LowerCaseMungeStep) {
@@ -93,7 +94,7 @@ class MungeComponentFactory {
 		} else if (ms instanceof SubstringMungeStep) {
 			return new SubstringMungeComponent(ms);
 		} else if(ms instanceof RetainCharactersMungeStep) {
-			return new RetainCharactersMungeComponent(ms);
+			return new RetainCharactersMungeComponent(ms, handler);
 		} else if(ms instanceof SubstringByWordMungeStep) {
 			return new SubstringByWordMungeComponent(ms);
 		} else if (ms instanceof ConcatMungeStep) {
@@ -135,7 +136,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	MungePenMungeStepListener mungeStepListener;
 	
-	
+	private FormValidationHandler handler;
 	
 	Map<MungeStep,AbstractMungeComponent> modelMap = new HashMap<MungeStep, AbstractMungeComponent>();
 	List<IOConnector> lines = new ArrayList<IOConnector>(); 
@@ -144,7 +145,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 * Creates a new empty mungepen.
 	 * 
 	 */
-	public MungePen(MatchRuleSet process) {
+	public MungePen(MatchRuleSet process, FormValidationHandler handler) {
 		process.addMatchMakerListener(new MungePenMatchRuleSetListener());
 		mungeStepListener = new MungePenMungeStepListener();
 		
@@ -157,7 +158,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		setOpaque(true);
 		this.process = process;
 		buildComponents(process);
-		
+		this.handler = handler;
 		
 	}
 	
@@ -169,7 +170,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	private void buildComponents(MatchRuleSet process) {
 		for (MungeStep ms : process.getChildren()) {
 			ms.addMatchMakerListener(mungeStepListener);
-			AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(ms);
+			AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(ms, handler);
 			modelMap.put(ms, mcom);
 			add(mcom,DEFAULT_LAYER);
 		}
@@ -650,7 +651,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			
 			for (int x : evt.getChangeIndices()) {
 				evt.getSource().getChildren().get(x).addMatchMakerListener(mungeStepListener);
-				AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(evt.getSource().getChildren().get(x));
+				AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(evt.getSource().getChildren().get(x), handler);
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
 				add(mcom);
 			}

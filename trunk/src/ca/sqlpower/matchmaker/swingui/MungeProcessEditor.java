@@ -19,7 +19,10 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.BorderLayout;
+
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 import ca.sqlpower.matchmaker.Match;
@@ -27,6 +30,8 @@ import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
+import ca.sqlpower.validation.swingui.StatusComponent;
 
 /**
  * Implements the EditorPane functionality for editing a munge process (MatchRuleSet).
@@ -53,13 +58,19 @@ public class MungeProcessEditor implements EditorPane {
     /**
      * The actual GUI component that provides the editing interface.
      */
-    private final JScrollPane panel;
+    private final JPanel panel;
     
     /**
      * The instance that monitors the subtree we're editing for changes (so we know
      * if there are unsaved changes).
      */
     private final MMOChangeWatcher<MatchRuleSet, MungeStep> changeHandler;
+    
+    /**
+     * 
+     */
+    private FormValidationHandler handler;
+    private StatusComponent status = new StatusComponent();
     
     /**
      * Creates a new editor for the given session's given munge process.
@@ -78,7 +89,16 @@ public class MungeProcessEditor implements EditorPane {
         this.swingSession = swingSession;
         this.parentMatch = match;
         this.process = process;
-        this.panel = new JScrollPane(new MungePen(process));
+        
+        status = new StatusComponent();
+        handler = new FormValidationHandler(status);
+        
+        panel = new JPanel(new BorderLayout());
+        panel.add(status,BorderLayout.NORTH);
+        JScrollPane p = new JScrollPane(new MungePen(process, handler));
+        panel.add(p,BorderLayout.CENTER);
+        
+        
         this.changeHandler = new MMOChangeWatcher<MatchRuleSet, MungeStep>(process);
         
         if (process.getParentMatch() != null && process.getParentMatch() != parentMatch) {
