@@ -110,6 +110,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		parameters.put(name, newValue);
 		getEventSupport().firePropertyChange(name, oldValue, newValue);
 	}
+	
+	public void setParameter(String name, boolean newValue) {
+		String oldValue = parameters.get(name);
+		parameters.put(name, newValue + "");
+		getEventSupport().firePropertyChange(name, oldValue, newValue + "");
+	}
 
 	public MungeStep duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
