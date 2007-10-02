@@ -57,6 +57,7 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.RefinedSoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.SoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
+import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
 
 /**
  * This is a temp spot for generating the Munge step components.
@@ -77,6 +78,8 @@ class MungeComponentFactory {
 			return new MetaphoneMungeComponent(ms);
 		} else if (ms instanceof DoubleMetaphoneMungeStep) {
 			return new DoubleMetaphoneMungeComponent(ms);
+		} else if (ms instanceof WordCountMungeStep) {
+			return new WordCountMungeComponent(ms);
 		} else {
 			return null;
 		}
@@ -520,8 +523,9 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				process.addChild(new MetaphoneMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_6) {
 				process.addChild(new DoubleMetaphoneMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_7) {
+				process.addChild(new WordCountMungeStep());
 			}
-			
 		}
 	}
 	
