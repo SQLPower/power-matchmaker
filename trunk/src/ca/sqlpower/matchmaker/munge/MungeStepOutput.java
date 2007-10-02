@@ -85,7 +85,7 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	 * Overridden to declare the correct parent type.
 	 */
 	@Override
-	public MatchMakerObject getParent() {
+	public MungeStep getParent() {
 		return (MungeStep) super.getParent();
 	}
 	
