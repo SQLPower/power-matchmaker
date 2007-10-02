@@ -70,8 +70,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	//holds the info for dragging a connection 
 	//between two IOCc
-	MungeComponent start;
-	MungeComponent finish;
+	AbstractMungeComponent start;
+	AbstractMungeComponent finish;
 	int startNum;
 	int finishNum;
 	
@@ -86,7 +86,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	
 	
-	Map<MungeStep,MungeComponent> modelMap = new HashMap<MungeStep, MungeComponent>();
+	Map<MungeStep,AbstractMungeComponent> modelMap = new HashMap<MungeStep, AbstractMungeComponent>();
 	List<IOConnector> lines = new ArrayList<IOConnector>(); 
 
 	/**
@@ -105,14 +105,6 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		addMouseListener(new MungePenMouseListener());
 		addMouseMotionListener(new MungePenMouseMotionListener());
 		addKeyListener(new MungePenKeyListener());
-		/*addFocusListener(new FocusAdapter(){
-			@Override
-			public void focusLost(FocusEvent e) {
-				logger.debug("Focus Losst");
-				unselectLine();
-				unselectCom();
-			}
-		});*/
 		
 		setBackground(Color.WHITE);
 		setOpaque(true);
@@ -129,7 +121,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	private void buildComponents(MatchRuleSet process) {
 		for (MungeStep ms : process.getChildren()) {
 			ms.addMatchMakerListener(mungeStepListener);
-			MungeComponent mcom = MungeComponentFactory.getMungeComponent(ms);
+			AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(ms);
 			modelMap.put(ms, mcom);
 			add(mcom);
 		}
@@ -187,37 +179,6 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		selectedLine = null;
 	}
 	
-	/**
-	 * Selects the given MungeComponent
-	 * 
-	 * @param mcom The MingeComponent to select
-	 */
-	public void selectCom(Component com) {
-	/*	logger.debug("Component select: " + com);
-		boolean redraw = recentlySelected != com;
-		recentlySelected = com;
-		if (com instanceof MungeComponent) {
-			((MungeComponent)com).setSelect(true);
-		}
-		if (redraw) {
-			repaint();
-		}*/
-	}
-	
-	/**
-	 * Unselects a MungeComponent if there is one selected, else does nothing 
-	 */
-	public void unselectCom() {
-		/*logger.debug("Component unselect");
-		if (recentlySelected  != null && recentlySelected instanceof MungeComponent) {
-			((MungeComponent)recentlySelected).setSelect(false);
-		}
-		recentlySelected = null;
-		diff = null;
-		repaint();*/
-	}
-	
-	
 	private IOConnector getSelectedLine() {
 		return selectedLine;
 	}
@@ -234,8 +195,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	//over ridden to add any Component 
 	@Override
 	protected void addImpl(Component comp, Object constraints, int index) {
-		if (comp instanceof MungeComponent) {
-			MungeComponent mcom = (MungeComponent)comp;
+		if (comp instanceof AbstractMungeComponent) {
+			AbstractMungeComponent mcom = (AbstractMungeComponent)comp;
 			modelMap.put(mcom.getStep(),mcom);
 		}
 		super.addImpl(comp, constraints, index);
@@ -273,6 +234,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				fixed = finish.getInputPosition(finishNum);
 				fixed.translate(finish.getX(), finish.getY());
 			}
+			g.setColor(Color.BLACK);
 			g.drawLine(fixed.x,fixed.y, mouseX, mouseY);	
 		}
 	}
@@ -346,6 +308,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 			findSelected(e);
 			if (!maybeShowPopup(e)) {
+				
 				checkForIOConnectors(e);
 			}
 		}
@@ -363,6 +326,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			
 			maybeShowPopup(e);
 			revalidate();
+			repaint();
 		}
 		
 		public void mouseClicked(MouseEvent e) {
@@ -373,11 +337,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		public boolean maybeShowPopup(MouseEvent e) {
 			if (e.isPopupTrigger()) {
 				findSelected(e);
-				if (getSelectedComponent() != null && getSelectedComponent() instanceof MungeComponent) {
-					JPopupMenu popup = ((MungeComponent) getSelectedComponent()).getPopupMenu();
+				if (getSelectedComponent() != null && getSelectedComponent() instanceof AbstractMungeComponent) {
+					JPopupMenu popup = ((AbstractMungeComponent) getSelectedComponent()).getPopupMenu();
 					if (popup != null) {
 						popup.show(MungePen.this, e.getX(), e.getY());
-						unselectCom();
 						return true;
 					}
 				} else if (getSelectedLine() != null && e.isPopupTrigger()) {
@@ -391,17 +354,12 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 
 		public void findSelected(MouseEvent e) {
-			unselectCom();
 			recentlySelected = null;
 			for (Component com : MungePen.this.getComponents()) {
 				if (com.getBounds().contains(e.getPoint())) {
 					
 					if (recentlySelected == null || getLayer(com) < getLayer(recentlySelected))
 					{
-						bringToFront(com);
-						if (!com.hasFocus()) {
-							com.requestFocusInWindow();
-						}
 						recentlySelected = com;
 						unselectLine();
 						diff = new Point(e.getX() - com.getX(), e.getY()-com.getY());
@@ -410,26 +368,31 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 			if (recentlySelected == null) {
 				requestFocusInWindow();
+			} else if (!recentlySelected.hasFocus()) {
+				bringToFront(recentlySelected);
+				recentlySelected.requestFocusInWindow();
 			}
 		}
 		
 		public void checkForIOConnectors(MouseEvent e) {
+			logger.debug("Checking for IOConnections");
+			
 			//used to define the range of which a hit is counted as
 			int tolerance = 15;
 			
-			recentlySelected = null;
+			Component sel = null;
 			
 			for (Component com : MungePen.this.getComponents()) {
 				if (com.getBounds().contains(e.getPoint())) {
-					if (getSelectedComponent() == null || getLayer(com) < getLayer(getSelectedComponent()))
+					if (sel == null || getLayer(com) < getLayer(sel))
 					{
-						recentlySelected = com;
+						sel = com;
 					}
 				}
 			}
 
-			if (recentlySelected instanceof MungeComponent) {
-				MungeComponent mcom = (MungeComponent) recentlySelected;
+			if (sel instanceof AbstractMungeComponent) {
+				AbstractMungeComponent mcom = (AbstractMungeComponent) sel;
 				int inputs = mcom.getStep().getInputs().size();
 
 				for (int x = 0;x<inputs;x++) {
@@ -450,11 +413,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 		}
 		
-		public void connectionHit(MungeComponent mcom, int connectionNum, boolean inputHit) {
+		public void connectionHit(AbstractMungeComponent mcom, int connectionNum, boolean inputHit) {
 			logger.debug("Connection hit");
 			
 			unselectLine();
-			unselectCom();
 			
 			getParent().repaint();
 
@@ -483,6 +445,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				finish = null;
 			}
 			
+			recentlySelected = null;
 			requestFocusInWindow();
 		}
 	}
@@ -490,9 +453,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	class MungePenMouseMotionListener extends MouseMotionAdapter {
 		@Override
 		public void mouseDragged(MouseEvent e) {
+			logger.debug("Mouse dragged");
 			if (getBounds().contains(e.getPoint())) {
-				if (getSelectedComponent() != null) {
-					getSelectedComponent().setLocation(new Point((int)(e.getX() - diff.getX()),(int)(e.getY() - diff.getY())));
+				if (recentlySelected != null) {
+					recentlySelected.setLocation(new Point((int)(e.getX() - diff.getX()),(int)(e.getY() - diff.getY())));
 					repaint();
 				} else if (start != null || finish != null) {
 					repaint();
@@ -515,8 +479,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		public void keyPressed(KeyEvent e) {
 			if (getSelectedLine() != null) {
 				getSelectedLine().keyPressed(e);
-			} else if (getSelectedComponent() != null && getSelectedComponent() instanceof MungeComponent) {
-				((MungeComponent)getSelectedComponent()).keyPressed(e);
+			} else if (getSelectedComponent() != null && getSelectedComponent() instanceof AbstractMungeComponent) {
+				((AbstractMungeComponent)getSelectedComponent()).keyPressed(e);
 			}
 			
 			if (e.getKeyCode() == KeyEvent.VK_0) {
@@ -614,11 +578,12 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	}
     
     static class MungeComponentFactory {
-    	public static  MungeComponent getMungeComponent(MungeStep ms) {
-    		return new MungeComponent(ms){
-
-				protected void buildUI(JPanel content) {
+    	public static  AbstractMungeComponent getMungeComponent(MungeStep ms) {
+    		return new AbstractMungeComponent(ms){
+				protected JPanel buildUI() {
+					JPanel content = new JPanel();
 					content.add(new JLabel("Test Component"));
+					return content;
 				}
     			
     		};
@@ -633,7 +598,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			
 			for (int x : evt.getChangeIndices()) {
 				evt.getSource().getChildren().get(x).addMatchMakerListener(mungeStepListener);
-				MungeComponent mcom = MungeComponentFactory.getMungeComponent(evt.getSource().getChildren().get(x));
+				AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(evt.getSource().getChildren().get(x));
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
 				add(mcom);
 			}
@@ -656,7 +621,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		public void mmChildrenRemoved(MatchMakerEvent<MatchRuleSet, MungeStep> evt) {
 			
 			for (MungeStep ms : evt.getChildren()) {
-				MungeComponent mcom = modelMap.remove(ms);
+				AbstractMungeComponent mcom = modelMap.remove(ms);
 				ms.removeMatchMakerListener(mungeStepListener);
 				remove(mcom);
 			}

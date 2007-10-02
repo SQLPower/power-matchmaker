@@ -54,10 +54,10 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
-public abstract class MungeComponent extends JPanel {
+public abstract class AbstractMungeComponent extends JPanel {
 	
 	
-	private static  final Logger logger = org.apache.log4j.Logger.getLogger(MungeComponent.class); 
+	private static  final Logger logger = org.apache.log4j.Logger.getLogger(AbstractMungeComponent.class); 
 	
 	/**
 	 * A Set of listeners that detect changes in the MungeSteps and redraws them
@@ -96,14 +96,14 @@ public abstract class MungeComponent extends JPanel {
 	boolean selected;
 	
 	/**
-	 * Creates a MungeComponent for the given step that will be in the munge pen.
+	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen.
 	 * Sets the background and border colours to given colours.
 	 * 
 	 * @param step The step connected to the UI
 	 * @param border The colour for the border around the rectangle
 	 * @param bg The background colour to the rectangle
 	 */
-	public MungeComponent(MungeStep step, Color border, Color bg) {
+	public AbstractMungeComponent(MungeStep step, Color border, Color bg) {
 		setFocusable(true);
 		this.borderColour = border;
 		this.bg = bg;
@@ -173,18 +173,18 @@ public abstract class MungeComponent extends JPanel {
 			
 		});
 		
-		buildUI(content);
+		content = buildUI();
 	}
 	
-	protected abstract void buildUI(JPanel content);
+	protected abstract JPanel buildUI();
 	
 	/**
-	 * Creates a MungeComponent for the given step that will be in the munge pen, 
+	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen, 
 	 * setting default colours
 	 * 
 	 * @param step The step connecting to the UI
 	 */
-	public MungeComponent(MungeStep step) {
+	public AbstractMungeComponent(MungeStep step) {
 		this(step, Color.BLACK,Color.WHITE);
 	}
 	
@@ -235,7 +235,7 @@ public abstract class MungeComponent extends JPanel {
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		//logger.debug("MungeComponent Repaint");
+		//logger.debug("AbstractMungeComponent Repaint");
 		g.setColor(Color.BLACK);
 		
 		if (getPreferredSize().width != getWidth() || getPreferredSize().height != getHeight()) {
@@ -344,8 +344,8 @@ public abstract class MungeComponent extends JPanel {
 	}
 	
 	/**
-	 * Passes a key event to the MungeComponent, this is only passed if this
-	 * MungeComponent is selected.
+	 * Passes a key event to the AbstractMungeComponent, this is only passed if this
+	 * AbstractMungeComponent is selected.
 	 * 
 	 * @param e The event
 	 */
@@ -367,8 +367,7 @@ public abstract class MungeComponent extends JPanel {
 	}
 	
 	
-	class HideShowAction extends AbstractAction {
-		
+	private class HideShowAction extends AbstractAction {
 		public HideShowAction() {
 			super("+");
 		}
@@ -388,30 +387,26 @@ public abstract class MungeComponent extends JPanel {
 	}
 
 	
-	static class AddInputAction extends AbstractAction {
-		private final MungeComponent com;
+	protected class AddInputAction extends AbstractAction {
 		
-		public AddInputAction(MungeComponent com) {
-			super("Add Input");
-			this.com = com;
+		public AddInputAction(String title) {
+			super(title);
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			com.getStep().addInput(com.getStep().getInputDescriptor(0));
-			com.getParent().repaint();
+			getStep().addInput(getStep().getInputDescriptor(0));
+			getParent().repaint();
 		}
 	}
 	
-	static class RemoveUnusedInputAction extends AbstractAction {
-		private final MungeComponent com;
+	protected class RemoveUnusedInputAction extends AbstractAction {
 		
-		RemoveUnusedInputAction(MungeComponent com) {
-			super("Remove UnusedInput");
-			this.com = com;
+		RemoveUnusedInputAction(String title) {
+			super(title);
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			MungeStep step = com.getStep();
+			MungeStep step = getStep();
 			
 			for (int x = 0; x< step.getInputs().size();x++) {
 				int y;
@@ -427,7 +422,7 @@ public abstract class MungeComponent extends JPanel {
 				step.removeInput(x);
 			}
 			
-			com.getParent().repaint();
+			getParent().repaint();
 		}
 	}
 	
