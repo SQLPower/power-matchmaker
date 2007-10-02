@@ -58,6 +58,7 @@ import ca.sqlpower.matchmaker.munge.RefinedSoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.RetainCharactersMungeStep;
 import ca.sqlpower.matchmaker.munge.SoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.StringSubstitutionMungeStep;
+import ca.sqlpower.matchmaker.munge.SubstringMungeStep;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
@@ -87,6 +88,8 @@ class MungeComponentFactory {
 			return new StringSubstitutionMungeComponent(ms);
 		} else if (ms instanceof TranslateWordMungeStep) {
 			return new TranslateWordMungeComponent(ms);
+		} else if (ms instanceof SubstringMungeStep) {
+			return new SubstringMungeComponent(ms);
 		} else if(ms instanceof RetainCharactersMungeStep) {
 			return new RetainCharactersMungeComponent(ms);
 		} else {
@@ -538,6 +541,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				process.addChild(new TranslateWordMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_9) {
 				process.addChild(new StringSubstitutionMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_Q) {
+				process.addChild(new SubstringMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_0) {
 				process.addChild(new RetainCharactersMungeStep());
 			}

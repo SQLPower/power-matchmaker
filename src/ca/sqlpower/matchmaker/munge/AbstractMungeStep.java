@@ -107,13 +107,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	
 	public Boolean getBooleanParameter(String name) {
 		String param = parameters.get(name);
-		if (param != null && (param.equals("true") || param.equals("false"))) {
-			return param.equals("true");
+		if (param != null) {
+			return Boolean.valueOf(param);
 		} else {
 			return null;
 		}
 	}
-
+	
 	public Integer getIntegerParameter(String name) {
 		String param = parameters.get(name);
 		if (param != null) {
