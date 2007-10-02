@@ -53,8 +53,8 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 		out = new MungeStepOutput<String>("stringSubstitutionOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("stringSubstitution", String.class);
+		setParameter(USE_REGEX_PARAMETER_NAME, false);
 		super.addInput(desc);
-		setParameter(USE_REGEX_PARAMETER_NAME, "false");
 	}
 	
 	@Override
@@ -81,14 +81,14 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 
 		String from = getParameter(FROM_PARAMETER_NAME);
 		String to = getParameter(TO_PARAMETER_NAME);
-		String useRegex = getParameter(USE_REGEX_PARAMETER_NAME);
+		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
 		if (in.getData() == null) {
 			out.setData(null);
 		} else if (from != null && to != null) {
-			if (useRegex.equals("true")) {
+			if (useRegex) {
 				Pattern p = Pattern.compile(from);
 				Matcher m = p.matcher(data);
 				data = m.replaceAll(to);

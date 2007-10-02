@@ -54,7 +54,7 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	public WordCountMungeStep() {
 		setName("Word Count");
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
-		setParameter(USE_REGEX_PARAMETER_NAME, "false");
+		setParameter(USE_REGEX_PARAMETER_NAME, false);
 		
 		out = new MungeStepOutput<BigDecimal>("wordCountOutput", BigDecimal.class);
 		addChild(out);
@@ -84,14 +84,14 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	public Boolean call() throws Exception {
 		super.call();
 		String delimiter = getParameter(DELIMITER_PARAMETER_NAME);
-		String useRegex = getParameter(USE_REGEX_PARAMETER_NAME);
+		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
 		
 		int wordCount = 0;
 		if (data != null) {
-			if (useRegex.equals("false")) {
+			if (!useRegex) {
 				delimiter = "[" + delimiter + "]+";
 			} 
 			Pattern p = Pattern.compile(delimiter);
