@@ -33,6 +33,11 @@ import javax.swing.event.DocumentListener;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
 
+/**
+ * This is the component for WordCountMungeStep. It has a JCheckBox
+ * for the USE_REGEX parameter and a JTextField for the DELIMITER
+ * parameter.
+ */
 public class WordCountMungeComponent extends AbstractMungeComponent {
 
 	private JCheckBox useRegex;
