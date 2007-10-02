@@ -24,6 +24,9 @@ import javax.swing.JPanel;
 
 import ca.sqlpower.matchmaker.munge.MungeStep;
 
+/**
+ * This is a component for a upper case munge step. It has no options at all.
+ */
 public class UpperCaseMungeComponent extends AbstractMungeComponent {
 
 	public UpperCaseMungeComponent(MungeStep step) {
