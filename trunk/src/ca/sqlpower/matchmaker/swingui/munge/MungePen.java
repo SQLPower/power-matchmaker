@@ -55,6 +55,7 @@ import ca.sqlpower.matchmaker.munge.MetaphoneMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.RefinedSoundexMungeStep;
+import ca.sqlpower.matchmaker.munge.RetainCharactersMungeStep;
 import ca.sqlpower.matchmaker.munge.SoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.StringSubstitutionMungeStep;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
@@ -86,6 +87,8 @@ class MungeComponentFactory {
 			return new StringSubstitutionMungeComponent(ms);
 		} else if (ms instanceof TranslateWordMungeStep) {
 			return new TranslateWordMungeComponent(ms);
+		} else if(ms instanceof RetainCharactersMungeStep) {
+			return new RetainCharactersMungeComponent(ms);
 		} else {
 			return null;
 		}
@@ -535,6 +538,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				process.addChild(new TranslateWordMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_9) {
 				process.addChild(new StringSubstitutionMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_0) {
+				process.addChild(new RetainCharactersMungeStep());
 			}
 		}
 	}

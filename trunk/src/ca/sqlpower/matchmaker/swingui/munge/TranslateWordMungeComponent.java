@@ -52,7 +52,7 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 		JPanel content = new JPanel();
 		TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
 		
-		useRegex = new JCheckBox("Use Alternate Encoding");
+		useRegex = new JCheckBox("Use Regular Expressions");
 		useRegex.setBackground(getBg());
 		useRegex.setSelected(temp.getBooleanParameter(temp.USE_REGEX_PARAMETER_NAME));
 		useRegex.addActionListener(new ActionListener(){
