@@ -86,10 +86,6 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	/**
-	 * Regex can not be used in combination with case insensitivity, this should
-	 * be disabled in the UI.
-	 */
 	public Boolean call() throws Exception {
 		super.call();
 
@@ -101,24 +97,20 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 		StringBuilder result = new StringBuilder();
 		
 		if (in.getData() != null) {
-			if (useRegex) {
-				Pattern p = Pattern.compile(retainChars);
-				for (Character letter: data.toCharArray()) {
-					Matcher m = p.matcher(letter.toString());
-					if (m.matches()) {
-						result.append(letter);
-					}
-				}
+			Pattern p;
+			if (!useRegex) {
+				retainChars = "[" + retainChars + "]+";
+			}
+			if (!caseSensitive) {
+				p = Pattern.compile(retainChars, Pattern.CASE_INSENSITIVE);
 			} else {
-				if (!caseSensitive) {
-					String retainLowerCase = retainChars.toLowerCase();
-					String retainUpperCase = retainChars.toUpperCase();
-					retainChars = retainLowerCase + retainUpperCase;
-				}
-				for (Character letter : data.toCharArray()) {
-					if (retainChars.contains(letter.toString())) {
-						result.append(letter);
-					}
+				p = Pattern.compile(retainChars);
+			}
+			
+			for (Character letter: data.toCharArray()) {
+				Matcher m = p.matcher(letter.toString());
+				if (m.matches()) {
+					result.append(letter);
 				}
 			}
 			out.setData(result.toString());
