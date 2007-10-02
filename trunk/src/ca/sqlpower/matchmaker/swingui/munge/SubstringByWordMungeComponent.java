@@ -45,7 +45,8 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * This is the component for SubstringByWordMungeStep. It has a 
  * JCheckBox for the USE_REGEX parameter and JTextFields for the 
- * FROM and TO parameter.
+ * delimiters and resultDelimiters parameter. It also contain 
+ * two JSpinners for users to set the begin and end index.
  */
 public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 

@@ -33,9 +33,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * This is the component for SubstringMungeStep. It has a 
- * JCheckBox for the USE_REGEX parameter and JTextFields for the 
- * FROM and TO parameter.
+ * This is the component for SubstringMungeStep. It contains 
+ * two JSpinners for users to set the begin and end index.
  */
 public class SubstringMungeComponent extends AbstractMungeComponent {
 
