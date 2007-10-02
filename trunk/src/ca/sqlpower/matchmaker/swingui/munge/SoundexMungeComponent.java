@@ -19,7 +19,6 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -35,9 +34,7 @@ public class SoundexMungeComponent extends AbstractMungeComponent {
 
 	@Override
 	protected JPanel buildUI() {
-		JPanel content = new JPanel();
-		content.add(new JLabel("No options available."));
-		return content;
+		return null;
 	}
 
 }
