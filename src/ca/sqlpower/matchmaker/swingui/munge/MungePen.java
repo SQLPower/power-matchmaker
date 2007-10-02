@@ -55,6 +55,25 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 
+/**
+ * This is a temp spot for generating the Munge step components.
+ * This will eventualy be put somewhere where it is easy for the user to 
+ * add there own mappings. 
+ */
+class MungeComponentFactory {
+	public static  AbstractMungeComponent getMungeComponent(MungeStep ms) {
+		return new AbstractMungeComponent(ms){
+			protected JPanel buildUI() {
+				JPanel content = new JPanel();
+				content.add(new JLabel("Test Component"));
+				return content;
+			}
+			
+		};
+	}
+}
+
+
 public class MungePen extends JLayeredPane implements Scrollable {
 	
 	private static  final Logger logger = Logger.getLogger(MungePen.class); 
@@ -64,6 +83,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	//The selected component for temp use before the request focus has kicked in
 	//only use right after a call to findSelected
 	Component recentlySelected;
+	
 	// The offset from the corner of the component to where the mouse clicked
 	Point diff;
 	
@@ -94,11 +114,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 * 
 	 */
 	public MungePen(MatchRuleSet process) {
-		
-		process.addChild(new UpperCaseMungeStep());
-		process.addChild(new UpperCaseMungeStep());
-		
-		process.addMatchMakerListener(new MungePenMatchRuleSetListeren());
+		process.addMatchMakerListener(new MungePenMatchRuleSetListener());
 		mungeStepListener = new MungePenMungeStepListener();
 		
 		setFocusable(true);
@@ -139,22 +155,13 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 		}
 	}
-
-	/**
-	 * Returns the list of IOCs that represents the connections.
-	 * 
-	 * @return The list
-	 */
-	public List<IOConnector> getConnectors() {
-		return lines;
-	}
 	
 	/**
 	 * Moves the given component to the topmost layer in the Pen
 	 * 
 	 * @param com The component to move
 	 */
-	public void bringToFront(Component com) {
+	private void bringToFront(Component com) {
 		remove(com);
 		add(com,0);
 	}
@@ -192,7 +199,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		return null;
 	}
 	
-	//over ridden to add any Component 
+	//over ridden to map all the mungesteps to there components
 	@Override
 	protected void addImpl(Component comp, Object constraints, int index) {
 		if (comp instanceof AbstractMungeComponent) {
@@ -239,6 +246,12 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
 	
+	/**
+	 * Removes a mungestep from the pen. 
+	 * This will remove the given mungestep asw ell as disconnect all its inputs.
+	 * 
+	 * @param ms The step to be removed
+	 */
 	public void removeMungeStep(MungeStep ms) {
 		
 		List<IOConnector> killed = new ArrayList<IOConnector>();
@@ -294,7 +307,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
 	
-	class MungePenMouseListener extends MouseAdapter {
+	
+	private class MungePenMouseListener extends MouseAdapter {
 		public void mousePressed(MouseEvent e) {
 			logger.debug("Mouse PRess");
 			//finds if the user has selected a line
@@ -374,6 +388,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 		}
 		
+		//checks to see if the mouse was near an IOC point
 		public void checkForIOConnectors(MouseEvent e) {
 			logger.debug("Checking for IOConnections");
 			
@@ -381,7 +396,6 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			int tolerance = 15;
 			
 			Component sel = null;
-			
 			for (Component com : MungePen.this.getComponents()) {
 				if (com.getBounds().contains(e.getPoint())) {
 					if (sel == null || getLayer(com) < getLayer(sel))
@@ -413,6 +427,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 		}
 		
+		//The mouse was near an IOC point
 		public void connectionHit(AbstractMungeComponent mcom, int connectionNum, boolean inputHit) {
 			logger.debug("Connection hit");
 			
@@ -450,7 +465,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
 	 
-	class MungePenMouseMotionListener extends MouseMotionAdapter {
+	private class MungePenMouseMotionListener extends MouseMotionAdapter {
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			logger.debug("Mouse dragged");
@@ -494,7 +509,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	/////////////////////////////////////////////////////////////////
 	//        Code to handle the scrollPane                       //
-	//         Most of it was taken from the playpen             //
+	//         Most of it was stolen from the playpen             //
 	//////////////////////////////////////////////////////////////
 	/**
 	 * Calculates the smallest rectangle that will completely
@@ -577,23 +592,9 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
     
-    static class MungeComponentFactory {
-    	public static  AbstractMungeComponent getMungeComponent(MungeStep ms) {
-    		return new AbstractMungeComponent(ms){
-				protected JPanel buildUI() {
-					JPanel content = new JPanel();
-					content.add(new JLabel("Test Component"));
-					return content;
-				}
-    			
-    		};
-    	}
-    }
-
-
     ///////////////////////////Listener for MatchMaker Rule Set /////////////////////////////////
 
-    class MungePenMatchRuleSetListeren implements MatchMakerListener<MatchRuleSet, MungeStep> {
+    private class MungePenMatchRuleSetListener implements MatchMakerListener<MatchRuleSet, MungeStep> {
 		public void mmChildrenInserted(MatchMakerEvent<MatchRuleSet, MungeStep> evt) {
 			
 			for (int x : evt.getChangeIndices()) {
@@ -639,7 +640,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
     }
 	///////////////////////////////////// Listener for the MungeStep /////////////////////////
     
-    class MungePenMungeStepListener implements MatchMakerListener<MungeStep, MungeStepOutput> {
+    private class MungePenMungeStepListener implements MatchMakerListener<MungeStep, MungeStepOutput> {
 
 		public void mmChildrenInserted(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
 
