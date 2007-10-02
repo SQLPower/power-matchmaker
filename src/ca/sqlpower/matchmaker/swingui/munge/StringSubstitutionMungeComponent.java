@@ -21,7 +21,9 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
+import javax.swing.Action;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -31,6 +33,7 @@ import javax.swing.event.DocumentListener;
 
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.StringSubstitutionMungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -46,8 +49,11 @@ public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
 	private JTextField from;
 	private JTextField to;
 	
-	public StringSubstitutionMungeComponent(MungeStep step) {
+	public StringSubstitutionMungeComponent(MungeStep step, FormValidationHandler handler) {
 		super(step);
+
+		RegexValidator validator = new RegexValidator(new ArrayList<Action>());
+		handler.addValidateObject(from, useRegex, validator);
 	}
 
 	@Override

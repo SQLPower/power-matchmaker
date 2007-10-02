@@ -22,7 +22,9 @@ package ca.sqlpower.matchmaker.swingui.munge;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
+import javax.swing.Action;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -32,6 +34,7 @@ import javax.swing.event.DocumentListener;
 
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
  * This is the component for WordCountMungeStep. It has a JCheckBox
@@ -43,8 +46,10 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 	private JCheckBox useRegex;
 	private JTextField delimiters;
 
-	public WordCountMungeComponent(MungeStep step) {
+	public WordCountMungeComponent(MungeStep step, FormValidationHandler handler) {
 		super(step);
+		RegexValidator validator = new RegexValidator(new ArrayList<Action>());
+		handler.addValidateObject(delimiters, useRegex, validator);
 	}
 
 	@Override

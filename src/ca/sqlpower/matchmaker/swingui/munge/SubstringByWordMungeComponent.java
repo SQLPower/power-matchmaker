@@ -21,7 +21,9 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
+import javax.swing.Action;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -35,6 +37,7 @@ import javax.swing.event.DocumentListener;
 
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SubstringByWordMungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -52,8 +55,10 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 	private JTextField delimiter;
 	private JTextField resultDelimiter;
 	
-	public SubstringByWordMungeComponent(MungeStep step) {
+	public SubstringByWordMungeComponent(MungeStep step, FormValidationHandler handler) {
 		super(step);
+		RegexValidator validator = new RegexValidator(new ArrayList<Action>());
+		handler.addValidateObject(delimiter, useRegex, validator);
 	}
 
 	@Override

@@ -86,9 +86,9 @@ class MungeComponentFactory {
 		} else if (ms instanceof DoubleMetaphoneMungeStep) {
 			return new DoubleMetaphoneMungeComponent(ms);
 		} else if (ms instanceof WordCountMungeStep) {
-			return new WordCountMungeComponent(ms);
+			return new WordCountMungeComponent(ms, handler);
 		} else if (ms instanceof StringSubstitutionMungeStep) {
-			return new StringSubstitutionMungeComponent(ms);
+			return new StringSubstitutionMungeComponent(ms, handler);
 		} else if (ms instanceof TranslateWordMungeStep) {
 			return new TranslateWordMungeComponent(ms);
 		} else if (ms instanceof SubstringMungeStep) {
@@ -96,7 +96,7 @@ class MungeComponentFactory {
 		} else if(ms instanceof RetainCharactersMungeStep) {
 			return new RetainCharactersMungeComponent(ms, handler);
 		} else if(ms instanceof SubstringByWordMungeStep) {
-			return new SubstringByWordMungeComponent(ms);
+			return new SubstringByWordMungeComponent(ms, handler);
 		} else if (ms instanceof ConcatMungeStep) {
 			return new ConcatMungeComponent(ms);
 		} else {
