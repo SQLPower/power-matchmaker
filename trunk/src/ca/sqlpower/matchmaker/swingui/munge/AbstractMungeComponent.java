@@ -475,6 +475,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 		f.setContentPane(sp);
 		f.pack();
 		f.setVisible(true);
-	}	
+	}
+
+
+	public Color getBg() {
+		return bg;
+	}
 }
 
