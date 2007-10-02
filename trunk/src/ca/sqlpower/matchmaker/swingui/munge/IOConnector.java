@@ -42,8 +42,8 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
  *Each IOC is recreated every time the munge pen is redrawn 
  */
 public class IOConnector {
-	MungeComponent parent;
-	MungeComponent child;
+	AbstractMungeComponent parent;
+	AbstractMungeComponent child;
 	int parentNumber;
 	int childNumber;
 	
@@ -52,12 +52,12 @@ public class IOConnector {
 	/**
 	 * Creates a new IOConnector that represents a connection line in the mungePen
 	 *  
-	 * @param parent The MungeComponent where the output is from
+	 * @param parent The AbstractMungeComponent where the output is from
 	 * @param parentNum The number of the IOC in the parent
-	 * @param child The MungeComponent where the inputs goes 
+	 * @param child The AbstractMungeComponent where the inputs goes 
 	 * @param childNum The number of the IOC in the child
 	 */
-	public IOConnector(MungeComponent parent, int parentNum, MungeComponent child, int childNum) {
+	public IOConnector(AbstractMungeComponent parent, int parentNum, AbstractMungeComponent child, int childNum) {
 		this.parent = parent;
 		this.child = child;
 		parentNumber = parentNum;
@@ -139,7 +139,7 @@ public class IOConnector {
 		bottom.translate(child.getX(), child.getY());
 		
 		MungeStepOutput link = child.getInputs().get(childNumber);
-		g.setColor(MungeComponent.getColor(link.getType()));
+		g.setColor(AbstractMungeComponent.getColor(link.getType()));
 		
 		g.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
 		
@@ -165,11 +165,11 @@ public class IOConnector {
 	}
 
 
-	public MungeComponent getParent() {
+	public AbstractMungeComponent getParent() {
 		return parent;
 	}
 
-	public MungeComponent getChild() {
+	public AbstractMungeComponent getChild() {
 		return child;
 	}
 
