@@ -104,7 +104,25 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	public String getParameter(String name) {
 		return parameters.get(name);
 	}
+	
+	public Boolean getBooleanParameter(String name) {
+		String param = parameters.get(name);
+		if (param != null && (param.equals("true") || param.equals("false"))) {
+			return param.equals("true");
+		} else {
+			return null;
+		}
+	}
 
+	public Integer getIntegerParameter(String name) {
+		String param = parameters.get(name);
+		if (param != null) {
+			return Integer.valueOf(param);
+		} else {
+			return null;
+		}
+	}
+	
 	public void setParameter(String name, String newValue) {
 		String oldValue = parameters.get(name);
 		parameters.put(name, newValue);
@@ -116,7 +134,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		parameters.put(name, newValue + "");
 		getEventSupport().firePropertyChange(name, oldValue, newValue + "");
 	}
-
+	
+	public void setParameter(String name, int newValue) {
+		String oldValue = parameters.get(name);
+		parameters.put(name, newValue + "");
+		getEventSupport().firePropertyChange(name, oldValue, newValue + "");
+	}
+	
 	public MungeStep duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
 		throw new UnsupportedOperationException("Duplicate is not supported yet");

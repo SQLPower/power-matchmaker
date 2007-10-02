@@ -41,7 +41,7 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 		out = new MungeStepOutput<String>("doubleMetaphoneOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("doubleMetaphone", String.class);
-		setParameter(USE_ALTERNATE_PARAMETER_NAME, "false");
+		setParameter(USE_ALTERNATE_PARAMETER_NAME, false);
 		super.addInput(desc);
 	}
 	
@@ -67,7 +67,7 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	public Boolean call() throws Exception {
 		super.call();
 
-		boolean useAlternate = getParameter(USE_ALTERNATE_PARAMETER_NAME).equals("true");
+		boolean useAlternate = getBooleanParameter(USE_ALTERNATE_PARAMETER_NAME);
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
 		if (data != null) {

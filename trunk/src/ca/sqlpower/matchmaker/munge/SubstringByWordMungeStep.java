@@ -68,8 +68,10 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	public SubstringByWordMungeStep() {
 		setName("Substring by Word");
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
-		setParameter(USE_REGEX_PARAMETER_NAME, "false");
 		setParameter(RESULT_DELIM_PARAMETER_NAME, " ");
+		setParameter(USE_REGEX_PARAMETER_NAME, false);
+		setParameter(BEGIN_PARAMETER_NAME, 0);
+		setParameter(END_PARAMETER_NAME, 0);
 		out = new MungeStepOutput<String>("substringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("substring", String.class);
@@ -102,11 +104,11 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	public Boolean call() throws Exception {
 		super.call();
 
-		int beginIndex = Integer.valueOf(getParameter(BEGIN_PARAMETER_NAME));
-		int endIndex = Integer.valueOf(getParameter(END_PARAMETER_NAME));
+		int beginIndex = getIntegerParameter(BEGIN_PARAMETER_NAME);
+		int endIndex = getIntegerParameter(END_PARAMETER_NAME);
 		
 		String delimiter = getParameter(DELIMITER_PARAMETER_NAME);
-		String useRegex = getParameter(USE_REGEX_PARAMETER_NAME);
+		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		String resultDelim = getParameter(RESULT_DELIM_PARAMETER_NAME);
 				
 		MungeStepOutput<String> in = getInputs().get(0);
@@ -119,7 +121,7 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 			}
 			
 			// This block separates the input into an array of words.
-			if (useRegex.equals("false")) {
+			if (!useRegex) {
 				delimiter = "[" + delimiter + "]+";
 			} 
 			Pattern p = Pattern.compile(delimiter);

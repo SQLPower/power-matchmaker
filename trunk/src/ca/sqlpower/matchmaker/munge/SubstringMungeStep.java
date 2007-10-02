@@ -41,6 +41,8 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	
 	public SubstringMungeStep() {
 		setName("Substring");
+		setParameter(BEGIN_PARAMETER_NAME, 0);
+		setParameter(END_PARAMETER_NAME, 0);
 		out = new MungeStepOutput<String>("substringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("substring", String.class);
@@ -73,8 +75,8 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	public Boolean call() throws Exception {
 		super.call();
 
-		int beginIndex = Integer.valueOf(getParameter(BEGIN_PARAMETER_NAME));
-		int endIndex = Integer.valueOf(getParameter(END_PARAMETER_NAME));
+		int beginIndex = getIntegerParameter(BEGIN_PARAMETER_NAME);
+		int endIndex = getIntegerParameter(END_PARAMETER_NAME);
 		
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();

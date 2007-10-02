@@ -69,7 +69,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("translateWord", String.class);
 		super.addInput(desc);
-		setParameter(USE_REGEX_PARAMETER_NAME, "false");
+		setParameter(USE_REGEX_PARAMETER_NAME, false);
 	}
 	
 	@Override
@@ -100,7 +100,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 
 		String from;
 		String to;
-		String useRegex = getParameter(USE_REGEX_PARAMETER_NAME);
+		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
@@ -111,7 +111,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 				to = translateWord.getTo();
 				
 				if (from != null && to != null) {
-					if (useRegex.equals("true")) {
+					if (useRegex) {
 						Pattern p = Pattern.compile(from);
 						Matcher m = p.matcher(data);
 						data = m.replaceAll(to);

@@ -61,8 +61,9 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 		out = new MungeStepOutput<String>("retainCharactersOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("retainCharacters", String.class);
-		setParameter(CASE_SENSITIVE_PARAMETER_NAME, "true");
-		setParameter(USE_REGEX_PARAMETER_NAME, "false");
+		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
+		setParameter(USE_REGEX_PARAMETER_NAME, false);
+		setParameter(RETAIN_CHARACTERS_PARAMETER_NAME, "");
 		super.addInput(desc);
 	}
 	
@@ -93,14 +94,14 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 		super.call();
 
 		MungeStepOutput<String> in = getInputs().get(0);
-		String caseSensitive = getParameter(CASE_SENSITIVE_PARAMETER_NAME);
-		String useRegex = getParameter(USE_REGEX_PARAMETER_NAME);
+		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
+		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		String retainChars = getParameter(RETAIN_CHARACTERS_PARAMETER_NAME);
 		String data = in.getData();
 		StringBuilder result = new StringBuilder();
 		
 		if (in.getData() != null) {
-			if (useRegex.equals("true")) {
+			if (useRegex) {
 				Pattern p = Pattern.compile(retainChars);
 				for (Character letter: data.toCharArray()) {
 					Matcher m = p.matcher(letter.toString());
@@ -109,7 +110,7 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 					}
 				}
 			} else {
-				if (caseSensitive.equals("false")) {
+				if (!caseSensitive) {
 					String retainLowerCase = retainChars.toLowerCase();
 					String retainUpperCase = retainChars.toUpperCase();
 					retainChars = retainLowerCase + retainUpperCase;
