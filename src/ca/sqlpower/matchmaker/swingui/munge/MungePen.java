@@ -158,6 +158,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		this.process = process;
 		buildComponents(process);
 		
+		
 	}
 	
 	/**
@@ -170,7 +171,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			ms.addMatchMakerListener(mungeStepListener);
 			AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(ms);
 			modelMap.put(ms, mcom);
-			add(mcom);
+			add(mcom,DEFAULT_LAYER);
 		}
 		
 		//This is done in an other loop to ensure that all the MungeComponets have been mapped
@@ -187,14 +188,14 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
 	
-	/**
-	 * Moves the given component to the topmost layer in the Pen
-	 * 
-	 * @param com The component to move
-	 */
-	private void bringToFront(Component com) {
-		remove(com);
-		add(com,0);
+	public void bringToFront(Component com) {
+		setLayer(com, DRAG_LAYER);
+		for (Component tmp : getComponents()) {
+			if (!tmp.equals(com)) {
+				setLayer(tmp, DEFAULT_LAYER);
+			}
+		}
+		moveToFront(com);
 	}
 	
 	/**
@@ -341,6 +342,11 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	private class MungePenMouseListener extends MouseAdapter {
 		public void mousePressed(MouseEvent e) {
+			
+			for (Component c : getComponents()) {
+				logger.debug("-----------------layer: " + getLayer(c));
+			}
+			
 			logger.debug("Mouse PRess");
 			//finds if the user has selected a line
 			unselectLine();
@@ -382,13 +388,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		public boolean maybeShowPopup(MouseEvent e) {
 			if (e.isPopupTrigger()) {
 				findSelected(e);
-				if (getSelectedComponent() != null && getSelectedComponent() instanceof AbstractMungeComponent) {
-					JPopupMenu popup = ((AbstractMungeComponent) getSelectedComponent()).getPopupMenu();
-					if (popup != null) {
-						popup.show(MungePen.this, e.getX(), e.getY());
-						return true;
-					}
-				} else if (getSelectedLine() != null && e.isPopupTrigger()) {
+				if (getSelectedLine() != null) {
 					JPopupMenu popup = getSelectedLine().getPopup();
 					getParent().repaint();
 					popup.show(MungePen.this,e.getX(),e.getY());
@@ -403,7 +403,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			for (Component com : MungePen.this.getComponents()) {
 				if (com.getBounds().contains(e.getPoint())) {
 					
-					if (recentlySelected == null || getLayer(com) < getLayer(recentlySelected))
+					if (recentlySelected == null || getLayer(com) > getLayer(recentlySelected))
 					{
 						recentlySelected = com;
 						unselectLine();
@@ -429,7 +429,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			Component sel = null;
 			for (Component com : MungePen.this.getComponents()) {
 				if (com.getBounds().contains(e.getPoint())) {
-					if (sel == null || getLayer(com) < getLayer(sel))
+					if (sel == null || getLayer(com) > getLayer(sel))
 					{
 						sel = com;
 					}
@@ -525,11 +525,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		public void keyPressed(KeyEvent e) {
 			if (getSelectedLine() != null) {
 				getSelectedLine().keyPressed(e);
-			} else if (getSelectedComponent() != null && getSelectedComponent() instanceof AbstractMungeComponent) {
-				((AbstractMungeComponent)getSelectedComponent()).keyPressed(e);
-			}
-			
-			if (e.getKeyCode() == KeyEvent.VK_1) {
+			} 
+			if (e.getKeyCode() == KeyEvent.VK_0) {
 				process.addChild(new UpperCaseMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_2) {
 				process.addChild(new LowerCaseMungeStep());
@@ -738,5 +735,20 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			repaint();
 		}
     }
+
+
+
+	public boolean isClicked(MouseEvent e, AbstractMungeComponent mc) {
+		Component sel = null;
+		for (Component com : MungePen.this.getComponents()) {
+			if (com.getBounds().contains(e.getPoint())) {
+				if (sel == null || getLayer(com) > getLayer(sel))
+				{
+					sel = com;
+				}
+			}
+		}
+		return sel.equals(mc);
+	}
 	
 }

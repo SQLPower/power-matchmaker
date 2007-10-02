@@ -22,7 +22,6 @@ package ca.sqlpower.matchmaker.swingui.munge;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -34,6 +33,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
@@ -95,6 +95,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private final Color bg;
 	private final Color borderColour;
 	
+	
+	private MungeComponentKeyListener mungeComKeyListener;
+	
 	/**
 	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen.
 	 * Sets the background and border colours to given colours.
@@ -104,16 +107,21 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param bg The background colour to the rectangle
 	 */
 	private AbstractMungeComponent(MungeStep step, Color border, Color bg) {
+		
 		this.borderColour = border;
 		this.bg = bg;
 		this.step = step;
 		
+		setVisible(true);
+		
+		mungeComKeyListener = new MungeComponentKeyListener();
+		addKeyListener(mungeComKeyListener);
 		
 		step.addMatchMakerListener(stepEventHandler);
 		setName(step.getName());
 		
 		setBorder(BorderFactory.createEmptyBorder(15,1,15,1));
-		setOpaque(false);
+		setOpaque(true);
 		setFocusable(true);
 		
 		Dimension ps = getPreferredSize();
@@ -126,6 +134,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		tmp.add(new JLabel(step.getName()));
 		
 		content = buildUI();
+		
 		
 		//returning null will prevent the +/- button form showing up
 		if (content != null) {
@@ -141,8 +150,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		root.setBackground(bg);
 		tmp.setBackground(bg);
-				
-
+		
 		root.addComponentListener(new ComponentListener(){
 
 			public void componentHidden(ComponentEvent e) {
@@ -173,11 +181,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 		addFocusListener(new FocusListener(){
 			public void focusGained(FocusEvent e) {
 				logger.debug("Gained focus");
-				repaint();
+				getParent().repaint();
 			}
 			public void focusLost(FocusEvent e) {
 				logger.debug("Lost focus");
-				repaint();
+				if (getParent() != null) {
+					getParent().repaint();
+				}
 			}
 			
 		});
@@ -332,7 +342,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	/**
-	 * Returns the popup munu to display when this componet is right clicked on.
+	 * Returns the popup menu to display when this component is right clicked on.
+	 * Defaults to just having a remove action, but can be over ridden to include more actions.
 	 * 
 	 * @return The popup menu
 	 */
@@ -374,9 +385,18 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/** 
 	 * Removes this munge step and disconnects all input and output IOCs
 	 */
-	public void remove() {
+	public void removeNormal() {
 		((MungePen)getParent()).removeMungeStep(getStep());
 	}
+	
+	/**
+	 * The remove action for the component. This defaults to normal deletion, but
+	 * can be over ridden to use the delete single or a custom action (not recommended).
+	 */
+	public void remove() {
+		removeNormal();
+	}
+	
 	
 	/**
 	 * The action to control the +/- button
@@ -395,9 +415,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 				root.remove(content);
 			}
 			validate();
-			getParent().repaint();
-			((Component)e.getSource()).requestFocusInWindow();
-			logger.debug("Repainted");
+			root.updateUI();
 		}	
 	}
 
@@ -459,6 +477,17 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 	}
 	
+	private class MungeComponentKeyListener extends KeyAdapter {
+		@Override
+		public void keyPressed(KeyEvent e) {
+			super.keyPressed(e);
+			
+			if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+				remove();
+			}
+		}
+	}
+		
 	public static void main(String[] args) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -475,6 +504,31 @@ public abstract class AbstractMungeComponent extends JPanel {
 		f.setContentPane(sp);
 		f.pack();
 		f.setVisible(true);
+	
+	/*	  
+	    // Add internal frame to desktop
+	    JDesktopPane desktop = new JDesktopPane();
+	 //   desktop.add(iframe);
+	   // desktop.add(iframe2);
+	    AbstractMungeComponent t = new AbstractMungeComponent(new UpperCaseMungeStep()){
+		
+			@Override
+			protected JPanel buildUI() {
+				return null;
+			}
+			
+		};
+		t.setVisible(true);
+	    
+		desktop.add(t);
+	    
+	    // Display the desktop in a top-level frame
+	    JFrame frame = new JFrame();
+	    frame.getContentPane().add(desktop, BorderLayout.CENTER);
+	    frame.setSize(300, 300);
+	    frame.setVisible(true);
+
+	 */
 	}
 
 
