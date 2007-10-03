@@ -20,11 +20,12 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.graph.BreadthFirstSearch;
+import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel.Edge;
 import ca.sqlpower.util.MonitorableImpl;
@@ -46,29 +47,65 @@ public class MungeProcessorImpl implements MungeProcessor {
      */
     private final MatchRuleSet mungeProcess;
     
+    /**
+     * The list of MungeSteps obtained from the MungeProcess that this processor will
+     * process, sorted in the exact order that the processor will process them.
+     */
+    private List<MungeStep> processOrder;
+    
     public MungeProcessorImpl(MatchRuleSet mungeProcess) {
         this.mungeProcess = mungeProcess;
-    }
-    
-    public Boolean call() throws Exception {
         List<MungeStep> steps = new ArrayList<MungeStep>(mungeProcess.getChildren());
         
         // topo sort
         MungeProcessGraphModel gm = new MungeProcessGraphModel(steps);
-        BreadthFirstSearch<MungeStep, Edge> bfs = new BreadthFirstSearch<MungeStep, Edge>();
-        List<MungeStep> searchOrder = bfs.performSearch(gm, steps.get(0));
+        DepthFirstSearch<MungeStep, Edge> dfs = new DepthFirstSearch<MungeStep, Edge>();
+        dfs.performSearch(gm);
+        processOrder = dfs.getFinishOrder();
+        Collections.reverse(processOrder);
+        logger.debug("Order of processing: " + processOrder);
+    }
+    
+    public Boolean call() throws Exception {
         
-        logger.debug("Order of processing: " + searchOrder);
-        
-        // open everyting
+    	monitorableHelper.setStarted(true);
+    	
+        // open everything
+        for (MungeStep step: processOrder) {
+        	step.open();
+        }
         
         // call until one step gives up
+        boolean finished = false;
+        while(!finished) {
+        	for (MungeStep step: processOrder) {
+        		boolean continuing = step.call();
+        		if (!continuing) {
+        			finished = true;
+        			break;
+        		}
+        	}
+        }
         
         // close everything
+        for (MungeStep step: processOrder) {
+        	step.close();
+        }
+        
+        monitorableHelper.setFinished(true);
         
         return Boolean.TRUE;
     }
-
+    
+    /**
+     * A package private method that will return the MungeSteps in the order that
+     * this MungeProcessor will process them. Currently, it's only being used by
+     * the related test case to ensure that the steps are being processed in a
+     * valid order.
+     */
+    List<MungeStep> getProcessOrder() {
+    	return processOrder;
+    }
     
     // ========== Monitorable Methods ============
     

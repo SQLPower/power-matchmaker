@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.util.List;
+
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 
@@ -41,7 +43,7 @@ import ca.sqlpower.matchmaker.MatchRuleSet;
  * the setup rather than factor it out, where a modification could
  * disturb all the test cases sharing it.
  */
-public class MungeProcessorTest extends TestCase {
+public class MungeProcessorImplTest extends TestCase {
 
     /**
      * The munge processor under test.  It will be set up to have
@@ -49,7 +51,7 @@ public class MungeProcessorTest extends TestCase {
      * children will be connected according to the diagram in the
      * class-level comment of this test case.
      */
-    MungeProcessor mp;
+    MungeProcessorImpl mp;
     
     /**
      * Step A as shown in the diagram in the class comment.
@@ -92,39 +94,61 @@ public class MungeProcessorTest extends TestCase {
         MatchRuleSet mungeProcess = new MatchRuleSet();
 
         a = new TestingMungeStep("A", 0, 1);
-        mungeProcess.addChild(a);
 
         b = new TestingMungeStep("B", 1, 1);
         b.connectInput(0, a.getChildren().get(0));
-        mungeProcess.addChild(b);
 
         c = new TestingMungeStep("C", 1, 2);
         c.connectInput(0, a.getChildren().get(0));
-        mungeProcess.addChild(c);
 
-        d = new TestingMungeStep("D", 1, 1);
-        mungeProcess.addChild(d);
+        d = new TestingMungeStep("D", 1, 1, false);
 
         e = new TestingMungeStep("E", 1, 0);
         e.connectInput(0, b.getChildren().get(0));
-        mungeProcess.addChild(e);
 
         f = new TestingMungeStep("F", 3, 0);
         f.connectInput(0, a.getChildren().get(0));
         // purposely leaving input 1 not connected (for testing)
         f.connectInput(2, c.getChildren().get(0));
-        mungeProcess.addChild(f);
 
         g = new TestingMungeStep("G", 1, 1);
         g.connectInput(0, c.getChildren().get(1));
+        
+
+        // The order in which MungeSteps are added should be
+        // randomized to ensure the processor isn't just processing
+        // the steps in the order in which it was given.
+        mungeProcess.addChild(a);
         mungeProcess.addChild(g);
+        mungeProcess.addChild(b);
+        mungeProcess.addChild(f);
+        mungeProcess.addChild(c);
+        mungeProcess.addChild(e);
+        mungeProcess.addChild(d);
 
         mp = new MungeProcessorImpl(mungeProcess);
     }
     
+    /**
+     * Tests to ensure that the MungeSteps are being processed in a valid order.
+     * The idea is that no MungeStep should be called before its parents, if any.
+     */
     public void testCorrectProcessingOrder() throws Exception {
-        mp.call();
-        // need to check the steps were call()ed in the correct order
-        fail("test not completed");
+        List<MungeStep> processOrder = mp.getProcessOrder();
+
+        for (MungeStep step: processOrder) {
+        	List<MungeStepOutput> stepInputs = step.getInputs();
+        	
+        	for (MungeStepOutput output: stepInputs) {
+        		if (output != null) {
+        			// Check if each parent step would be called before the current
+        			String called = output.getParent().getParameter("called");
+        			assertEquals("true", called);
+        		}
+        	}
+        	// mark the current step as 'called'
+        	step.setParameter("called", "true");
+        }
+        // need to check the steps were call()ed in a valid order
     }
 }
