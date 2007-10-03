@@ -266,7 +266,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 		
 		for (IOConnector con : lines) {
-			con.paintLine(g);
+			con.paint(g);
 		}
 		
 		if (start != null || finish != null) {

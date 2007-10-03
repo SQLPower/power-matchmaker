@@ -20,10 +20,17 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchRuleSet;
@@ -32,6 +39,9 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
+
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Implements the EditorPane functionality for editing a munge process (MatchRuleSet).
@@ -58,7 +68,8 @@ public class MungeProcessEditor implements EditorPane {
     /**
      * The actual GUI component that provides the editing interface.
      */
-    private final JPanel panel;
+    private final JPanel panel = new JPanel(new BorderLayout());
+    private final JTextField name = new JTextField();
     
     /**
      * The instance that monitors the subtree we're editing for changes (so we know
@@ -67,10 +78,10 @@ public class MungeProcessEditor implements EditorPane {
     private final MMOChangeWatcher<MatchRuleSet, MungeStep> changeHandler;
     
     /**
-     * 
+     * Validator for handling errors within the munge steps
      */
-    private FormValidationHandler handler;
-    private StatusComponent status = new StatusComponent();
+    private final StatusComponent status = new StatusComponent();
+    private final FormValidationHandler handler;
     
     /**
      * Creates a new editor for the given session's given munge process.
@@ -89,29 +100,47 @@ public class MungeProcessEditor implements EditorPane {
         this.swingSession = swingSession;
         this.parentMatch = match;
         this.process = process;
-        
-        status = new StatusComponent();
-        handler = new FormValidationHandler(status);
-        
-        panel = new JPanel(new BorderLayout());
-        panel.add(status,BorderLayout.NORTH);
-        JScrollPane p = new JScrollPane(new MungePen(process, handler));
-        panel.add(p,BorderLayout.CENTER);
-        
-        
         this.changeHandler = new MMOChangeWatcher<MatchRuleSet, MungeStep>(process);
-        
+        ArrayList<Action> actions = new ArrayList<Action>();
+        actions.add(saveAction);
+        this.handler = new FormValidationHandler(status, actions);
+        buildUI();
         if (process.getParentMatch() != null && process.getParentMatch() != parentMatch) {
             throw new IllegalStateException(
                     "The given process has a parent which is not the given parent match obejct!");
         }
     }
 
+    private void buildUI() {
+		FormLayout layout = new FormLayout(
+				"4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu", // columns
+				"4dlu,pref,4dlu,pref,4dlu"); // rows
+		CellConstraints cc = new CellConstraints();
+		JPanel subPanel = new JPanel(layout);
+        subPanel.add(status, cc.xyw(2, 2, 5));
+        subPanel.add(new JLabel("Munge Process Name: "), cc.xy(2, 4));
+        name.setText(process.getName());
+        subPanel.add(name, cc.xy(4, 4));
+		subPanel.add(new JButton(saveAction), cc.xy(6,4));
+
+        panel.add(subPanel,BorderLayout.NORTH);
+        JScrollPane p = new JScrollPane(new MungePen(process, handler));
+        panel.add(p,BorderLayout.CENTER);
+        
+    }
+    
+	Action saveAction = new AbstractAction("Save Munge Process"){
+		public void actionPerformed(ActionEvent e) {
+            doSave();
+		}
+	};
+    
     /**
      * Saves the process, possibly adding it to the parent match given in the
      * constructor if the process is not already a child of that match.
      */
     public boolean doSave() {
+    	process.setName(name.getText());
         if (process.getParentMatch() == null) {
             parentMatch.addMatchRuleSet(process);
             MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
@@ -129,6 +158,9 @@ public class MungeProcessEditor implements EditorPane {
     }
 
     public boolean hasUnsavedChanges() {
+    	if (!process.getName().equals(name.getText())) {
+    		return true;
+    	}
         return changeHandler.getHasChanged();
     }
 
