@@ -19,9 +19,6 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.util.List;
-
-import javax.swing.Action;
 import javax.swing.JTable;
 
 import org.apache.log4j.Logger;
@@ -41,33 +38,21 @@ public class TranslateWordValidator implements Validator {
     private static final Logger logger = Logger.getLogger(TranslateWordValidator.class);
 	
     private JTable table;
-    private List<Action> actions;
     
-    public TranslateWordValidator(JTable table,List<Action> actions){
+    public TranslateWordValidator(JTable table){
         this.table = table;
-        this.actions = actions;
     }
     public ValidateResult validate(Object contents) {
         TranslateWordsTableModel model = (TranslateWordsTableModel)table.getModel();
         for (int x = 0; x<model.getRowCount();x++) {
         	String val = (String) model.getValueAt(x, 0);
         	if (val.equals("")) {
-        		setComponentsEnabled(false);
                 return ValidateResult.createValidateResult(Status.FAIL, 
                         "The from field can not be empty");
         	}
         	
         }
-        setComponentsEnabled(true);
         return ValidateResult.createValidateResult(Status.OK, "");
     }
-    
-    private void setComponentsEnabled(boolean enable){
-        if (actions != null){
-            for (Action c : actions){
-            	logger.debug(c + ".enable(" + enable);
-                c.setEnabled(enable);
-            }
-        }
-    }
+
 }

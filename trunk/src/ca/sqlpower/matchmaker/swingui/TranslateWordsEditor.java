@@ -72,8 +72,8 @@ public class TranslateWordsEditor implements EditorPane {
 	private final MatchMakerSwingSession swingSession;
 	private final MatchMakerTranslateGroup group;
 		
-	private FormValidationHandler handler;
-	StatusComponent status = new StatusComponent();
+	private final FormValidationHandler handler;
+	private final StatusComponent status = new StatusComponent();
 
 	//keeps track of whether the editor pane has unsaved changes
 	private CustomTableModelListener tableListener;
@@ -87,6 +87,10 @@ public class TranslateWordsEditor implements EditorPane {
 			MatchMakerTranslateGroup group) {
 		this.swingSession = swingSession;
 		this.group = group;
+		List<Action> groupActions = new ArrayList<Action>();
+        groupActions.add(saveGroupAction);
+		handler = new FormValidationHandler(status, groupActions);
+		
 		setupTable();
 		buildUI();
 		if (!swingSession.getTranslations().getChildren().contains(group)) {
@@ -124,7 +128,6 @@ public class TranslateWordsEditor implements EditorPane {
 		CellConstraints cc = new CellConstraints();
 
 		int row = 2;
-		handler = new FormValidationHandler(status);
 		internalPB.add(status, cc.xy(4,row));
 		
 		row += 2;
@@ -180,14 +183,11 @@ public class TranslateWordsEditor implements EditorPane {
 		
 		externalPB.add(internalPB.getPanel(), cc.xyw(2,2,4,"f,f"));
 		
-        List<Action> groupActions = new ArrayList<Action>();
-        groupActions.add(saveGroupAction);
+        
         MMODuplicateValidator mmoValidator = new MMODuplicateValidator(swingSession.getTranslations(),
-                                    groupActions, "translate group name", 35, group);
+                                    null, "translate group name", 35, group);
         handler.addValidateObject(groupName, mmoValidator);
-        List<Action> wordsActions = new ArrayList<Action>();
-        wordsActions.add(saveGroupAction);
-        TranslateWordValidator wordValidator = new TranslateWordValidator(translateWordsTable,wordsActions);
+        TranslateWordValidator wordValidator = new TranslateWordValidator(translateWordsTable);
         handler.addValidateObject(translateWordsTable, wordValidator);
         
 		panel = externalPB.getPanel();
