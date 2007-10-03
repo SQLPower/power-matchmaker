@@ -38,6 +38,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -106,7 +107,8 @@ public class MungeProcessGroupEditor implements EditorPane {
 				
 				if (e.getClickCount() == 2) {
 					int row = MungeProcessGroupEditor.this.mungeProcessTable.getSelectedRow();
-//					swingSession.getTree().setSelectionPath(menuPath.pathByAddingChild(translateGroups.get(row)));
+					JTree tree = swingSession.getTree();					
+					tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(match.getMatchRuleSets().get(row)));
 				}
 			}		
         });
