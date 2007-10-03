@@ -128,8 +128,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	int finishNum;
 	
 	//current mouse position
-	int mouseX;
-	int mouseY;
+	public int mouseX;
+	public int mouseY;
 	
 	//the currurrently selected line
 	IOConnector selectedLine;
@@ -151,7 +151,6 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		
 		setFocusable(true);
 		addMouseListener(new MungePenMouseListener());
-		addMouseMotionListener(new MungePenMouseMotionListener());
 		addKeyListener(new MungePenKeyListener());
 		
 		setBackground(Color.WHITE);
@@ -160,6 +159,16 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		buildComponents(process);
 		this.handler = handler;
 		
+		addMouseMotionListener(new MouseMotionAdapter(){
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				mouseX = e.getX();
+				mouseY = e.getY();
+				if (start != null || finish != null) {
+					repaint();
+				}
+			}
+		});
 	}
 	
 	/**
@@ -199,6 +208,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		moveToFront(com);
 	}
 	
+	public boolean isConnecting() {
+		return (start != null || finish != null);
+	}
+	
 	/**
 	 * Selects the given line
 	 * 
@@ -221,15 +234,6 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	private IOConnector getSelectedLine() {
 		return selectedLine;
-	}
-	
-	private Component getSelectedComponent() {
-		for (Component com : getComponents()) {
-			if (com.hasFocus()) {
-				return com;
-			}
-		}
-		return null;
 	}
 	
 	//over ridden to map all the mungesteps to there components
@@ -262,7 +266,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 		
 		for (IOConnector con : lines) {
-			con.paint(g);
+			con.paintLine(g);
 		}
 		
 		if (start != null || finish != null) {
@@ -281,7 +285,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	/**
 	 * Removes a mungestep from the pen. 
-	 * This will remove the given mungestep asw ell as disconnect all its inputs.
+	 * This will remove the given mungestep as well as disconnect all its inputs.
 	 * 
 	 * @param ms The step to be removed
 	 */
@@ -341,13 +345,48 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	}
 	
 	
-	private class MungePenMouseListener extends MouseAdapter {
-		public void mousePressed(MouseEvent e) {
-			
-			for (Component c : getComponents()) {
-				logger.debug("-----------------layer: " + getLayer(c));
+	//The mouse was near an IOC point
+	public void connectionHit(AbstractMungeComponent mcom, int connectionNum, boolean inputHit) {
+		logger.debug("Connection hit");
+		requestFocusInWindow();
+		
+		unselectLine();
+		getParent().repaint();
+
+		if (inputHit) {
+			if (mcom.getInputs().size() > connectionNum && mcom.getInputs().get(connectionNum) != null) {
+				return;
 			}
-			
+		}
+		
+		if (inputHit) {
+			finish = mcom;
+			finishNum = connectionNum;
+		} else {
+			start = mcom;
+			startNum = connectionNum;
+		}
+		
+		//see if a connection is complete
+		if (start != null && finish != null) {
+			logger.debug("Connection checking startNum:" + startNum + " EndNum " + finishNum);
+			Class startHas = start.getStep().getChildren().get(startNum).getType();
+			Class finishWants = finish.getStep().getInputDescriptor(finishNum).getType();
+			logger.debug(startHas + " -> " + finishWants);
+			if (startHas.equals(finishWants)) {
+				logger.debug("Connecting");
+				finish.getStep().connectInput(finishNum,start.getStep().getChildren().get(startNum));
+			}
+			stopConnection();
+		}
+		
+		recentlySelected = null;
+		requestFocusInWindow();
+	}
+	
+	private class MungePenMouseListener extends MouseAdapter {
+		public void mousePressed(MouseEvent e) {	
+			requestFocusInWindow();
 			logger.debug("Mouse PRess");
 			//finds if the user has selected a line
 			unselectLine();
@@ -357,38 +396,16 @@ public class MungePen extends JLayeredPane implements Scrollable {
 					break;
 				}
 			}
-	
-			findSelected(e);
-			if (!maybeShowPopup(e)) {
-				
-				checkForIOConnectors(e);
-			}
-		}
-		
-		public void mouseReleased(MouseEvent e) {
-			logger.debug("Mouse released");
-			checkForIOConnectors(e);
-			
-			diff = null;
-			start = null;
-			finish = null;
-			
-			mouseX = e.getX();
-			mouseY = e.getY();
-			
-			maybeShowPopup(e);
-			revalidate();
 			repaint();
 		}
 		
-		public void mouseClicked(MouseEvent e) {
-			logger.debug("Mouse Click");
-			maybeShowPopup(e);
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			stopConnection();
 		}
 		
 		public boolean maybeShowPopup(MouseEvent e) {
 			if (e.isPopupTrigger()) {
-				findSelected(e);
 				if (getSelectedLine() != null) {
 					JPopupMenu popup = getSelectedLine().getPopup();
 					getParent().repaint();
@@ -398,132 +415,12 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 			return false;
 		}
-
-		public void findSelected(MouseEvent e) {
-			recentlySelected = null;
-			for (Component com : MungePen.this.getComponents()) {
-				if (com.getBounds().contains(e.getPoint())) {
-					
-					if (recentlySelected == null || getLayer(com) > getLayer(recentlySelected))
-					{
-						recentlySelected = com;
-						unselectLine();
-						diff = new Point(e.getX() - com.getX(), e.getY()-com.getY());
-					}
-				}
-			}
-			if (recentlySelected == null) {
-				requestFocusInWindow();
-			} else if (!recentlySelected.hasFocus()) {
-				bringToFront(recentlySelected);
-				recentlySelected.requestFocusInWindow();
-			}
-		}
-		
-		//checks to see if the mouse was near an IOC point
-		public void checkForIOConnectors(MouseEvent e) {
-			logger.debug("Checking for IOConnections");
-			
-			//used to define the range of which a hit is counted as
-			int tolerance = 15;
-			
-			Component sel = null;
-			for (Component com : MungePen.this.getComponents()) {
-				if (com.getBounds().contains(e.getPoint())) {
-					if (sel == null || getLayer(com) > getLayer(sel))
-					{
-						sel = com;
-					}
-				}
-			}
-
-			if (sel instanceof AbstractMungeComponent) {
-				AbstractMungeComponent mcom = (AbstractMungeComponent) sel;
-				int inputs = mcom.getStep().getInputs().size();
-
-				for (int x = 0;x<inputs;x++) {
-					Point p = mcom.getInputPosition(x);
-					p.translate(mcom.getX(), mcom.getY());
-					if (Math.abs(p.x - e.getX()) < tolerance && Math.abs(p.y - e.getY()) < tolerance) {
-						connectionHit(mcom, x, true);
-					}
-				}
-				
-				for (int x = 0;x<mcom.getOutputs().size();x++) {
-					Point p = mcom.getOutputPosition(x);
-					p.translate(mcom.getX(), mcom.getY());
-					if (Math.abs(p.x - e.getX()) < tolerance && Math.abs(p.y - e.getY()) < tolerance) {
-						connectionHit(mcom, x, false);
-					}
-				}
-			}
-		}
-		
-		//The mouse was near an IOC point
-		public void connectionHit(AbstractMungeComponent mcom, int connectionNum, boolean inputHit) {
-			logger.debug("Connection hit");
-			
-			unselectLine();
-			
-			getParent().repaint();
-
-			if (inputHit) {
-				if (mcom.getInputs().size() > connectionNum && mcom.getInputs().get(connectionNum) != null) {
-					return;
-				}
-			}
-			
-			if (inputHit) {
-				finish = mcom;
-				finishNum = connectionNum;
-			} else {
-				start = mcom;
-				startNum = connectionNum;
-			}
-			
-			//see if a connection is complete
-			if (start != null && finish != null) {
-				Class startHas = start.getStep().getChildren().get(startNum).getType();
-				Class finishWants = finish.getStep().getInputDescriptor(finishNum).getType();
-				if (startHas.equals(finishWants)) {
-					finish.getStep().connectInput(finishNum,start.getStep().getChildren().get(startNum));
-				}
-				start = null;
-				finish = null;
-			}
-			
-			recentlySelected = null;
-			requestFocusInWindow();
-		}
-	}
-	 
-	private class MungePenMouseMotionListener extends MouseMotionAdapter {
-		@Override
-		public void mouseDragged(MouseEvent e) {
-			logger.debug("Mouse dragged");
-			if (getBounds().contains(e.getPoint())) {
-				if (recentlySelected != null) {
-					recentlySelected.setLocation(new Point((int)(e.getX() - diff.getX()),(int)(e.getY() - diff.getY())));
-					repaint();
-				} else if (start != null || finish != null) {
-					repaint();
-				}
-			}
-			mouseX = e.getX();
-			mouseY = e.getY();
-		}
-		
-		@Override
-		public void mouseMoved(MouseEvent e) {
-			super.mouseMoved(e);
-			mouseX = e.getX();
-			mouseY = e.getY();
-		}
 	}
 	
 	class MungePenKeyListener extends KeyAdapter {
 		//passes key press to selected components
 		public void keyPressed(KeyEvent e) {
+			
 			if (getSelectedLine() != null) {
 				getSelectedLine().keyPressed(e);
 			} 
@@ -676,6 +573,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			for (MungeStep ms : evt.getChildren()) {
 				AbstractMungeComponent mcom = modelMap.remove(ms);
 				ms.removeMatchMakerListener(mungeStepListener);
+				mcom.removeAllListeners();
 				remove(mcom);
 			}
 			
@@ -706,27 +604,44 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			if (evt.getPropertyName().equals("inputs")) {
 				//changed indices =
 				if (evt.getOldValue() == null && evt.getNewValue() != null) {
-					//connected and input
-					MungeStepOutput mso = (MungeStepOutput)evt.getNewValue();
-					MungeStep child = evt.getSource();
-					MungeStep parent = (MungeStep)mso.getParent();
-					int parNum = parent.getChildren().indexOf(mso);
-					int childNum = child.getInputs().indexOf(mso);
-					
-					
-					IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
-					lines.add(ioc);
-					
+					if (evt.getNewValue() instanceof MungeStepOutput) {
+						logger.debug("connection Caught");
+						//connected and input
+						MungeStepOutput mso = (MungeStepOutput)evt.getNewValue();
+						
+						logger.debug("mos " + mso);
+						
+						MungeStep child = evt.getSource();
+						MungeStep parent = (MungeStep)mso.getParent();
+						int parNum = parent.getChildren().indexOf(mso);
+						int childNum = evt.getChangeIndices()[0];
+						
+						logger.debug("parNum: " + parNum + " childNum " + childNum);
+						
+						
+						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
+						lines.add(ioc);
+					} else {
+						//assuming it is of type input
+												
+					}
 				} else if (evt.getNewValue() == null && evt.getOldValue() != null) {
-					//disconnect input
-					MungeStepOutput mso = (MungeStepOutput)evt.getOldValue();
-					MungeStep child = evt.getSource();
-					MungeStep parent = (MungeStep)mso.getParent();
-					int parNum = parent.getChildren().indexOf(mso);
-					int childNum = child.getInputs().indexOf(mso);
-					
-					IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
-					lines.remove(ioc);
+					if ( evt.getOldValue() instanceof MungeStepOutput) {
+						//disconnect input
+						MungeStepOutput mso = (MungeStepOutput)evt.getOldValue();
+						MungeStep child = evt.getSource();
+						MungeStep parent = (MungeStep)mso.getParent();
+						int parNum = parent.getChildren().indexOf(mso);
+						int childNum = evt.getChangeIndices()[0];
+						
+						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
+						lines.remove(ioc);
+						logger.debug("Line deleted");
+					} else {
+						//assuming it is of type input
+						
+					}
+
 				} 
 			}
 			repaint();
@@ -738,18 +653,32 @@ public class MungePen extends JLayeredPane implements Scrollable {
     }
 
 
-
-	public boolean isClicked(MouseEvent e, AbstractMungeComponent mc) {
-		Component sel = null;
+    /**
+     * Returns the mungeComponet at the given point.
+     * 
+     * @param p The given point
+     * @return The MungeComponent
+     */
+	public AbstractMungeComponent getMungeComponentAt(Point p) {
+		AbstractMungeComponent sel = null;
 		for (Component com : MungePen.this.getComponents()) {
-			if (com.getBounds().contains(e.getPoint())) {
+			if (com.getBounds().contains(p) && com instanceof AbstractMungeComponent) {
 				if (sel == null || getLayer(com) > getLayer(sel))
 				{
-					sel = com;
+					sel = (AbstractMungeComponent)com;
 				}
 			}
 		}
-		return sel.equals(mc);
+		return sel;
+	}
+
+	public List<IOConnector> getIOConnectors() {
+		return lines;
+	}
+
+	public void stopConnection() {
+		start = null;
+		finish = null;
 	}
 	
 }

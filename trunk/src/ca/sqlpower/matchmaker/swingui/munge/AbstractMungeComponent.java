@@ -35,6 +35,11 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -52,6 +57,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -153,6 +159,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 		root.setBackground(bg);
 		tmp.setBackground(bg);
 		
+		addMouseListener(new MungeComponentMouseListener());
+		addMouseMotionListener(new MungeComponentMouseMoveListener());
+		
 		root.addComponentListener(new ComponentListener(){
 
 			public void componentHidden(ComponentEvent e) {
@@ -164,17 +173,18 @@ public abstract class AbstractMungeComponent extends JPanel {
 			public void componentMoved(ComponentEvent e) {
 				// TODO Auto-generated method stub
 				logger.debug("moved");
+				getParent().repaint();
 			}
 
 			public void componentResized(ComponentEvent e) {
 				getParent().repaint();
 				logger.debug("Componet resized");
-				//getParent().requestFocusInWindow();
 			}
 
 			public void componentShown(ComponentEvent e) {
 				// TODO Auto-generated method stub
 				logger.debug("Stub call: .componentShown()");
+				getParent().repaint();
 				
 			}
 			
@@ -182,8 +192,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 		addFocusListener(new FocusListener(){
 			public void focusGained(FocusEvent e) {
-				logger.debug("Gained focus");
-				getParent().repaint();
+				//if it is being deleted
+				if (getParent() != null) {
+					logger.debug("Gained focus");
+					getParent().repaint();
+				}
 			}
 			public void focusLost(FocusEvent e) {
 				logger.debug("Lost focus");
@@ -253,9 +266,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 		return step;
 	}
 	
+	
+	public MungePen getPen() {
+		return (MungePen)getParent();
+	}
+	
 	@Override
 	protected void paintComponent(Graphics g) {
-		logger.debug("AbstractMungeComponent Repaint");
 		g.setColor(Color.BLACK);
 		
 		if (getPreferredSize().width != getWidth() || getPreferredSize().height != getHeight()) {
@@ -381,14 +398,14 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * This should only be called of there is one input and one output 
 	 */
 	public void removeSingle() {
-		((MungePen)getParent()).removeMungeStepSingles(getStep());
+		getPen().removeMungeStepSingles(getStep());
 	}
 	
 	/** 
 	 * Removes this munge step and disconnects all input and output IOCs
 	 */
 	public void removeNormal() {
-		((MungePen)getParent()).removeMungeStep(getStep());
+		getPen().removeMungeStep(getStep());
 	}
 	
 	/**
@@ -438,7 +455,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			getStep().addInput(getStep().getInputDescriptor(0));
+			InputDescriptor ref = getStep().getInputDescriptor(0);
+			getStep().addInput(new InputDescriptor(ref.getName(),ref.getType()));
 			getParent().repaint();
 		}
 	}
@@ -463,11 +481,22 @@ public abstract class AbstractMungeComponent extends JPanel {
 			
 			for (int x = 0; x< step.getInputs().size();x++) {
 				int y;
-				for (y=x-1; y>=0 && step.getInputs().get(y) == null; y--);
-				y++;
-				if (y != x) {
-					step.connectInput(y, step.getInputs().get(x));
-					step.disconnectInput(x);
+				if (step.getInputs().get(x) != null) {
+					for (y=x-1; y>=0 && step.getInputs().get(y) == null; y--);
+					y++;
+					if (y != x) {
+						step.connectInput(y, step.getInputs().get(x));
+						step.disconnectInput(x);
+						
+						List<IOConnector> lines = getPen().getIOConnectors();
+						for (IOConnector ioc : lines) {
+							if (ioc.getChild().equals(AbstractMungeComponent.this) && ioc.getChildNumber() == x) {
+								IOConnector iocNew = new IOConnector(ioc.getParent(),ioc.getParentNumber(),ioc.getChild(),y);
+								lines.remove(ioc);
+								lines.add(iocNew);
+							}
+						}
+					}
 				}
 			}
 			
@@ -489,6 +518,82 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 		}
 	}
+	private Point diff;
+	
+	private class MungeComponentMouseListener implements MouseListener {
+
+		
+		public void mouseClicked(MouseEvent e) {
+			maybeShowPopup(e);
+		}
+
+		public void mouseEntered(MouseEvent e) {
+			
+		}
+
+		public void mouseExited(MouseEvent e) {
+		}
+
+		public void mousePressed(MouseEvent e) {
+			if (!maybeShowPopup(e)) {
+				diff = new Point((int)(e.getPoint().getX() - getX()), (int)(e.getPoint().getY() - getY()));			
+				diff.translate(getX(), getY());
+				if (!checkForIOConnectors(new Point(e.getX() + getX(),e.getY()+getY()))) {
+					requestFocusInWindow();
+				}
+			}
+		}
+
+		public void mouseReleased(MouseEvent e) {
+			if (!maybeShowPopup(e) && getPen().isConnecting()) {
+				Point abs = new Point(e.getX() + getX(),e.getY()+getY());
+				AbstractMungeComponent amc = getPen().getMungeComponentAt(abs);
+				if (amc == null || !amc.checkForIOConnectors(abs)) {
+					getPen().requestFocusInWindow();
+				}
+				getPen().repaint();
+			}
+			getPen().stopConnection();
+		}
+		
+	}
+	
+	/**
+	 * Possibly show the popup.
+	 * 
+	 * @param e The mouse event
+	 * @return true iff the popup was shown
+	 */
+	public boolean maybeShowPopup(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			getPopupMenu().show(AbstractMungeComponent.this, e.getX(), e.getY());
+			return true;
+		}
+		return false;
+	}
+	
+	private class MungeComponentMouseMoveListener extends MouseMotionAdapter {
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			MungePen parent = (MungePen)getParent();
+			if (!parent.isConnecting()) {
+				e.translatePoint(getX(), getY());
+				setLocation((int)(e.getX() - diff.getX()), (int)(e.getY()-diff.getY()));
+				getParent().repaint();
+			} else {
+				parent.mouseX = e.getX() + getX();
+				parent.mouseY = e.getY() + getY();
+				parent.repaint();
+			}
+		}
+		
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			getPen().mouseX = e.getX() + getX();
+			getPen().mouseY = e.getY() + getY();
+			getParent().repaint();
+		}
+	}
 		
 	public static void main(String[] args) {
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -506,36 +611,75 @@ public abstract class AbstractMungeComponent extends JPanel {
 		f.setContentPane(sp);
 		f.pack();
 		f.setVisible(true);
-	
-	/*	  
-	    // Add internal frame to desktop
-	    JDesktopPane desktop = new JDesktopPane();
-	 //   desktop.add(iframe);
-	   // desktop.add(iframe2);
-	    AbstractMungeComponent t = new AbstractMungeComponent(new UpperCaseMungeStep()){
-		
-			@Override
-			protected JPanel buildUI() {
-				return null;
-			}
-			
-		};
-		t.setVisible(true);
-	    
-		desktop.add(t);
-	    
-	    // Display the desktop in a top-level frame
-	    JFrame frame = new JFrame();
-	    frame.getContentPane().add(desktop, BorderLayout.CENTER);
-	    frame.setSize(300, 300);
-	    frame.setVisible(true);
-
-	 */
 	}
 
 
 	public Color getBg() {
 		return bg;
+	}
+	
+	//checks to see if the mouse was near an IOC point
+	public boolean checkForIOConnectors(Point mousePoint) {
+		logger.debug("Checking for IOConnections");
+		
+		//used to define the range of which a hit is counted as
+		int tolerance = 15;
+	
+		int inputs = getStep().getInputs().size();
+
+		MungePen parent = getPen();
+		
+		for (int x = 0;x<inputs;x++) {
+			Point p = getInputPosition(x);
+			p.translate(getX(), getY());
+			logger.debug("\nPoint: " + p + "\nMouse: " + mousePoint);
+			if (Math.abs(p.x - mousePoint.x) < tolerance && Math.abs(p.y - mousePoint.y) < tolerance) {
+				logger.debug("connecion hit=================================");
+				parent.connectionHit(this, x, true);
+				return true;
+			}
+		}
+		
+		for (int x = 0;x<getOutputs().size();x++) {
+			Point p = getOutputPosition(x);
+			p.translate(getX(), getY());
+			logger.debug("\n" + p + "\n" + mousePoint);
+
+			if (Math.abs(p.x - mousePoint.x) < tolerance && Math.abs(p.y - mousePoint.y) < tolerance) {
+				logger.debug("connecion hit=-============================");
+				parent.connectionHit(this, x, false);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+
+	/**
+	 * Removes all listeners associated with this munge step. This is useful when removing to to make sure
+	 * it does not stick around.
+	 */
+	public void removeAllListeners() {
+		for (FocusListener fl : getFocusListeners()) {
+			removeFocusListener(fl);
+		}
+		
+		for (MouseListener ml : getMouseListeners()) {
+			removeMouseListener(ml);
+		}
+		
+		for (MouseMotionListener mml : getMouseMotionListeners()) {
+			removeMouseMotionListener(mml);
+		}
+		
+		for (KeyListener kl : getKeyListeners()) {
+			removeKeyListener(kl);
+		}
+		
+		for (ComponentListener cl : getComponentListeners()) {
+			removeComponentListener(cl);
+		}	
 	}
 }
 
