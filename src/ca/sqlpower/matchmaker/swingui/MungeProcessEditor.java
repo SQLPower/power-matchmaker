@@ -20,16 +20,19 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
 import ca.sqlpower.matchmaker.Match;
@@ -70,7 +73,9 @@ public class MungeProcessEditor implements EditorPane {
      */
     private final JPanel panel = new JPanel(new BorderLayout());
     private final JTextField name = new JTextField();
-    
+    private final JSpinner priority = new JSpinner();
+    private final JTextField desc = new JTextField();
+    private final JComboBox color = new JComboBox();
     /**
      * The instance that monitors the subtree we're editing for changes (so we know
      * if there are unsaved changes).
@@ -113,16 +118,30 @@ public class MungeProcessEditor implements EditorPane {
 
     private void buildUI() {
 		FormLayout layout = new FormLayout(
-				"4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu", // columns
-				"4dlu,pref,4dlu,pref,4dlu"); // rows
+				"4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu,pref,4dlu", // columns
+				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu"); // rows
 		CellConstraints cc = new CellConstraints();
 		JPanel subPanel = new JPanel(layout);
-        subPanel.add(status, cc.xyw(2, 2, 5));
+        subPanel.add(status, cc.xyw(2, 2, 7));
         subPanel.add(new JLabel("Munge Process Name: "), cc.xy(2, 4));
         name.setText(process.getName());
         subPanel.add(name, cc.xy(4, 4));
-		subPanel.add(new JButton(saveAction), cc.xy(6,4));
-
+        subPanel.add(new JLabel("Priority: "), cc.xy(6, 4));
+        if (process.getMatchPercent() != null) {
+        	priority.setValue(process.getMatchPercent());
+        }
+        priority.setPreferredSize(new Dimension(100, 20));
+        subPanel.add(priority, cc.xy(8, 4));
+        
+        subPanel.add(new JLabel("Munge Process Desc: "), cc.xy(2, 6));
+        desc.setText(process.getDesc());
+        subPanel.add(desc, cc.xy(4, 6));
+        subPanel.add(new JLabel("Color: "), cc.xy(6, 6));
+        color.setSelectedItem(process.getColour());
+        subPanel.add(color, cc.xy(8, 6));
+        
+		subPanel.add(new JButton(saveAction), cc.xy(2,8));
+		
         panel.add(subPanel,BorderLayout.NORTH);
         JScrollPane p = new JScrollPane(new MungePen(process, handler));
         panel.add(p,BorderLayout.CENTER);
