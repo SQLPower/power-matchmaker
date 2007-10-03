@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JLayeredPane;
-import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
@@ -112,10 +111,6 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	final MatchRuleSet process;
 	
-	//The selected component for temp use before the request focus has kicked in
-	//only use right after a call to findSelected
-	Component recentlySelected;
-	
 	// The offset from the corner of the component to where the mouse clicked
 	Point diff;
 	
@@ -131,15 +126,11 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	public int mouseX;
 	public int mouseY;
 	
-	//the currurrently selected line
-	IOConnector selectedLine;
-	
 	MungePenMungeStepListener mungeStepListener;
 	
 	private FormValidationHandler handler;
 	
 	Map<MungeStep,AbstractMungeComponent> modelMap = new HashMap<MungeStep, AbstractMungeComponent>();
-	List<IOConnector> lines = new ArrayList<IOConnector>(); 
 
 	/**
 	 * Creates a new empty mungepen.
@@ -169,6 +160,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				}
 			}
 		});
+		
 	}
 	
 	/**
@@ -192,7 +184,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 					MungeStep parent = (MungeStep)link.getParent();
 					int parNum = parent.getChildren().indexOf(link);
 					IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(ms),x);
-					lines.add(ioc);
+					add(ioc);
 				}
 			}
 		}
@@ -211,30 +203,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	public boolean isConnecting() {
 		return (start != null || finish != null);
 	}
-	
-	/**
-	 * Selects the given line
-	 * 
-	 * @param line The line to select
-	 */
-	private void selectLine(IOConnector line) {
-		selectedLine = line;
-		line.setSelected(true);
-	}
-	
-	/**
-	 * Unselects a line if there is one selected, else does nothing 
-	 */
-	private void unselectLine() {
-		if (selectedLine != null) {
-			selectedLine.setSelected(false);
-		}
-		selectedLine = null;
-	}
-	
-	private IOConnector getSelectedLine() {
-		return selectedLine;
-	}
+
 	
 	//over ridden to map all the mungesteps to there components
 	@Override
@@ -242,6 +211,11 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		if (comp instanceof AbstractMungeComponent) {
 			AbstractMungeComponent mcom = (AbstractMungeComponent)comp;
 			modelMap.put(mcom.getStep(),mcom);
+		}
+		
+		if (comp instanceof IOConnector) {
+			IOConnector ioc = (IOConnector)comp;
+			addMouseListener(ioc);
 		}
 		super.addImpl(comp, constraints, index);
 	}
@@ -264,11 +238,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				logger.debug("Null clipping region");
 			}
 		}
-		
-		for (IOConnector con : lines) {
-			con.paint(g);
-		}
-		
+	
 		if (start != null || finish != null) {
 			Point fixed;
 			if (start != null) {
@@ -283,6 +253,16 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
 	
+	public List<IOConnector> getConnections() {
+		List<IOConnector> lines = new ArrayList<IOConnector>();
+		for (Component com: getComponents()) {
+			if (com instanceof IOConnector) {
+				lines.add((IOConnector)com);
+			}
+		}
+		return lines;
+	}
+	
 	/**
 	 * Removes a mungestep from the pen. 
 	 * This will remove the given mungestep as well as disconnect all its inputs.
@@ -291,16 +271,16 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 */
 	public void removeMungeStep(MungeStep ms) {
 		
+		List <IOConnector> lines = getConnections();
 		List<IOConnector> killed = new ArrayList<IOConnector>();
 		
 		for (int x = 0;x <lines.size();x++) {
 			IOConnector ioc = lines.get(x);
-			if (ioc.getParent().getStep().equals(ms) || ioc.getChild().getStep().equals(ms)) {
+			if (ioc.getParentCom().getStep().equals(ms) || ioc.getChildCom().getStep().equals(ms)) {
 				killed.add(ioc);
 			}
 		}		
 		for (IOConnector ioc : killed) {
-			lines.remove(ioc);
 			ioc.remove();
 		}
 		process.removeChild(ms);
@@ -314,6 +294,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 */
 	public void removeMungeStepSingles(MungeStep ms) {
 		
+		List <IOConnector> lines = getConnections();
 		List<IOConnector> killed = new ArrayList<IOConnector>();
 		MungeStep parent = null;
 		int parNum = 0;
@@ -322,19 +303,18 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		
 		for (int x = 0;x <lines.size();x++) {
 			IOConnector ioc = lines.get(x);
-			if (ioc.getParent().getStep().equals(ms) || ioc.getChild().getStep().equals(ms)) {
+			if (ioc.getParentCom().getStep().equals(ms) || ioc.getChildCom().getStep().equals(ms)) {
 				killed.add(ioc);
-				if (ioc.getParent().getStep().equals(ms)) {
-					child = ioc.getChild().getStep();
+				if (ioc.getParentCom().getStep().equals(ms)) {
+					child = ioc.getChildCom().getStep();
 					childNum = ioc.getChildNumber();
 				} else {
-					parent = ioc.getParent().getStep();
+					parent = ioc.getParentCom().getStep();
 					parNum = ioc.getParentNumber();
 				}
 			}
 		}		
 		for (IOConnector ioc : killed) {
-			lines.remove(ioc);
 			ioc.remove();
 		}
 		process.removeChild(ms);
@@ -349,8 +329,6 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	public void connectionHit(AbstractMungeComponent mcom, int connectionNum, boolean inputHit) {
 		logger.debug("Connection hit");
 		requestFocusInWindow();
-		
-		unselectLine();
 		getParent().repaint();
 
 		if (inputHit) {
@@ -379,52 +357,21 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 			stopConnection();
 		}
-		
-		recentlySelected = null;
 		requestFocusInWindow();
 	}
 	
 	private class MungePenMouseListener extends MouseAdapter {
 		public void mousePressed(MouseEvent e) {	
-			requestFocusInWindow();
 			logger.debug("Mouse PRess");
-			//finds if the user has selected a line
-			unselectLine();
-			for (IOConnector line : lines) {
-				if (line.clicked(e.getPoint())) {
-					selectLine(line);
-					break;
-				}
-			}
 			repaint();
-		}
-		
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			stopConnection();
-		}
-		
-		public boolean maybeShowPopup(MouseEvent e) {
-			if (e.isPopupTrigger()) {
-				if (getSelectedLine() != null) {
-					JPopupMenu popup = getSelectedLine().getPopup();
-					getParent().repaint();
-					popup.show(MungePen.this,e.getX(),e.getY());
-					return true;
-				}
-			}
-			return false;
+			requestFocusInWindow();
 		}
 	}
 	
 	class MungePenKeyListener extends KeyAdapter {
 		//passes key press to selected components
 		public void keyPressed(KeyEvent e) {
-			
-			if (getSelectedLine() != null) {
-				getSelectedLine().keyPressed(e);
-			} 
-			if (e.getKeyCode() == KeyEvent.VK_0) {
+			if (e.getKeyCode() == KeyEvent.VK_1) {
 				process.addChild(new UpperCaseMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_2) {
 				process.addChild(new LowerCaseMungeStep());
@@ -562,7 +509,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 						MungeStep parent = (MungeStep)link.getParent();
 						int parNum = parent.getChildren().indexOf(link);
 						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(ms),x);
-						lines.add(ioc);
+						add(ioc);
+
 					}
 				}
 			}
@@ -620,7 +568,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 						
 						
 						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
-						lines.add(ioc);
+						add(ioc);
+
 					} else {
 						//assuming it is of type input
 												
@@ -633,9 +582,14 @@ public class MungePen extends JLayeredPane implements Scrollable {
 						MungeStep parent = (MungeStep)mso.getParent();
 						int parNum = parent.getChildren().indexOf(mso);
 						int childNum = evt.getChangeIndices()[0];
-						
 						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
-						lines.remove(ioc);
+						
+						//This stupid loop is needed because remove uses direct comparision
+						for (IOConnector con : getConnections()) {
+							if (con.equals(ioc)) {
+								remove(con);
+							}
+						}
 						logger.debug("Line deleted");
 					} else {
 						//assuming it is of type input
@@ -670,10 +624,6 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 		}
 		return sel;
-	}
-
-	public List<IOConnector> getIOConnectors() {
-		return lines;
 	}
 
 	public void stopConnection() {

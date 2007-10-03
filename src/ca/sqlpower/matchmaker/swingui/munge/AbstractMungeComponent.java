@@ -129,7 +129,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		setName(step.getName());
 		
 		setBorder(BorderFactory.createEmptyBorder(15,1,15,1));
-		setOpaque(true);
+		setOpaque(false);
 		setFocusable(true);
 		
 		Dimension ps = getPreferredSize();
@@ -184,8 +184,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 			public void componentShown(ComponentEvent e) {
 				// TODO Auto-generated method stub
 				logger.debug("Stub call: .componentShown()");
-				getParent().repaint();
-				
 			}
 			
 		});
@@ -488,10 +486,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 						step.connectInput(y, step.getInputs().get(x));
 						step.disconnectInput(x);
 						
-						List<IOConnector> lines = getPen().getIOConnectors();
+						List<IOConnector> lines = getPen().getConnections();
 						for (IOConnector ioc : lines) {
-							if (ioc.getChild().equals(AbstractMungeComponent.this) && ioc.getChildNumber() == x) {
-								IOConnector iocNew = new IOConnector(ioc.getParent(),ioc.getParentNumber(),ioc.getChild(),y);
+							if (ioc.getChildCom().equals(AbstractMungeComponent.this) && ioc.getChildNumber() == x) {
+								IOConnector iocNew = new IOConnector(ioc.getParentCom(),ioc.getParentNumber(),ioc.getChildCom(),y);
 								lines.remove(ioc);
 								lines.add(iocNew);
 							}
@@ -535,6 +533,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 
 		public void mousePressed(MouseEvent e) {
+			logger.debug("MousePressed");
+			getPen().bringToFront(AbstractMungeComponent.this);
 			if (!maybeShowPopup(e)) {
 				diff = new Point((int)(e.getPoint().getX() - getX()), (int)(e.getPoint().getY() - getY()));			
 				diff.translate(getX(), getY());
@@ -554,6 +554,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 				getPen().repaint();
 			}
 			getPen().stopConnection();
+			getPen().revalidate();
+
 		}
 		
 	}
@@ -567,6 +569,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public boolean maybeShowPopup(MouseEvent e) {
 		if (e.isPopupTrigger()) {
 			getPopupMenu().show(AbstractMungeComponent.this, e.getX(), e.getY());
+			requestFocusInWindow();
 			return true;
 		}
 		return false;
@@ -575,16 +578,25 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private class MungeComponentMouseMoveListener extends MouseMotionAdapter {
 		@Override
 		public void mouseDragged(MouseEvent e) {
+			Dimension window = getParent().getSize();
+			
+			Point mouse = e.getPoint();
+			mouse.x += getX();
+			mouse.y += getY();
+			
 			MungePen parent = (MungePen)getParent();
+			if (mouse.x < 0 || mouse.y < 0) {
+				return;
+			}
+			
 			if (!parent.isConnecting()) {
 				e.translatePoint(getX(), getY());
 				setLocation((int)(e.getX() - diff.getX()), (int)(e.getY()-diff.getY()));
-				getParent().repaint();
 			} else {
 				parent.mouseX = e.getX() + getX();
 				parent.mouseY = e.getY() + getY();
-				parent.repaint();
 			}
+			parent.repaint();
 		}
 		
 		@Override
