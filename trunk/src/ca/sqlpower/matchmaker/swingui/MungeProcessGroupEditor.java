@@ -177,6 +177,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 			if ( selectedRow >= 0 && selectedRow < mungeProcessTable.getRowCount()) {
 				MatchRuleSet ruleSet = match.getMatchRuleSetFolder().getChildren().get(selectedRow);
 				match.removeMatchRuleSet(ruleSet);
+				swingSession.save(match);
 				if (selectedRow >= mungeProcessTable.getRowCount()) {
 					selectedRow = mungeProcessTable.getRowCount() - 1;
 				}
