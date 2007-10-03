@@ -158,7 +158,12 @@ public class MungeProcessEditor implements EditorPane {
     }
 
     public boolean hasUnsavedChanges() {
-    	if (!process.getName().equals(name.getText())) {
+    	boolean nameChanged;
+    	if (process.getName() == null) {
+    		if (!name.getText().equals("")){
+    			return true;
+    		}
+    	} else if (!process.getName().equals(name.getText())) {
     		return true;
     	}
         return changeHandler.getHasChanged();

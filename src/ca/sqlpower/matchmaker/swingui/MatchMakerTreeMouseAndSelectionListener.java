@@ -358,9 +358,13 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					Match m = (Match) f.getParent();
 
 					if (f.getName().equals(Match.MERGE_RULES_FOLDER_NAME)) {
-						MergeTableRuleEditor editor = new MergeTableRuleEditor(
-								swingSession, m);
+						MergeTableRuleEditor editor = new MergeTableRuleEditor(swingSession, m);
 						logger.debug("Created new merge table rules editor "
+								+ System.identityHashCode(editor));
+						swingSession.setCurrentEditorComponent(editor);
+					} else if (f.getName().equals(Match.MATCH_RULES_FOLDER_NAME)) {
+						MungeProcessGroupEditor editor = new MungeProcessGroupEditor(swingSession, m);
+						logger.debug("Created new munge process group editor "
 								+ System.identityHashCode(editor));
 						swingSession.setCurrentEditorComponent(editor);
 					}
