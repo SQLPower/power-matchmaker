@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.graph.GraphModel;
+import ca.sqlpower.graph.GraphModel;
 
 /**
  * Represents a collection of interconnected munge steps as a directed graph.

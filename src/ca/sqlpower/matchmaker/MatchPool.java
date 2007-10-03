@@ -43,13 +43,13 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.graph.BreadthFirstSearch;
+import ca.sqlpower.graph.DijkstrasAlgorithm;
+import ca.sqlpower.graph.GraphModel;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
-import ca.sqlpower.matchmaker.graph.DijkstrasAlgorithm;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
-import ca.sqlpower.matchmaker.graph.GraphModel;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.sql.SQL;
 

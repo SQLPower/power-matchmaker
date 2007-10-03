@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.matchmaker.MatchRuleSet;
-import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel.Edge;
 import ca.sqlpower.util.MonitorableImpl;
 

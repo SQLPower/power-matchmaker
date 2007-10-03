@@ -37,7 +37,7 @@ import javax.swing.SwingConstants;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.graph.GraphModel;
+import ca.sqlpower.graph.GraphModel;
 
 public class GraphViewer<V, E> extends JPanel implements Scrollable {
 	/**
