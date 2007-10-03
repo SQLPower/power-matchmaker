@@ -21,9 +21,7 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
-import javax.swing.Action;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -58,7 +56,7 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 	
 	public SubstringByWordMungeComponent(MungeStep step, FormValidationHandler handler) {
 		super(step);
-		RegexValidator validator = new RegexValidator(new ArrayList<Action>());
+		RegexValidator validator = new RegexValidator();
 		handler.addValidateObject(delimiter, useRegex, validator);
 	}
 

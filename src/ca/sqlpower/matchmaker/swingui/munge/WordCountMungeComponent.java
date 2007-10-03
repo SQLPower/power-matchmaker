@@ -22,9 +22,7 @@ package ca.sqlpower.matchmaker.swingui.munge;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
-import javax.swing.Action;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -48,7 +46,7 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 
 	public WordCountMungeComponent(MungeStep step, FormValidationHandler handler) {
 		super(step);
-		RegexValidator validator = new RegexValidator(new ArrayList<Action>());
+		RegexValidator validator = new RegexValidator();
 		handler.addValidateObject(delimiters, useRegex, validator);
 	}
 

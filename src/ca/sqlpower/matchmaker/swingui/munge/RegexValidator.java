@@ -19,11 +19,8 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
-import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import javax.swing.Action;
 
 import org.apache.log4j.Logger;
 
@@ -40,11 +37,8 @@ import ca.sqlpower.validation.Validator;
 public class RegexValidator implements Validator {
 
     private static final Logger logger = Logger.getLogger(RegexValidator.class);
-
-    private List<Action> actions;
     
-    public RegexValidator(List<Action> actions){
-        this.actions = actions;
+    public RegexValidator(){
     }
     
     public ValidateResult validate(Object contents) {
@@ -52,21 +46,10 @@ public class RegexValidator implements Validator {
     		String regex = (String) contents;
     		Pattern p = Pattern.compile(regex);
     	} catch (PatternSyntaxException e) {
-    		setComponentsEnabled(false);
     		return ValidateResult.createValidateResult(Status.FAIL, 
     				"The given regular expression is invalid.");
     	}
-
-        setComponentsEnabled(true);
         return ValidateResult.createValidateResult(Status.OK, "");
     }
-    
-    private void setComponentsEnabled(boolean enable){
-        if (actions != null){
-            for (Action c : actions){
-            	logger.debug(c + ".enable(" + enable);
-                c.setEnabled(enable);
-            }
-        }
-    }
+
 }
