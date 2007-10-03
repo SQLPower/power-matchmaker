@@ -29,10 +29,10 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.graph.BreadthFirstSearch;
+import ca.sqlpower.graph.GraphModel;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
-import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
-import ca.sqlpower.matchmaker.graph.GraphModel;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 
 /**

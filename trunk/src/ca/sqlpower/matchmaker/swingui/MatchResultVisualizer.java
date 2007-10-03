@@ -56,19 +56,17 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
-import com.jgoodies.forms.factories.ButtonBarFactory;
-
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.graph.BreadthFirstSearch;
+import ca.sqlpower.graph.ConnectedComponentFinder;
+import ca.sqlpower.graph.GraphModel;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
-import ca.sqlpower.matchmaker.graph.BreadthFirstSearch;
-import ca.sqlpower.matchmaker.graph.ConnectedComponentFinder;
-import ca.sqlpower.matchmaker.graph.GraphModel;
 import ca.sqlpower.matchmaker.graph.MatchPoolDotExport;
 import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
@@ -76,6 +74,8 @@ import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
 import ca.sqlpower.swingui.SPSUtils;
+
+import com.jgoodies.forms.factories.ButtonBarFactory;
 
 /**
  * The MatchResultVisualizer produces graphical representations of the matches
