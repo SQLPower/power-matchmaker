@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -155,7 +156,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 * 
 	 */
 	public MungePen(MungeProcess process, FormValidationHandler handler, 
-			Map stepsProperties) throws ArchitectException {
+			Map stepsProperties, Match match) throws ArchitectException {
 		this.stepsProperties = stepsProperties;
 		process.addMatchMakerListener(new MungePenMatchRuleSetListener());
 		mungeStepListener = new MungePenMungeStepListener();
@@ -184,12 +185,12 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		});
 		
 		if (process.getChildCount() == 0) {
-			process.addChild(new SQLInputStep(process.getParentMatch().getSourceTable()));
+			process.addChild(new SQLInputStep(match.getSourceTable()));
 		}
 	}
 	
 	/**
-	 * Translates the process' children into the mungePem
+	 * Translates the process' children into the mungePen
 	 * 
 	 * @param Process
 	 */

@@ -196,14 +196,18 @@ public class MungeProcessEditor implements EditorPane {
        	if (!hasColour) {
        		color.addItem(process.getColour());
        	}
-        color.setSelectedItem(process.getColour());
+       	if (process.getColour() != null) {
+       		color.setSelectedItem(process.getColour());
+       	} else {
+       		color.setSelectedIndex(0);
+       	}
         subPanel.add(color, cc.xy(8, 6));
         
 		subPanel.add(new JButton(saveAction), cc.xy(2,8));
 		subPanel.add(new JButton(customColour), cc.xy(8,8));
 		
         panel.add(subPanel,BorderLayout.NORTH);
-        JScrollPane p = new JScrollPane(new MungePen(process, handler, stepProperties));
+        JScrollPane p = new JScrollPane(new MungePen(process, handler, stepProperties, parentMatch));
         panel.add(p,BorderLayout.CENTER);
         
     }
@@ -255,6 +259,9 @@ public class MungeProcessEditor implements EditorPane {
     		if (!(process.getName() == null && name.getText().equals(""))) {
     			return true;
     		}
+    	}
+    	if (process.getMatchPercent() == null) {
+    		return true;
     	}
     	if (Integer.parseInt(priority.getValue().toString()) != Integer.parseInt(process.getMatchPercent().toString()) ) {
     		return true;
