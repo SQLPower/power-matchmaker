@@ -5,7 +5,7 @@
 
 <!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
 <hibernate-mapping>
-	<class name="ca.sqlpower.matchmaker.MatchRuleSet"
+	<class name="ca.sqlpower.matchmaker.munge.MungeProcess"
 		table="PL_MATCH_GROUP">
 		<id name="oid" type="long">
 			<column name="GROUP_OID" />
