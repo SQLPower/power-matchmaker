@@ -59,6 +59,11 @@ public class SQLInputStep extends AbstractMungeStep {
      * The table this step selects from.
      */
     private final SQLTable table;
+    
+    /**
+     * This is the connection to the input table's database.
+     */
+    private Connection con;
 
     public SQLInputStep(SQLTable table) throws ArchitectException {
         this.table = table;
@@ -169,7 +174,7 @@ public class SQLInputStep extends AbstractMungeStep {
             throw new RuntimeException("The input table has no parent database defined.");
         }
         
-        Connection con = db.getConnection();
+        con = db.getConnection();
         if (con == null) {
             throw new RuntimeException("Could not obtain a connection to the input table's database");
         }
@@ -199,6 +204,7 @@ public class SQLInputStep extends AbstractMungeStep {
         rs.close();
         rs = null;
         stmt.close();
+        con.close();
     }
 
     /**

@@ -58,6 +58,7 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 
 		try {
 			getStep().open();
+			getStep().close();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -110,11 +111,6 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 		content.add(top, BorderLayout.NORTH);
 		content.add(bottom, BorderLayout.SOUTH);
 		
-		try {
-			getStep().close();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
 		return content;
 	}
 	
