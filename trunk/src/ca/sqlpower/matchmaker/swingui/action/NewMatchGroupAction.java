@@ -24,7 +24,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRuleSet;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MungeProcessEditor;
 
@@ -45,7 +45,7 @@ public class NewMatchGroupAction extends AbstractAction {
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		MatchRuleSet g = new MatchRuleSet();
+		MungeProcess g = new MungeProcess();
 		g.setName("New Munge Process");
 		MungeProcessEditor editor = new MungeProcessEditor(swingSession,parent, g);
 		swingSession.setCurrentEditorComponent(editor);

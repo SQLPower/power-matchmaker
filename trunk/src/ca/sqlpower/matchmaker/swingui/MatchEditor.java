@@ -74,11 +74,11 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.validation.MatchNameValidator;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
@@ -234,7 +234,7 @@ public class MatchEditor implements EditorPane {
 			MungeProcessEditor editor = null;
 			editor = new MungeProcessEditor(swingSession,
 					match,
-					new MatchRuleSet());
+					new MungeProcess());
 			swingSession.setCurrentEditorComponent(editor);
 		}
 	};

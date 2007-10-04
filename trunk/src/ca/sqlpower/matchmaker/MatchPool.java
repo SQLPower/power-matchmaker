@@ -51,6 +51,7 @@ import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.SQL;
 
 /**
@@ -123,7 +124,7 @@ public class MatchPool {
      * @param ruleSet
      * @return a list of potential match records that belong to the match critieria group
      */
-    public List<PotentialMatchRecord> getAllPotentialMatchByMatchRuleSet(MatchRuleSet ruleSet) {
+    public List<PotentialMatchRecord> getAllPotentialMatchByMatchRuleSet(MungeProcess ruleSet) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : potentialMatches){
@@ -231,7 +232,7 @@ public class MatchPool {
             logger.debug("MatchPool's findAll method SQL: \n" + lastSQL);
             rs = stmt.executeQuery(lastSQL);
             while (rs.next()) {
-                MatchRuleSet ruleSet = match.getMatchRuleSetByName(rs.getString("GROUP_ID"));
+                MungeProcess ruleSet = match.getMatchRuleSetByName(rs.getString("GROUP_ID"));
                 if (ruleSet == null) {
                     session.handleWarning(
                             "Found a match record that refers to the " +
@@ -746,10 +747,10 @@ public class MatchPool {
 	 */
 	private PotentialMatchRecord addSyntheticPotentialMatchRecord(SourceTableRecord record1,
 			SourceTableRecord record2) {
-		MatchRuleSet syntheticRuleSet = match.getMatchRuleSetByName(MatchRuleSet.SYNTHETIC_MATCHES);
+		MungeProcess syntheticRuleSet = match.getMatchRuleSetByName(MungeProcess.SYNTHETIC_MATCHES);
 		if (syntheticRuleSet == null) {
-			syntheticRuleSet = new MatchRuleSet();
-			syntheticRuleSet.setName(MatchRuleSet.SYNTHETIC_MATCHES);
+			syntheticRuleSet = new MungeProcess();
+			syntheticRuleSet.setName(MungeProcess.SYNTHETIC_MATCHES);
 			match.getMatchRuleSetFolder().addChild(syntheticRuleSet);
 			MatchMakerDAO<Match> dao = session.getDAO(Match.class);
 			dao.save(match);
@@ -1151,7 +1152,7 @@ public class MatchPool {
 	 * @throws SQLException
 	 */
 	public void doAutoMatch(String ruleName) throws SQLException, ArchitectException {
-		MatchRuleSet ruleSet = match.getMatchRuleSetByName(ruleName);
+		MungeProcess ruleSet = match.getMatchRuleSetByName(ruleName);
 		if (ruleSet == null) {
 			throw new IllegalArgumentException("Auto-Match invoked with an " +
 					"invalid rule group name: " + ruleName);
@@ -1202,7 +1203,7 @@ public class MatchPool {
 	 * 'visited' set and propagating the algorithm to neighbours of selected
 	 * nodes.
 	 */
-	private void makeAutoMatches(MatchRuleSet ruleSet,
+	private void makeAutoMatches(MungeProcess ruleSet,
 			SourceTableRecord selected,
 			Set<SourceTableRecord> neighbours,
 			Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
@@ -1235,7 +1236,7 @@ public class MatchPool {
 	 * the comment for doAutoMatch in the context that 'record' is selected in
 	 * step 3
 	 */
-	private Set<SourceTableRecord> findAutoMatchNeighbours(MatchRuleSet ruleSet,
+	private Set<SourceTableRecord> findAutoMatchNeighbours(MungeProcess ruleSet,
 			SourceTableRecord record,
 			Set<SourceTableRecord> visited) {
 		logger.debug("The size of visited is " + visited.size());

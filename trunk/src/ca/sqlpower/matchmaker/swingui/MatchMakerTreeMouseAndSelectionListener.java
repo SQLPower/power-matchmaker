@@ -40,10 +40,10 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
@@ -141,8 +141,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 							Match.MERGE_RULES_FOLDER_NAME)) {
 						addMergeRulesFolderMenuItems(m, folder);
 					}
-				} else if (o instanceof MatchRuleSet) {
-					addMatchGroupMenuItems(m, (MatchRuleSet) o);
+				} else if (o instanceof MungeProcess) {
+					addMatchGroupMenuItems(m, (MungeProcess) o);
 				} else if (o instanceof MungeStep) {
 					addMatchRuleMenuItems(m, (MungeStep) o);
 				} else if (o instanceof TableMergeRules) {
@@ -219,7 +219,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 * @param group
 	 *            The current folder being right-clicked on.
 	 */
-	private void addMatchGroupMenuItems(JPopupMenu m, MatchRuleSet group) {
+	private void addMatchGroupMenuItems(JPopupMenu m, MungeProcess group) {
 		m.add(new JMenuItem(new DeleteMatchGroupAction(swingSession, group)));
 	}
 
@@ -346,10 +346,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 
 					swingSession.setCurrentEditorComponent(me);
 
-				} else if (o instanceof MatchRuleSet) {
-					Match m = ((MatchRuleSet) o).getParentMatch();
+				} else if (o instanceof MungeProcess) {
+					Match m = ((MungeProcess) o).getParentMatch();
 					MungeProcessEditor editor = new MungeProcessEditor(
-							swingSession, m, (MatchRuleSet) o);
+							swingSession, m, (MungeProcess) o);
 					logger.debug("Created new munge process editor "
 							+ System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);

@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 import junit.framework.TestCase;
 
@@ -39,7 +40,7 @@ public class PotentialMatchRecordTest extends TestCase {
 		MatchMakerSession session = new TestingMatchMakerSession();
 		Match match = new Match();
 		match.setSession(session);
-		MatchRuleSet ruleSet = new MatchRuleSet();
+		MungeProcess ruleSet = new MungeProcess();
 		ruleSet.setName("ruleset");
 		match.getMatchRuleSetFolder().addChild(ruleSet);
 		MatchPool pool = new MatchPool(match);

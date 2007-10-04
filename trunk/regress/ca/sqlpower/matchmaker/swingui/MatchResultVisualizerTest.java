@@ -40,13 +40,13 @@ import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetDuplicateAction;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetMasterAction;
 import ca.sqlpower.matchmaker.swingui.MatchResultVisualizer.SetNoMatchAction;
@@ -130,7 +130,7 @@ public class MatchResultVisualizerTest extends TestCase {
 		rhs = new SourceTableRecord(session,
 									match, 
 									keyList);
-		pmr = new PotentialMatchRecord(new MatchRuleSet(),
+		pmr = new PotentialMatchRecord(new MungeProcess(),
 										MatchType.UNMATCH,
 										lhs,
 										rhs,

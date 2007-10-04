@@ -30,10 +30,10 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.MatchPoolTest;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 /**
  * This is a class for different utilities used in testing.
@@ -53,8 +53,8 @@ public class MMTestUtils {
 	 */
 	public static MatchPool createTestingPool(MatchMakerSession session,
 			Match m,
-			MatchRuleSet groupOne,
-			MatchRuleSet groupTwo) {
+			MungeProcess groupOne,
+			MungeProcess groupTwo) {
 		
 		MatchPool pool = new MatchPool(m);
 		
@@ -579,7 +579,7 @@ public class MMTestUtils {
 	/**
 	 * Creates the result table used to store information about the graphs
 	 * created by
-	 * {@link #createTestingPool(MatchMakerSession, Match, MatchRuleSet, MatchRuleSet)}.
+	 * {@link #createTestingPool(MatchMakerSession, Match, MungeProcess, MungeProcess)}.
 	 * This table is only required if we want to test against a database.
 	 */
 	public static void createResultTable(Connection con) throws SQLException {

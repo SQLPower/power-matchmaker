@@ -19,7 +19,7 @@
 
 package ca.sqlpower.matchmaker.dao;
 
-import ca.sqlpower.matchmaker.MatchRuleSet;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 /**
  * The Data access interface for MatchRuleSet objects
@@ -29,6 +29,6 @@ import ca.sqlpower.matchmaker.MatchRuleSet;
  *
  * Remember to program to this interface rather than an implemenation
  */
-public interface MatchRuleSetDAO extends MatchMakerDAO<MatchRuleSet> {
+public interface MatchRuleSetDAO extends MatchMakerDAO<MungeProcess> {
 
 }

@@ -21,12 +21,13 @@
 package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 
 
-public class MatchRuleSetTest extends MatchMakerTestCase<MatchRuleSet> {
+public class MatchRuleSetTest extends MatchMakerTestCase<MungeProcess> {
 
-	MatchRuleSet target;
+	MungeProcess target;
 	final String appUserName = "test user";
 
     public MatchRuleSetTest() {
@@ -36,14 +37,14 @@ public class MatchRuleSetTest extends MatchMakerTestCase<MatchRuleSet> {
     }
 	protected void setUp() throws Exception {
 		super.setUp();
-		target = new MatchRuleSet();
+		target = new MungeProcess();
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);
 	}
 
 	@Override
-	protected MatchRuleSet getTarget() {
+	protected MungeProcess getTarget() {
 		return target;
 	}
 
@@ -51,7 +52,7 @@ public class MatchRuleSetTest extends MatchMakerTestCase<MatchRuleSet> {
     public void testSetParentMatch(){
         Match match = new Match();
         MatchMakerEventCounter listener = new MatchMakerEventCounter();
-        MatchRuleSet group = new MatchRuleSet();
+        MungeProcess group = new MungeProcess();
 
         group.addMatchMakerListener(listener);
         group.setParentMatch(match);

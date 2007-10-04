@@ -22,7 +22,6 @@ package ca.sqlpower.matchmaker.munge;
 import java.util.List;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 
 /**
  * Test for the Munge Processor itself.  Here's the setup:
@@ -91,7 +90,7 @@ public class MungeProcessorImplTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MatchRuleSet mungeProcess = new MatchRuleSet();
+        MungeProcess mungeProcess = new MungeProcess();
 
         a = new TestingMungeStep("A", 0, 1);
 

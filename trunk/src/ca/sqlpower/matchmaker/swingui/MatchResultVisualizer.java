@@ -63,13 +63,13 @@ import ca.sqlpower.graph.ConnectedComponentFinder;
 import ca.sqlpower.graph.GraphModel;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchPool;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.MatchPoolDotExport;
 import ca.sqlpower.matchmaker.graph.MatchPoolGraphModel;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
@@ -469,7 +469,7 @@ public class MatchResultVisualizer implements EditorPane {
 
         JPanel autoMatchPanel = new JPanel(new FlowLayout());
         ruleSetComboBox = new JComboBox();
-        for (MatchRuleSet ruleSet : match.getMatchRuleSets()) {
+        for (MungeProcess ruleSet : match.getMatchRuleSets()) {
         	ruleSetComboBox.addItem(ruleSet.getName());
         }
         autoMatchPanel.add(new JButton(new AutoMatchAction(graph.getModel())));

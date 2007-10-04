@@ -23,6 +23,7 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 
 import junit.framework.TestCase;
@@ -30,7 +31,7 @@ import junit.framework.TestCase;
 public class TranslateGroupParentTest extends TestCase {
     PlFolder<MatchMakerObject> folder;
     Match match;
-    MatchRuleSet cg;
+    MungeProcess cg;
     TranslateGroupParent tgp;
     TestingMatchMakerSession session;
 
@@ -38,7 +39,7 @@ public class TranslateGroupParentTest extends TestCase {
         folder = new PlFolder<MatchMakerObject>();
         match = new Match();
         folder.addChild(match);
-        cg = new MatchRuleSet();
+        cg = new MungeProcess();
         match.addMatchRuleSet(cg);
         session = new TestingMatchMakerSession(); 
         List<PlFolder> folders = new ArrayList<PlFolder>();

@@ -37,6 +37,7 @@ import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
 /**
@@ -110,8 +111,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     /**
      * Contains the match rules and the match rule sets
      */
-    private MatchMakerFolder<MatchRuleSet> matchRuleSetFolder =
-    	new MatchMakerFolder<MatchRuleSet>();
+    private MatchMakerFolder<MungeProcess> matchRuleSetFolder =
+    	new MatchMakerFolder<MungeProcess>();
     
     /** 
      * Container for the TableMergeRules 
@@ -478,13 +479,13 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	}
 
 
-	public List<MatchRuleSet> getMatchGroups() {
+	public List<MungeProcess> getMatchGroups() {
 		return getMatchRuleSetFolder().getChildren();
 	}
 
-	public MatchRuleSet getMatchRuleSetByName(String name) {
-		List <MatchRuleSet> groups = getMatchRuleSets();
-		for ( MatchRuleSet g : groups) {
+	public MungeProcess getMatchRuleSetByName(String name) {
+		List <MungeProcess> groups = getMatchRuleSets();
+		for ( MungeProcess g : groups) {
 			if ( g.getName() != null && g.getName().equals(name)) {
 				return g;
 			}
@@ -580,7 +581,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      *
      * @param ruleSet
      */
-    public void addMatchRuleSet(MatchRuleSet ruleSet) {
+    public void addMatchRuleSet(MungeProcess ruleSet) {
         // The folder will fire the child inserted event
         matchRuleSetFolder.addChild(ruleSet);
     }
@@ -590,20 +591,20 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      *
      * @param ruleSet
      */
-    public void removeMatchRuleSet(MatchRuleSet ruleSet) {
+    public void removeMatchRuleSet(MungeProcess ruleSet) {
         // The folder will fire the child removed event
         matchRuleSetFolder.removeChild(ruleSet);
     }
 
-    public List<MatchRuleSet> getMatchRuleSets(){
+    public List<MungeProcess> getMatchRuleSets(){
         return matchRuleSetFolder.getChildren();
     }
 
-    public void setMatchRuleSets(List<MatchRuleSet> groups){
+    public void setMatchRuleSets(List<MungeProcess> groups){
         matchRuleSetFolder.setChildren(groups);
     }
 
-    public MatchMakerFolder<MatchRuleSet> getMatchRuleSetFolder() {
+    public MatchMakerFolder<MungeProcess> getMatchRuleSetFolder() {
         return matchRuleSetFolder;
     }
 
@@ -627,8 +628,8 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		newMatch.setView(getView()==null?null:getView().duplicate());
 		newMatch.setSession(s);
 		
-		for (MatchRuleSet g : getMatchRuleSets()) {
-			MatchRuleSet newGroup = g.duplicate(newMatch.getMatchRuleSetFolder(),s);
+		for (MungeProcess g : getMatchRuleSets()) {
+			MungeProcess newGroup = g.duplicate(newMatch.getMatchRuleSetFolder(),s);
 			newMatch.addMatchRuleSet(newGroup);
 		}
 

@@ -36,6 +36,7 @@ import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.SPDataSource;
@@ -86,11 +87,11 @@ public class PreMergeDataFudgerTest extends TestCase {
 		match.setSession(session);
 		match.setResultTable(resultTable);
 		
-		MatchRuleSet groupOne = new MatchRuleSet();
+		MungeProcess groupOne = new MungeProcess();
 		groupOne.setName("Group_One");
 		match.addMatchRuleSet(groupOne);
 
-		MatchRuleSet groupTwo = new MatchRuleSet();
+		MungeProcess groupTwo = new MungeProcess();
 		groupOne.setName("Group_Two");
 		match.addMatchRuleSet(groupTwo);
 		

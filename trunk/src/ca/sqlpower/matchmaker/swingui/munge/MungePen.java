@@ -46,13 +46,13 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
 import ca.sqlpower.matchmaker.munge.DoubleMetaphoneMungeStep;
 import ca.sqlpower.matchmaker.munge.LowerCaseMungeStep;
 import ca.sqlpower.matchmaker.munge.MetaphoneMungeStep;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.RefinedSoundexMungeStep;
@@ -113,7 +113,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	private static  final Logger logger = Logger.getLogger(MungePen.class); 
 	
-	final MatchRuleSet process;
+	final MungeProcess process;
 	
 	// The offset from the corner of the component to where the mouse clicked
 	Point diff;
@@ -142,7 +142,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 * Creates a new empty mungepen.
 	 * 
 	 */
-	public MungePen(MatchRuleSet process, FormValidationHandler handler) {
+	public MungePen(MungeProcess process, FormValidationHandler handler) {
 		process.addMatchMakerListener(new MungePenMatchRuleSetListener());
 		mungeStepListener = new MungePenMungeStepListener();
 		
@@ -176,7 +176,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 * 
 	 * @param Process
 	 */
-	private void buildComponents(MatchRuleSet process) {
+	private void buildComponents(MungeProcess process) {
 		for (MungeStep ms : process.getChildren()) {
 			ms.addMatchMakerListener(mungeStepListener);
 			AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(ms, handler);
@@ -537,8 +537,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
     
     ///////////////////////////Listener for MatchMaker Rule Set /////////////////////////////////
 
-    private class MungePenMatchRuleSetListener implements MatchMakerListener<MatchRuleSet, MungeStep> {
-		public void mmChildrenInserted(MatchMakerEvent<MatchRuleSet, MungeStep> evt) {
+    private class MungePenMatchRuleSetListener implements MatchMakerListener<MungeProcess, MungeStep> {
+		public void mmChildrenInserted(MatchMakerEvent<MungeProcess, MungeStep> evt) {
 			
 			for (int x : evt.getChangeIndices()) {
 				evt.getSource().getChildren().get(x).addMatchMakerListener(mungeStepListener);
@@ -563,7 +563,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 		}
 	
-		public void mmChildrenRemoved(MatchMakerEvent<MatchRuleSet, MungeStep> evt) {
+		public void mmChildrenRemoved(MatchMakerEvent<MungeProcess, MungeStep> evt) {
 			
 			for (MungeStep ms : evt.getChildren()) {
 				AbstractMungeComponent mcom = modelMap.remove(ms);
@@ -575,11 +575,11 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			repaint();
 		}
 	
-		public void mmPropertyChanged(MatchMakerEvent<MatchRuleSet, MungeStep> evt) {
+		public void mmPropertyChanged(MatchMakerEvent<MungeProcess, MungeStep> evt) {
 			repaint();
 		}
 	
-		public void mmStructureChanged(MatchMakerEvent<MatchRuleSet, MungeStep> evt) {
+		public void mmStructureChanged(MatchMakerEvent<MungeProcess, MungeStep> evt) {
 			repaint();
 		}
     }
