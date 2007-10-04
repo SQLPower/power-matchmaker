@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
@@ -77,7 +76,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 		this.session = session;
 	}
 
-	public EngineInvocationResult call() throws EngineSettingException, IOException, SQLException {
+	public EngineInvocationResult call() throws EngineSettingException {
 		try {
 			try {
 				checkPreconditions();
@@ -193,4 +192,16 @@ public abstract class AbstractEngine implements MatchMakerEngine {
         
         return new String[] { javaPath, className, "match_oid=" + matchOid };
     }
+
+	public boolean isStarted() {
+		return started;
+	}
+
+	public void setStarted(boolean started) {
+		this.started = started;
+	}
+
+	public void setFinished(boolean finished) {
+		this.finished = finished;
+	}
 }

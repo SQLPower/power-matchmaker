@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.awt.Color;
+import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.Match;
@@ -74,7 +75,9 @@ public class MungeProcess
      * in the GUI.
      */
 	private Color colour;
-    
+
+	private MungeResultStep outputStep;
+	
 	/**
      * Constructor that sets up a default Munge process.
 	 */
@@ -208,5 +211,9 @@ public class MungeProcess
 			group.addChild(newStep);
 		}
 		return group;
+	}
+	
+	public List<MungeResult> getResults() {
+		return outputStep.getResults();
 	}
 }
