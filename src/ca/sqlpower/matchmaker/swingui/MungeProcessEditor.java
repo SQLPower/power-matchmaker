@@ -339,6 +339,8 @@ public class MungeProcessEditor implements EditorPane {
 			} else if (value.length() > MAX_RULE_SET_NAME_CHAR){
 			    return ValidateResult.createValidateResult(Status.FAIL, 
                         "Munge Process name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
+            } else if (process.getParent() == null && parentMatch.getMatchRuleSetByName(name.getText()) != null) {
+            	return ValidateResult.createValidateResult(Status.FAIL, "Munge Process name is invalid or already exists.");
             }
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
