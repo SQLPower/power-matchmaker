@@ -30,10 +30,10 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Match,MatchDAO>  {
 
@@ -188,17 +188,17 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         insertSampleMatchRuleData(groupOid, "test_rule_"+time);
         
         Match match = getDataAccessObject().findByName(matchName);
-            List<MatchRuleSet> groups = match.getMatchRuleSets();
+            List<MungeProcess> groups = match.getMatchRuleSets();
 		assertEquals("There should be one rule set", 1, groups.size());
 
-		MatchRuleSet group = groups.get(0);
+		MungeProcess group = groups.get(0);
 		assertEquals("Wrong Group name", "group_" + time, group.getName());
 
         // TODO check that the munge rules were retrieved
     }
     
     public void testRuleSetMove() throws Exception {
-        MatchRuleSet ruleSet = new MatchRuleSet();
+        MungeProcess ruleSet = new MungeProcess();
         ruleSet.setName("criteria group");
         
         Match oldMatch = new Match();
@@ -245,7 +245,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
             
             //A temporary fix for moving match rulesets. This makes a copy of the ruleSet and 
             //adds it to the newMatch.
-            MatchRuleSet ruleSet2 = ruleSet.duplicate(newMatch, getSession());
+            MungeProcess ruleSet2 = ruleSet.duplicate(newMatch, getSession());
             newMatch.addMatchRuleSet(ruleSet2);
             dao.save(newMatch);
             

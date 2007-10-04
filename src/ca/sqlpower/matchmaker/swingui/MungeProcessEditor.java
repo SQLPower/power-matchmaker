@@ -36,8 +36,8 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -66,7 +66,7 @@ public class MungeProcessEditor implements EditorPane {
     /**
      * The munge process this editor is responsible for editing.
      */
-    private final MatchRuleSet process;
+    private final MungeProcess process;
     
     /**
      * The actual GUI component that provides the editing interface.
@@ -80,7 +80,7 @@ public class MungeProcessEditor implements EditorPane {
      * The instance that monitors the subtree we're editing for changes (so we know
      * if there are unsaved changes).
      */
-    private final MMOChangeWatcher<MatchRuleSet, MungeStep> changeHandler;
+    private final MMOChangeWatcher<MungeProcess, MungeStep> changeHandler;
     
     /**
      * Validator for handling errors within the munge steps
@@ -100,12 +100,12 @@ public class MungeProcessEditor implements EditorPane {
     public MungeProcessEditor(
             MatchMakerSwingSession swingSession,
             Match match,
-            MatchRuleSet process) {
+            MungeProcess process) {
         super();
         this.swingSession = swingSession;
         this.parentMatch = match;
         this.process = process;
-        this.changeHandler = new MMOChangeWatcher<MatchRuleSet, MungeStep>(process);
+        this.changeHandler = new MMOChangeWatcher<MungeProcess, MungeStep>(process);
         ArrayList<Action> actions = new ArrayList<Action>();
         actions.add(saveAction);
         this.handler = new FormValidationHandler(status, actions);
@@ -165,7 +165,7 @@ public class MungeProcessEditor implements EditorPane {
             MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
             dao.save(parentMatch);
         } else {
-            MatchMakerDAO<MatchRuleSet> dao = swingSession.getDAO(MatchRuleSet.class);
+            MatchMakerDAO<MungeProcess> dao = swingSession.getDAO(MungeProcess.class);
             dao.save(process);
         }
         changeHandler.setHasChanged(false);

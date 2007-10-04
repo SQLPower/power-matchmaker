@@ -19,23 +19,23 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
-public class MatchRuleSetDAOHibernate extends AbstractMatchMakerDAOHibernate<MatchRuleSet> implements
+public class MatchRuleSetDAOHibernate extends AbstractMatchMakerDAOHibernate<MungeProcess> implements
 		MatchRuleSetDAO {
 
 	public MatchRuleSetDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
 		super(matchMakerSession);
 	}
 
-	public Class<MatchRuleSet> getBusinessClass() {
-		return MatchRuleSet.class;
+	public Class<MungeProcess> getBusinessClass() {
+		return MungeProcess.class;
 	}
 	
 	@Override
-	public void delete(MatchRuleSet deleteMe) {
+	public void delete(MungeProcess deleteMe) {
 		
 		MatchMakerObject parent = deleteMe.getParent();
 		if (parent != null ){

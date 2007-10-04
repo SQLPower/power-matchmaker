@@ -27,13 +27,13 @@ import java.sql.Statement;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
-public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCase<MatchRuleSet,MatchRuleSetDAO>  {
+public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCase<MungeProcess,MatchRuleSetDAO>  {
 
 	Long count=0L;
     Match match;
@@ -63,9 +63,9 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
     }
 
 	@Override
-	public MatchRuleSet createNewObjectUnderTest() throws Exception {
+	public MungeProcess createNewObjectUnderTest() throws Exception {
 		count++;
-		MatchRuleSet ruleSet = new MatchRuleSet();
+		MungeProcess ruleSet = new MungeProcess();
         ruleSet.setSession(getSession());
 		try {
 			setAllSetters(ruleSet, getNonPersitingProperties());
@@ -99,7 +99,7 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
         Statement stmt = null;
         try {
 
-            MatchRuleSet group = match.getMatchRuleSets().get(0);
+            MungeProcess group = match.getMatchRuleSets().get(0);
             String groupId = group.getName();
 
             MatchRuleSetDAO dao = getDataAccessObject();

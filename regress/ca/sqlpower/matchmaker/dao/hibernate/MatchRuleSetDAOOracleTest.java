@@ -21,14 +21,14 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.dao.AbstractMatchRuleSetDAOTestCase;
 import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 
 public class MatchRuleSetDAOOracleTest extends AbstractMatchRuleSetDAOTestCase {
     
-    private MatchRuleSet ruleSet;
+    private MungeProcess ruleSet;
     
     @Override
     protected void setUp() throws Exception {

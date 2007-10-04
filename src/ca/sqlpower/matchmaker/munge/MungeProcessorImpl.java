@@ -26,7 +26,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.graph.DepthFirstSearch;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel.Edge;
 import ca.sqlpower.util.MonitorableImpl;
 
@@ -45,7 +44,7 @@ public class MungeProcessorImpl implements MungeProcessor {
      * invoked, so that a single munge processor can be used for previewing
      * at design time.
      */
-    private final MatchRuleSet mungeProcess;
+    private final MungeProcess mungeProcess;
     
     /**
      * The list of MungeSteps obtained from the MungeProcess that this processor will
@@ -53,7 +52,7 @@ public class MungeProcessorImpl implements MungeProcessor {
      */
     private List<MungeStep> processOrder;
     
-    public MungeProcessorImpl(MatchRuleSet mungeProcess) {
+    public MungeProcessorImpl(MungeProcess mungeProcess) {
         this.mungeProcess = mungeProcess;
         List<MungeStep> steps = new ArrayList<MungeStep>(mungeProcess.getChildren());
         

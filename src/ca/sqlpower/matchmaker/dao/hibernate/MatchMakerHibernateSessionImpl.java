@@ -44,7 +44,6 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -59,6 +58,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.dao.TableMergeRuleDAO;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
@@ -263,7 +263,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             return (MatchMakerDAO<T>) folderDAO;
         } else if (businessClass == Match.class) {
             return (MatchMakerDAO<T>) matchDAO;
-        } else if (businessClass == MatchRuleSet.class){
+        } else if (businessClass == MungeProcess.class){
             return (MatchMakerDAO<T>) matchRuleSetDAO;
         } else if (businessClass == MatchMakerTranslateGroup.class){
             return (MatchMakerDAO<T>) matchMakerTranslateGroupDAO;

@@ -33,9 +33,9 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
@@ -57,8 +57,8 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
 		if (value instanceof Match) {
 			setIcon(matchIcon);
-		} else if (value instanceof MatchRuleSet) {
-            MatchRuleSet group = (MatchRuleSet) value;
+		} else if (value instanceof MungeProcess) {
+            MungeProcess group = (MungeProcess) value;
             if (group.getColour() == null) {
                 setIcon(groupIcon);
             } else {

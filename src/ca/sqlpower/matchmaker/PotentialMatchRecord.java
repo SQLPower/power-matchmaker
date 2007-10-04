@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 
 /**
@@ -44,7 +45,7 @@ public class PotentialMatchRecord {
      * The set of rules that caused the two source table records
      * identified here to be considered as potential matches.
      */
-    private final MatchRuleSet ruleSet;
+    private final MungeProcess ruleSet;
     
     /**
      * The current status of this potential match (unexamined, confirmed correct,
@@ -209,7 +210,7 @@ public class PotentialMatchRecord {
 	 *            the engine; true means NOT created by the engine
 	 */
     public PotentialMatchRecord(
-            MatchRuleSet ruleSet,
+            MungeProcess ruleSet,
             MatchType matchStatus,
             SourceTableRecord originalLhs,
             SourceTableRecord originalRhs,
@@ -275,7 +276,7 @@ public class PotentialMatchRecord {
         markDirty();
     }
 
-    public MatchRuleSet getRuleSet() {
+    public MungeProcess getRuleSet() {
         return ruleSet;
     }
 

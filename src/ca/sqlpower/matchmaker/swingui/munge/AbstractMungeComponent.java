@@ -54,10 +54,10 @@ import javax.swing.JToolBar;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -619,7 +619,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	public static void createAndShowGUI() {
-		MungePen p = new MungePen(new MatchRuleSet(), new FormValidationHandler(new StatusComponent()));
+		MungePen p = new MungePen(new MungeProcess(), new FormValidationHandler(new StatusComponent()));
 		JFrame f = new JFrame("Frame");
 		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		JScrollPane sp = new JScrollPane(p);

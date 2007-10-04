@@ -25,7 +25,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.tree.TreePath;
 
-import ca.sqlpower.matchmaker.MatchRuleSet;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
@@ -33,9 +33,9 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 public class DeleteMatchGroupAction extends AbstractAction {
 
     private final MatchMakerSwingSession swingSession;
-    private final MatchRuleSet matchGroup;
+    private final MungeProcess matchGroup;
 
-	public DeleteMatchGroupAction(MatchMakerSwingSession swingSession, MatchRuleSet matchGroup) {
+	public DeleteMatchGroupAction(MatchMakerSwingSession swingSession, MungeProcess matchGroup) {
 		super("Delete Match Group");
         this.swingSession = swingSession;
 		this.matchGroup = matchGroup;

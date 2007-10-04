@@ -48,10 +48,10 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
-import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -177,7 +177,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 			logger.debug("deleting translate group:"+selectedRow);
 			
 			if ( selectedRow >= 0 && selectedRow < mungeProcessTable.getRowCount()) {
-				MatchRuleSet ruleSet = match.getMatchRuleSetFolder().getChildren().get(selectedRow);
+				MungeProcess ruleSet = match.getMatchRuleSetFolder().getChildren().get(selectedRow);
 				match.removeMatchRuleSet(ruleSet);
 				swingSession.save(match);
 				if (selectedRow >= mungeProcessTable.getRowCount()) {
@@ -224,7 +224,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			MatchRuleSet ruleSet = match.getMatchRuleSets().get(rowIndex);
+			MungeProcess ruleSet = match.getMatchRuleSets().get(rowIndex);
 			switch (columnIndex) {
 			case 0:  return ruleSet.getName();
 			case 1:  return ruleSet.getDesc();
@@ -276,7 +276,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 	                }
 	            }
 	            for (Object matchRuleSet:evt.getChildren()){
-	                ((MatchRuleSet) matchRuleSet).addMatchMakerListener(this);
+	                ((MungeProcess) matchRuleSet).addMatchMakerListener(this);
 	            }
 	            fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
 	        }
@@ -297,7 +297,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 	                }
 	            }
 	            for (Object matchRuleSet:evt.getChildren()) {
-	                ((MatchRuleSet) matchRuleSet).removeMatchMakerListener(this);
+	                ((MungeProcess) matchRuleSet).removeMatchMakerListener(this);
 	            }
 	            fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
 	        }

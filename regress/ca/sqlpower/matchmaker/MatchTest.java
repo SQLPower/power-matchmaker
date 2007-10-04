@@ -41,6 +41,7 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.testutil.MockJDBCDriver;
@@ -103,7 +104,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     public void testMatchMakerFolderFiresEventForMatchRuleSets(){
         MatchMakerEventCounter l = new MatchMakerEventCounter();
         match.getMatchRuleSetFolder().addMatchMakerListener(l);
-        List<MatchRuleSet> mmoList = new ArrayList<MatchRuleSet>();
+        List<MungeProcess> mmoList = new ArrayList<MungeProcess>();
         match.setMatchRuleSets(mmoList);
         assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
         assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());

@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 
 
@@ -87,7 +88,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
         }
         if (mmo instanceof Match) {
             Match matchChild = (Match) mmo;
-            for (MatchRuleSet critGroup : matchChild.getMatchRuleSets()) {
+            for (MungeProcess critGroup : matchChild.getMatchRuleSets()) {
                 if (checkMMOContainsTranslateGroup(critGroup, tg)) return true;
             }
         } else {
