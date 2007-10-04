@@ -62,6 +62,7 @@ public class SQLInputStep extends AbstractMungeStep {
 
     public SQLInputStep(SQLTable table) throws ArchitectException {
         this.table = table;
+        setName(table.getName());
         for (SQLColumn c : table.getColumns()) {
             MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), typeClass(c.getType()));
             addChild(newOutput);
@@ -120,19 +121,9 @@ public class SQLInputStep extends AbstractMungeStep {
         }
     }
 
-    public int getInputCount() {
-        return 0;
-    }
-
-    public Class getInputType(int inputNumber) {
-        throw new IndexOutOfBoundsException(
-                "There are 0 inputs. You were asking about input number " + inputNumber);
-    }
-
     public Boolean call() throws Exception {
-        if (rs == null) {
-            throw new IllegalStateException("Step is not open");
-        }
+        super.call();
+        
         if (!rs.next()) {
             for (int i = 0; i < table.getColumns().size(); i++) {
                 MungeStepOutput<?> o = getChildren().get(i);
@@ -167,7 +158,9 @@ public class SQLInputStep extends AbstractMungeStep {
     
     @Override
     public void open() throws Exception {
-        if (rs != null) {
+    	super.open();
+    	
+    	if (rs != null) {
             throw new IllegalStateException("The input step is already open");
         }
         
@@ -200,6 +193,8 @@ public class SQLInputStep extends AbstractMungeStep {
     
     @Override
     public void close() throws Exception {
+    	super.close();
+    	
         Statement stmt = rs.getStatement();
         rs.close();
         rs = null;
