@@ -42,7 +42,7 @@ import junit.framework.TestCase;
  * the setup rather than factor it out, where a modification could
  * disturb all the test cases sharing it.
  */
-public class MungeProcessorImplTest extends TestCase {
+public class MungeProcessorTest extends TestCase {
 
     /**
      * The munge processor under test.  It will be set up to have
@@ -50,7 +50,7 @@ public class MungeProcessorImplTest extends TestCase {
      * children will be connected according to the diagram in the
      * class-level comment of this test case.
      */
-    MungeProcessorImpl mp;
+    MungeProcessor mp;
     
     /**
      * Step A as shown in the diagram in the class comment.
@@ -125,7 +125,7 @@ public class MungeProcessorImplTest extends TestCase {
         mungeProcess.addChild(e);
         mungeProcess.addChild(d);
 
-        mp = new MungeProcessorImpl(mungeProcess);
+        mp = new MungeProcessor(mungeProcess);
     }
     
     /**

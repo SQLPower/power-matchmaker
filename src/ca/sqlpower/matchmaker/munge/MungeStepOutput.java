@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -34,7 +37,8 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
  *
  * @param <T> The type of data this output holds.
  */
-public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput, MatchMakerObject> {
+public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput, MatchMakerObject> 
+								implements Comparable<MungeStepOutput<T>> {
 
 	/**
 	 * The type of data this step can hold.
@@ -115,6 +119,38 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	@Override
 	public boolean allowsChildren() {
 		return false;
+	}
+
+	public int compareTo(MungeStepOutput<T> o) {
+		if (type.equals(o.getType())) {
+			throw new IllegalStateException("Cannot compare two MungeStepOutputs" +
+					"that have different data types");
+		} 
+		
+		int compareValue = 0;
+		
+		Object otherData = o.getData();
+		
+		if (data == null || otherData == null) {
+			if (data != null) {
+				compareValue = 1;
+			} else if (otherData != null) {
+				compareValue = -1;
+			}
+		} else if (type.equals(String.class)){
+			compareValue = ((String)data).compareTo((String)otherData);
+		} else if (type.equals(BigDecimal.class)) {
+			compareValue = ((BigDecimal) data).compareTo((BigDecimal)otherData);
+		} else if (type.equals(Boolean.class)) {
+			compareValue = ((Boolean) data).compareTo((Boolean)otherData);
+		} else if (type.equals(Date.class)) {
+			compareValue = ((Date) data).compareTo((Date)otherData);
+		} else {
+			throw new IllegalStateException("MungeStepOutput" +
+					"contain an unsupported data type:" + type);
+		}
+		
+		return compareValue;
 	}
 	
 }

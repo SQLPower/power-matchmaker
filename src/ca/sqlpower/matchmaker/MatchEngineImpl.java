@@ -21,11 +21,15 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeProcessor;
+import ca.sqlpower.matchmaker.munge.MungeResult;
 import ca.sqlpower.sql.DefaultParameters;
 import ca.sqlpower.sql.PLSchemaException;
 
@@ -144,4 +148,38 @@ public class MatchEngineImpl extends AbstractEngine {
 		return logger;
 	}
 	
+	
+	@Override
+	public EngineInvocationResult call() throws EngineSettingException {
+		try {
+			try {
+				checkPreconditions();
+			} catch (ArchitectException e) {
+				throw new RuntimeException(e);
+			}
+			
+			List<MungeProcess> mungeProcesses = getMatch().getMatchRuleSetFolder().getChildren();
+			
+			for (MungeProcess currentProcess: mungeProcesses) {
+				Processor munger = new MungeProcessor(currentProcess);
+				munger.call();
+				List<MungeResult> results = currentProcess.getResults();
+				
+				MatchProcessor matcher = new MatchProcessor(results);
+				
+				
+			}
+			
+            setFinished(false);
+			setStarted(true);
+
+			getLogger().info("Engine process completed normally.");
+			
+			return EngineInvocationResult.SUCCESS;
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		} finally {
+			setFinished(true);
+		}
+	}
 }
