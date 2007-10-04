@@ -28,10 +28,12 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
  * This is the component for a translate word munge step. It has a two options, 
@@ -43,10 +45,10 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 	private JCheckBox useRegex;
 	private JComboBox translateGroup; 
 
-	public TranslateWordMungeComponent(MungeStep step) {
-		super(step);
+	public TranslateWordMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
+		super(ms, handler, session);
 	}
-
+	
 	@Override
 	protected JPanel buildUI() {
 		JPanel content = new JPanel();
@@ -54,12 +56,12 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 		
 		useRegex = new JCheckBox("Use Regular Expressions");
 		useRegex.setBackground(getBg());
-		useRegex.setSelected(temp.getBooleanParameter(temp.USE_REGEX_PARAMETER_NAME));
+		useRegex.setSelected(temp.getBooleanParameter(TranslateWordMungeStep.USE_REGEX_PARAMETER_NAME));
 		useRegex.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
-				temp.setParameter(temp.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
+				temp.setParameter(TranslateWordMungeStep.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
 			}
 			
 		});
@@ -72,8 +74,8 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			translateGroup = new JComboBox(groupDAO.findAll().toArray());
 			
 			// Sets the combo box to select the translate group in the parameter
-			if (temp.getParameter(temp.TRANSLATE_GROUP_PARAMETER_NAME) != null) {
-				String oid = temp.getParameter(temp.TRANSLATE_GROUP_PARAMETER_NAME);
+			if (temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME) != null) {
+				String oid = temp.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME);
 				if (groupDAO.findByOID(Long.valueOf(oid)) != null) {
 					translateGroup.setSelectedItem(groupDAO.findByOID(Long.valueOf(oid)));
 				}
@@ -83,7 +85,7 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			} else if (translateGroup.getSelectedItem() != null) {
 					MatchMakerTranslateGroup group = 
 						(MatchMakerTranslateGroup)translateGroup.getSelectedItem(); 
-					temp.setParameter(temp.TRANSLATE_GROUP_PARAMETER_NAME,
+					temp.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME,
 						group.getOid().toString());
 			}
 			
@@ -98,7 +100,7 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 				if (translateGroup.getSelectedItem() != null) {
 					MatchMakerTranslateGroup group = 
 						(MatchMakerTranslateGroup)translateGroup.getSelectedItem(); 
-					temp.setParameter(temp.TRANSLATE_GROUP_PARAMETER_NAME,
+					temp.setParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME,
 						group.getOid().toString());
 				}
 			}

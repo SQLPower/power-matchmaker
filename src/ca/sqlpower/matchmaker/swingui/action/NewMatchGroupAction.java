@@ -20,13 +20,16 @@
 package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 import javax.swing.AbstractAction;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MungeProcessEditor;
+import ca.sqlpower.swingui.SPSUtils;
 
 /**
  * A simple action to adds a new match group to the swing session and
@@ -47,8 +50,23 @@ public class NewMatchGroupAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		MungeProcess g = new MungeProcess();
 		g.setName("New Munge Process");
-		MungeProcessEditor editor = new MungeProcessEditor(swingSession,parent, g);
-		swingSession.setCurrentEditorComponent(editor);
+		MungeProcessEditor editor;
+		try {
+			editor = new MungeProcessEditor(swingSession,parent, g);
+			swingSession.setCurrentEditorComponent(editor);
+		} catch (ClassNotFoundException ex) {
+			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
+					"Error Class Not Found", 
+					"One of the classes in the munge component proporties files does not exist", ex);
+		} catch (ArchitectException ex) {
+			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
+					"Error Loading Source Table", 
+					"There was an error loading the source table", ex);
+		} catch (IOException ex) {
+			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+					"Error loading default munge step properties file",
+					"Could not load properties file from class path.", ex);
+		}
 	}
 
 }

@@ -29,6 +29,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.StringSubstitutionMungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -47,13 +48,13 @@ public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
 	private JTextField from;
 	private JTextField to;
 	
-	public StringSubstitutionMungeComponent(MungeStep step, FormValidationHandler handler) {
-		super(step);
+	public StringSubstitutionMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
+		super(step, handler, session);
 
 		RegexValidator validator = new RegexValidator();
 		handler.addValidateObject(from, useRegex, validator);
 	}
-
+	
 	@Override
 	protected JPanel buildUI() {
 		StringSubstitutionMungeStep step = (StringSubstitutionMungeStep) getStep();

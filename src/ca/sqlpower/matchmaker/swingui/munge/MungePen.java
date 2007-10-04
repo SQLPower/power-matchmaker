@@ -32,6 +32,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +48,7 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
@@ -73,39 +76,49 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  * add there own mappings. 
  */
 class MungeComponentFactory {
-	public static  AbstractMungeComponent getMungeComponent(MungeStep ms, FormValidationHandler handler) {
-		if (ms instanceof UpperCaseMungeStep) {
-			return new UpperCaseMungeComponent(ms);
-		} else if (ms instanceof LowerCaseMungeStep) {
-			return new LowerCaseMungeComponent(ms);
-		} else if (ms instanceof SoundexMungeStep) {
-			return new SoundexMungeComponent(ms);
-		} else if (ms instanceof RefinedSoundexMungeStep) {
-			return new RefinedSoundexMungeComponent(ms);
-		} else if (ms instanceof MetaphoneMungeStep) {
-			return new MetaphoneMungeComponent(ms);
-		} else if (ms instanceof DoubleMetaphoneMungeStep) {
-			return new DoubleMetaphoneMungeComponent(ms);
-		} else if (ms instanceof WordCountMungeStep) {
-			return new WordCountMungeComponent(ms, handler);
-		} else if (ms instanceof StringSubstitutionMungeStep) {
-			return new StringSubstitutionMungeComponent(ms, handler);
-		} else if (ms instanceof TranslateWordMungeStep) {
-			return new TranslateWordMungeComponent(ms);
-		} else if (ms instanceof SubstringMungeStep) {
-			return new SubstringMungeComponent(ms);
-		} else if(ms instanceof RetainCharactersMungeStep) {
-			return new RetainCharactersMungeComponent(ms, handler);
-		} else if(ms instanceof SubstringByWordMungeStep) {
-			return new SubstringByWordMungeComponent(ms, handler);
-		} else if (ms instanceof ConcatMungeStep) {
-			return new ConcatMungeComponent(ms);
-		} else if (ms instanceof SQLInputStep) {
-			return new SQLInputMungeComponent(ms);
-		} else {
-			return null;
+	private static final Type[] CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class}; 
+	
+	public static  AbstractMungeComponent getMungeComponent(MungeStep ms, FormValidationHandler handler, 
+		MatchMakerSession session, Map<String, StepDescription> stepProps) {
+		
+		if (ms instanceof SQLInputStep) {
+			return new SQLInputMungeComponent(ms, handler, session);
 		}
-			
+		
+		for (StepDescription sd : stepProps.values()) {
+			if (sd.getLogicClass().equals(ms.getClass())) {
+				Constructor[] constructors = sd.getGuiClass().getDeclaredConstructors();
+				
+				for (Constructor con : constructors) {
+					Type[] paramTypes = con.getGenericParameterTypes();					
+					
+					if (arrayEquals(paramTypes,CONSTRUCTOR_PARAMS)) {
+						try {
+							return (AbstractMungeComponent)con.newInstance(ms, handler, session);
+						} catch (Throwable t) {
+							throw new RuntimeException("Error generating munge step component check properties file.", t);
+						}
+					}
+				}
+			}
+		}
+		
+		throw new NoClassDefFoundError("Error no constructor"  
+				+ "(MungeStep, FormValidationHandler, MatchMakerSession) was found for the given munge step:" 
+				+ ms.getClass());
+	}
+	
+	private static boolean arrayEquals(Object[] a, Object[] b) {
+		if (a.length != b.length) {
+			return false;
+		}
+		
+		for (int x = 0; x < a.length; x++) {
+			if (!a[x].equals(b[x])) {
+				return false;
+			}
+		}
+		return true;
 	}
 }
 
@@ -113,18 +126,14 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	private static  final Logger logger = Logger.getLogger(MungePen.class); 
 	
-	final MungeProcess process;
-	
-	// The offset from the corner of the component to where the mouse clicked
-	Point diff;
-	
+	private final MungeProcess process;
 	
 	//holds the info for dragging a connection 
 	//between two IOCc
-	AbstractMungeComponent start;
-	AbstractMungeComponent finish;
-	int startNum;
-	int finishNum;
+	private AbstractMungeComponent start;
+	private AbstractMungeComponent finish;
+	private int startNum;
+	private int finishNum;
 	
 	//current mouse position
 	public int mouseX;
@@ -132,17 +141,22 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	private boolean normalizing;
 	
-	MungePenMungeStepListener mungeStepListener;
+	private MungePenMungeStepListener mungeStepListener;
 	
 	private FormValidationHandler handler;
 	
-	Map<MungeStep,AbstractMungeComponent> modelMap = new HashMap<MungeStep, AbstractMungeComponent>();
-
+	private Map<MungeStep,AbstractMungeComponent> modelMap = new HashMap<MungeStep, AbstractMungeComponent>();
+	
+	private Map<String, StepDescription> stepsProperties;
+	
+	
 	/**
 	 * Creates a new empty mungepen.
 	 * 
 	 */
-	public MungePen(MungeProcess process, FormValidationHandler handler) {
+	public MungePen(MungeProcess process, FormValidationHandler handler, 
+			Map stepsProperties) throws ArchitectException {
+		this.stepsProperties = stepsProperties;
 		process.addMatchMakerListener(new MungePenMatchRuleSetListener());
 		mungeStepListener = new MungePenMungeStepListener();
 		
@@ -153,8 +167,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		setBackground(Color.WHITE);
 		setOpaque(true);
 		this.process = process;
-		buildComponents(process);
 		this.handler = handler;
+		buildComponents(process);
 		
 		normalizing = false;
 		
@@ -169,6 +183,9 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 		});
 		
+		if (process.getChildCount() == 0) {
+			process.addChild(new SQLInputStep(process.getParentMatch().getSourceTable()));
+		}
 	}
 	
 	/**
@@ -179,14 +196,14 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	private void buildComponents(MungeProcess process) {
 		for (MungeStep ms : process.getChildren()) {
 			ms.addMatchMakerListener(mungeStepListener);
-			AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(ms, handler);
+			AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(ms, handler, process.getSession(), stepsProperties);
 			modelMap.put(ms, mcom);
 			add(mcom,DEFAULT_LAYER);
 		}
 		
 		//This is done in an other loop to ensure that all the MungeComponets have been mapped
 		for (MungeStep ms : process.getChildren()) {
-			for (int x = 0; x < ms.getChildren().size(); x++) {
+			for (int x = 0; x < ms.getInputs().size(); x++) {
 				MungeStepOutput link = ms.getInputs().get(x);
 				if (link != null) {
 					MungeStep parent = (MungeStep)link.getParent();
@@ -405,12 +422,6 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				process.addChild(new SubstringByWordMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_E) {
 				process.addChild(new ConcatMungeStep());
-			} else if (e.getKeyCode() == KeyEvent.VK_R) {
-				try {
-					process.addChild(new SQLInputStep(process.getParentMatch().getSourceTable()));
-				} catch (ArchitectException e1) {
-					System.out.println("too bad!");
-				}
 			}
 		}
 	}
@@ -542,7 +553,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			
 			for (int x : evt.getChangeIndices()) {
 				evt.getSource().getChildren().get(x).addMatchMakerListener(mungeStepListener);
-				AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(evt.getSource().getChildren().get(x), handler);
+				AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(evt.getSource().getChildren().get(x), 
+						handler, process.getSession(), stepsProperties);
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
 				add(mcom);
 			}

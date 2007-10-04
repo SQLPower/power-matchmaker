@@ -30,6 +30,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.RetainCharactersMungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -46,8 +47,8 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 	private JCheckBox caseSensitive;
 	private JTextField delimiters;
 
-	public RetainCharactersMungeComponent(MungeStep step, FormValidationHandler handler) {
-		super(step);
+	public RetainCharactersMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
+		super(step, handler, session);
 
 		RegexValidator validator = new RegexValidator();
 		handler.addValidateObject(delimiters, useRegex, validator);

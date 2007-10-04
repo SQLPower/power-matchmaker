@@ -44,24 +44,21 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
-import ca.sqlpower.validation.swingui.StatusComponent;
 
 public abstract class AbstractMungeComponent extends JPanel {
 	
@@ -105,7 +102,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private boolean expanded;
 	
+	private MatchMakerSession session;
+	
 	private MungeComponentKeyListener mungeComKeyListener;
+
+	private FormValidationHandler handler;
 	
 	/**
 	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen.
@@ -213,8 +214,18 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * 
 	 * @param step The step connecting to the UI
 	 */
-	public AbstractMungeComponent(MungeStep step) {
+	public AbstractMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		this(step, Color.BLACK,Color.WHITE);
+		this.session = session;
+		this.handler = handler;
+	}
+	
+	public MatchMakerSession getSession() {
+		return session;
+	}
+	
+	public FormValidationHandler getHandler() {
+		return handler;
 	}
 	
 	/**
@@ -609,25 +620,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 			getParent().repaint();
 		}
 	}
-		
-	public static void main(String[] args) {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
-            }
-        });
-	}
-	
-	public static void createAndShowGUI() {
-		MungePen p = new MungePen(new MungeProcess(), new FormValidationHandler(new StatusComponent()));
-		JFrame f = new JFrame("Frame");
-		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		JScrollPane sp = new JScrollPane(p);
-		f.setContentPane(sp);
-		f.pack();
-		f.setVisible(true);
-	}
-
 
 	public Color getBg() {
 		return bg;

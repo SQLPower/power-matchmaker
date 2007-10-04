@@ -25,8 +25,10 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.DoubleMetaphoneMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
  * This is the component for a double metaphone munge step. It has only one option,
@@ -35,9 +37,9 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 public class DoubleMetaphoneMungeComponent extends AbstractMungeComponent {
 
 	private JCheckBox useAlt;
-
-	public DoubleMetaphoneMungeComponent(MungeStep step) {
-		super(step);
+	
+	public DoubleMetaphoneMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
+		super(ms, handler, session);
 	}
 
 	@Override

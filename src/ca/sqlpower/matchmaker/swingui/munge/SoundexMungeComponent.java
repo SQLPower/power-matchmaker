@@ -21,17 +21,19 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import javax.swing.JPanel;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
  * This is a component for a soundex munge step. It has no options at all.
  */
 public class SoundexMungeComponent extends AbstractMungeComponent {
 
-	public SoundexMungeComponent(MungeStep step) {
-		super(step);
+	public SoundexMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
+		super(ms, handler, session);
 	}
-
+	
 	@Override
 	protected JPanel buildUI() {
 		return null;
