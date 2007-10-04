@@ -22,7 +22,9 @@ package ca.sqlpower.matchmaker.swingui.munge;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -36,10 +38,10 @@ public class ConcatMungeComponent extends AbstractMungeComponent {
 	private JButton addInputButton;
 	private JButton removeInputsButton;
 
-	public ConcatMungeComponent(MungeStep step) {
-		super(step);
+	public ConcatMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
+		super(ms, handler,session);
 	}
-
+	
 	@Override
 	protected JPanel buildUI() {
 		JPanel content = new JPanel();

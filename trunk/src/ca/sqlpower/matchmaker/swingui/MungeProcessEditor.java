@@ -25,7 +25,13 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -41,11 +47,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -97,6 +105,8 @@ public class MungeProcessEditor implements EditorPane {
     private final StatusComponent status = new StatusComponent();
     private final FormValidationHandler handler;
     
+    private final Map<String, StepDescription> stepProperties = new HashMap<String, StepDescription>();
+    
     /**
      * Creates a new editor for the given session's given munge process.
      * 
@@ -106,10 +116,8 @@ public class MungeProcessEditor implements EditorPane {
      * connect the process to this match when saving. 
      * @param process The process to edit
      */
-    public MungeProcessEditor(
-            MatchMakerSwingSession swingSession,
-            Match match,
-            MungeProcess process) {
+    public MungeProcessEditor(MatchMakerSwingSession swingSession,
+            Match match, MungeProcess process) throws ClassNotFoundException, ArchitectException, IOException {
         super();
         this.swingSession = swingSession;
         this.parentMatch = match;
@@ -118,16 +126,44 @@ public class MungeProcessEditor implements EditorPane {
         ArrayList<Action> actions = new ArrayList<Action>();
         actions.add(saveAction);
         this.handler = new FormValidationHandler(status, actions);
+        generatePropertiesMap();
         buildUI();
         if (process.getParentMatch() != null && process.getParentMatch() != parentMatch) {
             throw new IllegalStateException(
                     "The given process has a parent which is not the given parent match obejct!");
         }
         handler.addValidateObject(name, new MatchRuleSetNameValidator());
-        //handler.addValidateObject(priority, new MatchRuleSetPercentValidator());
+        
+        
     }
 
-    private void buildUI() {
+    private void generatePropertiesMap() throws ClassNotFoundException, IOException {
+    	Properties steps = new Properties();
+		steps.load(ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"));
+    	
+    	try {
+    		steps.load(new FileInputStream((System.getProperty("user.home") + "/.matchmaker/munge_components.properties")));
+    	} catch (IOException e) {
+    	}
+    	
+    	for (Object oKey : steps.keySet()) {
+    		if (oKey instanceof String) {
+    			String key = (String) oKey;
+    			StringTokenizer st = new StringTokenizer(key, ".");
+    			if (st.nextToken().equals("step")) {
+    				String newKey = st.nextToken();
+    				if (!stepProperties.containsKey(newKey)) {
+    					stepProperties.put(newKey, new StepDescription());
+    				}
+    				stepProperties.get(newKey).setProperty(st.nextToken(), steps.getProperty(key));
+    				
+    			}
+    		}
+    	}
+    	
+	}
+
+	private void buildUI() throws ArchitectException {
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu,pref,4dlu", // columns
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu"); // rows
@@ -167,7 +203,7 @@ public class MungeProcessEditor implements EditorPane {
 		subPanel.add(new JButton(customColour), cc.xy(8,8));
 		
         panel.add(subPanel,BorderLayout.NORTH);
-        JScrollPane p = new JScrollPane(new MungePen(process, handler));
+        JScrollPane p = new JScrollPane(new MungePen(process, handler, stepProperties));
         panel.add(p,BorderLayout.CENTER);
         
     }

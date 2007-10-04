@@ -33,8 +33,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
  * This is a component for a lower case munge step. It has no options at all.
@@ -45,8 +47,8 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 	JButton showAll;
 	JButton hideAll;
 	
-	public SQLInputMungeComponent(MungeStep step) {
-		super(step);
+	public SQLInputMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
+		super(step, handler, session);
 		setBorder(BorderFactory.createEmptyBorder(1,1,15,1));
 	}
 

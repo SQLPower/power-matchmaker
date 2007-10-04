@@ -21,17 +21,19 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import javax.swing.JPanel;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
  * This is a component for a lower case munge step. It has no options at all.
  */
 public class LowerCaseMungeComponent extends AbstractMungeComponent {
 
-	public LowerCaseMungeComponent(MungeStep step) {
-		super(step);
+	public LowerCaseMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
+		super(ms, handler, session);
 	}
-
+	
 	@Override
 	protected JPanel buildUI() {
 		return null;

@@ -26,8 +26,10 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SubstringMungeStep;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -41,10 +43,10 @@ public class SubstringMungeComponent extends AbstractMungeComponent {
 	private JSpinner begin;
 	private JSpinner end;
 	
-	public SubstringMungeComponent(MungeStep step) {
-		super(step);
+	public SubstringMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
+		super(ms, handler, session);
 	}
-
+	
 	@Override
 	protected JPanel buildUI() {
 		SubstringMungeStep step = (SubstringMungeStep) getStep();

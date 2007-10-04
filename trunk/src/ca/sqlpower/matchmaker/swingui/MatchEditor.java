@@ -31,6 +31,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -232,10 +233,24 @@ public class MatchEditor implements EditorPane {
 	private Action newMatchGroupAction = new AbstractAction("New Match Group") {
 		public void actionPerformed(ActionEvent arg0) {
 			MungeProcessEditor editor = null;
-			editor = new MungeProcessEditor(swingSession,
+			try {
+				editor = new MungeProcessEditor(swingSession,
 					match,
 					new MungeProcess());
-			swingSession.setCurrentEditorComponent(editor);
+				swingSession.setCurrentEditorComponent(editor);
+			} catch (ClassNotFoundException e) {
+				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
+						"Error Class Not Found", 
+						"One of the classes in the munge component proporties files does not exist", e);
+			} catch (ArchitectException e) {
+				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
+						"Error Loading Source Table", 
+						"There was an error loading the source table", e);
+			} catch (IOException e) {
+				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+						"Error loading default munge step properties file",
+						"Could not load properties file from class path.", e);
+			}
 		}
 	};
 

@@ -33,6 +33,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SubstringByWordMungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -54,8 +55,8 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 	private JTextField delimiter;
 	private JTextField resultDelimiter;
 	
-	public SubstringByWordMungeComponent(MungeStep step, FormValidationHandler handler) {
-		super(step);
+	public SubstringByWordMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
+		super(step, handler, session);
 		RegexValidator validator = new RegexValidator();
 		handler.addValidateObject(delimiter, useRegex, validator);
 	}
