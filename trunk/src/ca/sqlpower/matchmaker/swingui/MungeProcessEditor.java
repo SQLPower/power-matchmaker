@@ -288,39 +288,17 @@ public class MungeProcessEditor implements EditorPane {
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						"Match ruleSet name is required");
+						"Munge Process name is required");
 			} else if ( !value.equals(process.getName()) &&
 					parentMatch.getMatchRuleSetByName(name.getText()) != null ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						"Match ruleSet name is invalid or already exists.");
+						"Munge Process name is invalid or already exists.");
 			} else if (value.length() > MAX_RULE_SET_NAME_CHAR){
 			    return ValidateResult.createValidateResult(Status.FAIL, 
-                        "Match ruleSet name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
+                        "Munge Process name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
             }
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
 
-	private class MatchRuleSetPercentValidator implements Validator {
-		public ValidateResult validate(Object contents) {
-			String value = (String)contents;
-			if ( value == null || value.length() == 0 ) {
-				return ValidateResult.createValidateResult(Status.WARN,
-						"Match ruleSet percentage is required");
-			} else {
-				int pct = -1;
-				try {
-					pct = Integer.parseInt(value);
-				} catch ( NumberFormatException e ) {
-					return ValidateResult.createValidateResult(Status.FAIL,
-						"Match ruleSet percentage is invalid.");
-				}
-				if ( pct > 100 || pct < 0 ) {
-					return ValidateResult.createValidateResult(Status.WARN,
-							"Match ruleSet percentage range is invalid.");
-				}
-			}
-			return ValidateResult.createValidateResult(Status.OK, "");
-		}
-    }
 }

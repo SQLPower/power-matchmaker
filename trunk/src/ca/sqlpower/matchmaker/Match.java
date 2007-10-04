@@ -106,10 +106,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public static final String MERGE_RULES_FOLDER_NAME = "Merge Rules";
     
     /** Folder name for match rule set. */
-    public static final String MATCH_RULES_FOLDER_NAME = "Match Rules";
+    public static final String MATCH_RULES_FOLDER_NAME = "Munge Processes";
     
     /**
-     * Contains the match rules and the match rule sets
+     * Contains the Munge Processes and the Munge Steps
      */
     private MatchMakerFolder<MungeProcess> matchRuleSetFolder =
     	new MatchMakerFolder<MungeProcess>();
