@@ -216,7 +216,9 @@ public class MungeProcessEditor implements EditorPane {
     public boolean hasUnsavedChanges() {
 
     	if (!name.getText().equals(process.getName())) {
-    		return true;
+    		if (!(process.getName() == null && name.getText().equals(""))) {
+    			return true;
+    		}
     	}
     	if (Integer.parseInt(priority.getValue().toString()) != Integer.parseInt(process.getMatchPercent().toString()) ) {
     		return true;
@@ -225,7 +227,9 @@ public class MungeProcessEditor implements EditorPane {
     		return true;
     	}
     	if (!desc.getText().equals(process.getDesc())) {
-    		return true;
+    		if (!(process.getDesc() == null && desc.getText().equals(""))) {
+    			return true;
+    		}
     	}
         return changeHandler.getHasChanged();
     }

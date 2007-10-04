@@ -207,7 +207,7 @@
 				<column name="MATCH_OID" not-null="true" />
 			</key>
 			<one-to-many
-				class="ca.sqlpower.matchmaker.MatchRuleSet" />
+				class="ca.sqlpower.matchmaker.munge.MungeProcess" />
 		</bag>
 
 		<many-to-one name="parent"
