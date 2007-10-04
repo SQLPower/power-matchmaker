@@ -30,9 +30,9 @@ import ca.sqlpower.validation.Validator;
 
 /**
  * This validator is used to check the regex in the MungeComponent.
- * It gets the translations from the model and adds it to the list.  The list
- * is then put into a Set.  If the set and list size are not equal, this indicates
- * that there is a duplicate translations in which case the status becomes fail.
+ * It gets the regular expression from the text field and tries to compile it
+ * into a pattern. If the compilation throws a {@link PatternSyntaxException},
+ * the syntax of the given regular expression is invalid and status fails.
  */
 public class RegexValidator implements Validator {
 
