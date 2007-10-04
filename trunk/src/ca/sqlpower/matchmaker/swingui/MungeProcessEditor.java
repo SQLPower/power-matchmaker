@@ -20,16 +20,22 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -40,6 +46,9 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
+import ca.sqlpower.validation.Status;
+import ca.sqlpower.validation.ValidateResult;
+import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
@@ -75,7 +84,7 @@ public class MungeProcessEditor implements EditorPane {
     private final JTextField name = new JTextField();
     private final JSpinner priority = new JSpinner();
     private final JTextField desc = new JTextField();
-    private final JComboBox color = new JComboBox();
+    private final JComboBox color = new JComboBox(ColorScheme.BREWER_SET19);
     /**
      * The instance that monitors the subtree we're editing for changes (so we know
      * if there are unsaved changes).
@@ -114,6 +123,8 @@ public class MungeProcessEditor implements EditorPane {
             throw new IllegalStateException(
                     "The given process has a parent which is not the given parent match obejct!");
         }
+        handler.addValidateObject(name, new MatchRuleSetNameValidator());
+        //handler.addValidateObject(priority, new MatchRuleSetPercentValidator());
     }
 
     private void buildUI() {
@@ -137,10 +148,23 @@ public class MungeProcessEditor implements EditorPane {
         desc.setText(process.getDesc());
         subPanel.add(desc, cc.xy(4, 6));
         subPanel.add(new JLabel("Color: "), cc.xy(6, 6));
+        ColorCellRenderer renderer = new ColorCellRenderer();
+        color.setRenderer(renderer);
+       	boolean hasColour = false;
+       	for (int i = 0; i < color.getItemCount(); i++) {
+       		if (color.getItemAt(i).equals(process.getColour())) {
+       			hasColour = true;
+       			break;
+       		}
+       	}
+       	if (!hasColour) {
+       		color.addItem(process.getColour());
+       	}
         color.setSelectedItem(process.getColour());
         subPanel.add(color, cc.xy(8, 6));
         
 		subPanel.add(new JButton(saveAction), cc.xy(2,8));
+		subPanel.add(new JButton(customColour), cc.xy(8,8));
 		
         panel.add(subPanel,BorderLayout.NORTH);
         JScrollPane p = new JScrollPane(new MungePen(process, handler));
@@ -153,6 +177,15 @@ public class MungeProcessEditor implements EditorPane {
             doSave();
 		}
 	};
+	Action customColour = new AbstractAction("Custom Colour") {
+		public void actionPerformed(ActionEvent arg0) {
+			Color colour = swingSession.getCustomColour(process.getColour());
+		    if (colour != null) {
+		    	color.addItem(colour);
+		    	color.setSelectedItem(colour);
+		    }
+		}
+	};
     
     /**
      * Saves the process, possibly adding it to the parent match given in the
@@ -160,6 +193,10 @@ public class MungeProcessEditor implements EditorPane {
      */
     public boolean doSave() {
     	process.setName(name.getText());
+    	process.setDesc(desc.getText());
+    	process.setColour((Color)color.getSelectedItem());
+    	process.setMatchPercent(Short.valueOf(priority.getValue().toString()));
+    	
         if (process.getParentMatch() == null) {
             parentMatch.addMatchRuleSet(process);
             MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
@@ -177,15 +214,109 @@ public class MungeProcessEditor implements EditorPane {
     }
 
     public boolean hasUnsavedChanges() {
-    	boolean nameChanged;
-    	if (process.getName() == null) {
-    		if (!name.getText().equals("")){
-    			return true;
-    		}
-    	} else if (!process.getName().equals(name.getText())) {
+
+    	if (!name.getText().equals(process.getName())) {
+    		return true;
+    	}
+    	if (Integer.parseInt(priority.getValue().toString()) != Integer.parseInt(process.getMatchPercent().toString()) ) {
+    		return true;
+    	}
+    	if (!((Color) color.getSelectedItem()).equals(process.getColour())) {
+    		return true;
+    	}
+    	if (!desc.getText().equals(process.getDesc())) {
     		return true;
     	}
         return changeHandler.getHasChanged();
     }
+    /**
+     * Renders a rectangle of colour in a list cell.  The colour is determined
+     * by the list item value, which must be of type java.awt.Color.
+     */
+    private class ColorCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus);
+            if (value == null) {
+            	value = Color.BLACK;
+            }
+            setBackground((Color) value);
+            setOpaque(true);
+            setPreferredSize(new Dimension(50, 50));
+            setIcon(new ColorIcon((Color) value));
+            return this;
+        }
+    }
+    
+    /**
+     * This class converts a Color into an icon that has width of 85 pixels
+     * and height of 50 pixels.
+     */
+    private class ColorIcon implements Icon {
+        private int HEIGHT = 50;
+        
+        // width of 50 would make sense as the cell has dimensions 50x50 but
+        // the cell would only fill with the color icon if width is 85.
+        private int WIDTH = 85;
+        private Color colour;
+     
+        public ColorIcon(Color colour) {
+            this.colour = colour;
+        }
+     
+        public int getIconHeight() {
+            return HEIGHT;
+        }
+     
+        public int getIconWidth() {
+            return WIDTH;
+        }
+     
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            g.setColor(colour);
+            g.fillRect(x, y, WIDTH - 1, HEIGHT - 1);
+        }
+    }
+    
+	private class MatchRuleSetNameValidator implements Validator {
+		private static final int MAX_RULE_SET_NAME_CHAR = 30;
+        public ValidateResult validate(Object contents) {
+			String value = (String)contents;
+			if ( value == null || value.length() == 0 ) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						"Match ruleSet name is required");
+			} else if ( !value.equals(process.getName()) &&
+					parentMatch.getMatchRuleSetByName(name.getText()) != null ) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						"Match ruleSet name is invalid or already exists.");
+			} else if (value.length() > MAX_RULE_SET_NAME_CHAR){
+			    return ValidateResult.createValidateResult(Status.FAIL, 
+                        "Match ruleSet name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
+            }
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+    }
 
+	private class MatchRuleSetPercentValidator implements Validator {
+		public ValidateResult validate(Object contents) {
+			String value = (String)contents;
+			if ( value == null || value.length() == 0 ) {
+				return ValidateResult.createValidateResult(Status.WARN,
+						"Match ruleSet percentage is required");
+			} else {
+				int pct = -1;
+				try {
+					pct = Integer.parseInt(value);
+				} catch ( NumberFormatException e ) {
+					return ValidateResult.createValidateResult(Status.FAIL,
+						"Match ruleSet percentage is invalid.");
+				}
+				if ( pct > 100 || pct < 0 ) {
+					return ValidateResult.createValidateResult(Status.WARN,
+							"Match ruleSet percentage range is invalid.");
+				}
+			}
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+    }
 }
