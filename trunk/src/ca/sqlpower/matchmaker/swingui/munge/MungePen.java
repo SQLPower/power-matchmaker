@@ -45,6 +45,7 @@ import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchRuleSet;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -56,6 +57,7 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.RefinedSoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.RetainCharactersMungeStep;
+import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.munge.SoundexMungeStep;
 import ca.sqlpower.matchmaker.munge.StringSubstitutionMungeStep;
 import ca.sqlpower.matchmaker.munge.SubstringByWordMungeStep;
@@ -98,6 +100,8 @@ class MungeComponentFactory {
 			return new SubstringByWordMungeComponent(ms, handler);
 		} else if (ms instanceof ConcatMungeStep) {
 			return new ConcatMungeComponent(ms);
+		} else if (ms instanceof SQLInputStep) {
+			return new SQLInputMungeComponent(ms);
 		} else {
 			return null;
 		}
@@ -126,6 +130,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	public int mouseX;
 	public int mouseY;
 	
+	private boolean normalizing;
+	
 	MungePenMungeStepListener mungeStepListener;
 	
 	private FormValidationHandler handler;
@@ -149,6 +155,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		this.process = process;
 		buildComponents(process);
 		this.handler = handler;
+		
+		normalizing = false;
 		
 		addMouseMotionListener(new MouseMotionAdapter(){
 			@Override
@@ -389,14 +397,20 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				process.addChild(new TranslateWordMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_9) {
 				process.addChild(new StringSubstitutionMungeStep());
-			} else if (e.getKeyCode() == KeyEvent.VK_Q) {
-				process.addChild(new SubstringMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_0) {
+				process.addChild(new SubstringMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_Q) {
 				process.addChild(new RetainCharactersMungeStep());
-			} else if (e.getKeyCode() == KeyEvent.VK_E) {
-				process.addChild(new SubstringByWordMungeStep());
 			} else if (e.getKeyCode() == KeyEvent.VK_W) {
+				process.addChild(new SubstringByWordMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_E) {
 				process.addChild(new ConcatMungeStep());
+			} else if (e.getKeyCode() == KeyEvent.VK_R) {
+				try {
+					process.addChild(new SQLInputStep(process.getParentMatch().getSourceTable()));
+				} catch (ArchitectException e1) {
+					System.out.println("too bad!");
+				}
 			}
 		}
 	}
@@ -405,7 +419,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	/////////////////////////////////////////////////////////////////
 	//        Code to handle the scrollPane                       //
-	//         Most of it was stolen from the playpen             //
+	//    Most of it was shamelessly stolen from the playpen     //
 	//////////////////////////////////////////////////////////////
 	/**
 	 * Calculates the smallest rectangle that will completely
@@ -488,6 +502,39 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
     
+    /**
+	 * If some mungepen components get dragged into a negative range all of them are then shifted
+	 * so that the lowest x and y values are 0.  The components will retain their relative location.
+	 *
+	 * If this function is moved into a layout manager it causes problems with undo because we do
+	 * no know when this gets called.
+	 */
+	public void normalize() {
+		if (normalizing) return;
+		normalizing=true;
+		int minX = 0;
+		int minY = 0;
+
+		for (Component com : getComponents()) {
+			if (!(com instanceof IOConnector)) {
+				minX = Math.min(minX, com.getX());
+				minY = Math.min(minY, com.getY());
+			}
+		}
+
+		//Readjust
+		if ( minX < 0 || minY < 0 ) {
+			for (Component com : getComponents()) {
+				if (!(com instanceof IOConnector)) {
+					com.setLocation(com.getX()-minX, com.getY()-minY);
+				}
+			}
+			revalidate();
+		}
+		normalizing = false;
+	}
+
+    
     ///////////////////////////Listener for MatchMaker Rule Set /////////////////////////////////
 
     private class MungePenMatchRuleSetListener implements MatchMakerListener<MatchRuleSet, MungeStep> {
@@ -503,7 +550,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			//This is done in an other loop to ensure that all the MungeComponets have been mapped
 			for (int y : evt.getChangeIndices()) {
 				MungeStep ms = evt.getSource().getChildren().get(y);
-				for (int x = 0; x < ms.getChildren().size(); x++) {
+				for (int x = 0; x < ms.getInputs().size(); x++) {
 					MungeStepOutput link = ms.getInputs().get(x);
 					if (link != null) {
 						MungeStep parent = (MungeStep)link.getParent();

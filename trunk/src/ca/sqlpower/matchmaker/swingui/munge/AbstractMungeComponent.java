@@ -103,6 +103,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private final Color bg;
 	private final Color borderColour;
 	
+	private boolean expanded;
 	
 	private MungeComponentKeyListener mungeComKeyListener;
 	
@@ -119,7 +120,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		this.borderColour = border;
 		this.bg = bg;
 		this.step = step;
-		
 		setVisible(true);
 		
 		mungeComKeyListener = new MungeComponentKeyListener();
@@ -165,27 +165,18 @@ public abstract class AbstractMungeComponent extends JPanel {
 		root.addComponentListener(new ComponentListener(){
 
 			public void componentHidden(ComponentEvent e) {
-				// TODO Auto-generated method stub
-				logger.debug("Stub call: .componentHidden()");
-				
 			}
 
 			public void componentMoved(ComponentEvent e) {
-				// TODO Auto-generated method stub
-				logger.debug("moved");
 				getParent().repaint();
 			}
 
 			public void componentResized(ComponentEvent e) {
 				getParent().repaint();
-				logger.debug("Componet resized");
 			}
 
 			public void componentShown(ComponentEvent e) {
-				// TODO Auto-generated method stub
-				logger.debug("Stub call: .componentShown()");
 			}
-			
 		});
 
 		addFocusListener(new FocusListener(){
@@ -202,12 +193,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 					getParent().repaint();
 				}
 			}
-			
 		});
 		
+		expanded = false;
+		
 	}
-	
-	
+
 	/**
 	 * This returns the options for the munge step. This must be set individualy for each munge step.
 	 * If null is returned no options will be show and there will be no +/- button
@@ -264,9 +255,17 @@ public abstract class AbstractMungeComponent extends JPanel {
 		return step;
 	}
 	
-	
+	/**
+	 * Returns the munge pen that this munge component is in.
+	 * 
+	 * @return The pen
+	 */
 	public MungePen getPen() {
 		return (MungePen)getParent();
+	}
+	
+	public boolean isExpanded() {
+		return expanded;
 	}
 	
 	@Override
@@ -427,10 +426,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 			if (e.getActionCommand().equals("+")) {
 				putValue(NAME, "-");
 				root.add(content,BorderLayout.CENTER);
+				expanded = true;
 			} else {
 				putValue(NAME, "+");
 				root.remove(content);
+				expanded = false;
 			}
+			getPen().normalize();
 			validate();
 			root.updateUI();
 		}	
@@ -553,9 +555,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 				}
 				getPen().repaint();
 			}
+			getPen().normalize();
 			getPen().stopConnection();
 			getPen().revalidate();
-
 		}
 		
 	}
@@ -568,8 +570,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public boolean maybeShowPopup(MouseEvent e) {
 		if (e.isPopupTrigger()) {
-			getPopupMenu().show(AbstractMungeComponent.this, e.getX(), e.getY());
-			requestFocusInWindow();
+			JPopupMenu pop = getPopupMenu();
+			if (pop != null) {
+				pop.show(AbstractMungeComponent.this, e.getX(), e.getY());
+				requestFocusInWindow();
+			}
 			return true;
 		}
 		return false;
@@ -577,9 +582,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private class MungeComponentMouseMoveListener extends MouseMotionAdapter {
 		@Override
-		public void mouseDragged(MouseEvent e) {
-			Dimension window = getParent().getSize();
-			
+		public void mouseDragged(MouseEvent e) {			
 			Point mouse = e.getPoint();
 			mouse.x += getX();
 			mouse.y += getY();
