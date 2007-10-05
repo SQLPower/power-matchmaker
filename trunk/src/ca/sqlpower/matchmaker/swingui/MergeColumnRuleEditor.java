@@ -40,6 +40,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
@@ -76,7 +78,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private JPanel panel;
 	private final MatchMakerSwingSession swingSession;
 	private final Match match;
-	private TableMergeRules mergeRule;
+	private final TableMergeRules mergeRule;
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
 	private final SQLObjectChooser chooser;
@@ -87,11 +89,11 @@ public class MergeColumnRuleEditor implements EditorPane {
 	//keeps track of whether the table has unsaved changes
 	private CustomTableModelListener tableListener;
 	
-	public MergeColumnRuleEditor(MatchMakerSwingSession swingSession,
-			Match match, TableMergeRules mergeRule) {
-		this.swingSession = swingSession;
+	public MergeColumnRuleEditor(final MatchMakerSwingSession session,
+			final Match match, final TableMergeRules mr) {
+		this.swingSession = session;
 		this.match = match;
-		this.mergeRule = mergeRule;
+		this.mergeRule = mr;
 		if (match == null) {
 			throw new NullPointerException("You can't edit a null match");
 		}
@@ -110,6 +112,14 @@ public class MergeColumnRuleEditor implements EditorPane {
         tableListener = new CustomTableModelListener();
         ruleTableModel.addTableModelListener(tableListener);
         ruleTable = new ColumnMergeRulesTable(ruleTableModel);
+        ruleTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+			public void valueChanged(ListSelectionEvent e) {
+                ColumnMergeRules mergeColumn = mergeRule.getChildren().get(ruleTable.getSelectedRow()); 
+                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+    	        TreePath menuPath = treeModel.getPathForNode(mergeColumn);
+    	        swingSession.getTree().setSelectionPath(menuPath);
+			}
+		});
         
         buildUI();
         setDefaultSelections();

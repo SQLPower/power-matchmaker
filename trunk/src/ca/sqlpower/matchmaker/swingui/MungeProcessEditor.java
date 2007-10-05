@@ -52,6 +52,7 @@ import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.validation.Status;
@@ -83,7 +84,7 @@ public class MungeProcessEditor implements EditorPane {
     /**
      * The munge process this editor is responsible for editing.
      */
-    private final MungeProcess process;
+    private MungeProcess process;
     
     /**
      * The actual GUI component that provides the editing interface.
@@ -93,6 +94,9 @@ public class MungeProcessEditor implements EditorPane {
     private final JSpinner priority = new JSpinner();
     private final JTextField desc = new JTextField();
     private final JComboBox color = new JComboBox(ColorScheme.BREWER_SET19);
+    
+    private final MungePen mungePen;
+    
     /**
      * The instance that monitors the subtree we're editing for changes (so we know
      * if there are unsaved changes).
@@ -127,6 +131,8 @@ public class MungeProcessEditor implements EditorPane {
         actions.add(saveAction);
         this.handler = new FormValidationHandler(status, actions);
         generatePropertiesMap();
+        this.mungePen = new MungePen(process, handler, stepProperties, parentMatch);
+
         buildUI();
         if (process.getParentMatch() != null && process.getParentMatch() != parentMatch) {
             throw new IllegalStateException(
@@ -160,7 +166,6 @@ public class MungeProcessEditor implements EditorPane {
     			}
     		}
     	}
-    	
 	}
 
 	private void buildUI() throws ArchitectException {
@@ -207,7 +212,8 @@ public class MungeProcessEditor implements EditorPane {
 		subPanel.add(new JButton(customColour), cc.xy(8,8));
 		
         panel.add(subPanel,BorderLayout.NORTH);
-        JScrollPane p = new JScrollPane(new MungePen(process, handler, stepProperties, parentMatch));
+        
+        JScrollPane p = new JScrollPane(mungePen);
         panel.add(p,BorderLayout.CENTER);
         
     }
@@ -345,5 +351,16 @@ public class MungeProcessEditor implements EditorPane {
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
-
+	
+	public MungeProcess getProcess() {
+		return process;
+	}
+	
+	public void setSelectedStep(MungeStep step) {
+		mungePen.setSelectedStep(step);
+	}
+	
+	public void setSelectedStepOutput(MungeStepOutput mso) {
+		//TODO select the mso
+	}
 }
