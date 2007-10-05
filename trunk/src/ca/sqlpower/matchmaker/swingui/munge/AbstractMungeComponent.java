@@ -49,6 +49,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
+import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
@@ -58,6 +59,8 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 public abstract class AbstractMungeComponent extends JPanel {
@@ -102,7 +105,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private boolean expanded;
 	
-	private MatchMakerSession session;
+	private MatchMakerSwingSession session;
 	
 	private MungeComponentKeyListener mungeComKeyListener;
 
@@ -186,6 +189,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 				if (getParent() != null) {
 					logger.debug("Gained focus");
 					getParent().repaint();
+	                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) session.getTree().getModel();
+	    	        TreePath menuPath = treeModel.getPathForNode(getStep());
+	    	        session.getTree().setSelectionPath(menuPath);
 				}
 			}
 			public void focusLost(FocusEvent e) {
@@ -216,7 +222,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public AbstractMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		this(step, Color.BLACK,Color.WHITE);
-		this.session = session;
+		this.session = (MatchMakerSwingSession)session;
 		this.handler = handler;
 	}
 	
