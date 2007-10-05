@@ -35,6 +35,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
@@ -107,6 +109,14 @@ public class TranslateWordsEditor implements EditorPane {
         TranslateWordsTableModel tm = new TranslateWordsTableModel(group);
         tm.addTableModelListener(tableListener);
         translateWordsTable.setModel (tm);
+        translateWordsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+			public void valueChanged(ListSelectionEvent e) {
+                MatchMakerTranslateWord translateWord = group.getChildren().get(translateWordsTable.getSelectedRow()); 
+                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+    	        TreePath menuPath = treeModel.getPathForNode(translateWord);
+    	        swingSession.getTree().setSelectionPath(menuPath);
+			}
+		});
 	}
 	
 	private void buildUI() {

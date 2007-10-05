@@ -91,7 +91,9 @@ class MungeComponentFactory {
 				Constructor[] constructors = sd.getGuiClass().getDeclaredConstructors();
 				
 				for (Constructor con : constructors) {
-					Type[] paramTypes = con.getGenericParameterTypes();					
+					Type[] paramTypes = con.getGenericParameterTypes();	
+					
+					System.out.println(paramTypes[0] + " " + paramTypes[1] + " " + paramTypes[2]);
 					
 					if (arrayEquals(paramTypes,CONSTRUCTOR_PARAMS)) {
 						try {
@@ -691,4 +693,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		finish = null;
 	}
 	
+	public void setSelectedStep(MungeStep ms) {
+		modelMap.get(ms).requestFocusInWindow();
+	}
 }
