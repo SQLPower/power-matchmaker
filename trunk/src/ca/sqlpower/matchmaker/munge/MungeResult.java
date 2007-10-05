@@ -19,9 +19,24 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.matchmaker.SourceTableRecord;
+
+/**
+ * A representation of a complete munged data row. It contains the munged
+ * data that has gone through a MungeProcessor, and a SourceTableRecord
+ * representing the source data record that was being munged.
+ */
 public class MungeResult implements Comparable<MungeResult> {
+	
+	/**
+	 * The data that went through the MungeProcessor
+	 */
 	private MungeStepOutput[] mungedData;
-	private MungeStepOutput[] primaryKey;
+	
+	/**
+	 * The SourceTableRecord for the munged row. 
+	 */
+	private SourceTableRecord sourceTableRecord;
 	
 	public MungeStepOutput[] getMungedData() {
 		return mungedData;
@@ -31,12 +46,12 @@ public class MungeResult implements Comparable<MungeResult> {
 		this.mungedData = mungedData;
 	}
 	
-	public MungeStepOutput[] getPrimaryKey() {
-		return primaryKey;
+	public SourceTableRecord getSourceTableRecord() {
+		return sourceTableRecord;
 	}
 	
-	public void setPrimaryKey(MungeStepOutput[] primaryKey) {
-		this.primaryKey = primaryKey;
+	public void setSourceTableRecord(SourceTableRecord source) {
+		this.sourceTableRecord = source;
 	}
 
 	public int compareTo(MungeResult o) {

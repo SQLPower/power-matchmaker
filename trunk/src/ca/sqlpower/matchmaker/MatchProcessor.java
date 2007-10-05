@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker;
 import java.util.Collections;
 import java.util.List;
 
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResult;
 
 /**
@@ -31,10 +33,26 @@ import ca.sqlpower.matchmaker.munge.MungeResult;
  */
 public class MatchProcessor extends AbstractProcessor {
 
+	/**
+	 * A list of Munged data that the MatchProcessor would take from a MungeProcessor
+	 */
 	private List<MungeResult> matchData;
 	
-	public MatchProcessor(List<MungeResult> matchData) {
+	/**
+	 * The MungeProces that this MatchProcess is processing
+	 */
+	private MungeProcess mungeProcess;
+	
+	/**
+	 * The MatchPool that will be used to store the PotentialMatchRecords
+	 * and SourceTableRecords that will be marked as the potential matches
+	 */
+	private MatchPool pool;
+	
+	public MatchProcessor(MungeProcess process, List<MungeResult> matchData) {
 		this.matchData = matchData;
+		pool = new MatchPool(process.getParentMatch());
+		this.mungeProcess = process; 
 	}
 	
 	public Boolean call() throws Exception {
@@ -47,10 +65,19 @@ public class MatchProcessor extends AbstractProcessor {
 			for (int i=dataIndex + 1; i<matchData.size(); i++){
 				if (data.compareTo(matchData.get(i)) == 0) {
 					// Potential Match! so store in Match Result Table
-					PotentialMatchRecord pmr;
+					PotentialMatchRecord pmr = new PotentialMatchRecord(mungeProcess, 
+																		MatchType.UNMATCH, 
+																		data.getSourceTableRecord(), 
+																		matchData.get(i).getSourceTableRecord(),
+																		false);
+					pool.addSourceTableRecord(data.getSourceTableRecord());
+					pool.addSourceTableRecord(matchData.get(i).getSourceTableRecord());
+					pool.addPotentialMatch(pmr);
 				}
 			}
 		}
+		
+		pool.store();
 		
 		return Boolean.TRUE;
 	}

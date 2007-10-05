@@ -157,6 +157,8 @@ public class MatchEngineImpl extends AbstractEngine {
 			} catch (ArchitectException e) {
 				throw new RuntimeException(e);
 			}
+			setFinished(false);
+			setStarted(true);
 			
 			List<MungeProcess> mungeProcesses = getMatch().getMatchRuleSetFolder().getChildren();
 			
@@ -165,13 +167,10 @@ public class MatchEngineImpl extends AbstractEngine {
 				munger.call();
 				List<MungeResult> results = currentProcess.getResults();
 				
-				MatchProcessor matcher = new MatchProcessor(results);
-				
-				
+				MatchProcessor matcher = new MatchProcessor(currentProcess, results);
+				matcher.call();
 			}
 			
-            setFinished(false);
-			setStarted(true);
 
 			getLogger().info("Engine process completed normally.");
 			

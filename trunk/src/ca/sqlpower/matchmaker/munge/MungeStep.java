@@ -155,4 +155,10 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * to call this method after the {@link #open()} method has been called.
      */
     void close() throws Exception;
+    
+    /**
+     * Returns the first MungeStepOutput it finds with the given name. 
+     * Returns null if no such MungeStepOutput exists.
+     */
+    public MungeStepOutput getOutputByName(String name);
 }

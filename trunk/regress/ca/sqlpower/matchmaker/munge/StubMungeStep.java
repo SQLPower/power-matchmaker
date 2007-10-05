@@ -196,4 +196,10 @@ public class StubMungeStep implements MungeStep {
         
     }
 
+	public MungeStepOutput getOutputByName(String name) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMungeStep.getOutputByName()");
+		return null;
+	}
+
 }
