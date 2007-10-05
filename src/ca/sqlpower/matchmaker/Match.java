@@ -135,9 +135,10 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     private final CachableTable xrefTablePropertiesDelegate;
 
     /**
-     * The unique index of the source table that we're using.  Not necessarily one of the
-     * unique indices defined in the database; the user can pick an arbitrary set of columns.
-     */
+	 * The unique index of the source table that we're using. Not necessarily
+	 * one of the unique indices defined in the database; the user can pick an
+	 * arbitrary set of columns.
+	 */
     private TableIndex sourceTableIndex;
 
 	public Match() {
@@ -720,9 +721,31 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
     }
+    
+    /**
+     * Returns a SQLIndex object which is the set of columns the user
+     * wishes the MatchMaker to use for uniquely determining a row.
+     * There is no specific check that this set of columns does in fact
+     * uniquely identify a row, but the MatchMaker is not required to
+     * function properly if this set of columns doesn't have the uniqueness
+     * property.
+     */
 	public SQLIndex getSourceTableIndex() throws ArchitectException {
 		return sourceTableIndex.getTableIndex();
 	}
+	
+    /**
+     * Sets the SQLIndex object which is the set of columns the user
+     * wishes the MatchMaker to use for uniquely determining a row.
+     * There is no specific check that this set of columns does in fact
+     * uniquely identify a row, but the MatchMaker is not required to
+     * function properly if this set of columns doesn't have the uniqueness
+     * property.
+     * <p>
+     * When this value changes, the existing MatchPool and result table
+     * will have to be wiped out and re-created from scratch.  They both
+     * depend on the chosen set of columns that uniquely identify a row.
+     */
 	public void setSourceTableIndex(SQLIndex index) {
 		sourceTableIndex.setTableIndex(index);
 	}
