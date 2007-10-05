@@ -40,6 +40,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -49,6 +51,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
@@ -365,11 +368,15 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public static Color getColor(Class c) {
 		if (c.equals(String.class)) {
-			return Color.red;
+			return Color.RED;
 		} else if (c.equals(Boolean.class)) {
 			return Color.BLUE;
-		} else if (c.equals(Integer.class)){
+		} else if (c.equals(BigDecimal.class)) {
 			return Color.GREEN;
+		} else if (c.equals(Date.class)) {
+			return Color.ORANGE;
+		} else if (c.equals(Object.class)) {
+			return Color.BLACK;
 		}
 		return Color.PINK;
 	}
@@ -502,15 +509,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 					for (y=x-1; y>=0 && step.getInputs().get(y) == null; y--);
 					y++;
 					if (y != x) {
-						step.connectInput(y, step.getInputs().get(x));
-						step.disconnectInput(x);
-						
+						step.connectInput(y, step.getInputs().get(x));						
 						List<IOConnector> lines = getPen().getConnections();
 						for (IOConnector ioc : lines) {
 							if (ioc.getChildCom().equals(AbstractMungeComponent.this) && ioc.getChildNumber() == x) {
-								IOConnector iocNew = new IOConnector(ioc.getParentCom(),ioc.getParentNumber(),ioc.getChildCom(),y);
-								lines.remove(ioc);
-								lines.add(iocNew);
+								ioc.remove();
 							}
 						}
 					}
@@ -519,9 +522,16 @@ public abstract class AbstractMungeComponent extends JPanel {
 			
 			for (int x = step.getInputs().size()-1;x>0 && step.getInputs().get(x) == null;x--) {
 				step.removeInput(x);
-			}
+			}			
 			
-			getParent().repaint();
+			//cleans up the lines, Some of the IOCs may have made their bounds smaller during the call
+			//and that bit of the line might still be on the screen, this gets rig of it. May other things 
+			//were tried to get rid of it before this was used.
+			SwingUtilities.invokeLater(new Runnable(){
+				public void run() {
+					getPen().repaint();
+				}
+			});
 		}
 	}
 	
@@ -623,7 +633,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		public void mouseMoved(MouseEvent e) {
 			getPen().mouseX = e.getX() + getX();
 			getPen().mouseY = e.getY() + getY();
-			getParent().repaint();
 		}
 	}
 
