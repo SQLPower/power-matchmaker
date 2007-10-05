@@ -629,36 +629,52 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public boolean checkForIOConnectors(Point mousePoint) {
 		logger.debug("Checking for IOConnections");
 		
-		//used to define the range of which a hit is counted as
-		int tolerance = 15;
+		// this is the maximum distance squared where a connection
+		// would be considered as a hit. having it squared avoids
+		// square rooting in the loop.
+		int tolerance = 225;
 	
 		int inputs = getStep().getInputs().size();
 
 		MungePen parent = getPen();
 		
+		int minDist = tolerance;
+		int minNum = -1;
+		
 		for (int x = 0;x<inputs;x++) {
 			Point p = getInputPosition(x);
 			p.translate(getX(), getY());
 			logger.debug("\nPoint: " + p + "\nMouse: " + mousePoint);
-			if (Math.abs(p.x - mousePoint.x) < tolerance && Math.abs(p.y - mousePoint.y) < tolerance) {
-				logger.debug("connecion hit=================================");
-				parent.connectionHit(this, x, true);
-				return true;
+			int dist = Math.abs(p.x - mousePoint.x)*Math.abs(p.x - mousePoint.x) + Math.abs(p.y - mousePoint.y)*Math.abs(p.y - mousePoint.y); 
+			if (dist < tolerance && dist < minDist) {
+				minDist = dist;
+				minNum = x;
+
 			}
+		}
+		
+		if (minNum != -1) {
+			parent.connectionHit(this, minNum, true);
+			return true;
 		}
 		
 		for (int x = 0;x<getOutputs().size();x++) {
 			Point p = getOutputPosition(x);
 			p.translate(getX(), getY());
 			logger.debug("\n" + p + "\n" + mousePoint);
+			int dist = Math.abs(p.x - mousePoint.x)*Math.abs(p.x - mousePoint.x) + Math.abs(p.y - mousePoint.y)*Math.abs(p.y - mousePoint.y); 
+			if (dist < tolerance && dist < minDist) {
+				minDist = dist;
+				minNum = x;
 
-			if (Math.abs(p.x - mousePoint.x) < tolerance && Math.abs(p.y - mousePoint.y) < tolerance) {
-				logger.debug("connecion hit=-============================");
-				parent.connectionHit(this, x, false);
-				return true;
 			}
 		}
 		
+		if (minNum != -1) {
+			parent.connectionHit(this, minNum, false);
+			return true;
+		}
+
 		return false;
 	}
 
