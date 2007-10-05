@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -30,6 +29,7 @@ import java.util.Collections;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -40,8 +40,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.Border;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
 import org.apache.log4j.Logger;
@@ -95,7 +95,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 	private void setupTable() {
 		mungeProcessTableModel = new MungeProcessTableModel(swingSession, match);
 		mungeProcessTable = new JTable(mungeProcessTableModel);
-		TableCellRenderer renderer = new CustomTableCellRenderer();
+		TableCellRenderer renderer = new ColorRenderer(true);
         mungeProcessTable.setDefaultRenderer(Color.class, renderer );
         mungeProcessTable.setName("Munge Processes");
         
@@ -314,24 +314,43 @@ public class MungeProcessGroupEditor implements EditorPane {
 	    }
 	}
 	
-	private class CustomTableCellRenderer extends DefaultTableCellRenderer {
-	    public Component getTableCellRendererComponent
-	       (JTable table, Object value, boolean isSelected,
-	       boolean hasFocus, int row, int column) {
-	        Component cell = super.getTableCellRendererComponent
-	        	(table, value, isSelected, hasFocus, row, column);
-	        Color color;
-	        if(value instanceof Color) {
-	        	color = (Color) value;
+	private class ColorRenderer extends JLabel
+								implements TableCellRenderer {
+		Border unselectedBorder = null;
+		Border selectedBorder = null;
+		boolean isBordered = true;
 
-	        }
-	        else {
-	        	color = Color.BLACK;
-	        }
-        	cell.setForeground(color);
-        	cell.setBackground(color);
-        	cell.setPreferredSize(new Dimension(50, cell.getHeight()));
-	        return cell;
-	    }
-	}
+		public ColorRenderer(boolean isBordered) {
+			this.isBordered = isBordered;
+			setOpaque(true); //MUST do this for background to show up.
+		}
+
+		public Component getTableCellRendererComponent(
+				JTable table, Object color,
+				boolean isSelected, boolean hasFocus,
+				int row, int column) {
+			Color newColor = (Color)color;
+			setBackground(newColor);
+			if (isBordered) {
+				if (isSelected) {
+					if (selectedBorder == null) {
+						selectedBorder = BorderFactory.createMatteBorder(2,5,2,5,
+								table.getSelectionBackground());
+					}
+					setBorder(selectedBorder);
+				} else {
+					if (unselectedBorder == null) {
+						unselectedBorder = BorderFactory.createMatteBorder(2,5,2,5,
+								table.getBackground());
+					}
+					setBorder(unselectedBorder);
+				}
+			}
+
+			setToolTipText("RGB value: " + newColor.getRed() + ", "
+					+ newColor.getGreen() + ", "
+					+ newColor.getBlue());
+			return this;
+		}
+}
 }
