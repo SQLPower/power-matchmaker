@@ -105,6 +105,7 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 			lab.setBorder(BorderFactory.createEtchedBorder());
 			bottom.add(lab);
 			labels[x++] = lab;
+			hide(lab);
 		}
 		bottom.setBackground(getBg());
 		

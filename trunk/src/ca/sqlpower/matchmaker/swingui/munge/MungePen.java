@@ -57,6 +57,7 @@ import ca.sqlpower.matchmaker.munge.DoubleMetaphoneMungeStep;
 import ca.sqlpower.matchmaker.munge.LowerCaseMungeStep;
 import ca.sqlpower.matchmaker.munge.MetaphoneMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.RefinedSoundexMungeStep;
@@ -84,6 +85,8 @@ class MungeComponentFactory {
 		
 		if (ms instanceof SQLInputStep) {
 			return new SQLInputMungeComponent(ms, handler, session);
+		} else if (ms instanceof MungeResultStep) {
+			return new MungeResultMungeComponent(ms, handler, session);
 		}
 		
 		for (StepDescription sd : stepProps.values()) {
@@ -188,6 +191,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		
 		if (process.getChildCount() == 0) {
 			process.addChild(new SQLInputStep(match.getSourceTable()));
+			process.addChild(new MungeResultStep());
 		}
 	}
 	
@@ -379,7 +383,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			Class startHas = start.getStep().getChildren().get(startNum).getType();
 			Class finishWants = finish.getStep().getInputDescriptor(finishNum).getType();
 			logger.debug(startHas + " -> " + finishWants);
-			if (startHas.equals(finishWants)) {
+			if (startHas.equals(finishWants) || finishWants.equals(Object.class)) {
 				logger.debug("Connecting");
 				finish.getStep().connectInput(finishNum,start.getStep().getChildren().get(startNum));
 			}
@@ -646,9 +650,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
 						int childNum = evt.getChangeIndices()[0];
 						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
 						
-						//This stupid loop is needed because remove uses direct comparision
+						//This stupid loop is needed because remove uses direct comparison
 						for (IOConnector con : getConnections()) {
 							if (con.equals(ioc)) {
+								logger.debug("Found it");
 								remove(con);
 							}
 						}
@@ -660,11 +665,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
 
 				} 
 			}
-			repaint();
 		}
 
 		public void mmStructureChanged(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
-			repaint();
+			revalidate();
 		}
     }
 
