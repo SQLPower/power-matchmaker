@@ -100,7 +100,6 @@ public class SourceTableRecord {
      * 
      * @param session The MatchMakerSession of the given Match
      * @param match The Match this record is attached to
-     * @param pool The match pool that this record belongs to
      * @param displayValues The values used to display this record in the UI
      * @param keyValues The values of the unique index on the match's source
      * table.  These values must be specified in the same order as the match's
@@ -120,7 +119,7 @@ public class SourceTableRecord {
     }
 
     /**
-     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Match, MatchPool, List)}
+     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Match, List, List)}
      * but takes key values as a variable length argument list.  Mostly useful in setting up test
      * cases.
      */
@@ -131,6 +130,17 @@ public class SourceTableRecord {
     	this(session, match, new ArrayList<Object>(),Arrays.asList(keyValues));
     }
 
+    /**
+     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Match, List, List)}
+     * except the displayValues is initialized as an empty ArrayList.
+     */
+    public SourceTableRecord(
+            final MatchMakerSession session,
+            final Match match,
+            List<Object> keyValues) {
+    	this(session, match, new ArrayList<Object>(),keyValues);
+    }
+    
     /**
      * Looks up and returns the column values for the row this object
      * represents.  The values are returned in the list in the same order

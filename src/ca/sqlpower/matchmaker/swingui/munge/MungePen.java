@@ -190,8 +190,9 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		});
 		
 		if (process.getChildCount() == 0) {
-			process.addChild(new SQLInputStep(match.getSourceTable()));
-			process.addChild(new MungeResultStep());
+			MungeStep inputStep = new SQLInputStep(match.getSourceTable());
+			process.addChild(inputStep);
+			process.addChild(new MungeResultStep(match, inputStep));
 		}
 	}
 	

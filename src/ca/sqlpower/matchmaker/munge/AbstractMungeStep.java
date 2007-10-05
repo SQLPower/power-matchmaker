@@ -218,4 +218,17 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     	}
     	return true;
     }
+
+    /**
+     * Returns the first MungeStepOutput it finds with the given name. 
+     * Returns null if no such MungeStepOutput exists.
+     */
+    public MungeStepOutput getOutputByName(String name) {
+    	for(MungeStepOutput o: getChildren()) {
+    		if (o.getName().equals(name)) {
+    			return o;
+    		}
+    	}
+    	return null;
+    }
 }
