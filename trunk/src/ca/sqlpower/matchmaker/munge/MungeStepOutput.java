@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker.munge;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -40,6 +42,8 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput, MatchMakerObject> 
 								implements Comparable<MungeStepOutput<T>> {
 
+	private static final Logger logger = Logger.getLogger(MungeStepOutput.class);
+	
 	/**
 	 * The type of data this step can hold.
 	 * <p>
@@ -122,9 +126,9 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	}
 
 	public int compareTo(MungeStepOutput<T> o) {
-		if (type.equals(o.getType())) {
-			throw new IllegalStateException("Cannot compare two MungeStepOutputs" +
-					"that have different data types");
+		if (!type.equals(o.getType())) {
+			throw new IllegalStateException("Cannot compare two MungeStepOutputs " +
+					"that have different data types: " + type + " and " + o.getType());
 		} 
 		
 		int compareValue = 0;
@@ -133,23 +137,29 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 		
 		if (data == null || otherData == null) {
 			if (data != null) {
+				logger.debug("data was null");
 				compareValue = 1;
 			} else if (otherData != null) {
+				logger.debug("otherData was null");
 				compareValue = -1;
 			}
 		} else if (type.equals(String.class)){
+			logger.debug("comparing Strings " + data + " and " + otherData);
 			compareValue = ((String)data).compareTo((String)otherData);
 		} else if (type.equals(BigDecimal.class)) {
+			logger.debug("comparing BigDecimals " + data + " and " + otherData);
 			compareValue = ((BigDecimal) data).compareTo((BigDecimal)otherData);
 		} else if (type.equals(Boolean.class)) {
+			logger.debug("comparing Booleans " + data + " and " + otherData);
 			compareValue = ((Boolean) data).compareTo((Boolean)otherData);
 		} else if (type.equals(Date.class)) {
+			logger.debug("comparing Dates " + data + " and " + otherData);
 			compareValue = ((Date) data).compareTo((Date)otherData);
 		} else {
 			throw new IllegalStateException("MungeStepOutput" +
 					"contain an unsupported data type:" + type);
 		}
-		
+		logger.debug("compareValue is " + compareValue);
 		return compareValue;
 	}
 	
