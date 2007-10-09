@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.SourceTableRecord;
 
 /**
@@ -27,6 +29,8 @@ import ca.sqlpower.matchmaker.SourceTableRecord;
  * representing the source data record that was being munged.
  */
 public class MungeResult implements Comparable<MungeResult> {
+	
+	private static final Logger logger = Logger.getLogger(MungeResult.class);
 	
 	/**
 	 * The data that went through the MungeProcessor
@@ -61,8 +65,12 @@ public class MungeResult implements Comparable<MungeResult> {
 		
 		for (int i = 0; i < mungedData.length; i++) {
 			int compareValue = mungedData[i].compareTo(o.getMungedData()[i]);
-			if (compareValue != 0) return compareValue;
+			if (compareValue != 0) {
+				logger.debug("MungeResults are NOT equal, so return " + compareValue);
+				return compareValue;
+			}
 		}
+		logger.debug("MungeResults are equal, so return 0");
 		return 0;
 	}
 }
