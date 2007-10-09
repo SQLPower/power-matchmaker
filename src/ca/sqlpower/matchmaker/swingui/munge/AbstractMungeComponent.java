@@ -38,12 +38,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -122,7 +121,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private FormValidationHandler handler;
 	
 	private final JButton hideShow;
-	
+
 	/**
 	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen.
 	 * Sets the background and border colours to given colours.
@@ -144,7 +143,22 @@ public abstract class AbstractMungeComponent extends JPanel {
 		step.addMatchMakerListener(stepEventHandler);
 		setName(step.getName());
 		
-		setBorder(BorderFactory.createEmptyBorder(MMM_TOP.getHeight(null),1,15,MMM_TOP.getWidth(null)));
+		int borderTop;
+		if (!getStep().canAddInput() && getStep().getInputs().size() == 0) {
+			borderTop = MMM_TOP.getHeight(null);
+		} else {
+			 borderTop = ConnectorIcon.getHandleInstance(Object.class).getIconHeight();
+		}
+		
+		int borderBottom;
+		if (getStep().getChildCount() == 0) {
+			borderBottom = 0;
+		} else {
+			borderBottom = ConnectorIcon.getNibInstance(Object.class).getIconHeight();
+		}
+		setBorder(BorderFactory.createEmptyBorder(borderTop,1,borderBottom,MMM_TOP.getWidth(null)));
+				
+		
 		setOpaque(false);
 		setFocusable(true);
 		
@@ -288,8 +302,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public Point getOutputPosition(int outputNum) {
 		int outputs = step.getChildren().size();
 		int xPos = (int) (((double)(outputNum+1)/((double)outputs+1))*getWidth());
-		return new Point(xPos,getHeight());
-		
+		return new Point(xPos,getHeight() - getBorder().getBorderInsets(this).bottom);
 	}
 	
 	/**
@@ -327,17 +340,40 @@ public abstract class AbstractMungeComponent extends JPanel {
 		dim.width -= border.left+border.right;
 		dim.height -= border.top+border.bottom;
 		
-		int[] x = {0,9,(int)dim.getWidth()-1,(int)dim.getWidth()-1};
-		int[] y = {9,0,0,9};
+		int[] x = {0,MMM_TOP.getHeight(null)-1,dim.width-1,dim.width-1};
+		int[] y = {MMM_TOP.getHeight(null)-1,0,0,MMM_TOP.getHeight(null)-1};
 		g.setColor(borderColour);
+		g.translate(0, border.top - MMM_TOP.getHeight(null));
 		g.fillPolygon(x, y, 4);
-		g.drawImage(MMM_TOP, (int)dim.getWidth(), 0, null);
-		g.drawImage(MMM_BOT, (int)dim.getWidth(), (int)dim.getHeight() - border.top, null);
+		g.translate(0, -(border.top - MMM_TOP.getHeight(null)));
+		g.drawImage(MMM_TOP, getWidth()-border.right-1, border.top - MMM_TOP.getHeight(null), null);
+		g.drawImage(MMM_BOT, getWidth()-border.right-1, getHeight() - MMM_BOT.getHeight(null) - border.bottom - 1, null);
 
+		
+		
+		
+		for (int i = 0; i< getStep().getInputs().size(); i++) {
+			int xPos = getInputPosition(i).x;
+			Icon port = ConnectorIcon.getFemaleInstance(getStep().getInputDescriptor(i).getType());
+
+			port.paintIcon(this, g, xPos, border.top - port.getIconHeight());
+			
+			if (getStep().getInputs().get(i) != null) {
+				Icon handle = ConnectorIcon.getHandleInstance(getStep().getInputs().get(i).getType());
+				handle.paintIcon(this, g, xPos, 0);
+			}
+		}
+		
+		for (int i = 0; i < getStep().getChildCount(); i++) {
+			int xPos = getOutputPosition(i).x;
+			Icon nib = ConnectorIcon.getNibInstance(getStep().getChildren().get(i).getType());
+			nib.paintIcon(this, g, xPos, getHeight() - border.bottom - ConnectorIcon.NIB_OVERLAP);
+		}
 		
 		g = g.create(border.left, border.top, getWidth()-border.right, getHeight()-border.bottom);
 		g.setColor(bg);
-		g.fillRect(0, 0, (int)dim.getWidth()-1, (int)dim.getHeight()-1);
+		g.fillRect(0, 0, dim.width-1, dim.height-1);
+		
 	}
 	
 	/**
@@ -359,27 +395,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	
-	/**
-	 * Returns the appropriate colour for the given type.
-	 * This is used to colour code lines and the IOCs.
-	 * 
-	 * @param c The type of connection
-	 * @return The correct colour
-	 */
-	public static Color getColor(Class c) {
-		if (c.equals(String.class)) {
-			return Color.RED;
-		} else if (c.equals(Boolean.class)) {
-			return Color.BLUE;
-		} else if (c.equals(BigDecimal.class)) {
-			return Color.GREEN;
-		} else if (c.equals(Date.class)) {
-			return Color.ORANGE;
-		} else if (c.equals(Object.class)) {
-			return Color.BLACK;
-		}
-		return Color.PINK;
-	}
 	
 	/**
 	 * Returns the popup menu to display when this component is right clicked on.
@@ -686,6 +701,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 
 		return false;
-	}
+	}	
 }
 

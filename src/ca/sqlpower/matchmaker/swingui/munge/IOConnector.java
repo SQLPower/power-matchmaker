@@ -271,7 +271,7 @@ public class IOConnector extends JComponent implements MouseListener {
 		//If it is drawing in the time period between the child removed 
 		//and the event being finished,
 		if (link != null) {
-			g.setColor(AbstractMungeComponent.getColor(link.getType()));			
+			g.setColor(ConnectorIcon.getColor(link.getType()));			
 			g.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
 		} else {
 			logger.debug("Error line not existant");
