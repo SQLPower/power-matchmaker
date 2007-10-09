@@ -162,12 +162,14 @@ public class MatchEngineImpl extends AbstractEngine {
 			
 			List<MungeProcess> mungeProcesses = getMatch().getMatchRuleSetFolder().getChildren();
 			
+			MatchPool pool = new MatchPool(getMatch());
+			
 			for (MungeProcess currentProcess: mungeProcesses) {
 				Processor munger = new MungeProcessor(currentProcess);
 				munger.call();
 				List<MungeResult> results = currentProcess.getResults();
 				
-				MatchProcessor matcher = new MatchProcessor(currentProcess, results);
+				MatchProcessor matcher = new MatchProcessor(pool, currentProcess, results);
 				matcher.call();
 			}
 			

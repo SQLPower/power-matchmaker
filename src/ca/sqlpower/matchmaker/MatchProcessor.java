@@ -29,7 +29,9 @@ import ca.sqlpower.matchmaker.munge.MungeResult;
 /**
  * A Processor which takes a List of arrays of MungeStepOutputs, which it would
  * typically get from a MungeProcess, and performs matching on the data, and stores
- * the match results into the match repository.
+ * the match results into the match repository. This default implementation of matching
+ * only considers two records to form a potential match if their munged data is perfectly
+ * equal (that is, all of the MungeStepOutputs in the munged data is equal).
  */
 public class MatchProcessor extends AbstractProcessor {
 
@@ -49,9 +51,9 @@ public class MatchProcessor extends AbstractProcessor {
 	 */
 	private MatchPool pool;
 	
-	public MatchProcessor(MungeProcess process, List<MungeResult> matchData) {
+	public MatchProcessor(MatchPool pool, MungeProcess process, List<MungeResult> matchData) {
 		this.matchData = matchData;
-		pool = new MatchPool(process.getParentMatch());
+		this.pool = pool;
 		this.mungeProcess = process; 
 	}
 	
@@ -73,6 +75,9 @@ public class MatchProcessor extends AbstractProcessor {
 					pool.addSourceTableRecord(data.getSourceTableRecord());
 					pool.addSourceTableRecord(matchData.get(i).getSourceTableRecord());
 					pool.addPotentialMatch(pmr);
+				} else {
+					// If data doesn't match perfectly, then there should be no further matches if list was sorted properly
+					break;
 				}
 			}
 		}
