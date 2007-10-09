@@ -367,7 +367,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 		for (int i = 0; i < getStep().getChildCount(); i++) {
 			int xPos = getOutputPosition(i).x;
 			Icon nib = ConnectorIcon.getNibInstance(getStep().getChildren().get(i).getType());
-			nib.paintIcon(this, g, xPos, getHeight() - border.bottom - ConnectorIcon.NIB_OVERLAP);
+			if (!getPen().isConnectingOutput(this,i)) {
+				nib.paintIcon(this, g, xPos, getHeight() - border.bottom - ConnectorIcon.NIB_OVERLAP);
+			}
 		}
 		
 		g = g.create(border.left, border.top, getWidth()-border.right, getHeight()-border.bottom);
@@ -679,7 +681,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 		
 		if (minNum != -1) {
-			parent.connectionHit(this, minNum, true);
+			if (parent.isConnecting()) {
+				parent.finishConnection(this, minNum, true);
+			} else {
+				parent.startConnection(this, minNum, true);
+			}
 			return true;
 		}
 		
@@ -696,7 +702,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 		
 		if (minNum != -1) {
-			parent.connectionHit(this, minNum, false);
+			if (parent.isConnecting()) {
+				parent.finishConnection(this, minNum, false);
+			} else {
+				parent.startConnection(this, minNum, false);
+			}
 			return true;
 		}
 
