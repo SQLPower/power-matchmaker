@@ -76,6 +76,11 @@ public class MungeProcess
      */
 	private Color colour;
 
+	/**
+	 * The MungeStep that is used to accumulate the resulting munged data.
+	 * Any class can get the munge results by calling {@link #getResults()},
+	 * which will delegate to getting the results from this output step.
+	 */
 	private MungeResultStep outputStep;
 	
 	/**
@@ -213,7 +218,20 @@ public class MungeProcess
 		return group;
 	}
 	
+	/**
+	 * Get the results of the munging process, as a list of MungeResult.
+	 * This list will be empty if the munge process has not been run through
+	 * a munge processor.
+	 * @throws NullPointerException if the output step has not been set.
+	 */
 	public List<MungeResult> getResults() {
+		if (outputStep == null) {
+			throw new NullPointerException("The output step for this process has not been set!");
+		}
 		return outputStep.getResults();
+	}
+
+	public void setOutputStep(MungeResultStep outputStep) {
+		this.outputStep = outputStep;
 	}
 }
