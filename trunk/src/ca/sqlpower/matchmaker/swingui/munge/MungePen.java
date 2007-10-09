@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.Icon;
 import javax.swing.JLayeredPane;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
@@ -78,13 +79,17 @@ import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
- * This is a temp spot for generating the Munge step components.
- * This will eventualy be put somewhere where it is easy for the user to 
- * add there own mappings. 
+ * This class generates the mungeConpoents.
  */
 class MungeComponentFactory {
+	
+	/**
+	 * The array that looks like the set of types we are expecting for the correct constructor for any munge component
+	 *  (excluding the input and output steps).
+	 */
 	private static final Type[] CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class}; 
 	
+	// TODO transplant to a new MungeComponentManager, which will be referenced from SwingSessionContext
 	public static  AbstractMungeComponent getMungeComponent(MungeStep ms, FormValidationHandler handler, 
 		MatchMakerSession session, Map<String, StepDescription> stepProps) {
 		
@@ -133,26 +138,73 @@ class MungeComponentFactory {
 	}
 }
 
+/**
+ * This class is responsible for maintaining the interactive GUI for a munge
+ * process. It is used like any normal swing component and works best inside a
+ * scroll pane. Normally the children of this class will be MungeComponents or
+ * IOConnectors. There are several convenience methods for listing and removing
+ * child components of those types.
+ * <p>
+ * This component installs itself as a listener to the MungeProcess it's editing,
+ * and if the process or any of its munge steps are modified, the GUI will
+ * automatically refresh accordingly.
+ */
+
 public class MungePen extends JLayeredPane implements Scrollable {
 	
 	private static  final Logger logger = Logger.getLogger(MungePen.class); 
 	
+	/**
+	 * The process this MungePen visualizes and edits.  This MungePen listens for various
+	 * events on this process and all its children, and will update the GUI when important
+	 * changes take place.
+	 */
 	private final MungeProcess process;
 	
-	//holds the info for dragging a connection 
-	//between two IOCc
+	/**
+	 * holds the info for dragging a connection
+	 * between two IOCs. This will be null if we are not in 
+	 * the process of dragging a connection or the connection 
+	 * was started from the input of a mungeComponet.
+	 */ 
 	private AbstractMungeComponent start;
+	/**
+	 * holds the info for dragging a connection
+	 * between two IOCs. This will be null if we are not in 
+	 * the process of dragging a connection or the connection 
+	 * was started from the output of a mungeComponet.
+	 */ 
 	private AbstractMungeComponent finish;
+	
+	/**
+	 * The index of the output that is being dragged. The value is meaningless when
+	 * {@link #start} is null.
+	 */
 	private int startNum;
+	
+	/**
+	 * The index of the input that is being dragged. The value is meaningless when
+	 * {@link #finish} is null.
+	 */
 	private int finishNum;
 	
-	//current mouse position
+	/**
+	 * The current X value of the mouse.  Kept up to date by the mouse motion listener.
+	 */
 	public int mouseX;
+	
+	/**
+	 * The current X value of the mouse.  Kept up to date by the mouse motion listener.
+	 */
 	public int mouseY;
 	
+	/**
+	 * True iff the mungePen is in the normalizing.  This flag helps to prevent infinite
+	 * recursion in the normalize process.
+	 */
 	private boolean normalizing;
 	
-	private MungePenMungeStepListener mungeStepListener;
+	private final MungePenMungeStepListener mungeStepListener;
 	
 	private FormValidationHandler handler;
 	
@@ -202,9 +254,15 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	}
 	
 	/**
-	 * Translates the process' children into the mungePen
+	 * Attaches this MungePen to the given munge process.  This entails creating a
+	 * MungeComponent for every munge step in the process, then creating an IOConnector
+	 * for every connected input in each step of the process.  Listeners are attached
+	 * to all steps.
+	 * <p>
+	 * This is a constructor subroutine.  It is incorrect to call this method more
+	 * than once (which the constructor will have already done).
 	 * 
-	 * @param Process
+	 * @param process The process to attach.
 	 */
 	private void buildComponents(MungeProcess process) {
 		for (MungeStep ms : process.getChildren()) {
@@ -228,6 +286,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
 	
+	/**
+	 * Possibly unnecessary workaround for the moveToFront implementation in JLayeredPane.
+	 * We'll try getting rid of this method in the future.
+	 */
 	public void bringToFront(Component com) {
 		setLayer(com, DRAG_LAYER);
 		for (Component tmp : getComponents()) {
@@ -238,12 +300,30 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		moveToFront(com);
 	}
 	
+	/**
+	 * Returns true iff there is currently a connection being made by the user.
+	 */
 	public boolean isConnecting() {
 		return (start != null || finish != null);
 	}
-
 	
-	//over ridden to map all the mungesteps to there components
+	/**
+	 * Returns true iff there is currently a connection being made by the user,
+	 * and that connection started from the given output (which means the output peg will
+	 * be invisible).
+	 * 
+	 * @param com The component to check if it's the origin of a connection attempt
+	 * @param num The output index of com to check if it's the origin of a connection
+	 * attempt.
+	 */
+	public boolean isConnectingOutput(AbstractMungeComponent com, int num) {
+		return (start == com && startNum == num);  
+	}
+
+	/**
+	 * Intercepts add requests for AbstractMungeComponent implementations and IOConnectors,
+	 * performing certain bookkeeping tasks to maintain class invariants.
+	 */
 	@Override
 	protected void addImpl(Component comp, Object constraints, int index) {
 		if (comp instanceof AbstractMungeComponent) {
@@ -258,11 +338,16 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		super.addImpl(comp, constraints, index);
 	}
 	
+	/**
+	 * Paints the connection-in-progress graphics when necessary.  If debugging for
+	 * this class is at DEBUG level or lower, also draws a green rectangle just inside the
+	 * current clipping area of the given graphics.
+	 */
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
-		if (false && logger.isDebugEnabled()) {
+		if (logger.isDebugEnabled()) {
 			Graphics2D g2 = (Graphics2D)g;
 			Rectangle clip = g2.getClipBounds();
 			if (clip != null) {
@@ -279,18 +364,31 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 		if (start != null || finish != null) {
 			Point fixed;
+			Icon plug = null;
 			if (start != null) {
 				fixed = start.getOutputPosition(startNum);
 				fixed.translate(start.getX(), start.getY());
+				plug = ConnectorIcon.getFullPlugInstance(start.getStep().getChildren().get(startNum).getType());
 			} else {
 				fixed = finish.getInputPosition(finishNum);
 				fixed.translate(finish.getX(), finish.getY());
 			}
 			g.setColor(Color.BLACK);
-			g.drawLine(fixed.x,fixed.y, mouseX, mouseY);	
+			if (plug != null) {
+				g.drawLine(fixed.x,fixed.y, mouseX, mouseY - plug.getIconHeight()/2);
+				plug.paintIcon(this, g, mouseX, mouseY- plug.getIconHeight()/2);
+			} else {
+				g.drawLine(fixed.x,fixed.y, mouseX, mouseY);
+			}
 		}
 	}
 	
+	/**
+	 * Returns the list of all IOConnector components that belong to this MungePen.
+	 * 
+	 * @return A new list of all the IOConnectors in this MungePen. The list can
+	 * safely be modified by client code (it is not cached by the MungePen).
+	 */
 	public List<IOConnector> getConnections() {
 		List<IOConnector> lines = new ArrayList<IOConnector>();
 		for (Component com: getComponents()) {
@@ -302,10 +400,11 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	}
 	
 	/**
-	 * Removes a mungestep from the pen. 
-	 * This will remove the given mungestep as well as disconnect all its inputs.
+	 * Removes the given munge step from this pen. This will remove the given
+	 * munge step from its parent process as well as disconnect all its inputs.
 	 * 
-	 * @param ms The step to be removed
+	 * @param ms
+	 *            The step to be removed
 	 */
 	public void removeMungeStep(MungeStep ms) {
 		
@@ -325,10 +424,13 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	}
 	
 	/**
-	 * Removes a munge step and connects the inputs to the output.
-	 *  Only call this if there is one input and output
-	 *  
-	 * @param ms mungestep to delete
+	 * Removes the given munge step, but preserves the overall data flow by
+	 * connecting the old source step to the old target step. It is an error to
+	 * call this method for a munge step that doesn't have exactly one input and
+	 * one output.
+	 * 
+	 * @param ms
+	 *            mungestep to delete
 	 */
 	public void removeMungeStepSingles(MungeStep ms) {
 		
@@ -362,18 +464,43 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
 	
-	
-	//The mouse was near an IOC point
-	public void connectionHit(AbstractMungeComponent mcom, int connectionNum, boolean inputHit) {
-		logger.debug("Connection hit");
+	/**
+	 * Called when the user clicks on a plug. This sets the start or finish variable to allow the 
+	 * line and plug picture to be drawn while dragging the mouse.
+	 * 
+	 * @param mcom The MungeComponent that the connection was started with
+	 * @param connectionNum The index of input or output that was clicked
+	 * @param inputHit Set to true iff an input was clicked on
+	 */
+	public void startConnection(AbstractMungeComponent mcom, int connectionNum, boolean inputHit) {
 		requestFocusInWindow();
-		getParent().repaint();
-
 		if (inputHit) {
 			if (mcom.getInputs().size() > connectionNum && mcom.getInputs().get(connectionNum) != null) {
 				return;
 			}
 		}
+		
+		if (inputHit) {
+			finish = mcom;
+			finishNum = connectionNum;
+		} else {
+			start = mcom;
+			startNum = connectionNum;
+		}
+	}
+	
+	/**
+	 * Called when user has finished a connection on an input or output connector.
+	 * This checks that the connection made was valid, and if so, the corresponding 
+	 * MungeSteps in the munge process will be connected together.
+	 * 
+	 * @param mcom The MungeComponent that the connection was finished on
+	 * @param connectionNum The index of input or output that was dragged to
+	 * @param inputHit Set to true iff an input was dragged to
+	 */
+	public void finishConnection(AbstractMungeComponent mcom, int connectionNum, boolean inputHit) {
+		requestFocusInWindow();
+		getParent().repaint();
 		
 		if (inputHit) {
 			finish = mcom;
@@ -395,9 +522,12 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 			stopConnection();
 		}
-		requestFocusInWindow();
 	}
 	
+	/**
+	 * The mouse listener for the MungePen. It does a just in case repaint and 
+	 * requests input focus when the user clicks.
+	 */
 	private class MungePenMouseListener extends MouseAdapter {
 		public void mousePressed(MouseEvent e) {	
 			logger.debug("Mouse PRess");
@@ -406,6 +536,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
 	
+	/**
+	 * Temp method for adding munge steps. This will be added to a toolbar, 
+	 * with words so no guessing is needed
+	 */
 	class MungePenKeyListener extends KeyAdapter {
 		//passes key press to selected components
 		public void keyPressed(KeyEvent e) {
@@ -529,7 +663,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
     /**
 	 * If some mungepen components get dragged into a negative range all of them are then shifted
 	 * so that the lowest x and y values are 0.  The components will retain their relative location.
-	 *
+	 * <p>
 	 * If this function is moved into a layout manager it causes problems with undo because we do
 	 * no know when this gets called.
 	 */
@@ -561,6 +695,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
     
     ///////////////////////////Listener for MatchMaker Rule Set /////////////////////////////////
 
+	/**
+	 * The class for handling all of the actions fired by the MungeProcess. This takes care of adding and removing 
+	 * MungeCompoents that are no longer in the process. 
+	 */
     private class MungePenMatchRuleSetListener implements MatchMakerListener<MungeProcess, MungeStep> {
 		public void mmChildrenInserted(MatchMakerEvent<MungeProcess, MungeStep> evt) {
 			
@@ -610,6 +748,11 @@ public class MungePen extends JLayeredPane implements Scrollable {
     }
 	///////////////////////////////////// Listener for the MungeStep /////////////////////////
     
+
+	/**
+	 * The class for handling all of the actions fired by the MungeComponents. This takes care of adding and removing 
+	 * IOCs that are no longer connected to anything. 
+	 */
     private class MungePenMungeStepListener implements MatchMakerListener<MungeStep, MungeStepOutput> {
 
 		public void mmChildrenInserted(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
@@ -622,7 +765,6 @@ public class MungePen extends JLayeredPane implements Scrollable {
 
 		public void mmPropertyChanged(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
 			if (evt.getPropertyName().equals("inputs")) {
-				//changed indices =
 				if (evt.getOldValue() == null && evt.getNewValue() != null) {
 					if (evt.getNewValue() instanceof MungeStepOutput) {
 						logger.debug("connection Caught");
@@ -641,11 +783,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 						
 						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
 						add(ioc);
-
-					} else {
-						//assuming it is of type input
-												
-					}
+					}						
 				} else if (evt.getNewValue() == null && evt.getOldValue() != null) {
 					if ( evt.getOldValue() instanceof MungeStepOutput) {
 						//disconnect input
@@ -664,11 +802,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 							}
 						}
 						logger.debug("Line deleted");
-					} else {
-						//assuming it is of type input
-						
-					}
-
+					} 
 				} 
 			}
 		}
@@ -698,17 +832,26 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		return sel;
 	}
 
+	/**
+	 * Tells the mungePen that it is no longer connecting mungeSteps and to 
+	 * stop drawing that line.
+	 */
 	public void stopConnection() {
 		start = null;
 		finish = null;
 	}
 	
+	/**
+	 * Assigns input focus to the given munge step's component.
+	 * 
+	 * @param ms The mungeStep to select.
+	 */
 	public void setSelectedStep(MungeStep ms) {
 		modelMap.get(ms).requestFocusInWindow();
 	}
 	
 	/**
-	 * Removes all listeners associated with this munge step. This is useful when removing to to make sure
+	 * Removes all listeners associated with the given Component. This is useful when removing to to make sure
 	 * it does not stick around.
 	 */
 	public static void removeAllListeners(Component com) {

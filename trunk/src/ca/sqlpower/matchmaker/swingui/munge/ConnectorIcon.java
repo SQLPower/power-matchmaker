@@ -274,7 +274,7 @@ public class ConnectorIcon implements Icon {
 	 * @return The full male connector icon for the given data type (possibly cached from earlier calls)
 	 */
 	public static ConnectorIcon getFullPlugInstance(Class c) {
-		ConnectorIcon curr = getMaleInstance(c, true, true);
+		ConnectorIcon curr = fullPlugCache.get(c);
 		if (curr == null) {
 			curr = getMaleInstance(c, true, true);
 			fullPlugCache.put(c,curr);
