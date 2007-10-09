@@ -27,11 +27,16 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentListener;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -588,7 +593,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			for (MungeStep ms : evt.getChildren()) {
 				AbstractMungeComponent mcom = modelMap.remove(ms);
 				ms.removeMatchMakerListener(mungeStepListener);
-				mcom.removeAllListeners();
+				removeAllListeners(mcom);
 				remove(mcom);
 			}
 			
@@ -700,5 +705,31 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	public void setSelectedStep(MungeStep ms) {
 		modelMap.get(ms).requestFocusInWindow();
+	}
+	
+	/**
+	 * Removes all listeners associated with this munge step. This is useful when removing to to make sure
+	 * it does not stick around.
+	 */
+	public static void removeAllListeners(Component com) {
+		for (FocusListener fl : com.getFocusListeners()) {
+			com.removeFocusListener(fl);
+		}
+		
+		for (MouseListener ml : com.getMouseListeners()) {
+			com.removeMouseListener(ml);
+		}
+		
+		for (MouseMotionListener mml : com.getMouseMotionListeners()) {
+			com.removeMouseMotionListener(mml);
+		}
+		
+		for (KeyListener kl : com.getKeyListeners()) {
+			com.removeKeyListener(kl);
+		}
+		
+		for (ComponentListener cl : com.getComponentListeners()) {
+			com.removeComponentListener(cl);
+		}
 	}
 }

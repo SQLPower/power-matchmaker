@@ -27,15 +27,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
 
 import javax.swing.AbstractAction;
@@ -291,7 +288,7 @@ public class IOConnector extends JComponent implements MouseListener {
 	 */
 	public void remove() {
 		getParent().removeMouseListener(this);
-		removeAllListeners();
+		MungePen.removeAllListeners(this);
 		childCom.getStep().disconnectInput(childNumber);
 	}
 
@@ -349,31 +346,5 @@ public class IOConnector extends JComponent implements MouseListener {
 			getPopup().show(getParent(), e.getX(), e.getY());
 			requestFocusInWindow();
 		}
-	}
-
-	/**
-	 * Removes all listeners associated with this IOC. This is useful when removing to to make sure
-	 * it does not stick around.
-	 */
-	public void removeAllListeners() {
-		for (FocusListener fl : getFocusListeners()) {
-			removeFocusListener(fl);
-		}
-		
-		for (MouseListener ml : getMouseListeners()) {
-			removeMouseListener(ml);
-		}
-		
-		for (MouseMotionListener mml : getMouseMotionListeners()) {
-			removeMouseMotionListener(mml);
-		}
-		
-		for (KeyListener kl : getKeyListeners()) {
-			removeKeyListener(kl);
-		}
-		
-		for (ComponentListener cl : getComponentListeners()) {
-			removeComponentListener(cl);
-		}	
 	}
 }

@@ -19,13 +19,12 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -35,17 +34,18 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -64,13 +64,14 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
+import ca.sqlpower.util.WebColour;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 public abstract class AbstractMungeComponent extends JPanel {
 	
 	
 	private static  final Logger logger = org.apache.log4j.Logger.getLogger(AbstractMungeComponent.class); 
-	
+		
 	/**
 	 * A Set of listeners that detect changes in the MungeSteps and redraws them
 	 */
@@ -106,6 +107,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private final Color bg;
 	private final Color borderColour;
 	
+	private static final Image MMM_TOP = new ImageIcon(ClassLoader.getSystemResource("icons/mmm_top.png")).getImage(); 
+	private static final Image MMM_BOT = new ImageIcon(ClassLoader.getSystemResource("icons/mmm_bot.png")).getImage(); 
+	
+	private static final ImageIcon EXPOSE_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/expose_off.png"));
+	private static final ImageIcon EXPOSE_ON = new ImageIcon(ClassLoader.getSystemResource("icons/expose_on.png"));
+	
 	private boolean expanded;
 	
 	private MatchMakerSwingSession session;
@@ -113,6 +120,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private MungeComponentKeyListener mungeComKeyListener;
 
 	private FormValidationHandler handler;
+	
+	private final JButton hideShow;
 	
 	/**
 	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen.
@@ -135,7 +144,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		step.addMatchMakerListener(stepEventHandler);
 		setName(step.getName());
 		
-		setBorder(BorderFactory.createEmptyBorder(15,1,15,1));
+		setBorder(BorderFactory.createEmptyBorder(MMM_TOP.getHeight(null),1,15,MMM_TOP.getWidth(null)));
 		setOpaque(false);
 		setFocusable(true);
 		
@@ -150,11 +159,27 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		content = buildUI();
 		
+		hideShow = new JButton(new HideShowAction());
+		hideShow.setIcon(EXPOSE_OFF);
 		
 		//returning null will prevent the +/- button form showing up
 		if (content != null) {
-			JToolBar tb =new JToolBar();
-			tb.add(new HideShowAction());
+			JToolBar tb = new JToolBar();
+			hideShow.setBorder(null);
+			hideShow.addMouseListener(new MouseAdapter(){
+				public void mouseEntered(MouseEvent e) {
+					hideShow.setIcon(EXPOSE_ON);
+					hideShow.setBorder(null);
+				}
+				
+				public void mouseExited(MouseEvent e) {
+					hideShow.setIcon(EXPOSE_OFF);
+					hideShow.setBorder(null);
+				}
+			});
+			
+			tb.setBorder(null);
+			tb.add(hideShow);
 			tb.setFloatable(false);
 			tmp.add(tb);
 			content.setBackground(bg);
@@ -224,7 +249,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param step The step connecting to the UI
 	 */
 	public AbstractMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
-		this(step, Color.BLACK,Color.WHITE);
+		this(step, new WebColour("#dddddd"), new WebColour("#eeeeee"));
 		this.session = (MatchMakerSwingSession)session;
 		this.handler = handler;
 	}
@@ -290,54 +315,29 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		g.setColor(Color.BLACK);
+		
 		
 		if (getPreferredSize().width != getWidth() || getPreferredSize().height != getHeight()) {
 			setBounds(getX(), getY(), getPreferredSize().width, getPreferredSize().height);
 			revalidate();
 		}
 		
-		int outputs = step.getChildren().size();
-		int inputs = step.getInputs().size();
-		
 		Insets border = getBorder().getBorderInsets(this);
-		
-		for (int x= 0;x<inputs;x++){
-			Point top = getInputPosition(x);
-			g.drawLine((int)top.getX(), (int)top.getY(), (int)top.getX(), border.top);
-			
-
-			g.setColor(getColor(step.getInputDescriptor(x).getType()));
-			g.fillOval(top.x-2, top.y, 4, 4);
-			g.setColor(Color.BLACK);
-		}
-		
-		for (int x= 0;x<outputs;x++){
-			Point bottom = getOutputPosition(x);
-			g.drawLine((int)bottom.getX(), (int)bottom.getY(), (int)bottom.getX(), (int)bottom.getY() - border.bottom);
-
-			g.setColor(getColor(step.getChildren().get(x).getType()));
-			g.fillOval(bottom.x-2, bottom.y-5, 4, 4);
-			g.setColor(Color.BLACK);
-		}
-
-		g = g.create(border.left, border.top, getWidth()-border.right, getHeight()-border.bottom);
-		
 		Dimension dim = getSize();
 		dim.width -= border.left+border.right;
 		dim.height -= border.top+border.bottom;
+		
+		int[] x = {0,9,(int)dim.getWidth()-1,(int)dim.getWidth()-1};
+		int[] y = {9,0,0,9};
+		g.setColor(borderColour);
+		g.fillPolygon(x, y, 4);
+		g.drawImage(MMM_TOP, (int)dim.getWidth(), 0, null);
+		g.drawImage(MMM_BOT, (int)dim.getWidth(), (int)dim.getHeight() - border.top, null);
 
+		
+		g = g.create(border.left, border.top, getWidth()-border.right, getHeight()-border.bottom);
 		g.setColor(bg);
 		g.fillRect(0, 0, (int)dim.getWidth()-1, (int)dim.getHeight()-1);
-		g.setColor(borderColour);
-		if (hasFocus()) {
-			((Graphics2D)g).setStroke(new BasicStroke(3));
-		}
-		g.drawRect(0, 0, (int)dim.getWidth()-1, (int)dim.getHeight()-1);
-		if (hasFocus()) {
-			((Graphics2D)g).setStroke(new BasicStroke(1));
-		}
-		
 	}
 	
 	/**
@@ -435,6 +435,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public void remove() {
 		removeNormal();
+		MungePen.removeAllListeners(hideShow);
 	}
 	
 	
@@ -442,17 +443,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * The action to control the +/- button
 	 */
 	private class HideShowAction extends AbstractAction {
-		public HideShowAction() {
-			super("+");
-		}
-		
 		public void actionPerformed(ActionEvent e) {
-			if (e.getActionCommand().equals("+")) {
-				putValue(NAME, "-");
+			if (!expanded) {
 				root.add(content,BorderLayout.CENTER);
 				expanded = true;
 			} else {
-				putValue(NAME, "+");
 				root.remove(content);
 				expanded = false;
 			}
@@ -691,33 +686,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 
 		return false;
-	}
-
-
-	/**
-	 * Removes all listeners associated with this munge step. This is useful when removing to to make sure
-	 * it does not stick around.
-	 */
-	public void removeAllListeners() {
-		for (FocusListener fl : getFocusListeners()) {
-			removeFocusListener(fl);
-		}
-		
-		for (MouseListener ml : getMouseListeners()) {
-			removeMouseListener(ml);
-		}
-		
-		for (MouseMotionListener mml : getMouseMotionListeners()) {
-			removeMouseMotionListener(mml);
-		}
-		
-		for (KeyListener kl : getKeyListeners()) {
-			removeKeyListener(kl);
-		}
-		
-		for (ComponentListener cl : getComponentListeners()) {
-			removeComponentListener(cl);
-		}	
 	}
 }
 
