@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.FlowLayout;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -41,7 +40,6 @@ public class MungeResultMungeComponent extends AbstractMungeComponent {
 	
 	public MungeResultMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
 		super(ms, handler,session);
-		setBorder(BorderFactory.createEmptyBorder(15,1,1,1));
 	}
 	
 	@Override

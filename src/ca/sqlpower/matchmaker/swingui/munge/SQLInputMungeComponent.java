@@ -28,10 +28,12 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.ToolTipManager;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -43,13 +45,15 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  */
 public class SQLInputMungeComponent extends AbstractMungeComponent {
 
-	JLabel[] labels;
-	JButton showAll;
-	JButton hideAll;
+	private JLabel[] labels;
+	private JButton showAll;
+	private JButton hideAll;
+	
+	private static final ImageIcon PLUS_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/plus_off.png"));
+	private static final ImageIcon PLUS_ON = new ImageIcon(ClassLoader.getSystemResource("icons/plus_on.png"));
 	
 	public SQLInputMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
 		super(step, handler, session);
-		setBorder(BorderFactory.createEmptyBorder(1,1,15,1));
 	}
 
 	@Override
@@ -96,12 +100,31 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 		for (MungeStepOutput o: getStep().getChildren()) {
 			JLabel lab =new JLabel(o.getName());
 			lab.setToolTipText(o.getName());
+			ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+			toolTipManager.setInitialDelay(0);
+			
 			lab.addMouseListener(new MouseAdapter(){
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					hideShow((JLabel)e.getSource());
 				}
-			});
+				
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					if (((JLabel)e.getSource()).getText().equals("")) {
+						((JLabel)e.getSource()).setIcon(PLUS_ON);
+					}
+				}
+				
+				@Override
+				public void mouseExited(MouseEvent e) {
+					if (((JLabel)e.getSource()).getText().equals("")) {
+						((JLabel)e.getSource()).setIcon(PLUS_OFF);
+					}
+				}
+			})
+			
+			;
 			lab.setBorder(BorderFactory.createEtchedBorder());
 			bottom.add(lab);
 			labels[x++] = lab;
@@ -125,15 +148,17 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 	}
 	
 	public void hide(JLabel label) {
-		label.setText("+");
+		label.setText("");
+		label.setIcon(PLUS_OFF);
 	}
 
 	public void show(JLabel label) {
+		label.setIcon(null);
 		label.setText(label.getToolTipText());
 	}
 	
 	public void hideShow(JLabel label) {
-		if (label.getText().equals("+")) {
+		if (label.getText().equals("")) {
 			show(label);
 		} else {
 			hide(label);
