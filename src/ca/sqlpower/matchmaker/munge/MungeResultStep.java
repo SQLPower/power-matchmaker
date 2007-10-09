@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker.munge;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.Match;
@@ -31,10 +33,18 @@ import ca.sqlpower.matchmaker.SourceTableRecord;
  * This MungeStep is used to store the final results of a MungeProcess.
  * As such, it contains no outputs, and only inputs. For each row
  * that gets processed in a MungeProcess, this step will store the
- * result.
+ * result. 
+ * <p>
+ * This step makes an important assumption that the input step that it takes in
+ * contains MungeStepOutputs corresponding to the source table's unique key, and
+ * that each MungeStepOutput's name is the same as the corresponding column's name.
+ * If the MungeStepOutputs have different names, then this step will not be able
+ * to find them, as it uses the source table's index key to find them.
  */
 public class MungeResultStep extends AbstractMungeStep {
 
+	private static final Logger logger = Logger.getLogger(MungeResultStep.class);
+	
 	/**
 	 * A list of MungeResults that represent the munged data
 	 * coming out of the Munging process. Any process after
@@ -77,14 +87,23 @@ public class MungeResultStep extends AbstractMungeStep {
 		super.addInput(desc);
 	}
 
+	
 	@Override
+	/**
+	 * This override of the open method initializes the array of MungeStepOutputs (MSO)
+	 * which contains the MSOs containing the unique key values. This assumes
+	 * that the input step contains outputs which correspond to the table's unique
+	 * key columns. If they are missing, then call() will throw a NullPointerException
+	 */
 	public void open() throws Exception {
 		super.open();
 		
 		indexValues = new MungeStepOutput[uniqueIndex.getChildCount()];
 		for (int i=0; i < uniqueIndex.getChildren().size(); i++) {
 			SQLIndex.Column c = uniqueIndex.getChild(i);
+			logger.debug("Searching for MungeStepOuput with name " + c.getName());
 			indexValues[i] = inputStep.getOutputByName(c.getName());
+			logger.debug("Found MungeStepOuput " + indexValues[i]);
 		}
 	}
 	
@@ -100,6 +119,9 @@ public class MungeResultStep extends AbstractMungeStep {
 		List<Object> indexValueList = new ArrayList<Object>();
 		
 		for (MungeStepOutput o: indexValues) {
+			if (o == null) {
+				throw new NullPointerException("Input step is missing unique key values!");
+			}
 			indexValueList.add(o.getData());
 		}
 		
