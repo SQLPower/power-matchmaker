@@ -26,6 +26,7 @@ import java.awt.BasicStroke;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -61,6 +62,9 @@ public class IOConnector extends JComponent implements MouseListener {
 	
 	private Point top;
 	private Point bottom;
+	
+	private Stroke nonSelectedStroke = new BasicStroke(2);
+	private Stroke selectedStroke = new BasicStroke(3);
 	
 	private boolean recentlyResized;
 	
@@ -261,8 +265,12 @@ public class IOConnector extends JComponent implements MouseListener {
 	public void paintComponent(Graphics g) {
 		recentlyResized = false;
 		
+		Graphics2D g2 = (Graphics2D) g.create();
+		
 		if (hasFocus()) {
-			((Graphics2D)g).setStroke(new BasicStroke(2));
+			g2.setStroke(selectedStroke);
+		} else {
+			g2.setStroke(nonSelectedStroke);
 		}
 		
 		
@@ -271,14 +279,10 @@ public class IOConnector extends JComponent implements MouseListener {
 		//If it is drawing in the time period between the child removed 
 		//and the event being finished,
 		if (link != null) {
-			g.setColor(ConnectorIcon.getColor(link.getType()));			
-			g.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
+			g2.setColor(ConnectorIcon.getColor(link.getType()));			
+			g2.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
 		} else {
 			logger.debug("Error line not existant");
-		}
-		
-		if (hasFocus()) {
-			((Graphics2D)g).setStroke(new BasicStroke(1));
 		}
 		
 	}
