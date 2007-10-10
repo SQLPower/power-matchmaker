@@ -148,7 +148,6 @@ public class MatchEngineImpl extends AbstractEngine {
 		return logger;
 	}
 	
-	
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException {
 		try {
@@ -173,7 +172,8 @@ public class MatchEngineImpl extends AbstractEngine {
 				matcher.call();
 			}
 			
-
+			pool.store();
+			
 			getLogger().info("Engine process completed normally.");
 			
 			return EngineInvocationResult.SUCCESS;

@@ -33,7 +33,7 @@ import ca.sqlpower.matchmaker.munge.MungeResult;
  * typically get from a MungeProcess, and performs matching on the data, and stores
  * the match results into the match repository. This default implementation of matching
  * only considers two records to form a potential match if their munged data is perfectly
- * equal (that is, all of the MungeStepOutputs in the munged data is equal).
+ * equal (that is, all of the MungeStepOutputs in the munged data are equal).
  */
 public class MatchProcessor extends AbstractProcessor {
 
@@ -82,13 +82,12 @@ public class MatchProcessor extends AbstractProcessor {
 					pool.addSourceTableRecord(matchData.get(i).getSourceTableRecord());
 					pool.addPotentialMatch(pmr);
 				} else {
-					// If data doesn't match perfectly, then there should be no further matches if list was sorted properly
+					// If data doesn't match perfectly, then there should be 
+					// no further matches if list was sorted properly
 					break;
 				}
 			}
 		}
-		
-		pool.store();
 		
 		return Boolean.TRUE;
 	}
