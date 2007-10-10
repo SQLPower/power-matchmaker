@@ -73,4 +73,21 @@ public class MungeResult implements Comparable<MungeResult> {
 		logger.debug("MungeResults are equal, so return 0");
 		return 0;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuffer s = new StringBuffer();
+		
+		s.append("Key Values:");
+		for (Object o: sourceTableRecord.getKeyValues()) {
+			s.append(" ").append(o).append(" ");
+		}
+		
+		s.append("Data Values:");
+		for (MungeStepOutput o: mungedData) {
+			s.append(" ").append(o.getData()).append(" ");
+		}
+
+		return s.toString();
+	}
 }

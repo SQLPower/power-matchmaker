@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResult;
@@ -35,6 +37,8 @@ import ca.sqlpower.matchmaker.munge.MungeResult;
  */
 public class MatchProcessor extends AbstractProcessor {
 
+	private static final Logger logger = Logger.getLogger(MatchProcessor.class);
+	
 	/**
 	 * A list of Munged data that the MatchProcessor would take from a MungeProcessor
 	 */
@@ -67,6 +71,8 @@ public class MatchProcessor extends AbstractProcessor {
 			for (int i=dataIndex + 1; i<matchData.size(); i++){
 				if (data.compareTo(matchData.get(i)) == 0) {
 					// Potential Match! so store in Match Result Table
+					logger.debug("Found Match!\nRecords1:" + data + 
+							"\nRecord2:" + matchData.get(i));
 					PotentialMatchRecord pmr = new PotentialMatchRecord(mungeProcess, 
 																		MatchType.UNMATCH, 
 																		data.getSourceTableRecord(), 
