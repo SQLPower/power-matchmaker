@@ -33,7 +33,9 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.graph.MatchPoolDirectedGraphModel;
 import ca.sqlpower.sql.SQL;
 
 /**
@@ -51,20 +53,34 @@ public class MergeProcessor extends AbstractProcessor {
 	 */
 	private MatchPool pool;
 	
+    /**
+     * The list of MungeSteps obtained from the MungeProcess that this processor will
+     * process, sorted in the exact order that the processor will process them.
+     */
+    private List<SourceTableRecord> processOrder;
+	
+    private MatchPoolDirectedGraphModel gm;
+    
 	public MergeProcessor(Match match, MatchMakerSession session) 
 			throws SQLException, ArchitectException {
 		this.match = match;
 		this.session = session;
 		pool = new MatchPool(match);
+		
 		//Initialize the match pool
 		pool.findAll(new ArrayList<SQLColumn>());
+		
+		//Topological sort
+        gm = new MatchPoolDirectedGraphModel(pool);
+        DepthFirstSearch<SourceTableRecord, PotentialMatchRecord> dfs = new DepthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+        dfs.performSearch(gm);
+        processOrder = dfs.getFinishOrder();
 	}
 	
 	/**
 	 * Call this method to run the merge engine. Currently it only merges the data on 
 	 * the source table (not the child tables). The avg action is currently not
-	 * supported. Also, when master-duplicate hierarchy contains more than one level, 
-	 * call will not work properly, because it merges in no particular order.
+	 * supported.
 	 */
 	public Boolean call() throws Exception {
 		SQLTable sourceTable = match.getSourceTable();
@@ -104,18 +120,20 @@ public class MergeProcessor extends AbstractProcessor {
 
 		// Retrieves the sql statements to make the merge changes and executes it.
 		if (needsToCheckDup) {
-			for (PotentialMatchRecord pm : pool.getPotentialMatches()) {
-				if (pm.getMatchStatus() == PotentialMatchRecord.MatchType.AUTOMATCH 
-						|| pm.getMatchStatus() == PotentialMatchRecord.MatchType.MATCH) {
-					String sql = createUpdateSQL(pm, sourceTable, mapping, con);
-					int rows = stmt.executeUpdate(sql.toString());
+			for (SourceTableRecord str : processOrder) {
+				for (PotentialMatchRecord pm : gm.getOutboundEdges(str)) {
+					if (pm.getMatchStatus() == PotentialMatchRecord.MatchType.AUTOMATCH 
+							|| pm.getMatchStatus() == PotentialMatchRecord.MatchType.MATCH) {
+						String sql = createUpdateSQL(pm, sourceTable, mapping, con);
+						int rows = stmt.executeUpdate(sql.toString());
 
-					if (rows != 1) {
-						throw new IllegalStateException("The update did not affect the correct " +
-							"number of rows: expected 1 but got " + rows); 
+						if (rows != 1) {
+							throw new IllegalStateException("The update did not affect the correct " +
+									"number of rows: expected 1 but got " + rows); 
+						}
 					}
-				}
 
+				}
 			}
 		}
 		

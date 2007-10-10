@@ -76,7 +76,7 @@ public class MergeProcessorOracleTest extends AbstractMergeProcessorTest {
     	SQLDatabase db = session.getDatabase();
     	SPDataSource ds = session.getDatabase().getDataSource();
     	Connection con = db.getConnection();
-		String sql = "DROP TABLE MERGE_PROCESSOR_TEST";
+		String sql = "DROP TABLE " + getFullTableName();
 		execSQL(con,sql);
 		
 		//Creates the source table
@@ -86,8 +86,8 @@ public class MergeProcessorOracleTest extends AbstractMergeProcessorTest {
 					"\n COL_DATE DATE NULL," +
 					"\n COL_NUMBER NUMBER(22,0) NULL)";
 		execSQL(con,sql);
-		String testString = "ABCDE";
-		for (int i = 0; i < 5; i++) {
+		String testString = "ABCDEF";
+		for (int i = 0; i < 6; i++) {
 			sql = "INSERT INTO " + getFullTableName() + " VALUES(" +
 				i + ", " +
 				SQL.quote(testString.charAt(i)) + ", " +
@@ -95,10 +95,10 @@ public class MergeProcessorOracleTest extends AbstractMergeProcessorTest {
 				i + ")";
 			execSQL(con,sql);
 		}
-        sql = "INSERT INTO " + getFullTableName() + " (ID) VALUES(5)";
+        sql = "INSERT INTO " + getFullTableName() + " (ID) VALUES(6)";
         execSQL(con,sql);
-        match.setSourceTable(db.getTableByName("MERGE_PROCESSOR_TEST"));
-        match.setSourceTableIndex(db.getTableByName("MERGE_PROCESSOR_TEST").getPrimaryKeyIndex());
+        match.setSourceTable(db.getTableByName("MERGE_TEST"));
+        match.setSourceTableIndex(db.getTableByName("MERGE_TEST").getPrimaryKeyIndex());
 
         //Creates the result Table
         DDLGenerator ddlg = null;
@@ -109,7 +109,7 @@ public class MergeProcessorOracleTest extends AbstractMergeProcessorTest {
     	}
     	assertNotNull("DDLGenerator error", ddlg);
 		ddlg.setTargetSchema(ds.getPlSchema());
-		match.setResultTableName("MERGE_PROCESSOR_TEST_RESULT");
+		match.setResultTableName("MERGE_TEST_RESULT");
 		match.setResultTableSchema(ds.getPlSchema());
 		
 		if (Match.doesResultTableExist(session, match)) {
@@ -125,17 +125,32 @@ public class MergeProcessorOracleTest extends AbstractMergeProcessorTest {
 	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
 	    	"VALUES " + 
-	    	"(1,5,1,'AUTO_MATCH','N', 'test')";
+	    	"(6,4,10,'AUTO_MATCH','Y', 'test')";
 	    execSQL(con,sql);
 	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
 	    	"VALUES " + 
-	    	"(2,3,1,'MATCH','Y', 'test')";
+	    "(0,1,10,'AUTO_MATCH','N', 'test')";
 	    execSQL(con,sql);
 	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
 	    	"VALUES " + 
-	    	"(4,3,1,'UNMATCH','', 'test')";
+	    	"(1,5,10,'AUTO_MATCH','N', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(2,3,10,'MATCH','Y', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(4,3,10,'UNMATCH','', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(5,4,10,'MATCH','N', 'test')";
 	    execSQL(con,sql);
 	    
 	    cmr_string.setColumn(match.getSourceTable().getColumnByName("COL_STRING"));   	
@@ -149,6 +164,6 @@ public class MergeProcessorOracleTest extends AbstractMergeProcessorTest {
 
 	@Override
 	protected String getFullTableName() {
-		return "MM_TEST.MERGE_PROCESSOR_TEST";
+		return "MM_TEST.MERGE_TEST";
 	}
 }

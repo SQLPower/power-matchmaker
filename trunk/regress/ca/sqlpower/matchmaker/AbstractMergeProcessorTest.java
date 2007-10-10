@@ -98,7 +98,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 4";
 		rs = stmt.executeQuery(sql);
 		if (!rs.next()) {
-			fail("Merge deleted master record with id=4");
+			fail("Merge deleted master record with id = 4");
 		}
 		assertEquals("No changes should have been made.", "E", rs.getString(2));
 		assertEquals("No changes should have been made.", (new Date(1000*60*60*24*4)).toString(), rs.getDate(3).toString());
@@ -165,14 +165,14 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
-		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 5";
+		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
 		rs = stmt.executeQuery(sql);
 		if (!rs.next()) {
-			fail("Merge deleted master record with id = 5");
+			fail("Merge deleted master record with id = 6");
 		}
-		assertEquals("String not augmented.", "B", rs.getString(2));
-		assertEquals("Date not augmented.", (new Date(1000*60*60*24)).toString(), rs.getDate(3).toString());
-		assertEquals("Number not augmented.", 1, rs.getInt(4));
+		assertEquals("String not augmented.", "E", rs.getString(2));
+		assertEquals("Date not augmented.", (new Date(1000*60*60*24*4)).toString(), rs.getDate(3).toString());
+		assertEquals("Number not augmented.", 4, rs.getInt(4));
 		
 		sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 2";
 		rs = stmt.executeQuery(sql);
@@ -217,12 +217,12 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
-		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 5";
+		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
 		rs = stmt.executeQuery(sql);
 		if (!rs.next()) {
-			fail("Merge deleted master record with id = 5");
+			fail("Merge deleted master record with id = 6");
 		}
-		assertEquals("String not concatenated.", "B", rs.getString(2));
+		assertEquals("String not concatenated.", "EFBA", rs.getString(2));
 		assertNull("Date not ignored.", rs.getDate(3));
 		assertNull("Number not ignored.", rs.getObject(4));
 		
@@ -249,14 +249,14 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
-		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 5";
+		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
 		rs = stmt.executeQuery(sql);
 		if (!rs.next()) {
-			fail("Merge deleted master record with id = 5");
+			fail("Merge deleted master record with id = 6");
 		}
-		assertEquals("String not minimized.", "B", rs.getString(2));
-		assertEquals("Date not minimized.", (new Date(1000*60*60*24)).toString(), rs.getDate(3).toString());
-		assertEquals("Number not minimized.", 1, rs.getInt(4));
+		assertEquals("String not minimized.", "A", rs.getString(2));
+		assertEquals("Date not minimized.", (new Date(0)).toString(), rs.getDate(3).toString());
+		assertEquals("Number not minimized.", 0, rs.getInt(4));
 		
 		sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 2";
 		rs = stmt.executeQuery(sql);
@@ -281,14 +281,14 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
-		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 5";
+		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
 		rs = stmt.executeQuery(sql);
 		if (!rs.next()) {
-			fail("Merge deleted master record with id = 5");
+			fail("Merge deleted master record with id = 6");
 		}
-		assertEquals("String not maximized.", "B", rs.getString(2));
-		assertEquals("Date not maximized.", (new Date(1000*60*60*24)).toString(), rs.getDate(3).toString());
-		assertEquals("Number not maximized.", 1, rs.getInt(4));
+		assertEquals("String not maximized.", "F", rs.getString(2));
+		assertEquals("Date not maximized.", (new Date(1000*60*60*24*5)).toString(), rs.getDate(3).toString());
+		assertEquals("Number not maximized.", 5, rs.getInt(4));
 		
 		sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 2";
 		rs = stmt.executeQuery(sql);
@@ -333,14 +333,14 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
-		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 5";
+		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
 		rs = stmt.executeQuery(sql);
 		if (!rs.next()) {
-			fail("Merge deleted master record with id = 5");
+			fail("Merge deleted master record with id = 6");
 		}
 		assertNull("String not ignored.", rs.getString(2));
 		assertNull("Date not ignored.", rs.getDate(3));
-		assertEquals("Number not summed.", 1, rs.getInt(4));
+		assertEquals("Number not summed.", 10, rs.getInt(4));
 		
 		sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 2";
 		rs = stmt.executeQuery(sql);
