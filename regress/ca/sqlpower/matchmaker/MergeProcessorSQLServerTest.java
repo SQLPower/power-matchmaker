@@ -85,8 +85,8 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 					"\n COL_DATE DATETIME NULL," +
 					"\n COL_NUMBER NUMERIC NULL)";
 		execSQL(con,sql);
-		String testString = "ABCDE";
-		for (int i = 0; i < 5; i++) {
+		String testString = "ABCDEF";
+		for (int i = 0; i < 6; i++) {
 			sql = "INSERT INTO " + getFullTableName() + " VALUES(" +
 				i + ", " +
 				SQL.quote(testString.charAt(i)) + ", " +
@@ -94,12 +94,12 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 				i + ")";
 			execSQL(con,sql);
 		}
-        sql = "INSERT INTO " + getFullTableName() + " (ID) VALUES(5)";
+        sql = "INSERT INTO " + getFullTableName() + " (ID) VALUES(6)";
         execSQL(con,sql);
         match.setSourceTable(db.getTableByName("MM_TEST", "MM_TEST", 
-        	"MERGE_PROCESSOR_TEST"));
+        	"MERGE_TEST"));
         match.setSourceTableIndex(db.getTableByName("MM_TEST", "MM_TEST", 
-			"MERGE_PROCESSOR_TEST").getPrimaryKeyIndex());
+			"MERGE_TEST").getPrimaryKeyIndex());
 
         //Creates the result Table
         DDLGenerator ddlg = null;
@@ -110,7 +110,7 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
     	}
     	assertNotNull("DDLGenerator error", ddlg);
 		ddlg.setTargetSchema(ds.getPlSchema());
-		match.setResultTableName("MERGE_PROCESSOR_TEST_RESULT");
+		match.setResultTableName("MERGE_TEST_RESULT");
 		match.setResultTableSchema("MM_TEST");
 		match.setResultTableCatalog("MM_TEST");
 		
@@ -124,22 +124,38 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 	    	sql = sqlStatement.getSQLText();
 	    	execSQL(con,sql);
 	    }
-	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
-	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
-	    	"VALUES " + 
-	    	"(1,5,1,'AUTO_MATCH','N', 'test')";
-	    execSQL(con,sql);
-	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
-	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
-	    	"VALUES " + 
-	    	"(2,3,1,'MATCH','Y', 'test')";
-	    execSQL(con,sql);
-	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
-	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
-	    	"VALUES " + 
-	    	"(4,3,1,'UNMATCH','', 'test')";
-	    execSQL(con,sql);
 	    
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(6,4,10,'AUTO_MATCH','Y', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(0,1,10,'AUTO_MATCH','N', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(1,5,10,'AUTO_MATCH','N', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(2,3,10,'MATCH','Y', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(4,3,10,'UNMATCH','', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(5,4,10,'MATCH','N', 'test')";
+	    execSQL(con,sql);
+
 	    cmr_string.setColumn(match.getSourceTable().getColumnByName("COL_STRING"));   	
 		cmr_date.setColumn(match.getSourceTable().getColumnByName("COL_DATE"));
 		cmr_number.setColumn(match.getSourceTable().getColumnByName("COL_NUMBER"));
@@ -151,6 +167,6 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 	
 	@Override
 	protected String getFullTableName() {
-		return "MM_TEST.MM_TEST.MERGE_PROCESSOR_TEST";
+		return "MM_TEST.MM_TEST.MERGE_TEST";
 	}
 }
