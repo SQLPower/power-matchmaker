@@ -163,9 +163,6 @@ public class MatchPool {
      * @throws ArchitectException if SQLObjects fail to populate its children
      */
     public void findAll(List<SQLColumn> displayColumns) throws SQLException, ArchitectException {
-        
-        deleteRedundantMatchRecords();
-        
         SQLTable resultTable = match.getResultTable();
         Connection con = null;
         Statement stmt = null;
