@@ -23,6 +23,7 @@
 package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -64,9 +65,19 @@ public class IOConnector extends JComponent implements MouseListener {
 	private Point bottom;
 	
 	private Stroke nonSelectedStroke = new BasicStroke(2);
-	private Stroke selectedStroke = new BasicStroke(3);
+	private Stroke selectedStroke = new BasicStroke(4);
 	
 	private boolean recentlyResized;
+	
+	/**
+	 * The amount of space to add as padding around the line that is to drawn.
+	 */
+	private int boundsPadding = 10;
+	
+	/**
+	 * The amount of downward shift to apply to the line where it meets the plug handle. 
+	 */
+	private int plugOffset = 2;
 	
 	/**
 	 * Creates a new IOConnector that represents a connection line in the mungePen
@@ -226,6 +237,17 @@ public class IOConnector extends JComponent implements MouseListener {
 			} 
 		}
 		
+		width += boundsPadding;
+		height += boundsPadding;
+		x -= boundsPadding/2;
+		y -= boundsPadding/2;
+
+		top.x += boundsPadding/2;
+		top.y += boundsPadding/2;
+		bottom.x += boundsPadding/2;
+		bottom.y += boundsPadding/2 + plugOffset;
+		
+		
 		setBounds(x,y,width+1,height+1);
 	}
 	
@@ -283,6 +305,14 @@ public class IOConnector extends JComponent implements MouseListener {
 			g2.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
 		} else {
 			logger.debug("Error line not existant");
+		}
+		
+		if (logger.isDebugEnabled()) {
+			g.setColor(Color.RED);
+			g.drawRect(0, 0, getWidth() -1, getHeight()-1);
+			g.drawLine(top.x, top.y, top.x, top.y);
+			g.drawLine(bottom.x, bottom.y, bottom.x, bottom.y);
+			g.setColor(Color.BLACK);
 		}
 		
 	}
