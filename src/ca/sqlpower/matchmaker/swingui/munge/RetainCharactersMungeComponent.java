@@ -60,7 +60,6 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 		RetainCharactersMungeStep temp = (RetainCharactersMungeStep) getStep();
 
 		useRegex = new JCheckBox("Use Regular Expressions");
-		useRegex.setBackground(getBg());
 		useRegex.setSelected(temp.getBooleanParameter(temp.USE_REGEX_PARAMETER_NAME));
 		useRegex.addActionListener(new ActionListener(){
 
@@ -72,7 +71,6 @@ public class RetainCharactersMungeComponent extends AbstractMungeComponent {
 		});
 		
 		caseSensitive = new JCheckBox("Case Sensitive");
-		caseSensitive.setBackground(getBg());
 		caseSensitive.setSelected(temp.getBooleanParameter(temp.CASE_SENSITIVE_PARAMETER_NAME));
 		caseSensitive.addActionListener(new ActionListener(){
 

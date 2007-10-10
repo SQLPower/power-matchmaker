@@ -57,7 +57,6 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 		WordCountMungeStep step = (WordCountMungeStep) getStep();
 		
 		useRegex = new JCheckBox("Use Regular Expressions");
-		useRegex.setBackground(getBg());
 		useRegex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				WordCountMungeStep step = (WordCountMungeStep) getStep();

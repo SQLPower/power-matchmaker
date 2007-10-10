@@ -60,7 +60,6 @@ public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
 		StringSubstitutionMungeStep step = (StringSubstitutionMungeStep) getStep();
 		
 		useRegex = new JCheckBox("Use Regular Expressions");
-		useRegex.setBackground(getBg());
 		useRegex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				StringSubstitutionMungeStep step = (StringSubstitutionMungeStep) getStep();

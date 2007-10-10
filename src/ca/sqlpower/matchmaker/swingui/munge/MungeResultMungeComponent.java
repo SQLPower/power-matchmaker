@@ -48,8 +48,6 @@ public class MungeResultMungeComponent extends AbstractMungeComponent {
 		addInputButton = new JButton(new AddInputAction("Add Input"));
 		removeInputsButton = new JButton(
 				new RemoveUnusedInputAction("Clean Up"));
-		addInputButton.setBackground(getBg());
-		removeInputsButton.setBackground(getBg());
 
 		content.add(addInputButton);
 		content.add(removeInputsButton);

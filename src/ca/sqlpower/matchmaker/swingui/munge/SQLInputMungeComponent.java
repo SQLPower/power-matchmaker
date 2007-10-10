@@ -35,6 +35,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
@@ -59,7 +61,7 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 	@Override
 	protected JPanel buildUI() {
 		JPanel content = new JPanel();
-
+		
 		try {
 			getStep().open();
 			getStep().close();
@@ -81,7 +83,6 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 			}
 			
 		});
-		hideAll.setBackground(getBg());
 		showAll = new JButton(new AbstractAction("Show All") {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -90,8 +91,6 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 				}
 			}
 		});
-		showAll.setBackground(getBg());
-		top.setBackground(getBg());
 		top.add(hideAll);
 		top.add(showAll);
 		
@@ -130,7 +129,6 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 			labels[x++] = lab;
 			hide(lab);
 		}
-		bottom.setBackground(getBg());
 		
 		content.add(top, BorderLayout.NORTH);
 		content.add(bottom, BorderLayout.SOUTH);
@@ -171,6 +169,9 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 	
 	@Override
 	public JPopupMenu getPopupMenu() {
+		if (Logger.getLogger(AbstractMungeComponent.class).isDebugEnabled()) {
+			return super.getPopupMenu();
+		}
 		return null;
 	}
 }
