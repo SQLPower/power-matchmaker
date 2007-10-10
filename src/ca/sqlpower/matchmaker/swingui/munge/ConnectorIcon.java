@@ -178,7 +178,7 @@ public class ConnectorIcon implements Icon {
 	 * @param background The part behind the handle decoration
 	 * @param nib The nib (the part that actually plugs in)
 	 */
-	private ConnectorIcon(Image base, Image background, Image nib) {
+	private ConnectorIcon(Image base, Image background, Image nibCover, Image nibBackground) {
 
 		Dimension baseSize = new Dimension(0, 0);
 		if (base != null) {
@@ -191,13 +191,22 @@ public class ConnectorIcon implements Icon {
 			bgSize.height = background.getHeight(null);
 		}
 		Dimension nibSize = new Dimension(0, 0);
-		if (nib != null) {
-			nibSize.width = nib.getWidth(null);
-			nibSize.height = nib.getHeight(null);
+		if (nibBackground != null) {
+			nibSize.width = nibBackground.getWidth(null);
+			nibSize.height = nibBackground.getHeight(null);
 			if (base != null || background != null) {
 				nibSize.height -= NIB_OVERLAP;
 			}
 		}
+		Dimension nibCoverSize = new Dimension(0, 0);
+		if (nibCover != null) {
+			nibCoverSize.width = nibCover.getWidth(null);
+			nibCoverSize.height = nibCover.getHeight(null);
+			if (base != null || background != null) {
+				nibCoverSize.height -= NIB_OVERLAP;
+			}
+		}
+		
 		
 		GraphicsEnvironment graphEnv =GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice graphDevice = graphEnv.getDefaultScreenDevice();
@@ -208,8 +217,11 @@ public class ConnectorIcon implements Icon {
 		
 		Graphics2D g2 = imageData.createGraphics();
 		
-		if (nib != null) {
-			g2.drawImage(nib, 0, imageData.getHeight() - nib.getHeight(null), null);
+		if (nibBackground != null) {
+			g2.drawImage(nibBackground, 0, imageData.getHeight() - nibBackground.getHeight(null), null);
+		}
+		if (nibCover != null) {
+			g2.drawImage(nibCover, 0, imageData.getHeight() - nibCover.getHeight(null), null);
 		}
 		if (background != null) {
 			g2.drawImage(background, 0, 0, null);
@@ -242,12 +254,14 @@ public class ConnectorIcon implements Icon {
 			background = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/base/base_" + hexColour(c) + ".png")).getImage();
 		}
 		
-		Image nib = null;
+		Image nibBackground = null;
+		Image nibCover = null;
 		if (includeNib) {
 			logger.debug("nib resource path: icons/plugs/nib/nib_" + hexColour(c) + ".png");
-			nib = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/nib/nib_" + hexColour(c) + ".png")).getImage();
+			nibBackground = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/nib/nib_" + hexColour(c) + ".png")).getImage();
+			nibCover = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/nib/nib_cover.png")).getImage();
 		}
-		return new ConnectorIcon(base, background, nib);
+		return new ConnectorIcon(base, background, nibCover, nibBackground);
 	}
 	
 	/**
@@ -310,7 +324,7 @@ public class ConnectorIcon implements Icon {
 		if (curr == null) {
 			Image base = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/port/port_cover.png")).getImage();
 			Image background = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/port/port_" + hexColour(c) + ".png")).getImage();
-			curr = new ConnectorIcon(base, background, null);
+			curr = new ConnectorIcon(base, background, null, null);
 			femaleCache.put(c, curr);
 		}
 		return curr;
