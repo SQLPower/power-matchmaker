@@ -48,8 +48,6 @@ public class ConcatMungeComponent extends AbstractMungeComponent {
 		addInputButton = new JButton(new AddInputAction("Add Input"));
 		removeInputsButton = new JButton(
 				new RemoveUnusedInputAction("Clean Up"));
-		addInputButton.setBackground(getBg());
-		removeInputsButton.setBackground(getBg());
 
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu", // columns

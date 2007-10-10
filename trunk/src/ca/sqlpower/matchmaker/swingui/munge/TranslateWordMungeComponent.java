@@ -55,7 +55,6 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 		TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
 		
 		useRegex = new JCheckBox("Use Regular Expressions");
-		useRegex.setBackground(getBg());
 		useRegex.setSelected(temp.getBooleanParameter(TranslateWordMungeStep.USE_REGEX_PARAMETER_NAME));
 		useRegex.addActionListener(new ActionListener(){
 
@@ -92,7 +91,6 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 		} else {
 			translateGroup = new JComboBox();
 		}
-		translateGroup.setBackground(getBg());
 		translateGroup.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {

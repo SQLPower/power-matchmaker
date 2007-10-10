@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -38,17 +40,25 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
@@ -63,7 +73,6 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
-import ca.sqlpower.util.WebColour;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 public abstract class AbstractMungeComponent extends JPanel {
@@ -103,14 +112,40 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private final MungeStep step;
 	
-	private final Color bg;
-	private final Color borderColour;
+	/**
+	 * The background colour to use when this component is not selected.
+	 */
+	private Color normalBackground = new Color(0xee, 0xee, 0xee);
+	
+	/**
+	 * The shadow colour to use when this component is not selected.
+	 */
+	private Color normalShadow = new Color(0xdd, 0xdd, 0xdd);
+	
+	/**
+	 * The background colour to use when this component is selected.
+	 */
+	private Color selectedBackground = new Color(0xc5, 0xdd, 0xf7);
+	
+	/**
+	 * The shadow colour to use when this component is selected.
+	 */
+	private Color selectedShadow = new Color(0xb1, 0xc7, 0xdf);
+	
+	/**
+	 * The set of component types that should not have their opaqueness fiddled
+	 * with after the UI has been built.  See {@link #deOpaquify(Container)}
+	 * for details.
+	 */
+	protected Set<Class<? extends JComponent>> opaqueComponents = new HashSet<Class<? extends JComponent>>();
 	
 	private static final Image MMM_TOP = new ImageIcon(ClassLoader.getSystemResource("icons/mmm_top.png")).getImage(); 
 	private static final Image MMM_BOT = new ImageIcon(ClassLoader.getSystemResource("icons/mmm_bot.png")).getImage(); 
 	
 	private static final ImageIcon EXPOSE_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/expose_off.png"));
 	private static final ImageIcon EXPOSE_ON = new ImageIcon(ClassLoader.getSystemResource("icons/expose_on.png"));
+	
+	private static final int PLUG_OFFSET = 2;
 	
 	private boolean expanded;
 	
@@ -130,12 +165,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param border The colour for the border around the rectangle
 	 * @param bg The background colour to the rectangle
 	 */
-	private AbstractMungeComponent(MungeStep step, Color border, Color bg) {
+	private AbstractMungeComponent(MungeStep step) {
 		
-		this.borderColour = border;
-		this.bg = bg;
 		this.step = step;
 		setVisible(true);
+		setBackground(normalBackground);
 		
 		mungeComKeyListener = new MungeComponentKeyListener();
 		addKeyListener(mungeComKeyListener);
@@ -147,7 +181,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		if (!getStep().canAddInput() && getStep().getInputs().size() == 0) {
 			borderTop = MMM_TOP.getHeight(null);
 		} else {
-			 borderTop = ConnectorIcon.getHandleInstance(Object.class).getIconHeight();
+			 borderTop = ConnectorIcon.getHandleInstance(Object.class).getIconHeight() + PLUG_OFFSET;
 		}
 		
 		int borderBottom;
@@ -157,7 +191,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 			borderBottom = ConnectorIcon.getNibInstance(Object.class).getIconHeight();
 		}
 		setBorder(BorderFactory.createEmptyBorder(borderTop,1,borderBottom,MMM_TOP.getWidth(null)));
-				
 		
 		setOpaque(false);
 		setFocusable(true);
@@ -167,17 +200,23 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 		
 		root = new JPanel();
+		root.setBackground(Color.GREEN);
 		root.setLayout(new BorderLayout());
+		
+		
 		JPanel tmp = new JPanel( new FlowLayout());
+		tmp.setBackground(Color.BLUE);
 		tmp.add(new JLabel(step.getName()));
 		
-		content = buildUI();
 		
 		hideShow = new JButton(new HideShowAction());
 		hideShow.setIcon(EXPOSE_OFF);
 		
+		setupOpaqueComponents();
+		content = buildUI();
 		//returning null will prevent the +/- button form showing up
 		if (content != null) {
+			deOpaquify(content);
 			JToolBar tb = new JToolBar();
 			hideShow.setBorder(null);
 			hideShow.addMouseListener(new MouseAdapter(){
@@ -196,14 +235,16 @@ public abstract class AbstractMungeComponent extends JPanel {
 			tb.add(hideShow);
 			tb.setFloatable(false);
 			tmp.add(tb);
-			content.setBackground(bg);
+//			content.setBackground(normalBackground);
 		}
 
+
+		
 		root.add(tmp,BorderLayout.NORTH);
 		add(root);
 		
-		root.setBackground(bg);
-		tmp.setBackground(bg);
+//		root.setBackground(normalBackground);
+//		tmp.setBackground(normalBackground);
 		
 		addMouseListener(new MungeComponentMouseListener());
 		addMouseMotionListener(new MungeComponentMouseMoveListener());
@@ -244,13 +285,73 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 		});
 		
+		
+		root.setOpaque(false);
+		tmp.setOpaque(false);
+		if (content != null) {
+			content.setOpaque(false);
+		}
 		expanded = false;
 		
+		// Note, this does not take care of the content panel; only the basic
+		// stuff added here in the constructor (most importantly, the +/- button)
+		deOpaquify(this);
 	}
 
 	/**
-	 * This returns the options for the munge step. This must be set individualy for each munge step.
-	 * If null is returned no options will be show and there will be no +/- button
+	 * Adds the default set of component types that should not be made non-opaque
+	 * to the {@link #opaqueComponents} set.  If your munge component uses other component
+	 * types that should also not be made non-opaque, override this method and add
+	 * your types to that set.  Don't forget to call super.setupOpaqueComponents()
+	 * if you want to have the default set too.
+	 */
+	protected void setupOpaqueComponents() {
+		opaqueComponents.add(JTextField.class);
+		opaqueComponents.add(JTextArea.class);
+		opaqueComponents.add(JFormattedTextField.class);
+	}
+
+	/**
+	 * Walks the tree of components rooted at c, setting all of the components
+	 * that can and should be flagged as non-opaque as such.
+	 * <p>
+	 * Components that should not be made non-opaque (such as JTextField, because
+	 * that looks silly) will be left alone.  The exact set of component types
+	 * that will be left with their existing opaqueness setting is controlled by
+	 * the contents of the {@link #opaqueComponents} set.  If your munge component
+	 * implementation has a preferences component that's getting made non-opaque,
+	 * just add its class to that set in your {@link #setupOpaqueComponents()} method.
+	 * 
+	 * @param c
+	 */
+	private void deOpaquify(Container c) {
+		for (int i = 0; i < c.getComponentCount(); i++) {
+			Component cc = c.getComponent(i);
+			if (cc instanceof JComponent && !opaqueComponents.contains(cc.getClass())) {
+				((JComponent) cc).setOpaque(false);
+			}
+			if (cc instanceof Container) {
+				deOpaquify((Container) cc);
+			}
+		}
+	}
+
+	/**
+	 * This returns the user interface for your munge step options. This method
+	 * must be implemented individualy for each munge step. If your munge step
+	 * doesn't have any options, you should return null from this method, and
+	 * there will be no +/- button on your component.
+	 * <p>
+	 * Important note about opaqueness: The munge component's background colour
+	 * will change when it is selected.  For this effect to work properly, most
+	 * of your components will have to be non-opaque.  This is a pain for you
+	 * to remember and actually do for every munge component, so the AbstractMungeComponent
+	 * will walk through the panel returned by this method and set most of the contained
+	 * components to non-opaque.  Some components, though, look bad when they're not
+	 * opaque, so those are left alone.  If you're adding a custom (or unusual) component
+	 * to your preferences panel, and it's being made non-opaque against your wishes,
+	 * add its class to the {@link #opaqueComponents} set in your {@link #setupOpaqueComponents()}
+	 * method.
 	 * 
 	 * @return The option panel or null
 	 */
@@ -263,7 +364,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param step The step connecting to the UI
 	 */
 	public AbstractMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
-		this(step, new WebColour("#dddddd"), new WebColour("#eeeeee"));
+		this(step);
 		this.session = (MatchMakerSwingSession)session;
 		this.handler = handler;
 	}
@@ -340,14 +441,19 @@ public abstract class AbstractMungeComponent extends JPanel {
 		dim.width -= border.left+border.right;
 		dim.height -= border.top+border.bottom;
 		
-		int[] x = {0,MMM_TOP.getHeight(null)-1,dim.width-1,dim.width-1};
-		int[] y = {MMM_TOP.getHeight(null)-1,0,0,MMM_TOP.getHeight(null)-1};
-		g.setColor(borderColour);
+		g.drawImage(MMM_TOP, getWidth()-border.right-1, border.top - MMM_TOP.getHeight(null)+1, null);
+		g.drawImage(MMM_BOT, getWidth()-border.right-1, getHeight() - MMM_BOT.getHeight(null) - border.bottom - 1, null);
+		
+		int[] x = {0,						MMM_TOP.getHeight(null)-1,	dim.width + MMM_TOP.getWidth(null) -1,	dim.width-1};
+		int[] y = {MMM_TOP.getHeight(null),	1,							1,				MMM_TOP.getHeight(null)};
+		if (!hasFocus()) {
+			g.setColor(normalShadow);
+		} else {
+			g.setColor(selectedShadow);
+		}
 		g.translate(0, border.top - MMM_TOP.getHeight(null));
 		g.fillPolygon(x, y, 4);
 		g.translate(0, -(border.top - MMM_TOP.getHeight(null)));
-		g.drawImage(MMM_TOP, getWidth()-border.right-1, border.top - MMM_TOP.getHeight(null), null);
-		g.drawImage(MMM_BOT, getWidth()-border.right-1, getHeight() - MMM_BOT.getHeight(null) - border.bottom - 1, null);
 
 		
 		
@@ -373,7 +479,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 		
 		g = g.create(border.left, border.top, getWidth()-border.right, getHeight()-border.bottom);
-		g.setColor(bg);
+		if (!hasFocus()) {
+			g.setColor(normalBackground);
+		} else {
+			g.setColor(selectedBackground);
+		}
 		g.fillRect(0, 0, dim.width-1, dim.height-1);
 		
 	}
@@ -406,16 +516,44 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public JPopupMenu getPopupMenu() {
 		JPopupMenu ret = new JPopupMenu();
-		JMenuItem rm = new JMenuItem(new AbstractAction(){
+		JMenuItem rm = new JMenuItem(new AbstractAction("Delete (del)") {
 
 			public void actionPerformed(ActionEvent e) {
 				remove();
 			}
 			
 		});
-		
-		rm.setText("Delete (del)");
 		ret.add(rm);
+		
+		if (logger.isDebugEnabled()) {
+			ret.addSeparator();
+			ret.add(new AbstractAction("Show Components") {
+
+				public void actionPerformed(ActionEvent e) {
+					JTextArea ta = new JTextArea(listContents(AbstractMungeComponent.this, 0));
+					JOptionPane.showMessageDialog(AbstractMungeComponent.this, new JScrollPane(ta));
+				}
+				
+				private String listContents(Container c, int level) {
+					StringBuilder sb = new StringBuilder();
+					for (int i = 0; i < c.getComponentCount(); i++) {
+						Component cc = c.getComponent(i);
+						for (int j = 0; j < level; j++) {
+							sb.append("  ");
+						}
+						sb.append(cc.getClass().getName());
+						sb.append(": ");
+						sb.append(cc.getBackground());
+						sb.append("; opaque=").append(cc.isOpaque());
+						sb.append("\n");
+						if (cc instanceof Container) {
+							sb.append(listContents((Container) cc, level + 1));
+						}
+					}
+					return sb.toString();
+				}
+			});
+		}
 		return ret;
 	}
 	
@@ -567,7 +705,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 
 		public void mouseEntered(MouseEvent e) {
-			
 		}
 
 		public void mouseExited(MouseEvent e) {
@@ -646,10 +783,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 			getPen().mouseX = e.getX() + getX();
 			getPen().mouseY = e.getY() + getY();
 		}
-	}
-
-	public Color getBg() {
-		return bg;
 	}
 	
 	//checks to see if the mouse was near an IOC point

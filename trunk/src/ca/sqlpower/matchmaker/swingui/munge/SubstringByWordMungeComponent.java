@@ -66,7 +66,6 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 		SubstringByWordMungeStep step = (SubstringByWordMungeStep) getStep();
 		
 		useRegex = new JCheckBox("Use Regular Expressions");
-		useRegex.setBackground(getBg());
 		useRegex.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
 				SubstringByWordMungeStep step = (SubstringByWordMungeStep) getStep();
