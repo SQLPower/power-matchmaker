@@ -218,7 +218,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 * 
 	 */
 	public MungePen(MungeProcess process, FormValidationHandler handler, 
-			Map stepsProperties, Match match) throws ArchitectException {
+			Map<String, StepDescription> stepsProperties, Match match) throws ArchitectException {
 		this.stepsProperties = stepsProperties;
 		process.addMatchMakerListener(new MungePenMatchRuleSetListener());
 		mungeStepListener = new MungePenMungeStepListener();
@@ -476,7 +476,14 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		requestFocusInWindow();
 		if (inputHit) {
 			if (mcom.getInputs().size() > connectionNum && mcom.getInputs().get(connectionNum) != null) {
-				return;
+				for (IOConnector ioc :getConnections()) {
+					if (ioc.getChildCom().equals(mcom) && ioc.getChildNumber() == connectionNum) {
+						start = ioc.getParentCom();
+						startNum = ioc.getParentNumber();
+						ioc.remove();
+						return;
+					}
+				}
 			}
 		}
 		
@@ -511,7 +518,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 		
 		//see if a connection is complete
-		if (start != null && finish != null) {
+		if (start != null && finish != null && finish.getStep().getInputs().get(finishNum) == null) {
 			logger.debug("Connection checking startNum:" + startNum + " EndNum " + finishNum);
 			Class startHas = start.getStep().getChildren().get(startNum).getType();
 			Class finishWants = finish.getStep().getInputDescriptor(finishNum).getType();
