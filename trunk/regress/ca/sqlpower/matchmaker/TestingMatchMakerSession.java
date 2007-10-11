@@ -53,6 +53,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
         translateGroupParent= new TranslateGroupParent(this);
+        context = new TestingMatchMakerContext();
 	}
 
 	public String getAppUser() {
@@ -96,8 +97,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	}
 
 	public MatchMakerSessionContext getContext() {
-		// TODO add the context to the test session
-		return null;
+		return context;
 	}
 
     public PlFolder findFolder(String foldername) {
