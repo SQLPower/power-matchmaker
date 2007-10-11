@@ -249,7 +249,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		if (process.getChildCount() == 0) {
 			MungeStep inputStep = new SQLInputStep(match.getSourceTable());
 			process.addChild(inputStep);
-			process.addChild(new MungeResultStep(match, inputStep));
+			
+			MungeResultStep mungeResultStep = new MungeResultStep(match, inputStep);
+			process.addChild(mungeResultStep);
+			process.setOutputStep(mungeResultStep);
 		}
 	}
 	
@@ -361,28 +364,54 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				logger.debug("Null clipping region");
 			}
 		}
+	}
 	
+	@Override
+	public void paint(Graphics g) {
+		super.paint(g);
+		paintPendingConnection(g);
+	}
+	
+	private void paintPendingConnection(Graphics g) {
+		Point end = getClosestInput(new Point(mouseX,mouseY));
+		boolean snap = true;
+		
+		if (end ==null) {
+			end = new Point(mouseX,mouseY);
+			snap = false;
+		}
+		
 		if (start != null || finish != null) {
 			Point fixed;
 			Icon plug = null;
 			if (start != null) {
 				fixed = start.getOutputPosition(startNum);
 				fixed.translate(start.getX(), start.getY());
-				plug = ConnectorIcon.getFullPlugInstance(start.getStep().getChildren().get(startNum).getType());
+				if (!snap) {
+					plug = ConnectorIcon.getFullPlugInstance(start.getStep().getChildren().get(startNum).getType());
+				} else {
+					plug = ConnectorIcon.getHandleInstance(start.getStep().getChildren().get(startNum).getType());
+				}
 			} else {
 				fixed = finish.getInputPosition(finishNum);
 				fixed.translate(finish.getX(), finish.getY());
 			}
 			g.setColor(Color.BLACK);
 			if (plug != null) {
-				g.drawLine(fixed.x,fixed.y, mouseX, mouseY - plug.getIconHeight()/2);
-				plug.paintIcon(this, g, mouseX, mouseY- plug.getIconHeight()/2);
+				int dragPlugOffset;
+				if (!snap) {
+					dragPlugOffset = plug.getIconHeight()/2;
+				} else {
+					dragPlugOffset = 0;
+				}
+				g.drawLine(fixed.x,fixed.y, end.x, end.y - dragPlugOffset);
+				plug.paintIcon(this, g, end.x, end.y - dragPlugOffset);
 			} else {
-				g.drawLine(fixed.x,fixed.y, mouseX, mouseY);
+				g.drawLine(fixed.x,fixed.y, end.x, end.y);
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns the list of all IOConnector components that belong to this MungePen.
 	 * 
@@ -714,7 +743,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(evt.getSource().getChildren().get(x), 
 						handler, process.getSession(), stepsProperties);
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
-				add(mcom);
+				add(mcom);				
+				mcom.configureFromStepProperties();
 			}
 			
 			//This is done in an other loop to ensure that all the MungeComponets have been mapped
@@ -839,6 +869,39 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		return sel;
 	}
 
+	/**
+     * Returns the input position for the closest input to the given point.
+     * 
+     * @param p The given point
+     * @return The closest point or null if it is not near any of them 
+     */
+	public Point getClosestInput(Point p) {
+		if (start == null) {
+			return null;
+		}
+		
+		AbstractMungeComponent sel = getMungeComponentAt(p);
+		if (sel == null) {
+			return null;
+		}
+		
+		int index = sel.getClosestIOIndex(p, AbstractMungeComponent.CLICK_TOLERANCE, true);
+		
+		if (index == -1) {
+			return null;
+		}
+		
+		Class startHas = start.getStep().getChildren().get(startNum).getType();
+		Class finishWants = sel.getStep().getInputDescriptor(index).getType(); 
+		if (sel.getStep().getInputs().get(index) == null && 
+				(finishWants.equals(startHas) || finishWants.equals(Object.class))) {
+			Point ret = sel.getInputPosition(index);
+			ret.translate(sel.getX(), sel.getY());
+			return ret;
+		}
+		return null;
+	}
+	
 	/**
 	 * Tells the mungePen that it is no longer connecting mungeSteps and to 
 	 * stop drawing that line.

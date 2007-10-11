@@ -146,6 +146,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private static final ImageIcon EXPOSE_ON = new ImageIcon(ClassLoader.getSystemResource("icons/expose_on.png"));
 	
 	private static final int PLUG_OFFSET = 2;
+	public static final int CLICK_TOLERANCE = 15;
+	
+	public static final String MUNGECOMPONENT_X = "x";
+	public static final String MUNGECOMPONENT_Y = "y";
+	public static final String MUNGECOMPONENT_EXPANDED ="expanded";
 	
 	private boolean expanded;
 	
@@ -235,16 +240,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 			tb.add(hideShow);
 			tb.setFloatable(false);
 			tmp.add(tb);
-//			content.setBackground(normalBackground);
 		}
 
 
 		
 		root.add(tmp,BorderLayout.NORTH);
 		add(root);
-		
-//		root.setBackground(normalBackground);
-//		tmp.setBackground(normalBackground);
 		
 		addMouseListener(new MungeComponentMouseListener());
 		addMouseMotionListener(new MungeComponentMouseMoveListener());
@@ -309,6 +310,57 @@ public abstract class AbstractMungeComponent extends JPanel {
 		opaqueComponents.add(JTextField.class);
 		opaqueComponents.add(JTextArea.class);
 		opaqueComponents.add(JFormattedTextField.class);
+	}
+	
+	/**
+	 * Resets the location and expandedness to the values in the step.
+	 */
+	public void configureFromStepProperties() {
+		int x = getStepParameter(MUNGECOMPONENT_X, 0);
+		int y = getStepParameter(MUNGECOMPONENT_Y, 0);
+		boolean exp = getStepParameter(MUNGECOMPONENT_EXPANDED, false);
+		setLocation(new Point(x,y));
+		setExpand(exp);
+	}
+	
+	protected int getStepParameter(String key, int defaultValue) {
+		String val = step.getParameter(key);
+		if (val == null) {
+			return defaultValue;
+		}
+		try {
+			return Integer.parseInt(val);
+		} catch (NumberFormatException ex) {
+			logger.warn("Invalid integer value \"" + val + "\" for parameter \"" + key + "\" in step " + step);
+			return defaultValue;
+		}
+	}
+
+	protected boolean getStepParameter(String key, boolean defaultValue) {
+		String val = step.getParameter(key);
+		if (val == null) {
+			return defaultValue;
+		} else {
+			return Boolean.parseBoolean(val);
+		}
+	}
+
+	protected String getStepParameter(String key, String defaultValue) {
+		String val = step.getParameter(key);
+		if (val == null) {
+			return defaultValue;
+		} else {
+			return val;
+		}
+	}
+
+	/**
+	 * Tells the steps proporties so that it can reload the GUI bits if needed.
+	 */
+	protected void updateStepProperties() {
+		getStep().setParameter(MUNGECOMPONENT_EXPANDED, new Boolean(expanded).toString());
+		getStep().setParameter(MUNGECOMPONENT_X, new Integer(getX()).toString());
+		getStep().setParameter(MUNGECOMPONENT_Y, new Integer(getY()).toString());
 	}
 
 	/**
@@ -575,6 +627,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public void removeSingle() {
 		getPen().removeMungeStepSingles(getStep());
+		MungePen.removeAllListeners(hideShow);
 	}
 	
 	/** 
@@ -582,6 +635,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public void removeNormal() {
 		getPen().removeMungeStep(getStep());
+		MungePen.removeAllListeners(hideShow);
 	}
 	
 	/**
@@ -590,26 +644,44 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public void remove() {
 		removeNormal();
-		MungePen.removeAllListeners(hideShow);
 	}
 	
+	/**
+	 * Hides or expands the component.
+	 */
+	public void hideShow() {
+		if (!expanded) {
+			root.add(content,BorderLayout.CENTER);
+			expanded = true;
+		} else {
+			root.remove(content);
+			expanded = false;
+		}
+		getPen().normalize();
+		validate();
+		root.updateUI();
+		updateStepProperties();
+	}
+	
+	public void setExpand(boolean exp) {
+		if (expanded != exp) {
+			hideShow();
+		}
+	}
 	
 	/**
 	 * The action to control the +/- button
 	 */
 	private class HideShowAction extends AbstractAction {
 		public void actionPerformed(ActionEvent e) {
-			if (!expanded) {
-				root.add(content,BorderLayout.CENTER);
-				expanded = true;
-			} else {
-				root.remove(content);
-				expanded = false;
-			}
-			getPen().normalize();
-			validate();
-			root.updateUI();
+			hideShow();
 		}	
+	}
+	
+	@Override
+	public void setLocation(int x, int y) {
+		super.setLocation(x, y);
+		updateStepProperties();
 	}
 
 	
@@ -631,7 +703,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			InputDescriptor ref = getStep().getInputDescriptor(0);
 			getStep().addInput(new InputDescriptor(ref.getName(),ref.getType()));
-			getParent().repaint();
+			
+			//cleans up the lines because they were being stupid
+			SwingUtilities.invokeLater(new Runnable(){
+				public void run() {
+					getPen().repaint();
+				}
+			});
 		}
 	}
 	
@@ -789,61 +867,78 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public boolean checkForIOConnectors(Point mousePoint) {
 		logger.debug("Checking for IOConnections");
 		
-		// this is the maximum distance squared where a connection
-		// would be considered as a hit. having it squared avoids
-		// square rooting in the loop.
-		int tolerance = 225;
-	
-		int inputs = getStep().getInputs().size();
-
 		MungePen parent = getPen();
 		
-		int minDist = tolerance;
+		int inputIndex = getClosestIOIndex(mousePoint, CLICK_TOLERANCE, true);
+		
+		if (inputIndex != -1) {
+			if (parent.isConnecting()) {
+				parent.finishConnection(this, inputIndex, true);
+			} else {
+				parent.startConnection(this, inputIndex, true);
+			}
+			return true;
+		}
+		
+		
+		inputIndex = getClosestIOIndex(mousePoint, CLICK_TOLERANCE, false);
+		
+		if (inputIndex != -1) {
+			if (parent.isConnecting()) {
+				parent.finishConnection(this, inputIndex, false);
+			} else {
+				parent.startConnection(this, inputIndex, false);
+			}
+			return true;
+		}
+		
+		return false;
+		
+	}	
+	
+	/**
+	 * Returns the input or output number that is the closest to the given point 
+	 * within a tolerance.
+	 * 
+	 * @param mousePoint The given point
+	 * @param tol The tolerance
+	 * @param checkInputs Set to true if you are checking inputs, false if you are looking at outputs
+	 * @return The index of the closest input to the mouse event or -1 if no 
+	 *   inputs are close
+	 */
+	public int getClosestIOIndex(Point mousePoint, int tol, boolean checkInputs) {
+		
+		int count;
+		if (checkInputs) {
+			count = getStep().getInputs().size();
+		} else {
+			count = getStep().getChildren().size();
+		}
+		
+		//squared because it should be faster then using the sqrt method later
+		tol = tol*tol;
+		int minDist = tol;
 		int minNum = -1;
 		
-		for (int x = 0;x<inputs;x++) {
-			Point p = getInputPosition(x);
+		for (int x = 0;x<count;x++) {
+			Point p;
+			if (checkInputs) {
+				p = getInputPosition(x);
+			} else {
+				p = getOutputPosition(x);
+			}
+			
 			p.translate(getX(), getY());
 			logger.debug("\nPoint: " + p + "\nMouse: " + mousePoint);
 			int dist = Math.abs(p.x - mousePoint.x)*Math.abs(p.x - mousePoint.x) + Math.abs(p.y - mousePoint.y)*Math.abs(p.y - mousePoint.y); 
-			if (dist < tolerance && dist < minDist) {
+			if (dist < tol && dist < minDist) {
 				minDist = dist;
 				minNum = x;
 
 			}
 		}
 		
-		if (minNum != -1) {
-			if (parent.isConnecting()) {
-				parent.finishConnection(this, minNum, true);
-			} else {
-				parent.startConnection(this, minNum, true);
-			}
-			return true;
-		}
-		
-		for (int x = 0;x<getOutputs().size();x++) {
-			Point p = getOutputPosition(x);
-			p.translate(getX(), getY());
-			logger.debug("\n" + p + "\n" + mousePoint);
-			int dist = Math.abs(p.x - mousePoint.x)*Math.abs(p.x - mousePoint.x) + Math.abs(p.y - mousePoint.y)*Math.abs(p.y - mousePoint.y); 
-			if (dist < tolerance && dist < minDist) {
-				minDist = dist;
-				minNum = x;
-
-			}
-		}
-		
-		if (minNum != -1) {
-			if (parent.isConnecting()) {
-				parent.finishConnection(this, minNum, false);
-			} else {
-				parent.startConnection(this, minNum, false);
-			}
-			return true;
-		}
-
-		return false;
-	}	
+		return minNum;
+	}
 }
 
