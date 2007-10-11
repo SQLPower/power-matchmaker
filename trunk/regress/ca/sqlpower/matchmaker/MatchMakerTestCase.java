@@ -196,7 +196,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			}
 		} else if (property.getPropertyType() == MergeActionType.class) {
 			if (oldVal == MergeActionType.AUGMENT) {
-				return MergeActionType.AVG;
+				return MergeActionType.SUM;
 			} else {
 				return MergeActionType.AUGMENT;
 			}
@@ -369,7 +369,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			}
 		} else if (property.getPropertyType() == MergeActionType.class) {
 			if (oldVal == MergeActionType.AUGMENT) {
-				newVal = MergeActionType.AVG;
+				newVal = MergeActionType.SUM;
 			} else {
 				newVal = MergeActionType.AUGMENT;
 			}

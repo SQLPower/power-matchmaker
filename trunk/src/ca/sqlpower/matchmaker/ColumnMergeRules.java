@@ -29,7 +29,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	private static final Logger logger = Logger.getLogger(ColumnMergeRules.class);
 
 	public enum MergeActionType {
-		UNKNOWN, IGNORE, AUGMENT, CONCAT, MIN, MAX, SUM, AVG;
+		IGNORE, AUGMENT, CONCAT, MIN, MAX, SUM;
 		
 		public static MergeActionType getActionTypeFromString(String type) {
 			if ("IGNORE".equals(type)){
@@ -44,10 +44,8 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 				return MAX;
 			} else if ("SUM".equals(type)){
 				return SUM;
-			} else if ("AVG".equals(type)){
-				return AVG;
 			} else {
-				return UNKNOWN;
+				throw new IllegalStateException("No such merge action type: " + type);
 			} 
 		}
 		
@@ -66,10 +64,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 				return "MAX";
 			case SUM:
 				return "SUM";
-			case AVG:
-				return "AVG";
-			case UNKNOWN:
-				return "UNKNOWN";
 			default:
 				throw new IllegalStateException("Invalid enumeration");
 			}

@@ -21,10 +21,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +37,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -51,9 +49,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLSchema;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -66,7 +61,6 @@ import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
-import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -81,7 +75,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private final TableMergeRules mergeRule;
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
-	private final SQLObjectChooser chooser;
 	private final JCheckBox deleteDup = new JCheckBox();
 
 	private MergeColumnRuleTableModel ruleTableModel;
@@ -101,13 +94,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 			throw new NullPointerException("You can't edit a null merge rule");
 		}
 
-		chooser = new SQLObjectChooser(swingSession);
-        handler = new FormValidationHandler(status);
-        handler.addPropertyChangeListener(new PropertyChangeListener(){
-			public void propertyChange(PropertyChangeEvent evt) {
-				resetAction();
-			}});
-
         ruleTableModel = new MergeColumnRuleTableModel(mergeRule);
         tableListener = new CustomTableModelListener();
         ruleTableModel.addTableModelListener(tableListener);
@@ -122,21 +108,16 @@ public class MergeColumnRuleEditor implements EditorPane {
 		});
         
         buildUI();
-        setDefaultSelections();
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(saveAction);
+        handler = new FormValidationHandler(status,actions);
+        handler.addValidateObject(ruleTable, new MergeColumnRuleJTableValidator());
         handler.resetHasValidated(); // avoid false hits when newly created
-        
+
 	}
 
 	public TableMergeRules getMergeRule() {
 		return mergeRule;
-	}
-	
-	private void resetAction() {
-		ValidateResult result = handler.getWorstValidationStatus();
-		saveAction.setEnabled(true);
-		if (result.getStatus() == Status.FAIL) {
-			saveAction.setEnabled(false);
-		}
 	}
 
 	private void buildUI() {
@@ -156,19 +137,35 @@ public class MergeColumnRuleEditor implements EditorPane {
 		int row = 2;
 		pb.add(status, cc.xy(4,row));
 		row += 2;
-		pb.add(chooser.getCatalogTerm(), cc.xy(2,row,"r,t"));
-		pb.add(chooser.getCatalogComboBox(), cc.xy(4,row,"f,t"));
+		pb.add(new JLabel("Catalog:"), cc.xy(2,row,"r,t"));
+		JTextField temp = new JTextField(mergeRule.getSourceTable().getCatalogName());
+		temp.setEditable(false);
+		pb.add(temp, cc.xy(4,row,"f,t"));
 		row += 2;
-		pb.add(chooser.getSchemaTerm(), cc.xy(2,row,"r,t"));
-		pb.add(chooser.getSchemaComboBox(), cc.xy(4,row,"f,t"));
+		
+		pb.add(new JLabel("Schema:"), cc.xy(2,row,"r,t"));
+		temp = new JTextField(mergeRule.getSourceTable().getSchemaName());
+		temp.setEditable(false);
+		pb.add(temp, cc.xy(4,row,"f,t"));
 		
 		row += 2;
 		pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,t"));
-		pb.add(chooser.getTableComboBox(), cc.xy(4,row,"f,t"));
+		temp = new JTextField(mergeRule.getTableName());
+		temp.setEditable(false);
+		pb.add(temp, cc.xy(4,row,"f,t"));
 
 		row += 2;
 		pb.add(new JLabel("Index Name:"), cc.xy(2,row,"r,t"));
-		pb.add(chooser.getUniqueKeyComboBox(), cc.xy(4,row,"f,t"));
+		String indexName = "";
+		try {
+			indexName = mergeRule.getTableIndex().getName();
+		} catch (ArchitectException e1) {
+			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
+					"An exception occured while creating the merge column rules editor", e1);
+		}
+		temp = new JTextField(indexName);
+		temp.setEditable(false);
+		pb.add(temp, cc.xy(4,row,"f,t"));
 		
 		row += 2;
 		pb.add(new JLabel("Delete Dup:"), cc.xy(2,row,"r,t"));
@@ -178,62 +175,16 @@ public class MergeColumnRuleEditor implements EditorPane {
 		row += 2;
 		pb.add(new JScrollPane(ruleTable), cc.xy(4,row,"f,f"));
 
-		ButtonBarBuilder bbb = new ButtonBarBuilder();
-		bbb.addGridded(new JButton(deriveAction));
-		bbb.addRelatedGap();
-		bbb.addGridded(new JButton(clearAction));
-		bbb.addRelatedGap();
-		bbb.addGridded(new JButton(newRuleAction));
-		bbb.addRelatedGap();
-		bbb.addGridded(new JButton(deleteRuleAction));
-		bbb.addRelatedGap();
-		bbb.addGridded(new JButton(saveAction));
-		
 		row+=2;
-		pb.add(bbb.getPanel(), cc.xy(4,row,"c,c"));
+		pb.add(new JButton(saveAction), cc.xy(4,row,"c,c"));
 		panel = pb.getPanel();
-	}
-	
-	private boolean doesColumnExistsInChildren( SQLColumn column) {
-		for ( ColumnMergeRules columnMergeRules : mergeRule.getChildren() ) {
-			if ( columnMergeRules.getColumnName().equals(column.getName()) )
-				return true;
-		}
-		return false;
-	}
-	
-	public ColumnMergeRules newColumnRule() {
-		ColumnMergeRules newRules = new ColumnMergeRules();
-		newRules.setActionType(MergeActionType.IGNORE);
-		mergeRule.addChild(newRules);
-		return newRules;
-	}
-	
-	private Action newRuleAction = new AbstractAction("New") {
-		public void actionPerformed(ActionEvent e) {
-			newColumnRule();
-		}
-	};
 		
-	private Action deleteRuleAction = new AbstractAction("Delete") {
-		public void actionPerformed(ActionEvent e) {
-			final int selectedRow = ruleTable.getSelectedRow();
-			if (selectedRow == -1) {
-				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"You have to select a column first!");
-				return;
-			} else {
-				mergeRule.removeChild(mergeRule.getChildren().get(selectedRow));
-			}
-			if (selectedRow >= 0 && selectedRow < ruleTable.getRowCount()) {
-				ruleTable.setRowSelectionInterval(selectedRow, selectedRow);
-			}
-		}
-	};
+	}
 
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(ActionEvent e) {
 			
+			//This should be uncommented when we have a proper handler
 			if ( !handler.hasPerformedValidation() ) {
 				ruleTableModel.fireTableChanged(new TableModelEvent(ruleTableModel));
 			}
@@ -260,116 +211,22 @@ public class MergeColumnRuleEditor implements EditorPane {
 		}
 	};
 		
-
-	private Action deriveAction = new AbstractAction("Derive Collision Criteria") {
-		public void actionPerformed(ActionEvent e) {
-			try {
-				List<SQLColumn> columns = new ArrayList<SQLColumn>(
-						((SQLTable) chooser.getTableComboBox().getSelectedItem()).getColumns()); 
-				for (SQLColumn column : columns) {
-					if (!doesColumnExistsInChildren(column) ) {
-						ColumnMergeRules newRules = newColumnRule();
-						newRules.setColumn(column);
-					}
-					
-				}
-			} catch (Exception ex) {
-				SPSUtils.showExceptionDialogNoReport(panel, "An exception occured while deriving collison criteria", ex);
-			}
-		}
-	};
-	
-	private Action clearAction = new AbstractAction("Clear Collision Criteria") {
-		public void actionPerformed(ActionEvent e) {
-			while( mergeRule.getChildren().size() > 0 ) {
-				mergeRule.removeChild(mergeRule.getChildren().get(0));
-			}
-		}
-	};
-
-	/** for reversing the change of table combobox	 */
-	private SQLTable oldSQLTable;
-	private boolean reSetting = false;
-	
-	private void setDefaultSelections() {
-		if (mergeRule.getSourceTable() != null) {
-			chooser.getCatalogComboBox().setSelectedItem(mergeRule.getSourceTable().getCatalog());
-			chooser.getSchemaComboBox().setSelectedItem(mergeRule.getSourceTable().getSchema());
-			chooser.getTableComboBox().setSelectedItem(mergeRule.getSourceTable());
-			try {
-				chooser.getUniqueKeyComboBox().setSelectedItem(mergeRule.getTableIndex());
-			} catch (ArchitectException e1) {
-				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
-						"An exception occured while creating the merge column rules editor", e1);
-			}
-		}
-		deleteDup.setSelected(mergeRule.isDeleteDup());
-		
-		chooser.getTableComboBox().addItemListener(new ItemListener(){
-			public void itemStateChanged(ItemEvent e) {
-				System.out.println("StateChange="+e.getStateChange());
-				
-				if (!reSetting) {
-					if ( e.getStateChange() == ItemEvent.DESELECTED ) {
-						oldSQLTable = (SQLTable) e.getItem();
-					} else if ( e.getStateChange() == ItemEvent.SELECTED ) {
-						if (ruleTable.getRowCount() > 0) {
-							int respond = JOptionPane.showConfirmDialog(
-									swingSession.getFrame(),
-									"Change table will also clear the column merge rules, Do you want to continue?",
-									"Clear the column merge rules?", 
-									JOptionPane.YES_NO_OPTION,
-									JOptionPane.INFORMATION_MESSAGE);
-							if (respond == JOptionPane.YES_OPTION) {
-								clearAction.actionPerformed(null);
-								reSetting = false;
-							} else {
-								reSetting = true;
-								chooser.getTableComboBox().setSelectedItem(oldSQLTable);
-							}
-						}
-					}
-				} else {
-					if ( e.getStateChange() == ItemEvent.SELECTED ) {
-						reSetting = false;
-					}
-				}
-					
-			}
-		});
-		
-		MergeColumnRuleComboBoxValidator v1 = new MergeColumnRuleComboBoxValidator(chooser);
-		handler.addValidateObject(chooser.getCatalogComboBox(), v1);
-		handler.addValidateObject(chooser.getSchemaComboBox(), v1);
-		handler.addValidateObject(chooser.getTableComboBox(), v1);
-		handler.addValidateObject(chooser.getUniqueKeyComboBox(), v1);
-		
-		MergeColumnRuleJTableValidator v2 = new MergeColumnRuleJTableValidator();
-		handler.addValidateObject(ruleTable, v2);
-		
-		
-	}
-
 	public boolean doSave() {
-		
-		mergeRule.setTable((SQLTable) chooser.getTableComboBox().getSelectedItem());
-		mergeRule.setTableIndex((SQLIndex) chooser.getUniqueKeyComboBox().getSelectedItem());
-		mergeRule.setDeleteDup(deleteDup.isSelected());
-		
-//		for (ColumnMergeRules columnMergeRules : toBeDeleteList) {
-//			swingSession.delete(columnMergeRules);
-//		}
-        
-		if (!match.getTableMergeRules().contains(mergeRule)) {
-			match.getTableMergeRulesFolder().addChild(mergeRule);
-	        MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-	        TreePath menuPath = treeModel.getPathForNode(mergeRule);
-	        swingSession.getTree().setSelectionPath(menuPath);
-        }
-        
-		swingSession.save(match);
-		tableListener.setModified(false);
-		return true;
+		if (handler.getWorstValidationStatus().getStatus() != Status.FAIL) {
+			mergeRule.setDeleteDup(deleteDup.isSelected());
+
+			if (!match.getTableMergeRules().contains(mergeRule)) {
+				match.getTableMergeRulesFolder().addChild(mergeRule);
+				MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+				TreePath menuPath = treeModel.getPathForNode(mergeRule);
+				swingSession.getTree().setSelectionPath(menuPath);
+			}
+
+			swingSession.save(match);
+			tableListener.setModified(false);
+			return true;
+		}
+		return false;
 	}
 
 	public JComponent getPanel() {
@@ -379,9 +236,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 	public boolean hasUnsavedChanges() {
 		
 		if (tableListener.isModified()) return true;
-		if (chooser.getTableComboBox().getSelectedItem() != mergeRule.getSourceTable()) {
-			return true;
-		}
 		if (this.deleteDup.isSelected() != mergeRule.isDeleteDup()) {
 			return true;
 		}
@@ -398,9 +252,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
-			if (column == 0) {
-				return new DefaultCellEditor(chooser.getColumnComboBox());
-			} else if (column == 1) {
+			if (column == 1) {
 				return new DefaultCellEditor(
 						new JComboBox(
 								new DefaultComboBoxModel(
@@ -411,42 +263,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 		}
 	}
 	
-	private class MergeColumnRuleComboBoxValidator implements Validator {
-
-		private SQLObjectChooser chooser;
-		public MergeColumnRuleComboBoxValidator(SQLObjectChooser chooser) {
-			this.chooser = chooser;
-		}
-		
-		public ValidateResult validate(Object contents) {
-			if (chooser.getTableComboBox().getSelectedItem() == null) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						"Merge table is required");
-				
-			// Checks if an existing merge rule is already set to operate on 
-			// the chosen schema and table.
-			} else if (chooser.getTableComboBox().isEnabled()){
-				List<TableMergeRules> mergeRules = match.getTableMergeRules();
-				String schemaName = ((SQLSchema)chooser.getSchemaComboBox().getSelectedItem()).getName();
-				String tableName = ((SQLTable)chooser.getTableComboBox().getSelectedItem()).getName();
-				
-				for (TableMergeRules rule: mergeRules) {
-					if (rule != mergeRule &&
-							rule.getSchemaName().equals(schemaName) &&
-							rule.getTableName().equals(tableName)) {
-						return ValidateResult.createValidateResult(Status.FAIL,
-								"Only one merge rule can operate on an individual table");
-					}
-				}
-			}
-			if (chooser.getUniqueKeyComboBox().getSelectedItem() == null) {
-				return ValidateResult.createValidateResult(Status.FAIL,
-						"Merge table index is required");
-			}
-			return ValidateResult.createValidateResult(Status.OK, "");
-		}
-		
-	}
 	
 	private class MergeColumnRuleJTableValidator implements Validator {
 
@@ -454,25 +270,27 @@ public class MergeColumnRuleEditor implements EditorPane {
 			TableModel model = (TableModel) contents;
 			for ( int i=0; i<model.getRowCount(); i++) {
 				SQLColumn column = (SQLColumn) model.getValueAt(i, 0);
-				if (column == null) {
-					logger.debug("column #" + i + " is null");
-					return ValidateResult.createValidateResult(Status.FAIL,
-						"column name is required");
-				} 
-				for ( int j=i+1; j<model.getRowCount(); j++) {
-					SQLColumn column2 = (SQLColumn) model.getValueAt(j, 0);
-					if (column2 == null) {
-						logger.debug("column #" + j + " is null");
-						return ValidateResult.createValidateResult(Status.FAIL,
-							"column name is required");
+				MergeActionType mat = (MergeActionType) model.getValueAt(i, 1);
+				if (mat == MergeActionType.CONCAT) {
+					if (column.getType() != Types.VARCHAR 
+							&& column.getType() != Types.LONGVARCHAR) {
+						return ValidateResult.createValidateResult(Status.FAIL, "Invalid type for CONCAT");
 					}
-					if (column.getName().equals(column2.getName())) {
-						logger.debug("column #" + j + "[" + 
-								column.getName() + "] is duplicate");
-						return ValidateResult.createValidateResult(Status.FAIL,
-							"column name duplicated");
+				} else if (mat == MergeActionType.SUM) {
+					if (column.getType() != Types.BIGINT 
+							&& column.getType() != Types.DECIMAL
+							&& column.getType() != Types.DOUBLE
+							&& column.getType() != Types.FLOAT
+							&& column.getType() != Types.INTEGER
+							&& column.getType() != Types.NUMERIC
+							&& column.getType() != Types.REAL
+							&& column.getType() != Types.SMALLINT
+							&& column.getType() != Types.TINYINT) {
+							
+						return ValidateResult.createValidateResult(Status.FAIL, "Invalid type for SUM");
 					}
 				}
+				
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}

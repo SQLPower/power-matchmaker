@@ -107,33 +107,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		assertEquals("No changes should have been made.", (new Date(1000*60*60*24*4)).toString(), rs.getDate(3).toString());
 		assertEquals("No changes should have been made.", 4, rs.getInt(4));    
     }
-    
-    /**
-     * This tests on the unsupported actions, it should throw 
-     * {@link UnsupportedOperationException}.
-     */
-    public void testUnsupportedActions() throws Exception {
-    	populateTables();
-    	
-    	cmr_string.setActionType(MergeActionType.UNKNOWN);
-		
-		try {
-			mpor.call();
-			fail("Unknown action should not have been allowed.");
-		} catch (UnsupportedOperationException e) {
-			// Correct exception thrown.
-		}
-		
-		cmr_string.setActionType(MergeActionType.AVG);
-		
-		try {
-			mpor.call();
-			fail("Average action should not have been allowed.");
-		} catch (UnsupportedOperationException e) {
-			// Correct exception thrown.
-		}
-    }
-    
+       
     /**
      * This tests if the duplicates are deleted when the option is set.
      */

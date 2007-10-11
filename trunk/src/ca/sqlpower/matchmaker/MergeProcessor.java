@@ -107,11 +107,6 @@ public class MergeProcessor extends AbstractProcessor {
 		// Finds the columns that needs to be merged and maps it to the 
 		// corresponding column merge rule.
 		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
-			if (cmr.getActionType() == MergeActionType.UNKNOWN) {
-				throw new UnsupportedOperationException("UNKNOWN operation not supported.");
-			} else if (cmr.getActionType() == MergeActionType.AVG) {
-				throw new UnsupportedOperationException("AVG operation not supported.");
-			}
 			if (cmr.getActionType() != MergeActionType.IGNORE) {
 				needsToCheckDup = true;
 			}

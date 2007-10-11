@@ -79,7 +79,7 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 	
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return true;
+		return columnIndex == 1;
 	}
 	
 	@Override
