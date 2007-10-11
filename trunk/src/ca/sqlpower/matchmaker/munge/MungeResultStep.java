@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 
 /**
@@ -78,7 +79,8 @@ public class MungeResultStep extends AbstractMungeStep {
 	 */
 	private MungeStepOutput[] indexValues;
 	
-	public MungeResultStep(Match match, MungeStep inputStep) throws ArchitectException {
+	public MungeResultStep(Match match, MungeStep inputStep, MatchMakerSession session) throws ArchitectException {
+		super(session);
 		this.match = match;
 		this.inputStep = inputStep;
 		this.uniqueIndex = match.getSourceTableIndex();

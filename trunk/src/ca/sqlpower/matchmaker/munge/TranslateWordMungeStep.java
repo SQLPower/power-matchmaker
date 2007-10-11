@@ -42,13 +42,6 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 */
 	private MatchMakerTranslateGroup translateGroup;
 	
-	
-	/**
-	 * The session is used in this munge step to get the DAO that would allow us to
-	 * find the translate group by its oid.
-	 */
-	private MatchMakerSession session;
-	
     /**
      * The name of the parameter that specifies the OID of the translate group used
      * by this step.
@@ -63,8 +56,8 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
 	
 	public TranslateWordMungeStep(MatchMakerSession session) {
+		super(session);
 		setName("Translate Words");
-		this.session = session;
 		out = new MungeStepOutput<String>("translateWordOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("translateWord", String.class);
@@ -136,7 +129,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	@Override
 	public void open() throws Exception {
 		String oid = getParameter(TRANSLATE_GROUP_PARAMETER_NAME);
-		MatchMakerTranslateGroupDAO groupDAO = (MatchMakerTranslateGroupDAO) (session.getDAO(MatchMakerTranslateGroup.class));
+		MatchMakerTranslateGroupDAO groupDAO = (MatchMakerTranslateGroupDAO) (getSession().getDAO(MatchMakerTranslateGroup.class));
 		translateGroup = groupDAO.findByOID(Long.valueOf(oid));
 		if(translateGroup == null) {
 			throw new NullPointerException("Translate group with " + oid + " not found");

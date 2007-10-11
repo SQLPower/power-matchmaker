@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+
 import junit.framework.TestCase;
 
 public class RefinedSoundexMungeStepTest extends TestCase {
@@ -31,7 +33,7 @@ public class RefinedSoundexMungeStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new RefinedSoundexMungeStep();
+		step = new RefinedSoundexMungeStep(new TestingMatchMakerSession());
 	}
 
 	public void testCallonNormalString() throws Exception {

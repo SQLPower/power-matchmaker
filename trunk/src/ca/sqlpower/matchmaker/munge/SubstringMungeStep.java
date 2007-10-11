@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
+
 
 
 /**
@@ -39,7 +41,8 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	 */
 	public static final String END_PARAMETER_NAME = "endIndex";
 	
-	public SubstringMungeStep() {
+	public SubstringMungeStep(MatchMakerSession session) {
+		super(session);
 		setName("Substring");
 		setParameter(BEGIN_PARAMETER_NAME, 0);
 		setParameter(END_PARAMETER_NAME, 0);

@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+
 
 /**
  * A bare bones test implementation of an AbstractMungeStep for
@@ -26,6 +28,10 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class TestingAbstractMungeStep extends AbstractMungeStep {
 
+	public TestingAbstractMungeStep() {
+		super(new TestingMatchMakerSession());
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		return this == obj;

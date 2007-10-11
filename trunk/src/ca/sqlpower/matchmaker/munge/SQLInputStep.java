@@ -34,6 +34,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLType;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 
 /**
  * The SQLInputStep class implements a munge step which provides data
@@ -65,7 +66,8 @@ public class SQLInputStep extends AbstractMungeStep {
      */
     private Connection con;
 
-    public SQLInputStep(SQLTable table) throws ArchitectException {
+    public SQLInputStep(SQLTable table, MatchMakerSession session) throws ArchitectException {
+    	super(session);
         this.table = table;
         setName(table.getName());
         for (SQLColumn c : table.getColumns()) {
