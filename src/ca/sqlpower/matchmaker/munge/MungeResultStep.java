@@ -112,9 +112,16 @@ public class MungeResultStep extends AbstractMungeStep {
 		super.call();
 		
 		List<MungeStepOutput> inputs = getInputs(); 
+		MungeStepOutput[] mungedData = new MungeStepOutput[inputs.size()];
+		
+		for (int i = 0; i < inputs.size(); i++) {
+			MungeStepOutput output = inputs.get(i);
+			mungedData[i] = new MungeStepOutput(output.getName(), output.getType());
+			mungedData[i].setData(output.getData());
+		}
 		
 		MungeResult result = new MungeResult();
-		result.setMungedData(inputs.toArray(new MungeStepOutput[inputs.size()]));
+		result.setMungedData(mungedData);
 		
 		List<Object> indexValueList = new ArrayList<Object>();
 		
@@ -126,9 +133,9 @@ public class MungeResultStep extends AbstractMungeStep {
 		}
 		
 		SourceTableRecord source = new SourceTableRecord(getSession(), match, indexValueList);
-		
 		result.setSourceTableRecord(source);
 		
+		logger.debug("Adding MungeResult " + result);
 		results.add(result);
 		
 		return Boolean.TRUE;
