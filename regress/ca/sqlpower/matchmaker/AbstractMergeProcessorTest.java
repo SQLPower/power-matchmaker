@@ -42,6 +42,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     Match match;
     MergeProcessor mpor;
     TestingMatchMakerSession session;
+    Connection con;
 	
 	TableMergeRules tmr = new TableMergeRules();
 	ColumnMergeRules cmr_string = new ColumnMergeRules();
@@ -91,7 +92,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_number.setActionType(MergeActionType.AUGMENT);
 		mpor.call();
 		
-		Connection con = session.getConnection();
+		con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
     	
@@ -367,6 +368,14 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 			}
 	    }
 		return true;
+	}
+	
+	protected void tearDown() throws Exception {
+		String sql = "DROP TABLE " + getFullTableName();
+		execSQL(con, sql);
+		sql = "DROP TABLE " + getFullTableName() + "_RESULT";
+		execSQL(con, sql);
+		con.close();
 	}
 	
 	protected abstract String getFullTableName();

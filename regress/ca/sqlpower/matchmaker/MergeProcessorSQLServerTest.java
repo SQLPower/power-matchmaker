@@ -74,7 +74,7 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 		
     	SQLDatabase db = session.getDatabase();
     	SPDataSource ds = session.getDatabase().getDataSource();
-    	Connection con = db.getConnection();
+    	con = db.getConnection();
 		String sql = "DROP TABLE " + getFullTableName();
 		execSQL(con,sql);
 		
