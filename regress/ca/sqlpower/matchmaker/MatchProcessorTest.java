@@ -50,13 +50,15 @@ public class MatchProcessorTest extends TestCase {
 	private SourceTableRecord dup1;
 	private SourceTableRecord dup2;
 	private SourceTableRecord dup3;
+
+	private Connection con;
 	
 	protected void setUp() throws Exception {
 		super.setUp();
 		
 		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
 		SQLDatabase db = new SQLDatabase(dataSource);
-		Connection con = db.getConnection();
+		con = db.getConnection();
 		MMTestUtils.createResultTable(con);
 		TestingMatchMakerSession session = new TestingMatchMakerSession();
 		session.setConnection(con);
@@ -184,6 +186,11 @@ public class MatchProcessorTest extends TestCase {
 		process.setParentMatch(match);
 		pool = new MatchPool(match);
 		matcher = new MatchProcessor(pool, process, results);
+	}
+	
+	public void tearDown() throws Exception {
+		MMTestUtils.dropResultTable(con);
+		con.close();
 	}
 	
 	public void testCall() throws Exception {
