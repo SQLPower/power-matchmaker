@@ -53,6 +53,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.validation.Status;
@@ -252,6 +253,15 @@ public class MungeProcessEditor implements EditorPane {
             dao.save(process);
         }
         changeHandler.setHasChanged(false);
+        
+        //save all the positions of the components
+        for (Component com : mungePen.getComponents()) {
+        	if (com instanceof AbstractMungeComponent) {
+				AbstractMungeComponent mcom = (AbstractMungeComponent) com;
+				mcom.updateStepProperties();
+			}
+        }
+        
         return true;
     }
 

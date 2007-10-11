@@ -355,9 +355,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 
 	/**
-	 * Tells the steps proporties so that it can reload the GUI bits if needed.
+	 * Tells the steps properties so that it can reload the GUI bits if needed.
 	 */
-	protected void updateStepProperties() {
+	public void updateStepProperties() {
 		getStep().setParameter(MUNGECOMPONENT_EXPANDED, new Boolean(expanded).toString());
 		getStep().setParameter(MUNGECOMPONENT_X, new Integer(getX()).toString());
 		getStep().setParameter(MUNGECOMPONENT_Y, new Integer(getY()).toString());
@@ -660,7 +660,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		getPen().normalize();
 		validate();
 		root.updateUI();
-		updateStepProperties();
 	}
 	
 	public void setExpand(boolean exp) {
@@ -677,13 +676,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 			hideShow();
 		}	
 	}
-	
-	@Override
-	public void setLocation(int x, int y) {
-		super.setLocation(x, y);
-		updateStepProperties();
-	}
-
 	
 	/**
 	 * An action that can be added to the JPanel in buildUI that will add an input to the mungeStep.
@@ -790,7 +782,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 		public void mousePressed(MouseEvent e) {
 			logger.debug("MousePressed");
-			getPen().bringToFront(AbstractMungeComponent.this);
+			getPen().moveToFront(AbstractMungeComponent.this);
 			if (!maybeShowPopup(e)) {
 				diff = new Point((int)(e.getPoint().getX() - getX()), (int)(e.getPoint().getY() - getY()));			
 				diff.translate(getX(), getY());
