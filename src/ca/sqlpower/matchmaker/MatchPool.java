@@ -498,10 +498,9 @@ public class MatchPool {
     }
     
     /**
-     * Adds the given source table record to this match pool.  This is normally only
-     * done from the test suite, which sets up various scenarios to test.  In real life,
-     * source table records get added to the match pool on demand, and they come directly
-     * from SQL SELECTs on the source table.  See {@link #findAll()} for details.
+     * Adds the given source table record to this match pool.
+     * If a SourceTableRecord with the same key values is found, it will get
+     * overwritten by the SourceTableRecord given.
      * 
      * @param str The record to add. Its parent pool will be modified to point to
      * this pool.
@@ -512,10 +511,9 @@ public class MatchPool {
     }
 
     /**
-     * Adds the given potential match to this pool.  This is normally only
-     * done from the test suite, which sets up various scenarios to test.  In real life,
-     * source table records get added to the match pool via a
-     * SQL SELECT on the match result table.  See {@link #findAll()} for details.
+     * Adds the given potential match to this pool. If another 
+     * PotentialMatchRecord p exists in this pool, where p.equals(pmr) = true,
+     * then it will not get added.
      * 
      * @param pmr The record to add
      */
