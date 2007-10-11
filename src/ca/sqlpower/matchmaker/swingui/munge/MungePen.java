@@ -273,6 +273,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(ms, handler, process.getSession(), stepsProperties);
 			modelMap.put(ms, mcom);
 			add(mcom,DEFAULT_LAYER);
+			mcom.configureFromStepProperties();
 		}
 		
 		//This is done in an other loop to ensure that all the MungeComponets have been mapped
@@ -289,18 +290,14 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		}
 	}
 	
-	/**
-	 * Possibly unnecessary workaround for the moveToFront implementation in JLayeredPane.
-	 * We'll try getting rid of this method in the future.
-	 */
-	public void bringToFront(Component com) {
-		setLayer(com, DRAG_LAYER);
-		for (Component tmp : getComponents()) {
-			if (!tmp.equals(com)) {
-				setLayer(tmp, DEFAULT_LAYER);
-			}
+	@Override
+	public void moveToFront(Component c) {
+		super.moveToFront(c);
+		if (c instanceof AbstractMungeComponent) {
+			AbstractMungeComponent mcom = (AbstractMungeComponent) c;
+			process.getChildren().remove(mcom.getStep());
+			process.getChildren().add(getIndexOf(c), mcom.getStep());
 		}
-		moveToFront(com);
 	}
 	
 	/**
@@ -350,7 +347,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
-		if (logger.isDebugEnabled()) {
+		if (false && logger.isDebugEnabled()) {
 			Graphics2D g2 = (Graphics2D)g;
 			Rectangle clip = g2.getClipBounds();
 			if (clip != null) {
@@ -743,7 +740,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 				AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(evt.getSource().getChildren().get(x), 
 						handler, process.getSession(), stepsProperties);
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
-				add(mcom);				
+				add(mcom);
+				logger.debug("Generating positions from properites");
 				mcom.configureFromStepProperties();
 			}
 			
