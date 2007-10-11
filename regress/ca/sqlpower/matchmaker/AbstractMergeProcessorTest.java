@@ -25,8 +25,10 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import junit.framework.TestCase;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
@@ -151,6 +153,21 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		if (rs.next()) {
 			fail("Duplicate records not deleted.");
 		}
+    }
+    
+    /**
+     * This ensures that the MatchType is set as MERGED for each record in the match pool. 
+     */
+    public void testMatchTypeMerged() throws Exception {
+    	populateTables();
+    	mpor.call();
+		
+    	MatchPool matchPool = new MatchPool(match);
+    	matchPool.findAll(new ArrayList<SQLColumn>());
+    	
+    	for (PotentialMatchRecord pm : matchPool.getPotentialMatches()) {
+    		assertFalse("MatchType not set as MERGED for " + pm, pm.isMatch());
+    	}
     }
     
     public void testAugment() throws Exception {

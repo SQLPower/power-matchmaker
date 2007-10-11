@@ -35,6 +35,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.MatchPoolDirectedGraphModel;
 import ca.sqlpower.sql.SQL;
 
@@ -122,8 +123,7 @@ public class MergeProcessor extends AbstractProcessor {
 		if (needsToCheckDup) {
 			for (SourceTableRecord str : processOrder) {
 				for (PotentialMatchRecord pm : gm.getOutboundEdges(str)) {
-					if (pm.getMatchStatus() == PotentialMatchRecord.MatchType.AUTOMATCH 
-							|| pm.getMatchStatus() == PotentialMatchRecord.MatchType.MATCH) {
+					if (pm.isMatch()) {
 						String sql = createUpdateSQL(pm, sourceTable, mapping, con);
 						int rows = stmt.executeUpdate(sql.toString());
 
@@ -140,8 +140,7 @@ public class MergeProcessor extends AbstractProcessor {
 		// Retrieves the sql statements to delete the duplicate records and executes it.
 		if (tableMergeRule.isDeleteDup()) {
 			for (PotentialMatchRecord pm : pool.getPotentialMatches()) {
-				if (pm.getMatchStatus() == PotentialMatchRecord.MatchType.AUTOMATCH 
-						|| pm.getMatchStatus() == PotentialMatchRecord.MatchType.MATCH) {
+				if (pm.isMatch()) {
 					//delete the duplicate record
 					String sql = createDeleteSQL(pm, sourceTable, con);
 					int rows = stmt.executeUpdate(sql.toString());
@@ -153,6 +152,14 @@ public class MergeProcessor extends AbstractProcessor {
 				}
 			}
 		}
+		
+		for (PotentialMatchRecord pm : pool.getPotentialMatches()) {
+			if (pm.isMatch()) {
+				pm.setMatchStatus(MatchType.MERGED);
+			}
+		}
+		
+		pool.store();
 		stmt.close();
 		con.close();
 		return Boolean.TRUE;
