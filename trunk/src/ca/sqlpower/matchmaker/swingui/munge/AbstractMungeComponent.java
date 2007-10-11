@@ -61,6 +61,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
@@ -151,6 +152,17 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public static final String MUNGECOMPONENT_X = "x";
 	public static final String MUNGECOMPONENT_Y = "y";
 	public static final String MUNGECOMPONENT_EXPANDED ="expanded";
+
+	/**
+	 * The timer interval for the drop down. The length of time to wait before moving
+	 * the nib down again.
+	 */
+	public static final int DROP_TIMER_INTERVAL = 100;
+	
+	/**
+	 * The amount to drop the nib after each interval
+	 */
+	public static final int DROP_AMOUNT = 5;
 	
 	private boolean expanded;
 	
@@ -162,6 +174,28 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private final JButton hideShow;
 
+	private final int[] connected;
+	
+	/**
+	 * The icon of the nib that is dropping down.
+	 */
+	private Icon dropNib;
+	
+	/**
+	 * The current offset of the dropping nib, the number of pixles above where it will end up.
+	 */
+	private int dropNibOffSet;
+	
+	/**
+	 * The index of the currently dropping nib
+	 */
+	private int dropNibIndex;
+	
+	/**
+	 * The timer running the dropdown. Only one will exist at a time.
+	 */
+	private Timer dropNibTimer;
+	
 	/**
 	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen.
 	 * Sets the background and border colours to given colours.
@@ -175,6 +209,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 		this.step = step;
 		setVisible(true);
 		setBackground(normalBackground);
+		
+		dropNibIndex = -1;
+		connected = new int[step.getChildCount()];
+		for (int x = 0; x < connected.length;x++) {
+			connected[x] = 0;
+		}
 		
 		mungeComKeyListener = new MungeComponentKeyListener();
 		addKeyListener(mungeComKeyListener);
@@ -271,15 +311,14 @@ public abstract class AbstractMungeComponent extends JPanel {
 			public void focusGained(FocusEvent e) {
 				//if it is being deleted
 				if (getParent() != null) {
-					logger.debug("Gained focus");
 					getParent().repaint();
 	                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) session.getTree().getModel();
+	                
 	    	        TreePath menuPath = treeModel.getPathForNode(getStep());
 	    	        session.getTree().setSelectionPath(menuPath);
 				}
 			}
 			public void focusLost(FocusEvent e) {
-				logger.debug("Lost focus");
 				if (getParent() != null) {
 					getParent().repaint();
 				}
@@ -523,10 +562,22 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 		
 		for (int i = 0; i < getStep().getChildCount(); i++) {
-			int xPos = getOutputPosition(i).x;
-			Icon nib = ConnectorIcon.getNibInstance(getStep().getChildren().get(i).getType());
-			if (!getPen().isConnectingOutput(this,i)) {
-				nib.paintIcon(this, g, xPos, getHeight() - border.bottom - ConnectorIcon.NIB_OVERLAP);
+			if (!isOutputConnected(i) || (dropNib != null && dropNibIndex == i)) {
+				int xPos = getOutputPosition(i).x;
+				Icon nib;
+				
+				int droppingOffset;
+				if (dropNib == null || dropNibIndex != i) {
+					nib = ConnectorIcon.getNibInstance(getStep().getChildren().get(i).getType());
+					droppingOffset = 0;
+				} else {
+					nib = dropNib;
+					droppingOffset = dropNibOffSet;
+				}
+					
+				if (!getPen().isConnectingOutput(this,i)) {
+					nib.paintIcon(this, g, xPos, getHeight() - border.bottom - ConnectorIcon.NIB_OVERLAP - droppingOffset);
+				}
 			}
 		}
 		
@@ -778,10 +829,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 
 		public void mouseExited(MouseEvent e) {
+			nibDropStop();
 		}
 
 		public void mousePressed(MouseEvent e) {
-			logger.debug("MousePressed");
 			getPen().moveToFront(AbstractMungeComponent.this);
 			if (!maybeShowPopup(e)) {
 				diff = new Point((int)(e.getPoint().getX() - getX()), (int)(e.getPoint().getY() - getY()));			
@@ -828,7 +879,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private class MungeComponentMouseMoveListener extends MouseMotionAdapter {
 		@Override
-		public void mouseDragged(MouseEvent e) {			
+		public void mouseDragged(MouseEvent e) {
+			nibDropStop();
 			Point mouse = e.getPoint();
 			mouse.x += getX();
 			mouse.y += getY();
@@ -852,13 +904,24 @@ public abstract class AbstractMungeComponent extends JPanel {
 		public void mouseMoved(MouseEvent e) {
 			getPen().mouseX = e.getX() + getX();
 			getPen().mouseY = e.getY() + getY();
+			Point p = e.getPoint();
+			p.translate(getX(), getY());
+			int selected = getClosestIOIndex(p, CLICK_TOLERANCE, false);			
+			
+			if (dropNibIndex != selected && selected != -1 && isOutputConnected(selected)) {
+				if (dropNibTimer != null) {
+					dropNibTimer.stop();
+				}
+				dropNibTimer = new Timer(DROP_TIMER_INTERVAL,new DropDownAction(selected,DROP_AMOUNT));
+				dropNibTimer.start();
+			} else if (dropNibIndex != selected) {
+				nibDropStop();
+			}
 		}
 	}
 	
 	//checks to see if the mouse was near an IOC point
 	public boolean checkForIOConnectors(Point mousePoint) {
-		logger.debug("Checking for IOConnections");
-		
 		MungePen parent = getPen();
 		
 		int inputIndex = getClosestIOIndex(mousePoint, CLICK_TOLERANCE, true);
@@ -921,16 +984,75 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 			
 			p.translate(getX(), getY());
-			logger.debug("\nPoint: " + p + "\nMouse: " + mousePoint);
 			int dist = Math.abs(p.x - mousePoint.x)*Math.abs(p.x - mousePoint.x) + Math.abs(p.y - mousePoint.y)*Math.abs(p.y - mousePoint.y); 
 			if (dist < tol && dist < minDist) {
 				minDist = dist;
 				minNum = x;
-
 			}
 		}
 		
 		return minNum;
+	}
+	
+	/**
+	 * Returns true iff the output for the given index of this component is in use.
+	 * 
+	 * @param index The index
+	 */
+	public boolean isOutputConnected(int index) {
+		return connected[index] > 0;
+	}
+
+	/**
+	 * Tells this mungecomponent that the output at the given index is in use;
+	 * 
+	 * @param index the index
+	 * @param con True iff the component is in use.
+	 */
+	public void setConnectOutput(int index, boolean con) {
+		logger.debug("index: " + index + " -> " + con);
+		if (con) {
+			connected[index]++;
+		} else {
+			connected[index]--;
+			if (connected[index] < 0) {
+				connected[index] = 0;
+			}
+		}
+	}
+	
+	/**
+	 * Stops dropping the nib.
+	 */
+	private void nibDropStop() {
+		if (dropNibTimer != null && dropNibTimer.isRunning()) {
+			dropNib = null;			
+			dropNibTimer.stop();
+			dropNibIndex = -1;
+			repaint();
+		}
+	}
+	
+	/**
+	 * The action to be added to the timer to drop the nib.
+	 */
+	private class DropDownAction extends AbstractAction {
+		int dropAmount;
+		public DropDownAction(int index, int dropAmount) {
+			this.dropAmount = dropAmount;
+			dropNib = ConnectorIcon.getNibInstance(getStep().getChildren().get(index).getType());
+			dropNibOffSet = dropNib.getIconHeight();
+			dropNibIndex = index;
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			dropNibOffSet -= dropAmount;
+			
+			if (dropNibOffSet < 0) {
+				dropNibOffSet = 0;
+			}
+			repaint();
+		}
 	}
 }
 

@@ -219,6 +219,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	 */
 	public MungePen(MungeProcess process, FormValidationHandler handler, 
 			Map<String, StepDescription> stepsProperties, Match match) throws ArchitectException {
+		
 		this.stepsProperties = stepsProperties;
 		process.addMatchMakerListener(new MungePenMatchRuleSetListener());
 		mungeStepListener = new MungePenMungeStepListener();
@@ -285,6 +286,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 					int parNum = parent.getChildren().indexOf(link);
 					IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(ms),x);
 					add(ioc);
+					modelMap.get(parent).setConnectOutput(parNum, true);
 				}
 			}
 		}
@@ -755,7 +757,8 @@ public class MungePen extends JLayeredPane implements Scrollable {
 						int parNum = parent.getChildren().indexOf(link);
 						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(ms),x);
 						add(ioc);
-
+						logger.debug("parent: " + modelMap.get(parent) + "num: " + parNum);
+						modelMap.get(parent).setConnectOutput(parNum, true);
 					}
 				}
 			}
@@ -818,6 +821,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 						
 						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
 						add(ioc);
+						modelMap.get(parent).setConnectOutput(parNum, true);
 					}						
 				} else if (evt.getNewValue() == null && evt.getOldValue() != null) {
 					if ( evt.getOldValue() instanceof MungeStepOutput) {
@@ -827,13 +831,15 @@ public class MungePen extends JLayeredPane implements Scrollable {
 						MungeStep parent = (MungeStep)mso.getParent();
 						int parNum = parent.getChildren().indexOf(mso);
 						int childNum = evt.getChangeIndices()[0];
-						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
 						
 						//This stupid loop is needed because remove uses direct comparison
 						for (IOConnector con : getConnections()) {
-							if (con.equals(ioc)) {
+							if (con.getParentCom().equals(modelMap.get(parent)) 
+									&& con.getChildCom().equals(modelMap.get(child))
+									&& con.getParentNumber() == parNum && con.getChildNumber() == childNum) {
 								logger.debug("Found it");
 								remove(con);
+								con.getParentCom().setConnectOutput(con.getParentNumber(), false);
 							}
 						}
 						logger.debug("Line deleted");
