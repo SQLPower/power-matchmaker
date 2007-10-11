@@ -127,8 +127,7 @@ public class MatchPoolTest extends TestCase {
 	}
 
 	/**
-	 * Inserts the pair of match records described by the parameters (one row
-	 * for LHS-RHS and another for RHS-LHS just like the enging does).
+	 * Inserts a match record described by the parameters .
 	 */
 	private static void insertResultTableRecord(Connection con,
 			String originalLhsKey, String originalRhsKey, int matchPercent,
@@ -137,12 +136,6 @@ public class MatchPoolTest extends TestCase {
 		stmt.executeUpdate("INSERT into pl.match_results VALUES ("
 				+ SQL.quote(originalLhsKey) + "," + SQL.quote(originalRhsKey) + "," + SQL.quote(originalLhsKey)
 				+ "," + SQL.quote(originalRhsKey) + "," + "null," + "null," + "null,"
-				+ "null," + matchPercent + "," + SQL.quote(groupName) + ","
-				+ "{ts '2006-11-30 17:01:06.0'}," + "null,"
-				+ "{ts '2006-11-30 17:01:06.0'}," + "null," + "null)");
-		stmt.executeUpdate("INSERT into pl.match_results VALUES ("
-				+ SQL.quote(originalRhsKey) + "," + SQL.quote(originalLhsKey) + "," + SQL.quote(originalRhsKey)
-				+ "," + SQL.quote(originalLhsKey) + "," + "null," + "null," + "null,"
 				+ "null," + matchPercent + "," + SQL.quote(groupName) + ","
 				+ "{ts '2006-11-30 17:01:06.0'}," + "null,"
 				+ "{ts '2006-11-30 17:01:06.0'}," + "null," + "null)");
