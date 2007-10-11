@@ -113,5 +113,28 @@ public class MergeEngineImpl extends AbstractEngine {
 	public Logger getLogger() {
 		return logger;
 	}
+	
+	public EngineInvocationResult call() throws EngineSettingException {
+		try {
+			try {
+				checkPreconditions();
+			} catch (ArchitectException e) {
+				throw new RuntimeException(e);
+			}
+			setFinished(false);
+			setStarted(true);
+			
+			Processor merger = new MergeProcessor(getMatch(), getSession());
+			merger.call();
+			
+			getLogger().info("Engine process completed normally.");
+			
+			return EngineInvocationResult.SUCCESS;
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		} finally {
+			setFinished(true);
+		}
+	}
 
 }
