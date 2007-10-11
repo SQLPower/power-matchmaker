@@ -128,6 +128,13 @@ public class MungeProcessEditor implements EditorPane {
         this.parentMatch = match;
         this.process = process;
         this.changeHandler = new MMOChangeWatcher<MungeProcess, MungeStep>(process);
+        
+        //For some reason some process don't have sessions and this causes a null
+        //pointer barrage when it tries to find the tree when it gets focus, then fails and 
+        //gets focus again.
+        if (process.getSession() == null) {
+        	process.setSession(swingSession);
+        }
         ArrayList<Action> actions = new ArrayList<Action>();
         actions.add(saveAction);
         this.handler = new FormValidationHandler(status, actions);
