@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+
 import junit.framework.TestCase;
 
 public class ConcatMungeStepTest extends TestCase {
@@ -31,7 +33,7 @@ public class ConcatMungeStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new ConcatMungeStep();
+		step = new ConcatMungeStep(new TestingMatchMakerSession());
 	}
 
 	public void testCallConcatTwoStrings() throws Exception {

@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import org.apache.commons.codec.language.Soundex;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
+
 /**
  * This munge step will output the soundex code of the given input.
  */
@@ -28,7 +30,8 @@ public class SoundexMungeStep extends AbstractMungeStep {
 
 	private MungeStepOutput<String> out;
 	
-	public SoundexMungeStep() {
+	public SoundexMungeStep(MatchMakerSession session) {
+		super(session);
 		setName("Soundex");
 		out = new MungeStepOutput<String>("soundexOutput", String.class);
 		addChild(out);

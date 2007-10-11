@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.regex.Pattern;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
+
 
 
 /**
@@ -65,7 +67,8 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	 */
 	public static final String RESULT_DELIM_PARAMETER_NAME = "resultDelim";
 	
-	public SubstringByWordMungeStep() {
+	public SubstringByWordMungeStep(MatchMakerSession session) {
+		super(session);
 		setName("Substring by Word");
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
 		setParameter(RESULT_DELIM_PARAMETER_NAME, " ");

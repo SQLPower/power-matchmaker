@@ -56,6 +56,15 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 */
 	private boolean opened;
 	
+	/**
+	 * The session for this object
+	 */
+	private MatchMakerSession session;
+	
+	public AbstractMungeStep(MatchMakerSession session) {
+		this.session = session;
+	}
+	
 	public List<MungeStepOutput> getInputs() {
 		List<MungeStepOutput> values = new ArrayList<MungeStepOutput>();
 		for (Input in: inputs) {
@@ -230,5 +239,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     		}
     	}
     	return null;
+    }
+    
+    /**
+     * Returns the matchMakerSession associated with this object
+     */
+    public MatchMakerSession getSession() {
+    	return session;
     }
 }

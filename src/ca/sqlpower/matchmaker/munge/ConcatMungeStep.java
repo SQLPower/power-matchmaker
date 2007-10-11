@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
+
 /**
  * This munge step will concat all alphabetical string inputs.
  */
@@ -26,7 +28,8 @@ public class ConcatMungeStep extends AbstractMungeStep {
 
 	private MungeStepOutput<String> out;
 	
-	public ConcatMungeStep() {
+	public ConcatMungeStep(MatchMakerSession session) {
+		super(session);
 		setName("Concat");
 		out = new MungeStepOutput<String>("concatOutput", String.class);
 		addChild(out);

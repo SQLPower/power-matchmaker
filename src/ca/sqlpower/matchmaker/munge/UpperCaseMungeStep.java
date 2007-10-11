@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
+
 
 
 /**
@@ -29,7 +31,8 @@ public class UpperCaseMungeStep extends AbstractMungeStep {
 
 	private MungeStepOutput<String> out;
 
-	public UpperCaseMungeStep() {
+	public UpperCaseMungeStep(MatchMakerSession session) {
+		super(session);
 		setName("Upper Case");
 		out = new MungeStepOutput<String>("upperCaseOutput", String.class);
 		addChild(out);

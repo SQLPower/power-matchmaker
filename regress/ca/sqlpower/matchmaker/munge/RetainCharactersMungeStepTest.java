@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+
 import junit.framework.TestCase;
 
 public class RetainCharactersMungeStepTest extends TestCase {
@@ -30,7 +32,7 @@ public class RetainCharactersMungeStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new RetainCharactersMungeStep();
+		step = new RetainCharactersMungeStep(new TestingMatchMakerSession());
 	}
 
 	/**

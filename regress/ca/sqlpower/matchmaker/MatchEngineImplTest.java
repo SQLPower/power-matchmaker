@@ -98,9 +98,9 @@ public class MatchEngineImplTest extends TestCase {
 		
 		MungeProcess groupOne = new MungeProcess();
 		groupOne.setName("Group_One");
-		SQLInputStep inputStep = new SQLInputStep(sourceTable);
+		SQLInputStep inputStep = new SQLInputStep(sourceTable, session);
 		groupOne.addChild(inputStep);
-		MungeResultStep outputStep = new MungeResultStep(match, inputStep);
+		MungeResultStep outputStep = new MungeResultStep(match, inputStep, session);
 		outputStep.addInput(new InputDescriptor("result2", Object.class));
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
 		outputStep.connectInput(1, inputStep.getOutputByName("BAR"));

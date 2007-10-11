@@ -248,10 +248,10 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		});
 		
 		if (process.getChildCount() == 0) {
-			MungeStep inputStep = new SQLInputStep(match.getSourceTable());
+			MungeStep inputStep = new SQLInputStep(match.getSourceTable(), process.getSession());
 			process.addChild(inputStep);
 			
-			MungeResultStep mungeResultStep = new MungeResultStep(match, inputStep);
+			MungeResultStep mungeResultStep = new MungeResultStep(match, inputStep, process.getSession());
 			process.addChild(mungeResultStep);
 			process.setOutputStep(mungeResultStep);
 		}
@@ -579,31 +579,31 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		//passes key press to selected components
 		public void keyPressed(KeyEvent e) {
 			if (e.getKeyCode() == KeyEvent.VK_1) {
-				process.addChild(new UpperCaseMungeStep());
+				process.addChild(new UpperCaseMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_2) {
-				process.addChild(new LowerCaseMungeStep());
+				process.addChild(new LowerCaseMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_3) {
-				process.addChild(new SoundexMungeStep());
+				process.addChild(new SoundexMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_4) {
-				process.addChild(new RefinedSoundexMungeStep());
+				process.addChild(new RefinedSoundexMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_5) {
-				process.addChild(new MetaphoneMungeStep());
+				process.addChild(new MetaphoneMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_6) {
-				process.addChild(new DoubleMetaphoneMungeStep());
+				process.addChild(new DoubleMetaphoneMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_7) {
-				process.addChild(new WordCountMungeStep());
+				process.addChild(new WordCountMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_8) {
 				process.addChild(new TranslateWordMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_9) {
-				process.addChild(new StringSubstitutionMungeStep());
+				process.addChild(new StringSubstitutionMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_0) {
-				process.addChild(new SubstringMungeStep());
+				process.addChild(new SubstringMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_Q) {
-				process.addChild(new RetainCharactersMungeStep());
+				process.addChild(new RetainCharactersMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_W) {
-				process.addChild(new SubstringByWordMungeStep());
+				process.addChild(new SubstringByWordMungeStep(process.getSession()));
 			} else if (e.getKeyCode() == KeyEvent.VK_E) {
-				process.addChild(new ConcatMungeStep());
+				process.addChild(new ConcatMungeStep(process.getSession()));
 			}
 		}
 	}

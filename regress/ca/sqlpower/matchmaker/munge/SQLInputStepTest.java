@@ -30,6 +30,7 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.testutil.MockJDBCConnection;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 
@@ -73,7 +74,7 @@ public class SQLInputStepTest extends TestCase {
 
         Match match = new Match();
         match.setSourceTable(table);
-        step = new SQLInputStep(table);
+        step = new SQLInputStep(table, new TestingMatchMakerSession());
     }
     
     public void testNoDoubleOpen() throws Exception {

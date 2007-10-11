@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+
 import junit.framework.TestCase;
 
 public class SubstringByWordMungeStepTest extends TestCase {
@@ -31,7 +33,7 @@ public class SubstringByWordMungeStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new SubstringByWordMungeStep();
+		step = new SubstringByWordMungeStep(new TestingMatchMakerSession());
 	}
 	public void testCallonNoOccurence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
