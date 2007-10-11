@@ -121,9 +121,8 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 						((JLabel)e.getSource()).setIcon(PLUS_OFF);
 					}
 				}
-			})
+			});
 			
-			;
 			lab.setBorder(BorderFactory.createEtchedBorder());
 			bottom.add(lab);
 			labels[x++] = lab;
@@ -132,7 +131,6 @@ public class SQLInputMungeComponent extends AbstractMungeComponent {
 		
 		content.add(top, BorderLayout.NORTH);
 		content.add(bottom, BorderLayout.SOUTH);
-		
 		return content;
 	}
 	
