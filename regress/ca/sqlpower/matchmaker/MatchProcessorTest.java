@@ -35,7 +35,6 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResult;
-import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.SPDataSource;
 
@@ -96,21 +95,11 @@ public class MatchProcessorTest extends TestCase {
 				for (Boolean b: testBooleans) {
 					for (Date d: testDates) {
 						MungeResult result = new MungeResult();
-						MungeStepOutput<String> out1 = new MungeStepOutput<String>("string", String.class);
-						out1.setData(s);
-						MungeStepOutput<BigDecimal> out2 = new MungeStepOutput<BigDecimal>("decimal", BigDecimal.class);
-						out2.setData(n);
-						MungeStepOutput<Boolean> out3 = new MungeStepOutput<Boolean>("boolean", Boolean.class);
-						out3.setData(b);
-						MungeStepOutput<Date> out4 = new MungeStepOutput<Date>("date", Date.class);
-						out4.setData(d);
-						MungeStepOutput[] outputs = {out1, out2, out3, out4};
-						
+						Object[] outputs = {s, n, b, d};
 						result.setMungedData(outputs);
 						SourceTableRecord source = new SourceTableRecord(session, match, Integer.valueOf(key));
 						key++;
 						result.setSourceTableRecord(source);
-						
 						results.add(result);
 					}
 				}
@@ -119,15 +108,7 @@ public class MatchProcessorTest extends TestCase {
 		
 		// Add duplicate data
 		MungeResult result = new MungeResult();
-		MungeStepOutput<String> out1 = new MungeStepOutput<String>("string", String.class);
-		out1.setData("A");
-		MungeStepOutput<BigDecimal> out2 = new MungeStepOutput<BigDecimal>("decimal", BigDecimal.class);
-		out2.setData(BigDecimal.valueOf(0));
-		MungeStepOutput<Boolean> out3 = new MungeStepOutput<Boolean>("boolean", Boolean.class);
-		out3.setData(Boolean.TRUE);
-		MungeStepOutput<Date> out4 = new MungeStepOutput<Date>("date", Date.class);
-		out4.setData(new Date(0));
-		MungeStepOutput[] outputs = {out1, out2, out3, out4};
+		Object[] outputs = {"A", BigDecimal.valueOf(0), Boolean.TRUE, new Date(0)};
 		result.setMungedData(outputs);
 		dup1 = new SourceTableRecord(session, match, Integer.valueOf(key));
 		key++;
@@ -135,19 +116,11 @@ public class MatchProcessorTest extends TestCase {
 		results.add(result);
 		
 		result = new MungeResult();
-		out1 = new MungeStepOutput<String>("string", String.class);
-		out1.setData("B");
-		out2 = new MungeStepOutput<BigDecimal>("decimal", BigDecimal.class);
-		out2.setData(BigDecimal.valueOf(1));
-		out3 = new MungeStepOutput<Boolean>("boolean", Boolean.class);
-		out3.setData(Boolean.FALSE);
-		out4 = new MungeStepOutput<Date>("date", Date.class);
-		out4.setData(new Date(Long.MAX_VALUE/2));
-		outputs = new MungeStepOutput[4];
-		outputs[0] = out1;
-		outputs[1] = out2;
-		outputs[2] = out3;
-		outputs[3] = out4;
+		outputs = new Object[4];
+		outputs[0] = "B";
+		outputs[1] = BigDecimal.valueOf(1);
+		outputs[2] = Boolean.FALSE;
+		outputs[3] = new Date(Long.MAX_VALUE/2);
 		result.setMungedData(outputs);
 		dup2 = new SourceTableRecord(session, match, Integer.valueOf(key));
 		key++;
@@ -155,19 +128,11 @@ public class MatchProcessorTest extends TestCase {
 		results.add(result);
 		
 		result = new MungeResult();
-		out1 = new MungeStepOutput<String>("string", String.class);
-		out1.setData("C");
-		out2 = new MungeStepOutput<BigDecimal>("decimal", BigDecimal.class);
-		out2.setData(BigDecimal.valueOf(2));
-		out3 = new MungeStepOutput<Boolean>("boolean", Boolean.class);
-		out3.setData(Boolean.TRUE);
-		out4 = new MungeStepOutput<Date>("date", Date.class);
-		out4.setData(new Date(Long.MAX_VALUE));
-		outputs = new MungeStepOutput[4];
-		outputs[0] = out1;
-		outputs[1] = out2;
-		outputs[2] = out3;
-		outputs[3] = out4;
+		outputs = new Object[4];
+		outputs[0] = "C";
+		outputs[1] = BigDecimal.valueOf(2);
+		outputs[2] = Boolean.TRUE;
+		outputs[3] = new Date(Long.MAX_VALUE);
 		result.setMungedData(outputs);
 		dup3 = new SourceTableRecord(session, match, Integer.valueOf(key));
 		key++;
