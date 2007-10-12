@@ -148,6 +148,5 @@ public class MungeProcessorTest extends TestCase {
         	// mark the current step as 'called'
         	step.setParameter("called", "true");
         }
-        // need to check the steps were call()ed in a valid order
     }
 }
