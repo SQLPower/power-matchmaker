@@ -62,31 +62,33 @@ public class MungeProcessor extends AbstractProcessor {
     
     public Boolean call() throws Exception {
         
-    	monitorableHelper.setStarted(true);
-    	
-        // open everything
-        for (MungeStep step: processOrder) {
-        	step.open();
-        }
-        
-        // call until one step gives up
-        boolean finished = false;
-        while(!finished) {
-        	for (MungeStep step: processOrder) {
-        		boolean continuing = step.call();
-        		if (!continuing) {
-        			finished = true;
-        			break;
-        		}
-        	}
-        }
-        
-        // close everything
-        for (MungeStep step: processOrder) {
-        	step.close();
-        }
-        
-        monitorableHelper.setFinished(true);
+    	try {
+			monitorableHelper.setStarted(true);
+			
+			// open everything
+			for (MungeStep step: processOrder) {
+				step.open();
+			}
+			
+			// call until one step gives up
+			boolean finished = false;
+			while(!finished) {
+				for (MungeStep step: processOrder) {
+					boolean continuing = step.call();
+					if (!continuing) {
+						finished = true;
+						break;
+					}
+				}
+			}
+		} finally {
+			// close everything
+			for (MungeStep step: processOrder) {
+				step.close();
+			}
+			
+			monitorableHelper.setFinished(true);
+		}
         
         return Boolean.TRUE;
     }
