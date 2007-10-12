@@ -275,7 +275,7 @@ public class MatchPool {
                 }
                 pmr.setStoreState(StoreState.CLEAN);
                 addPotentialMatch(pmr);
-                logger.debug("Number of PotentialMatchRecords is now" + potentialMatches.size());
+                logger.debug("Number of PotentialMatchRecords is now " + potentialMatches.size());
             }
             
         } catch (SQLException ex) {
@@ -429,6 +429,12 @@ public class MatchPool {
             				int baseParamIndex = (numKeyValues + i) * 2;
 							ps.setObject(baseParamIndex + 5, duplicate.getKeyValues().get(i));
             				ps.setObject(baseParamIndex + 6, master.getKeyValues().get(i));
+            			}
+            		} else {
+            			for (int i = 0; i < numKeyValues; i++) {
+            				int baseParamIndex = (numKeyValues + i) * 2;
+							ps.setObject(baseParamIndex + 5, null);
+            				ps.setObject(baseParamIndex + 6, null);
             			}
             		}
             		
