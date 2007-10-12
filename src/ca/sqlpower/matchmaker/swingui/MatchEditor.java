@@ -65,6 +65,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLCatalog;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLObject;
@@ -73,9 +74,12 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -204,6 +208,11 @@ public class MatchEditor implements EditorPane {
         		public void mmStructureChanged(MatchMakerEvent<PlFolder, Match> evt) {}
         	};
         	parentFolder.addMatchMakerListener(matchRemovalListener);
+        	
+        	sourceChooser.getCatalogComboBox().setEnabled(false);
+        	sourceChooser.getSchemaComboBox().setEnabled(false);
+        	sourceChooser.getTableComboBox().setEnabled(false);
+        	viewBuilder.setEnabled(false);
         }
     }
 
@@ -683,13 +692,43 @@ public class MatchEditor implements EditorPane {
         	match.setName(matchIdText);
         }
 
-        logger.debug("Saving Match:" + match.getName());
-
+        if (match.getParent() == null) {
+        	sourceChooser.getCatalogComboBox().setEnabled(false);
+        	sourceChooser.getSchemaComboBox().setEnabled(false);
+        	sourceChooser.getTableComboBox().setEnabled(false);
+        	viewBuilder.setEnabled(false);
+        	
+        	TableMergeRules mergeRule = new TableMergeRules();
+        	mergeRule.setTable(match.getSourceTable());
+			try {
+				mergeRule.setTableIndex(match.getSourceTableIndex());
+			} catch (ArchitectException e) {
+				throw new ArchitectRuntimeException(e);
+			}
+	        
+			try {
+				List<SQLColumn> columns = new ArrayList<SQLColumn>(
+						(match.getSourceTable()).getColumns()); 
+				for (SQLColumn column : columns) {
+					ColumnMergeRules newRules = new ColumnMergeRules();
+					newRules.setActionType(MergeActionType.IGNORE);
+					mergeRule.addChild(newRules);
+					newRules.setColumn(column);
+				}
+			} catch (Exception ex) {
+				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "An exception occured while deriving collison criteria", ex);
+			}
+			
+			match.getTableMergeRulesFolder().addChild(0, mergeRule);
+        }
+		
+		logger.debug("Saving Match:" + match.getName());
+        
         PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
         if (!selectedFolder.getChildren().contains(match)) {
             swingSession.move(match,selectedFolder);
         	swingSession.save(selectedFolder);
-        }
+        } 
 
         swingSession.save(match);
         handler.resetHasValidated();
@@ -697,7 +736,6 @@ public class MatchEditor implements EditorPane {
         // bring back some buttons like create index...
         refreshActionStatus();
 		return true;
-
     }
 
     private void refreshActionStatus() {
