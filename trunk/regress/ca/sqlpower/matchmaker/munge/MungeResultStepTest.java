@@ -81,9 +81,9 @@ public class MungeResultStepTest extends TestCase {
 			assertEquals("output_" + i, keyString);
 		}
 		
-		MungeStepOutput[] mungedData = result.getMungedData();
+		Object[] mungedData = result.getMungedData();
 		assertEquals(1, mungedData.length);
-		MungeStepOutput output = mungedData[0];
-		assertEquals("cow", output.getData());
+		String output = (String)mungedData[0];
+		assertEquals("cow", output);
 	}
 }

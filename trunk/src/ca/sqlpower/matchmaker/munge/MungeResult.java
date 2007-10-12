@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.SourceTableRecord;
@@ -35,18 +38,18 @@ public class MungeResult implements Comparable<MungeResult> {
 	/**
 	 * The data that went through the MungeProcessor
 	 */
-	private MungeStepOutput[] mungedData;
+	private Object[] mungedData;
 	
 	/**
 	 * The SourceTableRecord for the munged row. 
 	 */
 	private SourceTableRecord sourceTableRecord;
 	
-	public MungeStepOutput[] getMungedData() {
+	public Object[] getMungedData() {
 		return mungedData;
 	}
 	
-	public void setMungedData(MungeStepOutput[] mungedData) {
+	public void setMungedData(Object[] mungedData) {
 		this.mungedData = mungedData;
 	}
 	
@@ -64,7 +67,36 @@ public class MungeResult implements Comparable<MungeResult> {
 		} 
 		
 		for (int i = 0; i < mungedData.length; i++) {
-			int compareValue = mungedData[i].compareTo(o.getMungedData()[i]);
+			int compareValue = 0;
+			Object thisData = mungedData[i];
+			Object otherData = o.getMungedData()[i];
+			
+			if (thisData == null || otherData == null) {
+				if (thisData != null) {
+					logger.debug("data was null");
+					compareValue = 1;
+				} else if (otherData != null) {
+					logger.debug("otherData was null");
+					compareValue = -1;
+				}
+			} else if (thisData.getClass().equals(String.class)){
+				logger.debug("comparing Strings " + thisData + " and " + otherData);
+				compareValue = ((String)thisData).compareTo((String)otherData);
+			} else if (thisData.getClass().equals(BigDecimal.class)) {
+				logger.debug("comparing BigDecimals " + thisData + " and " + otherData);
+				compareValue = ((BigDecimal) thisData).compareTo((BigDecimal)otherData);
+			} else if (thisData.getClass().equals(Boolean.class)) {
+				logger.debug("comparing Booleans " + thisData + " and " + otherData);
+				compareValue = ((Boolean) thisData).compareTo((Boolean)otherData);
+			} else if (thisData.getClass().equals(Date.class)) {
+				logger.debug("comparing Dates " + thisData + " and " + otherData);
+				compareValue = ((Date) thisData).compareTo((Date)otherData);
+			} else {
+				throw new IllegalStateException("MungeStepOutput" +
+						"contain an unsupported data type:" + thisData);
+			}
+			logger.debug("compareValue is " + compareValue);
+			
 			if (compareValue != 0) {
 				logger.debug("MungeResults are NOT equal, so return " + compareValue);
 				return compareValue;
@@ -84,8 +116,8 @@ public class MungeResult implements Comparable<MungeResult> {
 		}
 		
 		s.append("Data Values:");
-		for (MungeStepOutput o: mungedData) {
-			s.append(" ").append(o.getData()).append(" ");
+		for (Object o: mungedData) {
+			s.append(" ").append(o).append(" ");
 		}
 
 		return s.toString();

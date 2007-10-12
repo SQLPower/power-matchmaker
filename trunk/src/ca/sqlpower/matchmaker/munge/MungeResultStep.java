@@ -99,7 +99,9 @@ public class MungeResultStep extends AbstractMungeStep {
 	 */
 	public void open() throws Exception {
 		super.open();
-		
+		// results must be emptied out, or otherwise, it will
+		// contain the munge results from the last munge processor run.
+		results.clear();
 		indexValues = new MungeStepOutput[uniqueIndex.getChildCount()];
 		for (int i=0; i < uniqueIndex.getChildren().size(); i++) {
 			SQLIndex.Column c = uniqueIndex.getChild(i);
@@ -114,12 +116,11 @@ public class MungeResultStep extends AbstractMungeStep {
 		super.call();
 		
 		List<MungeStepOutput> inputs = getInputs(); 
-		MungeStepOutput[] mungedData = new MungeStepOutput[inputs.size()];
+		Object[] mungedData = new Object[inputs.size()];
 		
 		for (int i = 0; i < inputs.size(); i++) {
 			MungeStepOutput output = inputs.get(i);
-			mungedData[i] = new MungeStepOutput(output.getName(), output.getType());
-			mungedData[i].setData(output.getData());
+			mungedData[i] = output.getData();
 		}
 		
 		MungeResult result = new MungeResult();
