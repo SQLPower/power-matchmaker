@@ -20,7 +20,6 @@
 package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 
 import javax.swing.AbstractAction;
 
@@ -54,19 +53,11 @@ public class NewMatchGroupAction extends AbstractAction {
 		try {
 			editor = new MungeProcessEditor(swingSession,parent, g);
 			swingSession.setCurrentEditorComponent(editor);
-		} catch (ClassNotFoundException ex) {
-			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
-					"Error Class Not Found", 
-					"One of the classes in the munge component proporties files does not exist", ex);
 		} catch (ArchitectException ex) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
 					"Error Loading Source Table", 
 					"There was an error loading the source table", ex);
-		} catch (IOException ex) {
-			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
-					"Error loading default munge step properties file",
-					"Could not load properties file from class path.", ex);
-		}
+		} 
 	}
 
 }
