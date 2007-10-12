@@ -37,8 +37,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +53,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
@@ -76,67 +73,8 @@ import ca.sqlpower.matchmaker.munge.SubstringMungeStep;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
+import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
-
-/**
- * This class generates the mungeConpoents.
- */
-class MungeComponentFactory {
-	
-	/**
-	 * The array that looks like the set of types we are expecting for the correct constructor for any munge component
-	 *  (excluding the input and output steps).
-	 */
-	private static final Type[] CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class}; 
-	
-	// TODO transplant to a new MungeComponentManager, which will be referenced from SwingSessionContext
-	public static  AbstractMungeComponent getMungeComponent(MungeStep ms, FormValidationHandler handler, 
-		MatchMakerSession session, Map<String, StepDescription> stepProps) {
-		
-		if (ms instanceof SQLInputStep) {
-			return new SQLInputMungeComponent(ms, handler, session);
-		} else if (ms instanceof MungeResultStep) {
-			return new MungeResultMungeComponent(ms, handler, session);
-		}
-		
-		for (StepDescription sd : stepProps.values()) {
-			if (sd.getLogicClass().equals(ms.getClass())) {
-				Constructor[] constructors = sd.getGuiClass().getDeclaredConstructors();
-				
-				for (Constructor con : constructors) {
-					Type[] paramTypes = con.getGenericParameterTypes();	
-					
-					System.out.println(paramTypes[0] + " " + paramTypes[1] + " " + paramTypes[2]);
-					
-					if (arrayEquals(paramTypes,CONSTRUCTOR_PARAMS)) {
-						try {
-							return (AbstractMungeComponent)con.newInstance(ms, handler, session);
-						} catch (Throwable t) {
-							throw new RuntimeException("Error generating munge step component check properties file.", t);
-						}
-					}
-				}
-			}
-		}
-		
-		throw new NoClassDefFoundError("Error no constructor"  
-				+ "(MungeStep, FormValidationHandler, MatchMakerSession) was found for the given munge step:" 
-				+ ms.getClass());
-	}
-	
-	private static boolean arrayEquals(Object[] a, Object[] b) {
-		if (a.length != b.length) {
-			return false;
-		}
-		
-		for (int x = 0; x < a.length; x++) {
-			if (!a[x].equals(b[x])) {
-				return false;
-			}
-		}
-		return true;
-	}
-}
 
 /**
  * This class is responsible for maintaining the interactive GUI for a munge
@@ -210,17 +148,12 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	
 	private Map<MungeStep,AbstractMungeComponent> modelMap = new HashMap<MungeStep, AbstractMungeComponent>();
 	
-	private Map<String, StepDescription> stepsProperties;
-	
-	
 	/**
 	 * Creates a new empty mungepen.
 	 * 
 	 */
-	public MungePen(MungeProcess process, FormValidationHandler handler, 
-			Map<String, StepDescription> stepsProperties, Match match) throws ArchitectException {
+	public MungePen(MungeProcess process, FormValidationHandler handler, Match match) throws ArchitectException {
 		
-		this.stepsProperties = stepsProperties;
 		process.addMatchMakerListener(new MungePenMatchRuleSetListener());
 		mungeStepListener = new MungePenMungeStepListener();
 		
@@ -271,7 +204,9 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	private void buildComponents(MungeProcess process) {
 		for (MungeStep ms : process.getChildren()) {
 			ms.addMatchMakerListener(mungeStepListener);
-			AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(ms, handler, process.getSession(), stepsProperties);
+			
+			SwingSessionContext ssc = ((SwingSessionContext) process.getSession().getContext());
+			AbstractMungeComponent mcom = ssc.getMungeComponent(ms, handler, process.getSession());
 			modelMap.put(ms, mcom);
 			add(mcom,DEFAULT_LAYER);
 			mcom.configureFromStepProperties();
@@ -739,8 +674,9 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			
 			for (int x : evt.getChangeIndices()) {
 				evt.getSource().getChildren().get(x).addMatchMakerListener(mungeStepListener);
-				AbstractMungeComponent mcom = MungeComponentFactory.getMungeComponent(evt.getSource().getChildren().get(x), 
-						handler, process.getSession(), stepsProperties);
+				SwingSessionContext ssc = (SwingSessionContext) process.getSession().getContext();
+				AbstractMungeComponent mcom = (ssc.getMungeComponent(evt.getSource().getChildren().get(x),
+						handler, process.getSession()));
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
 				add(mcom);
 				logger.debug("Generating positions from properites");

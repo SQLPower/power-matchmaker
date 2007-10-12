@@ -25,13 +25,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -55,7 +49,6 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
-import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -110,8 +103,6 @@ public class MungeProcessEditor implements EditorPane {
     private final StatusComponent status = new StatusComponent();
     private final FormValidationHandler handler;
     
-    private final Map<String, StepDescription> stepProperties = new HashMap<String, StepDescription>();
-    
     /**
      * Creates a new editor for the given session's given munge process.
      * 
@@ -122,7 +113,7 @@ public class MungeProcessEditor implements EditorPane {
      * @param process The process to edit
      */
     public MungeProcessEditor(MatchMakerSwingSession swingSession,
-            Match match, MungeProcess process) throws ClassNotFoundException, ArchitectException, IOException {
+            Match match, MungeProcess process) throws ArchitectException {
         super();
         this.swingSession = swingSession;
         this.parentMatch = match;
@@ -138,8 +129,7 @@ public class MungeProcessEditor implements EditorPane {
         ArrayList<Action> actions = new ArrayList<Action>();
         actions.add(saveAction);
         this.handler = new FormValidationHandler(status, actions);
-        generatePropertiesMap();
-        this.mungePen = new MungePen(process, handler, stepProperties, parentMatch);
+        this.mungePen = new MungePen(process, handler, parentMatch);
 
         buildUI();
         if (process.getParentMatch() != null && process.getParentMatch() != parentMatch) {
@@ -150,31 +140,6 @@ public class MungeProcessEditor implements EditorPane {
         
         
     }
-
-    private void generatePropertiesMap() throws ClassNotFoundException, IOException {
-    	Properties steps = new Properties();
-		steps.load(ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"));
-    	
-    	try {
-    		steps.load(new FileInputStream((System.getProperty("user.home") + "/.matchmaker/munge_components.properties")));
-    	} catch (IOException e) {
-    	}
-    	
-    	for (Object oKey : steps.keySet()) {
-    		if (oKey instanceof String) {
-    			String key = (String) oKey;
-    			StringTokenizer st = new StringTokenizer(key, ".");
-    			if (st.nextToken().equals("step")) {
-    				String newKey = st.nextToken();
-    				if (!stepProperties.containsKey(newKey)) {
-    					stepProperties.put(newKey, new StepDescription());
-    				}
-    				stepProperties.get(newKey).setProperty(st.nextToken(), steps.getProperty(key));
-    				
-    			}
-    		}
-    	}
-	}
 
 	private void buildUI() throws ArchitectException {
 		FormLayout layout = new FormLayout(
