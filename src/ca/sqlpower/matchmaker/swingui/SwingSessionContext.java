@@ -27,12 +27,16 @@ import java.util.List;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.VersionFormatException;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 public interface SwingSessionContext extends MatchMakerSessionContext {
 
@@ -91,5 +95,18 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      * If null, the dialog's selected data source will remain unchanged.
      */
     public void showLoginDialog(SPDataSource selectedDataSource);
+    
+    /**
+     * Returns a new instance of the appropriate MungeComponent that is associated with the given MungeStep.
+     * Theses are provided in the munge_component.properties in the ca.sqlpower.matchmaker.swingui.munge, and 
+     * from the $HOME/.matchmaker/munge_components.properties file.
+     *  
+     * @param ms The mungeStep to create the component for
+     * @param handler A from validation handler to use on the component
+     * @param session The current matchmaker session
+     * @return A new MungeComponent that goes with the given MungeStep 
+     */
+    public AbstractMungeComponent getMungeComponent(MungeStep ms, FormValidationHandler handler, 
+    		MatchMakerSession session);
 
 }

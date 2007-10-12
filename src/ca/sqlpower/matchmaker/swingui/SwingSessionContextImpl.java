@@ -26,10 +26,18 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Type;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -47,8 +55,16 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.matchmaker.munge.MungeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.SQLInputStep;
+import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
+import ca.sqlpower.matchmaker.swingui.munge.MungeResultMungeComponent;
+import ca.sqlpower.matchmaker.swingui.munge.SQLInputMungeComponent;
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
@@ -63,6 +79,7 @@ import ca.sqlpower.swingui.db.DataSourceTypeEditor;
 import ca.sqlpower.swingui.db.DatabaseConnectionManager;
 import ca.sqlpower.util.ExceptionReport;
 import ca.sqlpower.util.VersionFormatException;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
@@ -71,6 +88,17 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 
     private static final Logger logger = Logger.getLogger(SwingSessionContextImpl.class);
 
+	/**
+	 * The array that looks like the set of types we are expecting for the correct constructor for any munge component
+	 *  (excluding the input and output steps).
+	 */
+	private static final Type[] CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class}; 
+
+	/**
+	 * The list of information about mungeSteps, which stores their StepClass, GUIClass, name and icon
+	 */
+	private final List<StepDescription> stepProperties = new ArrayList<StepDescription>();
+    
     /**
      * The underlying context that will deal with Hibernate for us.
      */
@@ -178,8 +206,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * settings in the MatchMaker GUI application.  This constructor creates its own delegate
      * session context object based on information in the given prefs node, or failing that,
      * by prompting the user with a GUI.
+     * @throws ClassNotFoundException 
      */
-    public SwingSessionContextImpl(Preferences prefsRootNode) throws IOException {
+    public SwingSessionContextImpl(Preferences prefsRootNode) throws IOException, ClassNotFoundException {
         this(prefsRootNode, createDelegateContext(prefsRootNode));
     }
 
@@ -188,10 +217,11 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * settings in the MatchMaker GUI application.  This implementation uses the delegate
      * context given as an argument.  It is intended for facilitating proper unit tests, and
      * you will most likely prefer using the other constructor in real life.
+     * @throws ClassNotFoundException 
      */
     public SwingSessionContextImpl(
             Preferences prefsRootNode,
-            MatchMakerSessionContext delegateContext) throws IOException {
+            MatchMakerSessionContext delegateContext) throws IOException, ClassNotFoundException {
         this.prefs = prefsRootNode;
         this.context = delegateContext;
         ExceptionReport.init();
@@ -208,6 +238,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         
         dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), dsDialogFactory,dsTypeDialogFactory, Collections.singletonList(loginDatabaseConnectionAction));
         loginDialog = new LoginDialog(this);
+        
+        generatePropertiesList();
     }
 
 
@@ -396,4 +428,89 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             return null;
         }
     }
+    
+    public AbstractMungeComponent getMungeComponent(MungeStep ms,
+			FormValidationHandler handler, MatchMakerSession session) {
+    	if (ms instanceof SQLInputStep) {
+			return new SQLInputMungeComponent(ms, handler, session);
+		} else if (ms instanceof MungeResultStep) {
+			return new MungeResultMungeComponent(ms, handler, session);
+		}
+		
+		for (StepDescription sd : stepProperties) {
+			if (sd.getLogicClass().equals(ms.getClass())) {
+				Constructor[] constructors = sd.getGuiClass().getDeclaredConstructors();
+				
+				for (Constructor con : constructors) {
+					Type[] paramTypes = con.getGenericParameterTypes();	
+					
+					if (arrayEquals(paramTypes,CONSTRUCTOR_PARAMS)) {
+						try {
+							return (AbstractMungeComponent)con.newInstance(ms, handler, session);
+						} catch (Throwable t) {
+							throw new RuntimeException("Error generating munge step component: " + sd.getGuiClass().getName() + ". " 
+									+ "Possibly caused by an error thrown in the constructor.", t);
+						}
+					}
+				}
+				throw new NoSuchMethodError("Error: No constructor (MungeStep, FormValidationHandler, MatchMakerSession) was found for the MungeComponent :"
+						+ sd.getGuiClass());
+			}
+		}
+		
+		throw new NoClassDefFoundError("Error: No MungeComponent was found for the given munge step: " + ms.getClass());
+	}
+    
+    private static boolean arrayEquals(Object[] a, Object[] b) {
+		if (a.length != b.length) {
+			return false;
+		}
+		
+		for (int x = 0; x < a.length; x++) {
+			if (!a[x].equals(b[x])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+    /**
+     * Populates the stepProperties list with the StepDescriptions that map the 
+     * steps to their MungeComponents, name and Icon.
+     * 
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
+	private void generatePropertiesList() throws ClassNotFoundException, IOException {
+	   	Properties steps = new Properties();
+	   	Map<String, StepDescription> stepProps = new HashMap<String, StepDescription>();
+	   	
+		steps.load(ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"));
+		
+		try {
+			steps.load(new FileInputStream((System.getProperty("user.home") + "/.matchmaker/munge_components.properties")));
+		} catch (IOException e) {
+		}
+		
+		for (Object oKey : steps.keySet()) {
+			if (oKey instanceof String) {
+					String key = (String) oKey;
+					StringTokenizer st = new StringTokenizer(key, ".");
+					
+					if (st.nextToken().equals("step")) {
+						String newKey = st.nextToken();
+					if (!stepProps.containsKey(newKey)) {
+						stepProps.put(newKey, new StepDescription());
+					}
+					stepProps.get(newKey).setProperty(st.nextToken(), steps.getProperty(key));
+				}
+			}
+		}
+		
+		for (StepDescription sd : stepProps.values()) {
+			stepProperties.add(sd);
+		}
+	}
+
+    
 }
