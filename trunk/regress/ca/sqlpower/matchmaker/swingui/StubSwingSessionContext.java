@@ -27,9 +27,13 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
  * A stub of SwingSessionContext.  None of the methods return useful values, but they all
@@ -93,4 +97,10 @@ public class StubSwingSessionContext implements SwingSessionContext {
     public void showLoginDialog(SPDataSource selectedDataSource) {
         logger.debug("Stub call: StubSwingSessionContext.showLoginDialog()");
     }
+
+	public AbstractMungeComponent getMungeComponent(MungeStep ms,
+			FormValidationHandler handler, MatchMakerSession session) {
+		logger.debug("Stub call: StubSwingSessionContext.getMungeComponent()");
+		return null;
+	}
 }
