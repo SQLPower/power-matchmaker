@@ -71,8 +71,8 @@ public class MatchProcessor extends AbstractProcessor {
 			for (int i=dataIndex + 1; i<matchData.size(); i++){
 				if (data.compareTo(matchData.get(i)) == 0) {
 					// Potential Match! so store in Match Result Table
-					logger.debug("Found Match!\nRecords1:" + data + 
-							"\nRecord2:" + matchData.get(i));
+					logger.debug("Found Match!\nRecord 1:" + data + 
+							"\nRecord 2:" + matchData.get(i));
 					PotentialMatchRecord pmr = new PotentialMatchRecord(mungeProcess, 
 																		MatchType.UNMATCH, 
 																		data.getSourceTableRecord(), 
