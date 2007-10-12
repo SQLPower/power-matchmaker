@@ -163,7 +163,7 @@ public class NewMergeRuleAction extends AbstractAction {
 	 * Creates a new column merge rule
 	 * @return returns the newly created column merge rule
 	 */
-	public ColumnMergeRules newColumnRule() {
+	private ColumnMergeRules newColumnRule() {
 		ColumnMergeRules newRules = new ColumnMergeRules();
 		newRules.setActionType(MergeActionType.IGNORE);
 		mergeRule.addChild(newRules);

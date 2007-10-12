@@ -37,6 +37,8 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
@@ -104,13 +106,32 @@ public class MergeTableRuleEditor implements EditorPane {
 		
 		mergeRulesTable = new EditableJTable(mergeTableRuleTableModel);
         mergeRulesTable.setName("Merge Tables");
+
+        //Enables/disables the buttons according to the selected table row
+        mergeRulesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+			public void valueChanged(ListSelectionEvent e) {
+				int row = MergeTableRuleEditor.this.mergeRulesTable.getSelectedRow();
+				
+				moveDown.setEnabled(false);
+				moveUp.setEnabled(false);
+				deleteRule.setEnabled(false);
+				
+				if (row > 1) {
+					moveUp.setEnabled(true);
+				}
+				if (row > 0 && row < MergeTableRuleEditor.this.mergeRulesTable.getRowCount() - 1) {
+					moveDown.setEnabled(true);
+				}
+				if (row > 0 && row < MergeTableRuleEditor.this.mergeRulesTable.getRowCount()) {
+					deleteRule.setEnabled(true);
+				}
+			}});
         
         //adds an action listener that looks for a double click, that opens the selected 
         //merge rule editor pane  
         mergeRulesTable.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
-				
 				if (e.getClickCount() == 2) {
 					int row = MergeTableRuleEditor.this.mergeRulesTable.getSelectedRow();
 					
@@ -118,7 +139,7 @@ public class MergeTableRuleEditor implements EditorPane {
 					Object child = menuTree.getModel().getChild(parent, row);
 					menuTree.setSelectionPath(menuPath.pathByAddingChild(child));
 				}
-			}		
+			}
         });
 
         mergeRulesTable.setDefaultRenderer(Boolean.class,new CheckBoxRenderer());
@@ -170,6 +191,10 @@ public class MergeTableRuleEditor implements EditorPane {
 		row+=2;
 		pb.add(bbb.getPanel(), cc.xy(4,row,"c,c"));
 		panel = pb.getPanel();
+		
+		moveDown.setEnabled(false);
+		moveUp.setEnabled(false);
+		deleteRule.setEnabled(false);
 	}
 
 	private void setDefaultSelections() {
@@ -180,11 +205,9 @@ public class MergeTableRuleEditor implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" up");
-			if ( selectedRow > 0 &&	selectedRow < mergeRulesTable.getRowCount()) {
-				match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow-1);
-				mergeRulesTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
-				TableUtils.fitColumnWidths(mergeRulesTable, 15);
-			}
+			match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow-1);
+			mergeRulesTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
+			TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
 	};
 	
@@ -192,36 +215,30 @@ public class MergeTableRuleEditor implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" down");
-			if ( selectedRow >= 0 && selectedRow < mergeRulesTable.getRowCount()-1) {
-				match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow+1);
-				mergeRulesTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
-				TableUtils.fitColumnWidths(mergeRulesTable, 15);
-			}
+			match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow+1);
+			mergeRulesTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
+			TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
 	};
 	
 	private Action deleteRule = new AbstractAction("Delete") {
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = mergeRulesTable.getSelectedRow();
+			logger.debug("deleting merge rule:"+selectedRow);
 			int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-			"Are you sure you want to delete the merge rule?");
+				"Are you sure you want to delete the merge rule?");
 			if (responds != JOptionPane.YES_OPTION)
 				return;
-			logger.debug("deleting merge rule:"+selectedRow);
-			if ( selectedRow >= 0 && selectedRow < mergeRulesTable.getRowCount()) {
-				TableMergeRules rule = match.getTableMergeRules().get(selectedRow);
-				match.removeTableMergeRule(rule);
-				if (selectedRow >= mergeRulesTable.getRowCount()) {
-					selectedRow = mergeRulesTable.getRowCount() - 1;
-				}
-				if (selectedRow >= 0) {
-					mergeRulesTable.setRowSelectionInterval(selectedRow, selectedRow);
-				}
-				TableUtils.fitColumnWidths(mergeRulesTable, 15);
-			} else {
-				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"Please select one merge rule to delete");
+
+			TableMergeRules rule = match.getTableMergeRules().get(selectedRow);
+			match.removeTableMergeRule(rule);
+			if (selectedRow >= mergeRulesTable.getRowCount()) {
+				selectedRow = mergeRulesTable.getRowCount() - 1;
 			}
+			if (selectedRow > 0) {
+				mergeRulesTable.setRowSelectionInterval(selectedRow, selectedRow);
+			}
+			TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
 	};
 	

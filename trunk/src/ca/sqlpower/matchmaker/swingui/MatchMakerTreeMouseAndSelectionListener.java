@@ -195,9 +195,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMergeRulesMenuItems(JPopupMenu m, TableMergeRules mergeRule) {
-		m
-				.add(new JMenuItem(new DeleteMergeRuleAction(swingSession,
-						mergeRule)));
+		if (!mergeRule.getTableName().equals(mergeRule.getParentMatch().getSourceTableName())) {
+			m.add(new JMenuItem(new DeleteMergeRuleAction(swingSession,
+					mergeRule)));
+		}
 	}
 
 	/**
