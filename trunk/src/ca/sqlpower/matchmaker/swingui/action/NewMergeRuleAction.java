@@ -117,8 +117,8 @@ public class NewMergeRuleAction extends AbstractAction {
 		});
 		
 		FormLayout layout = new FormLayout(
-			"4dlu,pref,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow,4dlu", 
-        	"4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
+			"10dlu,pref,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow,10dlu", 
+        	"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu");
         	//1    2    3    4    5     6    7   8    9 
 		CellConstraints cc = new CellConstraints();
 		Panel p = new Panel(layout);
@@ -156,6 +156,7 @@ public class NewMergeRuleAction extends AbstractAction {
         p.add(bot, cc.xyw(1, row, 5, "c,f"));
         dialog.add(p);
         dialog.pack();
+		dialog.setLocationRelativeTo(swingSession.getFrame());
         dialog.setVisible(true);
 	}
 	
