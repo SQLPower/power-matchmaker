@@ -43,6 +43,7 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
@@ -181,9 +182,12 @@ public class MergeTableRuleEditor implements EditorPane {
 		bsb.addRelatedGap();
 		bsb.addGridded(new JButton(moveDown));
 		pb.add(bsb.getPanel(), cc.xy(6,row,"c,c"));
+		
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
 		//new actions for delete and save should be extracted and be put into its own file.
 		bbb.addGridded(new JButton(new NewMergeRuleAction(swingSession, match)));
+		bbb.addRelatedGap();
+		bbb.addGridded(new JButton(deriveRelated));
 		bbb.addRelatedGap();
 		bbb.addGridded(new JButton(deleteRule));
 		bbb.addRelatedGap();
@@ -208,6 +212,17 @@ public class MergeTableRuleEditor implements EditorPane {
 			match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow-1);
 			mergeRulesTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
 			TableUtils.fitColumnWidths(mergeRulesTable, 15);
+		}
+	};
+	
+	private Action deriveRelated = new AbstractAction("Derive Related Rules") {
+		public void actionPerformed(ActionEvent e) {
+			try {
+				new RelatedTableDeriver(match,swingSession);
+			} catch (ArchitectException e1) {
+				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+						"Failed to generate columns for match source table.", e1);
+			}
 		}
 	};
 	
