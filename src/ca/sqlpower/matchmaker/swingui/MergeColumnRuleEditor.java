@@ -73,9 +73,12 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private final MatchMakerSwingSession swingSession;
 	private final Match match;
 	private final TableMergeRules mergeRule;
+	
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
 	private final JCheckBox deleteDup = new JCheckBox();
+	private final JComboBox parentTable = new JComboBox();
+	private final JComboBox childMergeAction;
 
 	private MergeColumnRuleTableModel ruleTableModel;
 	private ColumnMergeRulesTable ruleTable;
@@ -106,6 +109,13 @@ public class MergeColumnRuleEditor implements EditorPane {
     	        swingSession.getTree().setSelectionPath(menuPath);
 			}
 		});
+
+        for (TableMergeRules tmr : match.getTableMergeRules()) {
+        	if (!tmr.equals(mergeRule)) {
+        		parentTable.addItem(tmr.getName());
+        	}
+        }
+        childMergeAction = new JComboBox(TableMergeRules.ChildMergeActionType.values());
         
         buildUI();
         List<Action> actions = new ArrayList<Action>();
@@ -121,9 +131,10 @@ public class MergeColumnRuleEditor implements EditorPane {
 	}
 
 	private void buildUI() {
-		
+
+		String comboMinSize = "fill:min(pref;"+(new JComboBox().getMinimumSize().width)+"px):grow";
 		FormLayout layout = new FormLayout(
-				"4dlu,pref,4dlu,fill:min(pref;"+(new JComboBox().getMinimumSize().width)+"px):grow, 4dlu,pref,4dlu", // columns
+				"4dlu,pref,4dlu," + comboMinSize + ",4dlu,pref,4dlu," + comboMinSize + ",4dlu,pref,4dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,fill:40dlu:grow,4dlu,pref,4dlu"); // rows
 			//	 1     2    3    4               5    6    7     8         9    10   11      
 			//    status    cat       schema    table     index     del dup   table      button bar
@@ -137,25 +148,25 @@ public class MergeColumnRuleEditor implements EditorPane {
 		int row = 2;
 		pb.add(status, cc.xy(4,row));
 		row += 2;
-		pb.add(new JLabel("Catalog:"), cc.xy(2,row,"r,t"));
+		pb.add(new JLabel("Catalog:"), cc.xy(2,row,"r,c"));
 		JTextField temp = new JTextField(mergeRule.getSourceTable().getCatalogName());
 		temp.setEditable(false);
-		pb.add(temp, cc.xy(4,row,"f,t"));
+		pb.add(temp, cc.xyw(4,row,5,"f,c"));
 		row += 2;
 		
-		pb.add(new JLabel("Schema:"), cc.xy(2,row,"r,t"));
+		pb.add(new JLabel("Schema:"), cc.xy(2,row,"r,c"));
 		temp = new JTextField(mergeRule.getSourceTable().getSchemaName());
 		temp.setEditable(false);
-		pb.add(temp, cc.xy(4,row,"f,t"));
+		pb.add(temp, cc.xyw(4,row,5,"f,c"));
 		
 		row += 2;
-		pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,t"));
+		pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,c"));
 		temp = new JTextField(mergeRule.getTableName());
 		temp.setEditable(false);
-		pb.add(temp, cc.xy(4,row,"f,t"));
+		pb.add(temp, cc.xyw(4,row,5,"f,c"));
 
 		row += 2;
-		pb.add(new JLabel("Index Name:"), cc.xy(2,row,"r,t"));
+		pb.add(new JLabel("Index Name:"), cc.xy(2,row,"r,c"));
 		String indexName = "";
 		try {
 			indexName = mergeRule.getTableIndex().getName();
@@ -165,18 +176,27 @@ public class MergeColumnRuleEditor implements EditorPane {
 		}
 		temp = new JTextField(indexName);
 		temp.setEditable(false);
-		pb.add(temp, cc.xy(4,row,"f,t"));
+		pb.add(temp, cc.xyw(4,row,5,"f,c"));
 		
 		row += 2;
-		pb.add(new JLabel("Delete Dup:"), cc.xy(2,row,"r,t"));
-		pb.add(deleteDup, cc.xy(4,row,"l,t"));
-		
+		if (!mergeRule.getSourceTable().equals(match.getSourceTable())) {
+			pb.add(new JLabel("Parent Table:"), cc.xy(2,row,"l,c"));
+			pb.add(parentTable, cc.xy(4,row,"f,c"));
+			parentTable.setSelectedItem(mergeRule.getParentTable());
+			pb.add(new JLabel("Merge Action:"), cc.xy(6,row,"r,c"));
+			pb.add(childMergeAction, cc.xy(8,row,"f,c"));
+			childMergeAction.setSelectedItem(mergeRule.getChildMergeAction());
+		} else {
+			pb.add(new JLabel("Delete Dup:"), cc.xy(2,row,"r,c"));
+			pb.add(deleteDup, cc.xy(4, row, "l, c"));
+			deleteDup.setSelected(mergeRule.isDeleteDup());
+		}
 		
 		row += 2;
-		pb.add(new JScrollPane(ruleTable), cc.xy(4,row,"f,f"));
+		pb.add(new JScrollPane(ruleTable), cc.xyw(4,row,5,"f,f"));
 
 		row+=2;
-		pb.add(new JButton(saveAction), cc.xy(4,row,"c,c"));
+		pb.add(new JButton(saveAction), cc.xyw(4,row,5,"c,c"));
 		panel = pb.getPanel();
 		
 	}
@@ -213,8 +233,15 @@ public class MergeColumnRuleEditor implements EditorPane {
 		
 	public boolean doSave() {
 		if (handler.getWorstValidationStatus().getStatus() != Status.FAIL) {
-			mergeRule.setDeleteDup(deleteDup.isSelected());
-
+			
+			if (!mergeRule.getSourceTable().equals(match.getSourceTable())) {
+				mergeRule.setParentTable((String) parentTable.getSelectedItem());
+				mergeRule.setChildMergeAction(
+					(TableMergeRules.ChildMergeActionType) childMergeAction.getSelectedItem());
+			} else {
+				mergeRule.setDeleteDup(deleteDup.isSelected());
+			}
+			
 			if (!match.getTableMergeRules().contains(mergeRule)) {
 				match.getTableMergeRulesFolder().addChild(mergeRule);
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
@@ -234,10 +261,41 @@ public class MergeColumnRuleEditor implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
+		Object curParentTable = parentTable.getSelectedItem();
+		String oldParentTable = mergeRule.getParentTable();
+		Object curMergeAction = childMergeAction.getSelectedItem();
+		TableMergeRules.ChildMergeActionType oldMergeAction = mergeRule.getChildMergeAction();
 		
 		if (tableListener.isModified()) return true;
-		if (this.deleteDup.isSelected() != mergeRule.isDeleteDup()) {
-			return true;
+		
+		// Check if delete duplicate option has been changed
+		// for source table merge rule
+		if (match.getSourceTable().equals(mergeRule.getSourceTable())) {
+			if (this.deleteDup.isSelected() != mergeRule.isDeleteDup()) {
+				return true;
+			}
+			
+		// For related table merge rules
+		} else {
+			
+			// Check for changes in parent table
+			if ((curParentTable == null && oldParentTable != null) ||
+				(curParentTable != null && oldParentTable == null)) {
+				return true;
+			} else if (curParentTable != null && oldParentTable != null &&
+					!curParentTable.equals(oldParentTable)) {
+				return true;
+			}
+			
+			// Check for changes in child merge action
+			if ((curMergeAction == null && oldMergeAction != null) ||
+					(curMergeAction != null && oldMergeAction == null)) {
+				return true;
+			} else if (curMergeAction != null && oldMergeAction != null &&
+					!curMergeAction.equals(oldMergeAction)) {
+				return true;
+
+			}
 		}
 		return false;
 	}
@@ -252,7 +310,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
-			if (column == 1) {
+			if (column == 3) {
 				return new DefaultCellEditor(
 						new JComboBox(
 								new DefaultComboBoxModel(
@@ -270,7 +328,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 			TableModel model = (TableModel) contents;
 			for ( int i=0; i<model.getRowCount(); i++) {
 				SQLColumn column = (SQLColumn) model.getValueAt(i, 0);
-				MergeActionType mat = (MergeActionType) model.getValueAt(i, 1);
+				MergeActionType mat = (MergeActionType) model.getValueAt(i, 3);
 				if (mat == MergeActionType.CONCAT) {
 					if (column.getType() != Types.VARCHAR 
 							&& column.getType() != Types.LONGVARCHAR) {
