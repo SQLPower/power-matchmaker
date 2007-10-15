@@ -326,7 +326,12 @@ public class MergeColumnRuleEditor implements EditorPane {
 			TableModel model = (TableModel) contents;
 			for ( int i=0; i<model.getRowCount(); i++) {
 				SQLColumn column = (SQLColumn) model.getValueAt(i, 0);
-				MergeActionType mat = (MergeActionType) model.getValueAt(i, 3);
+				MergeActionType mat;
+				if (getMergeRule().isSourceMergeRule()) {
+					mat = (MergeActionType) model.getValueAt(i, 1);
+				} else {
+					mat = (MergeActionType) model.getValueAt(i, 3);
+				}
 				if (mat == MergeActionType.CONCAT) {
 					if (column.getType() != Types.VARCHAR 
 							&& column.getType() != Types.LONGVARCHAR) {
