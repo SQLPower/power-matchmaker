@@ -50,8 +50,12 @@ public class TableMergeRules
 	/**
 	 * The index for table 
 	 */
-	
 	private TableIndex tableIndex;
+	
+	/**
+	 * The parent tableMergeRule
+	 */
+	private String parentTable;
 	
 	public TableMergeRules() {
 		tableIndex = new TableIndex(this,cachableTable,"tableIndex");
@@ -166,6 +170,7 @@ public class TableMergeRules
 		this.deleteDup = deleteDup;
 		getEventSupport().firePropertyChange("deleteDup", oldValue, this.deleteDup);
 	}
+	
 
 	@Override
 	public String toString() {
@@ -217,4 +222,13 @@ public class TableMergeRules
 	public void setOid(Long oid) {
 		this.oid = oid;
 	}
+
+	public String getParentTable() {
+		return parentTable;
+	}
+
+	public void setParentTable(String parentTable) {
+		this.parentTable = parentTable;
+	}
+
 }
