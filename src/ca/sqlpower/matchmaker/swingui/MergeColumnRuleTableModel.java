@@ -42,14 +42,16 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 public class MergeColumnRuleTableModel extends AbstractTableModel implements MatchMakerListener {
 
 	private TableMergeRules mergeRule;
+	private boolean isSourceMergeRule;
 
 	public MergeColumnRuleTableModel(TableMergeRules mergeRule) {
 		this.mergeRule = mergeRule;
+		this.isSourceMergeRule = mergeRule.isSourceMergeRule();
 		MatchMakerUtils.listenToHierarchy(this, this.mergeRule);
 	}
 	
 	public int getColumnCount() {
-		return 4;
+		return mergeRule.isSourceMergeRule()? 2 : 4;
 	}
 
 	public int getRowCount() {
@@ -61,11 +63,15 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 		if (column == 0) {
 			return "Column";
 		} else if (column == 1) {
-			return "Primary Key";
-		} else if (column == 2) {
-			return "Foreign Key";
-		} else if (column == 3) {
-			return "Action";
+			return mergeRule.isSourceMergeRule()? "Action" : "Primary Key";
+		} else if (!isSourceMergeRule) { 
+			if (column == 2) {
+				return "Foreign Key";
+			} else if (column == 3) {
+				return "Action";
+			} else {
+				throw new RuntimeException("getColumnName: Unexcepted column index:"+column);	
+			}
 		} else {
 			throw new RuntimeException("getColumnName: Unexcepted column index:"+column);
 		}
@@ -74,12 +80,18 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		if (columnIndex == 0) {
 			return mergeRule.getChildren().get(rowIndex).getColumn();
-		} else if (columnIndex == 1) {
-			return mergeRule.getChildren().get(rowIndex).isInPrimaryKey();
-		} else if(columnIndex == 2) {
-			return mergeRule.getChildren().get(rowIndex).isInForeignKey();
-		} else if (columnIndex == 3) {
+		} else if (isSourceMergeRule && columnIndex == 1) {
 			return mergeRule.getChildren().get(rowIndex).getActionType();
+		} else if (!isSourceMergeRule) {
+			if (columnIndex == 1) {
+				return mergeRule.getChildren().get(rowIndex).isInPrimaryKey();
+			} else if(columnIndex == 2) {
+				return mergeRule.getChildren().get(rowIndex).isInForeignKey();
+			} else if (columnIndex == 3) {
+				return mergeRule.getChildren().get(rowIndex).getActionType();
+			} else {
+				throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
+			}
 		} else {
 			throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
 		}		
@@ -87,8 +99,8 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 	
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		if (mergeRule.isSourceMergeRule()) {
-			return columnIndex == 3;
+		if (isSourceMergeRule) {
+			return columnIndex == 1;
 		} else {
 			return (columnIndex == 1 || columnIndex == 2);
 		}
@@ -98,10 +110,16 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 	public Class<?> getColumnClass(int columnIndex) {
 		if (columnIndex == 0) {
 			return SQLColumn.class;
-		}  else if (columnIndex == 1 || columnIndex == 2) {
-			return Boolean.class;
-		} else if (columnIndex == 3) {
-			return ColumnMergeRules.MergeActionType.class;	
+		} else if (isSourceMergeRule && columnIndex == 1) {
+			return ColumnMergeRules.MergeActionType.class;
+		} else if (!isSourceMergeRule) {
+			if (columnIndex == 1 || columnIndex == 2) {
+				return Boolean.class;
+			} else if (columnIndex == 3) {
+				return ColumnMergeRules.MergeActionType.class;	
+			} else {
+				throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
+			}
 		} else {
 			throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
 		}
@@ -112,12 +130,18 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 		ColumnMergeRules rule = mergeRule.getChildren().get(rowIndex);
 		if (columnIndex == 0) {
 			rule.setColumn((SQLColumn) aValue);
-		} else if (columnIndex == 1) {
-			rule.setInPrimaryKey((Boolean) aValue);
-		} else if (columnIndex == 2) {
-			rule.setInForeignKey((Boolean) aValue);
-		} else if (columnIndex == 3) {
+		} else if (isSourceMergeRule && columnIndex == 1) {
 			rule.setActionType((MergeActionType) aValue);
+		} else if (!isSourceMergeRule) {
+			if (columnIndex == 1) {
+				rule.setInPrimaryKey((Boolean) aValue);
+			} else if (columnIndex == 2) {
+				rule.setInForeignKey((Boolean) aValue);
+			} else if (columnIndex == 3) {
+				rule.setActionType((MergeActionType) aValue);
+			} else {
+				throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
+			}
 		} else {
 			throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
 		}
