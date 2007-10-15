@@ -24,6 +24,7 @@ import java.awt.Window;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
@@ -31,6 +32,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
@@ -108,5 +110,21 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      */
     public AbstractMungeComponent getMungeComponent(MungeStep ms, FormValidationHandler handler, 
     		MatchMakerSession session);
+    
+   /**
+    * Returns the list of StepDescriptions.
+    * 
+    * @return The list
+    */
+    public Map<Class, StepDescription> getStepMap();
 
+    /**
+     * Returns a new instance of the mungstep at index "index" in the 
+     * list of steps.
+     * 
+     * @param index The index to look in
+     * @param session The session the mungeStep will added to
+     * @return A new MungeStep of the type given by the list
+     */
+    public MungeStep getMungeStep(Class create, MatchMakerSession session);
 }

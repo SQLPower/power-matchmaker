@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -92,12 +91,18 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	 * The array that looks like the set of types we are expecting for the correct constructor for any munge component
 	 *  (excluding the input and output steps).
 	 */
-	private static final Type[] CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class}; 
+	private static final Type[] MUNGECOM_CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class}; 
+	
+	/**
+	 * The array that looks like the set of types we are expecting for the correct constructor for any munge step
+	 *  (excluding the input and output steps).
+	 */
+	private static final Type[] MUNGESTEP_CONSTRUCTOR_PARAMS = {MatchMakerSession.class}; 
 
 	/**
 	 * The list of information about mungeSteps, which stores their StepClass, GUIClass, name and icon
 	 */
-	private final List<StepDescription> stepProperties = new ArrayList<StepDescription>();
+	private final Map<Class, StepDescription> stepProperties = new HashMap<Class, StepDescription>();
     
     /**
      * The underlying context that will deal with Hibernate for us.
@@ -437,25 +442,24 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 			return new MungeResultMungeComponent(ms, handler, session);
 		}
 		
-		for (StepDescription sd : stepProperties) {
-			if (sd.getLogicClass().equals(ms.getClass())) {
-				Constructor[] constructors = sd.getGuiClass().getDeclaredConstructors();
+    	StepDescription sd = stepProperties.get(ms.getClass());
+		if (sd.getLogicClass().equals(ms.getClass())) {
+			Constructor[] constructors = sd.getGuiClass().getDeclaredConstructors();
+			
+			for (Constructor con : constructors) {
+				Type[] paramTypes = con.getGenericParameterTypes();	
 				
-				for (Constructor con : constructors) {
-					Type[] paramTypes = con.getGenericParameterTypes();	
-					
-					if (arrayEquals(paramTypes,CONSTRUCTOR_PARAMS)) {
-						try {
-							return (AbstractMungeComponent)con.newInstance(ms, handler, session);
-						} catch (Throwable t) {
-							throw new RuntimeException("Error generating munge step component: " + sd.getGuiClass().getName() + ". " 
-									+ "Possibly caused by an error thrown in the constructor.", t);
-						}
+				if (arrayEquals(paramTypes,MUNGECOM_CONSTRUCTOR_PARAMS)) {
+					try {
+						return (AbstractMungeComponent)con.newInstance(ms, handler, session);
+					} catch (Throwable t) {
+						throw new RuntimeException("Error generating munge step component: " + sd.getGuiClass().getName() + ". " 
+								+ "Possibly caused by an error thrown in the constructor.", t);
 					}
 				}
-				throw new NoSuchMethodError("Error: No constructor (MungeStep, FormValidationHandler, MatchMakerSession) was found for the MungeComponent :"
-						+ sd.getGuiClass());
 			}
+			throw new NoSuchMethodError("Error: No constructor (MungeStep, FormValidationHandler, MatchMakerSession) was found for the MungeComponent :"
+					+ sd.getGuiClass());
 		}
 		
 		throw new NoClassDefFoundError("Error: No MungeComponent was found for the given munge step: " + ms.getClass());
@@ -508,8 +512,27 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		}
 		
 		for (StepDescription sd : stepProps.values()) {
-			stepProperties.add(sd);
+			stepProperties.put(sd.getLogicClass(), sd);
 		}
+	}
+	
+	public MungeStep getMungeStep(Class create, MatchMakerSession session) {
+		for (Constructor con : create.getConstructors()) {
+			if (arrayEquals(con.getGenericParameterTypes(), MUNGESTEP_CONSTRUCTOR_PARAMS)) {
+				try {
+					return (MungeStep)con.newInstance(session);
+				} catch (Throwable t) {
+					throw new RuntimeException("Error generating munge step: " + create.getName() + ". " 
+							+ "Possibly caused by an error thrown in the constructor.", t);
+				}
+			}
+		}
+		throw new NoSuchMethodError("Error: No constructor (MatchMakerSession) was found for the MungeStep :"
+				+ create.getClass());
+	}
+
+	public Map<Class, StepDescription> getStepMap() {
+		return stepProperties;
 	}
 
     
