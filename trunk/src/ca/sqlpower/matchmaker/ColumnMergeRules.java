@@ -142,6 +142,8 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		columnRule.setActionType(actionType);
 		columnRule.setUpdateAction(updateAction);
 		columnRule.setColumn(getColumn());
+		columnRule.setInForeignKey(inForeignKey);
+		columnRule.setInPrimaryKey(inPrimaryKey);
 		return columnRule;
 	}
 
@@ -215,7 +217,9 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 
 	public void setInForeignKey(boolean inForeignKey) {
+		boolean oldValue = this.inForeignKey;
 		this.inForeignKey = inForeignKey;
+		getEventSupport().firePropertyChange("inForeignKey", oldValue, this.inForeignKey);
 	}
 
 
@@ -225,7 +229,9 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 
 	public void setInPrimaryKey(boolean inPrimaryKey) {
+		boolean oldValue = this.inPrimaryKey;
 		this.inPrimaryKey = inPrimaryKey;
+		getEventSupport().firePropertyChange("inPrimaryKey", oldValue, this.inPrimaryKey);
 	}
 	
 }

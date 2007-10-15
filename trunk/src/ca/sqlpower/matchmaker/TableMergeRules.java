@@ -144,6 +144,7 @@ public class TableMergeRules
 		newMergeStrategy.setTableName(getTableName());
 		newMergeStrategy.setCatalogName(getCatalogName());
 		newMergeStrategy.setSchemaName(getSchemaName());
+		newMergeStrategy.setParentTable(getParentTable());
 		try {
 			if (tableIndex.isUserCreated()) {
 				newMergeStrategy.setTableIndex(new SQLIndex(getTableIndex()));
@@ -262,7 +263,9 @@ public class TableMergeRules
 	}
 
 	public void setParentTable(String parentTable) {
+		String oldValue = this.parentTable;
 		this.parentTable = parentTable;
+		getEventSupport().firePropertyChange("parentTable", oldValue, this.parentTable);
 	}
 
 	public ChildMergeActionType getChildMergeAction() {
