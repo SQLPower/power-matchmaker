@@ -450,6 +450,13 @@ public class RelatedTableDeriver implements EditorPane {
 		return true;
 	}
 
+	/**
+	 * This is a simple validator that checks if there is atleast one column selected. It
+	 * only works on a {@link PrimaryKeyColumnTableModel}. 
+	 * <p>
+	 * Adaptation of this for other tables would require adding a getSelectedColumns()
+	 * that returns a list of columns that have been selected to the table model.
+	 */
 	private class PrimaryKeySelectionValidator implements Validator {
 
 	    private JTable table;
