@@ -19,15 +19,24 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.io.File;
+
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+
+import org.apache.log4j.Logger;
 
 /**
  * This is a class that holds all the information of a munge step. This includes
  * the name, the object class, the gui class, and the icon.
  */
-public class StepDescription {
+public class 
+StepDescription extends JComponent implements Comparable<StepDescription> {
 
+	private static final Logger logger = Logger.getLogger(StepDescription.class);
+
+	
 	private String name;
 	private Class logicClass;
 	private Class guiClass;
@@ -44,8 +53,17 @@ public class StepDescription {
 		} else if (property.equals("gui")) {
 			setGuiClass(Class.forName(value));
 		} else if (property.equals("icon")) {
-			setIcon(new ImageIcon(value));
+			if(value.equals("")){
+				setIcon(null);
+			} else if (ClassLoader.getSystemResource(value) != null) {
+				setIcon(new ImageIcon(ClassLoader.getSystemResource(value)));
+			} else if (new File(value).exists()) {
+				setIcon(new ImageIcon(value));
+			} else {
+				setIcon(null);
+			}
 		}
+			
 	}
 	
 	public String getName() {
@@ -78,5 +96,9 @@ public class StepDescription {
 	
 	public void setIcon(Icon icon) {
 		this.icon = icon;
+	}
+	
+	public int compareTo(StepDescription o) {
+		return getName().compareTo(o.getName());
 	}
 }

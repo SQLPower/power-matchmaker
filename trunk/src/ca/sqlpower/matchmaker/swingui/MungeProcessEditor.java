@@ -29,6 +29,7 @@ import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -40,6 +41,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Match;
@@ -49,6 +51,7 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
+import ca.sqlpower.matchmaker.swingui.munge.MungeStepLibrary;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -186,9 +189,15 @@ public class MungeProcessEditor implements EditorPane {
 		
         panel.add(subPanel,BorderLayout.NORTH);
         
-        JScrollPane p = new JScrollPane(mungePen);
-        panel.add(p,BorderLayout.CENTER);
+        JToolBar t = new JToolBar();
         
+        MungeStepLibrary msl = new MungeStepLibrary(mungePen, ((SwingSessionContext) swingSession.getContext()).getStepMap());
+        t.setBackground(Color.WHITE);
+        t.add(new JScrollPane(msl.getList()));
+        t.setBorder(BorderFactory.createRaisedBevelBorder());
+        t.setFloatable(false);
+        panel.add(new JScrollPane(mungePen), BorderLayout.CENTER);
+        panel.add(t,BorderLayout.EAST);
     }
     
 	Action saveAction = new AbstractAction("Save Munge Process"){

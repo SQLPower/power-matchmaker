@@ -27,6 +27,13 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
@@ -37,6 +44,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,9 +96,23 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  * automatically refresh accordingly.
  */
 
-public class MungePen extends JLayeredPane implements Scrollable {
+public class MungePen extends JLayeredPane implements Scrollable, DropTargetListener {
 	
-	private static  final Logger logger = Logger.getLogger(MungePen.class); 
+	private static  final Logger logger = Logger.getLogger(MungePen.class);
+
+	/**
+	 * The amount of offset in the X dir to move a newly dropped mungeComponent.
+	 * This is needed because it drops them with respect to the top corner, which is transparent
+	 * so it looks silly.
+	 */
+	private static final int COM_DROP_OFFSET_X = -30;
+
+	/**
+	 * The amount of offset in the X dir to move a newly dropped mungeComponent.
+	 * This is needed because it drops them with respect to the top corner, which is transparent
+	 * so it looks silly.
+	 */
+	private static final int COM_DROP_OFFSET_Y = -30; 
 	
 	/**
 	 * The process this MungePen visualizes and edits.  This MungePen listens for various
@@ -180,11 +202,20 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			}
 		});
 		
+		setDropTarget(new DropTarget(this,this));
+		
 		if (process.getChildCount() == 0) {
 			MungeStep inputStep = new SQLInputStep(match.getSourceTable(), process.getSession());
+			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, new Boolean(true).toString());
 			process.addChild(inputStep);
 			
 			MungeResultStep mungeResultStep = new MungeResultStep(match, inputStep, process.getSession());
+			
+			String x = new Integer(0).toString();
+			String y = new Integer(300).toString();
+			
+			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
+			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
 			process.addChild(mungeResultStep);
 			process.setOutputStep(mungeResultStep);
 		}
@@ -384,6 +415,17 @@ public class MungePen extends JLayeredPane implements Scrollable {
 			ioc.remove();
 		}
 		process.removeChild(ms);
+	}
+	
+
+	private void addMungeStep(Class logicClass, Point location) {
+		MungeStep ms = ((SwingSessionContext)process.getSession().getContext()).getMungeStep(logicClass, 
+				process.getSession());
+		String x = new Integer(location.x + COM_DROP_OFFSET_X).toString();
+		String y = new Integer(location.y + COM_DROP_OFFSET_Y).toString();
+		ms.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
+		ms.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
+		process.addChild(ms);
 	}
 	
 	/**
@@ -602,7 +644,7 @@ public class MungePen extends JLayeredPane implements Scrollable {
 	}
 
  	public Dimension getPreferredScrollableViewportSize() {
-		// return getPreferredSize();
+		//return getPreferredSize();
 		return new Dimension(800,600);
 	}
 
@@ -884,5 +926,33 @@ public class MungePen extends JLayeredPane implements Scrollable {
 		for (ComponentListener cl : com.getComponentListeners()) {
 			com.removeComponentListener(cl);
 		}
+	}
+
+	public void dragEnter(DropTargetDragEvent dtde) {
+	}
+
+	public void dragExit(DropTargetEvent dte) {
+	}
+
+	public void dragOver(DropTargetDragEvent dtde) {
+	}
+
+	public void drop(DropTargetDropEvent dtde) {
+		Transferable t = dtde.getTransferable();
+		try {
+			StepDescription sd = (StepDescription)t.getTransferData(MungeStepLibrary.STEP_DESC_FLAVOR);
+			addMungeStep(sd.getLogicClass(), dtde.getLocation());
+			repaint();
+			dtde.dropComplete(true);
+			return;
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (UnsupportedFlavorException e) {
+		}
+		dtde.dropComplete(false);		
+	}
+
+	public void dropActionChanged(DropTargetDragEvent dtde) {
+		
 	}
 }

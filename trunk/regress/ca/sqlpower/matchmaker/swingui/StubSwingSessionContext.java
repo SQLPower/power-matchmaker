@@ -24,12 +24,14 @@ import java.awt.Window;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
@@ -101,6 +103,16 @@ public class StubSwingSessionContext implements SwingSessionContext {
 	public AbstractMungeComponent getMungeComponent(MungeStep ms,
 			FormValidationHandler handler, MatchMakerSession session) {
 		logger.debug("Stub call: StubSwingSessionContext.getMungeComponent()");
+		return null;
+	}
+
+	public MungeStep getMungeStep(Class create, MatchMakerSession session) {
+		logger.debug("Stub call: StubSwingSessionContext.getMungeStep()");
+		return null;
+	}
+
+	public Map<Class, StepDescription> getStepMap() {
+		logger.debug("Stub call: StubSwingSessionContext.getStepList()");
 		return null;
 	}
 }
