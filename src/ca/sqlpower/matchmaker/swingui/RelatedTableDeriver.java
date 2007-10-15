@@ -176,13 +176,13 @@ public class RelatedTableDeriver implements EditorPane {
 						mergeRule.setTableIndex(match.getSourceTableIndex());
 
 						try {
-							List<SQLColumn> columns = new ArrayList<SQLColumn>(
-									(match.getSourceTable()).getColumns()); 
+							List<SQLColumn> columns = new ArrayList<SQLColumn>(table.getColumns()); 
 							for (SQLColumn column : columns) {
 								ColumnMergeRules newRules = new ColumnMergeRules();
 								newRules.setActionType(MergeActionType.IGNORE);
 								mergeRule.addChild(newRules);
 								newRules.setColumn(column);
+								newRules.setColumnName(column.getName());
 							}
 						} catch (Exception ex) {
 							SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
