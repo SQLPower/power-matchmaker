@@ -27,6 +27,7 @@ import javax.swing.table.AbstractTableModel;
 
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
@@ -49,7 +50,7 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 	}
 	
 	public int getColumnCount() {
-		return 2;
+		return 4;
 	}
 
 	public int getRowCount() {
@@ -61,6 +62,10 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 		if (column == 0) {
 			return "Column";
 		} else if (column == 1) {
+			return "Primary Key";
+		} else if (column == 2) {
+			return "Foreign Key";
+		} else if (column == 3) {
 			return "Action";
 		} else {
 			throw new RuntimeException("getColumnName: Unexcepted column index:"+column);
@@ -71,6 +76,10 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 		if (columnIndex == 0) {
 			return mergeRule.getChildren().get(rowIndex).getColumn();
 		} else if (columnIndex == 1) {
+			return mergeRule.getChildren().get(rowIndex).isInPrimaryKey();
+		} else if(columnIndex == 2) {
+			return mergeRule.getChildren().get(rowIndex).isInForeignKey();
+		} else if (columnIndex == 3) {
 			return mergeRule.getChildren().get(rowIndex).getActionType();
 		} else {
 			throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
@@ -79,7 +88,25 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 	
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return columnIndex == 1;
+		Match match = mergeRule.getParentMatch();
+		if (match.getSourceTable().equals(mergeRule.getSourceTable())) {
+			return (columnIndex == 1 || columnIndex == 2);
+		} else {
+			return columnIndex != 0;
+		}
+	}
+	
+	@Override
+	public Class<?> getColumnClass(int columnIndex) {
+		if (columnIndex == 0) {
+			return SQLColumn.class;
+		}  else if (columnIndex == 1 || columnIndex == 2) {
+			return Boolean.class;
+		} else if (columnIndex == 3) {
+			return ColumnMergeRules.MergeActionType.class;	
+		} else {
+			throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
+		}
 	}
 	
 	@Override
@@ -88,6 +115,10 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 		if (columnIndex == 0) {
 			rule.setColumn((SQLColumn) aValue);
 		} else if (columnIndex == 1) {
+			rule.setInPrimaryKey((Boolean) aValue);
+		} else if (columnIndex == 2) {
+			rule.setInForeignKey((Boolean) aValue);
+		} else if (columnIndex == 3) {
 			rule.setActionType((MergeActionType) aValue);
 		} else {
 			throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
