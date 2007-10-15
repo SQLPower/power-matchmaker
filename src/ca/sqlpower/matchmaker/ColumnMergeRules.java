@@ -94,6 +94,10 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	
 	private MergeActionType actionType;
 	
+	private boolean inPrimaryKey;
+	
+	private boolean inForeignKey;
+	
 	private ColumnMergeRulesCachableColumn cachedColumn = new ColumnMergeRulesCachableColumn();
 	@Override
 	public int hashCode() {
@@ -202,6 +206,26 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	@Override
 	public boolean allowsChildren() {
 		return false;
+	}
+
+
+	public boolean isInForeignKey() {
+		return inForeignKey;
+	}
+
+
+	public void setInForeignKey(boolean inForeignKey) {
+		this.inForeignKey = inForeignKey;
+	}
+
+
+	public boolean isInPrimaryKey() {
+		return inPrimaryKey;
+	}
+
+
+	public void setInPrimaryKey(boolean inPrimaryKey) {
+		this.inPrimaryKey = inPrimaryKey;
 	}
 	
 }
