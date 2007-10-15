@@ -33,6 +33,36 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 public class TableMergeRules
 	extends AbstractMatchMakerObject<TableMergeRules, ColumnMergeRules> {
 
+	public enum ChildMergeActionType {
+		DELETE_ALL_DUP_CHILD, UPDATE_FAIL_ON_CONFLICT, UPDATE_DELETE_ON_CONFLICT;
+		
+		public static ChildMergeActionType getActionTypeFromString(String type) {
+			if ("Delete all duplicate children record".equals(type)){
+				return DELETE_ALL_DUP_CHILD;
+			} else if ("Update children record and fail if conflict".equals(type)){
+				return UPDATE_FAIL_ON_CONFLICT;
+			} else if ("Update children record and delete if conflict".equals(type)){
+				return UPDATE_DELETE_ON_CONFLICT;
+			} else {
+				throw new IllegalStateException("No such merge action type: " + type);
+			} 
+		}
+		
+		@Override
+		public String toString() {
+			switch (this) {
+			case DELETE_ALL_DUP_CHILD:
+				return "Delete all duplicate children record";
+			case UPDATE_FAIL_ON_CONFLICT:
+				return "Update children record and fail if conflict";
+			case UPDATE_DELETE_ON_CONFLICT:
+				return "Update children record and delete if conflict";
+			default:
+				throw new IllegalStateException("Invalid enumeration");
+			}
+		}
+	}
+	
 	private Long oid;
 
 	/**
@@ -40,7 +70,11 @@ public class TableMergeRules
 	 */
 	private boolean deleteDup;
 	
-	
+	/**
+	 * The action to take for this child table 
+	 */
+	private ChildMergeActionType childMergeAction;
+		
 	/**
 	 * The table on which we're merging
 	 */
@@ -229,6 +263,14 @@ public class TableMergeRules
 
 	public void setParentTable(String parentTable) {
 		this.parentTable = parentTable;
+	}
+
+	public ChildMergeActionType getChildMergeAction() {
+		return childMergeAction;
+	}
+
+	public void setChildMergeAction(ChildMergeActionType childMergeAction) {
+		this.childMergeAction = childMergeAction;
 	}
 
 }
