@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -51,6 +52,9 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
+import ca.sqlpower.validation.Status;
+import ca.sqlpower.validation.ValidateResult;
+import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
@@ -71,15 +75,18 @@ import com.jgoodies.forms.layout.FormLayout;
 public class RelatedTableDeriver implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(RelatedTableDeriver.class);
+	
 	private Match match;
+	private MatchMakerSwingSession swingSession;
+	private List<String> primaryKeys;
+
 	private JDialog dialog;
 	private JPanel panel;
-	private List<String> primaryKeys;
-	private MatchMakerSwingSession swingSession;
-	private JTable columntable;
-	private final SQLTable sqlTable;
-	private final PrimaryKeyColumnTableModel primaryKeyColumnTableModel;
+	private JTable columnTable;
 
+	private final SQLTable sourceTable;
+	private final PrimaryKeyColumnTableModel columnTableModel;
+	
 	/** Displays validation results */
 	private StatusComponent statusComponent;
 
@@ -90,18 +97,15 @@ public class RelatedTableDeriver implements EditorPane {
 
 	private final AbstractAction okAction = new AbstractAction("OK") {
 		public void actionPerformed(ActionEvent e) {
+			
+			// Adds all the user defined primary keys to the list that will be checked
 			primaryKeys = new ArrayList<String>();
-			for (CustomTableColumn column : primaryKeyColumnTableModel.getCandidateColumns() ) {
-				if (column.isKey() ) primaryKeys.add(column.getSQLColumn().getName());
+			for (CustomTableColumn column : columnTableModel.getSelectedColumns()) {
+				primaryKeys.add(column.getSQLColumn().getName());
 			}
 			logger.debug("Sorted list of selected columns: "+primaryKeys);
 
 			if (primaryKeys.size() == 0) {
-				dialog.dispose();
-				return;
-			}
-
-			if (validationHandler.getFailResults().size() != 0) {
 				dialog.dispose();
 				return;
 			}
@@ -115,12 +119,20 @@ public class RelatedTableDeriver implements EditorPane {
 			
 			Connection con = swingSession.getConnection();
 			DatabaseMetaData dbMeta;
+			ResultSet rs;
 			try {
 				dbMeta = con.getMetaData();
-			} catch (SQLException e1) {
-				throw new RuntimeException(e1);
+			} catch (SQLException ex) {
+				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+						"An exception occured while retrieving database metadata for deriving collison criteria", ex);
+				return;
 			}
-			ResultSet rs;
+			
+			// Finds all the merge rules that the match already has
+			List<String> mergeRules = new ArrayList<String>();
+			for (TableMergeRules tmr : match.getTableMergeRules()) {
+				mergeRules.add(tmr.getTableName());
+			}
 
 			try {
 				rs = dbMeta.getColumns(null, null, null, null);
@@ -131,51 +143,54 @@ public class RelatedTableDeriver implements EditorPane {
 					String columnName = rs.getString("COLUMN_NAME");
 					String catalogName = rs.getString("TABLE_CAT");
 					String schemaName = rs.getString("TABLE_SCHEM");
-					
-					if (tableName.equals(match.getSourceTableName())) {
+
+					// Skip the column if a merge rule already exists for the table
+					if (mergeRules.contains(tableName)) {
 						continue;
-					}
+					} 
 					
 					if (catalogName == null) {
 						catalogName = "";
 					}
 
-					if (tableName.equals(lastTableName) && catalogName.equals(lastCatalogName) &&
-						schemaName.equals(lastSchemaName)) {
-						if (primaryKeys.contains(columnName)) {
-							count++;
-						}
-						if (count == primaryKeys.size()) {
-							TableMergeRules mergeRule = new TableMergeRules();
-							SQLTable table = swingSession.getDatabase().getTableByName(catalogName, schemaName, tableName);
-							mergeRule.setTable(table);
-							mergeRule.setTableIndex(match.getSourceTableIndex());
-
-							try {
-								List<SQLColumn> columns = new ArrayList<SQLColumn>(
-										(match.getSourceTable()).getColumns()); 
-								for (SQLColumn column : columns) {
-									ColumnMergeRules newRules = new ColumnMergeRules();
-									newRules.setActionType(MergeActionType.IGNORE);
-									mergeRule.addChild(newRules);
-									newRules.setColumn(column);
-								}
-							} catch (Exception ex) {
-								SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "An exception occured while deriving collison criteria", ex);
-							}
-
-							match.getTableMergeRulesFolder().addChild(mergeRule);
-							
-							count = 0;
-						}
-					} else {
+					// Set the variables accordingly if the table has changed
+					if (!(tableName.equals(lastTableName) && catalogName.equals(lastCatalogName) &&
+						schemaName.equals(lastSchemaName))) {				
 						count = 0;
-						if (primaryKeys.contains(columnName)) {
-							count++;
-						}
 						lastCatalogName = catalogName;
 						lastSchemaName = schemaName;
 						lastTableName = tableName;
+					}
+					
+					if (primaryKeys.contains(columnName)) {
+						count++;
+					}
+					
+					// Adds a new merge rule for the table since it has all 
+					// of the source table's primary keys
+					if (count == primaryKeys.size()) {
+						TableMergeRules mergeRule = new TableMergeRules();
+						SQLTable table = swingSession.getDatabase().getTableByName(catalogName,
+								schemaName, tableName);
+						mergeRule.setTable(table);
+						mergeRule.setTableIndex(match.getSourceTableIndex());
+
+						try {
+							List<SQLColumn> columns = new ArrayList<SQLColumn>(
+									(match.getSourceTable()).getColumns()); 
+							for (SQLColumn column : columns) {
+								ColumnMergeRules newRules = new ColumnMergeRules();
+								newRules.setActionType(MergeActionType.IGNORE);
+								mergeRule.addChild(newRules);
+								newRules.setColumn(column);
+							}
+						} catch (Exception ex) {
+							SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+									"An exception occured while deriving collison criteria", ex);
+						}
+
+						match.getTableMergeRulesFolder().addChild(mergeRule);
+						count = 0;
 					}
 				}
 				con.close();
@@ -201,16 +216,23 @@ public class RelatedTableDeriver implements EditorPane {
 		this.match = match;
 		this.swingSession = swingSession;
 
-		sqlTable = match.getSourceTable();
+		sourceTable = match.getSourceTable();
 		SQLIndex oldIndex = match.getSourceTableIndex();
 
+		// List of actions to disable when validation status is fail.
+		List<Action> actions = new ArrayList<Action>();
+		actions.add(okAction);
+		
 		statusComponent = new StatusComponent();
-		validationHandler = new FormValidationHandler(statusComponent);
+		validationHandler = new FormValidationHandler(statusComponent, actions);
 
-		primaryKeyColumnTableModel = new PrimaryKeyColumnTableModel(sqlTable,oldIndex);
-		columntable = new JTable(primaryKeyColumnTableModel);
-		columntable.addColumnSelectionInterval(1, 1);
-		TableUtils.fitColumnWidths(columntable, 10);
+		columnTableModel = new PrimaryKeyColumnTableModel(sourceTable,oldIndex);
+		columnTable = new JTable(columnTableModel);
+		columnTable.addColumnSelectionInterval(1, 1);
+		TableUtils.fitColumnWidths(columnTable, 10);
+		
+		PrimaryKeySelectionValidator columnValidator = new PrimaryKeySelectionValidator(columnTable);
+		validationHandler.addValidateObject(columnTable, columnValidator);
 
 		dialog = new JDialog(swingSession.getFrame());
 		dialog.setTitle("Related Table Deriver");
@@ -218,6 +240,8 @@ public class RelatedTableDeriver implements EditorPane {
 		dialog.pack();
 		dialog.setLocationRelativeTo(swingSession.getFrame());
 		dialog.setVisible(true);
+		
+        validationHandler.resetHasValidated();
 	}
 
 	private void buildUI() {
@@ -240,7 +264,7 @@ public class RelatedTableDeriver implements EditorPane {
 		pb.add(statusComponent, cc.xy(2, 2));
 		pb.add(new JLabel("Table: " + DDLUtils.toQualifiedName(match.getSourceTable())),
 				cc.xy(2, 4));
-		JScrollPane scrollPane = new JScrollPane(columntable);
+		JScrollPane scrollPane = new JScrollPane(columnTable);
 		pb.add(scrollPane, cc.xy(2, 6, "f,f"));
 
 		pb.add(ButtonBarFactory.buildOKCancelBar(save, exit), cc.xy(2,8));
@@ -402,6 +426,16 @@ public class RelatedTableDeriver implements EditorPane {
 		public List<CustomTableColumn> getCandidateColumns() {
 			return candidateColumns;
 		}
+		
+		public List<CustomTableColumn> getSelectedColumns() {
+			List<CustomTableColumn> columns = new ArrayList<CustomTableColumn>();
+			for (CustomTableColumn column : columnTableModel.getCandidateColumns()) {
+				if (column.isKey()) {
+					columns.add(column);
+				}
+			}
+			return columns;
+		}
 	}
 
 	public JComponent getPanel() {
@@ -416,4 +450,23 @@ public class RelatedTableDeriver implements EditorPane {
 		return true;
 	}
 
+	private class PrimaryKeySelectionValidator implements Validator {
+
+	    private JTable table;
+	    
+	    public PrimaryKeySelectionValidator(JTable table){
+	        this.table = table;
+	    }
+	    public ValidateResult validate(Object contents) {
+	    	PrimaryKeyColumnTableModel model = (PrimaryKeyColumnTableModel)table.getModel();
+	    	System.out.println(model.getSelectedColumns().size() + "");
+	    	if (model.getSelectedColumns().size() == 0) {
+	    		return ValidateResult.createValidateResult(Status.FAIL, 
+	    			"Atleast one primary key column must be selected.");
+	    	}
+
+	        return ValidateResult.createValidateResult(Status.OK, "");
+	    }
+
+	}
 }
