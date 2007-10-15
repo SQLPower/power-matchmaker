@@ -179,7 +179,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 		pb.add(temp, cc.xyw(4,row,5,"f,c"));
 		
 		row += 2;
-		if (!mergeRule.getSourceTable().equals(match.getSourceTable())) {
+		if (!mergeRule.isSourceMergeRule()) {
 			pb.add(new JLabel("Parent Table:"), cc.xy(2,row,"l,c"));
 			pb.add(parentTable, cc.xy(4,row,"f,c"));
 			parentTable.setSelectedItem(mergeRule.getParentTable());
@@ -234,7 +234,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 	public boolean doSave() {
 		if (handler.getWorstValidationStatus().getStatus() != Status.FAIL) {
 			
-			if (!mergeRule.getSourceTable().equals(match.getSourceTable())) {
+			if (!mergeRule.isSourceMergeRule()) {
 				mergeRule.setParentTable((String) parentTable.getSelectedItem());
 				mergeRule.setChildMergeAction(
 					(TableMergeRules.ChildMergeActionType) childMergeAction.getSelectedItem());
@@ -270,7 +270,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 		
 		// Check if delete duplicate option has been changed
 		// for source table merge rule
-		if (match.getSourceTable().equals(mergeRule.getSourceTable())) {
+		if (mergeRule.isSourceMergeRule()) {
 			if (this.deleteDup.isSelected() != mergeRule.isDeleteDup()) {
 				return true;
 			}
@@ -299,8 +299,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 		}
 		return false;
 	}
-
-
 	
 	private class ColumnMergeRulesTable extends EditableJTable {
 

@@ -27,7 +27,6 @@ import javax.swing.table.AbstractTableModel;
 
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
@@ -88,11 +87,10 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 	
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		Match match = mergeRule.getParentMatch();
-		if (match.getSourceTable().equals(mergeRule.getSourceTable())) {
-			return (columnIndex == 1 || columnIndex == 2);
+		if (mergeRule.isSourceMergeRule()) {
+			return columnIndex == 3;
 		} else {
-			return columnIndex != 0;
+			return (columnIndex == 1 || columnIndex == 2);
 		}
 	}
 	
