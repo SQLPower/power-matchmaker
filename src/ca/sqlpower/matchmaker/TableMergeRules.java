@@ -273,4 +273,17 @@ public class TableMergeRules
 		this.childMergeAction = childMergeAction;
 	}
 
+	/**
+	 * This returns whether this merge rule is the source table merge 
+	 * rule of its parent match.
+	 */
+	public boolean isSourceMergeRule() {
+		if (getParentMatch() != null && getParentMatch().getSourceTable() != null 
+				&& getSourceTable() != null) {
+			SQLTable matchSourceTable = getParentMatch().getSourceTable();
+			return matchSourceTable.equals(getSourceTable());
+		} else {
+			return false;
+		}
+	}
 }
