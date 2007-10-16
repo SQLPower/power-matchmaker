@@ -478,8 +478,7 @@ public class PotentialMatchRecord {
 			return false;
 		}
 		PotentialMatchRecord other = (PotentialMatchRecord)obj;
-		if ((ruleSet == null ? other.ruleSet == null : ruleSet.equals(other.ruleSet))
-				&& (originalLhs == null ? other.originalLhs == null : originalLhs.equals(other.originalLhs))
+		if ((originalLhs == null ? other.originalLhs == null : originalLhs.equals(other.originalLhs))
 				&& (originalRhs == null ? other.originalRhs == null : originalRhs.equals(other.originalRhs))) {
 			return true;
 		} else {
@@ -490,7 +489,6 @@ public class PotentialMatchRecord {
 	@Override
 	public int hashCode() {
 		int result = 17;
-		result = 37*result + (ruleSet == null ? 0 : ruleSet.hashCode());
 		result = 37*result + (originalLhs == null ? 0 : originalLhs.hashCode());
 		result = 37*result + (originalRhs == null ? 0 : originalRhs.hashCode());
 		return result;

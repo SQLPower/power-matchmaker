@@ -524,13 +524,30 @@ public class MatchPool {
      * @param pmr The record to add
      */
     public void addPotentialMatch(PotentialMatchRecord pmr) {
-    	pmr.setPool(this);
-    	potentialMatches.add(pmr);
-    	pmr.getOriginalLhs().addPotentialMatch(pmr);
-        pmr.getOriginalRhs().addPotentialMatch(pmr);
-        if (pmr.getMatchStatus() == null) {
-        	pmr.setMatchStatus(MatchType.UNMATCH);
-        }
+    	if (potentialMatches.contains(pmr)) {
+    		logger.debug("Found duplicate match of " + pmr);
+    		List<PotentialMatchRecord> temp = new ArrayList<PotentialMatchRecord>(potentialMatches);
+    		int index = temp.indexOf(pmr);
+    		PotentialMatchRecord other = temp.get(index);
+    		Short otherMatchPercent = other.getRuleSet().getMatchPercent();
+			Short pmrMatchPercent = pmr.getRuleSet().getMatchPercent();
+			if (pmrMatchPercent == null || otherMatchPercent != null && otherMatchPercent >= pmrMatchPercent) { 
+    			logger.debug("other's matchPercent is equal or higher, so NOT replacing with pmr");
+    			return;
+    		} else {
+    			logger.debug("pmr's matchPercent is higher, so removing other");
+    			potentialMatches.remove(other);
+    		}
+    	}
+    	if (potentialMatches.add(pmr)) {
+    		logger.debug("added " + pmr + " to MatchPool");
+    		pmr.setPool(this);
+    		pmr.getOriginalLhs().addPotentialMatch(pmr);
+    		pmr.getOriginalRhs().addPotentialMatch(pmr);
+    		if (pmr.getMatchStatus() == null) {
+    			pmr.setMatchStatus(MatchType.UNMATCH);
+    		}
+    	}
     }
     
     /**
