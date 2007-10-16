@@ -73,7 +73,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	public class ColumnMergeRulesCachableColumn extends CachableColumn {
 		public ColumnMergeRulesCachableColumn() {
 			super(ColumnMergeRules.this, "column");
-			inPrimaryKey = false;
 		}
 		
 		public SQLTable getTable() {
@@ -95,9 +94,11 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	
 	private MergeActionType actionType;
 	
-	private boolean inPrimaryKey;
+	private boolean inPrimaryKey = false;
 	
 	private SQLColumn importedKeyColumn;
+	
+	private String updateStatement = "";
 	
 	private ColumnMergeRulesCachableColumn cachedColumn = new ColumnMergeRulesCachableColumn();
 	@Override
@@ -148,6 +149,9 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		} else if (!getImportedKeyColumn().equals(other.getImportedKeyColumn())) {
 			return false;
 		}
+		if (!getUpdateStatement().equals(other.getUpdateStatement())) {
+			return false;
+		}
 		return true;
 	}
 
@@ -166,6 +170,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		columnRule.setUpdateAction(updateAction);
 		columnRule.setInPrimaryKey(inPrimaryKey);
 		columnRule.setImportedKeyColumn(importedKeyColumn);
+		columnRule.setUpdateStatement(updateStatement);
 		return columnRule;
 	}
 
@@ -250,5 +255,17 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		boolean oldValue = this.updateAction;
 		this.updateAction = updateAction;
 		getEventSupport().firePropertyChange("updateAction", oldValue, this.updateAction);
+	}
+
+
+	public String getUpdateStatement() {
+		return updateStatement;
+	}
+
+
+	public void setUpdateStatement(String updateStatement) {
+		String oldValue = this.getUpdateStatement();
+		this.updateStatement = updateStatement;
+		getEventSupport().firePropertyChange("updateStatement", oldValue, this.updateStatement);
 	}
 }

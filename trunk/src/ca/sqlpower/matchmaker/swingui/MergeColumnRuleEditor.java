@@ -21,6 +21,8 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,6 +127,16 @@ public class MergeColumnRuleEditor implements EditorPane {
         childMergeAction = new JComboBox(TableMergeRules.ChildMergeActionType.values());
         
         buildUI();
+        
+        parentTable.addItemListener(new ItemListener() {
+
+			public void itemStateChanged(ItemEvent e) {
+				for (int row = 0; row < ruleTableModel.getRowCount(); row++) {
+					ruleTableModel.setValueAt(null, row, 2);
+				}
+			}
+        	
+        });
         
         List<Action> actions = new ArrayList<Action>();
         actions.add(saveAction);
@@ -365,12 +377,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 		
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
-			if (column == 3) {
-				return new DefaultCellEditor(
-						new JComboBox(
-								new DefaultComboBoxModel(
-										ColumnMergeRules.MergeActionType.values())));
-			} else if (column == 2) {
+			if (column == 2) {
 				JComboBox importedKeyColumns = new JComboBox();
 				if (getParentTable().getSelectedItem() != null) {
 					SQLTable table = (SQLTable) getParentTable().getSelectedItem();
@@ -378,7 +385,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 						List<SQLColumn> tableColumns = table.getColumns();
 						importedKeyColumns.setModel(new DefaultComboBoxModel(tableColumns.toArray()));
 						importedKeyColumns.insertItemAt(null, 0);
-						importedKeyColumns.setSelectedIndex(0);
 					} catch (ArchitectException e) {
 						SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 								"Failed to load list of columns from parent table.", e);
