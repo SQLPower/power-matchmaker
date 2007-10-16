@@ -45,6 +45,8 @@ public class MatchEngineImplTest extends TestCase {
 	private SQLDatabase db;
 	private SQLTable resultTable;
 	private Match match;
+	private TestingMatchMakerSession session;
+	private SQLTable sourceTable;
 	
 	protected void setUp() throws Exception {
 		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
@@ -55,8 +57,7 @@ public class MatchEngineImplTest extends TestCase {
 		
 		SQLSchema plSchema = db.getSchemaByName("pl");
 
-		SQLTable sourceTable = db.getTableByName(null, "pl", "source_table");
-		
+		sourceTable = db.getTableByName(null, "pl", "source_table");
 		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, IndexType.OTHER, null);
 		sourceTableIndex.addChild(sourceTableIndex.new Column(sourceTable.getColumn(0), false, false));
 		sourceTable.addIndex(sourceTableIndex);
@@ -74,7 +75,7 @@ public class MatchEngineImplTest extends TestCase {
 		stmt.close();
 		
 		resultTable = db.getTableByName(null, "pl", "match_results");
-		TestingMatchMakerSession session = new TestingMatchMakerSession() {
+		session = new TestingMatchMakerSession() {
 			@Override
 			public Connection getConnection() {
 				try {
@@ -138,5 +139,24 @@ public class MatchEngineImplTest extends TestCase {
 			assertEquals(null, p.getMaster());
 			assertEquals(MatchType.UNMATCH, p.getMatchStatus());
 		}
+	}
+	
+	public void testCallOnMultipleMungeProcesses() throws Exception {
+		MungeProcess groupTwo = new MungeProcess();
+		groupTwo.setName("Group_Two");
+		SQLInputStep inputStep = new SQLInputStep(sourceTable, session);
+		groupTwo.addChild(inputStep);
+		MungeResultStep outputStep = new MungeResultStep(match, inputStep, session);
+		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
+		groupTwo.addChild(outputStep);
+		groupTwo.setOutputStep(outputStep);
+		match.addMatchRuleSet(groupTwo);
+		
+		engine.call();
+		
+		MatchPool pool = new MatchPool(match);
+		pool.findAll(null);
+		assertEquals(2, pool.getSourceTableRecords().size());
+		assertEquals(1, pool.getPotentialMatches().size());
 	}
 }
