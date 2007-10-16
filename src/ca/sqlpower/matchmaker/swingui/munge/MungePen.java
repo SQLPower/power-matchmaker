@@ -36,8 +36,6 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -63,24 +61,11 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
-import ca.sqlpower.matchmaker.munge.DoubleMetaphoneMungeStep;
-import ca.sqlpower.matchmaker.munge.LowerCaseMungeStep;
-import ca.sqlpower.matchmaker.munge.MetaphoneMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.munge.RefinedSoundexMungeStep;
-import ca.sqlpower.matchmaker.munge.RetainCharactersMungeStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
-import ca.sqlpower.matchmaker.munge.SoundexMungeStep;
-import ca.sqlpower.matchmaker.munge.StringSubstitutionMungeStep;
-import ca.sqlpower.matchmaker.munge.SubstringByWordMungeStep;
-import ca.sqlpower.matchmaker.munge.SubstringMungeStep;
-import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
-import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
-import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
@@ -181,7 +166,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		
 		setFocusable(true);
 		addMouseListener(new MungePenMouseListener());
-		addKeyListener(new MungePenKeyListener());
 		
 		setBackground(Color.WHITE);
 		setOpaque(true);
@@ -549,46 +533,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			repaint();
 			requestFocusInWindow();
 		}
-	}
-	
-	/**
-	 * Temp method for adding munge steps. This will be added to a toolbar, 
-	 * with words so no guessing is needed
-	 */
-	class MungePenKeyListener extends KeyAdapter {
-		//passes key press to selected components
-		public void keyPressed(KeyEvent e) {
-			if (e.getKeyCode() == KeyEvent.VK_1) {
-				process.addChild(new UpperCaseMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_2) {
-				process.addChild(new LowerCaseMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_3) {
-				process.addChild(new SoundexMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_4) {
-				process.addChild(new RefinedSoundexMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_5) {
-				process.addChild(new MetaphoneMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_6) {
-				process.addChild(new DoubleMetaphoneMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_7) {
-				process.addChild(new WordCountMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_8) {
-				process.addChild(new TranslateWordMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_9) {
-				process.addChild(new StringSubstitutionMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_0) {
-				process.addChild(new SubstringMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_Q) {
-				process.addChild(new RetainCharactersMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_W) {
-				process.addChild(new SubstringByWordMungeStep(process.getSession()));
-			} else if (e.getKeyCode() == KeyEvent.VK_E) {
-				process.addChild(new ConcatMungeStep(process.getSession()));
-			}
-		}
-	}
-	
-	
+	}	
 	
 	/////////////////////////////////////////////////////////////////
 	//        Code to handle the scrollPane                       //

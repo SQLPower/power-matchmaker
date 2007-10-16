@@ -36,6 +36,8 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 
 	private static final Logger logger = Logger.getLogger(StepDescription.class);
 
+	private static final String DEFAULT_ICON = "icons/famfamfam/color_wheel.png";
+	
 	
 	private String name;
 	private Class logicClass;
@@ -53,14 +55,12 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 		} else if (property.equals("gui")) {
 			setGuiClass(Class.forName(value));
 		} else if (property.equals("icon")) {
-			if(value.equals("")){
-				setIcon(null);
-			} else if (ClassLoader.getSystemResource(value) != null) {
+			 if (!value.equals("") && ClassLoader.getSystemResource(value) != null) {
 				setIcon(new ImageIcon(ClassLoader.getSystemResource(value)));
-			} else if (new File(value).exists()) {
+			} else if (!value.equals("") && new File(value).exists()) {
 				setIcon(new ImageIcon(value));
 			} else {
-				setIcon(null);
+				setIcon(new ImageIcon(ClassLoader.getSystemResource(DEFAULT_ICON)));
 			}
 		}
 			
