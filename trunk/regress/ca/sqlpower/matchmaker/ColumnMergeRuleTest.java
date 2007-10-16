@@ -56,6 +56,9 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		m1.setParent(null);
 		m2.setParent(null);
 		
+		SQLColumn c1 = new SQLColumn();
+		SQLColumn c2 = new SQLColumn();
+		
 		TableMergeRules parent1 = new TableMergeRules();
 		parent1.setSession(new TestingMatchMakerSession());
 		parent1.setName("tmr1");
@@ -89,5 +92,21 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		
 		m1.setColumn(column);
 		assertEquals("Two objects with the same parents and columns should be equal",m1,m2);
+		
+		m1.setInPrimaryKey(true);
+		m2.setInPrimaryKey(false);
+		assertFalse("Two objects with different in primary key values should not be equal",
+				m1.equals(m2));
+		
+		m2.setInPrimaryKey(true);
+		assertEquals("Two objects with same primary key values should equal", m1, m2);
+		
+		m1.setImportedKeyColumn(c1);
+		m2.setImportedKeyColumn(c2);
+		assertFalse("Two objects with different imported key columns should not be equal",
+				m1.equals(m2));
+		
+		m2.setImportedKeyColumn(c1);
+		assertEquals("Two objects with same imported key columns should equal", m1, m2);
 	}
 }

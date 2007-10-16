@@ -45,6 +45,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
@@ -227,6 +228,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
                 Color oldColor = (Color) oldVal;
                 return new Color( (oldColor.getRGB()+0xF00) % 0x1000000);
             }
+        } else if (property.getPropertyType() == ChildMergeActionType.class) {
+        	if (oldVal != null && oldVal.equals(ChildMergeActionType.DELETE_ALL_DUP_CHILD)){
+        		return ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT;
+        	} else {
+        		return ChildMergeActionType.DELETE_ALL_DUP_CHILD;
+        	}
 		} else {
 			throw new RuntimeException("This test case lacks the ability to modify values for "
 					+ property.getName() + " (type "
@@ -395,6 +402,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
                 Color oldColor = (Color) oldVal;
                 newVal = new Color( (oldColor.getRGB()+0xF00) % 0x1000000);
             }
+        } else if (property.getPropertyType() == ChildMergeActionType.class) {
+        	if (oldVal != null && oldVal.equals(ChildMergeActionType.DELETE_ALL_DUP_CHILD)){
+        		return ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT;
+        	} else {
+        		return ChildMergeActionType.DELETE_ALL_DUP_CHILD;
+        	}
 		} else {
 			throw new RuntimeException("This test case lacks a value for "
 					+ property.getName() + " (type "

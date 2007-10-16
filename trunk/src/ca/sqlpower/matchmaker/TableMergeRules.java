@@ -89,7 +89,7 @@ public class TableMergeRules
 	/**
 	 * The parent tableMergeRule
 	 */
-	private String parentTable;
+	private SQLTable parentTable;
 	
 	public TableMergeRules() {
 		tableIndex = new TableIndex(this,cachableTable,"tableIndex");
@@ -125,6 +125,27 @@ public class TableMergeRules
 				return false;
 			}
 		}
+		if (isDeleteDup() != other.isDeleteDup()) {
+			return false;
+		}
+		if (getParentTable() == null) {
+			if (other.getParentTable() != null) {
+				return false;
+			}
+		} else {
+			if (other == null || !getParentTable().equals(other.getParentTable())) {
+				return false;
+			}
+		}
+		if (getChildMergeAction() == null) {
+			if (other.getChildMergeAction() != null) {
+				return false;
+			}
+		} else {
+			if (other == null || !getChildMergeAction().equals(other.getChildMergeAction())) {
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -145,6 +166,7 @@ public class TableMergeRules
 		newMergeStrategy.setCatalogName(getCatalogName());
 		newMergeStrategy.setSchemaName(getSchemaName());
 		newMergeStrategy.setParentTable(getParentTable());
+		newMergeStrategy.setChildMergeAction(getChildMergeAction());
 		try {
 			if (tableIndex.isUserCreated()) {
 				newMergeStrategy.setTableIndex(new SQLIndex(getTableIndex()));
@@ -258,12 +280,12 @@ public class TableMergeRules
 		this.oid = oid;
 	}
 
-	public String getParentTable() {
+	public SQLTable getParentTable() {
 		return parentTable;
 	}
 
-	public void setParentTable(String parentTable) {
-		String oldValue = this.parentTable;
+	public void setParentTable(SQLTable parentTable) {
+		SQLTable oldValue = this.parentTable;
 		this.parentTable = parentTable;
 		getEventSupport().firePropertyChange("parentTable", oldValue, this.parentTable);
 	}
@@ -273,7 +295,9 @@ public class TableMergeRules
 	}
 
 	public void setChildMergeAction(ChildMergeActionType childMergeAction) {
+		ChildMergeActionType oldValue = this.childMergeAction;
 		this.childMergeAction = childMergeAction;
+		getEventSupport().firePropertyChange("childMergeAction", oldValue, this.childMergeAction);
 	}
 
 	/**
