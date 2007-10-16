@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -62,6 +63,10 @@ public class MergeProcessor extends AbstractProcessor {
 	
     private MatchPoolDirectedGraphModel gm;
     
+    private SQLTable sourceTable;
+    private Connection con;
+    private Statement stmt;
+    
 	public MergeProcessor(Match match, MatchMakerSession session) 
 			throws SQLException, ArchitectException {
 		this.match = match;
@@ -76,6 +81,10 @@ public class MergeProcessor extends AbstractProcessor {
         DepthFirstSearch<SourceTableRecord, PotentialMatchRecord> dfs = new DepthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
         dfs.performSearch(gm);
         processOrder = dfs.getFinishOrder();
+        
+        sourceTable = match.getSourceTable();
+        con = session.getConnection();
+        stmt = con.createStatement();
 	}
 	
 	/**
@@ -84,29 +93,21 @@ public class MergeProcessor extends AbstractProcessor {
 	 * supported.
 	 */
 	public Boolean call() throws Exception {
-		SQLTable sourceTable = match.getSourceTable();
-        Connection con = session.getConnection();
-        Statement stmt = con.createStatement();
 
-        TableMergeRules tableMergeRule = null;
+        TableMergeRules sourceTableMergeRule = null;
         boolean needsToCheckDup = false;
         Map<SQLColumn, ColumnMergeRules> mapping = new HashMap<SQLColumn, ColumnMergeRules>();
         
         // Finds the correct table merge rule according to the source table
-		for (TableMergeRules mr : match.getTableMergeRules()) {
-			if (mr.getSourceTable().equals(sourceTable)) {
-				tableMergeRule = mr;
-				break;
-			}
-		}
-		
-		if (tableMergeRule == null) {
-			throw new IllegalStateException("No merge rule exists for source table.");
-		}
+        sourceTableMergeRule = match.getTableMergeRules().get(0);
+        
+        if (!sourceTableMergeRule.getSourceTable().equals(sourceTable)) {
+        	throw new IllegalStateException("The first merge rule needs to be the source table merge rule.");
+        }
 
 		// Finds the columns that needs to be merged and maps it to the 
 		// corresponding column merge rule.
-		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+		for (ColumnMergeRules cmr : sourceTableMergeRule.getChildren()) {
 			if (cmr.getActionType() != MergeActionType.IGNORE) {
 				needsToCheckDup = true;
 			}
@@ -115,29 +116,40 @@ public class MergeProcessor extends AbstractProcessor {
 		
 
 		// Retrieves the sql statements to make the merge changes and executes it.
-		if (needsToCheckDup) {
-			for (SourceTableRecord str : processOrder) {
-				for (PotentialMatchRecord pm : gm.getOutboundEdges(str)) {
-					if (pm.isMatch()) {
-						String sql = createUpdateSQL(pm, sourceTable, mapping, con);
+		for (SourceTableRecord str : processOrder) {
+			for (PotentialMatchRecord pm : gm.getOutboundEdges(str)) {
+				if (pm.isMatch()) {
+					List<Object> keyValues = pm.getDuplicate().getKeyValues();
+					List<String> sourceIndexColumnNames = new ArrayList<String>();
+					for (SQLIndex.Column c : match.getSourceTableIndex().getChildren()) {
+						sourceIndexColumnNames.add(c.getName());
+					}
+					MergeChildTables(sourceIndexColumnNames, keyValues, sourceTableMergeRule);
+					
+					
+					if (needsToCheckDup) {
+						String sql = createUpdateSQL(pm, mapping, sourceIndexColumnNames);
 						int rows = stmt.executeUpdate(sql.toString());
-
 						if (rows != 1) {
 							throw new IllegalStateException("The update did not affect the correct " +
 									"number of rows: expected 1 but got " + rows); 
 						}
 					}
 
+					
 				}
+
 			}
 		}
+
 		
 		// Retrieves the sql statements to delete the duplicate records and executes it.
-		if (tableMergeRule.isDeleteDup()) {
+		if (sourceTableMergeRule.isDeleteDup()) {
 			for (PotentialMatchRecord pm : pool.getPotentialMatches()) {
 				if (pm.isMatch()) {
+					
 					//delete the duplicate record
-					String sql = createDeleteSQL(pm, sourceTable, con);
+					String sql = createDeleteSQL(pm);
 					int rows = stmt.executeUpdate(sql.toString());
 					
 					if (rows != 1) {
@@ -161,11 +173,107 @@ public class MergeProcessor extends AbstractProcessor {
 	}
 	
 	/**
+	 * Does the merging on the child tables recusively
+	 * @param keyValues keyValues must be in the ordered by the same order of the columns
+	 */
+	private void MergeChildTables(List<String> keyColumnNames, List<Object> keyValues, TableMergeRules parentTableMergeRule) throws ArchitectException, SQLException {
+		SQLTable parentTable = parentTableMergeRule.getSourceTable();
+		
+		
+		for (TableMergeRules childTableMergeRule : match.getTableMergeRules()) {
+			if (parentTable.equals(childTableMergeRule.getParentTable())) {
+				
+				if (childTableMergeRule.getChildMergeAction() == TableMergeRules.ChildMergeActionType.DELETE_ALL_DUP_CHILD) {
+					StringBuilder sql = new StringBuilder();
+					
+					// Merge the grand child tables
+					List<String> foreignKeyColumnNames = getOrderedForeignKeyColumns(childTableMergeRule, keyColumnNames);
+					List<String> childKeyColumnNames = new ArrayList<String>();
+					for (ColumnMergeRules cmr : childTableMergeRule.getChildren()) {
+						if (cmr.isInPrimaryKey()) {
+							childKeyColumnNames.add(cmr.getColumnName());
+						}
+					}
+					List<List<Object>> mrKeyValues = getKeyValuesByParent(childKeyColumnNames ,foreignKeyColumnNames, keyValues, childTableMergeRule);
+					for (List<Object> keyVal : mrKeyValues) {
+						MergeChildTables(childKeyColumnNames, keyVal, childTableMergeRule);
+					}
+					
+					// Delete the duplicate child records					
+					sql.append("DELETE FROM " + DDLUtils.toQualifiedName(childTableMergeRule.getSourceTable()));
+					String whereStatement = generateWhereStatement(foreignKeyColumnNames, keyValues);
+					sql.append(whereStatement);
+					stmt.executeUpdate(sql.toString());
+				}
+			}
+		}
+	}
+	
+	
+	
+	private List<List<Object>> getKeyValuesByParent(List<String> keyColumnNames, 
+			List<String> foreignKeyColumnNames, List<Object> foreignKeyValues, 
+			TableMergeRules mr) throws SQLException {
+		boolean first = true;
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT ");
+		for (String columnName : keyColumnNames) {
+			if (!first) {
+				sql.append(", ");
+			}
+			first = false;
+			sql.append(columnName);
+		}
+		sql.append("\n FROM ");
+		sql.append(DDLUtils.toQualifiedName(mr.getSourceTable()));
+		
+		
+		
+		String whereStatement = generateWhereStatement(foreignKeyColumnNames, foreignKeyValues);
+		sql.append(whereStatement);
+		ResultSet rs = stmt.executeQuery(sql.toString());
+		
+		List<List<Object>> result = new ArrayList<List<Object>>();
+		while (rs.next()) {
+			List<Object> tempList = new ArrayList<Object>();
+			for (int i = 0; i < keyColumnNames.size(); i++) {
+				tempList.add(rs.getObject(i+1));
+			}
+			result.add(tempList);
+		}
+		
+		return result;
+	}
+
+	
+
+	private List<String> getOrderedForeignKeyColumns(TableMergeRules mr, List<String> foreignKeyColumnNames) {
+		List<String> curForeignKeyColumnNames = new ArrayList<String>();
+		for (ColumnMergeRules cmr : mr.getChildren()) {
+			if (cmr.getImportedKeyColumn() != null) {
+				for (String colName : foreignKeyColumnNames) {
+					if (colName.equals(cmr.getImportedKeyColumn().getName())) {
+						curForeignKeyColumnNames.add(cmr.getColumnName());
+					}
+				}
+				if (foreignKeyColumnNames.size() == curForeignKeyColumnNames.size()) {
+					break;
+				}
+			}
+		}
+		if (foreignKeyColumnNames.size() != curForeignKeyColumnNames.size()) {
+			throw new IllegalStateException("The foreign key for merge rule: " + mr.getName() + " is not set properly.");
+		}
+		return curForeignKeyColumnNames;
+	}
+
+	/**
 	 * This creates the update sql statement which updates the master record 
 	 * according to the merge rules.
+	 * @param sourceIndexColumnNames 
 	 */
-	private String createUpdateSQL(PotentialMatchRecord pm, SQLTable sourceTable,
-			Map<SQLColumn, ColumnMergeRules> mapping, Connection con) 
+	private String createUpdateSQL(PotentialMatchRecord pm,
+			Map<SQLColumn, ColumnMergeRules> mapping, List<String> sourceIndexColumnNames) 
 			throws SQLException, ArchitectException {
 		List<Object> dupVals;
 		List<Object> masterVals;
@@ -216,11 +324,11 @@ public class MergeProcessor extends AbstractProcessor {
 				} else if (resultVal == null) {
 					sql.append("null");
 				} else {
-					sql.append(formatObjectToSQL(resultVal, con));
+					sql.append(formatObjectToSQL(resultVal));
 				} 
 			}
 		}
-		String whereStatement = generateWhereStatement(pm.getMaster().getKeyValues(),con);
+		String whereStatement = generateWhereStatement(sourceIndexColumnNames, pm.getMaster().getKeyValues());
 		sql.append(whereStatement);
 		return sql.toString();
 	}
@@ -228,11 +336,10 @@ public class MergeProcessor extends AbstractProcessor {
 	/**
 	 * This creates the delete sql statement that deletes the duplicates
 	 */
-	private String createDeleteSQL(PotentialMatchRecord pm, SQLTable sourceTable,
-			Connection con) throws ArchitectException, SQLException {
+	private String createDeleteSQL(PotentialMatchRecord pm) throws ArchitectException, SQLException {
 		StringBuilder sql = new StringBuilder();
 		sql.append("DELETE FROM " + sourceTable.getName());
-		String whereStatement = generateWhereStatement(pm.getDuplicate().getKeyValues(), con);
+		String whereStatement = generateWhereStatement(pm.getDuplicate().getKeyValues());
 		sql.append(whereStatement);
 		return sql.toString();
 	}
@@ -301,7 +408,7 @@ public class MergeProcessor extends AbstractProcessor {
 		}
 	}
 	
-	private String formatObjectToSQL(Object ival, Connection con) throws SQLException {
+	private String formatObjectToSQL(Object ival) throws SQLException {
 		if (ival instanceof Date) {
 			return SQL.escapeDateTime(con, (Date) ival);
 		} else if (ival instanceof Number) {
@@ -311,8 +418,7 @@ public class MergeProcessor extends AbstractProcessor {
 		}
 	}
 	
-	private String generateWhereStatement(List<Object> keyValues,
-			Connection con) throws ArchitectException, SQLException {
+	private String generateWhereStatement(List<Object> keyValues) throws ArchitectException, SQLException {
 		boolean first = true;
 		int colIndex = 0;
 		StringBuilder sql = new StringBuilder();
@@ -325,10 +431,34 @@ public class MergeProcessor extends AbstractProcessor {
 			if (ival == null) {
 				sql.append(" IS NULL");
 			} else {
-				sql.append(formatObjectToSQL(ival, con));
+				sql.append(formatObjectToSQL(ival));
 			} 
 			first = false;
 		}
 		return sql.toString();
 	}
+	
+	private String generateWhereStatement(List<String> keyColumnNames, List<Object> keyValues) throws SQLException {
+		if (keyColumnNames.size() != keyValues.size()) {
+			throw new IllegalStateException("Invalid number of column name and values.");
+		}
+		boolean first = true;
+		int colIndex = 0;
+		StringBuilder sql = new StringBuilder();
+		sql.append("\n WHERE ");
+		for (Object ival : keyValues) {
+			String columnName = keyColumnNames.get(colIndex++);
+			if (!first) sql.append(" AND ");
+			sql.append(columnName);
+			sql.append("=");
+			if (ival == null) {
+				sql.append(" IS NULL");
+			} else {
+				sql.append(formatObjectToSQL(ival));
+			} 
+			first = false;
+		}
+		return sql.toString();
+	}
+
 }

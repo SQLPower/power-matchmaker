@@ -28,9 +28,22 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import junit.framework.TestCase;
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.ddl.DDLGenerator;
+import ca.sqlpower.architect.ddl.DDLStatement;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.SQL;
 
 /**
  * This is a test for the merge processor. It focuses on testing the
@@ -45,12 +58,19 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     MergeProcessor mpor;
     TestingMatchMakerSession session;
     Connection con;
-	
+    SQLDatabase db;
+    SPDataSource ds;
+    SQLTable sourceTable;
+    SQLTable childTable;
+    
 	TableMergeRules tmr = new TableMergeRules();
 	ColumnMergeRules cmr_string = new ColumnMergeRules();
 	ColumnMergeRules cmr_date = new ColumnMergeRules();
 	ColumnMergeRules cmr_number = new ColumnMergeRules();
-
+	
+	TableMergeRules ctmr = new TableMergeRules();
+	ColumnMergeRules ccmr_id = new ColumnMergeRules();
+	ColumnMergeRules ccmr_child_id = new ColumnMergeRules();
 	
 	/**
 	 * Subclasses need to implement this method to set the correct
@@ -58,8 +78,97 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	 * also be set accordingly. See {@link MergeProcessorOracleTest#setUp()}
 	 * for example.
 	 */
-   protected abstract void setUp() throws Exception;
-    
+	protected void setUp() throws Exception {
+		String sql;
+		match = new Match();
+
+		ds = getDS();
+		db = new SQLDatabase(ds);
+		session = new TestingMatchMakerSession() {
+
+			@Override
+			public Connection getConnection() {
+				try {
+					return db.getConnection();
+				} catch (ArchitectException e) {
+					throw new ArchitectRuntimeException(e);
+				}
+			}
+
+			@Override
+			public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
+				return new StubMatchMakerDAO<T>(businessClass);
+			}
+		};
+		session.setDatabase(db);
+
+		match.setSession(session);
+		con = db.getConnection();
+		session.setConnection(con);
+
+		tmr.addChild(cmr_string);
+		tmr.addChild(cmr_date);
+		tmr.addChild(cmr_number);
+		tmr.setDeleteDup(false);
+
+		ccmr_id.setInPrimaryKey(true);
+		ccmr_child_id.setInPrimaryKey(true);
+
+		ctmr.addChild(ccmr_id);
+		ctmr.addChild(ccmr_child_id);
+
+		match.addTableMergeRule(tmr);
+		match.addTableMergeRule(ctmr);
+
+		MungeProcess mp = new MungeProcess();
+		mp.setName("test");
+		match.addMatchRuleSet(mp);
+
+		//This is different for Oracle and SQL Server
+		createTables();
+
+		// Creates the result Table
+        DDLGenerator ddlg = null;
+    	try {
+    		ddlg = DDLUtils.createDDLGenerator(ds);
+    	} catch (ClassNotFoundException e) {
+    		fail("DDLUtils.createDDLGenerator(SPDataSource) threw a ClassNotFoundException");
+    	}
+    	assertNotNull("DDLGenerator error", ddlg);
+		ddlg.setTargetSchema(ds.getPlSchema());
+
+		if (Match.doesResultTableExist(session, match)) {
+			System.out.println(match.getResultTable());
+			ddlg.dropTable(match.getResultTable());
+		}
+		ddlg.addTable(match.createResultTable());
+		ddlg.addIndex((SQLIndex) match.getResultTable().getIndicesFolder().getChild(0));
+		
+	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
+	    	sql = sqlStatement.getSQLText();
+	    	execSQL(con,sql);
+	    }
+
+		//set the column and tabler merge rules
+		ccmr_id.setColumn(childTable.getColumnByName("PARENT_ID"));
+		ccmr_id.setImportedKeyColumn(sourceTable.getColumnByName("ID"));
+		ccmr_child_id.setColumn(childTable.getColumnByName("ID"));
+
+		ctmr.setTable(childTable);
+		ctmr.setParentTable(sourceTable);
+
+		cmr_string.setColumn(sourceTable.getColumnByName("COL_STRING"));   	
+		cmr_date.setColumn(sourceTable.getColumnByName("COL_DATE"));
+		cmr_number.setColumn(sourceTable.getColumnByName("COL_NUMBER"));
+
+		tmr.setTable(sourceTable);
+   	}
+
+	/**
+	 * Creates the tables we need
+	 */
+	protected abstract void createTables() throws Exception;
+   
     /**
      * This is a protected method that sets defaults for the column 
      * merge rules and table merge rule. Subclasses need to implement this
@@ -67,21 +176,98 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
      * database. See {@link MergeProcessorOracleTest#populateTables()} for 
      * example. This should be called before each test case. 
      */
-    protected void populateTables() throws Exception {
-		cmr_string.setActionType(MergeActionType.IGNORE);
-		cmr_date.setActionType(MergeActionType.IGNORE);
-		cmr_number.setActionType(MergeActionType.IGNORE);
-		
-		tmr.addChild(cmr_string);
-		tmr.addChild(cmr_date);
-		tmr.addChild(cmr_number);
-		tmr.setDeleteDup(false);
+    private void populateTables() throws Exception {
+    	String sql;
 
-		match.addTableMergeRule(tmr);
-		MungeProcess mp = new MungeProcess();
-		mp.setName("test");
-		match.addMatchRuleSet(mp);
-    }
+		//delete everything from source table
+		sql = "DELETE FROM " + getFullTableName() + "_CHILD";
+		execSQL(con, sql);
+		
+		//Populates the source table
+		String testString = "ABCDEF";
+		for (int i = 0; i < 6; i++) {
+			sql = "INSERT INTO " + getFullTableName() + " VALUES(" +
+				i + ", " +
+				SQL.quote(testString.charAt(i)) + ", " +
+				SQL.escapeDateTime(con, new Date((long) i*1000*60*60*24)) + ", " +
+				i + ")";
+			execSQL(con,sql);
+		}
+        sql = "INSERT INTO " + getFullTableName() + " (ID) VALUES(6)";
+        execSQL(con,sql);
+        
+        // delete everything from result table
+		sql = "DELETE FROM " + getFullTableName() + "_RESULT";
+		execSQL(con, sql);
+		
+		//6 is the master of 4, which is the master of 5, 
+		//which is the master of 1, which is the master of 0. 
+		//2 is the master of 3.
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(6,4,10,'AUTO_MATCH','Y', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    "(0,1,10,'AUTO_MATCH','N', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(1,5,10,'AUTO_MATCH','N', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(2,3,10,'MATCH','Y', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(4,3,10,'UNMATCH','', 'test')";
+	    execSQL(con,sql);
+	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
+	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
+	    	"VALUES " + 
+	    	"(5,4,10,'MATCH','N', 'test')";
+	    execSQL(con,sql);
+	    
+	    mpor = new MergeProcessor(match, session);
+	    
+	    // sets the default action type
+	    cmr_string.setActionType(MergeActionType.IGNORE);
+	    cmr_date.setActionType(MergeActionType.IGNORE);
+	    cmr_number.setActionType(MergeActionType.IGNORE);
+	}
+    
+    private void populateChildTable() throws Exception {
+    	String sql;
+		String testString = "ABC";
+		
+		//delete everything from child table
+		sql = "DELETE FROM " + getFullTableName() + "_CHILD";
+		execSQL(con, sql);
+		
+		//populates the child table
+		for (int i = 0; i < 6; i++) {
+			for (int j = 0; j < 3; j++) {
+				sql = "INSERT INTO " + getFullTableName() + "_CHILD VALUES(" +
+					i + ", " +
+					j + ", " +
+					SQL.quote(testString.charAt(j)) + ", " +
+					SQL.escapeDateTime(con, new Date((long) j*1000*60*60*24)) + ", " +
+					j + ")";
+				execSQL(con,sql);
+			}
+		}
+		
+		//sets the default action type
+		ctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
+
+	}
+    
     
     /**
      * This tests on a unmatch, it should do nothing.
@@ -344,6 +530,37 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		assertEquals("Number not summed.", 5, rs.getInt(4));
     }
     
+    public void testDeleteDupChild() throws Exception{
+    	populateTables();
+    	populateChildTable();
+	
+		mpor.call();
+		
+		Connection con = session.getConnection();
+		Statement stmt = con.createStatement();
+		ResultSet rs;
+		
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 1 OR PARENT_ID = 0 ");
+		sql.append("OR PARENT_ID = 4 OR PARENT_ID = 3 OR PARENT_ID = 5");
+		
+		rs = stmt.executeQuery(sql.toString());
+		assertFalse("Duplicate child records not deleted.", rs.next());
+
+		StringBuilder sql2 = new StringBuilder();
+		sql2.append("SELECT * FROM ");
+		sql2.append(getFullTableName() + "_CHILD");
+		sql2.append("\n WHERE PARENT_ID = 2 OR PARENT_ID = 6");
+		
+		rs = stmt.executeQuery(sql2.toString());
+		for (int i = 0; i < 3; i++) {
+			assertTrue("Non-duplicate child records deleted.", rs.next());
+		}
+		assertFalse("Extra non-duplicate child records found.", rs.next());
+    }
+    
 	protected boolean execSQL(Connection conn, String sql) {
 		Statement stmt = null;
 		try {
@@ -362,12 +579,16 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	}
 	
 	protected void tearDown() throws Exception {
-		String sql = "DROP TABLE " + getFullTableName();
-		execSQL(con, sql);
-		sql = "DROP TABLE " + getFullTableName() + "_RESULT";
-		execSQL(con, sql);
-		con.close();
+//		String sql = "DROP TABLE " + getFullTableName();
+//		execSQL(con, sql);
+//		sql = "DROP TABLE " + getFullTableName() + "_RESULT";
+//		execSQL(con, sql);
+//		sql = "DROP TABLE " + getFullTableName() + "_CHILD";
+//		execSQL(con, sql);
+//		con.close();
 	}
 	
 	protected abstract String getFullTableName();
+	
+	protected abstract SPDataSource getDS();
 }
