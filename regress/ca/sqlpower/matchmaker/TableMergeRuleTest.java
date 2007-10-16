@@ -20,6 +20,9 @@
 
 package ca.sqlpower.matchmaker;
 
+import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+
 public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 
 	TableMergeRules tableMergeRules;
@@ -49,6 +52,9 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		TableMergeRules m1 = getTarget();
 		TableMergeRules m2 = getTarget();
 		
+		SQLTable t1 = new SQLTable();
+		SQLTable t2 = new SQLTable();
+		
 		Match parent1 = new Match();
 		parent1.setSession(new TestingMatchMakerSession());
 		parent1.setName("match1");
@@ -71,5 +77,53 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		
 		m1.setTableName("t1");
 		assertEquals("Two objects with the same parents and tables should be equal",m1,m2);
+		
+		m1.setDeleteDup(true);
+		m2.setDeleteDup(false);
+		assertFalse("Two objects with different delete dup values should not be equal",
+				m1.equals(m2));
+		
+		m2.setDeleteDup(true);
+		assertEquals("Two objects with same delete dup values should be equals", m1, m2);
+		
+		m1.setParentTable(t1);
+		m2.setParentTable(t2);
+		assertFalse("Two objects with different parent tables should not be equal",
+				m1.equals(m2));
+		
+		m2.setParentTable(t1);
+		assertEquals("Two objects with same parent tables should be equal", m1, m2);
+		
+		m1.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
+		m2.setChildMergeAction(ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT);
+		assertFalse("Two objects with different child merge actions should not be equal",
+				m1.equals(m2));
+		
+		m2.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
+		assertEquals("Two objects with same child merge action types should equal", m1, m2);
+	}
+	
+	public void testIsSourceMergeRule() {
+		TableMergeRules m1 = getTarget();
+		TableMergeRules m2 = getTarget();
+		Match match = new Match();
+		
+		SQLTable t1 = new SQLTable();
+		SQLTable t2 = new SQLTable();
+		
+		m1.setTable(t1);
+		m2.setTable(t2);
+		match.setSourceTable(t1);
+		m1.setParentMatch(match);
+		m2.setParentMatch(match);
+		
+		assertTrue("Same source table of its parent match, should be a source merge rule",
+				m1.isSourceMergeRule());
+		assertFalse("Different source table from its parent match, should not be a source merge rule",
+				m2.isSourceMergeRule());
+		
+		m1.setParent(null);
+		assertFalse("Parent match is null, should not be a source merge rule",
+				m1.isSourceMergeRule());
 	}
 }
