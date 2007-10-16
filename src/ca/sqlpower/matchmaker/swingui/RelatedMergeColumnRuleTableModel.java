@@ -24,7 +24,6 @@ import javax.swing.event.TableModelEvent;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 
 /**
  * Implementation of {@link AbstractMergeColumnRuleTableModel}, table model 
@@ -40,7 +39,7 @@ public class RelatedMergeColumnRuleTableModel extends
 	}
 
 	public int getColumnCount() {
-		return mergeRule.isSourceMergeRule()? 2 : 4;
+		return 4;
 	}
 
 	@Override
@@ -52,7 +51,7 @@ public class RelatedMergeColumnRuleTableModel extends
 		} else if (column == 2) {
 			return "Imported Key Column";
 		} else if (column == 3) {
-			return "Action";
+			return "Update SQL Statement";
 		} else {
 			throw new RuntimeException("getColumnName: Unexcepted column index:"+column);
 		}
@@ -67,7 +66,7 @@ public class RelatedMergeColumnRuleTableModel extends
 		} else if(columnIndex == 2) {
 			return mergeRule.getChildren().get(rowIndex).getImportedKeyColumn();
 		} else if (columnIndex == 3) {
-			return mergeRule.getChildren().get(rowIndex).getActionType();
+			return mergeRule.getChildren().get(rowIndex).getUpdateStatement();
 		} else {
 			throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
 		}
@@ -75,7 +74,7 @@ public class RelatedMergeColumnRuleTableModel extends
 	
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return (columnIndex == 1 || columnIndex == 2);
+		return columnIndex != 0;
 	}
 	
 	@Override
@@ -87,7 +86,7 @@ public class RelatedMergeColumnRuleTableModel extends
 		} else if (columnIndex == 2) {
 			return SQLColumn.class;
 		} else if (columnIndex == 3) {
-			return ColumnMergeRules.MergeActionType.class;	
+			return String.class;	
 		} else {
 			throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
 		}
@@ -103,7 +102,7 @@ public class RelatedMergeColumnRuleTableModel extends
 		} else if (columnIndex == 2) {
 			rule.setImportedKeyColumn((SQLColumn) aValue);
 		} else if (columnIndex == 3) {
-			rule.setActionType((MergeActionType) aValue);
+			rule.setUpdateStatement((String) aValue);
 		} else {
 			throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
 		}
