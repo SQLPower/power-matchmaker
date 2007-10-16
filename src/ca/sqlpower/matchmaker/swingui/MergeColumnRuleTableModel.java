@@ -66,7 +66,7 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 			return mergeRule.isSourceMergeRule()? "Action" : "Primary Key";
 		} else if (!isSourceMergeRule) { 
 			if (column == 2) {
-				return "Foreign Key";
+				return "Imported Key Column";
 			} else if (column == 3) {
 				return "Action";
 			} else {
@@ -86,7 +86,7 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 			if (columnIndex == 1) {
 				return mergeRule.getChildren().get(rowIndex).isInPrimaryKey();
 			} else if(columnIndex == 2) {
-				return mergeRule.getChildren().get(rowIndex).isInForeignKey();
+				return mergeRule.getChildren().get(rowIndex).getImportedKeyColumn();
 			} else if (columnIndex == 3) {
 				return mergeRule.getChildren().get(rowIndex).getActionType();
 			} else {
@@ -113,8 +113,10 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 		} else if (isSourceMergeRule && columnIndex == 1) {
 			return ColumnMergeRules.MergeActionType.class;
 		} else if (!isSourceMergeRule) {
-			if (columnIndex == 1 || columnIndex == 2) {
+			if (columnIndex == 1) {
 				return Boolean.class;
+			} else if (columnIndex == 2) {
+				return SQLColumn.class;
 			} else if (columnIndex == 3) {
 				return ColumnMergeRules.MergeActionType.class;	
 			} else {
@@ -136,7 +138,7 @@ public class MergeColumnRuleTableModel extends AbstractTableModel implements Mat
 			if (columnIndex == 1) {
 				rule.setInPrimaryKey((Boolean) aValue);
 			} else if (columnIndex == 2) {
-				rule.setInForeignKey((Boolean) aValue);
+				rule.setImportedKeyColumn((SQLColumn) aValue);
 			} else if (columnIndex == 3) {
 				rule.setActionType((MergeActionType) aValue);
 			} else {
