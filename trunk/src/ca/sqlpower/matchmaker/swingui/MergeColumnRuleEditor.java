@@ -49,6 +49,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -112,12 +113,13 @@ public class MergeColumnRuleEditor implements EditorPane {
 
         for (TableMergeRules tmr : match.getTableMergeRules()) {
         	if (!tmr.equals(mergeRule)) {
-        		parentTable.addItem(tmr.getName());
+        		parentTable.addItem(tmr.getSourceTable());
         	}
         }
         childMergeAction = new JComboBox(TableMergeRules.ChildMergeActionType.values());
         
         buildUI();
+        
         List<Action> actions = new ArrayList<Action>();
         actions.add(saveAction);
         handler = new FormValidationHandler(status,actions);
@@ -130,6 +132,10 @@ public class MergeColumnRuleEditor implements EditorPane {
 		return mergeRule;
 	}
 
+	protected JComboBox getParentTable() {
+		return parentTable;
+	} 
+	
 	private void buildUI() {
 
 		String comboMinSize = "fill:min(pref;"+(new JComboBox().getMinimumSize().width)+"px):grow";
@@ -235,7 +241,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 		if (handler.getWorstValidationStatus().getStatus() != Status.FAIL) {
 			
 			if (!mergeRule.isSourceMergeRule()) {
-				mergeRule.setParentTable((String) parentTable.getSelectedItem());
+				mergeRule.setParentTable((SQLTable) parentTable.getSelectedItem());
 				mergeRule.setChildMergeAction(
 					(TableMergeRules.ChildMergeActionType) childMergeAction.getSelectedItem());
 			} else {
@@ -262,7 +268,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 	public boolean hasUnsavedChanges() {
 		Object curParentTable = parentTable.getSelectedItem();
-		String oldParentTable = mergeRule.getParentTable();
+		SQLTable oldParentTable = mergeRule.getSourceTable();
 		Object curMergeAction = childMergeAction.getSelectedItem();
 		TableMergeRules.ChildMergeActionType oldMergeAction = mergeRule.getChildMergeAction();
 		
@@ -313,6 +319,21 @@ public class MergeColumnRuleEditor implements EditorPane {
 						new JComboBox(
 								new DefaultComboBoxModel(
 										ColumnMergeRules.MergeActionType.values())));
+			} else if (!getMergeRule().isSourceMergeRule() && column == 2) {
+				JComboBox importedKeyColumns = new JComboBox();
+				if (getParentTable().getSelectedItem() != null) {
+					SQLTable table = (SQLTable) getParentTable().getSelectedItem();
+					try {
+						List<SQLColumn> tableColumns = table.getColumns();
+						importedKeyColumns.setModel(new DefaultComboBoxModel(tableColumns.toArray()));
+						importedKeyColumns.insertItemAt(null, 0);
+						importedKeyColumns.setSelectedIndex(0);
+					} catch (ArchitectException e) {
+						SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+								"Failed to load list of columns from parent table.", e);
+					}
+				}
+				return new DefaultCellEditor(importedKeyColumns);
 			} else {
 				return super.getCellEditor(row, column);
 			}
@@ -324,34 +345,32 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 		public ValidateResult validate(Object contents) {
 			TableModel model = (TableModel) contents;
-			for ( int i=0; i<model.getRowCount(); i++) {
-				SQLColumn column = (SQLColumn) model.getValueAt(i, 0);
+			if (getMergeRule().isSourceMergeRule()) {
 				MergeActionType mat;
-				if (getMergeRule().isSourceMergeRule()) {
+				for ( int i=0; i<model.getRowCount(); i++) {
+					SQLColumn column = (SQLColumn) model.getValueAt(i, 0);
 					mat = (MergeActionType) model.getValueAt(i, 1);
-				} else {
-					mat = (MergeActionType) model.getValueAt(i, 3);
-				}
-				if (mat == MergeActionType.CONCAT) {
-					if (column.getType() != Types.VARCHAR 
-							&& column.getType() != Types.LONGVARCHAR) {
-						return ValidateResult.createValidateResult(Status.FAIL, "Invalid type for CONCAT");
+					if (mat == MergeActionType.CONCAT) {
+						if (column.getType() != Types.VARCHAR 
+								&& column.getType() != Types.LONGVARCHAR) {
+							return ValidateResult.createValidateResult(Status.FAIL, "Invalid type for CONCAT");
+						}
+					} else if (mat == MergeActionType.SUM) {
+						if (column.getType() != Types.BIGINT 
+								&& column.getType() != Types.DECIMAL
+								&& column.getType() != Types.DOUBLE
+								&& column.getType() != Types.FLOAT
+								&& column.getType() != Types.INTEGER
+								&& column.getType() != Types.NUMERIC
+								&& column.getType() != Types.REAL
+								&& column.getType() != Types.SMALLINT
+								&& column.getType() != Types.TINYINT) {
+
+							return ValidateResult.createValidateResult(Status.FAIL, "Invalid type for SUM");
+						}
 					}
-				} else if (mat == MergeActionType.SUM) {
-					if (column.getType() != Types.BIGINT 
-							&& column.getType() != Types.DECIMAL
-							&& column.getType() != Types.DOUBLE
-							&& column.getType() != Types.FLOAT
-							&& column.getType() != Types.INTEGER
-							&& column.getType() != Types.NUMERIC
-							&& column.getType() != Types.REAL
-							&& column.getType() != Types.SMALLINT
-							&& column.getType() != Types.TINYINT) {
-							
-						return ValidateResult.createValidateResult(Status.FAIL, "Invalid type for SUM");
-					}
+
 				}
-				
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
@@ -365,6 +384,5 @@ public class MergeColumnRuleEditor implements EditorPane {
 				ruleTable.setRowSelectionInterval(selected, selected);
 			}
 		}
-	} 
-
+	}
 }
