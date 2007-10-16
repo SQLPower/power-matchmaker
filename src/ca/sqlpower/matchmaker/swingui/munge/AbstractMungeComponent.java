@@ -64,6 +64,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
@@ -111,6 +112,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 	};
 	
 	protected JPanel content;
+	protected JPanel contentPlusNames;
+	
 	private JPanel root;
 	
 	private final MungeStep step;
@@ -147,6 +150,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private static final ImageIcon EXPOSE_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/expose_off.png"));
 	private static final ImageIcon EXPOSE_ON = new ImageIcon(ClassLoader.getSystemResource("icons/expose_on.png"));
+	
+	private static final ImageIcon PLUS_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/plus_off.png"));
+	private static final ImageIcon PLUS_ON = new ImageIcon(ClassLoader.getSystemResource("icons/plus_on.png"));
 	
 	private static final int PLUG_OFFSET = 2;
 	public static final int CLICK_TOLERANCE = 15;
@@ -205,6 +211,37 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private int ghostIndex;
 	
 	/**
+	 * A panel that goes on top and labels the inputs
+	 */
+	private JPanel inputNames;
+	
+	/**
+	 * True iff a top panel is wanted displaying the names
+	 */
+	private boolean showInputNames;
+	
+	/**
+	 * Holds the lables with the names of the inputs.
+	 */
+	private JLabel[] inputLables;
+	
+	
+	/**
+	 * A panel that goes on bottom and labels the outputs
+	 */
+	private JPanel outputNames;
+	
+	/**
+	 * True iff a bottom panel is wanted displaying the names
+	 */
+	private boolean showOutputNames;
+	
+	/**
+	 * Holds the lables with the names of the outputs.
+	 */
+	private JLabel[] outputLables;
+	
+	/**
 	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen.
 	 * Sets the background and border colours to given colours.
 	 * 
@@ -213,7 +250,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param bg The background colour to the rectangle
 	 */
 	private AbstractMungeComponent(MungeStep step) {
-		
 		this.step = step;
 		setVisible(true);
 		setBackground(normalBackground);
@@ -223,6 +259,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 		for (int x = 0; x < connected.length;x++) {
 			connected[x] = 0;
 		}
+		
+		ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+		toolTipManager.setInitialDelay(0);
 		
 		bustGhost();
 		
@@ -291,10 +330,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 			tb.setFloatable(false);
 			tmp.add(tb);
 		}
-
-
 		
-		root.add(tmp,BorderLayout.NORTH);
+		root.add(tmp,BorderLayout.CENTER);
 		add(root);
 		
 		addMouseListener(new MungeComponentMouseListener());
@@ -338,15 +375,115 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		root.setOpaque(false);
 		tmp.setOpaque(false);
-		if (content != null) {
-			content.setOpaque(false);
-		}
 		expanded = false;
+		
+		buildInputNamesPanel();
+		buildOutputNamesPanel();
+		
+		if (content != null) {
+			contentPlusNames = new JPanel(new BorderLayout());
+			contentPlusNames.add(content, BorderLayout.CENTER);
+			contentPlusNames.add(outputNames,BorderLayout.SOUTH);
+			contentPlusNames.setOpaque(false);
+			content.setOpaque(false);
+		} else {
+			contentPlusNames = null;
+		}
 		
 		// Note, this does not take care of the content panel; only the basic
 		// stuff added here in the constructor (most importantly, the +/- button)
 		deOpaquify(this);
+		deOpaquify(inputNames);
 	}
+	
+	private void buildInputNamesPanel() {
+		if (expanded && showInputNames) {
+			root.remove(inputNames);
+		}
+		inputNames = new JPanel();
+		inputNames.setOpaque(false);
+		inputNames.setLayout(new FlowLayout());
+
+		inputLables = new JLabel[step.getInputs().size()];
+		
+		for (int x = 0; x < inputLables.length; x++) {
+			inputLables[x] = getCoolJLabel(step.getInputDescriptor(x).getName());
+			hide(inputLables[x]);
+			inputNames.add(inputLables[x]);
+			inputLables[x].setOpaque(false);
+		}
+		
+		if (expanded && showInputNames) {
+			root.add(inputNames, BorderLayout.NORTH);
+			revalidate();
+		}	
+	}
+	
+	private void buildOutputNamesPanel() {
+		outputNames = new JPanel();
+		outputNames.setOpaque(false);
+		outputNames.setLayout(new FlowLayout());
+
+		outputLables = new JLabel[step.getChildCount()];
+		
+		for (int x = 0; x < outputLables.length; x++) {
+			outputLables[x] = getCoolJLabel(step.getChildren().get(x).getName());
+			hide(outputLables[x]);
+			outputNames.add(outputLables[x]);
+			outputLables[x].setOpaque(false);
+		}
+	}
+
+	private JLabel getCoolJLabel(String id) {
+		JLabel lab =new JLabel(id);
+		lab.setToolTipText(id);
+		
+		lab.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				hideShow((JLabel)e.getSource());
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				if (((JLabel)e.getSource()).getText().equals("")) {
+					((JLabel)e.getSource()).setIcon(PLUS_ON);
+				}
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent e) {
+				if (((JLabel)e.getSource()).getText().equals("")) {
+					((JLabel)e.getSource()).setIcon(PLUS_OFF);
+				}
+			}
+		});
+		
+		lab.setBorder(BorderFactory.createEtchedBorder());
+		return lab;
+			
+	}
+	
+	private void hide(JLabel label) {
+		label.setText("");
+		label.setIcon(PLUS_OFF);
+	}
+
+	private void show(JLabel label) {
+		label.setIcon(null);
+		label.setText(label.getToolTipText());
+	}
+	
+	private void hideShow(JLabel label) {
+		if (label.getText().equals("")) {
+			show(label);
+		} else {
+			hide(label);
+		}
+		validate();
+	}
+	
+
 
 	/**
 	 * Adds the default set of component types that should not be made non-opaque
@@ -489,7 +626,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public Point getInputPosition(int inputNum) {
 		int inputs = step.getInputs().size();
 		
-		int xPos = (int) (((double)(inputNum+1)/((double)inputs+1))*getWidth());
+		if (!expanded || !showInputNames) {
+			int xPos = (int) (((double)(inputNum+1)/((double)inputs+1))*getWidth());
+			return new Point(xPos,0);
+		}
+		
+		int xPos = inputLables[inputNum].getX() + inputLables[inputNum].getWidth()/2;
 		return new Point(xPos,0);
 	}
 	
@@ -504,7 +646,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public Point getOutputPosition(int outputNum) {
 		int outputs = step.getChildren().size();
 		int xPos = (int) (((double)(outputNum+1)/((double)outputs+1))*getWidth());
-		return new Point(xPos,getHeight() - getBorder().getBorderInsets(this).bottom);
+		Point orig =  new Point(xPos,getHeight() - getBorder().getBorderInsets(this).bottom);
+		
+		if (expanded && showOutputNames) {
+			orig.x = outputLables[outputNum].getX() + outputLables[outputNum].getWidth()/2;
+		}
+		return orig;
 	}
 	
 	/**
@@ -718,12 +865,20 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * Hides or expands the component.
 	 */
 	public void hideShow() {
-		if (!expanded) {
-			root.add(content,BorderLayout.CENTER);
-			expanded = true;
+		expanded = !expanded;
+		if (expanded) {
+			if (showInputNames) {
+				root.add(inputNames, BorderLayout.NORTH);
+			}
+			if (showOutputNames) {
+				root.add(contentPlusNames,BorderLayout.SOUTH);
+			} else {
+				root.add(content,BorderLayout.SOUTH);
+			}
 		} else {
 			root.remove(content);
-			expanded = false;
+			root.remove(inputNames);
+			root.remove(contentPlusNames);
 		}
 		getPen().normalize();
 		validate();
@@ -763,13 +918,103 @@ public abstract class AbstractMungeComponent extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			InputDescriptor ref = getStep().getInputDescriptor(0);
 			getStep().addInput(new InputDescriptor(ref.getName(),ref.getType()));
+			buildInputNamesPanel();
 			
 			//cleans up the lines because they were being stupid
 			SwingUtilities.invokeLater(new Runnable(){
 				public void run() {
+					revalidate();
 					getPen().repaint();
 				}
 			});
+		}
+	}
+	
+	/**
+	 * An action that can be added to a munge step that when used will
+	 * change all of the inputs labels to the plus icon.
+	 */
+	protected class HideAllInputNamesAction extends AbstractAction {
+		
+		/**
+		 * Constructor to set the title
+		 * 
+		 * @param The title of the action
+		 */
+		public HideAllInputNamesAction(String title) {
+			super(title);
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			for (JLabel l : inputLables) {
+				hide(l);
+			}
+		}
+	}
+	
+	/**
+	 * An action that can be added to a munge step that when used will
+	 * change all of the inputs labels to the plus icon.
+	 */
+	protected class HideAllOutputNamesAction extends AbstractAction {
+		
+		/**
+		 * Constructor to set the title
+		 * 
+		 * @param The title of the action
+		 */
+		public HideAllOutputNamesAction(String title) {
+			super(title);
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			for (JLabel l : outputLables) {
+				hide(l);
+			}
+		}
+	}
+	
+	/**
+	 * An action that can be added to a munge step that when used will
+	 * change all of the inputs labels to the plus icon.
+	 */
+	protected class ShowAllInputNamesAction extends AbstractAction {
+		
+		/**
+		 * Constructor to set the title
+		 * 
+		 * @param The title of the action
+		 */
+		public ShowAllInputNamesAction(String title) {
+			super(title);
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			for (JLabel l : inputLables) {
+				show(l);
+			}
+		}
+	}
+	
+	/**
+	 * An action that can be added to a munge step that when used will
+	 * change all of the inputs labels to the plus icon.
+	 */
+	protected class ShowAllOutputNamesAction extends AbstractAction {
+		
+		/**
+		 * Constructor to set the title
+		 * 
+		 * @param The title of the action
+		 */
+		public ShowAllOutputNamesAction(String title) {
+			super(title);
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			for (JLabel l : outputLables) {
+				show(l);
+			}
 		}
 	}
 	
@@ -812,11 +1057,14 @@ public abstract class AbstractMungeComponent extends JPanel {
 				step.removeInput(x);
 			}			
 			
+			buildInputNamesPanel();
+			
 			//cleans up the lines, Some of the IOCs may have made their bounds smaller during the call
 			//and that bit of the line might still be on the screen, this gets rig of it. May other things 
 			//were tried to get rid of it before this was used.
 			SwingUtilities.invokeLater(new Runnable(){
 				public void run() {
+					revalidate();
 					getPen().repaint();
 				}
 			});
@@ -1095,5 +1343,24 @@ public abstract class AbstractMungeComponent extends JPanel {
 			repaint();
 		}
 	}
+	
+	/**
+	 * If set to true the input names will be displayed if the user expands the component.
+	 *  
+	 * @param b The value to set it to
+	 */
+	public void setInputShowNames(Boolean b) {
+		showInputNames = b;
+	}
+	
+	/**
+	 * If set to true the output names will be displayed if the user expands the component.
+	 *  
+	 * @param b The value to set it to
+	 */
+	public void setOutputShowNames(Boolean b) {
+		showOutputNames = b;
+	}
+	
 }
 

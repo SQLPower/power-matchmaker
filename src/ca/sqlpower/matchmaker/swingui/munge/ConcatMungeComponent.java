@@ -19,15 +19,14 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.FlowLayout;
+
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
-
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * This is a component for a concat munge step. It has two options, one button
@@ -48,14 +47,10 @@ public class ConcatMungeComponent extends AbstractMungeComponent {
 		addInputButton = new JButton(new AddInputAction("Add Input"));
 		removeInputsButton = new JButton(
 				new RemoveUnusedInputAction("Clean Up"));
-
-		FormLayout layout = new FormLayout(
-				"4dlu,pref,4dlu", // columns
-				"4dlu,pref,4dlu,pref,4dlu"); // rows
-		CellConstraints cc = new CellConstraints();
-		content.setLayout(layout);
-		content.add(addInputButton, cc.xy(2,2, "c,c"));
-		content.add(removeInputsButton, cc.xy(2,4, "c,c"));
+		content.setLayout(new FlowLayout());
+		content.add(addInputButton);
+		content.add(removeInputsButton);
+		setInputShowNames(true);
 		return content;
 	}
 
