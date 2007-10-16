@@ -53,53 +53,110 @@ public class ConnectorIcon implements Icon {
 	private static  final Logger logger = org.apache.log4j.Logger.getLogger(ConnectorIcon.class); 
 	
 	/**
-	 * The colour associated with connections that carry String data.
+	 * The colour associated with images we want to be orange.
 	 * There are external resources (images) which this particular colour
 	 * choice depends on, so exercise caution when changing the value of
 	 * this constant.
 	 */
-	private static final Color STRING_COLOUR = new Color(0xff, 0x9a, 0x00);
+	private static final Color ORANGE = new Color(0xff, 0x9a, 0x00);
 	
 	/**
-	 * The colour associated with connections that carry numeric data.
+	 * The colour associated with images we want to be red.
 	 * There are external resources (images) which this particular colour
 	 * choice depends on, so exercise caution when changing the value of
 	 * this constant.
 	 */
-	private static final Color BIGDECIMAL_COLOUR = new Color(0x53, 0x4a, 0x31);
+	private static final Color RED = new Color(0xc3, 0x02, 0x02);
+	
+	/**
+	 * The colour associated with images we want to be purple.
+	 * There are external resources (images) which this particular colour
+	 * choice depends on, so exercise caution when changing the value of
+	 * this constant.
+	 */
+	private static final Color PURPLE =  new Color(0xb3, 0x52, 0xdb);
+	
+	/**
+	 * The colour associated with images we want to be gray.
+	 * There are external resources (images) which this particular colour
+	 * choice depends on, so exercise caution when changing the value of
+	 * this constant.
+	 */
+	private static final Color GRAY = new Color(0x99, 0x99, 0x99);
+	
+	/**
+	 * The colour associated with images we want to be brown.
+	 * There are external resources (images) which this particular colour
+	 * choice depends on, so exercise caution when changing the value of
+	 * this constant.
+	 */
+	private static final Color BROWN = new Color(0x53, 0x4a, 0x31);
+	
+	/**
+	 * The colour associated with images we want to be green.
+	 * There are external resources (images) which this particular colour
+	 * choice depends on, so exercise caution when changing the value of
+	 * this constant.
+	 */
+	private static final Color GREEN = new Color(0x03, 0xa7, 0x12);
+	
+	/**
+	 * The colour associated with images we want to be blue.
+	 * There are external resources (images) which this particular colour
+	 * choice depends on, so exercise caution when changing the value of
+	 * this constant.
+	 */
+	private static final Color BLUE = new Color(0x00, 0x30, 0x82);
+	
+	
+	/**
+	 * The colour associated with connections that carry String data.
+	 * There are external resources (images) which this particular colour
+	 * choice depends on, use only colours defined above, or add the 
+	 * needed images when changing it.
+	 */
+	private static final Color STRING_COLOUR = ORANGE; 
+	
+	/**
+	 * The colour associated with connections that can carry any data.
+	 * There are external resources (images) which this particular colour
+	 * choice depends on, use only colours defined above, or add the 
+	 * needed images when changing it.
+	 */
+	private static final Color OBJECT_COLOUR = BROWN;
 	
 	/**
 	 * The colour associated with connections that carry boolean data.
 	 * There are external resources (images) which this particular colour
-	 * choice depends on, so exercise caution when changing the value of
-	 * this constant.
+	 * choice depends on, use only colours defined above, or add the 
+	 * needed images when changing it.
 	 */
-	private static final Color BOOLEAN_COLOUR = new Color(0x00, 0x30, 0x82);
+	private static final Color BOOLEAN_COLOUR = BLUE;
 	
 	/**
 	 * The colour associated with connections that carry dates.
 	 * There are external resources (images) which this particular colour
-	 * choice depends on, so exercise caution when changing the value of
-	 * this constant.
+	 * choice depends on, use only colours defined above, or add the 
+	 * needed images when changing it.
 	 */
-	private static final Color DATE_COLOUR = new Color(0xc3, 0x02, 0x02);
+	private static final Color DATE_COLOUR = RED;
 	
 	/**
-	 * The colour associated with inputs that can accept any type of data.
+	 * The colour associated with inputs number data.
 	 * There are external resources (images) which this particular colour
-	 * choice depends on, so exercise caution when changing the value of
-	 * this constant.
+	 * choice depends on, use only colours defined above, or add the 
+	 * needed images when changing it.
 	 */
-	private static final Color OBJECT_COLOUR = new Color(0x03, 0xa7, 0x12);
+	private static final Color BIGDECIMAL_COLOUR = GREEN;
 	
 	/**
 	 * The colour associated with connections that have a data type unknown
 	 * to this version of the MatchMaker.
 	 * There are external resources (images) which this particular colour
-	 * choice depends on, so exercise caution when changing the value of
-	 * this constant.
+	 * choice depends on, use only colours defined above, or add the 
+	 * needed images when changing it.
 	 */
-	private static final Color UNKNOWN_COLOUR = new Color(0x99, 0x99, 0x99);
+	private static final Color UNKNOWN_COLOUR = GRAY;
 	
 	/**
 	 * The amount of space (in pixels) at the top of the nib icon that should
