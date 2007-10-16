@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -26,6 +27,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
@@ -197,6 +199,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private Timer dropNibTimer;
 	
 	/**
+	 * The index of an input where the user's mouse is near. The paintComponent method
+	 * will paint a semi transparent plug handle here if. Do nothing if it is -1 
+	 */
+	private int ghostIndex;
+	
+	/**
 	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen.
 	 * Sets the background and border colours to given colours.
 	 * 
@@ -215,6 +223,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 		for (int x = 0; x < connected.length;x++) {
 			connected[x] = 0;
 		}
+		
+		bustGhost();
 		
 		mungeComKeyListener = new MungeComponentKeyListener();
 		addKeyListener(mungeComKeyListener);
@@ -536,7 +546,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		g.drawImage(MMM_BOT, getWidth()-border.right-1, getHeight() - MMM_BOT.getHeight(null) - border.bottom - 1, null);
 		
 		int[] x = {0,						MMM_TOP.getHeight(null)-1,	dim.width + MMM_TOP.getWidth(null) -1,	dim.width-1};
-		int[] y = {MMM_TOP.getHeight(null),	1,							1,				MMM_TOP.getHeight(null)};
+		int[] y = {MMM_TOP.getHeight(null),	1,							1,										MMM_TOP.getHeight(null)};
 		if (!hasFocus()) {
 			g.setColor(normalShadow);
 		} else {
@@ -555,9 +565,16 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 			port.paintIcon(this, g, xPos, border.top - port.getIconHeight());
 			
-			if (getStep().getInputs().get(i) != null) {
-				Icon handle = ConnectorIcon.getHandleInstance(getStep().getInputs().get(i).getType());
-				handle.paintIcon(this, g, xPos, 0);
+			if (getStep().getInputs().get(i) != null || ghostIndex == i) {
+				ConnectorIcon handle = ConnectorIcon.getHandleInstance(getStep().getInputDescriptor(i).getType());
+				
+				Graphics2D g2 = (Graphics2D)g.create();
+				if (ghostIndex == i) {
+					AlphaComposite alpha = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
+					g2.setComposite(alpha);
+				} 
+				
+				handle.paintIcon(this, g2, xPos, 0);
 			}
 		}
 		
@@ -823,6 +840,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		public void mouseClicked(MouseEvent e) {
 			maybeShowPopup(e);
+			bustGhost();
 		}
 
 		public void mouseEntered(MouseEvent e) {
@@ -830,6 +848,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 		public void mouseExited(MouseEvent e) {
 			nibDropStop();
+			bustGhost();
+			repaint();
 		}
 
 		public void mousePressed(MouseEvent e) {
@@ -877,6 +897,15 @@ public abstract class AbstractMungeComponent extends JPanel {
 		return false;
 	}
 	
+	public void bustGhost() {
+		ghostIndex = -1;		
+		repaint();
+	}
+	
+	public void setGhost(int ghost) {
+		ghostIndex = ghost;
+	}
+
 	private class MungeComponentMouseMoveListener extends MouseMotionAdapter {
 		@Override
 		public void mouseDragged(MouseEvent e) {
@@ -917,6 +946,18 @@ public abstract class AbstractMungeComponent extends JPanel {
 			} else if (dropNibIndex != selected) {
 				nibDropStop();
 			}
+			
+			selected = getClosestIOIndex(p, CLICK_TOLERANCE, true);
+			logger.debug("Selected: " + selected);
+			if (selected != -1 && getStep().getInputs().get(selected) == null) {
+				if (ghostIndex != selected) {
+					setGhost(selected);
+					logger.debug("Ghosting: " + selected);
+				}
+			} else {
+				bustGhost();
+			}
+			repaint();
 		}
 	}
 	

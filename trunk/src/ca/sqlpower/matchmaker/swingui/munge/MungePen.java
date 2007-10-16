@@ -337,18 +337,18 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		paintPendingConnection(g);
 	}
 	
-	private void paintPendingConnection(Graphics g) {
-		Point end = getClosestInput(new Point(mouseX,mouseY));
+	private void paintPendingConnection(Graphics g) {		
+		Point end = getClosestIO(new Point(mouseX,mouseY));
 		boolean snap = true;
 		
-		if (end ==null) {
+		if (end == null) {
 			end = new Point(mouseX,mouseY);
 			snap = false;
 		}
 		
 		if (start != null || finish != null) {
 			Point fixed;
-			Icon plug = null;
+			ConnectorIcon plug = null;
 			if (start != null) {
 				fixed = start.getOutputPosition(startNum);
 				fixed.translate(start.getX(), start.getY());
@@ -358,10 +358,13 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 					plug = ConnectorIcon.getHandleInstance(start.getStep().getChildren().get(startNum).getType());
 				}
 			} else {
+				Icon fixedPlug = ConnectorIcon.getHandleInstance(finish.getStep().getInputDescriptor(finishNum).getType());
 				fixed = finish.getInputPosition(finishNum);
 				fixed.translate(finish.getX(), finish.getY());
+				fixedPlug.paintIcon(this, g, fixed.x, fixed.y);
 			}
 			g.setColor(Color.BLACK);
+			
 			if (plug != null) {
 				int dragPlugOffset;
 				if (!snap) {
@@ -857,30 +860,43 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
      * @param p The given point
      * @return The closest point or null if it is not near any of them 
      */
-	public Point getClosestInput(Point p) {
-		if (start == null) {
-			return null;
-		}
-		
+	public Point getClosestIO(Point p) {
 		AbstractMungeComponent sel = getMungeComponentAt(p);
 		if (sel == null) {
 			return null;
 		}
 		
-		int index = sel.getClosestIOIndex(p, AbstractMungeComponent.CLICK_TOLERANCE, true);
-		
-		if (index == -1) {
-			return null;
+		if (start != null) {			
+			int index = sel.getClosestIOIndex(p, AbstractMungeComponent.CLICK_TOLERANCE, true);
+			
+			if (index == -1) {
+				return null;
+			}
+			
+			Class startHas = start.getStep().getChildren().get(startNum).getType();
+			Class finishWants = sel.getStep().getInputDescriptor(index).getType(); 
+			if (sel.getStep().getInputs().get(index) == null && 
+					(finishWants.equals(startHas) || finishWants.equals(Object.class))) {
+				Point ret = sel.getInputPosition(index);
+				ret.translate(sel.getX(), sel.getY());
+				return ret;
+			}
+		} else if (finish != null){
+			int index = sel.getClosestIOIndex(p, AbstractMungeComponent.CLICK_TOLERANCE, false);
+			
+			if (index == -1) {
+				return null;
+			}
+			
+			Class startHas = sel.getStep().getChildren().get(index).getType();
+			Class finishWants = finish.getStep().getInputDescriptor(finishNum).getType(); 
+			if (finishWants.equals(startHas) || finishWants.equals(Object.class)) {
+				Point ret = sel.getOutputPosition(index);
+				ret.translate(sel.getX(), sel.getY());
+				return ret;
+			}	
 		}
 		
-		Class startHas = start.getStep().getChildren().get(startNum).getType();
-		Class finishWants = sel.getStep().getInputDescriptor(index).getType(); 
-		if (sel.getStep().getInputs().get(index) == null && 
-				(finishWants.equals(startHas) || finishWants.equals(Object.class))) {
-			Point ret = sel.getInputPosition(index);
-			ret.translate(sel.getX(), sel.getY());
-			return ret;
-		}
 		return null;
 	}
 	
