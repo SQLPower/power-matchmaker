@@ -898,8 +898,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	public void bustGhost() {
-		ghostIndex = -1;		
-		repaint();
+		if (ghostIndex != -1) {
+			ghostIndex = -1;		
+			repaint();
+		}
 	}
 	
 	public void setGhost(int ghost) {
@@ -948,11 +950,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 			
 			selected = getClosestIOIndex(p, CLICK_TOLERANCE, true);
-			logger.debug("Selected: " + selected);
 			if (selected != -1 && getStep().getInputs().get(selected) == null) {
 				if (ghostIndex != selected) {
 					setGhost(selected);
-					logger.debug("Ghosting: " + selected);
 				}
 			} else {
 				bustGhost();

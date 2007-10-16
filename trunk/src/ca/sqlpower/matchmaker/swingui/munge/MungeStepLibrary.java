@@ -23,14 +23,19 @@ import java.awt.Component;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
@@ -41,11 +46,19 @@ import org.apache.log4j.Logger;
 public class MungeStepLibrary {
 	
 	private static final Logger logger = Logger.getLogger(MungeStepLibrary.class);
+	public static final DataFlavor STEP_DESC_FLAVOR = new DataFlavor(StepDescription.class, "Step Description");
 
+	private static final Icon PLUS_ON = new ImageIcon(ClassLoader.getSystemResource("icons/chevrons_left2.png"));
+	private static final Icon PLUS_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/chevrons_left1.png"));
+	
+	private static final Icon MINUS_ON = new ImageIcon(ClassLoader.getSystemResource("icons/chevrons_right2.png"));
+	private static final Icon MINUS_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/chevrons_right1.png"));
+	
 	private JList list; 
 	private final MungePen pen;
 	private final TransferHandler th;
-	public static final DataFlavor STEP_DESC_FLAVOR = new DataFlavor(StepDescription.class, "Step Description"); 
+	private JButton hideShow;
+	private boolean hidden;
 	
 	public MungeStepLibrary(MungePen mungePen, Map<Class, StepDescription> stepMap) {
 		logger.debug("Creating Library");
@@ -53,6 +66,7 @@ public class MungeStepLibrary {
 		pen = mungePen;
 		list = new JList();
 		th = new StepDescriptionTransferHandler();
+		hidden = false;
 		
 		StepDescription[] vals = stepMap.values().toArray(new StepDescription[0]);
 		Arrays.sort(vals);
@@ -67,7 +81,13 @@ public class MungeStepLibrary {
 					Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
 				StepDescription sd = (StepDescription) value;
-				super.getListCellRendererComponent(list, sd.getName(), index, isSelected, cellHasFocus);
+				if (!hidden) {
+					super.getListCellRendererComponent(list, sd.getName(), index, isSelected, cellHasFocus);
+					setToolTipText(null);
+				} else {
+					super.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus);
+					setToolTipText(sd.getName());
+				}
 				setIcon(sd.getIcon());
 				
 				return this;
@@ -84,10 +104,53 @@ public class MungeStepLibrary {
 		});
 		
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		hideShow = new JButton(new AbstractAction(){
+			public void actionPerformed(ActionEvent e) {
+				hidden = !hidden;
+				
+				list.updateUI();
+				hideShow.updateUI();
+
+				if (hidden) {
+					hideShow.setIcon(PLUS_ON);
+				} else {
+					hideShow.setIcon(MINUS_ON);
+				}
+				
+				hideShow.repaint();
+			}
+		});
+		
+		hideShow.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				if (hidden) {
+					hideShow.setIcon(PLUS_ON);
+				} else {
+					hideShow.setIcon(MINUS_ON);
+				}
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent e) {
+				if (hidden) {
+					hideShow.setIcon(PLUS_OFF);
+				} else {
+					hideShow.setIcon(MINUS_OFF);
+				}
+			}
+		});
+		
+		hideShow.setIcon(MINUS_OFF);
 	}
 	
 	public JList getList() {
 		return list;
+	}
+	
+	public JButton getHideShowButton() {
+		return hideShow;
 	}
 
 	

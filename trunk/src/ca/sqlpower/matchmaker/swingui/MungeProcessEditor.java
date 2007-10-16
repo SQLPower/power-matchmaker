@@ -193,7 +193,9 @@ public class MungeProcessEditor implements EditorPane {
         
         MungeStepLibrary msl = new MungeStepLibrary(mungePen, ((SwingSessionContext) swingSession.getContext()).getStepMap());
         t.setBackground(Color.WHITE);
-        t.add(new JScrollPane(msl.getList()));
+        t.setLayout(new BorderLayout());
+        t.add(msl.getHideShowButton(), BorderLayout.NORTH);
+        t.add(new JScrollPane(msl.getList()), BorderLayout.CENTER);
         t.setBorder(BorderFactory.createRaisedBevelBorder());
         t.setFloatable(false);
         panel.add(new JScrollPane(mungePen), BorderLayout.CENTER);
