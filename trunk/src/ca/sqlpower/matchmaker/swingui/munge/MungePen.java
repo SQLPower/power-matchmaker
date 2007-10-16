@@ -34,6 +34,7 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyListener;
@@ -48,8 +49,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.JLayeredPane;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
@@ -171,8 +176,10 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		setOpaque(true);
 		this.process = process;
 		this.handler = handler;
-		buildComponents(process);
 		
+		buildComponents(process);
+		buildPopup(((SwingSessionContext)process.getSession().getContext()).getStepMap());
+	
 		normalizing = false;
 		
 		addMouseMotionListener(new MouseMotionAdapter(){
@@ -205,6 +212,33 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		}
 	}
 	
+	private JPopupMenu buildPopup(Map<Class, StepDescription> stepMap) {
+		JPopupMenu pop = new JPopupMenu();
+		
+		JMenu add = new JMenu("Add Munge Step");
+		pop.add(add);
+		
+		for (StepDescription sd : stepMap.values()) {
+			JMenuItem item = new JMenuItem(sd.getName(), sd.getIcon());
+			item.addActionListener(new AddStepActon(sd.getLogicClass()));
+			add.add(item);
+		}
+		
+		return pop;
+	}
+	
+	private class AddStepActon extends AbstractAction {
+		Class logic;
+		
+		public AddStepActon(Class logic) {
+			this.logic = logic;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			addMungeStep(logic, new Point(mouseX,mouseY));
+		}
+	}
+
 	/**
 	 * Attaches this MungePen to the given munge process.  This entails creating a
 	 * MungeComponent for every munge step in the process, then creating an IOConnector
@@ -245,11 +279,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	@Override
 	public void moveToFront(Component c) {
 		super.moveToFront(c);
-		if (c instanceof AbstractMungeComponent) {
-			AbstractMungeComponent mcom = (AbstractMungeComponent) c;
-			process.getChildren().remove(mcom.getStep());
-			process.getChildren().add(getIndexOf(c), mcom.getStep());
-		}
 	}
 	
 	/**
@@ -532,6 +561,24 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			logger.debug("Mouse PRess");
 			repaint();
 			requestFocusInWindow();
+			maybeShowPopup(e);
+		}
+		
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			maybeShowPopup(e);
+		}
+		
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			maybeShowPopup(e);
+		}
+
+		private void maybeShowPopup(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				JPopupMenu pop = buildPopup(((SwingSessionContext)process.getSession().getContext()).getStepMap());
+				pop.show(MungePen.this, (int)e.getX(), (int)e.getY());
+			}
 		}
 	}	
 	
