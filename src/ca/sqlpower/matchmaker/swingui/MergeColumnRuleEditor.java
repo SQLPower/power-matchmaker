@@ -81,8 +81,8 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private final JComboBox parentTable = new JComboBox();
 	private final JComboBox childMergeAction;
 
-	private MergeColumnRuleTableModel ruleTableModel;
-	private ColumnMergeRulesTable ruleTable;
+	private AbstractMergeColumnRuleTableModel ruleTableModel;
+	private AbstractColumnMergeRulesTable ruleTable;
 	//keeps track of whether the table has unsaved changes
 	private CustomTableModelListener tableListener;
 	
@@ -98,10 +98,16 @@ public class MergeColumnRuleEditor implements EditorPane {
 			throw new NullPointerException("You can't edit a null merge rule");
 		}
 
-        ruleTableModel = new MergeColumnRuleTableModel(mergeRule);
+		if (mergeRule.isSourceMergeRule()) {
+			ruleTableModel = new SourceMergeColumnRuleTableModel(mergeRule);
+			ruleTable = new SourceColumnMergeRulesTable(ruleTableModel);
+		} else {
+			ruleTableModel = new RelatedMergeColumnRuleTableModel(mergeRule);
+			ruleTable = new RelatedColumnMergeRulesTable(ruleTableModel);
+
+		}
         tableListener = new CustomTableModelListener();
         ruleTableModel.addTableModelListener(tableListener);
-        ruleTable = new ColumnMergeRulesTable(ruleTableModel);
         ruleTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
 			public void valueChanged(ListSelectionEvent e) {
                 ColumnMergeRules mergeColumn = mergeRule.getChildren().get(ruleTable.getSelectedRow()); 
@@ -306,12 +312,57 @@ public class MergeColumnRuleEditor implements EditorPane {
 		return false;
 	}
 	
-	private class ColumnMergeRulesTable extends EditableJTable {
+	/**
+	 * Abstract EditableJTable class for the column merge rules. 
+	 * Different merge rules require different cell editors and should override
+	 * the method.
+	 */
+	private class AbstractColumnMergeRulesTable extends EditableJTable {
 
-		public ColumnMergeRulesTable(MergeColumnRuleTableModel columnMergeRuleTableModel) {
+		public AbstractColumnMergeRulesTable(AbstractMergeColumnRuleTableModel columnMergeRuleTableModel) {
 			super(columnMergeRuleTableModel);
 		}
 
+		@Override
+		public TableCellEditor getCellEditor(int row, int column) {
+				return super.getCellEditor(row, column);
+		}
+	}
+	
+	/**
+	 * Implementation of {@link AbstractColumnMergeRulesTable} for source merge
+	 * rules. It returns a combo box of the {@link MergeActionType} in the third column.
+	 */
+	private class SourceColumnMergeRulesTable extends AbstractColumnMergeRulesTable {
+		
+		public SourceColumnMergeRulesTable(AbstractMergeColumnRuleTableModel columnRuleTableModel) {
+			super(columnRuleTableModel);
+		}
+		
+		@Override
+		public TableCellEditor getCellEditor(int row, int column) {
+			if (column == 1) {
+				return new DefaultCellEditor(
+						new JComboBox(
+								new DefaultComboBoxModel(
+										ColumnMergeRules.MergeActionType.values())));
+			} else {
+				return super.getCellEditor(row, column);
+			}
+		}
+	}
+	
+	/**
+	 * Implementation of {@link AbstractColumnMergeRulesTable} for related merge 
+	 * rules. It returns a combo box of {@link SQLColumn} in the parent table for 
+	 * column 2.
+	 */
+	private class RelatedColumnMergeRulesTable extends AbstractColumnMergeRulesTable {
+		
+		public RelatedColumnMergeRulesTable(AbstractMergeColumnRuleTableModel columnRuleTableModel) {
+			super(columnRuleTableModel);
+		}
+		
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
 			if (column == 3) {
@@ -319,7 +370,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 						new JComboBox(
 								new DefaultComboBoxModel(
 										ColumnMergeRules.MergeActionType.values())));
-			} else if (!getMergeRule().isSourceMergeRule() && column == 2) {
+			} else if (column == 2) {
 				JComboBox importedKeyColumns = new JComboBox();
 				if (getParentTable().getSelectedItem() != null) {
 					SQLTable table = (SQLTable) getParentTable().getSelectedItem();
