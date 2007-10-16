@@ -50,6 +50,7 @@ import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.Match.MatchMode;
+import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
@@ -315,6 +316,12 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
                             Color oldColor = (Color) oldVal;
                             newVal = new Color( (oldColor.getRGB()+0xF00) % 0x1000000);
                         }
+                    } else if (property.getPropertyType() == ChildMergeActionType.class) {
+                    	if (oldVal != null && oldVal.equals(ChildMergeActionType.DELETE_ALL_DUP_CHILD)) {
+                    		newVal = ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT;
+                    	} else {
+                    		newVal = ChildMergeActionType.DELETE_ALL_DUP_CHILD;
+                    	}
 					} else {
 						throw new RuntimeException("This test case lacks a value for "
 								+ property.getName() + " (type "
