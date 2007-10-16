@@ -268,6 +268,29 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 
 	}
     
+    private void populateChildTableForUpdate() throws Exception {
+    	String sql;
+		String testString = "ABCDEF";
+		
+		//delete everything from child table
+		sql = "DELETE FROM " + getFullTableName() + "_CHILD";
+		execSQL(con, sql);
+		
+		//populates the child table
+		for (int i = 0; i < 6; i++) {
+			sql = "INSERT INTO " + getFullTableName() + "_CHILD VALUES(" +
+				i + ", " +
+				i + ", " +
+				SQL.quote(testString.charAt(i)) + ", " +
+				SQL.escapeDateTime(con, new Date((long) i*1000*60*60*24)) + ", " +
+				i + ")";
+			execSQL(con,sql);
+		}
+		
+		//sets the default action type
+		ctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
+
+	}
     
     /**
      * This tests on a unmatch, it should do nothing.
@@ -556,6 +579,59 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		rs = stmt.executeQuery(sql2.toString());
 		for (int i = 0; i < 3; i++) {
+			assertTrue("Non-duplicate child records deleted.", rs.next());
+		}
+		assertFalse("Extra non-duplicate child records found.", rs.next());
+    }
+    
+    public void testUpdateFailOnConflict() throws Exception{
+    	populateTables();
+    	populateChildTable();
+    	
+    	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
+		try {
+			mpor.call();
+			fail("Merge processor should not have worked!");
+		} catch (IllegalStateException e) {
+		}
+		
+    	populateTables();
+    	populateChildTableForUpdate();
+    	
+    	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
+    	mpor.call();
+    	
+		Connection con = session.getConnection();
+		Statement stmt = con.createStatement();
+		ResultSet rs;
+		
+    	StringBuilder sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 1 OR PARENT_ID = 0 ");
+		sql.append("OR PARENT_ID = 4 OR PARENT_ID = 3 OR PARENT_ID = 5");
+		
+		rs = stmt.executeQuery(sql.toString());
+		assertFalse("Duplicate child records not deleted.", rs.next());
+
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 2");
+		
+		rs = stmt.executeQuery(sql.toString());
+		for (int i = 0; i < 2; i++) {
+			assertTrue("Non-duplicate child records deleted.", rs.next());
+		}
+		assertFalse("Extra non-duplicate child records found.", rs.next());
+		
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 6");
+		
+		rs = stmt.executeQuery(sql.toString());
+		for (int i = 0; i < 4; i++) {
 			assertTrue("Non-duplicate child records deleted.", rs.next());
 		}
 		assertFalse("Extra non-duplicate child records found.", rs.next());
