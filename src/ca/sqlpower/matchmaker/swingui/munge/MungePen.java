@@ -45,6 +45,7 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -218,7 +219,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		JMenu add = new JMenu("Add Munge Step");
 		pop.add(add);
 		
-		for (StepDescription sd : stepMap.values()) {
+		StepDescription[] sds = stepMap.values().toArray(new StepDescription[0]);
+		Arrays.sort(sds);
+		for (StepDescription sd : sds) {
 			JMenuItem item = new JMenuItem(sd.getName(), sd.getIcon());
 			item.addActionListener(new AddStepActon(sd.getLogicClass()));
 			add.add(item);
