@@ -1137,6 +1137,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		if (e.isPopupTrigger()) {
 			JPopupMenu pop = getPopupMenu();
 			if (pop != null) {
+				diff = null;
 				pop.show(AbstractMungeComponent.this, e.getX(), e.getY());
 				requestFocusInWindow();
 			}
@@ -1170,8 +1171,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 			
 			if (!parent.isConnecting()) {
-				e.translatePoint(getX(), getY());
-				setLocation((int)(e.getX() - diff.getX()), (int)(e.getY()-diff.getY()));
+				//diff is set to null for a right click to stop dragging 
+				if (diff != null) {
+					e.translatePoint(getX(), getY());
+					setLocation((int)(e.getX() - diff.getX()), (int)(e.getY()-diff.getY()));
+				}
 			} else {
 				parent.mouseX = e.getX() + getX();
 				parent.mouseY = e.getY() + getY();
