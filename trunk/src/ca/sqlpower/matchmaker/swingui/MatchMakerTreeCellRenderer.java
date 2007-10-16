@@ -32,15 +32,30 @@ import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
+import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
+import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
-	final private Icon matchIcon = new ImageIcon(getClass().getResource("/icons/gears_16.png"));
-	final private Icon groupIcon = new ImageIcon(getClass().getResource("/icons/gear_16.png"));
+	final private Icon matchIcon = new ImageIcon(getClass().getResource("/icons/match_project.png"));
+	final private Icon mungeIcon = new ImageIcon(getClass().getResource("/icons/cog.png"));
+	final private Icon mergeIcon = new ImageIcon(getClass().getResource("/icons/cog_double.png"));
+	final private Icon sourceMergeIcon = new ImageIcon(getClass().getResource("/icons/cog_double_star.png"));
+	final private Icon folderIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/folder.png"));
+	final private Icon validateIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/tick.png"));
+	final private Icon infoIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/page_white_gear.png"));
+	final private Icon matchEngineIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/cog_go.png"));
+	final private Icon mungeCompIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/application_form.png"));
+	final private Icon mergeEngineIcon = new ImageIcon(getClass().getResource("/icons/cog_double_go.png"));
 
 	public Component getTreeCellRendererComponent(JTree tree, Object value,
 			boolean selected, boolean expanded, boolean leaf, int row,
@@ -60,13 +75,34 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 		} else if (value instanceof MungeProcess) {
             MungeProcess group = (MungeProcess) value;
             if (group.getColour() == null) {
-                setIcon(groupIcon);
+                setIcon(mungeIcon);
             } else {
-                setIcon(new ColoredIcon(groupIcon, group.getColour()));
+                setIcon(new ColoredIcon(mungeIcon, group.getColour()));
             }
 		} else if (value instanceof TableMergeRules) {
-			setIcon(groupIcon);
-		}
+			TableMergeRules rule = (TableMergeRules) value;
+			if (rule.isSourceMergeRule()) {
+				setIcon(sourceMergeIcon);
+			} else {
+				setIcon(mergeIcon);
+			}
+		} else if (value instanceof MatchActionNode) {
+			MatchActionType val = ((MatchActionNode) value).getActionType();
+			if (val.equals(MatchActionType.VALIDATE_MATCHES)) {
+				setIcon(validateIcon);
+			} else if (val.equals(MatchActionType.RUN_MATCH)) {
+				setIcon(matchEngineIcon);
+			} else if (val.equals(MatchActionType.RUN_MERGE)) {
+				setIcon(mergeEngineIcon);
+			} else { 
+				setIcon(infoIcon);
+			}
+		} else if (value instanceof PlFolder ||	 value instanceof MatchMakerFolder ||
+				value instanceof TranslateGroupParent || value instanceof FolderParent ){
+			setIcon(folderIcon);
+		} else if (value instanceof AbstractMungeStep) {
+			setIcon(mungeCompIcon);
+		} 
 		return this;
 	}
 
