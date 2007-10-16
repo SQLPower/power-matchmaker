@@ -124,15 +124,24 @@ public class MergeColumnRuleEditor implements EditorPane {
         		parentTable.addItem(tmr.getSourceTable());
         	}
         }
+
         childMergeAction = new JComboBox(TableMergeRules.ChildMergeActionType.values());
-        
         buildUI();
         
         parentTable.addItemListener(new ItemListener() {
 
 			public void itemStateChanged(ItemEvent e) {
+				
+				// Set each imported key column combo box to null
 				for (int row = 0; row < ruleTableModel.getRowCount(); row++) {
 					ruleTableModel.setValueAt(null, row, 2);
+				}
+				
+				// Set the sql statement to NOT_APPLICABLE if
+				// in primary key of parent table
+				if (!mergeRule.isSourceMergeRule()) {
+					RelatedMergeColumnRuleTableModel model = (RelatedMergeColumnRuleTableModel)ruleTableModel;
+					model.updatePrimaryKeys((SQLTable) e.getItem());
 				}
 			}
         	
@@ -144,6 +153,7 @@ public class MergeColumnRuleEditor implements EditorPane {
         handler.addValidateObject(ruleTable, new MergeColumnRuleJTableValidator());
         handler.resetHasValidated(); // avoid false hits when newly created
 
+        tableListener.setModified(false);
 	}
 
 	public TableMergeRules getMergeRule() {
@@ -286,19 +296,17 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 	public boolean hasUnsavedChanges() {
 		Object curParentTable = parentTable.getSelectedItem();
-		SQLTable oldParentTable = mergeRule.getSourceTable();
+		SQLTable oldParentTable = mergeRule.getParentTable();
 		Object curMergeAction = childMergeAction.getSelectedItem();
 		TableMergeRules.ChildMergeActionType oldMergeAction = mergeRule.getChildMergeAction();
 		
 		if (tableListener.isModified()) return true;
-		
 		// Check if delete duplicate option has been changed
 		// for source table merge rule
 		if (mergeRule.isSourceMergeRule()) {
 			if (this.deleteDup.isSelected() != mergeRule.isDeleteDup()) {
 				return true;
 			}
-			
 		// For related table merge rules
 		} else {
 			

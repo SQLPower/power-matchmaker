@@ -32,9 +32,10 @@ import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
  */
 public class SourceMergeColumnRuleTableModel extends
 		AbstractMergeColumnRuleTableModel {
-
+	
 	public SourceMergeColumnRuleTableModel(TableMergeRules mergeRule) {
 		super(mergeRule);
+		updatePrimaryKeys();
 	}
 
 	@Override
@@ -69,7 +70,11 @@ public class SourceMergeColumnRuleTableModel extends
 		if (columnIndex == 0) {
 			return mergeRule.getChildren().get(rowIndex).getColumn();
 		} else if (columnIndex == 1) {
-			return mergeRule.getChildren().get(rowIndex).getActionType();
+			if (primaryKeys.contains(rowIndex)) {
+				return ColumnMergeRules.MergeActionType.NA;
+			} else {
+				return mergeRule.getChildren().get(rowIndex).getActionType();
+			}
 		} else {
 			throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
 		}	
@@ -77,7 +82,11 @@ public class SourceMergeColumnRuleTableModel extends
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return columnIndex == 1;
+		if (columnIndex == 1 && !primaryKeys.contains(rowIndex)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -85,7 +94,12 @@ public class SourceMergeColumnRuleTableModel extends
 		if (columnIndex == 0) {
 			rule.setColumn((SQLColumn) aValue);
 		} else if (columnIndex == 1) {
-			rule.setActionType((MergeActionType) aValue);
+			if (!primaryKeys.contains(rowIndex)) {
+				rule.setActionType((MergeActionType) aValue);
+			} else {
+				// Do not set the value if the cell is a primary key
+				return;
+			}
 		} else {
 			throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
 		}

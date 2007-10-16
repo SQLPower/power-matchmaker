@@ -21,14 +21,19 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.swingui.SPSUtils;
 
 /**
  * Abstract table model of the column merge rules that belongs to the table merge rule.
@@ -40,6 +45,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 public abstract class AbstractMergeColumnRuleTableModel extends AbstractTableModel implements MatchMakerListener {
 
 	protected TableMergeRules mergeRule;
+	protected List<Integer> primaryKeys = new ArrayList<Integer>();
 	
 	public abstract int getColumnCount();
 	
@@ -114,4 +120,28 @@ public abstract class AbstractMergeColumnRuleTableModel extends AbstractTableMod
     public void mmStructureChanged(MatchMakerEvent evt) {
         fireTableStructureChanged();
     }
+    
+    /**
+     * This updates the list of primary keys in the source or parent table
+     * of the merge rule. This is used to decide which column in the table
+     * to set as non edit-able.
+     */
+	protected void updatePrimaryKeys() {
+		primaryKeys = new ArrayList<Integer>();
+		try {
+			SQLIndex tableIndex = mergeRule.getTableIndex();
+			if (tableIndex != null) {
+				for (int i = 0; i < getRowCount(); i++) {
+					SQLColumn column = (SQLColumn) getValueAt(i, 0);
+					if (tableIndex.getChildByName(column.getName()) != null) {
+						primaryKeys.add(i);
+					}
+				}
+			}
+		} catch (ArchitectException e) {
+			MatchMakerSwingSession session = (MatchMakerSwingSession) mergeRule.getSession();
+			SPSUtils.showExceptionDialogNoReport(session.getFrame(),
+					"Failed to retrieve primary keys of source table", e);
+		}
+	}
 }

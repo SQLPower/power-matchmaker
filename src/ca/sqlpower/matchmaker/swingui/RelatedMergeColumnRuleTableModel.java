@@ -21,9 +21,13 @@ package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.event.TableModelEvent;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules;
+import ca.sqlpower.swingui.SPSUtils;
 
 /**
  * Implementation of {@link AbstractMergeColumnRuleTableModel}, table model 
@@ -36,6 +40,29 @@ public class RelatedMergeColumnRuleTableModel extends
 	
 	public RelatedMergeColumnRuleTableModel(TableMergeRules mergeRule) {
 		super(mergeRule);
+		updatePrimaryKeys(null);
+	}
+	
+	public void updatePrimaryKeys(SQLTable table){
+		super.updatePrimaryKeys();
+		if (table != null) {
+			try {
+				SQLIndex tableIndex = table.getPrimaryKeyIndex();
+				if (tableIndex != null) {
+					System.out.println(tableIndex.getChildren());
+					for (int i = 0; i < getRowCount(); i++) {
+						SQLColumn column = (SQLColumn) getValueAt(i, 0);
+						if (tableIndex.getChildByName(column.getName()) != null) {
+							primaryKeys.add(i);
+						}
+					}
+				}
+			} catch (ArchitectException e) {
+				MatchMakerSwingSession session = (MatchMakerSwingSession) mergeRule.getSession();
+				SPSUtils.showExceptionDialogNoReport(session.getFrame(),
+						"Failed to retrieve primary keys of parent table", e);
+			}
+		}
 	}
 
 	public int getColumnCount() {
@@ -66,7 +93,11 @@ public class RelatedMergeColumnRuleTableModel extends
 		} else if(columnIndex == 2) {
 			return mergeRule.getChildren().get(rowIndex).getImportedKeyColumn();
 		} else if (columnIndex == 3) {
-			return mergeRule.getChildren().get(rowIndex).getUpdateStatement();
+			if (primaryKeys.contains(rowIndex)) {
+				return "NOT_APPLICABLE";
+			} else {
+				return mergeRule.getChildren().get(rowIndex).getUpdateStatement();
+			}
 		} else {
 			throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
 		}
@@ -74,7 +105,11 @@ public class RelatedMergeColumnRuleTableModel extends
 	
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return columnIndex != 0;
+		if (columnIndex == 3 && primaryKeys.contains(rowIndex)) {
+			return false;
+		} else {
+			return columnIndex != 0;
+		}
 	}
 	
 	@Override
@@ -102,7 +137,12 @@ public class RelatedMergeColumnRuleTableModel extends
 		} else if (columnIndex == 2) {
 			rule.setImportedKeyColumn((SQLColumn) aValue);
 		} else if (columnIndex == 3) {
-			rule.setUpdateStatement((String) aValue);
+			if (!primaryKeys.contains(rowIndex)) {
+				rule.setUpdateStatement((String) aValue);
+			} else {
+				// Do not set the value if the cell is a primary key
+				return;
+			}
 		} else {
 			throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
 		}
