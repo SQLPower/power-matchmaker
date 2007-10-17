@@ -28,7 +28,6 @@ import java.util.List;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.Match.MatchMode;
 
 public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<PlFolder<MatchMakerObject>,PlFolderDAO>  {
 
@@ -79,7 +78,6 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
      */
     public void testMatchMove() throws Exception {
         Match m = new Match();
-        m.setType(MatchMode.FIND_DUPES);
         m.setName("match");
 
         PlFolder<Match> oldFolder = new PlFolder<Match>("old");

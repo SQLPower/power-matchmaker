@@ -20,7 +20,6 @@
 
 package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
@@ -52,7 +51,6 @@ public class MatchRuleSetTest extends MatchMakerTestCase<MungeProcess> {
 
     public void testSetParentMatch(){
         Match match = new Match();
-        match.setType(MatchMode.FIND_DUPES);
         MatchMakerEventCounter listener = new MatchMakerEventCounter();
         MungeProcess group = new MungeProcess();
 
@@ -60,7 +58,6 @@ public class MatchRuleSetTest extends MatchMakerTestCase<MungeProcess> {
         group.setParentMatch(match);
         assertEquals("Incorrect number of events fired",1,listener.getAllEventCounts());
         assertEquals("Wrong property fired in the event","parent",listener.getLastEvt().getPropertyName());
-        assertEquals("Parent match not set properly", match, group.getParentMatch());
     }
 
 }

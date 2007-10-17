@@ -23,7 +23,6 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 
@@ -39,7 +38,6 @@ public class TranslateGroupParentTest extends TestCase {
     protected void setUp() throws Exception {
         folder = new PlFolder<MatchMakerObject>();
         match = new Match();
-        match.setType(MatchMode.FIND_DUPES);
         folder.addChild(match);
         cg = new MungeProcess();
         match.addMatchRuleSet(cg);

@@ -292,7 +292,11 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 					} else if (property.getPropertyType() == PlFolder.class) {
 						newVal = new PlFolder<Match>();
 					} else if (property.getPropertyType() == MatchMode.class) {
-						newVal = Match.MatchMode.FIND_DUPES;
+						if (oldVal == MatchMode.BUILD_XREF) {
+							newVal = MatchMode.FIND_DUPES;
+						} else {
+							newVal = Match.MatchMode.BUILD_XREF;
+						}
 					} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
 						newVal = new MatchMakerTranslateGroup();
 					} else if (property.getPropertyType() == MatchMakerObject.class) {

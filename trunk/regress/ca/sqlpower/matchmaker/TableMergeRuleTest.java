@@ -21,7 +21,6 @@
 package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 
 public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
@@ -43,6 +42,7 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 	}
 	@Override
 	protected TableMergeRules getTarget() {
+		
 		TableMergeRules tmr = new TableMergeRules();
 		tmr.setSession(testingMatchMakerSession);
 		return tmr;
@@ -56,11 +56,9 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		SQLTable t2 = new SQLTable();
 		
 		Match parent1 = new Match();
-		parent1.setType(MatchMode.FIND_DUPES);
 		parent1.setSession(new TestingMatchMakerSession());
 		parent1.setName("match1");
 		Match parent2 = new Match();
-		parent2.setType(MatchMode.FIND_DUPES);
 		parent2.setName("match2");
 		parent2.setSession(new TestingMatchMakerSession());
 		assertEquals("Two new objects should be equal",m1,m2);
@@ -109,7 +107,6 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		TableMergeRules m1 = getTarget();
 		TableMergeRules m2 = getTarget();
 		Match match = new Match();
-		match.setType(MatchMode.FIND_DUPES);
 		
 		SQLTable t1 = new SQLTable();
 		SQLTable t2 = new SQLTable();

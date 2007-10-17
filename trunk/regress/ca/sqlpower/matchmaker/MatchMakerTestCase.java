@@ -45,7 +45,6 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
-import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
@@ -98,7 +97,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForDuplication.add("lastUpdateDate");
         propertiesToIgnoreForDuplication.add("lastUpdateAppUser");
         propertiesToIgnoreForDuplication.add("lastUpdateOSUser");
-        propertiesToIgnoreForDuplication.add("type");
         
         // First pass set all settable properties
 		for (PropertyDescriptor property : settableProperties) {
@@ -117,7 +115,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			}
 		}
 		// Second pass get a copy make sure all of 
-		// the original mutable objects returned from getters are different
+		// the origional mutable objects returned from getters are different
 		// between the two objects, but have the same values. 
 		MatchMakerObject duplicate = mmo.duplicate(mmo.getParent(),session);
 		for (PropertyDescriptor property : settableProperties) {
@@ -394,7 +392,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		    newVal = new ArrayList();
 		} else if (property.getPropertyType() == Match.class) {
 		    newVal = new Match();
-		    ((Match) newVal).setType(MatchMode.FIND_DUPES);
 		    ((Match) newVal).setName("Fake_Match_"+System.currentTimeMillis());
 		} else if (property.getPropertyType() == SQLIndex.class) {
 			return new SQLIndex("new index",false,"",IndexType.HASHED,"");
@@ -427,14 +424,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	public void testWhatSettersSetGettersGet() throws Exception {
 		MatchMakerObject mmo = getTarget();
 		propertiesThatDifferOnSetAndGet.add("session");
-		
-        // Match type is a differing property but it was causing
-        // a problem. Setting the type creates the match rule set 
-        // folder and table merge rule set folder. The setter in 
-        // properties utils does not set type first and would cause
-        // errors when setting properties that need those folders.
-		propertiesThatDifferOnSetAndGet.add("type");
-		
 		List<PropertyDescriptor> settableProperties;
 		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
 		for (PropertyDescriptor property : settableProperties) {
@@ -447,6 +436,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				{
 					Object newVal = getNewDifferentValue(mmo, property, oldVal);
 					PropertyUtils.setProperty(mmo, property.getName(), newVal);
+				
 					Object valueGot = PropertyUtils.getProperty(mmo, property.getName());
 					assertEquals("Property "+property.getName()+" differs on object "+ mmo +" between getter and setter",newVal,valueGot);
 				}
@@ -463,10 +453,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	public void testWhatSettersSetGettersGetWithNoSideffects() throws Exception {
 		MatchMakerObject mmo = getTarget();
 		propertiesThatDifferOnSetAndGet.add("session");
-		
-		// See above method for reason why this is on the list
-		propertiesThatDifferOnSetAndGet.add("type");
-		
 		propertiesThatHaveSideEffects.addAll(propertiesThatDifferOnSetAndGet);
 		List<PropertyDescriptor> settableProperties;
 		Map<String,Object> setValues = new HashMap<String,Object>();
