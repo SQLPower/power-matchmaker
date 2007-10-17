@@ -62,7 +62,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     SQLDatabase db;
     SPDataSource ds;
     SQLTable sourceTable;
-    SQLTable childTable;
+    SQLTable ;
     SQLTable grandChildTable;
     
 	TableMergeRules tmr = new TableMergeRules();

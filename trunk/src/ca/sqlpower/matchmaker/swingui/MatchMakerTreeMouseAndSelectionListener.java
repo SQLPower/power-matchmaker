@@ -25,6 +25,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -282,10 +283,12 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	}
 
 	private void addFolderMenuItems(JPopupMenu m, final PlFolder folder) {
-		m.add(new JMenuItem(new NewMatchAction(swingSession, "New Match")));
-		m
-				.add(new JMenuItem(new PlMatchImportAction(swingSession,
-						owningFrame)));
+		JMenu mm = new JMenu("New Project");
+		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New DeDupe Project", Match.MatchMode.FIND_DUPES)));
+		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New X-ref Project", Match.MatchMode.BUILD_XREF)));
+		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New Cleansing Project",Match.MatchMode.CLEANSE)));
+		m.add(mm);
+		m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
 		m.add(new JMenuItem(new DeletePlFolderAction(swingSession,
 				"Delete Folder", folder)));
 	}

@@ -24,9 +24,10 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchEditor;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
@@ -37,35 +38,36 @@ import ca.sqlpower.swingui.SPSUtils;
  */
 public final class NewMatchAction extends AbstractAction {
 
+	private static final Logger logger = Logger.getLogger(NewMatchAction.class);
+	
+	private final Match.MatchMode type;
     private final MatchMakerSwingSession swingSession;
-
-	public NewMatchAction(
-            MatchMakerSwingSession swingSession,
-            String name) {
+    
+	public NewMatchAction(MatchMakerSwingSession swingSession, String name, Match.MatchMode type) {
 		super(name);
         this.swingSession = swingSession;
+        this.type = type;
 	}
 
 	public void actionPerformed(ActionEvent e) {
-	    MatchEditor me;
+		PlFolder<Match> folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
+		if (folder == null) {
+			JOptionPane.showMessageDialog(swingSession.getFrame(),
+					"Please select a folder first",
+					"Warning",
+					JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+
+		final Match match = new Match();
+		match.setSession(swingSession);	
+		match.setType(type);
 		try {
-			final Match match = new Match();
-			match.setSession(swingSession);
-			match.setType(MatchMode.FIND_DUPES);
-
-			PlFolder<Match> folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
-			if (folder == null) {
-				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"Please select a folder first",
-						"Warning",
-						JOptionPane.INFORMATION_MESSAGE);
-				return;
-			}
-
-			me = new MatchEditor(swingSession, match, folder);
+			MatchEditor me = new MatchEditor(swingSession, match, folder);
 			swingSession.setCurrentEditorComponent(me);
 		} catch (Exception ex) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Couldn't create match", ex);
 		}
 	}
+
 }
