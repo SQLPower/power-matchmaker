@@ -173,8 +173,9 @@ public class MergeProcessor extends AbstractProcessor {
 	}
 
 	/**
-	 * Does the merging on the child tables recusively
-	 * @param dupKeyValues keyValues must be in the ordered by the same order of the columns
+	 * Merge the child tables recusively.
+	 * <p>
+	 * Note that the keyValues must be in the ordered by the same order of the columns
 	 */
 	private void MergeChildTables(List<String> parentKeyColumnNames, 
 			List<Object> dupKeyValues, List<Object> masterKeyValues, 
@@ -184,50 +185,330 @@ public class MergeProcessor extends AbstractProcessor {
 		for (TableMergeRules childTableMergeRule : match.getTableMergeRules()) {
 			if (parentTable.equals(childTableMergeRule.getParentTable())) {
 				
-				// Merge the grand child tables		
+				// populates the data required to merge the grand child tables	
 				List<String> foreignKeyColumnNames = getOrderedForeignKeyColumns(
 						childTableMergeRule, parentKeyColumnNames);
 				List<String> childKeyColumnNames = getKeyColumnNames(childTableMergeRule);
 				List<List<Object>> childDupKeyValues = getDupKeyValues(
 						childKeyColumnNames, foreignKeyColumnNames, dupKeyValues, 
 						childTableMergeRule);
-				List<List<Object>> childMasterKeyValues = getMasterKeyValues(
-						parentKeyColumnNames, childKeyColumnNames ,foreignKeyColumnNames, 
-						dupKeyValues, masterKeyValues, childTableMergeRule, childDupKeyValues);
+				List<List<Object>> childMasterKeyValues = null; 
+					
+				if (childTableMergeRule.getChildMergeAction() == 
+					TableMergeRules.ChildMergeActionType.DELETE_ALL_DUP_CHILD) {
+					
+					childMasterKeyValues = new ArrayList<List<Object>>();
+					for (int i = 0; i < childDupKeyValues.size(); i++) {
+						childMasterKeyValues.add(null);
+					}
+					
+				} else if (childTableMergeRule.getChildMergeAction() == 
+					TableMergeRules.ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT) {
+					
+					// cannot update if there are no masterKeyValues
+					if (masterKeyValues == null) {
+						throw new IllegalStateException(
+						"Cannot update when parent table deletes all child duplicate records");
+					}
+
+					// populates the data required to merge the grand child tables	
+					childMasterKeyValues = getMasterKeyValues(
+							parentKeyColumnNames, childKeyColumnNames ,foreignKeyColumnNames, 
+							dupKeyValues, masterKeyValues, childTableMergeRule, childDupKeyValues);
+
+					// Try to see if creating a copy of the old record with the new key values would succeed
+					for (List<Object> newKeyVals : childMasterKeyValues) {
+						if (findRows(childTableMergeRule.getSourceTable(), 
+								childKeyColumnNames, newKeyVals)) {
+							//fail on conflict
+							throw new IllegalStateException(
+							"Merge Failed: Multiple records with the same primary key created on update.");
+						}
+					}
+
+					// Creates a copy of the old record with the new key values
+					for (int i = 0; i < childDupKeyValues.size(); i++) {
+						List<Object> oldRow = getRow(childKeyColumnNames, 
+								childDupKeyValues.get(i), childTableMergeRule);
+						insertRow(oldRow, childKeyColumnNames, childMasterKeyValues.get(i), 
+								childTableMergeRule);
+					}
+
+				} else if (childTableMergeRule.getChildMergeAction() == 
+					TableMergeRules.ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT) {
+
+					// cannot update if there are no masterKeyValues
+					if (masterKeyValues == null) {
+						throw new IllegalStateException(
+								"Cannot update when parent table deletes all child duplicate records");
+					}
+
+					// populates the data required to merge the grand child tables	
+					childMasterKeyValues = getMasterKeyValues(
+							parentKeyColumnNames, childKeyColumnNames ,foreignKeyColumnNames, 
+							dupKeyValues, masterKeyValues, childTableMergeRule, childDupKeyValues);
+					
+					// Try to see if the update would succeed
+					for (int i = 0; i < childDupKeyValues.size(); i++) {
+						if (!findRows(childTableMergeRule.getSourceTable(), childKeyColumnNames, 
+								childMasterKeyValues.get(i))) {
+							//insert a new row if now conflict
+							List<Object> oldRow = getRow(childKeyColumnNames, 
+									childDupKeyValues.get(i), childTableMergeRule);
+							insertRow(oldRow, childKeyColumnNames, childMasterKeyValues.get(i), 
+									childTableMergeRule);
+						}
+					}
+
+				}  else if (childTableMergeRule.getChildMergeAction() == TableMergeRules.ChildMergeActionType.UPDATE_USING_SQL) {
+					// cannot update if there are no masterKeyValues
+					if (masterKeyValues == null) {
+						throw new IllegalStateException(
+								"Cannot update when parent table deletes all child duplicate records");
+					}
+					
+					childMasterKeyValues = new ArrayList<List<Object>>();
+					for (List<Object> childDupKeyValue : childDupKeyValues) {
+						List<Object> newRow = getUpdatedRow(childKeyColumnNames, 
+								childDupKeyValue, childTableMergeRule, foreignKeyColumnNames, masterKeyValues);
+						List<Object> childMasterKeyValue = new ArrayList<Object>();
+						for (int i = 0; i < newRow.size(); i++) {
+							if (childTableMergeRule.getChildren().get(i).isInPrimaryKey()) {
+								childMasterKeyValue.add(newRow.get(i));
+							}
+						}
+						childMasterKeyValues.add(childMasterKeyValue);
+						insertRow(newRow, childTableMergeRule);
+					}
+				}
 				
-				// Recursively merge all the child tables
+				// Recursively merge all the grand child tables
 				for (int i = 0; i < childDupKeyValues.size(); i++) {
 					MergeChildTables(childKeyColumnNames, childDupKeyValues.get(i), childMasterKeyValues.get(i), childTableMergeRule);
 				}
 
-				if (childTableMergeRule.getChildMergeAction() == TableMergeRules.ChildMergeActionType.DELETE_ALL_DUP_CHILD) {
-					//Delete the duplicate child records
-					deleteRows(childTableMergeRule.getSourceTable(), foreignKeyColumnNames, dupKeyValues);
-				} else if (childTableMergeRule.getChildMergeAction() == TableMergeRules.ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT) {
-					//Try to see if the update would succeed
-					for (List<Object> newKeyVals : childMasterKeyValues) {
-						if (findRows(childTableMergeRule.getSourceTable(), childKeyColumnNames, newKeyVals)) {
-							//fail on conflict
-							throw new IllegalStateException("Merge Failed: Multiple records with the same primary key created on update.");
-						}
-					}
-					updateRows(childTableMergeRule.getSourceTable(), foreignKeyColumnNames, dupKeyValues, masterKeyValues);
-				} else if (childTableMergeRule.getChildMergeAction() == TableMergeRules.ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT) {
-					//Try to see if the update would succeed
-					int rowIndex = 0;
-					for (List<Object> newKeyVals : childMasterKeyValues) {
-						if (findRows(childTableMergeRule.getSourceTable(), childKeyColumnNames, newKeyVals)) {
-							//delete on conflict
-							deleteRows(childTableMergeRule.getSourceTable(), childKeyColumnNames, childDupKeyValues.get(rowIndex));
-						}
-						rowIndex++;
-					}
-					updateRows(childTableMergeRule.getSourceTable(), foreignKeyColumnNames, dupKeyValues, masterKeyValues);
-				} 
-			}
+				// Delete the duplicate child records
+				deleteRows(childTableMergeRule.getSourceTable(), foreignKeyColumnNames, dupKeyValues);
+			} 
+
+			
+
+			
 		}
 	}
 	
+	private void insertRow(List<Object> newRow, TableMergeRules tableMergeRule) throws SQLException {
+		StringBuilder sql = new StringBuilder();
+		StringBuilder sqlValues = new StringBuilder();
+		boolean first = true;
+		Object ival;
+		int colIndex = 0;
+		
+		sql.append("INSERT INTO ");
+		sql.append(DDLUtils.toQualifiedName(tableMergeRule.getSourceTable()));
+		sql.append("\n (");
+		sqlValues.append("\n VALUES (");
+		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+			if (!first) {
+				sql.append(", ");
+				sqlValues.append(", ");
+			}
+			first = false;
+			sql.append(cmr.getColumnName());
+			ival = newRow.get(colIndex++);
+			if (ival == null) {
+				sqlValues.append("NULL");
+			} else {
+				sqlValues.append(formatObjectToSQL(ival));
+			} 
+		}
+		sql.append(")");
+		sqlValues.append(")");
+		sql.append(sqlValues.toString());
+		stmt.executeUpdate(sql.toString());
+		
+	}
+
+	private List<Object> getUpdatedRow(List<String> columnNames, List<Object> columnVals, TableMergeRules tableMergeRule, List<String> foreignKeyColumnNames, List<Object> foreignKeyValues) throws SQLException {
+		List<Object> resultRow = new ArrayList<Object>();
+		StringBuilder sql = new StringBuilder();
+		boolean first = true;
+		Object ival;
+		
+		sql.append("SELECT ");
+		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+			boolean inForeignKey = false;
+			if (!first) {
+				sql.append(", ");
+			}
+			first = false;
+			for (int i = 0; i < foreignKeyColumnNames.size(); i++) {
+				if (cmr.getColumnName().equals(foreignKeyColumnNames.get(i))) {
+					ival = foreignKeyValues.get(i);
+					sql.append("(");
+					if (ival == null) {
+						sql.append("NULL");
+					} else {
+						sql.append(formatObjectToSQL(ival));
+					} 
+					sql.append(") AS ");
+					inForeignKey = true;
+					break;
+				}
+			}
+			if (!inForeignKey) {
+				if (!"".equals(cmr.getUpdateStatement())) {
+					sql.append("(");
+					sql.append(cmr.getUpdateStatement());
+					sql.append(") AS ");
+				}
+			}
+			sql.append(cmr.getColumnName());
+		}
+		sql.append("\n FROM ");
+		sql.append(DDLUtils.toQualifiedName(tableMergeRule.getSourceTable()));
+		String whereStatement = generateWhereStatement(columnNames, columnVals);
+		sql.append(whereStatement);
+		ResultSet rs = stmt.executeQuery(sql.toString());
+		if (!rs.next()) {
+			throw new IllegalStateException("Record with primary key not found");
+		}
+		
+		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+			resultRow.add(rs.getObject(cmr.getColumnName()));
+		}
+		
+		if (rs.next()) {
+			throw new IllegalStateException("Multiple records found with same primary key");
+		}
+		return resultRow;
+	}
+
+	private void insertRow(List<Object> oldRow, List<String> keyColumnNames, List<Object> keyValues, TableMergeRules tableMergeRule) throws SQLException {
+		StringBuilder sql = new StringBuilder();
+		StringBuilder sqlValues = new StringBuilder();
+		boolean first = true;
+		int colIndex = 0;
+		Object ival;
+		
+		sql.append("INSERT INTO ");
+		sql.append(DDLUtils.toQualifiedName(tableMergeRule.getSourceTable()));
+		sql.append("\n (");
+		sqlValues.append("\n VALUES (");
+		
+		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+			if (!keyColumnNames.contains(cmr.getColumnName())) {
+				if (!first) {
+					sql.append(", ");
+					sqlValues.append(", ");
+				}
+				first = false;
+				sql.append(cmr.getColumnName());
+				
+				ival = oldRow.get(colIndex); 
+				if (ival == null) {
+					sqlValues.append("NULL");
+				} else {
+					sqlValues.append(formatObjectToSQL(ival));
+				} 
+			}
+			colIndex++;
+		}
+		colIndex = 0;
+		for (String colName : keyColumnNames) {
+
+			if (!first) {
+				sql.append(", ");
+				sqlValues.append(", ");
+			}
+			first = false;
+			sql.append(colName);
+
+			ival = keyValues.get(colIndex); 
+			if (ival == null) {
+				sqlValues.append("NULL");
+			} else {
+				sqlValues.append(formatObjectToSQL(ival));
+			} 
+			colIndex++;
+		}
+		sql.append(")");
+		sqlValues.append(")");
+		sql.append(sqlValues.toString());
+		stmt.executeUpdate(sql.toString());
+	}
+
+	private List<Object> getRow(List<String> columnNames, List<Object> columnVals, TableMergeRules tableMergeRule) throws SQLException {
+		List<Object> resultRow = new ArrayList<Object>();
+		StringBuilder sql = new StringBuilder();
+		
+		sql.append("SELECT * FROM ");
+		sql.append(DDLUtils.toQualifiedName(tableMergeRule.getSourceTable()));
+		String whereStatement = generateWhereStatement(columnNames, columnVals);
+		sql.append(whereStatement);
+		ResultSet rs = stmt.executeQuery(sql.toString());
+		if (!rs.next()) {
+			throw new IllegalStateException("Record with primary key not found");
+		}
+		
+		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+			resultRow.add(rs.getObject(cmr.getColumnName()));
+		}
+		
+		if (rs.next()) {
+			throw new IllegalStateException("Multiple records found with same primary key");
+		}
+		return resultRow;
+	}
+
+	private List<Object> updateRowsUsingSQL(List<String> columnNames, List<Object> columnVals, TableMergeRules tableMergeRule, List<String> foreignKeyColumnNames, List<Object> masterKeyValues) throws SQLException {
+		StringBuilder sql = new StringBuilder();
+		boolean first = true;
+		int colIndex = 0;
+		Object ival;
+		
+		sql.append("UPDATE ");
+		sql.append(DDLUtils.toQualifiedName(tableMergeRule.getSourceTable()));
+		sql.append("\n SET ");
+		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+			if (!"".equals(cmr.getUpdateStatement())) {
+				if (foreignKeyColumnNames.contains(cmr.getColumnName())) {
+					throw new IllegalStateException("Can't have sql update statement for a foreign key column");
+				}
+				if (!first) {
+					sql.append(", ");
+				}
+				first = false;
+				sql.append(cmr.getColumnName());
+				sql.append("=");
+				sql.append(cmr.getUpdateStatement());
+			}
+		}
+		for (String ColumnName : foreignKeyColumnNames) {
+			if (!first) {
+				sql.append(", ");
+			}
+			first = false;
+			sql.append(ColumnName);
+			sql.append("=");
+
+			ival = masterKeyValues.get(colIndex++); 
+			if (ival == null) {
+				sql.append("NULL");
+			} else {
+				sql.append(formatObjectToSQL(ival));
+			} 
+		}
+		
+		String whereStatement = generateWhereStatement(columnNames, columnVals);
+		sql.append(whereStatement);
+		
+		
+		stmt.executeUpdate(sql.toString());
+		return masterKeyValues;
+
+	}
+
 	private void updateRows(SQLTable table, List<String> foreignKeyColumnNames, List<Object> dupKeyValues, List<Object> masterKeyValues) throws SQLException {
 		StringBuilder sql = new StringBuilder();
 		int colIndex = 0;
