@@ -249,7 +249,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 	};
 
-	private Action newMatchAction = null;
+	private Action newDeDupeAction = null;
+	private Action newXrefAction = null;
+	private Action newCleanseAction = null;
+	
 	private Action editMatchAction = new EditMatchAction("Edit Match");
 	private Action deleteMatchAction = new DeleteMatchAction(this);
 
@@ -425,7 +428,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
-		newMatchAction = new NewMatchAction(this, "New Match");
+		newDeDupeAction = new NewMatchAction(this, "New De-dupe Project", Match.MatchMode.FIND_DUPES);
+		newXrefAction = new NewMatchAction(this, "New X-refing Project", Match.MatchMode.BUILD_XREF);
+		newCleanseAction = new NewMatchAction(this, "New Data Cleansing Project", Match.MatchMode.CLEANSE);
+		
         JMenuBar menuBar = new JMenuBar();
 
 		//Settingup
@@ -446,7 +452,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		JMenu matchesMenu = new JMenu("Matches");
 		matchesMenu.setMnemonic('M');
-		matchesMenu.add(newMatchAction);
+		matchesMenu.add(newDeDupeAction);
+		matchesMenu.add(newXrefAction);
+		matchesMenu.add(newCleanseAction);
 		matchesMenu.add(editMatchAction);
 		matchesMenu.add(deleteMatchAction);
 		matchesMenu.addSeparator();
@@ -486,7 +494,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
 
 		toolBar.add(loginAction);
-		toolBar.add(newMatchAction);
+		toolBar.add(newDeDupeAction);
         toolBar.addSeparator();
         toolBar.add(runMatchAction);
         toolBar.add(runMergeAction);

@@ -64,13 +64,14 @@ public class NewMergeRuleAction extends AbstractAction {
     private final MatchMakerSwingSession swingSession;
 	private final Match parent;
 	private TableMergeRules mergeRule;
-	private static JDialog dialog;
+	private JDialog dialog;
 
 	public NewMergeRuleAction(MatchMakerSwingSession swingSession, Match parent) {
 	    super("New Merge Rule");
         this.swingSession = swingSession;
         this.parent = parent;
         dialog = new JDialog(swingSession.getFrame(),"New merge rule");
+        
         if (parent == null) throw new IllegalArgumentException("Parent must be non null");
 	}
 	
