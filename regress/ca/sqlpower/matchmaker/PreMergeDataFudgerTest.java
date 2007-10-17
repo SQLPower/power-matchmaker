@@ -34,7 +34,6 @@ import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -85,7 +84,6 @@ public class PreMergeDataFudgerTest extends TestCase {
 		resultTable = db.getTableByName(null, "pl", "match_results");
 		
 		match = new Match();
-		match.setType(MatchMode.FIND_DUPES);
 		match.setSession(session);
 		match.setResultTable(resultTable);
 		

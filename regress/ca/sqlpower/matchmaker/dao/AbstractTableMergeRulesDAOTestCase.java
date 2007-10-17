@@ -29,7 +29,6 @@ import java.util.List;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
@@ -42,7 +41,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
     public AbstractTableMergeRulesDAOTestCase() throws Exception {
         match= new Match();
         match.setName("Merge Rules Test Match");
-        match.setType(MatchMode.FIND_DUPES);
+        match.setType(Match.MatchMode.BUILD_XREF);
         folder = new PlFolder("test folder");
         match.setParent(folder);
         try {

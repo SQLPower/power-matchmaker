@@ -40,7 +40,6 @@ import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.PlDotIni;
@@ -70,16 +69,15 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         propertiesToIgnoreForDuplication.add("matchGroups");
         // These set other properties to null that describe the same object
         propertiesToIgnoreForDuplication.add("resultTable");
-        propertiesToIgnoreForDuplication.add("sourceTable");        
+        propertiesToIgnoreForDuplication.add("sourceTable");
+        
         propertiesToIgnoreForDuplication.add("sourceTableIndex");
-
+        
         propertiesThatHaveSideEffects.add("xrefTable");
         propertiesThatHaveSideEffects.add("sourceTable");
         propertiesThatHaveSideEffects.add("resultTable");
-        
         super.setUp();
         match = new Match();
-        match.setType(MatchMode.FIND_DUPES);
         session = new TestingMatchMakerSession();
 		session.setDatabase(new SQLDatabase());
         match.setSession(session);
@@ -586,49 +584,6 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	} catch (Exception e) {
 		}
     }
-	
-	/** 
-	 * Since match type was ignored when during
-	 * {@link MatchMakerTestCase#testDuplicate()}, this tests if
-	 * setters and getters are working properly.
-	 */
-	public void testMatchTypeDuplicate() {
-		MatchMode type = MatchMode.FIND_DUPES;
-		Match m1 = new Match();
-		m1.setType(type);
-		Match m2 = m1.duplicate(m1.getParent(), session);
-		assertEquals("Match type differed on duplicated objects", m1.getType(), m2.getType());
-		
-		type = MatchMode.BUILD_XREF;
-		Match m3 = new Match();
-		m3.setType(type);
-		Match m4 = m3.duplicate(m3.getParent(), session);
-		assertEquals("Match type differed on duplicated objects", m3.getType(), m4.getType());
-	}
-	
-	/** 
-	 * Since match type was ignored when during 
-	 * {@link MatchMakerTestCase#testWhatSettersSetGettersGet},
-	 * this tests if setters and getters are working properly.
-	 */
-	public void testSetterGetterForType() {
-		Match m1 = new Match();
-		MatchMode type = MatchMode.FIND_DUPES;
-		m1.setType(type);
-		assertEquals("Match type differ from setter and getter", type, m1.getType());
-		
-		type = MatchMode.CLEANSE;
-		try {
-			m1.setType(type);
-			fail("Match type should not be allowed to be set twice!");
-		} catch (UnsupportedOperationException e) {
-			// Correct exception thrown
-		}
-		
-		Match m2 = new Match();
-		m2.setType(type);
-		assertEquals("Match type differ from setter and getter", type, m2.getType());
-	}
 
 	private boolean execSQL(Connection conn, String sql) {
 		Statement stmt = null;
