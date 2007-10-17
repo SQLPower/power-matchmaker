@@ -43,6 +43,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
@@ -114,6 +115,7 @@ public class MatchResultVisualizerTest extends TestCase {
 		};
 
 		match = new Match();
+		match.setType(MatchMode.FIND_DUPES);
 		match.setSession(session);
 		match.setResultTable(resultTable);
 		match.setSourceTable(sourceTable);

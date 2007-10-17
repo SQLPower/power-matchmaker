@@ -28,6 +28,7 @@ import java.util.List;
 
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
@@ -40,8 +41,8 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
     PlFolder folder;
     public AbstractMatchRuleSetDAOTestCase() {
         match= new Match();
+        match.setType(MatchMode.FIND_DUPES);
         match.setName("Rule Set Test Match");
-        match.setType(Match.MatchMode.BUILD_XREF);
         folder = new PlFolder("main test folder");
         match.setParent(folder);
         try {

@@ -29,6 +29,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -88,6 +89,7 @@ public class MatchEngineImplTest extends TestCase {
 		session.setDatabase(db);
 		
 		match = new Match();
+		match.setType(MatchMode.FIND_DUPES);
 		match.setSession(session);
 		match.setSourceTable(sourceTable);
 		match.setSourceTableIndex(sourceTableIndex);

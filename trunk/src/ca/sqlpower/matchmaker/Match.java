@@ -111,15 +111,13 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     /**
      * Contains the Munge Processes and the Munge Steps
      */
-    private MatchMakerFolder<MungeProcess> matchRuleSetFolder =
-    	new MatchMakerFolder<MungeProcess>();
+    private MatchMakerFolder<MungeProcess> matchRuleSetFolder;
     
     /** 
      * Container for the TableMergeRules 
      * We have these folders so that we don't have to deal with multiple child types
      */ 
-    private MatchMakerFolder<TableMergeRules> tableMergeRulesFolder =
-    	new MatchMakerFolder<TableMergeRules>();
+    private MatchMakerFolder<TableMergeRules> tableMergeRulesFolder;
     
     /**
      * Cached source table 
@@ -141,16 +139,15 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	 */
     private TableIndex sourceTableIndex;
 
+    /**
+     * This creates a match without any folders, {@link setType} must be called
+     * after a call to this constructor to properly set up the match object with
+     * its appropriate folders.
+     */
 	public Match() {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
 	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
 	    xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
-		matchRuleSetFolder.setName(MATCH_RULES_FOLDER_NAME);
-        this.addChild(matchRuleSetFolder);
-		tableMergeRulesFolder.setName(MERGE_RULES_FOLDER_NAME);
-        this.addChild(tableMergeRulesFolder);
-        
-        setType(MatchMode.FIND_DUPES);
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
 	}
 	
@@ -456,16 +453,44 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 				this.mergeSettings);
 	}
 
-
-
-
 	public MatchMode getType() {
 		return type;
 	}
 
+	
+	/**
+	 * This sets the type of the match object and adds the child folders
+	 * accordingly. This should only be called once for each match and
+	 * would throw an exception if a second call was made. 
+	 */
 	public void setType(MatchMode type) {
 		MatchMode oldValue = this.type;
 		this.type = type;
+		
+		if (oldValue != null) {
+			if (oldValue.equals(type)) {
+				// This prevents errors when saving a match object on 
+				// hibernate calls this method even when its not actually
+				// modifying the type.
+				return;
+			} else {
+				throw new UnsupportedOperationException("MatchMode can only be set once!");
+			}
+		}
+		
+		if (!type.equals(MatchMode.CLEANSE)) {
+			if (tableMergeRulesFolder == null) {
+				tableMergeRulesFolder = new MatchMakerFolder<TableMergeRules>();
+				tableMergeRulesFolder.setName(MERGE_RULES_FOLDER_NAME);
+		        this.addChild(tableMergeRulesFolder);
+			}
+		}
+		if (matchRuleSetFolder == null) {
+			matchRuleSetFolder = new MatchMakerFolder<MungeProcess>();
+			matchRuleSetFolder.setName(MATCH_RULES_FOLDER_NAME);
+			this.addChild(matchRuleSetFolder);
+		}
+		
 		getEventSupport().firePropertyChange("type", oldValue, this.type);
 	}
 
@@ -548,20 +573,35 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      * Add a TableMergeRule rule to the TableMergeRules folder of this match
      */
     public void addTableMergeRule(TableMergeRules rule) {
-        // The folder will fire the child inserted event
-        tableMergeRulesFolder.addChild(rule);
+    	if (getType().equals(MatchMode.CLEANSE)) {
+    		throw new UnsupportedOperationException(
+    				"A cleansing project can not contain merge rules.");
+    	} else {
+	        // The folder will fire the child inserted event
+	        tableMergeRulesFolder.addChild(rule);
+    	}
     }
 
     /**
      * Removes the TableMergeRule rule from the TableMergeRules folder of this match
      */
     public void removeTableMergeRule(TableMergeRules rule) {
-        // The folder will fire the child removed event
-    	tableMergeRulesFolder.removeChild(rule);
+    	if (getType().equals(MatchMode.CLEANSE)) {
+    		throw new UnsupportedOperationException(
+    				"A cleansing project does not contain merge rules.");
+    	} else {
+    		// The folder will fire the child removed event
+    		tableMergeRulesFolder.removeChild(rule);
+    	}
     }
 
     public List<TableMergeRules> getTableMergeRules(){
-        return tableMergeRulesFolder.getChildren();
+    	if (getType().equals(MatchMode.CLEANSE)) {
+    		throw new UnsupportedOperationException(
+    				"A cleansing project does not contain merge rules.");
+    	} else {
+    		return tableMergeRulesFolder.getChildren();
+    	}
     }
 
     /**
@@ -570,11 +610,21 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
      *  pass in a null list 
      */
     public void setTableMergeRules(List<TableMergeRules> rules){
-    	tableMergeRulesFolder.setChildren(rules);
+    	if (getType().equals(MatchMode.CLEANSE)) {
+    		throw new UnsupportedOperationException(
+    				"A cleansing project does not contain merge rules.");
+    	} else {
+    		tableMergeRulesFolder.setChildren(rules);
+    	}
     }
 
     public MatchMakerFolder<TableMergeRules> getTableMergeRulesFolder() {
-        return tableMergeRulesFolder;
+    	if (getType().equals(MatchMode.CLEANSE)) {
+    		throw new UnsupportedOperationException(
+    				"A cleansing project does not contain merge rules.");
+    	} else {
+    		return tableMergeRulesFolder;
+    	}
     }
     
     /**

@@ -38,6 +38,7 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
@@ -87,6 +88,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	protected void setUp() throws Exception {
 		String sql;
 		match = new Match();
+		match.setType(MatchMode.FIND_DUPES);
 
 		ds = getDS();
 		db = new SQLDatabase(ds);
