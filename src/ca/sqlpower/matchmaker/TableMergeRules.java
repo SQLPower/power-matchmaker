@@ -34,7 +34,7 @@ public class TableMergeRules
 	extends AbstractMatchMakerObject<TableMergeRules, ColumnMergeRules> {
 
 	public enum ChildMergeActionType {
-		DELETE_ALL_DUP_CHILD, UPDATE_FAIL_ON_CONFLICT, UPDATE_DELETE_ON_CONFLICT;
+		DELETE_ALL_DUP_CHILD, UPDATE_FAIL_ON_CONFLICT, UPDATE_DELETE_ON_CONFLICT, UPDATE_USING_SQL;
 		
 		public static ChildMergeActionType getActionTypeFromString(String type) {
 			if ("Delete all duplicate children record".equals(type)){
@@ -43,6 +43,8 @@ public class TableMergeRules
 				return UPDATE_FAIL_ON_CONFLICT;
 			} else if ("Update children record and delete if conflict".equals(type)){
 				return UPDATE_DELETE_ON_CONFLICT;
+			} else if ("Update children record using the provided sql".equals(type)){
+				return UPDATE_USING_SQL;
 			} else {
 				throw new IllegalStateException("No such merge action type: " + type);
 			} 
@@ -57,6 +59,8 @@ public class TableMergeRules
 				return "Update children record and fail if conflict";
 			case UPDATE_DELETE_ON_CONFLICT:
 				return "Update children record and delete if conflict";
+			case UPDATE_USING_SQL:
+				return "Update children record using the provided sql";
 			default:
 				throw new IllegalStateException("Invalid enumeration");
 			}
