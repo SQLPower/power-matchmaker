@@ -362,10 +362,15 @@ public class MergeColumnRuleEditor implements EditorPane {
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
 			if (column == 1) {
+				List<MergeActionType> comboList = new ArrayList<MergeActionType>();
+				for (MergeActionType mat : ColumnMergeRules.MergeActionType.values()) {
+					if (mat != MergeActionType.NA) {
+						comboList.add(mat);
+					}
+				}
 				return new DefaultCellEditor(
 						new JComboBox(
-								new DefaultComboBoxModel(
-										ColumnMergeRules.MergeActionType.values())));
+								new DefaultComboBoxModel(comboList.toArray())));
 			} else {
 				return super.getCellEditor(row, column);
 			}
