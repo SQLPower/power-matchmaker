@@ -90,7 +90,8 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 			MatchActionType val = ((MatchActionNode) value).getActionType();
 			if (val.equals(MatchActionType.VALIDATE_MATCHES)) {
 				setIcon(validateIcon);
-			} else if (val.equals(MatchActionType.RUN_MATCH)) {
+			} else if (val.equals(MatchActionType.RUN_MATCH) ||
+					val.equals(MatchActionType.RUN_CLEANSING)) {
 				setIcon(matchEngineIcon);
 			} else if (val.equals(MatchActionType.RUN_MERGE)) {
 				setIcon(mergeEngineIcon);
