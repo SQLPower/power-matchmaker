@@ -78,6 +78,7 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.dao.MatchDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
@@ -256,12 +257,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		public void actionPerformed(ActionEvent e) {
 			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
-			if ( match == null )
-				return;
-			MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-		    TreePath treePath = 
-		    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,2));
-		    getTree().setSelectionPath(treePath);
+			if (match != null && match.getType().equals(MatchMode.FIND_DUPES)) {
+				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+			    TreePath treePath = 
+			    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,2));
+			    getTree().setSelectionPath(treePath);
+			}
 		}
 	};
 
@@ -269,12 +270,25 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		public void actionPerformed(ActionEvent e) {
 			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
-			if ( match == null )
-				return;
-			MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-		    TreePath treePath = 
-		    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,5));
-		    getTree().setSelectionPath(treePath);
+			if (match != null && match.getType().equals(MatchMode.FIND_DUPES)) {
+				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+				TreePath treePath = 
+					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,5));
+				getTree().setSelectionPath(treePath);
+			}
+		}
+	};
+	
+	private Action runCleansingAction = new AbstractAction("Run Cleansing") {
+
+		public void actionPerformed(ActionEvent e) {
+			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
+			if (match != null && match.getType().equals(MatchMode.CLEANSE)) {
+				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+				TreePath treePath = 
+					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,1));
+				getTree().setSelectionPath(treePath);
+			}
 		}
 	};
 
@@ -438,6 +452,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		matchesMenu.addSeparator();
 		matchesMenu.add(runMatchAction);
 		matchesMenu.add(runMergeAction);
+		matchesMenu.add(runCleansingAction);
 		matchesMenu.add(showMatchStatisticInfoAction);
 		matchesMenu.addSeparator();
         matchesMenu.add(new JMenuItem(new PlMatchImportAction(this, frame)));
@@ -475,6 +490,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         toolBar.addSeparator();
         toolBar.add(runMatchAction);
         toolBar.add(runMergeAction);
+        toolBar.add(runCleansingAction);
         toolBar.addSeparator();
         toolBar.addSeparator();
         toolBar.add(helpAction);

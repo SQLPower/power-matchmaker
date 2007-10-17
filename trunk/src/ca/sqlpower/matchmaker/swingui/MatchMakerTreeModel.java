@@ -40,6 +40,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -91,8 +92,6 @@ public class MatchMakerTreeModel implements TreeModel {
      */
     public static enum MatchActionType {
         
-        // TODO associate an icon with each enumerated value
-        
         /**
          * Shows the "run match" UI.
          */
@@ -117,7 +116,12 @@ public class MatchMakerTreeModel implements TreeModel {
          * Shows information about the parent match such as
          * its ID, folder, description, type and history
          */
-        AUDIT_INFO("Audit Information");
+        AUDIT_INFO("Audit Information"),
+        
+        /**
+         * Shows the "run cleansing" UI.
+         */
+        RUN_CLEANSING("Run Cleansing Engine");
         
         private final String name;
         
@@ -207,6 +211,14 @@ public class MatchMakerTreeModel implements TreeModel {
 	private FolderParent backup;
 	private TranslateGroupParent translate;
 	
+	private static final MatchActionType[] DE_DUP_ACTIONS = 
+		{MatchActionType.RUN_MATCH, MatchActionType.VALIDATE_MATCHES, MatchActionType.VALIDATION_STATUS,
+		MatchActionType.RUN_MERGE, MatchActionType.AUDIT_INFO};
+	
+	private static final MatchActionType[] CLEANSING_ACTIONS = 
+		{MatchActionType.RUN_CLEANSING, MatchActionType.AUDIT_INFO};
+	
+	
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
 
     /**
@@ -249,8 +261,14 @@ public class MatchMakerTreeModel implements TreeModel {
         List<MatchActionNode> actionNodes = matchActionCache.get(match);
         if (actionNodes == null) {
             actionNodes = new ArrayList<MatchActionNode>();
-            for (MatchActionType type : MatchActionType.values()) {
-                actionNodes.add(new MatchActionNode(type, match));
+            if (match.getType().equals(MatchMode.FIND_DUPES)) {
+	            for (MatchActionType type : DE_DUP_ACTIONS) {
+	                actionNodes.add(new MatchActionNode(type, match));
+	            }
+            } else if (match.getType().equals(MatchMode.CLEANSE)) {
+            	for (MatchActionType type : CLEANSING_ACTIONS) {
+            		actionNodes.add(new MatchActionNode(type, match));
+            	}
             }
             matchActionCache.put(match, actionNodes);
         }
