@@ -62,6 +62,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     SPDataSource ds;
     SQLTable sourceTable;
     SQLTable childTable;
+    SQLTable grandChildTable;
     
 	TableMergeRules tmr = new TableMergeRules();
 	ColumnMergeRules cmr_string = new ColumnMergeRules();
@@ -69,8 +70,13 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	ColumnMergeRules cmr_number = new ColumnMergeRules();
 	
 	TableMergeRules ctmr = new TableMergeRules();
+	ColumnMergeRules ccmr_parent_id = new ColumnMergeRules();
 	ColumnMergeRules ccmr_id = new ColumnMergeRules();
-	ColumnMergeRules ccmr_child_id = new ColumnMergeRules();
+	
+	TableMergeRules cctmr = new TableMergeRules();
+	ColumnMergeRules cccmr_gparent_id = new ColumnMergeRules();
+	ColumnMergeRules cccmr_parent_id = new ColumnMergeRules();
+	ColumnMergeRules cccmr_id = new ColumnMergeRules();
 	
 	/**
 	 * Subclasses need to implement this method to set the correct
@@ -106,20 +112,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		con = db.getConnection();
 		session.setConnection(con);
 
-		tmr.addChild(cmr_string);
-		tmr.addChild(cmr_date);
-		tmr.addChild(cmr_number);
-		tmr.setDeleteDup(false);
-
-		ccmr_id.setInPrimaryKey(true);
-		ccmr_child_id.setInPrimaryKey(true);
-
-		ctmr.addChild(ccmr_id);
-		ctmr.addChild(ccmr_child_id);
-
-		match.addTableMergeRule(tmr);
-		match.addTableMergeRule(ctmr);
-
 		MungeProcess mp = new MungeProcess();
 		mp.setName("test");
 		match.addMatchRuleSet(mp);
@@ -150,18 +142,47 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    }
 
 		//set the column and tabler merge rules
-		ccmr_id.setColumn(childTable.getColumnByName("PARENT_ID"));
-		ccmr_id.setImportedKeyColumn(sourceTable.getColumnByName("ID"));
-		ccmr_child_id.setColumn(childTable.getColumnByName("ID"));
-
-		ctmr.setTable(childTable);
-		ctmr.setParentTable(sourceTable);
-
+	    tmr.setTable(sourceTable);
+		tmr.addChild(cmr_string);
+		tmr.addChild(cmr_date);
+		tmr.addChild(cmr_number);
+		tmr.setDeleteDup(false);
+		
 		cmr_string.setColumn(sourceTable.getColumnByName("COL_STRING"));   	
 		cmr_date.setColumn(sourceTable.getColumnByName("COL_DATE"));
 		cmr_number.setColumn(sourceTable.getColumnByName("COL_NUMBER"));
+		
+		ctmr.addChild(ccmr_parent_id);
+		ctmr.addChild(ccmr_id);
+		ctmr.setTable(childTable);
+		ctmr.setParentTable(sourceTable);
+		
+		ccmr_parent_id.setInPrimaryKey(true);
+		ccmr_parent_id.setColumn(childTable.getColumnByName("PARENT_ID"));
+		ccmr_parent_id.setImportedKeyColumn(sourceTable.getColumnByName("ID"));
+		ccmr_id.setInPrimaryKey(true);
+		ccmr_id.setColumn(childTable.getColumnByName("ID"));
 
-		tmr.setTable(sourceTable);
+		cctmr.addChild(cccmr_gparent_id);
+		cctmr.addChild(cccmr_parent_id);
+		cctmr.addChild(cccmr_id);
+		cctmr.setTable(grandChildTable);
+		cctmr.setParentTable(childTable);
+		
+		cccmr_gparent_id.setInPrimaryKey(true);
+		cccmr_gparent_id.setColumn(grandChildTable.getColumnByName("GPARENT_ID"));
+		cccmr_gparent_id.setImportedKeyColumn(childTable.getColumnByName("PARENT_ID"));
+		
+		cccmr_parent_id.setInPrimaryKey(true);
+		cccmr_parent_id.setColumn(grandChildTable.getColumnByName("PARENT_ID"));
+		cccmr_parent_id.setImportedKeyColumn(childTable.getColumnByName("ID"));
+	
+		cccmr_id.setInPrimaryKey(true);
+		cccmr_id.setColumn(childTable.getColumnByName("ID"));
+
+		match.addTableMergeRule(tmr);
+		match.addTableMergeRule(ctmr);
+		match.addTableMergeRule(cctmr);
    	}
 
 	/**
@@ -244,7 +265,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     
     private void populateChildTable() throws Exception {
     	String sql;
-		String testString = "ABC";
+		String testString = "ABCDEF";
 		
 		//delete everything from child table
 		sql = "DELETE FROM " + getFullTableName() + "_CHILD";
@@ -252,20 +273,19 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		//populates the child table
 		for (int i = 0; i < 6; i++) {
-			for (int j = 0; j < 3; j++) {
+			for (int j = 0; j < i; j++) {
 				sql = "INSERT INTO " + getFullTableName() + "_CHILD VALUES(" +
 					i + ", " +
 					j + ", " +
 					SQL.quote(testString.charAt(j)) + ", " +
 					SQL.escapeDateTime(con, new Date((long) j*1000*60*60*24)) + ", " +
-					j + ")";
+					(i+j) + ")";
 				execSQL(con,sql);
 			}
 		}
 		
 		//sets the default action type
 		ctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
-
 	}
     
     private void populateChildTableForUpdate() throws Exception {
@@ -290,6 +310,60 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		//sets the default action type
 		ctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
 
+	}
+    
+    private void populateGrandChildTableForUpdate() throws Exception {
+    	String sql;
+		String testString = "ABCDEF";
+		
+		//delete everything from child table
+		sql = "DELETE FROM " + getFullTableName() + "_GCHILD";
+		execSQL(con, sql);
+		
+		//populates the child table
+		for (int i = 0; i < 6; i++) {
+			for (int k = 0; k < i; k++) {
+				sql = "INSERT INTO " + getFullTableName() + "_GCHILD VALUES(" +
+				i + ", " +
+				i + ", " +
+				k + ", " +
+				SQL.quote(testString.charAt(k)) + ", " +
+				SQL.escapeDateTime(con, new Date((long) k*1000*60*60*24)) + ", " +
+				(i+i+k) + ")";
+				execSQL(con,sql);
+			}
+		}
+		
+		//sets the default action type
+		cctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
+	}
+    
+    private void populateGrandChildTable() throws Exception {
+    	String sql;
+		String testString = "ABCDEF";
+		
+		//delete everything from child table
+		sql = "DELETE FROM " + getFullTableName() + "_GCHILD";
+		execSQL(con, sql);
+		
+		//populates the child table
+		for (int i = 0; i < 6; i++) {
+			for (int j = 0; j < i; j++) {
+				for (int k = 0; k < j; k++) {
+					sql = "INSERT INTO " + getFullTableName() + "_GCHILD VALUES(" +
+						i + ", " +
+						j + ", " +
+						k + ", " +
+						SQL.quote(testString.charAt(k)) + ", " +
+						SQL.escapeDateTime(con, new Date((long) k*1000*60*60*24)) + ", " +
+						(i+j+k) + ")";
+					execSQL(con,sql);
+				}
+			}
+		}
+		
+		//sets the default action type
+		cctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
 	}
     
     /**
@@ -556,6 +630,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     public void testDeleteDupChild() throws Exception{
     	populateTables();
     	populateChildTable();
+    	populateGrandChildTable();
 	
 		mpor.call();
 		
@@ -572,16 +647,27 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		rs = stmt.executeQuery(sql.toString());
 		assertFalse("Duplicate child records not deleted.", rs.next());
 
-		StringBuilder sql2 = new StringBuilder();
-		sql2.append("SELECT * FROM ");
-		sql2.append(getFullTableName() + "_CHILD");
-		sql2.append("\n WHERE PARENT_ID = 2 OR PARENT_ID = 6");
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 2 OR PARENT_ID = 6");
 		
-		rs = stmt.executeQuery(sql2.toString());
-		for (int i = 0; i < 3; i++) {
+		rs = stmt.executeQuery(sql.toString());
+		for (int i = 0; i < 2; i++) {
 			assertTrue("Non-duplicate child records deleted.", rs.next());
 		}
 		assertFalse("Extra non-duplicate child records found.", rs.next());
+		
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_GCHILD");
+		sql.append("\n WHERE GPARENT_ID = 1 OR GPARENT_ID = 0 ");
+		sql.append("OR GPARENT_ID = 4 OR GPARENT_ID = 3 OR GPARENT_ID = 5");
+		
+		rs = stmt.executeQuery(sql.toString());
+		assertFalse("Duplicate grandchild records not deleted.", rs.next());
+		
+		
     }
     
     public void testUpdateFailOnConflict() throws Exception{
@@ -597,8 +683,10 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
     	populateTables();
     	populateChildTableForUpdate();
+    	populateGrandChildTableForUpdate();
     	
     	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
+    	cctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
     	mpor.call();
     	
 		Connection con = session.getConnection();
@@ -635,6 +723,70 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 			assertTrue("Non-duplicate child records deleted.", rs.next());
 		}
 		assertFalse("Extra non-duplicate child records found.", rs.next());
+		
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_GCHILD");
+		sql.append("\n WHERE GPARENT_ID = 1 OR GPARENT_ID = 0 ");
+		sql.append("OR GPARENT_ID = 4 OR GPARENT_ID = 3 OR GPARENT_ID = 5");
+		
+		rs = stmt.executeQuery(sql.toString());
+		assertFalse("Duplicate grandchild records not merged.", rs.next());
+    }
+    
+    public void testUpdateDeleteOnConflict() throws Exception{
+    	populateTables();
+    	populateChildTable();
+    	populateGrandChildTable();
+    	
+    	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT);
+    	cctmr.setChildMergeAction(ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT);
+	
+		mpor.call();
+    	
+		Connection con = session.getConnection();
+		Statement stmt = con.createStatement();
+		ResultSet rs;
+		
+    	StringBuilder sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 1 OR PARENT_ID = 0 ");
+		sql.append("OR PARENT_ID = 4 OR PARENT_ID = 3 OR PARENT_ID = 5");
+		
+		rs = stmt.executeQuery(sql.toString());
+		assertFalse("Duplicate child records not deleted.", rs.next());
+
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 2");
+		
+		rs = stmt.executeQuery(sql.toString());
+		for (int i = 0; i < 3; i++) {
+			assertTrue("Non-duplicate child records deleted.", rs.next());
+		}
+		assertFalse("Extra non-duplicate child records found.", rs.next());
+		
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 6");
+		
+		rs = stmt.executeQuery(sql.toString());
+		for (int i = 0; i < 5; i++) {
+			assertTrue("Non-duplicate child records deleted.", rs.next());
+		}
+		assertFalse("Extra non-duplicate child records found.", rs.next());
+		
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_GCHILD");
+		sql.append("\n WHERE GPARENT_ID = 1 OR GPARENT_ID = 0 ");
+		sql.append("OR GPARENT_ID = 4 OR GPARENT_ID = 3 OR GPARENT_ID = 5");
+		
+		rs = stmt.executeQuery(sql.toString());
+		assertFalse("Duplicate grandchild records not merged.", rs.next());
     }
     
 	protected boolean execSQL(Connection conn, String sql) {

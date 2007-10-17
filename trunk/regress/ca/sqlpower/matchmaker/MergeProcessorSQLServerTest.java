@@ -38,7 +38,7 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 		execSQL(con,sql);
 		
 		// Creates the source table
-		sql = "CREATE TABLE " + getFullTableName() + " ("+
+		sql = "CREATE TABLE " + getFullTableName() + " (" +
 			"\n ID NUMERIC NOT NULL PRIMARY KEY," +
 			"\n COL_STRING VARCHAR(20) NULL," +
 			"\n COL_DATE DATETIME NULL," +
@@ -46,7 +46,17 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 		execSQL(con,sql);
 		
 		// Creates the child table
-		sql = "CREATE TABLE " + getFullTableName() + "_CHILD ("+
+		sql = "CREATE TABLE " + getFullTableName() + "_CHILD (" +
+			"\n PARENT_ID NUMERIC NOT NULL," +
+			"\n ID NUMERIC NOT NULL," +
+			"\n COL_STRING VARCHAR(20) NULL," +
+			"\n COL_DATE DATETIME NULL," +
+			"\n COL_NUMBER NUMERIC NULL)";
+		execSQL(con,sql);
+		
+		// Creates the grand child table
+		sql = "CREATE TABLE " + getFullTableName() + "_GCHILD (" +
+			"\n GPARENT_ID NUMERIC NOT NULL," +
 			"\n PARENT_ID NUMERIC NOT NULL," +
 			"\n ID NUMERIC NOT NULL," +
 			"\n COL_STRING VARCHAR(20) NULL," +
@@ -56,6 +66,7 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 		
 		sourceTable = db.getTableByName("MM_TEST", "MM_TEST", "MERGE_TEST");
 		childTable = db.getTableByName("MM_TEST", "MM_TEST", "MERGE_TEST_CHILD");
+		grandChildTable = db.getTableByName("MM_TEST", "MM_TEST", "MERGE_TEST_GCHILD");
         match.setSourceTable(sourceTable);
         match.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
 		match.setResultTableName("MERGE_TEST_RESULT");
