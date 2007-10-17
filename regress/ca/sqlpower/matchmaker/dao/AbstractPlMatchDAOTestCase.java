@@ -31,6 +31,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -43,11 +44,11 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 	public Match createNewObjectUnderTest() throws Exception {
 		count++;
 		Match match = new Match();
+		match.setType(MatchMode.FIND_DUPES);
 		match.setSession(getSession());
 		try {
 			setAllSetters(match, getNonPersitingProperties());
 			match.setName("Match "+count);
-			
 			PlFolder f = new PlFolder("test folder" + count);
 			PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
 			plFolderDAO.save(f);
@@ -83,6 +84,13 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         nonPersistingProperties.add("xrefTableCatalog");
         nonPersistingProperties.add("xrefTableSchema");
         nonPersistingProperties.add("xrefTableName");
+        
+        // Match type is a persisting property but it was causing
+        // a problem. Setting the type creates the match rule set 
+        // folder and table merge rule set folder. The setter in 
+        // properties utils does not set type first and would cause
+        // errors when setting properties that need those folders.
+        nonPersistingProperties.add("matchType");
       
 		return nonPersistingProperties;
 	}
@@ -202,6 +210,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         ruleSet.setName("criteria group");
         
         Match oldMatch = new Match();
+        oldMatch.setType(MatchMode.FIND_DUPES);
         oldMatch.setName("old");
 		PlFolder f = new PlFolder();
 		oldMatch.setParent(f);
@@ -211,6 +220,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		plFolderDAO.save(f);
         
         Match newMatch = new Match();
+        newMatch.setType(MatchMode.FIND_DUPES);
         newMatch.setName("new");
 		newMatch.setParent(f);
         
@@ -266,6 +276,32 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
             // connection didn't come from a pool so we can't close it
         }
      
+    }
+    
+    /**
+     * Since match type was a property ignored to check for persistency despite
+     * being a persistent property, this tests if it does actually persist.
+     */
+    public void testMatchTypePersists() throws Exception {
+		Match m1 = createNewObjectUnderTest();
+		getDataAccessObject().save(m1);
+		Match loadedMatch = getDataAccessObject().findByName(m1.getName());
+		assertEquals("Match type did not persists", m1.getType(), loadedMatch.getType());
+		
+		count++;
+		Match m2 = new Match();
+		m2.setType(MatchMode.BUILD_XREF);
+		m2.setSession(getSession());
+		m2.setName("Match "+count);
+		
+		PlFolder f = new PlFolder("test folder" + count);
+		PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+		plFolderDAO.save(f);
+		
+        m2.setParent(f);
+        getDataAccessObject().save(m2);
+		loadedMatch = getDataAccessObject().findByName(m2.getName());
+		assertEquals("Match type did not persists", m2.getType(), loadedMatch.getType());
     }
     
     /**

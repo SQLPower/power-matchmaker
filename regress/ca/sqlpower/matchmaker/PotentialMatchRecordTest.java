@@ -23,6 +23,7 @@ import java.util.Collections;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -39,6 +40,7 @@ public class PotentialMatchRecordTest extends TestCase {
 	protected void setUp() throws Exception {
 		MatchMakerSession session = new TestingMatchMakerSession();
 		Match match = new Match();
+		match.setType(MatchMode.FIND_DUPES);
 		match.setSession(session);
 		MungeProcess ruleSet = new MungeProcess();
 		ruleSet.setName("ruleset");

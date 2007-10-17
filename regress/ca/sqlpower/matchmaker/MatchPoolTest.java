@@ -40,6 +40,7 @@ import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
@@ -103,6 +104,7 @@ public class MatchPoolTest extends TestCase {
 		};
 
 		match = new Match();
+		match.setType(MatchMode.FIND_DUPES);
 		match.setSession(session);
 		match.setResultTable(resultTable);
 		match.setSourceTable(sourceTable);
