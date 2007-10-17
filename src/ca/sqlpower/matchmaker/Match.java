@@ -48,7 +48,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
     static final Logger logger = Logger.getLogger(Match.class);
 
 	public enum MatchMode {
-		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference");
+		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference"), CLEANSE("Cleanse");
 
 		String displayName;
 
