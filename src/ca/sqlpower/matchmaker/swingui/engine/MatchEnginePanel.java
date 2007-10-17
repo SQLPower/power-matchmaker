@@ -284,7 +284,7 @@ public class MatchEnginePanel implements EditorPane {
 		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, engine)), cc.xy(4, 2, "f,f"));
 		bbpb.add(new JButton(runEngineAction), cc.xy(6, 2, "f,f"));
 		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
-				match, getParentFrame())), cc.xy(2, 4, "f,f"));
+				match, parentFrame)), cc.xy(2, 4, "f,f"));
 		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
 
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
@@ -300,10 +300,6 @@ public class MatchEnginePanel implements EditorPane {
 		anotherP.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 		
 		return anotherP;
-	}
-
-	private JFrame getParentFrame() {
-		return parentFrame;
 	}
 	
 	/*===================== EditorPane implementation ==================*/

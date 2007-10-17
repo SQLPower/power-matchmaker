@@ -44,6 +44,7 @@ import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
@@ -51,8 +52,8 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
-import ca.sqlpower.matchmaker.swingui.action.DeleteMungeStepAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMergeRuleAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMungeStepAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateMatchAction;
@@ -64,6 +65,7 @@ import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
+import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
 import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
 import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
 
@@ -243,20 +245,30 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		m.add(new JMenuItem(new NewMergeRuleAction(swingSession, match)));
 
 		m.addSeparator();
-		m.add(new JMenuItem(new AbstractAction("Run Match") {
-			public void actionPerformed(ActionEvent e) {
-				MatchEnginePanel f = new MatchEnginePanel(swingSession, match,
-						owningFrame);
-				swingSession.setCurrentEditorComponent(f);
-			}
-		}));
-		m.add(new JMenuItem(new AbstractAction("Run Merge") {
-			public void actionPerformed(ActionEvent e) {
-				MergeEnginePanel f = new MergeEnginePanel(swingSession, match,
-						owningFrame);
-				swingSession.setCurrentEditorComponent(f);
-			}
-		}));
+		if (match.getType().equals(MatchMode.FIND_DUPES)) {
+			m.add(new JMenuItem(new AbstractAction("Run Match") {
+				public void actionPerformed(ActionEvent e) {
+					MatchEnginePanel f = new MatchEnginePanel(swingSession, match,
+							owningFrame);
+					swingSession.setCurrentEditorComponent(f);
+				}
+			}));
+			m.add(new JMenuItem(new AbstractAction("Run Merge") {
+				public void actionPerformed(ActionEvent e) {
+					MergeEnginePanel f = new MergeEnginePanel(swingSession, match,
+							owningFrame);
+					swingSession.setCurrentEditorComponent(f);
+				}
+			}));
+		} else if (match.getType().equals(MatchMode.CLEANSE)) {
+			m.add(new JMenuItem(new AbstractAction("Run Cleanse") {
+				public void actionPerformed(ActionEvent e) {
+					CleanseEnginePanel f = new CleanseEnginePanel(swingSession,
+							match, owningFrame);
+					swingSession.setCurrentEditorComponent(f);
+				}
+			}));
+		}
 
 		m.addSeparator();
 		m.add(new JMenuItem(new AbstractAction("Audit Information") {
