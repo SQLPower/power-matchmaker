@@ -20,7 +20,9 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -42,6 +44,18 @@ public class MatchEngineImpl extends AbstractEngine {
 
 	private static final Logger logger = Logger.getLogger(MatchEngineImpl.class);
 
+	private int jobSize;
+
+	private int progress;
+
+	private MungeProcessor munger;
+
+	private MatchProcessor matcher;
+
+	private String progressMessage;
+
+	private Processor currentProcessor;
+	
 	public MatchEngineImpl(MatchMakerSession session, Match match) {
 		this.setSession(session);
 		this.setMatch(match);
@@ -151,38 +165,107 @@ public class MatchEngineImpl extends AbstractEngine {
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException {
 		try {
+			setFinished(false);
+			setStarted(true);
+			progress = 0;
+			progressMessage = "Checking Match Engine Preconditions";
+			logger.info(progressMessage);
+			
 			try {
 				checkPreconditions();
 			} catch (ArchitectException e) {
 				throw new RuntimeException(e);
 			}
-			setFinished(false);
-			setStarted(true);
+			
+			progressMessage = "Starting Match Engine";
+			logger.info(progressMessage);
+			
+			Integer processCount = getMatch().getMatchSettings().getProcessCount();
+			int rowCount;
+			if (processCount == null || processCount == 0) {
+				Connection con = null;
+				Statement stmt = null;
+				try {
+				con = getSession().getConnection();
+				stmt = con.createStatement();
+				String rowCountSQL = "SELECT COUNT(*) AS ROWCOUNT FROM " + DDLUtils.toQualifiedName(getMatch().getSourceTable());
+				ResultSet result = stmt.executeQuery(rowCountSQL);
+				logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
+				result.next();
+				rowCount = result.getInt("ROWCOUNT");
+				} finally {
+					if (stmt != null) stmt.close();
+					if (con != null) con.close();
+				}
+			} else {
+				rowCount = processCount.intValue();
+			}
 			
 			List<MungeProcess> mungeProcesses = getMatch().getMatchRuleSetFolder().getChildren();
+			jobSize = rowCount * mungeProcesses.size() * 2;
 			
 			MatchPool pool = new MatchPool(getMatch());
 			// Fill pool with pre-existing matches
 			pool.findAll(null);
 			
 			for (MungeProcess currentProcess: mungeProcesses) {
-				Processor munger = new MungeProcessor(currentProcess);
-				munger.call();
+				munger = new MungeProcessor(currentProcess);
+				currentProcessor = munger;
+				progressMessage = "Running munge process " + currentProcess.getName();
+				logger.debug(getMessage());
+				munger.call(rowCount);
+				progress += munger.getProgress();
+
 				List<MungeResult> results = currentProcess.getResults();
 				
-				MatchProcessor matcher = new MatchProcessor(pool, currentProcess, results);
+				matcher = new MatchProcessor(pool, currentProcess, results);
+				currentProcessor = matcher;
+				progressMessage = "Matching munge process " + currentProcess.getName();
+				logger.debug(getMessage());
 				matcher.call();
+				progress += matcher.getProgress();
 			}
 			
+			currentProcessor = null;
+			progressMessage = "Storing matches";
+			logger.info(progressMessage);
 			pool.store();
 			
-			getLogger().info("Engine process completed normally.");
+			progressMessage = "Match Engine finished successfully";
+			logger.info(progressMessage);
 			
 			return EngineInvocationResult.SUCCESS;
 		} catch (Exception ex) {
+			progressMessage = "Match Engine failed";
+			logger.error(getMessage());
 			throw new RuntimeException(ex);
 		} finally {
 			setFinished(true);
+		}
+	
+	}
+	
+	///////// Monitorable support ///////////
+	
+	/**
+	 * Right now the job size is always indeterminant
+	 */
+	
+	@Override
+	public Integer getJobSize() {
+		return jobSize;
+	}
+
+	@Override
+	public String getMessage() {
+		return getProgress() + "/" + jobSize + ": " + progressMessage;
+	}
+
+	public int getProgress() {
+		if (currentProcessor != null) {
+			return progress + currentProcessor.getProgress();
+		} else {
+			return progress;
 		}
 	}
 }

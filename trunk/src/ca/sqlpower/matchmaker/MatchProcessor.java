@@ -59,6 +59,7 @@ public class MatchProcessor extends AbstractProcessor {
 		this.matchData = matchData;
 		this.pool = pool;
 		this.mungeProcess = process; 
+		monitorableHelper.setJobSize(matchData.size());
 	}
 	
 	public Boolean call() throws Exception {
@@ -66,6 +67,7 @@ public class MatchProcessor extends AbstractProcessor {
 		Collections.sort(matchData);
 		
 		for (MungeResult data: matchData) {
+			monitorableHelper.incrementProgress();
 			int dataIndex = matchData.indexOf(data);
 			
 			for (int i=dataIndex + 1; i<matchData.size(); i++){
