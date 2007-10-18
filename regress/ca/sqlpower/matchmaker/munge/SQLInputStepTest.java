@@ -31,6 +31,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.testutil.MockJDBCConnection;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 
@@ -58,12 +59,13 @@ public class SQLInputStepTest extends TestCase {
     }
     
     SQLInputStep step;
+    SQLDatabase db;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         
-        SQLDatabase db = new FakeDatabase();
+        db = new FakeDatabase();
         SQLTable table = new SQLTable(db, true);
         db.addChild(table);
         
@@ -73,11 +75,16 @@ public class SQLInputStepTest extends TestCase {
         table.addColumn(new SQLColumn(table, "col3", Types.TIMESTAMP, 50, 0));
 
         Project project = new Project();
+        project.setType(getProjectType());
         project.setSourceTable(table);
-        step = new SQLInputStep(table, new TestingMatchMakerSession());
+        step = new SQLInputStep(project, new TestingMatchMakerSession());
     }
     
-    public void testNoDoubleOpen() throws Exception {
+    protected ProjectMode getProjectType() {
+		return ProjectMode.FIND_DUPES;
+	}
+
+	public void testNoDoubleOpen() throws Exception {
         step.open();
         try {
             step.open();

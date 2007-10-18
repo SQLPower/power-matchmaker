@@ -99,7 +99,7 @@ public class MatchEngineImplTest extends TestCase {
 		
 		MungeProcess groupOne = new MungeProcess();
 		groupOne.setName("Group_One");
-		SQLInputStep inputStep = new SQLInputStep(sourceTable, session);
+		SQLInputStep inputStep = new SQLInputStep(project, session);
 		groupOne.addChild(inputStep);
 		MungeResultStep outputStep = new MungeResultStep(project, inputStep, session);
 		outputStep.addInput(new InputDescriptor("result2", Object.class));
@@ -144,7 +144,7 @@ public class MatchEngineImplTest extends TestCase {
 	public void testCallOnMultipleMungeProcesses() throws Exception {
 		MungeProcess groupTwo = new MungeProcess();
 		groupTwo.setName("Group_Two");
-		SQLInputStep inputStep = new SQLInputStep(sourceTable, session);
+		SQLInputStep inputStep = new SQLInputStep(project, session);
 		groupTwo.addChild(inputStep);
 		MungeResultStep outputStep = new MungeResultStep(project, inputStep, session);
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));

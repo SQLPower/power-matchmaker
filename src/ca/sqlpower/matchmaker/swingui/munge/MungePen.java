@@ -65,6 +65,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -197,11 +198,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		setDropTarget(new DropTarget(this,this));
 		
 		if (process.getChildCount() == 0) {
-			MungeStep inputStep = new SQLInputStep(project.getSourceTable(), process.getSession());
+			SQLInputStep inputStep = new SQLInputStep(project, process.getSession());
 			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, new Boolean(true).toString());
 			process.addChild(inputStep);
 			
-			MungeResultStep mungeResultStep = new MungeResultStep(project, inputStep, process.getSession());
+			MungeStep mungeResultStep = inputStep.getOuputStep();
 			
 			String x = new Integer(0).toString();
 			String y = new Integer(300).toString();
@@ -209,7 +210,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
 			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
 			process.addChild(mungeResultStep);
-			process.setOutputStep(mungeResultStep);
+			if (project.getType() == ProjectMode.FIND_DUPES) {
+				process.setOutputStep((MungeResultStep)mungeResultStep);
+			}
 		}
 	}
 	
