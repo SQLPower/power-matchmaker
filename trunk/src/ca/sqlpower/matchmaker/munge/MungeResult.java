@@ -72,13 +72,11 @@ public class MungeResult implements Comparable<MungeResult> {
 			Object otherData = o.getMungedData()[i];
 			
 			if (thisData == null || otherData == null) {
-				if (thisData != null) {
-					logger.debug("data was null");
-					compareValue = 1;
-				} else if (otherData != null) {
-					logger.debug("otherData was null");
+				if (otherData != null) {
 					compareValue = -1;
-				}
+				} else {
+					compareValue = 1;
+				} 
 			} else if (thisData.getClass().equals(String.class)){
 				logger.debug("comparing Strings " + thisData + " and " + otherData);
 				compareValue = ((String)thisData).compareTo((String)otherData);
