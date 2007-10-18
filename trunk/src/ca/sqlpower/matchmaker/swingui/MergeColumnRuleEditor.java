@@ -21,6 +21,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.sql.Types;
@@ -56,6 +57,7 @@ import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.Status;
@@ -126,6 +128,11 @@ public class MergeColumnRuleEditor implements EditorPane {
         }
 
         childMergeAction = new JComboBox(TableMergeRules.ChildMergeActionType.values());
+        childMergeAction.addActionListener(new ActionListener(){
+
+			public void actionPerformed(ActionEvent e) {
+				mergeRule.setChildMergeAction((ChildMergeActionType) childMergeAction.getSelectedItem());
+			}});
         buildUI();
         
         parentTable.addItemListener(new ItemListener() {
@@ -135,13 +142,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 				// Set each imported key column combo box to null
 				for (int row = 0; row < ruleTableModel.getRowCount(); row++) {
 					ruleTableModel.setValueAt(null, row, 2);
-				}
-				
-				// Set the sql statement to NOT_APPLICABLE if
-				// in primary key of parent table
-				if (!mergeRule.isSourceMergeRule()) {
-					RelatedMergeColumnRuleTableModel model = (RelatedMergeColumnRuleTableModel)ruleTableModel;
-					model.updatePrimaryKeys((SQLTable) e.getItem());
 				}
 			}
         	
