@@ -202,4 +202,11 @@ public class StubMungeStep implements MungeStep {
 		return null;
 	}
 
+	public boolean isVisible() {
+		return true;
+	}
+
+	public void setVisible(boolean v) {
+	}
+
 }
