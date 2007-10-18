@@ -33,7 +33,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchStatisticsPanel;
@@ -45,23 +45,23 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 public class ShowMatchStatisticInfoAction extends AbstractAction {
 
 	private final MatchMakerSession swingSession;
-	private Match match;
+	private Project project;
 	private JFrame parent;
 	private JDialog d;
 
 	public ShowMatchStatisticInfoAction(MatchMakerSession swingSession,
-			Match match, JFrame parent) {
+			Project project, JFrame parent) {
 		super("Match Statistics...");
-		this.match = match;
+		this.project = project;
 		this.parent = parent;
 		this.swingSession = swingSession;
 	}
 
 	public void actionPerformed(ActionEvent e) {
 
-		if (match == null) {
+		if (project == null) {
 			JOptionPane.showMessageDialog(parent,
-					"No match selected",
+					"No project selected",
 					"Error",
 					JOptionPane.ERROR_MESSAGE);
 			return;
@@ -69,7 +69,7 @@ public class ShowMatchStatisticInfoAction extends AbstractAction {
 
 		MatchStatisticsPanel p = null;
 		try {
-			p = new MatchStatisticsPanel(swingSession,match);
+			p = new MatchStatisticsPanel(swingSession,project);
 		} catch (SQLException e1) {
 			MMSUtils.showExceptionDialog(parent,
 					"Could not get match statistics information", e1);

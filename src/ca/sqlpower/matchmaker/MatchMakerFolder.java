@@ -73,8 +73,8 @@ public class MatchMakerFolder<C extends MatchMakerObject>
 	}
 	
 	/**
-	 * This method should not be used.  The match object is expected to perform
-	 * the duplication of its match folders.
+	 * This method should not be used.  The project object is expected to perform
+	 * the duplication of its folders.
 	 */
 	public MatchMakerFolder duplicate(MatchMakerObject parent, MatchMakerSession s) {
 		throw new RuntimeException("The match maker folder should never be duplicated.  It should be managed by the Match object");

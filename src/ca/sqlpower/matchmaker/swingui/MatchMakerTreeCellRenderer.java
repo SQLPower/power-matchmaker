@@ -33,7 +33,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -46,7 +46,7 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
-	final private Icon matchIcon = new ImageIcon(getClass().getResource("/icons/match_project.png"));
+	final private Icon projectIcon = new ImageIcon(getClass().getResource("/icons/match_project.png"));
 	final private Icon mungeIcon = new ImageIcon(getClass().getResource("/icons/cog.png"));
 	final private Icon mergeIcon = new ImageIcon(getClass().getResource("/icons/cog_double.png"));
 	final private Icon sourceMergeIcon = new ImageIcon(getClass().getResource("/icons/cog_double_star.png"));
@@ -70,8 +70,8 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
         
 		super.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus);
 
-		if (value instanceof Match) {
-			setIcon(matchIcon);
+		if (value instanceof Project) {
+			setIcon(projectIcon);
 		} else if (value instanceof MungeProcess) {
             MungeProcess group = (MungeProcess) value;
             if (group.getColour() == null) {

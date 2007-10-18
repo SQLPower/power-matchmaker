@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -91,13 +91,13 @@ public class StubMatchMakerSession implements MatchMakerSession{
         return null;
     }
 
-	public boolean isThisMatchNameAcceptable(String name) {
-		logger.debug("Stub call: StubMatchMakerSession.isThisMatchNameAcceptable()");
+	public boolean isThisProjectNameAcceptable(String name) {
+		logger.debug("Stub call: StubMatchMakerSession.isThisProjectNameAcceptable()");
 		return false;
 	}
 
-	public Match getMatchByName(String name) {
-		logger.debug("Stub call: StubMatchMakerSession.getMatchByName()");
+	public Project getProjectByName(String name) {
+		logger.debug("Stub call: StubMatchMakerSession.getProjectByName()");
 		return null;
 	}
 
@@ -106,8 +106,8 @@ public class StubMatchMakerSession implements MatchMakerSession{
         return null;
     }
 
-    public long countMatchByName(String name) {
-        logger.debug("Stub call: StubMatchMakerSession.countMatchByName()");
+    public long countProjectByName(String name) {
+        logger.debug("Stub call: StubMatchMakerSession.countProjectByName()");
         return 0;
     }
 

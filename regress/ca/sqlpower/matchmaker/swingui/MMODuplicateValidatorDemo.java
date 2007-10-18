@@ -123,7 +123,7 @@ public class MMODuplicateValidatorDemo {
         PanelBuilder pb = new PanelBuilder(layout);
         CellConstraints cc = new CellConstraints();
         pb.add(statusLabel, cc.xyw(2,2,6));
-        pb.add(new JLabel("Match Name"), cc.xy(2,4));
+        pb.add(new JLabel("Project Name"), cc.xy(2,4));
         pb.add(field, cc.xy(4,4));
         pb.add(create, cc.xy(6,4));
         pb.add(new JScrollPane(area), cc.xyw(2,6,5));

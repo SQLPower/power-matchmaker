@@ -35,11 +35,11 @@ import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerObjectComboBoxCellRenderer;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.validation.MatchNameValidator;
+import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.validation.Validator;
@@ -52,16 +52,16 @@ public class DuplicateProjectAction extends AbstractAction {
 	StatusComponent status = new StatusComponent();
 
 	private MatchMakerSwingSession swingSession;
-	private Match match;
+	private Project project;
 	private Callable<Boolean> okCall;
 	private Callable<Boolean> cancelCall;
 	private JComboBox folderComboBox;
 	private FormValidationHandler handler;
 	
-	public DuplicateProjectAction(MatchMakerSwingSession swingSession, Match match) {
+	public DuplicateProjectAction(MatchMakerSwingSession swingSession, Project project) {
 		super("Duplicate Project");
 		this.swingSession = swingSession;
-		this.match = match;
+		this.project = project;
 		handler = new FormValidationHandler(status);
 	}
 	
@@ -94,7 +94,7 @@ public class DuplicateProjectAction extends AbstractAction {
 			return targetNameField.getText();
 		}
 
-		public JTextField getMatchNameField() {
+		public JTextField getProjectNameField() {
 			return targetNameField;
 		}
 	}
@@ -102,10 +102,10 @@ public class DuplicateProjectAction extends AbstractAction {
 
 		String newName = null;
 		for ( int count=0; ; count++) {
-			newName = match.getName() +
+			newName = project.getName() +
 								"_DUP" +
 								(count==0?"":String.valueOf(count));
-			if ( swingSession.isThisMatchNameAcceptable(newName) )
+			if ( swingSession.isThisProjectNameAcceptable(newName) )
 				break;
 		}
 		final JDialog dialog;
@@ -113,19 +113,19 @@ public class DuplicateProjectAction extends AbstractAction {
 		final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
 		folderComboBox = new JComboBox(new DefaultComboBoxModel(folders.toArray()));
 		folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
-		folderComboBox.setSelectedItem(match.getParent());
+		folderComboBox.setSelectedItem(project.getParent());
 		
 		final DuplicatePanel archPanel = new DuplicatePanel(newName,folderComboBox);
 
 		okCall = new Callable<Boolean>() {
 			public Boolean call() {
 				String newName = archPanel.getDupName();
-				PlFolder<Match> folder = (PlFolder<Match>) folderComboBox
+				PlFolder<Project> folder = (PlFolder<Project>) folderComboBox
 				.getSelectedItem();
-				Match newmatch = match.duplicate(folder,swingSession);
-				newmatch.setName(newName);
-				folder.addChild(newmatch);
-				swingSession.save(newmatch);
+				Project newProject = project.duplicate(folder,swingSession);
+				newProject.setName(newName);
+				folder.addChild(newProject);
+				swingSession.save(newProject);
 				return new Boolean(true);
 			}};
 			
@@ -136,7 +136,7 @@ public class DuplicateProjectAction extends AbstractAction {
 			
 		dialog = DataEntryPanelBuilder.createDataEntryPanelDialog(archPanel,
 				swingSession.getFrame(),
-				"Duplicate Match",
+				"Duplicate Project",
 				"OK",
 				okCall,
 				cancelCall);
@@ -145,8 +145,8 @@ public class DuplicateProjectAction extends AbstractAction {
 		dialog.setLocationRelativeTo(swingSession.getFrame());
 		dialog.setVisible(true);
 		
-		Validator v = new MatchNameValidator(swingSession,new Match());
-        handler.addValidateObject(archPanel.getMatchNameField(),v);
+		Validator v = new ProjectNameValidator(swingSession,new Project());
+        handler.addValidateObject(archPanel.getProjectNameField(),v);
 	}
 
 }

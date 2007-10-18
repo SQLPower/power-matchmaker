@@ -21,12 +21,12 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import ca.sqlpower.matchmaker.dao.AbstractMatchRuleSetDAOTestCase;
-import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
+import ca.sqlpower.matchmaker.dao.AbstractMungeProcessDAOTestCase;
+import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 
-public class MatchRuleSetDAOSQLServerTest extends AbstractMatchRuleSetDAOTestCase {
+public class MatchRuleSetDAOSQLServerTest extends AbstractMungeProcessDAOTestCase {
     
     private MungeProcess ruleSet;
     
@@ -42,8 +42,8 @@ public class MatchRuleSetDAOSQLServerTest extends AbstractMatchRuleSetDAOTestCas
 	}
     
 	@Override
-	public MatchRuleSetDAO getDataAccessObject() throws Exception {
-		return new MatchRuleSetDAOHibernate(getSession());
+	public MungeProcessDAO getDataAccessObject() throws Exception {
+		return new MungeProcessDAOHibernate(getSession());
 	}
 
     @Override

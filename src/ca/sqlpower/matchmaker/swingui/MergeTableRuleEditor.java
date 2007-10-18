@@ -44,7 +44,7 @@ import javax.swing.tree.TreePath;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.util.EditableJTable;
@@ -74,7 +74,7 @@ public class MergeTableRuleEditor implements EditorPane {
 	private TreePath menuPath;
 
 	private final MatchMakerSwingSession swingSession;
-	private Match match;
+	private Project project;
 
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
@@ -82,14 +82,14 @@ public class MergeTableRuleEditor implements EditorPane {
 	//keeps track of whether the editor pane has unsaved changes
 	private CustomTableModelListener tableListener;
 	
-	public MergeTableRuleEditor(MatchMakerSwingSession swingSession,Match match) {
+	public MergeTableRuleEditor(MatchMakerSwingSession swingSession,Project project) {
 		this.swingSession = swingSession;
-		this.match = match;
-		if (match == null) {
-			throw new NullPointerException("You can't edit a null match");
+		this.project = project;
+		if (project == null) {
+			throw new NullPointerException("You can't edit a null project");
 		}
         handler = new FormValidationHandler(status);
-        setupRulesTable(swingSession,match);
+        setupRulesTable(swingSession,project);
         buildUI();
         setDefaultSelections();
         handler.resetHasValidated(); // avoid false hits when newly created
@@ -100,8 +100,8 @@ public class MergeTableRuleEditor implements EditorPane {
 		menuPath = menuTree.getSelectionPath();
 	}
 	
-	private void setupRulesTable(MatchMakerSwingSession swingSession, Match match) {
-		mergeTableRuleTableModel = new MergeTableRuleTableModel(match,swingSession);
+	private void setupRulesTable(MatchMakerSwingSession swingSession, Project project) {
+		mergeTableRuleTableModel = new MergeTableRuleTableModel(project,swingSession);
 		tableListener = new CustomTableModelListener();
 		mergeTableRuleTableModel.addTableModelListener(tableListener);
 		
@@ -185,7 +185,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
 		//new actions for delete and save should be extracted and be put into its own file.
-		bbb.addGridded(new JButton(new NewMergeRuleAction(swingSession, match)));
+		bbb.addGridded(new JButton(new NewMergeRuleAction(swingSession, project)));
 		bbb.addRelatedGap();
 		bbb.addGridded(new JButton(deriveRelated));
 		bbb.addRelatedGap();
@@ -202,14 +202,14 @@ public class MergeTableRuleEditor implements EditorPane {
 	}
 
 	private void setDefaultSelections() {
-		desc.setText(match.getTableMergeRulesFolder().getFolderDesc());
+		desc.setText(project.getTableMergeRulesFolder().getFolderDesc());
 	}
 	
 	private Action moveUp = new AbstractAction("", SPSUtils.createIcon("chevrons_up1", "Move Up")) {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" up");
-			match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow-1);
+			project.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow-1);
 			mergeRulesTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
 			TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
@@ -218,10 +218,10 @@ public class MergeTableRuleEditor implements EditorPane {
 	private Action deriveRelated = new AbstractAction("Derive Related Rules") {
 		public void actionPerformed(ActionEvent e) {
 			try {
-				new RelatedTableDeriver(match,swingSession);
+				new RelatedTableDeriver(project,swingSession);
 			} catch (ArchitectException e1) {
 				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
-						"Failed to generate columns for match source table.", e1);
+						"Failed to generate columns for project source table.", e1);
 			}
 		}
 	};
@@ -230,7 +230,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" down");
-			match.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow+1);
+			project.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow+1);
 			mergeRulesTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
 			TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
@@ -245,8 +245,8 @@ public class MergeTableRuleEditor implements EditorPane {
 			if (responds != JOptionPane.YES_OPTION)
 				return;
 
-			TableMergeRules rule = match.getTableMergeRules().get(selectedRow);
-			match.removeTableMergeRule(rule);
+			TableMergeRules rule = project.getTableMergeRules().get(selectedRow);
+			project.removeTableMergeRule(rule);
 			if (selectedRow >= mergeRulesTable.getRowCount()) {
 				selectedRow = mergeRulesTable.getRowCount() - 1;
 			}
@@ -276,8 +276,8 @@ public class MergeTableRuleEditor implements EditorPane {
 	 * of any children has been changed.
 	 */
 	public boolean doSave() {
-		logger.debug("#1 children size="+match.getTableMergeRules().size());
-		swingSession.save(match);
+		logger.debug("#1 children size="+project.getTableMergeRules().size());
+		swingSession.save(project);
 		this.tableListener.setModified(false);
 		return true;
 	}

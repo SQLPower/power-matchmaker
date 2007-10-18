@@ -28,7 +28,7 @@ public class PlFolderTest extends MatchMakerTestCase<PlFolder> {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		plFolder = new PlFolder<Match>("Test Folder");
+		plFolder = new PlFolder<Project>("Test Folder");
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		plFolder.setSession(session);

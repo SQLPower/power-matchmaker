@@ -56,16 +56,16 @@ public class MatchEngineImpl extends AbstractEngine {
 
 	private Processor currentProcessor;
 	
-	public MatchEngineImpl(MatchMakerSession session, Match match) {
+	public MatchEngineImpl(MatchMakerSession session, Project project) {
 		this.setSession(session);
-		this.setMatch(match);
+		this.setProject(project);
 	}
 
 	public void checkPreconditions() throws EngineSettingException, ArchitectException {
 		MatchMakerSession session = getSession();
-        Match match = getMatch();
+        Project project = getProject();
         final MatchMakerSessionContext context = session.getContext();
-        final MatchSettings settings = match.getMatchSettings();
+        final MungeSettings settings = project.getMungeSettings();
         
         if ( context == null ) {
         	throw new EngineSettingException(
@@ -88,24 +88,24 @@ public class MatchEngineImpl extends AbstractEngine {
                     "\" doesn't have the ODBC DSN set.");
         }
         
-        if (!Match.doesSourceTableExist(session, match)) {
+        if (!Project.doesSourceTableExist(session, project)) {
             throw new EngineSettingException(
                     "Your match source table \""+
-                    DDLUtils.toQualifiedName(match.getSourceTable())+
+                    DDLUtils.toQualifiedName(project.getSourceTable())+
             "\" does not exist");
         }
         
-        if (!session.canSelectTable(match.getSourceTable())) {
+        if (!session.canSelectTable(project.getSourceTable())) {
             throw new EngineSettingException(
             "PreCondition failed: can not select match source table");
         }
         
-        if (!Match.doesResultTableExist(session, match)) {
+        if (!Project.doesResultTableExist(session, project)) {
             throw new EngineSettingException(
             "PreCondition failed: match result table does not exist");
         }
         
-        if (!match.vertifyResultTableStruct() ) {
+        if (!project.vertifyResultTableStruct() ) {
             throw new EngineSettingException(
             "PreCondition failed: match result table structure incorrect");
         }
@@ -180,7 +180,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Starting Match Engine";
 			logger.info(progressMessage);
 			
-			Integer processCount = getMatch().getMatchSettings().getProcessCount();
+			Integer processCount = getProject().getMungeSettings().getProcessCount();
 			int rowCount;
 			if (processCount == null || processCount == 0) {
 				Connection con = null;
@@ -188,7 +188,7 @@ public class MatchEngineImpl extends AbstractEngine {
 				try {
 				con = getSession().getConnection();
 				stmt = con.createStatement();
-				String rowCountSQL = "SELECT COUNT(*) AS ROWCOUNT FROM " + DDLUtils.toQualifiedName(getMatch().getSourceTable());
+				String rowCountSQL = "SELECT COUNT(*) AS ROWCOUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
 				ResultSet result = stmt.executeQuery(rowCountSQL);
 				logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
 				result.next();
@@ -201,10 +201,10 @@ public class MatchEngineImpl extends AbstractEngine {
 				rowCount = processCount.intValue();
 			}
 			
-			List<MungeProcess> mungeProcesses = getMatch().getMatchRuleSetFolder().getChildren();
+			List<MungeProcess> mungeProcesses = getProject().getMungeProcessesFolder().getChildren();
 			jobSize = rowCount * mungeProcesses.size() * 2;
 			
-			MatchPool pool = new MatchPool(getMatch());
+			MatchPool pool = new MatchPool(getProject());
 			// Fill pool with pre-existing matches
 			pool.findAll(null);
 			

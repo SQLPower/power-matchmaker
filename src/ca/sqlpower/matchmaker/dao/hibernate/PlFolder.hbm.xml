@@ -32,7 +32,7 @@
 			<key>
 				<column name="folder_oid" length="80" not-null="true" />
 			</key>
-			<one-to-many class="ca.sqlpower.matchmaker.Match"  />
+			<one-to-many class="ca.sqlpower.matchmaker.Project"  />
 		</bag>
 
 	</class>

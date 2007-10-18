@@ -51,9 +51,9 @@ public class SourceTableRecord {
     private final MatchMakerSession session;
     
     /**
-     * The Match object this SourceTableRecord belongs to.
+     * The Project object this SourceTableRecord belongs to.
      */
-    private final Match match;
+    private final Project project;
     
     /**
      * The values of the unique index columns in the same order as the
@@ -96,56 +96,56 @@ public class SourceTableRecord {
     
     /**
      * Creates a new SourceTableRecord instance in the given MatchMakerSession
-     * for the given Match and source table key values.
+     * for the given Project and source table key values.
      * 
-     * @param session The MatchMakerSession of the given Match
-     * @param match The Match this record is attached to
+     * @param session The MatchMakerSession of the given Project
+     * @param project The Project this record is attached to
      * @param displayValues The values used to display this record in the UI
-     * @param keyValues The values of the unique index on the match's source
-     * table.  These values must be specified in the same order as the match's
+     * @param keyValues The values of the unique index on the project's source
+     * table.  These values must be specified in the same order as the project's
      * sourceTableIndex columns. Not allowed to be null.
      */
     public SourceTableRecord(
             final MatchMakerSession session,
-            final Match match,
+            final Project project,
             List<Object> displayValues,
             List<Object> keyValues) {
         super();
         this.session = session;
-        this.match = match;
+        this.project = project;
         this.displayValues = displayValues;
         this.keyValues = Collections.unmodifiableList(new ArrayList<Object>(keyValues));
         this.computedHashCode = this.keyValues.hashCode();
     }
 
     /**
-     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Match, List, List)}
+     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Project, List, List)}
      * but takes key values as a variable length argument list.  Mostly useful in setting up test
      * cases.
      */
     public SourceTableRecord(
             final MatchMakerSession session,
-            final Match match,
+            final Project project,
             Object ... keyValues) {
-    	this(session, match, new ArrayList<Object>(),Arrays.asList(keyValues));
+    	this(session, project, new ArrayList<Object>(),Arrays.asList(keyValues));
     }
 
     /**
-     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Match, List, List)}
+     * Works exactly like {@link #SourceTableRecord(MatchMakerSession, Project, List, List)}
      * except the displayValues is initialized as an empty ArrayList.
      */
     public SourceTableRecord(
             final MatchMakerSession session,
-            final Match match,
+            final Project project,
             List<Object> keyValues) {
-    	this(session, match, new ArrayList<Object>(),keyValues);
+    	this(session, project, new ArrayList<Object>(),keyValues);
     }
     
     /**
      * Looks up and returns the column values for the row this object
      * represents.  The values are returned in the list in the same order
-     * as the match's sourceTable's columns are listed in.  Thus, all
-     * SourceTableRecords attached to the same Match will return column
+     * as the project's sourceTable's columns are listed in.  Thus, all
+     * SourceTableRecords attached to the same Project will return column
      * values in the same order as each other.
      * 
      * @return The values for the row of the source table which is uniquely
@@ -153,7 +153,7 @@ public class SourceTableRecord {
      * @throws ArchitectException, SQLException 
      */
     public List<Object> fetchValues() throws ArchitectException, SQLException {
-        SQLTable sourceTable = match.getSourceTable();
+        SQLTable sourceTable = project.getSourceTable();
         List<Object> values = new ArrayList<Object>(sourceTable.getColumns().size());
         Connection con = null;
         Statement stmt = null;
@@ -175,7 +175,7 @@ public class SourceTableRecord {
             sql.append("\n WHERE ");
             first = true;
             for (int col = 0; col < keyValues.size(); col++) {
-                SQLIndex.Column icol = match.getSourceTableIndex().getChild(col);
+                SQLIndex.Column icol = project.getSourceTableIndex().getChild(col);
                 Object ival = keyValues.get(col);
                 if (!first) sql.append(" AND ");
                 sql.append(icol.getName());

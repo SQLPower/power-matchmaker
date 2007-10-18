@@ -17,32 +17,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker.dao.hibernate;
+package ca.sqlpower.matchmaker.dao;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
-public class MatchRuleSetDAOHibernate extends AbstractMatchMakerDAOHibernate<MungeProcess> implements
-		MatchRuleSetDAO {
-
-	public MatchRuleSetDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
-		super(matchMakerSession);
-	}
-
-	public Class<MungeProcess> getBusinessClass() {
-		return MungeProcess.class;
-	}
-	
-	@Override
-	public void delete(MungeProcess deleteMe) {
-		
-		MatchMakerObject parent = deleteMe.getParent();
-		if (parent != null ){
-			parent.removeChild(deleteMe);
-		}
-		super.delete(deleteMe);
-		
-	}
+/**
+ * The Data access interface for MatchRuleSet objects
+ *
+ * At this point this interface only extends the base DAO interface
+ * and is put in for future expansion. 
+ *
+ * Remember to program to this interface rather than an implemenation
+ */
+public interface MungeProcessDAO extends MatchMakerDAO<MungeProcess> {
 
 }

@@ -29,20 +29,20 @@ import junit.framework.TestCase;
 public class SourceTableRecordTest extends TestCase {
 
     MatchMakerSession session;
-    Match match;
+    Project project;
     MatchPool pool;
     
     @Override
     protected void setUp() throws Exception {
         session = new StubMatchMakerSession();
-        match = new Match();
-        match.setSession(session);
-        pool = new MatchPool(match);
+        project = new Project();
+        project.setSession(session);
+        pool = new MatchPool(project);
     }
     
     public void testNoNullKeyValuesAllowed() {
         try {
-            new SourceTableRecord(session, match, new ArrayList<Object>(), (List<Object>) null);
+            new SourceTableRecord(session, project, new ArrayList<Object>(), (List<Object>) null);
             fail("It allowed a null keyvalues list");
         } catch (NullPointerException ex) {
             // expected
@@ -55,14 +55,14 @@ public class SourceTableRecordTest extends TestCase {
         oneKeyValues.add(new String("moo"));
         oneKeyValues.add(new String("moo"));
         oneKeyValues.add(null);
-        SourceTableRecord one = new SourceTableRecord(session, match, pool, oneKeyValues);
+        SourceTableRecord one = new SourceTableRecord(session, project, pool, oneKeyValues);
         
         List<Object> twoKeyValues = new ArrayList<Object>();
         twoKeyValues.add(new String("cows"));
         twoKeyValues.add(new String("moo"));
         twoKeyValues.add(new String("moo"));
         twoKeyValues.add(null);
-        SourceTableRecord two = new SourceTableRecord(session, match, pool, twoKeyValues);
+        SourceTableRecord two = new SourceTableRecord(session, project, pool, twoKeyValues);
 
         assertTrue(one.equals(two));
         assertTrue(two.equals(one));
@@ -76,14 +76,14 @@ public class SourceTableRecordTest extends TestCase {
         oneKeyValues.add(new String("cows"));
         oneKeyValues.add(new String("moo"));
         oneKeyValues.add(null);
-        SourceTableRecord one = new SourceTableRecord(session, match, pool, oneKeyValues);
+        SourceTableRecord one = new SourceTableRecord(session, project, pool, oneKeyValues);
         
         List<Object> twoKeyValues = new ArrayList<Object>();
         twoKeyValues.add(new String("cows"));
         twoKeyValues.add(new String("moo"));
         twoKeyValues.add(new String("moo"));
         twoKeyValues.add(null);
-        SourceTableRecord two = new SourceTableRecord(session, match, pool,twoKeyValues);
+        SourceTableRecord two = new SourceTableRecord(session, project, pool,twoKeyValues);
 
         assertFalse(one.equals(two));
         assertFalse(two.equals(one));
@@ -93,14 +93,14 @@ public class SourceTableRecordTest extends TestCase {
         List<Object> oneKeyValues = new ArrayList<Object>();
         oneKeyValues.add(new String("cows"));
         oneKeyValues.add(new String("moo"));
-        SourceTableRecord one = new SourceTableRecord(session, match, pool,oneKeyValues);
+        SourceTableRecord one = new SourceTableRecord(session, project, pool,oneKeyValues);
         
         List<Object> twoKeyValues = new ArrayList<Object>();
         twoKeyValues.add(new String("cows"));
         twoKeyValues.add(new String("moo"));
         twoKeyValues.add(new String("moo"));
         twoKeyValues.add(null);
-        SourceTableRecord two = new SourceTableRecord(session, match, pool,twoKeyValues);
+        SourceTableRecord two = new SourceTableRecord(session, project, pool,twoKeyValues);
 
         assertFalse(one.equals(two));
         assertFalse(two.equals(one));

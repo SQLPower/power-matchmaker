@@ -44,7 +44,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -72,11 +72,11 @@ public class MungeProcessEditor implements EditorPane {
     private final MatchMakerSwingSession swingSession;
     
     /**
-     * The match that is or will be the parent of the process we're editing.
+     * The project that is or will be the parent of the process we're editing.
      * If this editor was created for a new process, it will not belong to this
-     * match until the doSave() method has been called.
+     * project until the doSave() method has been called.
      */
-    private final Match parentMatch;
+    private final Project parentProject;
     
     /**
      * The munge process this editor is responsible for editing.
@@ -109,17 +109,17 @@ public class MungeProcessEditor implements EditorPane {
     /**
      * Creates a new editor for the given session's given munge process.
      * 
-     * @param swingSession The session the given match and process belong to
-     * @param match The match that is or will become the process's parent. If the
+     * @param swingSession The session the given project and process belong to
+     * @param project The project that is or will become the process's parent. If the
      * process is new, it will not currently have a parent, but this editor will
-     * connect the process to this match when saving. 
+     * connect the process to this project when saving. 
      * @param process The process to edit
      */
     public MungeProcessEditor(MatchMakerSwingSession swingSession,
-            Match match, MungeProcess process) throws ArchitectException {
+            Project project, MungeProcess process) throws ArchitectException {
         super();
         this.swingSession = swingSession;
-        this.parentMatch = match;
+        this.parentProject = project;
         this.process = process;
         this.changeHandler = new MMOChangeWatcher<MungeProcess, MungeStep>(process);
         
@@ -132,14 +132,14 @@ public class MungeProcessEditor implements EditorPane {
         ArrayList<Action> actions = new ArrayList<Action>();
         actions.add(saveAction);
         this.handler = new FormValidationHandler(status, actions);
-        this.mungePen = new MungePen(process, handler, parentMatch);
+        this.mungePen = new MungePen(process, handler, parentProject);
 
         buildUI();
-        if (process.getParentMatch() != null && process.getParentMatch() != parentMatch) {
+        if (process.getParentProject() != null && process.getParentProject() != parentProject) {
             throw new IllegalStateException(
                     "The given process has a parent which is not the given parent match obejct!");
         }
-        handler.addValidateObject(name, new MatchRuleSetNameValidator());
+        handler.addValidateObject(name, new MungeProcessNameValidator());
         
         
     }
@@ -218,8 +218,8 @@ public class MungeProcessEditor implements EditorPane {
 	};
     
     /**
-     * Saves the process, possibly adding it to the parent match given in the
-     * constructor if the process is not already a child of that match.
+     * Saves the process, possibly adding it to the parent project given in the
+     * constructor if the process is not already a child of that project.
      */
     public boolean doSave() {
     	process.setName(name.getText());
@@ -227,10 +227,10 @@ public class MungeProcessEditor implements EditorPane {
     	process.setColour((Color)color.getSelectedItem());
     	process.setMatchPercent(Short.valueOf(priority.getValue().toString()));
     	
-        if (process.getParentMatch() == null) {
-            parentMatch.addMatchRuleSet(process);
-            MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
-            dao.save(parentMatch);
+        if (process.getParentProject() == null) {
+            parentProject.addMungeProcess(process);
+            MatchMakerDAO<Project> dao = swingSession.getDAO(Project.class);
+            dao.save(parentProject);
         } else {
             MatchMakerDAO<MungeProcess> dao = swingSession.getDAO(MungeProcess.class);
             dao.save(process);
@@ -324,7 +324,7 @@ public class MungeProcessEditor implements EditorPane {
         }
     }
     
-	private class MatchRuleSetNameValidator implements Validator {
+	private class MungeProcessNameValidator implements Validator {
 		private static final int MAX_RULE_SET_NAME_CHAR = 30;
         public ValidateResult validate(Object contents) {
 			String value = (String)contents;
@@ -332,13 +332,13 @@ public class MungeProcessEditor implements EditorPane {
 				return ValidateResult.createValidateResult(Status.FAIL,
 						"Munge Process name is required");
 			} else if ( !value.equals(process.getName()) &&
-					parentMatch.getMatchRuleSetByName(name.getText()) != null ) {
+					parentProject.getMungeProcessByName(name.getText()) != null ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
 						"Munge Process name is invalid or already exists.");
 			} else if (value.length() > MAX_RULE_SET_NAME_CHAR){
 			    return ValidateResult.createValidateResult(Status.FAIL, 
                         "Munge Process name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
-            } else if (process.getParent() == null && parentMatch.getMatchRuleSetByName(name.getText()) != null) {
+            } else if (process.getParent() == null && parentProject.getMungeProcessByName(name.getText()) != null) {
             	return ValidateResult.createValidateResult(Status.FAIL, "Munge Process name is invalid or already exists.");
             }
 			return ValidateResult.createValidateResult(Status.OK, "");

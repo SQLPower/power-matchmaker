@@ -14,8 +14,8 @@
 			</generator>
 		</id>
 
-		<many-to-one name="parentMatch" 
-			class="ca.sqlpower.matchmaker.Match" 
+		<many-to-one name="parentProject" 
+			class="ca.sqlpower.matchmaker.Project" 
 			fetch="select">
 			<column name="MATCH_OID"/>
 		</many-to-one>

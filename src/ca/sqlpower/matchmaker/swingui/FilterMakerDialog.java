@@ -91,25 +91,25 @@ public class FilterMakerDialog extends JDialog {
     private static final String LESSTHANOREQUALTHAN = "<=";
     private static final String GREATEROREQUALTHAN = ">=";
 
-    private SQLTable matchSourceTable;
+    private SQLTable projectSourceTable;
 
     /**
      *
      * @param parent The parent frame
      * @param returnText the JTextArea that the filter will put text in
-     * @param matchSourceTable the sqltable the filter is being used for
+     * @param projectSourceTable the sqltable the filter is being used for
      * @param trueForTextField true if the last input component should be JTextArea
      *                      false if the last input component should be a dropdown
      */
 
     public FilterMakerDialog(JFrame parent,
             final JTextArea returnText,
-            SQLTable matchSourceTable, boolean trueForTextField) {
+            SQLTable projectSourceTable, boolean trueForTextField) {
 
         super(parent, "Column Filter");
         setModal(true);
         this.returnText = returnText;
-        this.matchSourceTable =  matchSourceTable;
+        this.projectSourceTable =  projectSourceTable;
         this.trueForTextField = trueForTextField;
         buildUI();
         addWindowListener(windowsListener);
@@ -119,18 +119,18 @@ public class FilterMakerDialog extends JDialog {
      *
      * @param parent The parent dialog
      * @param returnText the JTextArea that the filter will put text in
-     * @param matchSourceTable the sqltable the filter is being used for
+     * @param projectSourceTable the sqltable the filter is being used for
      * @param trueForTextField true if the last input component should be JTextArea
      *                      false if the last input component should be a dropdown
      */
 
     public FilterMakerDialog(JDialog parent,
             final JTextArea returnText,
-            SQLTable matchSourceTable, boolean trueForTextField) {
+            SQLTable projectSourceTable, boolean trueForTextField) {
 
         super(parent, "Column Filter");
         this.returnText = returnText;
-        this.matchSourceTable =  matchSourceTable;
+        this.projectSourceTable =  projectSourceTable;
         this.trueForTextField = trueForTextField;
         buildUI();
         addWindowListener(windowsListener);
@@ -171,7 +171,7 @@ public class FilterMakerDialog extends JDialog {
 
         pb = new PanelBuilder(layout,p);
 
-        columnName = new JComboBox(new ColumnComboBoxModel(matchSourceTable));
+        columnName = new JComboBox(new ColumnComboBoxModel(projectSourceTable));
 
 
         comparisonOperator = new JComboBox();
@@ -201,7 +201,7 @@ public class FilterMakerDialog extends JDialog {
             conditionTextField = new JTextField();
             pb.add(conditionTextField, cc.xy(4,6));
         } else {
-        	columnName2 = new JComboBox(new ColumnComboBoxModel(matchSourceTable));
+        	columnName2 = new JComboBox(new ColumnComboBoxModel(projectSourceTable));
 
             pb.add(columnName2, cc.xy(4,6));
         }
@@ -341,9 +341,9 @@ public class FilterMakerDialog extends JDialog {
         public void actionPerformed(ActionEvent e) {
             StringBuffer sql = new StringBuffer();
             sql.append("SELECT 1 FROM ");
-            sql.append(DDLUtils.toQualifiedName(matchSourceTable.getCatalogName(),
-                    matchSourceTable.getSchemaName(),
-                    matchSourceTable.getName()));
+            sql.append(DDLUtils.toQualifiedName(projectSourceTable.getCatalogName(),
+                    projectSourceTable.getSchemaName(),
+                    projectSourceTable.getName()));
             sql.append(" WHERE ");
             sql.append(filterText.getText());
             logger.debug("Test SQL:["+sql.toString()+"]");
@@ -353,7 +353,7 @@ public class FilterMakerDialog extends JDialog {
             ResultSet rs =  null;
             try {
                 try {
-					con = matchSourceTable.getParentDatabase().getConnection();
+					con = projectSourceTable.getParentDatabase().getConnection();
 				} catch (ArchitectException e1) {
 					throw new ArchitectRuntimeException(e1);
 				}

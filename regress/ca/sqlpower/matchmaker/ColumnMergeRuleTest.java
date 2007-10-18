@@ -63,7 +63,7 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		parent1.setSession(new TestingMatchMakerSession());
 		parent1.setName("tmr1");
 		
-		Match gp1 = new Match();
+		Project gp1 = new Project();
 		parent1.setParent(gp1);
 		gp1.setName("gp 1");
 		
@@ -71,7 +71,7 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		parent2.setName("tmr2");
 		parent2.setSession(new TestingMatchMakerSession());
 		
-		Match gp2 = new Match();
+		Project gp2 = new Project();
 		parent2.setParent(gp2);
 		gp2.setName("gp 2");
 		

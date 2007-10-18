@@ -69,7 +69,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
     }
 
     /**
-     * Recursively searches for a match rule using the given translate group.
+     * Recursively searches for a munge step using the given translate group.
      *  
      * @param mmo the object and descendants we want to check.
      * @param tg the translate group to search for. Must not be null.
@@ -86,9 +86,9 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
                 }
             }
         }
-        if (mmo instanceof Match) {
-            Match matchChild = (Match) mmo;
-            for (MungeProcess critGroup : matchChild.getMatchRuleSets()) {
+        if (mmo instanceof Project) {
+            Project projectChild = (Project) mmo;
+            for (MungeProcess critGroup : projectChild.getMungeProcesses()) {
                 if (checkMMOContainsTranslateGroup(critGroup, tg)) return true;
             }
         } else {

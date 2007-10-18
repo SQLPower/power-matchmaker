@@ -35,7 +35,7 @@ import javax.swing.JFrame;
 import javax.swing.JRadioButton;
 import javax.swing.border.EmptyBorder;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -105,7 +105,7 @@ public class DeleteFolderDialog {
         	if ( moveContent.getModel().isSelected()) {
         		PlFolder newFolder = (PlFolder) moveTo.getSelectedItem();
         		while (folder.getChildCount() >0) {
-        			Match m = (Match) folder.getChildren().get(0);
+        			Project m = (Project) folder.getChildren().get(0);
         			session.move(m, newFolder);
         		}
         		session.getCurrentFolderParent().deleteAndRemoveChild(folder);

@@ -27,23 +27,23 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Expression;
 
-import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.dao.MatchDAO;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.dao.ProjectDAO;
 
-public class MatchDAOHibernate extends AbstractMatchMakerDAOHibernate<Match> implements
-		MatchDAO {
-    static final Logger logger = Logger.getLogger(MatchDAOHibernate.class);
+public class ProjectDAOHibernate extends AbstractMatchMakerDAOHibernate<Project> implements
+		ProjectDAO {
+    static final Logger logger = Logger.getLogger(ProjectDAOHibernate.class);
     
-    public MatchDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
+    public ProjectDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
 		super(matchMakerSession);
 	}
 
-	public List<Match> findAllMatchesWithoutFolders() {
+	public List<Project> findAllProjectsWithoutFolders() {
 	        try {
-	            List<Match> results = getHibernateSession()
+	            List<Project> results = getHibernateSession()
 	                    .createCriteria(getBusinessClass()).add(Expression.isNull("folder"))
 	                    .list();
-	            for ( Match m : results ) {
+	            for ( Project m : results ) {
 	            	m.setSession(getMatchMakerSession());
 	            }
 	            return results;
@@ -53,43 +53,43 @@ public class MatchDAOHibernate extends AbstractMatchMakerDAOHibernate<Match> imp
 	        }
 	    }
 
-	public Class<Match> getBusinessClass() {
-		return Match.class;
+	public Class<Project> getBusinessClass() {
+		return Project.class;
 	}
 
-	public Match findByName(String name) {
+	public Project findByName(String name) {
 		Session session = getHibernateSession();
-		Query query = session.createQuery("from Match m where m.name = :name");
+		Query query = session.createQuery("from Project m where m.name = :name");
 		query.setParameter("name", name);
-		List matches = query.list();
-		if (matches.size() == 0) {
+		List projects = query.list();
+		if (projects.size() == 0) {
 			return null;
-		} else if (matches.size() == 1) {
-			Match match = (Match) matches.get(0);
-			match.setSession(getMatchMakerSession());
-			return match;
+		} else if (projects.size() == 1) {
+			Project project = (Project) projects.get(0);
+			project.setSession(getMatchMakerSession());
+			return project;
 		} else {
-			throw new IllegalStateException("More than one match with name \""+name+"\"");
+			throw new IllegalStateException("More than one project with name \""+name+"\"");
 		}
 	}
 
-	public boolean isThisMatchNameAcceptable(String name) {
-		Long count = countMatchByName(name);
+	public boolean isThisProjectNameAcceptable(String name) {
+		Long count = countProjectByName(name);
 		return (count == 0);
 	}
 
-	public long countMatchByName(String name) {
+	public long countProjectByName(String name) {
 		Session session = getHibernateSession();
-		Query query = session.createQuery("select count(*) from Match m where m.name = :name");
+		Query query = session.createQuery("select count(*) from Project m where m.name = :name");
 		query.setParameter("name", name, Hibernate.STRING);
 		Long count = (Long)query.uniqueResult();
 		return count;
 	}
 	
 	@Override
-	public void save(Match saveMe) {
+	public void save(Project saveMe) {
 		if (saveMe.getParent() == null) {
-			throw new RuntimeException("The match parent folder is null");
+			throw new RuntimeException("The project parent folder is null");
 		}
 		super.save(saveMe);
 	}

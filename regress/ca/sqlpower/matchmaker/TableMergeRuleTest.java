@@ -55,11 +55,11 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		SQLTable t1 = new SQLTable();
 		SQLTable t2 = new SQLTable();
 		
-		Match parent1 = new Match();
+		Project parent1 = new Project();
 		parent1.setSession(new TestingMatchMakerSession());
-		parent1.setName("match1");
-		Match parent2 = new Match();
-		parent2.setName("match2");
+		parent1.setName("project1");
+		Project parent2 = new Project();
+		parent2.setName("project2");
 		parent2.setSession(new TestingMatchMakerSession());
 		assertEquals("Two new objects should be equal",m1,m2);
 		
@@ -106,24 +106,24 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 	public void testIsSourceMergeRule() {
 		TableMergeRules m1 = getTarget();
 		TableMergeRules m2 = getTarget();
-		Match match = new Match();
+		Project project = new Project();
 		
 		SQLTable t1 = new SQLTable();
 		SQLTable t2 = new SQLTable();
 		
 		m1.setTable(t1);
 		m2.setTable(t2);
-		match.setSourceTable(t1);
-		m1.setParentMatch(match);
-		m2.setParentMatch(match);
+		project.setSourceTable(t1);
+		m1.setParentProject(project);
+		m2.setParentProject(project);
 		
-		assertTrue("Same source table of its parent match, should be a source merge rule",
+		assertTrue("Same source table of its parent project, should be a source merge rule",
 				m1.isSourceMergeRule());
-		assertFalse("Different source table from its parent match, should not be a source merge rule",
+		assertFalse("Different source table from its parent project, should not be a source merge rule",
 				m2.isSourceMergeRule());
 		
 		m1.setParent(null);
-		assertFalse("Parent match is null, should not be a source merge rule",
+		assertFalse("Parent project is null, should not be a source merge rule",
 				m1.isSourceMergeRule());
 	}
 }

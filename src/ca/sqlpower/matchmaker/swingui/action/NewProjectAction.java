@@ -26,31 +26,31 @@ import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
-import ca.sqlpower.matchmaker.swingui.MatchEditor;
+import ca.sqlpower.matchmaker.swingui.ProjectEditor;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
 
 /**
- * Creates a new Match object and a GUI editor for it, then puts that editor in the split pane.
+ * Creates a new Project object and a GUI editor for it, then puts that editor in the split pane.
  */
-public final class NewMatchAction extends AbstractAction {
+public final class NewProjectAction extends AbstractAction {
 
-	private static final Logger logger = Logger.getLogger(NewMatchAction.class);
+	private static final Logger logger = Logger.getLogger(NewProjectAction.class);
 	
-	private final Match.MatchMode type;
+	private final Project.ProjectMode type;
     private final MatchMakerSwingSession swingSession;
     
-	public NewMatchAction(MatchMakerSwingSession swingSession, String name, Match.MatchMode type) {
+	public NewProjectAction(MatchMakerSwingSession swingSession, String name, Project.ProjectMode type) {
 		super(name);
         this.swingSession = swingSession;
         this.type = type;
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		PlFolder<Match> folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
+		PlFolder<Project> folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
 		if (folder == null) {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
 					"Please select a folder first",
@@ -59,11 +59,11 @@ public final class NewMatchAction extends AbstractAction {
 			return;
 		}
 
-		final Match match = new Match();
-		match.setSession(swingSession);	
-		match.setType(type);
+		final Project project = new Project();
+		project.setSession(swingSession);	
+		project.setType(type);
 		try {
-			MatchEditor me = new MatchEditor(swingSession, match, folder);
+			ProjectEditor me = new ProjectEditor(swingSession, project, folder);
 			swingSession.setCurrentEditorComponent(me);
 		} catch (Exception ex) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Couldn't create match", ex);

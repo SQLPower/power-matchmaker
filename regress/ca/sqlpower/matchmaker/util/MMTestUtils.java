@@ -26,7 +26,7 @@ import java.sql.Statement;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.MatchPoolTest;
@@ -52,7 +52,7 @@ public class MMTestUtils {
 	 * <img src="doc-files/testgraph.png">
 	 */
 	public static MatchPool createTestingPool(MatchMakerSession session,
-			Match m,
+			Project m,
 			MungeProcess groupOne,
 			MungeProcess groupTwo) {
 		
@@ -579,7 +579,7 @@ public class MMTestUtils {
 	/**
 	 * Creates the result table used to store information about the graphs
 	 * created by
-	 * {@link #createTestingPool(MatchMakerSession, Match, MungeProcess, MungeProcess)}.
+	 * {@link #createTestingPool(MatchMakerSession, Project, MungeProcess, MungeProcess)}.
 	 * This table is only required if we want to test against a database.
 	 */
 	public static void createResultTable(Connection con) throws SQLException {

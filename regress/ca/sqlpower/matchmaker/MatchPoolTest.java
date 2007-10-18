@@ -60,7 +60,7 @@ public class MatchPoolTest extends TestCase {
 	private SQLDatabase db;
 	private SQLTable sourceTable;
 	private SQLTable resultTable;
-	private Match match;
+	private Project project;
 
 	private MungeProcess groupOne;
 
@@ -102,21 +102,21 @@ public class MatchPoolTest extends TestCase {
 		    }
 		};
 
-		match = new Match();
-		match.setSession(session);
-		match.setResultTable(resultTable);
-		match.setSourceTable(sourceTable);
-		match.setSourceTableIndex(sourceTableIndex);
+		project = new Project();
+		project.setSession(session);
+		project.setResultTable(resultTable);
+		project.setSourceTable(sourceTable);
+		project.setSourceTableIndex(sourceTableIndex);
 
 		groupOne = new MungeProcess();
 		groupOne.setName("Group_One");
-		match.addMatchRuleSet(groupOne);
+		project.addMungeProcess(groupOne);
 
 		MungeProcess groupTwo = new MungeProcess();
 		groupTwo.setName("Group_Two");
-		match.addMatchRuleSet(groupTwo);
+		project.addMungeProcess(groupTwo);
 		
-		pool = MMTestUtils.createTestingPool(session, match, groupOne, groupTwo);
+		pool = MMTestUtils.createTestingPool(session, project, groupOne, groupTwo);
 	}
 
 	@Override
@@ -155,7 +155,7 @@ public class MatchPoolTest extends TestCase {
 	 * properly.
 	 */
 	public void testFindAllPotentialMatches() throws Exception {
-		MatchPool pool = new MatchPool(match);
+		MatchPool pool = new MatchPool(project);
 		insertResultTableRecord(con, "1", "2", 15, "Group_One");
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
@@ -181,7 +181,7 @@ public class MatchPoolTest extends TestCase {
 	 * properly.
 	 */
 	public void testFindSourceTableRecords() throws Exception {
-		MatchPool pool = new MatchPool(match);
+		MatchPool pool = new MatchPool(project);
 		insertResultTableRecord(con, "1", "2", 15, "Group_One");
 		insertResultTableRecord(con, "1", "3", 15, "Group_One");
 		insertSourceTableRecord(con, "1");
@@ -210,7 +210,7 @@ public class MatchPoolTest extends TestCase {
 
 	/** Tests that findAll() hooks up inbound and outbound matches properly. */
 	public void testFindAllEdgeHookup() throws Exception {
-		MatchPool pool = new MatchPool(match);
+		MatchPool pool = new MatchPool(project);
 		insertResultTableRecord(con, "1", "2", 15, "Group_One");
 		insertResultTableRecord(con, "1", "3", 15, "Group_One");
 		insertSourceTableRecord(con, "1");
@@ -227,7 +227,7 @@ public class MatchPoolTest extends TestCase {
 	 * Sets the master of a node in a graph when no masters have been set.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithNoMasters() throws Exception {
@@ -277,7 +277,7 @@ public class MatchPoolTest extends TestCase {
 	 * Sets the master everything to be a1.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterOfAllWithNoMasters() throws Exception {
@@ -329,7 +329,7 @@ public class MatchPoolTest extends TestCase {
 	 * Reverse the master/duplicate relationship
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterToDuplicate() throws Exception {
@@ -380,7 +380,7 @@ public class MatchPoolTest extends TestCase {
 	 * of the new master. This should not be a normal case.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithSameDuplicate() throws Exception {
@@ -432,7 +432,7 @@ public class MatchPoolTest extends TestCase {
 	 * has another different master. This should not be a normal case.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterToCurrentDuplicate() throws Exception {
@@ -483,7 +483,7 @@ public class MatchPoolTest extends TestCase {
 	 * Sets the master of a node with no master, but masters exist in the graph.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithMaster() throws Exception {
@@ -535,7 +535,7 @@ public class MatchPoolTest extends TestCase {
 	 * and the duplicate node is a duplicate of a different node.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterDupIsAMasterNewMasterHasMaster() throws Exception {
@@ -600,7 +600,7 @@ public class MatchPoolTest extends TestCase {
 	 * duplicate of another node.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterMasterHasMasterDupHasMaster() throws Exception {
@@ -666,7 +666,7 @@ public class MatchPoolTest extends TestCase {
 	 * should be the same way a duplicate button is implemented in the UI.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetDuplicateMasterHasMasterDupHasMaster() throws Exception {
@@ -732,7 +732,7 @@ public class MatchPoolTest extends TestCase {
 	 * master/duplicate edges.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetDuplicate() throws Exception {
@@ -802,7 +802,7 @@ public class MatchPoolTest extends TestCase {
 	 * ultimate master.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterInACycle() throws Exception {
@@ -884,7 +884,7 @@ public class MatchPoolTest extends TestCase {
 	 * in a cycle.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithMasterInACycle() throws Exception {
@@ -979,7 +979,7 @@ public class MatchPoolTest extends TestCase {
 	 * master is in a cycle.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithUltimateMasterInACycle() throws Exception {
@@ -1081,7 +1081,7 @@ public class MatchPoolTest extends TestCase {
 	 * matching has been completed each node should only have one master.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWhereMasterHasTwoMasters() throws Exception {
@@ -1157,7 +1157,7 @@ public class MatchPoolTest extends TestCase {
 	 * master is on the other side of a cycle.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterWithUltimateMasterOutsideCycle() throws Exception {
@@ -1305,7 +1305,7 @@ public class MatchPoolTest extends TestCase {
 	 * graph. The end result should have no cycles.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterToCreateACycle() throws Exception {
@@ -1375,7 +1375,7 @@ public class MatchPoolTest extends TestCase {
 	 * edge
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testSetMasterCreatingASyntheticEdge() throws Exception {
@@ -3547,7 +3547,7 @@ public class MatchPoolTest extends TestCase {
 	 * been removed.
 	 * <p>
 	 * See the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 */
 	public void testResetPoolRemovesSynthetics() throws Exception {
@@ -3667,7 +3667,7 @@ public class MatchPoolTest extends TestCase {
 	 * an exception if the MatchPool contains no SourceTableRecords.
 	 */
 	public void testStoreOnEmptyMatchPool() throws Exception {
-		MatchPool emptyPool = new MatchPool(match);
+		MatchPool emptyPool = new MatchPool(project);
 		try {
 			emptyPool.store();
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -3737,7 +3737,7 @@ public class MatchPoolTest extends TestCase {
      * left in a legal state.
 	 * <p>
 	 * See graph 'a' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
      * @throws ArchitectException 
      * @throws SQLException 
@@ -3771,7 +3771,7 @@ public class MatchPoolTest extends TestCase {
 	 * Tests that NoMatch edges are left alone by the auto-match.
 	 * <p>
 	 * See graph 'o' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3803,7 +3803,7 @@ public class MatchPoolTest extends TestCase {
 	 * prevent illegal states in the graph.
 	 * <p>
 	 * See graph 'u' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3838,7 +3838,7 @@ public class MatchPoolTest extends TestCase {
 	 * result is a legal graph.
 	 * <p>
 	 * See graph 'cycle' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3883,7 +3883,7 @@ public class MatchPoolTest extends TestCase {
 	 * two masters.
 	 * <p>
 	 * See graph 'f' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3916,7 +3916,7 @@ public class MatchPoolTest extends TestCase {
 	 * rule set.
 	 * <p>
 	 * See graph 'w' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -3949,7 +3949,7 @@ public class MatchPoolTest extends TestCase {
 	 * rule set. 
 	 * <p>
 	 * See graphs 'x' and 'y' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 
@@ -4019,7 +4019,7 @@ public class MatchPoolTest extends TestCase {
 	 * state.
 	 * <p>
 	 * See graph 'z' in the image for
-	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Match, MungeProcess)}
+	 * {@link MMTestUtils#createTestingPool(MatchMakerSession, Project, MungeProcess)}
 	 * for details on the graph.
 	 * @throws ArchitectException 
 	 * @throws SQLException 

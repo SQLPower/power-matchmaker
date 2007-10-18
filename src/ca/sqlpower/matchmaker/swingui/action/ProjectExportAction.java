@@ -31,34 +31,34 @@ import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 
-public class PlMatchExportAction extends AbstractAction {
+public class ProjectExportAction extends AbstractAction {
 
-    private final static Logger logger = Logger.getLogger(PlMatchExportAction.class);
+    private final static Logger logger = Logger.getLogger(ProjectExportAction.class);
     
     private final MatchMakerSwingSession swingSession;
 	private final JFrame owningFrame;
 
     /**
      * Creates a new instance of this action which is parented by the given frame and will export the
-     * given match object when invoked.
+     * given project object when invoked.
      *
      * @param swingSession The GUI session this action lives in.
      * @param owningFrame The frame that should own any dialogs this action creates.
-     * @param match The match to export.  If you specify null, the match to export will be
+     * @param project The project to export.  If you specify null, the project to export will be
      * determined by the current selection in the Swing Session's tree.
      */
-	public PlMatchExportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
+	public ProjectExportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
 		super("Export",
 				SPSUtils.createIcon( "general/Export",
 						"Export"));
-        logger.debug("Creating new match export action");
-		putValue(SHORT_DESCRIPTION, "Export Match");
+        logger.debug("Creating new project export action");
+		putValue(SHORT_DESCRIPTION, "Export Project");
         this.swingSession = swingSession;
 		this.owningFrame = owningFrame;
 	}
@@ -66,21 +66,21 @@ public class PlMatchExportAction extends AbstractAction {
 
 	public void actionPerformed(ActionEvent e) {
 
-	    Match match;  // the match we're exporting
-	    match = MMSUtils.getTreeObject(
+	    Project project;  // the project we're exporting
+	    project = MMSUtils.getTreeObject(
 	            swingSession.getTree(),
-	            Match.class );
+	            Project.class );
 
-        if (match == null) {
-            JOptionPane.showMessageDialog(owningFrame, "Please select a match to export.");
+        if (project == null) {
+            JOptionPane.showMessageDialog(owningFrame, "Please select a project to export.");
 			return;
 		}
 
 		JFileChooser fc = new JFileChooser(swingSession.getLastImportExportAccessPath());
 		fc.setFileFilter(SPSUtils.XML_FILE_FILTER);
-		fc.setDialogTitle("Export Match");
+		fc.setDialogTitle("Export Project");
 		fc.setSelectedFile(
-				new File("export_match_"+match.getName()+"."+
+				new File("export_project_"+project.getName()+"."+
 						((FileExtensionFilter) SPSUtils.XML_FILE_FILTER).getFilterExtension(0)));
 		fc.setApproveButtonText("Save");
 

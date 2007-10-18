@@ -53,8 +53,8 @@
 			<column name="LAST_update_OS_USER" length="30" />
 		</property>
 		
-		<many-to-one name="parentMatch"
-			class="ca.sqlpower.matchmaker.Match" fetch="select" >
+		<many-to-one name="parentProject"
+			class="ca.sqlpower.matchmaker.Project" fetch="select" >
 			<column name="MATCH_OID" not-null="true" />
 		</many-to-one>
 		

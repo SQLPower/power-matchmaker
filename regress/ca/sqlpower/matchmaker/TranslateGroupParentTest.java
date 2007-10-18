@@ -30,17 +30,17 @@ import junit.framework.TestCase;
 
 public class TranslateGroupParentTest extends TestCase {
     PlFolder<MatchMakerObject> folder;
-    Match match;
+    Project project;
     MungeProcess cg;
     TranslateGroupParent tgp;
     TestingMatchMakerSession session;
 
     protected void setUp() throws Exception {
         folder = new PlFolder<MatchMakerObject>();
-        match = new Match();
-        folder.addChild(match);
+        project = new Project();
+        folder.addChild(project);
         cg = new MungeProcess();
-        match.addMatchRuleSet(cg);
+        project.addMungeProcess(cg);
         session = new TestingMatchMakerSession(); 
         List<PlFolder> folders = new ArrayList<PlFolder>();
         folders.add(folder);

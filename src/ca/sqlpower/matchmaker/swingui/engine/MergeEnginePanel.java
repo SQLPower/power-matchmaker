@@ -42,7 +42,7 @@ import javax.swing.SpinnerNumberModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.MergeSettings;
@@ -127,9 +127,9 @@ public class MergeEnginePanel implements EditorPane {
 	private JFrame parentFrame;
 
 	/**
-	 * The match object the engine should run against.
+	 * The project object the engine should run against.
 	 */
-	private Match match;
+	private Project project;
 	
 	/**
 	 * The panel that displays all the information for the merge engine.
@@ -162,10 +162,10 @@ public class MergeEnginePanel implements EditorPane {
 	 */
 	private MatchMakerEngine engine;
 	
-	public MergeEnginePanel(MatchMakerSwingSession swingSession, Match match, JFrame parentFrame) {
+	public MergeEnginePanel(MatchMakerSwingSession swingSession, Project project, JFrame parentFrame) {
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
-		this.match = match;
+		this.project = project;
 		handler = new FormValidationHandler(status);
 		handler.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -173,7 +173,7 @@ public class MergeEnginePanel implements EditorPane {
 			}
 		});
 		this.engineOutputPanel = new EngineOutputPanel(parentFrame);
-		this.engine = new MergeEngineImpl(swingSession, match);
+		this.engine = new MergeEngineImpl(swingSession, project);
 		this.runEngineAction = new RunEngineAction(swingSession, engine, "Run Merge Engine", engineOutputPanel, this);
 		this.panel = buildUI();
 	}
@@ -224,10 +224,10 @@ public class MergeEnginePanel implements EditorPane {
 
 		CellConstraints cc = new CellConstraints();
 
-		MergeSettings settings = match.getMergeSettings();
+		MergeSettings settings = project.getMergeSettings();
 		
 		if (settings.getLog() == null) {
-			settings.setLog(new File(match.getName() + ".log"));
+			settings.setLog(new File(project.getName() + ".log"));
 		}
 		
 		File logFile = settings.getLog();
@@ -235,7 +235,7 @@ public class MergeEnginePanel implements EditorPane {
 		handler.addValidateObject(logFilePath, new LogFileNameValidator());
 		
 		if (settings.getErrorLogFile() == null) {
-			settings.setErrorLogFile(new File(match.getName() + ".error.log"));
+			settings.setErrorLogFile(new File(project.getName() + ".error.log"));
 		}
 		File errorLogFile = settings.getErrorLogFile();
 		errorLogFilePath = new JTextField(errorLogFile.getAbsolutePath());
@@ -303,7 +303,7 @@ public class MergeEnginePanel implements EditorPane {
 		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, engine)), cc.xy(4, 2, "f,f"));
 		bbpb.add(new JButton(runEngineAction), cc.xy(6, 2, "f,f"));
 		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
-				match, parentFrame)), cc.xy(2, 4, "f,f"));
+				project, parentFrame)), cc.xy(2, 4, "f,f"));
 		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
 
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
@@ -327,7 +327,7 @@ public class MergeEnginePanel implements EditorPane {
 	public boolean doSave() {
 		logger.debug("doSave called");
 		refreshActionStatus();
-		MergeSettings mergeSettings = match.getMergeSettings();
+		MergeSettings mergeSettings = project.getMergeSettings();
 		mergeSettings.setAppendToLog(appendToLog.isSelected());
 		mergeSettings.setErrorLogFile(new File(errorLogFilePath.getText()));
 		mergeSettings.setLog(new File(logFilePath.getText()));
@@ -343,8 +343,8 @@ public class MergeEnginePanel implements EditorPane {
 		}
 		mergeSettings.setDebug(debugMode.isSelected());
 		
-		MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
-		dao.save(match);
+		MatchMakerDAO<Project> dao = swingSession.getDAO(Project.class);
+		dao.save(project);
 		
 		return true;
 	}

@@ -24,23 +24,23 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 /**
- * Simple action that deletes a match from the swing session
+ * Simple action that deletes a project from the swing session
  */
 public class DeleteProjectAction extends AbstractAction {
 
 	private MatchMakerSwingSession swingSession;
-	private Match match;
+	private Project project;
 	private boolean calledFromTopMenu = true;
 	
     /**
      * Creates a new instance of this action which is parented by the given swingSession.
-     * match is null when an instance is created with this constructor and will be 
-     * configured to decide which Match to delete by checking for the selected item 
+     * project is null when an instance is created with this constructor and will be 
+     * configured to decide which Project to delete by checking for the selected item 
      * in the tree.
      * @param swingSession The GUI session this action lives in.
      */
@@ -51,31 +51,31 @@ public class DeleteProjectAction extends AbstractAction {
 	
     /**
      * Creates a new instance of this action with a call to the above constructor. In
-     * addition, this match is set to the given parameter.
+     * addition, this project is set to the given parameter.
      * @param swingSession The GUI session this action lives in.
      */
-	public DeleteProjectAction(MatchMakerSwingSession swingSession, Match match) {
+	public DeleteProjectAction(MatchMakerSwingSession swingSession, Project project) {
 		this(swingSession);
-		this.match = match;
+		this.project = project;
 		this.calledFromTopMenu = false;
 	}
 	
 	/**
-	 * Performs the delete action if a Match is selected.
+	 * Performs the delete action if a Project is selected.
 	 */
 	public void actionPerformed(ActionEvent e) {
 		if (calledFromTopMenu) {
-			this.match = MMSUtils.getTreeObject(this.swingSession.getTree(),Match.class);
-			if (match == null) return;
+			this.project = MMSUtils.getTreeObject(this.swingSession.getTree(),Project.class);
+			if (project == null) return;
 		}
 		int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-				"Are you sure you want to delete the match [" +
-				match.getName() + "]?",
+				"Are you sure you want to delete the project [" +
+				project.getName() + "]?",
 				"Confirm Delete",
 				JOptionPane.YES_NO_OPTION);
 		if ( responds != JOptionPane.YES_OPTION )
 			return;
-		swingSession.delete(match);
+		swingSession.delete(project);
 	}
 	
 }

@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 
 /**
  * A dialog that is used to create a list of columns that will later
@@ -244,7 +244,7 @@ public class DisplayedNodeValueChooser {
 		}
 	}
 
-	private Match match;
+	private Project match;
 	
 	/**
 	 * This is the list of the columns that the user has chosen in the
@@ -264,7 +264,7 @@ public class DisplayedNodeValueChooser {
 	 * 						in the source table of the match
 	 */
 	public DisplayedNodeValueChooser(SourceTableNodeRenderer renderer,
-									Match match)
+									Project match)
 									throws ArchitectException {
 		super();
 		this.renderer = renderer;

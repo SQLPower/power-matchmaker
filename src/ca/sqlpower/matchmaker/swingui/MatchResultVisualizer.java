@@ -61,7 +61,7 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.ConnectedComponentFinder;
 import ca.sqlpower.graph.GraphModel;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.SourceTableRecord;
@@ -402,7 +402,7 @@ public class MatchResultVisualizer implements EditorPane {
     /**
      * This is the match whose result table we're visualizing.
      */
-    private final Match match;
+    private final Project match;
     
     /**
      * The panel that holds all the GUI components.
@@ -448,8 +448,8 @@ public class MatchResultVisualizer implements EditorPane {
      */
     private List<SQLColumn> displayColumns = new ArrayList<SQLColumn>();
     
-    public MatchResultVisualizer(Match match) throws SQLException, ArchitectException {
-        this.match = match;
+    public MatchResultVisualizer(Project project) throws SQLException, ArchitectException {
+        this.match = project;
 
         JPanel buttonPanel = new JPanel(new GridLayout(2,2));
         buttonPanel.add(new JButton(exportDotFileAction));
@@ -457,7 +457,7 @@ public class MatchResultVisualizer implements EditorPane {
         buttonPanel.add(new JButton(resetPoolAction));
         buttonPanel.add(new JButton(chooseDisplayedValueAction));
 
-        pool = new MatchPool(match);
+        pool = new MatchPool(project);
         pool.findAll(displayColumns);
         graphModel = new MatchPoolGraphModel(pool);
         graph = new GraphViewer<SourceTableRecord, PotentialMatchRecord>(graphModel);
@@ -469,7 +469,7 @@ public class MatchResultVisualizer implements EditorPane {
 
         JPanel autoMatchPanel = new JPanel(new FlowLayout());
         ruleSetComboBox = new JComboBox();
-        for (MungeProcess ruleSet : match.getMatchRuleSets()) {
+        for (MungeProcess ruleSet : project.getMungeProcesses()) {
         	ruleSetComboBox.addItem(ruleSet.getName());
         }
         autoMatchPanel.add(new JButton(new AutoMatchAction(graph.getModel())));
@@ -492,7 +492,7 @@ public class MatchResultVisualizer implements EditorPane {
         recordViewerScrollPane.getVerticalScrollBar().setUnitIncrement(15);
         
         recordViewerScrollPane.setColumnHeaderView(recordViewerHeader);
-        recordViewerScrollPane.setRowHeaderView(SourceTableRecordViewer.headerPanel(match));
+        recordViewerScrollPane.setRowHeaderView(SourceTableRecordViewer.headerPanel(project));
 
         // put it all together
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,

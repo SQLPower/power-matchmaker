@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.RowSetModel;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
@@ -51,17 +51,17 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.sun.rowset.CachedRowSetImpl;
 
 /**
- * An EditorPane that shows a table of status information about one Match object.
- * If you want to see a status table for a different match, create a new one of these.
+ * An EditorPane that shows a table of status information about one Project object.
+ * If you want to see a status table for a different project, create a new one of these.
  */
 public class MatchValidationStatus extends NoEditEditorPane {
 
 	private static final Logger logger = Logger.getLogger(MatchValidationStatus.class);
 	
 	/**
-	 * The Match object whose match validation status is this class' concern.
+	 * The Project object whose match validation status is this class' concern.
 	 */
-	private final Match match;
+	private final Project project;
 	
 	/**
 	 * A table to display the validation status.
@@ -73,10 +73,10 @@ public class MatchValidationStatus extends NoEditEditorPane {
 	 */
     private final MatchMakerSwingSession swingSession;
     
-	public MatchValidationStatus(MatchMakerSwingSession swingSession, Match match) {
+	public MatchValidationStatus(MatchMakerSwingSession swingSession, Project project) {
 		super(null);
 		this.swingSession = swingSession;
-		this.match = match;
+		this.project = project;
 		super.setPanel(createUI());
 	}
 
@@ -98,7 +98,7 @@ public class MatchValidationStatus extends NoEditEditorPane {
     		sql.append("SELECT GROUP_ID,MATCH_PERCENT,MATCH_STATUS");
     		sql.append(",COUNT(*)/2");
     		sql.append(" FROM  ");
-    		SQLTable resultTable = match.getResultTable();
+    		SQLTable resultTable = project.getResultTable();
 			sql.append(DDLUtils.toQualifiedName(resultTable.getCatalogName(),
 					resultTable.getSchemaName(),
 					resultTable.getName()));
@@ -170,7 +170,7 @@ public class MatchValidationStatus extends NoEditEditorPane {
 			rsm = new RowSetModel(getMatchStats());
 			MatchStatsTableModel tableModel = new MatchStatsTableModel(rsm);
 			status.setModel(tableModel);
-			SQLTable resultTable = match.getResultTable();
+			SQLTable resultTable = project.getResultTable();
 			status.setName(DDLUtils.toQualifiedName(
 					resultTable.getCatalogName(),
 					resultTable.getSchemaName(),
@@ -191,7 +191,7 @@ public class MatchValidationStatus extends NoEditEditorPane {
 
         CellConstraints cc = new CellConstraints();
 
-        pb.add(new JLabel("Match: " + match.getName()), cc.xy(2,6,"l,c"));
+        pb.add(new JLabel("Project: " + project.getName()), cc.xy(2,6,"l,c"));
 
 		pb.add(new JScrollPane(status), cc.xy(2,10));
 

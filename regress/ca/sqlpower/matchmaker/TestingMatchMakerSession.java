@@ -124,7 +124,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         this.con = con;
     }
 
-    public Match getMatchByName(String name) {
+    public Project getProjectByName(String name) {
 		return null;
 	}
 
@@ -133,12 +133,12 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         return null;
     }
 
-	public boolean isThisMatchNameAcceptable(String name) {
+	public boolean isThisProjectNameAcceptable(String name) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-    public long countMatchByName(String name) {    
+    public long countProjectByName(String name) {    
         return 0;
     }
 

@@ -28,10 +28,10 @@ import java.sql.Types;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
-import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.Match.MatchMode;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 
-public class TypeStringToMatchTypeEnum implements UserType {
+public class TypeStringToProjectTypeEnum implements UserType {
 
 	public Object assemble(Serializable cached, Object owner)
 			throws HibernateException {
@@ -56,7 +56,7 @@ public class TypeStringToMatchTypeEnum implements UserType {
 	}
 
 	public int hashCode(Object x) throws HibernateException {
-		if ( !(x instanceof Match.MatchMode)) {
+		if ( !(x instanceof Project.ProjectMode)) {
 			return 0;
 		} else {
 			return x.hashCode();
@@ -73,7 +73,7 @@ public class TypeStringToMatchTypeEnum implements UserType {
 			throws HibernateException, SQLException {
 		String typeString = rs.getString(names[0]);
 		if (typeString != null) {
-			return MatchMode.getTypeByString(typeString);
+			return ProjectMode.getTypeByString(typeString);
 		} else {
 			return null;
 		}
@@ -82,7 +82,7 @@ public class TypeStringToMatchTypeEnum implements UserType {
 	public void nullSafeSet(PreparedStatement st, Object value, int index)
 			throws HibernateException, SQLException {
 		if (value != null) {
-			st.setString(index, ((MatchMode) value).toString());
+			st.setString(index, ((ProjectMode) value).toString());
 		} else {
 			st.setString(index, null);
 		}
@@ -94,7 +94,7 @@ public class TypeStringToMatchTypeEnum implements UserType {
 	}
 
 	public Class returnedClass() {
-		return Match.MatchMode.class;
+		return Project.ProjectMode.class;
 	}
 
 	public int[] sqlTypes() {

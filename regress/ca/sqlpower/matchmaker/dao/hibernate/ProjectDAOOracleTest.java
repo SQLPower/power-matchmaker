@@ -24,24 +24,24 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 import java.sql.Connection;
 import java.sql.Statement;
 
-import ca.sqlpower.matchmaker.Match;
-import ca.sqlpower.matchmaker.dao.AbstractPlMatchDAOTestCase;
-import ca.sqlpower.matchmaker.dao.MatchDAO;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
+import ca.sqlpower.matchmaker.dao.ProjectDAO;
 
 
-public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
+public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
     
-    private Match match;
+    private Project project;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        match = createNewObjectUnderTest();
+        project = createNewObjectUnderTest();
     }
     
 	@Override
-	public MatchDAO getDataAccessObject() throws Exception {
-		return new MatchDAOHibernate(getSession());
+	public ProjectDAO getDataAccessObject() throws Exception {
+		return new ProjectDAOHibernate(getSession());
 	}
 
     @Override
@@ -49,16 +49,16 @@ public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
         return HibernateTestUtil.getOracleHibernateSession();
     }
 
-    public void testMatchSettingsNotNullByDefault() {
-        assertNotNull(match.getMatchSettings());
+    public void testMungeSettingsNotNullByDefault() {
+        assertNotNull(project.getMungeSettings());
     }
 
     public void testMergeSettingsNotNullByDefault() {
-        assertNotNull(match.getMergeSettings());
+        assertNotNull(project.getMergeSettings());
     }
 
     @Override
-    protected long insertSampleMatchData(String matchName, Long folderOid) throws Exception {
+    protected long insertSampleProjectData(String projectName, Long folderOid) throws Exception {
         final long time = System.currentTimeMillis();
         Connection con = null;
         Statement stmt = null;
@@ -67,7 +67,7 @@ public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
             stmt = con.createStatement();
             stmt.executeUpdate(
                     "INSERT INTO pl_match (match_oid, match_id, match_type) " +
-                    "VALUES ("+time+", '"+matchName+"', '"+Match.MatchMode.FIND_DUPES+"')");
+                    "VALUES ("+time+", '"+projectName+"', '"+Project.ProjectMode.FIND_DUPES+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it
@@ -76,7 +76,7 @@ public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
     }
 
     @Override
-    protected long insertSampleMatchRuleData(long parentGroupOid, String lastUpdateUser) throws Exception {
+    protected long insertSampleMungeStepData(long parentGroupOid, String lastUpdateUser) throws Exception {
         final long time = System.currentTimeMillis();
         Connection con = null;
         Statement stmt = null;
@@ -94,7 +94,7 @@ public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
     }
 
     @Override
-    protected long insertSampleMatchRuleSetData(long parentMatchOid, String groupName) throws Exception {
+    protected long insertSampleMungeProcessData(long parentProjectOid, String groupName) throws Exception {
         final long time = System.currentTimeMillis();
         Connection con = null;
         Statement stmt = null;
@@ -103,7 +103,7 @@ public class MatchDAOOracleTest extends AbstractPlMatchDAOTestCase {
             stmt = con.createStatement();
             stmt.executeUpdate(
                     "INSERT INTO pl_match_group (group_oid, match_oid, group_id) " +
-                    "VALUES ("+time+", "+parentMatchOid+", '"+groupName+"')");
+                    "VALUES ("+time+", "+parentProjectOid+", '"+groupName+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it

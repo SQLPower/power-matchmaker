@@ -42,7 +42,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -52,8 +52,8 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
-import ca.sqlpower.matchmaker.dao.MatchDAO;
+import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
+import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
@@ -111,12 +111,12 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	private String dbUser;
 	private Date sessionStartTime;
 
-    private FolderParent currentMatchFolderParent;
-    private FolderParent backupMatchFolderParent;
+    private FolderParent currentProjectFolderParent;
+    private FolderParent backupProjectFolderParent;
 
     private PlFolderDAO folderDAO;
-    private MatchDAO matchDAO;
-    private MatchRuleSetDAO matchRuleSetDAO;
+    private ProjectDAO projectDAO;
+    private MungeProcessDAO mungeProcessDAO;
     private MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO;
     private TableMergeRuleDAO tableMergeRulesDAO;
 
@@ -198,8 +198,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
 		hSession = hibernateSessionFactory.openSession();
         folderDAO = new PlFolderDAOHibernate(this);
-        matchDAO = new MatchDAOHibernate(this);
-        matchRuleSetDAO = new MatchRuleSetDAOHibernate(this);
+        projectDAO = new ProjectDAOHibernate(this);
+        mungeProcessDAO = new MungeProcessDAOHibernate(this);
         matchMakerTranslateGroupDAO = new MatchMakerTranslateGroupDAOHibernate(this);
         tableMergeRulesDAO = new TableMergeRulesDAOHibernate(this);
         con.close();
@@ -261,10 +261,10 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
         if (businessClass == PlFolder.class) {
             return (MatchMakerDAO<T>) folderDAO;
-        } else if (businessClass == Match.class) {
-            return (MatchMakerDAO<T>) matchDAO;
+        } else if (businessClass == Project.class) {
+            return (MatchMakerDAO<T>) projectDAO;
         } else if (businessClass == MungeProcess.class){
-            return (MatchMakerDAO<T>) matchRuleSetDAO;
+            return (MatchMakerDAO<T>) mungeProcessDAO;
         } else if (businessClass == MatchMakerTranslateGroup.class){
             return (MatchMakerDAO<T>) matchMakerTranslateGroupDAO;
         } else if (businessClass == TableMergeRules.class) {
@@ -338,33 +338,33 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         return factory;
     }
 
-    public Match getMatchByName(String name) {
-    	return matchDAO.findByName(name);
+    public Project getProjectByName(String name) {
+    	return projectDAO.findByName(name);
     }
 
-	public boolean isThisMatchNameAcceptable(String name) {
-		return matchDAO.isThisMatchNameAcceptable(name);
+	public boolean isThisProjectNameAcceptable(String name) {
+		return projectDAO.isThisProjectNameAcceptable(name);
 	}
 
     public String createNewUniqueName() {
-        String name = "New Match";
-        if (getMatchByName(name) == null) {
+        String name = "New Project";
+        if (getProjectByName(name) == null) {
             return name;
         } else{
             int num=1;
             //Iterates until it finds a name that does not conflict with
-            //existing match names
-            while(getMatchByName(name+num) != null) {
+            //existing project names
+            while(getProjectByName(name+num) != null) {
                 num++;
-                name = "New Match" + num;
+                name = "New Project" + num;
             }
             return name;
         }
 
     }
 
-	public long countMatchByName(String name) {
-		return matchDAO.countMatchByName(name);
+	public long countProjectByName(String name) {
+		return projectDAO.countProjectByName(name);
 	}
 
     public TranslateGroupParent getTranslations() {
@@ -385,30 +385,30 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * list that was previously retrieved by a call to this method.
      */
 	public FolderParent getCurrentFolderParent() {
-		if (currentMatchFolderParent == null) {
-			currentMatchFolderParent = new FolderParent(this);
-            currentMatchFolderParent.setName("Current Match/Merge Information");
+		if (currentProjectFolderParent == null) {
+			currentProjectFolderParent = new FolderParent(this);
+            currentProjectFolderParent.setName("Current Projects");
 			PlFolderDAO folderDAO = (PlFolderDAO) getDAO(PlFolder.class);
 			for(PlFolder f :folderDAO.findAll()) {
-				currentMatchFolderParent.addChild(f);
+				currentProjectFolderParent.addChild(f);
 			}
 		}
-		return currentMatchFolderParent;
+		return currentProjectFolderParent;
 	}
 
 	/**
-     * Retrieves all the PL Folders from the database that have backed-up match
+     * Retrieves all the PL Folders from the database that have backed-up project
      * transactions, or returns the list that was previously retrieved by a call
      * to this method.
      * <p>
      * TODO implement backups
      */
 	public FolderParent getBackupFolderParent() {
-        if (backupMatchFolderParent == null) {
-            backupMatchFolderParent = new FolderParent(this);
-            backupMatchFolderParent.setName("Backup Match/Merge Information");
+        if (backupProjectFolderParent == null) {
+            backupProjectFolderParent = new FolderParent(this);
+            backupProjectFolderParent.setName("Backup Projects");
         }
-		return backupMatchFolderParent;
+		return backupProjectFolderParent;
 	}
 
     public Version getPLSchemaVersion() {

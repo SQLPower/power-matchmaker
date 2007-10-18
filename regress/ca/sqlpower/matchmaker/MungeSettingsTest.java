@@ -17,18 +17,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker.dao;
 
-import ca.sqlpower.matchmaker.munge.MungeProcess;
+package ca.sqlpower.matchmaker;
 
-/**
- * The Data access interface for MatchRuleSet objects
- *
- * At this point this interface only extends the base DAO interface
- * and is put in for future expansion. 
- *
- * Remember to program to this interface rather than an implemenation
- */
-public interface MatchRuleSetDAO extends MatchMakerDAO<MungeProcess> {
+import java.util.Date;
 
+public class MungeSettingsTest extends MatchMakerTestCase {
+
+	MungeSettings ms;
+	protected void setUp() throws Exception {
+		super.setUp();
+		ms = new MungeSettings();
+	}
+
+	@Override
+	protected MatchMakerObject getTarget() {
+		return ms;
+	}
+
+    public void testSetLastRunDateDefensive() {
+        Date myDate = new Date();
+        ms.setLastRunDate(myDate);
+        assertEquals(myDate, ms.getLastRunDate());
+        assertNotSame(myDate, ms.getLastRunDate());
+    }
 }

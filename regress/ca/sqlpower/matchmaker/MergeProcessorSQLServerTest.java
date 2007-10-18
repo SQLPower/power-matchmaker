@@ -84,11 +84,11 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 		sourceTable = db.getTableByName("MM_TEST", "MM_TEST", "MERGE_TEST");
 		childTable = db.getTableByName("MM_TEST", "MM_TEST", "MERGE_TEST_CHILD");
 		grandChildTable = db.getTableByName("MM_TEST", "MM_TEST", "MERGE_TEST_GCHILD");
-        match.setSourceTable(sourceTable);
-        match.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
-		match.setResultTableName("MERGE_TEST_RESULT");
-		match.setResultTableSchema("MM_TEST");
-		match.setResultTableCatalog("MM_TEST");
+        project.setSourceTable(sourceTable);
+        project.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
+		project.setResultTableName("MERGE_TEST_RESULT");
+		project.setResultTableSchema("MM_TEST");
+		project.setResultTableCatalog("MM_TEST");
 	}
 
 	protected SPDataSource getDS() {

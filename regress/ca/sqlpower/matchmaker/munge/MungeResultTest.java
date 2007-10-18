@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.swingui.StubMatchMakerSession;
@@ -44,12 +44,12 @@ public class MungeResultTest extends TestCase {
 		r1 = new MungeResult();
 		List<Object> keyValues = new ArrayList<Object>();
 		keyValues.add("test1");
-		r1.setSourceTableRecord(new SourceTableRecord(session, new Match(), keyValues));
+		r1.setSourceTableRecord(new SourceTableRecord(session, new Project(), keyValues));
 
 		r2 = new MungeResult();
 		keyValues = new ArrayList<Object>();
 		keyValues.add("test2");
-		r2.setSourceTableRecord(new SourceTableRecord(session, new Match(), keyValues));
+		r2.setSourceTableRecord(new SourceTableRecord(session, new Project(), keyValues));
 		
 		mungedData1 = new Object[] {"B", BigDecimal.valueOf(1), Boolean.TRUE, new Date(1)};
 		r1.setMungedData(mungedData1);

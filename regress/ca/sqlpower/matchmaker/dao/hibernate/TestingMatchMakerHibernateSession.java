@@ -34,7 +34,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -161,9 +161,9 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         return null;
     }
 
-    public Match getMatchByName(String name) {
+    public Project getProjectByName(String name) {
         // TODO Auto-generated method stub
-        logger.debug("Stub call: TestingMatchMakerHibernateSession.getMatchByName()");
+        logger.debug("Stub call: TestingMatchMakerHibernateSession.getProjectByName()");
         return null;
     }
 
@@ -173,21 +173,21 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         return null;
     }
 
-    public boolean isThisMatchNameAcceptable(Match match, String name) {
+    public boolean isThisProjectNameAcceptable(Project project, String name) {
         // TODO Auto-generated method stub
-        logger.debug("Stub call: TestingMatchMakerHibernateSession.isThisMatchNameAcceptable()");
+        logger.debug("Stub call: TestingMatchMakerHibernateSession.isThisProjectNameAcceptable()");
         return false;
     }
 
-    public boolean isThisMatchNameAcceptable(String name) {
+    public boolean isThisProjectNameAcceptable(String name) {
         // TODO Auto-generated method stub
-        logger.debug("Stub call: TestingMatchMakerHibernateSession.isThisMatchNameAcceptable()");
+        logger.debug("Stub call: TestingMatchMakerHibernateSession.isThisProjectNameAcceptable()");
         return false;
     }
 
-    public long countMatchByName(String name) {
+    public long countProjectByName(String name) {
         // TODO Auto-generated method stub
-        logger.debug("Stub call: TestingMatchMakerHibernateSession.countMatchByName()");
+        logger.debug("Stub call: TestingMatchMakerHibernateSession.countProjectByName()");
         return 0;
     }
 

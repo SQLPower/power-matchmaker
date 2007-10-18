@@ -37,7 +37,7 @@ import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.DBTestUtil;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
@@ -58,7 +58,7 @@ public class MatchResultVisualizerTest extends TestCase {
 	
 	Logger logger = Logger.getLogger(MatchResultVisualizerTest.class);
 	TestingMatchMakerSession session;
-	Match match;
+	Project project;
 	MatchResultVisualizer visualizer;
 	SourceTableRecord lhs;
 	SourceTableRecord rhs;
@@ -113,22 +113,22 @@ public class MatchResultVisualizerTest extends TestCase {
 		    }
 		};
 
-		match = new Match();
-		match.setSession(session);
-		match.setResultTable(resultTable);
-		match.setSourceTable(sourceTable);
-		match.setSourceTableIndex(sourceTableIndex);
+		project = new Project();
+		project.setSession(session);
+		project.setResultTable(resultTable);
+		project.setSourceTable(sourceTable);
+		project.setSourceTableIndex(sourceTableIndex);
 		
-		visualizer = new MatchResultVisualizer(match);
+		visualizer = new MatchResultVisualizer(project);
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("lhs");
 		lhs = new SourceTableRecord(session,
-									match, 
+									project, 
 									keyList);
 		keyList.clear();
 		keyList.add("rhs");
 		rhs = new SourceTableRecord(session,
-									match, 
+									project, 
 									keyList);
 		pmr = new PotentialMatchRecord(new MungeProcess(),
 										MatchType.UNMATCH,

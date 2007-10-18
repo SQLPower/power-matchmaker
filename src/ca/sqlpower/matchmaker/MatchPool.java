@@ -65,7 +65,7 @@ public class MatchPool {
     
     private static final Logger logger = Logger.getLogger(MatchPool.class);
     
-    private final Match match;
+    private final Project project;
     
     private final MatchMakerSession session;
     
@@ -86,18 +86,18 @@ public class MatchPool {
      */
     private final Set<PotentialMatchRecord> deletedMatches = new HashSet<PotentialMatchRecord>();
     
-    public MatchPool(Match match) {
+    public MatchPool(Project match) {
         this(match, new HashSet<PotentialMatchRecord>());
     }
     
-    public MatchPool(Match match, Set<PotentialMatchRecord> potentialMatches) {
-        this.match = match;
+    public MatchPool(Project match, Set<PotentialMatchRecord> potentialMatches) {
+        this.project = match;
         this.session = match.getSession();
         this.potentialMatches = potentialMatches;
     }
 
-    public Match getMatch() {
-        return match;
+    public Project getProject() {
+        return project;
     }
    
     /**
@@ -163,7 +163,7 @@ public class MatchPool {
      * @throws ArchitectException if SQLObjects fail to populate its children
      */
     public void findAll(List<SQLColumn> displayColumns) throws SQLException, ArchitectException {
-        SQLTable resultTable = match.getResultTable();
+        SQLTable resultTable = project.getResultTable();
         Connection con = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -182,7 +182,7 @@ public class MatchPool {
             }
             if (displayColumns == null || displayColumns.size() == 0) {
             	displayColumns = new ArrayList<SQLColumn>();
-            	for (SQLIndex.Column col: (List<SQLIndex.Column>)match.getSourceTableIndex().getChildren()) {
+            	for (SQLIndex.Column col: (List<SQLIndex.Column>)project.getSourceTableIndex().getChildren()) {
             		displayColumns.add(col.getColumn());
             	}
             }
@@ -201,13 +201,13 @@ public class MatchPool {
             sql.append("\n FROM ");
             sql.append(DDLUtils.toQualifiedName(resultTable));
             sql.append(" result,");
-            SQLTable sourceTable = match.getSourceTable();
+            SQLTable sourceTable = project.getSourceTable();
 			sql.append(DDLUtils.toQualifiedName(sourceTable));
             sql.append(" source1,");
             sql.append(DDLUtils.toQualifiedName(sourceTable));
             sql.append(" source2");
             int index = 0;
-            for (SQLIndex.Column col: (List<SQLIndex.Column>)match.getSourceTableIndex().getChildren()) {
+            for (SQLIndex.Column col: (List<SQLIndex.Column>)project.getSourceTableIndex().getChildren()) {
             	if (index == 0) { 
             		sql.append("\n WHERE");
             	} else {
@@ -229,7 +229,7 @@ public class MatchPool {
             logger.debug("MatchPool's findAll method SQL: \n" + lastSQL);
             rs = stmt.executeQuery(lastSQL);
             while (rs.next()) {
-                MungeProcess ruleSet = match.getMatchRuleSetByName(rs.getString("GROUP_ID"));
+                MungeProcess ruleSet = project.getMungeProcessByName(rs.getString("GROUP_ID"));
                 if (ruleSet == null) {
                     session.handleWarning(
                             "Found a match record that refers to the " +
@@ -246,7 +246,7 @@ public class MatchPool {
                             "\". Ignoring it.");
                     continue;
                 }
-                int indexSize = match.getSourceTableIndex().getChildCount();
+                int indexSize = project.getSourceTableIndex().getChildCount();
                 List<Object> lhsKeyValues = new ArrayList<Object>(indexSize);
                 List<Object> rhsKeyValues = new ArrayList<Object>(indexSize);
                 for (int i = 0; i < indexSize; i++) {
@@ -303,7 +303,7 @@ public class MatchPool {
 	 */
     public void store() throws SQLException {
         logger.debug("Starting to store");
-        SQLTable resultTable = match.getResultTable();
+        SQLTable resultTable = project.getResultTable();
         Connection con = null;
         String lastSQL = null;
         PreparedStatement ps = null;
@@ -495,7 +495,7 @@ public class MatchPool {
     private SourceTableRecord makeSourceTableRecord(List<Object> displayValues, List<Object> keyValues) {
         SourceTableRecord node = sourceTableRecords.get(keyValues);
         if (node == null) {
-            node = new SourceTableRecord(session, match, displayValues, keyValues);
+            node = new SourceTableRecord(session, project, displayValues, keyValues);
             addSourceTableRecord(node);
         } else {
         	node.setDisplayValues(displayValues);
@@ -601,10 +601,10 @@ public class MatchPool {
             stmt = con.createStatement();
             StringBuilder sql = new StringBuilder();
 
-            sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(match.getResultTable())).append(" M1");
-            sql.append("\n WHERE EXISTS( SELECT 1 FROM ").append(DDLUtils.toQualifiedName(match.getResultTable())).append(" M2");
+            sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(project.getResultTable())).append(" M1");
+            sql.append("\n WHERE EXISTS( SELECT 1 FROM ").append(DDLUtils.toQualifiedName(project.getResultTable())).append(" M2");
             sql.append("\n  WHERE ");
-            for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
+            for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
                 if (i > 0) sql.append("\n   AND ");
                 sql.append("M1.DUP_CANDIDATE_1").append(i).append(" = M2.DUP_CANDIDATE_2").append(i);
                 sql.append("\n AND ");
@@ -765,13 +765,13 @@ public class MatchPool {
 	 */
 	private PotentialMatchRecord addSyntheticPotentialMatchRecord(SourceTableRecord record1,
 			SourceTableRecord record2) {
-		MungeProcess syntheticRuleSet = match.getMatchRuleSetByName(MungeProcess.SYNTHETIC_MATCHES);
+		MungeProcess syntheticRuleSet = project.getMungeProcessByName(MungeProcess.SYNTHETIC_MATCHES);
 		if (syntheticRuleSet == null) {
 			syntheticRuleSet = new MungeProcess();
 			syntheticRuleSet.setName(MungeProcess.SYNTHETIC_MATCHES);
-			match.getMatchRuleSetFolder().addChild(syntheticRuleSet);
-			MatchMakerDAO<Match> dao = session.getDAO(Match.class);
-			dao.save(match);
+			project.getMungeProcessesFolder().addChild(syntheticRuleSet);
+			MatchMakerDAO<Project> dao = session.getDAO(Project.class);
+			dao.save(project);
 		}
 		
 		PotentialMatchRecord pmr = new PotentialMatchRecord(syntheticRuleSet, MatchType.UNMATCH, record1, record2, true);
@@ -1170,7 +1170,7 @@ public class MatchPool {
 	 * @throws SQLException
 	 */
 	public void doAutoMatch(String ruleName) throws SQLException, ArchitectException {
-		MungeProcess ruleSet = match.getMatchRuleSetByName(ruleName);
+		MungeProcess ruleSet = project.getMungeProcessByName(ruleName);
 		if (ruleSet == null) {
 			throw new IllegalArgumentException("Auto-Match invoked with an " +
 					"invalid rule group name: " + ruleName);

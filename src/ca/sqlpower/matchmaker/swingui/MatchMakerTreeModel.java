@@ -34,13 +34,13 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.matchmaker.Match.MatchMode;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -56,8 +56,8 @@ public class MatchMakerTreeModel implements TreeModel {
 
     /**
      * A very simple MatchMakerObject implementation for the tree's root node object.
-     * Its children will be FolderParent objects, which are the "Current Match/Merge"
-     * and "Backup Match/Merge" folders, which are in turn parents to the PLFolders
+     * Its children will be FolderParent objects, which are the "Current Project"
+     * and "Backup Project" folders, which are in turn parents to the PLFolders
      * (hence, FolderParent).
      */
     private static class MMRootNode <C extends MatchMakerObject> 
@@ -87,7 +87,7 @@ public class MatchMakerTreeModel implements TreeModel {
     }
 
     /**
-     * All the types of actions associated with each match in the tree.
+     * All the types of actions associated with each project in the tree.
      */
     public static enum MatchActionType {
         
@@ -112,7 +112,7 @@ public class MatchMakerTreeModel implements TreeModel {
         RUN_MERGE("Run Merge Engine"),
         
         /**
-         * Shows information about the parent match such as
+         * Shows information about the parent project such as
          * its ID, folder, description, type and history
          */
         AUDIT_INFO("Audit Information"),
@@ -136,18 +136,18 @@ public class MatchMakerTreeModel implements TreeModel {
     
     /**
      * A simple MatchMakerObject that holds a single Swing Action.  We create
-     * these as extra children for the Match objects in the tree so the entire
-     * match workflow is represented in one place, with pretty pictures and
+     * these as extra children for the Project objects in the tree so the entire
+     * project workflow is represented in one place, with pretty pictures and
      * everything.
      */
-    public class MatchActionNode extends AbstractMatchMakerObject<Match, MatchActionNode> {
+    public class MatchActionNode extends AbstractMatchMakerObject<Project, MatchActionNode> {
 
         private final MatchActionType matchActionType;
-        private final Match match;
+        private final Project project;
         
-        public MatchActionNode(MatchActionType matchActionType, Match match) {
+        public MatchActionNode(MatchActionType matchActionType, Project project) {
             this.matchActionType = matchActionType;
-            this.match = match;
+            this.project = project;
             setName(matchActionType.toString());
         }
 
@@ -170,7 +170,7 @@ public class MatchMakerTreeModel implements TreeModel {
             return System.identityHashCode(this);
         }
 
-        public Match duplicate(MatchMakerObject parent, MatchMakerSession session) {
+        public Project duplicate(MatchMakerObject parent, MatchMakerSession session) {
             throw new UnsupportedOperationException("A MatchActionNode cannot be duplicated");
         }
         
@@ -178,12 +178,12 @@ public class MatchMakerTreeModel implements TreeModel {
             return matchActionType;
         }
         
-        public Match getMatch() {
-        	return match;
+        public Project getProject() {
+        	return project;
         }
         
-        public Match getParent() {
-        	return match;
+        public Project getParent() {
+        	return project;
         }
     }
     
@@ -201,10 +201,10 @@ public class MatchMakerTreeModel implements TreeModel {
 	private final MMRootNode root = new MMRootNode();
 
     /**
-     * The cache that is maintained by {@link #getActionNodes(Match)}. Don't ever access
+     * The cache that is maintained by {@link #getActionNodes(Project)}. Don't ever access
      * this map directly.  Use that method.
      */
-	private Map<Match, List<MatchActionNode>> matchActionCache = new HashMap<Match, List<MatchActionNode>>();
+	private Map<Project, List<MatchActionNode>> matchActionCache = new HashMap<Project, List<MatchActionNode>>();
     
 	private FolderParent current;
 	private FolderParent backup;
@@ -250,26 +250,26 @@ public class MatchMakerTreeModel implements TreeModel {
     /**
      * Returns (and possibly creates) the list of action nodes associated with the given match
      * in this tree.  The responses from this method are cached, so once a list of
-     * actions has been returned for a particular match, the same list will be returned
+     * actions has been returned for a particular project, the same list will be returned
      * for all future requests.
      * 
-     * @param match The match the action nodes belong to. (It's their parent in the tree)
-     * @return The unique list of action nodes for the given match.
+     * @param project The project the action nodes belong to. (It's their parent in the tree)
+     * @return The unique list of action nodes for the given project.
      */
-    private List<MatchActionNode> getActionNodes(Match match) {
-        List<MatchActionNode> actionNodes = matchActionCache.get(match);
+    private List<MatchActionNode> getActionNodes(Project project) {
+        List<MatchActionNode> actionNodes = matchActionCache.get(project);
         if (actionNodes == null) {
             actionNodes = new ArrayList<MatchActionNode>();
-            if (match.getType().equals(MatchMode.FIND_DUPES)) {
+            if (project.getType().equals(ProjectMode.FIND_DUPES)) {
 	            for (MatchActionType type : DE_DUP_ACTIONS) {
-	                actionNodes.add(new MatchActionNode(type, match));
+	                actionNodes.add(new MatchActionNode(type, project));
 	            }
-            } else if (match.getType().equals(MatchMode.CLEANSE)) {
+            } else if (project.getType().equals(ProjectMode.CLEANSE)) {
             	for (MatchActionType type : CLEANSING_ACTIONS) {
-            		actionNodes.add(new MatchActionNode(type, match));
+            		actionNodes.add(new MatchActionNode(type, project));
             	}
             }
-            matchActionCache.put(match, actionNodes);
+            matchActionCache.put(project, actionNodes);
         }
         return actionNodes;
     }
@@ -278,8 +278,8 @@ public class MatchMakerTreeModel implements TreeModel {
         final MatchMakerObject<?, ?> mmoParent = (MatchMakerObject<?, ?>) parent;
         final MatchMakerObject<?, ?> mmoChild;
     
-        if (mmoParent instanceof Match) {
-            Match match = (Match) mmoParent;
+        if (mmoParent instanceof Project) {
+            Project match = (Project) mmoParent;
             MatchMakerObject [] visible = new MatchMakerObject [getChildCount(match)];
             int count = 0;
             for (MatchMakerObject child : match.getChildren()) {
@@ -313,8 +313,8 @@ public class MatchMakerTreeModel implements TreeModel {
 	public int getChildCount(Object parent) {
 		final MatchMakerObject<?, ?> mmo = (MatchMakerObject<?, ?>) parent;
         int count;
-        if (mmo instanceof Match) {
-            Match match = (Match) mmo;
+        if (mmo instanceof Project) {
+            Project match = (Project) mmo;
             List<MatchActionNode> matchActions = getActionNodes(match);
             count = mmo.getChildren().size() + matchActions.size();
         } else {

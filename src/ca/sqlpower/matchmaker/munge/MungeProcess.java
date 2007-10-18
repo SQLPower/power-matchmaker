@@ -23,7 +23,7 @@ import java.awt.Color;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
@@ -101,25 +101,25 @@ public class MungeProcess
      * Gets the grandparent of this object in the MatchMaker object tree.  If the parent
      * (a folder) is null, returns null.
      */
-    public Match getParentMatch() {
+    public Project getParentProject() {
         MatchMakerObject parentFolder = getParent();
         if (parentFolder == null) {
             return null;
         } else {
-            return (Match) parentFolder.getParent();
+            return (Project) parentFolder.getParent();
         }
     }
 
     /**
-     * Sets the parent of this object to be the rule set folder of the given match object
+     * Sets the parent of this object to be the rule set folder of the given project object
      *
      * this will fire a <b>parent</b> changed event not a parent match event
      */
-    public void setParentMatch(Match grandparent) {
+    public void setParentProject(Project grandparent) {
         if (grandparent == null) {
             setParent(null);
         } else {
-            setParent(grandparent.getMatchRuleSetFolder());
+            setParent(grandparent.getMungeProcessesFolder());
         }
     }
 

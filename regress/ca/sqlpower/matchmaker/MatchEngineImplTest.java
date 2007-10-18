@@ -44,7 +44,7 @@ public class MatchEngineImplTest extends TestCase {
 	private Connection con;
 	private SQLDatabase db;
 	private SQLTable resultTable;
-	private Match match;
+	private Project project;
 	private TestingMatchMakerSession session;
 	private SQLTable sourceTable;
 	
@@ -87,30 +87,30 @@ public class MatchEngineImplTest extends TestCase {
 		};
 		session.setDatabase(db);
 		
-		match = new Match();
-		match.setSession(session);
-		match.setSourceTable(sourceTable);
-		match.setSourceTableIndex(sourceTableIndex);
-		match.setResultTable(resultTable);
-		MatchSettings settings = new MatchSettings();
+		project = new Project();
+		project.setSession(session);
+		project.setSourceTable(sourceTable);
+		project.setSourceTableIndex(sourceTableIndex);
+		project.setResultTable(resultTable);
+		MungeSettings settings = new MungeSettings();
 		File file = File.createTempFile("matchTest", "log");
 		settings.setLog(file);
-		match.setMatchSettings(settings);
+		project.setMungeSettings(settings);
 		
 		MungeProcess groupOne = new MungeProcess();
 		groupOne.setName("Group_One");
 		SQLInputStep inputStep = new SQLInputStep(sourceTable, session);
 		groupOne.addChild(inputStep);
-		MungeResultStep outputStep = new MungeResultStep(match, inputStep, session);
+		MungeResultStep outputStep = new MungeResultStep(project, inputStep, session);
 		outputStep.addInput(new InputDescriptor("result2", Object.class));
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
 		outputStep.connectInput(1, inputStep.getOutputByName("BAR"));
 		groupOne.addChild(outputStep);
 		groupOne.setOutputStep(outputStep);
 		
-		match.addMatchRuleSet(groupOne);
+		project.addMungeProcess(groupOne);
 
-		engine = new MatchEngineImpl(session, match);
+		engine = new MatchEngineImpl(session, project);
 	}
 
 	public void tearDown() throws Exception {
@@ -122,7 +122,7 @@ public class MatchEngineImplTest extends TestCase {
 	public void testCall() throws Exception {
 		engine.call();
 		
-		MatchPool pool = new MatchPool(match);
+		MatchPool pool = new MatchPool(project);
 		pool.findAll(null);
 		assertEquals(2, pool.getSourceTableRecords().size());
 		assertEquals(1, pool.getPotentialMatches().size());
@@ -146,15 +146,15 @@ public class MatchEngineImplTest extends TestCase {
 		groupTwo.setName("Group_Two");
 		SQLInputStep inputStep = new SQLInputStep(sourceTable, session);
 		groupTwo.addChild(inputStep);
-		MungeResultStep outputStep = new MungeResultStep(match, inputStep, session);
+		MungeResultStep outputStep = new MungeResultStep(project, inputStep, session);
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
 		groupTwo.addChild(outputStep);
 		groupTwo.setOutputStep(outputStep);
-		match.addMatchRuleSet(groupTwo);
+		project.addMungeProcess(groupTwo);
 		
 		engine.call();
 		
-		MatchPool pool = new MatchPool(match);
+		MatchPool pool = new MatchPool(project);
 		pool.findAll(null);
 		assertEquals(2, pool.getSourceTableRecords().size());
 		assertEquals(1, pool.getPotentialMatches().size());

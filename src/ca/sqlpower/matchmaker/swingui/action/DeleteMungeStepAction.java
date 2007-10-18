@@ -29,7 +29,7 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
 /**
- * A simple action for deleting a match rule.
+ * A simple action for deleting a munge step.
  */
 public class DeleteMungeStepAction extends AbstractAction {
 	MungeStep step;

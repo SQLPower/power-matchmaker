@@ -255,21 +255,21 @@ public class TableMergeRules
      * Gets the grandparent of this object in the MatchMaker object tree.  If the parent
      * (a folder) is null, returns null.
      */
-    public Match getParentMatch() {
+    public Project getParentProject() {
         MatchMakerObject parentFolder = getParent();
         if (parentFolder == null) {
             return null;
         } else {
-            return (Match) parentFolder.getParent();
+            return (Project) parentFolder.getParent();
         }
     }
 
     /**
-     * Sets the parent of this object to be the match rule set folder of the given match object
+     * Sets the parent of this object to be the merge rules folder of the given project object
      *
      * this will fire a <b>parent</b> changed event not a parent match event
      */
-    public void setParentMatch(Match grandparent) {
+    public void setParentProject(Project grandparent) {
         if (grandparent == null) {
             setParent(null);
         } else {
@@ -307,12 +307,12 @@ public class TableMergeRules
 
 	/**
 	 * This returns whether this merge rule is the source table merge 
-	 * rule of its parent match.
+	 * rule of its parent project.
 	 */
 	public boolean isSourceMergeRule() {
-		if (getParentMatch() != null && getParentMatch().getSourceTable() != null 
+		if (getParentProject() != null && getParentProject().getSourceTable() != null 
 				&& getSourceTable() != null) {
-			SQLTable matchSourceTable = getParentMatch().getSourceTable();
+			SQLTable matchSourceTable = getParentProject().getSourceTable();
 			return matchSourceTable.equals(getSourceTable());
 		} else {
 			return false;
