@@ -135,6 +135,7 @@ public class MatchMakerTranslateWord
     	w.setTo(getTo());
     	w.setParent(parent);
     	w.setSession(session);
+    	w.setVisible(isVisible());
     	return w;
     }
 }

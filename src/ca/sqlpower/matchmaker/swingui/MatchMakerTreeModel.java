@@ -294,12 +294,13 @@ public class MatchMakerTreeModel implements TreeModel {
             }
             mmoChild = visible[index];
         } else {
+        	int real = index;
         	for (int i = 0; i < index; i++) {
         		if (!mmoParent.getChildren().get(i).isVisible()) {
-        			index++;
+        			real++;
         		}
         	}
-            mmoChild = mmoParent.getChildren().get(index);
+            mmoChild = mmoParent.getChildren().get(real);
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Child "+index+" of \""+mmoParent.getName()+"\" is "+

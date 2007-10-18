@@ -175,6 +175,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		columnRule.setInPrimaryKey(inPrimaryKey);
 		columnRule.setImportedKeyColumn(importedKeyColumn);
 		columnRule.setUpdateStatement(updateStatement);
+		columnRule.setVisible(isVisible());
 		return columnRule;
 	}
 

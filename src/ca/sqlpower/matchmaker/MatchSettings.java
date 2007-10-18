@@ -162,6 +162,7 @@ public class MatchSettings extends MatchMakerSettings {
 		settings.setSession(s);
 		settings.setShowProgressFreq(getShowProgressFreq()==null?null:new Long(getShowProgressFreq()));
 		settings.setTruncateCandDupe(getTruncateCandDupe());
+		settings.setVisible(isVisible());
 		return settings;
 	}
 }

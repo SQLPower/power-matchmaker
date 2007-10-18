@@ -58,7 +58,6 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 
 	private boolean visible;
 
-
 	public AbstractMatchMakerObject() {
 		visible = true;
 	}
@@ -289,7 +288,9 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	}
 	
 	public void setVisible(boolean visible) {
+		boolean old = this.visible;
 		this.visible = visible;
+		eventSupport.firePropertyChange("visible", old, visible);
 	}
 	
 	public boolean isVisible() {
