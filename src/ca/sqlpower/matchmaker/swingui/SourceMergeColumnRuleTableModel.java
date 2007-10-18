@@ -19,12 +19,17 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.util.ArrayList;
+
 import javax.swing.event.TableModelEvent;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.swingui.SPSUtils;
 
 /**
  * Implementation of {@link AbstractMergeColumnRuleTableModel}, table model for column 
@@ -104,6 +109,30 @@ public class SourceMergeColumnRuleTableModel extends
 			throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
 		}
 		fireTableChanged(new TableModelEvent(this,rowIndex));
+	}
+    
+	  /**
+	   * This updates the list of primary keys in the source or parent table
+	   * of the merge rule. This is used to decide which column in the table
+	   * to set as non edit-able.
+	   */
+		protected void updatePrimaryKeys() {
+		primaryKeys = new ArrayList<Integer>();
+		try {
+			SQLIndex tableIndex = mergeRule.getTableIndex();
+			if (tableIndex != null) {
+				for (int i = 0; i < getRowCount(); i++) {
+					SQLColumn column = (SQLColumn) getValueAt(i, 0);
+					if (tableIndex.getChildByName(column.getName()) != null) {
+						primaryKeys.add(i);
+					}
+				}
+			}
+		} catch (ArchitectException e) {
+			MatchMakerSwingSession session = (MatchMakerSwingSession) mergeRule.getSession();
+			SPSUtils.showExceptionDialogNoReport(session.getFrame(),
+					"Failed to retrieve primary keys of source table", e);
+		}
 	}
 
 }
