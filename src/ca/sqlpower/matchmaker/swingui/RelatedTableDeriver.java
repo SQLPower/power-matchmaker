@@ -50,6 +50,7 @@ import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
@@ -172,9 +173,11 @@ public class RelatedTableDeriver implements EditorPane {
 						TableMergeRules mergeRule = new TableMergeRules();
 						SQLTable table = swingSession.getDatabase().getTableByName(catalogName,
 								schemaName, tableName);
+						SQLIndex index = table.getPrimaryKeyIndex();
 						mergeRule.setTable(table);
-						mergeRule.setTableIndex(match.getSourceTableIndex());
-
+						mergeRule.setTableIndex(index);
+						mergeRule.setParentTable(sourceTable);
+						mergeRule.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
 						try {
 							List<SQLColumn> columns = new ArrayList<SQLColumn>(table.getColumns()); 
 							for (SQLColumn column : columns) {
@@ -183,6 +186,17 @@ public class RelatedTableDeriver implements EditorPane {
 								mergeRule.addChild(newRules);
 								newRules.setColumn(column);
 								newRules.setColumnName(column.getName());
+								if (index != null) {
+									for (SQLIndex.Column indexCol : index.getChildren()) {
+										if (column.equals(indexCol.getColumn())) {
+											newRules.setInPrimaryKey(true);
+										}
+									}
+								}
+								if (primaryKeys.contains(column.getName())) {
+									newRules.setImportedKeyColumn(sourceTable.getColumnByName(column.getName()));
+								}
+								
 							}
 						} catch (Exception ex) {
 							SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
@@ -200,7 +214,7 @@ public class RelatedTableDeriver implements EditorPane {
 			}
 			
 			logger.debug("Finished in " + ((System.currentTimeMillis()-start)/1000) + " seconds!");
-		
+			swingSession.save(match);
 			dialog.dispose();
 		}
 	};
