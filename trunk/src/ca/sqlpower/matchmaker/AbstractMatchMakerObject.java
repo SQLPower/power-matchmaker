@@ -56,9 +56,11 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	private MatchMakerSession matchMakerSession;
 	private String name;
 
+	private boolean visible;
+
 
 	public AbstractMatchMakerObject() {
-
+		visible = true;
 	}
 
 	/**
@@ -284,5 +286,13 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 
 	protected MatchMakerEventSupport<T, C> getEventSupport() {
 		return eventSupport;
+	}
+	
+	public void setVisible(boolean visible) {
+		this.visible = visible;
+	}
+	
+	public boolean isVisible() {
+		return visible;
 	}
 }

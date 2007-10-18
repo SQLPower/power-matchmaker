@@ -84,7 +84,6 @@ public class MatchMakerTreeModel implements TreeModel {
         public MMRootNode duplicate(MatchMakerObject parent, MatchMakerSession session) {
             throw new UnsupportedOperationException("MMTreeNodes cannot be duplicated");
         }
-
     }
 
     /**
@@ -278,17 +277,28 @@ public class MatchMakerTreeModel implements TreeModel {
 	public Object getChild(Object parent, int index) {
         final MatchMakerObject<?, ?> mmoParent = (MatchMakerObject<?, ?>) parent;
         final MatchMakerObject<?, ?> mmoChild;
+    
         if (mmoParent instanceof Match) {
             Match match = (Match) mmoParent;
-            if (index == 0) {
-                mmoChild = match.getChildren().get(index);
-            } else if (index == 1) {
-                mmoChild = match.getChildren().get(index);
-            } else {
-                List<MatchActionNode> matchActions = getActionNodes(match);
-                mmoChild = matchActions.get(index - 2);
-            }      
+            MatchMakerObject [] visible = new MatchMakerObject [getChildCount(match)];
+            int count = 0;
+            for (MatchMakerObject child : match.getChildren()) {
+            	if (child.isVisible()) {
+            		visible[count++] = child;
+            	}
+            }
+            for (MatchActionNode child : getActionNodes(match)) {
+            	if (child.isVisible()) {
+            		visible[count++] = child;
+            	}
+            }
+            mmoChild = visible[index];
         } else {
+        	for (int i = 0; i < index; i++) {
+        		if (!mmoParent.getChildren().get(i).isVisible()) {
+        			index++;
+        		}
+        	}
             mmoChild = mmoParent.getChildren().get(index);
         }
         if (logger.isDebugEnabled()) {
@@ -301,7 +311,7 @@ public class MatchMakerTreeModel implements TreeModel {
 
 	public int getChildCount(Object parent) {
 		final MatchMakerObject<?, ?> mmo = (MatchMakerObject<?, ?>) parent;
-        final int count;
+        int count;
         if (mmo instanceof Match) {
             Match match = (Match) mmo;
             List<MatchActionNode> matchActions = getActionNodes(match);
@@ -309,6 +319,14 @@ public class MatchMakerTreeModel implements TreeModel {
         } else {
             count = mmo.getChildren().size();
         }
+        
+        for (MatchMakerObject child : mmo.getChildren()) {
+        	if (!child.isVisible()) {
+        		logger.debug("--------------------------------");
+        		count--;
+        	}
+        }
+        
         if (logger.isDebugEnabled()) {
             logger.debug("Child count of \""+mmo.getName()+"\" is "+count);
         }

@@ -110,5 +110,14 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
      * DAO access will be done via this session.
 	 */
 	public void setSession(MatchMakerSession matchMakerSession);
+	
+	/**
+	 * Sets if the object will be shown in the tree.
+	 */
+	public void setVisible(boolean v);
 
+	/**
+	 * Returns if this item is visible in the tree.
+	 */
+	public boolean isVisible();
 }

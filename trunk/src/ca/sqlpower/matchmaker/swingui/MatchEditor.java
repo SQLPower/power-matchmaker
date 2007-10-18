@@ -126,7 +126,7 @@ public class MatchEditor implements EditorPane {
     private JComboBox folderComboBox = new JComboBox();
     private JComboBox indexComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
-    private JComboBox matchType = new JComboBox();
+    private JLabel matchType = new JLabel();
     private JTextField resultTableName = new JTextField();
     private JButton viewBuilder;
     private JButton createResultTable;
@@ -327,8 +327,6 @@ public class MatchEditor implements EditorPane {
 
         filterPanel = new FilterComponents(swingSession.getFrame());
 
-        matchType.setModel(new DefaultComboBoxModel(Match.MatchMode.values()));
-
         sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
         	public void itemStateChanged(ItemEvent e) {
         		filterPanel.getFilterTextArea().setText("");
@@ -385,18 +383,20 @@ public class MatchEditor implements EditorPane {
 		pb.add(new JScrollPane(filterPanel.getFilterTextArea()), cc.xy(4,row,"f,f"));
         pb.add(filterPanel.getEditButton(), cc.xy(6,row));
 		row+=2;
-		pb.addTitle("Output Table", cc.xy(2, row));
-		row+=2;
-		pb.add(resultChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
-		pb.add(resultChooser.getCatalogComboBox(), cc.xy(4,row));
-		pb.add(createResultTable, cc.xywh(6,row,1,1));
-		row+=2;
-		pb.add(resultChooser.getSchemaTerm(), cc.xy(2,row,"r,c"));
-		pb.add(resultChooser.getSchemaComboBox(), cc.xy(4,row));
-		row+=2;
-		pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,c"));
-		pb.add(resultTableName, cc.xy(4,row));
-		row+=2;
+		if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
+			pb.addTitle("Output Table", cc.xy(2, row));
+			row+=2;
+			pb.add(resultChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
+			pb.add(resultChooser.getCatalogComboBox(), cc.xy(4,row));
+			pb.add(createResultTable, cc.xywh(6,row,1,1));
+			row+=2;
+			pb.add(resultChooser.getSchemaTerm(), cc.xy(2,row,"r,c"));
+			pb.add(resultChooser.getSchemaComboBox(), cc.xy(4,row));
+			row+=2;
+			pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,c"));
+			pb.add(resultTableName, cc.xy(4,row));
+			row+=2;
+		}
 		// We don't want the save button to take up the whole column width
 		// so we wrap it in a JPanel with a FlowLayout. If there is a better
 		// way, please fix this.
@@ -431,7 +431,7 @@ public class MatchEditor implements EditorPane {
 
         matchId.setText(match.getName());
         desc.setText(match.getMatchSettings().getDescription());
-        matchType.setSelectedItem(match.getType());
+        matchType.setText(match.getType().toString());
         filterPanel.getFilterTextArea().setText(match.getFilter());
 
         Validator v = new MatchNameValidator(swingSession,match);
@@ -443,21 +443,25 @@ public class MatchEditor implements EditorPane {
         Validator v2a = new MatchSourceTableIndexValidator();
         handler.addValidateObject(indexComboBox,v2a);
 
-        if ( resultChooser.getCatalogComboBox().isEnabled() ) {
+        if ( !match.getType().equals(Match.MatchMode.CLEANSE) 
+        		&& resultChooser.getCatalogComboBox().isEnabled() ) {
         	Validator v3 = new MatchResultCatalogSchemaValidator("Result "+
         			resultChooser.getCatalogTerm().getText());
         	handler.addValidateObject(resultChooser.getCatalogComboBox(),v3);
         }
 
-        if ( resultChooser.getSchemaComboBox().isEnabled() ) {
+        if ( !match.getType().equals(Match.MatchMode.CLEANSE)
+        		&& resultChooser.getSchemaComboBox().isEnabled() ) {
         	Validator v4 = new MatchResultCatalogSchemaValidator("Result "+
         			resultChooser.getSchemaTerm().getText());
         	handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
         }
 
-        Validator v5 = new MatchResultTableNameValidator();
-        handler.addValidateObject(resultTableName,v5);
-
+        if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
+        	Validator v5 = new MatchResultTableNameValidator();
+        	handler.addValidateObject(resultTableName,v5);
+        }
+        
         Validator v6 = new AlwaysOKValidator();
         handler.addValidateObject(desc, v6);
         handler.addValidateObject(filterPanel.getFilterTextArea(), v6);
@@ -600,7 +604,6 @@ public class MatchEditor implements EditorPane {
     	}
 
     	final String matchName = matchId.getText().trim();
-        match.setType((Match.MatchMode)matchType.getSelectedItem());
         match.getMatchSettings().setDescription(desc.getText());
 
         match.setSourceTable(((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()));
@@ -637,44 +640,46 @@ public class MatchEditor implements EditorPane {
         	matchId.setText(id);
         }
 
-        SQLObject resultTableParent;
-        if ( resultChooser.getSchemaComboBox().isEnabled() &&
-        		resultChooser.getSchemaComboBox().getSelectedItem() != null ) {
-        	resultTableParent =
-        		(SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem();
-        } else if ( resultChooser.getCatalogComboBox().isEnabled() &&
-        		resultChooser.getCatalogComboBox().getSelectedItem() != null ) {
-        	resultTableParent =
-        		(SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem();
-        } else {
-        	resultTableParent = (SQLDatabase) resultChooser.getDb();
-        }
-
-        String trimmedResultTableName = resultTableName.getText().trim();
-        if ( trimmedResultTableName == null || trimmedResultTableName.length() == 0 ) {
-            //matchName (string taken from the match id textfield) is used
-            //instead of match.getName() because if the match is new, the
-            //matchName has not been saved to the database and therefore would
-            //return MM.Null instead
-            trimmedResultTableName = "MM_"+matchName;
-        	resultTableName.setText(trimmedResultTableName);
-        }
-
-        if(resultChooser.getCatalogComboBox().getSelectedItem() != null) {
-        	match.setResultTableCatalog( ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName());
-        }
-        if(resultChooser.getSchemaComboBox().getSelectedItem() != null) {
-        	match.setResultTableSchema( ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName());
-        }
+        if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
+	        SQLObject resultTableParent;
+	        if ( resultChooser.getSchemaComboBox().isEnabled() &&
+	        		resultChooser.getSchemaComboBox().getSelectedItem() != null ) {
+	        	resultTableParent =
+	        		(SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem();
+	        } else if ( resultChooser.getCatalogComboBox().isEnabled() &&
+	        		resultChooser.getCatalogComboBox().getSelectedItem() != null ) {
+	        	resultTableParent =
+	        		(SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem();
+	        } else {
+	        	resultTableParent = (SQLDatabase) resultChooser.getDb();
+	        }
+	
+	        String trimmedResultTableName = resultTableName.getText().trim();
+	        if ( trimmedResultTableName == null || trimmedResultTableName.length() == 0 ) {
+	            //matchName (string taken from the match id textfield) is used
+	            //instead of match.getName() because if the match is new, the
+	            //matchName has not been saved to the database and therefore would
+	            //return MM.Null instead
+	            trimmedResultTableName = "MM_"+matchName;
+	        	resultTableName.setText(trimmedResultTableName);
+	        }
+	
+	        if(resultChooser.getCatalogComboBox().getSelectedItem() != null) {
+	        	match.setResultTableCatalog( ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName());
+	        }
+	        if(resultChooser.getSchemaComboBox().getSelectedItem() != null) {
+	        	match.setResultTableSchema( ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName());
+	        }
         
-        try {
-			match.setResultTable(new SQLTable(resultTableParent,
-					trimmedResultTableName,
-					"MatchMaker result table",
-					"TABLE", true));
-		} catch (ArchitectException e) {
-			throw new ArchitectRuntimeException(e);
-		}
+	        try {
+				match.setResultTable(new SQLTable(resultTableParent,
+						trimmedResultTableName,
+						"MatchMaker result table",
+						"TABLE", true));
+			} catch (ArchitectException e) {
+				throw new ArchitectRuntimeException(e);
+			}
+        }
 
         match.setFilter(filterPanel.getFilterTextArea().getText());
 
@@ -719,7 +724,11 @@ public class MatchEditor implements EditorPane {
 				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "An exception occured while deriving collison criteria", ex);
 			}
 			
-			match.getTableMergeRulesFolder().addChild(0, mergeRule);
+			if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
+				match.getTableMergeRulesFolder().addChild(0, mergeRule);
+			} else {
+				match.getTableMergeRulesFolder().setVisible(false);
+			}
         }
 		
 		logger.debug("Saving Match:" + match.getName());
@@ -760,7 +769,14 @@ public class MatchEditor implements EditorPane {
     	}
 
     	ValidateResult r1 = handler.getResultOf(indexComboBox);
-    	ValidateResult r2 = handler.getResultOf(resultTableName);
+    	
+    	ValidateResult r2;
+    	if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
+    		r2 = handler.getResultOf(resultTableName);
+    	} else {
+    		r2 = null;
+    	}
+    	
     	ValidateResult r3 = handler.getResultOf(sourceChooser.getTableComboBox());
     	if ( r1 == null || r1.getStatus() != Status.OK ||
     			r2 == null || r2.getStatus() != Status.OK ||

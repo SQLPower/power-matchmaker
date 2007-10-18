@@ -150,4 +150,11 @@ public class StubMatchMakerObject implements MatchMakerObject {
 		
 	}
 
+	public boolean isVisible() {
+		return true;
+	}
+
+	public void setVisible(boolean v) {
+	}
+
 }
