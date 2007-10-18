@@ -29,7 +29,7 @@ import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.testutil.MockJDBCConnection;
 import ca.sqlpower.testutil.MockJDBCResultSet;
@@ -72,8 +72,8 @@ public class SQLInputStepTest extends TestCase {
         table.addColumn(new SQLColumn(table, "col2", Types.INTEGER, 50, 0));
         table.addColumn(new SQLColumn(table, "col3", Types.TIMESTAMP, 50, 0));
 
-        Match match = new Match();
-        match.setSourceTable(table);
+        Project project = new Project();
+        project.setSourceTable(table);
         step = new SQLInputStep(table, new TestingMatchMakerSession());
     }
     

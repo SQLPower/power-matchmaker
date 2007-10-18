@@ -88,7 +88,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
         propertiesToIgnoreForDuplication.add("oid");
         propertiesToIgnoreForDuplication.add("parent");
-        propertiesToIgnoreForDuplication.add("parentMatch");
+        propertiesToIgnoreForDuplication.add("parentProject");
         propertiesToIgnoreForDuplication.add("session");
         propertiesToIgnoreForDuplication.add("class");
         propertiesToIgnoreForDuplication.add("createDate");
@@ -172,7 +172,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			return new Long(((Long) oldVal).longValue() + 1L);
 		} else if (property.getPropertyType() == BigDecimal.class) {
 			return new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
-		} else if (property.getPropertyType() == MatchSettings.class) {
+		} else if (property.getPropertyType() == MungeSettings.class) {
 		    Integer processCount = ((MatchMakerSettings) oldVal).getProcessCount();
 		    ((MatchMakerSettings) oldVal).setProcessCount(new Integer(processCount +1));
 		    return oldVal;
@@ -189,11 +189,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			oldVal = File.createTempFile("mmTest2",".tmp");
 			((File)oldVal).deleteOnExit();
 			return oldVal;
-		} else if (property.getPropertyType() == Match.MatchMode.class) {
-			if (oldVal == Match.MatchMode.BUILD_XREF) {
-				return Match.MatchMode.FIND_DUPES;
+		} else if (property.getPropertyType() == Project.ProjectMode.class) {
+			if (oldVal == Project.ProjectMode.BUILD_XREF) {
+				return Project.ProjectMode.FIND_DUPES;
 			} else {
-				return Match.MatchMode.BUILD_XREF;
+				return Project.ProjectMode.BUILD_XREF;
 			}
 		} else if (property.getPropertyType() == MergeActionType.class) {
 			if (oldVal == MergeActionType.AUGMENT) {
@@ -255,7 +255,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		settableProperties = Arrays.asList(PropertyUtils.getPropertyDescriptors(mmo.getClass()));
         propertiesToIgnoreForEventGeneration.add("oid");
         propertiesToIgnoreForEventGeneration.add("session");
-        propertiesToIgnoreForEventGeneration.add("parentMatch");
+        propertiesToIgnoreForEventGeneration.add("parentProject");
 		for (PropertyDescriptor property : settableProperties) {
 			if (propertiesToIgnoreForEventGeneration.contains(property.getName())) continue;
 			Object oldVal;
@@ -341,8 +341,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			} else {
 				newVal = new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
 			}
-		} else if (property.getPropertyType() == MatchSettings.class) {
-			newVal = new MatchSettings();
+		} else if (property.getPropertyType() == MungeSettings.class) {
+			newVal = new MungeSettings();
 		    Integer processCount = ((MatchMakerSettings) newVal).getProcessCount();
 		    if (processCount == null) {
 		        processCount = new Integer(0);
@@ -367,12 +367,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			newVal = File.createTempFile("mmTest",".tmp");
 			((File)newVal).deleteOnExit();
 		} else if (property.getPropertyType() == PlFolder.class) {
-			newVal = new PlFolder<Match>();
-		} else if (property.getPropertyType() == Match.MatchMode.class) {
-			if (oldVal == Match.MatchMode.BUILD_XREF) {
-				newVal = Match.MatchMode.FIND_DUPES;
+			newVal = new PlFolder<Project>();
+		} else if (property.getPropertyType() == Project.ProjectMode.class) {
+			if (oldVal == Project.ProjectMode.BUILD_XREF) {
+				newVal = Project.ProjectMode.FIND_DUPES;
 			} else {
-				newVal = Match.MatchMode.BUILD_XREF;
+				newVal = Project.ProjectMode.BUILD_XREF;
 			}
 		} else if (property.getPropertyType() == MergeActionType.class) {
 			if (oldVal == MergeActionType.AUGMENT) {
@@ -390,9 +390,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			newVal = new Date();
 		} else if (property.getPropertyType() == List.class) {
 		    newVal = new ArrayList();
-		} else if (property.getPropertyType() == Match.class) {
-		    newVal = new Match();
-		    ((Match) newVal).setName("Fake_Match_"+System.currentTimeMillis());
+		} else if (property.getPropertyType() == Project.class) {
+		    newVal = new Project();
+		    ((Project) newVal).setName("Fake_Project_"+System.currentTimeMillis());
 		} else if (property.getPropertyType() == SQLIndex.class) {
 			return new SQLIndex("new index",false,"",IndexType.HASHED,"");
         } else if (property.getPropertyType() == Color.class) {

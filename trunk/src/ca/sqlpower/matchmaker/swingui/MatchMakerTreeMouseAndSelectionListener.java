@@ -37,14 +37,14 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.matchmaker.Match.MatchMode;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
@@ -57,12 +57,12 @@ import ca.sqlpower.matchmaker.swingui.action.DeleteMungeStepAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
+import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
-import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
-import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
+import ca.sqlpower.matchmaker.swingui.action.ProjectExportAction;
+import ca.sqlpower.matchmaker.swingui.action.ProjectImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
@@ -135,20 +135,20 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					}
 				} else if (o instanceof PlFolder) {
 					addFolderMenuItems(m, (PlFolder) o);
-				} else if (o instanceof Match) {
-					addMatchMenuItems(m, (Match) o);
+				} else if (o instanceof Project) {
+					addProjectMenuItems(m, (Project) o);
 				} else if (o instanceof MatchMakerFolder<?>) {
 					MatchMakerFolder<?> folder = (MatchMakerFolder<?>) o;
-					if (folder.getName().equals(Match.MATCH_RULES_FOLDER_NAME)) {
-						addMatchRulesFolderMenuItems(m, folder);
+					if (folder.getName().equals(Project.MUNGE_PROCESSES_FOLDER_NAME)) {
+						addMungeProcessesFolderMenuItems(m, folder);
 					} else if (folder.getName().equals(
-							Match.MERGE_RULES_FOLDER_NAME)) {
+							Project.MERGE_RULES_FOLDER_NAME)) {
 						addMergeRulesFolderMenuItems(m, folder);
 					}
 				} else if (o instanceof MungeProcess) {
 					addMungeProcessMenuItems(m, (MungeProcess) o);
 				} else if (o instanceof MungeStep) {
-					addMatchRuleMenuItems(m, (MungeStep) o);
+					addMungeStepMenuItems(m, (MungeStep) o);
 				} else if (o instanceof TableMergeRules) {
 					addMergeRulesMenuItems(m, (TableMergeRules) o);
 				} else if (o instanceof TranslateGroupParent) {
@@ -169,10 +169,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 * @param folder
 	 *            The current folder being right-clicked on.
 	 */
-	private void addMatchRulesFolderMenuItems(JPopupMenu m,
+	private void addMungeProcessesFolderMenuItems(JPopupMenu m,
 			MatchMakerFolder<?> folder) {
 		m.add(new JMenuItem(new NewMungeProcessAction(swingSession,
-				(Match) folder.getParent())));
+				(Project) folder.getParent())));
 	}
 
 	/**
@@ -185,7 +185,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 */
 	private void addMergeRulesFolderMenuItems(JPopupMenu m,
 			MatchMakerFolder<?> folder) {
-		m.add(new JMenuItem(new NewMergeRuleAction(swingSession, (Match) folder
+		m.add(new JMenuItem(new NewMergeRuleAction(swingSession, (Project) folder
 				.getParent())));
 	}
 
@@ -198,26 +198,26 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMergeRulesMenuItems(JPopupMenu m, TableMergeRules mergeRule) {
-		if (!mergeRule.getTableName().equals(mergeRule.getParentMatch().getSourceTableName())) {
+		if (!mergeRule.getTableName().equals(mergeRule.getParentProject().getSourceTableName())) {
 			m.add(new JMenuItem(new DeleteMergeRuleAction(swingSession,
 					mergeRule)));
 		}
 	}
 
 	/**
-	 * Attaches a menu item for the actions of a match rule.
+	 * Attaches a menu item for the actions of a munge step.
 	 * 
 	 * @param m
 	 *            The popup menu that the menu item would be attached onto.
 	 * @param rule
 	 *            The current folder being right-clicked on.
 	 */
-	private void addMatchRuleMenuItems(JPopupMenu m, MungeStep step) {
+	private void addMungeStepMenuItems(JPopupMenu m, MungeStep step) {
 		m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
 	}
 
 	/**
-	 * Attaches a menu item for the actions of a match rule set.
+	 * Attaches a menu item for the actions of a munge process.
 	 * 
 	 * @param m
 	 *            The popup menu that the menu item would be attached onto.
@@ -231,81 +231,81 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	private void createNewFolderMenuItem(JPopupMenu m) {
 		m.add(new JMenuItem(new AbstractAction("New Folder") {
 			public void actionPerformed(ActionEvent e) {
-				PlFolder<Match> folder = new PlFolder<Match>();
+				PlFolder<Project> folder = new PlFolder<Project>();
 				FolderEditor editor = new FolderEditor(swingSession, folder);
 				swingSession.setCurrentEditorComponent(editor);
 			}
 		}));
 	}
 
-	private void addMatchMenuItems(JPopupMenu m, final Match match) {
+	private void addProjectMenuItems(JPopupMenu m, final Project project) {
 
 		m.addSeparator();
-		m.add(new JMenuItem(new NewMungeProcessAction(swingSession, match)));
+		m.add(new JMenuItem(new NewMungeProcessAction(swingSession, project)));
 
-		if (!match.getType().equals(MatchMode.CLEANSE)) {
-			m.add(new JMenuItem(new NewMergeRuleAction(swingSession, match)));
+		if (!project.getType().equals(ProjectMode.CLEANSE)) {
+			m.add(new JMenuItem(new NewMergeRuleAction(swingSession, project)));
 		}
 		
 		m.addSeparator();
-		if (match.getType().equals(MatchMode.FIND_DUPES)) {
+		if (project.getType().equals(ProjectMode.FIND_DUPES)) {
 			m.add(new JMenuItem(new AbstractAction("Run Match") {
 				public void actionPerformed(ActionEvent e) {
-					MatchEnginePanel f = new MatchEnginePanel(swingSession, match,
+					MatchEnginePanel f = new MatchEnginePanel(swingSession, project,
 							owningFrame);
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));
 			m.add(new JMenuItem(new AbstractAction("Run Merge") {
 				public void actionPerformed(ActionEvent e) {
-					MergeEnginePanel f = new MergeEnginePanel(swingSession, match,
+					MergeEnginePanel f = new MergeEnginePanel(swingSession, project,
 							owningFrame);
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));
-		} else if (match.getType().equals(MatchMode.CLEANSE)) {
+		} else if (project.getType().equals(ProjectMode.CLEANSE)) {
 			m.add(new JMenuItem(new AbstractAction("Run Cleanse") {
 				public void actionPerformed(ActionEvent e) {
 					CleanseEnginePanel f = new CleanseEnginePanel(swingSession,
-							match, owningFrame);
+							project, owningFrame);
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));
 		}
 
 		m.addSeparator();
-		if (match.getType() != MatchMode.CLEANSE) {
+		if (project.getType() != ProjectMode.CLEANSE) {
 			m.add(new JMenuItem(new ShowMatchStatisticInfoAction(swingSession,
-					match, owningFrame)));
+					project, owningFrame)));
 		}
 		m.add(new JMenuItem(new AbstractAction("Audit Information") {
 			public void actionPerformed(ActionEvent e) {
-				swingSession.setCurrentEditorComponent(new MatchInfoEditor(
-						match));
+				swingSession.setCurrentEditorComponent(new ProjectInfoEditor(
+						project));
 			}
 		}));
 		
 		m.addSeparator();
 		m
-				.add(new JMenuItem(new PlMatchExportAction(swingSession,
+				.add(new JMenuItem(new ProjectExportAction(swingSession,
 						owningFrame)));
 		m
-				.add(new JMenuItem(new PlMatchImportAction(swingSession,
+				.add(new JMenuItem(new ProjectImportAction(swingSession,
 						owningFrame)));
 
 		m.addSeparator();
-		m.add(new JMenuItem(new DeleteProjectAction(swingSession, match)));
-		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, match)));
+		m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
+		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
 
 	}
 
 	private void addFolderMenuItems(JPopupMenu m, final PlFolder folder) {
 		JMenu mm = new JMenu("New Project");
-		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New De-duping Project", Match.MatchMode.FIND_DUPES)));
-		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New Cleansing Project",Match.MatchMode.CLEANSE)));
-		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New X-ref Project", Match.MatchMode.BUILD_XREF)));
+		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New De-duping Project", Project.ProjectMode.FIND_DUPES)));
+		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New Cleansing Project",Project.ProjectMode.CLEANSE)));
+		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New X-ref Project", Project.ProjectMode.BUILD_XREF)));
 		m.add(mm);
-		m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
+		m.add(new JMenuItem(new ProjectImportAction(swingSession, owningFrame)));
 		m.add(new JMenuItem(new DeletePlFolderAction(swingSession,
 				"Delete Folder", folder)));
 	}
@@ -360,11 +360,11 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					FolderEditor editor = new FolderEditor(swingSession,
 							(PlFolder) o);
 					swingSession.setCurrentEditorComponent(editor);
-				} else if (o instanceof Match) {
+				} else if (o instanceof Project) {
 
-					MatchEditor me;
-					me = new MatchEditor(swingSession, (Match) o,
-							(PlFolder<Match>) ((Match) o).getParent());
+					ProjectEditor me;
+					me = new ProjectEditor(swingSession, (Project) o,
+							(PlFolder<Project>) ((Project) o).getParent());
 
 					swingSession.setCurrentEditorComponent(me);
 
@@ -375,14 +375,14 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 							return;
 						}
 					}
-					Match m = ((MungeProcess) o).getParentMatch();
+					Project m = ((MungeProcess) o).getParentProject();
 					MungeProcessEditor editor = new MungeProcessEditor(swingSession, m, (MungeProcess) o);
 					logger.debug("Created new munge process editor "
 							+ System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 				} else if (o instanceof MungeStep) {
 					MungeProcess mp = (MungeProcess)((MungeStep) o).getParent();
-					Match m = mp.getParentMatch();
+					Project m = mp.getParentProject();
 					if (swingSession.getOldPane() instanceof MungeProcessEditor) {
 						MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
 						if (originalPane.getProcess() == mp) {
@@ -397,7 +397,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 				} else if (o instanceof MungeStepOutput) {
 					MungeStep ms = (MungeStep)((MungeStepOutput) o).getParent();
 					MungeProcess mp = (MungeProcess)(ms.getParent());
-					Match m = mp.getParentMatch();
+					Project m = mp.getParentProject();
 					if (swingSession.getOldPane() instanceof MungeProcessEditor) {
 						MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
 						if (originalPane.getProcess() == mp) {
@@ -411,14 +411,14 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					editor.setSelectedStepOutput((MungeStepOutput) o);
 				} else if (o instanceof MatchMakerFolder) {
 					MatchMakerFolder f = (MatchMakerFolder) o;
-					Match m = (Match) f.getParent();
+					Project m = (Project) f.getParent();
 
-					if (f.getName().equals(Match.MERGE_RULES_FOLDER_NAME)) {
+					if (f.getName().equals(Project.MERGE_RULES_FOLDER_NAME)) {
 						MergeTableRuleEditor editor = new MergeTableRuleEditor(swingSession, m);
 						logger.debug("Created new merge table rules editor "
 								+ System.identityHashCode(editor));
 						swingSession.setCurrentEditorComponent(editor);
-					} else if (f.getName().equals(Match.MATCH_RULES_FOLDER_NAME)) {
+					} else if (f.getName().equals(Project.MUNGE_PROCESSES_FOLDER_NAME)) {
 						MungeProcessGroupEditor editor = new MungeProcessGroupEditor(swingSession, m);
 						logger.debug("Created new munge process group editor "
 								+ System.identityHashCode(editor));
@@ -433,7 +433,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						}
 					}
 					TableMergeRules f = (TableMergeRules) o;
-					Match m = (Match) f.getParentMatch();
+					Project m = (Project) f.getParentProject();
 					MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession, m, f);
 					logger.debug("Created new merge column rules editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
@@ -448,7 +448,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						}
 					}
 					TableMergeRules f = (TableMergeRules) ((ColumnMergeRules) o).getParent();
-					Match m = (Match) f.getParentMatch();
+					Project m = (Project) f.getParentProject();
 					MergeColumnRuleEditor editor = new MergeColumnRuleEditor(swingSession, m, f);
 					logger.debug("Created new merge column rules editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
@@ -458,28 +458,28 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					if (node.getActionType() == MatchActionType.RUN_MATCH) {
 						swingSession
 								.setCurrentEditorComponent(new MatchEnginePanel(
-										swingSession, node.getMatch(),
+										swingSession, node.getProject(),
 										owningFrame));
 					} else if (node.getActionType() == MatchActionType.AUDIT_INFO) {
 						swingSession
-								.setCurrentEditorComponent(new MatchInfoEditor(
-										node.getMatch()));
+								.setCurrentEditorComponent(new ProjectInfoEditor(
+										node.getProject()));
 					} else if (node.getActionType() == MatchActionType.VALIDATE_MATCHES) {
-						if (node.getMatch().getResultTable() == null) {
+						if (node.getProject().getResultTable() == null) {
 							throw new Exception(
 									"Match result table does not exist!");
 						}
 						swingSession
 								.setCurrentEditorComponent(new MatchResultVisualizer(
-										node.getMatch()));
+										node.getProject()));
 					} else if (node.getActionType() == MatchActionType.VALIDATION_STATUS) {
 						swingSession
 								.setCurrentEditorComponent(new MatchValidationStatus(
-										swingSession, node.getMatch()));
+										swingSession, node.getProject()));
 					} else if (node.getActionType() == MatchActionType.RUN_MERGE) {
 						swingSession
 								.setCurrentEditorComponent(new MergeEnginePanel(
-										swingSession, node.getMatch(),
+										swingSession, node.getProject(),
 										owningFrame));
 					}
 				} else if (o instanceof TranslateGroupParent) {

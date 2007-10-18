@@ -29,37 +29,37 @@ import java.util.List;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.Match.MatchMode;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
-public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Match,MatchDAO>  {
+public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Project,ProjectDAO>  {
 
 	Long count=0L;
 
 	@Override
-	public Match createNewObjectUnderTest() throws Exception {
+	public Project createNewObjectUnderTest() throws Exception {
 		count++;
-		Match match = new Match();
-		match.setSession(getSession());
+		Project project = new Project();
+		project.setSession(getSession());
 		try {
-			setAllSetters(match, getNonPersitingProperties());
-			match.setName("Match "+count);
+			setAllSetters(project, getNonPersitingProperties());
+			project.setName("Project "+count);
 			
 			PlFolder f = new PlFolder("test folder" + count);
 			PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
 			plFolderDAO.save(f);
 			
-            match.setParent(f);
+            project.setParent(f);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
-		return match;
+		return project;
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		List<String> nonPersistingProperties = super.getNonPersitingProperties();
 		nonPersistingProperties.add("lastUpdateDate");
 		nonPersistingProperties.add("session");
-        nonPersistingProperties.add("matchRuleSets");
+        nonPersistingProperties.add("mungeProcesses");
         nonPersistingProperties.add("tableMergeRules");
         
         // tested explicitly elsewhere
@@ -88,20 +88,20 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		return nonPersistingProperties;
 	}
 	
-	public void testMatchRequiresFolder() throws Exception {
-		Match m = new Match();
-        m.setName("match no folder");
+	public void testProjectRequiresFolder() throws Exception {
+		Project m = new Project();
+        m.setName("project no folder");
 		
 		try {
 			getDataAccessObject().save(m);
-			fail("The save did not throw an exception when we saved a match with no folder.");
+			fail("The save did not throw an exception when we saved a project with no folder.");
 		} catch (RuntimeException e) {
 			// Expecting the method to throw a runtime exception because the folder is null
 		}
 	}
 
 	public void testIndexSave() throws Exception {
-		Match m = createNewObjectUnderTest();
+		Project m = createNewObjectUnderTest();
 		
 		// have to hook up a parent table so the UserType can search it for columns
 		SQLTable table = new SQLTable(null, "test_parent", null, "TABLE", true);
@@ -128,7 +128,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
                     "SELECT * FROM pl_match WHERE match_id='"+m.getName()+"'");
             
             if (!rs.next()) {
-            	fail("No results found for match "+m.getName());
+            	fail("No results found for project "+m.getName());
             }
             
             assertEquals("test1", rs.getString("index_column_name0"));
@@ -149,23 +149,23 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         }
         
         // this is not a good idea for a unit test, but Johnson insists
-        Match loadedMatch = getDataAccessObject().findByName(m.getName());
-        assertNotSame("Woops, got the same match back from cache", m, loadedMatch);
-        assertNotSame("Woops, got the same index back from cache", m.getSourceTableIndex(), loadedMatch.getSourceTableIndex());
-        assertNotSame("Woops, got the same indexColumn back from cache", m.getSourceTableIndex().getChild(0), loadedMatch.getSourceTableIndex().getChild(0));
+        Project loadedProject = getDataAccessObject().findByName(m.getName());
+        assertNotSame("Woops, got the same project back from cache", m, loadedProject);
+        assertNotSame("Woops, got the same index back from cache", m.getSourceTableIndex(), loadedProject.getSourceTableIndex());
+        assertNotSame("Woops, got the same indexColumn back from cache", m.getSourceTableIndex().getChild(0), loadedProject.getSourceTableIndex().getChild(0));
 
-        // since the table on the original match was fake, the source table
+        // since the table on the original project was fake, the source table
         // we get back from the DAO will have no columns.  We'll just put it back
         // before testing the index column resolution.
-        loadedMatch.setSourceTable(table);
+        loadedProject.setSourceTable(table);
         
-        assertEquals(3, loadedMatch.getSourceTableIndex().getChildCount());
-        assertEquals("test1", loadedMatch.getSourceTableIndex().getChild(0).getName());
-        assertNotNull(loadedMatch.getSourceTableIndex().getChild(0).getColumn());
-        assertEquals("test2", loadedMatch.getSourceTableIndex().getChild(1).getName());
-        assertNotNull(loadedMatch.getSourceTableIndex().getChild(1).getColumn());
-        assertEquals("test3", loadedMatch.getSourceTableIndex().getChild(2).getName());
-        assertNotNull(loadedMatch.getSourceTableIndex().getChild(2).getColumn());
+        assertEquals(3, loadedProject.getSourceTableIndex().getChildCount());
+        assertEquals("test1", loadedProject.getSourceTableIndex().getChild(0).getName());
+        assertNotNull(loadedProject.getSourceTableIndex().getChild(0).getColumn());
+        assertEquals("test2", loadedProject.getSourceTableIndex().getChild(1).getName());
+        assertNotNull(loadedProject.getSourceTableIndex().getChild(1).getColumn());
+        assertEquals("test3", loadedProject.getSourceTableIndex().getChild(2).getName());
+        assertNotNull(loadedProject.getSourceTableIndex().getChild(2).getColumn());
 	}
     
 	
@@ -177,19 +177,19 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
      */
     public void testIfChildrenLoadWorks() throws Exception {
         final long time = System.currentTimeMillis();
-        final String matchName = "match_"+time;
+        final String projectName = "project_"+time;
         
         PlFolder f = new PlFolder();
 		f.setName("test folder");
 		PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
 		plFolderDAO.save(f);
         
-        final long matchOid = insertSampleMatchData(matchName, f.getOid());
-        final long groupOid = insertSampleMatchRuleSetData(matchOid, "group_"+time);
-        insertSampleMatchRuleData(groupOid, "test_rule_"+time);
+        final long projectOid = insertSampleProjectData(projectName, f.getOid());
+        final long groupOid = insertSampleMungeProcessData(projectOid, "group_"+time);
+        insertSampleMungeStepData(groupOid, "test_rule_"+time);
         
-        Match match = getDataAccessObject().findByName(matchName);
-            List<MungeProcess> groups = match.getMatchRuleSets();
+        Project project = getDataAccessObject().findByName(projectName);
+            List<MungeProcess> groups = project.getMungeProcesses();
 		assertEquals("There should be one rule set", 1, groups.size());
 
 		MungeProcess group = groups.get(0);
@@ -199,30 +199,31 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
     }
     
     public void testRuleSetMove() throws Exception {
-        MungeProcess ruleSet = new MungeProcess();
-        ruleSet.setName("criteria group");
+        MungeProcess process = new MungeProcess();
+        process.setName("criteria group");
         
-        Match oldMatch = new Match();
-        oldMatch.setType(MatchMode.FIND_DUPES);
-        oldMatch.setName("old");
-		PlFolder f = new PlFolder();
-		oldMatch.setParent(f);
+        Project oldProject = new Project();
+        oldProject.setName("old");
+        oldProject.setType(ProjectMode.FIND_DUPES);
+
+        PlFolder f = new PlFolder();
+		oldProject.setParent(f);
         
 		f.setName("test folder");
 		PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
 		plFolderDAO.save(f);
         
-        Match newMatch = new Match();
-        newMatch.setType(MatchMode.FIND_DUPES);
-        newMatch.setName("new");
-		newMatch.setParent(f);
+        Project newProject = new Project();
+        newProject.setName("new");
+		newProject.setParent(f);
+        newProject.setType(ProjectMode.FIND_DUPES);
         
-        oldMatch.addMatchRuleSet(ruleSet);
+        oldProject.addMungeProcess(process);
 
-        MatchDAO dao = getDataAccessObject();
+        ProjectDAO dao = getDataAccessObject();
         
-        dao.save(oldMatch);
-        dao.save(newMatch);
+        dao.save(oldProject);
+        dao.save(newProject);
         
         Connection con = null;
         Statement stmt = null;
@@ -232,10 +233,10 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
             stmt = con.createStatement();
             try { 
                 rs = stmt.executeQuery(
-                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+ruleSet.getName()+"'");
+                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+process.getName()+"'");
             
                 if (!rs.next()) {
-                    fail("No results found for match "+ruleSet.getName());
+                    fail("No results found for project "+process.getName());
                 }
             
                 assertEquals("The setup failed to work","old", rs.getString("match_id"));
@@ -243,21 +244,21 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
                 try { rs.close(); } catch (Exception e) { System.err.println("Couldn't close result set"); e.printStackTrace(); }
             }
             
-            oldMatch.removeMatchRuleSet(ruleSet);
-            dao.save(oldMatch);
+            oldProject.removeMungeProcess(process);
+            dao.save(oldProject);
             
-            //A temporary fix for moving match rulesets. This makes a copy of the ruleSet and 
-            //adds it to the newMatch.
-            MungeProcess ruleSet2 = ruleSet.duplicate(newMatch, getSession());
-            newMatch.addMatchRuleSet(ruleSet2);
-            dao.save(newMatch);
+            //A temporary fix for moving munge processes. This makes a copy of the ruleSet and 
+            //adds it to the newProject.
+            MungeProcess ruleSet2 = process.duplicate(newProject, getSession());
+            newProject.addMungeProcess(ruleSet2);
+            dao.save(newProject);
             
             try { 
                 rs = stmt.executeQuery(
-                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+ruleSet.getName()+"'");
+                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+process.getName()+"'");
             
                 if (!rs.next()) {
-                    fail("No results found for match "+ruleSet.getName());
+                    fail("No results found for project "+process.getName());
                 }
             
                 assertEquals("move failed to work","new", rs.getString("match_id"));
@@ -279,10 +280,10 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
      * This method is abstract because the OID columns have to be handled
      * differently on different database platforms.
      * 
-     * @return The MATCH_OID value of the new match that was inserted.
+     * @return The MATCH_OID value of the new project that was inserted.
      */
-    protected abstract long insertSampleMatchData(
-            String matchName, Long folderOid) throws Exception;
+    protected abstract long insertSampleProjectData(
+            String projectName, Long folderOid) throws Exception;
     
     /**
      * Inserts a sample entry in PL_MATCH_GROUP, and returns its OID.  The group will
@@ -294,8 +295,8 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
      * 
      * @return The GROUP_OID value of the new munge process that was inserted.
      */
-    protected abstract long insertSampleMatchRuleSetData(
-            long parentMatchOid, String groupName) throws Exception;
+    protected abstract long insertSampleMungeProcessData(
+            long parentProjectOid, String groupName) throws Exception;
 
     /**
      * Inserts a sample entry in PL_MATCH_CRITERIA, and returns its OID.  The rule will
@@ -308,6 +309,6 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
      * 
      * @return The GROUP_OID value of the new munge process that was inserted.
      */
-    protected abstract long insertSampleMatchRuleData(
+    protected abstract long insertSampleMungeStepData(
             long parentGroupOid, String lastUpdateUser) throws Exception;
 }

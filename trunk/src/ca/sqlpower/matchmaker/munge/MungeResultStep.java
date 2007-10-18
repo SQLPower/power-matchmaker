@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 
@@ -55,9 +55,9 @@ public class MungeResultStep extends AbstractMungeStep {
 		new ArrayList<MungeResult>();
 	
 	/**
-	 * The match project that this MungeResultStep is working on.
+	 * The project that this MungeResultStep is working on.
 	 */
-	private final Match match;
+	private final Project project;
 	
 	/**
 	 * A SQLIndex representing the unique index chosen by the user to
@@ -79,11 +79,11 @@ public class MungeResultStep extends AbstractMungeStep {
 	 */
 	private MungeStepOutput[] indexValues;
 	
-	public MungeResultStep(Match match, MungeStep inputStep, MatchMakerSession session) throws ArchitectException {
+	public MungeResultStep(Project project, MungeStep inputStep, MatchMakerSession session) throws ArchitectException {
 		super(session);
-		this.match = match;
+		this.project = project;
 		this.inputStep = inputStep;
-		this.uniqueIndex = match.getSourceTableIndex();
+		this.uniqueIndex = project.getSourceTableIndex();
 		setName("Munge Results");
 		InputDescriptor desc = new InputDescriptor("result1", Object.class);
 		super.addInput(desc);
@@ -135,7 +135,7 @@ public class MungeResultStep extends AbstractMungeStep {
 			indexValueList.add(o.getData());
 		}
 		
-		SourceTableRecord source = new SourceTableRecord(getSession(), match, indexValueList);
+		SourceTableRecord source = new SourceTableRecord(getSession(), project, indexValueList);
 		result.setSourceTableRecord(source);
 		
 		logger.debug("Adding MungeResult " + result);

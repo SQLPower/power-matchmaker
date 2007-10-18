@@ -75,7 +75,7 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -83,7 +83,7 @@ import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.validation.MatchNameValidator;
+import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -100,19 +100,19 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * The MatchEditor is the GUI for editing all aspects of a {@link Match} instance.
+ * The MatchEditor is the GUI for editing all aspects of a {@link Project} instance.
  */
-public class MatchEditor implements EditorPane {
+public class ProjectEditor implements EditorPane {
 
-	private static final Logger logger = Logger.getLogger(MatchEditor.class);
+	private static final Logger logger = Logger.getLogger(ProjectEditor.class);
 
 	/**
-	 * The collection of combo boxes for choosing the match source table (or view).
+	 * The collection of combo boxes for choosing the project source table (or view).
 	 */
 	private SQLObjectChooser sourceChooser;
 	
 	/**
-	 * The collection of combo boxes for choosing the match result table.
+	 * The collection of combo boxes for choosing the project result table.
 	 */
 	private SQLObjectChooser resultChooser;
 
@@ -122,45 +122,44 @@ public class MatchEditor implements EditorPane {
 	private final JPanel panel;
 
 	StatusComponent status = new StatusComponent();
-    private JTextField matchId = new JTextField();
+    private JTextField projectId = new JTextField();
     private JComboBox folderComboBox = new JComboBox();
     private JComboBox indexComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
-    private JLabel matchType = new JLabel();
+    private JLabel projectType = new JLabel();
     private JTextField resultTableName = new JTextField();
     private JButton viewBuilder;
     private JButton createResultTable;
     private JButton createIndexButton;
-    private JButton saveMatch;
+    private JButton saveProject;
     
     private FilterComponents filterPanel;
 
     private final MatchMakerSwingSession swingSession;
 
     /**
-     * The match that this editor is editing.  If you want to edit a different match,
-     * create a new MatchEditor.
+     * The project that this editor is editing.  If you want to edit a different match,
+     * create a new ProjectEditor.
      */
-	private final Match match;
-	private final PlFolder<Match> folder;
+	private final Project project;
+	private final PlFolder<Project> folder;
 	private FormValidationHandler handler;
 
 	/**
-	 * Construct a MatchEditor; for a match that is not new, we create a backup for it,
+	 * Construct a ProjectEditor; for a project that is not new, we create a backup for it,
 	 * and give it the name of the old one, when we save it, we will remove
 	 * the backup from the folder, and insert the new one.
 	 * @param swingSession  -- a MatchMakerSession
-	 * @param match the Match Object to be edited
-	 * @param folder the match's parent folder (XXX isn't this just match.getParent()?)
-	 * @param newMatch a flag that indicates if match is a new match or not
+	 * @param project the project Object to be edited
+	 * @param folder the project's parent folder (XXX isn't this just project.getParent()?)
 	 */
-    public MatchEditor(final MatchMakerSwingSession swingSession, Match match, PlFolder<Match> folder) throws ArchitectException {
+    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder) throws ArchitectException {
         this.swingSession = swingSession;
-        if (match == null) throw new NullPointerException("You can't edit a null plmatch");
-        this.match = match;
+        if (project == null) throw new NullPointerException("You can't edit a null plmatch");
+        this.project = project;
         this.folder = folder;
         handler = new FormValidationHandler(status);
-        createResultTableAction = new CreateResultTableAction(swingSession, match);
+        createResultTableAction = new CreateResultTableAction(swingSession, project);
         panel = buildUI();
         setDefaultSelections();
         handler.addPropertyChangeListener(new PropertyChangeListener(){
@@ -171,30 +170,30 @@ public class MatchEditor implements EditorPane {
         handler.resetHasValidated(); // avoid false hits when newly created
 
         /**
-         * listen to the parent of the match, to handle the match removal
-         * from the tree. if this currently editting match was deleted
+         * listen to the parent of the project, to handle the project removal
+         * from the tree. if this currently editting project was deleted
          * from the tree, we want to close this panel without saving.
          */
-        if ( match.getParent() != null ) {
-        	final Match match2 = match;
-        	final PlFolder<Match> parentFolder = (PlFolder<Match>) match.getParent();
+        if ( project.getParent() != null ) {
+        	final Project project2 = project;
+        	final PlFolder<Project> parentFolder = (PlFolder<Project>) project.getParent();
         	final JPanel panel = getPanel();
-        	final MatchMakerListener<PlFolder, Match> matchRemovalListener = new MatchMakerListener<PlFolder, Match>(){
+        	final MatchMakerListener<PlFolder, Project> projectRemovalListener = new MatchMakerListener<PlFolder, Project>(){
 
         		// we don't care
-        		public void mmChildrenInserted(MatchMakerEvent<PlFolder, Match> evt) {}
+        		public void mmChildrenInserted(MatchMakerEvent<PlFolder, Project> evt) {}
 
-        		public void mmChildrenRemoved(MatchMakerEvent<PlFolder, Match> evt) {
+        		public void mmChildrenRemoved(MatchMakerEvent<PlFolder, Project> evt) {
         			if (!panel.isVisible() || !panel.isDisplayable()) {
         				return;
         			}
-        			final List<Match> matches = evt.getChildren();
+        			final List<Project> projects = evt.getChildren();
         			boolean found = false;
-        			for ( Match m : matches ) {
-        				if ( m == match2 ) found = true;
+        			for ( Project m : projects ) {
+        				if ( m == project2 ) found = true;
         			}
         			if ( found ) {
-        				logger.debug("This match is deleted from somewhere");
+        				logger.debug("This project is deleted from somewhere");
         				logger.debug("we have to close the editor without saving");
         				handler.resetHasValidated();
         				panel.setVisible(false);
@@ -203,11 +202,11 @@ public class MatchEditor implements EditorPane {
         			}
         		}
         		// we don't care
-        		public void mmPropertyChanged(MatchMakerEvent<PlFolder, Match> evt) {}
+        		public void mmPropertyChanged(MatchMakerEvent<PlFolder, Project> evt) {}
         		// we don't care
-        		public void mmStructureChanged(MatchMakerEvent<PlFolder, Match> evt) {}
+        		public void mmStructureChanged(MatchMakerEvent<PlFolder, Project> evt) {}
         	};
-        	parentFolder.addMatchMakerListener(matchRemovalListener);
+        	parentFolder.addMatchMakerListener(projectRemovalListener);
         	
         	sourceChooser.getCatalogComboBox().setEnabled(false);
         	sourceChooser.getSchemaComboBox().setEnabled(false);
@@ -217,10 +216,10 @@ public class MatchEditor implements EditorPane {
     }
 
     /**
-     * Saves the current match (which is referenced in the plMatch member variable of this editor instance).
+     * Saves the current project (which is referenced in the plMatch member variable of this editor instance).
      * If there is no current plMatch, a new one will be created and its properties will be set just like
      * they would if one had existed.  In either case, this action will then use Hibernate to save the
-     * match object back to the database (but it should use the MatchHome interface instead).
+     * project object back to the database (but it should use the MatchHome interface instead).
      */
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(final ActionEvent e) {
@@ -228,12 +227,12 @@ public class MatchEditor implements EditorPane {
                 boolean ok = doSave();
                 if ( ok ) {
                 	JOptionPane.showMessageDialog(swingSession.getFrame(),
-                			"Match Interface Saved Successfully",
+                			"Project Interface Saved Successfully",
                 			"Saved",JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (Exception ex) {
                 MMSUtils.showExceptionDialog(swingSession.getFrame(),
-                		"Match Interface Not Saved", ex);
+                		"Project Interface Not Saved", ex);
             }
 		}
 	};
@@ -243,7 +242,7 @@ public class MatchEditor implements EditorPane {
 			MungeProcessEditor editor = null;
 			try {
 				editor = new MungeProcessEditor(swingSession,
-					match,
+					project,
 					new MungeProcess());
 				swingSession.setCurrentEditorComponent(editor);
 			} catch (ArchitectException e) {
@@ -259,12 +258,12 @@ public class MatchEditor implements EditorPane {
 	}
 
     /**
-     * Returns the parent (owning) frame of this match editor.  If the owner
+     * Returns the parent (owning) frame of this project editor.  If the owner
      * isn't a frame (it might be a dialog or AWT Window) then null is returned.
      * You should always use {@link #getParentWindow()} in preference to
      * this method unless you really really need a JFrame.
      *
-     * @return the parent JFrame of this match editor's panel, or null if
+     * @return the parent JFrame of this project editor's panel, or null if
      * the owner is not a JFrame.
      */
     private JFrame getParentFrame() {
@@ -300,13 +299,13 @@ public class MatchEditor implements EditorPane {
 
 	private Action createIndexAction = new AbstractAction("Pick Columns"){
 		public void actionPerformed(ActionEvent e) {
-			if ( match.getSourceTable() == null ) {
+			if ( project.getSourceTable() == null ) {
 				JOptionPane.showMessageDialog(panel,
 						"You have to select a source table and save before picking columns" );
 				return;
 			}
 			try {
-				new MatchMakerIndexBuilder(match,swingSession);
+				new MatchMakerIndexBuilder(project,swingSession);
 			} catch (Exception ex) {
 				SPSUtils.showExceptionDialogNoReport(panel, "An exception occured while picking columns", ex);
 			}
@@ -315,7 +314,7 @@ public class MatchEditor implements EditorPane {
 
     private JPanel buildUI() {
 
-    	matchId.setName("Match ID");
+    	projectId.setName("Project ID");
 		sourceChooser = new SQLObjectChooser(swingSession);
         resultChooser = new SQLObjectChooser(swingSession);
         sourceChooser.getTableComboBox().setName("Source Table");
@@ -334,7 +333,7 @@ public class MatchEditor implements EditorPane {
 
     	viewBuilder = new JButton(viewBuilderAction);
     	createResultTable = new JButton(createResultTableAction);
-    	saveMatch = new JButton(saveAction);
+    	saveProject = new JButton(saveAction);
         createIndexButton = new JButton(createIndexAction );
 
     	FormLayout layout = new FormLayout(
@@ -349,8 +348,8 @@ public class MatchEditor implements EditorPane {
 		int row = 2;
 		pb.add(status, cc.xy(4,row));
 		row += 2;
-		pb.add(new JLabel("Match ID:"), cc.xy(2,row,"r,c"));
-		pb.add(matchId, cc.xy(4,row));
+		pb.add(new JLabel("Project ID:"), cc.xy(2,row,"r,c"));
+		pb.add(projectId, cc.xy(4,row));
 		row += 2;
 		pb.add(new JLabel("Folder:"), cc.xy(2,row,"r,c"));
 		pb.add(folderComboBox, cc.xy(4,row));
@@ -361,7 +360,7 @@ public class MatchEditor implements EditorPane {
 		pb.add(new JScrollPane(desc), cc.xy(4,row,"f,f"));
 		row += 2;
 		pb.add(new JLabel("Type:"), cc.xy(2,row,"r,c"));
-		pb.add(matchType, cc.xy(4,row));
+		pb.add(projectType, cc.xy(4,row));
 		row+=2;
 		pb.addTitle("Source Table", cc.xy(2, row));
 		row+=2;
@@ -383,7 +382,7 @@ public class MatchEditor implements EditorPane {
 		pb.add(new JScrollPane(filterPanel.getFilterTextArea()), cc.xy(4,row,"f,f"));
         pb.add(filterPanel.getEditButton(), cc.xy(6,row));
 		row+=2;
-		if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
+		if (!project.getType().equals(Project.ProjectMode.CLEANSE)) {
 			pb.addTitle("Output Table", cc.xy(2, row));
 			row+=2;
 			pb.add(resultChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
@@ -401,7 +400,7 @@ public class MatchEditor implements EditorPane {
 		// so we wrap it in a JPanel with a FlowLayout. If there is a better
 		// way, please fix this.
 		JPanel savePanel = new JPanel(new FlowLayout());
-		savePanel.add(saveMatch);
+		savePanel.add(saveProject);
 		pb.add(savePanel, cc.xy(4, row));
 
 		return pb.getPanel();
@@ -423,42 +422,42 @@ public class MatchEditor implements EditorPane {
 
         folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
         folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
-        if ( match.getParent() != null) {
-       		folderComboBox.setSelectedItem(match.getParent());
+        if ( project.getParent() != null) {
+       		folderComboBox.setSelectedItem(project.getParent());
         } else if ( folder != null ) {
         	folderComboBox.setSelectedItem(folder);
         }
 
-        matchId.setText(match.getName());
-        desc.setText(match.getMatchSettings().getDescription());
-        matchType.setText(match.getType().toString());
-        filterPanel.getFilterTextArea().setText(match.getFilter());
+        projectId.setText(project.getName());
+        desc.setText(project.getMungeSettings().getDescription());
+        projectType.setText(project.getType().toString());
+        filterPanel.getFilterTextArea().setText(project.getFilter());
 
-        Validator v = new MatchNameValidator(swingSession,match);
-        handler.addValidateObject(matchId,v);
+        Validator v = new ProjectNameValidator(swingSession,project);
+        handler.addValidateObject(projectId,v);
 
-        Validator v2 = new MatchSourceTableValidator(Collections.singletonList(saveAction));
+        Validator v2 = new ProjectSourceTableValidator(Collections.singletonList(saveAction));
         handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
 
-        Validator v2a = new MatchSourceTableIndexValidator();
+        Validator v2a = new ProjectSourceTableIndexValidator();
         handler.addValidateObject(indexComboBox,v2a);
 
-        if ( !match.getType().equals(Match.MatchMode.CLEANSE) 
+        if ( !project.getType().equals(Project.ProjectMode.CLEANSE) 
         		&& resultChooser.getCatalogComboBox().isEnabled() ) {
-        	Validator v3 = new MatchResultCatalogSchemaValidator("Result "+
+        	Validator v3 = new ProjectResultCatalogSchemaValidator("Result "+
         			resultChooser.getCatalogTerm().getText());
         	handler.addValidateObject(resultChooser.getCatalogComboBox(),v3);
         }
 
-        if ( !match.getType().equals(Match.MatchMode.CLEANSE)
+        if ( !project.getType().equals(Project.ProjectMode.CLEANSE)
         		&& resultChooser.getSchemaComboBox().isEnabled() ) {
-        	Validator v4 = new MatchResultCatalogSchemaValidator("Result "+
+        	Validator v4 = new ProjectResultCatalogSchemaValidator("Result "+
         			resultChooser.getSchemaTerm().getText());
         	handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
         }
 
-        if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
-        	Validator v5 = new MatchResultTableNameValidator();
+        if (!project.getType().equals(Project.ProjectMode.CLEANSE)) {
+        	Validator v5 = new ProjectResultTableNameValidator();
         	handler.addValidateObject(resultTableName,v5);
         }
         
@@ -467,8 +466,8 @@ public class MatchEditor implements EditorPane {
         handler.addValidateObject(filterPanel.getFilterTextArea(), v6);
 
 
-        if ( match.getSourceTable() != null ) {
-        	SQLTable sourceTable = match.getSourceTable();
+        if ( project.getSourceTable() != null ) {
+        	SQLTable sourceTable = project.getSourceTable();
         	filterPanel.setTable(sourceTable);
         	SQLCatalog cat = sourceTable.getCatalog();
         	SQLSchema sch = sourceTable.getSchema();
@@ -480,7 +479,7 @@ public class MatchEditor implements EditorPane {
         	createResultTableAction.setEnabled(false);
         }
 
-        refreshIndexComboBox(match.getSourceTableIndex(),match.getSourceTable());
+        refreshIndexComboBox(project.getSourceTableIndex(),project.getSourceTable());
 
         // listen to the table change
         sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
@@ -495,28 +494,28 @@ public class MatchEditor implements EditorPane {
 
         // listen to the sourceTableIndex changes,
         // for update the index combobox selection
-        match.addMatchMakerListener(new MatchMakerListener<Match, MatchMakerFolder>(){
+        project.addMatchMakerListener(new MatchMakerListener<Project, MatchMakerFolder>(){
 
         	// don't care
-        	public void mmChildrenInserted(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
+        	public void mmChildrenInserted(MatchMakerEvent<Project, MatchMakerFolder> evt) {}
         	//don't care
-        	public void mmChildrenRemoved(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
+        	public void mmChildrenRemoved(MatchMakerEvent<Project, MatchMakerFolder> evt) {}
 
-        	public void mmPropertyChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {
+        	public void mmPropertyChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {
         		if ( evt.getPropertyName().equals("sourceTableIndex")) {
         			try {
-						refreshIndexComboBox(match.getSourceTableIndex(),(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
+						refreshIndexComboBox(project.getSourceTableIndex(),(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
 					} catch (ArchitectException e) {
 						throw new ArchitectRuntimeException(e);
 					}
         		}
         	}
         	//don't care
-        	public void mmStructureChanged(MatchMakerEvent<Match, MatchMakerFolder> evt) {}
+        	public void mmStructureChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {}
         });
 
 
-    	SQLTable resultTable = match.getResultTable();
+    	SQLTable resultTable = project.getResultTable();
     	if ( resultTable != null ) {
     		SQLCatalog cat = resultTable.getCatalog();
     		SQLSchema sch = resultTable.getSchema();
@@ -526,7 +525,7 @@ public class MatchEditor implements EditorPane {
     		if ( sch != null ) {
     			resultChooser.getSchemaComboBox().setSelectedItem(sch);
     		}
-    		resultTableName.setText(match.getResultTable().getName());
+    		resultTableName.setText(project.getResultTable().getName());
     	}
 
         //This listener is put here to update the SQLTable in FilterPanel so the
@@ -540,7 +539,7 @@ public class MatchEditor implements EditorPane {
 
     /**
      * refersh combobox item
-     * @param newIndex       the match object, if the custom pick index is not a
+     * @param newIndex       the project object, if the custom pick index is not a
      * part of the table, we will add it to the combobox as well
      * @param newTable    the sqlTable contains unique index
      */
@@ -575,7 +574,7 @@ public class MatchEditor implements EditorPane {
      * Copies all the values from the GUI components into the PlMatch
      * object this component is editing, then persists it to the database.
      * @return true if save OK
-     * @throws ArchitectRuntimeException if we cannot set the result table on a match
+     * @throws ArchitectRuntimeException if we cannot set the result table on a project
      */
     public boolean doSave() {
 
@@ -589,7 +588,7 @@ public class MatchEditor implements EditorPane {
     		}
     		JOptionPane.showMessageDialog(swingSession.getFrame(),
     				"You have to fix these errors before saving:\n"+failMessage.toString(),
-    				"Match error",
+    				"Project error",
     				JOptionPane.ERROR_MESSAGE);
     		return false;
     	} else if ( warn.size() > 0 ) {
@@ -598,31 +597,31 @@ public class MatchEditor implements EditorPane {
     			warnMessage.append("--").append(w).append("\n");
     		}
     		JOptionPane.showMessageDialog(swingSession.getFrame(),
-    				"Warning: match will be saved, but you may not be able to run it, because of these wanings:\n"+warnMessage.toString(),
-    				"Match warning",
+    				"Warning: project will be saved, but you may not be able to run it, because of these wanings:\n"+warnMessage.toString(),
+    				"Project warning",
     				JOptionPane.INFORMATION_MESSAGE);
     	}
 
-    	final String matchName = matchId.getText().trim();
-        match.getMatchSettings().setDescription(desc.getText());
+    	final String projectName = projectId.getText().trim();
+        project.getMungeSettings().setDescription(desc.getText());
 
-        match.setSourceTable(((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()));
-        match.setSourceTableIndex(((SQLIndex) indexComboBox.getSelectedItem()));
+        project.setSourceTable(((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()));
+        project.setSourceTableIndex(((SQLIndex) indexComboBox.getSelectedItem()));
 
-        if ((matchName == null || matchName.length() == 0) &&
-        		match.getSourceTable() == null ) {
+        if ((projectName == null || projectName.length() == 0) &&
+        		project.getSourceTable() == null ) {
         	JOptionPane.showMessageDialog(getPanel(),
-        			"Match Name can not be empty",
+        			"Project Name can not be empty",
         			"Error",
         			JOptionPane.ERROR_MESSAGE);
         	return false;
         }
 
-        String id = matchName;
+        String id = projectName;
         if ( id == null || id.length() == 0 ) {
         	StringBuffer s = new StringBuffer();
-        	s.append("MATCH_");
-        	SQLTable table = match.getSourceTable();
+        	s.append("PROJECT_");
+        	SQLTable table = project.getSourceTable();
 			if ( table != null &&
 					table.getCatalogName() != null &&
         			table.getCatalogName().length() > 0 ) {
@@ -637,10 +636,10 @@ public class MatchEditor implements EditorPane {
 				s.append(table.getName());
 			}
         	id = s.toString();
-        	matchId.setText(id);
+        	projectId.setText(id);
         }
 
-        if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
+        if (!project.getType().equals(Project.ProjectMode.CLEANSE)) {
 	        SQLObject resultTableParent;
 	        if ( resultChooser.getSchemaComboBox().isEnabled() &&
 	        		resultChooser.getSchemaComboBox().getSelectedItem() != null ) {
@@ -656,23 +655,23 @@ public class MatchEditor implements EditorPane {
 	
 	        String trimmedResultTableName = resultTableName.getText().trim();
 	        if ( trimmedResultTableName == null || trimmedResultTableName.length() == 0 ) {
-	            //matchName (string taken from the match id textfield) is used
-	            //instead of match.getName() because if the match is new, the
-	            //matchName has not been saved to the database and therefore would
+	            //projectName (string taken from the project id textfield) is used
+	            //instead of project.getName() because if the project is new, the
+	            //projectName has not been saved to the database and therefore would
 	            //return MM.Null instead
-	            trimmedResultTableName = "MM_"+matchName;
+	            trimmedResultTableName = "MM_"+projectName;
 	        	resultTableName.setText(trimmedResultTableName);
 	        }
 	
 	        if(resultChooser.getCatalogComboBox().getSelectedItem() != null) {
-	        	match.setResultTableCatalog( ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName());
+	        	project.setResultTableCatalog( ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName());
 	        }
 	        if(resultChooser.getSchemaComboBox().getSelectedItem() != null) {
-	        	match.setResultTableSchema( ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName());
+	        	project.setResultTableSchema( ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName());
 	        }
         
 	        try {
-				match.setResultTable(new SQLTable(resultTableParent,
+				project.setResultTable(new SQLTable(resultTableParent,
 						trimmedResultTableName,
 						"MatchMaker result table",
 						"TABLE", true));
@@ -681,39 +680,39 @@ public class MatchEditor implements EditorPane {
 			}
         }
 
-        match.setFilter(filterPanel.getFilterTextArea().getText());
+        project.setFilter(filterPanel.getFilterTextArea().getText());
 
-        String matchIdText = matchId.getText();
-		if (!matchIdText.equals(match.getName())) {
-        	if (!swingSession.isThisMatchNameAcceptable(matchIdText)) {
+        String projectIdText = projectId.getText();
+		if (!projectIdText.equals(project.getName())) {
+        	if (!swingSession.isThisProjectNameAcceptable(projectIdText)) {
         		JOptionPane.showMessageDialog(getPanel(),
-        				"<html>Match name \"" + matchId.getText() +
+        				"<html>Project name \"" + projectId.getText() +
         					"\" does not exist or is invalid.\n" +
-        					"The match has not been saved",
-        				"Match name invalid",
+        					"The project has not been saved",
+        				"Project name invalid",
         				JOptionPane.ERROR_MESSAGE);
         		return false;
         	}
-        	match.setName(matchIdText);
+        	project.setName(projectIdText);
         }
 
-        if (match.getParent() == null) {
+        if (project.getParent() == null) {
         	sourceChooser.getCatalogComboBox().setEnabled(false);
         	sourceChooser.getSchemaComboBox().setEnabled(false);
         	sourceChooser.getTableComboBox().setEnabled(false);
         	viewBuilder.setEnabled(false);
         	
         	TableMergeRules mergeRule = new TableMergeRules();
-        	mergeRule.setTable(match.getSourceTable());
+        	mergeRule.setTable(project.getSourceTable());
 			try {
-				mergeRule.setTableIndex(match.getSourceTableIndex());
+				mergeRule.setTableIndex(project.getSourceTableIndex());
 			} catch (ArchitectException e) {
 				throw new ArchitectRuntimeException(e);
 			}
 	        
 			try {
 				List<SQLColumn> columns = new ArrayList<SQLColumn>(
-						(match.getSourceTable()).getColumns()); 
+						(project.getSourceTable()).getColumns()); 
 				for (SQLColumn column : columns) {
 					ColumnMergeRules newRules = new ColumnMergeRules();
 					newRules.setActionType(MergeActionType.IGNORE);
@@ -724,20 +723,20 @@ public class MatchEditor implements EditorPane {
 				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "An exception occured while deriving collison criteria", ex);
 			}
 			
-			if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
-				match.getTableMergeRulesFolder().addChild(0, mergeRule);
+			if (!project.getType().equals(Project.ProjectMode.CLEANSE)) {
+				project.getTableMergeRulesFolder().addChild(0, mergeRule);
 			}
         }
 		
-		logger.debug("Saving Match:" + match.getName());
+		logger.debug("Saving Project:" + project.getName());
         
         PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
-        if (!selectedFolder.getChildren().contains(match)) {
-            swingSession.move(match,selectedFolder);
+        if (!selectedFolder.getChildren().contains(project)) {
+            swingSession.move(project,selectedFolder);
         	swingSession.save(selectedFolder);
         } 
 
-        swingSession.save(match);
+        swingSession.save(project);
         handler.resetHasValidated();
 
         // bring back some buttons like create index...
@@ -759,7 +758,7 @@ public class MatchEditor implements EditorPane {
     		createIndexAction.setEnabled(false);
     	} else {
     		if (sourceChooser.getTableComboBox().getSelectedItem() !=
-        		match.getSourceTable() ) {
+        		project.getSourceTable() ) {
         		createIndexAction.setEnabled(false);
         	} else {
         		createIndexAction.setEnabled(true);
@@ -769,7 +768,7 @@ public class MatchEditor implements EditorPane {
     	ValidateResult r1 = handler.getResultOf(indexComboBox);
     	
     	ValidateResult r2;
-    	if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
+    	if (!project.getType().equals(Project.ProjectMode.CLEANSE)) {
     		r2 = handler.getResultOf(resultTableName);
     	} else {
     		r2 = null;
@@ -786,11 +785,11 @@ public class MatchEditor implements EditorPane {
     	}
     }
 
-    private class MatchSourceTableValidator implements Validator {
+    private class ProjectSourceTableValidator implements Validator {
 
         List<Action> actionsToDisable;
 
-        public MatchSourceTableValidator(List<Action> actionsToDisable){
+        public ProjectSourceTableValidator(List<Action> actionsToDisable){
             this.actionsToDisable = actionsToDisable;
         }
 
@@ -800,7 +799,7 @@ public class MatchEditor implements EditorPane {
 			if ( value == null ) {
                 enableAction(false);
 				return ValidateResult.createValidateResult(Status.WARN,
-						"Match source table is required");
+						"Project source table is required");
 			}
 			else {
 				try {
@@ -831,7 +830,7 @@ public class MatchEditor implements EditorPane {
 					if ( value == resultTable ) {
 						return ValidateResult.createValidateResult(
 								Status.WARN,
-								"Match source table has the same name as the result table");
+								"Project source table has the same name as the result table");
 					}
 				}
 			}
@@ -846,22 +845,22 @@ public class MatchEditor implements EditorPane {
     }
 
 
-    private class MatchSourceTableIndexValidator implements Validator {
+    private class ProjectSourceTableIndexValidator implements Validator {
 
     	public ValidateResult validate(Object contents) {
 			SQLIndex value = (SQLIndex)contents;
 			if ( value == null ) {
 				return ValidateResult.createValidateResult(Status.WARN,
-						"Match source table index is required");
+						"Project source table index is required");
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
 
-    private class MatchResultCatalogSchemaValidator implements Validator {
+    private class ProjectResultCatalogSchemaValidator implements Validator {
 
     	private String componentName;
-    	public MatchResultCatalogSchemaValidator(String componentName) {
+    	public ProjectResultCatalogSchemaValidator(String componentName) {
     		this.componentName = componentName;
 		}
 		public ValidateResult validate(Object contents) {
@@ -874,7 +873,7 @@ public class MatchEditor implements EditorPane {
 		}
     }
 
-    private class MatchResultTableNameValidator implements Validator {
+    private class ProjectResultTableNameValidator implements Validator {
         private static final int MAX_CHAR_RESULT_TABLE = 30;
 
 		public ValidateResult validate(Object contents) {
@@ -884,7 +883,7 @@ public class MatchEditor implements EditorPane {
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.WARN,
-						"Match result table name is required");
+						"Project result table name is required");
 			} else if (value.length() > MAX_CHAR_RESULT_TABLE){
 			    return ValidateResult.createValidateResult(Status.FAIL, "The result table" +
                         "cannot be longer than " +  MAX_CHAR_RESULT_TABLE + " characters long");
@@ -911,7 +910,7 @@ public class MatchEditor implements EditorPane {
 				}
 				if ( sourceTable == resultTable ) {
 					return ValidateResult.createValidateResult(Status.WARN,
-							"Match result table has the same name as the source table");
+							"Project result table has the same name as the source table");
 				}
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
@@ -924,26 +923,26 @@ public class MatchEditor implements EditorPane {
 
 
 	/**
-	 * Creates a new Match object and a GUI editor for it, then puts that editor in the split pane.
+	 * Creates a new Project object and a GUI editor for it, then puts that editor in the split pane.
 	 */
 	private final class CreateResultTableAction extends AbstractAction {
 
 	    private final MatchMakerSwingSession swingSession;
-		private Match match;
+		private Project project;
 
 		public CreateResultTableAction(
 	            MatchMakerSwingSession swingSession,
-	            Match match) {
+	            Project project) {
 			super("Create Result Table");
 	        this.swingSession = swingSession;
-			this.match = match;
+			this.project = project;
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			if (hasUnsavedChanges()) {
 				int choice = JOptionPane.showOptionDialog(
-						MatchEditor.this.getPanel(),
-						"Your match has unsaved changes", "Unsaved Changes",
+						ProjectEditor.this.getPanel(),
+						"Your project has unsaved changes", "Unsaved Changes",
 						0, 0, null,
 						new String[] { "Save", "Cancel" }, "Save");
 				logger.debug("choice: "+choice);
@@ -951,7 +950,7 @@ public class MatchEditor implements EditorPane {
 					boolean success = doSave();
 					if (!success) {
 						JOptionPane.showMessageDialog(
-								MatchEditor.this.getPanel(),
+								ProjectEditor.this.getPanel(),
 						"Validation Error.  Can't save.");
 						return;
 					}
@@ -985,9 +984,9 @@ public class MatchEditor implements EditorPane {
 						swingSession.getDatabase().getDataSource().getDriverClass());
 				return;
 			}
-			ddlg.setTargetCatalog(match.getResultTableCatalog());
-			ddlg.setTargetSchema(match.getResultTableSchema());
-			if (Match.doesResultTableExist(swingSession, match)) {
+			ddlg.setTargetCatalog(project.getResultTableCatalog());
+			ddlg.setTargetSchema(project.getResultTableSchema());
+			if (Project.doesResultTableExist(swingSession, project)) {
 				int answer = JOptionPane.showConfirmDialog(swingSession.getFrame(),
 						"Result table exists, do you want to drop and recreate it?",
 						"Table exists",
@@ -995,10 +994,10 @@ public class MatchEditor implements EditorPane {
 				if ( answer != JOptionPane.YES_OPTION ) {
 					return;
 				}
-				ddlg.dropTable(match.getResultTable());
+				ddlg.dropTable(project.getResultTable());
 			}
-			ddlg.addTable(match.createResultTable());
-			ddlg.addIndex((SQLIndex) match.getResultTable().getIndicesFolder().getChild(0));
+			ddlg.addTable(project.createResultTable());
+			ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
 
 		    final JDialog editor = new JDialog(swingSession.getFrame(),
 		    		"Create Result Table", false );

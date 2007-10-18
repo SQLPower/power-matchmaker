@@ -24,7 +24,7 @@ import java.util.List;
 import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
@@ -36,7 +36,7 @@ public class MungeResultStepTest extends TestCase {
 		super.setUp();
 		MungeStep inputStep = new TestingMungeStep("input", 0, 3);
 		
-		Match match = new Match();
+		Project project = new Project();
 		SQLIndex index = new SQLIndex();
 		
 		SQLColumn col1 = new SQLColumn();
@@ -54,10 +54,10 @@ public class MungeResultStepTest extends TestCase {
 		index.addIndexColumn(col3, false, false);
 		inputStep.getOutputByName("output_2").setData("output_2");
 		
-		match.setSourceTableIndex(index);
+		project.setSourceTableIndex(index);
 		
 		
-		step = new MungeResultStep(match, inputStep, new TestingMatchMakerSession());
+		step = new MungeResultStep(project, inputStep, new TestingMatchMakerSession());
 		MungeStepOutput<String> output = new MungeStepOutput<String>("munged", String.class);
 		output.setData("cow");
 		step.connectInput(0, output);

@@ -26,7 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.Match.MatchMode;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.testutil.MockJDBCDriver;
@@ -64,7 +64,7 @@ public class FileNameToLogTest extends TestCase {
 		rs.setColumnName(1,"file_name");
 		names = new String[1];
 		names[0]="file_name";
-		data = new String[MatchMode.values().length+1];
+		data = new String[ProjectMode.values().length+1];
 		allLogs = new File[3];
 
 		for (int i = 0; i<3;i++) {

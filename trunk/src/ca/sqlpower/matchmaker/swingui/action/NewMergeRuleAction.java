@@ -38,7 +38,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
@@ -62,11 +62,11 @@ import com.jgoodies.forms.layout.FormLayout;
 public class NewMergeRuleAction extends AbstractAction {
     
     private final MatchMakerSwingSession swingSession;
-	private final Match parent;
+	private final Project parent;
 	private TableMergeRules mergeRule;
 	private JDialog dialog;
 
-	public NewMergeRuleAction(MatchMakerSwingSession swingSession, Match parent) {
+	public NewMergeRuleAction(MatchMakerSwingSession swingSession, Project parent) {
 	    super("New Merge Rule");
         this.swingSession = swingSession;
         this.parent = parent;

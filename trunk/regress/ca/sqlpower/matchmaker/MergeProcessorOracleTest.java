@@ -88,10 +88,10 @@ public class MergeProcessorOracleTest extends AbstractMergeProcessorTest {
 		sourceTable = db.getTableByName("MERGE_TEST");
 		childTable = db.getTableByName("MERGE_TEST_CHILD");
 		grandChildTable = db.getTableByName("MERGE_TEST_GCHILD");
-		match.setSourceTable(sourceTable);
-        match.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
-		match.setResultTableName("MERGE_TEST_RESULT");
-		match.setResultTableSchema(ds.getPlSchema());
+		project.setSourceTable(sourceTable);
+        project.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
+		project.setResultTableName("MERGE_TEST_RESULT");
+		project.setResultTableSchema(ds.getPlSchema());
 		
 	}
 }

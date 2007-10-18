@@ -47,7 +47,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
@@ -77,7 +77,7 @@ public class RelatedTableDeriver implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(RelatedTableDeriver.class);
 	
-	private Match match;
+	private Project project;
 	private MatchMakerSwingSession swingSession;
 	private List<String> primaryKeys;
 
@@ -129,9 +129,9 @@ public class RelatedTableDeriver implements EditorPane {
 				return;
 			}
 			
-			// Finds all the merge rules that the match already has
+			// Finds all the merge rules that the project already has
 			List<String> mergeRules = new ArrayList<String>();
-			for (TableMergeRules tmr : match.getTableMergeRules()) {
+			for (TableMergeRules tmr : project.getTableMergeRules()) {
 				mergeRules.add(tmr.getTableName());
 			}
 
@@ -203,7 +203,7 @@ public class RelatedTableDeriver implements EditorPane {
 									"An exception occured while deriving collison criteria", ex);
 						}
 
-						match.getTableMergeRulesFolder().addChild(mergeRule);
+						project.getTableMergeRulesFolder().addChild(mergeRule);
 						count = 0;
 					}
 				}
@@ -214,7 +214,7 @@ public class RelatedTableDeriver implements EditorPane {
 			}
 			
 			logger.debug("Finished in " + ((System.currentTimeMillis()-start)/1000) + " seconds!");
-			swingSession.save(match);
+			swingSession.save(project);
 			dialog.dispose();
 		}
 	};
@@ -225,13 +225,13 @@ public class RelatedTableDeriver implements EditorPane {
 		}
 	};
 
-	public RelatedTableDeriver(Match match,
+	public RelatedTableDeriver(Project project,
 		MatchMakerSwingSession swingSession) throws ArchitectException {
-		this.match = match;
+		this.project = project;
 		this.swingSession = swingSession;
 
-		sourceTable = match.getSourceTable();
-		SQLIndex oldIndex = match.getSourceTableIndex();
+		sourceTable = project.getSourceTable();
+		SQLIndex oldIndex = project.getSourceTableIndex();
 
 		// List of actions to disable when validation status is fail.
 		List<Action> actions = new ArrayList<Action>();
@@ -276,7 +276,7 @@ public class RelatedTableDeriver implements EditorPane {
 		JButton exit = new JButton(cancelAction);
 
 		pb.add(statusComponent, cc.xy(2, 2));
-		pb.add(new JLabel("Table: " + DDLUtils.toQualifiedName(match.getSourceTable())),
+		pb.add(new JLabel("Table: " + DDLUtils.toQualifiedName(project.getSourceTable())),
 				cc.xy(2, 4));
 		JScrollPane scrollPane = new JScrollPane(columnTable);
 		pb.add(scrollPane, cc.xy(2, 6, "f,f"));

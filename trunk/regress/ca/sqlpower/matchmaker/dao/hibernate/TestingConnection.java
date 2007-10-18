@@ -41,11 +41,11 @@ import org.apache.log4j.Logger;
  *      throw SQLException when called if this connection is disabled.  Example:
  * <pre>
  * try {
- *     Match match = getDataAccessObject().findByName(matchName);
+ *     Project project = getDataAccessObject().findByName(projectName);
  *     ((TestingMatchMakerHibernateSession) getSession()).setConnectionDisabled(true);
- *     List&lt;MatchRuleSet&gt; cglist = match.getMatchCriteriaGroups();
- *     for (MatchRuleSet cg : cglist) {
- *         System.out.println("Match child: "+cg);  // this will fail if the DAO doesn't cascade the retrieval properly
+ *     List&lt;MungeProcess&gt; cglist = project.getMungeProcesses;
+ *     for (MungeProcess cg : cglist) {
+ *         System.out.println("Project child: "+cg);  // this will fail if the DAO doesn't cascade the retrieval properly
  *     }
  * } finally {
  *     ((TestingMatchMakerHibernateSession) getSession()).setConnectionDisabled(false);

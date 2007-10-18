@@ -70,7 +70,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -78,19 +78,19 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.Match.MatchMode;
-import ca.sqlpower.matchmaker.dao.MatchDAO;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
+import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.dao.MatchRuleSetDAO;
+import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
-import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
-import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
-import ca.sqlpower.matchmaker.swingui.action.PlMatchImportAction;
+import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.ProjectExportAction;
+import ca.sqlpower.matchmaker.swingui.action.ProjectImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersionFormatException;
@@ -259,8 +259,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action runMatchAction = new AbstractAction("Run Match") {
 
 		public void actionPerformed(ActionEvent e) {
-			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
-			if (match != null && match.getType().equals(MatchMode.FIND_DUPES)) {
+			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
+			if (match != null && match.getType().equals(ProjectMode.FIND_DUPES)) {
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
 			    TreePath treePath = 
 			    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,2));
@@ -272,8 +272,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action runMergeAction = new AbstractAction("Run Merge") {
 
 		public void actionPerformed(ActionEvent e) {
-			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
-			if (match != null && match.getType().equals(MatchMode.FIND_DUPES)) {
+			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
+			if (match != null && match.getType().equals(ProjectMode.FIND_DUPES)) {
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
 				TreePath treePath = 
 					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,5));
@@ -285,8 +285,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action runCleanseAction = new AbstractAction("Run Cleanse") {
 
 		public void actionPerformed(ActionEvent e) {
-			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
-			if (match != null && match.getType().equals(MatchMode.CLEANSE)) {
+			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
+			if (match != null && match.getType().equals(ProjectMode.CLEANSE)) {
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
 				TreePath treePath = 
 					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,1));
@@ -317,12 +317,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action showMatchStatisticInfoAction = new AbstractAction("Match Statistics") {
 
 		public void actionPerformed(ActionEvent e) {
-			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
-			if (match == null || match.getType().equals(MatchMode.CLEANSE))
+			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
+			if (project == null || project.getType().equals(ProjectMode.CLEANSE))
 				return;
 
 			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(
-					MatchMakerSwingSession.this,match,frame);
+					MatchMakerSwingSession.this,project,frame);
 			sm.actionPerformed(e);
 		}
 	};
@@ -428,9 +428,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
-		newDeDupeAction = new NewMatchAction(this, "New De-duping Project", Match.MatchMode.FIND_DUPES);
-		newXrefAction = new NewMatchAction(this, "New X-refing Project", Match.MatchMode.BUILD_XREF);
-		newCleanseAction = new NewMatchAction(this, "New Cleansing Project", Match.MatchMode.CLEANSE);
+		newDeDupeAction = new NewProjectAction(this, "New De-duping Project", Project.ProjectMode.FIND_DUPES);
+		newXrefAction = new NewProjectAction(this, "New X-refing Project", Project.ProjectMode.BUILD_XREF);
+		newCleanseAction = new NewProjectAction(this, "New Cleansing Project", Project.ProjectMode.CLEANSE);
 		
         JMenuBar menuBar = new JMenuBar();
 
@@ -465,8 +465,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		projectMenu.addSeparator();
 		projectMenu.add(showMatchStatisticInfoAction);
 		projectMenu.addSeparator();
-        projectMenu.add(new JMenuItem(new PlMatchImportAction(this, frame)));
-		projectMenu.add(new JMenuItem(new PlMatchExportAction(this, frame)));
+        projectMenu.add(new JMenuItem(new ProjectImportAction(this, frame)));
+		projectMenu.add(new JMenuItem(new ProjectExportAction(this, frame)));
 		menuBar.add(projectMenu);
 
 		JMenu toolsMenu = new JMenu("Tools");
@@ -575,14 +575,14 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		public void actionPerformed(ActionEvent e) {
 			JTree menuTree = getTree();
 			TreePath menuPath;
-			Match match = MMSUtils.getTreeObject(menuTree,Match.class);
-			if (match == null) return;
+			Project project = MMSUtils.getTreeObject(menuTree,Project.class);
+			if (project == null) return;
 
 			try {
-				menuPath = ((MatchMakerTreeModel)menuTree.getModel()).getPathForNode(match);
+				menuPath = ((MatchMakerTreeModel)menuTree.getModel()).getPathForNode(project);
 				menuTree.setSelectionPath(menuPath);
 			} catch (Exception ex) {
-				MMSUtils.showExceptionDialog(frame, "Couldn't create match editor", ex);
+				MMSUtils.showExceptionDialog(frame, "Couldn't create project editor", ex);
 			}
 		}
 	}
@@ -872,20 +872,20 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         return sessionImpl.getConnection();
     }
 
-	public Match getMatchByName(String name) {
-		return sessionImpl.getMatchByName(name);
+	public Project getProjectByName(String name) {
+		return sessionImpl.getProjectByName(name);
 	}
 
-	public boolean isThisMatchNameAcceptable(String name) {
-		return sessionImpl.isThisMatchNameAcceptable(name);
+	public boolean isThisProjectNameAcceptable(String name) {
+		return sessionImpl.isThisProjectNameAcceptable(name);
 	}
 
     public String createNewUniqueName() {
         return sessionImpl.createNewUniqueName();
     }
 
-	public long countMatchByName(String name) {
-		return sessionImpl.countMatchByName(name);
+	public long countProjectByName(String name) {
+		return sessionImpl.countProjectByName(name);
 	}
 
 	/**
@@ -924,20 +924,20 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param mmo
 	 */
 	public void save(MatchMakerObject mmo) {
-		if (mmo instanceof Match){
-			Match match = (Match)mmo;
-			MatchDAO dao = (MatchDAO) getDAO(Match.class);
-			dao.save(match);
+		if (mmo instanceof Project){
+			Project project = (Project)mmo;
+			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
+			dao.save(project);
 		} else if (mmo instanceof MatchMakerFolder){
-			Match match = (Match)mmo.getParent();
-			MatchDAO dao = (MatchDAO) getDAO(Match.class);
-			dao.save(match);
+			Project project = (Project)mmo.getParent();
+			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
+			dao.save(project);
 		} else if (mmo instanceof PlFolder){
 			PlFolderDAO dao = (PlFolderDAO) getDAO(PlFolder.class);
 			dao.save((PlFolder) mmo);
 		} else if (mmo instanceof MungeProcess) {
 			MungeProcess cg = (MungeProcess)mmo;
-			MatchRuleSetDAO dao = (MatchRuleSetDAO) getDAO(MungeProcess.class);
+			MungeProcessDAO dao = (MungeProcessDAO) getDAO(MungeProcess.class);
 			dao.save(cg);
 		} else {
 			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");

@@ -97,31 +97,31 @@ public interface MatchMakerSession {
     public Connection getConnection();
 
     /**
-	 * check to see if there is any match under given name
+	 * check to see if there is any project under given name
 	 * @param name
-	 * @return true if no match found under given name, false otherwise
+	 * @return true if no project found under given name, false otherwise
 	 */
-    public boolean isThisMatchNameAcceptable(String name);
+    public boolean isThisProjectNameAcceptable(String name);
 
     /**
-	 * count match entity by given name
+	 * count project entity by given name
 	 * @param name
-	 * @return number of match entity
+	 * @return number of project entity
 	 */
-    public long countMatchByName(String name);
+    public long countProjectByName(String name);
 
     /**
-     * find the Match Object by name, search by the DAO
-     * @param name the name of the match desired
-     * @return match object or null if not found
+     * find the Project Object by name, search by the DAO
+     * @param name the name of the project desired
+     * @return project object or null if not found
      */
-    public Match getMatchByName(String name);
+    public Project getProjectByName(String name);
 
     /**
-     * This method creates an unique name for the match such that it does not
-     * conflict with existing match names.  The foromat of the name should be
-     * New_Match#
-     * @return an unique non-conflicting name in New_Match# form (unless New_Match
+     * This method creates an unique name for the project such that it does not
+     * conflict with existing project names.  The foromat of the name should be
+     * New_Project#
+     * @return an unique non-conflicting name in New_Project# form (unless New_Project
      *          is already an acceptable name)
      */
     public String createNewUniqueName();
@@ -162,12 +162,12 @@ public interface MatchMakerSession {
     public TranslateGroupParent getTranslations();
 
     /**
-	 * All of the Match folders that the current user can see with backup.
+	 * All of the project that the current user can see with backup.
 	 */
 	public FolderParent getBackupFolderParent();
 
 	/**
-	 * All of the Match folders that the current user can see that are active.
+	 * All of the projects that the current user can see that are active.
 	 */
 	public FolderParent getCurrentFolderParent();
 	

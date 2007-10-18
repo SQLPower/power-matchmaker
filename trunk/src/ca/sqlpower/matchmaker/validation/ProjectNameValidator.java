@@ -19,35 +19,35 @@
 
 package ca.sqlpower.matchmaker.validation;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
 
-public class MatchNameValidator implements Validator {
+public class ProjectNameValidator implements Validator {
 
 	private MatchMakerSwingSession session;
-	private Match match;
-    private static final int MAX_CHAR_MATCH_NAME = 80;
+	private Project project;
+    private static final int MAX_CHAR_PROJECT_NAME = 80;
 
-	public MatchNameValidator(MatchMakerSwingSession session, Match match) {
+	public ProjectNameValidator(MatchMakerSwingSession session, Project project) {
 		this.session = session;
-		this.match = match;
+		this.project = project;
 	}
 
 	public ValidateResult validate(Object contents) {	    
 		String value = (String)contents;
 		if ( value == null || value.length() == 0 ) {
 			return ValidateResult.createValidateResult(Status.FAIL,
-					"Match name is required");
-		} else if ( !value.equals(match.getName()) &&
-					!session.isThisMatchNameAcceptable(value) ) {
+					"Project name is required");
+		} else if ( !value.equals(project.getName()) &&
+					!session.isThisProjectNameAcceptable(value) ) {
 			return ValidateResult.createValidateResult(Status.FAIL,
-					"Match name is invalid or already exists.");
-		} else if (value.length() > MAX_CHAR_MATCH_NAME){
+					"Project name is invalid or already exists.");
+		} else if (value.length() > MAX_CHAR_PROJECT_NAME){
 		    return ValidateResult.createValidateResult(Status.FAIL, "Match ID cannot be more than "+
-                    MAX_CHAR_MATCH_NAME + " characters long");
+                    MAX_CHAR_PROJECT_NAME + " characters long");
         }
 		return ValidateResult.createValidateResult(Status.OK, "");
 	}

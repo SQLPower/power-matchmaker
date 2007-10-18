@@ -32,7 +32,7 @@ import ca.sqlpower.sql.TestingDefParamsObject;
 
 public class MatchMakerEngineImplTest extends TestCase {
 
-	Match match;
+	Project project;
 	MatchEngineImpl matchMakerEngine;
 	private TestingMatchMakerHibernateSession session;
 	private TestingMatchMakerContext context;
@@ -40,11 +40,11 @@ public class MatchMakerEngineImplTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		match = new Match();
+		project = new Project();
 		session = new TestingMatchMakerHibernateSession(DBTestUtil.getOracleDS());
 		session.setDatabase(new SQLDatabase());
-		match.setSession(session);
-		matchMakerEngine = new MatchEngineImpl(session,match);
+		project.setSession(session);
+		matchMakerEngine = new MatchEngineImpl(session,project);
 		context = new TestingMatchMakerContext();
 		session.setContext(context);
 		def = new TestingDefParamsObject(session);
@@ -76,7 +76,7 @@ public class MatchMakerEngineImplTest extends TestCase {
 
 	//   check for unwriteable file
     public void testLogCantWrite() throws IOException{
-        MatchMakerSettings settings = new MatchSettings(); 
+        MatchMakerSettings settings = new MungeSettings(); 
         File log = new File("mmenginetest.log");
         settings.setLog(log);
         log.createNewFile();
@@ -88,7 +88,7 @@ public class MatchMakerEngineImplTest extends TestCase {
     
     // check for append
     public void testCanWriteLogExists() throws IOException{
-        MatchMakerSettings settings = new MatchSettings(); 
+        MatchMakerSettings settings = new MungeSettings(); 
         File log = new File("mmenginetest.log");
         settings.setLog(log);
         log.createNewFile();
@@ -99,7 +99,7 @@ public class MatchMakerEngineImplTest extends TestCase {
     
     // check for create
     public void testCanWriteLogNonExistantButWritable() throws IOException{
-        MatchMakerSettings settings = new MatchSettings(); 
+        MatchMakerSettings settings = new MungeSettings(); 
         File log = new File("mmenginetest.log");
         settings.setLog(log);
         log.createNewFile();
@@ -111,7 +111,7 @@ public class MatchMakerEngineImplTest extends TestCase {
     
 //  check for append
     public void testCanReadLogExists() throws IOException{
-        MatchMakerSettings settings = new MatchSettings(); 
+        MatchMakerSettings settings = new MungeSettings(); 
         File log = new File("mmenginetest.log");
         settings.setLog(log);
         log.createNewFile();
@@ -122,7 +122,7 @@ public class MatchMakerEngineImplTest extends TestCase {
     
     // check for create
     public void testCanReadLogNonExistant() throws IOException{
-        MatchMakerSettings settings = new MatchSettings(); 
+        MatchMakerSettings settings = new MungeSettings(); 
         File log = new File("mmenginetest.log");
         settings.setLog(log);
         // this is an unreadable file (I hope)

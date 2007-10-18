@@ -46,7 +46,7 @@ import javax.swing.table.TableCellRenderer;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
@@ -76,14 +76,14 @@ public class MungeProcessGroupEditor implements EditorPane {
 	private JTable mungeProcessTable;
 	
 	private final MatchMakerSwingSession swingSession;
-	private final Match match;
+	private final Project project;
 
 	private final FormValidationHandler handler;
 	private final StatusComponent status = new StatusComponent();
 	
-	public MungeProcessGroupEditor(MatchMakerSwingSession swingSession, Match m) {
+	public MungeProcessGroupEditor(MatchMakerSwingSession swingSession, Project m) {
 		this.swingSession = swingSession;
-		this.match = m;
+		this.project = m;
 
 		setupTable();
         buildUI();
@@ -93,7 +93,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 	}
 	
 	private void setupTable() {
-		mungeProcessTableModel = new MungeProcessTableModel(swingSession, match);
+		mungeProcessTableModel = new MungeProcessTableModel(swingSession, project);
 		mungeProcessTable = new JTable(mungeProcessTableModel);
 		TableCellRenderer renderer = new ColorRenderer(true);
         mungeProcessTable.setDefaultRenderer(Color.class, renderer );
@@ -108,7 +108,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 				if (e.getClickCount() == 2) {
 					int row = MungeProcessGroupEditor.this.mungeProcessTable.getSelectedRow();
 					JTree tree = swingSession.getTree();					
-					tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(match.getMatchRuleSets().get(row)));
+					tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(project.getMungeProcesses().get(row)));
 				}
 			}		
         });
@@ -141,7 +141,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 		
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
 		//new actions for delete and save should be extracted and be put into its own file.
-		bbb.addGridded(new JButton(new NewMungeProcessAction(swingSession, match)));
+		bbb.addGridded(new JButton(new NewMungeProcessAction(swingSession, project)));
 		bbb.addRelatedGap();
 		bbb.addGridded(new JButton(deleteAction));
 
@@ -177,9 +177,9 @@ public class MungeProcessGroupEditor implements EditorPane {
 			logger.debug("deleting translate group:"+selectedRow);
 			
 			if ( selectedRow >= 0 && selectedRow < mungeProcessTable.getRowCount()) {
-				MungeProcess ruleSet = match.getMatchRuleSetFolder().getChildren().get(selectedRow);
-				match.removeMatchRuleSet(ruleSet);
-				swingSession.save(match);
+				MungeProcess ruleSet = project.getMungeProcessesFolder().getChildren().get(selectedRow);
+				project.removeMungeProcess(ruleSet);
+				swingSession.save(project);
 				if (selectedRow >= mungeProcessTable.getRowCount()) {
 					selectedRow = mungeProcessTable.getRowCount() - 1;
 				}
@@ -209,10 +209,10 @@ public class MungeProcessGroupEditor implements EditorPane {
 	 */
 	private class MungeProcessTableModel extends AbstractTableModel implements MatchMakerListener{
 
-		private Match match;
-		public MungeProcessTableModel(MatchMakerSwingSession swingSession, Match match) {
-			this.match = match;
-			MatchMakerUtils.listenToHierarchy(this, this.match);
+		private Project project;
+		public MungeProcessTableModel(MatchMakerSwingSession swingSession, Project project) {
+			this.project = project;
+			MatchMakerUtils.listenToHierarchy(this, this.project);
 		}
 
 		public int getColumnCount() {
@@ -220,11 +220,11 @@ public class MungeProcessGroupEditor implements EditorPane {
 		}
 
 		public int getRowCount() {
-			return match.getMatchRuleSets().size();
+			return project.getMungeProcesses().size();
 		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			MungeProcess ruleSet = match.getMatchRuleSets().get(rowIndex);
+			MungeProcess ruleSet = project.getMungeProcesses().get(rowIndex);
 			switch (columnIndex) {
 			case 0:  return ruleSet.getName();
 			case 1:  return ruleSet.getDesc();
@@ -262,7 +262,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 		}
 		
 	    public void mmChildrenInserted(MatchMakerEvent evt) {
-	        if(evt.getSource() instanceof Match || evt.getSource() == match.getMatchRuleSetFolder()){
+	        if(evt.getSource() instanceof Project || evt.getSource() == project.getMungeProcessesFolder()){
 	            int[] changed = evt.getChangeIndices();
 	            ArrayList<Integer> changedIndices = new ArrayList<Integer>();
 	            for (int selectedRowIndex:changed){
@@ -275,15 +275,15 @@ public class MungeProcessGroupEditor implements EditorPane {
 	                    return;
 	                }
 	            }
-	            for (Object matchRuleSet:evt.getChildren()){
-	                ((MungeProcess) matchRuleSet).addMatchMakerListener(this);
+	            for (Object mungeProcess :evt.getChildren()){
+	                ((MungeProcess) mungeProcess).addMatchMakerListener(this);
 	            }
 	            fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
 	        }
 	    }
 
 	    public void mmChildrenRemoved(MatchMakerEvent evt) {
-	        if(evt.getSource() instanceof Match || evt.getSource() == match.getMatchRuleSetFolder()) {
+	        if(evt.getSource() instanceof Project || evt.getSource() == project.getMungeProcessesFolder()) {
 	            int[] changed = evt.getChangeIndices();
 	            ArrayList<Integer> changedIndices = new ArrayList<Integer>();
 	            for (int selectedRowIndex:changed){
@@ -296,8 +296,8 @@ public class MungeProcessGroupEditor implements EditorPane {
 	                    return;
 	                }
 	            }
-	            for (Object matchRuleSet:evt.getChildren()) {
-	                ((MungeProcess) matchRuleSet).removeMatchMakerListener(this);
+	            for (Object mungeProcess:evt.getChildren()) {
+	                ((MungeProcess) mungeProcess).removeMatchMakerListener(this);
 	            }
 	            fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
 	        }
@@ -305,7 +305,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 
 	    public void mmPropertyChanged(MatchMakerEvent evt) { 
 	        if(evt.getSource() instanceof TableMergeRules) {
-	            fireTableRowsUpdated(match.getTableMergeRules().indexOf(evt.getSource()), match.getTableMergeRules().indexOf(evt.getSource()));
+	            fireTableRowsUpdated(project.getTableMergeRules().indexOf(evt.getSource()), project.getTableMergeRules().indexOf(evt.getSource()));
 	        }
 	    }
 

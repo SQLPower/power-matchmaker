@@ -20,7 +20,7 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.dao.TableMergeRuleDAO;
 
@@ -33,7 +33,7 @@ public class TableMergeRulesDAOHibernate extends AbstractMatchMakerDAOHibernate<
 	}
 
 	public void delete(TableMergeRules deleteMe) {
-		Match parent = deleteMe.getParentMatch();
+		Project parent = deleteMe.getParentProject();
 		if (parent != null ){
 			parent.removeTableMergeRule(deleteMe);
 		}

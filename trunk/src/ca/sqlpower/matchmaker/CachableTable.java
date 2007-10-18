@@ -28,7 +28,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 
 /**
- * Provides the ability to maintain the SQLTable properties of the Match via
+ * Provides the ability to maintain the SQLTable properties of the Project via
  * simple String properties.
  * <p>
  * All this behaviour would be better off in a Hibernate user type, but we
@@ -41,7 +41,7 @@ public class CachableTable {
 
 	private static final Logger logger = Logger.getLogger(CachableTable.class); 
 	/**
-     * The name of the Match property we're maintaining (for example,
+     * The name of the Project property we're maintaining (for example,
      * sourceTable, xrefTable, or resultTable).
      */
     private final String propertyName;
@@ -146,22 +146,22 @@ public class CachableTable {
         }
 
         try {
-			logger.debug("Match.getSourceTable("+catalogName+","+schemaName+","+tableName+")");
+			logger.debug("Project.getSourceTable("+catalogName+","+schemaName+","+tableName+")");
 			logger.debug("mmo.parent="+mmo.getParent());
 			SQLDatabase db = mmo.getSession().getDatabase();
 			if (ArchitectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
 				SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
 				if (table == null) {
-					Match.logger.debug("     Not found.  Adding simulated...");
+					Project.logger.debug("     Not found.  Adding simulated...");
 					table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
 				} else {
-					Match.logger.debug("     Found!");
+					Project.logger.debug("     Found!");
 				}
 				cachedTable = table;
 				return cachedTable;
 			} else {
 				mmo.getSession().handleWarning("The location of "+propertyName+" "+catalogName+"."+schemaName+"."+tableName +
-						" in Match "+mmo.getName()+ " is not compatible with the "+db.getName() +" database. " +
+						" in Project "+mmo.getName()+ " is not compatible with the "+db.getName() +" database. " +
 				"The table selection has been reset to nothing");
 				return null;
 			}

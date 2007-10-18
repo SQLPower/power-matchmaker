@@ -17,28 +17,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
+package ca.sqlpower.matchmaker.dao.hibernate;
 
-package ca.sqlpower.matchmaker;
+import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
-import java.util.Date;
+public class MungeProcessDAOHibernate extends AbstractMatchMakerDAOHibernate<MungeProcess> implements
+		MungeProcessDAO {
 
-public class MatchSettingsTest extends MatchMakerTestCase {
-
-	MatchSettings ms;
-	protected void setUp() throws Exception {
-		super.setUp();
-		ms = new MatchSettings();
+	public MungeProcessDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
+		super(matchMakerSession);
 	}
 
+	public Class<MungeProcess> getBusinessClass() {
+		return MungeProcess.class;
+	}
+	
 	@Override
-	protected MatchMakerObject getTarget() {
-		return ms;
+	public void delete(MungeProcess deleteMe) {
+		
+		MatchMakerObject parent = deleteMe.getParent();
+		if (parent != null ){
+			parent.removeChild(deleteMe);
+		}
+		super.delete(deleteMe);
+		
 	}
 
-    public void testSetLastRunDateDefensive() {
-        Date myDate = new Date();
-        ms.setLastRunDate(myDate);
-        assertEquals(myDate, ms.getLastRunDate());
-        assertNotSame(myDate, ms.getLastRunDate());
-    }
 }

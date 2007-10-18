@@ -25,14 +25,14 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 
 
-public class MatchRuleSetTest extends MatchMakerTestCase<MungeProcess> {
+public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
 
 	MungeProcess target;
 	final String appUserName = "test user";
 
-    public MatchRuleSetTest() {
+    public MungeProcessTest() {
         super();
-        propertiesToIgnoreForEventGeneration.add("parentMatch");
+        propertiesToIgnoreForEventGeneration.add("parentProject");
         propertiesThatDifferOnSetAndGet.add("parent");
     }
 	protected void setUp() throws Exception {
@@ -49,13 +49,13 @@ public class MatchRuleSetTest extends MatchMakerTestCase<MungeProcess> {
 	}
 
 
-    public void testSetParentMatch(){
-        Match match = new Match();
+    public void testSetParentProject(){
+        Project project = new Project();
         MatchMakerEventCounter listener = new MatchMakerEventCounter();
-        MungeProcess group = new MungeProcess();
+        MungeProcess process = new MungeProcess();
 
-        group.addMatchMakerListener(listener);
-        group.setParentMatch(match);
+        process.addMatchMakerListener(listener);
+        process.setParentProject(project);
         assertEquals("Incorrect number of events fired",1,listener.getAllEventCounts());
         assertEquals("Wrong property fired in the event","parent",listener.getLastEvt().getPropertyName());
     }

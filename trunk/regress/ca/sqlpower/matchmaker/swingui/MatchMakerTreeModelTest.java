@@ -26,7 +26,7 @@ import javax.swing.event.TreeModelEvent;
 
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
@@ -85,7 +85,7 @@ public class MatchMakerTreeModelTest extends TestCase {
 
 		folder.addChild(mmo);
 		treeModel.addTreeModelListener(counter);
-		mmo.addChild(new Match());
+		mmo.addChild(new Project());
 
 		assertEquals("insert event count should be 1",
 				1, counter.getChildrenInsertedCount());

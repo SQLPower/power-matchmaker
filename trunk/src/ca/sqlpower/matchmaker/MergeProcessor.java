@@ -48,7 +48,7 @@ import ca.sqlpower.sql.SQL;
 public class MergeProcessor extends AbstractProcessor {
 
 	private MatchMakerSession session;
-	private Match match;
+	private Project project;
 
 	/**
 	 * Stores the sets of potential matches which is used for merging the data.
@@ -67,11 +67,11 @@ public class MergeProcessor extends AbstractProcessor {
     private Connection con;
     private Statement stmt;
     
-	public MergeProcessor(Match match, MatchMakerSession session) 
+	public MergeProcessor(Project project, MatchMakerSession session) 
 			throws SQLException, ArchitectException {
-		this.match = match;
+		this.project = project;
 		this.session = session;
-		pool = new MatchPool(match);
+		pool = new MatchPool(project);
 		
 		//Initialize the match pool
 		pool.findAll(new ArrayList<SQLColumn>());
@@ -82,7 +82,7 @@ public class MergeProcessor extends AbstractProcessor {
         dfs.performSearch(gm);
         processOrder = dfs.getFinishOrder();
         
-        sourceTable = match.getSourceTable();
+        sourceTable = project.getSourceTable();
         con = session.getConnection();
         stmt = con.createStatement();
 	}
@@ -99,7 +99,7 @@ public class MergeProcessor extends AbstractProcessor {
         Map<SQLColumn, ColumnMergeRules> mapping = new HashMap<SQLColumn, ColumnMergeRules>();
         
         // Finds the correct table merge rule according to the source table
-        sourceTableMergeRule = match.getTableMergeRules().get(0);
+        sourceTableMergeRule = project.getTableMergeRules().get(0);
         
         if (!sourceTableMergeRule.getSourceTable().equals(sourceTable)) {
         	throw new IllegalStateException("The first merge rule needs to be the source table merge rule.");
@@ -166,7 +166,7 @@ public class MergeProcessor extends AbstractProcessor {
 	
 	private List<String> getSourceIndexColumnNames() throws ArchitectException {
 		List<String> sourceIndexColumnNames = new ArrayList<String>();
-		for (SQLIndex.Column c : match.getSourceTableIndex().getChildren()) {
+		for (SQLIndex.Column c : project.getSourceTableIndex().getChildren()) {
 			sourceIndexColumnNames.add(c.getName());
 		}
 		return sourceIndexColumnNames;
@@ -182,7 +182,7 @@ public class MergeProcessor extends AbstractProcessor {
 			TableMergeRules parentTableMergeRule) throws ArchitectException, SQLException {
 		SQLTable parentTable = parentTableMergeRule.getSourceTable();
 		
-		for (TableMergeRules childTableMergeRule : match.getTableMergeRules()) {
+		for (TableMergeRules childTableMergeRule : project.getTableMergeRules()) {
 			if (parentTable.equals(childTableMergeRule.getParentTable())) {
 				
 				// populates the data required to merge the grand child tables	
@@ -816,7 +816,7 @@ public class MergeProcessor extends AbstractProcessor {
 		StringBuilder sql = new StringBuilder();
 		sql.append("\n WHERE ");
 		for (Object ival : keyValues) {
-			SQLIndex.Column icol = match.getSourceTableIndex().getChild(colIndex++);
+			SQLIndex.Column icol = project.getSourceTableIndex().getChild(colIndex++);
 			if (!first) sql.append(" AND ");
 			sql.append(icol.getName());
 			if (ival == null) {

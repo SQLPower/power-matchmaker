@@ -41,15 +41,15 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
-import ca.sqlpower.matchmaker.MatchSettings;
+import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
-import ca.sqlpower.matchmaker.Match.MatchMode;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
@@ -273,10 +273,10 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						} else {
 							newVal = new BigDecimal(((BigDecimal) oldVal).longValue() + 1L);
 						}
-					} else if (property.getPropertyType() == MatchSettings.class) {
-						MatchSettings matchSettings = new MatchSettings();
-						setAllSetters(matchSettings, propertiesThatAreNotPersisted);
-						newVal = matchSettings;
+					} else if (property.getPropertyType() == MungeSettings.class) {
+						MungeSettings mungeSettings = new MungeSettings();
+						setAllSetters(mungeSettings, propertiesThatAreNotPersisted);
+						newVal = mungeSettings;
 					} else if (property.getPropertyType() == MergeSettings.class) {
 						MergeSettings mergeSettings = new MergeSettings();
 						setAllSetters(mergeSettings, propertiesThatAreNotPersisted);
@@ -290,12 +290,12 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						newVal = File.createTempFile("mmTest",".tmp");
 						((File)newVal).deleteOnExit();
 					} else if (property.getPropertyType() == PlFolder.class) {
-						newVal = new PlFolder<Match>();
-					} else if (property.getPropertyType() == MatchMode.class) {
-						if (oldVal == MatchMode.BUILD_XREF) {
-							newVal = MatchMode.FIND_DUPES;
+						newVal = new PlFolder<Project>();
+					} else if (property.getPropertyType() == ProjectMode.class) {
+						if (oldVal == ProjectMode.BUILD_XREF) {
+							newVal = ProjectMode.FIND_DUPES;
 						} else {
-							newVal = Match.MatchMode.BUILD_XREF;
+							newVal = Project.ProjectMode.BUILD_XREF;
 						}
 					} else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
 						newVal = new MatchMakerTranslateGroup();

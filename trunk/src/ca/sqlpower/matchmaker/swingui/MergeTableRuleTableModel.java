@@ -27,7 +27,7 @@ import javax.swing.table.AbstractTableModel;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
@@ -47,13 +47,13 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
  */
 public class MergeTableRuleTableModel extends AbstractTableModel implements MatchMakerListener {
 
-	private Match match;
+	private Project project;
 	private SQLObjectChooser chooser;
-	public MergeTableRuleTableModel(Match match, 
+	public MergeTableRuleTableModel(Project project, 
 			MatchMakerSwingSession swingSession) {
 		this.chooser = new SQLObjectChooser(swingSession);
-		this.match = match;
-		MatchMakerUtils.listenToHierarchy(this, this.match);
+		this.project = project;
+		MatchMakerUtils.listenToHierarchy(this, this.project);
 	}
 	
 	public int getColumnCount() {
@@ -61,18 +61,18 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
 	}
 
 	public int getRowCount() {
-		return match.getTableMergeRules().size();
+		return project.getTableMergeRules().size();
 	}
 
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		if (columnIndex == 0) {
-			return match.getTableMergeRules().get(rowIndex).getCatalogName();
+			return project.getTableMergeRules().get(rowIndex).getCatalogName();
 		} else if (columnIndex == 1) {
-			return match.getTableMergeRules().get(rowIndex).getSchemaName();
+			return project.getTableMergeRules().get(rowIndex).getSchemaName();
 		} else if (columnIndex == 2) {
-			return match.getTableMergeRules().get(rowIndex).getTableName();
+			return project.getTableMergeRules().get(rowIndex).getTableName();
 		} else if ( columnIndex == 3) {
-			return match.getTableMergeRules().get(rowIndex).isDeleteDup() ? "Yes" : "No";
+			return project.getTableMergeRules().get(rowIndex).isDeleteDup() ? "Yes" : "No";
 		} else {
 			return null;
 		}
@@ -112,7 +112,7 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
 	}
 
     public void mmChildrenInserted(MatchMakerEvent evt) {
-        if(evt.getSource() instanceof Match || evt.getSource() == match.getTableMergeRulesFolder()){
+        if(evt.getSource() instanceof Project || evt.getSource() == project.getTableMergeRulesFolder()){
             int[] changed = evt.getChangeIndices();
             ArrayList<Integer> changedIndices = new ArrayList<Integer>();
             for (int selectedRowIndex:changed){
@@ -133,7 +133,7 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
     }
 
     public void mmChildrenRemoved(MatchMakerEvent evt) {
-        if(evt.getSource() instanceof Match || evt.getSource() == match.getTableMergeRulesFolder()) {
+        if(evt.getSource() instanceof Project || evt.getSource() == project.getTableMergeRulesFolder()) {
             int[] changed = evt.getChangeIndices();
             ArrayList<Integer> changedIndices = new ArrayList<Integer>();
             for (int selectedRowIndex:changed){
@@ -155,7 +155,7 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
 
     public void mmPropertyChanged(MatchMakerEvent evt) { 
         if(evt.getSource() instanceof TableMergeRules) {
-            fireTableRowsUpdated(match.getTableMergeRules().indexOf(evt.getSource()), match.getTableMergeRules().indexOf(evt.getSource()));
+            fireTableRowsUpdated(project.getTableMergeRules().indexOf(evt.getSource()), project.getTableMergeRules().indexOf(evt.getSource()));
         }
     }
 

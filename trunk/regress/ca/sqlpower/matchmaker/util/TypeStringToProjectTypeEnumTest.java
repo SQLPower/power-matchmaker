@@ -25,18 +25,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.testutil.MockJDBCDriver;
 import ca.sqlpower.testutil.MockJDBCPreparedStatement;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 
-public class TypeStringToMatchTypeEnumTest extends TestCase {
+public class TypeStringToProjectTypeEnumTest extends TestCase {
 
-	Match.MatchMode[] allTypes = Match.MatchMode.values();
+	Project.ProjectMode[] allTypes = Project.ProjectMode.values();
 
-	TypeStringToMatchTypeEnum userType;
+	TypeStringToProjectTypeEnum userType;
 	private MockJDBCResultSet rs;
 	private String[] names;
 	String[] data;
@@ -44,7 +44,7 @@ public class TypeStringToMatchTypeEnumTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 			
-		userType = new TypeStringToMatchTypeEnum();
+		userType = new TypeStringToProjectTypeEnum();
 		SPDataSource ds = new SPDataSource(new PlDotIni());
 		String URL = "jdbc:mock:dbmd.catalogTerm=Catalog&dbmd.schemaTerm=Schema&catalogs=farm,yard,zoo&schemas.farm=cow,pig&schemas.yard=cat,robin&schemas.zoo=lion,giraffe&tables.farm.cow=moo&tables.farm.pig=oink&tables.yard.cat=meow&tables.yard.robin=tweet&tables.zoo.lion=roar&tables.zoo.giraffe=***,^%%";
 		ds.getParentType().setJdbcDriver(MockJDBCDriver.class.getCanonicalName());
@@ -61,18 +61,18 @@ public class TypeStringToMatchTypeEnumTest extends TestCase {
 		rs.setColumnName(1,"match_type");
 		names = new String[1];
 		names[0]="match_type";
-		data = new String[Match.MatchMode.values().length+1];
+		data = new String[Project.ProjectMode.values().length+1];
 		int i = 0;
-		for (Match.MatchMode type: allTypes) {
+		for (Project.ProjectMode type: allTypes) {
 			data[i] = type.toString();
 			i++;     
 		}
 	}
 
 	public void testDeepCopy() {
-		for (Match.MatchMode type: allTypes) {
-			Match.MatchMode testCopy = (Match.MatchMode) userType.deepCopy(type);
-			assertEquals("Invalid match type",type,testCopy);
+		for (Project.ProjectMode type: allTypes) {
+			Project.ProjectMode testCopy = (Project.ProjectMode) userType.deepCopy(type);
+			assertEquals("Invalid project type",type,testCopy);
 				
 		}
 	}
@@ -82,9 +82,9 @@ public class TypeStringToMatchTypeEnumTest extends TestCase {
 			Object[] row = {data[i]};
 			rs.addRow(row);
 			rs.next();
-			Match.MatchMode get = (Match.MatchMode)userType.nullSafeGet(rs, names, null);
+			Project.ProjectMode get = (Project.ProjectMode)userType.nullSafeGet(rs, names, null);
 			if (i < allTypes.length) {
-				assertEquals("The match type is not correct", allTypes[i], get);
+				assertEquals("The project type is not correct", allTypes[i], get);
 			} else {
 				assertEquals("The result is not correct",null, get);
 			}
@@ -102,7 +102,7 @@ public class TypeStringToMatchTypeEnumTest extends TestCase {
 				userType.nullSafeSet(statements, null, 1);
 			}
 			Object[] values = statements.getParameters();
-			assertEquals("The match string is not correct", data[i], (String)values[0]);
+			assertEquals("The project string is not correct", data[i], (String)values[0]);
 		}
 	}
 	
@@ -115,7 +115,7 @@ public class TypeStringToMatchTypeEnumTest extends TestCase {
 				userType.nullSafeSet(statements, null, 6);
 			}
 			Object[] values = statements.getParameters();
-			assertEquals("The match string is not correct", data[i], (String)values[5]);
+			assertEquals("The project string is not correct", data[i], (String)values[5]);
 		}		
 	}
 		

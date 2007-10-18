@@ -26,26 +26,26 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
+import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 
 public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTestCase<TableMergeRules,TableMergeRuleDAO>  {
 
 	Long count=0L;
-    Match match;
+    Project project;
     PlFolder folder;
     public AbstractTableMergeRulesDAOTestCase() throws Exception {
-        match= new Match();
-        match.setName("Merge Rules Test Match");
-        match.setType(Match.MatchMode.BUILD_XREF);
+        project= new Project();
+        project.setName("Merge Rules Test Project");
+        project.setType(Project.ProjectMode.BUILD_XREF);
         folder = new PlFolder("test folder");
-        match.setParent(folder);
+        project.setParent(folder);
         try {
-            match.setSession(getSession());
+            project.setSession(getSession());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -58,8 +58,8 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
         super.setUp();
         PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
 		plFolderDAO.save(folder);
-        MatchDAO matchDAO = new MatchDAOHibernate(getSession());
-        matchDAO.save(match);
+        ProjectDAO projectDAO = new ProjectDAOHibernate(getSession());
+        projectDAO.save(project);
     }
 
 	@Override
@@ -71,7 +71,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 			setAllSetters(mergeRules, getNonPersitingProperties());
 			mergeRules.setName("MergeRule "+count);
 			mergeRules.setTableName("table"+count);
-            match.addTableMergeRule(mergeRules);
+            project.addTableMergeRule(mergeRules);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
@@ -88,7 +88,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 		nonPersistingProperties.add("lastUpdateAppUser");
 		nonPersistingProperties.add("session");
         nonPersistingProperties.add("parent");
-        nonPersistingProperties.add("parentMatch");
+        nonPersistingProperties.add("parentProject");
         nonPersistingProperties.add("oid");
         nonPersistingProperties.add("name");
 		return nonPersistingProperties;
@@ -96,15 +96,15 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 	
 	public void testTableParentIsTheCorrectObject() throws Exception {
 		createNewObjectUnderTest();
-		TableMergeRules mergeRules = match.getTableMergeRules().get(0);
-		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",match.getTableMergeRulesFolder(),mergeRules.getParent());
+		TableMergeRules mergeRules = project.getTableMergeRules().get(0);
+		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",project.getTableMergeRulesFolder(),mergeRules.getParent());
 	}
 
 	public void testTableParentIsTheCorrectObjectAfterDAOSave() throws Exception {
 		createNewObjectUnderTest();
-		new MatchDAOHibernate(getSession()).save(match);
-		TableMergeRules mergeRules = match.getTableMergeRules().get(0);
-		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",match.getTableMergeRulesFolder(),mergeRules.getParent());
+		new ProjectDAOHibernate(getSession()).save(project);
+		TableMergeRules mergeRules = project.getTableMergeRules().get(0);
+		assertEquals("The merge rule "+mergeRules.toString()+ "'s  parent is not the folder it should be in",project.getTableMergeRulesFolder(),mergeRules.getParent());
 	}
 	
     public void testDelete() throws Exception {
@@ -113,7 +113,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
         createNewObjectUnderTest();
         try {
 
-            TableMergeRules mergeRules = match.getTableMergeRules().get(0);
+            TableMergeRules mergeRules = project.getTableMergeRules().get(0);
             String tableName = mergeRules.getTableName();
             TableMergeRuleDAO dao = getDataAccessObject();
             dao.save(mergeRules);

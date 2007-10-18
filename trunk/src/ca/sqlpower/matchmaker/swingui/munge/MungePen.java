@@ -64,7 +64,7 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -165,7 +165,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 * Creates a new empty mungepen.
 	 * 
 	 */
-	public MungePen(MungeProcess process, FormValidationHandler handler, Match match) throws ArchitectException {
+	public MungePen(MungeProcess process, FormValidationHandler handler, Project project) throws ArchitectException {
 		
 		process.addMatchMakerListener(new MungePenMatchRuleSetListener());
 		mungeStepListener = new MungePenMungeStepListener();
@@ -197,11 +197,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		setDropTarget(new DropTarget(this,this));
 		
 		if (process.getChildCount() == 0) {
-			MungeStep inputStep = new SQLInputStep(match.getSourceTable(), process.getSession());
+			MungeStep inputStep = new SQLInputStep(project.getSourceTable(), process.getSession());
 			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, new Boolean(true).toString());
 			process.addChild(inputStep);
 			
-			MungeResultStep mungeResultStep = new MungeResultStep(match, inputStep, process.getSession());
+			MungeResultStep mungeResultStep = new MungeResultStep(project, inputStep, process.getSession());
 			
 			String x = new Integer(0).toString();
 			String y = new Integer(300).toString();

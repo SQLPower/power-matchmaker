@@ -24,7 +24,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MungeProcessEditor;
@@ -37,9 +37,9 @@ import ca.sqlpower.swingui.SPSUtils;
 public class NewMungeProcessAction extends AbstractAction {
     
     private final MatchMakerSwingSession swingSession;
-	private final Match parent;
+	private final Project parent;
 
-	public NewMungeProcessAction(MatchMakerSwingSession swingSession, Match parent) {
+	public NewMungeProcessAction(MatchMakerSwingSession swingSession, Project parent) {
 	    super("New Munge Process");
         this.swingSession = swingSession;
         this.parent = parent;

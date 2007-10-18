@@ -25,10 +25,10 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.Match.MatchMode;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 
 public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<PlFolder<MatchMakerObject>,PlFolderDAO>  {
 
@@ -57,33 +57,33 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 		return nonPersistingProperties;
 	}
 	
-	public void testMatchesPersist() throws Exception {
+	public void testProjectPersist() throws Exception {
 		PlFolder f = createNewObjectUnderTest();
-		Match match = new Match();
-		match.setName("child");
-		match.setType(Match.MatchMode.FIND_DUPES);
+		Project project = new Project();
+		project.setName("child");
+		project.setType(Project.ProjectMode.FIND_DUPES);
 		
 		PlFolderDAO dao = getDataAccessObject();
 		
 		dao.save(f);
-		f.addChild(match);
+		f.addChild(project);
         dao.save(f);
 		List<PlFolder> folders = dao.findAll();
 		PlFolder fAgain = folders.get(folders.indexOf(f));
 		assertEquals("Wrong number of children", 1,fAgain.getChildCount());
-		assertEquals("Wrong child",match, fAgain.getChildren().get(0));
+		assertEquals("Wrong child",project, fAgain.getChildren().get(0));
 	}
 
     /**
-     * Test if you can properly move a match.
+     * Test if you can properly move a project.
      */
-    public void testMatchMove() throws Exception {
-        Match m = new Match();
-        m.setType(MatchMode.FIND_DUPES);
-        m.setName("match");
+    public void testProjectMove() throws Exception {
+        Project m = new Project();
+        m.setName("project");
+        m.setType(ProjectMode.FIND_DUPES);
 
-        PlFolder<Match> oldFolder = new PlFolder<Match>("old");
-        PlFolder<Match> newFolder = new PlFolder<Match>("new");
+        PlFolder<Project> oldFolder = new PlFolder<Project>("old");
+        PlFolder<Project> newFolder = new PlFolder<Project>("new");
 
         oldFolder.addChild(m);
         PlFolderDAO dao = getDataAccessObject();
@@ -103,7 +103,7 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
                                 + m.getName() + "' and pl_folder2.folder_oid = pl_match.folder_oid");
 
                 if (!rs.next()) {
-                    fail("No results found for match " + m.getName());
+                    fail("No results found for project " + m.getName());
                 }
 
                 assertEquals("The setup failed to work", "old", rs
@@ -127,7 +127,7 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
                         + m.getName() + "' and pl_folder2.folder_oid = pl_match.folder_oid");
 
                 if (!rs.next()) {
-                    fail("No results found for match " + m.getName());
+                    fail("No results found for project " + m.getName());
                 }
 
                 assertEquals("move failed to work", "new", rs

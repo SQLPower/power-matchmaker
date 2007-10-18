@@ -31,9 +31,9 @@ public class MergeEngineImpl extends AbstractEngine {
 
 	private static final Logger logger = Logger.getLogger(MergeEngineImpl.class);
 	
-	public MergeEngineImpl(MatchMakerSession session, Match match) {
+	public MergeEngineImpl(MatchMakerSession session, Project project) {
 		this.setSession(session);
-		this.setMatch(match);
+		this.setProject(project);
 	}
 	
 	/**
@@ -46,9 +46,9 @@ public class MergeEngineImpl extends AbstractEngine {
 	public void checkPreconditions() throws EngineSettingException, ArchitectException {
 		
 		MatchMakerSession session = getSession();
-        Match match = getMatch();
+        Project project = getProject();
         final MatchMakerSessionContext context = session.getContext();
-        final MergeSettings settings = match.getMergeSettings();
+        final MergeSettings settings = project.getMergeSettings();
         
         if ( context == null ) {
         	throw new EngineSettingException(
@@ -71,26 +71,26 @@ public class MergeEngineImpl extends AbstractEngine {
                     "\" doesn't have the ODBC DSN set.");
         }
         
-        if (!Match.doesSourceTableExist(session, match)) {
+        if (!Project.doesSourceTableExist(session, project)) {
             throw new EngineSettingException(
-                    "Your match source table \""+
-                    DDLUtils.toQualifiedName(match.getSourceTable())+
+                    "Your project source table \""+
+                    DDLUtils.toQualifiedName(project.getSourceTable())+
             "\" does not exist");
         }
         
-        if (!session.canSelectTable(match.getSourceTable())) {
+        if (!session.canSelectTable(project.getSourceTable())) {
             throw new EngineSettingException(
-            "PreCondition failed: can not select match source table");
+            "PreCondition failed: can not select project source table");
         }
         
-        if (!Match.doesResultTableExist(session, match)) {
+        if (!Project.doesResultTableExist(session, project)) {
             throw new EngineSettingException(
-            "PreCondition failed: match result table does not exist");
+            "PreCondition failed: project result table does not exist");
         }
         
-        if (!match.vertifyResultTableStruct() ) {
+        if (!project.vertifyResultTableStruct() ) {
             throw new EngineSettingException(
-            "PreCondition failed: match result table structure incorrect");
+            "PreCondition failed: project result table structure incorrect");
         }
         
         if (!canWriteLogFile(settings)) {
@@ -124,7 +124,7 @@ public class MergeEngineImpl extends AbstractEngine {
 			setFinished(false);
 			setStarted(true);
 			
-			Processor merger = new MergeProcessor(getMatch(), getSession());
+			Processor merger = new MergeProcessor(getProject(), getSession());
 			merger.call();
 			
 			getLogger().info("Engine process completed normally.");

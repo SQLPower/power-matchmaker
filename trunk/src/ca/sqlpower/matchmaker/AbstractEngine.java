@@ -41,9 +41,9 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	private MatchMakerSession session;
     
     /**
-     * The match project this engine operates on.
+     * The project this engine operates on.
      */
-	private Match match;
+	private Project project;
 	
 	/**
 	 * Gets set to true when the process has started.
@@ -60,12 +60,12 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	 */
 	private boolean cancelled;
 	
-	protected Match getMatch() {
-		return match;
+	protected Project getProject() {
+		return project;
 	}
 
-	protected void setMatch(Match match) {
-		this.match = match;
+	protected void setProject(Project project) {
+		this.project = project;
 	}
 
 	protected MatchMakerSession getSession() {
@@ -146,7 +146,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	}
 
 	/**
-	 * returns true if the log file of this match is readable.
+	 * returns true if the log file of this project is readable.
 	 */
 	public static boolean canReadLogFile(MatchMakerSettings settings) {
 		File file = settings.getLog();
@@ -157,7 +157,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	}
 
 	/**
-	 * returns true if the log file of this match is writable.
+	 * returns true if the log file of this project is writable.
 	 */
 	public static boolean canWriteLogFile(MatchMakerSettings settings) {
 	    File file = settings.getLog();
@@ -188,9 +188,9 @@ public abstract class AbstractEngine implements MatchMakerEngine {
         String sep = System.getProperty("file.separator");
         String javaPath = javaHome + sep + "bin" + sep + "java";
         String className = getClass().getName();
-        Long matchOid = match.getOid();
+        Long projectOid = project.getOid();
         
-        return new String[] { javaPath, className, "match_oid=" + matchOid };
+        return new String[] { javaPath, className, "match_oid=" + projectOid };
     }
 
 	public boolean isStarted() {

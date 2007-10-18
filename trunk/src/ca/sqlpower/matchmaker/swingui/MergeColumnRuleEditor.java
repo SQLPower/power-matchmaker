@@ -54,7 +54,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
@@ -76,7 +76,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private static final Logger logger = Logger.getLogger(MergeColumnRuleEditor.class);
 	private JPanel panel;
 	private final MatchMakerSwingSession swingSession;
-	private final Match match;
+	private final Project project;
 	private final TableMergeRules mergeRule;
 	
 	StatusComponent status = new StatusComponent();
@@ -91,12 +91,12 @@ public class MergeColumnRuleEditor implements EditorPane {
 	private CustomTableModelListener tableListener;
 	
 	public MergeColumnRuleEditor(final MatchMakerSwingSession session,
-			final Match match, final TableMergeRules mr) {
+			final Project project, final TableMergeRules mr) {
 		this.swingSession = session;
-		this.match = match;
+		this.project = project;
 		this.mergeRule = mr;
-		if (match == null) {
-			throw new NullPointerException("You can't edit a null match");
+		if (project == null) {
+			throw new NullPointerException("You can't edit a null project");
 		}
 		if (mergeRule == null) {
 			throw new NullPointerException("You can't edit a null merge rule");
@@ -121,7 +121,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 			}
 		});
 
-        for (TableMergeRules tmr : match.getTableMergeRules()) {
+        for (TableMergeRules tmr : project.getTableMergeRules()) {
         	if (!tmr.equals(mergeRule)) {
         		parentTable.addItem(tmr.getSourceTable());
         	}
@@ -280,14 +280,14 @@ public class MergeColumnRuleEditor implements EditorPane {
 				mergeRule.setDeleteDup(deleteDup.isSelected());
 			}
 			
-			if (!match.getTableMergeRules().contains(mergeRule)) {
-				match.getTableMergeRulesFolder().addChild(mergeRule);
+			if (!project.getTableMergeRules().contains(mergeRule)) {
+				project.getTableMergeRulesFolder().addChild(mergeRule);
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
 				TreePath menuPath = treeModel.getPathForNode(mergeRule);
 				swingSession.getTree().setSelectionPath(menuPath);
 			}
 
-			swingSession.save(match);
+			swingSession.save(project);
 			tableListener.setModified(false);
 			return true;
 		}

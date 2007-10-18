@@ -51,7 +51,7 @@ public class PreMergeDataFudgerTest extends TestCase {
 	private SQLDatabase db;
 	private SQLTable sourceTable;
 	private SQLTable resultTable;
-	private Match match;
+	private Project project;
 	
 	private MatchMakerSession session = new StubMatchMakerSession() {
 		@Override
@@ -83,19 +83,19 @@ public class PreMergeDataFudgerTest extends TestCase {
 
 		resultTable = db.getTableByName(null, "pl", "match_results");
 		
-		match = new Match();
-		match.setSession(session);
-		match.setResultTable(resultTable);
+		project = new Project();
+		project.setSession(session);
+		project.setResultTable(resultTable);
 		
 		MungeProcess groupOne = new MungeProcess();
 		groupOne.setName("Group_One");
-		match.addMatchRuleSet(groupOne);
+		project.addMungeProcess(groupOne);
 
 		MungeProcess groupTwo = new MungeProcess();
 		groupOne.setName("Group_Two");
-		match.addMatchRuleSet(groupTwo);
+		project.addMungeProcess(groupTwo);
 		
-		pool = MMTestUtils.createTestingPool(session, match, groupOne, groupTwo);
+		pool = MMTestUtils.createTestingPool(session, project, groupOne, groupTwo);
 		
 		fudger = new PreMergeDataFudger(session, pool);
 	}

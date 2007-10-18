@@ -45,7 +45,7 @@ import javax.swing.table.TableColumnModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.RowSetModel;
 import ca.sqlpower.swingui.table.DateTableCellRenderer;
@@ -62,20 +62,20 @@ public class MatchStatisticsPanel extends JPanel {
 	private static final Logger logger = Logger.getLogger(MatchStatisticsPanel.class);
 	
 	private final MatchMakerSession swingSession;
-	private Match match;
+	private Project project;
 	private Timestamp startDateTime;
 
-	public MatchStatisticsPanel(MatchMakerSession swingSession, Match match)
+	public MatchStatisticsPanel(MatchMakerSession swingSession, Project project)
 		throws SQLException {
 		super(new BorderLayout());
-		this.match = match;
+		this.project = project;
 		this.swingSession = swingSession;
 		createUI();
 	}
 
 	private void createUI() throws SQLException {
 
-		RowSet rs = getMatchStats(match);
+		RowSet rs = getMatchStats(project);
 		RowSetModel rsm = new RowSetModel(rs);
 
 		JTable table = new MatchStatisticTable(rsm);
@@ -111,7 +111,7 @@ public class MatchStatisticsPanel extends JPanel {
 	}
 
 
-	private RowSet getMatchStats(Match match) throws SQLException {
+	private RowSet getMatchStats(Project project) throws SQLException {
     	Connection con = null;
     	Statement stmt = null;
     	ResultSet rs =  null;
@@ -129,7 +129,7 @@ public class MatchStatisticsPanel extends JPanel {
     		lastSql = sql.toString();
     		PreparedStatement pstmt = con.prepareStatement(lastSql);
     		pstmt.setString(1, "MATCH");
-    		pstmt.setString(2, match.getName());
+    		pstmt.setString(2, project.getName());
     		rs = pstmt.executeQuery();
 
     		CachedRowSetImpl crset = new CachedRowSetImpl();
@@ -149,7 +149,7 @@ public class MatchStatisticsPanel extends JPanel {
     	}
     }
 
-	private RowSet getMatchGroupStats(Match match, int runNo, int total) throws SQLException {
+	private RowSet getMatchGroupStats(Project match, int runNo, int total) throws SQLException {
     	Connection con = null;
     	PreparedStatement pstmt = null;
     	ResultSet rs =  null;
@@ -228,7 +228,7 @@ public class MatchStatisticsPanel extends JPanel {
 			totalFound = bTotalFound.intValue();
 		}
 
-		return getMatchGroupStats(match,runNo,totalFound);
+		return getMatchGroupStats(project,runNo,totalFound);
 	}
 
 
@@ -385,7 +385,7 @@ public class MatchStatisticsPanel extends JPanel {
     		sql.append(" AND OBJECT_NAME=? ");
     		pstmt = con.prepareStatement(sql.toString());
     		pstmt.setString(1, "MATCH");
-    		pstmt.setString(2, match.getName());
+    		pstmt.setString(2, project.getName());
     		int rc = pstmt.executeUpdate();
     		con.commit();
 
@@ -412,7 +412,7 @@ public class MatchStatisticsPanel extends JPanel {
     		sql.append(" AND OBJECT_NAME=? AND START_DATE_TIME<=?");
     		pstmt = con.prepareStatement(sql.toString());
     		pstmt.setString(1, "MATCH");
-    		pstmt.setString(2, match.getName());
+    		pstmt.setString(2, project.getName());
     		pstmt.setTimestamp(3, getStartDateTime());
     		int rc = pstmt.executeUpdate();
     		con.commit();

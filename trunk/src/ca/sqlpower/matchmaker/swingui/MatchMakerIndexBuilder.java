@@ -45,7 +45,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.RegExValidator;
@@ -61,7 +61,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class MatchMakerIndexBuilder implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MatchMakerIndexBuilder.class);
-	private Match match;
+	private Project project;
 	private JDialog dialog;
 	private JPanel panel;
 	private List<CustomTableColumn> selectedColumns;
@@ -125,12 +125,12 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		this.tableModified = modified;
 	}
 
-	public MatchMakerIndexBuilder(Match match, MatchMakerSwingSession swingSession) throws ArchitectException {
-		this.match = match;
+	public MatchMakerIndexBuilder(Project project, MatchMakerSwingSession swingSession) throws ArchitectException {
+		this.project = project;
 		this.swingSession = swingSession;
 
-		sqlTable = match.getSourceTable();
-		SQLIndex oldIndex = match.getSourceTableIndex();
+		sqlTable = project.getSourceTable();
+		SQLIndex oldIndex = project.getSourceTableIndex();
 
 		String name;
 		if (oldIndex != null &&
@@ -138,7 +138,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 			name = oldIndex.getName();
 		} else {
 			for( int i=0; ;i++) {
-				name = match.getSourceTableName()+"_UPK"+(i==0?"":String.valueOf(i));
+				name = project.getSourceTableName()+"_UPK"+(i==0?"":String.valueOf(i));
 				if (sqlTable.getIndexByName(name) == null) break;
 			}
 		}
@@ -182,7 +182,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		JButton exit = new JButton(cancelAction);
 
         pb.add(statusComponent, cc.xy(2, 2));
-		pb.add(new JLabel("Table: " + DDLUtils.toQualifiedName(match.getSourceTable())),
+		pb.add(new JLabel("Table: " + DDLUtils.toQualifiedName(project.getSourceTable())),
 					cc.xy(2, 4));
 		pb.add(indexName, cc.xy(2, 6));
 		JScrollPane scrollPane = new JScrollPane(columntable);
@@ -395,7 +395,7 @@ public class MatchMakerIndexBuilder implements EditorPane {
 				            e);
 		}
 
-		match.setSourceTableIndex(index);
+		project.setSourceTableIndex(index);
 		return true;
 	}
 

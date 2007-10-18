@@ -46,15 +46,15 @@ import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.testutil.MockJDBCDriver;
 
-public class MatchTest extends MatchMakerTestCase<Match> {
+public class ProjectTest extends MatchMakerTestCase<Project> {
 
-    Match match;
+    Project project;
 	private TestingMatchMakerSession session;
 
     protected void setUp() throws Exception {
     	// The following two are ignored because they are to be used only by hibernate
     	// so they don't throw events
-        propertiesToIgnoreForEventGeneration.add("matchRuleSets");
+        propertiesToIgnoreForEventGeneration.add("mungeProcesses");
         propertiesToIgnoreForEventGeneration.add("tableMergeRules");
         // Ignored because they are delegates to support functions for the chached table class
         propertiesToIgnoreForEventGeneration.add("sourceTableCatalog");
@@ -66,7 +66,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         propertiesToIgnoreForEventGeneration.add("xrefTableCatalog");
         propertiesToIgnoreForEventGeneration.add("xrefTableSchema");
         propertiesToIgnoreForEventGeneration.add("xrefTableName");
-        propertiesToIgnoreForDuplication.add("matchGroups");
+        propertiesToIgnoreForDuplication.add("mungeProcesses");
         // These set other properties to null that describe the same object
         propertiesToIgnoreForDuplication.add("resultTable");
         propertiesToIgnoreForDuplication.add("sourceTable");
@@ -77,41 +77,41 @@ public class MatchTest extends MatchMakerTestCase<Match> {
         propertiesThatHaveSideEffects.add("sourceTable");
         propertiesThatHaveSideEffects.add("resultTable");
         super.setUp();
-        match = new Match();
+        project = new Project();
         session = new TestingMatchMakerSession();
 		session.setDatabase(new SQLDatabase());
-        match.setSession(session);
+        project.setSession(session);
     }
     @Override
-    protected Match getTarget() {
-        return match;
+    protected Project getTarget() {
+        return project;
     }
 
 
 	public void testEqual() {
-		Match m1 = new Match();
-		Match m2 = new Match();
-		assertTrue("Match1 <> match2", (m1 != m2) );
-		assertTrue("Match1 equals match2", m1.equals(m2) );
-		m1.setName("match1");
-		m2.setName("match2");
-		assertFalse("Match1 should not equals match2", m1.equals(m2) );
-		m1.setName("match");
-		m2.setName("match");
-		assertTrue("Match1 should equals match2", m1.equals(m2) );
+		Project m1 = new Project();
+		Project m2 = new Project();
+		assertTrue("Project1 <> project2", (m1 != m2) );
+		assertTrue("Project1 equals project2", m1.equals(m2) );
+		m1.setName("project1");
+		m2.setName("project2");
+		assertFalse("Project1 should not equals project2", m1.equals(m2) );
+		m1.setName("project");
+		m2.setName("project");
+		assertTrue("Project1 should equals project2", m1.equals(m2) );
 	}
 
-    public void testMatchMakerFolderFiresEventForMatchRuleSets(){
+    public void testMatchMakerFolderFiresEventForMungeProcesses(){
         MatchMakerEventCounter l = new MatchMakerEventCounter();
-        match.getMatchRuleSetFolder().addMatchMakerListener(l);
+        project.getMungeProcessesFolder().addMatchMakerListener(l);
         List<MungeProcess> mmoList = new ArrayList<MungeProcess>();
-        match.setMatchRuleSets(mmoList);
+        project.setMungeProcesses(mmoList);
         assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
         assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
     }
     
     public void testCreateResultTable() throws ArchitectException {
-    	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
+    	SQLTable sourceTable = new SQLTable(project.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
     	pk1.setNullable(DatabaseMetaData.columnNoNulls);
@@ -130,11 +130,11 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	idx.addChild(idx.new Column(pk2, true, false));
     	sourceTable.addIndex(idx);
 
-    	match.setSourceTable(sourceTable);
-    	match.setSourceTableIndex(idx);
+    	project.setSourceTable(sourceTable);
+    	project.setSourceTableIndex(idx);
     	
-    	match.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
-    	SQLTable resultTable = match.createResultTable();
+    	project.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
+    	SQLTable resultTable = project.createResultTable();
     	
     	int i = 0;
     	assertEquals("dup_candidate_10", resultTable.getColumn(i++).getName());
@@ -190,7 +190,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     }
     
     public void testCreateResultTableIndex() throws ArchitectException {
-    	SQLTable sourceTable = new SQLTable(match.getSession().getDatabase(), "match_source", null, "TABLE", true);
+    	SQLTable sourceTable = new SQLTable(project.getSession().getDatabase(), "match_source", null, "TABLE", true);
     	
     	SQLColumn pk1 = new SQLColumn(sourceTable, "pk1", Types.VARCHAR, 20, 0);
     	pk1.setNullable(DatabaseMetaData.columnNoNulls);
@@ -209,11 +209,11 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	idx.addChild(idx.new Column(pk2, true, false));
     	sourceTable.addIndex(idx);
 
-    	match.setSourceTable(sourceTable);
-    	match.setSourceTableIndex(idx);
+    	project.setSourceTable(sourceTable);
+    	project.setSourceTableIndex(idx);
     	
-    	match.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
-    	SQLTable resultTable = match.createResultTable();
+    	project.setResultTableName("my_result_table_that_almost_didnt_have_cow_in_its_name");
+    	SQLTable resultTable = project.createResultTable();
     	
     	List<SQLIndex> indices = resultTable.getIndicesFolder().getChildren();
     	assertEquals(1, indices.size());
@@ -235,14 +235,14 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	// dumb source table and index with no columns to satisfy createResultsTable() preconditions
     	SQLTable tab = new SQLTable(session.getDatabase(), true);
     	SQLIndex idx = new SQLIndex("my_index", true, null, IndexType.CLUSTERED, null);
-    	match.setSourceTable(tab);
-    	match.setSourceTableIndex(idx);
+    	project.setSourceTable(tab);
+    	project.setSourceTableIndex(idx);
     	
-    	match.setResultTableCatalog("my_cat");
-    	match.setResultTableSchema("my_dog");
-    	match.setResultTableName("my_chinchilla");
+    	project.setResultTableCatalog("my_cat");
+    	project.setResultTableSchema("my_dog");
+    	project.setResultTableName("my_chinchilla");
     	
-    	SQLTable resultTable = match.createResultTable();
+    	SQLTable resultTable = project.createResultTable();
     	
     	assertEquals("my_cat", resultTable.getCatalogName());
     	assertEquals("my_dog", resultTable.getSchemaName());
@@ -251,9 +251,9 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     
     public void testGetSourceTableIndex() throws Exception {
     	SQLIndex foo = new SQLIndex();
-    	match.setSourceTableIndex(foo);
-    	assertNotNull(match.getSourceTableIndex());
-    	assertSame(foo, match.getSourceTableIndex());
+    	project.setSourceTableIndex(foo);
+    	assertNotNull(project.getSourceTableIndex());
+    	assertSame(foo, project.getSourceTableIndex());
     }
     
 	public void testResultTableExistsWhenTrue() throws Exception {
@@ -267,14 +267,14 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		session.setDatabase(db);
 		SQLTable resultTable = db.getTableByName("farm", "cow", "moo");
 		assertNotNull(resultTable);
-		match.setResultTable(resultTable);
-		assertTrue(Match.doesResultTableExist(session, match));
+		project.setResultTable(resultTable);
+		assertTrue(Project.doesResultTableExist(session, project));
 	}
 	
 
 	/**
 	 * Tests that new nonexistant handcrafted tables are nonexistant according
-	 * to the Match object.
+	 * to the Project object.
 	 */
 	public void testResultTableExistsWhenFalse() throws Exception {
 		SPDataSource ds = new SPDataSource(new PlDotIni());
@@ -289,14 +289,14 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		SQLSchema cowSchem = (SQLSchema) farmCat.getChildByName("cow");
 		SQLTable resultTable = new SQLTable(cowSchem, "nonexistant", null,
 				"TABLE", true);
-		match.setResultTable(resultTable);
-		assertFalse(Match.doesResultTableExist(session, match));
+		project.setResultTable(resultTable);
+		assertFalse(Project.doesResultTableExist(session, project));
 	}
 
 	/**
 	 * Tests that new nonexistant simulated tables that are really in the
 	 * session's in-memory view of the database are nonexistant according to the
-	 * Match object.
+	 * Project object.
 	 */
 	public void testResultTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
@@ -310,8 +310,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		session.setDatabase(db);
 		SQLTable resultTable = ArchitectUtils.addSimulatedTable(db, "cat",
 				"sch", "faketab");
-		match.setResultTable(resultTable);
-		assertFalse(Match.doesResultTableExist(session, match));
+		project.setResultTable(resultTable);
+		assertFalse(Project.doesResultTableExist(session, project));
 	}
 	
 	public void testSourceTableExistsWhenTrue() throws Exception {
@@ -325,13 +325,13 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		session.setDatabase(db);
 		SQLTable sourceTable = db.getTableByName("farm", "cow", "moo");
 		assertNotNull(sourceTable);
-		match.setSourceTable(sourceTable);
-		assertTrue(Match.doesSourceTableExist(session, match));
+		project.setSourceTable(sourceTable);
+		assertTrue(Project.doesSourceTableExist(session, project));
 	}
 
 	/**
 	 * Tests that new nonexistant handcrafted tables are nonexistant according
-	 * to the Match object.
+	 * to the Project object.
 	 */
 	public void testSourceTableExistsWhenFalse() throws Exception {
 		SPDataSource ds = new SPDataSource(new PlDotIni());
@@ -346,14 +346,14 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		SQLSchema cowSchem = (SQLSchema) farmCat.getChildByName("cow");
 		SQLTable sourceTable = new SQLTable(cowSchem, "nonexistant", null,
 				"TABLE", true);
-		match.setSourceTable(sourceTable);
-		assertFalse(Match.doesSourceTableExist(session, match));
+		project.setSourceTable(sourceTable);
+		assertFalse(Project.doesSourceTableExist(session, project));
 	}
 
 	/**
 	 * Tests that new nonexistant simulated tables that are really in the
 	 * session's in-memory view of the database are nonexistant according to the
-	 * Match object.
+	 * Project object.
 	 */
 	public void testSourceTableExistsWhenInMemoryButStillFalse()
 			throws Exception {
@@ -367,8 +367,8 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		session.setDatabase(db);
 		SQLTable sourceTable = ArchitectUtils.addSimulatedTable(db, "cat",
 				"sch", "faketab");
-		match.setSourceTable(sourceTable);
-		assertFalse(Match.doesSourceTableExist(session, match));
+		project.setSourceTable(sourceTable);
+		assertFalse(Project.doesSourceTableExist(session, project));
 	}
 	
 	public void testVertifyResultTableSS() throws SQLException, InstantiationException,
@@ -378,7 +378,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
 		session.setConnection(db.getConnection());
-		match.setSession(session);
+		project.setSession(session);
 		
 		
 		
@@ -405,31 +405,31 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	sourceTable.addIndex(idx);
 
     	try {
-    		match.vertifyResultTableStruct();
-    		fail("match has no source table, but no exception caught.");
+    		project.vertifyResultTableStruct();
+    		fail("project has no source table, but no exception caught.");
     	} catch (Exception e) {
 		}
     	
-    	match.setSourceTable(sourceTable);
+    	project.setSourceTable(sourceTable);
     	
     	try {
-    		match.vertifyResultTableStruct();
-    		fail("match has no unique index, but no exception caught.");
+    		project.vertifyResultTableStruct();
+    		fail("project has no unique index, but no exception caught.");
     	} catch (Exception e) {
 		}
     	
-    	match.setSourceTableIndex(idx);
+    	project.setSourceTableIndex(idx);
     	
     	try {
-    		match.vertifyResultTableStruct();
+    		project.vertifyResultTableStruct();
     		fail("result table name has not been setup, but no exception caught.");
     	} catch (Exception e) {
 		}
     	
     	SQLSchema sch = db.getSchemaByName(ds.getPlSchema());
     	SQLTable resultTable = new SQLTable(sch,"my_result_table",null,"TABLE",true);
-    	match.setResultTable(resultTable);
-    	resultTable = match.createResultTable();
+    	project.setResultTable(resultTable);
+    	resultTable = project.createResultTable();
 
     	Connection con = db.getConnection();
     	Statement stmt = null;
@@ -437,7 +437,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		execSQL(con,sql);
 
 		try {
-    		match.vertifyResultTableStruct();
+    		project.vertifyResultTableStruct();
     		fail("result table is not persistent, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -451,11 +451,11 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	assertNotNull("DDLGenerator error", ddlg);
 		ddlg.setTargetSchema(ds.getPlSchema());
 		
-		if (Match.doesResultTableExist(session, match)) {
-			ddlg.dropTable(match.getResultTable());
+		if (Project.doesResultTableExist(session, project)) {
+			ddlg.dropTable(project.getResultTable());
 		}
-		ddlg.addTable(match.createResultTable());
-		ddlg.addIndex((SQLIndex) match.getResultTable().getIndicesFolder().getChild(0));
+		ddlg.addTable(project.createResultTable());
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
 		
 		
 		int successCount = 0;
@@ -466,13 +466,13 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 
 	    assertEquals("Not all statements executed", ddlg.getDdlStatements().size(), successCount);
     	assertTrue("we should have a good result table.",
-    			match.vertifyResultTableStruct());
+    			project.vertifyResultTableStruct());
     	
     	sql = "drop table " + DDLUtils.toQualifiedName(resultTable);
     	execSQL(con,sql);
 
     	try {
-    		match.vertifyResultTableStruct();
+    		project.vertifyResultTableStruct();
     		fail("result table is droped, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -485,7 +485,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		SQLDatabase db = new SQLDatabase(ds);
 		session.setDatabase(db);
 		session.setConnection(db.getConnection());
-		match.setSession(session);
+		project.setSession(session);
 		
 		
 		
@@ -512,31 +512,31 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	sourceTable.addIndex(idx);
 
     	try {
-    		match.vertifyResultTableStruct();
-    		fail("match has no source table, but no exception caught.");
+    		project.vertifyResultTableStruct();
+    		fail("project has no source table, but no exception caught.");
     	} catch (Exception e) {
 		}
     	
-    	match.setSourceTable(sourceTable);
+    	project.setSourceTable(sourceTable);
     	
     	try {
-    		match.vertifyResultTableStruct();
-    		fail("match has no unique index, but no exception caught.");
+    		project.vertifyResultTableStruct();
+    		fail("project has no unique index, but no exception caught.");
     	} catch (Exception e) {
 		}
     	
-    	match.setSourceTableIndex(idx);
+    	project.setSourceTableIndex(idx);
     	
     	try {
-    		match.vertifyResultTableStruct();
+    		project.vertifyResultTableStruct();
     		fail("result table name has not been setup, but no exception caught.");
     	} catch (Exception e) {
 		}
     	
     	SQLSchema sch = db.getSchemaByName(ds.getPlSchema());
     	SQLTable resultTable = new SQLTable(sch,"my_result_table",null,"TABLE",true);
-    	match.setResultTable(resultTable);
-    	resultTable = match.createResultTable();
+    	project.setResultTable(resultTable);
+    	resultTable = project.createResultTable();
 
     	Connection con = db.getConnection();
     	Statement stmt = null;
@@ -544,7 +544,7 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 		execSQL(con,sql);
 
 		try {
-    		match.vertifyResultTableStruct();
+    		project.vertifyResultTableStruct();
     		fail("result table is not persistent, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -558,11 +558,11 @@ public class MatchTest extends MatchMakerTestCase<Match> {
     	assertNotNull("DDLGenerator error", ddlg);
 		ddlg.setTargetSchema(ds.getPlSchema());
 		
-		if (Match.doesResultTableExist(session, match)) {
-			ddlg.dropTable(match.getResultTable());
+		if (Project.doesResultTableExist(session, project)) {
+			ddlg.dropTable(project.getResultTable());
 		}
-		ddlg.addTable(match.createResultTable());
-		ddlg.addIndex((SQLIndex) match.getResultTable().getIndicesFolder().getChild(0));
+		ddlg.addTable(project.createResultTable());
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
 		
 		
 		int successCount = 0;
@@ -573,13 +573,13 @@ public class MatchTest extends MatchMakerTestCase<Match> {
 
 	    assertEquals("Not all statements executed", ddlg.getDdlStatements().size(), successCount);
     	assertTrue("we should have a good result table.",
-    			match.vertifyResultTableStruct());
+    			project.vertifyResultTableStruct());
     	
     	sql = "drop table " + DDLUtils.toQualifiedName(resultTable);
     	execSQL(con,sql);
 
     	try {
-    		match.vertifyResultTableStruct();
+    		project.vertifyResultTableStruct();
     		fail("result table is droped, but no exception caught.");
     	} catch (Exception e) {
 		}

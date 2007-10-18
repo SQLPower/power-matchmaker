@@ -54,7 +54,7 @@ import ca.sqlpower.sql.SQL;
  */
 public abstract class AbstractMergeProcessorTest extends TestCase {
 
-    Match match;
+    Project project;
     MergeProcessor mpor;
     TestingMatchMakerSession session;
     Connection con;
@@ -86,13 +86,13 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	
 	/**
 	 * Subclasses need to implement this method to set the correct
-	 * database of the desired platform. The match and session should
+	 * database of the desired platform. The project and session should
 	 * also be set accordingly. See {@link MergeProcessorOracleTest#setUp()}
 	 * for example.
 	 */
 	protected void setUp() throws Exception {
 		String sql;
-		match = new Match();
+		project = new Project();
 
 		ds = getDS();
 		db = new SQLDatabase(ds);
@@ -114,13 +114,13 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		};
 		session.setDatabase(db);
 
-		match.setSession(session);
+		project.setSession(session);
 		con = db.getConnection();
 		session.setConnection(con);
 
 		MungeProcess mp = new MungeProcess();
 		mp.setName("test");
-		match.addMatchRuleSet(mp);
+		project.addMungeProcess(mp);
 
 		//This is different for Oracle and SQL Server
 		createTables();
@@ -135,12 +135,12 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	assertNotNull("DDLGenerator error", ddlg);
 		ddlg.setTargetSchema(ds.getPlSchema());
 
-		if (Match.doesResultTableExist(session, match)) {
-			System.out.println(match.getResultTable());
-			ddlg.dropTable(match.getResultTable());
+		if (Project.doesResultTableExist(session, project)) {
+			System.out.println(project.getResultTable());
+			ddlg.dropTable(project.getResultTable());
 		}
-		ddlg.addTable(match.createResultTable());
-		ddlg.addIndex((SQLIndex) match.getResultTable().getIndicesFolder().getChild(0));
+		ddlg.addTable(project.createResultTable());
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
 		
 	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
 	    	sql = sqlStatement.getSQLText();
@@ -196,9 +196,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cccmr_date.setColumn(sourceTable.getColumnByName("COL_DATE"));
 		cccmr_number.setColumn(sourceTable.getColumnByName("COL_NUMBER"));
 		
-		match.addTableMergeRule(tmr);
-		match.addTableMergeRule(ctmr);
-		match.addTableMergeRule(cctmr);
+		project.addTableMergeRule(tmr);
+		project.addTableMergeRule(ctmr);
+		project.addTableMergeRule(cctmr);
    	}
 
 	/**
@@ -271,7 +271,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    	"(5,4,10,'MATCH','N', 'test')";
 	    execSQL(con,sql);
 	    
-	    mpor = new MergeProcessor(match, session);
+	    mpor = new MergeProcessor(project, session);
 	    
 	    // sets the default action type
 	    cmr_string.setActionType(MergeActionType.IGNORE);
@@ -443,7 +443,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	populateTables();
     	mpor.call();
 		
-    	MatchPool matchPool = new MatchPool(match);
+    	MatchPool matchPool = new MatchPool(project);
     	matchPool.findAll(new ArrayList<SQLColumn>());
     	
     	for (PotentialMatchRecord pm : matchPool.getPotentialMatches()) {

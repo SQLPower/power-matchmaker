@@ -31,7 +31,7 @@ import javax.swing.JTextArea;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.DateFormatAllowsNull;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
@@ -39,17 +39,17 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * The MatchInfoEditor is used to display information about a match such
+ * The ProjectInfoEditor is used to display information about a project such
  * as its ID, type and history. This is not editable, so it extends {@link NoEditEditorPane}
  */
-public class MatchInfoEditor extends NoEditEditorPane {
+public class ProjectInfoEditor extends NoEditEditorPane {
 
-	private static final Logger logger = Logger.getLogger(MatchInfoEditor.class);
-	private Match match;
+	private static final Logger logger = Logger.getLogger(ProjectInfoEditor.class);
+	private Project project;
 
-	public MatchInfoEditor(Match match) throws HeadlessException {
+	public ProjectInfoEditor(Project project) throws HeadlessException {
 		super(null);
-		this.match = match;
+		this.project = project;
 		super.setPanel(buildUI());
 	}
 
@@ -78,26 +78,26 @@ public class MatchInfoEditor extends NoEditEditorPane {
 
 		String folderName = null;
 
-		 if ( match.getParent() != null) {
-   			folderName = match.getParent().getName();
+		 if ( project.getParent() != null) {
+   			folderName = project.getParent().getName();
 		}
 
-		pb.add(new JLabel(match.getName()), cc.xy(4,2));
+		pb.add(new JLabel(project.getName()), cc.xy(4,2));
 		pb.add(new JLabel(folderName), cc.xy(4,4));
-		JTextArea descriptionText = new JTextArea(match.getMatchSettings().getDescription(), 3, 3);
+		JTextArea descriptionText = new JTextArea(project.getMungeSettings().getDescription(), 3, 3);
 		descriptionText.setEditable(false);
 		pb.add(new JScrollPane(descriptionText), cc.xy(4,6,"f,f"));
-		pb.add(new JLabel(match.getType().toString()), cc.xy(4,8));
+		pb.add(new JLabel(project.getType().toString()), cc.xy(4,8));
 
 		pb.add(new JLabel("Logged on As:"), cc.xy(2,10,"r,c"));
 		pb.add(new JLabel("Last Updated Date:"), cc.xy(2,12,"r,c"));
 		pb.add(new JLabel("Last Updated User:"), cc.xy(2,14,"r,c"));
 		pb.add(new JLabel("Last Run Date:"), cc.xy(2,16,"r,c"));
 
-		pb.add(new JLabel(match.getName()), cc.xy(4,10));
-		pb.add(new JLabel(df.format(match.getLastUpdateDate())), cc.xy(4,12,"f,f"));
-		pb.add(new JLabel(match.getLastUpdateAppUser()), cc.xy(4,14));
-		pb.add(new JLabel(df.format(match.getMatchSettings().getLastRunDate())), cc.xy(4,16,"f,f"));
+		pb.add(new JLabel(project.getName()), cc.xy(4,10));
+		pb.add(new JLabel(df.format(project.getLastUpdateDate())), cc.xy(4,12,"f,f"));
+		pb.add(new JLabel(project.getLastUpdateAppUser()), cc.xy(4,14));
+		pb.add(new JLabel(df.format(project.getMungeSettings().getLastRunDate())), cc.xy(4,16,"f,f"));
 
 		JLabel checkout = new JLabel("Checkout Information");
 		Font f = checkout.getFont();

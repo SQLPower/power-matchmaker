@@ -39,10 +39,10 @@ import javax.swing.SpinnerNumberModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
-import ca.sqlpower.matchmaker.MatchSettings;
+import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
@@ -99,9 +99,9 @@ public class CleanseEnginePanel implements EditorPane {
 	private JFrame parentFrame;
 
 	/**
-	 * The match object the engine should run against.
+	 * The project object the engine should run against.
 	 */
-	private Match match;
+	private Project project;
 	
 	/**
 	 * The panel that holds all components of this EditorPane.
@@ -136,14 +136,14 @@ public class CleanseEnginePanel implements EditorPane {
 	
 	/**
 	 * @param swingSession The application Swing session
-	 * @param match The Match that this panel is running the engine on
+	 * @param project The Project that this panel is running the engine on
 	 * @param parentFrame The JFrame that contains this panel
 	 */
-	public CleanseEnginePanel(MatchMakerSwingSession swingSession, Match match,
+	public CleanseEnginePanel(MatchMakerSwingSession swingSession, Project project,
 			JFrame parentFrame) {
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
-		this.match = match;
+		this.project = project;
 		handler = new FormValidationHandler(status);
 		handler.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -151,7 +151,7 @@ public class CleanseEnginePanel implements EditorPane {
 			}
 		});
 		engineOutputPanel = new EngineOutputPanel(parentFrame);
-		engine = new MatchEngineImpl(swingSession, match);
+		engine = new MatchEngineImpl(swingSession, project);
 		runEngineAction = new RunEngineAction(swingSession, engine,
 				"Run Cleanse Engine", engineOutputPanel, this);
 		panel = buildUI();
@@ -203,10 +203,10 @@ public class CleanseEnginePanel implements EditorPane {
 
 		CellConstraints cc = new CellConstraints();
 
-		MatchSettings settings = match.getMatchSettings();
+		MungeSettings settings = project.getMungeSettings();
 
 		if (settings.getLog() == null) {
-			settings.setLog(new File(match.getName() + ".log"));
+			settings.setLog(new File(project.getName() + ".log"));
 		}
 		File logFile = settings.getLog();
 		logFilePath = new JTextField(logFile.getAbsolutePath());
@@ -273,12 +273,12 @@ public class CleanseEnginePanel implements EditorPane {
 	}
 	
 	/**
-	 * Updates the engine settings in the match based on the current values in
-	 * the GUI, then stores the match using its DAO.
+	 * Updates the engine settings in the project based on the current values in
+	 * the GUI, then stores the project using its DAO.
 	 */
 	public boolean doSave() {
 		refreshActionStatus();
-		MatchSettings settings = match.getMatchSettings();
+		MungeSettings settings = project.getMungeSettings();
 		settings.setLog(new File(logFilePath.getText()));
 		settings.setAppendToLog(appendToLog.isSelected());
 		if (recordsToProcess.getValue().equals(new Integer(0))) {
@@ -287,8 +287,8 @@ public class CleanseEnginePanel implements EditorPane {
 			settings.setProcessCount((Integer) recordsToProcess.getValue());
 		}
 		
-		MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
-		dao.save(match);
+		MatchMakerDAO<Project> dao = swingSession.getDAO(Project.class);
+		dao.save(project);
 
 		return true;
 	}

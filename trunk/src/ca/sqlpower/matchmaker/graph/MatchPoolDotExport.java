@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.ColorScheme;
 import ca.sqlpower.util.WebColour;
 
@@ -56,9 +56,9 @@ public class MatchPoolDotExport {
     private final List<String> groupNames = new ArrayList<String>();
     
     /**
-     * This is the match whose result table we're visualizing.
+     * This is the project whose result table we're visualizing.
      */
-    private final Match match;
+    private final Project project;
     
     /**
      * The file we will write the dot code to.
@@ -67,12 +67,12 @@ public class MatchPoolDotExport {
     
     /**
      * Creates a new exporter instance that exports the result table of
-     * the given Match object.
+     * the given project object.
      * 
-     * @param match The match whose source table you want to represent as a dot file.
+     * @param project The project whose source table you want to represent as a dot file.
      */
-    public MatchPoolDotExport(final Match match) {
-        this.match = match;
+    public MatchPoolDotExport(final Project project) {
+        this.project = project;
     }
     
     /**
@@ -94,7 +94,7 @@ public class MatchPoolDotExport {
      * result table.
      * 
      * @throws ArchitectRuntimeException If there are any problems accessing
-     * the SQLObjects of the {@link #match}.
+     * the SQLObjects of the {@link #project}.
      */
     public void exportDotFile() throws SQLException, IOException {
         Connection con = null;
@@ -103,18 +103,18 @@ public class MatchPoolDotExport {
         PrintWriter out = null;
         try {
             out = new PrintWriter(new BufferedWriter(new FileWriter(dotFile)));
-            out.println("digraph " + match.getName());
+            out.println("digraph " + project.getName());
             out.println("{");
             
-            con = match.getSession().getConnection();
+            con = project.getSession().getConnection();
             stmt = con.createStatement();
             StringBuilder sql = new StringBuilder();
-            String sourceTableName = DDLUtils.toQualifiedName(match.getResultTable());
+            String sourceTableName = DDLUtils.toQualifiedName(project.getResultTable());
             sql.append("SELECT * FROM ").append(sourceTableName);
             sql.append(" m1 WHERE NOT EXISTS ( SELECT 1 FROM ").append(sourceTableName);
             sql.append(" m2 WHERE m1.dup_candidate_10 = m2.dup_candidate_20 and m1.dup_candidate_20 = m2.dup_candidate_10 and m1.dup_candidate_10 < m2.dup_candidate_10)");
             sql.append(" ORDER BY");
-            for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
+            for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
                 if (i == 0) {
                     sql.append(" ");
                 } else {
@@ -245,7 +245,7 @@ public class MatchPoolDotExport {
      */
     private String rhsOriginalNodeName(ResultSet rs) throws SQLException, ArchitectException {
         List<String> colNames = new ArrayList<String>();
-        for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
+        for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
             colNames.add("DUP_CANDIDATE_2"+i);
         }
         return nodeName(rs, colNames);
@@ -257,7 +257,7 @@ public class MatchPoolDotExport {
      */
     private String lhsOriginalNodeName(ResultSet rs) throws SQLException, ArchitectException {
         List<String> colNames = new ArrayList<String>();
-        for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
+        for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
             colNames.add("DUP_CANDIDATE_1"+i);
         }
         return nodeName(rs, colNames);
@@ -269,7 +269,7 @@ public class MatchPoolDotExport {
      */
     private String rhsNodeName(ResultSet rs) throws SQLException, ArchitectException {
         List<String> colNames = new ArrayList<String>();
-        for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
+        for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
             colNames.add("CURRENT_CANDIDATE_2"+i);
         }
         return nodeName(rs, colNames);
@@ -281,7 +281,7 @@ public class MatchPoolDotExport {
      */
     private String lhsNodeName(ResultSet rs) throws SQLException, ArchitectException {
         List<String> colNames = new ArrayList<String>();
-        for (int i = 0; i < match.getSourceTableIndex().getChildCount(); i++) {
+        for (int i = 0; i < project.getSourceTableIndex().getChildCount(); i++) {
             colNames.add("CURRENT_CANDIDATE_1"+i);
         }
         return nodeName(rs, colNames);

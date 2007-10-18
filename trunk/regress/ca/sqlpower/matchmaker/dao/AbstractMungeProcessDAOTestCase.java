@@ -26,26 +26,26 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchDAOHibernate;
+import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
-public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCase<MungeProcess,MatchRuleSetDAO>  {
+public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCase<MungeProcess,MungeProcessDAO>  {
 
 	Long count=0L;
-    Match match;
+    Project project;
     PlFolder folder;
-    public AbstractMatchRuleSetDAOTestCase() {
-        match= new Match();
-        match.setName("Rule Set Test Match");
-        match.setType(Match.MatchMode.BUILD_XREF);
+    public AbstractMungeProcessDAOTestCase() {
+        project= new Project();
+        project.setName("Munge Process Test Project");
+        project.setType(Project.ProjectMode.BUILD_XREF);
         folder = new PlFolder("main test folder");
-        match.setParent(folder);
+        project.setParent(folder);
         try {
-            match.setSession(getSession());
+            project.setSession(getSession());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -58,8 +58,8 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
         super.setUp();
         PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
 		plFolderDAO.save(folder);
-        MatchDAO matchDAO = new MatchDAOHibernate(getSession());
-        matchDAO.save(match);
+        ProjectDAO matchDAO = new ProjectDAOHibernate(getSession());
+        matchDAO.save(project);
     }
 
 	@Override
@@ -70,7 +70,7 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
 		try {
 			setAllSetters(ruleSet, getNonPersitingProperties());
             ruleSet.setName("Group "+count);
-            match.addMatchRuleSet(ruleSet);
+            project.addMungeProcess(ruleSet);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
@@ -87,7 +87,7 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
 		nonPersistingProperties.add("lastUpdateAppUser");
 		nonPersistingProperties.add("session");
         nonPersistingProperties.add("parent");
-        nonPersistingProperties.add("parentMatch");
+        nonPersistingProperties.add("parentProject");
         nonPersistingProperties.add("oid");
 
 		return nonPersistingProperties;
@@ -95,22 +95,22 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
 
     public void testDelete() throws Exception {
         Connection con = getSession().getConnection();
-        MatchDAO matchDAO = new MatchDAOHibernate(getSession());
+        ProjectDAO projectDAO = new ProjectDAOHibernate(getSession());
         Statement stmt = null;
         try {
 
-            MungeProcess group = match.getMatchRuleSets().get(0);
-            String groupId = group.getName();
+            MungeProcess process = project.getMungeProcesses().get(0);
+            String groupId = process.getName();
 
-            MatchRuleSetDAO dao = getDataAccessObject();
-            dao.save(group);
+            MungeProcessDAO dao = getDataAccessObject();
+            dao.save(process);
             
             stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+groupId+"'");
             assertTrue("munge process didn't save?!", rs.next());
             rs.close();
 
-            dao.delete(group);
+            dao.delete(process);
 
             rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+groupId+"'");
             assertFalse("munge process didn't delete", rs.next());

@@ -41,10 +41,10 @@ import javax.swing.SpinnerNumberModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
-import ca.sqlpower.matchmaker.MatchSettings;
+import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
@@ -117,9 +117,9 @@ public class MatchEnginePanel implements EditorPane {
 	private JFrame parentFrame;
 
 	/**
-	 * The match object the engine should run against.
+	 * The project object the engine should run against.
 	 */
-	private Match match;
+	private Project project;
 	
 	/**
 	 * The panel that holds all components of this EditorPane.
@@ -154,14 +154,14 @@ public class MatchEnginePanel implements EditorPane {
 	
 	/**
 	 * @param swingSession The application Swing session
-	 * @param match The Match that this panel is running the engine on
+	 * @param project The Project that this panel is running the engine on
 	 * @param parentFrame The JFrame that contains this panel
 	 */
-	public MatchEnginePanel(MatchMakerSwingSession swingSession, Match match,
+	public MatchEnginePanel(MatchMakerSwingSession swingSession, Project project,
 			JFrame parentFrame) {
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
-		this.match = match;
+		this.project = project;
 		handler = new FormValidationHandler(status);
 		handler.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -169,7 +169,7 @@ public class MatchEnginePanel implements EditorPane {
 			}
 		});
 		engineOutputPanel = new EngineOutputPanel(parentFrame);
-		engine = new MatchEngineImpl(swingSession, match);
+		engine = new MatchEngineImpl(swingSession, project);
 		runEngineAction = new RunEngineAction(swingSession, engine, "Run Match Engine", engineOutputPanel, this);
 		panel = buildUI();
 	}
@@ -220,10 +220,10 @@ public class MatchEnginePanel implements EditorPane {
 
 		CellConstraints cc = new CellConstraints();
 
-		MatchSettings settings = match.getMatchSettings();
+		MungeSettings settings = project.getMungeSettings();
 
 		if (settings.getLog() == null) {
-			settings.setLog(new File(match.getName() + ".log"));
+			settings.setLog(new File(project.getName() + ".log"));
 		}
 		File logFile = settings.getLog();
 		logFilePath = new JTextField(logFile.getAbsolutePath());
@@ -284,7 +284,7 @@ public class MatchEnginePanel implements EditorPane {
 		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, engine)), cc.xy(4, 2, "f,f"));
 		bbpb.add(new JButton(runEngineAction), cc.xy(6, 2, "f,f"));
 		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
-				match, parentFrame)), cc.xy(2, 4, "f,f"));
+				project, parentFrame)), cc.xy(2, 4, "f,f"));
 		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
 
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
@@ -315,12 +315,12 @@ public class MatchEnginePanel implements EditorPane {
 	}
 	
 	/**
-	 * Updates the engine settings in the match based on the current values in
-	 * the GUI, then stores the match using its DAO.
+	 * Updates the engine settings in the project based on the current values in
+	 * the GUI, then stores the project using its DAO.
 	 */
 	public boolean doSave() {
 		refreshActionStatus();
-		MatchSettings settings = match.getMatchSettings();
+		MungeSettings settings = project.getMungeSettings();
 		settings.setDebug(debugMode.isSelected());
 		settings.setTruncateCandDupe(clearMatchPool.isSelected());
 		settings.setSendEmail(sendEmail.isSelected());
@@ -332,8 +332,8 @@ public class MatchEnginePanel implements EditorPane {
 			settings.setProcessCount((Integer) recordsToProcess.getValue());
 		}
 		
-		MatchMakerDAO<Match> dao = swingSession.getDAO(Match.class);
-		dao.save(match);
+		MatchMakerDAO<Project> dao = swingSession.getDAO(Project.class);
+		dao.save(project);
 
 		return true;
 	}

@@ -30,7 +30,7 @@ import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 
 /**
- * A collection of tests for the Match class that concentrate on testing the helper
+ * A collection of tests for the Project class that concentrate on testing the helper
  * methods for coordinating the sourceTable property with the sourceTableName, sourceTableCatalog,
  * and sourceTableSchema properties.  All that behaviour would be better off in a Hibernate
  * user type, but we couldn't get that working, so we moved the logic into the business model.
@@ -41,17 +41,17 @@ import ca.sqlpower.architect.SQLTable;
  * properly, and the testCreateNewX tests are verifying ArchitectUtils.addSimulatedTable() works.
  * This isn't an ideal unit test, but it's the best we can do right now.
  */
-public class MatchSQLTableHelperTest extends TestCase {
+public class ProjectSQLTableHelperTest extends TestCase {
 
     TestingMatchMakerSession session;
-    Match match;
+    Project project;
     
     protected void setUp() throws Exception {
         super.setUp();
         session = new TestingMatchMakerSession();
         session.setDatabase(new SQLDatabase());
-        match = new Match();
-        match.setSession(session);
+        project = new Project();
+        project.setSession(session);
     }
 
     protected void tearDown() throws Exception {
@@ -114,134 +114,134 @@ public class MatchSQLTableHelperTest extends TestCase {
     public void testLocateExisting1() throws Exception {
         SQLTable table = setUpScenario1();
         
-        match.setSourceTableCatalog(null);
-        match.setSourceTableSchema(null);
-        match.setSourceTableName("table1");
+        project.setSourceTableCatalog(null);
+        project.setSourceTableSchema(null);
+        project.setSourceTableName("table1");
 
-        assertNull(match.getSourceTableCatalog());
-        assertNull(match.getSourceTableSchema());
-        assertEquals("table1", match.getSourceTableName());
+        assertNull(project.getSourceTableCatalog());
+        assertNull(project.getSourceTableSchema());
+        assertEquals("table1", project.getSourceTableName());
 
-        SQLTable found = match.getSourceTable();
+        SQLTable found = project.getSourceTable();
         assertNotNull(found);
         assertEquals("you found it", found.getColumn(0).getName());
         assertSame(table, found);
 
         // tests different behaviour than the previous identical assertions
         // (retrieving this information from the cachedSourceTable vs. the plain properties)
-        assertNull(match.getSourceTableCatalog());
-        assertNull(match.getSourceTableSchema());
-        assertEquals("table1", match.getSourceTableName());
+        assertNull(project.getSourceTableCatalog());
+        assertNull(project.getSourceTableSchema());
+        assertEquals("table1", project.getSourceTableName());
     }
 
     /** Tests that the helper can locate an existing table inside a schema directly under the database. */
     public void testLocateExisting2() throws Exception {
         SQLTable table = setUpScenario2();
         
-        match.setSourceTableCatalog(null);
-        match.setSourceTableSchema("schema2");
-        match.setSourceTableName("table2");
+        project.setSourceTableCatalog(null);
+        project.setSourceTableSchema("schema2");
+        project.setSourceTableName("table2");
 
-        assertNull(match.getSourceTableCatalog());
-        assertEquals("schema2", match.getSourceTableSchema());
-        assertEquals("table2", match.getSourceTableName());
+        assertNull(project.getSourceTableCatalog());
+        assertEquals("schema2", project.getSourceTableSchema());
+        assertEquals("table2", project.getSourceTableName());
 
-        SQLTable found = match.getSourceTable();
+        SQLTable found = project.getSourceTable();
         assertNotNull(found);
         assertEquals("you found it2", found.getColumn(0).getName());
         assertSame(table, found);
         
         // tests different behaviour than the previous identical assertions
         // (retrieving this information from the cachedSourceTable vs. the plain properties)
-        assertNull(match.getSourceTableCatalog());
-        assertEquals("schema2", match.getSourceTableSchema());
-        assertEquals("table2", match.getSourceTableName());
+        assertNull(project.getSourceTableCatalog());
+        assertEquals("schema2", project.getSourceTableSchema());
+        assertEquals("table2", project.getSourceTableName());
     }
 
     /** Tests that the helper can locate an existing table directly inside a catalog under the database. */
     public void testLocateExisting3() throws Exception {
         SQLTable table = setUpScenario3();
         
-        match.setSourceTableCatalog("catalog3");
-        match.setSourceTableSchema(null);
-        match.setSourceTableName("table3");
+        project.setSourceTableCatalog("catalog3");
+        project.setSourceTableSchema(null);
+        project.setSourceTableName("table3");
 
-        assertEquals("catalog3", match.getSourceTableCatalog());
-        assertNull(match.getSourceTableSchema());
-        assertEquals("table3", match.getSourceTableName());
+        assertEquals("catalog3", project.getSourceTableCatalog());
+        assertNull(project.getSourceTableSchema());
+        assertEquals("table3", project.getSourceTableName());
 
-        SQLTable found = match.getSourceTable();
+        SQLTable found = project.getSourceTable();
         assertNotNull(found);
         assertEquals("you found it3", found.getColumn(0).getName());
         assertSame(table, found);
         
         // tests different behaviour than the previous identical assertions
         // (retrieving this information from the cachedSourceTable vs. the plain properties)
-        assertEquals("catalog3", match.getSourceTableCatalog());
-        assertNull(match.getSourceTableSchema());
-        assertEquals("table3", match.getSourceTableName());
+        assertEquals("catalog3", project.getSourceTableCatalog());
+        assertNull(project.getSourceTableSchema());
+        assertEquals("table3", project.getSourceTableName());
     }
 
     /** Tests that the helper can locate an existing table nested inside a database, catalog, and schema. */
     public void testLocateExisting4() throws Exception {
         SQLTable table = setUpScenario4();
         
-        match.setSourceTableCatalog("catalog4");
-        match.setSourceTableSchema("schema4");
-        match.setSourceTableName("table4");
+        project.setSourceTableCatalog("catalog4");
+        project.setSourceTableSchema("schema4");
+        project.setSourceTableName("table4");
         
-        assertEquals("catalog4", match.getSourceTableCatalog());
-        assertEquals("schema4", match.getSourceTableSchema());
-        assertEquals("table4", match.getSourceTableName());
+        assertEquals("catalog4", project.getSourceTableCatalog());
+        assertEquals("schema4", project.getSourceTableSchema());
+        assertEquals("table4", project.getSourceTableName());
 
-        SQLTable found = match.getSourceTable();
+        SQLTable found = project.getSourceTable();
         assertNotNull(found);
         assertEquals("you found it4", found.getColumn(0).getName());
         assertSame(table, found);
         
         // tests different behaviour than the previous identical assertions
         // (retrieving this information from the cachedSourceTable vs. the plain properties)
-        assertEquals("catalog4", match.getSourceTableCatalog());
-        assertEquals("schema4", match.getSourceTableSchema());
-        assertEquals("table4", match.getSourceTableName());
+        assertEquals("catalog4", project.getSourceTableCatalog());
+        assertEquals("schema4", project.getSourceTableSchema());
+        assertEquals("table4", project.getSourceTableName());
     }
 
     public void testCreateNew1() throws Exception {
-        match.setSourceTableCatalog(null);
-        match.setSourceTableSchema(null);
-        match.setSourceTableName("table1");
+        project.setSourceTableCatalog(null);
+        project.setSourceTableSchema(null);
+        project.setSourceTableName("table1");
 
-        SQLTable created = match.getSourceTable();
+        SQLTable created = project.getSourceTable();
         assertNotNull(created);
         assertEquals("table1", created.getName());
     }
 
     public void testCreateNew2() throws Exception {
-        match.setSourceTableCatalog(null);
-        match.setSourceTableSchema("schema2");
-        match.setSourceTableName("table2");
+        project.setSourceTableCatalog(null);
+        project.setSourceTableSchema("schema2");
+        project.setSourceTableName("table2");
 
-        SQLTable created = match.getSourceTable();
+        SQLTable created = project.getSourceTable();
         assertNotNull(created);
         assertEquals("table2", created.getName());
     }
 
     public void testCreateNew3() throws Exception {
-        match.setSourceTableCatalog("catalog3");
-        match.setSourceTableSchema(null);
-        match.setSourceTableName("table3");
+        project.setSourceTableCatalog("catalog3");
+        project.setSourceTableSchema(null);
+        project.setSourceTableName("table3");
 
-        SQLTable created = match.getSourceTable();
+        SQLTable created = project.getSourceTable();
         assertNotNull(created);
         assertEquals("table3", created.getName());
     }
 
     public void testCreateNew4() throws Exception {
-        match.setSourceTableCatalog("catalog4");
-        match.setSourceTableSchema("schema4");
-        match.setSourceTableName("table4");
+        project.setSourceTableCatalog("catalog4");
+        project.setSourceTableSchema("schema4");
+        project.setSourceTableName("table4");
 
-        SQLTable created = match.getSourceTable();
+        SQLTable created = project.getSourceTable();
         assertNotNull(created);
         assertEquals("table4", created.getName());
     }
@@ -249,41 +249,41 @@ public class MatchSQLTableHelperTest extends TestCase {
     public void testSetSourceTable1() throws Exception {
         SQLTable table = setUpScenario1();
         
-        match.setSourceTable(table);
+        project.setSourceTable(table);
 
-        assertNull(match.getSourceTableCatalog());
-        assertNull(match.getSourceTableSchema());
-        assertEquals("table1", match.getSourceTableName());
+        assertNull(project.getSourceTableCatalog());
+        assertNull(project.getSourceTableSchema());
+        assertEquals("table1", project.getSourceTableName());
     }
 
     public void testSetSourceTable2() throws Exception {
         SQLTable table = setUpScenario2();
         
-        match.setSourceTable(table);
+        project.setSourceTable(table);
 
-        assertNull(match.getSourceTableCatalog());
-        assertEquals("schema2", match.getSourceTableSchema());
-        assertEquals("table2", match.getSourceTableName());
+        assertNull(project.getSourceTableCatalog());
+        assertEquals("schema2", project.getSourceTableSchema());
+        assertEquals("table2", project.getSourceTableName());
     }
 
     public void testSetSourceTable3() throws Exception {
         SQLTable table = setUpScenario3();
         
-        match.setSourceTable(table);
+        project.setSourceTable(table);
 
-        assertEquals("catalog3", match.getSourceTableCatalog());
-        assertNull(match.getSourceTableSchema());
-        assertEquals("table3", match.getSourceTableName());
+        assertEquals("catalog3", project.getSourceTableCatalog());
+        assertNull(project.getSourceTableSchema());
+        assertEquals("table3", project.getSourceTableName());
     }
 
     public void testSetSourceTable4() throws Exception {
         SQLTable table = setUpScenario4();
         
-        match.setSourceTable(table);
+        project.setSourceTable(table);
 
-        assertEquals("catalog4", match.getSourceTableCatalog());
-        assertEquals("schema4", match.getSourceTableSchema());
-        assertEquals("table4", match.getSourceTableName());
+        assertEquals("catalog4", project.getSourceTableCatalog());
+        assertEquals("schema4", project.getSourceTableSchema());
+        assertEquals("table4", project.getSourceTableName());
     }
     
     
@@ -299,16 +299,16 @@ public class MatchSQLTableHelperTest extends TestCase {
         setUpScenario3();
         
         /* scenario 3 has catalogs under the database, so this table is specified in an illegal location */ 
-        match.setSourceTableCatalog(null);
-        match.setSourceTableSchema(null);
-        match.setSourceTableName("bad_hierarchy");
+        project.setSourceTableCatalog(null);
+        project.setSourceTableSchema(null);
+        project.setSourceTableName("bad_hierarchy");
         
         assertEquals("There should be no warnings in the session to start with",
                 0, session.getWarnings().size());
 
         assertNull(
                 "the table should not have been created, because location is illegal",
-                match.getSourceTable());
+                project.getSourceTable());
         
         assertEquals("Should have generated a warning",
                 1, session.getWarnings().size());

@@ -57,8 +57,8 @@ public abstract class CachableColumn {
      * bound property <tt>column</tt>, so setting the column name like this
      * may eventually result in a property change event for the "column" property.
      * 
-     * @param columnName the name of the match's source table column these match
-     * criteria are associated with.
+     * @param columnName the name of the project's source table column these munge
+     * steps are associated with.
      */
     public void setColumnName(String columnName) {
         cachedColumn = null;
@@ -66,7 +66,7 @@ public abstract class CachableColumn {
     }
 
     /**
-     * Attempts to resolve the given column name to a column of the owning Match
+     * Attempts to resolve the given column name to a column of the owning Project
      * object's source table. This functionality is provided for the benefit of
      * the ORM layer, which has difficulty using the business model.
      * <p>

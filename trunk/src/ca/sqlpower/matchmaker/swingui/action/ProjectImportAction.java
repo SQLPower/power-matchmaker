@@ -34,23 +34,23 @@ import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
 
-public class PlMatchImportAction extends AbstractAction {
+public class ProjectImportAction extends AbstractAction {
 
-	private static final Logger logger = Logger.getLogger(PlMatchImportAction.class);
+	private static final Logger logger = Logger.getLogger(ProjectImportAction.class);
     
     private final MatchMakerSwingSession swingSession;
 	private JFrame owningFrame;
 
-	public PlMatchImportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
+	public ProjectImportAction(MatchMakerSwingSession swingSession, JFrame owningFrame) {
 		super("Import",
 				SPSUtils.createIcon( "general/Import",
                 "Import"));
-		putValue(SHORT_DESCRIPTION, "Import Match");
+		putValue(SHORT_DESCRIPTION, "Import Project");
         this.swingSession = swingSession;
 		this.owningFrame = owningFrame;
 	}
@@ -60,7 +60,7 @@ public class PlMatchImportAction extends AbstractAction {
 		JFileChooser fc = new JFileChooser(
 				swingSession.getLastImportExportAccessPath());
 		fc.setFileFilter(SPSUtils.XML_FILE_FILTER);
-		fc.setDialogTitle("Import Match");
+		fc.setDialogTitle("Import Project");
 	
 		File importFile = null;
 		int fcChoice = fc.showOpenDialog(owningFrame);
@@ -70,7 +70,7 @@ public class PlMatchImportAction extends AbstractAction {
 			swingSession.setLastImportExportAccessPath(
 					importFile.getAbsolutePath());
 
-			Match match = new Match();
+			Project project = new Project();
 			BufferedInputStream in = null;
 			try {
 				in = new BufferedInputStream(new FileInputStream(importFile));
@@ -91,40 +91,40 @@ public class PlMatchImportAction extends AbstractAction {
 			    }         
             }
 
-			if ( match == null ) {
+			if ( project == null ) {
 				JOptionPane.showConfirmDialog(null,
-						"Unable to read match ID from XML",
+						"Unable to read project ID from XML",
 						"XML File error",
 						JOptionPane.ERROR_MESSAGE);
 				return;
 			} else {
 
-				Match match2 = swingSession.getMatchByName(match.getName());
-				if ( match2 != null ) {
-					logger.debug("Match ["+match2.getName()+"] exists");
+				Project project2 = swingSession.getProjectByName(project.getName());
+				if ( project2 != null ) {
+					logger.debug("Project ["+project2.getName()+"] exists");
 					int option = JOptionPane.showConfirmDialog(
 							swingSession.getFrame(),
-		                    "Match ["+match2.getName()+"] Exists! Do you want to overwrite it?",
-		                    "Match ["+match2.getName()+"] Exists!",
+		                    "Project ["+project2.getName()+"] Exists! Do you want to overwrite it?",
+		                    "Project ["+project2.getName()+"] Exists!",
 		                    JOptionPane.OK_CANCEL_OPTION );
 					if ( option != JOptionPane.OK_OPTION ) {
 						return;
 					}
-					swingSession.delete(match2);
+					swingSession.delete(project2);
 				}
 
-				if ( match.getParent() != null ) {
+				if ( project.getParent() != null ) {
 					List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
-					for ( PlFolder<Match> folder : folders ) {
-						if ( folder.getName().equals(((PlFolder<Match>)match.getParent()).getName())) {
+					for ( PlFolder<Project> folder : folders ) {
+						if ( folder.getName().equals(((PlFolder<Project>)project.getParent()).getName())) {
 							logger.debug("Folder ["+folder.getName()+"] exists");
-							swingSession.move(match,folder);
+							swingSession.move(project,folder);
 							break;
 						}
 					}
 				}
-				logger.debug("Saving Match:" + match.getName());
-				swingSession.save(match);
+				logger.debug("Saving Project:" + project.getName());
+				swingSession.save(project);
 			}
 
 		}

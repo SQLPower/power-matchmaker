@@ -28,7 +28,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 
 /**
- * The Match (Object) settings that are common to both the match and the merge
+ * The Project (Object) settings that are common to both the match and the merge
  * engines
  *
  */

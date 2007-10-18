@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
-import ca.sqlpower.matchmaker.Match;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 
 public class SourceTableRecordViewer {
@@ -68,7 +68,7 @@ public class SourceTableRecordViewer {
 
     /**
      * The panel that contains all the column values of a single
-     * record from the match's source table.
+     * record from the project's source table.
      */
     private final RecordViewerPanel panel;
     
@@ -178,7 +178,7 @@ public class SourceTableRecordViewer {
      * Creates the panel of column names that should appear along
      * the left-hand side of a grid of SourceTableRecord panels.
      */
-    public static JPanel headerPanel(Match match) throws ArchitectException {
+    public static JPanel headerPanel(Project match) throws ArchitectException {
         JPanel panel = new JPanel(new GridLayout(0,1));
         panel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK));
         
