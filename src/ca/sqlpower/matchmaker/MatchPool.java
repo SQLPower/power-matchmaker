@@ -102,16 +102,16 @@ public class MatchPool {
    
     /**
      * Finds all the potential match record (edges in the graph) that belongs to the
-     * particular match group
-     * @param matchGroupName
+     * particular munge process
+     * @param mungeProcessName
      * @return a list of potential match records that belong to the match critieria group
      */
     public List<PotentialMatchRecord> getAllPotentialMatchByMatchRuleSet
-                        (String matchGroupName) {
+                        (String mungeProcessName) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : potentialMatches){
-            if (pmr.getRuleSet().getName().equals(matchGroupName)){
+            if (pmr.getRuleSet().getName().equals(mungeProcessName)){
                 matchList.add(pmr);
             }
         }
@@ -120,7 +120,7 @@ public class MatchPool {
           
     /**
      * Finds all the potential match record (edges in the graph) that belongs to the
-     * particular match group
+     * particular munge process
      * @param ruleSet
      * @return a list of potential match records that belong to the match critieria group
      */
@@ -136,7 +136,7 @@ public class MatchPool {
     }
     
     /**
-	 * This removes all of the potential matches in the given match group from
+	 * This removes all of the potential matches in the given munge process from
 	 * the pool ONLY. This does not remove the potential matches from the nodes
 	 * it connects. Nor does this modify the database.
 	 */
@@ -741,12 +741,12 @@ public class MatchPool {
     /**
 	 * This method adds a match rule set to the match in this pool
 	 * for synthetic edges if the rule set does not already exist.
-	 * IMPORTANT NOTE: In the case that the new match group for synthetic edges
+	 * IMPORTANT NOTE: In the case that the new munge process for synthetic edges
 	 * had to be created, this pool's match object will be saved using the current
 	 * Match DAO from the session.  This is a bit of a strange side effect of this
 	 * method, so be careful!
 	 * <p>
-	 * Once the match group for synthetic edges has been located or created, a
+	 * Once the munge process for synthetic edges has been located or created, a
 	 * new potential match record that is synthetic (created by the Match Maker)
 	 * is added to the pool. This edge (which is a potential match record) belongs
 	 * to the special synthetic edges rule set. The match type

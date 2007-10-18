@@ -86,7 +86,7 @@ import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
-import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
@@ -253,8 +253,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action newXrefAction = null;
 	private Action newCleanseAction = null;
 	
-	private Action editMatchAction = new EditMatchAction("Edit Match");
-	private Action deleteMatchAction = new DeleteMatchAction(this);
+	private Action editProjectAction = new EditProjectAction("Edit Project");
+	private Action deleteProjectAction = new DeleteProjectAction(this);
 
 	private Action runMatchAction = new AbstractAction("Run Match") {
 
@@ -282,7 +282,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		}
 	};
 	
-	private Action runCleansingAction = new AbstractAction("Run Cleansing") {
+	private Action runCleanseAction = new AbstractAction("Run Cleanse") {
 
 		public void actionPerformed(ActionEvent e) {
 			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
@@ -314,11 +314,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		}
 	};
 
-	private Action showMatchStatisticInfoAction = new AbstractAction("Statistics") {
+	private Action showMatchStatisticInfoAction = new AbstractAction("Match Statistics") {
 
 		public void actionPerformed(ActionEvent e) {
 			Match match = MMSUtils.getTreeObject(getTree(),Match.class);
-			if ( match == null )
+			if (match == null || match.getType().equals(MatchMode.CLEANSE))
 				return;
 
 			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(
@@ -428,9 +428,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
-		newDeDupeAction = new NewMatchAction(this, "New De-dupe Project", Match.MatchMode.FIND_DUPES);
+		newDeDupeAction = new NewMatchAction(this, "New De-duping Project", Match.MatchMode.FIND_DUPES);
 		newXrefAction = new NewMatchAction(this, "New X-refing Project", Match.MatchMode.BUILD_XREF);
-		newCleanseAction = new NewMatchAction(this, "New Data Cleansing Project", Match.MatchMode.CLEANSE);
+		newCleanseAction = new NewMatchAction(this, "New Cleansing Project", Match.MatchMode.CLEANSE);
 		
         JMenuBar menuBar = new JMenuBar();
 
@@ -450,22 +450,24 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		databaseMenu.add(databaseConnectionAction );
 		menuBar.add(databaseMenu);
 
-		JMenu matchesMenu = new JMenu("Matches");
-		matchesMenu.setMnemonic('M');
-		matchesMenu.add(newDeDupeAction);
-		matchesMenu.add(newXrefAction);
-		matchesMenu.add(newCleanseAction);
-		matchesMenu.add(editMatchAction);
-		matchesMenu.add(deleteMatchAction);
-		matchesMenu.addSeparator();
-		matchesMenu.add(runMatchAction);
-		matchesMenu.add(runMergeAction);
-		matchesMenu.add(runCleansingAction);
-		matchesMenu.add(showMatchStatisticInfoAction);
-		matchesMenu.addSeparator();
-        matchesMenu.add(new JMenuItem(new PlMatchImportAction(this, frame)));
-		matchesMenu.add(new JMenuItem(new PlMatchExportAction(this, frame)));
-		menuBar.add(matchesMenu);
+		JMenu projectMenu = new JMenu("Project");
+		projectMenu.setMnemonic('M');
+		projectMenu.add(newDeDupeAction);
+		projectMenu.add(newCleanseAction);
+		projectMenu.add(newXrefAction);
+		projectMenu.addSeparator();
+		projectMenu.add(editProjectAction);
+		projectMenu.add(deleteProjectAction);
+		projectMenu.addSeparator();
+		projectMenu.add(runMatchAction);
+		projectMenu.add(runMergeAction);
+		projectMenu.add(runCleanseAction);
+		projectMenu.addSeparator();
+		projectMenu.add(showMatchStatisticInfoAction);
+		projectMenu.addSeparator();
+        projectMenu.add(new JMenuItem(new PlMatchImportAction(this, frame)));
+		projectMenu.add(new JMenuItem(new PlMatchExportAction(this, frame)));
+		menuBar.add(projectMenu);
 
 		JMenu toolsMenu = new JMenu("Tools");
 		toolsMenu.setMnemonic('t');
@@ -494,11 +496,15 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
 
 		toolBar.add(loginAction);
+		toolBar.addSeparator();
+		toolBar.addSeparator();
 		toolBar.add(newDeDupeAction);
+		toolBar.add(newCleanseAction);
+		toolBar.add(newXrefAction);
         toolBar.addSeparator();
         toolBar.add(runMatchAction);
         toolBar.add(runMergeAction);
-        toolBar.add(runCleansingAction);
+        toolBar.add(runCleanseAction);
         toolBar.addSeparator();
         toolBar.addSeparator();
         toolBar.add(helpAction);
@@ -561,8 +567,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         return sessionContext;
     }
 
-    private final class EditMatchAction extends AbstractAction {
-		private EditMatchAction(String name) {
+    private final class EditProjectAction extends AbstractAction {
+		private EditProjectAction(String name) {
 			super(name);
 		}
 

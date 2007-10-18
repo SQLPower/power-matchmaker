@@ -31,7 +31,7 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 /**
  * Simple action that deletes a match from the swing session
  */
-public class DeleteMatchAction extends AbstractAction {
+public class DeleteProjectAction extends AbstractAction {
 
 	private MatchMakerSwingSession swingSession;
 	private Match match;
@@ -44,8 +44,8 @@ public class DeleteMatchAction extends AbstractAction {
      * in the tree.
      * @param swingSession The GUI session this action lives in.
      */
-	public DeleteMatchAction(MatchMakerSwingSession swingSession) {
-		super("Delete Match");
+	public DeleteProjectAction(MatchMakerSwingSession swingSession) {
+		super("Delete Project");
 		this.swingSession = swingSession;
 	}
 	
@@ -54,7 +54,7 @@ public class DeleteMatchAction extends AbstractAction {
      * addition, this match is set to the given parameter.
      * @param swingSession The GUI session this action lives in.
      */
-	public DeleteMatchAction(MatchMakerSwingSession swingSession, Match match) {
+	public DeleteProjectAction(MatchMakerSwingSession swingSession, Match match) {
 		this(swingSession);
 		this.match = match;
 		this.calledFromTopMenu = false;

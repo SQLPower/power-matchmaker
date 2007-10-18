@@ -46,9 +46,9 @@ import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
-public class DuplicateMatchAction extends AbstractAction {
+public class DuplicateProjectAction extends AbstractAction {
 	
-	private static final Logger logger = Logger.getLogger(DuplicateMatchAction.class);
+	private static final Logger logger = Logger.getLogger(DuplicateProjectAction.class);
 	StatusComponent status = new StatusComponent();
 
 	private MatchMakerSwingSession swingSession;
@@ -58,8 +58,8 @@ public class DuplicateMatchAction extends AbstractAction {
 	private JComboBox folderComboBox;
 	private FormValidationHandler handler;
 	
-	public DuplicateMatchAction(MatchMakerSwingSession swingSession, Match match) {
-		super("Duplicate");
+	public DuplicateProjectAction(MatchMakerSwingSession swingSession, Match match) {
+		super("Duplicate Project");
 		this.swingSession = swingSession;
 		this.match = match;
 		handler = new FormValidationHandler(status);

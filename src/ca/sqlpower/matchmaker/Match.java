@@ -480,7 +480,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 	}
 
 
-	public List<MungeProcess> getMatchGroups() {
+	public List<MungeProcess> getMungeProcesses() {
 		return getMatchRuleSetFolder().getChildren();
 	}
 

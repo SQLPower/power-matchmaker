@@ -22,34 +22,42 @@ package ca.sqlpower.matchmaker.swingui.action;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
-import javax.swing.tree.TreePath;
 
+import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
+import ca.sqlpower.matchmaker.swingui.MungeProcessEditor;
+import ca.sqlpower.swingui.SPSUtils;
 
-
-public class DeleteMatchGroupAction extends AbstractAction {
-
+/**
+ * A simple action to adds a new munge process to the swing session and
+ * opens up the editor for the new munge process.
+ */
+public class NewMungeProcessAction extends AbstractAction {
+    
     private final MatchMakerSwingSession swingSession;
-    private final MungeProcess matchGroup;
+	private final Match parent;
 
-	public DeleteMatchGroupAction(MatchMakerSwingSession swingSession, MungeProcess matchGroup) {
-		super("Delete Match Group");
+	public NewMungeProcessAction(MatchMakerSwingSession swingSession, Match parent) {
+	    super("New Munge Process");
         this.swingSession = swingSession;
-		this.matchGroup = matchGroup;
+        this.parent = parent;
+        if (parent == null) throw new IllegalArgumentException("Parent must be non null");
+	}
+	
+	public void actionPerformed(ActionEvent e) {
+		MungeProcess g = new MungeProcess();
+		g.setName("New Munge Process");
+		MungeProcessEditor editor;
+		try {
+			editor = new MungeProcessEditor(swingSession,parent, g);
+			swingSession.setCurrentEditorComponent(editor);
+		} catch (ArchitectException ex) {
+			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
+					"Error Loading Source Table", 
+					"There was an error loading the source table", ex);
+		} 
 	}
 
-	public void actionPerformed(ActionEvent e) {
-		int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-		"Are you sure you want to delete the match group?");
-		if (responds != JOptionPane.YES_OPTION)
-			return;
-		MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();
-		TreePath treePath = treeModel.getPathForNode(matchGroup.getParent());
-		swingSession.getTree().setSelectionPath(treePath);
-		swingSession.delete(matchGroup);
-		swingSession.setCurrentEditorComponent(null);
-	}
 }

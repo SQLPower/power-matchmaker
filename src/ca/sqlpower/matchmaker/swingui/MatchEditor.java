@@ -238,7 +238,7 @@ public class MatchEditor implements EditorPane {
 		}
 	};
 
-	private Action newMatchGroupAction = new AbstractAction("New Match Group") {
+	private Action newMungeProcessAction = new AbstractAction("New Munge Process") {
 		public void actionPerformed(ActionEvent arg0) {
 			MungeProcessEditor editor = null;
 			try {
@@ -750,14 +750,14 @@ public class MatchEditor implements EditorPane {
     private void refreshActionStatus() {
     	ValidateResult worst = handler.getWorstValidationStatus();
     	saveAction.setEnabled(true);
-		newMatchGroupAction.setEnabled(true);
+		newMungeProcessAction.setEnabled(true);
 
     	if ( worst.getStatus() == Status.FAIL ) {
     		saveAction.setEnabled(false);
-    		newMatchGroupAction.setEnabled(false);
+    		newMungeProcessAction.setEnabled(false);
     	}
     	if (sourceChooser.getTableComboBox().getSelectedItem() == null){
-    		newMatchGroupAction.setEnabled(false);
+    		newMungeProcessAction.setEnabled(false);
     		createIndexAction.setEnabled(false);
     	} else {
     		if (sourceChooser.getTableComboBox().getSelectedItem() !=

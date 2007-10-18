@@ -28,8 +28,8 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.TranslateWordsEditor;
 
 /**
- * A simple action to adds a new match group to the swing session and
- * opens up the editor for the new match group.
+ * A simple action to adds a new translate group to the swing session and
+ * opens up the editor for the new translate group.
  */
 public class NewTranslateGroupAction extends AbstractAction {
     

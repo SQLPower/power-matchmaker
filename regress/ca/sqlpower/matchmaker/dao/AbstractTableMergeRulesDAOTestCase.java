@@ -120,13 +120,13 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
             
             stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM pl_merge_criteria WHERE table_name = '"+tableName+"'");
-            assertTrue("match group didn't save?!", rs.next());
+            assertTrue("munge process didn't save?!", rs.next());
             rs.close();
             
             dao.delete(mergeRules);
 
             rs = stmt.executeQuery("SELECT * FROM pl_merge_criteria WHERE table_name = '"+tableName+"'");
-            assertFalse("match group didn't delete", rs.next());
+            assertFalse("munge process didn't delete", rs.next());
             rs.close();
         } finally {
         	if (stmt != null) {

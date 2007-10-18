@@ -220,13 +220,13 @@ public class MatchPoolDotExport {
     }
 
     /**
-     * Translates the given match group name to an X11 colour name that GraphViz can use.
+     * Translates the given munge process name to an X11 colour name that GraphViz can use.
      * 
-     * @param string The match group name
+     * @param string The munge process name
      * @return An X11 colour name such that every time this method is called with the same
-     * match group name, the same colour name is returned, but no two match group names will
+     * munge process name, the same colour name is returned, but no two munge process names will
      * translate to the same colour for the lifetime of this instance of MatchResultVisualizer.
-     * @throws ArrayIndexOutOfBoundsException if you use more match groups than we have set up
+     * @throws ArrayIndexOutOfBoundsException if you use more munge processes than we have set up
      * colours for.  (see COLOURS and add more items to it if you're running into this problem).
      */
     private String colourForEdge(String groupName, boolean original) {

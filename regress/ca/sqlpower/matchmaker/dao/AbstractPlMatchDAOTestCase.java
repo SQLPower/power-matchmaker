@@ -289,7 +289,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
      * This method is abstract because the OID columns have to be handled
      * differently on different database platforms.
      * 
-     * @return The GROUP_OID value of the new match group that was inserted.
+     * @return The GROUP_OID value of the new munge process that was inserted.
      */
     protected abstract long insertSampleMatchRuleSetData(
             long parentMatchOid, String groupName) throws Exception;
@@ -303,7 +303,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
      * This method is abstract because the OID columns have to be handled
      * differently on different database platforms.
      * 
-     * @return The GROUP_OID value of the new match group that was inserted.
+     * @return The GROUP_OID value of the new munge process that was inserted.
      */
     protected abstract long insertSampleMatchRuleData(
             long parentGroupOid, String lastUpdateUser) throws Exception;

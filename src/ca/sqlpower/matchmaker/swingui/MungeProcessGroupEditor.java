@@ -52,7 +52,7 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
@@ -141,7 +141,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 		
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
 		//new actions for delete and save should be extracted and be put into its own file.
-		bbb.addGridded(new JButton(new NewMatchGroupAction(swingSession, match)));
+		bbb.addGridded(new JButton(new NewMungeProcessAction(swingSession, match)));
 		bbb.addRelatedGap();
 		bbb.addGridded(new JButton(deleteAction));
 
