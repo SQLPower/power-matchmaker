@@ -61,6 +61,7 @@ import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
+import ca.sqlpower.matchmaker.swingui.munge.CleanseResultMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungeResultMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.SQLInputMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
@@ -436,10 +437,13 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     
     public AbstractMungeComponent getMungeComponent(MungeStep ms,
 			FormValidationHandler handler, MatchMakerSession session) {
+    	//special cases
     	if (ms instanceof SQLInputStep) {
 			return new SQLInputMungeComponent(ms, handler, session);
 		} else if (ms instanceof MungeResultStep) {
 			return new MungeResultMungeComponent(ms, handler, session);
+		} else if (ms instanceof SQLInputStep.CleanseResultStep) {
+			return new CleanseResultMungeComponent(ms,handler,session);
 		}
 		
     	StepDescription sd = stepProperties.get(ms.getClass());
