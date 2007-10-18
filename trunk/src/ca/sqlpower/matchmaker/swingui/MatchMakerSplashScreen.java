@@ -20,19 +20,30 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.LayoutManager;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.sql.DataSourceCollection;
+import ca.sqlpower.sql.PlDotIni;
+import ca.sqlpower.sql.SPDataSource;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -50,14 +61,47 @@ public class MatchMakerSplashScreen {
 		buildUI();
 	}
 
+    private static class LogoLayout implements LayoutManager {
+
+        int textStartY = 130;
+        
+        public void layoutContainer(Container parent) {
+            JLabel text = (JLabel) parent.getComponent(0);
+            JLabel bgLabel = (JLabel) parent.getComponent(1);
+            
+            bgLabel.setBounds(0, 0, parent.getWidth(), parent.getHeight());
+            text.setBounds(0, textStartY, parent.getWidth(), text.getPreferredSize().height);
+        }
+
+        public Dimension minimumLayoutSize(Container parent) {
+            JLabel bgLabel = (JLabel) parent.getComponent(1);
+            return bgLabel.getPreferredSize();
+        }
+
+        public Dimension preferredLayoutSize(Container parent) {
+            return minimumLayoutSize(parent);
+        }
+
+        public void removeLayoutComponent(Component comp) {
+            // nop
+        }
+        
+        public void addLayoutComponent(String name, Component comp) {
+            // nop
+        }
+    }
+
 	private void buildUI() {
 
-		JLabel spgLogo = new JLabel(new ImageIcon(getClass().getResource("/icons/sqlpower_transparent.png")));
-		JLabel mmLogo = new JLabel(new ImageIcon(getClass().getResource("/icons/matchmaker_huge.png")));
-		JLabel welcome  = new JLabel("<html>" + "Power*MatchMaker " + MatchMakerSessionContext.APP_VERSION + "</html>");
-		Font f = welcome.getFont();
-		Font newf = new Font(f.getName(),f.getStyle(),f.getSize()*2);
-		welcome.setFont(newf);
+        JPanel spgLogo = new JPanel(new LogoLayout());
+        spgLogo.add(new JLabel("<html><div align='center'>SQL Power Group Inc.<br>http://www.sqlpower.ca/</div></html>", JLabel.CENTER));
+        spgLogo.add(new JLabel(new ImageIcon(getClass().getResource("/icons/sqlpower_alpha_gradient.png"))));
+        
+		JLabel mmLogo = new JLabel(new ImageIcon(getClass().getResource("/icons/matchmaker_huge.png")), JLabel.CENTER);
+		JLabel title  = new JLabel("<html>" + "Power*MatchMaker " + MatchMakerSessionContext.APP_VERSION + "</html>", JLabel.CENTER);
+		Font f = title.getFont();
+		Font newf = new Font(f.getName(), f.getStyle(), (int) (f.getSize() * 1.5));
+		title.setFont(newf);
         
         StringBuilder summary = new StringBuilder();
         summary.append("<html><table><tr>");
@@ -94,48 +138,67 @@ public class MatchMakerSplashScreen {
         summary.append("</tr><tr>");
         summary.append("<td>Power*Loader Schema Version:</td><td>").append(session.getPLSchemaVersion()).append("</td>");
         summary.append("</tr></table></html>");
-        JLabel summaryLabel = new JLabel(summary.toString());
+        JLabel summaryLabel = new JLabel(summary.toString(), JLabel.CENTER);
         
-        JLabel sqlpower =
-			new JLabel("<html><div align='center'>SQL Power Group Inc.<br>http://www.sqlpower.ca/</div></html>");
-
-        FormLayout layout = new FormLayout(
-				"4dlu, pref, 4dlu, fill:100:grow, 4dlu, fill:100:grow, 4dlu ");
+        FormLayout layout = new FormLayout("4dlu, pref:grow, 4dlu ");
 		int rowCount =0;
 		PanelBuilder pb = new PanelBuilder(layout);
 		CellConstraints c = new CellConstraints();
-		pb.appendRow(new RowSpec("10dlu"));
+        
+		pb.appendRow(new RowSpec("10px:grow"));
 		rowCount++;
-		pb.appendRow(new RowSpec("pref"));
+		
+        pb.appendRow(new RowSpec("pref"));
 		rowCount++;
-		pb.add(spgLogo, c.xyw(2, rowCount, 3));
-		spgLogo.setHorizontalAlignment(JLabel.CENTER);
-		pb.add(mmLogo, c.xyw(6, rowCount, 1));
-		mmLogo.setHorizontalAlignment(JLabel.CENTER);
-		pb.appendRow(new RowSpec("10dlu"));
-		rowCount++;
-		pb.appendRow(new RowSpec("pref"));
-		rowCount++;
-		pb.add(welcome, c.xyw(2, rowCount, 5));
-		welcome.setHorizontalAlignment(JLabel.CENTER);
-		pb.appendRow(new RowSpec("10dlu"));
-		rowCount++;
-		pb.appendRow(new RowSpec("fill:pref"));
-		rowCount++;
-		pb.add(summaryLabel,c.xyw(2, rowCount, 3));
-		pb.appendRow(new RowSpec("4dlu"));
+        
+        pb.add(mmLogo, c.xy(2, rowCount));
+        pb.appendRow(new RowSpec("15px"));
         rowCount++;
 
-		pb.appendRow(new RowSpec("pref:grow"));
+        pb.appendRow(new RowSpec("pref"));
 		rowCount++;
-		pb.add(sqlpower, c.xyw(2, rowCount, 5));
-		sqlpower.setHorizontalAlignment(JLabel.CENTER);
-		sqlpower.setVerticalAlignment(JLabel.BOTTOM);
-		splashScreen = pb.getPanel();
+		
+        pb.add(title, c.xy(2, rowCount));
+		pb.appendRow(new RowSpec("60px"));
+		rowCount++;
+		
+        pb.appendRow(new RowSpec("fill:pref"));
+		rowCount++;
+		
+        pb.add(summaryLabel,c.xy(2, rowCount));
+		pb.appendRow(new RowSpec("50px"));
+        rowCount++;
+        
+        pb.appendRow(new RowSpec("fill:pref"));
+        rowCount++;
+        
+        pb.add(spgLogo, c.xy(2, rowCount));
+        rowCount++;
+        
+        pb.appendRow(new RowSpec("10px:grow"));
+        rowCount++;
 
+		splashScreen = pb.getPanel();
 	}
 
 	public JPanel getSplashScreen() {
 		return splashScreen;
 	}
+    
+    
+    public static void main(String[] args) throws Exception {
+        final JFrame f = new JFrame("Preview");
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        DataSourceCollection plini = new PlDotIni();
+        plini.read(new File(System.getProperty("user.home"), "pl.ini"));
+        MatchMakerSessionContext context = new MatchMakerHibernateSessionContext(plini);
+        SPDataSource ds = plini.getDataSource("deepthought-oracle-mm");
+        f.setContentPane(new MatchMakerSplashScreen(context.createSession(ds, ds.getUser(), ds.getPass())).getSplashScreen());
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                f.pack();
+                f.setVisible(true);
+            }
+        });
+    }
 }
