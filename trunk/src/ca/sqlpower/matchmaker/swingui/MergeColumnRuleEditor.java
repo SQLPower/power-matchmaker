@@ -203,7 +203,11 @@ public class MergeColumnRuleEditor implements EditorPane {
 		pb.add(new JLabel("Index Name:"), cc.xy(2,row,"r,c"));
 		String indexName = "";
 		try {
-			indexName = mergeRule.getTableIndex().getName();
+			if (mergeRule.getTableIndex() == null) {
+				indexName = "";
+			} else {
+				indexName = mergeRule.getTableIndex().getName();
+			}
 		} catch (ArchitectException e1) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
 					"An exception occured while creating the merge column rules editor", e1);
