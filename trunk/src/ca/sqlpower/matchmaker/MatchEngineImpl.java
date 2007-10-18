@@ -90,24 +90,24 @@ public class MatchEngineImpl extends AbstractEngine {
         
         if (!Project.doesSourceTableExist(session, project)) {
             throw new EngineSettingException(
-                    "Your match source table \""+
+                    "Your project source table \""+
                     DDLUtils.toQualifiedName(project.getSourceTable())+
             "\" does not exist");
         }
         
         if (!session.canSelectTable(project.getSourceTable())) {
             throw new EngineSettingException(
-            "PreCondition failed: can not select match source table");
+            "PreCondition failed: can not select project source table");
         }
         
         if (!Project.doesResultTableExist(session, project)) {
             throw new EngineSettingException(
-            "PreCondition failed: match result table does not exist");
+            "PreCondition failed: project result table does not exist");
         }
         
         if (!project.vertifyResultTableStruct() ) {
             throw new EngineSettingException(
-            "PreCondition failed: match result table structure incorrect");
+            "PreCondition failed: project result table structure incorrect");
         }
         
         if (settings.getSendEmail()) {
