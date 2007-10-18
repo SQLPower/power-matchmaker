@@ -65,7 +65,7 @@ public class MungeProcess
 	private String filter;
     
     /**
-     * Marks whether or not the match engine should process this match group when
+     * Marks whether or not the match engine should process this munge process when
      * running a match process.  True means it will be processed.
      */
 	private boolean active = true;

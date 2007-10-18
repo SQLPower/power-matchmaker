@@ -107,13 +107,13 @@ public abstract class AbstractMatchRuleSetDAOTestCase extends AbstractDAOTestCas
             
             stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+groupId+"'");
-            assertTrue("match group didn't save?!", rs.next());
+            assertTrue("munge process didn't save?!", rs.next());
             rs.close();
 
             dao.delete(group);
 
             rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+groupId+"'");
-            assertFalse("match group didn't delete", rs.next());
+            assertFalse("munge process didn't delete", rs.next());
             rs.close();
         } finally {
             stmt.close();

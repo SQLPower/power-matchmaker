@@ -50,15 +50,15 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
-import ca.sqlpower.matchmaker.swingui.action.DeleteMatchAction;
-import ca.sqlpower.matchmaker.swingui.action.DeleteMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMungeStepAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteTranslateGroupAction;
-import ca.sqlpower.matchmaker.swingui.action.DuplicateMatchAction;
+import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMatchAction;
-import ca.sqlpower.matchmaker.swingui.action.NewMatchGroupAction;
+import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.PlMatchExportAction;
@@ -146,7 +146,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						addMergeRulesFolderMenuItems(m, folder);
 					}
 				} else if (o instanceof MungeProcess) {
-					addMatchGroupMenuItems(m, (MungeProcess) o);
+					addMungeProcessMenuItems(m, (MungeProcess) o);
 				} else if (o instanceof MungeStep) {
 					addMatchRuleMenuItems(m, (MungeStep) o);
 				} else if (o instanceof TableMergeRules) {
@@ -162,7 +162,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	}
 
 	/**
-	 * Attaches a menu item for the actions of a match group.
+	 * Attaches a menu item for the actions of a munge process.
 	 * 
 	 * @param m
 	 *            The popup menu that the menu item would be attached onto.
@@ -171,7 +171,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 */
 	private void addMatchRulesFolderMenuItems(JPopupMenu m,
 			MatchMakerFolder<?> folder) {
-		m.add(new JMenuItem(new NewMatchGroupAction(swingSession,
+		m.add(new JMenuItem(new NewMungeProcessAction(swingSession,
 				(Match) folder.getParent())));
 	}
 
@@ -224,8 +224,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 * @param group
 	 *            The current folder being right-clicked on.
 	 */
-	private void addMatchGroupMenuItems(JPopupMenu m, MungeProcess group) {
-		m.add(new JMenuItem(new DeleteMatchGroupAction(swingSession, group)));
+	private void addMungeProcessMenuItems(JPopupMenu m, MungeProcess group) {
+		m.add(new JMenuItem(new DeleteMungeProcessAction(swingSession, group)));
 	}
 
 	private void createNewFolderMenuItem(JPopupMenu m) {
@@ -241,9 +241,12 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	private void addMatchMenuItems(JPopupMenu m, final Match match) {
 
 		m.addSeparator();
-		m.add(new JMenuItem(new NewMatchGroupAction(swingSession, match)));
-		m.add(new JMenuItem(new NewMergeRuleAction(swingSession, match)));
+		m.add(new JMenuItem(new NewMungeProcessAction(swingSession, match)));
 
+		if (!match.getType().equals(MatchMode.CLEANSE)) {
+			m.add(new JMenuItem(new NewMergeRuleAction(swingSession, match)));
+		}
+		
 		m.addSeparator();
 		if (match.getType().equals(MatchMode.FIND_DUPES)) {
 			m.add(new JMenuItem(new AbstractAction("Run Match") {
@@ -271,15 +274,17 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		}
 
 		m.addSeparator();
+		if (match.getType() != MatchMode.CLEANSE) {
+			m.add(new JMenuItem(new ShowMatchStatisticInfoAction(swingSession,
+					match, owningFrame)));
+		}
 		m.add(new JMenuItem(new AbstractAction("Audit Information") {
 			public void actionPerformed(ActionEvent e) {
 				swingSession.setCurrentEditorComponent(new MatchInfoEditor(
 						match));
 			}
 		}));
-		m.add(new JMenuItem(new ShowMatchStatisticInfoAction(swingSession,
-				match, owningFrame)));
-
+		
 		m.addSeparator();
 		m
 				.add(new JMenuItem(new PlMatchExportAction(swingSession,
@@ -289,16 +294,16 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						owningFrame)));
 
 		m.addSeparator();
-		m.add(new JMenuItem(new DeleteMatchAction(swingSession, match)));
-		m.add(new JMenuItem(new DuplicateMatchAction(swingSession, match)));
+		m.add(new JMenuItem(new DeleteProjectAction(swingSession, match)));
+		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, match)));
 
 	}
 
 	private void addFolderMenuItems(JPopupMenu m, final PlFolder folder) {
 		JMenu mm = new JMenu("New Project");
-		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New DeDupe Project", Match.MatchMode.FIND_DUPES)));
-		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New X-ref Project", Match.MatchMode.BUILD_XREF)));
+		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New De-duping Project", Match.MatchMode.FIND_DUPES)));
 		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New Cleansing Project",Match.MatchMode.CLEANSE)));
+		mm.add(new JMenuItem(new NewMatchAction(swingSession, "New X-ref Project", Match.MatchMode.BUILD_XREF)));
 		m.add(mm);
 		m.add(new JMenuItem(new PlMatchImportAction(swingSession, owningFrame)));
 		m.add(new JMenuItem(new DeletePlFolderAction(swingSession,
