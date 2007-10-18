@@ -27,6 +27,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DropTarget;
@@ -43,6 +44,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.CubicCurve2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -161,7 +163,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	private FormValidationHandler handler;
 	
 	private Map<MungeStep,AbstractMungeComponent> modelMap = new HashMap<MungeStep, AbstractMungeComponent>();
-	
+    
 	/**
 	 * Creates a new empty mungepen.
 	 * 
@@ -352,11 +354,13 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	
 	@Override
 	public void paint(Graphics g) {
-		super.paint(g);
-		paintPendingConnection(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		super.paint(g2);
+		paintPendingConnection(g2);
 	}
 	
-	private void paintPendingConnection(Graphics g) {		
+	private void paintPendingConnection(Graphics2D g) {
 		Point end = getClosestIO(new Point(mouseX,mouseY));
 		boolean snap = true;
 		
@@ -391,10 +395,14 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				} else {
 					dragPlugOffset = 0;
 				}
-				g.drawLine(fixed.x,fixed.y, end.x, end.y - dragPlugOffset);
+                CubicCurve2D c = IOConnector.createConnectorPath(
+                        fixed.x,fixed.y, end.x, end.y - dragPlugOffset);
+				g.draw(c);
 				plug.paintIcon(this, g, end.x, end.y - dragPlugOffset);
 			} else {
-				g.drawLine(fixed.x,fixed.y, end.x, end.y);
+                CubicCurve2D c = IOConnector.createConnectorPath(
+                        fixed.x, fixed.y, end.x, end.y);
+                g.draw(c);
 			}
 		}
 	}

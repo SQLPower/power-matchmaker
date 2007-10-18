@@ -35,7 +35,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.Line2D;
+import java.awt.geom.CubicCurve2D;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -55,6 +55,16 @@ public class IOConnector extends JComponent implements MouseListener {
 	
 	private static  final Logger logger = Logger.getLogger(IOConnector.class); 
 	
+    
+    /**
+     * The distance from the connection point where the control point for
+     * the connector line should be.  For outputs, the control will be this
+     * many pixels directly below the connection point; for inputs, it will
+     * be this many pixels above the connection point.  Larger values for this
+     * parameter make the connectors and wires look more rigid.
+     */
+    public static final int RIGIDITY = 100;
+    
 	AbstractMungeComponent parentCom;
 	AbstractMungeComponent childCom;
 	int parentNumber;
@@ -69,6 +79,15 @@ public class IOConnector extends JComponent implements MouseListener {
 	
 	private boolean recentlyResized;
 	
+    /**
+     * The number of pixels around a click that are tested to see if they intersect
+     * this IOConnector's path.  A larger number allows for sloppier clicking; smaller
+     * numbers require more accurate clicking.
+     * 
+     * @see #contains(Point)
+     */
+    private int clickRadius = 3;
+    
 	/**
 	 * The amount of space to add as padding around the line that is to drawn.
 	 */
@@ -132,21 +151,20 @@ public class IOConnector extends JComponent implements MouseListener {
 		return (MungePen)getParent();
 	}
 	
-	
-	/**
-	 * Checks if the current line has been clicked. 
-	 * 
-	 * @param click The point where the click was directed
-	 * @return will return true iff the click was within 6 pixles of the
-	 * click
-	 */
-	public boolean clicked(Point click) {
-		Point p1 = parentCom.getOutputPosition(parentNumber);
-		p1.translate(parentCom.getX(), parentCom.getY());
-		Point p2 = childCom.getInputPosition(childNumber);
-		p2.translate(childCom.getX(), childCom.getY());
-		double dist = Line2D.ptSegDist(p1.x,p1.y,p2.x,p2.y,click.x,click.y);
-		return dist < 6;
+    /**
+     * Checks, with a certain degree of fuzziness, if the given point intersects
+     * the visible line of this IOConnector.  The amount of fuzziness is controlled
+     * by the {@link #clickRadius} property.
+     * 
+     * @param p The point to test, in the parent component's coordinate space
+     */
+	public boolean clicked(Point p) {
+        Point p1 = parentCom.getOutputPosition(parentNumber);
+        p1.translate(parentCom.getX(), parentCom.getY());
+        Point p2 = childCom.getInputPosition(childNumber);
+        p2.translate(childCom.getX(), childCom.getY());
+        CubicCurve2D c = createConnectorPath(p1.x, p1.y, p2.x, p2.y);
+        return c.intersects(p.x - clickRadius, p.y - clickRadius, clickRadius * 2, clickRadius * 2);
 	}
 
 	/**
@@ -301,8 +319,9 @@ public class IOConnector extends JComponent implements MouseListener {
 		//If it is drawing in the time period between the child removed 
 		//and the event being finished,
 		if (link != null) {
-			g2.setColor(ConnectorIcon.getColor(link.getType()));			
-			g2.drawLine((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
+			g2.setColor(ConnectorIcon.getColor(link.getType()));
+            CubicCurve2D c = createConnectorPath((int)top.getX(), (int)top.getY(), (int)bottom.getX(), (int)bottom.getY());
+			g2.draw(c);
 		} else {
 			logger.debug("Error line not existant");
 		}
@@ -317,7 +336,19 @@ public class IOConnector extends JComponent implements MouseListener {
 		
 	}
 	
-	/**
+	public static CubicCurve2D createConnectorPath(int x1, int y1, int x2, int y2) {
+        int rigidity = Math.min(RIGIDITY, Math.abs(y1 - y2));
+        if (y2 < y1) {
+            rigidity = -rigidity;
+        }
+        return new CubicCurve2D.Double(
+                x1, y1,
+                x1, y1 + rigidity,
+                x2, y2 - rigidity,
+                x2, y2);
+    }
+
+    /**
 	 * deletes this IOC and the link in the mungeSteps 
 	 */
 	public void remove() {
