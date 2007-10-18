@@ -160,6 +160,7 @@ public class MergeSettings extends MatchMakerSettings {
 		settings.setSession(s);
 		settings.setShowProgressFreq(getShowProgressFreq()==null?null:new Long(getShowProgressFreq()));
 		settings.setCommitFrequency(getCommitFrequency()==null?null:new Integer(getCommitFrequency()));
+		settings.setVisible(isVisible());
 		
 		return settings;
 	}

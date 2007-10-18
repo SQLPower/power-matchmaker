@@ -171,6 +171,7 @@ public class TableMergeRules
 		newMergeStrategy.setSchemaName(getSchemaName());
 		newMergeStrategy.setParentTable(getParentTable());
 		newMergeStrategy.setChildMergeAction(getChildMergeAction());
+		newMergeStrategy.setVisible(isVisible());
 		try {
 			if (tableIndex.isUserCreated()) {
 				newMergeStrategy.setTableIndex(new SQLIndex(getTableIndex()));

@@ -150,7 +150,6 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		tableMergeRulesFolder.setName(MERGE_RULES_FOLDER_NAME);
         this.addChild(tableMergeRulesFolder);
         
-        setType(MatchMode.FIND_DUPES);
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
 	}
 	
@@ -467,6 +466,9 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		MatchMode oldValue = this.type;
 		this.type = type;
 		getEventSupport().firePropertyChange("type", oldValue, this.type);
+		if (type != null && type.equals(MatchMode.CLEANSE)) {
+			tableMergeRulesFolder.setVisible(false);
+		}
 	}
 
 	public ViewSpec getView() {
@@ -626,6 +628,7 @@ public class Match extends AbstractMatchMakerObject<Match, MatchMakerFolder> {
 		newMatch.setResultTable(getResultTable());
 		newMatch.setXrefTable(getXrefTable());
 		newMatch.setType(getType());
+		newMatch.setVisible(isVisible());
 		newMatch.setView(getView()==null?null:getView().duplicate());
 		newMatch.setSession(s);
 		

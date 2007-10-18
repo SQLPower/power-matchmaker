@@ -132,6 +132,7 @@ public class PlFolder<C extends MatchMakerObject>
 		f.setLastBackupNo(getLastBackupNo());
 		f.setFolderStatus(getFolderStatus());
 		f.setParent(parent);
+		f.setVisible(isVisible());
 		f.setSession(session);
 		for (MatchMakerObject o: getChildren()){
 			f.addChild(o.duplicate(parent, session));

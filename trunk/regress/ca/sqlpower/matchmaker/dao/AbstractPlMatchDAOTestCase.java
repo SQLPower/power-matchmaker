@@ -31,6 +31,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Match;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Match.MatchMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -202,6 +203,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
         ruleSet.setName("criteria group");
         
         Match oldMatch = new Match();
+        oldMatch.setType(MatchMode.FIND_DUPES);
         oldMatch.setName("old");
 		PlFolder f = new PlFolder();
 		oldMatch.setParent(f);
@@ -211,6 +213,7 @@ public abstract class AbstractPlMatchDAOTestCase extends AbstractDAOTestCase<Mat
 		plFolderDAO.save(f);
         
         Match newMatch = new Match();
+        newMatch.setType(MatchMode.FIND_DUPES);
         newMatch.setName("new");
 		newMatch.setParent(f);
         

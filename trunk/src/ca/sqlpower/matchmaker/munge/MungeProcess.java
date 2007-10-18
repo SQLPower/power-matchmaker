@@ -210,6 +210,7 @@ public class MungeProcess
 		group.setMatchPercent(getMatchPercent()==null?null:new Short(getMatchPercent()));
 		group.setName(getName()==null?null:new String(getName()));
 		group.setSession(s);
+		group.setVisible(isVisible());
 		
 		for ( MungeStep step : getChildren()) {
             MungeStep newStep = step.duplicate(group,s);

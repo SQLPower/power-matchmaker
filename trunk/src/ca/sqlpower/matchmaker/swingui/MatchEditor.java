@@ -726,8 +726,6 @@ public class MatchEditor implements EditorPane {
 			
 			if (!match.getType().equals(Match.MatchMode.CLEANSE)) {
 				match.getTableMergeRulesFolder().addChild(0, mergeRule);
-			} else {
-				match.getTableMergeRulesFolder().setVisible(false);
 			}
         }
 		

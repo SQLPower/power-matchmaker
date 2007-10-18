@@ -49,7 +49,6 @@ public class RelatedMergeColumnRuleTableModel extends
 			try {
 				SQLIndex tableIndex = table.getPrimaryKeyIndex();
 				if (tableIndex != null) {
-					System.out.println(tableIndex.getChildren());
 					for (int i = 0; i < getRowCount(); i++) {
 						SQLColumn column = (SQLColumn) getValueAt(i, 0);
 						if (tableIndex.getChildByName(column.getName()) != null) {

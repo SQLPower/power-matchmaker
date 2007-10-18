@@ -466,7 +466,6 @@ public class RelatedTableDeriver implements EditorPane {
 	    }
 	    public ValidateResult validate(Object contents) {
 	    	PrimaryKeyColumnTableModel model = (PrimaryKeyColumnTableModel)table.getModel();
-	    	System.out.println(model.getSelectedColumns().size() + "");
 	    	if (model.getSelectedColumns().size() == 0) {
 	    		return ValidateResult.createValidateResult(Status.FAIL, 
 	    			"Atleast one primary key column must be selected.");

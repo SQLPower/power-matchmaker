@@ -89,6 +89,7 @@ public class MatchMakerTranslateGroup
 		g.setSession(s);
 		g.setParent(parent);
 		g.setName(this.getName());
+		g.setVisible(isVisible());
 		for (MatchMakerTranslateWord w: getChildren()){
 			g.addChild(w.duplicate(g,s));
 		}
