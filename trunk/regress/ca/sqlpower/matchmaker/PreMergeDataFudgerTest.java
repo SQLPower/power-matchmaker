@@ -123,7 +123,7 @@ public class PreMergeDataFudgerTest extends TestCase {
 
 		// this one's different because there is also a direct user-validated edge belonging to GroupOne
 		Collection<PotentialMatchRecord> n3Edges = n3.getOriginalMatchEdges();
-		assertEquals(3, n3Edges.size());
+		assertEquals(2, n3Edges.size());
 		PotentialMatchRecord n3n4 = null;
 		for (PotentialMatchRecord edge : n3Edges) {
 			if (edge.getRuleSet() == fudger.getRuleSet()) {
