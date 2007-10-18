@@ -52,6 +52,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Project;
@@ -126,13 +127,23 @@ public class MergeColumnRuleEditor implements EditorPane {
         		parentTable.addItem(tmr.getSourceTable());
         	}
         }
+        parentTable.addActionListener(new ActionListener(){
 
+			public void actionPerformed(ActionEvent e) {
+				mergeRule.setParentTable((SQLTable) parentTable.getSelectedItem());
+				if (handler != null) {
+					handler.performFormValidation();
+        		}
+			}
+		});
+        
         childMergeAction = new JComboBox(TableMergeRules.ChildMergeActionType.values());
         childMergeAction.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
 				mergeRule.setChildMergeAction((ChildMergeActionType) childMergeAction.getSelectedItem());
-			}});
+			}
+		});
         buildUI();
         
         parentTable.addItemListener(new ItemListener() {
@@ -443,8 +454,96 @@ public class MergeColumnRuleEditor implements EditorPane {
 							return ValidateResult.createValidateResult(Status.FAIL, "Invalid type for SUM");
 						}
 					}
-
 				}
+			}
+			else {
+				TableMergeRules tableMergeRule = getMergeRule();
+				Project match = tableMergeRule.getParentProject();
+				SQLTable parentTable = tableMergeRule.getParentTable();
+				
+				// checks for invalid foreign keys types
+				for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+					if (cmr.getImportedKeyColumn() != null) {
+						if (cmr.getImportedKeyColumn().getType() != cmr.getColumn().getType()) {
+							return ValidateResult.createValidateResult(Status.FAIL, "Data type mismatch on imported key columns");
+						}
+					}
+				}
+				
+				// checks for foreign keys that is not part of the parent's primary keys
+				for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+					if (cmr.getImportedKeyColumn() != null) {
+						if (cmr.getImportedKeyColumn().getType() != cmr.getColumn().getType()) {
+							return ValidateResult.createValidateResult(Status.FAIL, "Data type mismatch on imported key columns");
+						}
+					}
+				}
+				
+				// checks for invalid foreign keys
+				if (parentTable != null) {
+					for (TableMergeRules parentMergeRule : match.getTableMergeRules()) {
+						if (parentMergeRule.getSourceTable().equals(parentTable)) {
+							//parentMergeRule is parent
+							if (parentMergeRule.isSourceMergeRule()) {
+								try {
+									int count = 0;
+									for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+										if (cmr.getImportedKeyColumn() != null) {
+											boolean found = false;
+											for (SQLIndex.Column column : match.getSourceTableIndex().getChildren()) {
+												if (column.getColumn().equals(cmr.getImportedKeyColumn())) {
+													count++;
+													found = true;
+													break;
+												}
+											}
+											if (!found) {
+												return ValidateResult.createValidateResult(Status.FAIL, 
+														"Invalid foreign imported key columns");
+											}
+										}
+									}
+									if (count != match.getSourceTableIndex().getChildCount()) {
+										return ValidateResult.createValidateResult(Status.FAIL, 
+												"Invalid foreign imported key columns");
+									}
+								} catch (ArchitectException e) {
+									throw new RuntimeException("Cannot find the source table index.");
+								}
+							} else {
+								int primaryKeyCount = 0;
+								int foreignKeyCount = 0;
+								for (ColumnMergeRules parentColumn : parentMergeRule.getChildren()) {
+									if (parentColumn.isInPrimaryKey()) {
+										primaryKeyCount++;
+									}
+								}
+								for (ColumnMergeRules childColumn : tableMergeRule.getChildren()) {
+									if (childColumn.getImportedKeyColumn() != null) {
+										boolean found = false;
+										for (ColumnMergeRules parentColumn : parentMergeRule.getChildren()) {
+											if (parentColumn.getColumn().equals(childColumn.getImportedKeyColumn())) {
+												foreignKeyCount++;
+												found = true;
+												break;
+											}
+										}
+										if (!found) {
+											return ValidateResult.createValidateResult(Status.FAIL, 
+													"Invalid foreign imported key columns");
+										}
+									}
+								}
+								if (primaryKeyCount != foreignKeyCount) {
+									return ValidateResult.createValidateResult(Status.FAIL, "Invalid foreign imported key columns");
+								}
+							}
+							
+							break;
+						}
+					}
+				}
+				
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
