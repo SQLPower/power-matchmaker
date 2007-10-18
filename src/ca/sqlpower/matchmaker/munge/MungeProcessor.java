@@ -61,9 +61,15 @@ public class MungeProcessor extends AbstractProcessor {
     }
     
     public Boolean call() throws Exception {
+    	return this.call(-1);
+    }
+    
+    public Boolean call(int rowCount) throws Exception {
         
     	try {
 			monitorableHelper.setStarted(true);
+			monitorableHelper.setFinished(false);
+			monitorableHelper.setJobSize(rowCount);
 			
 			// open everything
 			for (MungeStep step: processOrder) {
@@ -72,7 +78,7 @@ public class MungeProcessor extends AbstractProcessor {
 			
 			// call until one step gives up
 			boolean finished = false;
-			while(!finished) {
+			while(!finished && monitorableHelper.getProgress() < rowCount) {
 				for (MungeStep step: processOrder) {
 					boolean continuing = step.call();
 					if (!continuing) {
@@ -80,6 +86,7 @@ public class MungeProcessor extends AbstractProcessor {
 						break;
 					}
 				}
+				monitorableHelper.incrementProgress();
 			}
 		} finally {
 			// close everything
