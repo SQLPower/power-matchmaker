@@ -21,6 +21,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -31,10 +32,10 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
@@ -51,7 +52,11 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.swingui.MonitorableWorker;
+import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.SPSwingWorker;
+import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -73,20 +78,23 @@ import com.jgoodies.forms.layout.FormLayout;
  * Currently it only find grand child tables if the grand child table
  * contains the source table's primary key.
  */
-public class RelatedTableDeriver implements EditorPane {
+public class DeriveRelatedRulesAction extends AbstractAction implements SwingWorkerRegistry {
 
-	private static final Logger logger = Logger.getLogger(RelatedTableDeriver.class);
+	private static final Logger logger = Logger.getLogger(DeriveRelatedRulesAction.class);
 	
 	private Project project;
 	private MatchMakerSwingSession swingSession;
 	private List<String> primaryKeys;
 
 	private JDialog dialog;
-	private JPanel panel;
 	private JTable columnTable;
+	private JButton save;
+	private JButton exit;
 
-	private final SQLTable sourceTable;
-	private final PrimaryKeyColumnTableModel columnTableModel;
+	private SQLTable sourceTable;
+	private PrimaryKeyColumnTableModel columnTableModel;
+	
+	private ActionListener deriveAction = new DeriveAction(this); 
 	
 	/** Displays validation results */
 	private StatusComponent statusComponent;
@@ -95,9 +103,37 @@ public class RelatedTableDeriver implements EditorPane {
 	 * Handles the validation rules for this form.
 	 */
 	private FormValidationHandler validationHandler;
+	
+	private JProgressBar progressBar;
 
-	private final AbstractAction okAction = new AbstractAction("OK") {
-		public void actionPerformed(ActionEvent e) {
+	private class DeriveAction extends MonitorableWorker implements ActionListener {
+
+		/**
+         * Indicates that the derive process has begun.
+         */
+        private boolean started;
+        
+        /**
+         * Indicated that the derive process has terminated (with either
+         * success or failure).
+         */
+        private boolean finished;
+		
+		public DeriveAction(SwingWorkerRegistry registry) {
+			super(registry);
+		}
+
+		@Override
+		public void cleanup() throws Exception {
+        	logger.debug("DeriveRelatedRulesAction.cleanup() starting");
+        	finished = true;
+        	dialog.dispose();
+		}
+
+		@Override
+		/** Called (once) by run() in superclass */
+		public void doStuff() throws Exception {
+            started = true;
 			
 			// Adds all the user defined primary keys to the list that will be checked
 			primaryKeys = new ArrayList<String>();
@@ -112,7 +148,7 @@ public class RelatedTableDeriver implements EditorPane {
 			}
 
 			long start = System.currentTimeMillis();
-			logger.debug("Deriving....");
+			logger.debug("Fetching database meta data...");
 
 			String lastTableName = "";
 			String lastSchemaName = "";
@@ -136,10 +172,12 @@ public class RelatedTableDeriver implements EditorPane {
 			}
 
 			try {
+				logger.debug("Beginning comparison on columns...");
 				rs = dbMeta.getColumns(null, null, null, null);
 				int count = 0;
 
 				while (rs.next()) {
+					
 					String tableName = rs.getString("TABLE_NAME");
 					String columnName = rs.getString("COLUMN_NAME");
 					String catalogName = rs.getString("TABLE_CAT");
@@ -215,76 +253,135 @@ public class RelatedTableDeriver implements EditorPane {
 			
 			logger.debug("Finished in " + ((System.currentTimeMillis()-start)/1000) + " seconds!");
 			swingSession.save(project);
-			dialog.dispose();
 		}
-	};
+
+		public void actionPerformed(ActionEvent e) {
+			save.setEnabled(false);
+			
+			try {
+            	progressBar.setVisible(true);
+            	logger.debug("Progress Bar has been set to visible");
+            	ProgressWatcher watcher = new ProgressWatcher(progressBar, this);
+            	watcher.setHideProgressBarWhenFinished(true);
+            	watcher.start();
+                new Thread(this).start();
+            } catch (Exception ex) {
+                SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+                        "Error in deriving related rules.", ex );
+                this.finished = true;
+            }
+		}
+
+		public Integer getJobSize() {
+			return null;
+		}
+
+		public String getMessage() {
+			return "Deriving related rules...";
+		}
+
+		public int getProgress() {
+			return 0;
+		}
+
+		public boolean hasStarted() {
+			return started;
+		}
+
+		public boolean isFinished() {
+			return finished;
+		}
+	}
 
 	private final AbstractAction cancelAction = new AbstractAction("Cancel") {
 		public void actionPerformed(ActionEvent e) {
 			dialog.dispose();
 		}
 	};
+	
+	/**
+	 * Does nothing! This is only here so that the button can be disabled.
+	 */
+	private final AbstractAction okAction = new AbstractAction("OK") {
+		public void actionPerformed(ActionEvent e) {
+		}
+	};
 
-	public RelatedTableDeriver(Project project,
-		MatchMakerSwingSession swingSession) throws ArchitectException {
+	public DeriveRelatedRulesAction(MatchMakerSwingSession swingSession, Project project) {
+		super("Derive Related Rules");
 		this.project = project;
 		this.swingSession = swingSession;
+		dialog = new JDialog(swingSession.getFrame(), "Derive Related Rules");
+	}
+	
 
-		sourceTable = project.getSourceTable();
-		SQLIndex oldIndex = project.getSourceTableIndex();
-
-		// List of actions to disable when validation status is fail.
-		List<Action> actions = new ArrayList<Action>();
-		actions.add(okAction);
-		
-		statusComponent = new StatusComponent();
-		validationHandler = new FormValidationHandler(statusComponent, actions);
-
-		columnTableModel = new PrimaryKeyColumnTableModel(sourceTable,oldIndex);
-		columnTable = new JTable(columnTableModel);
-		columnTable.addColumnSelectionInterval(1, 1);
-		TableUtils.fitColumnWidths(columnTable, 10);
-		
-		PrimaryKeySelectionValidator columnValidator = new PrimaryKeySelectionValidator(columnTable);
-		validationHandler.addValidateObject(columnTable, columnValidator);
-
-		dialog = new JDialog(swingSession.getFrame());
-		dialog.setTitle("Related Table Deriver");
-		buildUI();
-		dialog.pack();
-		dialog.setLocationRelativeTo(swingSession.getFrame());
-		dialog.setVisible(true);
-		
-        validationHandler.resetHasValidated();
+	public void registerSwingWorker(SPSwingWorker worker) {
+		swingSession.registerSwingWorker(worker);
 	}
 
-	private void buildUI() {
+	public void removeSwingWorker(SPSwingWorker worker) {
+		swingSession.removeSwingWorker(worker);
+	}
 
+	public void actionPerformed(ActionEvent e) {
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:pref:grow,4dlu",
 				// column1    2    3
-		"10dlu,pref:grow,4dlu,pref:grow,4dlu,fill:min(200dlu;pref):grow,4dlu,pref,4dlu");
-		//       1     2         3    4         5    6         7     8                          9    10   11
+		"10dlu,pref:grow,4dlu,pref:grow,4dlu,fill:min(200dlu;pref):grow,4dlu,pref,4dlu,pref,10dlu");
+		// 1        2     3   4           5                    6         7     8   9    10   11
 		PanelBuilder pb;
 		JPanel panel = logger.isDebugEnabled() ? new FormDebugPanel(layout)
-		: new JPanel(layout);
+			: new JPanel(layout);
 		pb = new PanelBuilder(layout, panel);
 
 		CellConstraints cc = new CellConstraints();
 
-		JButton save = new JButton(okAction);
-		JButton exit = new JButton(cancelAction);
+		save = new JButton(okAction);
+		save.addActionListener(deriveAction);
+		exit = new JButton(cancelAction);
 
+		// List of actions to disable when validation status is fail.
+		List<Action> actions = new ArrayList<Action>();
+		actions.add(okAction);
+
+		statusComponent = new StatusComponent();
+		validationHandler = new FormValidationHandler(statusComponent, actions);
 		pb.add(statusComponent, cc.xy(2, 2));
 		pb.add(new JLabel("Table: " + DDLUtils.toQualifiedName(project.getSourceTable())),
 				cc.xy(2, 4));
+		
+		try {
+			sourceTable = project.getSourceTable();
+			SQLIndex oldIndex = project.getSourceTableIndex();
+			columnTableModel = new PrimaryKeyColumnTableModel(sourceTable,oldIndex);
+			columnTable = new JTable(columnTableModel);
+			columnTable.addColumnSelectionInterval(1, 1);
+			TableUtils.fitColumnWidths(columnTable, 10);
+		} catch (ArchitectException ex) {
+			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+					"Error in deriving related rules.", ex);
+		}
+		
 		JScrollPane scrollPane = new JScrollPane(columnTable);
 		pb.add(scrollPane, cc.xy(2, 6, "f,f"));
+		
+		PrimaryKeySelectionValidator columnValidator = new PrimaryKeySelectionValidator(columnTable);
+		validationHandler.addValidateObject(columnTable, columnValidator);
 
-		pb.add(ButtonBarFactory.buildOKCancelBar(save, exit), cc.xy(2,8));
+		progressBar = new JProgressBar();
+		pb.add(progressBar, cc.xy(2, 8, "f,f"));
+
+		pb.add(ButtonBarFactory.buildOKCancelBar(save, exit), cc.xy(2,10));
+		
 		dialog.getContentPane().add(panel);
 		dialog.getRootPane().setDefaultButton(save);
 		SPSUtils.makeJDialogCancellable(dialog, cancelAction, false);
+		dialog.setTitle("Related Table Deriver");
+		dialog.pack();
+		dialog.setLocationRelativeTo(swingSession.getFrame());
+		dialog.setVisible(true);
+		
+		validationHandler.resetHasValidated();
 	}
 
 	/**
@@ -450,18 +547,6 @@ public class RelatedTableDeriver implements EditorPane {
 			}
 			return columns;
 		}
-	}
-
-	public JComponent getPanel() {
-		return panel;
-	}
-
-	public boolean hasUnsavedChanges() {
-		return false;
-	}
-
-	public boolean doSave() {
-		return true;
 	}
 
 	/**

@@ -127,7 +127,7 @@ public class ProjectEditor implements EditorPane {
     private JComboBox folderComboBox = new JComboBox();
     private JComboBox indexComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
-    private JLabel projectType = new JLabel();
+    private JTextField projectType = new JTextField();
     private JTextField resultTableName = new JTextField();
     private JButton viewBuilder;
     private JButton createResultTable;
@@ -362,6 +362,7 @@ public class ProjectEditor implements EditorPane {
 		row += 2;
 		pb.add(new JLabel("Type:"), cc.xy(2,row,"r,c"));
 		pb.add(projectType, cc.xy(4,row));
+        projectType.setEditable(false);
 		row+=2;
 		pb.addTitle("Source Table", cc.xy(2, row));
 		row+=2;
