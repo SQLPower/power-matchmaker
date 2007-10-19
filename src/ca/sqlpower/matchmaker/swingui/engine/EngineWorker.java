@@ -23,7 +23,6 @@ import java.awt.Component;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import javax.swing.JProgressBar;
 import javax.swing.text.Document;
 
 import org.apache.log4j.Appender;
@@ -63,19 +62,19 @@ class EngineWorker extends SPSwingWorker {
 	
 	/**
 	 * @param engine The MatchMakerEngine that the worker will run
-	 * @param engineOutputDoc
-	 * @param progressBar The progress bar that will visualize the engine progress
+	 * @param outputPanel The EngineOutputPanel where the engine will display it's output, 
+	 * including the log output and progress bar
 	 * @param registry The SwingWorkerRegistry that this worker will register itself with
 	 * @throws EngineSettingException
 	 * @throws ArchitectException
 	 */
-	public EngineWorker(MatchMakerEngine engine, Document engineOutputDoc, JProgressBar progressBar, SwingWorkerRegistry registry) throws EngineSettingException, ArchitectException {
+	public EngineWorker(MatchMakerEngine engine, EngineOutputPanel outputPanel, SwingWorkerRegistry registry) throws EngineSettingException, ArchitectException {
 		super(registry);
 		this.engine = engine;
-		this.engineOutputDoc = engineOutputDoc;
-		this.parentComponent = progressBar;
+		this.engineOutputDoc = outputPanel.getOutputDocument();
+		this.parentComponent = outputPanel.getOutputComponent().getTopLevelAncestor();
 		engine.checkPreconditions();
-		ProgressWatcher.watchProgress(progressBar, engine);
+		ProgressWatcher.watchProgress(outputPanel.getProgressBar(), engine);
 	}
 	
 	@Override
