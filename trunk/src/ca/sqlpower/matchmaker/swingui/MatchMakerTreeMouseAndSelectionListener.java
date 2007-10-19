@@ -481,6 +481,9 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 								.setCurrentEditorComponent(new MergeEnginePanel(
 										swingSession, node.getProject(),
 										owningFrame));
+					} else if (node.getActionType() == MatchActionType.RUN_CLEANSING) {
+						swingSession.setCurrentEditorComponent(new CleanseEnginePanel(
+									swingSession, node.getProject(), owningFrame));
 					}
 				} else if (o instanceof TranslateGroupParent) {
 					swingSession

@@ -39,10 +39,10 @@ import javax.swing.SpinnerNumberModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.MatchEngineImpl;
+import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MungeSettings;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
@@ -151,7 +151,7 @@ public class CleanseEnginePanel implements EditorPane {
 			}
 		});
 		engineOutputPanel = new EngineOutputPanel(parentFrame);
-		engine = new MatchEngineImpl(swingSession, project);
+		engine = new CleanseEngineImpl(swingSession, project);
 		runEngineAction = new RunEngineAction(swingSession, engine,
 				"Run Cleanse Engine", engineOutputPanel, this);
 		panel = buildUI();
