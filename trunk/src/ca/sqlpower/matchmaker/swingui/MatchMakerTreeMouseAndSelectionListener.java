@@ -243,12 +243,12 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		m.addSeparator();
 		m.add(new JMenuItem(new NewMungeProcessAction(swingSession, project)));
 
-		if (!project.getType().equals(ProjectMode.CLEANSE)) {
+		if (project.getType() != ProjectMode.CLEANSE) {
 			m.add(new JMenuItem(new NewMergeRuleAction(swingSession, project)));
 		}
 		
 		m.addSeparator();
-		if (project.getType().equals(ProjectMode.FIND_DUPES)) {
+		if (project.getType() == ProjectMode.FIND_DUPES) {
 			m.add(new JMenuItem(new AbstractAction("Run Match") {
 				public void actionPerformed(ActionEvent e) {
 					MatchEnginePanel f = new MatchEnginePanel(swingSession, project,
@@ -263,7 +263,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));
-		} else if (project.getType().equals(ProjectMode.CLEANSE)) {
+		} else if (project.getType() == ProjectMode.CLEANSE) {
 			m.add(new JMenuItem(new AbstractAction("Run Cleanse") {
 				public void actionPerformed(ActionEvent e) {
 					CleanseEnginePanel f = new CleanseEnginePanel(swingSession,

@@ -25,6 +25,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 
@@ -67,7 +68,7 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
             stmt = con.createStatement();
             stmt.executeUpdate(
                     "INSERT INTO pl_match (match_oid, match_id, match_type) " +
-                    "VALUES ("+time+", '"+projectName+"', '"+Project.ProjectMode.FIND_DUPES+"')");
+                    "VALUES ("+time+", '"+projectName+"', '"+ProjectMode.FIND_DUPES+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it

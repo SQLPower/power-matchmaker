@@ -26,12 +26,13 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
+import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
 
 public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTestCase<TableMergeRules,TableMergeRuleDAO>  {
 
@@ -41,7 +42,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
     public AbstractTableMergeRulesDAOTestCase() throws Exception {
         project= new Project();
         project.setName("Merge Rules Test Project");
-        project.setType(Project.ProjectMode.BUILD_XREF);
+        project.setType(ProjectMode.BUILD_XREF);
         folder = new PlFolder("test folder");
         project.setParent(folder);
         try {

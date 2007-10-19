@@ -260,11 +260,11 @@ public class MatchMakerTreeModel implements TreeModel {
         List<MatchActionNode> actionNodes = matchActionCache.get(project);
         if (actionNodes == null) {
             actionNodes = new ArrayList<MatchActionNode>();
-            if (project.getType().equals(ProjectMode.FIND_DUPES)) {
+            if (project.getType() == ProjectMode.FIND_DUPES) {
 	            for (MatchActionType type : DE_DUP_ACTIONS) {
 	                actionNodes.add(new MatchActionNode(type, project));
 	            }
-            } else if (project.getType().equals(ProjectMode.CLEANSE)) {
+            } else if (project.getType() == ProjectMode.CLEANSE) {
             	for (MatchActionType type : CLEANSING_ACTIONS) {
             		actionNodes.add(new MatchActionNode(type, project));
             	}

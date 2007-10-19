@@ -260,7 +260,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		public void actionPerformed(ActionEvent e) {
 			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (match != null && match.getType().equals(ProjectMode.FIND_DUPES)) {
+			if (match != null && match.getType() == ProjectMode.FIND_DUPES) {
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
 			    TreePath treePath = 
 			    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,2));
@@ -273,7 +273,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		public void actionPerformed(ActionEvent e) {
 			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (match != null && match.getType().equals(ProjectMode.FIND_DUPES)) {
+			if (match != null && match.getType() == ProjectMode.FIND_DUPES) {
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
 				TreePath treePath = 
 					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,5));
@@ -286,7 +286,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		public void actionPerformed(ActionEvent e) {
 			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (match != null && match.getType().equals(ProjectMode.CLEANSE)) {
+			if (match != null && match.getType() == ProjectMode.CLEANSE) {
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
 				TreePath treePath = 
 					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,1));
@@ -318,7 +318,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		public void actionPerformed(ActionEvent e) {
 			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (project == null || project.getType().equals(ProjectMode.CLEANSE))
+			if (project == null || project.getType() == ProjectMode.CLEANSE)
 				return;
 
 			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(

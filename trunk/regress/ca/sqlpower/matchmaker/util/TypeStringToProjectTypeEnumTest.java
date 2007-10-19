@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import junit.framework.TestCase;
-import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.testutil.MockJDBCDriver;
@@ -34,7 +34,7 @@ import ca.sqlpower.testutil.MockJDBCResultSet;
 
 public class TypeStringToProjectTypeEnumTest extends TestCase {
 
-	Project.ProjectMode[] allTypes = Project.ProjectMode.values();
+	ProjectMode[] allTypes = ProjectMode.values();
 
 	TypeStringToProjectTypeEnum userType;
 	private MockJDBCResultSet rs;
@@ -61,17 +61,17 @@ public class TypeStringToProjectTypeEnumTest extends TestCase {
 		rs.setColumnName(1,"match_type");
 		names = new String[1];
 		names[0]="match_type";
-		data = new String[Project.ProjectMode.values().length+1];
+		data = new String[ProjectMode.values().length+1];
 		int i = 0;
-		for (Project.ProjectMode type: allTypes) {
+		for (ProjectMode type: allTypes) {
 			data[i] = type.toString();
 			i++;     
 		}
 	}
 
 	public void testDeepCopy() {
-		for (Project.ProjectMode type: allTypes) {
-			Project.ProjectMode testCopy = (Project.ProjectMode) userType.deepCopy(type);
+		for (ProjectMode type: allTypes) {
+			ProjectMode testCopy = (ProjectMode) userType.deepCopy(type);
 			assertEquals("Invalid project type",type,testCopy);
 				
 		}
@@ -82,7 +82,7 @@ public class TypeStringToProjectTypeEnumTest extends TestCase {
 			Object[] row = {data[i]};
 			rs.addRow(row);
 			rs.next();
-			Project.ProjectMode get = (Project.ProjectMode)userType.nullSafeGet(rs, names, null);
+			ProjectMode get = (ProjectMode)userType.nullSafeGet(rs, names, null);
 			if (i < allTypes.length) {
 				assertEquals("The project type is not correct", allTypes[i], get);
 			} else {
