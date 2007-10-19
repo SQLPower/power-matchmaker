@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
@@ -59,6 +60,9 @@ public class MatchProcessor extends AbstractProcessor {
 		this.matchData = matchData;
 		this.pool = pool;
 		this.mungeProcess = process; 
+		if (mungeProcess.getParentProject().getMungeSettings().getDebug()) {
+			logger.setLevel(Level.DEBUG);
+		}
 		monitorableHelper.setJobSize(matchData.size());
 	}
 	
@@ -92,5 +96,9 @@ public class MatchProcessor extends AbstractProcessor {
 		}
 		
 		return Boolean.TRUE;
+	}
+	
+    public static Logger getLogger() {
+		return logger;
 	}
 }

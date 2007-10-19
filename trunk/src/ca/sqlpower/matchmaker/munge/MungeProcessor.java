@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.graph.DepthFirstSearch;
@@ -49,6 +50,9 @@ public class MungeProcessor extends AbstractProcessor {
     
     public MungeProcessor(MungeProcess mungeProcess) {
         this.mungeProcess = mungeProcess;
+        if (mungeProcess.getParentProject().getMungeSettings().getDebug()) {
+        	logger.setLevel(Level.DEBUG);
+        }
         List<MungeStep> steps = new ArrayList<MungeStep>(mungeProcess.getChildren());
         
         // topo sort
@@ -109,4 +113,9 @@ public class MungeProcessor extends AbstractProcessor {
     List<MungeStep> getProcessOrder() {
     	return processOrder;
     }
+    
+    public static Logger getLogger() {
+		return logger;
+	}
 }
+
