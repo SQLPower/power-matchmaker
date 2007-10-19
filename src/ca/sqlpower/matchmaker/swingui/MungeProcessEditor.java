@@ -45,6 +45,7 @@ import javax.swing.JToolBar;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -140,6 +141,10 @@ public class MungeProcessEditor implements EditorPane {
                     "The given process has a parent which is not the given parent match obejct!");
         }
         handler.addValidateObject(name, new MungeProcessNameValidator());
+        
+        if (project.getType() == ProjectMode.CLEANSE) {
+        	handler.addValidateObject(priority, new CleanseProjectProcessPriorityValidator());
+        }
         
         
     }
@@ -341,6 +346,25 @@ public class MungeProcessEditor implements EditorPane {
             } else if (process.getParent() == null && parentProject.getMungeProcessByName(name.getText()) != null) {
             	return ValidateResult.createValidateResult(Status.FAIL, "Munge Process name is invalid or already exists.");
             }
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+    }
+	
+	private class CleanseProjectProcessPriorityValidator implements Validator {
+        public ValidateResult validate(Object contents) {
+        	
+        	if (contents == null) {
+        		return ValidateResult.createValidateResult(Status.WARN, "No priority set, assuming 0");
+        	}
+        	
+			int value = Integer.parseInt((String)contents);
+		
+			for (MungeProcess mp : parentProject.getMungeProcessesFolder().getChildren()) {
+				if (mp.getMatchPercent() == value && mp != process) {
+					return ValidateResult.createValidateResult(Status.WARN, "Duplicate Priority. " + 
+							"If both the cleansing process are run at the same time there is no way to know there relitive order.");
+				}
+			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }

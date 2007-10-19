@@ -20,10 +20,16 @@
 package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -33,17 +39,22 @@ import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
+import ca.sqlpower.matchmaker.MungeProcessPriorityComparator;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
@@ -128,7 +139,18 @@ public class CleanseEnginePanel implements EditorPane {
 	 * An action to run the engine and print the output to the engineOutputPanel
 	 */
 	private Action runEngineAction;
+	
+	/**
+	 * The map of check boxes to munge processes. This is used to update 
+ 	 * if a process is active.
+	 */
+	private Map<JCheckBox, MungeProcess> processes;
 
+	/**
+	 * The button to close the popup.
+	 */
+	private JButton showPopupButton;
+	
 	/**
 	 * The match engine for this panel
 	 */
@@ -191,6 +213,22 @@ public class CleanseEnginePanel implements EditorPane {
 	 * this method simply lays out the components that class provides.
 	 */
 	private JPanel buildUI() {
+		
+		final List<MungeProcess> processlist = new LinkedList<MungeProcess>(project.getMungeProcessesFolder().getChildren());
+		Collections.sort(processlist, new MungeProcessPriorityComparator());
+		
+		processes = new LinkedHashMap<JCheckBox, MungeProcess>();
+		
+		showPopupButton = new JButton();
+		showPopupButton.addActionListener(new AbstractAction(){
+			public void actionPerformed(ActionEvent e) {
+				getPopupMenu(processlist).show(panel, showPopupButton.getX(), showPopupButton.getY() + showPopupButton.getHeight());
+			}
+		});
+		
+		getPopupMenu(processlist);
+		setPopupButtonText();
+		
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,4dlu,pref,4dlu",
 				//  1         2    3         4     5     6    7     8
@@ -229,6 +267,10 @@ public class CleanseEnginePanel implements EditorPane {
 		pb.add(new JButton(browseLogFileAction), cc.xy(5, y, "r,f"));
 		pb.add(appendToLog, cc.xy(7, y, "l,f"));
 
+		y+=2;
+		pb.add(new JLabel("Cleansing Processes to run: "), cc.xy(2, y, "r,c"));
+		pb.add(showPopupButton, cc.xy(4, y, "l,c"));
+		
 		y += 2;
 		pb.add(new JLabel("Records to Process (0 for no limit):"), cc.xy(2, y, "r,c"));
 		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
@@ -258,6 +300,123 @@ public class CleanseEnginePanel implements EditorPane {
 		anotherP.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 		
 		return anotherP;
+	}
+	
+	private void setPopupButtonText() {
+		int count = 0;
+		
+		for (MungeProcess mp : processes.values()) {
+			if (mp.getActive()) {
+				count++;
+			}
+		}
+		
+		showPopupButton.setText("Choose Munge Processes");
+		
+		if (count == 0) {
+			showPopupButton.setText(showPopupButton.getText() + " (None Selected)");
+		} else if (count == processes.size()) {
+			showPopupButton.setText(showPopupButton.getText() + " (All Selected)");
+		} else {
+			showPopupButton.setText(showPopupButton.getText() + " (" + count + " Selected)");
+		}
+		if (panel != null) {
+			panel.revalidate();
+		}
+	}
+	
+	private JPopupMenu getPopupMenu(List<MungeProcess> processlist) {
+		processes.clear();
+		
+		final JPopupMenu processMenu = new JPopupMenu("Choose Processes");
+		
+		processMenu.addPopupMenuListener(new PopupMenuListener(){
+			public void popupMenuCanceled(PopupMenuEvent e) {
+				//not used (popupMenuWillBecomeInvisible should also be called)
+			}
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+				boolean save = false;
+				for (JCheckBox cb : processes.keySet()) {
+					MungeProcess mp = processes.get(cb);
+					if (cb.isSelected() != mp.getActive()) {
+						mp.setActive(cb.isSelected());
+						save = true;
+					}
+				}
+				if (save) {
+					swingSession.save(project);
+					setPopupButtonText();
+				}
+			}
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				//not used
+			}
+		});
+		
+		processMenu.setBorder(BorderFactory.createRaisedBevelBorder());
+		
+		final JButton selectAll = new JButton("Select All");
+		selectAll.addActionListener(new AbstractAction(){
+			public void actionPerformed(ActionEvent e) {
+					for (JCheckBox jcb : processes.keySet()) {
+						jcb.setSelected(true);
+					}
+				}			
+		});
+		
+		
+		final JButton unselectAll = new JButton(new AbstractAction("Unselect All"){
+			public void actionPerformed(ActionEvent e) {
+					for (JCheckBox jcb : processes.keySet()) {
+						jcb.setSelected(false);
+					}
+				}			
+		});
+		
+		final JButton close = new JButton(new AbstractAction("Close"){
+			public void actionPerformed(ActionEvent e) {
+				processMenu.setVisible(false);
+			}
+		});
+		
+		String cols = "10dlu,pref,10dlu";
+		String rows = "4dlu,";
+		
+		for (int x = 0; x < processlist.size()+2; x++) {
+			rows += "pref,4dlu,";
+		}
+		rows = rows.substring(0,rows.length()-1);
+		
+		FormLayout layout = new FormLayout(cols,
+				rows);
+		
+		JPanel top = new JPanel(new FlowLayout());
+		top.add(selectAll, -1);
+		top.add(unselectAll, -1);
+
+		JPanel menu = logger.isDebugEnabled() ? new FormDebugPanel(layout) : new JPanel(layout);
+		CellConstraints mcc = new CellConstraints();
+		
+		int row = 2;
+		menu.add(top, mcc.xy(2,row));		
+		
+		for (MungeProcess mp : processlist) {
+			row+=2;
+			JCheckBox cb = new JCheckBox(mp.getName());
+			cb.setSelected(mp.getActive());
+			processes.put(cb, mp);
+			menu.add(cb,mcc.xy(2,row));
+		}
+		
+		row+=2;
+		JPanel tmp = new JPanel(new FlowLayout());
+		tmp.add(close);
+		menu.add(tmp,mcc.xy(2,row));
+
+		
+		processMenu.add(menu);
+		
+		return processMenu;
 	}
 	
 	/*===================== EditorPane implementation ==================*/
