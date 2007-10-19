@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
@@ -37,6 +39,8 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 public class TableMergeRules
 	extends AbstractMatchMakerObject<TableMergeRules, ColumnMergeRules> {
 
+	private static final Logger logger = Logger.getLogger(TableMergeRules.class);
+	
 	public enum ChildMergeActionType {
 		DELETE_ALL_DUP_CHILD, UPDATE_FAIL_ON_CONFLICT, UPDATE_DELETE_ON_CONFLICT, UPDATE_USING_SQL;
 		
@@ -351,9 +355,9 @@ public class TableMergeRules
 		} else {
 			for (Object cmr : getChildren()) {
 				if (cmr != null)
-					System.out.println(cmr.getClass());
+					logger.debug(cmr.getClass());
 				else
-					System.out.println("null");
+					logger.debug("null");
 			}
 			for (ColumnMergeRules cmr : getChildren()) {
 				if (cmr.isInPrimaryKey()) {

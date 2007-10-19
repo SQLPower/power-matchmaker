@@ -170,7 +170,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 */
 	public MungePen(MungeProcess process, FormValidationHandler handler, Project project) throws ArchitectException {
 		
-		process.addMatchMakerListener(new MungePenMatchRuleSetListener());
+		process.addMatchMakerListener(new MungePenMungeProcessListener());
 		mungeStepListener = new MungePenMungeStepListener();
 		
 		setFocusable(true);
@@ -720,7 +720,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 * The class for handling all of the actions fired by the MungeProcess. This takes care of adding and removing 
 	 * MungeCompoents that are no longer in the process. 
 	 */
-    private class MungePenMatchRuleSetListener implements MatchMakerListener<MungeProcess, MungeStep> {
+    private class MungePenMungeProcessListener implements MatchMakerListener<MungeProcess, MungeStep> {
 		public void mmChildrenInserted(MatchMakerEvent<MungeProcess, MungeStep> evt) {
 			
 			for (int x : evt.getChangeIndices()) {

@@ -93,10 +93,12 @@ public class MergeProcessor extends AbstractProcessor {
 	 * supported.
 	 */
 	public Boolean call() throws Exception {
-
         TableMergeRules sourceTableMergeRule = null;
         boolean needsToCheckDup = false;
         Map<SQLColumn, ColumnMergeRules> mapping = new HashMap<SQLColumn, ColumnMergeRules>();
+        
+		monitorableHelper.setStarted(true);
+		monitorableHelper.setFinished(false);
         
         // Finds the correct table merge rule according to the source table
         sourceTableMergeRule = project.getTableMergeRules().get(0);
@@ -114,15 +116,22 @@ public class MergeProcessor extends AbstractProcessor {
 			mapping.put(cmr.getColumn(), cmr);
 		}
 		
+		int rowCount = 0;
+		for (SourceTableRecord str: processOrder) {
+			rowCount += gm.getOutboundEdges(str).size();
+		}
+		monitorableHelper.setJobSize(rowCount);
+		
 		for (SourceTableRecord str : processOrder) {
 			for (PotentialMatchRecord pm : gm.getOutboundEdges(str)) {
+				monitorableHelper.incrementProgress();
 				if (pm.isMatch()) {
 					List<Object> dupKeyValues = pm.getDuplicate().getKeyValues();
 					List<Object> masterKeyValues = pm.getMaster().getKeyValues();
 					List<String> sourceIndexColumnNames = getSourceIndexColumnNames();
 					
 					// Starts the recursive merging
-					MergeChildTables(sourceIndexColumnNames, dupKeyValues, masterKeyValues, sourceTableMergeRule);
+					mergeChildTables(sourceIndexColumnNames, dupKeyValues, masterKeyValues, sourceTableMergeRule);
 
 					if (needsToCheckDup) {
 						int rows = updateSourceTableRows(pm, mapping, sourceIndexColumnNames, masterKeyValues);
@@ -132,7 +141,6 @@ public class MergeProcessor extends AbstractProcessor {
 						}
 					}
 				}
-
 			}
 		}
 		
@@ -161,6 +169,7 @@ public class MergeProcessor extends AbstractProcessor {
 		pool.store();
 		stmt.close();
 		con.close();
+		monitorableHelper.setFinished(true);
 		return Boolean.TRUE;
 	}
 	
@@ -177,7 +186,7 @@ public class MergeProcessor extends AbstractProcessor {
 	 * <p>
 	 * Note that the keyValues must be in the ordered by the same order of the columns
 	 */
-	private void MergeChildTables(List<String> parentKeyColumnNames, 
+	private void mergeChildTables(List<String> parentKeyColumnNames, 
 			List<Object> dupKeyValues, List<Object> masterKeyValues, 
 			TableMergeRules parentTableMergeRule) throws ArchitectException, SQLException {
 		SQLTable parentTable = parentTableMergeRule.getSourceTable();
@@ -284,7 +293,7 @@ public class MergeProcessor extends AbstractProcessor {
 				
 				// Recursively merge all the grand child tables
 				for (int i = 0; i < childDupKeyValues.size(); i++) {
-					MergeChildTables(childKeyColumnNames, childDupKeyValues.get(i), childMasterKeyValues.get(i), childTableMergeRule);
+					mergeChildTables(childKeyColumnNames, childDupKeyValues.get(i), childMasterKeyValues.get(i), childTableMergeRule);
 				}
 
 				// Delete the duplicate child records
@@ -808,26 +817,6 @@ public class MergeProcessor extends AbstractProcessor {
 		} else {
 			return SQL.quote(ival.toString());
 		}
-	}
-	
-	private String generateWhereStatement(List<Object> keyValues) throws ArchitectException, SQLException {
-		boolean first = true;
-		int colIndex = 0;
-		StringBuilder sql = new StringBuilder();
-		sql.append("\n WHERE ");
-		for (Object ival : keyValues) {
-			SQLIndex.Column icol = project.getSourceTableIndex().getChild(colIndex++);
-			if (!first) sql.append(" AND ");
-			sql.append(icol.getName());
-			if (ival == null) {
-				sql.append(" IS NULL");
-			} else {
-				sql.append("=");
-				sql.append(formatObjectToSQL(ival));
-			} 
-			first = false;
-		}
-		return sql.toString();
 	}
 	
 	private String generateWhereStatement(List<String> keyColumnNames, List<Object> keyValues) throws SQLException {

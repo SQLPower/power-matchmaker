@@ -26,7 +26,7 @@ import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 
-public class MatchRuleSetDAOOracleTest extends AbstractMungeProcessDAOTestCase {
+public class MungeProcessDAOOracleTest extends AbstractMungeProcessDAOTestCase {
     
     private MungeProcess ruleSet;
     

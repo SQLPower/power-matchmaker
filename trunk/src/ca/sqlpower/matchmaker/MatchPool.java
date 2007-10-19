@@ -106,7 +106,7 @@ public class MatchPool {
      * @param mungeProcessName
      * @return a list of potential match records that belong to the match critieria group
      */
-    public List<PotentialMatchRecord> getAllPotentialMatchByMatchRuleSet
+    public List<PotentialMatchRecord> getAllPotentialMatchByMungeProcess
                         (String mungeProcessName) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
@@ -124,7 +124,7 @@ public class MatchPool {
      * @param ruleSet
      * @return a list of potential match records that belong to the match critieria group
      */
-    public List<PotentialMatchRecord> getAllPotentialMatchByMatchRuleSet(MungeProcess ruleSet) {
+    public List<PotentialMatchRecord> getAllPotentialMatchByMungeProcess(MungeProcess ruleSet) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : potentialMatches){
@@ -140,8 +140,8 @@ public class MatchPool {
 	 * the pool ONLY. This does not remove the potential matches from the nodes
 	 * it connects. Nor does this modify the database.
 	 */
-    public void removePotentialMatchesInMatchGroup(String groupName){
-        potentialMatches.removeAll(getAllPotentialMatchByMatchRuleSet(groupName));        
+    public void removePotentialMatchesInMungeProcess(String processName){
+        potentialMatches.removeAll(getAllPotentialMatchByMungeProcess(processName));        
     }
     
     /**
