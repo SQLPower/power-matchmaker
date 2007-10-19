@@ -107,50 +107,44 @@ public abstract class AbstractCleanseTest extends TestCase{
         execSQL(con,sql);
 	}
 	
-	public void testOneUpperCaseConnection() {	
-		try {
-			populateTables();
-			
-			MungeStep mrs = step.getOuputStep();
-			UpperCaseMungeStep ucms = new UpperCaseMungeStep(new TestingMatchMakerSession());
-			ucms.connectInput(0, step.getChildren().get(1));
-			mrs.connectInput(1, ucms.getChildren().get(0));
-			
-			MungeProcess mungep = new MungeProcess();
-			mungep.addChild(step);
-			mungep.addChild(mrs);
-			mungep.addChild(ucms);
-			
-			MungeProcessor mp = new MungeProcessor(mungep);
-			mp.call();
-			
-			Connection con = db.getConnection();
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery("SELECT * FROM " + getFullTableName());
-			
-			if (!rs.next()) {
-				fail("NOTHING IN THE TABLE! :(");
-			}
-			
-			
-			assertEquals("a".toUpperCase(), rs.getString(2));
-			rs.next();
-			assertEquals("b".toUpperCase(), rs.getString(2));
-			rs.next();
-			assertEquals("c".toUpperCase(), rs.getString(2));
-			rs.next();
-			assertEquals("d".toUpperCase(), rs.getString(2));
-			rs.next();
-			assertEquals("e".toUpperCase(), rs.getString(2));
-			rs.next();
-			assertEquals("f".toUpperCase(), rs.getString(2));
-			
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(":(");
+	public void testOneUpperCaseConnection() throws Exception{	
+		populateTables();
+
+		MungeStep mrs = step.getOuputStep();
+		UpperCaseMungeStep ucms = new UpperCaseMungeStep(new TestingMatchMakerSession());
+		ucms.connectInput(0, step.getChildren().get(1));
+		mrs.connectInput(1, ucms.getChildren().get(0));
+
+		MungeProcess mungep = new MungeProcess();
+		mungep.addChild(step);
+		mungep.addChild(mrs);
+		mungep.addChild(ucms);
+		project.addMungeProcess(mungep);
+		
+		MungeProcessor mp = new MungeProcessor(mungep);
+		mp.call();
+
+		Connection con = db.getConnection();
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT * FROM " + getFullTableName());
+
+		if (!rs.next()) {
+			fail("NOTHING IN THE TABLE! :(");
 		}
-			
+
+
+		assertEquals("a".toUpperCase(), rs.getString(2));
+		rs.next();
+		assertEquals("b".toUpperCase(), rs.getString(2));
+		rs.next();
+		assertEquals("c".toUpperCase(), rs.getString(2));
+		rs.next();
+		assertEquals("d".toUpperCase(), rs.getString(2));
+		rs.next();
+		assertEquals("e".toUpperCase(), rs.getString(2));
+		rs.next();
+		assertEquals("f".toUpperCase(), rs.getString(2));
+
 	}
 	
 	protected boolean execSQL(Connection conn, String sql) {

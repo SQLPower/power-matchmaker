@@ -20,6 +20,8 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -40,10 +42,12 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
@@ -356,6 +360,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 		public AbstractColumnMergeRulesTable(AbstractMergeColumnRuleTableModel columnMergeRuleTableModel) {
 			super(columnMergeRuleTableModel);
+			setDefaultRenderer(String.class, new CustomTableCellRenderer());
 		}
 
 		@Override
@@ -408,9 +413,8 @@ public class MergeColumnRuleEditor implements EditorPane {
 			if (column == 2) {
 				JComboBox importedKeyColumns = new JComboBox();
 				if (getParentTable().getSelectedItem() != null) {
-					SQLTable table = (SQLTable) getParentTable().getSelectedItem();
 					try {
-						List<SQLColumn> tableColumns = table.getColumns();
+						List<SQLColumn> tableColumns = mergeRule.getParentTablePrimaryKey();
 						importedKeyColumns.setModel(new DefaultComboBoxModel(tableColumns.toArray()));
 						importedKeyColumns.insertItemAt(null, 0);
 					} catch (ArchitectException e) {
@@ -425,6 +429,20 @@ public class MergeColumnRuleEditor implements EditorPane {
 		}
 	}
 	
+	public class CustomTableCellRenderer extends DefaultTableCellRenderer {
+	    public Component getTableCellRendererComponent (JTable table, 
+	    		Object value, boolean isSelected, boolean hasFocus, 
+	    		int row, int column) {
+	        Component cell = super.getTableCellRendererComponent(table, 
+	        		value, isSelected, hasFocus, row, column);
+	        if (table.getModel().isCellEditable(row, column)){
+	        	cell.setBackground(Color.WHITE);
+	        } else {
+	        	cell.setBackground(new Color(212,208,200));
+	        }
+	        return cell;
+	    }
+	}
 	
 	private class MergeColumnRuleJTableValidator implements Validator {
 
