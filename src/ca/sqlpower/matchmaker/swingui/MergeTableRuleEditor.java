@@ -241,6 +241,7 @@ public class MergeTableRuleEditor implements EditorPane {
 			if (selectedRow > 0) {
 				mergeRulesTable.setRowSelectionInterval(selectedRow, selectedRow);
 			}
+			doSave();
 			TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
 	};
