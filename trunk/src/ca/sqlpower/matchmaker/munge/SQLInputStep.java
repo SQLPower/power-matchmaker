@@ -237,7 +237,6 @@ public class SQLInputStep extends AbstractMungeStep {
      * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
     public MungeStep getOuputStep() throws ArchitectException {
-        new Exception().printStackTrace();
         if (outputStep != null) {
             return outputStep;
         } else if (project.getType() == ProjectMode.CLEANSE) {

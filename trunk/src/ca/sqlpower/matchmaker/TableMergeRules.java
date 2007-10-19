@@ -19,8 +19,12 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
+import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -317,5 +321,46 @@ public class TableMergeRules
 		} else {
 			return false;
 		}
+	}
+	
+	/**
+	 * Finds the parent table merge rule and returns the primary key of it.
+	 * If no such table is found then throw an exception.
+	 */
+	public List<SQLColumn> getParentTablePrimaryKey() throws ArchitectException {
+		if (getParentTable() != null && getParentProject() != null) {
+			for (TableMergeRules tmr : getParentProject().getTableMergeRules()) {
+				if (tmr.getSourceTable().equals(parentTable)) {
+					return tmr.getPrimaryKey();
+				}
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Finds the primary key for the current table merge rule.
+	 */
+	public List<SQLColumn> getPrimaryKey() throws ArchitectException {
+		List<SQLColumn> columns = new ArrayList<SQLColumn>();
+		
+		if (isSourceMergeRule()) {
+			for (SQLIndex.Column column : getParentProject().getSourceTableIndex().getChildren()) {
+				columns.add(column.getColumn()); 
+			}
+		} else {
+			for (Object cmr : getChildren()) {
+				if (cmr != null)
+					System.out.println(cmr.getClass());
+				else
+					System.out.println("null");
+			}
+			for (ColumnMergeRules cmr : getChildren()) {
+				if (cmr.isInPrimaryKey()) {
+					columns.add(cmr.getColumn());
+				}
+			}
+		}
+		return columns;
 	}
 }

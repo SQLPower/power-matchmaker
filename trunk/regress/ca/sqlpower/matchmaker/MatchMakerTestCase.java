@@ -133,7 +133,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 					// Ok, the duplicate object's property value compared equal.
 					// Now we want to make sure if we modify that property on the original,
 					// it won't affect the copy.
-					Object newCopyVal = modifyObject(property, copyVal);
+					Object newCopyVal = modifyObject(mmo, property, copyVal);
 
 					assertFalse(
 							"The two values are the same mutable object for property "+property.getDisplayName() + " was "+oldVal+ " and " + copyVal,
@@ -146,15 +146,20 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	}
 	
 	/**
-	 * Returns a new value that is not equal if the Object is immutable or 
-	 * modifies and returns oldVal if the object is mutable
-	 * Assumes oldVal is not null.
-	 * @param oldVal
-	 * @return
-	 * @throws IOException 
+	 * Returns a new value that is not equal to oldVal. If oldVal is immutable, the
+	 * returned object will be a new instance compatible with oldVal.  If oldVal is 
+	 * mutable, it will be modified in some way so it is no longer equal to its original
+	 * value.
+	 * 
+	 * @param mmo The object to which the property belongs.  You might need this
+	 *  if you have a special case for certain types of objects.
+	 * @param property The property that should be modified.  It belongs to mmo.
+	 * @param oldVal The existing value of the property to modify.  The returned value
+	 * will not equal this one at the time this method was first called, although it may
+	 * be the same instance as this one, but modified in some way.
 	 */
 	
-	private Object modifyObject(PropertyDescriptor property, Object oldVal) throws IOException {
+	private Object modifyObject(MatchMakerObject mmo, PropertyDescriptor property, Object oldVal) throws IOException {
 		if (property.getPropertyType() == Integer.TYPE
 				|| property.getPropertyType() == Integer.class) {
 				return ((Integer) oldVal) + 1;
@@ -217,7 +222,15 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			((Date)oldVal).setTime(((Date)oldVal).getTime()+10000);
 			return oldVal;
 		} else if (property.getPropertyType() == List.class) {
-		    ((List)oldVal).add("Test");
+			if (property.getName().equals("children")) {
+				if (mmo instanceof TableMergeRules) {
+					((List) oldVal).add(new ColumnMergeRules());
+				} else {
+					((List) oldVal).add(new StubMatchMakerObject());
+				}
+			} else {
+				((List)oldVal).add("Test");
+			}
 		    return oldVal;
 		} else if (property.getPropertyType() == SQLIndex.class ) {
 			((SQLIndex) oldVal).setName("modified index");
