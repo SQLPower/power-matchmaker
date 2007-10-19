@@ -23,7 +23,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 
 
@@ -31,70 +31,57 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 
 public class MockJDBCCleanseTest extends SQLInputStepTest {
 
-    protected ProjectMode getMatchType() {
-		return ProjectMode.CLEANSE;
+    @Override
+    protected ProjectMode getProjectType() {
+        return ProjectMode.CLEANSE;
+    }
+	
+	public void testDoNothing() throws Exception {
+        
+        assertSame(project, step.getParent().getParent().getParent());
+        assertSame(ProjectMode.CLEANSE, ((Project) (step.getParent().getParent().getParent())).getType());
+        
+	    MungeStep mrs = step.getOuputStep();
+        process.addChild(mrs);
+
+	    MungeProcessor mp = new MungeProcessor(process);
+	    mp.call();
+
+	    Connection con = db.getConnection();
+	    Statement stmt = con.createStatement();
+	    ResultSet rs = stmt.executeQuery("SELECT * FROM table1");
+
+	    if (!rs.next()) {
+	        fail("NOTHING IN THE TABLE! :(");
+	    }
+
+
+	    assertEquals("row1,1", rs.getString(1));
 	}
 	
-	public void testDoNothing() {
-		try {
-			MungeStep mrs = step.getOuputStep();
-			
-			MungeProcess mungep = new MungeProcess();
-			mungep.addChild(step);
-			mungep.addChild(mrs);
-			
-			MungeProcessor mp = new MungeProcessor(mungep);
-			mp.call();
-			
-			Connection con = db.getConnection();
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery("SELECT * FROM table1");
-			
-			if (!rs.next()) {
-				fail("NOTHING IN THE TABLE! :(");
-			}
-			
-			
-			assertEquals("row1,1", rs.getString(1));
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(":(");
-		}
-	}
-	
-	public void testOneUpperCaseConnection() {	
-		try {
-			
-			MungeStep mrs = step.getOuputStep();
-			UpperCaseMungeStep ucms = new UpperCaseMungeStep(new TestingMatchMakerSession());
-			ucms.connectInput(0, step.getChildren().get(0));
-			mrs.connectInput(0, ucms.getChildren().get(0));
-			
-			MungeProcess mungep = new MungeProcess();
-			mungep.addChild(step);
-			mungep.addChild(mrs);
-			mungep.addChild(ucms);
-			
-			MungeProcessor mp = new MungeProcessor(mungep);
-			mp.call();
-			
-			Connection con = db.getConnection();
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery("SELECT * FROM table1");
-			
-			if (!rs.next()) {
-				fail("NOTHING IN THE TABLE! :(");
-			}
-			
-			
-			assertEquals("row1,1".toUpperCase(), rs.getString(1));
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(":(");
-		}
-			
+	public void testOneUpperCaseConnection() throws Exception {	
+
+	    MungeStep mrs = step.getOuputStep();
+	    UpperCaseMungeStep ucms = new UpperCaseMungeStep(project.getSession());
+	    ucms.connectInput(0, step.getChildren().get(0));
+	    mrs.connectInput(0, ucms.getChildren().get(0));
+
+	    process.addChild(mrs);
+	    process.addChild(ucms);
+
+	    MungeProcessor mp = new MungeProcessor(process);
+        mp.call(10);
+
+	    Connection con = db.getConnection();
+	    Statement stmt = con.createStatement();
+	    ResultSet rs = stmt.executeQuery("SELECT * FROM table1");
+
+	    if (!rs.next()) {
+	        fail("NOTHING IN THE TABLE! :(");
+	    }
+
+	    assertEquals("row1,1".toUpperCase(), rs.getString(1));
+
 	}
 	
 }

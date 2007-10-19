@@ -71,21 +71,20 @@ public class SQLInputStep extends AbstractMungeStep {
      */
     private Connection con;
 
-    /**
-     * The type of the match
-     */
-	private ProjectMode type;
-
 	/**
 	 * The match we are working on
 	 */
 	private Project project;
 
+    /**
+     * The output step that is tied to this input step.
+     */
+    private MungeStep outputStep;
+
     public SQLInputStep(Project project, MatchMakerSession session) throws ArchitectException {
     	super(session);
         this.table = project.getSourceTable();
         this.project = project;
-        type = project.getType();
         setName(table.getName());
         for (SQLColumn c : table.getColumns()) {
             MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), typeClass(c.getType()));
@@ -234,14 +233,19 @@ public class SQLInputStep extends AbstractMungeStep {
     }
     
     /**
-     * 
+     * Creates or returns the output step for this input step.  There will only
+     * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
     public MungeStep getOuputStep() throws ArchitectException {
-    	if (type == ProjectMode.CLEANSE) {
-    		return new CleanseResultStep(project, getSession());
+        new Exception().printStackTrace();
+        if (outputStep != null) {
+            return outputStep;
+        } else if (project.getType() == ProjectMode.CLEANSE) {
+    		outputStep = new CleanseResultStep(project, getSession());
     	} else {
-    		return new MungeResultStep(project, this, getSession());
+    		outputStep = new MungeResultStep(project, this, getSession());
     	}
+        return outputStep;
     }
     
     public class CleanseResultStep extends AbstractMungeStep {
