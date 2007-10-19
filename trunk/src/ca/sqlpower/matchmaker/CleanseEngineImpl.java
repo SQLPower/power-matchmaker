@@ -23,6 +23,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -51,7 +53,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 	private String progressMessage;
 	
 	private Processor currentProcessor;
-
+	
 	public CleanseEngineImpl(MatchMakerSession session, Project project) {
 		this.setSession(session);
 		this.setProject(project);
@@ -187,10 +189,19 @@ public class CleanseEngineImpl extends AbstractEngine {
 				rowCount = processCount.intValue();
 			}
 			
-			List<MungeProcess> mungeProcesses = getProject().getMungeProcessesFolder().getChildren();
-			jobSize = rowCount * mungeProcesses.size();
+			List<MungeProcess> processes = new LinkedList<MungeProcess>();
+			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
+				if (mp.getActive()) {
+					processes.add(mp);
+				}
+			}
+			Collections.sort(processes, new MungeProcessPriorityComparator());
 			
-			for (MungeProcess currentProcess: mungeProcesses) {
+			
+			jobSize = rowCount * processes.size();
+			
+			
+			for (MungeProcess currentProcess: processes) {
 				munger = new MungeProcessor(currentProcess);
 				currentProcessor = munger;
 				progressMessage = "Running cleanse process " + currentProcess.getName();
@@ -215,7 +226,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 		}
 	
 	}
-	
+
 	///////// Monitorable support ///////////
 	
 	/**
