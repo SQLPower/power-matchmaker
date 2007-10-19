@@ -60,6 +60,8 @@ public class SQLInputStepTest extends TestCase {
     
     SQLInputStep step;
     SQLDatabase db;
+    Project project;
+    MungeProcess process;
     
     @Override
     protected void setUp() throws Exception {
@@ -74,10 +76,15 @@ public class SQLInputStepTest extends TestCase {
         table.addColumn(new SQLColumn(table, "col2", Types.INTEGER, 50, 0));
         table.addColumn(new SQLColumn(table, "col3", Types.TIMESTAMP, 50, 0));
 
-        Project project = new Project();
+        project = new Project();
         project.setType(getProjectType());
         project.setSourceTable(table);
+        
+        process = new MungeProcess();
+        project.addMungeProcess(process);
+        
         step = new SQLInputStep(project, new TestingMatchMakerSession());
+        process.addChild(step);
     }
     
     protected ProjectMode getProjectType() {
