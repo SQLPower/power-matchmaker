@@ -43,7 +43,6 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
@@ -187,7 +186,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		//new actions for delete and save should be extracted and be put into its own file.
 		bbb.addGridded(new JButton(new NewMergeRuleAction(swingSession, project)));
 		bbb.addRelatedGap();
-		bbb.addGridded(new JButton(deriveRelated));
+		bbb.addGridded(new JButton(new DeriveRelatedRulesAction(swingSession, project)));
 		bbb.addRelatedGap();
 		bbb.addGridded(new JButton(deleteRule));
 		bbb.addRelatedGap();
@@ -214,18 +213,7 @@ public class MergeTableRuleEditor implements EditorPane {
 			TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
 	};
-	
-	private Action deriveRelated = new AbstractAction("Derive Related Rules") {
-		public void actionPerformed(ActionEvent e) {
-			try {
-				new RelatedTableDeriver(project,swingSession);
-			} catch (ArchitectException e1) {
-				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
-						"Failed to generate columns for project source table.", e1);
-			}
-		}
-	};
-	
+
 	private Action moveDown = new AbstractAction("", SPSUtils.createIcon("chevrons_down1", "Move Down")) {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
@@ -268,6 +256,7 @@ public class MergeTableRuleEditor implements EditorPane {
                 MMSUtils.showExceptionDialog(swingSession.getFrame(),
                 		"Merge Interface Not Saved", ex);
             }
+            TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
 	};
 	
