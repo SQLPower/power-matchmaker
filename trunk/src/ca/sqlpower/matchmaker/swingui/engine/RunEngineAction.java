@@ -65,7 +65,7 @@ class RunEngineAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		editorPane.doSave();
 		try {
-			EngineWorker w = new EngineWorker(engine, engineOutputPanel.getOutputDocument(), engineOutputPanel.getProgressBar(), session);
+			EngineWorker w = new EngineWorker(engine, engineOutputPanel, session);
 			new Thread(w).start();
 		} catch (Exception ex) {
 			MMSUtils.showExceptionDialog(editorPane.getPanel(), "Engine error", ex);
