@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -164,6 +165,11 @@ public class MatchEngineImpl extends AbstractEngine {
 	
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException {
+		Level oldLoggerLevel = logger.getLevel();
+		if (getProject().getMungeSettings().getDebug()) {
+			logger.setLevel(Level.DEBUG);
+		}
+		
 		try {
 			setFinished(false);
 			setStarted(true);
@@ -180,26 +186,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Starting Match Engine";
 			logger.info(progressMessage);
 			
-			Integer processCount = getProject().getMungeSettings().getProcessCount();
-			int rowCount;
-			if (processCount == null || processCount == 0) {
-				Connection con = null;
-				Statement stmt = null;
-				try {
-				con = getSession().getConnection();
-				stmt = con.createStatement();
-				String rowCountSQL = "SELECT COUNT(*) AS ROWCOUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
-				ResultSet result = stmt.executeQuery(rowCountSQL);
-				logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
-				result.next();
-				rowCount = result.getInt("ROWCOUNT");
-				} finally {
-					if (stmt != null) stmt.close();
-					if (con != null) con.close();
-				}
-			} else {
-				rowCount = processCount.intValue();
-			}
+			int rowCount = getNumRowsToProcess();
 			
 			List<MungeProcess> mungeProcesses = getProject().getMungeProcessesFolder().getChildren();
 			jobSize = rowCount * mungeProcesses.size() * 2;
@@ -208,23 +195,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			// Fill pool with pre-existing matches
 			pool.findAll(null);
 			
-			for (MungeProcess currentProcess: mungeProcesses) {
-				munger = new MungeProcessor(currentProcess);
-				currentProcessor = munger;
-				progressMessage = "Running munge process " + currentProcess.getName();
-				logger.debug(getMessage());
-				munger.call(rowCount);
-				progress += munger.getProgress();
-
-				List<MungeResult> results = currentProcess.getResults();
-				
-				matcher = new MatchProcessor(pool, currentProcess, results);
-				currentProcessor = matcher;
-				progressMessage = "Matching munge process " + currentProcess.getName();
-				logger.debug(getMessage());
-				matcher.call();
-				progress += matcher.getProgress();
-			}
+			mungeAndMatch(rowCount, mungeProcesses, pool);
 			
 			currentProcessor = null;
 			progressMessage = "Storing matches";
@@ -240,9 +211,54 @@ public class MatchEngineImpl extends AbstractEngine {
 			logger.error(getMessage());
 			throw new RuntimeException(ex);
 		} finally {
+			logger.setLevel(oldLoggerLevel);
 			setFinished(true);
 		}
 	
+	}
+
+	private void mungeAndMatch(int rowCount, List<MungeProcess> mungeProcesses,
+			MatchPool pool) throws Exception {
+		for (MungeProcess currentProcess: mungeProcesses) {
+			munger = new MungeProcessor(currentProcess);
+			currentProcessor = munger;
+			progressMessage = "Running munge process " + currentProcess.getName();
+			logger.debug(getMessage());
+			munger.call(rowCount);
+			progress += munger.getProgress();
+
+			List<MungeResult> results = currentProcess.getResults();
+			
+			matcher = new MatchProcessor(pool, currentProcess, results);
+			currentProcessor = matcher;
+			progressMessage = "Matching munge process " + currentProcess.getName();
+			logger.debug(getMessage());
+			matcher.call();
+			progress += matcher.getProgress();
+		}
+	}
+
+	private int getNumRowsToProcess() throws SQLException {
+		Integer processCount = getProject().getMungeSettings().getProcessCount();
+		int rowCount;
+		Connection con = null;
+		Statement stmt = null;
+		try {
+			con = getSession().getConnection();
+			stmt = con.createStatement();
+			String rowCountSQL = "SELECT COUNT(*) AS ROWCOUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
+			ResultSet result = stmt.executeQuery(rowCountSQL);
+			logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
+			result.next();
+			rowCount = result.getInt("ROWCOUNT");
+		} finally {
+			if (stmt != null) stmt.close();
+			if (con != null) con.close();
+		}
+		if (processCount != null && processCount.intValue() > 0 && processCount.intValue() < rowCount) {
+			rowCount = processCount.intValue();
+		}
+		return rowCount;
 	}
 	
 	///////// Monitorable support ///////////
