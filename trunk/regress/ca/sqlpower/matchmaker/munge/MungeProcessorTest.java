@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import ca.sqlpower.matchmaker.Project;
+
 import junit.framework.TestCase;
 
 /**
@@ -91,6 +93,7 @@ public class MungeProcessorTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         MungeProcess mungeProcess = new MungeProcess();
+        mungeProcess.setParentProject(new Project());
 
         a = new TestingMungeStep("A", 0, 1);
 
