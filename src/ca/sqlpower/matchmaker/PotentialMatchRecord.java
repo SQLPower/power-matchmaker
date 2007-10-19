@@ -198,7 +198,7 @@ public class PotentialMatchRecord {
 	 * set.
 	 * 
 	 * @param ruleSet
-	 *            the MatchRuleSet that makes this edge exist
+	 *            the MungeProcess that makes this edge exist
 	 * @param matchStatus
 	 *            the status of the relationship
 	 * @param originalLhs

@@ -174,7 +174,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     private final Set<SPSwingWorker> swingWorkers = new HashSet<SPSwingWorker>();
     
     /**
-     * A colour chooser used by the MatchRuleSetEditor to set custom colours.
+     * A colour chooser used by the MungeProcessEditor to set custom colours.
      * It has been created within a swing session to share recent colours amongst
      * different match rule sets.
      */

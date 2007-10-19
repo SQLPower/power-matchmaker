@@ -22,7 +22,7 @@ package ca.sqlpower.matchmaker.dao;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 /**
- * The Data access interface for MatchRuleSet objects
+ * The Data access interface for MungeProcess objects
  *
  * At this point this interface only extends the base DAO interface
  * and is put in for future expansion. 
