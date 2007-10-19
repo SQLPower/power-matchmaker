@@ -235,7 +235,6 @@ public class MungeProcessEditor implements EditorPane {
             MatchMakerDAO<MungeProcess> dao = swingSession.getDAO(MungeProcess.class);
             dao.save(process);
         }
-        changeHandler.setHasChanged(false);
         
         //save all the positions of the components
         for (Component com : mungePen.getComponents()) {
@@ -245,6 +244,7 @@ public class MungeProcessEditor implements EditorPane {
 			}
         }
         
+        changeHandler.setHasChanged(false);
         return true;
     }
 
