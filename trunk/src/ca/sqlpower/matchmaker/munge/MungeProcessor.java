@@ -113,9 +113,5 @@ public class MungeProcessor extends AbstractProcessor {
     List<MungeStep> getProcessOrder() {
     	return processOrder;
     }
-    
-    public static Logger getLogger() {
-		return logger;
-	}
 }
 

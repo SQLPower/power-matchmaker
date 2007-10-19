@@ -97,8 +97,4 @@ public class MatchProcessor extends AbstractProcessor {
 		
 		return Boolean.TRUE;
 	}
-	
-    public static Logger getLogger() {
-		return logger;
-	}
 }
