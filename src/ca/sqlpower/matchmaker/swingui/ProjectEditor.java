@@ -75,11 +75,12 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -382,7 +383,7 @@ public class ProjectEditor implements EditorPane {
 		pb.add(new JScrollPane(filterPanel.getFilterTextArea()), cc.xy(4,row,"f,f"));
         pb.add(filterPanel.getEditButton(), cc.xy(6,row));
 		row+=2;
-		if (!project.getType().equals(Project.ProjectMode.CLEANSE)) {
+		if (project.getType() != ProjectMode.CLEANSE) {
 			pb.addTitle("Output Table", cc.xy(2, row));
 			row+=2;
 			pb.add(resultChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
@@ -422,7 +423,7 @@ public class ProjectEditor implements EditorPane {
 
         folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
         folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
-        if ( project.getParent() != null) {
+        if (project.getParent() != null) {
        		folderComboBox.setSelectedItem(project.getParent());
         } else if ( folder != null ) {
         	folderComboBox.setSelectedItem(folder);
@@ -442,25 +443,23 @@ public class ProjectEditor implements EditorPane {
         Validator v2a = new ProjectSourceTableIndexValidator();
         handler.addValidateObject(indexComboBox,v2a);
 
-        if ( !project.getType().equals(Project.ProjectMode.CLEANSE) 
-        		&& resultChooser.getCatalogComboBox().isEnabled() ) {
-        	Validator v3 = new ProjectResultCatalogSchemaValidator("Result "+
-        			resultChooser.getCatalogTerm().getText());
-        	handler.addValidateObject(resultChooser.getCatalogComboBox(),v3);
-        }
-
-        if ( !project.getType().equals(Project.ProjectMode.CLEANSE)
-        		&& resultChooser.getSchemaComboBox().isEnabled() ) {
-        	Validator v4 = new ProjectResultCatalogSchemaValidator("Result "+
-        			resultChooser.getSchemaTerm().getText());
-        	handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
-        }
-
-        if (!project.getType().equals(Project.ProjectMode.CLEANSE)) {
+        if (project.getType() != ProjectMode.CLEANSE) { 
+        	if (resultChooser.getCatalogComboBox().isEnabled()) {
+        		Validator v3 = new ProjectResultCatalogSchemaValidator("Result "+
+        				resultChooser.getCatalogTerm().getText());
+        		handler.addValidateObject(resultChooser.getCatalogComboBox(),v3);
+        	}
+        	
+        	if (resultChooser.getSchemaComboBox().isEnabled()) {
+        		Validator v4 = new ProjectResultCatalogSchemaValidator("Result "+
+        				resultChooser.getSchemaTerm().getText());
+        		handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
+        	}
+        	
         	Validator v5 = new ProjectResultTableNameValidator();
         	handler.addValidateObject(resultTableName,v5);
         }
-        
+        	
         Validator v6 = new AlwaysOKValidator();
         handler.addValidateObject(desc, v6);
         handler.addValidateObject(filterPanel.getFilterTextArea(), v6);
@@ -639,7 +638,7 @@ public class ProjectEditor implements EditorPane {
         	projectId.setText(id);
         }
 
-        if (!project.getType().equals(Project.ProjectMode.CLEANSE)) {
+        if (project.getType() != ProjectMode.CLEANSE) {
 	        SQLObject resultTableParent;
 	        if ( resultChooser.getSchemaComboBox().isEnabled() &&
 	        		resultChooser.getSchemaComboBox().getSelectedItem() != null ) {
@@ -723,7 +722,7 @@ public class ProjectEditor implements EditorPane {
 				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "An exception occured while deriving collison criteria", ex);
 			}
 			
-			if (!project.getType().equals(Project.ProjectMode.CLEANSE)) {
+			if (project.getType() != ProjectMode.CLEANSE) {
 				project.getTableMergeRulesFolder().addChild(0, mergeRule);
 			} else {
 				project.getTableMergeRulesFolder().setVisible(false);
@@ -770,7 +769,7 @@ public class ProjectEditor implements EditorPane {
     	ValidateResult r1 = handler.getResultOf(indexComboBox);
     	
     	ValidateResult r2;
-    	if (!project.getType().equals(Project.ProjectMode.CLEANSE)) {
+    	if (project.getType() != ProjectMode.CLEANSE) {
     		r2 = handler.getResultOf(resultTableName);
     	} else {
     		r2 = null;

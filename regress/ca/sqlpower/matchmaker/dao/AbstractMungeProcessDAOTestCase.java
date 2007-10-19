@@ -26,11 +26,12 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
-import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
+import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCase<MungeProcess,MungeProcessDAO>  {
@@ -41,7 +42,7 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
     public AbstractMungeProcessDAOTestCase() {
         project= new Project();
         project.setName("Munge Process Test Project");
-        project.setType(Project.ProjectMode.BUILD_XREF);
+        project.setType(ProjectMode.BUILD_XREF);
         folder = new PlFolder("main test folder");
         project.setParent(folder);
         try {

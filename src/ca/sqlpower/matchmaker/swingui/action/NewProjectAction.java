@@ -26,11 +26,12 @@ import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
-import ca.sqlpower.matchmaker.swingui.ProjectEditor;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.matchmaker.swingui.ProjectEditor;
 import ca.sqlpower.swingui.SPSUtils;
 
 /**
@@ -40,10 +41,10 @@ public final class NewProjectAction extends AbstractAction {
 
 	private static final Logger logger = Logger.getLogger(NewProjectAction.class);
 	
-	private final Project.ProjectMode type;
+	private final ProjectMode type;
     private final MatchMakerSwingSession swingSession;
     
-	public NewProjectAction(MatchMakerSwingSession swingSession, String name, Project.ProjectMode type) {
+	public NewProjectAction(MatchMakerSwingSession swingSession, String name, ProjectMode type) {
 		super(name);
         this.swingSession = swingSession;
         this.type = type;

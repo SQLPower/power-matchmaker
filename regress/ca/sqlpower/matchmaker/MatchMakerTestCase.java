@@ -45,6 +45,7 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.util.ViewSpec;
@@ -189,11 +190,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			oldVal = File.createTempFile("mmTest2",".tmp");
 			((File)oldVal).deleteOnExit();
 			return oldVal;
-		} else if (property.getPropertyType() == Project.ProjectMode.class) {
-			if (oldVal == Project.ProjectMode.BUILD_XREF) {
-				return Project.ProjectMode.FIND_DUPES;
+		} else if (property.getPropertyType() == ProjectMode.class) {
+			if (oldVal == ProjectMode.BUILD_XREF) {
+				return ProjectMode.FIND_DUPES;
 			} else {
-				return Project.ProjectMode.BUILD_XREF;
+				return ProjectMode.BUILD_XREF;
 			}
 		} else if (property.getPropertyType() == MergeActionType.class) {
 			if (oldVal == MergeActionType.AUGMENT) {
@@ -368,11 +369,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			((File)newVal).deleteOnExit();
 		} else if (property.getPropertyType() == PlFolder.class) {
 			newVal = new PlFolder<Project>();
-		} else if (property.getPropertyType() == Project.ProjectMode.class) {
-			if (oldVal == Project.ProjectMode.BUILD_XREF) {
-				newVal = Project.ProjectMode.FIND_DUPES;
+		} else if (property.getPropertyType() == ProjectMode.class) {
+			if (oldVal == ProjectMode.BUILD_XREF) {
+				newVal = ProjectMode.FIND_DUPES;
 			} else {
-				newVal = Project.ProjectMode.BUILD_XREF;
+				newVal = ProjectMode.BUILD_XREF;
 			}
 		} else if (property.getPropertyType() == MergeActionType.class) {
 			if (oldVal == MergeActionType.AUGMENT) {

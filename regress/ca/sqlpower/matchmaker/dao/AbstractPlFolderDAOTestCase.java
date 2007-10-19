@@ -61,7 +61,7 @@ public abstract class AbstractPlFolderDAOTestCase extends AbstractDAOTestCase<Pl
 		PlFolder f = createNewObjectUnderTest();
 		Project project = new Project();
 		project.setName("child");
-		project.setType(Project.ProjectMode.FIND_DUPES);
+		project.setType(ProjectMode.FIND_DUPES);
 		
 		PlFolderDAO dao = getDataAccessObject();
 		

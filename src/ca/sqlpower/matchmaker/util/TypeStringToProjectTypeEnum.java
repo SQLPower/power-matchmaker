@@ -28,7 +28,6 @@ import java.sql.Types;
 import org.hibernate.HibernateException;
 import org.hibernate.usertype.UserType;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 
 public class TypeStringToProjectTypeEnum implements UserType {
@@ -56,7 +55,7 @@ public class TypeStringToProjectTypeEnum implements UserType {
 	}
 
 	public int hashCode(Object x) throws HibernateException {
-		if ( !(x instanceof Project.ProjectMode)) {
+		if ( !(x instanceof ProjectMode)) {
 			return 0;
 		} else {
 			return x.hashCode();
@@ -94,7 +93,7 @@ public class TypeStringToProjectTypeEnum implements UserType {
 	}
 
 	public Class returnedClass() {
-		return Project.ProjectMode.class;
+		return ProjectMode.class;
 	}
 
 	public int[] sqlTypes() {

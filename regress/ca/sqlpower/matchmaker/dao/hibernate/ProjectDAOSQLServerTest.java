@@ -25,7 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 
@@ -137,7 +137,7 @@ public class ProjectDAOSQLServerTest extends AbstractProjectDAOTestCase {
             stmt = con.createStatement();
             stmt.executeUpdate(
                     "INSERT INTO pl_match (match_id, match_type, folder_oid) " +
-                    "VALUES ('"+projectName+"', '"+Project.ProjectMode.FIND_DUPES+"', " + folderOid.longValue() + ")");
+                    "VALUES ('"+projectName+"', '"+ProjectMode.FIND_DUPES+"', " + folderOid.longValue() + ")");
             
             keysRS = stmt.executeQuery("SELECT match_oid FROM pl_match WHERE match_id='"+projectName+"'");
             long projectOid;
