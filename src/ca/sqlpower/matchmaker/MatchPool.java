@@ -1272,4 +1272,15 @@ public class MatchPool {
 		logger.debug("findAutoMatchNeighbours: The neighbours to automatch for " + record + " are " + ret);
 		return ret;
 	}
+
+	/**
+	 * Completely removes all SourceTableRecords and PotentialMatchRecords, and also
+	 * removes all PotentialMatchRecords in the database repository for this MatchPool
+	 */
+	public void clear() throws SQLException {
+		deletedMatches.addAll(potentialMatches);
+		store();
+		sourceTableRecords.clear();
+		potentialMatches.clear();
+	}
 }

@@ -34,7 +34,7 @@ public class MungeSettings extends MatchMakerSettings {
         result = PRIME * result + ((autoMatchThreshold == null) ? 0 : autoMatchThreshold.hashCode());
         result = PRIME * result + ((breakUpMatch == true) ? 123 : 234);
         result = PRIME * result + ((lastBackupNo == null) ? 0 : lastBackupNo.hashCode());
-        result = PRIME * result + ((truncateCandDupe == true) ? 345 : 456);
+        result = PRIME * result + ((clearMatchPool == true) ? 345 : 456);
         return result;
     }
 
@@ -62,7 +62,7 @@ public class MungeSettings extends MatchMakerSettings {
                 return false;
         } else if (!lastBackupNo.equals(other.lastBackupNo))
             return false;
-        if (truncateCandDupe != other.truncateCandDupe ) return false;
+        if (clearMatchPool != other.clearMatchPool ) return false;
         return true;
     }
 
@@ -83,7 +83,7 @@ public class MungeSettings extends MatchMakerSettings {
 	/**
 	 * Truncate the candidate duplicate table
 	 */
-	private boolean truncateCandDupe = false;
+	private boolean clearMatchPool = false;
 
 	public boolean getBreakUpMatch() {
 		return breakUpMatch;
@@ -96,15 +96,15 @@ public class MungeSettings extends MatchMakerSettings {
 				this.breakUpMatch);
 	}
 
-	public boolean getTruncateCandDupe() {
-		return truncateCandDupe;
+	public boolean isClearMatchPool() {
+		return clearMatchPool;
 	}
 
-	public void setTruncateCandDupe(boolean truncateCandDupe) {
-		boolean oldValue = this.truncateCandDupe;
-		this.truncateCandDupe = truncateCandDupe;
-		getEventSupport().firePropertyChange("truncateCandDupe", oldValue,
-				this.truncateCandDupe);
+	public void setClearMatchPool(boolean clearMatchPool) {
+		boolean oldValue = this.clearMatchPool;
+		this.clearMatchPool = clearMatchPool;
+		getEventSupport().firePropertyChange("clearMatchPool", oldValue,
+				this.clearMatchPool);
 	}
 
 	public Short getAutoMatchThreshold() {
@@ -135,7 +135,7 @@ public class MungeSettings extends MatchMakerSettings {
         buf.append("autoMatchThreshold->"+autoMatchThreshold+", ");
         buf.append("breakUpMatch->"+breakUpMatch+", ");
         buf.append("lastBackupNo->"+lastBackupNo+", ");
-        buf.append("truncateCandDupe->"+truncateCandDupe+", ");
+        buf.append("clearMatchPool->"+clearMatchPool+", ");
         buf.append(super.toString());
         buf.append("]");
         return buf.toString();
@@ -161,7 +161,7 @@ public class MungeSettings extends MatchMakerSettings {
 		settings.setSendEmail(getSendEmail());
 		settings.setSession(s);
 		settings.setShowProgressFreq(getShowProgressFreq()==null?null:new Long(getShowProgressFreq()));
-		settings.setTruncateCandDupe(getTruncateCandDupe());
+		settings.setClearMatchPool(isClearMatchPool());
 		settings.setVisible(isVisible());
 		return settings;
 	}
