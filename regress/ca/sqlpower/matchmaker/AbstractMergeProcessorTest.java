@@ -165,6 +165,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		ctmr.addChild(ccmr_number);
 		ctmr.setTable(childTable);
 		ctmr.setParentTable(sourceTable);
+		ctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
 		
 		ccmr_parent_id.setInPrimaryKey(true);
 		ccmr_parent_id.setColumn(childTable.getColumnByName("PARENT_ID"));
@@ -183,6 +184,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cctmr.addChild(cccmr_number);
 		cctmr.setTable(grandChildTable);
 		cctmr.setParentTable(childTable);
+		cctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
 		
 		cccmr_gparent_id.setInPrimaryKey(true);
 		cccmr_gparent_id.setColumn(grandChildTable.getColumnByName("GPARENT_ID"));

@@ -103,6 +103,13 @@ public class MergeProcessor extends AbstractProcessor {
 	 * supported.
 	 */
 	public Boolean call() throws Exception {
+		int recordsToProcess;
+		if (project.getMergeSettings().getProcessCount() == null) {
+			recordsToProcess = 0;
+		} else {
+			recordsToProcess = project.getMergeSettings().getProcessCount();
+		}
+		int processCount = 0;
         TableMergeRules sourceTableMergeRule = null;
         boolean needsToCheckDup = false;
         Map<SQLColumn, ColumnMergeRules> mapping = new HashMap<SQLColumn, ColumnMergeRules>();
@@ -126,13 +133,19 @@ public class MergeProcessor extends AbstractProcessor {
 			mapping.put(cmr.getColumn(), cmr);
 		}
 		
-		int rowCount = 0;
-		for (SourceTableRecord str: processOrder) {
-			rowCount += gm.getOutboundEdges(str).size();
+		if (recordsToProcess == 0) {
+			int rowCount = 0;
+			for (SourceTableRecord str: processOrder) {
+				rowCount += gm.getOutboundEdges(str).size();
+			}
+			monitorableHelper.setJobSize(rowCount);
+		} else {
+			monitorableHelper.setJobSize(recordsToProcess);
 		}
-		monitorableHelper.setJobSize(rowCount);
 		
 		for (SourceTableRecord str : processOrder) {
+			if (recordsToProcess != 0 && processCount > recordsToProcess) break;
+			processCount++;
 			for (PotentialMatchRecord pm : gm.getOutboundEdges(str)) {
 				monitorableHelper.incrementProgress();
 				if (pm.isMatch()) {
@@ -158,6 +171,8 @@ public class MergeProcessor extends AbstractProcessor {
 		
 		if (sourceTableMergeRule.isDeleteDup()) {
 			for (PotentialMatchRecord pm : pool.getPotentialMatches()) {
+				if (recordsToProcess != 0 && processCount > recordsToProcess) break;
+				processCount++;
 				if (pm.isMatch()) {
 					List<Object> dupKeyValues = pm.getDuplicate().getKeyValues();
 					List<String> sourceIndexColumnNames = getSourceIndexColumnNames();
