@@ -224,7 +224,7 @@ public class MatchPool {
             	sql.append("source2." + col.getColumn().getName());
             	index++;
             }
-            
+            sql.append(" AND MATCH_STATUS != 'MERGED'");
             lastSQL = sql.toString();
             logger.debug("MatchPool's findAll method SQL: \n" + lastSQL);
             rs = stmt.executeQuery(lastSQL);
