@@ -195,6 +195,14 @@ public class MatchEngineImpl extends AbstractEngine {
 			// Fill pool with pre-existing matches
 			pool.findAll(null);
 			
+			if (getProject().getMungeSettings().isClearMatchPool()) {
+				progressMessage = "Clearing Match Pool";
+				logger.info(progressMessage);
+				pool.clear();
+			}
+			
+			progressMessage = "Searching for matches";
+			logger.info(progressMessage);
 			mungeAndMatch(rowCount, mungeProcesses, pool);
 			
 			currentProcessor = null;

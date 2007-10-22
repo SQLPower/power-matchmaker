@@ -250,7 +250,7 @@ public class MatchEnginePanel implements EditorPane {
 				}
 			}
 		});
-		clearMatchPool = new JCheckBox("Clear match pool?", settings.getTruncateCandDupe());
+		clearMatchPool = new JCheckBox("Clear match pool?", settings.isClearMatchPool());
 		sendEmail = new JCheckBox("Send E-mails?", settings.getSendEmail());
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
@@ -322,7 +322,7 @@ public class MatchEnginePanel implements EditorPane {
 		refreshActionStatus();
 		MungeSettings settings = project.getMungeSettings();
 		settings.setDebug(debugMode.isSelected());
-		settings.setTruncateCandDupe(clearMatchPool.isSelected());
+		settings.setClearMatchPool(clearMatchPool.isSelected());
 		settings.setSendEmail(sendEmail.isSelected());
 		settings.setLog(new File(logFilePath.getText()));
 		settings.setAppendToLog(appendToLog.isSelected());

@@ -4060,4 +4060,21 @@ public class MatchPoolTest extends TestCase {
 		assertFalse(pmrZ2ToZ3.getMaster() == z2
 				&& pmrZ3ToZ4.getMaster() == z4);
 	}
+	
+	public void testClear() throws Exception {
+		assertTrue(pool.getPotentialMatches().size() != 0);
+		assertTrue(pool.getSourceTableRecords().size() != 0);
+		
+		pool.clear();
+		pool.findAll(null);
+		
+		assertEquals(0, pool.getPotentialMatches().size());
+		assertEquals(0, pool.getSourceTableRecords().size());
+		
+		Statement stmt = con.createStatement();
+		ResultSet rs = stmt.executeQuery("SELECT * FROM "
+				+ DDLUtils.toQualifiedName(resultTable)
+				+ " WHERE DUP_CANDIDATE_10='a1' AND DUP_CANDIDATE_20='a3'");
+		rs.next();
+	}
 }

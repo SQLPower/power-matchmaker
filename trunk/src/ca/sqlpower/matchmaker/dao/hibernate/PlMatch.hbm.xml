@@ -116,7 +116,7 @@
 				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="match_send_email_ind" length="1" />
 			</property>
-			<property name="truncateCandDupe"
+			<property name="clearMatchPool"
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="truncate_cand_dup_ind" length="1" />
 			</property>
