@@ -251,23 +251,20 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		if (project.getType() == ProjectMode.FIND_DUPES) {
 			m.add(new JMenuItem(new AbstractAction("Run Match") {
 				public void actionPerformed(ActionEvent e) {
-					MatchEnginePanel f = new MatchEnginePanel(swingSession, project,
-							owningFrame);
+					MatchEnginePanel f = swingSession.getMatchEnginePanel(project.getMatchingEngine(), project);
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));
 			m.add(new JMenuItem(new AbstractAction("Run Merge") {
 				public void actionPerformed(ActionEvent e) {
-					MergeEnginePanel f = new MergeEnginePanel(swingSession, project,
-							owningFrame);
+					MergeEnginePanel f = swingSession.getMergeEnginePanel(project.getMergingEngine(), project);
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));
 		} else if (project.getType() == ProjectMode.CLEANSE) {
 			m.add(new JMenuItem(new AbstractAction("Run Cleanse") {
 				public void actionPerformed(ActionEvent e) {
-					CleanseEnginePanel f = new CleanseEnginePanel(swingSession,
-							project, owningFrame);
+					CleanseEnginePanel f = swingSession.getCleanseEnginePanel(project.getCleansingEngine(), project);
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));
@@ -457,9 +454,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					MatchActionNode node = (MatchActionNode) o;
 					if (node.getActionType() == MatchActionType.RUN_MATCH) {
 						swingSession
-								.setCurrentEditorComponent(new MatchEnginePanel(
-										swingSession, node.getProject(),
-										owningFrame));
+								.setCurrentEditorComponent(swingSession.getMatchEnginePanel(node.getProject().getMatchingEngine(), node.getProject()));
 					} else if (node.getActionType() == MatchActionType.AUDIT_INFO) {
 						swingSession
 								.setCurrentEditorComponent(new ProjectInfoEditor(
@@ -477,13 +472,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 								.setCurrentEditorComponent(new MatchValidationStatus(
 										swingSession, node.getProject()));
 					} else if (node.getActionType() == MatchActionType.RUN_MERGE) {
-						swingSession
-								.setCurrentEditorComponent(new MergeEnginePanel(
-										swingSession, node.getProject(),
-										owningFrame));
+						swingSession.setCurrentEditorComponent(swingSession.getMergeEnginePanel(
+								node.getProject().getMergingEngine(), node.getProject()));
 					} else if (node.getActionType() == MatchActionType.RUN_CLEANSING) {
-						swingSession.setCurrentEditorComponent(new CleanseEnginePanel(
-									swingSession, node.getProject(), owningFrame));
+						swingSession.setCurrentEditorComponent(swingSession.getCleanseEnginePanel(node.getProject().getCleansingEngine(), node.getProject()));
 					}
 				} else if (o instanceof TranslateGroupParent) {
 					swingSession
