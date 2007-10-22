@@ -150,7 +150,7 @@ public class MergeEngineImpl extends AbstractEngine {
 	}
 
 	private int getNumRowsToProcess() throws SQLException {
-		Integer processCount = getProject().getMungeSettings().getProcessCount();
+		Integer processCount = getProject().getMergeSettings().getProcessCount();
 		int rowCount;
 		Connection con = null;
 		Statement stmt = null;

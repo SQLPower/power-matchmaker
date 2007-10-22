@@ -137,7 +137,7 @@ public class MatchPoolTest extends TestCase {
 				+ SQL.quote(originalLhsKey) + "," + SQL.quote(originalRhsKey) + "," + SQL.quote(originalLhsKey)
 				+ "," + SQL.quote(originalRhsKey) + "," + "null," + "null," + "null,"
 				+ "null," + matchPercent + "," + SQL.quote(groupName) + ","
-				+ "{ts '2006-11-30 17:01:06.0'}," + "null,"
+				+ "{ts '2006-11-30 17:01:06.0'}," + "'UNMATCH',"
 				+ "{ts '2006-11-30 17:01:06.0'}," + "null," + "null)");
 		stmt.close();
 
