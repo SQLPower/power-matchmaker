@@ -35,8 +35,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -68,21 +70,24 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
+import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
@@ -92,6 +97,9 @@ import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ProjectExportAction;
 import ca.sqlpower.matchmaker.swingui.action.ProjectImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
+import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
+import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
+import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.swingui.CommonCloseAction;
@@ -373,6 +381,24 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      */
     private boolean editorComponentUpdateInProgress = false;
 
+    /**
+     * A map that links an engine to a panel. This is used so that only
+     * one of each engine and panel ever exist per project.
+     */
+	private Map<MergeEngineImpl, MergeEnginePanel> mergeEnginPanels;
+	
+	 /**
+     * A map that links an engine to a panel. This is used so that only
+     * one of each engine and panel ever exist per project.
+     */
+	private Map<MatchEngineImpl, MatchEnginePanel> matchEnginPanels;
+	
+	 /**
+     * A map that links an engine to a panel. This is used so that only
+     * one of each engine and panel ever exist per project.
+     */
+	private Map<CleanseEngineImpl, CleanseEnginePanel> cleanseEnginPanels;
+
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
      * would use a LoginDialog instead of calling this constructor directly.
@@ -390,6 +416,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
         this.smallMMIcon = new ImageIcon(getClass().getResource("/icons/matchmaker_24.png"));
+        
+        matchEnginPanels = new HashMap<MatchEngineImpl, MatchEnginePanel>();
+        mergeEnginPanels = new HashMap<MergeEngineImpl, MergeEnginePanel>();
+        cleanseEnginPanels = new HashMap<CleanseEngineImpl, CleanseEnginePanel>();
 
         // this grabs warnings from the business model and DAO's and lets us handle them.
         sessionImpl.addWarningListener(new WarningListener() {
@@ -1108,6 +1138,51 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 */
 	public EditorPane getOldPane() {
 		return oldPane;
+	}
+	
+	/**
+	 * Returns or creates the editor panel linked to the given engine
+	 * 
+	 * @param mei The current engine
+	 * @param project The current project
+	 */
+	public MergeEnginePanel getMergeEnginePanel(MergeEngineImpl mei, Project project) {
+		MergeEnginePanel ep = mergeEnginPanels.get(mei);
+		if (mergeEnginPanels.get(mei) == null) {
+			ep = new MergeEnginePanel(this,project, getFrame());
+			mergeEnginPanels.put(mei,ep); 
+		}
+		return ep;
+	}
+	
+	/**
+	 * Returns or creates the editor panel linked to the given engine
+	 * 
+	 * @param mei The current engine
+	 * @param project The current project
+	 */
+	public MatchEnginePanel getMatchEnginePanel(MatchEngineImpl mei, Project project) {
+		MatchEnginePanel ep = matchEnginPanels.get(mei);
+		if (ep == null) {
+			ep = new MatchEnginePanel(this,project, getFrame());
+			matchEnginPanels.put(mei,ep); 
+		}
+		return ep;
+	}
+	
+	/**
+	 * Returns or creates the editor panel linked to the given engine
+	 * 
+	 * @param mei The current engine
+	 * @param project The current project
+	 */
+	public CleanseEnginePanel getCleanseEnginePanel(CleanseEngineImpl mei, Project project) {
+		CleanseEnginePanel ep = cleanseEnginPanels.get(mei);
+		if (ep == null) {
+			ep = new CleanseEnginePanel(this,project, getFrame());
+			cleanseEnginPanels.put(mei,ep); 
+		}
+		return ep;
 	}
 
 }

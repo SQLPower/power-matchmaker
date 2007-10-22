@@ -98,6 +98,10 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForDuplication.add("lastUpdateDate");
         propertiesToIgnoreForDuplication.add("lastUpdateAppUser");
         propertiesToIgnoreForDuplication.add("lastUpdateOSUser");
+        propertiesToIgnoreForDuplication.add("mergingEngine");
+        propertiesToIgnoreForDuplication.add("matchingEngine");
+        propertiesToIgnoreForDuplication.add("cleansingEngine");
+        
         
         // First pass set all settable properties
 		for (PropertyDescriptor property : settableProperties) {

@@ -222,7 +222,7 @@ public class CleanseEnginePanel implements EditorPane {
 		showPopupButton = new JButton();
 		showPopupButton.addActionListener(new AbstractAction(){
 			public void actionPerformed(ActionEvent e) {
-				getPopupMenu(processlist).show(panel, showPopupButton.getX(), showPopupButton.getY() + showPopupButton.getHeight());
+				getPopupMenu(processlist).show(panel, showPopupButton.getX(), showPopupButton.getY());
 			}
 		});
 		

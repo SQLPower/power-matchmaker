@@ -140,7 +140,22 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * arbitrary set of columns.
 	 */
     private TableIndex sourceTableIndex;
+    
+    /**
+     * The Cleansing engine this will be created lazyily, because we only need one instance per project.
+     */
+    private CleanseEngineImpl cleansingEngine = null;
 
+    /**
+     * The Merging engine this will be created lazyily, because we only need one instance per project.
+     */
+    private MatchEngineImpl matchingEngine = null;
+
+    /**
+     * The Matching engine this will be created lazyily, because we only need one instance per project.
+     */
+	private MergeEngineImpl mergingEngine;
+    
 	public Project() {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
 	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
@@ -745,5 +760,41 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      */
 	public void setSourceTableIndex(SQLIndex index) {
 		sourceTableIndex.setTableIndex(index);
+	}
+	
+	/**
+	 * Gets the cleansing engine editor panel. This is done to ensure that only one panel is created per project.
+	 * 
+	 * @return The editor panel.
+	 */
+	public CleanseEngineImpl getCleansingEngine() {
+		if (cleansingEngine == null) {
+			cleansingEngine = new CleanseEngineImpl(getSession(), this); 
+		}
+		return cleansingEngine;
+	}
+	
+	/**
+	 * Gets the cleansing engine editor panel. This is done to ensure that only one panel is created per project.
+	 * 
+	 * @return The editor panel.
+	 */
+	public MatchEngineImpl getMatchingEngine() {
+		if (matchingEngine == null) {
+			matchingEngine = new MatchEngineImpl(getSession(), this); 
+		}
+		return matchingEngine;
+	}
+	
+	/**
+	 * Gets the cleansing engine editor panel. This is done to ensure that only one panel is created per project.
+	 * 
+	 * @return The editor panel.
+	 */
+	public MergeEngineImpl getMergingEngine() {
+		if (mergingEngine == null) {
+			mergingEngine = new MergeEngineImpl(getSession(), this); 
+		}
+		return mergingEngine;
 	}
 }
