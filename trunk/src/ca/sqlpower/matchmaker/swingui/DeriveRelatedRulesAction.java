@@ -220,7 +220,7 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 							List<SQLColumn> columns = new ArrayList<SQLColumn>(table.getColumns()); 
 							for (SQLColumn column : columns) {
 								ColumnMergeRules newRules = new ColumnMergeRules();
-								newRules.setActionType(MergeActionType.IGNORE);
+								newRules.setActionType(MergeActionType.USE_MASTER_VALUE);
 								mergeRule.addChild(newRules);
 								newRules.setColumn(column);
 								newRules.setColumnName(column.getName());

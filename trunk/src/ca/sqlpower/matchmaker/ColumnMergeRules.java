@@ -29,22 +29,22 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	private static final Logger logger = Logger.getLogger(ColumnMergeRules.class);
 
 	public enum MergeActionType {
-		IGNORE, AUGMENT, CONCAT, MIN, MAX, SUM, NA;
+		USE_MASTER_VALUE, AUGMENT, CONCAT, MIN, MAX, SUM, NA;
 		
 		public static MergeActionType getActionTypeFromString(String type) {
-			if ("IGNORE".equals(type)){
-				return IGNORE;
-			} else if ("AUGMENT".equals(type)){
+			if ("Use master value".equals(type)){
+				return USE_MASTER_VALUE;
+			} else if ("Augment nulls".equals(type)){
 				return AUGMENT;
-			} else if ("CONCAT".equals(type)){
+			} else if ("Concatenate".equals(type)){
 				return CONCAT;
-			} else if ("MIN".equals(type)){
+			} else if ("Minimum".equals(type)){
 				return MIN;
-			} else if ("MAX".equals(type)){
+			} else if ("Maximum".equals(type)){
 				return MAX;
-			} else if ("SUM".equals(type)){
+			} else if ("Sum".equals(type)){
 				return SUM;
-			} else if ("NOT_APPLICABLE".equals(type)) {
+			} else if ("Not applicable".equals(type)) {
 				return NA;
 			} else {
 				throw new IllegalStateException("No such merge action type: " + type);
@@ -54,20 +54,20 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		@Override
 		public String toString() {
 			switch (this) {
-			case IGNORE:
-				return "IGNORE";
+			case USE_MASTER_VALUE:
+				return "Use master value";
 			case AUGMENT:
-				return "AUGMENT";
+				return "Augment nulls";
 			case CONCAT:
-				return "CONCAT";
+				return "Concatenate";
 			case MIN:
-				return "MIN";
+				return "Minimum";
 			case MAX:
-				return "MAX";
+				return "Maximum";
 			case SUM:
-				return "SUM";
+				return "Sum";
 			case NA:
-				return "NOT_APPLICABLE";
+				return "Not applicable";
 			default:
 				throw new IllegalStateException("Invalid enumeration");
 			}

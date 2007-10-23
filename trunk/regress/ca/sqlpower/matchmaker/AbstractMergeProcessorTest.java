@@ -276,9 +276,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    mpor = new MergeProcessor(project, session);
 	    
 	    // sets the default action type
-	    cmr_string.setActionType(MergeActionType.IGNORE);
-	    cmr_date.setActionType(MergeActionType.IGNORE);
-	    cmr_number.setActionType(MergeActionType.IGNORE);
+	    cmr_string.setActionType(MergeActionType.USE_MASTER_VALUE);
+	    cmr_date.setActionType(MergeActionType.USE_MASTER_VALUE);
+	    cmr_number.setActionType(MergeActionType.USE_MASTER_VALUE);
 	}
     
     private void populateChildTable() throws Exception {
@@ -497,8 +497,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 			// Correct exception thrown.
 		}
 		
-    	cmr_string.setActionType(MergeActionType.IGNORE);
-		cmr_date.setActionType(MergeActionType.IGNORE);
+    	cmr_string.setActionType(MergeActionType.USE_MASTER_VALUE);
+		cmr_date.setActionType(MergeActionType.USE_MASTER_VALUE);
 		cmr_number.setActionType(MergeActionType.CONCAT);
 		
 		try {
@@ -509,8 +509,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		}
 		
     	cmr_string.setActionType(MergeActionType.CONCAT);
-		cmr_date.setActionType(MergeActionType.IGNORE);
-		cmr_number.setActionType(MergeActionType.IGNORE);
+		cmr_date.setActionType(MergeActionType.USE_MASTER_VALUE);
+		cmr_number.setActionType(MergeActionType.USE_MASTER_VALUE);
 		
 		mpor.call();
 
@@ -614,8 +614,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		}
 		
     	cmr_string.setActionType(MergeActionType.SUM);
-		cmr_date.setActionType(MergeActionType.IGNORE);
-		cmr_number.setActionType(MergeActionType.IGNORE);
+		cmr_date.setActionType(MergeActionType.USE_MASTER_VALUE);
+		cmr_number.setActionType(MergeActionType.USE_MASTER_VALUE);
 		
 		try {
 			mpor.call();
@@ -624,8 +624,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 			// Correct exception thrown.
 		}
 		
-    	cmr_string.setActionType(MergeActionType.IGNORE);
-		cmr_date.setActionType(MergeActionType.IGNORE);
+    	cmr_string.setActionType(MergeActionType.USE_MASTER_VALUE);
+		cmr_date.setActionType(MergeActionType.USE_MASTER_VALUE);
 		cmr_number.setActionType(MergeActionType.SUM);
 		
 		mpor.call();
