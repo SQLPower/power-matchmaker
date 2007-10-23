@@ -50,7 +50,6 @@ public class ConcatMungeComponent extends AbstractMungeComponent {
 		content.setLayout(new FlowLayout());
 		content.add(addInputButton);
 		content.add(removeInputsButton);
-		setInputShowNames(true);
 		return content;
 	}
 
