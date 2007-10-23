@@ -405,7 +405,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addIndex(idx);
 
     	try {
-    		project.vertifyResultTableStruct();
+    		project.verifyResultTableStruct();
     		fail("project has no source table, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -413,7 +413,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setSourceTable(sourceTable);
     	
     	try {
-    		project.vertifyResultTableStruct();
+    		project.verifyResultTableStruct();
     		fail("project has no unique index, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -421,7 +421,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setSourceTableIndex(idx);
     	
     	try {
-    		project.vertifyResultTableStruct();
+    		project.verifyResultTableStruct();
     		fail("result table name has not been setup, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -437,7 +437,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		execSQL(con,sql);
 
 		try {
-    		project.vertifyResultTableStruct();
+    		project.verifyResultTableStruct();
     		fail("result table is not persistent, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -466,13 +466,13 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 
 	    assertEquals("Not all statements executed", ddlg.getDdlStatements().size(), successCount);
     	assertTrue("we should have a good result table.",
-    			project.vertifyResultTableStruct());
+    			project.verifyResultTableStruct());
     	
     	sql = "drop table " + DDLUtils.toQualifiedName(resultTable);
     	execSQL(con,sql);
 
     	try {
-    		project.vertifyResultTableStruct();
+    		project.verifyResultTableStruct();
     		fail("result table is droped, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -512,7 +512,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	sourceTable.addIndex(idx);
 
     	try {
-    		project.vertifyResultTableStruct();
+    		project.verifyResultTableStruct();
     		fail("project has no source table, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -520,7 +520,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setSourceTable(sourceTable);
     	
     	try {
-    		project.vertifyResultTableStruct();
+    		project.verifyResultTableStruct();
     		fail("project has no unique index, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -528,7 +528,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	project.setSourceTableIndex(idx);
     	
     	try {
-    		project.vertifyResultTableStruct();
+    		project.verifyResultTableStruct();
     		fail("result table name has not been setup, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -544,7 +544,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		execSQL(con,sql);
 
 		try {
-    		project.vertifyResultTableStruct();
+    		project.verifyResultTableStruct();
     		fail("result table is not persistent, but no exception caught.");
     	} catch (Exception e) {
 		}
@@ -573,13 +573,13 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 
 	    assertEquals("Not all statements executed", ddlg.getDdlStatements().size(), successCount);
     	assertTrue("we should have a good result table.",
-    			project.vertifyResultTableStruct());
+    			project.verifyResultTableStruct());
     	
     	sql = "drop table " + DDLUtils.toQualifiedName(resultTable);
     	execSQL(con,sql);
 
     	try {
-    		project.vertifyResultTableStruct();
+    		project.verifyResultTableStruct();
     		fail("result table is droped, but no exception caught.");
     	} catch (Exception e) {
 		}

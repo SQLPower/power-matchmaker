@@ -243,7 +243,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 					"catalog, schema, and name before calling " +
 					"createResultTable()");
 		}
-		SQLTable t = new SQLTable(oldResultTable.getParent(), oldResultTable.getName(), oldResultTable.getRemarks(), "TABLE", true);
 
 		logger.debug("createResultTable: table parent=" +
 				(oldResultTable.getParent()==null?"null":oldResultTable.getParent().getClass()) +
@@ -251,6 +250,24 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 				(oldResultTable.getParent()==null?"null":oldResultTable.getParent().getName()) +
 				"]");
 		logger.debug("createResultTable: si="+si+" si.children.size="+si.getChildCount());
+		
+		SQLTable t = buildResultTable(oldResultTable, si);
+		setResultTable(t);
+
+		return t;
+	}
+	
+	/**
+	 * This builds the result table according to given setup information. 
+	 *  
+	 * @param resultTable This contains the setup information for the result table to be generated.
+	 * @param si The unique index upon which the result table should reflect on
+	 * @throws ArchitectException
+	 */
+	public SQLTable buildResultTable(SQLTable resultTable, SQLIndex si) 
+		throws ArchitectException {
+		
+		SQLTable t = new SQLTable(resultTable.getParent(), resultTable.getName(), resultTable.getRemarks(), "TABLE", true);
 
 		addResultTableColumns(t, si, "dup_candidate_1");
 		addResultTableColumns(t, si, "dup_candidate_2");
@@ -296,8 +313,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 			newidx.addChild(newidx.new Column(t.getColumn(i), true, false));
 		}
 		t.addIndex(newidx);
-		setResultTable(t);
-
+		
 		return t;
 	}
 
@@ -322,7 +338,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 	
 	/**
-	 * Vetify the result table structure and existence in the SQL Database,
+	 * Verify the result table structure and existence in the SQL Database,
 	 * the result table should looks like this:
 	 * <p>
 	 * <p>dup_candidate_1xxx  [yyy],
@@ -347,7 +363,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * 
 	 * the result table may not exists in the database (in-memory), and
 	 * the source unique index also may not in the database. you may need
-	 * to call {@link MatchMakerSession.isThisSQLTableExists()} to vertify
+	 * to call {@link MatchMakerSession.isThisSQLTableExists()} to verify
 	 * the result table existence
 	 * <p> 
 	 * @return false if the table is not exist in the sql database, or
@@ -361,7 +377,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * <b>or</b>
 	 * <p>session and sql database have not been setup for the match
 	 */
-	public boolean vertifyResultTableStruct() throws ArchitectException {
+	public boolean verifyResultTableStruct() throws ArchitectException {
 
 		MatchMakerSession session = getSession();
 		if ( session == null ) {
@@ -407,7 +423,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		}
 
 		List<SQLTable> inMemory = new ArrayList<SQLTable>();
-		inMemory.add(resultTable);
+		inMemory.add(buildResultTable(resultTable, si));
 		List<SQLTable> physical = new ArrayList<SQLTable>();
 		physical.add(table);
 		CompareSQL compare = new CompareSQL(inMemory,physical);
@@ -418,7 +434,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 			logger.debug(diff.toString());
 			/** we have not made the sql Comparator smart enough to handle 
 			 * some difference like oracle Date = Date(7) etc. so we can
-			 * not count the type=modified. (different type,percision,scale)
+			 * not count the type=modified. (different type,precision,scale)
 			 */
 			if ( diff.getType() != DiffType.SAME &&
 					diff.getType() != DiffType.MODIFIED) {
