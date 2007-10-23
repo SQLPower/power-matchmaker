@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
 import junit.framework.TestCase;
@@ -31,6 +33,8 @@ public class DoubleMetaphoneMungeStepTest extends TestCase {
 	
 	private MungeStepOutput testInput;
 	
+	private final Logger logger = Logger.getLogger("testLogger");
+	
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new DoubleMetaphoneMungeStep(new TestingMatchMakerSession());
@@ -40,7 +44,7 @@ public class DoubleMetaphoneMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("Smith");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -53,7 +57,7 @@ public class DoubleMetaphoneMungeStepTest extends TestCase {
 		testInput.setData("Smith");
 		step.connectInput(0, testInput);
 		step.setParameter(step.USE_ALTERNATE_PARAMETER_NAME, "true");
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -65,7 +69,7 @@ public class DoubleMetaphoneMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);

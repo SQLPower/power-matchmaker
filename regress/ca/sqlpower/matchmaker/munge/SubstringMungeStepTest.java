@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
 import junit.framework.TestCase;
@@ -30,6 +32,8 @@ public class SubstringMungeStepTest extends TestCase {
 	private SubstringMungeStep step;
 	
 	private MungeStepOutput testInput;
+	
+	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -42,7 +46,7 @@ public class SubstringMungeStepTest extends TestCase {
 		step.connectInput(0, testInput);
 		step.setParameter(step.BEGIN_PARAMETER_NAME, "3");
 		step.setParameter(step.END_PARAMETER_NAME, "9");
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -57,7 +61,7 @@ public class SubstringMungeStepTest extends TestCase {
 		
 		step.setParameter(step.BEGIN_PARAMETER_NAME, "3");
 		step.setParameter(step.END_PARAMETER_NAME, "100");
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -66,7 +70,7 @@ public class SubstringMungeStepTest extends TestCase {
 		
 		step.setParameter(step.BEGIN_PARAMETER_NAME, "90");
 		step.setParameter(step.END_PARAMETER_NAME, "100");
-		step.open();
+		step.open(logger);
 		step.call();
 		results = step.getChildren(); 
 		output = results.get(0);
@@ -75,7 +79,7 @@ public class SubstringMungeStepTest extends TestCase {
 		
 		step.setParameter(step.BEGIN_PARAMETER_NAME, "-100");
 		step.setParameter(step.END_PARAMETER_NAME, "100");
-		step.open();
+		step.open(logger);
 		try {
 			step.call();
 			fail("IndexOutofBoundsException was not thrown as expected");
@@ -90,7 +94,7 @@ public class SubstringMungeStepTest extends TestCase {
 		step.setParameter(step.BEGIN_PARAMETER_NAME, "3");
 		step.setParameter(step.END_PARAMETER_NAME, "9");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);

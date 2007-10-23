@@ -23,6 +23,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 
@@ -30,6 +32,8 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 
 
 public class MockJDBCCleanseTest extends SQLInputStepTest {
+	
+	private final Logger logger = Logger.getLogger("testLogger");
 
     @Override
     protected ProjectMode getProjectType() {
@@ -44,7 +48,7 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
 	    MungeStep mrs = step.getOuputStep();
         process.addChild(mrs);
 
-	    MungeProcessor mp = new MungeProcessor(process);
+	    MungeProcessor mp = new MungeProcessor(process, logger);
 	    mp.call();
 
 	    Connection con = db.getConnection();
@@ -69,7 +73,7 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
 	    process.addChild(mrs);
 	    process.addChild(ucms);
 
-	    MungeProcessor mp = new MungeProcessor(process);
+	    MungeProcessor mp = new MungeProcessor(process, logger);
         mp.call(10);
 
 	    Connection con = db.getConnection();

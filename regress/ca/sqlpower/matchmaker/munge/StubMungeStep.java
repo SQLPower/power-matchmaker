@@ -91,7 +91,7 @@ public class StubMungeStep implements MungeStep {
         return null;
     }
 
-    public void open() throws Exception {
+    public void open(Logger logger) throws Exception {
         logger.debug("Stub call: StubMungeStep.open()");
         
     }

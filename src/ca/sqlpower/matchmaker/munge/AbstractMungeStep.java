@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -55,6 +57,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 * This refers to whether a open() call has been made on this munge step.
 	 */
 	private boolean opened;
+	
+	/**
+	 * The logger to print the inputs and outputs to
+	 */
+	private Logger logger;
 	
 	/**
 	 * The session for this object
@@ -199,11 +206,17 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	}
 
     /**
-     * Does nothing, because most steps do not need to allocate any resources.
+     * Only sets the logger, because most steps do not need to allocate any resources.
      * If your step needs to allocate resources (perform a database query, open
      * a file, connect to a server, and so on), you should override this method.
      */
-    public void open() throws Exception {
+    public void open(Logger logger) throws Exception {
+    	this.logger = logger;
+    	
+    	if (logger.isDebugEnabled()) {
+    		logger.debug("Opening MungeStep " + getName());
+    	}
+    	
         opened = true;
     }
 
@@ -213,8 +226,58 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
      * too and clean up the resources.
      */
     public void close() throws Exception {
+    	if (logger.isDebugEnabled()) {
+    		logger.debug("Closing MungeStep " + getName());
+    	}
+    	logger = null;
         opened = false;
     }
+    
+    /**
+     * Prints all the inputs iff the given logger has 
+     * debugging enabled
+     */
+    protected void printInputs() {
+    	if (logger.isDebugEnabled()) {
+    		String out = getName() + " Inputs: ";
+    		for (MungeStepOutput mso : getInputs()) {
+    			if (mso == null) {
+    				out += "[ null] ";
+    			} else {
+    				if (mso.getName() != null && mso.getName().length() != 0) {
+    					out += "[ " + mso.getName() + ": " + mso.getData().toString() + " ] ";
+    				} else {
+    					out += "[ " + mso.getData().toString() + " ] ";
+    				}
+    			}
+    		}
+    		logger.debug(out);
+    	}
+    }
+    
+    /**
+     * Prints all the outputs iff the given logger has 
+     * debugging enabled
+     */
+    protected void printOutputs() {
+    	if (logger.isDebugEnabled()) {
+    		String out = getName() + " Outputs: ";
+    		for (MungeStepOutput mso : getChildren()) {
+    			if (mso == null) {
+    				out += "[ null] ";
+    			} else {
+    				if (mso.getName() != null && mso.getName().length() != 0) {
+    					out += "[ " + mso.getName() + ": " + mso.getData().toString() + " ] ";
+    				} else {
+    					out += "[ " + mso.getData().toString() + " ] ";
+    				}
+    			}
+    		}
+    		logger.debug(out);
+    	}
+    }
+
+    
     
     /** 
      * Any implementation of this class that implements call() must call super.call()
@@ -225,6 +288,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     	if (!opened) {
     		throw new IllegalStateException("A munge step must be opened before called.");
     	}
+    	printInputs();
     	return true;
     }
 

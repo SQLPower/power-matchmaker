@@ -228,7 +228,7 @@ public class MatchEngineImpl extends AbstractEngine {
 	private void mungeAndMatch(int rowCount, List<MungeProcess> mungeProcesses,
 			MatchPool pool) throws Exception {
 		for (MungeProcess currentProcess: mungeProcesses) {
-			munger = new MungeProcessor(currentProcess);
+			munger = new MungeProcessor(currentProcess, logger);
 			currentProcessor = munger;
 			progressMessage = "Running munge process " + currentProcess.getName();
 			logger.debug(getMessage());

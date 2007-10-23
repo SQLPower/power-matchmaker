@@ -67,7 +67,9 @@ public class UpperCaseMungeStep extends AbstractMungeStep {
 		if (in.getData() != null) {
 			data = data.toUpperCase();
 		}
+		
 		out.setData(data);
+		printOutputs();
 		return true;
 	}
 

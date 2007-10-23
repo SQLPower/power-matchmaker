@@ -68,6 +68,7 @@ public class SoundexMungeStep extends AbstractMungeStep {
 		} else {
 			out.setData(null);
 		}
+		printOutputs();
 		return true;
 	}
 

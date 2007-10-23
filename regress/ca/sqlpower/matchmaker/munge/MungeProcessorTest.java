@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.Project;
 
 import junit.framework.TestCase;
@@ -89,6 +91,8 @@ public class MungeProcessorTest extends TestCase {
      */
     private MungeStep g;
     
+    private final Logger logger = Logger.getLogger("testLogger");
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -128,7 +132,7 @@ public class MungeProcessorTest extends TestCase {
         mungeProcess.addChild(e);
         mungeProcess.addChild(d);
 
-        mp = new MungeProcessor(mungeProcess);
+        mp = new MungeProcessor(mungeProcess, logger);
     }
     
     /**

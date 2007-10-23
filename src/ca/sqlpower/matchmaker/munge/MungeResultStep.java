@@ -97,8 +97,8 @@ public class MungeResultStep extends AbstractMungeStep {
 	 * that the input step contains outputs which correspond to the table's unique
 	 * key columns. If they are missing, then call() will throw a NullPointerException
 	 */
-	public void open() throws Exception {
-		super.open();
+	public void open(Logger logger) throws Exception {
+		super.open(logger);
 		// results must be emptied out, or otherwise, it will
 		// contain the munge results from the last munge processor run.
 		results.clear();
@@ -140,7 +140,7 @@ public class MungeResultStep extends AbstractMungeStep {
 		
 		logger.debug("Adding MungeResult " + result);
 		results.add(result);
-		
+		printOutputs();
 		return Boolean.TRUE;
 	}
 	

@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker.munge;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
 import junit.framework.TestCase;
@@ -32,6 +34,8 @@ public class WordCountMungeStepTest extends TestCase {
 	
 	private MungeStepOutput testInput;
 	
+	private final Logger logger = Logger.getLogger("testLogger");
+	
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new WordCountMungeStep(new TestingMatchMakerSession());
@@ -41,7 +45,7 @@ public class WordCountMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -53,7 +57,7 @@ public class WordCountMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a b c d e f g");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -66,7 +70,7 @@ public class WordCountMungeStepTest extends TestCase {
 		testInput.setData("a   b \nc d\n e f\n\ng");
 		step.setParameter(step.DELIMITER_PARAMETER_NAME, " \n");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -83,7 +87,7 @@ public class WordCountMungeStepTest extends TestCase {
 		step.setParameter(step.USE_REGEX_PARAMETER_NAME, "true");
 		step.setParameter(step.DELIMITER_PARAMETER_NAME, "a+");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -95,7 +99,7 @@ public class WordCountMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);

@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
@@ -31,6 +33,8 @@ public class TranslateWordMungeStepTest extends TestCase {
 	private MatchMakerTranslateGroup translateGroup;
 	
 	private MungeStepOutput testInput;
+	
+	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -48,7 +52,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
 		step.connectInput(0, testInput);
 		
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -62,7 +66,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
 		step.connectInput(0, testInput);
 		
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -80,7 +84,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
 		step.setParameter(step.USE_REGEX_PARAMETER_NAME, "true");
 		
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -93,7 +97,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		testInput.setData(null);
 		step.connectInput(0, testInput);
 		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);

@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.MatchMakerObject;
 
 /**
@@ -148,7 +150,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * Once this method has been called on a MungeStep, it is required that
      * the {@link #close()} method is also called in the future.
      */
-    void open() throws Exception;
+    void open(Logger logger) throws Exception;
     
     /**
      * Closes any resources allocated by the {@link open()} method.  It is mandatory

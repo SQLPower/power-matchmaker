@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
 import junit.framework.TestCase;
@@ -29,6 +31,8 @@ public class RetainCharactersMungeStepTest extends TestCase {
 
 	private RetainCharactersMungeStep step;
 	private MungeStepOutput testInput;
+	
+	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -45,7 +49,7 @@ public class RetainCharactersMungeStepTest extends TestCase {
 		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "123");
 		step.connectInput(0, testInput);
 		
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -59,7 +63,7 @@ public class RetainCharactersMungeStepTest extends TestCase {
 		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "abc");
 		step.connectInput(0, testInput);
 		
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -74,7 +78,7 @@ public class RetainCharactersMungeStepTest extends TestCase {
 		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, "false");
 		step.connectInput(0, testInput);
 		
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -92,7 +96,7 @@ public class RetainCharactersMungeStepTest extends TestCase {
 		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "[a-zA-z]");
 		step.setParameter(step.USE_REGEX_PARAMETER_NAME, "true");
 		
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -105,7 +109,7 @@ public class RetainCharactersMungeStepTest extends TestCase {
 		testInput.setData(null);
 		step.connectInput(0, testInput);
 		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "123");
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);

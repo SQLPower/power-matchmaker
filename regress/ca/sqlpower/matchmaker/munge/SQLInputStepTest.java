@@ -25,6 +25,8 @@ import java.sql.Types;
 import java.util.Date;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+
 import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
@@ -37,6 +39,8 @@ import ca.sqlpower.testutil.MockJDBCResultSet;
 
 public class SQLInputStepTest extends TestCase {
 
+	private final Logger logger = Logger.getLogger("testLogger");
+	
     private class FakeDatabase extends SQLDatabase {
         
         private MockJDBCConnection con;
@@ -92,9 +96,9 @@ public class SQLInputStepTest extends TestCase {
 	}
 
 	public void testNoDoubleOpen() throws Exception {
-        step.open();
+        step.open(logger);
         try {
-            step.open();
+            step.open(logger);
             fail("Opened step twice (should not be possible)");
         } catch (IllegalStateException ex) {
             // good
@@ -113,7 +117,7 @@ public class SQLInputStepTest extends TestCase {
 
     public void testNoCallAfterClose() throws Exception {
         try {
-            step.open();
+            step.open(logger);
             step.close();
             step.call();
             fail("call() succeeded after the step was closed");
@@ -123,7 +127,7 @@ public class SQLInputStepTest extends TestCase {
     }
 
     public void testCallReturnsCorrectValues() throws Exception {
-        step.open();
+        step.open(logger);
         assertTrue(step.call());
         assertTrue(step.call());
         assertTrue(step.call());
@@ -132,7 +136,7 @@ public class SQLInputStepTest extends TestCase {
     }
     
     public void testOutputsNullAtFirst() throws Exception {
-        step.open();
+        step.open(logger);
         assertNull(step.getChildren().get(0).getData());
         assertNull(step.getChildren().get(1).getData());
         assertNull(step.getChildren().get(2).getData());
@@ -140,7 +144,7 @@ public class SQLInputStepTest extends TestCase {
     }
 
     public void testOutputsNullAfterEnd() throws Exception {
-        step.open();
+        step.open(logger);
         while (step.call() == Boolean.TRUE);
         assertNull(step.getChildren().get(0).getData());
         assertNull(step.getChildren().get(1).getData());
@@ -149,7 +153,7 @@ public class SQLInputStepTest extends TestCase {
     }
 
     public void testOutputsTrackResults() throws Exception {
-        step.open();
+        step.open(logger);
         step.call();
         assertEquals("row1,1",             step.getChildren().get(0).getData());
         assertEquals(new BigDecimal("12"), step.getChildren().get(1).getData());

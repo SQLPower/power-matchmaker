@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.concurrent.Callable;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -78,4 +79,14 @@ public interface MatchMakerEngine extends Monitorable, Callable<EngineInvocation
 	 * are logged at any combination of the standard Log4J logging levels.
 	 */
 	public Logger getLogger();
+	
+	/**
+	 * Return the level at which to log the engine progress
+	 */
+	public Level getMessageLevel();
+	
+	/**
+	 * Sets the level at which to log the engine progress
+	 */
+	public void setMessageLevel(Level lev);
 }

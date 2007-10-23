@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -59,6 +60,11 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	 * Gets set to true when the user attempts to cancel the engine run.
 	 */
 	private boolean cancelled;
+	
+	/**
+	 * The level at which to show the engine debugging
+	 */
+	private Level messageLevel = Level.INFO;
 	
 	protected Project getProject() {
 		return project;
@@ -204,4 +210,12 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	public void setFinished(boolean finished) {
 		this.finished = finished;
 	}
+		
+    public void setMessageLevel(Level lev) {
+    	messageLevel = lev;
+    }
+    
+    public Level getMessageLevel() {
+    	return messageLevel;
+    }
 }

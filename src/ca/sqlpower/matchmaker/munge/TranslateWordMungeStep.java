@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker.munge;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
@@ -114,7 +116,9 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 				}
 			}
 		}
+		
 		out.setData(data);
+		printOutputs();
 		return true;
 	}
 
@@ -127,13 +131,13 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 * the parameter.
 	 */
 	@Override
-	public void open() throws Exception {
+	public void open(Logger logger) throws Exception {
 		String oid = getParameter(TRANSLATE_GROUP_PARAMETER_NAME);
 		MatchMakerTranslateGroupDAO groupDAO = (MatchMakerTranslateGroupDAO) (getSession().getDAO(MatchMakerTranslateGroup.class));
 		translateGroup = groupDAO.findByOID(Long.valueOf(oid));
 		if(translateGroup == null) {
 			throw new NullPointerException("Translate group with " + oid + " not found");
 		}
-		super.open();
+		super.open(logger);
 	}
 }
