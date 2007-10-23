@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -152,6 +153,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 	
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException {
+		Level oldLevel = logger.getLevel();
 		try {
 			logger.setLevel(getMessageLevel());
 			setFinished(false);
@@ -224,6 +226,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 			throw new RuntimeException(ex);
 		} finally {
 			setFinished(true);
+			logger.setLevel(oldLevel);
 		}
 	
 	}

@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -118,7 +119,9 @@ public class MergeEngineImpl extends AbstractEngine {
 	}
 	
 	public EngineInvocationResult call() throws EngineSettingException {
+		Level oldLevel = logger.getLevel();
 		try {
+			logger.setLevel(getMessageLevel());
 			setFinished(false);
 			setStarted(true);
 			progress = 0;
@@ -146,6 +149,7 @@ public class MergeEngineImpl extends AbstractEngine {
 			throw new RuntimeException(ex);
 		} finally {
 			setFinished(true);
+			logger.setLevel(oldLevel);
 		}
 	}
 

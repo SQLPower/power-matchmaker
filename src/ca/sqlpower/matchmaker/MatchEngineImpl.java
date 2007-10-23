@@ -166,9 +166,7 @@ public class MatchEngineImpl extends AbstractEngine {
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException {
 		Level oldLoggerLevel = logger.getLevel();
-		if (getProject().getMungeSettings().getDebug()) {
-			logger.setLevel(Level.DEBUG);
-		}
+		logger.setLevel(getMessageLevel());
 		
 		try {
 			setFinished(false);
