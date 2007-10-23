@@ -31,6 +31,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -1175,6 +1176,19 @@ public abstract class AbstractMungeComponent extends JPanel {
 				if (diff != null) {
 					e.translatePoint(getX(), getY());
 					setLocation((int)(e.getX() - diff.getX()), (int)(e.getY()-diff.getY()));
+					Rectangle newRect = getPen().getVisibleRect();
+					boolean update = false;
+					if (getPen().getParent().getWidth() - getLocation().x - getWidth() < 0) {
+						newRect.x += getWidth();
+						update = true;
+					}
+					if (getPen().getParent().getHeight() - getLocation().y - getHeight() < 0) {
+						newRect.y += getHeight();
+						update = true;
+					}
+					if (update) {
+						getPen().scrollRectToVisible(newRect);
+					}
 				}
 			} else {
 				parent.mouseX = e.getX() + getX();
