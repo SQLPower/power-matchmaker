@@ -167,7 +167,7 @@ public class NewMergeRuleAction extends AbstractAction {
 	 */
 	private ColumnMergeRules newColumnRule() {
 		ColumnMergeRules newRules = new ColumnMergeRules();
-		newRules.setActionType(MergeActionType.IGNORE);
+		newRules.setActionType(MergeActionType.USE_MASTER_VALUE);
 		mergeRule.addChild(newRules);
 		return newRules;
 	}

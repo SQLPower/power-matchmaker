@@ -42,17 +42,19 @@ public class TableMergeRules
 	private static final Logger logger = Logger.getLogger(TableMergeRules.class);
 	
 	public enum ChildMergeActionType {
-		DELETE_ALL_DUP_CHILD, UPDATE_FAIL_ON_CONFLICT, UPDATE_DELETE_ON_CONFLICT, UPDATE_USING_SQL;
+		DELETE_ALL_DUP_CHILD, UPDATE_USING_SQL, UPDATE_FAIL_ON_CONFLICT, UPDATE_DELETE_ON_CONFLICT, MERGE_ON_CONFLICT;
 		
 		public static ChildMergeActionType getActionTypeFromString(String type) {
-			if ("Delete all duplicate children record".equals(type)){
+			if ("Delete all duplicate child records".equals(type)){
 				return DELETE_ALL_DUP_CHILD;
-			} else if ("Update children record and fail if conflict".equals(type)){
+			} else if ("Update child records and fail if conflict".equals(type)){
 				return UPDATE_FAIL_ON_CONFLICT;
-			} else if ("Update children record and delete if conflict".equals(type)){
+			} else if ("Update child records and delete if conflictt".equals(type)){
 				return UPDATE_DELETE_ON_CONFLICT;
-			} else if ("Update children record using the provided sql".equals(type)){
+			} else if ("Update child records using the provided sql".equals(type)){
 				return UPDATE_USING_SQL;
+			} else if ("Merge child records if conflict".equals(type)){
+				return MERGE_ON_CONFLICT;
 			} else {
 				throw new IllegalStateException("No such merge action type: " + type);
 			} 
@@ -62,13 +64,15 @@ public class TableMergeRules
 		public String toString() {
 			switch (this) {
 			case DELETE_ALL_DUP_CHILD:
-				return "Delete all duplicate children record";
+				return "Delete all duplicate child records";
 			case UPDATE_FAIL_ON_CONFLICT:
-				return "Update children record and fail if conflict";
+				return "Update child records and fail if conflict";
 			case UPDATE_DELETE_ON_CONFLICT:
-				return "Update children record and delete if conflict";
+				return "Update child records and delete if conflict";
 			case UPDATE_USING_SQL:
-				return "Update children record using the provided sql";
+				return "Update child records using the provided sql";
+			case MERGE_ON_CONFLICT:
+				return "Merge child records if conflict";
 			default:
 				throw new IllegalStateException("Invalid enumeration");
 			}

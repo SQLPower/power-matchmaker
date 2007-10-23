@@ -715,7 +715,7 @@ public class ProjectEditor implements EditorPane {
 						(project.getSourceTable()).getColumns()); 
 				for (SQLColumn column : columns) {
 					ColumnMergeRules newRules = new ColumnMergeRules();
-					newRules.setActionType(MergeActionType.IGNORE);
+					newRules.setActionType(MergeActionType.USE_MASTER_VALUE);
 					mergeRule.addChild(newRules);
 					newRules.setColumn(column);
 				}

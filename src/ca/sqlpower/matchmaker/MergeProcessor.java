@@ -127,7 +127,7 @@ public class MergeProcessor extends AbstractProcessor {
 		// Finds the columns that needs to be merged and maps it to the 
 		// corresponding column merge rule.
 		for (ColumnMergeRules cmr : sourceTableMergeRule.getChildren()) {
-			if (cmr.getActionType() != MergeActionType.IGNORE) {
+			if (cmr.getActionType() != MergeActionType.USE_MASTER_VALUE) {
 				needsToCheckDup = true;
 			}
 			mapping.put(cmr.getColumn(), cmr);
@@ -750,7 +750,7 @@ public class MergeProcessor extends AbstractProcessor {
 			Object resultVal = null;
 			count++;
 
-			if (cmr != null && cmr.getActionType() != MergeActionType.IGNORE) {
+			if (cmr != null && cmr.getActionType() != MergeActionType.USE_MASTER_VALUE) {
 
 				if (masterVal == null) {
 					resultVal = dupVal;
