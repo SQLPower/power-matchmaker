@@ -773,9 +773,12 @@ public class ProjectEditor implements EditorPane {
 	    		r2 = ValidateResult.createValidateResult(Status.OK, "");
 	    	}
 	    	ValidateResult r3 = handler.getResultOf(resultChooser.getSchemaComboBox());
+	    	ValidateResult r4 = handler.getResultOf(sourceChooser.getTableComboBox());
 	    	if ( r1 == null || r1.getStatus() != Status.OK ||
 	    			r2 == null || r2.getStatus() != Status.OK ||
-	    			r3 == null || r3.getStatus() != Status.OK ) {
+	    			r3 == null || r3.getStatus() != Status.OK ||
+	    			r4 == null || r4.getStatus() != Status.OK ||
+	    			sourceChooser.getUniqueKeyComboBox().getSelectedItem() == null) {
 	    		createResultTableAction.setEnabled(false);
 	    	} else {
 	    		createResultTableAction.setEnabled(true);
