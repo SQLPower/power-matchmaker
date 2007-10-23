@@ -163,4 +163,8 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 		return compareValue;
 	}
 	
+	@Override
+	public String toString() {
+		return "<" + getName() + ": " + getData() + ">";
+	}
 }

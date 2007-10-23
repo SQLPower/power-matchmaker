@@ -311,4 +311,24 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     public MatchMakerSession getSession() {
     	return session;
     }
+    
+    @Override
+    public String toString() {
+    	StringBuilder result = new StringBuilder();
+    	result.append(this.getName() + ": ");
+    	result.append("[Inputs:");
+    	for (MungeStepOutput mso : getInputs()) {
+    		result.append(" " + mso);
+    	}
+    	result.append("] [Outputs:");
+    	for (MungeStepOutput mso : getChildren()) {
+    		result.append(" " + mso);
+    	}
+    	result.append("] [Parameters:");
+    	for (String param : getParameterNames()) {
+    		result.append(" <" + param + ":" + getParameter(param) + ">");
+    	}
+    	result.append("]");
+    	return result.toString();
+    }
 }
