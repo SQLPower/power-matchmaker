@@ -23,6 +23,8 @@ import java.awt.Component;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 
 import org.apache.log4j.Appender;
@@ -60,6 +62,12 @@ class EngineWorker extends SPSwingWorker {
 	 */
 	private Component parentComponent;
 	
+	
+	/**
+	 * Action to re-enable after engine has completed.
+	 */
+	private Action action;
+	
 	/**
 	 * @param engine The MatchMakerEngine that the worker will run
 	 * @param outputPanel The EngineOutputPanel where the engine will display it's output, 
@@ -68,11 +76,13 @@ class EngineWorker extends SPSwingWorker {
 	 * @throws EngineSettingException
 	 * @throws ArchitectException
 	 */
-	public EngineWorker(MatchMakerEngine engine, EngineOutputPanel outputPanel, SwingWorkerRegistry registry) throws EngineSettingException, ArchitectException {
+	public EngineWorker(MatchMakerEngine engine, EngineOutputPanel outputPanel,
+			SwingWorkerRegistry registry, Action action) throws EngineSettingException, ArchitectException {
 		super(registry);
 		this.engine = engine;
 		this.engineOutputDoc = outputPanel.getOutputDocument();
 		this.parentComponent = outputPanel.getOutputComponent().getTopLevelAncestor();
+		this.action = action;
 		engine.checkPreconditions();
 		ProgressWatcher.watchProgress(outputPanel.getProgressBar(), engine);
 	}
@@ -91,6 +101,14 @@ class EngineWorker extends SPSwingWorker {
 			engine.getLogger().error("Error during engine run", getDoStuffException());
 		}
 		engine.getLogger().removeAppender(appender);
+		
+		SwingUtilities.invokeLater(new Runnable(){
+
+			public void run() {
+				action.setEnabled(true);
+			}
+			
+		});
 	}
 	
 }

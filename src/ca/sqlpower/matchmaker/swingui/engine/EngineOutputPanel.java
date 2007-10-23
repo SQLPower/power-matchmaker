@@ -36,6 +36,8 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
@@ -92,12 +94,28 @@ public class EngineOutputPanel {
 		}
 		engineOutputDoc = new DefaultStyledDocument();
 
-		JTextArea outputTextArea = new JTextArea(20, 80);
+		final JTextArea outputTextArea = new JTextArea(20, 80);
 		outputTextArea.setDocument(engineOutputDoc);
 		outputTextArea.setEditable(false);
 		outputTextArea.setWrapStyleWord(true);
 		outputTextArea.setLineWrap(true);
 		outputTextArea.setAutoscrolls(true);
+		
+		engineOutputDoc.addDocumentListener(new DocumentListener(){
+
+			public void changedUpdate(DocumentEvent e) {
+				// not used.
+			}
+
+			public void insertUpdate(DocumentEvent e) {
+				outputTextArea.setCaretPosition(outputTextArea.getText().length());
+			}
+
+			public void removeUpdate(DocumentEvent e) {
+				// not used.
+			}
+			
+		});
 
 		if (courierNewExist) {
 			Font oldFont = outputTextArea.getFont();
