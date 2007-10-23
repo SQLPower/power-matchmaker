@@ -131,36 +131,42 @@ public class MergeColumnRuleEditor implements EditorPane {
         		parentTable.addItem(tmr.getSourceTable());
         	}
         }
-        parentTable.addActionListener(new ActionListener(){
 
-			public void actionPerformed(ActionEvent e) {
+        parentTable.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
 				mergeRule.setParentTable((SQLTable) parentTable.getSelectedItem());
 				if (handler != null) {
 					handler.performFormValidation();
         		}
+				// Set each imported key column combo box to null
+				for (int row = 0; row < ruleTableModel.getRowCount(); row++) {
+					ruleTableModel.setValueAt(null, row, 2);
+				}
 			}
-		});
+        });
         
         childMergeAction = new JComboBox(TableMergeRules.ChildMergeActionType.values());
         childMergeAction.addActionListener(new ActionListener(){
-
 			public void actionPerformed(ActionEvent e) {
 				mergeRule.setChildMergeAction((ChildMergeActionType) childMergeAction.getSelectedItem());
 			}
 		});
         buildUI();
         
-        parentTable.addItemListener(new ItemListener() {
-
-			public void itemStateChanged(ItemEvent e) {
-				
-				// Set each imported key column combo box to null
-				for (int row = 0; row < ruleTableModel.getRowCount(); row++) {
-					ruleTableModel.setValueAt(null, row, 2);
+        deleteDup.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (deleteDup.isSelected()) {
+					for (ColumnMergeRules cmr : mergeRule.getChildren()) {
+						cmr.setActionType(MergeActionType.AUGMENT);
+					}
+				} else {
+					for (ColumnMergeRules cmr : mergeRule.getChildren()) {
+						cmr.setActionType(MergeActionType.USE_MASTER_VALUE);
+					}
 				}
 			}
-        	
-        });
+		});
+        
         
         List<Action> actions = new ArrayList<Action>();
         actions.add(saveAction);
@@ -256,20 +262,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(ActionEvent e) {
-			
-			//This should be uncommented when we have a proper handler
-			if ( !handler.hasPerformedValidation() ) {
-				ruleTableModel.fireTableChanged(new TableModelEvent(ruleTableModel));
-			}
-			ValidateResult result = handler.getWorstValidationStatus();
-			if ( result.getStatus() == Status.FAIL) {
-				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"You have to fix the error before you can save the merge rules",
-						"Save",
-						JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-
 			if ( doSave() ) {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
 						"Merge Column rules saved.",
@@ -285,7 +277,12 @@ public class MergeColumnRuleEditor implements EditorPane {
 	};
 		
 	public boolean doSave() {
-		if (handler.getWorstValidationStatus().getStatus() != Status.FAIL) {
+		if ( !handler.hasPerformedValidation() ) {
+			ruleTableModel.fireTableChanged(new TableModelEvent(ruleTableModel));
+		}
+		ValidateResult result = handler.getWorstValidationStatus();
+		
+		if (result.getStatus() != Status.FAIL) {
 			
 			if (!mergeRule.isSourceMergeRule()) {
 				mergeRule.setParentTable((SQLTable) parentTable.getSelectedItem());
@@ -305,8 +302,13 @@ public class MergeColumnRuleEditor implements EditorPane {
 			swingSession.save(project);
 			tableListener.setModified(false);
 			return true;
+		} else {
+			JOptionPane.showMessageDialog(swingSession.getFrame(),
+					"You have to fix the error before you can save the merge rules",
+					"Save",
+					JOptionPane.ERROR_MESSAGE);
+			return false;
 		}
-		return false;
 	}
 
 	public JComponent getPanel() {
