@@ -156,7 +156,7 @@ public class ProjectEditor implements EditorPane {
 	 */
     public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder) throws ArchitectException {
         this.swingSession = swingSession;
-        if (project == null) throw new NullPointerException("You can't edit a null plmatch");
+        if (project == null) throw new NullPointerException("You can't edit a null project");
         this.project = project;
         this.folder = folder;
         handler = new FormValidationHandler(status);
@@ -475,9 +475,6 @@ public class ProjectEditor implements EditorPane {
         	sourceChooser.getSchemaComboBox().setSelectedItem(sch);
         	sourceChooser.getTableComboBox().setSelectedItem(sourceTable);
     	}
-        if (indexComboBox.getSelectedItem() == null) {
-        	createResultTableAction.setEnabled(false);
-        }
 
         refreshIndexComboBox(project.getSourceTableIndex(),project.getSourceTable());
 
@@ -767,23 +764,22 @@ public class ProjectEditor implements EditorPane {
         	}
     	}
 
-    	ValidateResult r1 = handler.getResultOf(indexComboBox);
-    	
-    	ValidateResult r2;
     	if (project.getType() != ProjectMode.CLEANSE) {
-    		r2 = handler.getResultOf(resultTableName);
-    	} else {
-    		r2 = null;
-    	}
-    	
-    	ValidateResult r3 = handler.getResultOf(sourceChooser.getTableComboBox());
-    	if ( r1 == null || r1.getStatus() != Status.OK ||
-    			r2 == null || r2.getStatus() != Status.OK ||
-    			r3 == null || r3.getStatus() != Status.OK ||
-    			handler.hasPerformedValidation() ) {
-    		createResultTableAction.setEnabled(false);
-    	} else {
-    		createResultTableAction.setEnabled(true);
+	    	ValidateResult r1 = handler.getResultOf(resultTableName);
+	    	ValidateResult r2;
+	    	if (resultChooser.getCatalogComboBox().isEnabled()) {
+	    		r2 = handler.getResultOf(resultChooser.getCatalogComboBox());
+	    	} else {
+	    		r2 = ValidateResult.createValidateResult(Status.OK, "");
+	    	}
+	    	ValidateResult r3 = handler.getResultOf(resultChooser.getSchemaComboBox());
+	    	if ( r1 == null || r1.getStatus() != Status.OK ||
+	    			r2 == null || r2.getStatus() != Status.OK ||
+	    			r3 == null || r3.getStatus() != Status.OK ) {
+	    		createResultTableAction.setEnabled(false);
+	    	} else {
+	    		createResultTableAction.setEnabled(true);
+	    	}
     	}
     }
 
