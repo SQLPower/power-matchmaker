@@ -242,12 +242,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     		String out = getName() + " Inputs: ";
     		for (MungeStepOutput mso : getInputs()) {
     			if (mso == null) {
-    				out += "[ null] ";
+    				out += "[ null ] ";
     			} else {
     				if (mso.getName() != null && mso.getName().length() != 0) {
-    					out += "[ " + mso.getName() + ": " + mso.getData().toString() + " ] ";
+    					out += "[ " + mso.getName() + ": " + mso.getData() + " ] ";
     				} else {
-    					out += "[ " + mso.getData().toString() + " ] ";
+    					out += "[ " + mso.getData() + " ] ";
     				}
     			}
     		}
@@ -264,12 +264,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     		String out = getName() + " Outputs: ";
     		for (MungeStepOutput mso : getChildren()) {
     			if (mso == null) {
-    				out += "[ null] ";
+    				out += "[ null ] ";
     			} else {
     				if (mso.getName() != null && mso.getName().length() != 0) {
-    					out += "[ " + mso.getName() + ": " + mso.getData().toString() + " ] ";
+    					out += "[ " + mso.getName() + ": " + mso.getData() + " ] ";
     				} else {
-    					out += "[ " + mso.getData().toString() + " ] ";
+    					out += "[ " + mso.getData() + " ] ";
     				}
     			}
     		}
