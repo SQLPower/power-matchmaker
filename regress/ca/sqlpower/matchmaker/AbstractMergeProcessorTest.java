@@ -54,35 +54,36 @@ import ca.sqlpower.sql.SQL;
  */
 public abstract class AbstractMergeProcessorTest extends TestCase {
 
-    Project project;
-    MergeProcessor mpor;
-    TestingMatchMakerSession session;
-    Connection con;
-    SQLDatabase db;
-    SPDataSource ds;
-    SQLTable sourceTable;
-    SQLTable childTable;
-    SQLTable grandChildTable;
+	static Project project;
+	static MergeProcessor mpor;
+	static TestingMatchMakerSession session;
+	static Connection con;
+	static SQLDatabase db;
+	static SPDataSource ds;
+	static SQLTable sourceTable;
+	static SQLTable childTable;
+	static SQLTable grandChildTable;
+    static boolean alreadyRan = false;
     
-	TableMergeRules tmr = new TableMergeRules();
-	ColumnMergeRules cmr_string = new ColumnMergeRules();
-	ColumnMergeRules cmr_date = new ColumnMergeRules();
-	ColumnMergeRules cmr_number = new ColumnMergeRules();
+    static TableMergeRules tmr = new TableMergeRules();
+    static ColumnMergeRules cmr_string = new ColumnMergeRules();
+    static ColumnMergeRules cmr_date = new ColumnMergeRules();
+    static ColumnMergeRules cmr_number = new ColumnMergeRules();
 	
-	TableMergeRules ctmr = new TableMergeRules();
-	ColumnMergeRules ccmr_parent_id = new ColumnMergeRules();
-	ColumnMergeRules ccmr_id = new ColumnMergeRules();
-	ColumnMergeRules ccmr_string = new ColumnMergeRules();
-	ColumnMergeRules ccmr_date = new ColumnMergeRules();
-	ColumnMergeRules ccmr_number = new ColumnMergeRules();
+    static TableMergeRules ctmr = new TableMergeRules();
+    static ColumnMergeRules ccmr_parent_id = new ColumnMergeRules();
+    static ColumnMergeRules ccmr_id = new ColumnMergeRules();
+	static ColumnMergeRules ccmr_string = new ColumnMergeRules();
+	static ColumnMergeRules ccmr_date = new ColumnMergeRules();
+	static ColumnMergeRules ccmr_number = new ColumnMergeRules();
 	
-	TableMergeRules cctmr = new TableMergeRules();
-	ColumnMergeRules cccmr_gparent_id = new ColumnMergeRules();
-	ColumnMergeRules cccmr_parent_id = new ColumnMergeRules();
-	ColumnMergeRules cccmr_id = new ColumnMergeRules();
-	ColumnMergeRules cccmr_string = new ColumnMergeRules();
-	ColumnMergeRules cccmr_date = new ColumnMergeRules();
-	ColumnMergeRules cccmr_number = new ColumnMergeRules();
+	static TableMergeRules cctmr = new TableMergeRules();
+	static ColumnMergeRules cccmr_gparent_id = new ColumnMergeRules();
+	static ColumnMergeRules cccmr_parent_id = new ColumnMergeRules();
+	static ColumnMergeRules cccmr_id = new ColumnMergeRules();
+	static ColumnMergeRules cccmr_string = new ColumnMergeRules();
+	static ColumnMergeRules cccmr_date = new ColumnMergeRules();
+	static ColumnMergeRules cccmr_number = new ColumnMergeRules();
 	
 	/**
 	 * Subclasses need to implement this method to set the correct
@@ -91,6 +92,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	 * for example.
 	 */
 	protected void setUp() throws Exception {
+		if (alreadyRan) return;
+		alreadyRan = true;
+		
 		String sql;
 		project = new Project();
 
@@ -403,7 +407,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_number.setActionType(MergeActionType.AUGMENT);
 		mpor.call();
 		
-		con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
     	
@@ -427,7 +430,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
 		mpor.call();
 
-		Connection con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
@@ -462,7 +464,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		mpor.call();
 
-		Connection con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
@@ -514,7 +515,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		mpor.call();
 
-		Connection con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
@@ -546,7 +546,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		mpor.call();
 
-		Connection con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
@@ -578,7 +577,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		mpor.call();
 
-		Connection con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
@@ -630,7 +628,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		mpor.call();
 
-		Connection con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
@@ -659,7 +656,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	
 		mpor.call();
 		
-		Connection con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
@@ -712,7 +708,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	cctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
     	mpor.call();
     	
-		Connection con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
@@ -766,7 +761,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	
 		mpor.call();
     	
-		Connection con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
@@ -822,7 +816,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
 		mpor.call();
     	
-		Connection con = session.getConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs;
 		
