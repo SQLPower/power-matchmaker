@@ -63,27 +63,26 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	static SQLTable sourceTable;
 	static SQLTable childTable;
 	static SQLTable grandChildTable;
-    static boolean alreadyRan = false;
     
-    static TableMergeRules tmr = new TableMergeRules();
-    static ColumnMergeRules cmr_string = new ColumnMergeRules();
-    static ColumnMergeRules cmr_date = new ColumnMergeRules();
-    static ColumnMergeRules cmr_number = new ColumnMergeRules();
+    static TableMergeRules tmr;
+    static ColumnMergeRules cmr_string;
+    static ColumnMergeRules cmr_date;
+    static ColumnMergeRules cmr_number;
 	
-    static TableMergeRules ctmr = new TableMergeRules();
-    static ColumnMergeRules ccmr_parent_id = new ColumnMergeRules();
-    static ColumnMergeRules ccmr_id = new ColumnMergeRules();
-	static ColumnMergeRules ccmr_string = new ColumnMergeRules();
-	static ColumnMergeRules ccmr_date = new ColumnMergeRules();
-	static ColumnMergeRules ccmr_number = new ColumnMergeRules();
+    static TableMergeRules ctmr;
+    static ColumnMergeRules ccmr_parent_id;
+    static ColumnMergeRules ccmr_id;
+	static ColumnMergeRules ccmr_string;
+	static ColumnMergeRules ccmr_date;
+	static ColumnMergeRules ccmr_number;
 	
-	static TableMergeRules cctmr = new TableMergeRules();
-	static ColumnMergeRules cccmr_gparent_id = new ColumnMergeRules();
-	static ColumnMergeRules cccmr_parent_id = new ColumnMergeRules();
-	static ColumnMergeRules cccmr_id = new ColumnMergeRules();
-	static ColumnMergeRules cccmr_string = new ColumnMergeRules();
-	static ColumnMergeRules cccmr_date = new ColumnMergeRules();
-	static ColumnMergeRules cccmr_number = new ColumnMergeRules();
+	static TableMergeRules cctmr;
+	static ColumnMergeRules cccmr_gparent_id;
+	static ColumnMergeRules cccmr_parent_id;
+	static ColumnMergeRules cccmr_id;
+	static ColumnMergeRules cccmr_string;
+	static ColumnMergeRules cccmr_date;
+	static ColumnMergeRules cccmr_number;
 	
 	/**
 	 * Subclasses need to implement this method to set the correct
@@ -92,8 +91,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	 * for example.
 	 */
 	protected void setUp() throws Exception {
-		if (alreadyRan) return;
-		alreadyRan = true;
 		
 		String sql;
 		project = new Project();
@@ -151,6 +148,26 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    	execSQL(con,sql);
 	    }
 
+	    tmr = new TableMergeRules();
+	    cmr_string = new ColumnMergeRules();
+	    cmr_date = new ColumnMergeRules();
+	    cmr_number = new ColumnMergeRules();
+		
+	    ctmr = new TableMergeRules();
+	    ccmr_parent_id = new ColumnMergeRules();
+	    ccmr_id = new ColumnMergeRules();
+		ccmr_string = new ColumnMergeRules();
+		ccmr_date = new ColumnMergeRules();
+		ccmr_number = new ColumnMergeRules();
+		
+		cctmr = new TableMergeRules();
+		cccmr_gparent_id = new ColumnMergeRules();
+		cccmr_parent_id = new ColumnMergeRules();
+		cccmr_id = new ColumnMergeRules();
+		cccmr_string = new ColumnMergeRules();
+		cccmr_date = new ColumnMergeRules();
+		cccmr_number = new ColumnMergeRules();
+		
 		//set the column and tabler merge rules
 	    tmr.setTable(sourceTable);
 		tmr.addChild(cmr_string);
@@ -222,10 +239,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     private void populateTables() throws Exception {
     	String sql;
 
-		//delete everything from source table
-		sql = "DELETE FROM " + getFullTableName();
-		execSQL(con, sql);
-		
+    	clearTables();
+    	
 		//Populates the source table
 		String testString = "ABCDEF";
 		for (int i = 0; i < 6; i++) {
@@ -239,10 +254,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
         sql = "INSERT INTO " + getFullTableName() + " (ID) VALUES(6)";
         execSQL(con,sql);
         
-        // delete everything from result table
-		sql = "DELETE FROM " + getFullTableName() + "_RESULT";
-		execSQL(con, sql);
-		
 		//6 is the master of 4, which is the master of 5, 
 		//which is the master of 1, which is the master of 0. 
 		//2 is the master of 3.
@@ -288,13 +299,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     private void populateChildTable() throws Exception {
     	String sql;
 		String testString = "ABCDEF";
-		
-		//delete everything from child table
-		sql = "DELETE FROM " + getFullTableName() + "_CHILD";
-		execSQL(con, sql);
-		
-		populateTables();
-		
+				
 		//populates the child table
 		for (int i = 0; i < 6; i++) {
 			for (int j = 0; j < i; j++) {
@@ -315,13 +320,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     private void populateChildTableForUpdate() throws Exception {
     	String sql;
 		String testString = "ABCDEF";
-		
-		//delete everything from child table
-		sql = "DELETE FROM " + getFullTableName() + "_CHILD";
-		execSQL(con, sql);
-		
-		populateTables();
-		
+				
 		//populates the child table
 		for (int i = 0; i < 6; i++) {
 			sql = "INSERT INTO " + getFullTableName() + "_CHILD VALUES(" +
@@ -341,13 +340,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     private void populateGrandChildTableForUpdate() throws Exception {
     	String sql;
 		String testString = "ABCDEF";
-		
-		//delete everything from child table
-		sql = "DELETE FROM " + getFullTableName() + "_GCHILD";
-		execSQL(con, sql);
-		
-		populateChildTableForUpdate();
-		
+				
 		//populates the child table
 		for (int i = 0; i < 6; i++) {
 			for (int k = 0; k < i; k++) {
@@ -370,12 +363,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	String sql;
 		String testString = "ABCDEF";
 		
-		//delete everything from child table
-		sql = "DELETE FROM " + getFullTableName() + "_GCHILD";
-		execSQL(con, sql);
-		
-		populateChildTable();
-		
 		//populates the child table
 		for (int i = 0; i < 6; i++) {
 			for (int j = 0; j < i; j++) {
@@ -395,6 +382,26 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		//sets the default action type
 		cctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
 	}
+    
+    public void clearTables() throws Exception{
+    	String sql;
+    	
+    	//delete everything from grand child table
+    	sql = "DELETE FROM " + getFullTableName() + "_GCHILD";
+    	execSQL(con, sql);
+    	
+    	//delete everything from child table
+		sql = "DELETE FROM " + getFullTableName() + "_CHILD";
+		execSQL(con, sql);
+		
+		//delete everything from source table
+		sql = "DELETE FROM " + getFullTableName();
+		execSQL(con, sql);
+		
+		// delete everything from result table
+		sql = "DELETE FROM " + getFullTableName() + "_RESULT";
+		execSQL(con, sql);
+    }
     
     /**
      * This tests on a unmatch, it should do nothing.
@@ -652,6 +659,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     
     public void testDeleteDupChild() throws Exception{
     	
+    	populateTables();
+    	populateChildTable();
     	populateGrandChildTable();
 	
 		mpor.call();
@@ -692,7 +701,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     }
     
     public void testUpdateFailOnConflict() throws Exception{
-    	
+
+    	populateTables();
     	populateChildTable();
     	
     	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
@@ -702,6 +712,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		} catch (IllegalStateException e) {
 		}
 		
+		populateTables();
+    	populateChildTableForUpdate();
     	populateGrandChildTableForUpdate();
     	
     	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
@@ -754,6 +766,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     
     public void testUpdateDeleteOnConflict() throws Exception{
 
+    	populateTables();
+    	populateChildTable();
     	populateGrandChildTable();
     	
     	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT);
@@ -807,6 +821,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     
     public void testUpdateUsingSQL() throws Exception{
 
+    	populateTables();
+    	populateChildTable();
     	populateGrandChildTable();
     	
     	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_USING_SQL);
@@ -859,8 +875,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		rs = stmt.executeQuery(sql.toString());
 		assertFalse("Duplicate grandchild records not merged.", rs.next());
     }
-    
+
 	protected boolean execSQL(Connection conn, String sql) {
+//		System.out.println(sql);
 		Statement stmt = null;
 		try {
     		stmt = conn.createStatement();

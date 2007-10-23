@@ -307,10 +307,10 @@ public class MergeProcessor extends AbstractProcessor {
 					}
 
 				}  else if (childTableMergeRule.getChildMergeAction() == TableMergeRules.ChildMergeActionType.UPDATE_USING_SQL) {
-					// cannot update if there are no masterKeyValues
 
 					logger.debug("Creating a copy of the duplicate record's children on table " + childTableMergeRule.getSourceTable());
 
+					// cannot update if there are no masterKeyValues
 					if (masterKeyValues == null) {
 						throw new IllegalStateException(
 								"Cannot update when parent table deletes all child duplicate records");
@@ -512,83 +512,6 @@ public class MergeProcessor extends AbstractProcessor {
 		return resultRow;
 	}
 
-	private List<Object> updateRowsUsingSQL(List<String> columnNames, List<Object> columnVals, TableMergeRules tableMergeRule, List<String> foreignKeyColumnNames, List<Object> masterKeyValues) throws SQLException {
-		StringBuilder sql = new StringBuilder();
-		boolean first = true;
-		int colIndex = 0;
-		Object ival;
-		
-		sql.append("UPDATE ");
-		sql.append(DDLUtils.toQualifiedName(tableMergeRule.getSourceTable()));
-		sql.append("\n SET ");
-		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
-			if (!"".equals(cmr.getUpdateStatement())) {
-				if (foreignKeyColumnNames.contains(cmr.getColumnName())) {
-					throw new IllegalStateException("Can't have sql update statement for a foreign key column");
-				}
-				if (!first) {
-					sql.append(", ");
-				}
-				first = false;
-				sql.append(cmr.getColumnName());
-				sql.append("=");
-				sql.append(cmr.getUpdateStatement());
-			}
-		}
-		for (String ColumnName : foreignKeyColumnNames) {
-			if (!first) {
-				sql.append(", ");
-			}
-			first = false;
-			sql.append(ColumnName);
-			sql.append("=");
-
-			ival = masterKeyValues.get(colIndex++); 
-			if (ival == null) {
-				sql.append("NULL");
-			} else {
-				sql.append(formatObjectToSQL(ival));
-			} 
-		}
-		
-		String whereStatement = generateWhereStatement(columnNames, columnVals);
-		sql.append(whereStatement);
-		
-		
-		stmt.executeUpdate(sql.toString());
-		return masterKeyValues;
-
-	}
-
-	private void updateRows(SQLTable table, List<String> foreignKeyColumnNames, List<Object> dupKeyValues, List<Object> masterKeyValues) throws SQLException {
-		StringBuilder sql = new StringBuilder();
-		int colIndex = 0;
-		Object ival;
-		
-		sql.append("UPDATE ");
-		sql.append(DDLUtils.toQualifiedName(table));
-		sql.append("\n SET ");
-		boolean first = true;
-		for (String ColumnName : foreignKeyColumnNames) {
-			if (!first) {
-				sql.append(", ");
-			}
-			first = false;
-			sql.append(ColumnName);
-			sql.append("=");
-
-			ival = masterKeyValues.get(colIndex++); 
-			if (ival == null) {
-				sql.append("NULL");
-			} else {
-				sql.append(formatObjectToSQL(ival));
-			} 
-		}
-		String whereStatement = generateWhereStatement(foreignKeyColumnNames, dupKeyValues);
-		sql.append(whereStatement);
-		stmt.executeUpdate(sql.toString());
-	}
-	
 	private List<String> getKeyColumnNames(TableMergeRules tableMergeRule) {
 		List<String> childKeyColumnNames = new ArrayList<String>();
 		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
