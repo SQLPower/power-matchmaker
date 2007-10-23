@@ -235,4 +235,9 @@ public class MungeProcess
 	public void setOutputStep(MungeResultStep outputStep) {
 		this.outputStep = outputStep;
 	}
+
+	@Override
+	public String toString() {
+		return getName();
+	}
 }
