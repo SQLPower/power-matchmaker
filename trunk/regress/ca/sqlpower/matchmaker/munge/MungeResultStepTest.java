@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
@@ -31,6 +33,8 @@ import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 public class MungeResultStepTest extends TestCase {
 
 	private MungeResultStep step;
+	
+	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -64,7 +68,7 @@ public class MungeResultStepTest extends TestCase {
 	}
 
 	public void test() throws Exception {
-		step.open();
+		step.open(logger);
 		step.call();
 
 		List<MungeResult> results = step.getResults();

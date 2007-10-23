@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -34,10 +35,13 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSpinner;
@@ -46,6 +50,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
@@ -157,6 +162,11 @@ public class CleanseEnginePanel implements EditorPane {
 	private MatchMakerEngine engine;
 	
 	/**
+	 * 
+	 */
+	private JComboBox messageLevel;
+	
+	/**
 	 * @param swingSession The application Swing session
 	 * @param project The Project that this panel is running the engine on
 	 * @param parentFrame The JFrame that contains this panel
@@ -259,6 +269,28 @@ public class CleanseEnginePanel implements EditorPane {
 			recordsToProcess.setValue(settings.getProcessCount());
 		}
 		
+		messageLevel = new JComboBox(new Level[] {Level.ALL, Level.DEBUG, Level.ERROR, Level.FATAL, Level.INFO, Level.OFF, Level.WARN});
+		messageLevel.setSelectedItem(engine.getMessageLevel());
+		messageLevel.setRenderer(new DefaultListCellRenderer(){
+			@Override
+			public Component getListCellRendererComponent(JList list,
+					Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				setText(value.toString());
+				return this;
+			}
+		});
+		
+		messageLevel.addActionListener(new AbstractAction(){
+			public void actionPerformed(ActionEvent e) {
+				Level sel = (Level)messageLevel.getSelectedItem();
+				engine.setMessageLevel(sel);
+			}
+		});
+		
+		
+		
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
 		int y = 4;
@@ -274,6 +306,11 @@ public class CleanseEnginePanel implements EditorPane {
 		y += 2;
 		pb.add(new JLabel("Records to Process (0 for no limit):"), cc.xy(2, y, "r,c"));
 		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
+		
+		
+		y += 2;
+		pb.add(new JLabel("Message Level:"),cc.xy(2,y,"r,c"));
+		pb.add(messageLevel, cc.xy(4,y,"l,c"));
 		
 		FormLayout bbLayout = new FormLayout(
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu",

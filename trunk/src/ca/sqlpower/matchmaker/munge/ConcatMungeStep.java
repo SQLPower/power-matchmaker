@@ -31,7 +31,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
 	public ConcatMungeStep(MatchMakerSession session) {
 		super(session);
 		setName("Concat");
-		out = new MungeStepOutput<String>("concatOutput", String.class);
+		out = new  MungeStepOutput<String>("concatOutput", String.class);
 		addChild(out);
 		InputDescriptor desc1 = new InputDescriptor("concat1", String.class);
 		InputDescriptor desc2 = new InputDescriptor("concat2", String.class);
@@ -67,6 +67,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		if (allNulls) {
 			out.setData(null);
 		}
+		printOutputs();
 		return true;
 	}
 

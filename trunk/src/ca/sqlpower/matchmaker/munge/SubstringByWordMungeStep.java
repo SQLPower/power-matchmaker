@@ -150,6 +150,8 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 		} else {
 			out.setData(null);
 		}
+		
+		printOutputs();
 		return true;
 	}
 

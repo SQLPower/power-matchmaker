@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -30,15 +31,19 @@ import java.io.File;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
@@ -153,6 +158,11 @@ public class MatchEnginePanel implements EditorPane {
 	private MatchMakerEngine engine;
 	
 	/**
+	 * The combobox for choosing the messageLevel 
+	 */
+	private JComboBox messageLevel;
+	
+	/**
 	 * @param swingSession The application Swing session
 	 * @param project The Project that this panel is running the engine on
 	 * @param parentFrame The JFrame that contains this panel
@@ -244,6 +254,8 @@ public class MatchEnginePanel implements EditorPane {
 				if (((JCheckBox) e.getSource()).isSelected()) {
 					clearMatchPool.setSelected(true);
 					recordsToProcess.setValue(new Integer(1));
+					engine.setMessageLevel(Level.ALL);
+					messageLevel.setSelectedItem(engine.getMessageLevel());
 				} else {
 					clearMatchPool.setSelected(false);
 					recordsToProcess.setValue(new Integer(0));
@@ -253,6 +265,26 @@ public class MatchEnginePanel implements EditorPane {
 		clearMatchPool = new JCheckBox("Clear match pool?", settings.isClearMatchPool());
 		sendEmail = new JCheckBox("Send E-mails?", settings.getSendEmail());
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
+		
+		messageLevel = new JComboBox(new Level[] {Level.ALL, Level.DEBUG, Level.ERROR, Level.FATAL, Level.INFO, Level.OFF, Level.WARN});
+		messageLevel.setSelectedItem(engine.getMessageLevel());
+		messageLevel.setRenderer(new DefaultListCellRenderer(){
+			@Override
+			public Component getListCellRendererComponent(JList list,
+					Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				setText(value.toString());
+				return this;
+			}
+		});
+		
+		messageLevel.addActionListener(new AbstractAction(){
+			public void actionPerformed(ActionEvent e) {
+				Level sel = (Level)messageLevel.getSelectedItem();
+				engine.setMessageLevel(sel);
+			}
+		});
 
 		int y = 4;
 		pb.add(new JLabel("Log File:"), cc.xy(2, y, "r,f"));
@@ -272,7 +304,11 @@ public class MatchEnginePanel implements EditorPane {
 		
 		y += 2;
 		pb.add(sendEmail, cc.xy(4, y, "l,c"));
-
+		
+		y += 2;
+		pb.add(new JLabel("Message Level:"), cc.xy(2,y, "r,c"));
+		pb.add(messageLevel, cc.xy(4,y,"l,c"));
+		
 		FormLayout bbLayout = new FormLayout(
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu",
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");

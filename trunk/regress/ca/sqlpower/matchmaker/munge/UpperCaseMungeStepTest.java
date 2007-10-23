@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
@@ -33,6 +35,8 @@ public class UpperCaseMungeStepTest extends TestCase {
 	
 	private MungeStepOutput testInput;
 	
+	private final Logger logger = Logger.getLogger("testLogger");
+	
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new UpperCaseMungeStep(new TestingMatchMakerSession());
@@ -42,7 +46,7 @@ public class UpperCaseMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -54,7 +58,7 @@ public class UpperCaseMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcDEF!@#$%^&*");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -67,7 +71,7 @@ public class UpperCaseMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);

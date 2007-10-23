@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
 import junit.framework.TestCase;
@@ -30,6 +32,8 @@ public class SubstringByWordMungeStepTest extends TestCase {
 	private SubstringByWordMungeStep step;
 	
 	private MungeStepOutput testInput;
+	
+	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -41,7 +45,7 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		step.setParameter(step.BEGIN_PARAMETER_NAME,"1");
 		step.setParameter(step.END_PARAMETER_NAME,"3");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -55,7 +59,7 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		step.setParameter(step.BEGIN_PARAMETER_NAME,"1");
 		step.setParameter(step.END_PARAMETER_NAME,"2");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -71,7 +75,7 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		step.setParameter(step.BEGIN_PARAMETER_NAME,"1");
 		step.setParameter(step.END_PARAMETER_NAME,"2");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
@@ -85,7 +89,7 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		step.setParameter(step.BEGIN_PARAMETER_NAME, "3");
 		step.setParameter(step.END_PARAMETER_NAME, "9");
 		step.connectInput(0, testInput);
-		step.open();
+		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);

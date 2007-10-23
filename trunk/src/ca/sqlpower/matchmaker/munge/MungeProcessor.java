@@ -42,14 +42,17 @@ public class MungeProcessor extends AbstractProcessor {
      */
     private final MungeProcess mungeProcess;
     
+    private final Logger engineLogger;
+    
     /**
      * The list of MungeSteps obtained from the MungeProcess that this processor will
      * process, sorted in the exact order that the processor will process them.
      */
     private List<MungeStep> processOrder;
     
-    public MungeProcessor(MungeProcess mungeProcess) {
+    public MungeProcessor(MungeProcess mungeProcess, Logger logger) {
         this.mungeProcess = mungeProcess;
+        this.engineLogger = logger;
         if (mungeProcess.getParentProject().getMungeSettings().getDebug()) {
         	logger.setLevel(Level.DEBUG);
         }
@@ -77,7 +80,7 @@ public class MungeProcessor extends AbstractProcessor {
 			
 			// open everything
 			for (MungeStep step: processOrder) {
-				step.open();
+				step.open(engineLogger);
 			}
 			
 			// call until one step gives up

@@ -100,7 +100,9 @@ public class WordCountMungeStep extends AbstractMungeStep {
 			Pattern p = Pattern.compile(delimiter);
 			wordCount = p.split(data).length;
 		}
+		
 		out.setData(new BigDecimal(wordCount));
+		printOutputs();
 		return true;
 	}
 

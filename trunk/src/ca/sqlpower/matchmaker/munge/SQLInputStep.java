@@ -176,12 +176,13 @@ public class SQLInputStep extends AbstractMungeStep {
             }
         }
         
+        printOutputs();
         return true;
     }
     
     @Override
-    public void open() throws Exception {
-    	super.open();
+    public void open(Logger logger) throws Exception {
+    	super.open(logger);
     	
     	if (rs != null) {
             throw new IllegalStateException("The input step is already open");

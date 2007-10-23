@@ -26,6 +26,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLDatabase;
@@ -47,6 +50,7 @@ public abstract class AbstractCleanseTest extends TestCase{
     SPDataSource ds;
     SQLTable sourceTable;
     SQLInputStep step;
+    final Logger logger = Logger.getLogger("testLogger");
     
 	protected void setUp() throws Exception {
 		project = new Project();
@@ -121,7 +125,7 @@ public abstract class AbstractCleanseTest extends TestCase{
 		mungep.addChild(ucms);
 		project.addMungeProcess(mungep);
 		
-		MungeProcessor mp = new MungeProcessor(mungep);
+		MungeProcessor mp = new MungeProcessor(mungep, logger);
 		mp.call();
 
 		Connection con = db.getConnection();

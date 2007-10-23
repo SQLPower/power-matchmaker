@@ -153,6 +153,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException {
 		try {
+			logger.setLevel(getMessageLevel());
 			setFinished(false);
 			setStarted(true);
 			progress = 0;
@@ -202,7 +203,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 			
 			
 			for (MungeProcess currentProcess: processes) {
-				munger = new MungeProcessor(currentProcess);
+				munger = new MungeProcessor(currentProcess, logger);
 				currentProcessor = munger;
 				progressMessage = "Running cleanse process " + currentProcess.getName();
 				logger.debug(getMessage());
