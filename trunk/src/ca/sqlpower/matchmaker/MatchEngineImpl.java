@@ -106,7 +106,7 @@ public class MatchEngineImpl extends AbstractEngine {
             "PreCondition failed: project result table does not exist");
         }
         
-        if (!project.vertifyResultTableStruct() ) {
+        if (!project.verifyResultTableStruct() ) {
             throw new EngineSettingException(
             "PreCondition failed: project result table structure incorrect");
         }

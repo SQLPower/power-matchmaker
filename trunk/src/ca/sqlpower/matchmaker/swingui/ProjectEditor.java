@@ -130,7 +130,6 @@ public class ProjectEditor implements EditorPane {
     private JTextField projectType = new JTextField();
     private JTextField resultTableName = new JTextField();
     private JButton viewBuilder;
-    private JButton createResultTable;
     private JButton createIndexButton;
     private JButton saveProject;
     
@@ -160,7 +159,6 @@ public class ProjectEditor implements EditorPane {
         this.project = project;
         this.folder = folder;
         handler = new FormValidationHandler(status);
-        createResultTableAction = new CreateResultTableAction(swingSession, project);
         panel = buildUI();
         setDefaultSelections();
         handler.addPropertyChangeListener(new PropertyChangeListener(){
@@ -226,10 +224,14 @@ public class ProjectEditor implements EditorPane {
 		public void actionPerformed(final ActionEvent e) {
             try {
                 boolean ok = doSave();
-                if ( ok ) {
+                if (ok) {
                 	JOptionPane.showMessageDialog(swingSession.getFrame(),
                 			"Project Interface Saved Successfully",
                 			"Saved",JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                	JOptionPane.showMessageDialog(swingSession.getFrame(),
+                			"Project Interface Not Saved",
+                			"Not Saved",JOptionPane.WARNING_MESSAGE);
                 }
             } catch (Exception ex) {
                 MMSUtils.showExceptionDialog(swingSession.getFrame(),
@@ -296,8 +298,6 @@ public class ProjectEditor implements EditorPane {
 		}
 	};
 
-	private final Action createResultTableAction;
-
 	private Action createIndexAction = new AbstractAction("Pick Columns"){
 		public void actionPerformed(ActionEvent e) {
 			if ( project.getSourceTable() == null ) {
@@ -333,7 +333,6 @@ public class ProjectEditor implements EditorPane {
         	}});
 
     	viewBuilder = new JButton(viewBuilderAction);
-    	createResultTable = new JButton(createResultTableAction);
     	saveProject = new JButton(saveAction);
         createIndexButton = new JButton(createIndexAction );
 
@@ -389,7 +388,6 @@ public class ProjectEditor implements EditorPane {
 			row+=2;
 			pb.add(resultChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
 			pb.add(resultChooser.getCatalogComboBox(), cc.xy(4,row));
-			pb.add(createResultTable, cc.xywh(6,row,1,1));
 			row+=2;
 			pb.add(resultChooser.getSchemaTerm(), cc.xy(2,row,"r,c"));
 			pb.add(resultChooser.getSchemaComboBox(), cc.xy(4,row));
@@ -486,6 +484,13 @@ public class ProjectEditor implements EditorPane {
 				} catch (ArchitectException e1) {
 					throw new ArchitectRuntimeException(e1);
 				}
+		        String trimmedResultTableName = resultTableName.getText().trim();
+		        if (trimmedResultTableName == null || trimmedResultTableName.length() == 0) {
+		        	SQLTable sourceTable = (SQLTable)(sourceChooser.getTableComboBox().getSelectedItem());
+		            trimmedResultTableName = sourceTable.getName();
+		            trimmedResultTableName += "_RESULT";
+		        	resultTableName.setText(trimmedResultTableName);
+		        }
         	}
         });
 
@@ -574,9 +579,7 @@ public class ProjectEditor implements EditorPane {
      * @throws ArchitectRuntimeException if we cannot set the result table on a project
      */
     public boolean doSave() {
-
     	List<String> fail = handler.getFailResults();
-    	List<String> warn = handler.getWarnResults();
 
     	if ( fail.size() > 0 ) {
     		StringBuffer failMessage = new StringBuffer();
@@ -588,15 +591,6 @@ public class ProjectEditor implements EditorPane {
     				"Project error",
     				JOptionPane.ERROR_MESSAGE);
     		return false;
-    	} else if ( warn.size() > 0 ) {
-    		StringBuffer warnMessage = new StringBuffer();
-    		for ( String w : warn ) {
-    			warnMessage.append("--").append(w).append("\n");
-    		}
-    		JOptionPane.showMessageDialog(swingSession.getFrame(),
-    				"Warning: project will be saved, but you may not be able to run it, because of these wanings:\n"+warnMessage.toString(),
-    				"Project warning",
-    				JOptionPane.INFORMATION_MESSAGE);
     	}
 
     	final String projectName = projectId.getText().trim();
@@ -650,30 +644,26 @@ public class ProjectEditor implements EditorPane {
 	        	resultTableParent = (SQLDatabase) resultChooser.getDb();
 	        }
 	
-	        String trimmedResultTableName = resultTableName.getText().trim();
-	        if ( trimmedResultTableName == null || trimmedResultTableName.length() == 0 ) {
-	            //projectName (string taken from the project id textfield) is used
-	            //instead of project.getName() because if the project is new, the
-	            //projectName has not been saved to the database and therefore would
-	            //return MM.Null instead
-	            trimmedResultTableName = "MM_"+projectName;
-	        	resultTableName.setText(trimmedResultTableName);
-	        }
-	
 	        if(resultChooser.getCatalogComboBox().getSelectedItem() != null) {
 	        	project.setResultTableCatalog( ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName());
 	        }
 	        if(resultChooser.getSchemaComboBox().getSelectedItem() != null) {
 	        	project.setResultTableSchema( ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName());
 	        }
+	        project.setResultTableName(resultTableName.getText());
         
 	        try {
-				project.setResultTable(new SQLTable(resultTableParent,
-						trimmedResultTableName,
-						"MatchMaker result table",
-						"TABLE", true));
-			} catch (ArchitectException e) {
-				throw new ArchitectRuntimeException(e);
+	        	if (!Project.doesResultTableExist(swingSession, project) ||
+	        			!project.verifyResultTableStruct()) {
+	        		generateResultTableSQL();
+	        	}
+	        	if (!Project.doesResultTableExist(swingSession, project) ||
+	        			!project.verifyResultTableStruct()) {
+	        		return false;
+	        	}
+			} catch (Exception e) {
+				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+					"Error in trying to update result table while saving", e);
 			}
         }
 
@@ -742,6 +732,170 @@ public class ProjectEditor implements EditorPane {
         refreshActionStatus();
 		return true;
     }
+    
+    /**
+	 * Creates and shows a dialog with the generated SQL for the
+	 * result table in it. The dialog has buttons with actions 
+	 * that can save, execute, or copy the SQL to the clipboard.
+	 */
+	public void generateResultTableSQL()
+		throws InstantiationException, IllegalAccessException,
+		HeadlessException, SQLException, ArchitectException, ClassNotFoundException {
+
+		final DDLGenerator ddlg = DDLUtils.createDDLGenerator(
+				swingSession.getDatabase().getDataSource());
+		if (ddlg == null) {
+			JOptionPane.showMessageDialog(swingSession.getFrame(),
+					"Couldn't create DDL Generator for database type\n"+
+					swingSession.getDatabase().getDataSource().getDriverClass());
+			return;
+		}
+		ddlg.setTargetCatalog(project.getResultTableCatalog());
+		ddlg.setTargetSchema(project.getResultTableSchema());
+		if (Project.doesResultTableExist(swingSession, project)) {
+			int answer = JOptionPane.showConfirmDialog(swingSession.getFrame(),
+					"Result table exists, do you want to drop and recreate it?",
+					"Table exists",
+					JOptionPane.YES_NO_OPTION);
+			if ( answer != JOptionPane.YES_OPTION ) {
+				return;
+			}
+			ddlg.dropTable(project.getResultTable());
+		}
+		ddlg.addTable(project.createResultTable());
+		ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
+
+	    final JDialog editor = new JDialog(swingSession.getFrame(),
+	    		"Create Result Table", true);
+	    JComponent cp = (JComponent) editor.getContentPane();
+
+	    Box statementsBox = Box.createVerticalBox();
+	    final List<JTextArea> sqlTextFields = new ArrayList<JTextArea>();
+	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
+	    	final JTextArea sqlTextArea = new JTextArea(sqlStatement.getSQLText());
+			statementsBox.add(sqlTextArea);
+			sqlTextFields.add(sqlTextArea);
+	    }
+
+	    Action saveAction = new AbstractAction("Save") {
+			public void actionPerformed(ActionEvent e) {
+				AbstractDocument doc = new DefaultStyledDocument();
+				for (JTextArea sqlText : sqlTextFields ) {
+			    	try {
+						doc.insertString(doc.getLength(),
+										sqlText.getText(),
+										null);
+						doc.insertString(doc.getLength(),";\n",null);
+					} catch (BadLocationException e1) {
+						SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Unexcepted Document Error",e1);
+					}
+			    }
+				SPSUtils.saveDocument(swingSession.getFrame(),
+						doc,
+						(FileExtensionFilter)SPSUtils.SQL_FILE_FILTER);
+			}
+	    };
+	    Action copyAction = new AbstractAction("Copy to Clipboard") {
+			public void actionPerformed(ActionEvent e) {
+				StringBuffer buf = new StringBuffer();
+				for (JTextArea sqlText : sqlTextFields ) {
+					buf.append(sqlText.getText());
+					buf.append(";\n");
+			    }
+				StringSelection selection = new StringSelection(buf.toString());
+				Clipboard clipboard = Toolkit.getDefaultToolkit()
+						.getSystemClipboard();
+				clipboard.setContents(selection, selection);
+			}
+	    };
+	    Action executeAction = new AbstractAction("Execute") {
+			public void actionPerformed(ActionEvent e) {
+
+				Connection con = null;
+				Statement stmt = null;
+				String sql = null;
+				try {
+					con = swingSession.getConnection();
+					stmt = con.createStatement();
+					int successCount = 0;
+
+					for (JTextArea sqlText : sqlTextFields ) {
+						sql = sqlText.getText();
+						try {
+							stmt.executeUpdate(sql);
+							successCount += 1;
+						} catch (SQLException e1) {
+							int choice = JOptionPane.showOptionDialog(editor,
+									"The following SQL statement failed:\n" +
+									sql +
+									"\nThe error was: " + e1.getMessage() +
+									"\n\nDo you want to continue executing the create script?",
+									"SQL Error", JOptionPane.YES_NO_OPTION,
+									JOptionPane.ERROR_MESSAGE, null,
+									new String[] {"Abort", "Continue"}, "Continue" );
+							if (choice != 1) {
+								break;
+							}
+						}
+					}
+
+					JOptionPane.showMessageDialog(swingSession.getFrame(),
+							"Successfully executed " + successCount + " of " +
+							sqlTextFields.size() + " SQL Statements." +
+							(successCount == 0 ? "\n\nBetter Luck Next Time." : ""));
+
+                    //closes the dialog if all the statement is executed successfully
+                    //if not, the dialog remains on the screen
+                    if (successCount == sqlTextFields.size()){
+					    editor.dispose();
+                    }
+				} catch (SQLException ex) {
+					JOptionPane.showMessageDialog(editor,
+							"Create Script Failure",
+							"Couldn't allocate a Statement:\n" + ex.getMessage(),
+							JOptionPane.ERROR_MESSAGE);
+				} finally {
+                    try {
+                        if (stmt != null) {
+                            stmt.close();
+                        }
+                    } catch (SQLException ex) {
+                        logger.warn("Couldn't close statement", ex);
+                    }
+                    try {
+                        if (con != null) {
+                            con.close();
+                        }
+                    } catch (SQLException ex) {
+                        logger.warn("Couldn't close connection", ex);
+                    }
+				}
+			}
+	    };
+	    Action cancelAction = new AbstractAction("Close") {
+			public void actionPerformed(ActionEvent e) {
+				editor.dispose();
+			}
+	    };
+
+	    // the gui layout part
+	    cp.setLayout(new BorderLayout(10,10));
+	    cp.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+	    cp.add(new JScrollPane(statementsBox), BorderLayout.CENTER);
+
+	    ButtonBarBuilder bbb = ButtonBarBuilder.createLeftToRightBuilder();
+	    bbb.addGridded(new JButton(saveAction));
+	    bbb.addGridded(new JButton(copyAction));
+	    bbb.addGridded(new JButton(executeAction));
+	    bbb.addGridded(new JButton(cancelAction));
+
+	    cp.add(bbb.getPanel(), BorderLayout.SOUTH);
+
+	    editor.pack();
+	    editor.setLocationRelativeTo(null);
+	    editor.setVisible(true);
+	}
 
     private void refreshActionStatus() {
     	ValidateResult worst = handler.getWorstValidationStatus();
@@ -763,27 +917,6 @@ public class ProjectEditor implements EditorPane {
         		createIndexAction.setEnabled(true);
         	}
     	}
-
-    	if (project.getType() != ProjectMode.CLEANSE) {
-	    	ValidateResult r1 = handler.getResultOf(resultTableName);
-	    	ValidateResult r2;
-	    	if (resultChooser.getCatalogComboBox().isEnabled()) {
-	    		r2 = handler.getResultOf(resultChooser.getCatalogComboBox());
-	    	} else {
-	    		r2 = ValidateResult.createValidateResult(Status.OK, "");
-	    	}
-	    	ValidateResult r3 = handler.getResultOf(resultChooser.getSchemaComboBox());
-	    	ValidateResult r4 = handler.getResultOf(sourceChooser.getTableComboBox());
-	    	if ( r1 == null || r1.getStatus() != Status.OK ||
-	    			r2 == null || r2.getStatus() != Status.OK ||
-	    			r3 == null || r3.getStatus() != Status.OK ||
-	    			r4 == null || r4.getStatus() != Status.OK ||
-	    			sourceChooser.getUniqueKeyComboBox().getSelectedItem() == null) {
-	    		createResultTableAction.setEnabled(false);
-	    	} else {
-	    		createResultTableAction.setEnabled(true);
-	    	}
-    	}
     }
 
     private class ProjectSourceTableValidator implements Validator {
@@ -799,7 +932,7 @@ public class ProjectEditor implements EditorPane {
 			SQLTable value = (SQLTable)contents;
 			if ( value == null ) {
                 enableAction(false);
-				return ValidateResult.createValidateResult(Status.WARN,
+				return ValidateResult.createValidateResult(Status.FAIL,
 						"Project source table is required");
 			}
 			else {
@@ -830,7 +963,7 @@ public class ProjectEditor implements EditorPane {
 					}
 					if ( value == resultTable ) {
 						return ValidateResult.createValidateResult(
-								Status.WARN,
+								Status.FAIL,
 								"Project source table has the same name as the result table");
 					}
 				}
@@ -851,7 +984,7 @@ public class ProjectEditor implements EditorPane {
     	public ValidateResult validate(Object contents) {
 			SQLIndex value = (SQLIndex)contents;
 			if ( value == null ) {
-				return ValidateResult.createValidateResult(Status.WARN,
+				return ValidateResult.createValidateResult(Status.FAIL,
 						"Project source table index is required");
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
@@ -867,7 +1000,7 @@ public class ProjectEditor implements EditorPane {
 		public ValidateResult validate(Object contents) {
 			SQLObject value = (SQLObject)contents;
 			if ( value == null ) {
-				return ValidateResult.createValidateResult(Status.WARN,
+				return ValidateResult.createValidateResult(Status.FAIL,
 						componentName + " is required");
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
@@ -883,13 +1016,13 @@ public class ProjectEditor implements EditorPane {
 
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
-				return ValidateResult.createValidateResult(Status.WARN,
+				return ValidateResult.createValidateResult(Status.FAIL,
 						"Project result table name is required");
 			} else if (value.length() > MAX_CHAR_RESULT_TABLE){
 			    return ValidateResult.createValidateResult(Status.FAIL, "The result table" +
                         "cannot be longer than " +  MAX_CHAR_RESULT_TABLE + " characters long");
             } else if (!sqlIdentifierPattern.matcher(value).matches()) {
-				return ValidateResult.createValidateResult(Status.WARN,
+				return ValidateResult.createValidateResult(Status.FAIL,
 						"Result table name is not a valid SQL identifier");
 			} else if (sourceChooser.getTableComboBox().getSelectedItem() != null ) {
 				SQLTable sourceTable = (SQLTable) sourceChooser.getTableComboBox().getSelectedItem();
@@ -910,7 +1043,7 @@ public class ProjectEditor implements EditorPane {
 					throw new ArchitectRuntimeException(e);
 				}
 				if ( sourceTable == resultTable ) {
-					return ValidateResult.createValidateResult(Status.WARN,
+					return ValidateResult.createValidateResult(Status.FAIL,
 							"Project result table has the same name as the source table");
 				}
 			}
@@ -920,216 +1053,5 @@ public class ProjectEditor implements EditorPane {
 
 	public boolean hasUnsavedChanges() {
 		return handler.hasPerformedValidation();
-	}
-
-
-	/**
-	 * Creates a new Project object and a GUI editor for it, then puts that editor in the split pane.
-	 */
-	private final class CreateResultTableAction extends AbstractAction {
-
-	    private final MatchMakerSwingSession swingSession;
-		private Project project;
-
-		public CreateResultTableAction(
-	            MatchMakerSwingSession swingSession,
-	            Project project) {
-			super("Create Result Table");
-	        this.swingSession = swingSession;
-			this.project = project;
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			if (hasUnsavedChanges()) {
-				int choice = JOptionPane.showOptionDialog(
-						ProjectEditor.this.getPanel(),
-						"Your project has unsaved changes", "Unsaved Changes",
-						0, 0, null,
-						new String[] { "Save", "Cancel" }, "Save");
-				logger.debug("choice: "+choice);
-				if (choice == 0) {
-					boolean success = doSave();
-					if (!success) {
-						JOptionPane.showMessageDialog(
-								ProjectEditor.this.getPanel(),
-						"Validation Error.  Can't save.");
-						return;
-					}
-				} else if (choice == 1 || choice == -1) {
-					return;
-				} else {
-					throw new IllegalStateException("Unknown choice: "+choice);
-				}
-			}
-			try {
-				showSqlGui();
-			} catch (Exception ex) {
-				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Couldn't create SQL Preview", ex);
-			}
-		}
-
-		/**
-		 * Creates and shows a dialog with the generated SQL in it.
-		 * The dialog has buttons with actions that can save, execute,
-		 * or copy the SQL to the clipboard.
-		 */
-		public void showSqlGui()
-			throws InstantiationException, IllegalAccessException,
-			HeadlessException, SQLException, ArchitectException, ClassNotFoundException {
-
-			final DDLGenerator ddlg = DDLUtils.createDDLGenerator(
-					swingSession.getDatabase().getDataSource());
-			if (ddlg == null) {
-				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"Couldn't create DDL Generator for database type\n"+
-						swingSession.getDatabase().getDataSource().getDriverClass());
-				return;
-			}
-			ddlg.setTargetCatalog(project.getResultTableCatalog());
-			ddlg.setTargetSchema(project.getResultTableSchema());
-			if (Project.doesResultTableExist(swingSession, project)) {
-				int answer = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-						"Result table exists, do you want to drop and recreate it?",
-						"Table exists",
-						JOptionPane.YES_NO_OPTION);
-				if ( answer != JOptionPane.YES_OPTION ) {
-					return;
-				}
-				ddlg.dropTable(project.getResultTable());
-			}
-			ddlg.addTable(project.createResultTable());
-			ddlg.addIndex((SQLIndex) project.getResultTable().getIndicesFolder().getChild(0));
-
-		    final JDialog editor = new JDialog(swingSession.getFrame(),
-		    		"Create Result Table", false );
-		    JComponent cp = (JComponent) editor.getContentPane();
-
-		    Box statementsBox = Box.createVerticalBox();
-		    final List<JTextArea> sqlTextFields = new ArrayList<JTextArea>();
-		    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
-		    	final JTextArea sqlTextArea = new JTextArea(sqlStatement.getSQLText());
-				statementsBox.add(sqlTextArea);
-				sqlTextFields.add(sqlTextArea);
-		    }
-
-		    Action saveAction = new AbstractAction("Save") {
-				public void actionPerformed(ActionEvent e) {
-					AbstractDocument doc = new DefaultStyledDocument();
-					for (JTextArea sqlText : sqlTextFields ) {
-				    	try {
-							doc.insertString(doc.getLength(),
-											sqlText.getText(),
-											null);
-							doc.insertString(doc.getLength(),";\n",null);
-						} catch (BadLocationException e1) {
-							SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Unexcepted Document Error",e1);
-						}
-				    }
-					SPSUtils.saveDocument(swingSession.getFrame(),
-							doc,
-							(FileExtensionFilter)SPSUtils.SQL_FILE_FILTER);
-				}
-		    };
-		    Action copyAction = new AbstractAction("Copy to Clipboard") {
-				public void actionPerformed(ActionEvent e) {
-					StringBuffer buf = new StringBuffer();
-					for (JTextArea sqlText : sqlTextFields ) {
-						buf.append(sqlText.getText());
-						buf.append(";\n");
-				    }
-					StringSelection selection = new StringSelection(buf.toString());
-					Clipboard clipboard = Toolkit.getDefaultToolkit()
-							.getSystemClipboard();
-					clipboard.setContents(selection, selection);
-				}
-		    };
-		    Action executeAction = new AbstractAction("Execute") {
-				public void actionPerformed(ActionEvent e) {
-
-					Connection con = null;
-					Statement stmt = null;
-					String sql = null;
-					try {
-						con = swingSession.getConnection();
-						stmt = con.createStatement();
-						int successCount = 0;
-
-						for (JTextArea sqlText : sqlTextFields ) {
-							sql = sqlText.getText();
-							try {
-								stmt.executeUpdate(sql);
-								successCount += 1;
-							} catch (SQLException e1) {
-								int choice = JOptionPane.showOptionDialog(editor,
-										"The following SQL statement failed:\n" +
-										sql +
-										"\nThe error was: " + e1.getMessage() +
-										"\n\nDo you want to continue executing the create script?",
-										"SQL Error", JOptionPane.YES_NO_OPTION,
-										JOptionPane.ERROR_MESSAGE, null,
-										new String[] {"Abort", "Continue"}, "Continue" );
-								if (choice != 1) {
-									break;
-								}
-							}
-						}
-
-						JOptionPane.showMessageDialog(swingSession.getFrame(),
-								"Successfully executed " + successCount + " of " +
-								sqlTextFields.size() + " SQL Statements." +
-								(successCount == 0 ? "\n\nBetter Luck Next Time." : ""));
-
-	                    //closes the dialog if all the statement is executed successfully
-	                    //if not, the dialog remains on the screen
-	                    if (successCount == sqlTextFields.size()){
-						    editor.dispose();
-	                    }
-					} catch (SQLException ex) {
-						JOptionPane.showMessageDialog(editor,
-								"Create Script Failure",
-								"Couldn't allocate a Statement:\n" + ex.getMessage(),
-								JOptionPane.ERROR_MESSAGE);
-					} finally {
-                        try {
-                            if (stmt != null) {
-                                stmt.close();
-                            }
-                        } catch (SQLException ex) {
-                            logger.warn("Couldn't close statement", ex);
-                        }
-                        try {
-                            if (con != null) {
-                                con.close();
-                            }
-                        } catch (SQLException ex) {
-                            logger.warn("Couldn't close connection", ex);
-                        }
-					}
-				}
-		    };
-		    Action cancelAction = new AbstractAction("Close") {
-				public void actionPerformed(ActionEvent e) {
-					editor.dispose();
-				}
-		    };
-
-		    // the gui layout part
-		    cp.setLayout(new BorderLayout(10,10));
-		    cp.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-		    cp.add(new JScrollPane(statementsBox), BorderLayout.CENTER);
-
-		    ButtonBarBuilder bbb = ButtonBarBuilder.createLeftToRightBuilder();
-		    bbb.addGridded(new JButton(saveAction));
-		    bbb.addGridded(new JButton(copyAction));
-		    bbb.addGridded(new JButton(executeAction));
-		    bbb.addGridded(new JButton(cancelAction));
-
-		    cp.add(bbb.getPanel(), BorderLayout.SOUTH);
-
-		    editor.pack();
-		    editor.setLocationRelativeTo(null);
-		    editor.setVisible(true);
-		}
 	}
 }
