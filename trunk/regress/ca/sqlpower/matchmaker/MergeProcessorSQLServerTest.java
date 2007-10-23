@@ -26,6 +26,15 @@ import ca.sqlpower.sql.SPDataSource;
  */
 public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 	
+	static boolean alreadyRan = false;
+	
+	@Override
+	protected void setUp() throws Exception {
+		if (alreadyRan) return;
+		super.setUp();
+		alreadyRan = true;
+	}
+	
 	protected String getFullTableName() {
 		return "MM_TEST.MM_TEST.MERGE_TEST";
 	}
