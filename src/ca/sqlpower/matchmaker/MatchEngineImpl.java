@@ -203,7 +203,6 @@ public class MatchEngineImpl extends AbstractEngine {
 			logger.info(progressMessage);
 			mungeAndMatch(rowCount, mungeProcesses, pool);
 			
-			currentProcessor = null;
 			progressMessage = "Storing matches";
 			logger.info(progressMessage);
 			pool.store();
@@ -232,6 +231,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			logger.debug(getMessage());
 			munger.call(rowCount);
 			progress += munger.getProgress();
+			currentProcessor = null;
 
 			List<MungeResult> results = currentProcess.getResults();
 			
@@ -241,6 +241,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			logger.debug(getMessage());
 			matcher.call();
 			progress += matcher.getProgress();
+			currentProcessor = null;
 		}
 	}
 
