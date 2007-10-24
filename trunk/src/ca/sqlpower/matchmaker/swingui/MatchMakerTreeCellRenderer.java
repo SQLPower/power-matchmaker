@@ -33,10 +33,12 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
@@ -56,6 +58,7 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 	final private Icon matchEngineIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/cog_go.png"));
 	final private Icon mungeCompIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/application_form.png"));
 	final private Icon mergeEngineIcon = new ImageIcon(getClass().getResource("/icons/cog_double_go.png"));
+	final private Icon translateWordIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/cog_edit.png"));
 
 	public Component getTreeCellRendererComponent(JTree tree, Object value,
 			boolean selected, boolean expanded, boolean leaf, int row,
@@ -98,9 +101,12 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 			} else { 
 				setIcon(infoIcon);
 			}
-		} else if (value instanceof PlFolder ||	 value instanceof MatchMakerFolder ||
-				value instanceof TranslateGroupParent || value instanceof FolderParent ){
+		} else if (value instanceof PlFolder || value instanceof MatchMakerFolder ||
+				value instanceof TranslateGroupParent || 
+				value instanceof FolderParent || value instanceof MatchMakerTranslateGroup){
 			setIcon(folderIcon);
+		} else if (value instanceof MatchMakerTranslateWord) {
+			setIcon(translateWordIcon);
 		} else if (value instanceof AbstractMungeStep) {
 			setIcon(mungeCompIcon);
 		} 
