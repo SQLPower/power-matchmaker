@@ -96,13 +96,13 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	
 	private boolean updateAction;
 	
-	private MergeActionType actionType;
+	private MergeActionType actionType = MergeActionType.USE_MASTER_VALUE;
 	
 	private boolean inPrimaryKey = false;
 	
 	private SQLColumn importedKeyColumn;
 	
-	private String updateStatement = "";
+	private String updateStatement;
 	
 	private ColumnMergeRulesCachableColumn cachedColumn = new ColumnMergeRulesCachableColumn();
 	@Override
@@ -153,10 +153,8 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		} else if (!getImportedKeyColumn().equals(other.getImportedKeyColumn())) {
 			return false;
 		}
-		if (!getUpdateStatement().equals(other.getUpdateStatement())) {
-			return false;
-		}
-		return true;
+		
+		return (getUpdateStatement() == null) ? (other.getUpdateStatement() == null) : (getUpdateStatement().equals(other.getUpdateStatement()));
 	}
 
 	/**

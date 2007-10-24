@@ -65,6 +65,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	static SQLTable grandChildTable;
     
     static TableMergeRules tmr;
+    static ColumnMergeRules cmr_id;
     static ColumnMergeRules cmr_string;
     static ColumnMergeRules cmr_date;
     static ColumnMergeRules cmr_number;
@@ -149,6 +150,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    }
 
 	    tmr = new TableMergeRules();
+	    cmr_id = new ColumnMergeRules();
 	    cmr_string = new ColumnMergeRules();
 	    cmr_date = new ColumnMergeRules();
 	    cmr_number = new ColumnMergeRules();
@@ -170,11 +172,13 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		//set the column and tabler merge rules
 	    tmr.setTable(sourceTable);
+	    tmr.addChild(cmr_id);
 		tmr.addChild(cmr_string);
 		tmr.addChild(cmr_date);
 		tmr.addChild(cmr_number);
 		tmr.setDeleteDup(false);
 		
+		cmr_id.setColumn(sourceTable.getColumnByName("ID"));
 		cmr_string.setColumn(sourceTable.getColumnByName("COL_STRING"));   	
 		cmr_date.setColumn(sourceTable.getColumnByName("COL_DATE"));
 		cmr_number.setColumn(sourceTable.getColumnByName("COL_NUMBER"));
@@ -291,6 +295,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    mpor = new MergeProcessor(project, session);
 	    
 	    // sets the default action type
+	    cmr_id.setActionType(MergeActionType.USE_MASTER_VALUE);
 	    cmr_string.setActionType(MergeActionType.USE_MASTER_VALUE);
 	    cmr_date.setActionType(MergeActionType.USE_MASTER_VALUE);
 	    cmr_number.setActionType(MergeActionType.USE_MASTER_VALUE);
@@ -876,6 +881,68 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		assertFalse("Duplicate grandchild records not merged.", rs.next());
     }
 
+    public void testMergeOnConflict() throws Exception{
+
+    	populateTables();
+    	populateChildTable();
+    	populateGrandChildTable();
+    	
+    	ctmr.setChildMergeAction(ChildMergeActionType.MERGE_ON_CONFLICT);
+    	ccmr_string.setActionType(MergeActionType.CONCAT);
+    	ccmr_date.setActionType(MergeActionType.MAX);
+    	ccmr_number.setActionType(MergeActionType.SUM);
+    	
+    	cctmr.setChildMergeAction(ChildMergeActionType.MERGE_ON_CONFLICT);
+    	cccmr_string.setActionType(MergeActionType.CONCAT);
+    	cccmr_date.setActionType(MergeActionType.MAX);
+    	cccmr_number.setActionType(MergeActionType.SUM);
+    	
+		mpor.call();
+    	
+		Statement stmt = con.createStatement();
+		ResultSet rs;
+		
+    	StringBuilder sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 1 OR PARENT_ID = 0 ");
+		sql.append("OR PARENT_ID = 4 OR PARENT_ID = 3 OR PARENT_ID = 5");
+		
+		rs = stmt.executeQuery(sql.toString());
+		assertFalse("Duplicate child records not deleted.", rs.next());
+
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 2");
+		
+		rs = stmt.executeQuery(sql.toString());
+		for (int i = 0; i < 3; i++) {
+			assertTrue("Non-duplicate child records deleted.", rs.next());
+		}
+		assertFalse("Extra non-duplicate child records found.", rs.next());
+		
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n WHERE PARENT_ID = 6");
+		
+		rs = stmt.executeQuery(sql.toString());
+		for (int i = 0; i < 5; i++) {
+			assertTrue("Non-duplicate child records deleted.", rs.next());
+		}
+		assertFalse("Extra non-duplicate child records found.", rs.next());
+		
+		sql = new StringBuilder();
+		sql.append("SELECT * FROM ");
+		sql.append(getFullTableName() + "_GCHILD");
+		sql.append("\n WHERE GPARENT_ID = 1 OR GPARENT_ID = 0 ");
+		sql.append("OR GPARENT_ID = 4 OR GPARENT_ID = 3 OR GPARENT_ID = 5");
+		
+		rs = stmt.executeQuery(sql.toString());
+		assertFalse("Duplicate grandchild records not merged.", rs.next());
+    }
+    
 	protected boolean execSQL(Connection conn, String sql) {
 //		System.out.println(sql);
 		Statement stmt = null;
