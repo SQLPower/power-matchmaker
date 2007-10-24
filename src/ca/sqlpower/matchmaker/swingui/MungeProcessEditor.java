@@ -37,6 +37,7 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -227,6 +228,15 @@ public class MungeProcessEditor implements EditorPane {
      * constructor if the process is not already a child of that project.
      */
     public boolean doSave() {
+    	ValidateResult result = handler.getWorstValidationStatus();
+        if ( result.getStatus() == Status.FAIL) {
+            JOptionPane.showMessageDialog(swingSession.getFrame(),
+                    "You have to fix the error before you can save the munge process",
+                    "Save",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    	
     	process.setName(name.getText());
     	process.setDesc(desc.getText());
     	process.setColour((Color)color.getSelectedItem());
@@ -258,7 +268,6 @@ public class MungeProcessEditor implements EditorPane {
     }
 
     public boolean hasUnsavedChanges() {
-
     	if (!name.getText().equals(process.getName())) {
     		if (!(process.getName() == null && name.getText().equals(""))) {
     			return true;
