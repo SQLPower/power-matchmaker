@@ -24,7 +24,7 @@ import javax.swing.event.TableModelEvent;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 
 /**
  * Implementation of {@link AbstractMergeColumnRuleTableModel}, table model 
@@ -40,7 +40,7 @@ public class RelatedMergeColumnRuleTableModel extends
 	}
 	
 	public int getColumnCount() {
-		return 4;
+		return 5;
 	}
 
 	@Override
@@ -52,6 +52,8 @@ public class RelatedMergeColumnRuleTableModel extends
 		} else if (column == 2) {
 			return "Imported Key Column";
 		} else if (column == 3) {
+			return "Action";
+		} else if (column == 4) {
 			return "Update SQL Statement";
 		} else {
 			throw new RuntimeException("getColumnName: Unexcepted column index:"+column);
@@ -65,13 +67,15 @@ public class RelatedMergeColumnRuleTableModel extends
 			return rule.getColumn();
 		} else if (columnIndex == 1) {
 			return rule.isInPrimaryKey();
-		} else if(columnIndex == 2) {
+		} else if (columnIndex == 2) {
 			return rule.getImportedKeyColumn();
 		} else if (columnIndex == 3) {
+			return rule.getActionType();
+		} else if (columnIndex == 4) {
 			if (rule.getImportedKeyColumn() == null) {
 				return mergeRule.getChildren().get(rowIndex).getUpdateStatement();
 			} else {
-				return "NOT_APPLICABLE";
+				return "Not applicable";
 			}
 		} else {
 			throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
@@ -80,13 +84,19 @@ public class RelatedMergeColumnRuleTableModel extends
 	
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-
-		if (columnIndex == 3) { 
-			if (mergeRule.getChildMergeAction() != ChildMergeActionType.UPDATE_USING_SQL) {
+		ColumnMergeRules colRule = mergeRule.getChildren().get(rowIndex);
+		if (columnIndex == 4) { 
+			if (colRule.getImportedKeyColumn() != null) {
 				return false;
 			} else {
-				return mergeRule.getChildren().get(rowIndex).getImportedKeyColumn() == null;
+				return colRule.getImportedKeyColumn() == null;
 			} 
+		} else if (columnIndex == 3) {
+			if (colRule.isInPrimaryKey() || colRule.getImportedKeyColumn() != null) {
+				return false;
+			} else {
+				return true;
+			}
 		} else {
 			return columnIndex != 0;
 		}
@@ -101,6 +111,8 @@ public class RelatedMergeColumnRuleTableModel extends
 		} else if (columnIndex == 2) {
 			return SQLColumn.class;
 		} else if (columnIndex == 3) {
+			return MergeActionType.class;
+		} else if (columnIndex == 4) {
 			return String.class;	
 		} else {
 			throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
@@ -113,10 +125,23 @@ public class RelatedMergeColumnRuleTableModel extends
 		if (columnIndex == 0) {
 			rule.setColumn((SQLColumn) aValue);
 		} else if (columnIndex == 1) {
-			rule.setInPrimaryKey((Boolean) aValue);
+			Boolean value = (Boolean) aValue;
+			rule.setInPrimaryKey(value);
+			if (value) {
+				rule.setActionType(MergeActionType.NA);
+			} else if (rule.getImportedKeyColumn() == null){
+				rule.setActionType(MergeActionType.USE_MASTER_VALUE);
+			}
 		} else if (columnIndex == 2) {
+			if (aValue != null) {
+				rule.setActionType(MergeActionType.NA);
+			} else if (!rule.isInPrimaryKey()) {
+				rule.setActionType(MergeActionType.USE_MASTER_VALUE);
+			}
 			rule.setImportedKeyColumn((SQLColumn) aValue);
 		} else if (columnIndex == 3) {
+			rule.setActionType((MergeActionType) aValue);
+		} else if (columnIndex == 4) {
 			if (rule.getImportedKeyColumn() == null) {
 				rule.setUpdateStatement((String) aValue);
 			} else {
