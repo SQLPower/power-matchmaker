@@ -76,17 +76,28 @@ public class MatchProcessor extends AbstractProcessor {
 			
 			for (int i=dataIndex + 1; i<matchData.size(); i++){
 				if (data.compareTo(matchData.get(i)) == 0) {
-					// Potential Match! so store in Match Result Table
-					logger.debug("Found Match!\nRecord 1:" + data + 
-							"\nRecord 2:" + matchData.get(i));
-					PotentialMatchRecord pmr = new PotentialMatchRecord(mungeProcess, 
-																		MatchType.UNMATCH, 
-																		data.getSourceTableRecord(), 
-																		matchData.get(i).getSourceTableRecord(),
-																		false);
-					pool.addSourceTableRecord(data.getSourceTableRecord());
-					pool.addSourceTableRecord(matchData.get(i).getSourceTableRecord());
-					pool.addPotentialMatch(pmr);
+					boolean nullMatch = false;
+					for (int j = 0; j < data.getMungedData().length; j++) {
+						if (data.getMungedData()[j] == null && matchData.get(i).getMungedData()[j] == null) {
+							logger.debug("Ignoring match on null data");
+							nullMatch = true;
+							break;
+						}
+					}
+					
+					if (!nullMatch) {
+						// Potential Match! so store in Match Result Table
+						logger.debug("Found Match!\nRecord 1:" + data
+								+ "\nRecord 2:" + matchData.get(i));
+						PotentialMatchRecord pmr = new PotentialMatchRecord(
+								mungeProcess, MatchType.UNMATCH, data
+										.getSourceTableRecord(), matchData.get(
+										i).getSourceTableRecord(), false);
+						pool.addSourceTableRecord(data.getSourceTableRecord());
+						pool.addSourceTableRecord(matchData.get(i)
+								.getSourceTableRecord());
+						pool.addPotentialMatch(pmr);
+					}
 				} else {
 					// If data doesn't match perfectly, then there should be 
 					// no further matches if list was sorted properly

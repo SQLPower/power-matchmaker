@@ -49,6 +49,7 @@ public class MatchProcessorTest extends TestCase {
 	private SourceTableRecord dup1;
 	private SourceTableRecord dup2;
 	private SourceTableRecord dup3;
+	private SourceTableRecord nullDup;
 
 	private Connection con;
 	
@@ -70,20 +71,24 @@ public class MatchProcessorTest extends TestCase {
 		testStrings.add("A");
 		testStrings.add("B");
 		testStrings.add("C");
+		testStrings.add(null);
 		
 		List<BigDecimal> testNumbers = new ArrayList<BigDecimal>();
 		testNumbers.add(BigDecimal.valueOf(0));
 		testNumbers.add(BigDecimal.valueOf(1));
 		testNumbers.add(BigDecimal.valueOf(2));
+		testNumbers.add(null);
 		
 		List<Boolean> testBooleans = new ArrayList<Boolean>();
 		testBooleans.add(Boolean.TRUE);
 		testBooleans.add(Boolean.FALSE);
+		testBooleans.add(null);
 		
 		List<Date> testDates = new ArrayList<Date>();
 		testDates.add(new Date(0));
 		testDates.add(new Date(Long.MAX_VALUE/2));
 		testDates.add(new Date(Long.MAX_VALUE));
+		testDates.add(null);
 
 		List<MungeResult> results = new ArrayList<MungeResult>();
 
@@ -135,6 +140,18 @@ public class MatchProcessorTest extends TestCase {
 		outputs[3] = new Date(Long.MAX_VALUE);
 		result.setMungedData(outputs);
 		dup3 = new SourceTableRecord(session, project, Integer.valueOf(key));
+		key++;
+		result.setSourceTableRecord(dup3);
+		results.add(result);
+		
+		result = new MungeResult();
+		outputs = new Object[4];
+		outputs[0] = null;
+		outputs[1] = null;
+		outputs[2] = null;
+		outputs[3] = null;
+		result.setMungedData(outputs);
+		nullDup = new SourceTableRecord(session, project, Integer.valueOf(key));
 		key++;
 		result.setSourceTableRecord(dup3);
 		results.add(result);
