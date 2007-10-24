@@ -357,15 +357,27 @@ public class TableMergeRules
 				columns.add(column.getColumn()); 
 			}
 		} else {
-			for (Object cmr : getChildren()) {
-				if (cmr != null)
-					logger.debug(cmr.getClass());
-				else
-					logger.debug("null");
-			}
 			for (ColumnMergeRules cmr : getChildren()) {
 				if (cmr.isInPrimaryKey()) {
 					columns.add(cmr.getColumn());
+				}
+			}
+		}
+		return columns;
+	}
+	
+	/**
+	 * Finds the imported key for the current table merge rule.
+	 */
+	public List<ColumnMergeRules> getImportedKey() throws ArchitectException {
+		List<ColumnMergeRules> columns = new ArrayList<ColumnMergeRules>();
+		
+		if (isSourceMergeRule()) {
+			return null;
+		} else {
+			for (ColumnMergeRules cmr : getChildren()) {
+				if (cmr.getImportedKeyColumn() != null) {
+					columns.add(cmr);
 				}
 			}
 		}
