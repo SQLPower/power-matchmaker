@@ -516,8 +516,8 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	}
 
 	public MungeProcess getMungeProcessByName(String name) {
-		List <MungeProcess> groups = getMungeProcesses();
-		for ( MungeProcess g : groups) {
+		List <MungeProcess> mungeProcesses = getMungeProcesses();
+		for ( MungeProcess g : mungeProcesses) {
 			if ( g.getName() != null && g.getName().equals(name)) {
 				return g;
 			}
@@ -609,13 +609,13 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     }
     
     /**
-     * Adds a munge process to the rule set folder of this project
+     * Adds a munge process to the munge process folder of this project
      *
-     * @param ruleSet
+     * @param mungeProcess
      */
-    public void addMungeProcess(MungeProcess ruleSet) {
+    public void addMungeProcess(MungeProcess mungeProcess) {
         // The folder will fire the child inserted event
-        mungeProcessesFolder.addChild(ruleSet);
+        mungeProcessesFolder.addChild(mungeProcess);
     }
 
     /**

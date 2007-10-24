@@ -62,7 +62,7 @@ public class MatchPoolTest extends TestCase {
 	private SQLTable resultTable;
 	private Project project;
 
-	private MungeProcess groupOne;
+	private MungeProcess mungeProcessOne;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -108,15 +108,15 @@ public class MatchPoolTest extends TestCase {
 		project.setSourceTable(sourceTable);
 		project.setSourceTableIndex(sourceTableIndex);
 
-		groupOne = new MungeProcess();
-		groupOne.setName("Group_One");
-		project.addMungeProcess(groupOne);
+		mungeProcessOne = new MungeProcess();
+		mungeProcessOne.setName("Munge_Process_One");
+		project.addMungeProcess(mungeProcessOne);
 
-		MungeProcess groupTwo = new MungeProcess();
-		groupTwo.setName("Group_Two");
-		project.addMungeProcess(groupTwo);
+		MungeProcess mungeProcessTwo = new MungeProcess();
+		mungeProcessTwo.setName("Munge_Process_Two");
+		project.addMungeProcess(mungeProcessTwo);
 		
-		pool = MMTestUtils.createTestingPool(session, project, groupOne, groupTwo);
+		pool = MMTestUtils.createTestingPool(session, project, mungeProcessOne, mungeProcessTwo);
 	}
 
 	@Override
@@ -131,12 +131,12 @@ public class MatchPoolTest extends TestCase {
 	 */
 	private static void insertResultTableRecord(Connection con,
 			String originalLhsKey, String originalRhsKey, int matchPercent,
-			String groupName) throws SQLException {
+			String mungeProcessName) throws SQLException {
 		Statement stmt = con.createStatement();
 		stmt.executeUpdate("INSERT into pl.match_results VALUES ("
 				+ SQL.quote(originalLhsKey) + "," + SQL.quote(originalRhsKey) + "," + SQL.quote(originalLhsKey)
 				+ "," + SQL.quote(originalRhsKey) + "," + "null," + "null," + "null,"
-				+ "null," + matchPercent + "," + SQL.quote(groupName) + ","
+				+ "null," + matchPercent + "," + SQL.quote(mungeProcessName) + ","
 				+ "{ts '2006-11-30 17:01:06.0'}," + "'UNMATCH',"
 				+ "{ts '2006-11-30 17:01:06.0'}," + "null," + "null)");
 		stmt.close();
@@ -156,7 +156,7 @@ public class MatchPoolTest extends TestCase {
 	 */
 	public void testFindAllPotentialMatches() throws Exception {
 		MatchPool pool = new MatchPool(project);
-		insertResultTableRecord(con, "1", "2", 15, "Group_One");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		pool.findAll(new ArrayList<SQLColumn>());
@@ -167,7 +167,7 @@ public class MatchPoolTest extends TestCase {
 			assertNotNull(pmr.getOriginalLhs());
 			assertNotNull(pmr.getOriginalLhs().getKeyValues());
 			assertEquals(1, pmr.getOriginalLhs().getKeyValues().size());
-			assertEquals("Group_One", pmr.getRuleSet().getName());
+			assertEquals("Munge_Process_One", pmr.getMungeProcess().getName());
 		}
 		int originalMatchCount = matches.size();
 		
@@ -182,8 +182,8 @@ public class MatchPoolTest extends TestCase {
 	 */
 	public void testFindSourceTableRecords() throws Exception {
 		MatchPool pool = new MatchPool(project);
-		insertResultTableRecord(con, "1", "2", 15, "Group_One");
-		insertResultTableRecord(con, "1", "3", 15, "Group_One");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
+		insertResultTableRecord(con, "1", "3", 15, "Munge_Process_One");
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
@@ -211,8 +211,8 @@ public class MatchPoolTest extends TestCase {
 	/** Tests that findAll() hooks up inbound and outbound matches properly. */
 	public void testFindAllEdgeHookup() throws Exception {
 		MatchPool pool = new MatchPool(project);
-		insertResultTableRecord(con, "1", "2", 15, "Group_One");
-		insertResultTableRecord(con, "1", "3", 15, "Group_One");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
+		insertResultTableRecord(con, "1", "3", 15, "Munge_Process_One");
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
@@ -3714,7 +3714,7 @@ public class MatchPoolTest extends TestCase {
 	public void testStoreNewRecordMatched() throws Exception {
 		SourceTableRecord a1 = pool.getSourceTableRecord(Collections.singletonList("a1"));
 		SourceTableRecord a3 = pool.getSourceTableRecord(Collections.singletonList("a3"));
-		PotentialMatchRecord a1a3 = new PotentialMatchRecord(groupOne, MatchType.UNMATCH, 
+		PotentialMatchRecord a1a3 = new PotentialMatchRecord(mungeProcessOne, MatchType.UNMATCH, 
 				a1, a3, false);
 		a1a3.setMatchStatus(MatchType.MATCH);
 		pool.addPotentialMatch(a1a3);
@@ -3753,7 +3753,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("a3");
 		SourceTableRecord a3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Group_One");
+		pool.doAutoMatch("Munge_Process_One");
 		
 		PotentialMatchRecord pmrA1ToA2 = pool.getPotentialMatchFromOriginals(a1, a2);
 		PotentialMatchRecord pmrA1ToA3 = pool.getPotentialMatchFromOriginals(a1, a3);
@@ -3787,7 +3787,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("o3");
 		SourceTableRecord o3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Group_One");
+		pool.doAutoMatch("Munge_Process_One");
 		
 		PotentialMatchRecord pmrO1ToO2 = pool.getPotentialMatchFromOriginals(o1, o2);
 		PotentialMatchRecord pmrO1ToO3 = pool.getPotentialMatchFromOriginals(o1, o3);
@@ -3819,7 +3819,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("u3");
 		SourceTableRecord u3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Group_One");
+		pool.doAutoMatch("Munge_Process_One");
 		
 		PotentialMatchRecord pmrU1ToU2 = pool.getPotentialMatchFromOriginals(u1, u2);
 		PotentialMatchRecord pmrU1ToU3 = pool.getPotentialMatchFromOriginals(u1, u3);
@@ -3854,7 +3854,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("cycle3");
 		SourceTableRecord cycle3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Group_One");
+		pool.doAutoMatch("Munge_Process_One");
 		
 		PotentialMatchRecord pmrCyc1ToCyc2 = pool.getPotentialMatchFromOriginals(cycle1, cycle2);
 		PotentialMatchRecord pmrCyc1ToCyc3 = pool.getPotentialMatchFromOriginals(cycle1, cycle3);
@@ -3899,7 +3899,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("f3");
 		SourceTableRecord f3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Group_One");
+		pool.doAutoMatch("Munge_Process_One");
 		
 		PotentialMatchRecord pmrF1ToF2 = pool.getPotentialMatchFromOriginals(f1, f2);
 		PotentialMatchRecord pmrF1ToF3 = pool.getPotentialMatchFromOriginals(f1, f3);
@@ -3932,7 +3932,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("w3");
 		SourceTableRecord w3 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Group_One");
+		pool.doAutoMatch("Munge_Process_One");
 		
 		PotentialMatchRecord pmrW1ToW2 = pool.getPotentialMatchFromOriginals(w1, w2);
 		PotentialMatchRecord pmrW1ToW3 = pool.getPotentialMatchFromOriginals(w1, w3);
@@ -3980,7 +3980,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("y4");
 		SourceTableRecord y4 = pool.getSourceTableRecord(keyList);
 
-		pool.doAutoMatch("Group_One");
+		pool.doAutoMatch("Munge_Process_One");
 		
 		PotentialMatchRecord pmrX1ToX2 = pool.getPotentialMatchFromOriginals(x1, x2);
 		PotentialMatchRecord pmrX1ToX3 = pool.getPotentialMatchFromOriginals(x1, x3);
@@ -4038,7 +4038,7 @@ public class MatchPoolTest extends TestCase {
 		keyList.add("z4");
 		SourceTableRecord z4 = pool.getSourceTableRecord(keyList);
 		
-		pool.doAutoMatch("Group_One");
+		pool.doAutoMatch("Munge_Process_One");
 		
 		PotentialMatchRecord pmrZ1ToZ2 = pool.getPotentialMatchFromOriginals(z1, z2);
 		PotentialMatchRecord pmrZ1ToZ3 = pool.getPotentialMatchFromOriginals(z1, z3);

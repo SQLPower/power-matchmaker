@@ -45,7 +45,7 @@ public class PotentialMatchRecord {
      * The set of rules that caused the two source table records
      * identified here to be considered as potential matches.
      */
-    private final MungeProcess ruleSet;
+    private final MungeProcess mungeProcess;
     
     /**
      * The current status of this potential match (unexamined, confirmed correct,
@@ -197,7 +197,7 @@ public class PotentialMatchRecord {
 	 * identified as the LHS and RHS of the edge. By default, the master is not
 	 * set.
 	 * 
-	 * @param ruleSet
+	 * @param mungeProcess
 	 *            the MungeProcess that makes this edge exist
 	 * @param matchStatus
 	 *            the status of the relationship
@@ -210,12 +210,12 @@ public class PotentialMatchRecord {
 	 *            the engine; true means NOT created by the engine
 	 */
     public PotentialMatchRecord(
-            MungeProcess ruleSet,
+            MungeProcess mungeProcess,
             MatchType matchStatus,
             SourceTableRecord originalLhs,
             SourceTableRecord originalRhs,
             boolean synthetic) {
-        this.ruleSet = ruleSet;
+        this.mungeProcess = mungeProcess;
         this.matchStatus = matchStatus;
         this.originalLhs = originalLhs;
         this.originalRhs = originalRhs;
@@ -276,8 +276,8 @@ public class PotentialMatchRecord {
         markDirty();
     }
 
-    public MungeProcess getRuleSet() {
-        return ruleSet;
+    public MungeProcess getMungeProcess() {
+        return mungeProcess;
     }
 
     public SourceTableRecord getOriginalLhs() {
@@ -463,7 +463,7 @@ public class PotentialMatchRecord {
 	
 	/**
 	 * This override of the equals method evaluates equality on PotentialMatchRecords based on
-	 * their ruleSet, originalLhs, and originalRhs. We also considered including the 
+	 * their mungeProcess, originalLhs, and originalRhs. We also considered including the 
 	 * match pool in the evaluation, however, we feel that the usefulness of a 'Query by example'
 	 * feature, (which would search for PotentialMatchRecords based on an example PotentialMatchRecord
 	 * which may not include the match pool) is enough to leave it out. Also, for now, each match

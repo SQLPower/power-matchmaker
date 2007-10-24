@@ -51,9 +51,9 @@ public class MatchPoolDotExport {
     private static final Logger logger = Logger.getLogger(MatchPoolDotExport.class);
         
     /**
-     * The group names that have been seen by {@link colourName()} in the order it saw them.
+     * The munge processes names that have been seen by {@link colourName()} in the order it saw them.
      */
-    private final List<String> groupNames = new ArrayList<String>();
+    private final List<String> mungeProcessesNames = new ArrayList<String>();
     
     /**
      * This is the project whose result table we're visualizing.
@@ -229,11 +229,11 @@ public class MatchPoolDotExport {
      * @throws ArrayIndexOutOfBoundsException if you use more munge processes than we have set up
      * colours for.  (see COLOURS and add more items to it if you're running into this problem).
      */
-    private String colourForEdge(String groupName, boolean original) {
-        int index = groupNames.indexOf(groupName);
+    private String colourForEdge(String mungeProcessName, boolean original) {
+        int index = mungeProcessesNames.indexOf(mungeProcessName);
         if (index < 0) {
-            groupNames.add(groupName);
-            index = groupNames.size()-1;
+            mungeProcessesNames.add(mungeProcessName);
+            index = mungeProcessesNames.size()-1;
         }
         WebColour c = ColorScheme.BREWER_SET19[index];
         return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());

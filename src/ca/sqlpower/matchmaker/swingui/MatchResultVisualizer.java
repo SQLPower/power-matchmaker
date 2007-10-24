@@ -389,7 +389,7 @@ public class MatchResultVisualizer implements EditorPane {
 			int response = JOptionPane.showConfirmDialog(panel, warningMessage, "WARNING", JOptionPane.OK_CANCEL_OPTION);
 			if (response == JOptionPane.OK_OPTION) {
 				try {
-					pool.doAutoMatch((String) ruleSetComboBox.getSelectedItem());
+					pool.doAutoMatch((String) mungeProcessComboBox.getSelectedItem());
 					pool.store();
 					graph.repaint();
 				} catch (Exception ex) {
@@ -440,7 +440,7 @@ public class MatchResultVisualizer implements EditorPane {
 
     private final GraphModel<SourceTableRecord, PotentialMatchRecord> graphModel;
     
-    private JComboBox ruleSetComboBox;
+    private JComboBox mungeProcessComboBox;
     
     /**
      * A list of the SQLColumns that we want to display in each SourceTableRecord
@@ -468,13 +468,13 @@ public class MatchResultVisualizer implements EditorPane {
         doAutoLayout();
 
         JPanel autoMatchPanel = new JPanel(new FlowLayout());
-        ruleSetComboBox = new JComboBox();
-        for (MungeProcess ruleSet : project.getMungeProcesses()) {
-        	ruleSetComboBox.addItem(ruleSet.getName());
+        mungeProcessComboBox = new JComboBox();
+        for (MungeProcess mungeProcess : project.getMungeProcesses()) {
+        	mungeProcessComboBox.addItem(mungeProcess.getName());
         }
         autoMatchPanel.add(new JButton(new AutoMatchAction(graph.getModel())));
         autoMatchPanel.add(new JLabel(":"));
-        autoMatchPanel.add(ruleSetComboBox);
+        autoMatchPanel.add(mungeProcessComboBox);
         
         JPanel graphPanel = new JPanel(new BorderLayout());
         graphPanel.add(buttonPanel, BorderLayout.NORTH);

@@ -221,11 +221,11 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 * 
 	 * @param m
 	 *            The popup menu that the menu item would be attached onto.
-	 * @param group
+	 * @param mungeProcess
 	 *            The current folder being right-clicked on.
 	 */
-	private void addMungeProcessMenuItems(JPopupMenu m, MungeProcess group) {
-		m.add(new JMenuItem(new DeleteMungeProcessAction(swingSession, group)));
+	private void addMungeProcessMenuItems(JPopupMenu m, MungeProcess mungeProcess) {
+		m.add(new JMenuItem(new DeleteMungeProcessAction(swingSession, mungeProcess)));
 	}
 
 	private void createNewFolderMenuItem(JPopupMenu m) {

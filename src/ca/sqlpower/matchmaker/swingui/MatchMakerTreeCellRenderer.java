@@ -73,11 +73,11 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 		if (value instanceof Project) {
 			setIcon(projectIcon);
 		} else if (value instanceof MungeProcess) {
-            MungeProcess group = (MungeProcess) value;
-            if (group.getColour() == null) {
+            MungeProcess mungeProcess = (MungeProcess) value;
+            if (mungeProcess.getColour() == null) {
                 setIcon(mungeIcon);
             } else {
-                setIcon(new ColoredIcon(mungeIcon, group.getColour()));
+                setIcon(new ColoredIcon(mungeIcon, mungeProcess.getColour()));
             }
 		} else if (value instanceof TableMergeRules) {
 			TableMergeRules rule = (TableMergeRules) value;

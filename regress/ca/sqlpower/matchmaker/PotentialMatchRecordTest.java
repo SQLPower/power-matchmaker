@@ -40,13 +40,13 @@ public class PotentialMatchRecordTest extends TestCase {
 		MatchMakerSession session = new TestingMatchMakerSession();
 		Project project = new Project();
 		project.setSession(session);
-		MungeProcess ruleSet = new MungeProcess();
-		ruleSet.setName("ruleset");
-		project.getMungeProcessesFolder().addChild(ruleSet);
+		MungeProcess mungeProcess = new MungeProcess();
+		mungeProcess.setName("mungeprocess");
+		project.getMungeProcessesFolder().addChild(mungeProcess);
 		MatchPool pool = new MatchPool(project);
 		SourceTableRecord str1 = new SourceTableRecord(session, project, Collections.singletonList("str1"));
 		SourceTableRecord str2 = new SourceTableRecord(session, project, Collections.singletonList("str2"));
-		pmr = new PotentialMatchRecord(ruleSet, MatchType.UNMATCH, str1, str2, false);
+		pmr = new PotentialMatchRecord(mungeProcess, MatchType.UNMATCH, str1, str2, false);
 		pool.addPotentialMatch(pmr);
 	}
 	
