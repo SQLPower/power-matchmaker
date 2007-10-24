@@ -111,10 +111,13 @@ public class TranslateWordsEditor implements EditorPane {
         translateWordsTable.setModel (tm);
         translateWordsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
 			public void valueChanged(ListSelectionEvent e) {
-                MatchMakerTranslateWord translateWord = group.getChildren().get(translateWordsTable.getSelectedRow()); 
-                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-    	        TreePath menuPath = treeModel.getPathForNode(translateWord);
-    	        swingSession.getTree().setSelectionPath(menuPath);
+				int row = translateWordsTable.getSelectedRow();
+				if (row >= 0) {
+					MatchMakerTranslateWord translateWord = group.getChildren().get(row); 
+					MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+					TreePath menuPath = treeModel.getPathForNode(translateWord);
+					swingSession.getTree().setSelectionPath(menuPath);
+				}
 			}
 		});
 	}
