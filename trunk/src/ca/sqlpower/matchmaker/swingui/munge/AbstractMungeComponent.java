@@ -545,9 +545,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * Tells the steps properties so that it can reload the GUI bits if needed.
 	 */
 	public void updateStepProperties() {
-		getStep().setParameter(MUNGECOMPONENT_EXPANDED, new Boolean(expanded).toString());
-		getStep().setParameter(MUNGECOMPONENT_X, new Integer(getX()).toString());
-		getStep().setParameter(MUNGECOMPONENT_Y, new Integer(getY()).toString());
+		getStep().setParameter(MUNGECOMPONENT_EXPANDED, expanded);
+		getStep().setParameter(MUNGECOMPONENT_X, getX());
+		getStep().setParameter(MUNGECOMPONENT_Y, getY());
 	}
 
 	/**

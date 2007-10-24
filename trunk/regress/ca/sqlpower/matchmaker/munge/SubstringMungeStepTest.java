@@ -44,8 +44,8 @@ public class SubstringMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcABCabc");
 		step.connectInput(0, testInput);
-		step.setParameter(step.BEGIN_PARAMETER_NAME, "3");
-		step.setParameter(step.END_PARAMETER_NAME, "9");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
+		step.setParameter(step.END_PARAMETER_NAME, 9);
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
@@ -59,8 +59,8 @@ public class SubstringMungeStepTest extends TestCase {
 		testInput.setData("abcABCabc");
 		step.connectInput(0, testInput);
 		
-		step.setParameter(step.BEGIN_PARAMETER_NAME, "3");
-		step.setParameter(step.END_PARAMETER_NAME, "100");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
+		step.setParameter(step.END_PARAMETER_NAME, 100);
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 
@@ -68,8 +68,8 @@ public class SubstringMungeStepTest extends TestCase {
 		String result = (String)output.getData();
 		assertEquals("ABCabc", result);
 		
-		step.setParameter(step.BEGIN_PARAMETER_NAME, "90");
-		step.setParameter(step.END_PARAMETER_NAME, "100");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 90);
+		step.setParameter(step.END_PARAMETER_NAME, 100);
 		step.open(logger);
 		step.call();
 		results = step.getChildren(); 
@@ -77,8 +77,8 @@ public class SubstringMungeStepTest extends TestCase {
 		result = (String)output.getData();
 		assertEquals("", result);
 		
-		step.setParameter(step.BEGIN_PARAMETER_NAME, "-100");
-		step.setParameter(step.END_PARAMETER_NAME, "100");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, -100);
+		step.setParameter(step.END_PARAMETER_NAME, 100);
 		step.open(logger);
 		try {
 			step.call();
@@ -91,8 +91,8 @@ public class SubstringMungeStepTest extends TestCase {
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
-		step.setParameter(step.BEGIN_PARAMETER_NAME, "3");
-		step.setParameter(step.END_PARAMETER_NAME, "9");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
+		step.setParameter(step.END_PARAMETER_NAME, 9);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();

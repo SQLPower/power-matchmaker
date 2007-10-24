@@ -117,7 +117,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("aabfooaabfooabfoob");
 		step.connectInput(0, testInput);
-		step.setParameter(step.USE_REGEX_PARAMETER_NAME, "true");
+		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
 		step.setParameter(step.FROM_PARAMETER_NAME, "a*b");
 		step.setParameter(step.TO_PARAMETER_NAME, "-");
 		step.open(logger);
@@ -133,7 +133,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		testInput.setData("abcdABCdabcdABC");
 		step.setParameter(step.FROM_PARAMETER_NAME, "abc");
 		step.setParameter(step.TO_PARAMETER_NAME, "-");
-		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, "false");
+		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
 		step.connectInput(0, testInput);
 		
 		step.open(logger);

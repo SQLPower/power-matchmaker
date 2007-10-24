@@ -75,7 +75,7 @@ public class RetainCharactersMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
 		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "abc");
-		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, "false");
+		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
 		step.connectInput(0, testInput);
 		
 		step.open(logger);
@@ -94,7 +94,7 @@ public class RetainCharactersMungeStepTest extends TestCase {
 		testInput.setData("xxy123xxy!@#xyABC");
 		step.connectInput(0, testInput);
 		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "[a-zA-z]");
-		step.setParameter(step.USE_REGEX_PARAMETER_NAME, "true");
+		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
 		
 		step.open(logger);
 		step.call();
