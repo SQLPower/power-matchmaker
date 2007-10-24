@@ -988,9 +988,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			mmo.getParent().removeChild(mmo);
             if (mmo instanceof MungeStep) {
                 // Munge Steps are special because they don't have a DAO of their own
-                MatchMakerObject ruleSet = mmo.getParent();
-                MatchMakerDAO dao = getDAO(ruleSet.getClass());
-                dao.save(ruleSet);
+                MatchMakerObject mungeProcess = mmo.getParent();
+                MatchMakerDAO dao = getDAO(mungeProcess.getClass());
+                dao.save(mungeProcess);
             } else if ( mmo instanceof ColumnMergeRules) {
             	// so are column merge rules
             	MatchMakerObject tableMergeRules = mmo.getParent();

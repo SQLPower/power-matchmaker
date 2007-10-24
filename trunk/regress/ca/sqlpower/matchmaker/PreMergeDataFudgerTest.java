@@ -87,15 +87,15 @@ public class PreMergeDataFudgerTest extends TestCase {
 		project.setSession(session);
 		project.setResultTable(resultTable);
 		
-		MungeProcess groupOne = new MungeProcess();
-		groupOne.setName("Group_One");
-		project.addMungeProcess(groupOne);
+		MungeProcess mungeProcessOne = new MungeProcess();
+		mungeProcessOne.setName("Munge_Process_One");
+		project.addMungeProcess(mungeProcessOne);
 
-		MungeProcess groupTwo = new MungeProcess();
-		groupOne.setName("Group_Two");
-		project.addMungeProcess(groupTwo);
+		MungeProcess mungeProcessTwo = new MungeProcess();
+		mungeProcessOne.setName("Munge_Process_Two");
+		project.addMungeProcess(mungeProcessTwo);
 		
-		pool = MMTestUtils.createTestingPool(session, project, groupOne, groupTwo);
+		pool = MMTestUtils.createTestingPool(session, project, mungeProcessOne, mungeProcessTwo);
 		
 		fudger = new PreMergeDataFudger(session, pool);
 	}
@@ -115,18 +115,18 @@ public class PreMergeDataFudgerTest extends TestCase {
 		
 		PotentialMatchRecord n1n4 = n1.getMatchRecordByValidatedSourceTableRecord(n4);
 		assertNotNull(n1n4);
-		assertSame(n1n4.getRuleSet(), fudger.getRuleSet());
+		assertSame(n1n4.getMungeProcess(), fudger.getMungeProcess());
 
 		PotentialMatchRecord n2n4 = n2.getMatchRecordByValidatedSourceTableRecord(n4);
 		assertNotNull(n2n4);
-		assertSame(n2n4.getRuleSet(), fudger.getRuleSet());
+		assertSame(n2n4.getMungeProcess(), fudger.getMungeProcess());
 
 		// this one's different because there is also a direct user-validated edge belonging to GroupOne
 		Collection<PotentialMatchRecord> n3Edges = n3.getOriginalMatchEdges();
 		assertEquals(2, n3Edges.size());
 		PotentialMatchRecord n3n4 = null;
 		for (PotentialMatchRecord edge : n3Edges) {
-			if (edge.getRuleSet() == fudger.getRuleSet()) {
+			if (edge.getMungeProcess() == fudger.getMungeProcess()) {
 				assertNull("Only one fudged edge should exist on n3", n3n4);
 				n3n4 = edge;
 			}
@@ -145,7 +145,7 @@ public class PreMergeDataFudgerTest extends TestCase {
 		
 		PotentialMatchRecord n1n4 = n1.getMatchRecordByValidatedSourceTableRecord(n4);
 		assertNotNull(n1n4);
-		assertSame(n1n4.getRuleSet(), fudger.getRuleSet());
+		assertSame(n1n4.getMungeProcess(), fudger.getMungeProcess());
 		
 		fudger.unfudge();
 		

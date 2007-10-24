@@ -28,12 +28,12 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 public class MungeProcessDAOSQLServerTest extends AbstractMungeProcessDAOTestCase {
     
-    private MungeProcess ruleSet;
+    private MungeProcess mungeProcess;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        ruleSet = createNewObjectUnderTest();
+        mungeProcess = createNewObjectUnderTest();
     }
     
     @Override

@@ -66,18 +66,18 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 	@Override
 	public MungeProcess createNewObjectUnderTest() throws Exception {
 		count++;
-		MungeProcess ruleSet = new MungeProcess();
-        ruleSet.setSession(getSession());
+		MungeProcess mungeProcess = new MungeProcess();
+        mungeProcess.setSession(getSession());
 		try {
-			setAllSetters(ruleSet, getNonPersitingProperties());
-            ruleSet.setName("Group "+count);
-            project.addMungeProcess(ruleSet);
+			setAllSetters(mungeProcess, getNonPersitingProperties());
+            mungeProcess.setName("Munge Process "+count);
+            project.addMungeProcess(mungeProcess);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
 			throw new RuntimeException(e);
 		}
-		return ruleSet;
+		return mungeProcess;
 	}
 
 	@Override
@@ -101,19 +101,19 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
         try {
 
             MungeProcess process = project.getMungeProcesses().get(0);
-            String groupId = process.getName();
+            String processId = process.getName();
 
             MungeProcessDAO dao = getDataAccessObject();
             dao.save(process);
             
             stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+groupId+"'");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+processId+"'");
             assertTrue("munge process didn't save?!", rs.next());
             rs.close();
 
             dao.delete(process);
 
-            rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+groupId+"'");
+            rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+processId+"'");
             assertFalse("munge process didn't delete", rs.next());
             rs.close();
         } finally {

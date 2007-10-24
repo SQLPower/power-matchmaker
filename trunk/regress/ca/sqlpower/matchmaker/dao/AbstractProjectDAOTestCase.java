@@ -185,22 +185,22 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
 		plFolderDAO.save(f);
         
         final long projectOid = insertSampleProjectData(projectName, f.getOid());
-        final long groupOid = insertSampleMungeProcessData(projectOid, "group_"+time);
-        insertSampleMungeStepData(groupOid, "test_rule_"+time);
+        final long processOid = insertSampleMungeProcessData(projectOid, "group_"+time);
+        insertSampleMungeStepData(processOid, "test_rule_"+time);
         
         Project project = getDataAccessObject().findByName(projectName);
-            List<MungeProcess> groups = project.getMungeProcesses();
-		assertEquals("There should be one rule set", 1, groups.size());
+            List<MungeProcess> mungeProcesses = project.getMungeProcesses();
+		assertEquals("There should be one munge process", 1, mungeProcesses.size());
 
-		MungeProcess group = groups.get(0);
-		assertEquals("Wrong Group name", "group_" + time, group.getName());
+		MungeProcess mungeProcess = mungeProcesses.get(0);
+		assertEquals("Wrong munge process name", "group_" + time, mungeProcess.getName());
 
         // TODO check that the munge rules were retrieved
     }
     
-    public void testRuleSetMove() throws Exception {
+    public void testMungeProcessMove() throws Exception {
         MungeProcess process = new MungeProcess();
-        process.setName("criteria group");
+        process.setName("munge process");
         
         Project oldProject = new Project();
         oldProject.setName("old");
@@ -247,10 +247,10 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
             oldProject.removeMungeProcess(process);
             dao.save(oldProject);
             
-            //A temporary fix for moving munge processes. This makes a copy of the ruleSet and 
+            //A temporary fix for moving munge processes. This makes a copy of the mungeProcess and 
             //adds it to the newProject.
-            MungeProcess ruleSet2 = process.duplicate(newProject, getSession());
-            newProject.addMungeProcess(ruleSet2);
+            MungeProcess mungeProcess2 = process.duplicate(newProject, getSession());
+            newProject.addMungeProcess(mungeProcess2);
             dao.save(newProject);
             
             try { 
@@ -286,7 +286,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
             String projectName, Long folderOid) throws Exception;
     
     /**
-     * Inserts a sample entry in PL_MATCH_GROUP, and returns its OID.  The group will
+     * Inserts a sample entry in PL_MATCH_GROUP, and returns its OID.  The munge process will
      * its name (GROUP_ID) set to the given string value.  This is useful for
      * verifying that you are retrieving the same record that this method inserted.
      * <p>
@@ -296,7 +296,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
      * @return The GROUP_OID value of the new munge process that was inserted.
      */
     protected abstract long insertSampleMungeProcessData(
-            long parentProjectOid, String groupName) throws Exception;
+            long parentProjectOid, String mungeProcessName) throws Exception;
 
     /**
      * Inserts a sample entry in PL_MATCH_CRITERIA, and returns its OID.  The rule will

@@ -104,14 +104,14 @@ public class MatchPool {
      * Finds all the potential match record (edges in the graph) that belongs to the
      * particular munge process
      * @param mungeProcessName
-     * @return a list of potential match records that belong to the match critieria group
+     * @return a list of potential match records that belong to the munge process
      */
     public List<PotentialMatchRecord> getAllPotentialMatchByMungeProcess
                         (String mungeProcessName) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : potentialMatches){
-            if (pmr.getRuleSet().getName().equals(mungeProcessName)){
+            if (pmr.getMungeProcess().getName().equals(mungeProcessName)){
                 matchList.add(pmr);
             }
         }
@@ -121,14 +121,14 @@ public class MatchPool {
     /**
      * Finds all the potential match record (edges in the graph) that belongs to the
      * particular munge process
-     * @param ruleSet
-     * @return a list of potential match records that belong to the match critieria group
+     * @param mungeProcess
+     * @return a list of potential match records that belong to the munge process
      */
-    public List<PotentialMatchRecord> getAllPotentialMatchByMungeProcess(MungeProcess ruleSet) {
+    public List<PotentialMatchRecord> getAllPotentialMatchByMungeProcess(MungeProcess mungeProcess) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
         for (PotentialMatchRecord pmr : potentialMatches){
-            if (pmr.getRuleSet() == ruleSet){
+            if (pmr.getMungeProcess() == mungeProcess){
                 matchList.add(pmr);
             }
         }
@@ -229,8 +229,8 @@ public class MatchPool {
             logger.debug("MatchPool's findAll method SQL: \n" + lastSQL);
             rs = stmt.executeQuery(lastSQL);
             while (rs.next()) {
-                MungeProcess ruleSet = project.getMungeProcessByName(rs.getString("GROUP_ID"));
-                if (ruleSet == null) {
+                MungeProcess mungeProcess = project.getMungeProcessByName(rs.getString("GROUP_ID"));
+                if (mungeProcess == null) {
                     session.handleWarning(
                             "Found a match record that refers to the " +
                             "non-existant rule set \""+rs.getString("GROUP_ID")+
@@ -262,7 +262,7 @@ public class MatchPool {
                 SourceTableRecord lhs = makeSourceTableRecord(lhsDisplayValues, lhsKeyValues);
                 SourceTableRecord rhs = makeSourceTableRecord(rhsDisplayValues, rhsKeyValues);
                 PotentialMatchRecord pmr =
-                	new PotentialMatchRecord(ruleSet, matchStatus, lhs, rhs, false);
+                	new PotentialMatchRecord(mungeProcess, matchStatus, lhs, rhs, false);
                 if (matchStatus == MatchType.MATCH || matchStatus == MatchType.AUTOMATCH) {
                 	if (SQL.decodeInd(rs.getString("DUP1_MASTER_IND"))) {
                 		pmr.setMaster(lhs);
@@ -402,8 +402,8 @@ public class MatchPool {
             			ps.setObject(i * 2 + 1, pmr.getOriginalLhs().getKeyValues().get(i));
             			ps.setObject(i * 2 + 2, pmr.getOriginalRhs().getKeyValues().get(i));
             		}
-            		ps.setObject(numKeyValues * 2 + 1, pmr.getRuleSet().getMatchPercent());
-            		ps.setObject(numKeyValues * 2 + 2, pmr.getRuleSet().getName());
+            		ps.setObject(numKeyValues * 2 + 1, pmr.getMungeProcess().getMatchPercent());
+            		ps.setObject(numKeyValues * 2 + 2, pmr.getMungeProcess().getName());
             		ps.setObject(numKeyValues * 2 + 3, pmr.getMatchStatus().getCode());
             		
             		SourceTableRecord duplicate;
@@ -529,8 +529,8 @@ public class MatchPool {
     		List<PotentialMatchRecord> temp = new ArrayList<PotentialMatchRecord>(potentialMatches);
     		int index = temp.indexOf(pmr);
     		PotentialMatchRecord other = temp.get(index);
-    		Short otherMatchPercent = other.getRuleSet().getMatchPercent();
-			Short pmrMatchPercent = pmr.getRuleSet().getMatchPercent();
+    		Short otherMatchPercent = other.getMungeProcess().getMatchPercent();
+			Short pmrMatchPercent = pmr.getMungeProcess().getMatchPercent();
 			if (pmrMatchPercent == null || otherMatchPercent != null && otherMatchPercent >= pmrMatchPercent) { 
     			logger.debug("other's matchPercent is equal or higher, so NOT replacing with pmr");
     			return;
@@ -765,16 +765,16 @@ public class MatchPool {
 	 */
 	private PotentialMatchRecord addSyntheticPotentialMatchRecord(SourceTableRecord record1,
 			SourceTableRecord record2) {
-		MungeProcess syntheticRuleSet = project.getMungeProcessByName(MungeProcess.SYNTHETIC_MATCHES);
-		if (syntheticRuleSet == null) {
-			syntheticRuleSet = new MungeProcess();
-			syntheticRuleSet.setName(MungeProcess.SYNTHETIC_MATCHES);
-			project.getMungeProcessesFolder().addChild(syntheticRuleSet);
+		MungeProcess syntheticMungeProcess = project.getMungeProcessByName(MungeProcess.SYNTHETIC_MATCHES);
+		if (syntheticMungeProcess == null) {
+			syntheticMungeProcess = new MungeProcess();
+			syntheticMungeProcess.setName(MungeProcess.SYNTHETIC_MATCHES);
+			project.getMungeProcessesFolder().addChild(syntheticMungeProcess);
 			MatchMakerDAO<Project> dao = session.getDAO(Project.class);
 			dao.save(project);
 		}
 		
-		PotentialMatchRecord pmr = new PotentialMatchRecord(syntheticRuleSet, MatchType.UNMATCH, record1, record2, true);
+		PotentialMatchRecord pmr = new PotentialMatchRecord(syntheticMungeProcess, MatchType.UNMATCH, record1, record2, true);
 		addPotentialMatch(pmr);
 		
 		return pmr;
@@ -1169,11 +1169,11 @@ public class MatchPool {
 	 * @throws ArchitectException
 	 * @throws SQLException
 	 */
-	public void doAutoMatch(String ruleName) throws SQLException, ArchitectException {
-		MungeProcess ruleSet = project.getMungeProcessByName(ruleName);
-		if (ruleSet == null) {
+	public void doAutoMatch(String mungeProcessName) throws SQLException, ArchitectException {
+		MungeProcess mungeProcess = project.getMungeProcessByName(mungeProcessName);
+		if (mungeProcess == null) {
 			throw new IllegalArgumentException("Auto-Match invoked with an " +
-					"invalid rule group name: " + ruleName);
+					"invalid munge process name: " + mungeProcessName);
 		}
 		Collection<SourceTableRecord> records = sourceTableRecords.values();
 		
@@ -1185,7 +1185,7 @@ public class MatchPool {
 			boolean addToVisited = true;
 			for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
 				if (pmr.getMatchStatus() != MatchType.NOMATCH
-						&& pmr.getRuleSet() == ruleSet) {
+						&& pmr.getMungeProcess() == mungeProcess) {
 					addToVisited = false;
 				}
 			}
@@ -1200,8 +1200,8 @@ public class MatchPool {
 		
 		logger.debug("The size of visited is " + visited.size());
 
-		Set<SourceTableRecord> neighbours = findAutoMatchNeighbours(ruleSet, selected, visited);
-		makeAutoMatches(ruleSet, selected, neighbours, visited);
+		Set<SourceTableRecord> neighbours = findAutoMatchNeighbours(mungeProcess, selected, visited);
+		makeAutoMatches(mungeProcess, selected, neighbours, visited);
 		//If we haven't visited all the nodes, we are not done!
 		while (visited.size() != records.size()) {
 			SourceTableRecord temp = null;
@@ -1211,8 +1211,8 @@ public class MatchPool {
 					break;
 				}
 			}
-			neighbours = findAutoMatchNeighbours(ruleSet, temp, visited);
-			makeAutoMatches(ruleSet, temp, neighbours, visited);
+			neighbours = findAutoMatchNeighbours(mungeProcess, temp, visited);
+			makeAutoMatches(mungeProcess, temp, neighbours, visited);
 		}
 	}
 
@@ -1221,7 +1221,7 @@ public class MatchPool {
 	 * 'visited' set and propagating the algorithm to neighbours of selected
 	 * nodes.
 	 */
-	private void makeAutoMatches(MungeProcess ruleSet,
+	private void makeAutoMatches(MungeProcess mungeProcess,
 			SourceTableRecord selected,
 			Set<SourceTableRecord> neighbours,
 			Set<SourceTableRecord> visited) throws SQLException, ArchitectException {
@@ -1244,7 +1244,7 @@ public class MatchPool {
 		}
 		for (SourceTableRecord record : neighbours) {
 			if (!visited.contains(record)) {
-				makeAutoMatches(ruleSet, record, findAutoMatchNeighbours(ruleSet, record, visited), visited);
+				makeAutoMatches(mungeProcess, record, findAutoMatchNeighbours(mungeProcess, record, visited), visited);
 			}
 		}
 	}
@@ -1254,13 +1254,13 @@ public class MatchPool {
 	 * the comment for doAutoMatch in the context that 'record' is selected in
 	 * step 3
 	 */
-	private Set<SourceTableRecord> findAutoMatchNeighbours(MungeProcess ruleSet,
+	private Set<SourceTableRecord> findAutoMatchNeighbours(MungeProcess mungeProcess,
 			SourceTableRecord record,
 			Set<SourceTableRecord> visited) {
 		logger.debug("The size of visited is " + visited.size());
 		Set<SourceTableRecord> ret = new HashSet<SourceTableRecord>();
 		for (PotentialMatchRecord pmr : record.getOriginalMatchEdges()) {
-			if (pmr.getRuleSet() == ruleSet 
+			if (pmr.getMungeProcess() == mungeProcess 
 					&& pmr.getMatchStatus() != MatchType.NOMATCH) {
 				if (record == pmr.getOriginalLhs() && !visited.contains(pmr.getOriginalRhs())) {
 					ret.add(pmr.getOriginalRhs());

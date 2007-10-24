@@ -52,7 +52,7 @@ public class MungeProcess
 	private String desc;
     
     /**
-     * The user's confidence that this group of match rule produces
+     * The user's confidence that this munge process produces
      * actual matches.  Will usually be NULL or in the range 0-100, but
      * this range is not enforced.
      */
@@ -71,7 +71,7 @@ public class MungeProcess
 	private boolean active = true;
     
     /**
-     * The colour associated with this group of rule by the user.  Useful
+     * The colour associated with this munge process by the user.  Useful
      * in the GUI.
      */
 	private Color colour;
@@ -167,10 +167,10 @@ public class MungeProcess
         return colour;
     }
     
-    public void setColour(Color groupColor) {
+    public void setColour(Color mungeProcessColor) {
         Color oldValue = this.colour;
-        this.colour = groupColor;
-        getEventSupport().firePropertyChange("colour", oldValue, groupColor);
+        this.colour = mungeProcessColor;
+        getEventSupport().firePropertyChange("colour", oldValue, mungeProcessColor);
     }
     
 	@Override
@@ -202,21 +202,21 @@ public class MungeProcess
 	 * and children
 	 */
 	public MungeProcess duplicate(MatchMakerObject parent, MatchMakerSession s){
-		MungeProcess group = new MungeProcess();
-		group.setActive(getActive());
-		group.setDesc(getDesc()==null?null:new String(getDesc()));
-		group.setFilter(getFilter()==null?null:new String(getFilter()));
-        group.setColour(getColour() == null ? null : new Color(getColour().getRGB()));
-		group.setMatchPercent(getMatchPercent()==null?null:new Short(getMatchPercent()));
-		group.setName(getName()==null?null:new String(getName()));
-		group.setSession(s);
-		group.setVisible(isVisible());
+		MungeProcess mungeProcess = new MungeProcess();
+		mungeProcess.setActive(getActive());
+		mungeProcess.setDesc(getDesc()==null?null:new String(getDesc()));
+		mungeProcess.setFilter(getFilter()==null?null:new String(getFilter()));
+        mungeProcess.setColour(getColour() == null ? null : new Color(getColour().getRGB()));
+		mungeProcess.setMatchPercent(getMatchPercent()==null?null:new Short(getMatchPercent()));
+		mungeProcess.setName(getName()==null?null:new String(getName()));
+		mungeProcess.setSession(s);
+		mungeProcess.setVisible(isVisible());
 		
 		for ( MungeStep step : getChildren()) {
-            MungeStep newStep = step.duplicate(group,s);
-			group.addChild(newStep);
+            MungeStep newStep = step.duplicate(mungeProcess,s);
+			mungeProcess.addChild(newStep);
 		}
-		return group;
+		return mungeProcess;
 	}
 	
 	/**

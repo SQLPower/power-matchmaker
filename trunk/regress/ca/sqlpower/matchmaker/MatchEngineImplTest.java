@@ -97,18 +97,18 @@ public class MatchEngineImplTest extends TestCase {
 		settings.setLog(file);
 		project.setMungeSettings(settings);
 		
-		MungeProcess groupOne = new MungeProcess();
-		groupOne.setName("Group_One");
+		MungeProcess mungeProcessOne = new MungeProcess();
+		mungeProcessOne.setName("Munge_Process_One");
 		SQLInputStep inputStep = new SQLInputStep(project, session);
-		groupOne.addChild(inputStep);
+		mungeProcessOne.addChild(inputStep);
 		MungeResultStep outputStep = new MungeResultStep(project, inputStep, session);
 		outputStep.addInput(new InputDescriptor("result2", Object.class));
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
 		outputStep.connectInput(1, inputStep.getOutputByName("BAR"));
-		groupOne.addChild(outputStep);
-		groupOne.setOutputStep(outputStep);
+		mungeProcessOne.addChild(outputStep);
+		mungeProcessOne.setOutputStep(outputStep);
 		
-		project.addMungeProcess(groupOne);
+		project.addMungeProcess(mungeProcessOne);
 
 		engine = new MatchEngineImpl(session, project);
 	}
@@ -142,15 +142,15 @@ public class MatchEngineImplTest extends TestCase {
 	}
 	
 	public void testCallOnMultipleMungeProcesses() throws Exception {
-		MungeProcess groupTwo = new MungeProcess();
-		groupTwo.setName("Group_Two");
+		MungeProcess mungeProcessTwo = new MungeProcess();
+		mungeProcessTwo.setName("Munge_Process_Two");
 		SQLInputStep inputStep = new SQLInputStep(project, session);
-		groupTwo.addChild(inputStep);
+		mungeProcessTwo.addChild(inputStep);
 		MungeResultStep outputStep = new MungeResultStep(project, inputStep, session);
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
-		groupTwo.addChild(outputStep);
-		groupTwo.setOutputStep(outputStep);
-		project.addMungeProcess(groupTwo);
+		mungeProcessTwo.addChild(outputStep);
+		mungeProcessTwo.setOutputStep(outputStep);
+		project.addMungeProcess(mungeProcessTwo);
 		
 		engine.call();
 		
