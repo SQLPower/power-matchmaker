@@ -25,11 +25,13 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.Autoscroll;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -90,7 +92,7 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
  * automatically refresh accordingly.
  */
 
-public class MungePen extends JLayeredPane implements Scrollable, DropTargetListener {
+public class MungePen extends JLayeredPane implements Scrollable, DropTargetListener, Autoscroll {
 	
 	private static  final Logger logger = Logger.getLogger(MungePen.class);
 
@@ -106,7 +108,17 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 * This is needed because it drops them with respect to the top corner, which is transparent
 	 * so it looks silly.
 	 */
-	private static final int COM_DROP_OFFSET_Y = -30; 
+	private static final int COM_DROP_OFFSET_Y = -30;
+
+	/**
+	 * The max distance from the side the mouse can be to start an autoscroll
+	 */
+	private static final int AUTO_SCROLL_INSET = 25; 
+	
+	/**
+	 * The speed at which auto scroll happens
+	 */
+	private static final int AUTO_SCROLL_SPEED = 10;
 	
 	/**
 	 * The process this MungePen visualizes and edits.  This MungePen listens for various
@@ -163,7 +175,24 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	private FormValidationHandler handler;
 	
 	private Map<MungeStep,AbstractMungeComponent> modelMap = new HashMap<MungeStep, AbstractMungeComponent>();
-    
+
+	/**
+	 * Sets the default autoScroll bounds
+	 */
+	private Insets lockedScrollInsets = new Insets(AUTO_SCROLL_INSET,AUTO_SCROLL_INSET, AUTO_SCROLL_INSET, AUTO_SCROLL_INSET);
+
+	/**
+	 * checks if the bounds are locked see {@link #lockAutoScroll(boolean)} for the reason for locking these 
+	 */
+	private boolean lockScrollInsets = false;
+	
+	/**
+	 * The magic point that tricks the getPreferedSize into thinking that it is a component.
+	 * 
+	 * This is done to allow the pen to auto scroll to area that does not exist.
+	 */
+	private Point magic = new Point(0,0);
+	
 	/**
 	 * Creates a new empty mungepen.
 	 * 
@@ -189,6 +218,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		addMouseMotionListener(new MouseMotionAdapter(){
 			@Override
 			public void mouseMoved(MouseEvent e) {
+				//resets the magic point to allow the excess space to be removed
+				magic.x = 0;
+				magic.y = 0;
 				mouseX = e.getX();
 				mouseY = e.getY();
 				if (start != null || finish != null) {
@@ -199,20 +231,31 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		
 		setDropTarget(new DropTarget(this,this));
 		
+		
 		if (process.getChildCount() == 0) {
 			SQLInputStep inputStep = new SQLInputStep(project, process.getSession());
 			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, true);
 			process.addChild(inputStep);
 			
 			MungeStep mungeResultStep = inputStep.getOuputStep();
+
+			String x = new Integer(AUTO_SCROLL_INSET + 5).toString();
+			String y = new Integer(300).toString();
 			
-			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, 0);
-			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, 300);
+			//sets the input one just outside of the autoscroll bounds
+			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
+			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, x);
+			
+			//sets the location of the result step (resonalibly arbatrary location)
+			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
+			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
+
 			process.addChild(mungeResultStep);
 			if (project.getType() == ProjectMode.FIND_DUPES) {
 				process.setOutputStep((MungeResultStep)mungeResultStep);
 			}
 		}
+		
 	}
 	
 	private JPopupMenu buildPopup(Map<Class, StepDescription> stepMap) {
@@ -333,6 +376,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
+		//painting area
 		if (false && logger.isDebugEnabled()) {
 			Graphics2D g2 = (Graphics2D)g;
 			Rectangle clip = g2.getClipBounds();
@@ -346,6 +390,14 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			} else {
 				logger.debug("Null clipping region");
 			}
+		}
+		
+		//Auto Scroll bounds
+		if (false && logger.isDebugEnabled()) {
+			g.drawLine(getWidth() - getAutoscrollInsets().right, 0, getWidth() - getAutoscrollInsets().right, getHeight());
+			g.drawLine(getAutoscrollInsets().left, 0, getAutoscrollInsets().left, getHeight());
+			g.drawLine(0, getHeight() - getAutoscrollInsets().bottom, getWidth(), getHeight() - getAutoscrollInsets().bottom);
+			g.drawLine(0,getAutoscrollInsets().top, getWidth(), getAutoscrollInsets().top);
 		}
 	}
 	
@@ -569,7 +621,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 */
 	private class MungePenMouseListener extends MouseAdapter {
 		public void mousePressed(MouseEvent e) {	
-			logger.debug("Mouse PRess");
 			repaint();
 			requestFocusInWindow();
 			maybeShowPopup(e);
@@ -613,8 +664,8 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 
 		// viewport seems to never come back as null, but protect anyways...
 		if (vpSize != null) {
-			ppSize = new Dimension(Math.max(usedSpace.width, vpSize.width),
-					Math.max(usedSpace.height, vpSize.height));
+			ppSize = new Dimension(Math.max(magic.x,Math.max(usedSpace.width, vpSize.width)),
+					Math.max(magic.y,Math.max(usedSpace.height, vpSize.height)));
 		}
 
 		if (ppSize != null) {
@@ -793,14 +844,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 						//connected and input
 						MungeStepOutput mso = (MungeStepOutput)evt.getNewValue();
 						
-						logger.debug("mos " + mso);
 						
 						MungeStep child = evt.getSource();
 						MungeStep parent = (MungeStep)mso.getParent();
 						int parNum = parent.getChildren().indexOf(mso);
 						int childNum = evt.getChangeIndices()[0];
-						
-						logger.debug("parNum: " + parNum + " childNum " + childNum);
 						
 						
 						IOConnector ioc = new IOConnector(modelMap.get(parent),parNum,modelMap.get(child),childNum);
@@ -821,12 +869,10 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 							if (con.getParentCom().equals(modelMap.get(parent)) 
 									&& con.getChildCom().equals(modelMap.get(child))
 									&& con.getParentNumber() == parNum && con.getChildNumber() == childNum) {
-								logger.debug("Found it");
 								remove(con);
 								con.getParentCom().setConnectOutput(con.getParentNumber(), false);
 							}
 						}
-						logger.debug("Line deleted");
 					} 
 				} 
 			}
@@ -948,15 +994,20 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 
 	public void dragEnter(DropTargetDragEvent dtde) {
+		lockAutoScroll(false);
 	}
 
 	public void dragExit(DropTargetEvent dte) {
+		lockAutoScroll(false);
 	}
 
 	public void dragOver(DropTargetDragEvent dtde) {
+		lockAutoScroll(false);
 	}
 
 	public void drop(DropTargetDropEvent dtde) {
+		magic = new Point(0,0);
+		lockAutoScroll(false);
 		Transferable t = dtde.getTransferable();
 		try {
 			StepDescription sd = (StepDescription)t.getTransferData(MungeStepLibrary.STEP_DESC_FLAVOR);
@@ -972,6 +1023,121 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 
 	public void dropActionChanged(DropTargetDragEvent dtde) {
-		
+		magic = new Point(0,0);
+	}
+	
+	/**
+	 * Notifiys the pen of an auto scroll being done with a component that is not 
+	 * floating. Meaning that it part of the pen, this is done so that the component 
+	 * is also moved with the screen and not just left hanging
+	 * 
+	 * @param cursorLocn move point
+	 * @param com Component to move
+	 */
+	public void autoscroll(Point cursorLocn, Component com) {
+		logger.debug("AUTOSCROLL");
+		lockAutoScroll(true);
+		Insets autoScrollBorder = getAutoscrollInsets();
+		Rectangle visRec = getVisibleRect();
+		if (cursorLocn.x > getWidth() - autoScrollBorder.right) {
+			if (magic.x > 0) {
+				magic.x += AUTO_SCROLL_SPEED;
+				lockedScrollInsets.right += AUTO_SCROLL_SPEED;
+				revalidate();
+			} else if (visRec.x + visRec.width + AUTO_SCROLL_SPEED > getWidth()) {
+				magic.x = getWidth();
+			}
+			visRec.x += AUTO_SCROLL_SPEED;
+			if (com != null) {
+				com.setLocation(com.getX() + AUTO_SCROLL_SPEED, com.getY());
+			}
+		}
+		if (cursorLocn.x < autoScrollBorder.left) {
+			if (visRec.x == 0) {
+				unNormalize(AUTO_SCROLL_SPEED, 0);
+			} else {
+				visRec.x -= AUTO_SCROLL_SPEED;
+			}
+			if (com != null) {
+				com.setLocation(com.getX() - AUTO_SCROLL_SPEED, com.getY());
+			}
+		}
+		if (cursorLocn.y < autoScrollBorder.top) {
+			if (visRec.y == 0) {
+				unNormalize(0, AUTO_SCROLL_SPEED);
+			} else {
+				visRec.y -= AUTO_SCROLL_SPEED;
+			}
+			if (com != null) {
+				com.setLocation(com.getX(), com.getY() - AUTO_SCROLL_SPEED);
+			}
+		}
+		if (cursorLocn.y > getHeight() - autoScrollBorder.bottom) {
+			if (magic.y > 0) {
+				magic.y += AUTO_SCROLL_SPEED;
+				lockedScrollInsets.bottom += AUTO_SCROLL_SPEED;
+				revalidate();
+			} else if (visRec.y + visRec.height + AUTO_SCROLL_SPEED > getHeight()) {
+				magic.y = getHeight();
+			}
+			visRec.y += AUTO_SCROLL_SPEED;			
+			if (com != null) {
+				com.setLocation(com.getX(), com.getY() + AUTO_SCROLL_SPEED);
+			}
+		}
+		scrollRectToVisible(visRec);
+		if (com != null) {
+			com.repaint();
+		}
+	}
+
+	public void autoscroll(Point cursorLocn) {
+		autoscroll(cursorLocn, null);
+	}
+	
+	/**
+	 * moves all the components on the pen (excluding IOC's which take care of them selves)
+	 * by the given amount.
+	 * 
+	 * @param x X!
+	 * @param y Y!
+	 */
+	private void unNormalize(int x, int y) {
+		for (Component com : getComponents()) {
+			if (!(com instanceof IOConnector)) {
+				com.setLocation(com.getX() + x,com.getY() + y);
+			}
+		}
+	}
+
+	public Insets getAutoscrollInsets() {
+		if (!lockScrollInsets) {
+			setAutoScrollInsets();
+		}
+		logger.debug(lockedScrollInsets);
+		return lockedScrollInsets;
+	}
+	
+	/**
+	 * Forces an update to the autoScroll bounds.
+	 * See {@link #lockAutoScroll(boolean)}
+	 */
+	public void setAutoScrollInsets() {
+		Rectangle r = getVisibleRect();
+		lockedScrollInsets = new Insets(r.y + AUTO_SCROLL_INSET, r.x  + AUTO_SCROLL_INSET, 
+				getHeight() - r.y - r.height + AUTO_SCROLL_INSET, getWidth() - r.x - r.width + AUTO_SCROLL_INSET);
+	}
+	
+	/**
+	 * Locks/Unlocks the autoscroll insets so that they can not be changed. This is done
+	 * because as the pen scroll in one direction, the bounds get adjusted to be only the
+	 * {@link #AUTO_SCROLL_INSET} px from the edge, and the screen moves, but the point 
+	 * that what ever is handling this is does not change and the bounds are wrong until the 
+	 * mouse is moved, by locking the bounds to the old positions it can scroll forever.
+	 * 
+	 * @param lock Lock the border
+	 */
+	public void lockAutoScroll(boolean lock) {
+		lockScrollInsets = lock;
 	}
 }

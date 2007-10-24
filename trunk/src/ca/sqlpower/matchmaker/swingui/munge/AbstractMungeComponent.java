@@ -31,7 +31,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -118,6 +117,22 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private JPanel root;
 	
 	private final MungeStep step;
+	
+	/**
+	 * The point to auto scroll to
+	 */
+	private Point autoScrollPoint;
+	
+	/**
+	 * The timer to handle when to autoscroll because always calling it is way too fast.
+	 */
+	private Timer autoScrollTimer;
+	
+	/**
+	 * How often to call auto scroll
+	 */
+	private static final int AUTO_SCROLL_TIME = 55;
+	
 	
 	/**
 	 * The background colour to use when this component is not selected.
@@ -255,6 +270,16 @@ public abstract class AbstractMungeComponent extends JPanel {
 		setVisible(true);
 		setBackground(normalBackground);
 		
+		autoScrollTimer = new Timer(AUTO_SCROLL_TIME, new AbstractAction(){
+
+			public void actionPerformed(ActionEvent e) {
+				logger.debug("TIMER GO!!!");
+				getPen().autoscroll(autoScrollPoint, AbstractMungeComponent.this);
+			}});
+		
+		autoScrollTimer.stop();
+		autoScrollTimer.setRepeats(true);
+		
 		dropNibIndex = -1;
 		connected = new int[step.getChildCount()];
 		for (int x = 0; x < connected.length;x++) {
@@ -369,6 +394,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 			public void focusLost(FocusEvent e) {
 				if (getParent() != null) {
 					getParent().repaint();
+				} 
+				if (autoScrollTimer.isRunning()) {
+					autoScrollTimer.stop();
 				}
 			}
 		});
@@ -1090,6 +1118,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		public void mouseClicked(MouseEvent e) {
 			maybeShowPopup(e);
 			bustGhost();
+			autoScrollTimer.stop();
 		}
 
 		public void mouseEntered(MouseEvent e) {
@@ -1113,6 +1142,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 
 		public void mouseReleased(MouseEvent e) {
+			//resets the auto scroll bounds for the munge pen
+			getPen().lockAutoScroll(false);
+			autoScrollTimer.stop();
+
 			if (!maybeShowPopup(e) && getPen().isConnecting()) {
 				Point abs = new Point(e.getX() + getX(),e.getY()+getY());
 				AbstractMungeComponent amc = getPen().getMungeComponentAt(abs);
@@ -1172,23 +1205,42 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 			
 			if (!parent.isConnecting()) {
-				//diff is set to null for a right click to stop dragging 
+				//diff is set to null for a right click to prevent dragging 
 				if (diff != null) {
+					//unlocks the bounds (because the pen has no idea when the mouse is moving
+					getPen().lockAutoScroll(false);
 					e.translatePoint(getX(), getY());
 					setLocation((int)(e.getX() - diff.getX()), (int)(e.getY()-diff.getY()));
-					Rectangle newRect = getPen().getVisibleRect();
-					boolean update = false;
-					if (getPen().getParent().getWidth() - getLocation().x - getWidth() < 0) {
-						newRect.x += getWidth();
-						update = true;
+					
+					//checks if auto scrolling is a good idea at the present time
+					MungePen pen = getPen();
+					Insets autoScroll = pen.getAutoscrollInsets();
+					//does not use the mouse point because this looks better
+					autoScrollPoint = new Point(pen.getWidth()/2, pen.getHeight()/2);
+					boolean asChanged = false;
+					if (getX() + getWidth() > pen.getWidth() - autoScroll.right) {
+						autoScrollPoint.x = getX() + getWidth();
+						asChanged = true;
 					}
-					if (getPen().getParent().getHeight() - getLocation().y - getHeight() < 0) {
-						newRect.y += getHeight();
-						update = true;
+					if (getY() + getHeight() > pen.getHeight() - autoScroll.bottom) {
+						autoScrollPoint.y = getY() + getHeight();
+						asChanged = true;
 					}
-					if (update) {
-						getPen().scrollRectToVisible(newRect);
+					if (getX() < autoScroll.left) {
+						autoScrollPoint.x = getX();
+						asChanged = true;
 					}
+					if (getY() < autoScroll.top) {
+						autoScrollPoint.y = getY();
+						asChanged = true;
+					}
+					
+					if (!asChanged) {
+						autoScrollTimer.stop();
+					} else {
+						autoScrollTimer.restart();
+					}
+					
 				}
 			} else {
 				parent.mouseX = e.getX() + getX();

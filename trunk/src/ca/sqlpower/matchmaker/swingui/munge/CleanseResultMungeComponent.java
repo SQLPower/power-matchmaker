@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -43,4 +44,14 @@ public class CleanseResultMungeComponent extends AbstractMungeComponent {
 	protected JPanel buildUI() {
 		return new JPanel();
 	}
+	
+	@Override
+	public JPopupMenu getPopupMenu() {
+		return null;
+	}
+	
+	@Override
+	public void remove() {
+	}
+	
 }
