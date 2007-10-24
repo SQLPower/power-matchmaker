@@ -333,7 +333,8 @@ public class TableMergeRules
 	
 	/**
 	 * Finds the parent table merge rule and returns the primary key of it.
-	 * If no such table is found then throw an exception.
+	 * If no such table is found then throw an exception. Returns null if
+	 * parentTable or the parent of this merge rule has not been set
 	 */
 	public List<SQLColumn> getParentTablePrimaryKey() throws ArchitectException {
 		if (getParentTable() != null && getParentProject() != null) {

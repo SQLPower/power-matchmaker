@@ -20,8 +20,6 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -42,12 +40,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
@@ -134,13 +130,28 @@ public class MergeColumnRuleEditor implements EditorPane {
 
         parentTable.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
+				List<SQLColumn> primarykeyCols = null;
+
 				mergeRule.setParentTable((SQLTable) parentTable.getSelectedItem());
-				if (handler != null) {
-					handler.performFormValidation();
-        		}
 				// Set each imported key column combo box to null
 				for (int row = 0; row < ruleTableModel.getRowCount(); row++) {
 					ruleTableModel.setValueAt(null, row, 2);
+				}
+				
+				try {
+					primarykeyCols = getParentTablePrimaryKeys();
+				} catch (ArchitectException ex) {
+					SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+							"Error while updating parent table for merge rule", ex);
+				}
+				
+				if (primarykeyCols == null) return;
+				for (SQLColumn column : primarykeyCols) {
+					for (ColumnMergeRules cmr : mergeRule.getChildren()) {
+						if (cmr.getColumnName().equals(column.getName())) {
+							cmr.setImportedKeyColumn(column);
+						}
+					}
 				}
 			}
         });
@@ -181,7 +192,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 		return mergeRule;
 	}
 
-	protected JComboBox getParentTable() {
+	protected JComboBox getParentTableComboBox() {
 		return parentTable;
 	} 
 	
@@ -310,6 +321,18 @@ public class MergeColumnRuleEditor implements EditorPane {
 			return false;
 		}
 	}
+	
+	public List<SQLColumn> getParentTablePrimaryKeys() throws ArchitectException{
+		List<SQLColumn> primaryKeys = null;
+		if (parentTable.getSelectedItem() != null) {
+			for (TableMergeRules tmr : project.getTableMergeRules()) {
+				if (tmr.getSourceTable().equals(parentTable.getSelectedItem())) {
+					primaryKeys = tmr.getPrimaryKey();
+				}
+			}
+		}
+		return primaryKeys;
+	}
 
 	public JComponent getPanel() {
 		return panel;
@@ -356,6 +379,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 		return false;
 	}
 	
+	
 	/**
 	 * Abstract EditableJTable class for the column merge rules. 
 	 * Different merge rules require different cell editors and should override
@@ -365,7 +389,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 		public AbstractColumnMergeRulesTable(AbstractMergeColumnRuleTableModel columnMergeRuleTableModel) {
 			super(columnMergeRuleTableModel);
-			setDefaultRenderer(String.class, new CustomTableCellRenderer());
 		}
 
 		@Override
@@ -417,9 +440,9 @@ public class MergeColumnRuleEditor implements EditorPane {
 		public TableCellEditor getCellEditor(int row, int column) {
 			if (column == 2) {
 				JComboBox importedKeyColumns = new JComboBox();
-				if (getParentTable().getSelectedItem() != null) {
+				if (getParentTableComboBox().getSelectedItem() != null) {
 					try {
-						List<SQLColumn> tableColumns = mergeRule.getParentTablePrimaryKey();
+						List<SQLColumn> tableColumns = getParentTablePrimaryKeys();
 						importedKeyColumns.setModel(new DefaultComboBoxModel(tableColumns.toArray()));
 						importedKeyColumns.insertItemAt(null, 0);
 					} catch (ArchitectException e) {
@@ -428,27 +451,22 @@ public class MergeColumnRuleEditor implements EditorPane {
 					}
 				}
 				return new DefaultCellEditor(importedKeyColumns);
+			} else if (column == 3) {
+				List<MergeActionType> comboList = new ArrayList<MergeActionType>();
+				for (MergeActionType mat : ColumnMergeRules.MergeActionType.values()) {
+					if (mat != MergeActionType.NA) {
+						comboList.add(mat);
+					}
+				}
+				return new DefaultCellEditor(
+						new JComboBox(
+								new DefaultComboBoxModel(comboList.toArray())));
 			} else {
 				return super.getCellEditor(row, column);
 			}
 		}
 	}
-	
-	public class CustomTableCellRenderer extends DefaultTableCellRenderer {
-	    public Component getTableCellRendererComponent (JTable table, 
-	    		Object value, boolean isSelected, boolean hasFocus, 
-	    		int row, int column) {
-	        Component cell = super.getTableCellRendererComponent(table, 
-	        		value, isSelected, hasFocus, row, column);
-	        if (table.getModel().isCellEditable(row, column)){
-	        	cell.setBackground(Color.WHITE);
-	        } else {
-	        	cell.setBackground(new Color(212,208,200));
-	        }
-	        return cell;
-	    }
-	}
-	
+
 	private class MergeColumnRuleJTableValidator implements Validator {
 
 		public ValidateResult validate(Object contents) {
@@ -481,7 +499,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 			}
 			else {
 				TableMergeRules tableMergeRule = getMergeRule();
-				Project match = tableMergeRule.getParentProject();
 				SQLTable parentTable = tableMergeRule.getParentTable();
 				
 				// checks for invalid foreign keys types
@@ -504,7 +521,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 				
 				// checks for invalid foreign keys
 				if (parentTable != null) {
-					for (TableMergeRules parentMergeRule : match.getTableMergeRules()) {
+					for (TableMergeRules parentMergeRule : project.getTableMergeRules()) {
 						if (parentMergeRule.getSourceTable().equals(parentTable)) {
 							//parentMergeRule is parent
 							if (parentMergeRule.isSourceMergeRule()) {
@@ -513,7 +530,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 									for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
 										if (cmr.getImportedKeyColumn() != null) {
 											boolean found = false;
-											for (SQLIndex.Column column : match.getSourceTableIndex().getChildren()) {
+											for (SQLIndex.Column column : project.getSourceTableIndex().getChildren()) {
 												if (column.getColumn().equals(cmr.getImportedKeyColumn())) {
 													count++;
 													found = true;
@@ -526,7 +543,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 											}
 										}
 									}
-									if (count != match.getSourceTableIndex().getChildCount()) {
+									if (count != project.getSourceTableIndex().getChildCount()) {
 										return ValidateResult.createValidateResult(Status.FAIL, 
 												"Invalid foreign imported key columns");
 									}

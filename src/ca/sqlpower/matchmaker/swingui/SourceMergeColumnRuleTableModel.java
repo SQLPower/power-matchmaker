@@ -75,11 +75,7 @@ public class SourceMergeColumnRuleTableModel extends
 		if (columnIndex == 0) {
 			return mergeRule.getChildren().get(rowIndex).getColumn();
 		} else if (columnIndex == 1) {
-			if (primaryKeys.contains(rowIndex)) {
-				return ColumnMergeRules.MergeActionType.NA;
-			} else {
-				return mergeRule.getChildren().get(rowIndex).getActionType();
-			}
+			return mergeRule.getChildren().get(rowIndex).getActionType();
 		} else {
 			throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
 		}	
@@ -99,12 +95,7 @@ public class SourceMergeColumnRuleTableModel extends
 		if (columnIndex == 0) {
 			rule.setColumn((SQLColumn) aValue);
 		} else if (columnIndex == 1) {
-			if (!primaryKeys.contains(rowIndex)) {
-				rule.setActionType((MergeActionType) aValue);
-			} else {
-				// Do not set the value if the cell is a primary key
-				return;
-			}
+			rule.setActionType((MergeActionType) aValue);
 		} else {
 			throw new RuntimeException("setValueAt: Unexcepted column index:"+columnIndex);
 		}
@@ -125,6 +116,7 @@ public class SourceMergeColumnRuleTableModel extends
 					SQLColumn column = (SQLColumn) getValueAt(i, 0);
 					if (tableIndex.getChildByName(column.getName()) != null) {
 						primaryKeys.add(i);
+						mergeRule.getChildren().get(i).setActionType(MergeActionType.NA);
 					}
 				}
 			}
