@@ -74,7 +74,7 @@ public class MungeResult implements Comparable<MungeResult> {
 			if (thisData == null || otherData == null) {
 				if (otherData != null) {
 					compareValue = -1;
-				} else {
+				} else if (thisData != null) {
 					compareValue = 1;
 				} 
 			} else if (thisData.getClass().equals(String.class)){
