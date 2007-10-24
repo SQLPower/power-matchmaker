@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -52,6 +53,7 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 	private JSpinner begin;
 	private JSpinner end;
 	private JCheckBox useRegex;
+	private JCheckBox caseSensitive;
 	private JTextField delimiter;
 	private JTextField resultDelimiter;
 	
@@ -73,6 +75,17 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 			}	
 		});
 		useRegex.setSelected(step.getBooleanParameter(step.USE_REGEX_PARAMETER_NAME));
+		
+		caseSensitive = new JCheckBox("Case Sensitive");
+		caseSensitive.setSelected(step.getBooleanParameter(step.CASE_SENSITIVE_PARAMETER_NAME));
+		caseSensitive.addActionListener(new ActionListener(){
+
+			public void actionPerformed(ActionEvent e) {
+				SubstringByWordMungeStep step = (SubstringByWordMungeStep) getStep();
+				step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
+			}
+			
+		});
 		
 		delimiter = new JTextField(step.getParameter(step.DELIMITER_PARAMETER_NAME));
 		delimiter.getDocument().addDocumentListener(new DocumentListener(){
@@ -145,7 +158,12 @@ public class SubstringByWordMungeComponent extends AbstractMungeComponent {
 		content.add(delimiter, cc.xy(4,6));
 		content.add(new JLabel("Result Delim:"), cc.xy(2,8));
 		content.add(resultDelimiter, cc.xy(4,8));
-		content.add(useRegex, cc.xyw(2,10,3));
+		
+		JPanel bottom = new JPanel(new GridLayout(2,1));
+		bottom.add(useRegex);
+		bottom.add(caseSensitive);
+		content.add(bottom, cc.xyw(2,10,3, "c,f"));
+		
 		return content;
 	}
 }

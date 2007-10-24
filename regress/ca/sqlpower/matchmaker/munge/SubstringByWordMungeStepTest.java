@@ -39,7 +39,7 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		super.setUp();
 		step = new SubstringByWordMungeStep(new TestingMatchMakerSession());
 	}
-	public void testCallonNoOccurence() throws Exception {
+	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
 		step.setParameter(step.BEGIN_PARAMETER_NAME,"1");
@@ -53,7 +53,7 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		assertEquals("bc",result);
 	}
 
-	public void testCallonMultipleOccurences() throws Exception {
+	public void testCallonMultipleOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abc bcd cde def efg fgh ghi");
 		step.setParameter(step.BEGIN_PARAMETER_NAME,"1");
@@ -106,5 +106,22 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		} catch (UnexpectedDataTypeException ex) {
 			// UnexpectedDataTypeException was thrown as expected
 		}
+	}
+	
+	public void testCallonCaseInsensitive() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData("abczbcdZcdezdefZefg");
+		step.setParameter(step.DELIMITER_PARAMETER_NAME, "z");
+		step.setParameter(step.BEGIN_PARAMETER_NAME,"1");
+		step.setParameter(step.END_PARAMETER_NAME,"2");
+		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, "false");
+		step.connectInput(0, testInput);
+		
+		step.open(logger);
+		step.call();
+		List<MungeStepOutput> results = step.getChildren(); 
+		MungeStepOutput output = results.get(0);
+		String result = (String)output.getData();
+		assertEquals("b c d e f", result);
 	}
 }

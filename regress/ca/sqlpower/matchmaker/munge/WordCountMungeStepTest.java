@@ -41,7 +41,7 @@ public class WordCountMungeStepTest extends TestCase {
 		step = new WordCountMungeStep(new TestingMatchMakerSession());
 	}
 
-	public void testCallonNoOccurence() throws Exception {
+	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
 		step.connectInput(0, testInput);
@@ -53,7 +53,7 @@ public class WordCountMungeStepTest extends TestCase {
 		assertEquals(1, result.intValue());
 	}
 
-	public void testCallonMultipleOccurences() throws Exception {
+	public void testCallonMultipleOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("a b c d e f g");
 		step.connectInput(0, testInput);

@@ -63,6 +63,9 @@ public class MatchMakerTranslateGroupDAOStub implements
 
     }
 
+    /**
+     * Returns a default translate group, ignoring the given oid.
+     */
 	public MatchMakerTranslateGroup findByOID(long oid) {
 		MatchMakerTranslateGroup translateGroup = new MatchMakerTranslateGroup();
 		MatchMakerTranslateWord test = new MatchMakerTranslateWord();

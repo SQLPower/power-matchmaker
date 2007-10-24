@@ -26,7 +26,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 
 
 /**
- * This munge step will substitute all occurences of a given string to another for
+ * This munge step will substitute all occurrences of a given string to another for
  *  a alphabetical string inputs. This step supports using regular expressions as
  *  an option for the target string.
  */
@@ -50,6 +50,13 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	 */
 	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
 	
+	/**
+	 * This is the name of the parameter that decides whether this step will be
+	 * case sensitive. The only values accepted by the parameter are "true" and
+	 *  "false".
+	 */
+	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	
 	public StringSubstitutionMungeStep(MatchMakerSession session) {
 		super(session);
 		setName("String Substitution");
@@ -57,6 +64,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("stringSubstitution", String.class);
 		setParameter(USE_REGEX_PARAMETER_NAME, false);
+		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
 		super.addInput(desc);
 	}
 	
@@ -85,19 +93,24 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 		String from = getParameter(FROM_PARAMETER_NAME);
 		String to = getParameter(TO_PARAMETER_NAME);
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
+		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
 		
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
 		if (in.getData() == null) {
 			out.setData(null);
 		} else if (from != null && to != null) {
-			if (useRegex) {
-				Pattern p = Pattern.compile(from);
-				Matcher m = p.matcher(data);
-				data = m.replaceAll(to);
-			} else {
-				data = data.replace(from, to);
+			if (!useRegex) {
+				from = "(" + from + "){1}";
 			}
+			Pattern p;
+			if (!caseSensitive) {
+				p = Pattern.compile(from, Pattern.CASE_INSENSITIVE);
+			} else {
+				p = Pattern.compile(from);
+			}
+			Matcher m = p.matcher(data);
+			data = m.replaceAll(to);
 			out.setData(data);
 		}
 

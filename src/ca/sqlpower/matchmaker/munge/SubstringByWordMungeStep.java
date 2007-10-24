@@ -67,12 +67,20 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	 */
 	public static final String RESULT_DELIM_PARAMETER_NAME = "resultDelim";
 	
+	/**
+	 * This is the name of the parameter that decides whether this step will be
+	 * case sensitive. The only values accepted by the parameter are "true" and
+	 *  "false".
+	 */
+	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	
 	public SubstringByWordMungeStep(MatchMakerSession session) {
 		super(session);
 		setName("Substring by Word");
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
 		setParameter(RESULT_DELIM_PARAMETER_NAME, " ");
 		setParameter(USE_REGEX_PARAMETER_NAME, false);
+		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
 		setParameter(BEGIN_PARAMETER_NAME, 0);
 		setParameter(END_PARAMETER_NAME, 0);
 		out = new MungeStepOutput<String>("substringOutput", String.class);
@@ -112,6 +120,7 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 		
 		String delimiter = getParameter(DELIMITER_PARAMETER_NAME);
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
+		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
 		String resultDelim = getParameter(RESULT_DELIM_PARAMETER_NAME);
 				
 		MungeStepOutput<String> in = getInputs().get(0);
@@ -127,7 +136,12 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 			if (!useRegex) {
 				delimiter = "[" + delimiter + "]+";
 			} 
-			Pattern p = Pattern.compile(delimiter);
+			Pattern p;
+			if (!caseSensitive) {
+				p = Pattern.compile(delimiter, Pattern.CASE_INSENSITIVE);
+			} else {
+				p = Pattern.compile(delimiter);
+			}
 			String [] words = p.split(data);
 			
 			// This for loop performs the substring on each word

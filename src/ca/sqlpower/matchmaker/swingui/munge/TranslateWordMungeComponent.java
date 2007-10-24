@@ -43,6 +43,7 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
 public class TranslateWordMungeComponent extends AbstractMungeComponent {
 
 	private JCheckBox useRegex;
+	private JCheckBox caseSensitive;
 	private JComboBox translateGroup; 
 
 	public TranslateWordMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
@@ -61,6 +62,17 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			public void actionPerformed(ActionEvent e) {
 				TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
 				temp.setParameter(TranslateWordMungeStep.USE_REGEX_PARAMETER_NAME, useRegex.isSelected());
+			}
+			
+		});
+		
+		caseSensitive = new JCheckBox("Case Sensitive");
+		caseSensitive.setSelected(temp.getBooleanParameter(temp.CASE_SENSITIVE_PARAMETER_NAME));
+		caseSensitive.addActionListener(new ActionListener(){
+
+			public void actionPerformed(ActionEvent e) {
+				TranslateWordMungeStep temp = (TranslateWordMungeStep) getStep();
+				temp.setParameter(temp.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
 			}
 			
 		});
@@ -105,10 +117,11 @@ public class TranslateWordMungeComponent extends AbstractMungeComponent {
 			
 		});
 		
-		content.setLayout(new GridLayout(3,1));
+		content.setLayout(new GridLayout(4,1));
 		content.add(new JLabel("Translate Group:"));
 		content.add(translateGroup);
 		content.add(useRegex);
+		content.add(caseSensitive);
 		return content;
 	}
 }
