@@ -232,7 +232,13 @@ public class TranslateWordsEditor implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
-		return tableListener.isModified();
+		if (group.getParent() == null) {
+			return true;
+		} else if (!groupName.getText().equals(group.getName())) {
+			return true;
+		} else {
+			return tableListener.isModified();
+		}
 	}
 	
 	/**

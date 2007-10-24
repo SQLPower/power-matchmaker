@@ -322,6 +322,9 @@ public class MergeColumnRuleEditor implements EditorPane {
 		TableMergeRules.ChildMergeActionType oldMergeAction = mergeRule.getChildMergeAction();
 		
 		if (tableListener.isModified()) return true;
+		
+		if (mergeRule.getParent() == null) return true;
+		
 		// Check if delete duplicate option has been changed
 		// for source table merge rule
 		if (mergeRule.isSourceMergeRule()) {
