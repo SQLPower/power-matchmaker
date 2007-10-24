@@ -41,6 +41,8 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
@@ -64,7 +66,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * A panel to edit the translate words groups
+ * A panel to edit the munge process group
  */
 public class MungeProcessGroupEditor implements EditorPane {
 
@@ -89,7 +91,7 @@ public class MungeProcessGroupEditor implements EditorPane {
         buildUI();
         handler = new FormValidationHandler(status);
         handler.resetHasValidated();
-
+        deleteAction.setEnabled(false);
 	}
 	
 	private void setupTable() {
@@ -98,6 +100,18 @@ public class MungeProcessGroupEditor implements EditorPane {
 		TableCellRenderer renderer = new ColorRenderer(true);
         mungeProcessTable.setDefaultRenderer(Color.class, renderer );
         mungeProcessTable.setName("Munge Processes");
+        
+        // adds a selection listener that enables/disables delete button
+        mungeProcessTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+			public void valueChanged(ListSelectionEvent e) {
+				int row = MungeProcessGroupEditor.this.mungeProcessTable.getSelectedRow();
+				if (row == -1) {
+					deleteAction.setEnabled(false);
+				} else {
+					deleteAction.setEnabled(true);
+				}
+			}
+		});
         
         //adds an action listener that looks for a double click, that opens the selected 
         //merge rule editor pane  
@@ -168,17 +182,18 @@ public class MungeProcessGroupEditor implements EditorPane {
 	Action deleteAction = new AbstractAction("Delete Munge Process") {
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = mungeProcessTable.getSelectedRow();
-			int response = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-				"Are you sure you want to delete the munge process?");
-			if (response != JOptionPane.YES_OPTION) {
-				return;
-			}
 		
-			logger.debug("deleting translate group:"+selectedRow);
+			logger.debug("deleting munge process:"+selectedRow);
 			
 			if ( selectedRow >= 0 && selectedRow < mungeProcessTable.getRowCount()) {
-				MungeProcess ruleSet = project.getMungeProcessesFolder().getChildren().get(selectedRow);
-				project.removeMungeProcess(ruleSet);
+				int response = JOptionPane.showConfirmDialog(swingSession.getFrame(),
+				"Are you sure you want to delete the munge process?");
+				if (response != JOptionPane.YES_OPTION) {
+					return;
+				}
+				
+				MungeProcess mp = project.getMungeProcesses().get(selectedRow);
+				project.removeMungeProcess(mp);
 				swingSession.save(project);
 				if (selectedRow >= mungeProcessTable.getRowCount()) {
 					selectedRow = mungeProcessTable.getRowCount() - 1;
@@ -188,7 +203,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 				}
 			} else {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"Please select one translate group to delete");
+						"Please select one munge process to delete");
 			}
 		}
 	};
@@ -196,7 +211,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 	
 	/**
 	 * table model for the munge processes, it shows the munge processes
-	 * in a JTable, allows user add/delete/reorder translation groups.
+	 * in a JTable, allows user add/delete/reorder munge processes.
 	 * <p>
 	 * It has 4 columns:
 	 * <dl>
@@ -224,12 +239,12 @@ public class MungeProcessGroupEditor implements EditorPane {
 		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			MungeProcess ruleSet = project.getMungeProcesses().get(rowIndex);
+			MungeProcess mungeProcess = project.getMungeProcesses().get(rowIndex);
 			switch (columnIndex) {
-			case 0:  return ruleSet.getName();
-			case 1:  return ruleSet.getDesc();
-			case 2:  return ruleSet.getColour();
-			case 3:  return ruleSet.getMatchPercent();
+			case 0:  return mungeProcess.getName();
+			case 1:  return mungeProcess.getDesc();
+			case 2:  return mungeProcess.getColour();
+			case 3:  return mungeProcess.getMatchPercent();
 			default: return null;
 			}
 		}
