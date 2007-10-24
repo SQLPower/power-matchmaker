@@ -25,8 +25,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -167,6 +169,7 @@ public class MatchEngineImpl extends AbstractEngine {
 	public EngineInvocationResult call() throws EngineSettingException {
 		Level oldLoggerLevel = logger.getLevel();
 		logger.setLevel(getMessageLevel());
+		FileAppender fileAppender = null;
 		
 		try {
 			setFinished(false);
@@ -180,6 +183,11 @@ public class MatchEngineImpl extends AbstractEngine {
 			} catch (ArchitectException e) {
 				throw new RuntimeException(e);
 			}
+			
+			String logFilePath = getProject().getMungeSettings().getLog().getAbsolutePath();
+			boolean appendToFile = getProject().getMungeSettings().getAppendToLog();
+			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
+			logger.addAppender(fileAppender);
 			
 			progressMessage = "Starting Match Engine";
 			logger.info(progressMessage);
@@ -217,6 +225,9 @@ public class MatchEngineImpl extends AbstractEngine {
 			throw new RuntimeException(ex);
 		} finally {
 			logger.setLevel(oldLoggerLevel);
+			if (fileAppender != null) {
+				logger.removeAppender(fileAppender);
+			}
 			setFinished(true);
 		}
 	
