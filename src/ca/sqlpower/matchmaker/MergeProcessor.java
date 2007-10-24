@@ -126,7 +126,7 @@ public class MergeProcessor extends AbstractProcessor {
 		// Finds the columns that needs to be merged and maps it to the 
 		// corresponding column merge rule.
 		for (ColumnMergeRules cmr : sourceTableMergeRule.getChildren()) {
-			if (cmr.getActionType() != MergeActionType.USE_MASTER_VALUE) {
+			if (cmr.getActionType() != MergeActionType.USE_MASTER_VALUE && cmr.getActionType() != MergeActionType.NA) {
 				needsToCheckDup = true;
 			}
 			mapping.put(cmr.getColumn(), cmr);
@@ -358,7 +358,11 @@ public class MergeProcessor extends AbstractProcessor {
 						if (masterRow == null) {
 							insertRow(childTableMergeRule.getSourceTable(), childMasterRows.get(i));
 						} else {
-							mergeRows(childDupRows.get(i), masterRow, childTableMergeRule);
+							int rowsCount = mergeRows(childDupRows.get(i), masterRow, childTableMergeRule);
+							if (rowsCount != 1) {
+								throw new IllegalStateException("The update did not affect the correct " +
+										"number of rows: expected 1 but got " + rowsCount);
+							}
 						}
 					}
 				}
@@ -516,8 +520,10 @@ public class MergeProcessor extends AbstractProcessor {
 			Object dupVal = dupRowValues.getValue(cmr.getColumnName());
 			Object masterVal = masterRowValues.getValue(cmr.getColumnName());
 			Object resultVal = null;
-			
-			if (cmr != null && cmr.getActionType() != MergeActionType.USE_MASTER_VALUE) {
+			if (cmr == null) {
+				throw new IllegalStateException("Column merge rule cannot be null");
+			}
+			if (cmr.getActionType() != MergeActionType.USE_MASTER_VALUE && cmr.getActionType() != MergeActionType.NA) {
 				
 				if (masterVal == null) {
 					resultVal = dupVal;
@@ -550,9 +556,13 @@ public class MergeProcessor extends AbstractProcessor {
 				} 
 			}
 		}
-		String whereStatement = generateWhereStatement(masterRowValues);
-		sql.append(whereStatement);
-		return stmt.executeUpdate(sql.toString());
+		if (!first) {
+			String whereStatement = generateWhereStatement(masterRowValues);
+			sql.append(whereStatement);
+			return stmt.executeUpdate(sql.toString());
+		} else {
+			return 1;
+		}
 	}
 	
 	private String generateWhereStatement(ResultRow row) throws SQLException, ArchitectException {
