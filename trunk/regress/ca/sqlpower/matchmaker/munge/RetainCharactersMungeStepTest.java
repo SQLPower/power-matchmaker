@@ -43,7 +43,7 @@ public class RetainCharactersMungeStepTest extends TestCase {
 	 * This tests the case where the target string is not present, the output
 	 * should just be the same as before the call. 
 	 */
-	public void testCallonNoOccurence() throws Exception {
+	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
 		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "123");
@@ -57,7 +57,7 @@ public class RetainCharactersMungeStepTest extends TestCase {
 		assertEquals("", result);
 	}
 
-	public void testCallonMultipleOccurences() throws Exception {
+	public void testCallonMultipleOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdABCabcd");
 		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "abc");

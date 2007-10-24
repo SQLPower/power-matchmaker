@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -45,6 +46,7 @@ import com.jgoodies.forms.layout.FormLayout;
 public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
 
 	private JCheckBox useRegex;
+	private JCheckBox caseSensitive;
 	private JTextField from;
 	private JTextField to;
 	
@@ -67,6 +69,17 @@ public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
 			}	
 		});
 		useRegex.setSelected(step.getBooleanParameter(step.USE_REGEX_PARAMETER_NAME));
+		
+		caseSensitive = new JCheckBox("Case Sensitive");
+		caseSensitive.setSelected(step.getBooleanParameter(step.CASE_SENSITIVE_PARAMETER_NAME));
+		caseSensitive.addActionListener(new ActionListener(){
+
+			public void actionPerformed(ActionEvent e) {
+				StringSubstitutionMungeStep temp = (StringSubstitutionMungeStep) getStep();
+				temp.setParameter(temp.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
+			}
+			
+		});
 		
 		from = new JTextField(step.getParameter(step.FROM_PARAMETER_NAME));
 		from.getDocument().addDocumentListener(new DocumentListener(){
@@ -113,7 +126,12 @@ public class StringSubstitutionMungeComponent extends AbstractMungeComponent {
 		content.add(from, cc.xy(4,2));
 		content.add(new JLabel("To:"), cc.xy(2,4));
 		content.add(to, cc.xy(4,4));
-		content.add(useRegex, cc.xyw(2,6,3));
+		
+		JPanel bottom = new JPanel(new GridLayout(2,1));
+		bottom.add(useRegex);
+		bottom.add(caseSensitive);
+		content.add(bottom, cc.xyw(2,6,3, "c,f"));
+		
 		return content;
 	}
 }

@@ -31,7 +31,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 
 
 /**
- * This munge step will substitute all occurences of a given group of strings to another for
+ * This munge step will substitute all occurrences of a given group of strings to another for
  *  a alphabetical string input according to a mapping defined in a given MatchMakerTranslateGroup. 
  *  This step supports using regular expressions as an option for the target string.
  */
@@ -57,6 +57,14 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 */
 	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
 	
+	/**
+	 * This is the name of the parameter that decides whether this step will be
+	 * case sensitive. The only values accepted by the parameter are "true" and
+	 *  "false".
+	 */
+	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	
+	
 	public TranslateWordMungeStep(MatchMakerSession session) {
 		super(session);
 		setName("Translate Words");
@@ -65,6 +73,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		InputDescriptor desc = new InputDescriptor("translateWord", String.class);
 		super.addInput(desc);
 		setParameter(USE_REGEX_PARAMETER_NAME, false);
+		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
 	}
 	
 	@Override
@@ -96,6 +105,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		String from;
 		String to;
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
+		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
 		
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
@@ -106,13 +116,17 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 				to = translateWord.getTo();
 				
 				if (from != null && to != null) {
-					if (useRegex) {
-						Pattern p = Pattern.compile(from);
-						Matcher m = p.matcher(data);
-						data = m.replaceAll(to);
+					if (!useRegex) {
+						from = "(" + from + "){1}";
+					} 
+					Pattern p;
+					if (!caseSensitive) {
+						p = Pattern.compile(from, Pattern.CASE_INSENSITIVE);
 					} else {
-						data = data.replace(from, to);
+						p = Pattern.compile(from);
 					}
+					Matcher m = p.matcher(data);
+					data = m.replaceAll(to);
 				}
 			}
 		}
