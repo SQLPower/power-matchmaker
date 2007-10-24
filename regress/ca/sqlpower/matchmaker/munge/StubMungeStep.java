@@ -53,17 +53,14 @@ public class StubMungeStep implements MungeStep {
 
     public void close() throws Exception {
         logger.debug("Stub call: StubMungeStep.close()");
-        
     }
 
     public void connectInput(int index, MungeStepOutput o) {
         logger.debug("Stub call: StubMungeStep.connectInput()");
-        
     }
 
     public void disconnectInput(int index) {
         logger.debug("Stub call: StubMungeStep.disconnectInput()");
-        
     }
 
     public InputDescriptor getInputDescriptor(int inputNumber) {
@@ -93,27 +90,33 @@ public class StubMungeStep implements MungeStep {
 
     public void open(Logger logger) throws Exception {
         logger.debug("Stub call: StubMungeStep.open()");
-        
     }
 
     public void removeInput(int index) {
         logger.debug("Stub call: StubMungeStep.removeInput()");
-        
     }
 
     public void setParameter(String name, String newValue) {
         logger.debug("Stub call: StubMungeStep.setParameter()");
-        
     }
+    
+
+	public void setParameter(String name, boolean newValue) {
+		logger.debug("Stub call: StubMungeStep.setParameter()");
+		
+	}
+
+	public void setParameter(String name, int newValue) {
+		logger.debug("Stub call: StubMungeStep.setParameter()");
+		
+	}
 
     public void addChild(MungeStepOutput child) {
         logger.debug("Stub call: StubMungeStep.addChild()");
-        
     }
 
     public void addMatchMakerListener(MatchMakerListener<MungeStep, MungeStepOutput> l) {
         logger.debug("Stub call: StubMungeStep.addMatchMakerListener()");
-        
     }
 
     public boolean allowsChildren() {
@@ -148,27 +151,22 @@ public class StubMungeStep implements MungeStep {
 
     public void removeChild(MungeStepOutput child) {
         logger.debug("Stub call: StubMungeStep.removeChild()");
-        
     }
 
     public void removeMatchMakerListener(MatchMakerListener<MungeStep, MungeStepOutput> l) {
         logger.debug("Stub call: StubMungeStep.removeMatchMakerListener()");
-        
     }
 
     public void setName(String string) {
         logger.debug("Stub call: StubMungeStep.setName()");
-        
     }
 
     public void setParent(MatchMakerObject parent) {
         logger.debug("Stub call: StubMungeStep.setParent()");
-        
     }
 
     public void setSession(MatchMakerSession matchMakerSession) {
         logger.debug("Stub call: StubMungeStep.setSession()");
-        
     }
 
     public Date getCreateDate() {
@@ -193,7 +191,6 @@ public class StubMungeStep implements MungeStep {
 
     public void registerUpdate() {
         logger.debug("Stub call: StubMungeStep.registerUpdate()");
-        
     }
 
 	public MungeStepOutput getOutputByName(String name) {
@@ -208,5 +205,4 @@ public class StubMungeStep implements MungeStep {
 
 	public void setVisible(boolean v) {
 	}
-
 }

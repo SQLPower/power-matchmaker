@@ -124,7 +124,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		testInput.setData("xxyfooxxyfooxyfooy");
 		step.connectInput(0, testInput);
 		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
-		step.setParameter(step.USE_REGEX_PARAMETER_NAME, "true");
+		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
 		
 		step.open(logger);
 		step.call();
@@ -139,7 +139,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 		testInput.setData("abcdABCD");
 		step.connectInput(0, testInput);
 		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
-		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, "false");
+		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
 		
 		step.open(logger);
 		step.call();

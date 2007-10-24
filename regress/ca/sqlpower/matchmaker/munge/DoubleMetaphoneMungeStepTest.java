@@ -56,7 +56,7 @@ public class DoubleMetaphoneMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("Smith");
 		step.connectInput(0, testInput);
-		step.setParameter(step.USE_ALTERNATE_PARAMETER_NAME, "true");
+		step.setParameter(step.USE_ALTERNATE_PARAMETER_NAME, true);
 		step.open(logger);
 		step.call();
 		List<MungeStepOutput> results = step.getChildren(); 

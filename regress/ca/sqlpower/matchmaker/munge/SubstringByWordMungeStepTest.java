@@ -42,8 +42,8 @@ public class SubstringByWordMungeStepTest extends TestCase {
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abcdefg");
-		step.setParameter(step.BEGIN_PARAMETER_NAME,"1");
-		step.setParameter(step.END_PARAMETER_NAME,"3");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 1);
+		step.setParameter(step.END_PARAMETER_NAME, 3);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -56,8 +56,8 @@ public class SubstringByWordMungeStepTest extends TestCase {
 	public void testCallonMultipleOccurrences() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abc bcd cde def efg fgh ghi");
-		step.setParameter(step.BEGIN_PARAMETER_NAME,"1");
-		step.setParameter(step.END_PARAMETER_NAME,"2");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 1);
+		step.setParameter(step.END_PARAMETER_NAME, 2);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -72,8 +72,8 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		testInput.setData("abc   bcd \ncde def\n efg fgh\n\nghi");
 		step.setParameter(step.DELIMITER_PARAMETER_NAME, " \n");
 		step.setParameter(step.RESULT_DELIM_PARAMETER_NAME, ":");
-		step.setParameter(step.BEGIN_PARAMETER_NAME,"1");
-		step.setParameter(step.END_PARAMETER_NAME,"2");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 1);
+		step.setParameter(step.END_PARAMETER_NAME, 2);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -86,8 +86,8 @@ public class SubstringByWordMungeStepTest extends TestCase {
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
-		step.setParameter(step.BEGIN_PARAMETER_NAME, "3");
-		step.setParameter(step.END_PARAMETER_NAME, "9");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 3);
+		step.setParameter(step.END_PARAMETER_NAME, 9);
 		step.connectInput(0, testInput);
 		step.open(logger);
 		step.call();
@@ -112,9 +112,9 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("abczbcdZcdezdefZefg");
 		step.setParameter(step.DELIMITER_PARAMETER_NAME, "z");
-		step.setParameter(step.BEGIN_PARAMETER_NAME,"1");
-		step.setParameter(step.END_PARAMETER_NAME,"2");
-		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, "false");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 1);
+		step.setParameter(step.END_PARAMETER_NAME, 2);
+		step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, false);
 		step.connectInput(0, testInput);
 		
 		step.open(logger);

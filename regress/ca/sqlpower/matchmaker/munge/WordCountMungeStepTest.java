@@ -84,7 +84,7 @@ public class WordCountMungeStepTest extends TestCase {
 	public void testCallonUsingRegex() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData("aaaaab");
-		step.setParameter(step.USE_REGEX_PARAMETER_NAME, "true");
+		step.setParameter(step.USE_REGEX_PARAMETER_NAME, true);
 		step.setParameter(step.DELIMITER_PARAMETER_NAME, "a+");
 		step.connectInput(0, testInput);
 		step.open(logger);

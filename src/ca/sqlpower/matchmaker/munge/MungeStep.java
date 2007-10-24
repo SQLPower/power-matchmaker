@@ -63,6 +63,10 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 */
 	void setParameter(String name, String newValue);
 
+	void setParameter(String name, boolean newValue);
+	
+	void setParameter(String name, int newValue);
+
     /**
      * Enumerates the list of all parameter names currently in place in this munge step.
      */

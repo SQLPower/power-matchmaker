@@ -201,16 +201,13 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		
 		if (process.getChildCount() == 0) {
 			SQLInputStep inputStep = new SQLInputStep(project, process.getSession());
-			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, new Boolean(true).toString());
+			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, true);
 			process.addChild(inputStep);
 			
 			MungeStep mungeResultStep = inputStep.getOuputStep();
 			
-			String x = new Integer(0).toString();
-			String y = new Integer(300).toString();
-			
-			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
-			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
+			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, 0);
+			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, 300);
 			process.addChild(mungeResultStep);
 			if (project.getType() == ProjectMode.FIND_DUPES) {
 				process.setOutputStep((MungeResultStep)mungeResultStep);
@@ -451,8 +448,8 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	private void addMungeStep(Class logicClass, Point location) {
 		MungeStep ms = ((SwingSessionContext)process.getSession().getContext()).getMungeStep(logicClass, 
 				process.getSession());
-		String x = new Integer(location.x + COM_DROP_OFFSET_X).toString();
-		String y = new Integer(location.y + COM_DROP_OFFSET_Y).toString();
+		int x = location.x + COM_DROP_OFFSET_X;
+		int y = location.y + COM_DROP_OFFSET_Y;
 		ms.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
 		ms.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
 		process.addChild(ms);
