@@ -127,6 +127,7 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 		public void cleanup() throws Exception {
         	logger.debug("DeriveRelatedRulesAction.cleanup() starting");
         	finished = true;
+        	
         	dialog.dispose();
 		}
 
@@ -253,16 +254,18 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 			
 			logger.debug("Finished in " + ((System.currentTimeMillis()-start)/1000) + " seconds!");
 			swingSession.save(project);
+			save.setEnabled(true);
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			save.setEnabled(false);
-			
+			started = false;
+			finished = false;
 			try {
             	progressBar.setVisible(true);
             	logger.debug("Progress Bar has been set to visible");
             	ProgressWatcher watcher = new ProgressWatcher(progressBar, this);
-            	watcher.setHideProgressBarWhenFinished(true);
+//            	watcher.setHideProgressBarWhenFinished(true);
             	watcher.start();
                 new Thread(this).start();
             } catch (Exception ex) {
