@@ -86,6 +86,14 @@ public class MatchPool {
      */
     private final Set<PotentialMatchRecord> deletedMatches = new HashSet<PotentialMatchRecord>();
     
+    /**
+     * A set of PotentialMatchRecords that do not have a munge process that exists in the repository.
+     * These orphaned matches may come about from munge processes that got deleted or renamed.
+     * The MatchPool will not consider these to be official matches, but keeps a record of them
+     * so that they can be removed properly if a new match is created with the same source table records.
+     */
+    private final Set<PotentialMatchRecord> orphanedMatches = new HashSet<PotentialMatchRecord>();
+    
     public MatchPool(Project match) {
         this(match, new HashSet<PotentialMatchRecord>());
     }
@@ -230,13 +238,6 @@ public class MatchPool {
             rs = stmt.executeQuery(lastSQL);
             while (rs.next()) {
                 MungeProcess mungeProcess = project.getMungeProcessByName(rs.getString("GROUP_ID"));
-                if (mungeProcess == null) {
-                    session.handleWarning(
-                            "Found a match record that refers to the " +
-                            "non-existant rule set \""+rs.getString("GROUP_ID")+
-                            "\". Ignoring it.");
-                    continue;
-                }
                 String statusCode = rs.getString("MATCH_STATUS");
                 MatchType matchStatus = MatchType.typeForCode(statusCode);
                 if (statusCode != null && matchStatus == null) {
@@ -259,8 +260,18 @@ public class MatchPool {
                     lhsDisplayValues.add(rs.getObject("disp1"+i));
                     rhsDisplayValues.add(rs.getObject("disp2"+i));
                 }
-                SourceTableRecord lhs = makeSourceTableRecord(lhsDisplayValues, lhsKeyValues);
-                SourceTableRecord rhs = makeSourceTableRecord(rhsDisplayValues, rhsKeyValues);
+                
+                SourceTableRecord rhs = null;
+            	SourceTableRecord lhs = null;
+                
+                if (mungeProcess != null) {
+                	rhs = makeSourceTableRecord(rhsDisplayValues, rhsKeyValues);
+                	lhs = makeSourceTableRecord(lhsDisplayValues, lhsKeyValues);
+                } else {
+                	rhs = new SourceTableRecord(session, project, null, rhsKeyValues);
+                	lhs = new SourceTableRecord(session, project, null, lhsKeyValues);
+                }
+                
                 PotentialMatchRecord pmr =
                 	new PotentialMatchRecord(mungeProcess, matchStatus, lhs, rhs, false);
                 if (matchStatus == MatchType.MATCH || matchStatus == MatchType.AUTOMATCH) {
@@ -274,8 +285,17 @@ public class MatchPool {
                 	pmr.setMatchStatus(MatchType.UNMATCH);
                 }
                 pmr.setStoreState(StoreState.CLEAN);
-                addPotentialMatch(pmr);
-                logger.debug("Number of PotentialMatchRecords is now " + potentialMatches.size());
+                
+                if (mungeProcess != null) {
+                	addPotentialMatch(pmr);
+                	logger.debug("Number of PotentialMatchRecords is now " + potentialMatches.size());
+                } else {
+                	if (orphanedMatches.add(pmr)) {
+                		if (pmr.getMatchStatus() == null) {
+                			pmr.setMatchStatus(MatchType.UNMATCH);
+                		}
+                	}
+                }
             }
             
         } catch (SQLException ex) {
@@ -312,6 +332,31 @@ public class MatchPool {
         try {
             con = session.getConnection();
             StringBuilder sql = new StringBuilder();
+            sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
+            sql.append("\n WHERE ");
+            for (int i = 0;; i++) {
+            	sql.append("DUP_CANDIDATE_1" + i + "=?");
+            	sql.append(" AND DUP_CANDIDATE_2" + i + "=?");
+            	if (i + 1 >= numKeyValues) break;
+            	sql.append(" AND ");
+            }
+            lastSQL = sql.toString();
+            logger.debug("The SQL statement we are running is " + lastSQL);
+            
+            ps = con.prepareStatement(lastSQL);
+            
+            for (Iterator<PotentialMatchRecord> it = deletedMatches.iterator(); it.hasNext(); ) {
+            	PotentialMatchRecord pmr = it.next();
+            	logger.debug("Dropping " + pmr + " from the database.");
+            	for (int i = 0; i < numKeyValues; i++) {
+            		ps.setObject(i * 2 + 1, pmr.getOriginalLhs().getKeyValues().get(i));
+            		ps.setObject(i * 2 + 2, pmr.getOriginalRhs().getKeyValues().get(i));
+            	}
+            	ps.executeUpdate();
+            	it.remove();
+            }
+            
+            sql = new StringBuilder();
             sql.append("UPDATE ");
             sql.append(DDLUtils.toQualifiedName(resultTable)); 
             sql.append("\n SET ");
@@ -443,31 +488,6 @@ public class MatchPool {
             	}
             }
             
-            sql = new StringBuilder();
-            sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
-            sql.append("\n WHERE ");
-            for (int i = 0;; i++) {
-            	sql.append("DUP_CANDIDATE_1" + i + "=?");
-            	sql.append(" AND DUP_CANDIDATE_2" + i + "=?");
-            	if (i + 1 >= numKeyValues) break;
-            	sql.append(" AND ");
-            }
-            lastSQL = sql.toString();
-            logger.debug("The SQL statement we are running is " + lastSQL);
-            
-            ps = con.prepareStatement(lastSQL);
-            
-            for (Iterator<PotentialMatchRecord> it = deletedMatches.iterator(); it.hasNext(); ) {
-            	PotentialMatchRecord pmr = it.next();
-            	logger.debug("Dropping " + pmr + " from the database.");
-            	for (int i = 0; i < numKeyValues; i++) {
-            		ps.setObject(i * 2 + 1, pmr.getOriginalLhs().getKeyValues().get(i));
-            		ps.setObject(i * 2 + 2, pmr.getOriginalRhs().getKeyValues().get(i));
-            	}
-            	ps.executeUpdate();
-            	it.remove();
-            }
-            
         } catch (SQLException ex) {
             logger.error("Error in query: "+lastSQL, ex);
             session.handleWarning(
@@ -536,8 +556,14 @@ public class MatchPool {
     			return;
     		} else {
     			logger.debug("pmr's matchPercent is higher, so removing other");
-    			potentialMatches.remove(other);
+    			removePotentialMatch(other);
     		}
+    	}
+    	if (orphanedMatches.contains(pmr)) {
+    		List<PotentialMatchRecord> temp = new ArrayList<PotentialMatchRecord>(orphanedMatches);
+    		int index = temp.indexOf(pmr);
+    		PotentialMatchRecord other = temp.get(index);
+    		deletedMatches.add(other);
     	}
     	if (potentialMatches.add(pmr)) {
     		logger.debug("added " + pmr + " to MatchPool");
@@ -1279,8 +1305,10 @@ public class MatchPool {
 	 */
 	public void clear() throws SQLException {
 		deletedMatches.addAll(potentialMatches);
+		deletedMatches.addAll(orphanedMatches);
 		store();
 		sourceTableRecords.clear();
 		potentialMatches.clear();
+		orphanedMatches.clear();
 	}
 }
