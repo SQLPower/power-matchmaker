@@ -154,14 +154,14 @@ public class MergeEngineImpl extends AbstractEngine {
 		try {
 			con = getSession().getConnection();
 			stmt = con.createStatement();
-			String rowCountSQL = "SELECT COUNT(*) AS ROWCOUNT FROM " + 
+			String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + 
 				DDLUtils.toQualifiedName(getProject().getResultTable()) +
 				" WHERE MATCH_STATUS = " + SQL.quote("AUTO_MATCH") 
 				+ " OR MATCH_STATUS = " + SQL.quote("MATCH");
 			ResultSet result = stmt.executeQuery(rowCountSQL);
 			logger.debug("Getting result table row count with SQL statment " + rowCountSQL);
 			result.next();
-			rowCount = result.getInt("ROWCOUNT");
+			rowCount = result.getInt("ROW_COUNT");
 		} finally {
 			if (stmt != null) stmt.close();
 			if (con != null) con.close();
