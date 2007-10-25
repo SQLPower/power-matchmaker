@@ -43,6 +43,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.tree.TreePath;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
@@ -246,6 +247,10 @@ public class MungeProcessEditor implements EditorPane {
             parentProject.addMungeProcess(process);
             MatchMakerDAO<Project> dao = swingSession.getDAO(Project.class);
             dao.save(parentProject);
+            
+            MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+			TreePath menuPath = treeModel.getPathForNode(process);
+			swingSession.getTree().setSelectionPath(menuPath);
         } else {
             MatchMakerDAO<MungeProcess> dao = swingSession.getDAO(MungeProcess.class);
             dao.save(process);
