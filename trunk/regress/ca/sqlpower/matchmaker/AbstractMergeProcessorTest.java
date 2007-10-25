@@ -41,6 +41,7 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
+import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
@@ -300,6 +301,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    mpor = new MergeProcessor(project, session, logger);
 	    
 	    // sets the default action type
+	    tmr.setDeleteDup(false);
 	    cmr_id.setActionType(MergeActionType.USE_MASTER_VALUE);
 	    cmr_string.setActionType(MergeActionType.USE_MASTER_VALUE);
 	    cmr_date.setActionType(MergeActionType.USE_MASTER_VALUE);
@@ -461,14 +463,16 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
      * This ensures that the MatchType is set as MERGED for each record in the match pool. 
      */
     public void testMatchTypeMerged() throws Exception {
+    	
     	populateTables();
+    	
     	mpor.call();
 		
     	MatchPool matchPool = new MatchPool(project);
     	matchPool.findAll(new ArrayList<SQLColumn>());
-    	
     	for (PotentialMatchRecord pm : matchPool.getPotentialMatches()) {
     		assertFalse("MatchType not set as MERGED for " + pm, pm.isMatch());
+    		assertFalse("Match result with status 'UNMATCH' for duplicate not deleted after merge for: " + pm, pm.getMatchStatus() == MatchType.UNMATCH);
     	}
     }
     
@@ -948,21 +952,12 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		assertFalse("Duplicate grandchild records not merged.", rs.next());
     }
     
-	protected boolean execSQL(Connection conn, String sql) {
-//		System.out.println(sql);
+	protected boolean execSQL(Connection conn, String sql) throws SQLException {
 		Statement stmt = null;
-		try {
-    		stmt = conn.createStatement();
-   			stmt.executeUpdate(sql);
-		} catch (SQLException e) {
-			System.out.println("SQL ERROR:["+sql+"]\n"+e.getMessage());
-			return false;
-		} finally {
-			try {
-				if (stmt != null) stmt.close();
-			} catch (SQLException ex) {
-			}
-	    }
+		stmt = conn.createStatement();
+		stmt.executeUpdate(sql);
+		if (stmt != null) stmt.close();
+
 		return true;
 	}
 	
