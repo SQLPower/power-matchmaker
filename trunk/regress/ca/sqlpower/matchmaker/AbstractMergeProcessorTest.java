@@ -28,6 +28,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLColumn;
@@ -53,7 +56,9 @@ import ca.sqlpower.sql.SQL;
  * should be written to implement this class.
  */
 public abstract class AbstractMergeProcessorTest extends TestCase {
-
+	
+	private final Logger logger = Logger.getLogger("testLogger");
+	
 	static Project project;
 	static MergeProcessor mpor;
 	static TestingMatchMakerSession session;
@@ -292,7 +297,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    	"(5,4,10,'MATCH','N', 'test')";
 	    execSQL(con,sql);
 	    
-	    mpor = new MergeProcessor(project, session);
+	    mpor = new MergeProcessor(project, session, logger);
 	    
 	    // sets the default action type
 	    cmr_id.setActionType(MergeActionType.USE_MASTER_VALUE);

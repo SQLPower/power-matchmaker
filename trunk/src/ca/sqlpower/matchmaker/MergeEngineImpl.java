@@ -138,7 +138,7 @@ public class MergeEngineImpl extends AbstractEngine {
 
 			progressMessage = "Starting Merge Engine";
 			logger.info(progressMessage);
-			merger = new MergeProcessor(getProject(), getSession());
+			merger = new MergeProcessor(getProject(), getSession(), getLogger());
 			merger.call();
 			progress += merger.getProgress();
 			

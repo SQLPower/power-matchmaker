@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -49,9 +48,8 @@ import ca.sqlpower.sql.SQL;
  */
 public class MergeProcessor extends AbstractProcessor {
 
-    private static final Logger logger = Logger.getLogger(MergeProcessor.class);
+	private static final Logger logger = Logger.getLogger(MergeProcessor.class);
     
-	private MatchMakerSession session;
 	private Project project;
 
 	/**
@@ -71,15 +69,14 @@ public class MergeProcessor extends AbstractProcessor {
     private Connection con;
     private Statement stmt;
     
-	public MergeProcessor(Project project, MatchMakerSession session) 
+    private final Logger engineLogger;
+    
+	public MergeProcessor(Project project, MatchMakerSession session, Logger logger) 
 			throws SQLException, ArchitectException {
 		this.project = project;
-		this.session = session;
-		pool = new MatchPool(project);
+		this.engineLogger = logger;
 		
-		if (project.getMergeSettings().getDebug()) {
-        	logger.setLevel(Level.DEBUG);
-        }
+		pool = new MatchPool(project);
 		
 		//Initialize the match pool
 		pool.findAll(new ArrayList<SQLColumn>());
@@ -89,7 +86,7 @@ public class MergeProcessor extends AbstractProcessor {
         DepthFirstSearch<SourceTableRecord, PotentialMatchRecord> dfs = new DepthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
         dfs.performSearch(gm);
         processOrder = dfs.getFinishOrder();
-        logger.debug("Order of processing: " + processOrder);
+        engineLogger.debug("Order of processing: " + processOrder);
         
         sourceTable = project.getSourceTable();
         con = session.getConnection();
@@ -156,7 +153,7 @@ public class MergeProcessor extends AbstractProcessor {
 					mergeChildTables(dupKeyValues, masterKeyValues, sourceTableMergeRule);
 
 					if (needsToCheckDup) {
-						logger.debug("Updating source table columns according the merge actions...");
+						engineLogger.debug("Updating source table columns according the merge actions...");
 						ResultRow dupRow = findRowByPrimaryKey(sourceTableMergeRule, dupKeyValues);
 						ResultRow masterRow = findRowByPrimaryKey(sourceTableMergeRule, masterKeyValues);
 						//int rows = updateSourceTableRows(pm, mapping, sourceIndexColumnNames, masterKeyValues);
@@ -178,7 +175,7 @@ public class MergeProcessor extends AbstractProcessor {
 				if (pm.isMatch()) {
 					ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
 					
-					logger.debug("Deleting duplicate record: " + dupKeyValues + " on table: " + sourceTable);
+					engineLogger.debug("Deleting duplicate record: " + dupKeyValues + " on table: " + sourceTable);
 					//delete the duplicate record
 					int rows = deleteRowByPrimaryKey(sourceTable, dupKeyValues);
 					
@@ -213,7 +210,7 @@ public class MergeProcessor extends AbstractProcessor {
 			TableMergeRules parentTableMergeRule) 
 	throws ArchitectException, SQLException {
 		
-		logger.debug("Merging duplicate record: " + parentDupRow + " into master record: " + parentMasterRow + " on table: " + parentTableMergeRule.getSourceTable());
+		engineLogger.debug("Merging duplicate record: " + parentDupRow + " into master record: " + parentMasterRow + " on table: " + parentTableMergeRule.getSourceTable());
 		SQLTable parentTable = parentTableMergeRule.getSourceTable();
 		
 		for (TableMergeRules childTableMergeRule : project.getTableMergeRules()) {
@@ -223,7 +220,7 @@ public class MergeProcessor extends AbstractProcessor {
 				List<ResultRow> childDupRows = findChildRowsByParentRow(parentDupRow, childTableMergeRule);
 				List<ResultRow> childMasterRows = new ArrayList<ResultRow>();
 					
-				logger.debug("Merge Strategy is: " + childTableMergeRule.getChildMergeAction().toString());
+				engineLogger.debug("Merge Strategy is: " + childTableMergeRule.getChildMergeAction().toString());
 	
 				if (childTableMergeRule.getChildMergeAction() == 
 					TableMergeRules.ChildMergeActionType.DELETE_ALL_DUP_CHILD) {
@@ -235,7 +232,7 @@ public class MergeProcessor extends AbstractProcessor {
 				} else if (childTableMergeRule.getChildMergeAction() == 
 					TableMergeRules.ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT) {
 	
-					logger.debug("Creating a copy of the duplicate record's children on table " + childTableMergeRule.getSourceTable());
+					engineLogger.debug("Creating a copy of the duplicate record's children on table " + childTableMergeRule.getSourceTable());
 					
 					// cannot update if there are no masterKeyValues
 					if (parentMasterRow == null) {
@@ -272,7 +269,7 @@ public class MergeProcessor extends AbstractProcessor {
 				} else if (childTableMergeRule.getChildMergeAction() == 
 					TableMergeRules.ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT) {
 	
-					logger.debug("Creating a copy of the duplicate record's children on table " + childTableMergeRule.getSourceTable());
+					engineLogger.debug("Creating a copy of the duplicate record's children on table " + childTableMergeRule.getSourceTable());
 	
 					// cannot update if there are no masterKeyValues
 					if (parentMasterRow == null) {
@@ -300,7 +297,7 @@ public class MergeProcessor extends AbstractProcessor {
 	
 				}  else if (childTableMergeRule.getChildMergeAction() == TableMergeRules.ChildMergeActionType.UPDATE_USING_SQL) {
 	
-					logger.debug("Creating a copy of the duplicate record's children on table " + childTableMergeRule.getSourceTable());
+					engineLogger.debug("Creating a copy of the duplicate record's children on table " + childTableMergeRule.getSourceTable());
 	
 					// cannot update if there are no masterKeyValues
 					if (parentMasterRow == null) {
@@ -335,7 +332,7 @@ public class MergeProcessor extends AbstractProcessor {
 					
 				}  else if (childTableMergeRule.getChildMergeAction() == TableMergeRules.ChildMergeActionType.MERGE_ON_CONFLICT) {
 	
-					logger.debug("Creating a copy of the duplicate record's children on table " + childTableMergeRule.getSourceTable());
+					engineLogger.debug("Creating a copy of the duplicate record's children on table " + childTableMergeRule.getSourceTable());
 	
 					// cannot update if there are no masterKeyValues
 					if (parentMasterRow == null) {
@@ -368,13 +365,13 @@ public class MergeProcessor extends AbstractProcessor {
 				}
 				
 				// Recursively merge all the grand child tables
-				logger.debug("Merging duplicate's child reocrds on table " + childTableMergeRule.getSourceTable());
+				engineLogger.debug("Merging duplicate's child reocrds on table " + childTableMergeRule.getSourceTable());
 				for (int i = 0; i < childDupRows.size(); i++) {
 					mergeChildTables(childDupRows.get(i), childMasterRows.get(i), childTableMergeRule);
 				}
 	
 				// Delete the duplicate child records
-				logger.debug("Deleting duplicate's child reocrds on table " + childTableMergeRule.getSourceTable());
+				engineLogger.debug("Deleting duplicate's child reocrds on table " + childTableMergeRule.getSourceTable());
 				deleteRowsByForeignKey(childTableMergeRule, parentDupRow);
 			} 
 	
@@ -429,9 +426,17 @@ public class MergeProcessor extends AbstractProcessor {
 
 	private ResultRow findRowByPrimaryKey(TableMergeRules tableMergeRule, ResultRow row) throws SQLException, ArchitectException {
 		StringBuilder sql = new StringBuilder();
-		sql.append("SELECT * FROM ");
+		boolean first = true;
+		sql.append("SELECT ");
+		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+			if (!first) sql.append(", ");
+			first = false;
+			sql.append(cmr.getColumnName());
+		}
+		sql.append(" FROM ");
 		sql.append(DDLUtils.toQualifiedName(tableMergeRule.getSourceTable()));
 		sql.append(generateWhereStatement(row));
+		System.out.println(sql);
 		ResultSet rs = stmt.executeQuery(sql.toString());
 		if (rs.next()) {
 			ResultRow result = new ResultRow(tableMergeRule, rs);
@@ -446,15 +451,22 @@ public class MergeProcessor extends AbstractProcessor {
 
 	private List<ResultRow> findChildRowsByParentRow(
 			ResultRow foreignKeyValues, 
-			TableMergeRules childTableMergeRule) throws SQLException, ArchitectException {
+			TableMergeRules tableMergeRule) throws SQLException, ArchitectException {
 		
 		
 		boolean first = true;
 		StringBuilder sql = new StringBuilder();
-		sql.append("SELECT * FROM ");
-		sql.append(DDLUtils.toQualifiedName(childTableMergeRule.getSourceTable()));
+		sql.append("SELECT ");
+		for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+			if (!first) sql.append(", ");
+			first = false;
+			sql.append(cmr.getColumnName());
+		}
+		sql.append(" FROM ");
+		sql.append(DDLUtils.toQualifiedName(tableMergeRule.getSourceTable()));
 		sql.append("\n WHERE ");
-		for (ColumnMergeRules column : childTableMergeRule.getImportedKey()) {
+		first = true;
+		for (ColumnMergeRules column : tableMergeRule.getImportedKey()) {
 			if (!first) sql.append(" AND ");
 			first = false;
 			sql.append(column.getColumnName());
@@ -470,7 +482,7 @@ public class MergeProcessor extends AbstractProcessor {
 		
 		List<ResultRow> result = new ArrayList<ResultRow>();
 		while (rs.next()) {
-			ResultRow tempRow = new ResultRow(childTableMergeRule, rs);
+			ResultRow tempRow = new ResultRow(tableMergeRule, rs);
 			result.add(tempRow);
 		}
 		return result;
@@ -754,7 +766,20 @@ public class MergeProcessor extends AbstractProcessor {
 		}
 		
 		public String toString(){
-			return values.toString();
+			StringBuilder temp = new StringBuilder();
+			boolean first = true;
+			temp.append("[");
+			for (int i = 0; i < values.size(); i++) {
+				if (values.get(i) != null) {
+					if (!first) temp.append(", ");
+					first = false;
+					temp.append(tableMergeRule.getChildren().get(i).getColumnName());
+					temp.append("=");
+					temp.append(values.get(i));
+				} 
+			}
+			temp.append("]");
+			return temp.toString();
 		}
 	}
 
