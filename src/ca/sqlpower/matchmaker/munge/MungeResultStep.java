@@ -116,17 +116,19 @@ public class MungeResultStep extends AbstractMungeStep {
 		super.call();
 		
 		List<MungeStepOutput> inputs = getInputs(); 
-		List<Object> mungedData = new ArrayList<Object>();
+		Object[] mungedData = new Object[inputs.size()];
 		
 		for (int i = 0; i < inputs.size(); i++) {
 			MungeStepOutput output = inputs.get(i);
 			if (output != null) {
-				mungedData.add(output.getData());
+				mungedData[i] = output.getData();
+			} else {
+				mungedData[i] = null;
 			}
 		}
 		
 		MungeResult result = new MungeResult();
-		result.setMungedData(mungedData.toArray());
+		result.setMungedData(mungedData);
 		
 		List<Object> indexValueList = new ArrayList<Object>();
 		
