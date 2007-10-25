@@ -128,7 +128,7 @@ public class LoginDialog implements SwingWorkerRegistry {
             	progressBar.setVisible(true);
             	logger.debug("Progress Bar has been set to visible");
             	ProgressWatcher watcher = new ProgressWatcher(progressBar, this);
-            	watcher.setHideProgressBarWhenFinished(true);
+//            	watcher.setHideProgressBarWhenFinished(true);
             	watcher.start();
                 new Thread(this).start();
             } catch (Exception ex) {
@@ -148,8 +148,15 @@ public class LoginDialog implements SwingWorkerRegistry {
         	logger.debug("LoginAction.doStuff() was invoked!");
             loginWasSuccessful = false;
             started = true;
+            finished = false;
+            
+            // Reset exception to null for each login. Without it,
+            // cleanup() would think there was an error if one existed
+            // in the previous attempt to login even if things were fixed.
+            setDoStuffException(null);
+            
             session = sessionContext.createSession(dbSource,
-                    userID.getText(), new String(password.getPassword()));
+            		userID.getText(), new String(password.getPassword()));
             session.getDatabase().populate();
             loginWasSuccessful = true;
         }
