@@ -128,7 +128,7 @@ public class LoginDialog implements SwingWorkerRegistry {
             	progressBar.setVisible(true);
             	logger.debug("Progress Bar has been set to visible");
             	ProgressWatcher watcher = new ProgressWatcher(progressBar, this);
-//            	watcher.setHideProgressBarWhenFinished(true);
+            	watcher.setHideProgressBarWhenFinished(true);
             	watcher.start();
                 new Thread(this).start();
             } catch (Exception ex) {
