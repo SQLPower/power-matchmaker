@@ -96,14 +96,14 @@ public class MatchValidationStatus extends NoEditEditorPane {
     		con = swingSession.getConnection();
     		StringBuffer sql = new StringBuffer();
     		sql.append("SELECT GROUP_ID,MATCH_PERCENT,MATCH_STATUS");
-    		sql.append(",COUNT(*)/2");
+    		sql.append(",COUNT(*)");
     		sql.append(" FROM  ");
     		SQLTable resultTable = project.getResultTable();
 			sql.append(DDLUtils.toQualifiedName(resultTable.getCatalogName(),
 					resultTable.getSchemaName(),
 					resultTable.getName()));
     		sql.append(" GROUP BY GROUP_ID,MATCH_PERCENT,MATCH_STATUS");
-    		sql.append(" ORDER BY MATCH_PERCENT DESC,MATCH_STATUS");
+    		sql.append(" ORDER BY MATCH_PERCENT ASC,MATCH_STATUS");
 
     		PreparedStatement pstmt = con.prepareStatement(sql.toString());
     		rs = pstmt.executeQuery();
@@ -150,7 +150,7 @@ public class MatchValidationStatus extends NoEditEditorPane {
 			if ( column == 0 ) {
 				return "Group";
 			} else if ( column == 1 ) {
-				return "Match Percent";
+				return "Priority";
 			} else if ( column == 2 ) {
 				return "Match Status";
 			} else if ( column == 3 ) {
