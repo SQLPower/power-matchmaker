@@ -17,8 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker.munge;
+package ca.sqlpower.matchmaker;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -33,16 +34,17 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.SQLInputStep;
+import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SQL;
 
-public abstract class AbstractCleanseTest extends TestCase{
+public abstract class AbstractCleanseEngineImplTest extends TestCase{
     Project project;
     TestingMatchMakerSession session;
     Connection con;
@@ -50,6 +52,7 @@ public abstract class AbstractCleanseTest extends TestCase{
     SPDataSource ds;
     SQLTable sourceTable;
     SQLInputStep step;
+    CleanseEngineImpl engine;
     final Logger logger = Logger.getLogger("testLogger");
     
 	protected void setUp() throws Exception {
@@ -79,15 +82,17 @@ public abstract class AbstractCleanseTest extends TestCase{
 		con = db.getConnection();
 		session.setConnection(con);
 
-		MungeProcess mp = new MungeProcess();
-		mp.setName("test");
-		project.addMungeProcess(mp);
 		project.setType(ProjectMode.CLEANSE);
 
 		//This is different for Oracle and SQL Server
 		createTables();
 		step = new SQLInputStep(project, session);
 
+		MungeSettings settings = new MungeSettings();
+		File file = File.createTempFile("cleanseTest", "log");
+		settings.setLog(file);
+		project.setMungeSettings(settings);
+		engine = new CleanseEngineImpl(session, project);
    	}
 	
 	private void populateTables() throws Exception {
@@ -111,7 +116,7 @@ public abstract class AbstractCleanseTest extends TestCase{
         execSQL(con,sql);
 	}
 	
-	public void testOneUpperCaseConnection() throws Exception{	
+	public void testSimpleCall() throws Exception{	
 		populateTables();
 
 		MungeStep mrs = step.getOuputStep();
@@ -123,10 +128,10 @@ public abstract class AbstractCleanseTest extends TestCase{
 		mungep.addChild(step);
 		mungep.addChild(mrs);
 		mungep.addChild(ucms);
+		mungep.setName("test");
 		project.addMungeProcess(mungep);
 		
-		MungeProcessor mp = new MungeProcessor(mungep, logger);
-		mp.call();
+		engine.call();
 
 		Connection con = db.getConnection();
 		Statement stmt = con.createStatement();

@@ -17,39 +17,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker.munge;
+package ca.sqlpower.matchmaker;
 
-import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.sql.SPDataSource;
 
 
-public class OracleCleanseTest extends AbstractCleanseTest {
+public class SQLServerCleanseEngineImplTest extends AbstractCleanseEngineImplTest {
 	protected String getFullTableName() {
-		return "MM_TEST.CLEANSE_TEST";
+		return "MM_TEST.MM_TEST.CLEANSE_TEST";
 	}
 	
 	protected SPDataSource getDS() {
-		return DBTestUtil.getOracleDS();
+		return DBTestUtil.getSqlServerDS();
 	}
 
 	protected void createTables() throws Exception {
-
 		//Drop the old tables
 		String sql = "DROP TABLE " + getFullTableName();
 		execSQL(con,sql);
 		
 		// Creates the source table
-		sql = "CREATE TABLE " + getFullTableName() + " ("+
-					"\n ID NUMBER(22,0) NOT NULL PRIMARY KEY," +
-					"\n COL_STRING VARCHAR2(20) NULL," +
-					"\n COL_DATE DATE NULL," +
-					"\n COL_NUMBER NUMBER(22,0) NULL)";
+		sql = "CREATE TABLE " + getFullTableName() + " (" +
+			"\n ID NUMERIC NOT NULL PRIMARY KEY," +
+			"\n COL_STRING VARCHAR(20) NULL," +
+			"\n COL_DATE DATETIME NULL," +
+			"\n COL_NUMBER NUMERIC NULL)";
 		execSQL(con,sql);
 		
-		sourceTable = db.getTableByName("CLEANSE_TEST");
+		sourceTable = db.getTableByName("MM_TEST", "MM_TEST", "CLEANSE_TEST");
 		project.setSourceTable(sourceTable);
         project.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
-		
 	}
 	
 

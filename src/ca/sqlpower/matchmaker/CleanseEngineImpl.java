@@ -23,8 +23,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Level;
@@ -172,11 +171,11 @@ public class CleanseEngineImpl extends AbstractEngine {
 				try {
 					con = getSession().getConnection();
 					stmt = con.createStatement();
-					String rowCountSQL = "SELECT COUNT(*) AS ROWCOUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
+					String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
 					ResultSet result = stmt.executeQuery(rowCountSQL);
 					logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
 					result.next();
-					rowCount = result.getInt("ROWCOUNT");
+					rowCount = result.getInt("ROW_COUNT");
 				} finally {
 					if (stmt != null) stmt.close();
 					if (con != null) con.close();
@@ -185,14 +184,12 @@ public class CleanseEngineImpl extends AbstractEngine {
 				rowCount = processCount.intValue();
 			}
 			
-			List<MungeProcess> processes = new LinkedList<MungeProcess>();
+			List<MungeProcess> processes = new ArrayList<MungeProcess>();
 			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
 				if (mp.getActive()) {
 					processes.add(mp);
 				}
 			}
-			Collections.sort(processes, new MungeProcessPriorityComparator());
-			
 			
 			jobSize = rowCount * processes.size();
 			
