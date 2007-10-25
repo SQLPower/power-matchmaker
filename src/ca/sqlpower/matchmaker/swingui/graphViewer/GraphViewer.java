@@ -133,24 +133,29 @@ public class GraphViewer<V, E> extends JPanel implements Scrollable {
         
         g2.setColor(getForeground());
         
+        Rectangle rect = getVisibleRect();
         for (E edge : model.getEdges()) {
             JComponent er = edgeRenderer.getGraphEdgeRendererComponent(edge);
-            er.setSize(er.getPreferredSize());
-            Graphics erg = g2.create();
-            er.paint(erg);
-            erg.dispose();
+            if (er.getPreferredSize().getHeight() > rect.y - 200 && er.getPreferredSize().getHeight() < rect.y + rect.height + 200) {
+            	er.setSize(er.getPreferredSize());
+            	Graphics erg = g2.create();
+            	er.paint(erg);
+            	erg.dispose();
+            }
         }
         for (V node : model.getNodes()) {
             Rectangle nodePos = layoutCache.getNodeBounds(node);
-            JComponent nr = nodeRenderer.getGraphNodeRendererComponent(node, node == selectedNode, node == focusedNode);
-            Dimension nodeSize = nr.getPreferredSize();
-            nr.setSize(nodeSize);
-            nodePos.width = nodeSize.width;
-            nodePos.height = nodeSize.height;
-            layoutCache.setNodeBounds(node, nodePos);
-            Graphics nrg = g2.create(nodePos.x, nodePos.y, nodeSize.width, nodeSize.height);
-            nr.paint(nrg);
-            nrg.dispose();
+            if (nodePos.y > rect.y - 200 && nodePos.y < rect.y + rect.height + 200) {
+	            JComponent nr = nodeRenderer.getGraphNodeRendererComponent(node, node == selectedNode, node == focusedNode);
+	            Dimension nodeSize = nr.getPreferredSize();
+	            nr.setSize(nodeSize);
+	            nodePos.width = nodeSize.width;
+	            nodePos.height = nodeSize.height;
+	            layoutCache.setNodeBounds(node, nodePos);
+	            Graphics nrg = g2.create(nodePos.x, nodePos.y, nodeSize.width, nodeSize.height);
+	            nr.paint(nrg);
+	            nrg.dispose();
+            }
         }
 	}
 
