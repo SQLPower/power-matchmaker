@@ -84,13 +84,6 @@ public class MatchEngineImpl extends AbstractEngine {
         			"PreCondition failed: data source of the session must not be null");
         }
         
-        if (!hasODBCDSN(session.getDatabase().getDataSource())){
-        	throw new EngineSettingException(
-        			"Your Data Source \""+
-                    session.getDatabase().getDataSource().getDisplayName()+
-                    "\" doesn't have the ODBC DSN set.");
-        }
-        
         if (!Project.doesSourceTableExist(session, project)) {
             throw new EngineSettingException(
                     "Your project source table \""+
