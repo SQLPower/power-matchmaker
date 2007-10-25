@@ -257,11 +257,11 @@ public class MatchEngineImpl extends AbstractEngine {
 		try {
 			con = getSession().getConnection();
 			stmt = con.createStatement();
-			String rowCountSQL = "SELECT COUNT(*) AS ROWCOUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
+			String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
 			ResultSet result = stmt.executeQuery(rowCountSQL);
 			logger.debug("Getting source table row count with SQL statment " + rowCountSQL);
 			result.next();
-			rowCount = result.getInt("ROWCOUNT");
+			rowCount = result.getInt("ROW_COUNT");
 		} finally {
 			if (stmt != null) stmt.close();
 			if (con != null) con.close();
