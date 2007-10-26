@@ -337,12 +337,13 @@ public class TableMergeRules
 			}
 		}
 
-		if (primarykeyCols == null) return;
-		for (SQLColumn column : primarykeyCols) {
-			for (ColumnMergeRules cmr : getChildren()) {
-				if (cmr.getColumnName().equals(column.getName())) {
-					cmr.setImportedKeyColumn(column, true);
-					break;
+		if (primarykeyCols != null) {
+			for (SQLColumn column : primarykeyCols) {
+				for (ColumnMergeRules cmr : getChildren()) {
+					if (cmr.getColumnName().equals(column.getName())) {
+						cmr.setImportedKeyColumn(column, true);
+						break;
+					}
 				}
 			}
 		}
