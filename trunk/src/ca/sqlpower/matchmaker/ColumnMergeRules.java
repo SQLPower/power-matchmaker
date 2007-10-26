@@ -184,9 +184,13 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 
 	public void setActionType(MergeActionType actionType) {
+		setActionType(actionType, false);
+	}
+	
+	public void setActionType(MergeActionType actionType, boolean isUndo) {
 		MergeActionType oldValue = this.actionType;
 		this.actionType = actionType;
-		getEventSupport().firePropertyChange("actionType", oldValue, this.actionType);
+		getEventSupport().firePropertyChange("actionType", oldValue, this.actionType, isUndo);
 	}
 
 	@Override

@@ -503,4 +503,10 @@ public class CleanseEnginePanel implements EditorPane {
 		dao.save(project);
 		return true;
 	}
+
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: CleanseEnginePanel.discardChanges()");
+		return false;
+	}
 }

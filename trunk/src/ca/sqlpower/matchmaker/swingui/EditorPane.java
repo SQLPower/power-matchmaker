@@ -23,7 +23,7 @@ package ca.sqlpower.matchmaker.swingui;
 import javax.swing.JComponent;
 
 /**
- * The interface (that should be) implmented by all the Editors
+ * The interface (that should be) implemented by all the Editors
  * that are to appear in the "right side" editor pane area.
  *
  */
@@ -54,4 +54,9 @@ public interface EditorPane {
      * Retrieves the Editor's visual component.
      */
 	public JComponent getPanel();
+	
+	/**
+	 * Discards the changes made to the editor pane
+	 */
+	public boolean discardChanges();
 }

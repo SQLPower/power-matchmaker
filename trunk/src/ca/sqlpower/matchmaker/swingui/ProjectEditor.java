@@ -1054,4 +1054,10 @@ public class ProjectEditor implements EditorPane {
 	public boolean hasUnsavedChanges() {
 		return handler.hasPerformedValidation();
 	}
+
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: ProjectEditor.discardChanges()");
+		return false;
+	}
 }

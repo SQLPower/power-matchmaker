@@ -45,6 +45,14 @@ class NoEditEditorPane implements EditorPane {
 	}
 
 	/**
+	 * Since nothing changes, no changes are discarded, so we just say that
+	 * discarding worked.
+	 */
+	public boolean discardChanges() {
+		return true;
+	}
+	
+	/**
 	 * Always returns false because, since nothing is being edited, there are
 	 * never changes, nevermind changes that haven't been saved.
 	 */
@@ -59,4 +67,5 @@ class NoEditEditorPane implements EditorPane {
 	public void setPanel(JComponent panel) {
 		this.panel = panel;
 	}
+	
 }

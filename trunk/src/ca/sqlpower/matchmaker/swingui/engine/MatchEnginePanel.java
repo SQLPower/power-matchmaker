@@ -373,4 +373,10 @@ public class MatchEnginePanel implements EditorPane {
 
 		return true;
 	}
+
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchEnginePanel.discardChanges()");
+		return false;
+	}
 }

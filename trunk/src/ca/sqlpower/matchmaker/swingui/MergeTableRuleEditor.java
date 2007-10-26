@@ -283,5 +283,11 @@ public class MergeTableRuleEditor implements EditorPane {
         return this.tableListener.isModified();
 	}
 
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MergeTableRuleEditor.discardChanges()");
+		return false;
+	}
+
 	
 }

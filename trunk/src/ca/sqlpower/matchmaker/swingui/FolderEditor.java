@@ -234,4 +234,10 @@ public class FolderEditor implements EditorPane {
 	public boolean hasUnsavedChanges() {
 		return handler.hasPerformedValidation();
 	}
+
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: FolderEditor.discardChanges()");
+		return false;
+	}
 }

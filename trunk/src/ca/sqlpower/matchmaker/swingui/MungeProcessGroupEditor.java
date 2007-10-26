@@ -368,4 +368,10 @@ public class MungeProcessGroupEditor implements EditorPane {
 			return this;
 		}
 }
+
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MungeProcessGroupEditor.discardChanges()");
+		return false;
+	}
 }
