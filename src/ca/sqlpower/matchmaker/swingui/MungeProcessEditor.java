@@ -46,10 +46,12 @@ import javax.swing.JToolBar;
 import javax.swing.tree.TreePath;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
@@ -237,6 +239,18 @@ public class MungeProcessEditor implements EditorPane {
                     JOptionPane.ERROR_MESSAGE);
             return false;
         }
+        
+        MungeProcessGraphModel gm = new MungeProcessGraphModel(process.getChildren());
+        DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge> dfs = new DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge>();
+        dfs.performSearch(gm);
+        
+        if (dfs.isCyclic()) {
+        	 JOptionPane.showMessageDialog(swingSession.getFrame(),
+                     "Your munge process contains at least one cycle.\nThis may result in unexpected results.",
+                     "Save",
+                     JOptionPane.WARNING_MESSAGE);
+        }
+        
     	
     	process.setName(name.getText());
     	process.setDesc(desc.getText());
