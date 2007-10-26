@@ -86,23 +86,11 @@ public class MergeEnginePanel implements EditorPane {
 	private JTextField logFilePath;
 
 	/**
-	 * The file path to which error logs will be written to.
-	 * Must be a valid file path that the user has write permissions on.
-	 */
-	private JTextField errorLogFilePath;
-	
-	/**
 	 * Opens a file chooser for the user to select the log file they wish
 	 * to use for engine output.
 	 */
 	private BrowseFileAction browseLogFileAction;
 
-	/**
-	 * Opens a file chooser for the user to select the log file they wish
-	 * to use for engine error output.
-	 */
-	private BrowseFileAction browseErrorLogFileAction;
-	
 	/**
 	 * Denotes whether or not the log file should be overwritten or
 	 * appended to.
@@ -114,12 +102,6 @@ public class MergeEnginePanel implements EditorPane {
 	 * engine to process.
 	 */
 	private JSpinner recordsToProcess;
-	
-	/**
-	 * A field for the user to specify how many records for the engine
-	 * to process between each commit.
-	 */
-	private JSpinner commitFrequency;
 	
 	/**
 	 * A flag for the engine to run in debug mode or not.
@@ -244,27 +226,13 @@ public class MergeEnginePanel implements EditorPane {
 		logFilePath = new JTextField(logFile.getAbsolutePath());
 		handler.addValidateObject(logFilePath, new LogFileNameValidator());
 		
-		if (settings.getErrorLogFile() == null) {
-			settings.setErrorLogFile(new File(project.getName() + ".error.log"));
-		}
-		File errorLogFile = settings.getErrorLogFile();
-		errorLogFilePath = new JTextField(errorLogFile.getAbsolutePath());
-		handler.addValidateObject(errorLogFilePath, new LogFileNameValidator());
-		
 		browseLogFileAction = new BrowseFileAction(parentFrame, logFilePath);
-		browseErrorLogFileAction = new BrowseFileAction(parentFrame, errorLogFilePath);
 		
 		appendToLog = new JCheckBox("Append to old Log File?", settings.getAppendToLog());
 		
 		recordsToProcess = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 100));
 		if (settings.getProcessCount() != null) {
 			recordsToProcess.setValue(settings.getProcessCount());
-		}
-		
-		commitFrequency = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 100));
-		if (settings.getCommitFrequency() != null) {
-			logger.debug("commitFrequency's value is " + settings.getCommitFrequency());
-			commitFrequency.setValue(settings.getCommitFrequency());
 		}
 		
 		debugMode = new JCheckBox("Debug Mode?", settings.getDebug());
@@ -309,17 +277,8 @@ public class MergeEnginePanel implements EditorPane {
 		pb.add(appendToLog, cc.xy(7, y, "l,f"));
 
 		y += 2;
-		pb.add(new JLabel("Error Log File:"), cc.xy(2, y, "r,f"));
-		pb.add(new JButton(browseErrorLogFileAction), cc.xy(5, y, "r,f"));
-		pb.add(errorLogFilePath, cc.xy(4, y, "f,f"));
-		
-		y += 2;
 		pb.add(new JLabel("Records to Process (0 for no limit):"), cc.xy(2, y, "r,c"));
 		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
-		
-		y += 2;
-		pb.add(new JLabel("Commit Frequency (0 for no limit):"), cc.xy(2, y, "r,c"));
-		pb.add(commitFrequency, cc.xy(4, y, "l,c"));
 		
 		y += 2;
 		pb.add(debugMode, cc.xy(4, y, "l,c"));
@@ -365,17 +324,11 @@ public class MergeEnginePanel implements EditorPane {
 		refreshActionStatus();
 		MergeSettings mergeSettings = project.getMergeSettings();
 		mergeSettings.setAppendToLog(appendToLog.isSelected());
-		mergeSettings.setErrorLogFile(new File(errorLogFilePath.getText()));
 		mergeSettings.setLog(new File(logFilePath.getText()));
 		if (recordsToProcess.getValue().equals(new Integer(0))) {
 			mergeSettings.setProcessCount(null);
 		} else {
 			mergeSettings.setProcessCount((Integer) recordsToProcess.getValue());
-		}
-		if (commitFrequency.getValue().equals(new Integer(0))) {
-			mergeSettings.setCommitFrequency(null);
-		} else {
-			mergeSettings.setCommitFrequency((Integer) commitFrequency.getValue());
 		}
 		mergeSettings.setDebug(debugMode.isSelected());
 		

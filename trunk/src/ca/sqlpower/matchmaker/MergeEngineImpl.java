@@ -24,8 +24,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -113,6 +115,8 @@ public class MergeEngineImpl extends AbstractEngine {
 	
 	public EngineInvocationResult call() throws EngineSettingException {
 		Level oldLevel = logger.getLevel();
+		FileAppender fileAppender = null;
+		
 		try {
 			logger.setLevel(getMessageLevel());
 			setFinished(false);
@@ -126,6 +130,11 @@ public class MergeEngineImpl extends AbstractEngine {
 			} catch (ArchitectException e) {
 				throw new RuntimeException(e);
 			}
+			
+			String logFilePath = getProject().getMergeSettings().getLog().getAbsolutePath();
+			boolean appendToFile = getProject().getMergeSettings().getAppendToLog();
+			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
+			logger.addAppender(fileAppender);
 			
 			jobSize = getNumRowsToProcess();
 
@@ -141,8 +150,11 @@ public class MergeEngineImpl extends AbstractEngine {
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		} finally {
-			setFinished(true);
 			logger.setLevel(oldLevel);
+			if (fileAppender != null) {
+				logger.removeAppender(fileAppender);
+			}
+			setFinished(true);
 		}
 	}
 
