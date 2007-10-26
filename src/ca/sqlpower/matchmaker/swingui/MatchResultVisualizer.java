@@ -640,4 +640,10 @@ public class MatchResultVisualizer implements EditorPane {
 	MatchPool getPool() {
 		return pool;
 	}
+
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchResultVisualizer.discardChanges()");
+		return false;
+	}
 }

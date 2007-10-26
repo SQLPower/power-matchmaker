@@ -380,4 +380,10 @@ public class TranslateWordsEditor implements EditorPane {
 			}
 		}
 	}
+
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: TranslateWordsEditor.discardChanges()");
+		return false;
+	}
 }

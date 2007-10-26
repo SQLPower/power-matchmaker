@@ -408,4 +408,9 @@ public class MungeProcessEditor implements EditorPane {
 	public void setSelectedStepOutput(MungeStepOutput mso) {
 		//TODO select the mso
 	}
+
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

@@ -30,6 +30,7 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 
 /**
  *
@@ -240,9 +241,26 @@ public class TableMergeRules
 	}
 
 	public void setDeleteDup(boolean deleteDup) {
+		setDeleteDup(deleteDup, false);
+	}
+	
+	public void setDeleteDup(boolean deleteDup, boolean isUndo) {
 		boolean oldValue = this.deleteDup;
 		this.deleteDup = deleteDup;
-		getEventSupport().firePropertyChange("deleteDup", oldValue, this.deleteDup);
+		if (deleteDup) {
+			for (ColumnMergeRules cmr : getChildren()) {
+				if (cmr.getActionType() == MergeActionType.USE_MASTER_VALUE) {
+					cmr.setActionType(MergeActionType.AUGMENT, true);
+				}
+			}
+		} else {
+			for (ColumnMergeRules cmr : getChildren()) {
+				if (cmr.getActionType() == MergeActionType.AUGMENT) {
+					cmr.setActionType(MergeActionType.USE_MASTER_VALUE, true);
+				}
+			}
+		}
+		getEventSupport().firePropertyChange("deleteDup", oldValue, this.deleteDup, isUndo);
 	}
 	
 

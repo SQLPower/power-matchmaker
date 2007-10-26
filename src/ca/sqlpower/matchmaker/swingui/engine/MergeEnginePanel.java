@@ -347,4 +347,10 @@ public class MergeEnginePanel implements EditorPane {
 		logger.debug("Stub call: MergeEnginePanel.hasUnsavedChanges()");
 		return false;
 	}
+
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MergeEnginePanel.discardChanges()");
+		return false;
+	}
 }

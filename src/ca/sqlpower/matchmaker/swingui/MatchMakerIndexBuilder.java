@@ -399,4 +399,10 @@ public class MatchMakerIndexBuilder implements EditorPane {
 		return true;
 	}
 
+	public boolean discardChanges() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchMakerIndexBuilder.discardChanges()");
+		return false;
+	}
+
 }

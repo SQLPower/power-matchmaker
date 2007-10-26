@@ -112,6 +112,10 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 	 * @param newValue The value after the change. Can be null.
 	 */
 	public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+		firePropertyChange(propertyName, oldValue, newValue, false);
+	}
+	
+	public void firePropertyChange(String propertyName, Object oldValue, Object newValue, boolean isUndo) {
 		if (propertyName == null) throw new NullPointerException("Null property name is not allowed");
 		if ( (oldValue == null && newValue == null) ||
 			 (oldValue != null && oldValue.equals(newValue))) {
@@ -122,7 +126,8 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 		evt.setOldValue(oldValue);
 		evt.setNewValue(newValue);
 		evt.setPropertyName(propertyName);
-
+		evt.setUndoEvent(isUndo);
+		
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
             listeners.get(i).mmPropertyChanged(evt);

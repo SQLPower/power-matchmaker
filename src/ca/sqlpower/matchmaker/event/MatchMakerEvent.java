@@ -36,7 +36,16 @@ public class MatchMakerEvent<S extends MatchMakerObject,C extends MatchMakerObje
 	private Object oldValue;
 	private Object newValue;
 	private S source;
+	private boolean isUndoEvent;
 	
+	public boolean isUndoEvent() {
+		return isUndoEvent;
+	}
+
+	public void setUndoEvent(boolean isUndoEvent) {
+		this.isUndoEvent = isUndoEvent;
+	}
+
 	public S getSource() {
 		return source;
 	}

@@ -26,6 +26,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -60,9 +61,13 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 
 import org.apache.log4j.Logger;
 
@@ -468,7 +473,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
 		fileMenu.add(exitAction);
-
+		JMenuItem undoItem = new JMenuItem(undoAction);
+		undoItem.setAccelerator( KeyStroke.getKeyStroke("ctrl Z") );
+		fileMenu.add(undoItem);
+		
+		fileMenu.add(redoAction);
+		
 		menuBar.add(fileMenu);
 
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
@@ -693,7 +703,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 case O_DISCARD:
                     save = false;
                     doit = true;
-                    // TODO refresh the objects in question from the database (to cancel user edits)
                     break;
                 case O_CANCEL:
                     save = false;
@@ -710,6 +719,15 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                         if (!doit){
                             tree.setSelectionPath(lastTreePath);
                         }
+                    }
+                } else if (doit) {
+                	if (oldPane != null) {
+                        doit = oldPane.discardChanges();
+                        if (!doit){
+                        	logger.debug("Cannot Discard Changes");
+                            //tree.setSelectionPath(lastTreePath);
+                        }
+                        doit = true;
                     }
                 }
             }
@@ -782,7 +800,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 Class[] defArgs = { Action.class, Action.class, Action.class };
                 Method registerMethod = osxAdapter.getDeclaredMethod("registerMacOSXApplication", defArgs);
                 if (registerMethod != null) {
-                    Object[] args = { exitAction, userPrefsAction, aboutAction };
+                    Object[] args = { exitAction, userPrefsAction, aboutAction};
                     registerMethod.invoke(osxAdapter, args);
                 }
 
@@ -1183,6 +1201,90 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			cleanseEnginPanels.put(mei,ep); 
 		}
 		return ep;
+	}
+
+	//undo stuff
+	
+	protected UndoAction undoAction = new UndoAction();
+	protected RedoAction redoAction = new RedoAction();
+	protected UndoManager undo;
+	
+	/**
+	UndoAction creates an undo menu item with behaviour
+	**/
+    class UndoAction extends AbstractAction {
+        public UndoAction() {
+            super("Undo");
+            setEnabled(false);
+            putValue(MNEMONIC_KEY, KeyEvent.VK_U);
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                undo.undo();
+            } catch (CannotUndoException ex) {
+                System.out.println("Unable to undo: " + ex);
+                ex.printStackTrace();
+            }
+            updateUndoState();
+            redoAction.updateRedoState();
+        }
+
+        protected void updateUndoState() {
+            if (undo.canUndo()) {
+                setEnabled(true);
+                //putValue(Action.NAME, undo.getUndoPresentationName());
+            } else {
+                setEnabled(false);
+                //putValue(Action.NAME, "Undo");
+            }
+        }
+    }
+
+	/**
+	RedoAction creates a redo menu item with behaviour
+	**/
+    class RedoAction extends AbstractAction {
+        public RedoAction() {
+            super("Redo");
+            setEnabled(false);
+            putValue(MNEMONIC_KEY, KeyEvent.VK_R);
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                undo.redo();
+            } catch (CannotRedoException ex) {
+                System.out.println("Unable to redo: " + ex);
+                ex.printStackTrace();
+            }
+            updateRedoState();
+            undoAction.updateUndoState();
+        }
+
+        protected void updateRedoState() {
+            if (undo.canRedo()) {
+                setEnabled(true);
+            } else {
+                setEnabled(false);
+            }
+        }
+    }
+
+	public UndoManager getUndo() {
+		return undo;
+	}
+
+	public void setUndo(UndoManager undo) {
+		this.undo = undo;
+	}
+
+	public void refreshUndoAction() {
+		undoAction.updateUndoState();
+		redoAction.updateRedoState();
 	}
 
 }

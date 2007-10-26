@@ -146,6 +146,11 @@ public class TranslateGroupsEditor implements EditorPane {
 		return false;
 	}
 
+	public boolean discardChanges() {
+		logger.debug("Discard Changes: Not implemented :(");
+		return false;
+	}
+
 	public JComponent getPanel() {
 		return panel;
 	}
@@ -246,4 +251,5 @@ public class TranslateGroupsEditor implements EditorPane {
 			}
 		}
 	}
+
 }
