@@ -289,5 +289,11 @@ public class MergeTableRuleEditor implements EditorPane {
 		return false;
 	}
 
+	public void refreshComponents() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MergeTableRuleEditor.refreshComponents()");
+		
+	}
+
 	
 }

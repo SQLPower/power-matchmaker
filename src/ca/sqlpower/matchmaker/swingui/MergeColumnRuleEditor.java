@@ -47,8 +47,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
-import javax.swing.undo.UndoManager;
-import javax.swing.undo.UndoableEdit;
 
 import org.apache.log4j.Logger;
 
@@ -57,14 +55,10 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.undo.UndoableEditClass;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.Status;
@@ -78,14 +72,14 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MergeColumnRuleEditor implements EditorPane, MatchMakerListener {
+public class MergeColumnRuleEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MergeColumnRuleEditor.class);
 	private JPanel panel;
 	private final MatchMakerSwingSession swingSession;
 	private final Project project;
 	private final TableMergeRules mergeRule;
-	private final UndoManager undo;
+	private final MMOChangeUndoWatcher undo;
 	
 	StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
@@ -97,8 +91,6 @@ public class MergeColumnRuleEditor implements EditorPane, MatchMakerListener {
 	private AbstractColumnMergeRulesTable ruleTable;
 	//keeps track of whether the table has unsaved changes
 	private CustomTableModelListener tableListener;
-	
-	private boolean hasUnsavedChanges = false;
 	
 	public MergeColumnRuleEditor(final MatchMakerSwingSession session,
 			final Project project, final TableMergeRules mr) {
@@ -139,29 +131,7 @@ public class MergeColumnRuleEditor implements EditorPane, MatchMakerListener {
 
         parentTable.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				List<SQLColumn> primarykeyCols = null;
-
 				mergeRule.setParentTable((SQLTable) parentTable.getSelectedItem());
-				// Set each imported key column combo box to null
-				for (int row = 0; row < ruleTableModel.getRowCount(); row++) {
-					ruleTableModel.setValueAt(null, row, 2);
-				}
-				
-				try {
-					primarykeyCols = getParentTablePrimaryKeys();
-				} catch (ArchitectException ex) {
-					SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
-							"Error while updating parent table for merge rule", ex);
-				}
-				
-				if (primarykeyCols == null) return;
-				for (SQLColumn column : primarykeyCols) {
-					for (ColumnMergeRules cmr : mergeRule.getChildren()) {
-						if (cmr.getColumnName().equals(column.getName())) {
-							cmr.setImportedKeyColumn(column);
-						}
-					}
-				}
 			}
         });
         
@@ -187,11 +157,7 @@ public class MergeColumnRuleEditor implements EditorPane, MatchMakerListener {
         handler.resetHasValidated(); // avoid false hits when newly created
 
         tableListener.setModified(false);
-        
-        //undo stuff
-        MatchMakerUtils.listenToHierarchy(this, mr);
-        undo = new UndoManager();
-        swingSession.setUndo(undo);
+        undo = new MMOChangeUndoWatcher(mr,this,session);
 	}
 
 	public TableMergeRules getMergeRule() {
@@ -332,10 +298,7 @@ public class MergeColumnRuleEditor implements EditorPane, MatchMakerListener {
 	 * undo until cannot undo
 	 */
 	public boolean discardChanges() {
-		while (undo.canUndo()) {
-			undo.undo();
-		}
-		return true;
+		return undo.undoAll();
 	}
 	
 	public List<SQLColumn> getParentTablePrimaryKeys() throws ArchitectException{
@@ -393,7 +356,7 @@ public class MergeColumnRuleEditor implements EditorPane, MatchMakerListener {
 //			}
 //		}
 //		return false;
-		return hasUnsavedChanges;
+		return undo.getHasChanged();
 	}
 	
 	
@@ -616,36 +579,9 @@ public class MergeColumnRuleEditor implements EditorPane, MatchMakerListener {
 		}
 	}
 
-	public void mmChildrenInserted(MatchMakerEvent evt) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MergeColumnRuleEditor.mmChildrenInserted()");
-	}
-
-	public void mmChildrenRemoved(MatchMakerEvent evt) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MergeColumnRuleEditor.mmChildrenRemoved()");
-	}
-
-	public void mmPropertyChanged(MatchMakerEvent evt) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MergeColumnRuleEditor.mmPropertyChanged()");
-		if (!evt.isUndoEvent()) {
-			System.out.println(evt.getSource());
-			hasUnsavedChanges = true;
-			UndoableEdit ue = new UndoableEditClass(evt, null);
-			undo.addEdit(ue);
-			swingSession.refreshUndoAction();
-		} else {
-			if (!undo.canUndo()) {
-				hasUnsavedChanges = false;
-			}
-		}
+	public void refreshComponents() {
+		logger.debug("Stub call: MergeColumnRuleEditor.refreshCompoents()");
 		deleteDup.setSelected(mergeRule.isDeleteDup());
+		
 	}
-
-	public void mmStructureChanged(MatchMakerEvent evt) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MergeColumnRuleEditor.mmStructureChanged()");
-	}
-
 }

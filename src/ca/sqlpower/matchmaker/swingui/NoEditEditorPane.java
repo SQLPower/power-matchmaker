@@ -60,6 +60,9 @@ class NoEditEditorPane implements EditorPane {
 		return false;
 	}
 
+	public void refreshComponents() {
+	}
+
 	public JComponent getPanel() {
 		return panel;
 	}
@@ -67,5 +70,6 @@ class NoEditEditorPane implements EditorPane {
 	public void setPanel(JComponent panel) {
 		this.panel = panel;
 	}
+
 	
 }

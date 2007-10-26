@@ -59,4 +59,9 @@ public interface EditorPane {
 	 * Discards the changes made to the editor pane
 	 */
 	public boolean discardChanges();
+	
+	/**
+	 * Update the swing component values from the matchmaker object
+	 */
+	public void refreshComponents();
 }

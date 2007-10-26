@@ -509,4 +509,10 @@ public class CleanseEnginePanel implements EditorPane {
 		logger.debug("Stub call: CleanseEnginePanel.discardChanges()");
 		return false;
 	}
+
+	public void refreshComponents() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: CleanseEnginePanel.refreshComponents()");
+		
+	}
 }

@@ -19,29 +19,42 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEdit;
+
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.undo.UndoableEditClass;
 
 /**
  * Utility class that registers every change to a subtree of MatchMakerObjects
  * by flipping its hasChanged flag to true. Mainly intended to support the
  * hasUnsavedChanges feature of EditorPane.
  */
-public class MMOChangeWatcher <T extends MatchMakerObject,C extends MatchMakerObject>
+public class MMOChangeUndoWatcher <T extends MatchMakerObject,C extends MatchMakerObject>
 implements MatchMakerListener<T,C> {
 
     private boolean hasChanged = false;
-
+    private UndoManager undo;
+    private EditorPane pane;
+    private MatchMakerSwingSession swingSession;
+    
+    
     /**
      * Creates a new MMO Change Watcher for the matchmaker object subtree rooted
      * at the given node.
      * 
      * @param mmo The root node of the subtree to monitor.
      */
-    public MMOChangeWatcher(MatchMakerObject<T,C> mmo) {
+    public MMOChangeUndoWatcher(MatchMakerObject<T,C> mmo, EditorPane pane, MatchMakerSwingSession session) {
+    	swingSession = session;
+    	this.pane = pane;
+    	
         MatchMakerUtils.listenToHierarchy(this, mmo);
+        undo = new UndoManager();
+        swingSession.setUndo(undo);
     }
 
     /**
@@ -69,6 +82,18 @@ implements MatchMakerListener<T,C> {
      */
     public void mmPropertyChanged(MatchMakerEvent<T,C> evt) {
         hasChanged = true;
+        if (!evt.isUndoEvent()) {
+			System.out.println(evt.getSource());
+			hasChanged = true;
+			UndoableEdit ue = new UndoableEditClass(evt, null);
+			undo.addEdit(ue);
+			swingSession.refreshUndoAction();
+		} else {
+			if (!undo.canUndo()) {
+				hasChanged = false;
+			}
+		}
+        pane.refreshComponents();
     }
 
     /**
@@ -101,6 +126,13 @@ implements MatchMakerListener<T,C> {
      */
     public void setHasChanged(boolean hasChanged) {
         this.hasChanged = hasChanged;
+    }
+    
+    public boolean undoAll() {
+    	while (undo.canUndo()) {
+			undo.undo();
+		}
+		return true;
     }
 
 }

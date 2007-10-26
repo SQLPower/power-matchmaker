@@ -240,4 +240,10 @@ public class FolderEditor implements EditorPane {
 		logger.debug("Stub call: FolderEditor.discardChanges()");
 		return false;
 	}
+
+	public void refreshComponents() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: FolderEditor.refreshCompoents()");
+		
+	}
 }
