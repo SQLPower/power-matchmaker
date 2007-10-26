@@ -646,4 +646,10 @@ public class MatchResultVisualizer implements EditorPane {
 		logger.debug("Stub call: MatchResultVisualizer.discardChanges()");
 		return false;
 	}
+
+	public void refreshComponents() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MatchResultVisualizer.refreshComponents()");
+		
+	}
 }

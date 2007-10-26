@@ -1060,4 +1060,10 @@ public class ProjectEditor implements EditorPane {
 		logger.debug("Stub call: ProjectEditor.discardChanges()");
 		return false;
 	}
+
+	public void refreshComponents() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: ProjectEditor.refreshComponents()");
+		
+	}
 }

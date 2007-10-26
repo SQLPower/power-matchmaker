@@ -353,4 +353,10 @@ public class MergeEnginePanel implements EditorPane {
 		logger.debug("Stub call: MergeEnginePanel.discardChanges()");
 		return false;
 	}
+
+	public void refreshComponents() {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MergeEnginePanel.refreshComponents()");
+		
+	}
 }

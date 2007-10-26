@@ -103,7 +103,7 @@ public class MungeProcessEditor implements EditorPane {
      * The instance that monitors the subtree we're editing for changes (so we know
      * if there are unsaved changes).
      */
-    private final MMOChangeWatcher<MungeProcess, MungeStep> changeHandler;
+    private final MMOChangeUndoWatcher<MungeProcess, MungeStep> changeHandler;
     
     /**
      * Validator for handling errors within the munge steps
@@ -126,7 +126,7 @@ public class MungeProcessEditor implements EditorPane {
         this.swingSession = swingSession;
         this.parentProject = project;
         this.process = process;
-        this.changeHandler = new MMOChangeWatcher<MungeProcess, MungeStep>(process);
+        this.changeHandler = new MMOChangeUndoWatcher<MungeProcess, MungeStep>(process, this, swingSession);
         
         //For some reason some process don't have sessions and this causes a null
         //pointer barrage when it tries to find the tree when it gets focus, then fails and 
@@ -412,5 +412,9 @@ public class MungeProcessEditor implements EditorPane {
 	public boolean discardChanges() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public void refreshComponents() {
+		// TODO Auto-generated method stub
 	}
 }

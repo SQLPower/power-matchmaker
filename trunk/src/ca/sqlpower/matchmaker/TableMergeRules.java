@@ -320,9 +320,33 @@ public class TableMergeRules
 	}
 
 	public void setParentTable(SQLTable parentTable) {
+		setParentTable(parentTable, false);
+	}
+	
+	public void setParentTable(SQLTable parentTable, boolean isUndo) {
 		SQLTable oldValue = this.parentTable;
 		this.parentTable = parentTable;
-		getEventSupport().firePropertyChange("parentTable", oldValue, this.parentTable);
+		
+		List<SQLColumn> primarykeyCols = null;
+		primarykeyCols = getParentTablePrimaryKey();
+		
+		// Set each imported key column combo box to null
+		for (ColumnMergeRules cmr : getChildren()) {
+			if (cmr.getImportedKeyColumn() != null) {
+				cmr.setImportedKeyColumn(null, true);
+			}
+		}
+
+		if (primarykeyCols == null) return;
+		for (SQLColumn column : primarykeyCols) {
+			for (ColumnMergeRules cmr : getChildren()) {
+				if (cmr.getColumnName().equals(column.getName())) {
+					cmr.setImportedKeyColumn(column, true);
+					break;
+				}
+			}
+		}
+		getEventSupport().firePropertyChange("parentTable", oldValue, this.parentTable, isUndo);
 	}
 
 	public ChildMergeActionType getChildMergeAction() {
@@ -354,7 +378,7 @@ public class TableMergeRules
 	 * If no such table is found then throw an exception. Returns null if
 	 * parentTable or the parent of this merge rule has not been set
 	 */
-	public List<SQLColumn> getParentTablePrimaryKey() throws ArchitectException {
+	public List<SQLColumn> getParentTablePrimaryKey() {
 		if (getParentTable() != null && getParentProject() != null) {
 			for (TableMergeRules tmr : getParentProject().getTableMergeRules()) {
 				if (tmr.getSourceTable().equals(parentTable)) {
@@ -368,12 +392,16 @@ public class TableMergeRules
 	/**
 	 * Finds the primary key for the current table merge rule.
 	 */
-	public List<SQLColumn> getPrimaryKey() throws ArchitectException {
+	public List<SQLColumn> getPrimaryKey()  {
 		List<SQLColumn> columns = new ArrayList<SQLColumn>();
 		
 		if (isSourceMergeRule()) {
-			for (SQLIndex.Column column : getParentProject().getSourceTableIndex().getChildren()) {
-				columns.add(column.getColumn()); 
+			try {
+				for (SQLIndex.Column column : getParentProject().getSourceTableIndex().getChildren()) {
+					columns.add(column.getColumn()); 
+				}
+			} catch (ArchitectException e) {
+				throw new IllegalStateException("Error when getting primary keys");
 			}
 		} else {
 			for (ColumnMergeRules cmr : getChildren()) {

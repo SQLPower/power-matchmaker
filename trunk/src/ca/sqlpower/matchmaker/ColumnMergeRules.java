@@ -248,9 +248,13 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 
 	public void setImportedKeyColumn(SQLColumn importedKeyColumn) {
+		setImportedKeyColumn(importedKeyColumn, false);
+	}
+	
+	public void setImportedKeyColumn(SQLColumn importedKeyColumn, boolean isUndo) {
 		SQLColumn oldValue = this.getImportedKeyColumn();
 		this.importedKeyColumn = importedKeyColumn;
-		getEventSupport().firePropertyChange("importedKeyColumn", oldValue, this.importedKeyColumn);
+		getEventSupport().firePropertyChange("importedKeyColumn", oldValue, this.importedKeyColumn, isUndo);
 	}
 
 

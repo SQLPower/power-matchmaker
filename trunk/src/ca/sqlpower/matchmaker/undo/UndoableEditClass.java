@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.undo;
 
 import javax.swing.undo.AbstractUndoableEdit;
 
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -58,20 +59,26 @@ public class UndoableEditClass extends AbstractUndoableEdit{
 		} else {
 			value = undoEvent.getNewValue();
 		}
-		
+		System.out.println(source);
+		System.out.println(undo);
+		System.out.println(value);
+		System.out.println(undoEvent.getPropertyName());
 		if (source instanceof TableMergeRules) {
 			TableMergeRules tableMergeRule = (TableMergeRules) source;
 			String propertyName = undoEvent.getPropertyName();
 			if ("deleteDup".equals(propertyName)) {
 				boolean deleteDup = (Boolean) value;
 				tableMergeRule.setDeleteDup(deleteDup, true);
+			} else if ("parentTable".equals(propertyName)) {
+				SQLTable table = (SQLTable) value;
+				tableMergeRule.setParentTable(table, true);
 			}
 		} else if (source instanceof ColumnMergeRules) {
 			ColumnMergeRules columnMergeRule = (ColumnMergeRules) source;
 			String propertyName = undoEvent.getPropertyName();
 			if ("actionType".equals(propertyName)) {
-				MergeActionType oldValue = (MergeActionType) undoEvent.getOldValue();
-				columnMergeRule.setActionType(oldValue, true);
+				MergeActionType mat = (MergeActionType) value;
+				columnMergeRule.setActionType(mat, true);
 			}
 		} 
 	}
