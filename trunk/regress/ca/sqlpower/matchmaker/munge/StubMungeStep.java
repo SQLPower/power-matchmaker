@@ -205,4 +205,11 @@ public class StubMungeStep implements MungeStep {
 
 	public void setVisible(boolean v) {
 	}
+
+	public boolean isUndoing() {
+		return false;
+	}
+
+	public void setUndoing(boolean isUndoing) {
+	}
 }
