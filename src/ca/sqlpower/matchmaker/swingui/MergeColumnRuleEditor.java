@@ -581,7 +581,12 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 	public void refreshComponents() {
 		logger.debug("Stub call: MergeColumnRuleEditor.refreshCompoents()");
-		deleteDup.setSelected(mergeRule.isDeleteDup());
-		
+		if (mergeRule.isSourceMergeRule()) {
+			deleteDup.setSelected(mergeRule.isDeleteDup());
+		} else {
+			parentTable.setSelectedItem(mergeRule.getParentTable());
+			childMergeAction.setSelectedItem(mergeRule.getChildMergeAction());
+		}
+		handler.performFormValidation();
 	}
 }

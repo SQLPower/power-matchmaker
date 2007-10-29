@@ -33,10 +33,13 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 	public ColumnMergeRuleTest() {
 		propertiesToIgnoreForEventGeneration.add("columnName");
 		propertiesToIgnoreForDuplication.add("columnName");
+		
 		propertiesThatDifferOnSetAndGet.add("name");
 		
 		propertiesThatHaveSideEffects.add("column");
 		propertiesThatHaveSideEffects.add("parent");
+		propertiesThatHaveSideEffects.add("inPrimaryKey");
+		propertiesThatHaveSideEffects.add("importedKeyColumn");
 	}
 	@Override
 	protected ColumnMergeRules getTarget() throws ArchitectException {

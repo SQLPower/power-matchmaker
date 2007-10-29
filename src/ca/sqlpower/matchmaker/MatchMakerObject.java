@@ -120,4 +120,15 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
 	 * Returns if this item is visible in the tree.
 	 */
 	public boolean isVisible();
+	
+	
+	/**
+	 * Returns true if the object is undoing.
+	 */
+	public boolean isUndoing();
+	
+	/**
+	 * Sets if the object is undoing.
+	 */
+	public void setUndoing(boolean isUndoing);
 }

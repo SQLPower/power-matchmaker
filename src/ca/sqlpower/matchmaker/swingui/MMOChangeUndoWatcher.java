@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
@@ -41,6 +42,19 @@ implements MatchMakerListener<T,C> {
     private EditorPane pane;
     private MatchMakerSwingSession swingSession;
     
+    /**
+     *  A "start compound edit" event would create a new instance of compound edit
+     *  and subsequent edits would be part of the compound edit until a 
+     *  "end compound edit" event is received.
+     */
+    private CompoundEdit ce;
+    
+    /**
+     *  undoCount works like magic in architect, each "start compound edit" event
+     *  would increment it and each "end compound edit" event would decrement
+     *  it. This allows multilevel compound edits.
+     */
+    private static int undoCount = 0;
     
     /**
      * Creates a new MMO Change Watcher for the matchmaker object subtree rooted
@@ -76,17 +90,37 @@ implements MatchMakerListener<T,C> {
             MatchMakerUtils.unlistenToHierarchy(this, child);
         }
     }
-
+    
     /**
-     * Listener implementation.
+     * Listener implementation. Note that it is synchronized because 
+     * sometimes ce is not initialized when a compound event happens.
      */
-    public void mmPropertyChanged(MatchMakerEvent<T,C> evt) {
+    public synchronized void mmPropertyChanged(MatchMakerEvent<T,C> evt) {
         hasChanged = true;
         if (!evt.isUndoEvent()) {
-			System.out.println(evt.getSource());
-			hasChanged = true;
+        	hasChanged = true;
 			UndoableEdit ue = new UndoableEditClass(evt, null);
-			undo.addEdit(ue);
+			
+        	if ("UNDOSTATE".equals(evt.getPropertyName())) {
+            	boolean undoing = (Boolean) evt.getNewValue();
+            	if (undoing) {
+            		undoCount++;
+            		if (undoCount == 1) {
+            			ce = new CompoundEdit();
+            		}
+            	} else {
+            		undoCount--;
+            		if (undoCount == 0) {
+            			ce.end();
+            			undo.addEdit(ce);
+                		ce = null;
+            		}
+            	}
+            } else if (undoCount > 0) {
+        		ce.addEdit(ue);
+        	} else {
+        		undo.addEdit(ue);
+        	}
 			swingSession.refreshUndoAction();
 		} else {
 			if (!undo.canUndo()) {
@@ -134,5 +168,4 @@ implements MatchMakerListener<T,C> {
 		}
 		return true;
     }
-
 }
