@@ -157,4 +157,11 @@ public class StubMatchMakerObject implements MatchMakerObject {
 	public void setVisible(boolean v) {
 	}
 
+	public boolean isUndoing() {
+		return false;
+	}
+
+	public void setUndoing(boolean isUndoing) {
+	}
+
 }
