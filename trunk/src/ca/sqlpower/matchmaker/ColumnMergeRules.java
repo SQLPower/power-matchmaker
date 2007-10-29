@@ -181,16 +181,11 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	public MergeActionType getActionType() {
 		return actionType;
 	}
-
-
-	public void setActionType(MergeActionType actionType) {
-		setActionType(actionType, false);
-	}
 	
-	public void setActionType(MergeActionType actionType, boolean isUndo) {
+	public void setActionType(MergeActionType actionType) {
 		MergeActionType oldValue = this.actionType;
 		this.actionType = actionType;
-		getEventSupport().firePropertyChange("actionType", oldValue, this.actionType, isUndo);
+		getEventSupport().firePropertyChange("actionType", oldValue, this.actionType);
 	}
 
 	@Override
@@ -237,8 +232,19 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 	public void setInPrimaryKey(boolean inPrimaryKey) {
 		boolean oldValue = this.inPrimaryKey;
+		if (!isUndoing()) { 
+			getEventSupport().firePropertyChange("UNDOSTATE", false, true);
+			if (inPrimaryKey) {
+				setActionType(MergeActionType.NA);
+			} else if (getImportedKeyColumn() == null){
+				setActionType(MergeActionType.USE_MASTER_VALUE);
+			}
+		}
 		this.inPrimaryKey = inPrimaryKey;
 		getEventSupport().firePropertyChange("inPrimaryKey", oldValue, this.inPrimaryKey);
+		if (!isUndoing()) { 
+			getEventSupport().firePropertyChange("UNDOSTATE", true, false);
+		}
 	}
 
 
@@ -246,15 +252,21 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		return importedKeyColumn;
 	}
 
-
 	public void setImportedKeyColumn(SQLColumn importedKeyColumn) {
-		setImportedKeyColumn(importedKeyColumn, false);
-	}
-	
-	public void setImportedKeyColumn(SQLColumn importedKeyColumn, boolean isUndo) {
 		SQLColumn oldValue = this.getImportedKeyColumn();
+		if (!isUndoing()) { 
+			getEventSupport().firePropertyChange("UNDOSTATE", false, true);
+			if (importedKeyColumn != null) {
+				setActionType(MergeActionType.NA);
+			} else if (!isInPrimaryKey()) {
+				setActionType(MergeActionType.USE_MASTER_VALUE);
+			}
+		}
 		this.importedKeyColumn = importedKeyColumn;
-		getEventSupport().firePropertyChange("importedKeyColumn", oldValue, this.importedKeyColumn, isUndo);
+		getEventSupport().firePropertyChange("importedKeyColumn", oldValue, this.importedKeyColumn);
+		if (!isUndoing()) { 
+			getEventSupport().firePropertyChange("UNDOSTATE", true, false);
+		}
 	}
 
 

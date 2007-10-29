@@ -296,4 +296,16 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	public boolean isVisible() {
 		return visible;
 	}
+	
+	/////// Undo Stuff ///////
+	// fires the event as a undo event if this is true;
+	private boolean isUndoing;
+
+	public boolean isUndoing() {
+		return isUndoing;
+	}
+
+	public void setUndoing(boolean isUndoing) {
+		this.isUndoing = isUndoing;
+	}
 }

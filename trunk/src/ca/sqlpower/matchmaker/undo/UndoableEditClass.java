@@ -19,16 +19,26 @@
 
 package ca.sqlpower.matchmaker.undo;
 
-import javax.swing.undo.AbstractUndoableEdit;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
-import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.ColumnMergeRules;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotUndoException;
+
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.MatchMakerObject;
-import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 
 public class UndoableEditClass extends AbstractUndoableEdit{
+	
+	private static final Logger logger = Logger.getLogger(UndoableEditClass.class);
+	
 	private MatchMakerEvent undoEvent;
 	private MatchMakerObject mmo;
 
@@ -40,46 +50,64 @@ public class UndoableEditClass extends AbstractUndoableEdit{
 
 	public void undo(){
 		super.undo();
-		//TODO: undo the MatchMakerEvent
-		undoOrRedo(true);
-		
+		try {
+			undoEvent.getSource().setUndoing(true);
+		    modifyProperty(undoEvent.getOldValue());
+		} catch (IllegalAccessException e) {
+			logger.error("Couldn't access setter for "+
+					undoEvent.getPropertyName(), e);
+			throw new CannotUndoException();
+		} catch (InvocationTargetException e) {
+			logger.error("Setter for "+undoEvent.getPropertyName()+
+					" on "+undoEvent.getSource()+" threw exception", e);
+			throw new CannotUndoException();
+		} catch (IntrospectionException e) {
+			logger.error("Couldn't introspect source object "+
+					undoEvent.getSource(), e);
+			throw new CannotUndoException();
+		} finally {
+			undoEvent.getSource().setUndoing(false);
+		}
 	}
 
 	public void redo(){
 		super.redo();
-		//TODO: redo the MatchMakerEvent
-		undoOrRedo(false);
+		try {
+			undoEvent.getSource().setUndoing(true);
+		    modifyProperty(undoEvent.getNewValue());
+		} catch (IllegalAccessException e) {
+			logger.error("Couldn't access setter for "+
+					undoEvent.getPropertyName(), e);
+			throw new CannotUndoException();
+		} catch (InvocationTargetException e) {
+			logger.error("Setter for "+undoEvent.getPropertyName()+
+					" on "+undoEvent.getSource()+" threw exception", e);
+			throw new CannotUndoException();
+		} catch (IntrospectionException e) {
+			logger.error("Couldn't introspect source object "+
+					undoEvent.getSource(), e);
+			throw new CannotUndoException();
+		} finally {
+			undoEvent.getSource().setUndoing(false);
+		}
 	}
 	
-	public void undoOrRedo(boolean undo) {
-		MatchMakerObject source = undoEvent.getSource();
-		Object value;
-		if (undo) {
-			value = undoEvent.getOldValue();
-		} else {
-			value = undoEvent.getNewValue();
+	private void modifyProperty(Object value) throws IntrospectionException,
+	    IllegalArgumentException, IllegalAccessException,
+	    InvocationTargetException {
+		// We did this using BeanUtils.copyProperty() before, but the error
+		// messages were too vague.
+		BeanInfo info = Introspector.getBeanInfo(undoEvent.getSource().getClass());
+		
+		PropertyDescriptor[] props = info.getPropertyDescriptors();
+		for (PropertyDescriptor prop : Arrays.asList(props)) {
+		    if (prop.getName().equals(undoEvent.getPropertyName())) {
+		        Method writeMethod = prop.getWriteMethod();
+		        if (writeMethod != null) {
+		        	System.out.println(writeMethod);
+		            writeMethod.invoke(undoEvent.getSource(), new Object[] { value });
+		        }
+		    }
 		}
-		System.out.println(source);
-		System.out.println(undo);
-		System.out.println(value);
-		System.out.println(undoEvent.getPropertyName());
-		if (source instanceof TableMergeRules) {
-			TableMergeRules tableMergeRule = (TableMergeRules) source;
-			String propertyName = undoEvent.getPropertyName();
-			if ("deleteDup".equals(propertyName)) {
-				boolean deleteDup = (Boolean) value;
-				tableMergeRule.setDeleteDup(deleteDup, true);
-			} else if ("parentTable".equals(propertyName)) {
-				SQLTable table = (SQLTable) value;
-				tableMergeRule.setParentTable(table, true);
-			}
-		} else if (source instanceof ColumnMergeRules) {
-			ColumnMergeRules columnMergeRule = (ColumnMergeRules) source;
-			String propertyName = undoEvent.getPropertyName();
-			if ("actionType".equals(propertyName)) {
-				MergeActionType mat = (MergeActionType) value;
-				columnMergeRule.setActionType(mat, true);
-			}
-		} 
 	}
 }

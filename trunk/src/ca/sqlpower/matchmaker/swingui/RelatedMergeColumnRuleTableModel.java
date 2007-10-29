@@ -127,17 +127,7 @@ public class RelatedMergeColumnRuleTableModel extends
 		} else if (columnIndex == 1) {
 			Boolean value = (Boolean) aValue;
 			rule.setInPrimaryKey(value);
-			if (value) {
-				rule.setActionType(MergeActionType.NA);
-			} else if (rule.getImportedKeyColumn() == null){
-				rule.setActionType(MergeActionType.USE_MASTER_VALUE);
-			}
 		} else if (columnIndex == 2) {
-			if (aValue != null) {
-				rule.setActionType(MergeActionType.NA);
-			} else if (!rule.isInPrimaryKey()) {
-				rule.setActionType(MergeActionType.USE_MASTER_VALUE);
-			}
 			rule.setImportedKeyColumn((SQLColumn) aValue);
 		} else if (columnIndex == 3) {
 			rule.setActionType((MergeActionType) aValue);

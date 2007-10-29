@@ -101,7 +101,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForDuplication.add("mergingEngine");
         propertiesToIgnoreForDuplication.add("matchingEngine");
         propertiesToIgnoreForDuplication.add("cleansingEngine");
-        
+        propertiesToIgnoreForDuplication.add("undoing");
         
         // First pass set all settable properties
 		for (PropertyDescriptor property : settableProperties) {
@@ -274,6 +274,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForEventGeneration.add("oid");
         propertiesToIgnoreForEventGeneration.add("session");
         propertiesToIgnoreForEventGeneration.add("parentProject");
+        propertiesToIgnoreForEventGeneration.add("undoing");
+        
 		for (PropertyDescriptor property : settableProperties) {
 			if (propertiesToIgnoreForEventGeneration.contains(property.getName())) continue;
 			Object oldVal;
@@ -471,6 +473,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	public void testWhatSettersSetGettersGetWithNoSideffects() throws Exception {
 		MatchMakerObject mmo = getTarget();
 		propertiesThatDifferOnSetAndGet.add("session");
+		propertiesThatDifferOnSetAndGet.add("undoing");
+		
 		propertiesThatHaveSideEffects.addAll(propertiesThatDifferOnSetAndGet);
 		List<PropertyDescriptor> settableProperties;
 		Map<String,Object> setValues = new HashMap<String,Object>();

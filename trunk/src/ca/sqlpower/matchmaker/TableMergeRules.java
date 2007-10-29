@@ -239,28 +239,31 @@ public class TableMergeRules
 	public boolean isDeleteDup() {
 		return deleteDup;
 	}
-
-	public void setDeleteDup(boolean deleteDup) {
-		setDeleteDup(deleteDup, false);
-	}
 	
-	public void setDeleteDup(boolean deleteDup, boolean isUndo) {
-		boolean oldValue = this.deleteDup;
-		this.deleteDup = deleteDup;
-		if (deleteDup) {
-			for (ColumnMergeRules cmr : getChildren()) {
-				if (cmr.getActionType() == MergeActionType.USE_MASTER_VALUE) {
-					cmr.setActionType(MergeActionType.AUGMENT, true);
+	public void setDeleteDup(boolean deleteDup) {
+		
+		if (!isUndoing()) { 
+			getEventSupport().firePropertyChange("UNDOSTATE", false, true);
+			if (deleteDup) {
+				for (ColumnMergeRules cmr : getChildren()) {
+					if (cmr.getActionType() == MergeActionType.USE_MASTER_VALUE) {
+						cmr.setActionType(MergeActionType.AUGMENT);
+					}
 				}
-			}
-		} else {
-			for (ColumnMergeRules cmr : getChildren()) {
-				if (cmr.getActionType() == MergeActionType.AUGMENT) {
-					cmr.setActionType(MergeActionType.USE_MASTER_VALUE, true);
+			} else {
+				for (ColumnMergeRules cmr : getChildren()) {
+					if (cmr.getActionType() == MergeActionType.AUGMENT) {
+						cmr.setActionType(MergeActionType.USE_MASTER_VALUE);
+					}
 				}
 			}
 		}
-		getEventSupport().firePropertyChange("deleteDup", oldValue, this.deleteDup, isUndo);
+		boolean oldValue = this.deleteDup;
+		this.deleteDup = deleteDup;
+		getEventSupport().firePropertyChange("deleteDup", oldValue, this.deleteDup);
+		if (!isUndoing()) { 
+			getEventSupport().firePropertyChange("UNDOSTATE", true, false);
+		}
 	}
 	
 
@@ -320,34 +323,34 @@ public class TableMergeRules
 	}
 
 	public void setParentTable(SQLTable parentTable) {
-		setParentTable(parentTable, false);
-	}
-	
-	public void setParentTable(SQLTable parentTable, boolean isUndo) {
+		if (this.parentTable == parentTable) return;
 		SQLTable oldValue = this.parentTable;
 		this.parentTable = parentTable;
-		
-		List<SQLColumn> primarykeyCols = null;
-		primarykeyCols = getParentTablePrimaryKey();
-		
-		// Set each imported key column combo box to null
-		for (ColumnMergeRules cmr : getChildren()) {
-			if (cmr.getImportedKeyColumn() != null) {
-				cmr.setImportedKeyColumn(null, true);
+		if (!isUndoing()) {
+			List<SQLColumn> primarykeyCols = null;
+			primarykeyCols = getParentTablePrimaryKey();
+			getEventSupport().firePropertyChange("UNDOSTATE", false, true);
+			// Set each imported key column combo box to null
+			for (ColumnMergeRules cmr : getChildren()) {
+				if (cmr.getImportedKeyColumn() != null) {
+					cmr.setImportedKeyColumn(null);
+				}
 			}
-		}
-
-		if (primarykeyCols != null) {
-			for (SQLColumn column : primarykeyCols) {
-				for (ColumnMergeRules cmr : getChildren()) {
-					if (cmr.getColumnName().equals(column.getName())) {
-						cmr.setImportedKeyColumn(column, true);
-						break;
+			if (primarykeyCols != null) {
+				for (SQLColumn column : primarykeyCols) {
+					for (ColumnMergeRules cmr : getChildren()) {
+						if (cmr.getColumnName().equals(column.getName())) {
+							cmr.setImportedKeyColumn(column);
+							break;
+						}
 					}
 				}
 			}
 		}
-		getEventSupport().firePropertyChange("parentTable", oldValue, this.parentTable, isUndo);
+		getEventSupport().firePropertyChange("parentTable", oldValue, this.parentTable);
+		if (!isUndoing()) {
+			getEventSupport().firePropertyChange("UNDOSTATE", true, false);
+		}
 	}
 
 	public ChildMergeActionType getChildMergeAction() {
@@ -367,7 +370,7 @@ public class TableMergeRules
 	public boolean isSourceMergeRule() {
 		if (getParentProject() != null && getParentProject().getSourceTable() != null 
 				&& getSourceTable() != null) {
-			SQLTable matchSourceTable = getParentProject().getSourceTable();
+			SQLTable matchSourceTable= getParentProject().getSourceTable();
 			return matchSourceTable.equals(getSourceTable());
 		} else {
 			return false;
