@@ -171,6 +171,21 @@ public class MergeEnginePanel implements EditorPane {
 	}
 	
 	/**
+	 *	Enables/Disables the run engine action. The action will
+	 *	only be enabled if the form status is not fail. 
+	 * {@link MatchMakerSwingSession#isEnginesEnabled()} should
+	 *	be checked before calling this method.
+	 */
+	public void setEngineEnabled(boolean enabled) {
+		ValidateResult worst = handler.getWorstValidationStatus();
+		if (worst.getStatus() == Status.FAIL) {
+			runEngineAction.setEnabled(false);
+		} else {
+			runEngineAction.setEnabled(enabled);
+		}
+	}
+	
+	/**
 	 * Performs a form validation on the configuration portion and sets the
 	 * status accordingly as well as disabling the button to run the engine if
 	 * necessary.
@@ -178,8 +193,8 @@ public class MergeEnginePanel implements EditorPane {
 	private void refreshActionStatus() {
 		ValidateResult worst = handler.getWorstValidationStatus();
 		runEngineAction.setEnabled(true);
-
-		if (worst.getStatus() == Status.FAIL) {
+		
+		if (worst.getStatus() == Status.FAIL || !swingSession.isEnginesEnabled()) {
 			runEngineAction.setEnabled(false);
 		}
 	}

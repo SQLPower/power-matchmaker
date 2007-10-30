@@ -487,9 +487,11 @@ public class ProjectEditor implements EditorPane {
 		        String trimmedResultTableName = resultTableName.getText().trim();
 		        if (trimmedResultTableName == null || trimmedResultTableName.length() == 0) {
 		        	SQLTable sourceTable = (SQLTable)(sourceChooser.getTableComboBox().getSelectedItem());
-		            trimmedResultTableName = sourceTable.getName();
-		            trimmedResultTableName += "_RESULT";
-		        	resultTableName.setText(trimmedResultTableName);
+		        	if (sourceTable != null) {
+		        		trimmedResultTableName = sourceTable.getName();
+		        		trimmedResultTableName += "_RESULT";
+		        		resultTableName.setText(trimmedResultTableName);
+		        	}
 		        }
         	}
         });

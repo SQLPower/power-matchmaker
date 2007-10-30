@@ -33,9 +33,9 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.EngineSettingException;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSwingWorker;
-import ca.sqlpower.swingui.SwingWorkerRegistry;
 
 /**
  * A SPSwingWorker implementation that runs a MatchMakerEngine.
@@ -69,6 +69,11 @@ class EngineWorker extends SPSwingWorker {
 	private Action action;
 	
 	/**
+	 *	The session that this EngineWorker is from.
+	 */
+	private MatchMakerSwingSession session;
+	
+	/**
 	 * @param engine The MatchMakerEngine that the worker will run
 	 * @param outputPanel The EngineOutputPanel where the engine will display it's output, 
 	 * including the log output and progress bar
@@ -77,8 +82,9 @@ class EngineWorker extends SPSwingWorker {
 	 * @throws ArchitectException
 	 */
 	public EngineWorker(MatchMakerEngine engine, EngineOutputPanel outputPanel,
-			SwingWorkerRegistry registry, Action action) throws EngineSettingException, ArchitectException {
-		super(registry);
+			MatchMakerSwingSession session, Action action) throws EngineSettingException, ArchitectException {
+		super(session);
+		this.session = session;
 		this.engine = engine;
 		this.engineOutputDoc = outputPanel.getOutputDocument();
 		this.parentComponent = outputPanel.getOutputComponent().getTopLevelAncestor();
@@ -105,7 +111,7 @@ class EngineWorker extends SPSwingWorker {
 		SwingUtilities.invokeLater(new Runnable(){
 
 			public void run() {
-				action.setEnabled(true);
+				session.setAllEnginesEnabled(true);
 			}
 			
 		});
