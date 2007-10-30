@@ -72,16 +72,21 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MergeColumnRuleEditor implements EditorPane {
+public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
 
 	private static final Logger logger = Logger.getLogger(MergeColumnRuleEditor.class);
-	private JPanel panel;
 	private final MatchMakerSwingSession swingSession;
 	private final Project project;
 	private final TableMergeRules mergeRule;
+
+	/**
+	 * keeps track of whether the table has unsaved changes and all the 
+	 * edits made.
+	 */ 
 	private final MMOChangeUndoWatcher undo;
 	
-	StatusComponent status = new StatusComponent();
+	private JPanel panel;
+	private final StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
 	private final JCheckBox deleteDup = new JCheckBox();
 	private final JComboBox parentTable = new JComboBox();
@@ -89,8 +94,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 	private AbstractMergeColumnRuleTableModel ruleTableModel;
 	private AbstractColumnMergeRulesTable ruleTable;
-	//keeps track of whether the table has unsaved changes
-	private CustomTableModelListener tableListener;
 	
 	public MergeColumnRuleEditor(final MatchMakerSwingSession session,
 			final Project project, final TableMergeRules mr) {
@@ -112,8 +115,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 			ruleTable = new RelatedColumnMergeRulesTable(ruleTableModel);
 
 		}
-        tableListener = new CustomTableModelListener();
-        ruleTableModel.addTableModelListener(tableListener);
+		
         ruleTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
 			public void valueChanged(ListSelectionEvent e) {
                 ColumnMergeRules mergeColumn = mergeRule.getChildren().get(ruleTable.getSelectedRow()); 
@@ -141,7 +143,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 				mergeRule.setChildMergeAction((ChildMergeActionType) childMergeAction.getSelectedItem());
 			}
 		});
-        buildUI();
         
         deleteDup.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -149,15 +150,15 @@ public class MergeColumnRuleEditor implements EditorPane {
 			}
 		});
         
+        buildUI();
         
         List<Action> actions = new ArrayList<Action>();
         actions.add(saveAction);
         handler = new FormValidationHandler(status,actions);
         handler.addValidateObject(ruleTable, new MergeColumnRuleJTableValidator());
         handler.resetHasValidated(); // avoid false hits when newly created
-
-        tableListener.setModified(false);
-        undo = new MMOChangeUndoWatcher(mr,this,session);
+        
+        undo = new MMOChangeUndoWatcher<TableMergeRules, ColumnMergeRules>(mr,this,session);
 	}
 
 	public TableMergeRules getMergeRule() {
@@ -240,7 +241,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 		row+=2;
 		pb.add(new JButton(saveAction), cc.xyw(4,row,5,"c,c"));
 		panel = pb.getPanel();
-		
 	}
 
 	private Action saveAction = new AbstractAction("Save") {
@@ -283,7 +283,8 @@ public class MergeColumnRuleEditor implements EditorPane {
 			}
 
 			swingSession.save(project);
-			tableListener.setModified(false);
+			undo.setHasChanged(false);
+			
 			return true;
 		} else {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
@@ -318,44 +319,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
-//		Object curParentTable = parentTable.getSelectedItem();
-//		SQLTable oldParentTable = mergeRule.getParentTable();
-//		Object curMergeAction = childMergeAction.getSelectedItem();
-//		TableMergeRules.ChildMergeActionType oldMergeAction = mergeRule.getChildMergeAction();
-//		
-//		if (tableListener.isModified()) return true;
-//		
-//		if (mergeRule.getParent() == null) return true;
-//		
-//		// Check if delete duplicate option has been changed
-//		// for source table merge rule
-//		if (mergeRule.isSourceMergeRule()) {
-//			if (this.deleteDup.isSelected() != mergeRule.isDeleteDup()) {
-//				return true;
-//			}
-//		// For related table merge rules
-//		} else {
-//			
-//			// Check for changes in parent table
-//			if ((curParentTable == null && oldParentTable != null) ||
-//				(curParentTable != null && oldParentTable == null)) {
-//				return true;
-//			} else if (curParentTable != null && oldParentTable != null &&
-//					!curParentTable.equals(oldParentTable)) {
-//				return true;
-//			}
-//			
-//			// Check for changes in child merge action
-//			if ((curMergeAction == null && oldMergeAction != null) ||
-//					(curMergeAction != null && oldMergeAction == null)) {
-//				return true;
-//			} else if (curMergeAction != null && oldMergeAction != null &&
-//					!curMergeAction.equals(oldMergeAction)) {
-//				return true;
-//
-//			}
-//		}
-//		return false;
 		return undo.getHasChanged();
 	}
 	
@@ -373,7 +336,7 @@ public class MergeColumnRuleEditor implements EditorPane {
 
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
-				return super.getCellEditor(row, column);
+			return super.getCellEditor(row, column);
 		}
 	}
 	
@@ -580,7 +543,6 @@ public class MergeColumnRuleEditor implements EditorPane {
 	}
 
 	public void refreshComponents() {
-		logger.debug("Stub call: MergeColumnRuleEditor.refreshCompoents()");
 		if (mergeRule.isSourceMergeRule()) {
 			deleteDup.setSelected(mergeRule.isDeleteDup());
 		} else {
@@ -588,5 +550,9 @@ public class MergeColumnRuleEditor implements EditorPane {
 			childMergeAction.setSelectedItem(mergeRule.getChildMergeAction());
 		}
 		handler.performFormValidation();
+	}
+
+	public void cleanup() {
+		undo.cleanup();
 	}
 }

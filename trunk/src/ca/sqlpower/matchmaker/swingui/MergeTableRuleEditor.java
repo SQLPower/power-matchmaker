@@ -34,7 +34,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -62,21 +61,21 @@ import com.jgoodies.forms.layout.FormLayout;
 public class MergeTableRuleEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(MergeTableRuleEditor.class);
+	private final MatchMakerSwingSession swingSession;
+	private Project project;
 	
 	private JPanel panel;
-	private JTextArea desc = new JTextArea(3,80);
-	private JTable mergeRulesTable;
-	MergeTableRuleTableModel mergeTableRuleTableModel;
 	private JScrollPane mergeRulesScrollPane;
+	private StatusComponent status = new StatusComponent();
+	private FormValidationHandler handler;
 	
+	private JTable mergeRulesTable;
+	private MergeTableRuleTableModel mergeTableRuleTableModel;
+
 	private JTree menuTree;
 	private TreePath menuPath;
 
-	private final MatchMakerSwingSession swingSession;
-	private Project project;
 
-	StatusComponent status = new StatusComponent();
-	private FormValidationHandler handler;
 	
 	//keeps track of whether the editor pane has unsaved changes
 	private CustomTableModelListener tableListener;
@@ -90,7 +89,6 @@ public class MergeTableRuleEditor implements EditorPane {
         handler = new FormValidationHandler(status);
         setupRulesTable(swingSession,project);
         buildUI();
-        setDefaultSelections();
         handler.resetHasValidated(); // avoid false hits when newly created
         
         //finds the tree and menu path with that will allow the the double click
@@ -151,8 +149,8 @@ public class MergeTableRuleEditor implements EditorPane {
 		
 		FormLayout layout = new FormLayout(
 				"4dlu,14dlu,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow, 4dlu,pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,min(pref;40dlu),12dlu,pref,4dlu,fill:40dlu:grow,4dlu,pref,4dlu"); // rows
-			//	 1     2    3    4               5    6    7     8         9    10   11      
+				"10dlu,pref,12dlu,pref,4dlu,fill:40dlu:grow,4dlu,pref,4dlu"); // rows
+			//	 1     2    3     4    5    6    7     8         9    10        
 
 
 		PanelBuilder pb;
@@ -164,13 +162,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		int row = 2;
 		pb.add(status, cc.xy(4,row));
 		row += 2;
-		
-        desc.setWrapStyleWord(true);
-        desc.setLineWrap(true);
-		pb.add(new JLabel("Description:"), cc.xy(4,row,"l,t"));
-		row += 2;
-		pb.add(new JScrollPane(desc), cc.xy(4,row,"f,f"));
-		row += 2;
+
 		pb.add(new JLabel("Merge Rules:"), cc.xy(4,row,"l,t"));
 		row += 2;
 		mergeRulesScrollPane = new JScrollPane(mergeRulesTable);
@@ -200,10 +192,6 @@ public class MergeTableRuleEditor implements EditorPane {
 		deleteRule.setEnabled(false);
 	}
 
-	private void setDefaultSelections() {
-		desc.setText(project.getTableMergeRulesFolder().getFolderDesc());
-	}
-	
 	private Action moveUp = new AbstractAction("", SPSUtils.createIcon("chevrons_up1", "Move Up")) {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();

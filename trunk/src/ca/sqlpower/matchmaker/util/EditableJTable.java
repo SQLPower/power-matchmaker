@@ -35,7 +35,7 @@ import javax.swing.table.TableModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.swingui.CleanupTableModel;
+import ca.sqlpower.matchmaker.swingui.CleanupModel;
 
 /**
  * This class implements the workarounds for the bugs in the jTable
@@ -59,8 +59,8 @@ public class EditableJTable extends JTable {
 	public void removeNotify() {
 		super.removeNotify();
 		logger.debug("Table removed from hierarchy.  Cleaning up model...");
-		if (getModel() instanceof CleanupTableModel) {
-			((CleanupTableModel) getModel()).cleanup();
+		if (getModel() instanceof CleanupModel) {
+			((CleanupModel) getModel()).cleanup();
 		}
 	}
 	

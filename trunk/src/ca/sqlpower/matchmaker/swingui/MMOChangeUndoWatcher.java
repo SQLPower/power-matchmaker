@@ -23,6 +23,8 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
@@ -37,10 +39,13 @@ import ca.sqlpower.matchmaker.undo.UndoableEditClass;
 public class MMOChangeUndoWatcher <T extends MatchMakerObject,C extends MatchMakerObject>
 implements MatchMakerListener<T,C> {
 
-    private boolean hasChanged = false;
+	private static final Logger logger = Logger.getLogger(MMOChangeUndoWatcher.class);
+	
+    private boolean hasChanged;
     private UndoManager undo;
     private EditorPane pane;
     private MatchMakerSwingSession swingSession;
+    private MatchMakerObject<T, C> mmo;
     
     /**
      *  A "start compound edit" event would create a new instance of compound edit
@@ -54,7 +59,7 @@ implements MatchMakerListener<T,C> {
      *  would increment it and each "end compound edit" event would decrement
      *  it. This allows multilevel compound edits.
      */
-    private static int undoCount = 0;
+    private static int undoCount;
     
     /**
      * Creates a new MMO Change Watcher for the matchmaker object subtree rooted
@@ -63,12 +68,17 @@ implements MatchMakerListener<T,C> {
      * @param mmo The root node of the subtree to monitor.
      */
     public MMOChangeUndoWatcher(MatchMakerObject<T,C> mmo, EditorPane pane, MatchMakerSwingSession session) {
-    	swingSession = session;
+    	this.swingSession = session;
+    	this.mmo = mmo;
     	this.pane = pane;
     	
+    	logger.debug("Initializing Undo Watcher.");
         MatchMakerUtils.listenToHierarchy(this, mmo);
         undo = new UndoManager();
         swingSession.setUndo(undo);
+        undoCount = 0;
+        ce = null;
+        hasChanged = false;
     }
 
     /**
@@ -97,6 +107,7 @@ implements MatchMakerListener<T,C> {
      */
     public synchronized void mmPropertyChanged(MatchMakerEvent<T,C> evt) {
         hasChanged = true;
+        logger.debug("Property: " + evt.getPropertyName() + " from " + evt.getSource().toString() + " has changed.");
         if (!evt.isUndoEvent()) {
         	hasChanged = true;
 			UndoableEdit ue = new UndoableEditClass(evt, null);
@@ -104,11 +115,13 @@ implements MatchMakerListener<T,C> {
         	if ("UNDOSTATE".equals(evt.getPropertyName())) {
             	boolean undoing = (Boolean) evt.getNewValue();
             	if (undoing) {
+            		logger.debug("Starting new compound edit with undoCount: " + undoCount);
             		undoCount++;
             		if (undoCount == 1) {
             			ce = new CompoundEdit();
             		}
             	} else {
+            		logger.debug("Ending compound edit with undoCount: " + undoCount);
             		undoCount--;
             		if (undoCount == 0) {
             			ce.end();
@@ -162,10 +175,27 @@ implements MatchMakerListener<T,C> {
         this.hasChanged = hasChanged;
     }
     
+    /**
+     * Undo everything!
+     */
     public boolean undoAll() {
     	while (undo.canUndo()) {
 			undo.undo();
 		}
 		return true;
+    }
+    
+    /**
+     * Make the undoWatcher stop listening to the matchmaker objects and
+     * clears the undo stack
+     */
+    public void cleanup() {
+    	if (undo != null) {
+    		undo.die();
+			MatchMakerUtils.unlistenToHierarchy(this, mmo);
+			mmo = null;
+			pane = null;
+			swingSession.refreshUndoAction();
+    	}
     }
 }
