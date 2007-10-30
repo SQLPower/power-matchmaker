@@ -147,9 +147,11 @@ public class BuildExampleTableDialog extends JDialog{
 	 * Creates a new Dialog
 	 */
 	public BuildExampleTableDialog(MatchMakerSwingSession swingSession) {
+		super(swingSession.getFrame(),"Create Example Table");
 		this.swingSession = swingSession;
 		sourceChooser = new SQLObjectChooser(swingSession);
 		tableName = new JTextField(30);
+		tableName.setText("MMExampleTable");
 		buildGUI();
 	}
 	
