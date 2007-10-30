@@ -23,18 +23,26 @@ package ca.sqlpower.matchmaker.dao;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.List;
 
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.Column;
+import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.architect.ddl.DDLGenerator;
+import ca.sqlpower.architect.ddl.DDLStatement;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.sql.SPDataSource;
 
 public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Project,ProjectDAO>  {
 
@@ -198,6 +206,69 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         // TODO check that the munge rules were retrieved
     }
     
+    
+    /**
+     * This tests a previous bug where the columns of a newly created result table
+     * of a project would be cleared out after saving the project. 
+     */
+    public void testResultTableColumnsExistAfterSave() throws Exception {
+    	SQLTable sourceTable = new SQLTable(getSession().getDatabase(),
+    			"my_COOL_source_table", "", "TABLE", true);
+    	SQLIndex sourceTableIndex = new SQLIndex("my_COOL_source_table_index",
+    			true, null, IndexType.CLUSTERED, null);
+    	SQLColumn sqlCol = new SQLColumn(sourceTable, "testSQLCol",
+    			Types.INTEGER, 10, 10);
+    	sourceTable.addColumn(sqlCol);
+    	Column col = sourceTableIndex.new Column(sqlCol, false, false);
+    	sourceTableIndex.addChild(col);
+    	
+    	Project project = createNewObjectUnderTest();
+    	project.setSourceTable(sourceTable);
+    	project.setSourceTableIndex(sourceTableIndex);
+    	
+    	project.setResultTableName("my_COOL_result_table");
+    	SQLTable resultTable = project.createResultTable();
+    	
+    	// Sets up the sql statements needed for the result table
+    	final DDLGenerator ddlg = DDLUtils.createDDLGenerator(
+    			getDS());
+    	ddlg.setTargetCatalog(project.getResultTableCatalog());
+    	ddlg.setTargetSchema(project.getResultTableSchema());
+    	ddlg.dropTable(project.getResultTable());
+    	ddlg.addTable(resultTable);
+
+    	// Rus the sql statments to build the result table on the database
+    	Connection con = null;
+    	Statement stmt = null;
+    	try {
+    		con = getSession().getConnection();
+    		stmt = con.createStatement();
+    		for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
+    			try {
+    				stmt.executeUpdate(sqlStatement.getSQLText());
+    			} catch(SQLException e) {
+    				System.out.println("Ignoring exception (assuming table to drop did not exist).");
+    				e.printStackTrace(System.out);
+    			}
+    		}
+    	} finally {
+    		try { 
+    			stmt.close(); 
+    		} catch (Exception e) {
+    			System.err.println("Couldn't close statement"); 
+    			e.printStackTrace(); 
+    		}
+    	}
+    	
+    	assertEquals("Wrong number of columns for result table before save",
+    			15, project.getResultTable().getColumns().size());
+    	
+        getDataAccessObject().save(project);
+        
+    	assertEquals("Wrong number of columns for result table after save",
+    			15, project.getResultTable().getColumns().size());
+    }
+    
     public void testMungeProcessMove() throws Exception {
         MungeProcess process = new MungeProcess();
         process.setName("munge process");
@@ -205,6 +276,8 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         Project oldProject = new Project();
         oldProject.setName("old");
         oldProject.setType(ProjectMode.FIND_DUPES);
+        oldProject.setResultTableName("old_result_table");
+		oldProject.setSession(getSession());
 
         PlFolder f = new PlFolder();
 		oldProject.setParent(f);
@@ -217,6 +290,8 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         newProject.setName("new");
 		newProject.setParent(f);
         newProject.setType(ProjectMode.FIND_DUPES);
+        newProject.setResultTableName("new_result_table");
+		newProject.setSession(getSession());
         
         oldProject.addMungeProcess(process);
 
@@ -311,4 +386,6 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
      */
     protected abstract long insertSampleMungeStepData(
             long parentGroupOid, String lastUpdateUser) throws Exception;
+    
+	protected abstract SPDataSource getDS();
 }

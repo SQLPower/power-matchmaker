@@ -25,13 +25,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
+import ca.sqlpower.sql.SPDataSource;
 
 
 public class ProjectDAOSQLServerTest extends AbstractProjectDAOTestCase {
     
+	protected SPDataSource getDS() {
+		return DBTestUtil.getSqlServerDS();
+	}
+	
     @Override
     public ProjectDAO getDataAccessObject() throws Exception {
         return new ProjectDAOHibernate(getSession());
