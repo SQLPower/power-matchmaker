@@ -294,9 +294,9 @@ public class MatchStatisticsPanel extends JPanel {
 		@Override
 		public String getColumnName(int column) {
 			if ( column == 0 ) {
-				return "Group";
+				return "Munge Process";
 			} else if ( column == 1 ) {
-				return "Match Percent";
+				return "Priority";
 			} else if ( column == 2 ) {
 				return "Total Found";
 			} else if ( column == 3 ) {

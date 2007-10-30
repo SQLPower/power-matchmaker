@@ -71,7 +71,7 @@ public class ProjectInfoEditor extends NoEditEditorPane {
 		pb = new PanelBuilder(layout, panel);
 		CellConstraints cc = new CellConstraints();
 
-		pb.add(new JLabel("Match ID:"), cc.xy(2,2,"r,c"));
+		pb.add(new JLabel("Project ID:"), cc.xy(2,2,"r,c"));
 		pb.add(new JLabel("Folder:"), cc.xy(2,4,"r,c"));
 		pb.add(new JLabel("Description:"), cc.xy(2,6,"r,t"));
 		pb.add(new JLabel("Type:"), cc.xy(2,8,"r,c"));
