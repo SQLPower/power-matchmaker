@@ -132,8 +132,16 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 					"The begin index can not be less than 0.");
 			}
 			
-			// This block separates the input into an array of words.
 			if (!useRegex) {
+				// This block of code adds escape characters to each of
+				// the regex special characters to be taken as literals
+				String specialChars = "-+*?()[]{}|^<=";
+				delimiter = delimiter.replaceAll("\\\\", "\\\\\\\\");
+				delimiter = delimiter.replaceAll("\\$", "\\\\\\$");
+				for (char letter : specialChars.toCharArray()) {
+					delimiter = delimiter.replaceAll("\\" + letter, "\\\\" + letter);
+				}
+				
 				delimiter = "[" + delimiter + "]+";
 			} 
 			Pattern p;
@@ -142,6 +150,8 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 			} else {
 				p = Pattern.compile(delimiter);
 			}
+			// This separates the input into an array of "words"
+			// according to the specified delimiters.
 			String [] words = p.split(data);
 			
 			// This for loop performs the substring on each word

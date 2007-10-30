@@ -104,6 +104,24 @@ public class RetainCharactersMungeStepTest extends TestCase {
 		assertEquals("xxyxxyxyABC", result);
 	}
 	
+	/**
+	 * Tests for a previous bug where special regex characters would
+	 * not be taken in as literals even if regex was turned off.
+	 */
+	public void testCallonRegexInput() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData("a\\-+*?()[]{}|$^<=z");
+		step.connectInput(0, testInput);
+		step.setParameter(step.RETAIN_CHARACTERS_PARAMETER_NAME, "\\-+*?()[]{}|$^<=");
+		
+		step.open(logger);
+		step.call();
+		List<MungeStepOutput> results = step.getChildren(); 
+		MungeStepOutput output = results.get(0);
+		String result = (String)output.getData();
+		assertEquals("\\-+*?()[]{}|$^<=", result);
+	}
+	
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);

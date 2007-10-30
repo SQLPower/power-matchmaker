@@ -101,6 +101,14 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 			out.setData(null);
 		} else if (from != null && to != null) {
 			if (!useRegex) {
+				// This block of code adds escape characters to each of
+				// the regex special characters to be taken as literals
+				String specialChars = "-+*?()[]{}|^<=";
+				from = from.replaceAll("\\\\", "\\\\\\\\");
+				from = from.replaceAll("\\$", "\\\\\\$");
+				for (char letter : specialChars.toCharArray()) {
+					from = from.replaceAll("\\" + letter, "\\\\" + letter); 
+				}
 				from = "(" + from + "){1}";
 			}
 			Pattern p;
