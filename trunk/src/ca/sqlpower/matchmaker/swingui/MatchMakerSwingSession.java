@@ -193,6 +193,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * different match rule sets.
      */
     private final JColorChooser colourChooser = new JColorChooser();
+
+    /**
+     * This variable is used to determine whether the engines of this session
+     * should be enabled.
+     */
+	private boolean enginesEnabled = true;
     
     private Action userPrefsAction = new AbstractAction("User Preferences...") {
 		public void actionPerformed(ActionEvent e) {
@@ -1183,6 +1189,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		if (mergeEnginPanels.get(mei) == null) {
 			ep = new MergeEnginePanel(this,project, getFrame());
 			mergeEnginPanels.put(mei,ep); 
+			ep.setEngineEnabled(enginesEnabled);
 		}
 		return ep;
 	}
@@ -1198,6 +1205,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		if (ep == null) {
 			ep = new MatchEnginePanel(this,project, getFrame());
 			matchEnginPanels.put(mei,ep); 
+			ep.setEngineEnabled(enginesEnabled);
 		}
 		return ep;
 	}
@@ -1213,6 +1221,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		if (ep == null) {
 			ep = new CleanseEnginePanel(this,project, getFrame());
 			cleanseEnginPanels.put(mei,ep); 
+			ep.setEngineEnabled(enginesEnabled);
 		}
 		return ep;
 	}
@@ -1301,4 +1310,30 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		redoAction.updateRedoState();
 	}
 
+	
+	/**
+	 *	Enables/Disables all of this session's engine panels' 
+	 *	run engine actions. Note that the actions will only
+	 *	be enabled if the form status in the panel is not fail.
+	 */
+	public void setAllEnginesEnabled(boolean enabled){
+		enginesEnabled  = enabled;
+		for (MatchEnginePanel ep: matchEnginPanels.values()) {
+			ep.setEngineEnabled(enabled);
+		}
+		for (MergeEnginePanel ep : mergeEnginPanels.values()){
+			ep.setEngineEnabled(enabled);
+		}
+		for (CleanseEnginePanel ep : cleanseEnginPanels.values()) {
+			ep.setEngineEnabled(enabled);
+		}
+ 	}
+
+	/**
+	 * Returns whether the run engine actions have been 
+	 * enabled/disabled in this session.
+	 */
+	public boolean isEnginesEnabled() {
+		return enginesEnabled;
+	}
 }
