@@ -24,10 +24,12 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
+import ca.sqlpower.sql.SPDataSource;
 
 
 public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
@@ -39,6 +41,10 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
         super.setUp();
         project = createNewObjectUnderTest();
     }
+    
+	protected SPDataSource getDS() {
+		return DBTestUtil.getOracleDS();
+	}
     
 	@Override
 	public ProjectDAO getDataAccessObject() throws Exception {

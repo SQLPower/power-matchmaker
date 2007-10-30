@@ -30,6 +30,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.DBTestUtil;
@@ -255,10 +256,22 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		return false;
 	}
 
-	public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: TestingMatchMakerHibernateSession.findSQLTableByName()");
-		return null;
+	public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) 
+			throws ArchitectException{
+    	logger.debug("Session.findSQLTableByName:" +
+    			catalog + "." + schema + "." + tableName);
+    	if (tableName == null || tableName.length() == 0) return null;
+		SQLDatabase currentDB = getDatabase();
+		SQLDatabase tempDB = null;
+		try {
+			tempDB = new SQLDatabase(dataSource);
+			return tempDB.getTableByName(
+					catalog,
+					schema,
+					tableName);
+		} finally {
+			if (tempDB != null) tempDB.disconnect();
+		}
 	}
 
 	public boolean tableExists(String catalog, String schema, String tableName) {

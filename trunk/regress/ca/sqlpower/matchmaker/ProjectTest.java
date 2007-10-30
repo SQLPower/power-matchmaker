@@ -371,7 +371,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		assertFalse(Project.doesSourceTableExist(session, project));
 	}
 	
-	public void testVertifyResultTableSS() throws SQLException, InstantiationException,
+	public void testVerifyResultTableSS() throws SQLException, InstantiationException,
 											IllegalAccessException, ArchitectException {
 		
 		SPDataSource ds = DBTestUtil.getSqlServerDS();
@@ -478,7 +478,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		}
     }
 	
-	public void testVertifyResultTableORA() throws SQLException, InstantiationException,
+	public void testVerifyResultTableORA() throws SQLException, InstantiationException,
 											IllegalAccessException, ArchitectException {
 		
 		SPDataSource ds = DBTestUtil.getOracleDS();
