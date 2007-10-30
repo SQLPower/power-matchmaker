@@ -1,4 +1,5 @@
 <?xml version='1.0'?>
+<?xml-stylesheet href="/Users/sean/Desktop/docbook-css-0.4/driver.css" type="text/css"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.0//EN" 
 	"http://www.oasis-open.org/docbook/xml/simple/1.0/sdocbook.dtd">
 
@@ -980,6 +981,436 @@
 				definitions made earlier. You can open multiple sessions
 				simultaneously to access different repositories.
 			</para>
+		</section>
+
+		<section id="MM_Example">
+			<title>A Small Power*MatchMaker Example</title>
+			<para>
+				This section will give you a step by step example of
+				using the MatchMaker to create a small De-Duping
+				project.
+			</para>
+
+			<orderedlist>
+				<listitem>
+					<para>
+						Welcome to the Match Maker Example, this will
+						take you through an example De-Duping project
+						and highlight some of the key features of the
+						Power*MatchMaker.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						To begin click on the help menu in the top menu
+						bar and choose
+						<userinput>Build Example Table</userinput>.
+						This will create the base table for this
+						example that you can practice finding and
+						removing duplicates in. Choose a location for
+						the example table and click
+						<userinput>Create</userinput>
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						We now need to create an new folder to store
+						this project. To create the folder, right click
+						on the
+						<userinput>Current Project</userinput>
+						folder on the tree of items to the right, and
+						choose
+						<userinput>New Folder</userinput>.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now press
+						<userinput>Save</userinput>
+						. If you expand the Current Project folder you
+						will see that there is a new folder inside with
+						the name you gave the project.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Right Click on the newly created folder and
+						choose
+						<userinput>New Project</userinput>
+						-&gt;
+						<userinput>New De-Duping Project</userinput>
+						.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						In the new window enter a title for the new
+						project.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Next in the
+						<userinput>Source Table</userinput>
+						section, enter the location of the newly created
+						example table. Choose Catalog, Schema and Table
+						appropriately. The unique index option lets you
+						choose which fields are needed uniquely identify
+						the records. By default the primary key is
+						selected, but if there is no primary key or the
+						primary key is inappropriate, the unique index
+						can be modified by clicking
+						<userinput>Pick Columns</userinput>
+						after you have saved the project.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now select the result table for the information
+						to be stored. If the table does not exist one
+						will be created for you. If the table exists but
+						is not correctly formated you will be given the
+						option to drop the table and create a new one.
+						Press
+						<userinput>Save</userinput>
+						to save the project.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Next expand the new folder you created in step 1
+						and then expand the project you just created. In
+						the folder labeled
+						<userinput>Munge Process</userinput>
+						Right-Click and choose
+						<userinput>New Munge Process</userinput>
+						. The Editor that comes up is the Munge Editor.
+						In the Editor there are three major parts. First
+						is the editor options in the top area. Second is
+						the white center area that is the Munge Pen.
+						Finally there is the Munge Step toolbar on the
+						right.
+					</para>
+
+					<para>
+						In the Munge Pen You will see the two default
+						steps for a De-Duping Project. At the top there
+						there is the input step labeled with the table's
+						name. This step contains all of the initial data
+						from your table. Clicking
+						<userinput>Show All</userinput>
+						will display the labels of all the table's
+						columns.
+					</para>
+
+					<para>
+						The other step in the Munge Pen is the output
+						step, labeled
+						<emphasis>Result Step</emphasis>
+						. This is where the transformed data will be
+						places so that it can be compared while
+						matching.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						As a simple start, drag the peg under HomePhone
+						in the input step into the plug in the output
+						step. This would match all records in the table
+						that have the exact same home phone number. This
+						is a good start but not all that useful, as
+						there are many ways to enter a phone number and
+						this will only find a match between two phone
+						numbers if they were entered in the exact same
+						way.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						To counter this problem we can add a Munge Step.
+						Bring the
+						<userinput>Retain Characters</userinput>
+						Munge Step into the Munge Pen. This can be done
+						by either dragging the step form the toolbar or
+						by right clicking in the Munge Pen and selecting
+						it from the list. This munge step allow you to
+						take in a string and remove all but the given
+						characters. A detailed description of all the
+						munge steps can be found later in the user guide
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						To configure the step open the step's options,
+						by clicking on the
+						<userinput>Expand Button</userinput>
+						beside the name. Because this a phone number we
+						will want to strip all the characters except the
+						numbers.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						In the text field either enter the numbers
+						<emphasis>0123456789</emphasis>
+						or enable regular expressions and use
+						<emphasis>[0-9]</emphasis>
+						.
+					</para>
+					<para>
+						More information or regular expressions can be
+						found of the Interweb.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now remove the connection between HomePhone and
+						the output step by either Right-Clicking on the
+						connection line and choosing
+						<userinput>delete</userinput>
+						or dragging the peg out of the result step and
+						letting it drop in the white area.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Connect the HomePhone peg in the input step to
+						the plug in the Retain Characters, and the peg
+						coming out of the Retain Characters step into
+						the plug in the output step. This will now match
+						all the records that have the same digits in
+						there phone numbers regardless of how they were
+						entered.
+					</para>
+					<para>
+						For example now (416) 555-1234, 416-555-1234 and
+						4165551234 will all match.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						To add a second set of data to compare on, open
+						the output step's options by clicking on the
+						button next to the name and click
+						<userinput>Add Input</userinput>
+						.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now create an identical Retain Characters step
+						and use to the also compare the cellPhone
+						column. Now any two records that have both an
+						home phone number and a cell phone Number with
+						the same digits will be considered possible
+						matches.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Next Give the process a name and press
+						<userinput>Save</userinput>
+						. It is helpful to give a process a good name so
+						that it can be easily identified later.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Next click on
+						<userinput>Run Match Engine</userinput>
+						in the Tree on the left. Running the match
+						engine will not modify your data in anyway.
+					</para>
+				</listitem>
+				<listitem>
+					<para>There are many options here:</para>
+					<para>
+						Log file is where the info from the run will be
+						stored.
+					</para>
+					<para>
+						Selecting clear match pool will remove all
+						previous matches that were found
+					</para>
+					<para>
+						Message level indicates what amount of
+						information will be displayed, it is recommended
+						that you limit the number of records to process
+						if the message level is set to
+						<userinput>DEBUG</userinput>
+						, because there is a large amount of information
+						printed and this can take a very long time.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						For now you can leave the default setting and
+						click
+						<userinput>Run Match Engine</userinput>
+						.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						This has found all possible records that share
+						both a cell and a home phone number. How ever it
+						did not combine any of the data, first it must
+						be manually checked over to ensure no records
+						are merged accidently.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Click on
+						<userinput>Validate Matches</userinput>
+						in the tree on the left to see the matches that
+						were found.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						On the left there are a series of shapes that
+						represent groups of the records that have the
+						same home and cell numbers and their
+						relationships to the other records. If you click
+						on a number on the left the data from the
+						records in the group will be displayed on the
+						right with differences in red. All of this is
+						relative most lefterly record, which is they on
+						you clicked on.
+					</para>
+					<para>
+						Right now all of the lines are drawn in red but
+						if there were more then one Munge Process they
+						all display in different colours.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Presently only the id is shown in the left side
+						to identify the records but to make them easier
+						to see you can click
+						<userinput>Choose Displayed Value</userinput>
+						to change what values you see. Lets Change it to
+						show people full names. Click
+						<userinput>Choose Display Names</userinput>
+						and select FirstName then LastName.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now its time to manually look at all of the
+						matches and verify the correct ones. Click on a
+						name in the first group. On the right you can
+						see the differences between all of the records
+						relative to the one you clicked on.
+					</para>
+					<para>
+						Above each column there is a set of buttons that
+						show the different ways these can be connected.
+					</para>
+					<para>
+						Above the selected record there are the three
+						buttons "Master of All", "No Match to Any" and
+						"Unmatch All" Above all the other records there
+						are the buttons "Master", "Duplicate", "No
+						Match". The first set effect all the records in
+						the group. While the second set of buttons
+						effect only the record they are over top of.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Play around with these until you have a good set
+						of selected matches. You will notice three
+						different line types Dashed, Dotted and Solid
+						with a circle at one end.
+					</para>
+					<para>
+						A
+						<emphasis>dashed</emphasis>
+						line means that it is undecided.
+					</para>
+					<para>
+						A
+						<emphasis>dotted</emphasis>
+						line means it has been identified as not a
+						match.
+					</para>
+					<para>
+						A
+						<emphasis>solid</emphasis>
+						line means it is a match, making the record with
+						the circle near it the master record, which is
+						the one that will be kept after merging.
+					</para>
+					<para>
+						At the bottom there is a
+						<userinput>Auto-Match</userinput>
+						button, pressing this will declare that all of
+						the undecided possible matches are matches and
+						choose a master record at random. This is not
+						recommended as serious data loss could occur if
+						the records are not manually checked.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now that some of the records have been matched
+						they need to be merged. This is where your data
+						will be modified. But first we need to define a
+						set of rules for merging. Open the
+						<userinput>Merge Rules</userinput>
+						folder by clicking on it in the tree. Here you
+						can define child and grandchild tables, that
+						will also be merged when the current table is to
+						prevent orphaning records. In this example there
+						are not child tables.
+					</para>
+					<para>
+						The
+						<userinput>Derive Related Tables</userinput>
+						button will search through the database and look
+						for tables that may be related to the selected
+						one based on there primary key. You can manually
+						add others by pressing the
+						<userinput>New Merge Rule</userinput>
+						button.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Click on the example table's name in the tree in
+						the
+						<emphasis>Merge Rules</emphasis>
+						folder. Here you can define what is to be done
+						when merging two records for each column. For
+						this example "Augment nulls" will be fine as it
+						will leave all of the master record's columns
+						alone except if they have nulls, which it will
+						try to fill in the missing data from the
+						duplicate records.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now to finally run the merge and update the data
+						click on the
+						<userinput>Run Merge Engine</userinput>
+						option on the tree on the left. After choosing a
+						log file press
+						<userinput>Run Merge Engine</userinput>
+						and the selected records will be merged.
+					</para>
+				</listitem>
+				<listitem>
+					<para>You data has now been merged.</para>
+					<para>
+						More detail on everything covered here can be
+						found in the user guide.
+					</para>
+				</listitem>
+			</orderedlist>
 		</section>
 
 		<section id="How_To_Use.GUI">
