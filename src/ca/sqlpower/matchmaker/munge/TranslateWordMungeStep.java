@@ -116,7 +116,16 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 				to = translateWord.getTo();
 				
 				if (from != null && to != null) {
+					// This block of code adds escape characters to each of
+					// the regex special characters to be taken as literals
 					if (!useRegex) {
+						String specialChars = "-+*?()[]{}|^<=";
+						from = from.replaceAll("\\\\", "\\\\\\\\");
+						from = from.replaceAll("\\$", "\\\\\\$");
+						for (char letter : specialChars.toCharArray()) {
+							from = from.replaceAll("\\" + letter, "\\\\" + letter);
+						}
+						
 						from = "(" + from + "){1}";
 					} 
 					Pattern p;

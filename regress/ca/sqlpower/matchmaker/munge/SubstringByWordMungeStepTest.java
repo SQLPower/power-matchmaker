@@ -83,6 +83,25 @@ public class SubstringByWordMungeStepTest extends TestCase {
 		assertEquals("b:c:d:e:f:g:h",result);
 	}
 	
+	/**
+	 * Tests for a previous bug where special regex characters would
+	 * not be taken in as literals even if regex was turned off.
+	 */
+	public void testCallonRegexInput() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData("ab\\-+*?()cd[]{}|$^<=de");
+		step.setParameter(step.BEGIN_PARAMETER_NAME, 1);
+		step.setParameter(step.END_PARAMETER_NAME, 2);
+		step.setParameter(step.DELIMITER_PARAMETER_NAME, "\\-+*?()[]{}|$^<=");
+		step.connectInput(0, testInput);
+		step.open(logger);
+		step.call();
+		List<MungeStepOutput> results = step.getChildren(); 
+		MungeStepOutput output = results.get(0);
+		String result = (String)output.getData();
+		assertEquals("b d e",result);
+	}
+	
 	public void testCallonNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);

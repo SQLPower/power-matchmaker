@@ -115,6 +115,24 @@ public class TranslateWordMungeStepTest extends TestCase {
 		String result = (String)output.getData();
 		assertEquals("1234badc", result);
 	}
+	
+	/**
+	 * Tests for a previous bug where special regex characters would
+	 * not be taken in as literals even if regex was turned off.
+	 */
+	public void testCallonRegexInput() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData("ab\\-+*?()[]{}|$^<=cd");
+		step.setParameter(step.TRANSLATE_GROUP_PARAMETER_NAME, "123");
+		step.connectInput(0, testInput);
+		
+		step.open(logger);
+		step.call();
+		List<MungeStepOutput> results = step.getChildren(); 
+		MungeStepOutput output = results.get(0);
+		String result = (String)output.getData();
+		assertEquals("12\\-+*?()[]{}|$^<=34", result);
+	}
 
 	/**
 	 * This tests the case where the regular expression option is enabled.

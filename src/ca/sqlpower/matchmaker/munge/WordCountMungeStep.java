@@ -53,11 +53,19 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	 */
 	public static final String USE_REGEX_PARAMETER_NAME = "useRegex";
 	
+	/**
+	 * This is the name of the parameter that decides whether this step will be
+	 * case sensitive. The only values accepted by the parameter are "true" and
+	 *  "false".
+	 */
+	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
+	
 	public WordCountMungeStep(MatchMakerSession session) {
 		super(session);
 		setName("Word Count");
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
 		setParameter(USE_REGEX_PARAMETER_NAME, false);
+		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
 		
 		out = new MungeStepOutput<BigDecimal>("wordCountOutput", BigDecimal.class);
 		addChild(out);
@@ -88,6 +96,7 @@ public class WordCountMungeStep extends AbstractMungeStep {
 		super.call();
 		String delimiter = getParameter(DELIMITER_PARAMETER_NAME);
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
+		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
 		
 		MungeStepOutput<String> in = getInputs().get(0);
 		String data = in.getData();
@@ -95,9 +104,23 @@ public class WordCountMungeStep extends AbstractMungeStep {
 		int wordCount = 0;
 		if (data != null) {
 			if (!useRegex) {
+				// This block of code adds escape characters to each of
+				// the regex special characters to be taken as literals
+				String specialChars = "-+*?()[]{}|^<=";
+				delimiter = delimiter.replaceAll("\\\\", "\\\\\\\\");
+				delimiter = delimiter.replaceAll("\\$", "\\\\\\$");
+				for (char letter : specialChars.toCharArray()) {
+					delimiter = delimiter.replaceAll("\\" + letter, "\\\\" + letter);
+				}
+				
 				delimiter = "[" + delimiter + "]+";
 			} 
-			Pattern p = Pattern.compile(delimiter);
+			Pattern p;
+			if (!caseSensitive) {
+				p = Pattern.compile(delimiter, Pattern.CASE_INSENSITIVE);
+			} else {
+				p = Pattern.compile(delimiter);
+			}
 			wordCount = p.split(data).length;
 		}
 		

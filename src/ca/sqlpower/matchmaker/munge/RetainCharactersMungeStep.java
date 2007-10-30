@@ -91,7 +91,7 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	
 	public Boolean call() throws Exception {
 		super.call();
-
+	
 		MungeStepOutput<String> in = getInputs().get(0);
 		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
@@ -102,6 +102,15 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 		if (in.getData() != null) {
 			Pattern p;
 			if (!useRegex) {
+				// This block of code adds escape characters to each of
+				// the regex special characters to be taken as literals
+				String specialChars = "-+*?()[]{}|^<=";
+				retainChars = retainChars.replaceAll("\\\\", "\\\\\\\\");
+				retainChars = retainChars.replaceAll("\\$", "\\\\\\$");
+				for (char letter : specialChars.toCharArray()) {
+					retainChars = retainChars.replaceAll("\\" + letter, "\\\\" + letter);
+				}
+				
 				retainChars = "[" + retainChars + "]+";
 			}
 			if (!caseSensitive) {

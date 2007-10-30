@@ -109,6 +109,23 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		assertEquals("123cba", result);
 	}
 	
+	/**
+	 * Tests for a previous bug where special regex characters would
+	 * not be taken in as literals even if regex was turned off.
+	 */
+	public void testCallonRegexInput() throws Exception {
+		testInput = new MungeStepOutput<String>("test", String.class);
+		testInput.setData("a\\-+*?()[]{}|$^<=z");
+		step.connectInput(0, testInput);
+		step.setParameter(step.FROM_PARAMETER_NAME, "\\-+*?()[]{}|$^<=");
+		step.setParameter(step.TO_PARAMETER_NAME, "!");
+		step.open(logger);
+		step.call();
+		List<MungeStepOutput> results = step.getChildren(); 
+		MungeStepOutput output = results.get(0);
+		String result = (String)output.getData();
+		assertEquals("a!z", result);
+	}
 
 	/**
 	 * This tests the case where the regular expression option is enabled.
@@ -127,6 +144,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 		String result = (String)output.getData();
 		assertEquals("-foo-foo-foo-", result);
 	}
+	
 	
 	public void testCallonCaseInsensitive() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
