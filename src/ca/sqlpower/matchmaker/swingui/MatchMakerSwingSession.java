@@ -96,6 +96,7 @@ import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
+import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
@@ -309,7 +310,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	};
 
 	private Action helpAction;
-
+	private Action buildExampleTableAction;
+	
 	private Action tableQueryAction = new AbstractAction("Table Explorer") {
 		public void actionPerformed(ActionEvent e) {
 			TableQueryFrame f = new TableQueryFrame(MatchMakerSwingSession.this);
@@ -520,7 +522,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         JMenu windowMenu = new JMenu("Window");
         windowMenu.setMnemonic('w');
         menuBar.add(windowMenu);
-
+        
         helpAction = new HelpAction(frame);
 
 		JMenu helpMenu = new JMenu("Help");
@@ -530,7 +532,13 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             helpMenu.addSeparator();
         }
         helpMenu.add(helpAction);
-		menuBar.add(helpMenu);
+		
+        buildExampleTableAction = new BuildExampleTableAction(this);
+        helpMenu.add(buildExampleTableAction);
+
+        menuBar.add(helpMenu);
+		
+        
 		frame.setJMenuBar(menuBar);
 
 		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
