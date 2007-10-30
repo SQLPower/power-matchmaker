@@ -112,10 +112,6 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 	 * @param newValue The value after the change. Can be null.
 	 */
 	public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-		firePropertyChange(propertyName, oldValue, newValue, false);
-	}
-	
-	public void firePropertyChange(String propertyName, Object oldValue, Object newValue, boolean isUndo) {
 		if (propertyName == null) throw new NullPointerException("Null property name is not allowed");
 		if ( (oldValue == null && newValue == null) ||
 			 (oldValue != null && oldValue.equals(newValue))) {
@@ -126,8 +122,8 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 		evt.setOldValue(oldValue);
 		evt.setNewValue(newValue);
 		evt.setPropertyName(propertyName);
-		evt.setUndoEvent(isUndo);
-		
+		evt.setUndoEvent(source.isUndoing());
+
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
             listeners.get(i).mmPropertyChanged(evt);
@@ -156,13 +152,14 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 		evt.setOldValue(oldValue);
 		evt.setNewValue(newValue);
 		evt.setPropertyName(propertyName);
+		evt.setUndoEvent(source.isUndoing());
 		evt.setChangeIndices(new int[] {changedIndex});
 
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
             listeners.get(i).mmPropertyChanged(evt);
 		}
-	}
+	} 
 
 	/**
 	 * Fires a mmChildrenInserted event to all listeners.
@@ -187,6 +184,7 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 		evt.setChangeIndices(insertedIndices);
 		evt.setPropertyName(childPropertyName);
 		evt.setChildren(insertedChildren);
+		evt.setUndoEvent(source.isUndoing());
 		if (logger.isDebugEnabled()){
 		    logger.debug("Firing children inserted for object "+source);
 		}
@@ -221,7 +219,8 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 		evt.setChangeIndices(removedIndices);
 		evt.setPropertyName(childPropertyName);
 		evt.setChildren(removedChildren);
-
+		evt.setUndoEvent(source.isUndoing());
+		
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
             logger.debug("fireChildrenRemoved calling listeners");
@@ -235,7 +234,8 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 	public void fireStructureChanged() {
 		MatchMakerEvent<T, C> evt = new MatchMakerEvent<T, C>();
 		evt.setSource(source);
-
+		evt.setUndoEvent(source.isUndoing());
+		
 		// see class-level comment A
 		for (int i = listeners.size() - 1; i >= 0; i--) {
 			if (logger.isDebugEnabled()) {

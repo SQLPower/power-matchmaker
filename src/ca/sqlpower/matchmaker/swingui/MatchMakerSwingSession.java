@@ -732,6 +732,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 }
             }
             if (doit) {
+            	// clears the undo stack and the listeners to the match
+            	// maker object
+            	if (oldPane instanceof CleanupModel) {
+            		((CleanupModel) oldPane).cleanup();
+            	}
+            		
                 //Remebers the treepath to the last node that it clicked on
                 if (pane != null){
                     lastTreePath = tree.getSelectionPath();

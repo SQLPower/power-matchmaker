@@ -26,7 +26,7 @@ package ca.sqlpower.matchmaker.swingui;
  * and will ask a CleanupTableModel to clean up when the table becomes
  * undisplayable.
  */
-public interface CleanupTableModel {
+public interface CleanupModel {
 	
 	/**
 	 * Asks this table model to permanently clean up its resources.

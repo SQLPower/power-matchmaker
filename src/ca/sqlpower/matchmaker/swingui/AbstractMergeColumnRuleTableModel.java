@@ -38,7 +38,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
  * row count = children count of table merge rule.
  */
 
-public abstract class AbstractMergeColumnRuleTableModel extends AbstractTableModel implements MatchMakerListener {
+public abstract class AbstractMergeColumnRuleTableModel extends AbstractTableModel implements MatchMakerListener, CleanupModel {
 
 	protected TableMergeRules mergeRule;
 	protected List<Integer> primaryKeys = new ArrayList<Integer>();
@@ -116,5 +116,9 @@ public abstract class AbstractMergeColumnRuleTableModel extends AbstractTableMod
     public void mmStructureChanged(MatchMakerEvent evt) {
         fireTableStructureChanged();
     }
+
+	public void cleanup() {
+		MatchMakerUtils.unlistenToHierarchy(this, this.mergeRule);
+	}
 
 }
