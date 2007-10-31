@@ -126,9 +126,9 @@ public class RelatedMergeColumnRuleTableModel extends
 			rule.setColumn((SQLColumn) aValue);
 		} else if (columnIndex == 1) {
 			Boolean value = (Boolean) aValue;
-			rule.setInPrimaryKey(value);
+			rule.setInPrimaryKeyAndAction(value);
 		} else if (columnIndex == 2) {
-			rule.setImportedKeyColumn((SQLColumn) aValue);
+			rule.setImportedKeyColumnAndAction((SQLColumn) aValue);
 		} else if (columnIndex == 3) {
 			rule.setActionType((MergeActionType) aValue);
 		} else if (columnIndex == 4) {

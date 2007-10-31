@@ -45,15 +45,18 @@ public class DeleteMergeRuleAction extends AbstractAction {
 
 	public void actionPerformed(ActionEvent e) {
 		int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-		"Are you sure you want to delete the merge rule?");
+				"Are you sure you want to delete the merge rule?",
+				"Confirmation",JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE);
 		if (responds != JOptionPane.YES_OPTION)
 			return;
-		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-		TreePath treePath = treeModel.getPathForNode(mergeRule.getParent());
-		swingSession.getTree().setSelectionPath(treePath);
 		Project project = mergeRule.getParentProject();
 		project.removeTableMergeRule(mergeRule);
 		swingSession.save(project);
+
+		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+		TreePath treePath = treeModel.getPathForNode(project.getTableMergeRulesFolder());
+		swingSession.getTree().setSelectionPath(treePath);
 	}
 
 }
