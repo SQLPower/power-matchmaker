@@ -26,6 +26,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
@@ -36,6 +37,7 @@ import javax.swing.table.TableModel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.swingui.CleanupModel;
+import ca.sqlpower.swingui.table.TableUtils;
 
 /**
  * This class implements the workarounds for the bugs in the jTable
@@ -170,4 +172,13 @@ public class EditableJTable extends JTable {
 		};
 	}
 
+	@Override
+	public void tableChanged(TableModelEvent e) {
+		super.tableChanged(e);
+		try {
+			TableUtils.fitColumnWidths(this, 15);
+		} catch (Exception ex) {
+			//sometimes exceptions are thrown when the table is not yet fully initialized
+		}
+	}
 }
