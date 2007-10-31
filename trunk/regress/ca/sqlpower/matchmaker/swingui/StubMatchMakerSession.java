@@ -169,4 +169,8 @@ public class StubMatchMakerSession implements MatchMakerSession{
 		return false;
 	}
 
+	public String getAppUserEmail() {
+		return null;
+	}
+
 }

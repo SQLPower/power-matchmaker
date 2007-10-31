@@ -275,15 +275,18 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	}
 
 	public boolean tableExists(String catalog, String schema, String tableName) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.tableExists()");
 		return false;
 	}
 
 	public boolean tableExists(SQLTable table) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.tableExists()");
 		return false;
+	}
+
+	public String getAppUserEmail() {
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.getAppUserEmail()");
+		return null;
 	}
 
 }

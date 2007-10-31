@@ -66,6 +66,11 @@ public interface MatchMakerSession {
 	 * the same as the DB User.
 	 */
 	public String getAppUser();
+	
+	/** 
+	 * The email of the PL Schema user for this session.
+	 */
+	public String getAppUserEmail();
 
 	/**
 	 * The actual RDBMS user name that we are connected to the database as.

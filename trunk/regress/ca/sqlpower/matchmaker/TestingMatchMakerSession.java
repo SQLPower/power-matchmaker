@@ -42,6 +42,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	
 	Date date = new Date();
 	String appUser = "App User";
+	String appUserEmail = "app@sqlpower.ca";
 	String dbUser = "DB User";
 	SQLDatabase db = new SQLDatabase();
 	List<PlFolder> folders;
@@ -256,5 +257,9 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     		}
     	}
     }
+
+	public String getAppUserEmail() {
+		return appUserEmail;
+	}
 
 }
