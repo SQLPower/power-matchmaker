@@ -920,6 +920,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     public String getAppUser() {
         return sessionImpl.getAppUser();
     }
+    
+    public String getAppUserEmail() {
+    	return sessionImpl.getAppUserEmail();
+    }
 
     public String getDBUser() {
         return sessionImpl.getDBUser();

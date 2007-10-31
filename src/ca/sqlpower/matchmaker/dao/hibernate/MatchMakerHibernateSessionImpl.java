@@ -216,6 +216,10 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	public String getAppUser() {
 		return appUser.getUserId();
 	}
+	
+	public String getAppUserEmail() {
+		return appUser.getEmailAddress();
+	}
 
 	public String getDBUser() {
 		return dbUser;

@@ -39,13 +39,20 @@ import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
+import ca.sqlpower.sql.DatabaseObject;
 
 /**
  * folder is the parent of project. should be not null.
  */
-public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder> {
+public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder> 
+	implements DatabaseObject{
 
     static final Logger logger = Logger.getLogger(Project.class);
+    
+    /**
+     * The type name of a Project as a DatabaseObject
+     */
+    public static final String DB_OBJECT_TYPE = "MATCHMAKER_PROJECT"; 
 
 	public enum ProjectMode {
 		FIND_DUPES("Find Duplicates"), BUILD_XREF("Build Cross-Reference"), CLEANSE("Cleanse");
@@ -812,5 +819,19 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 			mergingEngine = new MergeEngineImpl(getSession(), this); 
 		}
 		return mergingEngine;
+	}
+
+	/**
+	 * Returns the name of this Project as saved for DatabaseObject
+	 */
+	public String getObjectName() {
+		return getName();
+	}
+
+	/**
+	 * Returns the type name of this as a DatabaseObject
+	 */
+	public String getObjectType() {
+		return DB_OBJECT_TYPE;
 	}
 }
