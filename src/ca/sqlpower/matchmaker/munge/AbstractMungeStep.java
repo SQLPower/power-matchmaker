@@ -101,7 +101,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		Input in = new Input(null, desc);
 		inputs.add(in);
 		int index = inputs.size()-1;
-		getEventSupport().firePropertyChange("inputs", index, null, in);
+		getEventSupport().firePropertyChange("addInputs", index, null, desc);
 		return index;
 	}
 
@@ -110,8 +110,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 			throw new IndexOutOfBoundsException(
 			"There is no IOConnector at the give index.");
 		}
-		getEventSupport().firePropertyChange("inputs", index,
-				inputs.get(index), null);
+		getEventSupport().firePropertyChange("addInputs", index,
+				inputs.get(index).descriptor, null);
 		inputs.remove(index);
 	}
 

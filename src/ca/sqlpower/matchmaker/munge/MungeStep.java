@@ -167,4 +167,6 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * Returns null if no such MungeStepOutput exists.
      */
     public MungeStepOutput getOutputByName(String name);
+    
+    
 }
