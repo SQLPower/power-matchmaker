@@ -69,6 +69,8 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -573,9 +575,16 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * Tells the steps properties so that it can reload the GUI bits if needed.
 	 */
 	public void updateStepProperties() {
-		getStep().setParameter(MUNGECOMPONENT_EXPANDED, expanded);
-		getStep().setParameter(MUNGECOMPONENT_X, getX());
-		getStep().setParameter(MUNGECOMPONENT_Y, getY());
+		MungeStep step = getStep();
+		if (step instanceof AbstractMatchMakerObject) {
+			((AbstractMatchMakerObject) step).startCompoundEdit();
+		}
+		step.setParameter(MUNGECOMPONENT_EXPANDED, expanded);
+		step.setParameter(MUNGECOMPONENT_X, getX());
+		step.setParameter(MUNGECOMPONENT_Y, getY());
+		if (step instanceof AbstractMatchMakerObject) {
+			((AbstractMatchMakerObject) step).endCompoundEdit();
+		}
 	}
 
 	/**
@@ -870,16 +879,32 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * This should only be called of there is one input and one output 
 	 */
 	public void removeSingle() {
+		MungeStep step = getStep();
+		MatchMakerObject mmo = step.getParent();
+		if (mmo instanceof AbstractMatchMakerObject) {
+			((AbstractMatchMakerObject) mmo).startCompoundEdit();
+		}
 		getPen().removeMungeStepSingles(getStep());
 		MungePen.removeAllListeners(hideShow);
+		if (mmo instanceof AbstractMatchMakerObject) {
+			((AbstractMatchMakerObject) mmo).endCompoundEdit();
+		}
 	}
 	
 	/** 
 	 * Removes this munge step and disconnects all input and output IOCs
 	 */
 	public void removeNormal() {
-		getPen().removeMungeStep(getStep());
+		MungeStep step = getStep();
+		MatchMakerObject mmo = step.getParent();
+		if (mmo instanceof AbstractMatchMakerObject) {
+			((AbstractMatchMakerObject) mmo).startCompoundEdit();
+		}
+		getPen().removeMungeStep(step);
 		MungePen.removeAllListeners(hideShow);
+		if (mmo instanceof AbstractMatchMakerObject) {
+			((AbstractMatchMakerObject) mmo).endCompoundEdit();
+		}
 	}
 	
 	/**
@@ -893,7 +918,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * Hides or expands the component.
 	 */
-	public void hideShow() {
+	public void hideShow(boolean fireEvent) {
 		expanded = !expanded;
 		if (expanded) {
 			if (showInputNames) {
@@ -912,6 +937,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 		getPen().normalize();
 		validate();
 		root.updateUI();
+		if (fireEvent) {
+			updateStepProperties();
+		}
+	}
+	
+	public void hideShow() {
+		hideShow(true);
 	}
 	
 	public void setExpand(boolean exp) {
@@ -1063,8 +1095,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			MungeStep step = getStep();
 			
+			MungeStep step = getStep();
+			if (step instanceof AbstractMatchMakerObject) {
+				((AbstractMatchMakerObject)step).startCompoundEdit();
+			}
+				
 			for (int x = 0; x< step.getInputs().size();x++) {
 				int y;
 				if (step.getInputs().get(x) != null) {
@@ -1085,6 +1121,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 			for (int x = step.getInputs().size()-1;x>0 && step.getInputs().get(x) == null;x--) {
 				step.removeInput(x);
 			}			
+			if (step instanceof AbstractMatchMakerObject) {
+				((AbstractMatchMakerObject)step).endCompoundEdit();
+			}
 			
 			buildInputNamesPanel();
 			
@@ -1113,7 +1152,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	private Point diff;
 	
 	private class MungeComponentMouseListener implements MouseListener {
-
+		Point startPoint;
 		
 		public void mouseClicked(MouseEvent e) {
 			maybeShowPopup(e);
@@ -1138,6 +1177,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 				if (!checkForIOConnectors(new Point(e.getX() + getX(),e.getY()+getY()))) {
 					requestFocusInWindow();
 				}
+				startPoint = getLocation();
 			}
 		}
 
@@ -1145,7 +1185,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 			//resets the auto scroll bounds for the munge pen
 			getPen().lockAutoScroll(false);
 			autoScrollTimer.stop();
-
+			if (startPoint != null && !startPoint.equals(getLocation())) {
+				updateStepProperties();
+			}
 			if (!maybeShowPopup(e) && getPen().isConnecting()) {
 				Point abs = new Point(e.getX() + getX(),e.getY()+getY());
 				AbstractMungeComponent amc = getPen().getMungeComponentAt(abs);
@@ -1153,6 +1195,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 					getPen().requestFocusInWindow();
 				}
 				getPen().repaint();
+				
 			}
 			getPen().normalize();
 			getPen().stopConnection();
@@ -1430,6 +1473,24 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public void setOutputShowNames(Boolean b) {
 		showOutputNames = b;
+	}
+	
+	/**
+	 * reloads the content pane from the matchmaker object
+	 */
+	public void reload() {
+		boolean old = expanded;
+		if (old) {
+			hideShow(false);
+		}
+		
+		content = buildUI();
+		content.setOpaque(false);
+		deOpaquify(content);
+		if (old) {
+			hideShow(false);
+		}
+		requestFocus();
 	}
 	
 }

@@ -393,7 +393,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		}
 		
 		//Auto Scroll bounds
-		if (false && logger.isDebugEnabled()) {
+		if (logger.isDebugEnabled()) {
 			g.drawLine(getWidth() - getAutoscrollInsets().right, 0, getWidth() - getAutoscrollInsets().right, getHeight());
 			g.drawLine(getAutoscrollInsets().left, 0, getAutoscrollInsets().left, getHeight());
 			g.drawLine(0, getHeight() - getAutoscrollInsets().bottom, getWidth(), getHeight() - getAutoscrollInsets().bottom);
@@ -840,7 +840,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			if (evt.getPropertyName().equals("inputs")) {
 				if (evt.getOldValue() == null && evt.getNewValue() != null) {
 					if (evt.getNewValue() instanceof MungeStepOutput) {
-						logger.debug("connection Caught");
+						logger.debug("connection caught");
 						//connected and input
 						MungeStepOutput mso = (MungeStepOutput)evt.getNewValue();
 						
@@ -857,6 +857,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 					}						
 				} else if (evt.getNewValue() == null && evt.getOldValue() != null) {
 					if ( evt.getOldValue() instanceof MungeStepOutput) {
+						logger.debug("connection removed");
 						//disconnect input
 						MungeStepOutput mso = (MungeStepOutput)evt.getOldValue();
 						MungeStep child = evt.getSource();
@@ -875,7 +876,18 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 						}
 					} 
 				} 
+			} else if (evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED) ||
+					evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_X) ||
+					evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_Y)) {
+				if (evt.isUndoEvent()) {
+					modelMap.get(evt.getSource()).configureFromStepProperties();
+				}
+			} else {
+				if (evt.isUndoEvent()) {
+					modelMap.get(evt.getSource()).reload();
+				}
 			}
+			repaint();
 		}
 
 		public void mmStructureChanged(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
@@ -1140,4 +1152,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	public void lockAutoScroll(boolean lock) {
 		lockScrollInsets = lock;
 	}
+	
+	
 }

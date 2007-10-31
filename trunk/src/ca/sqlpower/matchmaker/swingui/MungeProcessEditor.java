@@ -34,7 +34,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -57,6 +56,7 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.matchmaker.swingui.munge.MungeStepLibrary;
+import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -69,12 +69,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Implements the EditorPane functionality for editing a munge process (MatchRuleSet).
  */
-public class MungeProcessEditor implements EditorPane {
-    
-    /**
-     * The session this editor belongs to.
-     */
-    private final MatchMakerSwingSession swingSession;
+public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess, MungeStep> {
     
     /**
      * The project that is or will be the parent of the process we're editing.
@@ -84,26 +79,14 @@ public class MungeProcessEditor implements EditorPane {
     private final Project parentProject;
     
     /**
-     * The munge process this editor is responsible for editing.
-     */
-    private MungeProcess process;
-    
-    /**
      * The actual GUI component that provides the editing interface.
      */
-    private final JPanel panel = new JPanel(new BorderLayout());
     private final JTextField name = new JTextField();
     private final JSpinner priority = new JSpinner();
     private final JTextField desc = new JTextField();
     private final JComboBox color = new JComboBox(ColorScheme.BREWER_SET19);
     
     private final MungePen mungePen;
-    
-    /**
-     * The instance that monitors the subtree we're editing for changes (so we know
-     * if there are unsaved changes).
-     */
-    private final MMOChangeUndoWatcher<MungeProcess, MungeStep> changeHandler;
     
     /**
      * Validator for handling errors within the munge steps
@@ -122,12 +105,10 @@ public class MungeProcessEditor implements EditorPane {
      */
     public MungeProcessEditor(MatchMakerSwingSession swingSession,
             Project project, MungeProcess process) throws ArchitectException {
-        super();
-        this.swingSession = swingSession;
-        this.parentProject = project;
-        this.process = process;
-        this.changeHandler = new MMOChangeUndoWatcher<MungeProcess, MungeStep>(process, this, swingSession);
+        super(swingSession, process);
         
+        this.parentProject = project;
+
         //For some reason some process don't have sessions and this causes a null
         //pointer barrage when it tries to find the tree when it gets focus, then fails and 
         //gets focus again.
@@ -138,7 +119,8 @@ public class MungeProcessEditor implements EditorPane {
         actions.add(saveAction);
         this.handler = new FormValidationHandler(status, actions);
         this.mungePen = new MungePen(process, handler, parentProject);
-
+        
+        panel = new JPanel(new BorderLayout());
         buildUI();
         if (process.getParentProject() != null && process.getParentProject() != parentProject) {
             throw new IllegalStateException(
@@ -161,33 +143,33 @@ public class MungeProcessEditor implements EditorPane {
 		JPanel subPanel = new JPanel(layout);
         subPanel.add(status, cc.xyw(2, 2, 7));
         subPanel.add(new JLabel("Munge Process Name: "), cc.xy(2, 4));
-        name.setText(process.getName());
+        name.setText(mmo.getName());
         subPanel.add(name, cc.xy(4, 4));
         subPanel.add(new JLabel("Priority: "), cc.xy(6, 4));
-        if (process.getMatchPercent() != null) {
-        	priority.setValue(process.getMatchPercent());
+        if (mmo.getMatchPercent() != null) {
+        	priority.setValue(mmo.getMatchPercent());
         }
         priority.setPreferredSize(new Dimension(100, 20));
         subPanel.add(priority, cc.xy(8, 4));
         
         subPanel.add(new JLabel("Munge Process Desc: "), cc.xy(2, 6));
-        desc.setText(process.getDesc());
+        desc.setText(mmo.getDesc());
         subPanel.add(desc, cc.xy(4, 6));
         subPanel.add(new JLabel("Color: "), cc.xy(6, 6));
         ColorCellRenderer renderer = new ColorCellRenderer();
         color.setRenderer(renderer);
        	boolean hasColour = false;
        	for (int i = 0; i < color.getItemCount(); i++) {
-       		if (color.getItemAt(i).equals(process.getColour())) {
+       		if (color.getItemAt(i).equals(mmo.getColour())) {
        			hasColour = true;
        			break;
        		}
        	}
        	if (!hasColour) {
-       		color.addItem(process.getColour());
+       		color.addItem(mmo.getColour());
        	}
-       	if (process.getColour() != null) {
-       		color.setSelectedItem(process.getColour());
+       	if (mmo.getColour() != null) {
+       		color.setSelectedItem(mmo.getColour());
        	} else {
        		color.setSelectedIndex(0);
        	}
@@ -218,7 +200,7 @@ public class MungeProcessEditor implements EditorPane {
 	};
 	Action customColour = new AbstractAction("Custom Colour") {
 		public void actionPerformed(ActionEvent arg0) {
-			Color colour = swingSession.getCustomColour(process.getColour());
+			Color colour = swingSession.getCustomColour(mmo.getColour());
 		    if (colour != null) {
 		    	color.addItem(colour);
 		    	color.setSelectedItem(colour);
@@ -240,7 +222,7 @@ public class MungeProcessEditor implements EditorPane {
             return false;
         }
         
-        MungeProcessGraphModel gm = new MungeProcessGraphModel(process.getChildren());
+        MungeProcessGraphModel gm = new MungeProcessGraphModel(mmo.getChildren());
         DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge> dfs = new DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge>();
         dfs.performSearch(gm);
         
@@ -252,22 +234,22 @@ public class MungeProcessEditor implements EditorPane {
         }
         
     	
-    	process.setName(name.getText());
-    	process.setDesc(desc.getText());
-    	process.setColour((Color)color.getSelectedItem());
-    	process.setMatchPercent(Short.valueOf(priority.getValue().toString()));
+    	mmo.setName(name.getText());
+    	mmo.setDesc(desc.getText());
+    	mmo.setColour((Color)color.getSelectedItem());
+    	mmo.setMatchPercent(Short.valueOf(priority.getValue().toString()));
     	
-        if (process.getParentProject() == null) {
-            parentProject.addMungeProcess(process);
+        if (mmo.getParentProject() == null) {
+            parentProject.addMungeProcess(mmo);
             MatchMakerDAO<Project> dao = swingSession.getDAO(Project.class);
             dao.save(parentProject);
             
             MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-			TreePath menuPath = treeModel.getPathForNode(process);
+			TreePath menuPath = treeModel.getPathForNode(mmo);
 			swingSession.getTree().setSelectionPath(menuPath);
         } else {
             MatchMakerDAO<MungeProcess> dao = swingSession.getDAO(MungeProcess.class);
-            dao.save(process);
+            dao.save(mmo);
         }
         
         //save all the positions of the components
@@ -278,35 +260,31 @@ public class MungeProcessEditor implements EditorPane {
 			}
         }
         
-        changeHandler.setHasChanged(false);
+        undo.setHasChanged(false);
         return true;
     }
 
-    public JComponent getPanel() {
-        return panel;
-    }
-
     public boolean hasUnsavedChanges() {
-    	if (!name.getText().equals(process.getName())) {
-    		if (!(process.getName() == null && name.getText().equals(""))) {
+    	if (!name.getText().equals(mmo.getName())) {
+    		if (!(mmo.getName() == null && name.getText().equals(""))) {
     			return true;
     		}
     	}
-    	if (process.getMatchPercent() == null) {
+    	if (mmo.getMatchPercent() == null) {
     		return true;
     	}
-    	if (Integer.parseInt(priority.getValue().toString()) != Integer.parseInt(process.getMatchPercent().toString()) ) {
+    	if (Integer.parseInt(priority.getValue().toString()) != Integer.parseInt(mmo.getMatchPercent().toString()) ) {
     		return true;
     	}
-    	if (!((Color) color.getSelectedItem()).equals(process.getColour())) {
+    	if (!((Color) color.getSelectedItem()).equals(mmo.getColour())) {
     		return true;
     	}
-    	if (!desc.getText().equals(process.getDesc())) {
-    		if (!(process.getDesc() == null && desc.getText().equals(""))) {
+    	if (!desc.getText().equals(mmo.getDesc())) {
+    		if (!(mmo.getDesc() == null && desc.getText().equals(""))) {
     			return true;
     		}
     	}
-        return changeHandler.getHasChanged();
+        return super.hasUnsavedChanges();
     }
     /**
      * Renders a rectangle of colour in a list cell.  The colour is determined
@@ -364,14 +342,14 @@ public class MungeProcessEditor implements EditorPane {
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
 						"Munge Process name is required");
-			} else if ( !value.equals(process.getName()) &&
+			} else if ( !value.equals(mmo.getName()) &&
 					parentProject.getMungeProcessByName(name.getText()) != null ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
 						"Munge Process name is invalid or already exists.");
 			} else if (value.length() > MAX_RULE_SET_NAME_CHAR){
 			    return ValidateResult.createValidateResult(Status.FAIL, 
                         "Munge Process name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
-            } else if (process.getParent() == null && parentProject.getMungeProcessByName(name.getText()) != null) {
+            } else if (mmo.getParent() == null && parentProject.getMungeProcessByName(name.getText()) != null) {
             	return ValidateResult.createValidateResult(Status.FAIL, "Munge Process name is invalid or already exists.");
             }
 			return ValidateResult.createValidateResult(Status.OK, "");
@@ -388,7 +366,7 @@ public class MungeProcessEditor implements EditorPane {
 			int value = Integer.parseInt((String)contents);
 		
 			for (MungeProcess mp : parentProject.getMungeProcessesFolder().getChildren()) {
-				if (mp.getMatchPercent() == value && mp != process) {
+				if (mp.getMatchPercent() == value && mp != mmo) {
 					return ValidateResult.createValidateResult(Status.WARN, "Duplicate Priority. " + 
 							"If both the cleansing process are run at the same time there is no way to know there relitive order.");
 				}
@@ -398,7 +376,7 @@ public class MungeProcessEditor implements EditorPane {
     }
 	
 	public MungeProcess getProcess() {
-		return process;
+		return mmo;
 	}
 	
 	public void setSelectedStep(MungeStep step) {
@@ -409,12 +387,4 @@ public class MungeProcessEditor implements EditorPane {
 		//TODO select the mso
 	}
 
-	public boolean discardChanges() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-	}
 }
