@@ -33,5 +33,6 @@
 	<classpathentry kind="lib" path="lib/postgresql-8.1dev-401.jdbc3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-digester.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sqlpower_library"/>
+	<classpathentry kind="lib" path="C:/Documents and Settings/Kevin/My Documents/workspace/matchmaker/lib/mailapi.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

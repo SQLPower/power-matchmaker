@@ -24,10 +24,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.security.PLSecurityException;
+import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.Version;
 import ca.sqlpower.util.VersionFormatException;
 
@@ -55,6 +55,16 @@ public interface MatchMakerSessionContext {
      * Should be checked every time a session is created.
      */
     public static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,30);
+    
+    /**
+     * Name of the preferences parameter for email host address
+     */
+    public static final String EMAIL_HOST_PREFS = "email.host";
+    
+    /**
+     * Name of the preferences parameter for email localhost address
+     */
+    public static final String EMAIL_LOCALHOST_PREFS = "email.localhost";
 
     public List<SPDataSource> getDataSources();
 
@@ -92,4 +102,24 @@ public interface MatchMakerSessionContext {
      * as well as a JNDI implementation.
      */
     public DataSourceCollection getPlDotIni();
+    
+    /**
+     * Returns the email smtp host address set in the preferences
+     */
+    public String getEmailSmtpHost();
+    
+    /**
+     * Sets the email smtp host address in the preferences 
+     */
+    public void setEmailSmtpHost(String host);
+    
+    /**
+     * Returns the email smtp localhost address set in the preferences 
+     */
+    public String getEmailSmtpLocalhost();
+    
+    /**
+     * Sets the email smtp localhost address in the preferences
+     */
+    public void setEmailSmtpLocalhost(String localhost);
 }

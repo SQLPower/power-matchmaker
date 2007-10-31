@@ -132,6 +132,24 @@ public class SwingSessionContextTest extends TestCase {
                 System.out.println("Stub MMSContext.getPlDotIni()");
                 return dsCollection;
             }
+
+			public String getEmailSmtpHost() {
+				System.out.println("Stub call: MMSContext.getEmailHost()");
+				return null;
+			}
+
+			public String getEmailSmtpLocalhost() {
+				System.out.println("Stub call: MMSContext.getEmailLocalhost()");
+				return null;
+			}
+
+			public void setEmailSmtpHost(String host) {
+				System.out.println("Stub call: MMSContext.setEmailHost()");
+			}
+
+			public void setEmailSmtpLocalhost(String localhost) {
+				System.out.println("Stub call: MMSContext.setEmailLocalhost()");
+			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
         PreferencesFactory stubPrefsFactory = new PreferencesFactory();
