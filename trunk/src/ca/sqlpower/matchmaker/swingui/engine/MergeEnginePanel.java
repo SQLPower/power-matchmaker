@@ -358,20 +358,12 @@ public class MergeEnginePanel implements EditorPane {
 	}
 
 	public boolean hasUnsavedChanges() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MergeEnginePanel.hasUnsavedChanges()");
 		return false;
 	}
 
 	public boolean discardChanges() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MergeEnginePanel.discardChanges()");
+		logger.debug("Cannot discard chagnes");
 		return false;
 	}
 
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MergeEnginePanel.refreshComponents()");
-		
-	}
 }

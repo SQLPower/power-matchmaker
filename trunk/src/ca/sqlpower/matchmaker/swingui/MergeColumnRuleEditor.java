@@ -58,6 +58,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.SPSUtils;
@@ -539,7 +540,8 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	}
 
 	@Override
-	public void refreshComponents() {
+	public void undoEventFired(
+			MatchMakerEvent<TableMergeRules, ColumnMergeRules> evt) {
 		if (mmo.isSourceMergeRule()) {
 			deleteDup.setSelected(mmo.isDeleteDup());
 		} else {

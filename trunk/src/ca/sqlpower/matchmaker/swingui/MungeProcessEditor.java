@@ -49,6 +49,7 @@ import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -385,6 +386,11 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 	
 	public void setSelectedStepOutput(MungeStepOutput mso) {
 		//TODO select the mso
+	}
+
+	@Override
+	public void undoEventFired(MatchMakerEvent<MungeProcess, MungeStep> evt) {
+		
 	}
 
 }

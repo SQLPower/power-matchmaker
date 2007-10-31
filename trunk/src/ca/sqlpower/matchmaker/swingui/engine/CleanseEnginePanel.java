@@ -520,14 +520,8 @@ public class CleanseEnginePanel implements EditorPane {
 	}
 
 	public boolean discardChanges() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: CleanseEnginePanel.discardChanges()");
+		logger.debug("Cannot discard changes");
 		return false;
 	}
 
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: CleanseEnginePanel.refreshComponents()");
-		
-	}
 }

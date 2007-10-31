@@ -147,7 +147,7 @@ public class TranslateGroupsEditor implements EditorPane {
 	}
 
 	public boolean discardChanges() {
-		logger.debug("Discard Changes: Not implemented :(");
+		logger.debug("Cannot discard chagnes");
 		return false;
 	}
 
@@ -250,12 +250,6 @@ public class TranslateGroupsEditor implements EditorPane {
 				fireTableDataChanged();
 			}
 		}
-	}
-
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: TranslateGroupsEditor.refreshComponents()");
-		
 	}
 
 }

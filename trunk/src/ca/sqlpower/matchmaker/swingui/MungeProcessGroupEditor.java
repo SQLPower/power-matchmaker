@@ -367,17 +367,10 @@ public class MungeProcessGroupEditor implements EditorPane {
 					+ newColor.getBlue());
 			return this;
 		}
-}
-
-	public boolean discardChanges() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MungeProcessGroupEditor.discardChanges()");
-		return false;
 	}
 
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MungeProcessGroupEditor.refreshComponents()");
-		
+	public boolean discardChanges() {
+		logger.debug("Cannot discard chagnes");
+		return false;
 	}
 }

@@ -236,14 +236,8 @@ public class FolderEditor implements EditorPane {
 	}
 
 	public boolean discardChanges() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: FolderEditor.discardChanges()");
+		logger.debug("Cannot discard changes");
 		return false;
 	}
 
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: FolderEditor.refreshCompoents()");
-		
-	}
 }
