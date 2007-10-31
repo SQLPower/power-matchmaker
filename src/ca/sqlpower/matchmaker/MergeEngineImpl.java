@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import javax.mail.MessagingException;
+
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -101,6 +103,24 @@ public class MergeEngineImpl extends AbstractEngine {
             "PreCondition failed: project result table structure incorrect");
         }
         
+        if (settings.getSendEmail()) {
+        	// First checks if the email settings are correct
+        	if (!validateEmailSetting(context)) {
+        		throw new EngineSettingException(
+        				"missing email setting information," +
+        				" the email sender requires smtp host name and" +
+        		" smtp localhost name!");
+        	}
+        	
+        	// Then creates the emails for each status
+        	try {
+				setupEmails(context);
+			} catch (Exception e) {
+				throw new EngineSettingException("PreCondition failed: " +
+						"error while setting up for sending emails.", e);
+			}
+        }
+        
         if (!canWriteLogFile(settings)) {
             throw new EngineSettingException("The log file is not writable.");
         }
@@ -146,8 +166,33 @@ public class MergeEngineImpl extends AbstractEngine {
 			
 			progressMessage = "Merge Engine finished successfully";
 			logger.info(progressMessage);
+			
+			if (getProject().getMungeSettings().getSendEmail()) {
+				try {
+					greenEmail.setEmailSubject("Merge Engine success!");
+					greenEmail.setEmailBody("Merge Engine finished successfully.");
+					greenEmail.sendMessage();
+				} catch (MessagingException e) {
+					logger.error("Sending emails failed: ", e);
+				}
+			}
+			
 			return EngineInvocationResult.SUCCESS;
 		} catch (Exception ex) {
+			progressMessage = "Cleanse Engine failed";
+			logger.error(getMessage());
+			
+			if (getProject().getMungeSettings().getSendEmail()) {
+				try {
+					redEmail.setEmailSubject("Cleanse Engine failed!");
+					redEmail.setEmailBody("Cleanse Engine failed because: \n" +
+						ex.getMessage());
+					redEmail.sendMessage();
+				} catch (MessagingException e) {
+					logger.error("Sending emails failed: ", e);
+				}
+			}
+			
 			throw new RuntimeException(ex);
 		} finally {
 			logger.setLevel(oldLevel);

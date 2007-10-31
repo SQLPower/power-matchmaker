@@ -21,20 +21,21 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.mail.MessagingException;
+
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
-import ca.sqlpower.sql.DefaultParameters;
-import ca.sqlpower.sql.PLSchemaException;
 
 /**
  * The MatchMaker's cleansing engine.  Runs all of the munge steps in the correct
@@ -90,52 +91,30 @@ public class CleanseEngineImpl extends AbstractEngine {
             throw new EngineSettingException(
             "PreCondition failed: can not select project source table");
         }
-        
+
         if (settings.getSendEmail()) {
-        
-            Connection con = null;
-            try {
-                con = session.getConnection();
-                if (!validateEmailSetting(new DefaultParameters(con))) {
-                    throw new EngineSettingException(
-                            "missing email setting information," +
-                            " the email sender requires smtp server name and" +
-                    " returning email address!");
-                }
-            } catch (SQLException e) {
-                throw new EngineSettingException("Cannot validate email settings",e);
-            } catch (PLSchemaException e) {
-                throw new EngineSettingException("Cannot validate email settings",e);
-            } finally {
-                try {
-                    if (con != null) con.close();
-                } catch (SQLException ex) {
-                    logger.warn("Couldn't close connection", ex);
-                }
-            }
+        	// First checks the email settings
+        	if (!validateEmailSetting(context)) {
+        		throw new EngineSettingException(
+        				"missing email setting information," +
+        				" the email sender requires smtp host name and" +
+        		" smtp localhost name!");
+        	}
+        	
+        	// Then tries to setup the emails to each status
+        	try {
+				setupEmails(context);
+			} catch (Exception e) {
+				throw new EngineSettingException("PreCondition failed: " +
+						"error while setting up for sending emails.", e);
+			}
         }
-                
+
         if (!canWriteLogFile(settings)) {
             throw new EngineSettingException("The log file is not writable.");
         }
 	} 
-    
-	/**
-	 * returns true if the DEF_PARAM.EMAIL_NOTIFICATION_RETURN_ADRS and
-	 * DEF_PARAM.MAIL_SERVER_NAME column are not null or empty, they are
-	 * require to run email_notification engine.
-	 */
-	static boolean validateEmailSetting(DefaultParameters def) {
-		boolean validate;
-		String emailAddress = def.getEmailReturnAddress();
-		String smtpServer = def.getEmailServerName();
-		validate = emailAddress != null &&
-					emailAddress.length() > 0 &&
-					smtpServer != null &&
-					smtpServer.length() > 0;
-		return validate;
-	}
-
+ 
 	/**
 	 * Returns the logger for the MatchEngineImpl class.
 	 */
@@ -146,6 +125,8 @@ public class CleanseEngineImpl extends AbstractEngine {
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException {
 		Level oldLevel = logger.getLevel();
+		FileAppender fileAppender = null;
+		
 		try {
 			logger.setLevel(getMessageLevel());
 			setFinished(false);
@@ -159,6 +140,11 @@ public class CleanseEngineImpl extends AbstractEngine {
 			} catch (ArchitectException e) {
 				throw new RuntimeException(e);
 			}
+			
+			String logFilePath = getProject().getMungeSettings().getLog().getAbsolutePath();
+			boolean appendToFile = getProject().getMungeSettings().getAppendToLog();
+			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
+			logger.addAppender(fileAppender);
 			
 			progressMessage = "Starting Cleanse Engine";
 			logger.info(progressMessage);
@@ -209,14 +195,39 @@ public class CleanseEngineImpl extends AbstractEngine {
 			progressMessage = "Cleanse Engine finished successfully";
 			logger.info(progressMessage);
 			
+			if (getProject().getMungeSettings().getSendEmail()) {
+				try {
+					greenEmail.setEmailSubject("Cleanse Engine success!");
+					greenEmail.setEmailBody("Cleanse Engine finished successfully.");
+					greenEmail.sendMessage();
+				} catch (MessagingException e) {
+					logger.error("Sending emails failed: ", e);
+				}
+			}
+			
 			return EngineInvocationResult.SUCCESS;
 		} catch (Exception ex) {
 			progressMessage = "Cleanse Engine failed";
 			logger.error(getMessage());
+			
+			if (getProject().getMungeSettings().getSendEmail()) {
+				try {
+					redEmail.setEmailSubject("Cleanse Engine failed!");
+					redEmail.setEmailBody("Cleanse Engine failed because: \n" +
+						ex.getMessage());
+					redEmail.sendMessage();
+				} catch (MessagingException e) {
+					logger.error("Sending emails failed: ", e);
+				}
+			}
+			
 			throw new RuntimeException(ex);
 		} finally {
-			setFinished(true);
 			logger.setLevel(oldLevel);
+			setFinished(true);
+			if (fileAppender != null) {
+				logger.removeAppender(fileAppender);
+			}
 		}
 	
 	}
