@@ -232,21 +232,20 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 	public void setInPrimaryKey(boolean inPrimaryKey) {
 		boolean oldValue = this.inPrimaryKey;
-		if (!isUndoing()) { 
-			getEventSupport().firePropertyChange("UNDOSTATE", false, true);
-			if (inPrimaryKey) {
-				setActionType(MergeActionType.NA);
-			} else if (getImportedKeyColumn() == null){
-				setActionType(MergeActionType.USE_MASTER_VALUE);
-			}
-		}
 		this.inPrimaryKey = inPrimaryKey;
 		getEventSupport().firePropertyChange("inPrimaryKey", oldValue, this.inPrimaryKey);
-		if (!isUndoing()) { 
-			getEventSupport().firePropertyChange("UNDOSTATE", true, false);
-		}
 	}
-
+	
+	public void setInPrimaryKeyAndAction(boolean inPrimaryKey) {
+		startCompoundEdit();
+		setInPrimaryKey(inPrimaryKey);
+		if (inPrimaryKey) {
+			setActionType(MergeActionType.NA);
+		} else if (getImportedKeyColumn() == null){
+			setActionType(MergeActionType.USE_MASTER_VALUE);
+		}
+		endCompoundEdit();
+	}
 
 	public SQLColumn getImportedKeyColumn() {
 		return importedKeyColumn;
@@ -254,19 +253,20 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 	public void setImportedKeyColumn(SQLColumn importedKeyColumn) {
 		SQLColumn oldValue = this.getImportedKeyColumn();
-		if (!isUndoing()) { 
-			getEventSupport().firePropertyChange("UNDOSTATE", false, true);
-			if (importedKeyColumn != null) {
-				setActionType(MergeActionType.NA);
-			} else if (!isInPrimaryKey()) {
-				setActionType(MergeActionType.USE_MASTER_VALUE);
-			}
-		}
 		this.importedKeyColumn = importedKeyColumn;
 		getEventSupport().firePropertyChange("importedKeyColumn", oldValue, this.importedKeyColumn);
-		if (!isUndoing()) { 
-			getEventSupport().firePropertyChange("UNDOSTATE", true, false);
+	}
+	
+	public void setImportedKeyColumnAndAction(SQLColumn importedKeyColumn) {
+		if (this.importedKeyColumn == importedKeyColumn) return;
+		startCompoundEdit();
+		setImportedKeyColumn(importedKeyColumn);
+		if (importedKeyColumn != null) {
+			setActionType(MergeActionType.NA);
+		} else if (!isInPrimaryKey()) {
+			setActionType(MergeActionType.USE_MASTER_VALUE);
 		}
+		endCompoundEdit();
 	}
 
 

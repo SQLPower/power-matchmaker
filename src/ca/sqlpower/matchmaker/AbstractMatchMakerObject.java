@@ -20,7 +20,6 @@
 package ca.sqlpower.matchmaker;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -172,8 +171,26 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * @param j the index of the other element to be swapped.
      */
 	public void swapChildren(int i, int j) {
-		Collections.swap(getChildren(), i, j);
-		eventSupport.fireStructureChanged();
+		final List<C> l = getChildren();
+		startCompoundEdit();
+		int less;
+		int more;
+		if (i < j) {
+			less = i;
+			more = j;
+		} else {
+			less = j;
+			more = i;
+		}
+		C child1 = l.get(less);
+		C child2 = l.get(more);
+		
+		removeChild(child1);
+		removeChild(child2);
+		
+		addChild(less, child2);
+		addChild(more, child1);
+		endCompoundEdit();
 	}
 	
 	public String getLastUpdateAppUser() {
@@ -307,5 +324,13 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 
 	public void setUndoing(boolean isUndoing) {
 		this.isUndoing = isUndoing;
+	}
+	
+	public void startCompoundEdit() {
+		getEventSupport().firePropertyChange("UNDOSTATE", false, true);
+	}
+	
+	public void endCompoundEdit() {
+		getEventSupport().firePropertyChange("UNDOSTATE", true, false);
 	}
 }
