@@ -21,12 +21,21 @@ package ca.sqlpower.matchmaker;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.security.EmailNotification;
+import ca.sqlpower.security.PLSecurityException;
+import ca.sqlpower.security.EmailNotification.EmailRecipient;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.util.Email;
+import ca.sqlpower.util.UnknownFreqCodeException;
 /**
  * Common ground for all C engines.  This class handles events
  * output capture, monitoring and starting and stoping the engine. 
@@ -62,6 +71,36 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	private boolean cancelled;
 	
 	/**
+	 * The users who should be emailed for a green status
+	 */
+	protected List<EmailRecipient> greenUsers;
+	
+	/**
+	 * The users who should be emailed for a yellow status
+	 */
+	protected List<EmailRecipient> yellowUsers;
+	
+	/**
+	 * The users who should be emailed for a red status
+	 */
+	protected List<EmailRecipient> redUsers;
+	
+	/**
+	 * The email for sending info of a green status
+	 */
+	protected Email greenEmail;
+	
+	/**
+	 * The email for sending info of a yellow status
+	 */
+	protected Email yellowEmail;
+	
+	/**
+	 * The email for sending info of a red status
+	 */
+	protected Email redEmail;
+	
+	/**
 	 * The level at which to show the engine debugging
 	 */
 	private Level messageLevel = Level.INFO;
@@ -94,7 +133,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 			started = true;
 
 			getLogger().info("Engine process completed normally.");
-			
+
 			return EngineInvocationResult.SUCCESS;
 		} finally {
 			finished = true;
@@ -218,4 +257,63 @@ public abstract class AbstractEngine implements MatchMakerEngine {
     public Level getMessageLevel() {
     	return messageLevel;
     }
+    
+	/**
+	 * Returns true if the smtp host and localhost addresses 
+	 * are not null or empty, they are require to send the emails.
+	 */
+	protected boolean validateEmailSetting(MatchMakerSessionContext context) {
+		boolean validate = false;
+		String host = context.getEmailSmtpHost();
+		String localhost = context.getEmailSmtpLocalhost();
+		validate = host != null &&
+					host.length() > 0 &&
+					localhost != null &&
+					localhost.length() > 0;
+		return validate;
+	}
+	
+	/**
+	 * Fills each of the users lists for each status. 
+	 */
+	private void findEmailUsers() throws UnknownFreqCodeException,
+			PLSecurityException, SQLException {
+		Connection con = session.getConnection();
+		greenUsers = EmailNotification.findGreenEmailRecipients(con, project);
+		yellowUsers = EmailNotification.findYellowEmailRecipients(con, project);
+		redUsers = EmailNotification.findRedEmailRecipients(con, project);
+	}
+	
+	/**
+	 * This sets up the given email with the addresses for
+	 * sender and recipient.
+	 */
+	private void setupAddresses(Email email, List<EmailRecipient> recipients) 
+			throws UnsupportedEncodingException {
+		email.setFromEmail(session.getAppUserEmail());
+		email.setFromName(session.getAppUser());
+		for (EmailRecipient recipient: recipients) {
+			email.addToAddress(recipient.getEmail(), recipient.getName());
+		}
+	}
+	
+	/**
+	 * Creates and sets up the emails for each status.
+	 */
+	protected void setupEmails(MatchMakerSessionContext context) 
+			throws Exception {
+		findEmailUsers();
+		
+		String host = context.getEmailSmtpHost();
+		String localhost = context.getEmailSmtpLocalhost();
+		
+		greenEmail = new Email(host, localhost);
+		yellowEmail = new Email(host, localhost);
+		redEmail = new Email(host, localhost);
+		
+		setupAddresses(greenEmail, greenUsers);
+		setupAddresses(yellowEmail, yellowUsers);
+		setupAddresses(redEmail, redUsers);
+	}
+	
 }

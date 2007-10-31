@@ -55,23 +55,21 @@ public class MatchMakerEngineImplTest extends TestCase {
 	}
 
 	public void testValidateEmailSettingsValid() throws SQLException, PLSchemaException{
-		def.setEmailReturnAddress("test@sqlpower.ca");
-		def.setEmailServerName("mail");
-		assertTrue(matchMakerEngine.validateEmailSetting(def));
+		context.setEmailSmtpHost("mail.sqlpower.ca");
+		context.setEmailSmtpLocalhost("www.sqlpower.ca");
+		assertTrue(matchMakerEngine.validateEmailSetting(context));
 	}
 	
-	public void testValidateEmailSettingsNoReturn() throws SQLException, PLSchemaException{
-		TestingDefParamsObject def = new TestingDefParamsObject(session);
-		def.setEmailReturnAddress(null);
-		def.setEmailServerName("mail");
-		assertFalse("The email is valid without a return email address",matchMakerEngine.validateEmailSetting(def));
+	public void testValidateEmailSettingsNoLocalhost() throws SQLException, PLSchemaException{
+		context.setEmailSmtpHost("mail.sqlpower.ca");
+		context.setEmailSmtpLocalhost("");
+		assertFalse("The email is valid without a smtp host address", matchMakerEngine.validateEmailSetting(context));
 	}
 	
-	public void testValidateEmailSettingsNoServer() throws SQLException, PLSchemaException{
-		TestingDefParamsObject def = new TestingDefParamsObject(session);
-		def.setEmailReturnAddress("test@sqlpower.ca");
-		def.setEmailServerName("");
-		assertFalse("The email is valid without a server name",matchMakerEngine.validateEmailSetting(def));
+	public void testValidateEmailSettingsNoHost() throws SQLException, PLSchemaException{
+		context.setEmailSmtpHost("");
+		context.setEmailSmtpLocalhost("www.sqlpower.ca");
+		assertFalse("The email is valid without a smtp localhost address", matchMakerEngine.validateEmailSetting(context));
 	}
 
 	//   check for unwriteable file

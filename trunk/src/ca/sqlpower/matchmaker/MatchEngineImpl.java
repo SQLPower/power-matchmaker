@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import javax.mail.MessagingException;
+
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -35,8 +37,6 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
 import ca.sqlpower.matchmaker.munge.MungeResult;
-import ca.sqlpower.sql.DefaultParameters;
-import ca.sqlpower.sql.PLSchemaException;
 
 /**
  * The MatchMaker's matching engine.  Runs all of the munge steps in the correct
@@ -107,49 +107,27 @@ public class MatchEngineImpl extends AbstractEngine {
         }
         
         if (settings.getSendEmail()) {
-        
-            Connection con = null;
-            try {
-                con = session.getConnection();
-                if (!validateEmailSetting(new DefaultParameters(con))) {
-                    throw new EngineSettingException(
-                            "missing email setting information," +
-                            " the email sender requires smtp server name and" +
-                    " returning email address!");
-                }
-            } catch (SQLException e) {
-                throw new EngineSettingException("Cannot validate email settings",e);
-            } catch (PLSchemaException e) {
-                throw new EngineSettingException("Cannot validate email settings",e);
-            } finally {
-                try {
-                    if (con != null) con.close();
-                } catch (SQLException ex) {
-                    logger.warn("Couldn't close connection", ex);
-                }
-            }
+        	// First checks for email settings
+        	if (!validateEmailSetting(context)) {
+        		throw new EngineSettingException(
+        				"missing email setting information," +
+        				" the email sender requires smtp host name and" +
+        		" smtp localhost name!");
+        	}
+        	
+        	// Then tries to set up the emails for each status
+        	try {
+				setupEmails(context);
+			} catch (Exception e) {
+				throw new EngineSettingException("PreCondition failed: " +
+						"error while setting up for sending emails.", e);
+			}
         }
                 
         if (!canWriteLogFile(settings)) {
             throw new EngineSettingException("The log file is not writable.");
         }
 	} 
-    
-	/**
-	 * returns true if the DEF_PARAM.EMAIL_NOTIFICATION_RETURN_ADRS and
-	 * DEF_PARAM.MAIL_SERVER_NAME column are not null or empty, they are
-	 * require to run email_notification engine.
-	 */
-	static boolean validateEmailSetting(DefaultParameters def) {
-		boolean validate;
-		String emailAddress = def.getEmailReturnAddress();
-		String smtpServer = def.getEmailServerName();
-		validate = emailAddress != null &&
-					emailAddress.length() > 0 &&
-					smtpServer != null &&
-					smtpServer.length() > 0;
-		return validate;
-	}
 
 	/**
 	 * Returns the logger for the MatchEngineImpl class.
@@ -211,10 +189,32 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Match Engine finished successfully";
 			logger.info(progressMessage);
 			
+			if (getProject().getMungeSettings().getSendEmail()) {
+				try {
+					greenEmail.setEmailSubject("Match Engine success!");
+					greenEmail.setEmailBody("Match Engine finished successfully.");
+					greenEmail.sendMessage();
+				} catch (MessagingException e) {
+					logger.error("Sending emails failed: " + e.getMessage());
+				}
+			}
+			
 			return EngineInvocationResult.SUCCESS;
 		} catch (Exception ex) {
 			progressMessage = "Match Engine failed";
 			logger.error(getMessage());
+			
+			if (getProject().getMungeSettings().getSendEmail()) {
+				try {
+					redEmail.setEmailSubject("Match Engine failed!");
+					redEmail.setEmailBody("Match Engine failed because: \n" +
+						ex.getMessage());
+					redEmail.sendMessage();
+				} catch (MessagingException e) {
+					logger.error("Sending emails failed: " + e.getMessage());
+				}
+			}
+			
 			throw new RuntimeException(ex);
 		} finally {
 			logger.setLevel(oldLoggerLevel);
