@@ -1162,11 +1162,16 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 currentWorker.setCancelled(true);
             }
             
-            JOptionPane.showMessageDialog(frame,
-                    "There are still unfinished tasks running in the MatchMaker.\n" +
-                    "Please wait for them to finish, and then try closing again.",
-                    "Warning", JOptionPane.WARNING_MESSAGE);
-            return false;
+            Object[] options = {"Wait", "Force Quit"};
+    		int n = JOptionPane.showOptionDialog(frame, 
+    				"There are still unfinished tasks running in the MatchMaker.\n" +
+    				"You can either wait for them to finish and try closing again later" +
+    				", or force the application to close. Quitting will leave these tasks unfinished.", 
+    				"Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, 
+    				null, options, options[0]);
+            if (n == 0) {
+            	return false;
+            }
         }
 		return true;
 	}
