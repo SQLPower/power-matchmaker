@@ -86,6 +86,7 @@ import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
@@ -106,6 +107,7 @@ import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
 import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
 import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
+import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.swingui.CommonCloseAction;
@@ -748,8 +750,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             if (doit) {
             	// clears the undo stack and the listeners to the match
             	// maker object
-            	if (oldPane instanceof CleanupModel) {
-            		((CleanupModel) oldPane).cleanup();
+            	if (oldPane instanceof AbstractUndoableEditorPane) {
+            		((AbstractUndoableEditorPane) oldPane).cleanup();
+            	}
+            	if (pane instanceof AbstractUndoableEditorPane) {
+            		((AbstractUndoableEditorPane) pane).initUndo();
             	}
             		
                 //Remebers the treepath to the last node that it clicked on
@@ -998,6 +1003,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			dao.save(project);
 		} else if (mmo instanceof MatchMakerFolder){
 			Project project = (Project)mmo.getParent();
+			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
+			dao.save(project);
+		} else if (mmo instanceof TableMergeRules) {
+			Project project = ((TableMergeRules)mmo).getParentProject();
 			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
 			dao.save(project);
 		} else if (mmo instanceof PlFolder){

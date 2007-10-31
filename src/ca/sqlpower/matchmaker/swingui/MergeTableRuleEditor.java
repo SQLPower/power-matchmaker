@@ -28,7 +28,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -45,11 +44,10 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
+import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.table.TableUtils;
-import ca.sqlpower.validation.swingui.FormValidationHandler;
-import ca.sqlpower.validation.swingui.StatusComponent;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.ButtonStackBuilder;
@@ -58,16 +56,11 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MergeTableRuleEditor implements EditorPane {
+public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, TableMergeRules> {
 
 	private static final Logger logger = Logger.getLogger(MergeTableRuleEditor.class);
-	private final MatchMakerSwingSession swingSession;
-	private Project project;
 	
-	private JPanel panel;
 	private JScrollPane mergeRulesScrollPane;
-	private StatusComponent status = new StatusComponent();
-	private FormValidationHandler handler;
 	
 	private JTable mergeRulesTable;
 	private MergeTableRuleTableModel mergeTableRuleTableModel;
@@ -75,33 +68,23 @@ public class MergeTableRuleEditor implements EditorPane {
 	private JTree menuTree;
 	private TreePath menuPath;
 
-
-	
-	//keeps track of whether the editor pane has unsaved changes
-	private CustomTableModelListener tableListener;
 	
 	public MergeTableRuleEditor(MatchMakerSwingSession swingSession,Project project) {
-		this.swingSession = swingSession;
-		this.project = project;
-		if (project == null) {
-			throw new NullPointerException("You can't edit a null project");
-		}
-        handler = new FormValidationHandler(status);
+		super(swingSession, project);
+		
         setupRulesTable(swingSession,project);
         buildUI();
-        handler.resetHasValidated(); // avoid false hits when newly created
         
         //finds the tree and menu path with that will allow the the double click
         //button to open the editor windows
 		menuTree = MergeTableRuleEditor.this.swingSession.getTree();
 		menuPath = menuTree.getSelectionPath();
+		
 	}
 	
 	private void setupRulesTable(MatchMakerSwingSession swingSession, Project project) {
 		mergeTableRuleTableModel = new MergeTableRuleTableModel(project,swingSession);
-		tableListener = new CustomTableModelListener();
-		mergeTableRuleTableModel.addTableModelListener(tableListener);
-		
+
 		mergeRulesTable = new EditableJTable(mergeTableRuleTableModel);
         mergeRulesTable.setName("Merge Tables");
 
@@ -160,7 +143,7 @@ public class MergeTableRuleEditor implements EditorPane {
 		CellConstraints cc = new CellConstraints();
 
 		int row = 2;
-		pb.add(status, cc.xy(4,row));
+		pb.add(new JLabel("List of table merge rules:"), cc.xy(4,row));
 		row += 2;
 
 		pb.add(new JLabel("Merge Rules:"), cc.xy(4,row,"l,t"));
@@ -176,9 +159,9 @@ public class MergeTableRuleEditor implements EditorPane {
 		
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
 		//new actions for delete and save should be extracted and be put into its own file.
-		bbb.addGridded(new JButton(new NewMergeRuleAction(swingSession, project)));
+		bbb.addGridded(new JButton(new NewMergeRuleAction(swingSession, mmo)));
 		bbb.addRelatedGap();
-		bbb.addGridded(new JButton(new DeriveRelatedRulesAction(swingSession, project)));
+		bbb.addGridded(new JButton(new DeriveRelatedRulesAction(swingSession, mmo)));
 		bbb.addRelatedGap();
 		bbb.addGridded(new JButton(deleteRule));
 		bbb.addRelatedGap();
@@ -196,9 +179,8 @@ public class MergeTableRuleEditor implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" up");
-			project.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow-1);
+			mmo.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow-1);
 			mergeRulesTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
-			TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
 	};
 
@@ -206,9 +188,8 @@ public class MergeTableRuleEditor implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" down");
-			project.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow+1);
+			mmo.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow+1);
 			mergeRulesTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
-			TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
 	};
 	
@@ -221,8 +202,8 @@ public class MergeTableRuleEditor implements EditorPane {
 			if (responds != JOptionPane.YES_OPTION)
 				return;
 
-			TableMergeRules rule = project.getTableMergeRules().get(selectedRow);
-			project.removeTableMergeRule(rule);
+			TableMergeRules rule = mmo.getTableMergeRules().get(selectedRow);
+			mmo.removeTableMergeRule(rule);
 			if (selectedRow >= mergeRulesTable.getRowCount()) {
 				selectedRow = mergeRulesTable.getRowCount() - 1;
 			}
@@ -230,7 +211,6 @@ public class MergeTableRuleEditor implements EditorPane {
 				mergeRulesTable.setRowSelectionInterval(selectedRow, selectedRow);
 			}
 			doSave();
-			TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
 	};
 	
@@ -245,43 +225,6 @@ public class MergeTableRuleEditor implements EditorPane {
                 MMSUtils.showExceptionDialog(swingSession.getFrame(),
                 		"Merge Interface Not Saved", ex);
             }
-            TableUtils.fitColumnWidths(mergeRulesTable, 15);
 		}
 	};
-	
-	/**
-	 * Saves the order of the tableMergeRules.  Modifies tree UI if the order
-	 * of any children has been changed.
-	 */
-	public boolean doSave() {
-		logger.debug("#1 children size="+project.getTableMergeRules().size());
-		swingSession.save(project);
-		this.tableListener.setModified(false);
-		return true;
-	}
-
-	public JComponent getPanel() {
-		return panel;
-	}
-
-	/**
-	 * Returns true if there are changes that have not been saved.
-	 */
-	public boolean hasUnsavedChanges() {
-        return this.tableListener.isModified();
-	}
-
-	public boolean discardChanges() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MergeTableRuleEditor.discardChanges()");
-		return false;
-	}
-
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MergeTableRuleEditor.refreshComponents()");
-		
-	}
-
-	
 }

@@ -34,15 +34,18 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.munge.InputDescriptor;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
-public class UndoableEditClass extends AbstractUndoableEdit{
+public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 	
-	private static final Logger logger = Logger.getLogger(UndoableEditClass.class);
+	private static final Logger logger = Logger.getLogger(MMOPropertyChangeUndoableEdit.class);
 	
 	private MatchMakerEvent undoEvent;
 	private MatchMakerObject mmo;
 
-	public UndoableEditClass(MatchMakerEvent e, MatchMakerObject mmo){
+	public MMOPropertyChangeUndoableEdit(MatchMakerEvent e, MatchMakerObject mmo){
 		super();
 		undoEvent = e;
 		this.mmo = mmo;
@@ -104,10 +107,44 @@ public class UndoableEditClass extends AbstractUndoableEdit{
 		    if (prop.getName().equals(undoEvent.getPropertyName())) {
 		        Method writeMethod = prop.getWriteMethod();
 		        if (writeMethod != null) {
-		        	System.out.println(writeMethod);
 		            writeMethod.invoke(undoEvent.getSource(), new Object[] { value });
+		            return;
 		        }
 		    }
+		}
+		if (undoEvent.getSource() instanceof MungeStep) {
+			if (undoEvent.getPropertyName().equals("inputs")) {
+				MungeStep step = (MungeStep)undoEvent.getSource();
+				if (value == null) {
+					for(int index : undoEvent.getChangeIndices()) {
+						step.disconnectInput(index);
+					}
+				} else {
+					if (value instanceof MungeStepOutput) { 
+						for(int index : undoEvent.getChangeIndices()) {
+							step.connectInput(index, (MungeStepOutput) value);
+						}
+					} else {
+						throw new IllegalStateException("inputs of wrong type: " + value.getClass());
+					}
+				}
+			} else if (undoEvent.getPropertyName().equals("addInputs")) {
+				MungeStep step = (MungeStep)undoEvent.getSource();
+				if (value == null) {
+					for(int index : undoEvent.getChangeIndices()) {
+						step.removeInput(index);
+					}
+				} else {
+					if (value instanceof InputDescriptor) { 
+						step.addInput((InputDescriptor) value);
+					} else {
+						throw new IllegalStateException("input descriptor of wrong type: " + value.getClass());
+					}
+				}
+			} else {
+				MungeStep step = (MungeStep)undoEvent.getSource();
+				step.setParameter(undoEvent.getPropertyName(), (String) value);
+			}
 		}
 	}
 }

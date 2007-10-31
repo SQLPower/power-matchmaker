@@ -35,7 +35,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -59,8 +58,10 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -72,83 +73,94 @@ import com.jgoodies.forms.debug.FormDebugPanel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
+public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMergeRules, ColumnMergeRules> {
 
 	private static final Logger logger = Logger.getLogger(MergeColumnRuleEditor.class);
-	private final MatchMakerSwingSession swingSession;
-	private final Project project;
-	private final TableMergeRules mergeRule;
 
-	/**
-	 * keeps track of whether the table has unsaved changes and all the 
-	 * edits made.
-	 */ 
-	private final MMOChangeUndoWatcher undo;
-	
-	private JPanel panel;
+	private final Project project;
+
 	private final StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
-	private final JCheckBox deleteDup = new JCheckBox();
-	private final JComboBox parentTable = new JComboBox();
-	private final JComboBox childMergeAction;
 
+	/**
+	 * allows the user to set whether to delete duplicates
+	 */ 
+	private final JCheckBox deleteDup = new JCheckBox();
+	private ActionListener deleteDupListener = new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+			mmo.setDeleteDupAndActionType(deleteDup.isSelected());
+		}
+	};
+
+	/**
+	 * allows the user to set the parentTable
+	 */ 
+	private final JComboBox parentTable = new JComboBox();
+	private ItemListener parentTableListner = new ItemListener() {
+		public void itemStateChanged(ItemEvent e) {
+			mmo.setParentTableAndImportedKeys((SQLTable) parentTable.getSelectedItem());
+		}
+    };
+    
+    /**
+	 * allows the user to set the childMergeAction
+	 */ 
+	private final JComboBox childMergeAction;
+	private ActionListener childMergeActionListener = new ActionListener(){
+		public void actionPerformed(ActionEvent e) {
+			mmo.setChildMergeAction((ChildMergeActionType) childMergeAction.getSelectedItem());
+		}
+	};
+
+	/**
+	 * The table that lists the column merge rules
+	 */
 	private AbstractMergeColumnRuleTableModel ruleTableModel;
 	private AbstractColumnMergeRulesTable ruleTable;
+	private ListSelectionListener tablelistener = new ListSelectionListener(){
+		public void valueChanged(ListSelectionEvent e) {
+            ColumnMergeRules mergeColumn = mmo.getChildren().get(ruleTable.getSelectedRow()); 
+            MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+	        TreePath menuPath = treeModel.getPathForNode(mergeColumn);
+	        swingSession.getTree().setSelectionPath(menuPath);
+		}
+	};
 	
 	public MergeColumnRuleEditor(final MatchMakerSwingSession session,
 			final Project project, final TableMergeRules mr) {
-		this.swingSession = session;
+		super(session, mr);
+		
 		this.project = project;
-		this.mergeRule = mr;
+		
 		if (project == null) {
 			throw new NullPointerException("You can't edit a null project");
 		}
-		if (mergeRule == null) {
+		if (mmo == null) {
 			throw new NullPointerException("You can't edit a null merge rule");
 		}
 
-		if (mergeRule.isSourceMergeRule()) {
-			ruleTableModel = new SourceMergeColumnRuleTableModel(mergeRule);
+		if (mmo.isSourceMergeRule()) {
+			ruleTableModel = new SourceMergeColumnRuleTableModel(mmo);
 			ruleTable = new SourceColumnMergeRulesTable(ruleTableModel);
 		} else {
-			ruleTableModel = new RelatedMergeColumnRuleTableModel(mergeRule);
+			ruleTableModel = new RelatedMergeColumnRuleTableModel(mmo);
 			ruleTable = new RelatedColumnMergeRulesTable(ruleTableModel);
 
 		}
-		
-        ruleTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
-			public void valueChanged(ListSelectionEvent e) {
-                ColumnMergeRules mergeColumn = mergeRule.getChildren().get(ruleTable.getSelectedRow()); 
-                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-    	        TreePath menuPath = treeModel.getPathForNode(mergeColumn);
-    	        swingSession.getTree().setSelectionPath(menuPath);
-			}
-		});
+        ruleTable.getSelectionModel().addListSelectionListener(tablelistener);
+        TableUtils.fitColumnWidths(ruleTable, 15);
 
         for (TableMergeRules tmr : project.getTableMergeRules()) {
-        	if (!tmr.equals(mergeRule)) {
+        	if (!tmr.equals(mmo)) {
         		parentTable.addItem(tmr.getSourceTable());
         	}
         }
-
-        parentTable.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				mergeRule.setParentTable((SQLTable) parentTable.getSelectedItem());
-			}
-        });
+        parentTable.addItemListener(parentTableListner);
         
         childMergeAction = new JComboBox(TableMergeRules.ChildMergeActionType.values());
-        childMergeAction.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				mergeRule.setChildMergeAction((ChildMergeActionType) childMergeAction.getSelectedItem());
-			}
-		});
+        childMergeAction.addActionListener(childMergeActionListener);
         
-        deleteDup.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				mergeRule.setDeleteDup(deleteDup.isSelected());
-			}
-		});
+        deleteDup.addActionListener(deleteDupListener);
         
         buildUI();
         
@@ -157,12 +169,10 @@ public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
         handler = new FormValidationHandler(status,actions);
         handler.addValidateObject(ruleTable, new MergeColumnRuleJTableValidator());
         handler.resetHasValidated(); // avoid false hits when newly created
-        
-        undo = new MMOChangeUndoWatcher<TableMergeRules, ColumnMergeRules>(mr,this,session);
 	}
 
 	public TableMergeRules getMergeRule() {
-		return mergeRule;
+		return mmo;
 	}
 
 	protected JComboBox getParentTableComboBox() {
@@ -188,19 +198,19 @@ public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
 		pb.add(status, cc.xy(4,row));
 		row += 2;
 		pb.add(new JLabel("Catalog:"), cc.xy(2,row,"r,c"));
-		JTextField temp = new JTextField(mergeRule.getSourceTable().getCatalogName());
+		JTextField temp = new JTextField(mmo.getSourceTable().getCatalogName());
 		temp.setEditable(false);
 		pb.add(temp, cc.xyw(4,row,5,"f,c"));
 		row += 2;
 		
 		pb.add(new JLabel("Schema:"), cc.xy(2,row,"r,c"));
-		temp = new JTextField(mergeRule.getSourceTable().getSchemaName());
+		temp = new JTextField(mmo.getSourceTable().getSchemaName());
 		temp.setEditable(false);
 		pb.add(temp, cc.xyw(4,row,5,"f,c"));
 		
 		row += 2;
 		pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,c"));
-		temp = new JTextField(mergeRule.getTableName());
+		temp = new JTextField(mmo.getTableName());
 		temp.setEditable(false);
 		pb.add(temp, cc.xyw(4,row,5,"f,c"));
 
@@ -208,10 +218,10 @@ public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
 		pb.add(new JLabel("Index Name:"), cc.xy(2,row,"r,c"));
 		String indexName = "";
 		try {
-			if (mergeRule.getTableIndex() == null) {
+			if (mmo.getTableIndex() == null) {
 				indexName = "";
 			} else {
-				indexName = mergeRule.getTableIndex().getName();
+				indexName = mmo.getTableIndex().getName();
 			}
 		} catch (ArchitectException e1) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
@@ -222,17 +232,17 @@ public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
 		pb.add(temp, cc.xyw(4,row,5,"f,c"));
 		
 		row += 2;
-		if (!mergeRule.isSourceMergeRule()) {
+		if (!mmo.isSourceMergeRule()) {
 			pb.add(new JLabel("Parent Table:"), cc.xy(2,row,"l,c"));
 			pb.add(parentTable, cc.xy(4,row,"f,c"));
-			parentTable.setSelectedItem(mergeRule.getParentTable());
+			parentTable.setSelectedItem(mmo.getParentTable());
 			pb.add(new JLabel("Merge Action:"), cc.xy(6,row,"r,c"));
 			pb.add(childMergeAction, cc.xy(8,row,"f,c"));
-			childMergeAction.setSelectedItem(mergeRule.getChildMergeAction());
+			childMergeAction.setSelectedItem(mmo.getChildMergeAction());
 		} else {
 			pb.add(new JLabel("Delete Dup:"), cc.xy(2,row,"r,c"));
 			pb.add(deleteDup, cc.xy(4, row, "l, c"));
-			deleteDup.setSelected(mergeRule.isDeleteDup());
+			deleteDup.setSelected(mmo.isDeleteDup());
 		}
 		
 		row += 2;
@@ -250,6 +260,10 @@ public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
 						"Merge Column rules saved.",
 						"Save",
 						JOptionPane.INFORMATION_MESSAGE);
+				
+				MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+				TreePath menuPath = treeModel.getPathForNode(mmo);
+				swingSession.getTree().setSelectionPath(menuPath);
 			} else {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
 						"Merge Column rules not saved.",
@@ -258,7 +272,8 @@ public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
 			}
 		}
 	};
-		
+	
+	@Override
 	public boolean doSave() {
 		if ( !handler.hasPerformedValidation() ) {
 			ruleTableModel.fireTableChanged(new TableModelEvent(ruleTableModel));
@@ -267,25 +282,13 @@ public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
 		
 		if (result.getStatus() != Status.FAIL) {
 			
-			if (!mergeRule.isSourceMergeRule()) {
-				mergeRule.setParentTable((SQLTable) parentTable.getSelectedItem());
-				mergeRule.setChildMergeAction(
-					(TableMergeRules.ChildMergeActionType) childMergeAction.getSelectedItem());
-			} else {
-				mergeRule.setDeleteDup(deleteDup.isSelected());
-			}
-			
-			if (!project.getTableMergeRules().contains(mergeRule)) {
-				project.getTableMergeRulesFolder().addChild(mergeRule);
-				MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-				TreePath menuPath = treeModel.getPathForNode(mergeRule);
-				swingSession.getTree().setSelectionPath(menuPath);
+			//adds the mergeRule to the project if it is new
+			if (!project.getTableMergeRules().contains(mmo)) {
+				project.getTableMergeRulesFolder().addChild(mmo);
 			}
 
-			swingSession.save(project);
-			undo.setHasChanged(false);
+			return super.doSave();
 			
-			return true;
 		} else {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
 					"You have to fix the error before you can save the merge rules",
@@ -293,13 +296,6 @@ public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
 					JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
-	}
-	
-	/**
-	 * undo until cannot undo
-	 */
-	public boolean discardChanges() {
-		return undo.undoAll();
 	}
 	
 	public List<SQLColumn> getParentTablePrimaryKeys() throws ArchitectException{
@@ -314,12 +310,12 @@ public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
 		return primaryKeys;
 	}
 
-	public JComponent getPanel() {
-		return panel;
-	}
-
+	@Override
 	public boolean hasUnsavedChanges() {
-		return undo.getHasChanged();
+		if (mmo.getParent() == null) {
+			return true;
+		}
+		return super.hasUnsavedChanges();
 	}
 	
 	
@@ -535,24 +531,22 @@ public class MergeColumnRuleEditor implements EditorPane, CleanupModel {
 
 	public void setSelectedColumn(ColumnMergeRules selectedColumn) {
 		if (selectedColumn != null) {
-			int selected = mergeRule.getChildren().indexOf(selectedColumn);			
+			int selected = mmo.getChildren().indexOf(selectedColumn);			
 			if (selected >= 0 && selected<ruleTable.getRowCount()) {
 				ruleTable.setRowSelectionInterval(selected, selected);
 			}
 		}
 	}
 
+	@Override
 	public void refreshComponents() {
-		if (mergeRule.isSourceMergeRule()) {
-			deleteDup.setSelected(mergeRule.isDeleteDup());
+		if (mmo.isSourceMergeRule()) {
+			deleteDup.setSelected(mmo.isDeleteDup());
 		} else {
-			parentTable.setSelectedItem(mergeRule.getParentTable());
-			childMergeAction.setSelectedItem(mergeRule.getChildMergeAction());
+			parentTable.setSelectedItem(mmo.getParentTable());
+			childMergeAction.setSelectedItem(mmo.getChildMergeAction());
 		}
 		handler.performFormValidation();
 	}
 
-	public void cleanup() {
-		undo.cleanup();
-	}
 }

@@ -29,7 +29,10 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.undo.UndoableEditClass;
+import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
+import ca.sqlpower.matchmaker.undo.MMOChildrenInsertUndoableEdit;
+import ca.sqlpower.matchmaker.undo.MMOChildrenRemoveUndoableEdit;
+import ca.sqlpower.matchmaker.undo.MMOPropertyChangeUndoableEdit;
 
 /**
  * Utility class that registers every change to a subtree of MatchMakerObjects
@@ -43,7 +46,7 @@ implements MatchMakerListener<T,C> {
 	
     private boolean hasChanged;
     private UndoManager undo;
-    private EditorPane pane;
+    private AbstractUndoableEditorPane pane;
     private MatchMakerSwingSession swingSession;
     private MatchMakerObject<T, C> mmo;
     
@@ -67,12 +70,12 @@ implements MatchMakerListener<T,C> {
      * 
      * @param mmo The root node of the subtree to monitor.
      */
-    public MMOChangeUndoWatcher(MatchMakerObject<T,C> mmo, EditorPane pane, MatchMakerSwingSession session) {
+    public MMOChangeUndoWatcher(MatchMakerObject<T,C> mmo, AbstractUndoableEditorPane pane, MatchMakerSwingSession session) {
     	this.swingSession = session;
     	this.mmo = mmo;
     	this.pane = pane;
     	
-    	logger.debug("Initializing Undo Watcher.");
+    	logger.debug("Initializing undo watcher: " + this);
         MatchMakerUtils.listenToHierarchy(this, mmo);
         undo = new UndoManager();
         swingSession.setUndo(undo);
@@ -85,10 +88,26 @@ implements MatchMakerListener<T,C> {
      * Listener implementation.
      */
     public void mmChildrenInserted(MatchMakerEvent<T,C> evt) {
-        hasChanged = true;
-        for (MatchMakerObject<T,C> child : evt.getChildren()) {
-            MatchMakerUtils.listenToHierarchy(this, child);
-        }
+    	hasChanged = true;
+    	for (MatchMakerObject<T,C> child : evt.getChildren()) {
+    		MatchMakerUtils.listenToHierarchy(this, child);
+    	}
+    	
+    	logger.debug("Children: " + evt.getChildren() + " is inserted into: " + evt.getSource().toString());
+    	if (!evt.isUndoEvent()) {
+    		UndoableEdit ue = new MMOChildrenInsertUndoableEdit(evt, null);
+
+    		if (undoCount > 0) {
+    			ce.addEdit(ue);
+    		} else {
+    			undo.addEdit(ue);
+    		}
+    	} else {
+    		if (!undo.canUndo()) {
+    			hasChanged = false;
+    		}
+    	}
+    	swingSession.refreshUndoAction();
     }
 
     /**
@@ -99,18 +118,32 @@ implements MatchMakerListener<T,C> {
         for (MatchMakerObject<T,C> child : evt.getChildren()) {
             MatchMakerUtils.unlistenToHierarchy(this, child);
         }
+    	
+    	logger.debug("Children: " + evt.getChildren() + " is inserted into: " + evt.getSource().toString());
+    	if (!evt.isUndoEvent()) {
+    		UndoableEdit ue = new MMOChildrenRemoveUndoableEdit(evt, null);
+
+    		if (undoCount > 0) {
+    			ce.addEdit(ue);
+    		} else {
+    			undo.addEdit(ue);
+    		}
+    	} else {
+    		if (!undo.canUndo()) {
+    			hasChanged = false;
+    		}
+    	}
+    	swingSession.refreshUndoAction();
     }
     
     /**
-     * Listener implementation. Note that it is synchronized because 
-     * sometimes ce is not initialized when a compound event happens.
+     * Listener implementation. 
      */
-    public synchronized void mmPropertyChanged(MatchMakerEvent<T,C> evt) {
+    public void mmPropertyChanged(MatchMakerEvent<T,C> evt) {
         hasChanged = true;
-        logger.debug("Property: " + evt.getPropertyName() + " from " + evt.getSource().toString() + " has changed.");
+        logger.debug("Watcher: " + this + ", Property: " + evt.getPropertyName() + " from " + evt.getSource().toString() + " has changed.");
         if (!evt.isUndoEvent()) {
-        	hasChanged = true;
-			UndoableEdit ue = new UndoableEditClass(evt, null);
+			UndoableEdit ue = new MMOPropertyChangeUndoableEdit(evt, null);
 			
         	if ("UNDOSTATE".equals(evt.getPropertyName())) {
             	boolean undoing = (Boolean) evt.getNewValue();
@@ -134,22 +167,23 @@ implements MatchMakerListener<T,C> {
         	} else {
         		undo.addEdit(ue);
         	}
-			swingSession.refreshUndoAction();
 		} else {
 			if (!undo.canUndo()) {
 				hasChanged = false;
 			}
 		}
+        swingSession.refreshUndoAction();
         pane.refreshComponents();
     }
 
     /**
-     * Listener implementation.
+     * Listener implementation. Should only be called when the mmo is 
+     * saved and setChildren is called.
      */
     @SuppressWarnings("unchecked")
     public void mmStructureChanged(MatchMakerEvent<T,C> evt) {
-        hasChanged = true;
-        MatchMakerUtils.listenToHierarchy(this, evt.getSource());
+    	MatchMakerUtils.unlistenToHierarchy(this, mmo);
+    	MatchMakerUtils.listenToHierarchy(this, mmo);
     }
 
     /**
@@ -173,6 +207,10 @@ implements MatchMakerListener<T,C> {
      */
     public void setHasChanged(boolean hasChanged) {
         this.hasChanged = hasChanged;
+        if (!hasChanged) {
+        	undo.discardAllEdits();
+        	swingSession.refreshUndoAction();
+        }
     }
     
     /**
@@ -182,6 +220,7 @@ implements MatchMakerListener<T,C> {
     	while (undo.canUndo()) {
 			undo.undo();
 		}
+    	setHasChanged(false);
 		return true;
     }
     
@@ -191,6 +230,7 @@ implements MatchMakerListener<T,C> {
      */
     public void cleanup() {
     	if (undo != null) {
+    		logger.debug("Cleaning up undo watcher: " + this);
     		undo.die();
 			MatchMakerUtils.unlistenToHierarchy(this, mmo);
 			mmo = null;
