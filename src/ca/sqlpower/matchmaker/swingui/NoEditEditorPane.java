@@ -45,11 +45,10 @@ class NoEditEditorPane implements EditorPane {
 	}
 
 	/**
-	 * Since nothing changes, no changes are discarded, so we just say that
-	 * discarding worked.
+	 * Since nothing changes, no changes are discarded.
 	 */
 	public boolean discardChanges() {
-		return true;
+		return false;
 	}
 	
 	/**
@@ -58,9 +57,6 @@ class NoEditEditorPane implements EditorPane {
 	 */
 	public boolean hasUnsavedChanges() {
 		return false;
-	}
-
-	public void refreshComponents() {
 	}
 
 	public JComponent getPanel() {

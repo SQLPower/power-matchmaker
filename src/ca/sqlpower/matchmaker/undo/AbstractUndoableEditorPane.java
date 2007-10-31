@@ -25,6 +25,7 @@ import javax.swing.JPanel;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.swingui.CleanupModel;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MMOChangeUndoWatcher;
@@ -79,11 +80,7 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C ex
 	public JComponent getPanel() {
 		return panel;
 	}
-	
-	
-	public void refreshComponents() {
-	}
-	
+
 	public void cleanup() {
 		undo.cleanup();
 	}
@@ -92,4 +89,7 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C ex
 	public void initUndo() {
 		undo = new MMOChangeUndoWatcher<T, C>(mmo,this,swingSession);
 	}
+
+	public abstract void undoEventFired(MatchMakerEvent<T,C> evt);
+	
 }

@@ -622,8 +622,6 @@ public class MatchResultVisualizer implements EditorPane {
     // ======= EditorPane stuff ========
 
     public boolean doSave() {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: MatchResultVisualizer.doSave()");
         return true;
     }
 
@@ -632,8 +630,6 @@ public class MatchResultVisualizer implements EditorPane {
     }
 
     public boolean hasUnsavedChanges() {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: MatchResultVisualizer.hasUnsavedChanges()");
         return false;
     }
 
@@ -642,14 +638,8 @@ public class MatchResultVisualizer implements EditorPane {
 	}
 
 	public boolean discardChanges() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MatchResultVisualizer.discardChanges()");
+		logger.debug("Cannot discard chagnes");
 		return false;
 	}
 
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MatchResultVisualizer.refreshComponents()");
-		
-	}
 }

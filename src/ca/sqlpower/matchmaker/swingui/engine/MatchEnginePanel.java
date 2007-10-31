@@ -390,14 +390,8 @@ public class MatchEnginePanel implements EditorPane {
 	}
 
 	public boolean discardChanges() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MatchEnginePanel.discardChanges()");
+		logger.debug("Cannot discard changes");
 		return false;
 	}
 
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: MatchEnginePanel.refreshComponents()");
-		
-	}
 }

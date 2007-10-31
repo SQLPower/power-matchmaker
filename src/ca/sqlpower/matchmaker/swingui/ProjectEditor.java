@@ -1058,14 +1058,7 @@ public class ProjectEditor implements EditorPane {
 	}
 
 	public boolean discardChanges() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: ProjectEditor.discardChanges()");
+		logger.debug("Cannot discard chagnes");
 		return false;
-	}
-
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: ProjectEditor.refreshComponents()");
-		
 	}
 }

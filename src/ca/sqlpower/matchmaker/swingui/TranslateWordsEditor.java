@@ -382,14 +382,8 @@ public class TranslateWordsEditor implements EditorPane {
 	}
 
 	public boolean discardChanges() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: TranslateWordsEditor.discardChanges()");
+		logger.debug("Cannot discard chagnes");
 		return false;
 	}
 
-	public void refreshComponents() {
-		// TODO Auto-generated method stub
-		logger.debug("Stub call: TranslateWordsEditor.refreshComponents()");
-		
-	}
 }

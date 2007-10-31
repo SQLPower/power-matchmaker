@@ -38,8 +38,6 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 		
 		propertiesThatHaveSideEffects.add("column");
 		propertiesThatHaveSideEffects.add("parent");
-		propertiesThatHaveSideEffects.add("inPrimaryKey");
-		propertiesThatHaveSideEffects.add("importedKeyColumn");
 	}
 	@Override
 	protected ColumnMergeRules getTarget() throws ArchitectException {

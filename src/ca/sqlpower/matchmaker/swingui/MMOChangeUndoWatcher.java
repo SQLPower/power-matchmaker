@@ -171,9 +171,9 @@ implements MatchMakerListener<T,C> {
 			if (!undo.canUndo()) {
 				hasChanged = false;
 			}
+			pane.undoEventFired(evt);
 		}
         swingSession.refreshUndoAction();
-        pane.refreshComponents();
     }
 
     /**
