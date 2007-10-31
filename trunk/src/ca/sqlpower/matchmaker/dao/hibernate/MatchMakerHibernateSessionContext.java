@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
 
@@ -58,13 +59,20 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     private final DataSourceCollection plDotIni;
     
     /**
+     * The prefs node that we use for persisting all the basic user settings that are
+     * the same for all MatchMaker sessions.
+     */
+    private final Preferences prefs;
+    
+    /**
      * Creates a new session context that uses the Hibernate DAO's to interact with the PL Schema.
      * 
      * @param plIni The data source collection that this context will use.
      */
-    public MatchMakerHibernateSessionContext(DataSourceCollection plIni) {
+    public MatchMakerHibernateSessionContext(Preferences prefs, DataSourceCollection plIni) {
         logger.debug("Creating new session context");
         this.plDotIni = plIni;
+        this.prefs = prefs;
     }
 
     /* (non-Javadoc)
@@ -101,4 +109,31 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         return plDotIni;
     }
 
+    /**
+     * Returns the smtp host address 
+     */
+	public String getEmailSmtpHost() {
+		return prefs.get(EMAIL_HOST_PREFS, "");
+	}
+
+	/**
+	 * Returns the smtp localhost address
+	 */
+	public String getEmailSmtpLocalhost() {
+		return prefs.get(EMAIL_LOCALHOST_PREFS, "");
+	}
+
+	/**
+	 * Sets the smtp host address in the preferences
+	 */
+	public void setEmailSmtpHost(String host) {
+		prefs.put(EMAIL_HOST_PREFS, host);
+	}
+
+	/**
+	 * Sets the smtp localhost address in the preferences
+	 */
+	public void setEmailSmtpLocalhost(String localhost) {
+		prefs.put(EMAIL_LOCALHOST_PREFS, localhost);		
+	}   
 }

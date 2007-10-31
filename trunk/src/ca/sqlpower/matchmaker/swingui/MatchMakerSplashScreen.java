@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
+import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
@@ -191,7 +192,7 @@ public class MatchMakerSplashScreen {
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         DataSourceCollection plini = new PlDotIni();
         plini.read(new File(System.getProperty("user.home"), "pl.ini"));
-        MatchMakerSessionContext context = new MatchMakerHibernateSessionContext(plini);
+        MatchMakerSessionContext context = new MatchMakerHibernateSessionContext(PreferencesManager.getRootNode(), plini);
         SPDataSource ds = plini.getDataSource("deepthought-oracle-mm");
         f.setContentPane(new MatchMakerSplashScreen(context.createSession(ds, ds.getUser(), ds.getPass())).getSplashScreen());
         SwingUtilities.invokeLater(new Runnable() {

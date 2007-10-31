@@ -28,6 +28,7 @@ import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.PlDotIni;
@@ -53,7 +54,7 @@ public class HibernateSessionContextTest extends TestCase {
         DataSourceCollection ini = new PlDotIni();
         ds = DBTestUtil.getOracleDS();
         ini.addDataSource(ds);
-        ctx = new MatchMakerHibernateSessionContext(ini);
+        ctx = new MatchMakerHibernateSessionContext(PreferencesManager.getRootNode(), ini);
     }
     
     public void testGetDataSources() {

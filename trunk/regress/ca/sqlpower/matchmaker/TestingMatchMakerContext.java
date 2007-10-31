@@ -23,7 +23,9 @@ package ca.sqlpower.matchmaker;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.prefs.Preferences;
 
+import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
@@ -32,11 +34,9 @@ import ca.sqlpower.sql.SchemaVersionFormatException;
 
 public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	List<SPDataSource> dataSources;
-	String emailEngineLocation;
-	String matchEngineLocation;
-	String mergeEngineLocation;
 	DataSourceCollection plDotIni;
 	MatchMakerSession session;
+	Preferences prefs = PreferencesManager.getRootNode();
 	
 	public List<SPDataSource> getDataSources() {
 		return dataSources;
@@ -67,6 +67,22 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 			SQLException, IOException,
 			SchemaVersionFormatException, PLSchemaException {
 		return session;
+	}
+
+	public String getEmailSmtpHost() {
+		return prefs.get(EMAIL_HOST_PREFS, "");
+	}
+
+	public String getEmailSmtpLocalhost() {
+		return prefs.get(EMAIL_LOCALHOST_PREFS, "");
+	}
+
+	public void setEmailSmtpHost(String host) {
+		prefs.put(EMAIL_HOST_PREFS, host);
+	}
+
+	public void setEmailSmtpLocalhost(String localhost) {
+		prefs.put(EMAIL_LOCALHOST_PREFS, localhost);
 	}
 
 }

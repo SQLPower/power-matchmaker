@@ -109,12 +109,12 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * The underlying context that will deal with Hibernate for us.
      */
     private final MatchMakerSessionContext context;
-
+    
     /**
      * The prefs node that we use for persisting all the basic user settings that are
-     * the same for all MatchMaker sessions.
+     * the same for all MatchMaker swing sessions.
      */
-    private final Preferences prefs;
+    private final Preferences swingPrefs;
     
     /**
      * Action that implements an extra button we put on the database connection manager
@@ -228,7 +228,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     public SwingSessionContextImpl(
             Preferences prefsRootNode,
             MatchMakerSessionContext delegateContext) throws IOException, ClassNotFoundException {
-        this.prefs = prefsRootNode;
+        this.swingPrefs = prefsRootNode;
         this.context = delegateContext;
         ExceptionReport.init();
 
@@ -281,14 +281,14 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getLastImportExportAccessPath()
      */
     public String getLastImportExportAccessPath() {
-        return prefs.get(MatchMakerSwingUserSettings.LAST_IMPORT_EXPORT_PATH, null);
+        return swingPrefs.get(MatchMakerSwingUserSettings.LAST_IMPORT_EXPORT_PATH, null);
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#setLastImportExportAccessPath(java.lang.String)
      */
     public void setLastImportExportAccessPath(String lastExportAccessPath) {
-        prefs.put(MatchMakerSwingUserSettings.LAST_IMPORT_EXPORT_PATH, lastExportAccessPath);
+    	swingPrefs.put(MatchMakerSwingUserSettings.LAST_IMPORT_EXPORT_PATH, lastExportAccessPath);
     }
 
     /* (non-Javadoc)
@@ -296,10 +296,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     public Rectangle getFrameBounds() {
         Rectangle bounds = new Rectangle();
-        bounds.x = prefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_X, 100);
-        bounds.y = prefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_Y, 100);
-        bounds.width = prefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_WIDTH, 600);
-        bounds.height = prefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_HEIGHT, 440);
+        bounds.x = swingPrefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_X, 100);
+        bounds.y = swingPrefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_Y, 100);
+        bounds.width = swingPrefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_WIDTH, 600);
+        bounds.height = swingPrefs.getInt(MatchMakerSwingUserSettings.MAIN_FRAME_HEIGHT, 440);
         return bounds;
     }
 
@@ -307,24 +307,24 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#setFrameBounds(java.awt.Rectangle)
      */
     public void setFrameBounds(Rectangle bounds) {
-        prefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_X, bounds.x);
-        prefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_Y, bounds.y);
-        prefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_WIDTH, bounds.width);
-        prefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_HEIGHT, bounds.height);
+    	swingPrefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_X, bounds.x);
+    	swingPrefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_Y, bounds.y);
+    	swingPrefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_WIDTH, bounds.width);
+    	swingPrefs.putInt(MatchMakerSwingUserSettings.MAIN_FRAME_HEIGHT, bounds.height);
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#setLastLoginDataSource(ca.sqlpower.sql.SPDataSource)
      */
     public void setLastLoginDataSource(SPDataSource dataSource) {
-        prefs.put(MatchMakerSwingUserSettings.LAST_LOGIN_DATA_SOURCE, dataSource.getName());
+    	swingPrefs.put(MatchMakerSwingUserSettings.LAST_LOGIN_DATA_SOURCE, dataSource.getName());
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getLastLoginDataSource()
      */
     public SPDataSource getLastLoginDataSource() {
-        String lastDSName = prefs.get(MatchMakerSwingUserSettings.LAST_LOGIN_DATA_SOURCE, null);
+        String lastDSName = swingPrefs.get(MatchMakerSwingUserSettings.LAST_LOGIN_DATA_SOURCE, null);
         if (lastDSName == null) return null;
         for (SPDataSource ds : getDataSources()) {
             if (ds.getName().equals(lastDSName)) return ds;
@@ -413,7 +413,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         }
         //XXX: We should NOT be using ArchitectSession for this
         prefs.put(ArchitectSession.PREFS_PL_INI_PATH, plDotIniPath);
-        return new MatchMakerHibernateSessionContext(plDotIni);
+        return new MatchMakerHibernateSessionContext(prefs, plDotIni);
     }
 
     private static DataSourceCollection readPlDotIni(String plDotIniPath) {
@@ -539,5 +539,19 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		return stepProperties;
 	}
 
-    
+	public String getEmailSmtpHost() {
+		return context.getEmailSmtpHost();
+	}
+
+	public String getEmailSmtpLocalhost() {
+		return context.getEmailSmtpLocalhost();
+	}
+
+	public void setEmailSmtpHost(String host) {
+		context.setEmailSmtpHost(host);
+	}
+
+	public void setEmailSmtpLocalhost(String localhost) {
+		context.setEmailSmtpLocalhost(localhost);
+	}
 }
