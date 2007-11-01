@@ -80,8 +80,8 @@ public class HibernateSessionContextTest extends TestCase {
         // DEF_PARAM table with one column!
         Connection con = DBTestUtil.connectToDatabase(ds);
         Statement stmt = con.createStatement();
-        stmt.executeUpdate("CREATE TABLE "+ds.getPlSchema()+".DEF_PARAM ( SCHEMA_VERSION VARCHAR(50) )");
-        stmt.executeUpdate("INSERT INTO "+ds.getPlSchema()+".DEF_PARAM VALUES ('"+v.toString()+"')");
+        stmt.executeUpdate("CREATE TABLE "+ds.getPlSchema()+".MM_SCHEMA_INFO (PARAM_NAME VARCHAR(50), PARAM_VALUE VARCHAR(2000))");
+        stmt.executeUpdate("INSERT INTO "+ds.getPlSchema()+".MM_SCHEMA_INFO VALUES ('schema_version', '"+v.toString()+"')");
         stmt.close();
         
         try {

@@ -164,7 +164,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         ResultSet rs = null;
         try {
             stmt = con.createStatement();
-            rs = stmt.executeQuery("SELECT param_value FROM mm_schema_info WHERE param_name='schema_version'");
+            rs = stmt.executeQuery("SELECT param_value FROM " + ds.getPlSchema() + ".mm_schema_info WHERE param_name='schema_version'");
             if (!rs.next()) {
                 throw new SQLException(
                         "There is no schema_version entry in the " +
@@ -178,6 +178,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
                 // this case is unlikely to happen because we have to check for null when setting up hibernate 
             	plSchema = "not set";
             }
+            logger.error(e);
 			SQLException exception = new SQLException(
                     "Couldn't determine Repository schema version for database " + ds.getDisplayName() + ".\n" +
                     "Please check that you have set the Repository Schema Owner correctly in the DataSource Configuration\n" +
