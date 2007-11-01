@@ -85,9 +85,15 @@ public class MungeProcessor extends AbstractProcessor {
 			
 			// call until one step gives up
 			boolean finished = false;
+			
+			//stops the process if nothing is going to happen
+			//this will cause an infinite loop if nothing returns false
+			if (processOrder.size() < 2) {
+				finished = true;
+			}
 			while(!finished && !monitorableHelper.isCancelled() && (rowCount == -1 || monitorableHelper.getProgress() < rowCount)) {
 				for (MungeStep step: processOrder) {
-					boolean continuing = step.call() && !monitorableHelper.isCancelled();
+					boolean continuing = !monitorableHelper.isCancelled() && step.call();
 					if (!continuing) {
 						finished = true;
 						break;
