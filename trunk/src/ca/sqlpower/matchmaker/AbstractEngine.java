@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -86,19 +85,9 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	protected List<EmailRecipient> redUsers;
 	
 	/**
-	 * The email for sending info of a green status
+	 * The email for sending info of the engine
 	 */
-	protected Email greenEmail;
-	
-	/**
-	 * The email for sending info of a yellow status
-	 */
-	protected Email yellowEmail;
-	
-	/**
-	 * The email for sending info of a red status
-	 */
-	protected Email redEmail;
+	protected Email email;
 	
 	/**
 	 * The level at which to show the engine debugging
@@ -286,40 +275,30 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	private void findEmailUsers() throws UnknownFreqCodeException,
 			PLSecurityException, SQLException {
 		Connection con = session.getConnection();
-		greenUsers = EmailNotification.findGreenEmailRecipients(con, project);
-		yellowUsers = EmailNotification.findYellowEmailRecipients(con, project);
-		redUsers = EmailNotification.findRedEmailRecipients(con, project);
-	}
-	
-	/**
-	 * This sets up the given email with the addresses for
-	 * sender and recipient.
-	 */
-	private void setupAddresses(Email email, List<EmailRecipient> recipients) 
-			throws UnsupportedEncodingException {
-		email.setFromEmail(session.getAppUserEmail());
-		email.setFromName(session.getAppUser());
-		for (EmailRecipient recipient: recipients) {
-			email.addToAddress(recipient.getEmail(), recipient.getName());
-		}
+		greenUsers = EmailNotification.findEmailRecipients(con,
+				this, EmailNotification.GREEN_STATUS);
+		yellowUsers = EmailNotification.findEmailRecipients(con,
+				this, EmailNotification.YELLOW_STATUS);
+		redUsers = EmailNotification.findEmailRecipients(con,
+				this, EmailNotification.RED_STATUS);
 	}
 	
 	/**
 	 * Creates and sets up the emails for each status.
 	 */
-	protected void setupEmails(MatchMakerSessionContext context) 
+	protected void setupEmail(MatchMakerSessionContext context) 
 			throws Exception {
 		findEmailUsers();
 		
 		String host = context.getEmailSmtpHost();
 		String localhost = context.getEmailSmtpLocalhost();
 		
-		greenEmail = new Email(host, localhost);
-		yellowEmail = new Email(host, localhost);
-		redEmail = new Email(host, localhost);
-		
-		setupAddresses(greenEmail, greenUsers);
-		setupAddresses(yellowEmail, yellowUsers);
-		setupAddresses(redEmail, redUsers);
+		email = new Email(host, localhost);
+		email.setFromEmail(session.getAppUserEmail());
+		email.setFromName(session.getAppUser());
+	}
+
+	public String getObjectName() {
+		return getProject().getOid().toString();
 	}
 }
