@@ -91,6 +91,7 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 		nonPersistingProperties.add("session");
         nonPersistingProperties.add("parent");
         nonPersistingProperties.add("parentProject");
+        nonPersistingProperties.add("results");
         nonPersistingProperties.add("oid");
 
 		return nonPersistingProperties;
@@ -98,24 +99,23 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 
     public void testDelete() throws Exception {
         Connection con = getSession().getConnection();
-        ProjectDAO projectDAO = new ProjectDAOHibernate(getSession());
         Statement stmt = null;
         try {
 
             MungeProcess process = project.getMungeProcesses().get(0);
-            String processId = process.getName();
+            String processName = process.getName();
 
             MungeProcessDAO dao = getDataAccessObject();
             dao.save(process);
             
             stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+processId+"'");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM mm_munge_process WHERE process_name = '"+processName+"'");
             assertTrue("munge process didn't save?!", rs.next());
             rs.close();
 
             dao.delete(process);
 
-            rs = stmt.executeQuery("SELECT * FROM pl_match_group WHERE group_id = '"+processId+"'");
+            rs = stmt.executeQuery("SELECT * FROM mm_munge_process WHERE process_name = '"+processName+"'");
             assertFalse("munge process didn't delete", rs.next());
             rs.close();
         } finally {
