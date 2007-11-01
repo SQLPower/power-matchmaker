@@ -172,13 +172,15 @@ public class SQLInputStep extends AbstractMungeStep {
     public void open(Logger logger) throws Exception {
     	super.open(logger);
 
-    	if (rs != null || table != null) {
+    	if (rs != null) {
             throw new IllegalStateException("The input step is already open");
         }
 
         Project project = getProject();
-        this.table = project.getSourceTable();
-        setName(table.getName());
+        if (table ==  null) { 
+        	this.table = project.getSourceTable();
+        	setName(table.getName());
+        }
         for (SQLColumn c : table.getColumns()) {
             MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), typeClass(c.getType()));
             addChild(newOutput);

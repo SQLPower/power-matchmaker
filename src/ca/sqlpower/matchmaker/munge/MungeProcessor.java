@@ -104,7 +104,12 @@ public class MungeProcessor extends AbstractProcessor {
 		} finally {
 			// close everything
 			for (MungeStep step: processOrder) {
-				step.close();
+				try {
+					step.close();
+				} catch (Exception ex) {
+					logger.error("Close failed; squishing exception in order" +
+							" not to obscure any earlier exceptions.", ex);
+				}
 			}
 			
 			monitorableHelper.setFinished(true);
