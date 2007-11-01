@@ -25,8 +25,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import javax.mail.MessagingException;
-
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -37,6 +35,7 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
 import ca.sqlpower.matchmaker.munge.MungeResult;
+import ca.sqlpower.util.EmailAppender;
 
 /**
  * The MatchMaker's matching engine.  Runs all of the munge steps in the correct
@@ -46,6 +45,8 @@ import ca.sqlpower.matchmaker.munge.MungeResult;
 public class MatchEngineImpl extends AbstractEngine {
 
 	private static final Logger logger = Logger.getLogger(MatchEngineImpl.class);
+	
+	private static final String DB_OBJECT_TYPE = "MATCH_ENGINE";
 
 	private int jobSize;
 
@@ -117,7 +118,7 @@ public class MatchEngineImpl extends AbstractEngine {
         	
         	// Then tries to set up the emails for each status
         	try {
-				setupEmails(context);
+				setupEmail(context);
 			} catch (Exception e) {
 				throw new EngineSettingException("PreCondition failed: " +
 						"error while setting up for sending emails.", e);
@@ -141,6 +142,7 @@ public class MatchEngineImpl extends AbstractEngine {
 		Level oldLoggerLevel = logger.getLevel();
 		logger.setLevel(getMessageLevel());
 		FileAppender fileAppender = null;
+		EmailAppender emailAppender = null;
 		cancelled = false;
 		
 		try {
@@ -160,6 +162,11 @@ public class MatchEngineImpl extends AbstractEngine {
 			boolean appendToFile = getProject().getMungeSettings().getAppendToLog();
 			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
 			logger.addAppender(fileAppender);
+			
+			if (getProject().getMungeSettings().getSendEmail()) {
+				emailAppender = new EmailAppender(email, greenUsers, yellowUsers, redUsers);
+				logger.addAppender(emailAppender);
+			}
 			
 			progressMessage = "Starting Match Engine";
 			logger.info(progressMessage);
@@ -199,10 +206,8 @@ public class MatchEngineImpl extends AbstractEngine {
 			
 			if (getProject().getMungeSettings().getSendEmail()) {
 				try {
-					greenEmail.setEmailSubject("Match Engine success!");
-					greenEmail.setEmailBody("Match Engine finished successfully.");
-					greenEmail.sendMessage();
-				} catch (MessagingException e) {
+					emailAppender.sendGreenEmail();
+				} catch (Exception e) {
 					logger.error("Sending emails failed: " + e.getMessage());
 				}
 			}
@@ -218,11 +223,8 @@ public class MatchEngineImpl extends AbstractEngine {
 			
 			if (getProject().getMungeSettings().getSendEmail()) {
 				try {
-					redEmail.setEmailSubject("Match Engine failed!");
-					redEmail.setEmailBody("Match Engine failed because: \n" +
-						ex.getMessage());
-					redEmail.sendMessage();
-				} catch (MessagingException e) {
+					emailAppender.sendRedEmail();
+				} catch (Exception e) {
 					logger.error("Sending emails failed: " + e.getMessage());
 				}
 			}
@@ -309,6 +311,10 @@ public class MatchEngineImpl extends AbstractEngine {
 		} else {
 			return progress;
 		}
+	}
+
+	public String getObjectType() {
+		return DB_OBJECT_TYPE;
 	}
 	
 	@Override

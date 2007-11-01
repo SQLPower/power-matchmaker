@@ -25,8 +25,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.mail.MessagingException;
-
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -36,6 +34,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
+import ca.sqlpower.util.EmailAppender;
 
 /**
  * The MatchMaker's cleansing engine.  Runs all of the munge steps in the correct
@@ -44,6 +43,8 @@ import ca.sqlpower.matchmaker.munge.MungeProcessor;
 public class CleanseEngineImpl extends AbstractEngine {
 
 	private static final Logger logger = Logger.getLogger(CleanseEngineImpl.class);
+	
+	private static final String DB_OBJECT_TYPE = "CLEANSE_ENGINE";
 
 	private int jobSize;
 
@@ -103,7 +104,7 @@ public class CleanseEngineImpl extends AbstractEngine {
         	
         	// Then tries to setup the emails to each status
         	try {
-				setupEmails(context);
+				setupEmail(context);
 			} catch (Exception e) {
 				throw new EngineSettingException("PreCondition failed: " +
 						"error while setting up for sending emails.", e);
@@ -127,6 +128,8 @@ public class CleanseEngineImpl extends AbstractEngine {
 		Level oldLevel = logger.getLevel();
 		cancelled = false;
 		FileAppender fileAppender = null;
+		EmailAppender emailAppender = null;
+		
 		try {
 			logger.setLevel(getMessageLevel());
 			setFinished(false);
@@ -145,6 +148,9 @@ public class CleanseEngineImpl extends AbstractEngine {
 			boolean appendToFile = getProject().getMungeSettings().getAppendToLog();
 			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
 			logger.addAppender(fileAppender);
+			
+			emailAppender = new EmailAppender(email, greenUsers, yellowUsers, redUsers);
+			logger.addAppender(emailAppender);
 			
 			progressMessage = "Starting Cleanse Engine";
 			logger.info(progressMessage);
@@ -200,10 +206,8 @@ public class CleanseEngineImpl extends AbstractEngine {
 			
 			if (getProject().getMungeSettings().getSendEmail()) {
 				try {
-					greenEmail.setEmailSubject("Cleanse Engine success!");
-					greenEmail.setEmailBody("Cleanse Engine finished successfully.");
-					greenEmail.sendMessage();
-				} catch (MessagingException e) {
+					emailAppender.sendGreenEmail();
+				} catch (Exception e) {
 					logger.error("Sending emails failed: ", e);
 				}
 			}
@@ -219,11 +223,8 @@ public class CleanseEngineImpl extends AbstractEngine {
 			
 			if (getProject().getMungeSettings().getSendEmail()) {
 				try {
-					redEmail.setEmailSubject("Cleanse Engine failed!");
-					redEmail.setEmailBody("Cleanse Engine failed because: \n" +
-						ex.getMessage());
-					redEmail.sendMessage();
-				} catch (MessagingException e) {
+					emailAppender.sendRedEmail();
+				} catch (Exception e) {
 					logger.error("Sending emails failed: ", e);
 				}
 			}
@@ -261,6 +262,10 @@ public class CleanseEngineImpl extends AbstractEngine {
 		} else {
 			return progress;
 		}
+	}
+
+	public String getObjectType() {
+		return DB_OBJECT_TYPE;
 	}
 	
 	public synchronized void setCancelled(boolean cancelled) {

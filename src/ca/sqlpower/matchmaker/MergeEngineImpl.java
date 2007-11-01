@@ -24,8 +24,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import javax.mail.MessagingException;
-
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -34,6 +32,7 @@ import org.apache.log4j.PatternLayout;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.SQL;
+import ca.sqlpower.util.EmailAppender;
 
 /**
  * Implements the merging and purging functionality of the MatchMaker.
@@ -41,6 +40,8 @@ import ca.sqlpower.sql.SQL;
 public class MergeEngineImpl extends AbstractEngine {
 
 	private static final Logger logger = Logger.getLogger(MergeEngineImpl.class);
+	
+	private static final String DB_OBJECT_TYPE = "MERGE_ENGINE";
 
 	private int jobSize;
 	private int progress;
@@ -114,7 +115,7 @@ public class MergeEngineImpl extends AbstractEngine {
         	
         	// Then creates the emails for each status
         	try {
-				setupEmails(context);
+				setupEmail(context);
 			} catch (Exception e) {
 				throw new EngineSettingException("PreCondition failed: " +
 						"error while setting up for sending emails.", e);
@@ -136,8 +137,9 @@ public class MergeEngineImpl extends AbstractEngine {
 	public EngineInvocationResult call() throws EngineSettingException {
 		Level oldLevel = logger.getLevel();
 		FileAppender fileAppender = null;
+		EmailAppender emailAppender = null;
 		cancelled = false;
-		
+
 		try {
 			logger.setLevel(getMessageLevel());
 			setFinished(false);
@@ -157,6 +159,9 @@ public class MergeEngineImpl extends AbstractEngine {
 			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
 			logger.addAppender(fileAppender);
 			
+			emailAppender = new EmailAppender(email, greenUsers, yellowUsers, redUsers);
+			logger.addAppender(emailAppender);
+			
 			jobSize = getNumRowsToProcess();
 
 			progressMessage = "Starting Merge Engine";
@@ -173,10 +178,8 @@ public class MergeEngineImpl extends AbstractEngine {
 			
 			if (getProject().getMungeSettings().getSendEmail()) {
 				try {
-					greenEmail.setEmailSubject("Merge Engine success!");
-					greenEmail.setEmailBody("Merge Engine finished successfully.");
-					greenEmail.sendMessage();
-				} catch (MessagingException e) {
+					emailAppender.sendGreenEmail();
+				} catch (Exception e) {
 					logger.error("Sending emails failed: ", e);
 				}
 			}
@@ -191,11 +194,8 @@ public class MergeEngineImpl extends AbstractEngine {
 			
 			if (getProject().getMungeSettings().getSendEmail()) {
 				try {
-					redEmail.setEmailSubject("Cleanse Engine failed!");
-					redEmail.setEmailBody("Cleanse Engine failed because: \n" +
-						ex.getMessage());
-					redEmail.sendMessage();
-				} catch (MessagingException e) {
+					emailAppender.sendRedEmail();
+				} catch (Exception e) {
 					logger.error("Sending emails failed: ", e);
 				}
 			}
@@ -254,6 +254,10 @@ public class MergeEngineImpl extends AbstractEngine {
 		} else {
 			return progress;
 		}
+	}
+
+	public String getObjectType() {
+		return DB_OBJECT_TYPE;
 	}
 	
 	@Override

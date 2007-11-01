@@ -27,6 +27,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.sql.DatabaseObject;
 import ca.sqlpower.util.Monitorable;
 
 /**
@@ -34,7 +35,8 @@ import ca.sqlpower.util.Monitorable;
  * process which does some time-consuming operation on a Match.  Currently,
  * there are two major implementations: The Match Engine and Merge Engine.
  */
-public interface MatchMakerEngine extends Monitorable, Callable<EngineInvocationResult> {
+public interface MatchMakerEngine extends Monitorable,
+	Callable<EngineInvocationResult>, DatabaseObject {
 
 	/**
 	 * Starts the engine.  This method returns once the engine run has
