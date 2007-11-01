@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.sql.SQLException;
+
 import ca.sqlpower.sql.SPDataSource;
 
 /**
@@ -43,13 +45,28 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 		
 		// Drop the old tables
 		String sql = "DROP TABLE " + getFullTableName() + "_GCHILD";
-		execSQL(con,sql);
+		try {
+			execSQL(con,sql);
+		} catch (SQLException e) {
+			// Ignoring if the table did not exist before hand.
+			System.out.println(e.getStackTrace());
+		}
 		
 		sql = "DROP TABLE " + getFullTableName() + "_CHILD";
-		execSQL(con,sql);
+		try {
+			execSQL(con,sql);
+		} catch (SQLException e) {
+			// Ignoring if the table did not exist before hand.
+			System.out.println(e.getStackTrace());
+		}
 		
 		sql = "DROP TABLE " + getFullTableName();
-		execSQL(con,sql);
+		try {
+			execSQL(con,sql);
+		} catch (SQLException e) {
+			// Ignoring if the table did not exist before hand.
+			System.out.println(e.getStackTrace());
+		}
 		
 		// Creates the source table
 		sql = "CREATE TABLE " + getFullTableName() + " (" +
