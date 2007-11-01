@@ -62,34 +62,22 @@ public class SQLInputStep extends AbstractMungeStep {
     private ResultSet rs;
     
     /**
-     * The table this step selects from.
+     * The table this step selects from.  This value is initialized based on the
+     * containing project's source table when setParent() is called.
      */
-    private final SQLTable table;
+    private SQLTable table;
     
     /**
      * This is the connection to the input table's database.
      */
     private Connection con;
 
-	/**
-	 * The match we are working on
-	 */
-	private Project project;
-
     /**
      * The output step that is tied to this input step.
      */
     private MungeStep outputStep;
-
-    public SQLInputStep(Project project, MatchMakerSession session) throws ArchitectException {
-    	super(session);
-        this.table = project.getSourceTable();
-        this.project = project;
-        setName(table.getName());
-        for (SQLColumn c : table.getColumns()) {
-            MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), typeClass(c.getType()));
-            addChild(newOutput);
-        }
+    
+    public SQLInputStep() {
     }
 
     /**
@@ -183,11 +171,19 @@ public class SQLInputStep extends AbstractMungeStep {
     @Override
     public void open(Logger logger) throws Exception {
     	super.open(logger);
-    	
-    	if (rs != null) {
+
+    	if (rs != null || table != null) {
             throw new IllegalStateException("The input step is already open");
         }
-        
+
+        Project project = getProject();
+        this.table = project.getSourceTable();
+        setName(table.getName());
+        for (SQLColumn c : table.getColumns()) {
+            MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), typeClass(c.getType()));
+            addChild(newOutput);
+        }
+
         SQLDatabase db = table.getParentDatabase();
         if (db == null) {
             throw new RuntimeException("The input table has no parent database defined.");
@@ -238,12 +234,14 @@ public class SQLInputStep extends AbstractMungeStep {
      * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
     public MungeStep getOuputStep() throws ArchitectException {
+        Project project = getProject();
         if (outputStep != null) {
             return outputStep;
         } else if (project.getType() == ProjectMode.CLEANSE) {
     		outputStep = new CleanseResultStep(project, getSession());
     	} else {
-    		outputStep = new MungeResultStep(project, this, getSession());
+    		outputStep = new MungeResultStep();
+            ((MungeResultStep) outputStep).setInputStep(this);
     	}
         return outputStep;
     }
@@ -252,7 +250,6 @@ public class SQLInputStep extends AbstractMungeStep {
     	SQLTable table;
     	
 		private CleanseResultStep(Project project, MatchMakerSession session) throws ArchitectException {
-			super(session);
 			table = project.getSourceTable();
 			setName(table.getName());
 			addInitialInputs();

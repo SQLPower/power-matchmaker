@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="ca.sqlpower.matchmaker.munge">
+	<class name="AbstractMungeStep"
+		   table="mm_munge_step" abstract="true">
+		
+		<id name="oid" type="long" access="field">
+			<column name="munge_step_oid" />
+			<generator class="native">
+				<param name="sequence">mm_munge_step_oid_seq</param>
+			</generator>
+		</id>
+		   
+		<discriminator column="step_class" length="1000" />
+
+		<many-to-one name="parent" 
+			class="MungeProcess" 
+			fetch="select">
+			<column name="munge_process_oid"/>
+		</many-to-one>
+		<property name="name" type="string">
+			<column name="step_name" length="100" />
+		</property>
+		<property name="lastUpdateDate" type="timestamp" access="field">
+			<column name="last_update_date" length="23" />
+		</property>
+		<property name="lastUpdateOsUser" type="string" access="field">
+			<column name="last_update_os_user" length="30" />
+		</property>
+		<property name="lastUpdateAppUser" type="string" access="field">
+			<column name="last_update_user" length="30" />
+		</property>
+		<property name="visible"
+			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
+			<column name="visible_ind" length="1" />
+		</property>
+
+		<map name="parameters" access="field" table="mm_munge_step_parameter">
+			<key column="munge_step_oid"/>
+			<index column="parameter_name" type="string"/>
+			<element column="parameter_value" type="string"/>
+		</map>
+		
+		<!-- Hardcoding this list is not ideal.  These should be added dynamically by the session
+		     when it is created (based on the resource file that lists all the munge steps) -->
+		     
+		<!-- The cleanse result step is a non-static inner class, and cannot be persisted by Hibernate -->
+		
+		<subclass name="ConcatMungeStep" />
+		<subclass name="DoubleMetaphoneMungeStep" />
+		<subclass name="GoogleAddressLookup" />
+		<subclass name="LowerCaseMungeStep" />
+		<subclass name="MetaphoneMungeStep" />
+		<subclass name="MungeResultStep" />
+		<subclass name="RefinedSoundexMungeStep" />
+		<subclass name="RetainCharactersMungeStep" />
+		<subclass name="SoundexMungeStep" />
+		<subclass name="SQLInputStep" />
+		<subclass name="StringSubstitutionMungeStep" />
+		<subclass name="SubstringByWordMungeStep" />
+		<subclass name="SubstringMungeStep" />
+		<subclass name="TranslateWordMungeStep" />
+		<subclass name="UpperCaseMungeStep" />
+		<subclass name="WordCountMungeStep" />
+		
+	</class>
+</hibernate-mapping>

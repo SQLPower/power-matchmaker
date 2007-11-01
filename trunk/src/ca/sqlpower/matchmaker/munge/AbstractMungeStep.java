@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.Project;
 
 /**
  * An abstract implementation of the MungeStep interface. The only
@@ -40,6 +41,13 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
  */
 public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeStep, MungeStepOutput> implements MungeStep {
 	
+    /**
+     * The object identifier for this munge step instance.  Required by
+     * the persistence layer, but otherwise unused.
+     */
+    @SuppressWarnings("unused")
+    private Long oid;
+    
 	/**
 	 * A list of Input objects, each containing a MungeStepOutput
 	 * that the parent MungeStep has output, which this MungeStep 
@@ -61,15 +69,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	/**
 	 * The logger to print the inputs and outputs to
 	 */
-	private Logger logger;
+	protected Logger logger;
 	
-	/**
-	 * The session for this object
-	 */
-	private MatchMakerSession session;
-	
-	public AbstractMungeStep(MatchMakerSession session) {
-		this.session = session;
+	public AbstractMungeStep() {
 	}
 	
 	public List<MungeStepOutput> getInputs() {
@@ -212,7 +214,10 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
      */
     public void open(Logger logger) throws Exception {
     	this.logger = logger;
-    	
+        if (logger == null) {
+            throw new NullPointerException("Step " + getClass().getName() + " was given a null logger");
+        }
+
     	if (logger.isDebugEnabled()) {
     		logger.debug("Opening MungeStep " + getName());
     	}
@@ -226,10 +231,14 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
      * too and clean up the resources.
      */
     public void close() throws Exception {
-    	if (logger.isDebugEnabled()) {
-    		logger.debug("Closing MungeStep " + getName());
-    	}
-    	logger = null;
+        if (logger == null) {
+            System.err.println("Warning: Step " + getClass().getName() + " lost its logger");
+        } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Closing MungeStep " + getName());
+            }
+            logger = null;
+        }
         opened = false;
     }
     
@@ -288,6 +297,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     	if (!opened) {
     		throw new IllegalStateException("A munge step must be opened before called.");
     	}
+        if (logger == null) {
+            throw new NullPointerException("Step " + getClass().getName() + " lost its logger");
+        }
     	printInputs();
     	return true;
     }
@@ -304,12 +316,18 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     	}
     	return null;
     }
-    
+
     /**
-     * Returns the matchMakerSession associated with this object
+     * Returns the MMO ancestor of this munge step that is a Project.
+     * Returns null if there is no such ancestor.
      */
-    public MatchMakerSession getSession() {
-    	return session;
+    public Project getProject() {
+        for (MatchMakerObject<?, ?> mmo = getParent(); mmo != null; mmo = mmo.getParent()) {
+            if (mmo instanceof Project) {
+                return (Project) mmo;
+            }
+        }
+        return null;
     }
     
     @Override

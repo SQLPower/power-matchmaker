@@ -21,11 +21,9 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
 
 public class StringSubstitutionMungeStepTest extends TestCase {
 
@@ -37,7 +35,7 @@ public class StringSubstitutionMungeStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new StringSubstitutionMungeStep(new TestingMatchMakerSession());
+		step = new StringSubstitutionMungeStep();
 	}
 
 	/**

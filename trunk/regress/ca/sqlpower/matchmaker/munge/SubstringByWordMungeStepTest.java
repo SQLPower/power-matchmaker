@@ -21,11 +21,9 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
 
 public class SubstringByWordMungeStepTest extends TestCase {
 
@@ -37,7 +35,7 @@ public class SubstringByWordMungeStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new SubstringByWordMungeStep(new TestingMatchMakerSession());
+		step = new SubstringByWordMungeStep();
 	}
 	public void testCallonNoOccurrence() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);

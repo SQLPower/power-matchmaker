@@ -7,34 +7,34 @@
 <hibernate-mapping>
 
 	<class name="ca.sqlpower.matchmaker.Project"
-		table="PL_MATCH" >
+		table="mm_project" >
 		<id name="oid" type="long" access="field">
-			<column name="MATCH_OID" />
+			<column name="project_oid" />
 			<generator class="native">
-				<param name="sequence">pl_match_match_oid_seq</param>
+				<param name="sequence">mm_project_oid_seq</param>
 			</generator>
 		</id>
 		<property name="name" type="string">
-			<column name="MATCH_ID" length="80" />
+			<column name="project_name" length="80" />
 		</property>
 		<property name="type" type="ca.sqlpower.matchmaker.util.TypeStringToProjectTypeEnum">
-			<column name="MATCH_TYPE" length="35" not-null="true" />
+			<column name="project_type" length="35" not-null="true" />
 		</property>
 		<property name="filter" type="string">
 			<column name="FILTER" length="2000" />
 		</property>
 		
 		<property name="sourceTableCatalog" type="string">	
-			<column name="TABLE_CATALOG" length="30" />
+			<column name="source_table_catalog" length="60" />
 		</property>
 		<property name="sourceTableSchema" type="string">
-			<column name="TABLE_OWNER" length="30" />
+			<column name="source_table_schema" length="60" />
 		</property>
 		<property name="sourceTableName" type="string">
-			<column name="MATCH_TABLE" length="30" />
+			<column name="source_table_name" length="60" />
 		</property>
 		<property name="sourceTableIndex" type="ca.sqlpower.matchmaker.util.ListToSQLIndex">
-			<column name="PK_COLUMN" length="30" />
+			<column name="source_table_index_name" length="60" />
 		    <column name="index_column_name0" length="50" />
 		    <column name="index_column_name1" length="50" />
 		    <column name="index_column_name2" length="50" />
@@ -48,23 +48,28 @@
 		</property>
 
 		<property name="resultTableCatalog" type="string">	
-			<column name="RESULTS_TABLE_CATALOG" length="30" />
+			<column name="result_table_catalog" length="60" />
 		</property>
 		<property name="resultTableSchema" type="string">
-			<column name="RESULTS_TABLE_OWNER" length="30" />
+			<column name="result_table_schema" length="60" />
 		</property>
 		<property name="resultTableName" type="string">
-			<column name="RESULTS_TABLE" length="30" />
+			<column name="result_table_name" length="60" />
 		</property>
 		
 		<property name="xrefTableCatalog" type="string">	
-			<column name="xref_catalog" length="30" />
+			<column name="xref_table_catalog" length="30" />
 		</property>
 		<property name="xrefTableSchema" type="string">
-			<column name="xref_owner" length="30" />
+			<column name="xref_table_schema" length="30" />
 		</property>
 		<property name="xrefTableName" type="string">
 			<column name="xref_table_name" length="30" />
+		</property>
+	
+		<property name="visible"
+			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
+			<column name="visible_ind" length="1" />
 		</property>
 	
 		<property name="createDate" type="timestamp" access="field">
@@ -85,18 +90,17 @@
 				<column name="AUTO_MATCH_THRESHOLD" precision="3" scale="0" />
 			</property>
 			<property name="log" type="ca.sqlpower.matchmaker.util.FileNameToLog">
-				<column name="MATCH_LOG_FILE_NAME" length="200" />
+				<column name="MATCH_LOG_FILE_NAME" length="2000" />
 			</property>
 			<property name="processCount" type="integer">
 				<column name="MATCH_PROCESS_CNT" precision="18" scale="0" />
 			</property>
-			<property name="showProgressFreq" type="long">
-				<column name="MATCH_SHOW_PROGRESS_FREQ" precision="18"
-					scale="0" />
-			</property>
+			
+			<!-- XXX this should probably be moved out of this component into the project itself  -->
 			<property name="description" type="string">
 				<column name="MATCH_DESC" length="2000" />
 			</property>
+			
 			<property name="debug"
 				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="MATCH_DEBUG_MODE_IND" length="1" />
@@ -108,17 +112,13 @@
 			<property name="lastRunDate" type="timestamp">
 				<column name="MATCH_LAST_RUN_DATE" />
 			</property>
-			<property name="breakUpMatch"
-				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
-				<column name="MATCH_BREAK_IND" length="1" />
-			</property>
 			<property name="sendEmail"
 				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="match_send_email_ind" length="1" />
 			</property>
 			<property name="clearMatchPool"
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
-				<column name="truncate_cand_dup_ind" length="1" />
+				<column name="clear_match_pool_ind" length="1" />
 			</property>
 			<property name="lastBackupNo" type="long">
 				<column name="last_backup_no" precision="18" scale="0" />
@@ -131,12 +131,12 @@
 			<property name="log" type="ca.sqlpower.matchmaker.util.FileNameToLog">
 				<column name="MERGE_LOG_FILE_NAME" length="200" />
 			</property>
+			<property name="appendToLog"
+				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
+				<column name="MERGE_APPEND_TO_LOG_IND" length="1" />
+			</property>
 			<property name="processCount" type="integer">
 				<column name="MERGE_PROCESS_CNT" precision="18" scale="0" />
-			</property>
-			<property name="showProgressFreq" type="long">
-				<column name="MERGE_SHOW_PROGRESS_FREQ" precision="18"
-					scale="0" />
 			</property>
 			<property name="augmentNull"
 				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
@@ -145,10 +145,6 @@
 			<property name="debug"
 				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 				<column name="MERGE_DEBUG_MODE_IND" length="1" />
-			</property>
-			<property name="appendToLog"
-				type="ca.sqlpower.matchmaker.util.CustomBooleanType">
-				<column name="MERGE_APPEND_TO_LOG_IND" length="1" />
 			</property>
 			<property name="lastRunDate" type="timestamp">
 				<column name="MERGE_LAST_RUN_DATE" length="23" />
@@ -163,40 +159,14 @@
 			</property>
 		</component>
 		<property name="view" type="ca.sqlpower.matchmaker.util.StringsToViewSpec">
-			<column name="SELECT_CLAUSE" length="2000" />
-			<column name="FROM_CLAUSE" length="2000" />
-			<column name="WHERE_CLAUSE" length="2000" />
+			<column name="view_select_clause" length="2000" />
+			<column name="view_from_clause" length="2000" />
+			<column name="view_where_clause" length="2000" />
 		</property>
-		<!-- Removed the locking properties
-		<property name="checkedOutInd"
-			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
-			<column name="checked_out_ind" length="1" />
-		</property>
-		<property name="checkedOutDate" type="timestamp">
-			<column name="checked_out_date" length="23" />
-		</property>
-		<property name="checkedOutUser" type="string">
-			<column name="checked_out_user" length="30" />
-		</property>
-		<property name="checkedOutOsUser" type="string">
-			<column name="checked_out_os_user" length="30" />
-		</property>
-
-		<property name="tempSourceTableName" type="string">
-			<column name="temp_source_table_name" length="30" />
-		</property>
-		<property name="tempCandDupTableName" type="string">
-			<column name="temp_cand_dup_table_name" length="30" />
-		</property>
-
-		<property name="fromClauseDb" type="string">
-			<column name="from_clause_db" length="800" />
-		</property>
-		-->
 
 		<list name="tableMergeRules" lazy="true" fetch="subselect" cascade="all-delete-orphan">
 			<key>
-				<column name="MATCH_OID" not-null="true" />
+				<column name="project_oid" not-null="true" />
 			</key>
 			<index column="SEQ_NO" />
 			<one-to-many
@@ -204,7 +174,7 @@
 		</list>
 		<bag name="mungeProcesses" inverse="true" lazy="true" fetch="subselect" cascade="all-delete-orphan">
 			<key>
-				<column name="MATCH_OID" not-null="true" />
+				<column name="project_oid" not-null="true" />
 			</key>
 			<one-to-many
 				class="ca.sqlpower.matchmaker.munge.MungeProcess" />

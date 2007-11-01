@@ -11,7 +11,7 @@
 		<id name="oid" type="long" access="field">
 			<column name="MATCH_TRANSLATE_OID" precision="22" scale="0" />
 			<generator class="native">
-				<param name="sequence">match_translate_oid_seq</param>
+				<param name="sequence">pl_match_translate_oid_seq</param>
 			</generator>
 		</id>
 		

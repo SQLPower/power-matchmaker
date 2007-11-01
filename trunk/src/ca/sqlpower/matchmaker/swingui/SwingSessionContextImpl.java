@@ -93,12 +93,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	 *  (excluding the input and output steps).
 	 */
 	private static final Type[] MUNGECOM_CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class}; 
-	
-	/**
-	 * The array that looks like the set of types we are expecting for the correct constructor for any munge step
-	 *  (excluding the input and output steps).
-	 */
-	private static final Type[] MUNGESTEP_CONSTRUCTOR_PARAMS = {MatchMakerSession.class}; 
 
 	/**
 	 * The list of information about mungeSteps, which stores their StepClass, GUIClass, name and icon
@@ -516,23 +510,28 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		}
 		
 		for (StepDescription sd : stepProps.values()) {
+            if (sd.getLogicClass() == null) {
+                throw new IllegalStateException("Step Description " + sd + " does not have logicClass set");
+            }
 			stepProperties.put(sd.getLogicClass(), sd);
 		}
 	}
 	
-	public MungeStep getMungeStep(Class create, MatchMakerSession session) {
-		for (Constructor con : create.getConstructors()) {
-			if (arrayEquals(con.getGenericParameterTypes(), MUNGESTEP_CONSTRUCTOR_PARAMS)) {
-				try {
-					return (MungeStep)con.newInstance(session);
-				} catch (Throwable t) {
-					throw new RuntimeException("Error generating munge step: " + create.getName() + ". " 
-							+ "Possibly caused by an error thrown in the constructor.", t);
-				}
-			}
-		}
-		throw new NoSuchMethodError("Error: No constructor (MatchMakerSession) was found for the MungeStep :"
-				+ create.getClass());
+    /**
+     * Creates a new instance of the given class, wrapping any possible
+     * exceptions into a RuntimeException.
+     * 
+     * @param create The class to create a new instance of
+     * @return A new instance of the given class.
+     * @throws RuntimeException if anything goes wrong with creating an instance
+     */
+	public MungeStep getMungeStep(Class<? extends MungeStep> create) {
+        try {
+            return create.newInstance();
+        } catch (Throwable t) {
+            throw new RuntimeException("Error generating munge step: " + create.getName() + ". " 
+                    + "Possibly caused by an error thrown in the constructor.", t);
+        }
 	}
 
 	public Map<Class, StepDescription> getStepMap() {

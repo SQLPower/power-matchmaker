@@ -22,8 +22,6 @@ package ca.sqlpower.matchmaker.munge;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ca.sqlpower.matchmaker.MatchMakerSession;
-
 
 /**
  * This munge step will substitute all occurrences of a given string to another for
@@ -57,8 +55,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	 */
 	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
 	
-	public StringSubstitutionMungeStep(MatchMakerSession session) {
-		super(session);
+	public StringSubstitutionMungeStep() {
 		setName("String Substitution");
 		out = new MungeStepOutput<String>("stringSubstitutionOutput", String.class);
 		addChild(out);

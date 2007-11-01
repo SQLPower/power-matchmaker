@@ -19,9 +19,6 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-
-
 /**
  * A bare bones test implementation of an AbstractMungeStep for
  * unit testing purposes only.
@@ -29,7 +26,6 @@ import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 public class TestingAbstractMungeStep extends AbstractMungeStep {
 
 	public TestingAbstractMungeStep() {
-		super(new TestingMatchMakerSession());
 	}
 	
 	@Override

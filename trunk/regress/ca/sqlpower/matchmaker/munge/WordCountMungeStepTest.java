@@ -22,11 +22,9 @@ package ca.sqlpower.matchmaker.munge;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
 
 public class WordCountMungeStepTest extends TestCase {
 
@@ -38,7 +36,7 @@ public class WordCountMungeStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new WordCountMungeStep(new TestingMatchMakerSession());
+		step = new WordCountMungeStep();
 	}
 
 	public void testCallonNoOccurrence() throws Exception {

@@ -86,7 +86,7 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 
 		//This is different for Oracle and SQL Server
 		createTables();
-		step = new SQLInputStep(project, session);
+		step = new SQLInputStep();
 
 		MungeSettings settings = new MungeSettings();
 		File file = File.createTempFile("cleanseTest", "log");
@@ -120,7 +120,7 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		populateTables();
 
 		MungeStep mrs = step.getOuputStep();
-		UpperCaseMungeStep ucms = new UpperCaseMungeStep(new TestingMatchMakerSession());
+		UpperCaseMungeStep ucms = new UpperCaseMungeStep();
 		ucms.connectInput(0, step.getChildren().get(1));
 		mrs.connectInput(1, ucms.getChildren().get(0));
 

@@ -6,11 +6,11 @@
 <!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
 <hibernate-mapping>
 
-	<class name="ca.sqlpower.matchmaker.PlFolder" table="PL_FOLDER2">
+	<class name="ca.sqlpower.matchmaker.PlFolder" table="pl_folder2">
 		<id name="oid" type="long" access="field">
 			<column name="folder_oid"/>
 			<generator class="native">
-				<param name="sequence">pl_folder_oid_seq</param>
+				<param name="sequence">pl_folder2_oid_seq</param>
 			</generator>
 		</id>
 

@@ -32,8 +32,9 @@ public class MergeSettings extends MatchMakerSettings {
 	private boolean backUp;
 	
 	/**
-	 * Augments null (an engine parameter)
-	 * TODO figure out what this means
+	 * When true, the merge engine for this project will attempt to augment nulls
+     * in the master record with values from the duplicate records.  Otherwise, the
+     * master is left alone.
 	 */
 	private boolean augmentNull;
 		
@@ -102,7 +103,6 @@ public class MergeSettings extends MatchMakerSettings {
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
 		settings.setSendEmail(getSendEmail());
 		settings.setSession(s);
-		settings.setShowProgressFreq(getShowProgressFreq()==null?null:new Long(getShowProgressFreq()));
 		settings.setVisible(isVisible());
 		
 		return settings;

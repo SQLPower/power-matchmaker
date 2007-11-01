@@ -21,13 +21,9 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-import ca.sqlpower.matchmaker.munge.LowerCaseMungeStep;
-import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
 
 public class LowerCaseMungeStepTest extends TestCase {
 
@@ -39,7 +35,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new LowerCaseMungeStep(new TestingMatchMakerSession());
+		step = new LowerCaseMungeStep();
 	}
 
 	public void testCallonUpperCaseString() throws Exception {

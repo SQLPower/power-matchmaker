@@ -22,8 +22,6 @@ package ca.sqlpower.matchmaker.munge;
 import java.math.BigDecimal;
 import java.util.regex.Pattern;
 
-import ca.sqlpower.matchmaker.MatchMakerSession;
-
 /**
  * This munge step will return the number of words in a given string based
  * on a given delimiter string. By default, the delimiter is interpreted as a list
@@ -60,8 +58,7 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	 */
 	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
 	
-	public WordCountMungeStep(MatchMakerSession session) {
-		super(session);
+	public WordCountMungeStep() {
 		setName("Word Count");
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
 		setParameter(USE_REGEX_PARAMETER_NAME, false);

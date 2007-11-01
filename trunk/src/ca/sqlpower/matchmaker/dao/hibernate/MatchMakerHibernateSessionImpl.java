@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -42,28 +43,27 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
-import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
+import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
+import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.dao.TableMergeRuleDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
-import ca.sqlpower.sql.DefaultParameters;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.UnknownFreqCodeException;
@@ -127,11 +127,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	private Session hSession;
 
     /**
-     * A snapshot of the def_param table when we logged in.
-     */
-    private final DefaultParameters defParam;
-
-    /**
      * The version of the Power*Loader schema we're connected to.
      */
     private final Version plSchemaVersion;
@@ -165,9 +160,18 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         logger.info("Database driver name: "+dbmd.getDriverName());
         logger.info("Database driver version: "+dbmd.getDriverVersion());
 
+        Statement stmt = null;
+        ResultSet rs = null;
         try {
-            defParam = new DefaultParameters(con, null, ds.getPlSchema());
-            plSchemaVersion = defParam.getPLSchemaVersion();
+            stmt = con.createStatement();
+            rs = stmt.executeQuery("SELECT param_value FROM mm_schema_info WHERE param_name='schema_version'");
+            if (!rs.next()) {
+                throw new SQLException(
+                        "There is no schema_version entry in the " +
+                        "mm_schema_info table. It is not safe to continue.");
+            }
+            plSchemaVersion = new Version();
+            plSchemaVersion.setVersion(rs.getString(1));
         } catch (SQLException e) {
             String plSchema = ds.getPlSchema();
             if (plSchema == null || plSchema.length() == 0) {
@@ -180,6 +184,9 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
                     "(Repository Schema Owner currently " + plSchema + ").");
             exception.setNextException(e);
             throw exception;
+        } finally {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
         }
 
         if (plSchemaVersion.compareTo(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION) < 0) {
