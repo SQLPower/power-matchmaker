@@ -21,5 +21,5 @@ VALUES (upper(USER), CURRENT_TIMESTAMP, USER, 'MONTHLY', 'Y','Y','Y','Y')
 ;
 
 INSERT INTO user_group (user_id, group_name, last_update_date, last_update_user) 
-VALUES (upper('USER'),'PL_ADMIN',CURRENT_TIMESTAMP,USER)
+VALUES (upper(USER),'PL_ADMIN',CURRENT_TIMESTAMP,USER)
 ;
