@@ -1216,7 +1216,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 				mp.repaint();
 			} else {
 				mp.updatePositionsToMMO();
-				System.out.println(getStep());
 			}
 			mp.normalize();
 			mp.stopConnection();

@@ -144,7 +144,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		ddlg.setTargetSchema(ds.getPlSchema());
 
 		if (Project.doesResultTableExist(session, project)) {
-			System.out.println(project.getResultTable());
 			ddlg.dropTable(project.getResultTable());
 		}
 		ddlg.addTable(project.createResultTable());
