@@ -159,8 +159,11 @@ public class MergeEngineImpl extends AbstractEngine {
 			fileAppender = new FileAppender(new PatternLayout("%d %p %m\n"), logFilePath, appendToFile);
 			logger.addAppender(fileAppender);
 			
-			emailAppender = new EmailAppender(email, greenUsers, yellowUsers, redUsers);
-			logger.addAppender(emailAppender);
+			if (getProject().getMungeSettings().getSendEmail()) {
+				String emailSubject = "Project " + getProject().getName() + " Match Engine";
+				emailAppender = new EmailAppender(email, emailSubject, greenUsers, yellowUsers, redUsers);
+				logger.addAppender(emailAppender);
+			}
 			
 			jobSize = getNumRowsToProcess();
 
@@ -176,14 +179,6 @@ public class MergeEngineImpl extends AbstractEngine {
 			progressMessage = "Merge Engine finished successfully";
 			logger.info(progressMessage);
 			
-			if (getProject().getMungeSettings().getSendEmail()) {
-				try {
-					emailAppender.sendGreenEmail();
-				} catch (Exception e) {
-					logger.error("Sending emails failed: ", e);
-				}
-			}
-			
 			return EngineInvocationResult.SUCCESS;
 		} catch (UserAbortException uce) {
 			logger.info("Merge aborted by user");
@@ -191,22 +186,23 @@ public class MergeEngineImpl extends AbstractEngine {
 		} catch (Exception ex) {
 			progressMessage = "Cleanse Engine failed";
 			logger.error(getMessage());
-			
-			if (getProject().getMungeSettings().getSendEmail()) {
-				try {
-					emailAppender.sendRedEmail();
-				} catch (Exception e) {
-					logger.error("Sending emails failed: ", e);
-				}
-			}
-			
 			throw new RuntimeException(ex);
 		} finally {
 			logger.setLevel(oldLevel);
+			setFinished(true);
+			
+			if (emailAppender != null) {
+				try {
+					emailAppender.close();
+				} catch (RuntimeException e) {
+					logger.warn("Error while sending emails: " + e.getMessage());
+				}
+				logger.removeAppender(emailAppender);
+			}
 			if (fileAppender != null) {
 				logger.removeAppender(fileAppender);
 			}
-			setFinished(true);
+			
 		}
 	}
 
