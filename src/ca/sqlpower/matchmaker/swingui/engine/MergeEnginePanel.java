@@ -345,6 +345,8 @@ public class MergeEnginePanel implements EditorPane {
 			}
 		});
 		
+		abortB.setEnabled(false);
+		
 		bbpb.add(abortB,cc.xy(6,4));
 
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
