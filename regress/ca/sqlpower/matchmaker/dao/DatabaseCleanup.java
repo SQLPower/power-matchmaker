@@ -42,12 +42,13 @@ public class DatabaseCleanup {
         tablesToDelete = new ArrayList<String>();
         tablesToDelete.add("pl_match_translate");
         tablesToDelete.add("pl_match_translate_group");
-        tablesToDelete.add("pl_match_criteria");
-        tablesToDelete.add("pl_match_group");
-        tablesToDelete.add("pl_merge_consolidate_criteria");
-        tablesToDelete.add("pl_merge_criteria");
+        tablesToDelete.add("mm_munge_step_parameter");
+        tablesToDelete.add("mm_munge_step");
+        tablesToDelete.add("mm_munge_process");
+        tablesToDelete.add("mm_column_merge_rule");
+        tablesToDelete.add("mm_table_merge_rule");
         tablesToDelete.add("pl_match_xref_map");
-        tablesToDelete.add("pl_match");
+        tablesToDelete.add("mm_project");
         tablesToDelete.add("pl_folder2");
   
         Statement stmt = con.createStatement();

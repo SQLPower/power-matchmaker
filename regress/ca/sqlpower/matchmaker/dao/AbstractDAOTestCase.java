@@ -26,7 +26,6 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -41,13 +40,13 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
-import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.MergeSettings;
+import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
@@ -123,13 +122,9 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 	@Override
 	protected void setUp() throws Exception {
         Connection con = null;
-        try {
-            con = getSession().getConnection();
-            // You forgot to set the session's connection didn't you?
-            DatabaseCleanup.clearDatabase(con);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        con = getSession().getConnection();
+        // You forgot to set the session's connection didn't you?
+        DatabaseCleanup.clearDatabase(con);
         resetSession();
 	}
 
