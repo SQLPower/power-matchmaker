@@ -91,6 +91,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
         ArrayList<String> nonPersisting = new ArrayList<String>();
         nonPersisting.add("oid");
         nonPersisting.add("session");
+        nonPersisting.add("undoing");
         return nonPersisting;
     }
 

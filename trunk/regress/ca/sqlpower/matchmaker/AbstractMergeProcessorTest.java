@@ -181,7 +181,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		tmr.addChild(cmr_string);
 		tmr.addChild(cmr_date);
 		tmr.addChild(cmr_number);
-		tmr.setDeleteDup(false);
 		
 		cmr_id.setColumn(sourceTable.getColumnByName("ID"));
 		cmr_string.setColumn(sourceTable.getColumnByName("COL_STRING"));   	
@@ -300,7 +299,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    mpor = new MergeProcessor(project, session, logger);
 	    
 	    // sets the default action type
-	    tmr.setDeleteDup(false);
 	    cmr_id.setActionType(MergeActionType.USE_MASTER_VALUE);
 	    cmr_string.setActionType(MergeActionType.USE_MASTER_VALUE);
 	    cmr_date.setActionType(MergeActionType.USE_MASTER_VALUE);
@@ -444,7 +442,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     public void testDeleteDup() throws Exception {
     	populateTables();
 		
-    	tmr.setDeleteDup(true);
     	
 		mpor.call();
 
