@@ -28,7 +28,6 @@ import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.dao.hibernate.TestingMatchMakerHibernateSession;
 import ca.sqlpower.sql.PLSchemaException;
-import ca.sqlpower.sql.TestingDefParamsObject;
 
 public class MatchMakerEngineImplTest extends TestCase {
 
@@ -36,7 +35,6 @@ public class MatchMakerEngineImplTest extends TestCase {
 	MatchEngineImpl matchMakerEngine;
 	private TestingMatchMakerHibernateSession session;
 	private TestingMatchMakerContext context;
-	private TestingDefParamsObject def;
 	
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -47,7 +45,6 @@ public class MatchMakerEngineImplTest extends TestCase {
 		matchMakerEngine = new MatchEngineImpl(session,project);
 		context = new TestingMatchMakerContext();
 		session.setContext(context);
-		def = new TestingDefParamsObject(session);
 	}
 
 	protected void tearDown() throws Exception {
