@@ -71,6 +71,7 @@ public class MatchProcessor extends AbstractProcessor {
 		Collections.sort(matchData);
 		
 		for (MungeResult data: matchData) {
+			if (monitorableHelper.isCancelled()) return Boolean.TRUE;
 			monitorableHelper.incrementProgress();
 			int dataIndex = matchData.indexOf(data);
 			

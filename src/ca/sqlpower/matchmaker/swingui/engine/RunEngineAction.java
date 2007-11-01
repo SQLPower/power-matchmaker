@@ -27,12 +27,14 @@ import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.swingui.event.TaskTerminationEvent;
+import ca.sqlpower.swingui.event.TaskTerminationListener;
 
 /**
  * This action is used to run the match engine. It also is responsible
- * for constructing the user interface that deals with engine ouput.
+ * for constructing the user interface that deals with engine output.
  */
-class RunEngineAction extends AbstractAction {
+class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 	
 	/**
 	 * The application swing session
@@ -54,24 +56,56 @@ class RunEngineAction extends AbstractAction {
 	 */
 	private EditorPane editorPane;
 	
-	public RunEngineAction(MatchMakerSwingSession session, MatchMakerEngine engine, String name, EngineOutputPanel engineOutputPanel, EditorPane editorPane) {
+	/**
+	 * The "action" that is run when the engine finishes
+	 */
+	private Runnable finishAction;
+	
+	/**
+	 * The "action" that is run when the engine starts
+	 */
+	private Runnable startAction;
+
+	
+	/**
+	 * Sets up the action.
+	 * 
+	 * @param startAction An action to be run when the engine is started. Can be null.
+	 * @param finishAction An action to be run when the engine is finished. Can be null.
+	 */
+	public RunEngineAction(MatchMakerSwingSession session, MatchMakerEngine engine, String name, 
+			EngineOutputPanel engineOutputPanel, EditorPane editorPane, Runnable startAction, 
+			Runnable finishAction) {
 		super(name);
 		this.session = session;
 		this.engineOutputPanel = engineOutputPanel;
 		this.engine = engine;
 		this.editorPane = editorPane;
+		this.finishAction = finishAction;
+		this.startAction = startAction;
 	}
 	
 	public void actionPerformed(ActionEvent e) {
+		if (startAction != null) {
+			startAction.run();
+		}
 		editorPane.doSave();
+		engineOutputPanel.getProgressBar().getModel().setValue(0);
 		session.setAllEnginesEnabled(false);
 		try {
 			EngineWorker w = new EngineWorker(engine, engineOutputPanel, session, this);
+			w.addTaskTerminationListener(this);
 			new Thread(w).start();
 		} catch (Exception ex) {
 			MMSUtils.showExceptionDialog(editorPane.getPanel(), "Engine error", ex);
 			session.setAllEnginesEnabled(true);
 			return;
+		}
+	}
+
+	public void taskFinished(TaskTerminationEvent e) {
+		if (finishAction != null) {
+			finishAction.run();
 		}
 	}
 }
