@@ -83,6 +83,7 @@ import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
@@ -91,6 +92,7 @@ import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
@@ -1020,6 +1022,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			MungeProcess cg = (MungeProcess)mmo;
 			MungeProcessDAO dao = (MungeProcessDAO) getDAO(MungeProcess.class);
 			dao.save(cg);
+		} else if (mmo instanceof MatchMakerTranslateGroup) {
+			MatchMakerTranslateGroup tg = (MatchMakerTranslateGroup)mmo;
+			MatchMakerTranslateGroupDAO dao = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
+			dao.save(tg);
 		} else {
 			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");
 		}

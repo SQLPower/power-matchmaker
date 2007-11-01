@@ -193,6 +193,16 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		endCompoundEdit();
 	}
 	
+	public void moveChild(int from, int to) {
+		if (to == from) return;
+		final List<C> l = getChildren();
+		C child = l.get(from);
+		startCompoundEdit();
+		removeChild(l.get(from));
+		addChild(to, child);
+		endCompoundEdit();
+	}
+	
 	public String getLastUpdateAppUser() {
 		return lastUpdateAppUser;
 	}
