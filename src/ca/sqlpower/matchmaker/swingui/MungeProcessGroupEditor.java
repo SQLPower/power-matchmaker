@@ -32,7 +32,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -48,13 +47,14 @@ import javax.swing.table.TableCellRenderer;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
+import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
@@ -68,24 +68,19 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * A panel to edit the munge process group
  */
-public class MungeProcessGroupEditor implements EditorPane {
+public class MungeProcessGroupEditor extends AbstractUndoableEditorPane<Project, MungeProcess> {
 
 	private static final Logger logger = Logger.getLogger(MungeProcessGroupEditor.class);
 	
-	private JPanel panel;
 	private JScrollPane scrollPane;
 	MungeProcessTableModel mungeProcessTableModel;
 	private JTable mungeProcessTable;
-	
-	private final MatchMakerSwingSession swingSession;
-	private final Project project;
 
 	private final FormValidationHandler handler;
 	private final StatusComponent status = new StatusComponent();
 	
-	public MungeProcessGroupEditor(MatchMakerSwingSession swingSession, Project m) {
-		this.swingSession = swingSession;
-		this.project = m;
+	public MungeProcessGroupEditor(MatchMakerSwingSession swingSession, Project project) {
+		super(swingSession, project);
 
 		setupTable();
         buildUI();
@@ -95,7 +90,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 	}
 	
 	private void setupTable() {
-		mungeProcessTableModel = new MungeProcessTableModel(swingSession, project);
+		mungeProcessTableModel = new MungeProcessTableModel(swingSession, mmo);
 		mungeProcessTable = new JTable(mungeProcessTableModel);
 		TableCellRenderer renderer = new ColorRenderer(true);
         mungeProcessTable.setDefaultRenderer(Color.class, renderer );
@@ -122,7 +117,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 				if (e.getClickCount() == 2) {
 					int row = MungeProcessGroupEditor.this.mungeProcessTable.getSelectedRow();
 					JTree tree = swingSession.getTree();					
-					tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(project.getMungeProcesses().get(row)));
+					tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(mmo.getMungeProcesses().get(row)));
 				}
 			}		
         });
@@ -155,9 +150,11 @@ public class MungeProcessGroupEditor implements EditorPane {
 		
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
 		//new actions for delete and save should be extracted and be put into its own file.
-		bbb.addGridded(new JButton(new NewMungeProcessAction(swingSession, project)));
+		bbb.addGridded(new JButton(new NewMungeProcessAction(swingSession, mmo)));
 		bbb.addRelatedGap();
 		bbb.addGridded(new JButton(deleteAction));
+		bbb.addRelatedGap();
+		bbb.addGridded(new JButton(saveAction));
 
 		row+=2;
 		pb.add(bbb.getPanel(), cc.xy(4,row,"c,c"));
@@ -165,20 +162,6 @@ public class MungeProcessGroupEditor implements EditorPane {
 		panel = pb.getPanel();
 	}
 
-	public boolean doSave() {
-		logger.debug("Do Save: Not implemented :(");
-		return false;
-	}
-
-	public JComponent getPanel() {
-		return panel;
-	}
-
-	public boolean hasUnsavedChanges() {
-		logger.debug("Has unsaved changes: Not implemented :(");
-		return false;
-	}
-	
 	Action deleteAction = new AbstractAction("Delete Munge Process") {
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = mungeProcessTable.getSelectedRow();
@@ -192,9 +175,8 @@ public class MungeProcessGroupEditor implements EditorPane {
 					return;
 				}
 				
-				MungeProcess mp = project.getMungeProcesses().get(selectedRow);
-				project.removeMungeProcess(mp);
-				swingSession.save(project);
+				MungeProcess mp = mmo.getMungeProcesses().get(selectedRow);
+				mmo.removeMungeProcess(mp);
 				if (selectedRow >= mungeProcessTable.getRowCount()) {
 					selectedRow = mungeProcessTable.getRowCount() - 1;
 				}
@@ -208,6 +190,11 @@ public class MungeProcessGroupEditor implements EditorPane {
 		}
 	};
 
+	Action saveAction = new AbstractAction("Save Munge Process") {
+		public void actionPerformed(ActionEvent e) {
+			doSave();
+		}
+	};
 	
 	/**
 	 * table model for the munge processes, it shows the munge processes
@@ -369,8 +356,10 @@ public class MungeProcessGroupEditor implements EditorPane {
 		}
 	}
 
-	public boolean discardChanges() {
-		logger.debug("Cannot discard chagnes");
-		return false;
+	@Override
+	public void undoEventFired(MatchMakerEvent<Project, MungeProcess> evt) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: MungeProcessGroupEditor.undoEventFired()");
+		
 	}
 }
