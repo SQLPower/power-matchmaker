@@ -11,7 +11,7 @@
 		<id name="oid" type="long" access="field">
 			<column name="translate_group_oid" precision="22" scale="0" />
 			<generator class="native">
-				<param name="sequence">pl_match_translate_group_oid_seq</param>
+				<param name="sequence">match_translate_group_oid_seq</param>
 			</generator>
 		</id>
 
@@ -19,6 +19,11 @@
 		<property name="name" type="string">
 			<column name="TRANSLATE_GROUP_NAME" length="35"
 				unique="true" />
+		</property>
+		
+		<property name="visible"
+			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
+			<column name="visible_ind" length="1" />
 		</property>
 		
 		<list name="children" lazy="true" table="pl_match_translate" cascade="all-delete-orphan">

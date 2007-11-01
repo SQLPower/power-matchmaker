@@ -28,5 +28,10 @@
 			<column name="TO_WORD" length="80" />
 		</property>
 
+		<property name="visible"
+			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
+			<column name="visible_ind" length="1" />
+		</property>
+		
 	</class>
 </hibernate-mapping>

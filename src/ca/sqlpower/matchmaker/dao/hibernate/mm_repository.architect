@@ -1946,558 +1946,560 @@
     <column id="COL1544" populated="true" autoIncrement="false" name="SEQ_NO" nullable="1" physicalName="seq_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL683" sourceDataTypeName="NUMBER" type="3" />
     <column id="COL1545" populated="true" autoIncrement="false" name="FROM_WORD" nullable="1" physicalName="from_word" precision="80" referenceCount="1" remarks="" scale="0" source-column-ref="COL684" sourceDataTypeName="VARCHAR2" type="12" />
     <column id="COL1546" populated="true" autoIncrement="false" name="TO_WORD" nullable="1" physicalName="to_word" precision="80" referenceCount="1" remarks="" scale="0" source-column-ref="COL685" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1547" populated="true" autoIncrement="false" autoIncrementSequenceName="new column_seq" name="visible_ind" nullable="1" physicalName="visible_ind" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
    </folder>
-   <folder id="FOL1547" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1548" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1548" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1549" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1549" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1550" populated="true" index-type="CLUSTERED" name="PL_MATCH_TRANSLATE_PK" physicalName="PL_MATCH_TRANSLATE_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1551" populated="true" ascending="false" column-ref="COL1542" descending="false" name="MATCH_TRANSLATE_OID" physicalName="MATCH_TRANSLATE_OID" />
+   <folder id="FOL1550" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1551" populated="true" index-type="CLUSTERED" name="PL_MATCH_TRANSLATE_PK" physicalName="PL_MATCH_TRANSLATE_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1552" populated="true" ascending="false" column-ref="COL1542" descending="false" name="MATCH_TRANSLATE_OID" physicalName="MATCH_TRANSLATE_OID" />
     </index>
    </folder>
   </table>
-  <table id="TAB1552" populated="true" name="PL_MATCH_TRANSLATE_GROUP" objectType="TABLE" physicalName="pl_match_translate_group" >
-   <folder id="FOL1553" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1554" populated="true" autoIncrement="true" autoIncrementSequenceName="PL_MATCH_TRANSLATE_GROUP_OID_seq" name="TRANSLATE_GROUP_OID" nullable="0" physicalName="translate_group_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL693" type="3" />
-    <column id="COL1555" populated="true" autoIncrement="false" name="TRANSLATE_GROUP_NAME" nullable="0" physicalName="translate_group_name" precision="35" referenceCount="1" remarks="" scale="0" source-column-ref="COL694" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1553" populated="true" name="PL_MATCH_TRANSLATE_GROUP" objectType="TABLE" physicalName="pl_match_translate_group" >
+   <folder id="FOL1554" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1555" populated="true" autoIncrement="true" autoIncrementSequenceName="MATCH_TRANSLATE_GROUP_OID_seq" name="TRANSLATE_GROUP_OID" nullable="0" physicalName="translate_group_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL693" type="3" />
+    <column id="COL1556" populated="true" autoIncrement="false" name="TRANSLATE_GROUP_NAME" nullable="0" physicalName="translate_group_name" precision="35" referenceCount="1" remarks="" scale="0" source-column-ref="COL694" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1557" populated="true" autoIncrement="false" autoIncrementSequenceName="new column_seq" name="visible_ind" nullable="1" physicalName="visible_ind" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
    </folder>
-   <folder id="FOL1556" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1558" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1557" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1559" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1558" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1559" populated="true" index-type="CLUSTERED" name="PL_MATCH_TRANSLATE_GROUP_PK" physicalName="PL_MATCH_TRANSLATE_GROUP_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1560" populated="true" ascending="false" column-ref="COL1554" descending="false" name="TRANSLATE_GROUP_OID" physicalName="TRANSLATE_GROUP_OID" />
+   <folder id="FOL1560" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1561" populated="true" index-type="CLUSTERED" name="PL_MATCH_TRANSLATE_GROUP_PK" physicalName="PL_MATCH_TRANSLATE_GROUP_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1562" populated="true" ascending="false" column-ref="COL1555" descending="false" name="TRANSLATE_GROUP_OID" physicalName="TRANSLATE_GROUP_OID" />
     </index>
    </folder>
   </table>
-  <table id="TAB1561" populated="true" name="PL_MATCH_XREF_MAP" objectType="TABLE" physicalName="pl_match_xref_map" >
-   <folder id="FOL1562" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1563" populated="true" autoIncrement="false" name="project_oid" nullable="0" physicalName="project_oid" precision="22" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL702" type="3" />
-    <column id="COL1564" populated="true" autoIncrement="false" name="MAPPING_SEQ_NO" nullable="0" physicalName="mapping_seq_no" precision="22" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL703" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1565" populated="true" autoIncrement="false" name="SOURCE_COLUMN_NAME" nullable="1" physicalName="source_column_name" precision="50" referenceCount="1" remarks="" scale="0" source-column-ref="COL704" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1566" populated="true" autoIncrement="false" name="TARGET_COLUMN_NAME" nullable="1" physicalName="target_column_name" precision="50" referenceCount="1" remarks="" scale="0" source-column-ref="COL705" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1567" populated="true" autoIncrement="false" name="INDEX_COLUMN_IND" nullable="1" physicalName="index_column_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL706" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1563" populated="true" name="PL_MATCH_XREF_MAP" objectType="TABLE" physicalName="pl_match_xref_map" >
+   <folder id="FOL1564" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1565" populated="true" autoIncrement="false" name="project_oid" nullable="0" physicalName="project_oid" precision="22" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL702" type="3" />
+    <column id="COL1566" populated="true" autoIncrement="false" name="MAPPING_SEQ_NO" nullable="0" physicalName="mapping_seq_no" precision="22" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL703" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1567" populated="true" autoIncrement="false" name="SOURCE_COLUMN_NAME" nullable="1" physicalName="source_column_name" precision="50" referenceCount="1" remarks="" scale="0" source-column-ref="COL704" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1568" populated="true" autoIncrement="false" name="TARGET_COLUMN_NAME" nullable="1" physicalName="target_column_name" precision="50" referenceCount="1" remarks="" scale="0" source-column-ref="COL705" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1569" populated="true" autoIncrement="false" name="INDEX_COLUMN_IND" nullable="1" physicalName="index_column_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL706" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1568" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1570" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1569" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1571" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1570" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1571" populated="true" index-type="CLUSTERED" name="PL_MATCH_XREF_MAP_PK" physicalName="PL_MATCH_XREF_MAP_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1572" populated="true" ascending="false" column-ref="COL1563" descending="false" name="project_oid" physicalName="MATCH_OID" />
-     <index-column id="IDC1573" populated="true" ascending="false" column-ref="COL1564" descending="false" name="MAPPING_SEQ_NO" physicalName="MAPPING_SEQ_NO" />
+   <folder id="FOL1572" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1573" populated="true" index-type="CLUSTERED" name="PL_MATCH_XREF_MAP_PK" physicalName="PL_MATCH_XREF_MAP_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1574" populated="true" ascending="false" column-ref="COL1565" descending="false" name="project_oid" physicalName="MATCH_OID" />
+     <index-column id="IDC1575" populated="true" ascending="false" column-ref="COL1566" descending="false" name="MAPPING_SEQ_NO" physicalName="MAPPING_SEQ_NO" />
     </index>
    </folder>
   </table>
-  <table id="TAB1574" populated="true" name="mm_column_merge_rule" objectType="TABLE" physicalName="mm_column_merge_rule" remarks="" >
-   <folder id="FOL1575" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1576" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_column_merge_rule_oid_seq" name="column_merge_rule_oid" nullable="0" physicalName="column_merge_rule_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL715" type="3" />
-    <column id="COL1577" populated="true" autoIncrement="false" name="table_merge_rule_oid" nullable="0" physicalName="table_merge_rule_oid" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL716" type="3" />
-    <column id="COL1578" populated="true" autoIncrement="false" name="column_name" nullable="1" physicalName="column_name" precision="60" referenceCount="1" remarks="" scale="0" source-column-ref="COL717" type="12" />
-    <column id="COL1579" populated="true" autoIncrement="false" name="in_primary_key_ind" nullable="1" physicalName="in_primary_key_ind" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1580" populated="true" autoIncrement="false" name="imported_key_column_name" nullable="1" physicalName="imported_key_column_name" precision="60" referenceCount="1" remarks="The column name within the parent table; see mm_table_merge_rule.parent_merge_rule_oid" scale="0" type="12" />
-    <column id="COL1581" populated="true" autoIncrement="false" name="update_statement" nullable="1" physicalName="update_statement" precision="2000" referenceCount="1" remarks="SQL statement that chooses a safe new value for this column when marging a child table" scale="0" type="12" />
-    <column id="COL1582" populated="true" autoIncrement="false" name="ACTION_TYPE" nullable="1" physicalName="action_type" precision="50" referenceCount="1" remarks="" scale="0" source-column-ref="COL721" type="12" />
-    <column id="COL1583" populated="true" autoIncrement="false" name="visible_ind" nullable="1" physicalName="visible_ind" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1584" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL722" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1585" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL723" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1586" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL724" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1576" populated="true" name="mm_column_merge_rule" objectType="TABLE" physicalName="mm_column_merge_rule" remarks="" >
+   <folder id="FOL1577" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1578" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_column_merge_rule_oid_seq" name="column_merge_rule_oid" nullable="0" physicalName="column_merge_rule_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL715" type="3" />
+    <column id="COL1579" populated="true" autoIncrement="false" name="table_merge_rule_oid" nullable="0" physicalName="table_merge_rule_oid" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL716" type="3" />
+    <column id="COL1580" populated="true" autoIncrement="false" name="column_name" nullable="1" physicalName="column_name" precision="60" referenceCount="1" remarks="" scale="0" source-column-ref="COL717" type="12" />
+    <column id="COL1581" populated="true" autoIncrement="false" name="in_primary_key_ind" nullable="1" physicalName="in_primary_key_ind" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1582" populated="true" autoIncrement="false" name="imported_key_column_name" nullable="1" physicalName="imported_key_column_name" precision="60" referenceCount="1" remarks="The column name within the parent table; see mm_table_merge_rule.parent_merge_rule_oid" scale="0" type="12" />
+    <column id="COL1583" populated="true" autoIncrement="false" name="update_statement" nullable="1" physicalName="update_statement" precision="2000" referenceCount="1" remarks="SQL statement that chooses a safe new value for this column when marging a child table" scale="0" type="12" />
+    <column id="COL1584" populated="true" autoIncrement="false" name="ACTION_TYPE" nullable="1" physicalName="action_type" precision="50" referenceCount="1" remarks="" scale="0" source-column-ref="COL721" type="12" />
+    <column id="COL1585" populated="true" autoIncrement="false" name="visible_ind" nullable="1" physicalName="visible_ind" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1586" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL722" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1587" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL723" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1588" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL724" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1587" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1589" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1588" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1590" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1589" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1590" populated="true" index-type="CLUSTERED" name="mm_column_merge_rule_pk" physicalName="PL_MERGE_CONSOLIDT_CRITERIA_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1591" populated="true" ascending="false" column-ref="COL1576" descending="false" name="column_merge_rule_oid" physicalName="MERGE_CONSOLIDATE_CRITERIA_OID" />
+   <folder id="FOL1591" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1592" populated="true" index-type="CLUSTERED" name="mm_column_merge_rule_pk" physicalName="PL_MERGE_CONSOLIDT_CRITERIA_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1593" populated="true" ascending="false" column-ref="COL1578" descending="false" name="column_merge_rule_oid" physicalName="MERGE_CONSOLIDATE_CRITERIA_OID" />
     </index>
    </folder>
   </table>
-  <table id="TAB1592" populated="true" name="mm_table_merge_rule" objectType="TABLE" physicalName="mm_table_merge_rule" remarks="" >
-   <folder id="FOL1593" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1594" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_table_merge_rule_oid_seq" name="table_merge_rule_oid" nullable="0" physicalName="table_merge_rule_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL732" type="3" />
-    <column id="COL1595" populated="true" autoIncrement="false" name="project_oid" nullable="1" physicalName="project_oid" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL733" type="3" />
-    <column id="COL1596" populated="true" autoIncrement="false" name="parent_merge_rule_oid" nullable="1" physicalName="parent_merge_rule_oid" precision="22" referenceCount="1" remarks="" scale="0" type="3" />
-    <column id="COL1597" populated="true" autoIncrement="false" name="SEQ_NO" nullable="1" physicalName="seq_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL741" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1598" populated="true" autoIncrement="false" name="table_catalog" nullable="1" physicalName="table_catalog" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL735" type="12" />
-    <column id="COL1599" populated="true" autoIncrement="false" name="table_schema" nullable="1" physicalName="table_schema" precision="60" referenceCount="1" remarks="" scale="0" source-column-ref="COL734" type="12" />
-    <column id="COL1600" populated="true" autoIncrement="false" name="table_name" nullable="1" physicalName="table_name" precision="60" referenceCount="1" remarks="" scale="0" source-column-ref="COL736" type="12" />
-    <column id="COL1601" populated="true" autoIncrement="false" name="child_merge_action" nullable="1" physicalName="child_merge_action" precision="50" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1602" populated="true" autoIncrement="false" name="primary_key_index" nullable="1" physicalName="primary_key_index" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1603" populated="true" autoIncrement="false" name="index_column_name_0" nullable="1" physicalName="index_column_name_0" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1604" populated="true" autoIncrement="false" name="index_column_name_1" nullable="1" physicalName="index_column_name_1" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1605" populated="true" autoIncrement="false" name="index_column_name_2" nullable="1" physicalName="index_column_name_2" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1606" populated="true" autoIncrement="false" name="index_column_name_3" nullable="1" physicalName="index_column_name_3" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1607" populated="true" autoIncrement="false" name="index_column_name_4" nullable="1" physicalName="index_column_name_4" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1608" populated="true" autoIncrement="false" name="index_column_name_5" nullable="1" physicalName="index_column_name_5" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1609" populated="true" autoIncrement="false" name="index_column_name_6" nullable="1" physicalName="index_column_name_6" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1610" populated="true" autoIncrement="false" name="index_column_name_7" nullable="1" physicalName="index_column_name_7" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1611" populated="true" autoIncrement="false" name="index_column_name_8" nullable="1" physicalName="index_column_name_8" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1612" populated="true" autoIncrement="false" name="index_column_name_9" nullable="1" physicalName="index_column_name_9" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1613" populated="true" autoIncrement="false" name="DELETE_DUP_IND" nullable="1" physicalName="delete_dup_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL740" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1614" populated="true" autoIncrement="false" name="visible_ind" nullable="1" physicalName="visible_ind" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1615" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL738" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1616" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL739" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1617" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL742" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1594" populated="true" name="mm_table_merge_rule" objectType="TABLE" physicalName="mm_table_merge_rule" remarks="" >
+   <folder id="FOL1595" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1596" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_table_merge_rule_oid_seq" name="table_merge_rule_oid" nullable="0" physicalName="table_merge_rule_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL732" type="3" />
+    <column id="COL1597" populated="true" autoIncrement="false" name="project_oid" nullable="1" physicalName="project_oid" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL733" type="3" />
+    <column id="COL1598" populated="true" autoIncrement="false" name="parent_merge_rule_oid" nullable="1" physicalName="parent_merge_rule_oid" precision="22" referenceCount="1" remarks="" scale="0" type="3" />
+    <column id="COL1599" populated="true" autoIncrement="false" name="SEQ_NO" nullable="1" physicalName="seq_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL741" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1600" populated="true" autoIncrement="false" name="table_catalog" nullable="1" physicalName="table_catalog" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL735" type="12" />
+    <column id="COL1601" populated="true" autoIncrement="false" name="table_schema" nullable="1" physicalName="table_schema" precision="60" referenceCount="1" remarks="" scale="0" source-column-ref="COL734" type="12" />
+    <column id="COL1602" populated="true" autoIncrement="false" name="table_name" nullable="1" physicalName="table_name" precision="60" referenceCount="1" remarks="" scale="0" source-column-ref="COL736" type="12" />
+    <column id="COL1603" populated="true" autoIncrement="false" name="child_merge_action" nullable="1" physicalName="child_merge_action" precision="50" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1604" populated="true" autoIncrement="false" name="primary_key_index" nullable="1" physicalName="primary_key_index" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1605" populated="true" autoIncrement="false" name="index_column_name_0" nullable="1" physicalName="index_column_name_0" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1606" populated="true" autoIncrement="false" name="index_column_name_1" nullable="1" physicalName="index_column_name_1" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1607" populated="true" autoIncrement="false" name="index_column_name_2" nullable="1" physicalName="index_column_name_2" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1608" populated="true" autoIncrement="false" name="index_column_name_3" nullable="1" physicalName="index_column_name_3" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1609" populated="true" autoIncrement="false" name="index_column_name_4" nullable="1" physicalName="index_column_name_4" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1610" populated="true" autoIncrement="false" name="index_column_name_5" nullable="1" physicalName="index_column_name_5" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1611" populated="true" autoIncrement="false" name="index_column_name_6" nullable="1" physicalName="index_column_name_6" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1612" populated="true" autoIncrement="false" name="index_column_name_7" nullable="1" physicalName="index_column_name_7" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1613" populated="true" autoIncrement="false" name="index_column_name_8" nullable="1" physicalName="index_column_name_8" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1614" populated="true" autoIncrement="false" name="index_column_name_9" nullable="1" physicalName="index_column_name_9" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1615" populated="true" autoIncrement="false" name="DELETE_DUP_IND" nullable="1" physicalName="delete_dup_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL740" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1616" populated="true" autoIncrement="false" name="visible_ind" nullable="1" physicalName="visible_ind" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1617" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL738" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1618" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL739" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1619" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL742" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1618" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1620" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1619" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1621" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1620" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1621" populated="true" index-type="CLUSTERED" name="mm_table_merge_rule_pk" physicalName="PL_MERGE_CRITERIA_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1622" populated="true" ascending="false" column-ref="COL1594" descending="false" name="table_merge_rule_oid" physicalName="MERGE_CRITERIA_OID" />
+   <folder id="FOL1622" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1623" populated="true" index-type="CLUSTERED" name="mm_table_merge_rule_pk" physicalName="PL_MERGE_CRITERIA_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1624" populated="true" ascending="false" column-ref="COL1596" descending="false" name="table_merge_rule_oid" physicalName="MERGE_CRITERIA_OID" />
     </index>
    </folder>
   </table>
-  <table id="TAB1623" populated="true" name="PL_USER" objectType="TABLE" physicalName="pl_user" >
-   <folder id="FOL1624" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1625" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL1027" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1626" populated="true" autoIncrement="false" name="USER_NAME" nullable="1" physicalName="user_name" precision="50" referenceCount="1" remarks="" scale="0" source-column-ref="COL1028" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1627" populated="true" autoIncrement="false" name="USER_PASSWORD" nullable="1" physicalName="user_password" precision="35" referenceCount="1" remarks="" scale="0" source-column-ref="COL1029" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1628" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1030" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1629" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1031" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1630" populated="true" autoIncrement="false" name="EMAIL_ADDRESS" nullable="1" physicalName="email_address" precision="40" referenceCount="1" remarks="" scale="0" source-column-ref="COL1032" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1631" populated="true" autoIncrement="false" defaultValue="&apos;MONTHLY&apos; " name="DEFAULT_KPI_FREQUENCY" nullable="1" physicalName="default_kpi_frequency" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1033" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1632" populated="true" autoIncrement="false" name="CREATE_DATE" nullable="1" physicalName="create_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1034" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1633" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1035" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1634" populated="true" autoIncrement="false" defaultValue="&apos;Y&apos;" name="SHOW_RED_IND" nullable="1" physicalName="show_red_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1036" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1635" populated="true" autoIncrement="false" defaultValue="&apos;Y&apos;" name="SHOW_YELLOW_IND" nullable="1" physicalName="show_yellow_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1037" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1636" populated="true" autoIncrement="false" defaultValue="&apos;Y&apos;" name="SHOW_GREEN_IND" nullable="1" physicalName="show_green_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1038" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1637" populated="true" autoIncrement="false" defaultValue="&apos;Y&apos;" name="SHOW_GREY_IND" nullable="1" physicalName="show_grey_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1039" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1638" populated="true" autoIncrement="false" name="PASSWORD" nullable="1" physicalName="password" precision="100" referenceCount="1" remarks="" scale="0" source-column-ref="COL1040" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1639" populated="true" autoIncrement="false" name="USE_LOADER_IND" nullable="1" physicalName="use_loader_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1041" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1640" populated="true" autoIncrement="false" name="USE_SUMMARIZER_IND" nullable="1" physicalName="use_summarizer_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1042" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1641" populated="true" autoIncrement="false" name="USE_MATCHMAKER_IND" nullable="1" physicalName="use_matchmaker_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1043" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1642" populated="true" autoIncrement="false" name="USE_DASHBOARD_IND" nullable="1" physicalName="use_dashboard_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1044" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1625" populated="true" name="PL_USER" objectType="TABLE" physicalName="pl_user" >
+   <folder id="FOL1626" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1627" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL1027" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1628" populated="true" autoIncrement="false" name="USER_NAME" nullable="1" physicalName="user_name" precision="50" referenceCount="1" remarks="" scale="0" source-column-ref="COL1028" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1629" populated="true" autoIncrement="false" name="USER_PASSWORD" nullable="1" physicalName="user_password" precision="35" referenceCount="1" remarks="" scale="0" source-column-ref="COL1029" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1630" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1030" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1631" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1031" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1632" populated="true" autoIncrement="false" name="EMAIL_ADDRESS" nullable="1" physicalName="email_address" precision="40" referenceCount="1" remarks="" scale="0" source-column-ref="COL1032" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1633" populated="true" autoIncrement="false" defaultValue="&apos;MONTHLY&apos; " name="DEFAULT_KPI_FREQUENCY" nullable="1" physicalName="default_kpi_frequency" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1033" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1634" populated="true" autoIncrement="false" name="CREATE_DATE" nullable="1" physicalName="create_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1034" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1635" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1035" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1636" populated="true" autoIncrement="false" defaultValue="&apos;Y&apos;" name="SHOW_RED_IND" nullable="1" physicalName="show_red_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1036" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1637" populated="true" autoIncrement="false" defaultValue="&apos;Y&apos;" name="SHOW_YELLOW_IND" nullable="1" physicalName="show_yellow_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1037" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1638" populated="true" autoIncrement="false" defaultValue="&apos;Y&apos;" name="SHOW_GREEN_IND" nullable="1" physicalName="show_green_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1038" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1639" populated="true" autoIncrement="false" defaultValue="&apos;Y&apos;" name="SHOW_GREY_IND" nullable="1" physicalName="show_grey_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1039" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1640" populated="true" autoIncrement="false" name="PASSWORD" nullable="1" physicalName="password" precision="100" referenceCount="1" remarks="" scale="0" source-column-ref="COL1040" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1641" populated="true" autoIncrement="false" name="USE_LOADER_IND" nullable="1" physicalName="use_loader_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1041" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1642" populated="true" autoIncrement="false" name="USE_SUMMARIZER_IND" nullable="1" physicalName="use_summarizer_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1042" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1643" populated="true" autoIncrement="false" name="USE_MATCHMAKER_IND" nullable="1" physicalName="use_matchmaker_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1043" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1644" populated="true" autoIncrement="false" name="USE_DASHBOARD_IND" nullable="1" physicalName="use_dashboard_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1044" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1643" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1645" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1644" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1646" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1645" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1646" populated="true" index-type="CLUSTERED" name="PL_USER_PK" physicalName="PL_USER_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1647" populated="true" ascending="false" column-ref="COL1625" descending="false" name="USER_ID" physicalName="USER_ID" />
+   <folder id="FOL1647" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1648" populated="true" index-type="CLUSTERED" name="PL_USER_PK" physicalName="PL_USER_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1649" populated="true" ascending="false" column-ref="COL1627" descending="false" name="USER_ID" physicalName="USER_ID" />
     </index>
    </folder>
   </table>
-  <table id="TAB1648" populated="true" name="PL_USER_NOTIFICATION" objectType="TABLE" physicalName="pl_user_notification" >
-   <folder id="FOL1649" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1650" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL1052" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1651" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1053" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1652" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="80" primaryKeySeq="2" referenceCount="1" remarks="" scale="0" source-column-ref="COL1054" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1653" populated="true" autoIncrement="false" name="EMAIL_RED_IND" nullable="1" physicalName="email_red_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1055" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1654" populated="true" autoIncrement="false" name="EMAIL_YELLOW_IND" nullable="1" physicalName="email_yellow_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1056" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1655" populated="true" autoIncrement="false" name="EMAIL_GREEN_IND" nullable="1" physicalName="email_green_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1057" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1656" populated="true" autoIncrement="false" name="VIEW_KPI_IND" nullable="1" physicalName="view_kpi_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1058" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1650" populated="true" name="PL_USER_NOTIFICATION" objectType="TABLE" physicalName="pl_user_notification" >
+   <folder id="FOL1651" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1652" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL1052" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1653" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1053" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1654" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="80" primaryKeySeq="2" referenceCount="1" remarks="" scale="0" source-column-ref="COL1054" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1655" populated="true" autoIncrement="false" name="EMAIL_RED_IND" nullable="1" physicalName="email_red_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1055" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1656" populated="true" autoIncrement="false" name="EMAIL_YELLOW_IND" nullable="1" physicalName="email_yellow_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1056" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1657" populated="true" autoIncrement="false" name="EMAIL_GREEN_IND" nullable="1" physicalName="email_green_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1057" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1658" populated="true" autoIncrement="false" name="VIEW_KPI_IND" nullable="1" physicalName="view_kpi_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1058" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1657" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1659" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1658" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1660" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1659" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1660" populated="true" index-type="CLUSTERED" name="PL_USER_NOTIFICATION_PK" physicalName="PL_USER_NOTIFICATION_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1661" populated="true" ascending="false" column-ref="COL1650" descending="false" name="USER_ID" physicalName="USER_ID" />
-     <index-column id="IDC1662" populated="true" ascending="false" column-ref="COL1651" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
-     <index-column id="IDC1663" populated="true" ascending="false" column-ref="COL1652" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
+   <folder id="FOL1661" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1662" populated="true" index-type="CLUSTERED" name="PL_USER_NOTIFICATION_PK" physicalName="PL_USER_NOTIFICATION_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1663" populated="true" ascending="false" column-ref="COL1652" descending="false" name="USER_ID" physicalName="USER_ID" />
+     <index-column id="IDC1664" populated="true" ascending="false" column-ref="COL1653" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
+     <index-column id="IDC1665" populated="true" ascending="false" column-ref="COL1654" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
     </index>
    </folder>
   </table>
-  <table id="TAB1664" populated="true" name="PL_USER_NOTIFICATION_LOG" objectType="TABLE" physicalName="pl_user_notification_log" >
-   <folder id="FOL1665" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1666" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL1068" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1667" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1069" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1668" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="80" primaryKeySeq="2" referenceCount="1" remarks="" scale="0" source-column-ref="COL1070" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1669" populated="true" autoIncrement="false" name="RUN_STATUS" nullable="0" physicalName="run_status" precision="12" primaryKeySeq="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1071" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1670" populated="true" autoIncrement="false" name="SENT_DATE" nullable="0" physicalName="sent_date" precision="7" primaryKeySeq="4" referenceCount="1" remarks="" scale="0" source-column-ref="COL1072" sourceDataTypeName="DATE" type="91" />
+  <table id="TAB1666" populated="true" name="PL_USER_NOTIFICATION_LOG" objectType="TABLE" physicalName="pl_user_notification_log" >
+   <folder id="FOL1667" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1668" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL1068" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1669" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1069" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1670" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="80" primaryKeySeq="2" referenceCount="1" remarks="" scale="0" source-column-ref="COL1070" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1671" populated="true" autoIncrement="false" name="RUN_STATUS" nullable="0" physicalName="run_status" precision="12" primaryKeySeq="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1071" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1672" populated="true" autoIncrement="false" name="SENT_DATE" nullable="0" physicalName="sent_date" precision="7" primaryKeySeq="4" referenceCount="1" remarks="" scale="0" source-column-ref="COL1072" sourceDataTypeName="DATE" type="91" />
    </folder>
-   <folder id="FOL1671" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1673" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1672" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1674" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1673" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1674" populated="true" index-type="CLUSTERED" name="PL_USER_NOTIFICATION_LOG_PK" physicalName="PL_USER_NOTIFICATION_LOG_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1675" populated="true" ascending="false" column-ref="COL1666" descending="false" name="USER_ID" physicalName="USER_ID" />
-     <index-column id="IDC1676" populated="true" ascending="false" column-ref="COL1667" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
-     <index-column id="IDC1677" populated="true" ascending="false" column-ref="COL1668" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
-     <index-column id="IDC1678" populated="true" ascending="false" column-ref="COL1669" descending="false" name="RUN_STATUS" physicalName="RUN_STATUS" />
-     <index-column id="IDC1679" populated="true" ascending="false" column-ref="COL1670" descending="false" name="SENT_DATE" physicalName="SENT_DATE" />
+   <folder id="FOL1675" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1676" populated="true" index-type="CLUSTERED" name="PL_USER_NOTIFICATION_LOG_PK" physicalName="PL_USER_NOTIFICATION_LOG_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1677" populated="true" ascending="false" column-ref="COL1668" descending="false" name="USER_ID" physicalName="USER_ID" />
+     <index-column id="IDC1678" populated="true" ascending="false" column-ref="COL1669" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
+     <index-column id="IDC1679" populated="true" ascending="false" column-ref="COL1670" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
+     <index-column id="IDC1680" populated="true" ascending="false" column-ref="COL1671" descending="false" name="RUN_STATUS" physicalName="RUN_STATUS" />
+     <index-column id="IDC1681" populated="true" ascending="false" column-ref="COL1672" descending="false" name="SENT_DATE" physicalName="SENT_DATE" />
     </index>
    </folder>
   </table>
-  <table id="TAB1680" populated="true" name="USER_GROUP" objectType="TABLE" physicalName="user_group" >
-   <folder id="FOL1681" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1682" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL1219" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1683" populated="true" autoIncrement="false" name="GROUP_NAME" nullable="0" physicalName="group_name" precision="60" primaryKeySeq="1" referenceCount="2" remarks="" scale="0" source-column-ref="COL1220" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1684" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1221" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1685" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1222" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1686" populated="true" autoIncrement="false" name="CREATE_DATE" nullable="1" physicalName="create_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1223" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1687" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1224" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1682" populated="true" name="USER_GROUP" objectType="TABLE" physicalName="user_group" >
+   <folder id="FOL1683" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1684" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL1219" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1685" populated="true" autoIncrement="false" name="GROUP_NAME" nullable="0" physicalName="group_name" precision="60" primaryKeySeq="1" referenceCount="2" remarks="" scale="0" source-column-ref="COL1220" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1686" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1221" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1687" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1222" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1688" populated="true" autoIncrement="false" name="CREATE_DATE" nullable="1" physicalName="create_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1223" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1689" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1224" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1688" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1690" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1689" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1691" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1690" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1691" populated="true" index-type="CLUSTERED" name="USER_GROUP_PK" physicalName="USER_GROUP_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1692" populated="true" ascending="false" column-ref="COL1682" descending="false" name="USER_ID" physicalName="USER_ID" />
-     <index-column id="IDC1693" populated="true" ascending="false" column-ref="COL1683" descending="false" name="GROUP_NAME" physicalName="GROUP_NAME" />
+   <folder id="FOL1692" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1693" populated="true" index-type="CLUSTERED" name="USER_GROUP_PK" physicalName="USER_GROUP_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1694" populated="true" ascending="false" column-ref="COL1684" descending="false" name="USER_ID" physicalName="USER_ID" />
+     <index-column id="IDC1695" populated="true" ascending="false" column-ref="COL1685" descending="false" name="GROUP_NAME" physicalName="GROUP_NAME" />
     </index>
    </folder>
   </table>
-  <table id="TAB1694" populated="true" name="USER_OBJECT_PRIVS" objectType="TABLE" physicalName="user_object_privs" >
-   <folder id="FOL1695" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1696" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL1233" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1697" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1234" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1698" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="80" primaryKeySeq="2" referenceCount="1" remarks="" scale="0" source-column-ref="COL1235" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1699" populated="true" autoIncrement="false" name="MODIFY_IND" nullable="1" physicalName="modify_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1236" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1700" populated="true" autoIncrement="false" name="DELETE_IND" nullable="1" physicalName="delete_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1237" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1701" populated="true" autoIncrement="false" name="EXECUTE_IND" nullable="1" physicalName="execute_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1238" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1702" populated="true" autoIncrement="false" name="GRANT_IND" nullable="1" physicalName="grant_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1239" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1703" populated="true" autoIncrement="false" name="NOTIFY_IND" nullable="1" physicalName="notify_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1240" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1704" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1241" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1705" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1242" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1706" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1243" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1696" populated="true" name="USER_OBJECT_PRIVS" objectType="TABLE" physicalName="user_object_privs" >
+   <folder id="FOL1697" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1698" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL1233" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1699" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1234" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1700" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="80" primaryKeySeq="2" referenceCount="1" remarks="" scale="0" source-column-ref="COL1235" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1701" populated="true" autoIncrement="false" name="MODIFY_IND" nullable="1" physicalName="modify_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1236" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1702" populated="true" autoIncrement="false" name="DELETE_IND" nullable="1" physicalName="delete_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1237" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1703" populated="true" autoIncrement="false" name="EXECUTE_IND" nullable="1" physicalName="execute_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1238" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1704" populated="true" autoIncrement="false" name="GRANT_IND" nullable="1" physicalName="grant_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1239" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1705" populated="true" autoIncrement="false" name="NOTIFY_IND" nullable="1" physicalName="notify_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1240" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1706" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1241" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1707" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1242" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1708" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1243" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1707" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1709" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1708" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1710" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1709" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1710" populated="true" index-type="CLUSTERED" name="USER_OBJECT_PRIVS_PK" physicalName="USER_OBJECT_PRIVS_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1711" populated="true" ascending="false" column-ref="COL1696" descending="false" name="USER_ID" physicalName="USER_ID" />
-     <index-column id="IDC1712" populated="true" ascending="false" column-ref="COL1697" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
-     <index-column id="IDC1713" populated="true" ascending="false" column-ref="COL1698" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
+   <folder id="FOL1711" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1712" populated="true" index-type="CLUSTERED" name="USER_OBJECT_PRIVS_PK" physicalName="USER_OBJECT_PRIVS_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1713" populated="true" ascending="false" column-ref="COL1698" descending="false" name="USER_ID" physicalName="USER_ID" />
+     <index-column id="IDC1714" populated="true" ascending="false" column-ref="COL1699" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
+     <index-column id="IDC1715" populated="true" ascending="false" column-ref="COL1700" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
     </index>
    </folder>
   </table>
-  <table id="TAB1714" populated="true" name="USER_SYSTEM_PRIVS" objectType="TABLE" physicalName="user_system_privs" >
-   <folder id="FOL1715" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1716" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL1253" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1717" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1254" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1718" populated="true" autoIncrement="false" name="CREATE_ANY_IND" nullable="1" physicalName="create_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1255" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1719" populated="true" autoIncrement="false" name="MODIFY_ANY_IND" nullable="1" physicalName="modify_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1256" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1720" populated="true" autoIncrement="false" name="DELETE_ANY_IND" nullable="1" physicalName="delete_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1257" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1721" populated="true" autoIncrement="false" name="EXECUTE_ANY_IND" nullable="1" physicalName="execute_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1258" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1722" populated="true" autoIncrement="false" name="GRANT_ANY_IND" nullable="1" physicalName="grant_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1259" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1723" populated="true" autoIncrement="false" name="NOTIFY_ANY_IND" nullable="1" physicalName="notify_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1260" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1724" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1261" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1725" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1262" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1726" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1263" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1716" populated="true" name="USER_SYSTEM_PRIVS" objectType="TABLE" physicalName="user_system_privs" >
+   <folder id="FOL1717" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1718" populated="true" autoIncrement="false" name="USER_ID" nullable="0" physicalName="user_id" precision="35" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL1253" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1719" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL1254" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1720" populated="true" autoIncrement="false" name="CREATE_ANY_IND" nullable="1" physicalName="create_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1255" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1721" populated="true" autoIncrement="false" name="MODIFY_ANY_IND" nullable="1" physicalName="modify_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1256" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1722" populated="true" autoIncrement="false" name="DELETE_ANY_IND" nullable="1" physicalName="delete_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1257" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1723" populated="true" autoIncrement="false" name="EXECUTE_ANY_IND" nullable="1" physicalName="execute_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1258" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1724" populated="true" autoIncrement="false" name="GRANT_ANY_IND" nullable="1" physicalName="grant_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1259" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1725" populated="true" autoIncrement="false" name="NOTIFY_ANY_IND" nullable="1" physicalName="notify_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL1260" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1726" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL1261" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1727" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1262" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1728" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL1263" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1727" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1729" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1728" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1730" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1729" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1730" populated="true" index-type="CLUSTERED" name="USER_SYSTEM_PRIVS_PK" physicalName="USER_SYSTEM_PRIVS_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1731" populated="true" ascending="false" column-ref="COL1716" descending="false" name="USER_ID" physicalName="USER_ID" />
-     <index-column id="IDC1732" populated="true" ascending="false" column-ref="COL1717" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
+   <folder id="FOL1731" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1732" populated="true" index-type="CLUSTERED" name="USER_SYSTEM_PRIVS_PK" physicalName="USER_SYSTEM_PRIVS_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1733" populated="true" ascending="false" column-ref="COL1718" descending="false" name="USER_ID" physicalName="USER_ID" />
+     <index-column id="IDC1734" populated="true" ascending="false" column-ref="COL1719" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
     </index>
    </folder>
   </table>
-  <table id="TAB1733" populated="true" name="PL_FOLDER2" objectType="TABLE" physicalName="pl_folder2" >
-   <folder id="FOL1734" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1735" populated="true" autoIncrement="true" autoIncrementSequenceName="PL_FOLDER2_OID_seq" name="FOLDER_OID" nullable="0" physicalName="folder_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL466" type="3" />
-    <column id="COL1736" populated="true" autoIncrement="false" name="FOLDER_NAME" nullable="0" physicalName="folder_name" precision="80" referenceCount="1" remarks="" scale="0" source-column-ref="COL467" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1737" populated="true" autoIncrement="false" name="visible_ind" nullable="1" physicalName="visible_ind" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1738" populated="true" autoIncrement="false" name="FOLDER_DESC" nullable="1" physicalName="folder_desc" precision="255" referenceCount="1" remarks="" scale="0" source-column-ref="COL468" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1739" populated="true" autoIncrement="false" name="FOLDER_STATUS" nullable="1" physicalName="folder_status" precision="12" referenceCount="1" remarks="" scale="0" source-column-ref="COL469" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1740" populated="true" autoIncrement="false" name="LAST_BACKUP_NO" nullable="1" physicalName="last_backup_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL470" sourceDataTypeName="NUMBER" type="3" />
+  <table id="TAB1735" populated="true" name="PL_FOLDER2" objectType="TABLE" physicalName="pl_folder2" >
+   <folder id="FOL1736" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1737" populated="true" autoIncrement="true" autoIncrementSequenceName="PL_FOLDER2_OID_seq" name="FOLDER_OID" nullable="0" physicalName="folder_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL466" type="3" />
+    <column id="COL1738" populated="true" autoIncrement="false" name="FOLDER_NAME" nullable="0" physicalName="folder_name" precision="80" referenceCount="1" remarks="" scale="0" source-column-ref="COL467" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1739" populated="true" autoIncrement="false" name="visible_ind" nullable="1" physicalName="visible_ind" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1740" populated="true" autoIncrement="false" name="FOLDER_DESC" nullable="1" physicalName="folder_desc" precision="255" referenceCount="1" remarks="" scale="0" source-column-ref="COL468" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1741" populated="true" autoIncrement="false" name="FOLDER_STATUS" nullable="1" physicalName="folder_status" precision="12" referenceCount="1" remarks="" scale="0" source-column-ref="COL469" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1742" populated="true" autoIncrement="false" name="LAST_BACKUP_NO" nullable="1" physicalName="last_backup_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL470" sourceDataTypeName="NUMBER" type="3" />
    </folder>
-   <folder id="FOL1741" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1743" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1742" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1744" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1743" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1744" populated="true" index-type="CLUSTERED" name="PL_FOLDER2_PK" physicalName="PL_FOLDER2_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1745" populated="true" ascending="false" column-ref="COL1735" descending="false" name="FOLDER_OID" physicalName="FOLDER_OID" />
+   <folder id="FOL1745" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1746" populated="true" index-type="CLUSTERED" name="PL_FOLDER2_PK" physicalName="PL_FOLDER2_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1747" populated="true" ascending="false" column-ref="COL1737" descending="false" name="FOLDER_OID" physicalName="FOLDER_OID" />
     </index>
-    <index id="IDX1746" populated="true" index-type="CLUSTERED" name="PL_FOLDER2_NAME_UIDX" physicalName="PL_FOLDER2_NAME_UIDX" primaryKeyIndex="false" unique="true" >
-     <index-column id="IDC1747" populated="true" ascending="false" column-ref="COL1736" descending="false" name="FOLDER_NAME" physicalName="FOLDER_NAME" />
-    </index>
-   </folder>
-  </table>
-  <table id="TAB1748" populated="true" name="PL_GROUP" objectType="TABLE" physicalName="pl_group" >
-   <folder id="FOL1749" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1750" populated="true" autoIncrement="false" name="GROUP_NAME" nullable="0" physicalName="group_name" precision="60" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL492" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1751" populated="true" autoIncrement="false" name="GROUP_DESC" nullable="1" physicalName="group_desc" precision="80" referenceCount="1" remarks="" scale="0" source-column-ref="COL493" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1752" populated="true" autoIncrement="false" name="DEF_DATE_FREQ_CODE" nullable="1" physicalName="def_date_freq_code" precision="10" referenceCount="1" remarks="" scale="0" source-column-ref="COL494" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1753" populated="true" autoIncrement="false" name="GROUP_COMMENT" nullable="1" physicalName="group_comment" precision="2000" referenceCount="1" remarks="" scale="0" source-column-ref="COL495" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1754" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL496" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1755" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL497" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1756" populated="true" autoIncrement="false" name="CREATE_DATE" nullable="1" physicalName="create_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL498" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1757" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL499" sourceDataTypeName="VARCHAR2" type="12" />
-   </folder>
-   <folder id="FOL1758" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
-   </folder>
-   <folder id="FOL1759" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
-   </folder>
-   <folder id="FOL1760" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1761" populated="true" index-type="CLUSTERED" name="PL_GROUP_PK" physicalName="PL_GROUP_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1762" populated="true" ascending="false" column-ref="COL1750" descending="false" name="GROUP_NAME" physicalName="GROUP_NAME" />
+    <index id="IDX1748" populated="true" index-type="CLUSTERED" name="PL_FOLDER2_NAME_UIDX" physicalName="PL_FOLDER2_NAME_UIDX" primaryKeyIndex="false" unique="true" >
+     <index-column id="IDC1749" populated="true" ascending="false" column-ref="COL1738" descending="false" name="FOLDER_NAME" physicalName="FOLDER_NAME" />
     </index>
    </folder>
   </table>
-  <table id="TAB1763" populated="true" name="PL_GROUP_NOTIFICATION" objectType="TABLE" physicalName="pl_group_notification" >
-   <folder id="FOL1764" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1765" populated="true" autoIncrement="false" name="GROUP_NAME" nullable="0" physicalName="group_name" precision="60" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL507" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1766" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL508" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1767" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="80" primaryKeySeq="2" referenceCount="1" remarks="" scale="0" source-column-ref="COL509" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1768" populated="true" autoIncrement="false" name="EMAIL_RED_IND" nullable="1" physicalName="email_red_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL510" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1769" populated="true" autoIncrement="false" name="EMAIL_YELLOW_IND" nullable="1" physicalName="email_yellow_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL511" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1770" populated="true" autoIncrement="false" name="EMAIL_GREEN_IND" nullable="1" physicalName="email_green_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL512" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1771" populated="true" autoIncrement="false" name="VIEW_KPI_IND" nullable="1" physicalName="view_kpi_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL513" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1750" populated="true" name="PL_GROUP" objectType="TABLE" physicalName="pl_group" >
+   <folder id="FOL1751" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1752" populated="true" autoIncrement="false" name="GROUP_NAME" nullable="0" physicalName="group_name" precision="60" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL492" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1753" populated="true" autoIncrement="false" name="GROUP_DESC" nullable="1" physicalName="group_desc" precision="80" referenceCount="1" remarks="" scale="0" source-column-ref="COL493" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1754" populated="true" autoIncrement="false" name="DEF_DATE_FREQ_CODE" nullable="1" physicalName="def_date_freq_code" precision="10" referenceCount="1" remarks="" scale="0" source-column-ref="COL494" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1755" populated="true" autoIncrement="false" name="GROUP_COMMENT" nullable="1" physicalName="group_comment" precision="2000" referenceCount="1" remarks="" scale="0" source-column-ref="COL495" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1756" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL496" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1757" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL497" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1758" populated="true" autoIncrement="false" name="CREATE_DATE" nullable="1" physicalName="create_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL498" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1759" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL499" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1772" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1760" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1773" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1761" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1774" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1775" populated="true" index-type="CLUSTERED" name="PL_GROUP_NOTIFICATION_PK" physicalName="PL_GROUP_NOTIFICATION_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1776" populated="true" ascending="false" column-ref="COL1765" descending="false" name="GROUP_NAME" physicalName="GROUP_NAME" />
-     <index-column id="IDC1777" populated="true" ascending="false" column-ref="COL1766" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
-     <index-column id="IDC1778" populated="true" ascending="false" column-ref="COL1767" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
+   <folder id="FOL1762" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1763" populated="true" index-type="CLUSTERED" name="PL_GROUP_PK" physicalName="PL_GROUP_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1764" populated="true" ascending="false" column-ref="COL1752" descending="false" name="GROUP_NAME" physicalName="GROUP_NAME" />
     </index>
    </folder>
   </table>
-  <table id="TAB1779" populated="true" name="GROUP_OBJECT_PRIVS" objectType="TABLE" physicalName="group_object_privs" >
-   <folder id="FOL1780" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1781" populated="true" autoIncrement="false" name="GROUP_NAME" nullable="0" physicalName="group_name" precision="60" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL312" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1782" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL313" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1783" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="80" primaryKeySeq="2" referenceCount="1" remarks="" scale="0" source-column-ref="COL314" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1784" populated="true" autoIncrement="false" name="MODIFY_IND" nullable="1" physicalName="modify_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL315" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1785" populated="true" autoIncrement="false" name="DELETE_IND" nullable="1" physicalName="delete_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL316" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1786" populated="true" autoIncrement="false" name="EXECUTE_IND" nullable="1" physicalName="execute_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL317" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1787" populated="true" autoIncrement="false" name="GRANT_IND" nullable="1" physicalName="grant_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL318" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1788" populated="true" autoIncrement="false" name="NOTIFY_IND" nullable="1" physicalName="notify_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL319" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1789" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL320" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1790" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL321" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1791" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL322" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1765" populated="true" name="PL_GROUP_NOTIFICATION" objectType="TABLE" physicalName="pl_group_notification" >
+   <folder id="FOL1766" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1767" populated="true" autoIncrement="false" name="GROUP_NAME" nullable="0" physicalName="group_name" precision="60" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL507" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1768" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL508" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1769" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="80" primaryKeySeq="2" referenceCount="1" remarks="" scale="0" source-column-ref="COL509" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1770" populated="true" autoIncrement="false" name="EMAIL_RED_IND" nullable="1" physicalName="email_red_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL510" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1771" populated="true" autoIncrement="false" name="EMAIL_YELLOW_IND" nullable="1" physicalName="email_yellow_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL511" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1772" populated="true" autoIncrement="false" name="EMAIL_GREEN_IND" nullable="1" physicalName="email_green_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL512" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1773" populated="true" autoIncrement="false" name="VIEW_KPI_IND" nullable="1" physicalName="view_kpi_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL513" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1792" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1774" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1793" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1775" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1794" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1795" populated="true" index-type="CLUSTERED" name="GROUP_OBJECT_PRIVS_PK" physicalName="GROUP_OBJECT_PRIVS_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1796" populated="true" ascending="false" column-ref="COL1781" descending="false" name="GROUP_NAME" physicalName="GROUP_NAME" />
-     <index-column id="IDC1797" populated="true" ascending="false" column-ref="COL1782" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
-     <index-column id="IDC1798" populated="true" ascending="false" column-ref="COL1783" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
+   <folder id="FOL1776" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1777" populated="true" index-type="CLUSTERED" name="PL_GROUP_NOTIFICATION_PK" physicalName="PL_GROUP_NOTIFICATION_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1778" populated="true" ascending="false" column-ref="COL1767" descending="false" name="GROUP_NAME" physicalName="GROUP_NAME" />
+     <index-column id="IDC1779" populated="true" ascending="false" column-ref="COL1768" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
+     <index-column id="IDC1780" populated="true" ascending="false" column-ref="COL1769" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
     </index>
    </folder>
   </table>
-  <table id="TAB1799" populated="true" name="GROUP_SYSTEM_PRIVS" objectType="TABLE" physicalName="group_system_privs" >
-   <folder id="FOL1800" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1801" populated="true" autoIncrement="false" name="GROUP_NAME" nullable="0" physicalName="group_name" precision="60" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL332" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1802" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL333" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1803" populated="true" autoIncrement="false" name="CREATE_ANY_IND" nullable="1" physicalName="create_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL334" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1804" populated="true" autoIncrement="false" name="MODIFY_ANY_IND" nullable="1" physicalName="modify_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL335" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1805" populated="true" autoIncrement="false" name="DELETE_ANY_IND" nullable="1" physicalName="delete_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL336" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1806" populated="true" autoIncrement="false" name="EXECUTE_ANY_IND" nullable="1" physicalName="execute_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL337" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1807" populated="true" autoIncrement="false" name="GRANT_ANY_IND" nullable="1" physicalName="grant_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL338" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1808" populated="true" autoIncrement="false" name="NOTIFY_ANY_IND" nullable="1" physicalName="notify_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL339" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1809" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL340" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1810" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL341" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1811" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL342" sourceDataTypeName="VARCHAR2" type="12" />
+  <table id="TAB1781" populated="true" name="GROUP_OBJECT_PRIVS" objectType="TABLE" physicalName="group_object_privs" >
+   <folder id="FOL1782" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1783" populated="true" autoIncrement="false" name="GROUP_NAME" nullable="0" physicalName="group_name" precision="60" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL312" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1784" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL313" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1785" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="80" primaryKeySeq="2" referenceCount="1" remarks="" scale="0" source-column-ref="COL314" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1786" populated="true" autoIncrement="false" name="MODIFY_IND" nullable="1" physicalName="modify_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL315" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1787" populated="true" autoIncrement="false" name="DELETE_IND" nullable="1" physicalName="delete_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL316" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1788" populated="true" autoIncrement="false" name="EXECUTE_IND" nullable="1" physicalName="execute_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL317" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1789" populated="true" autoIncrement="false" name="GRANT_IND" nullable="1" physicalName="grant_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL318" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1790" populated="true" autoIncrement="false" name="NOTIFY_IND" nullable="1" physicalName="notify_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL319" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1791" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL320" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1792" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL321" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1793" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL322" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1812" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1794" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1813" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1795" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1814" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1815" populated="true" index-type="CLUSTERED" name="GROUP_SYSTEM_PRIVS_PK" physicalName="GROUP_SYSTEM_PRIVS_PK" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1816" populated="true" ascending="false" column-ref="COL1801" descending="false" name="GROUP_NAME" physicalName="GROUP_NAME" />
-     <index-column id="IDC1817" populated="true" ascending="false" column-ref="COL1802" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
+   <folder id="FOL1796" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1797" populated="true" index-type="CLUSTERED" name="GROUP_OBJECT_PRIVS_PK" physicalName="GROUP_OBJECT_PRIVS_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1798" populated="true" ascending="false" column-ref="COL1783" descending="false" name="GROUP_NAME" physicalName="GROUP_NAME" />
+     <index-column id="IDC1799" populated="true" ascending="false" column-ref="COL1784" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
+     <index-column id="IDC1800" populated="true" ascending="false" column-ref="COL1785" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
     </index>
    </folder>
   </table>
-  <table id="TAB1818" populated="true" name="mm_munge_step_parameter" objectType="TABLE" physicalName="mm_munge_step_parameter" remarks="" >
-   <folder id="FOL1819" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1820" populated="true" autoIncrement="false" name="munge_step_oid" nullable="0" physicalName="munge_step_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" type="3" />
-    <column id="COL1821" populated="true" autoIncrement="false" name="parameter_name" nullable="0" physicalName="parameter_name" precision="100" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1822" populated="true" autoIncrement="false" name="parameter_value" nullable="0" physicalName="parameter_value" precision="2000" referenceCount="1" remarks="" scale="0" type="12" />
+  <table id="TAB1801" populated="true" name="GROUP_SYSTEM_PRIVS" objectType="TABLE" physicalName="group_system_privs" >
+   <folder id="FOL1802" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1803" populated="true" autoIncrement="false" name="GROUP_NAME" nullable="0" physicalName="group_name" precision="60" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL332" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1804" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL333" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1805" populated="true" autoIncrement="false" name="CREATE_ANY_IND" nullable="1" physicalName="create_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL334" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1806" populated="true" autoIncrement="false" name="MODIFY_ANY_IND" nullable="1" physicalName="modify_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL335" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1807" populated="true" autoIncrement="false" name="DELETE_ANY_IND" nullable="1" physicalName="delete_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL336" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1808" populated="true" autoIncrement="false" name="EXECUTE_ANY_IND" nullable="1" physicalName="execute_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL337" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1809" populated="true" autoIncrement="false" name="GRANT_ANY_IND" nullable="1" physicalName="grant_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL338" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1810" populated="true" autoIncrement="false" name="NOTIFY_ANY_IND" nullable="1" physicalName="notify_any_ind" precision="3" referenceCount="1" remarks="" scale="0" source-column-ref="COL339" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1811" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL340" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1812" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL341" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1813" populated="true" autoIncrement="false" name="LAST_UPDATE_OS_USER" nullable="1" physicalName="last_update_os_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL342" sourceDataTypeName="VARCHAR2" type="12" />
    </folder>
-   <folder id="FOL1823" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1814" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1824" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1815" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1825" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1826" populated="true" index-type="CLUSTERED" name="mm_munge_step_parameter_pk" physicalName="mm_munge_step_parameter_pk" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1827" populated="true" ascending="false" column-ref="COL1820" descending="false" name="munge_step_oid" physicalName="munge_step_oid" />
-     <index-column id="IDC1828" populated="true" ascending="false" column-ref="COL1821" descending="false" name="parameter_name" physicalName="parameter_name" />
+   <folder id="FOL1816" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1817" populated="true" index-type="CLUSTERED" name="GROUP_SYSTEM_PRIVS_PK" physicalName="GROUP_SYSTEM_PRIVS_PK" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1818" populated="true" ascending="false" column-ref="COL1803" descending="false" name="GROUP_NAME" physicalName="GROUP_NAME" />
+     <index-column id="IDC1819" populated="true" ascending="false" column-ref="COL1804" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
     </index>
    </folder>
   </table>
-  <table id="TAB1829" populated="true" name="PL_STATS" objectType="TABLE" physicalName="pl_stats" >
-   <folder id="FOL1830" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1831" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL882" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1832" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="200" referenceCount="1" remarks="" scale="0" source-column-ref="COL883" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1833" populated="true" autoIncrement="false" name="START_DATE_TIME" nullable="0" physicalName="start_date_time" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL884" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1834" populated="true" autoIncrement="false" name="TABLE_FILE_ID" nullable="1" physicalName="table_file_id" precision="35" referenceCount="1" remarks="" scale="0" source-column-ref="COL885" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1835" populated="true" autoIncrement="false" name="PROCESS_SEQ_NO" nullable="1" physicalName="process_seq_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL886" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1836" populated="true" autoIncrement="false" name="STATS_TYPE" nullable="1" physicalName="stats_type" precision="8" referenceCount="1" remarks="" scale="0" source-column-ref="COL887" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1837" populated="true" autoIncrement="false" name="ELAPSED_TIME" nullable="1" physicalName="elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL888" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1838" populated="true" autoIncrement="false" name="CPU_TIME" nullable="1" physicalName="cpu_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL889" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1839" populated="true" autoIncrement="false" name="COMMIT_FREQ" nullable="1" physicalName="commit_freq" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL890" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1840" populated="true" autoIncrement="false" name="WRITE_DB_ERRORS_IND" nullable="1" physicalName="write_db_errors_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL891" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1841" populated="true" autoIncrement="false" name="ROLLBACK_SEGMENT_NAME" nullable="1" physicalName="rollback_segment_name" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL892" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1842" populated="true" autoIncrement="false" name="RUN_STATUS" nullable="1" physicalName="run_status" precision="12" referenceCount="1" remarks="" scale="0" source-column-ref="COL893" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1843" populated="true" autoIncrement="false" name="RUN_NO" nullable="1" physicalName="run_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL894" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1844" populated="true" autoIncrement="false" name="NO_OF_REC_TOTAL" nullable="1" physicalName="no_of_rec_total" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL895" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1845" populated="true" autoIncrement="false" name="NO_OF_REC_READ" nullable="1" physicalName="no_of_rec_read" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL896" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1846" populated="true" autoIncrement="false" name="NO_OF_REC_FILTERED" nullable="1" physicalName="no_of_rec_filtered" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL897" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1847" populated="true" autoIncrement="false" name="NO_OF_REC_PROCESSED" nullable="1" physicalName="no_of_rec_processed" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL898" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1848" populated="true" autoIncrement="false" name="NO_OF_REC_SKIPPED" nullable="1" physicalName="no_of_rec_skipped" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL899" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1849" populated="true" autoIncrement="false" name="NO_OF_REC_REJECTED" nullable="1" physicalName="no_of_rec_rejected" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL900" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1850" populated="true" autoIncrement="false" name="NO_OF_REC_ADDED" nullable="1" physicalName="no_of_rec_added" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL901" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1851" populated="true" autoIncrement="false" name="NO_OF_REC_UPDATED" nullable="1" physicalName="no_of_rec_updated" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL902" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1852" populated="true" autoIncrement="false" name="NO_OF_REC_DELETED" nullable="1" physicalName="no_of_rec_deleted" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL903" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1853" populated="true" autoIncrement="false" name="PKG_RETURN_CODE" nullable="1" physicalName="pkg_return_code" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL904" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1854" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL905" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1855" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL906" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1856" populated="true" autoIncrement="false" name="NO_OF_INPUT_REC_SKIPPED" nullable="1" physicalName="no_of_input_rec_skipped" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL907" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1857" populated="true" autoIncrement="false" name="TRANS_RUN_NO" nullable="1" physicalName="trans_run_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL908" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1858" populated="true" autoIncrement="false" name="TRUNCATE_IND" nullable="1" physicalName="truncate_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL909" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1859" populated="true" autoIncrement="false" name="ANALYZE_IND" nullable="1" physicalName="analyze_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL910" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1860" populated="true" autoIncrement="false" name="CONTINUOUS_DIM_IND" nullable="1" physicalName="continuous_dim_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL911" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1861" populated="true" autoIncrement="false" name="DATE_RANGE_START_DATE" nullable="1" physicalName="date_range_start_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL912" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1862" populated="true" autoIncrement="false" name="DATE_RANGE_END_DATE" nullable="1" physicalName="date_range_end_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL913" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1863" populated="true" autoIncrement="false" name="ADD_ELAPSED_TIME" nullable="1" physicalName="add_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL914" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1864" populated="true" autoIncrement="false" name="UPDATE_ELAPSED_TIME" nullable="1" physicalName="update_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL915" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1865" populated="true" autoIncrement="false" name="DELETE_ELAPSED_TIME" nullable="1" physicalName="delete_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL916" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1866" populated="true" autoIncrement="false" name="NO_OF_DELTA_REC_OLD" nullable="1" physicalName="no_of_delta_rec_old" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL917" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1867" populated="true" autoIncrement="false" name="NO_OF_DELTA_REC_NEW" nullable="1" physicalName="no_of_delta_rec_new" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL918" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1868" populated="true" autoIncrement="false" name="DELTA_SORT_IND" nullable="1" physicalName="delta_sort_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL919" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1869" populated="true" autoIncrement="false" name="DELTA_SORT_TIME" nullable="1" physicalName="delta_sort_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL920" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1870" populated="true" autoIncrement="false" name="ENGINE_RETURN_CODE" nullable="1" physicalName="engine_return_code" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL921" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1871" populated="true" autoIncrement="false" name="JOB_STEP_DESC" nullable="1" physicalName="job_step_desc" precision="255" referenceCount="1" remarks="" scale="0" source-column-ref="COL922" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1872" populated="true" autoIncrement="false" name="END_DATE_TIME" nullable="1" physicalName="end_date_time" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL923" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1873" populated="true" autoIncrement="false" name="ESTIMATE_DURATION" nullable="1" physicalName="estimate_duration" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL924" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1874" populated="true" autoIncrement="false" name="ESTIMATE_COMPLETION_TIME" nullable="1" physicalName="estimate_completion_time" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL925" sourceDataTypeName="DATE" type="91" />
-    <column id="COL1875" populated="true" autoIncrement="false" name="PERCENT_PROCESSED" nullable="1" physicalName="percent_processed" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL926" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1876" populated="true" autoIncrement="false" name="RATE_PROCESSED" nullable="1" physicalName="rate_processed" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL927" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1877" populated="true" autoIncrement="false" name="PREV_ADD_ELAPSED_TIME" nullable="1" physicalName="prev_add_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL928" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1878" populated="true" autoIncrement="false" name="PREV_UPDATE_ELAPSED_TIME" nullable="1" physicalName="prev_update_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL929" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1879" populated="true" autoIncrement="false" name="PREV_DELETE_ELAPSED_TIME" nullable="1" physicalName="prev_delete_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL930" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1880" populated="true" autoIncrement="false" name="PREV_RATE_PROCESSED" nullable="1" physicalName="prev_rate_processed" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL931" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1881" populated="true" autoIncrement="false" name="PREV_ELAPSED_TIME" nullable="1" physicalName="prev_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL932" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1882" populated="true" autoIncrement="false" name="PREV_RUN_STATUS" nullable="1" physicalName="prev_run_status" precision="12" referenceCount="1" remarks="" scale="0" source-column-ref="COL933" sourceDataTypeName="VARCHAR2" type="12" />
-    <column id="COL1883" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_TOTAL" nullable="1" physicalName="prev_no_of_rec_total" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL934" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1884" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_READ" nullable="1" physicalName="prev_no_of_rec_read" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL935" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1885" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_FILTERED" nullable="1" physicalName="prev_no_of_rec_filtered" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL936" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1886" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_PROCESSED" nullable="1" physicalName="prev_no_of_rec_processed" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL937" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1887" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_SKIPPED" nullable="1" physicalName="prev_no_of_rec_skipped" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL938" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1888" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_REJECTED" nullable="1" physicalName="prev_no_of_rec_rejected" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL939" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1889" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_ADDED" nullable="1" physicalName="prev_no_of_rec_added" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL940" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1890" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_UPDATED" nullable="1" physicalName="prev_no_of_rec_updated" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL941" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1891" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_DELETED" nullable="1" physicalName="prev_no_of_rec_deleted" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL942" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1892" populated="true" autoIncrement="false" name="PREV_NO_OF_INPUT_REC_SKIPPED" nullable="1" physicalName="prev_no_of_input_rec_skipped" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL943" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1893" populated="true" autoIncrement="false" name="PREV_NO_OF_DELTA_REC_OLD" nullable="1" physicalName="prev_no_of_delta_rec_old" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL944" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1894" populated="true" autoIncrement="false" name="PREV_NO_OF_DELTA_REC_NEW" nullable="1" physicalName="prev_no_of_delta_rec_new" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL945" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1895" populated="true" autoIncrement="false" name="PREV_DURATION" nullable="1" physicalName="prev_duration" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL946" sourceDataTypeName="NUMBER" type="3" />
+  <table id="TAB1820" populated="true" name="mm_munge_step_parameter" objectType="TABLE" physicalName="mm_munge_step_parameter" remarks="" >
+   <folder id="FOL1821" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1822" populated="true" autoIncrement="false" name="munge_step_oid" nullable="0" physicalName="munge_step_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" type="3" />
+    <column id="COL1823" populated="true" autoIncrement="false" name="parameter_name" nullable="0" physicalName="parameter_name" precision="100" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1824" populated="true" autoIncrement="false" name="parameter_value" nullable="0" physicalName="parameter_value" precision="2000" referenceCount="1" remarks="" scale="0" type="12" />
    </folder>
-   <folder id="FOL1896" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1825" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1897" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1826" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1898" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1899" populated="true" index-type="CLUSTERED" name="PL_STATS_U01" physicalName="PL_STATS_U01" primaryKeyIndex="false" unique="true" >
-     <index-column id="IDC1900" populated="true" ascending="false" column-ref="COL1831" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
-     <index-column id="IDC1901" populated="true" ascending="false" column-ref="COL1832" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
-     <index-column id="IDC1902" populated="true" ascending="false" column-ref="COL1834" descending="false" name="TABLE_FILE_ID" physicalName="TABLE_FILE_ID" />
-     <index-column id="IDC1903" populated="true" ascending="false" column-ref="COL1836" descending="false" name="STATS_TYPE" physicalName="STATS_TYPE" />
-     <index-column id="IDC1904" populated="true" ascending="false" column-ref="COL1833" descending="false" name="START_DATE_TIME" physicalName="START_DATE_TIME" />
-     <index-column id="IDC1905" populated="true" ascending="false" column-ref="COL1835" descending="false" name="PROCESS_SEQ_NO" physicalName="PROCESS_SEQ_NO" />
-    </index>
-    <index id="IDX1906" populated="true" index-type="CLUSTERED" name="PL_STATS_IDX" physicalName="PL_STATS_IDX" primaryKeyIndex="false" unique="false" >
-     <index-column id="IDC1907" populated="true" ascending="false" column-ref="COL1831" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
-     <index-column id="IDC1908" populated="true" ascending="false" column-ref="COL1857" descending="false" name="TRANS_RUN_NO" physicalName="TRANS_RUN_NO" />
+   <folder id="FOL1827" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1828" populated="true" index-type="CLUSTERED" name="mm_munge_step_parameter_pk" physicalName="mm_munge_step_parameter_pk" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1829" populated="true" ascending="false" column-ref="COL1822" descending="false" name="munge_step_oid" physicalName="munge_step_oid" />
+     <index-column id="IDC1830" populated="true" ascending="false" column-ref="COL1823" descending="false" name="parameter_name" physicalName="parameter_name" />
     </index>
    </folder>
   </table>
-  <table id="TAB1909" populated="true" name="mm_schema_info" objectType="TABLE" physicalName="mm_schema_info" remarks="" >
-   <folder id="FOL1910" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1911" populated="true" autoIncrement="false" name="param_name" nullable="0" physicalName="param_name" precision="50" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" type="12" />
-    <column id="COL1912" populated="true" autoIncrement="false" name="param_value" nullable="1" physicalName="param_value" precision="2000" referenceCount="1" remarks="" scale="0" type="12" />
+  <table id="TAB1831" populated="true" name="PL_STATS" objectType="TABLE" physicalName="pl_stats" >
+   <folder id="FOL1832" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1833" populated="true" autoIncrement="false" name="OBJECT_TYPE" nullable="0" physicalName="object_type" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL882" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1834" populated="true" autoIncrement="false" name="OBJECT_NAME" nullable="0" physicalName="object_name" precision="200" referenceCount="1" remarks="" scale="0" source-column-ref="COL883" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1835" populated="true" autoIncrement="false" name="START_DATE_TIME" nullable="0" physicalName="start_date_time" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL884" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1836" populated="true" autoIncrement="false" name="TABLE_FILE_ID" nullable="1" physicalName="table_file_id" precision="35" referenceCount="1" remarks="" scale="0" source-column-ref="COL885" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1837" populated="true" autoIncrement="false" name="PROCESS_SEQ_NO" nullable="1" physicalName="process_seq_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL886" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1838" populated="true" autoIncrement="false" name="STATS_TYPE" nullable="1" physicalName="stats_type" precision="8" referenceCount="1" remarks="" scale="0" source-column-ref="COL887" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1839" populated="true" autoIncrement="false" name="ELAPSED_TIME" nullable="1" physicalName="elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL888" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1840" populated="true" autoIncrement="false" name="CPU_TIME" nullable="1" physicalName="cpu_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL889" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1841" populated="true" autoIncrement="false" name="COMMIT_FREQ" nullable="1" physicalName="commit_freq" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL890" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1842" populated="true" autoIncrement="false" name="WRITE_DB_ERRORS_IND" nullable="1" physicalName="write_db_errors_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL891" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1843" populated="true" autoIncrement="false" name="ROLLBACK_SEGMENT_NAME" nullable="1" physicalName="rollback_segment_name" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL892" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1844" populated="true" autoIncrement="false" name="RUN_STATUS" nullable="1" physicalName="run_status" precision="12" referenceCount="1" remarks="" scale="0" source-column-ref="COL893" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1845" populated="true" autoIncrement="false" name="RUN_NO" nullable="1" physicalName="run_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL894" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1846" populated="true" autoIncrement="false" name="NO_OF_REC_TOTAL" nullable="1" physicalName="no_of_rec_total" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL895" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1847" populated="true" autoIncrement="false" name="NO_OF_REC_READ" nullable="1" physicalName="no_of_rec_read" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL896" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1848" populated="true" autoIncrement="false" name="NO_OF_REC_FILTERED" nullable="1" physicalName="no_of_rec_filtered" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL897" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1849" populated="true" autoIncrement="false" name="NO_OF_REC_PROCESSED" nullable="1" physicalName="no_of_rec_processed" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL898" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1850" populated="true" autoIncrement="false" name="NO_OF_REC_SKIPPED" nullable="1" physicalName="no_of_rec_skipped" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL899" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1851" populated="true" autoIncrement="false" name="NO_OF_REC_REJECTED" nullable="1" physicalName="no_of_rec_rejected" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL900" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1852" populated="true" autoIncrement="false" name="NO_OF_REC_ADDED" nullable="1" physicalName="no_of_rec_added" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL901" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1853" populated="true" autoIncrement="false" name="NO_OF_REC_UPDATED" nullable="1" physicalName="no_of_rec_updated" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL902" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1854" populated="true" autoIncrement="false" name="NO_OF_REC_DELETED" nullable="1" physicalName="no_of_rec_deleted" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL903" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1855" populated="true" autoIncrement="false" name="PKG_RETURN_CODE" nullable="1" physicalName="pkg_return_code" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL904" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1856" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="last_update_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL905" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1857" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="last_update_user" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL906" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1858" populated="true" autoIncrement="false" name="NO_OF_INPUT_REC_SKIPPED" nullable="1" physicalName="no_of_input_rec_skipped" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL907" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1859" populated="true" autoIncrement="false" name="TRANS_RUN_NO" nullable="1" physicalName="trans_run_no" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL908" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1860" populated="true" autoIncrement="false" name="TRUNCATE_IND" nullable="1" physicalName="truncate_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL909" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1861" populated="true" autoIncrement="false" name="ANALYZE_IND" nullable="1" physicalName="analyze_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL910" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1862" populated="true" autoIncrement="false" name="CONTINUOUS_DIM_IND" nullable="1" physicalName="continuous_dim_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL911" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1863" populated="true" autoIncrement="false" name="DATE_RANGE_START_DATE" nullable="1" physicalName="date_range_start_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL912" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1864" populated="true" autoIncrement="false" name="DATE_RANGE_END_DATE" nullable="1" physicalName="date_range_end_date" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL913" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1865" populated="true" autoIncrement="false" name="ADD_ELAPSED_TIME" nullable="1" physicalName="add_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL914" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1866" populated="true" autoIncrement="false" name="UPDATE_ELAPSED_TIME" nullable="1" physicalName="update_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL915" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1867" populated="true" autoIncrement="false" name="DELETE_ELAPSED_TIME" nullable="1" physicalName="delete_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL916" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1868" populated="true" autoIncrement="false" name="NO_OF_DELTA_REC_OLD" nullable="1" physicalName="no_of_delta_rec_old" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL917" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1869" populated="true" autoIncrement="false" name="NO_OF_DELTA_REC_NEW" nullable="1" physicalName="no_of_delta_rec_new" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL918" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1870" populated="true" autoIncrement="false" name="DELTA_SORT_IND" nullable="1" physicalName="delta_sort_ind" precision="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL919" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1871" populated="true" autoIncrement="false" name="DELTA_SORT_TIME" nullable="1" physicalName="delta_sort_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL920" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1872" populated="true" autoIncrement="false" name="ENGINE_RETURN_CODE" nullable="1" physicalName="engine_return_code" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL921" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1873" populated="true" autoIncrement="false" name="JOB_STEP_DESC" nullable="1" physicalName="job_step_desc" precision="255" referenceCount="1" remarks="" scale="0" source-column-ref="COL922" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1874" populated="true" autoIncrement="false" name="END_DATE_TIME" nullable="1" physicalName="end_date_time" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL923" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1875" populated="true" autoIncrement="false" name="ESTIMATE_DURATION" nullable="1" physicalName="estimate_duration" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL924" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1876" populated="true" autoIncrement="false" name="ESTIMATE_COMPLETION_TIME" nullable="1" physicalName="estimate_completion_time" precision="7" referenceCount="1" remarks="" scale="0" source-column-ref="COL925" sourceDataTypeName="DATE" type="91" />
+    <column id="COL1877" populated="true" autoIncrement="false" name="PERCENT_PROCESSED" nullable="1" physicalName="percent_processed" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL926" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1878" populated="true" autoIncrement="false" name="RATE_PROCESSED" nullable="1" physicalName="rate_processed" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL927" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1879" populated="true" autoIncrement="false" name="PREV_ADD_ELAPSED_TIME" nullable="1" physicalName="prev_add_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL928" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1880" populated="true" autoIncrement="false" name="PREV_UPDATE_ELAPSED_TIME" nullable="1" physicalName="prev_update_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL929" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1881" populated="true" autoIncrement="false" name="PREV_DELETE_ELAPSED_TIME" nullable="1" physicalName="prev_delete_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL930" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1882" populated="true" autoIncrement="false" name="PREV_RATE_PROCESSED" nullable="1" physicalName="prev_rate_processed" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL931" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1883" populated="true" autoIncrement="false" name="PREV_ELAPSED_TIME" nullable="1" physicalName="prev_elapsed_time" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL932" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1884" populated="true" autoIncrement="false" name="PREV_RUN_STATUS" nullable="1" physicalName="prev_run_status" precision="12" referenceCount="1" remarks="" scale="0" source-column-ref="COL933" sourceDataTypeName="VARCHAR2" type="12" />
+    <column id="COL1885" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_TOTAL" nullable="1" physicalName="prev_no_of_rec_total" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL934" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1886" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_READ" nullable="1" physicalName="prev_no_of_rec_read" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL935" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1887" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_FILTERED" nullable="1" physicalName="prev_no_of_rec_filtered" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL936" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1888" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_PROCESSED" nullable="1" physicalName="prev_no_of_rec_processed" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL937" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1889" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_SKIPPED" nullable="1" physicalName="prev_no_of_rec_skipped" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL938" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1890" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_REJECTED" nullable="1" physicalName="prev_no_of_rec_rejected" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL939" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1891" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_ADDED" nullable="1" physicalName="prev_no_of_rec_added" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL940" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1892" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_UPDATED" nullable="1" physicalName="prev_no_of_rec_updated" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL941" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1893" populated="true" autoIncrement="false" name="PREV_NO_OF_REC_DELETED" nullable="1" physicalName="prev_no_of_rec_deleted" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL942" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1894" populated="true" autoIncrement="false" name="PREV_NO_OF_INPUT_REC_SKIPPED" nullable="1" physicalName="prev_no_of_input_rec_skipped" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL943" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1895" populated="true" autoIncrement="false" name="PREV_NO_OF_DELTA_REC_OLD" nullable="1" physicalName="prev_no_of_delta_rec_old" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL944" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1896" populated="true" autoIncrement="false" name="PREV_NO_OF_DELTA_REC_NEW" nullable="1" physicalName="prev_no_of_delta_rec_new" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL945" sourceDataTypeName="NUMBER" type="3" />
+    <column id="COL1897" populated="true" autoIncrement="false" name="PREV_DURATION" nullable="1" physicalName="prev_duration" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL946" sourceDataTypeName="NUMBER" type="3" />
    </folder>
-   <folder id="FOL1913" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   <folder id="FOL1898" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
    </folder>
-   <folder id="FOL1914" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   <folder id="FOL1899" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
    </folder>
-   <folder id="FOL1915" populated="true" name="Indices" physicalName="Indices" type="4" >
-    <index id="IDX1916" populated="true" index-type="CLUSTERED" name="mm_schema_info_pk" physicalName="mm_schema_info_pk" primaryKeyIndex="true" unique="true" >
-     <index-column id="IDC1917" populated="true" ascending="false" column-ref="COL1911" descending="false" name="param_name" physicalName="param_name" />
+   <folder id="FOL1900" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1901" populated="true" index-type="CLUSTERED" name="PL_STATS_U01" physicalName="PL_STATS_U01" primaryKeyIndex="false" unique="true" >
+     <index-column id="IDC1902" populated="true" ascending="false" column-ref="COL1833" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
+     <index-column id="IDC1903" populated="true" ascending="false" column-ref="COL1834" descending="false" name="OBJECT_NAME" physicalName="OBJECT_NAME" />
+     <index-column id="IDC1904" populated="true" ascending="false" column-ref="COL1836" descending="false" name="TABLE_FILE_ID" physicalName="TABLE_FILE_ID" />
+     <index-column id="IDC1905" populated="true" ascending="false" column-ref="COL1838" descending="false" name="STATS_TYPE" physicalName="STATS_TYPE" />
+     <index-column id="IDC1906" populated="true" ascending="false" column-ref="COL1835" descending="false" name="START_DATE_TIME" physicalName="START_DATE_TIME" />
+     <index-column id="IDC1907" populated="true" ascending="false" column-ref="COL1837" descending="false" name="PROCESS_SEQ_NO" physicalName="PROCESS_SEQ_NO" />
+    </index>
+    <index id="IDX1908" populated="true" index-type="CLUSTERED" name="PL_STATS_IDX" physicalName="PL_STATS_IDX" primaryKeyIndex="false" unique="false" >
+     <index-column id="IDC1909" populated="true" ascending="false" column-ref="COL1833" descending="false" name="OBJECT_TYPE" physicalName="OBJECT_TYPE" />
+     <index-column id="IDC1910" populated="true" ascending="false" column-ref="COL1859" descending="false" name="TRANS_RUN_NO" physicalName="TRANS_RUN_NO" />
+    </index>
+   </folder>
+  </table>
+  <table id="TAB1911" populated="true" name="mm_schema_info" objectType="TABLE" physicalName="mm_schema_info" remarks="" >
+   <folder id="FOL1912" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL1913" populated="true" autoIncrement="false" name="param_name" nullable="0" physicalName="param_name" precision="50" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1914" populated="true" autoIncrement="false" name="param_value" nullable="1" physicalName="param_value" precision="2000" referenceCount="1" remarks="" scale="0" type="12" />
+   </folder>
+   <folder id="FOL1915" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   </folder>
+   <folder id="FOL1916" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   </folder>
+   <folder id="FOL1917" populated="true" name="Indices" physicalName="Indices" type="4" >
+    <index id="IDX1918" populated="true" index-type="CLUSTERED" name="mm_schema_info_pk" physicalName="mm_schema_info_pk" primaryKeyIndex="true" unique="true" >
+     <index-column id="IDC1919" populated="true" ascending="false" column-ref="COL1913" descending="false" name="param_name" physicalName="param_name" />
     </index>
    </folder>
   </table>
   <relationships>
-   <relationship id="REL1918" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1518" fkCardinality="7" identifying="true" name="mm_project_munge_process_fk" physicalName="mm_project_munge_process_fk" pk-table-ref="TAB1438" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1919" populated="true" fk-column-ref="COL1521" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1440" />
+   <relationship id="REL1920" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1518" fkCardinality="7" identifying="true" name="mm_project_munge_process_fk" physicalName="mm_project_munge_process_fk" pk-table-ref="TAB1438" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1921" populated="true" fk-column-ref="COL1521" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1440" />
    </relationship>
-   <relationship id="REL1920" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1561" fkCardinality="7" identifying="true" name="mm_project_xref_map_fk" physicalName="mm_project_xref_map_fk" pk-table-ref="TAB1438" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1921" populated="true" fk-column-ref="COL1563" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1440" />
+   <relationship id="REL1922" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1563" fkCardinality="7" identifying="true" name="mm_project_xref_map_fk" physicalName="mm_project_xref_map_fk" pk-table-ref="TAB1438" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1923" populated="true" fk-column-ref="COL1565" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1440" />
    </relationship>
-   <relationship id="REL1922" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1592" fkCardinality="7" identifying="true" name="mm_project_table_merge_rule_fk" physicalName="mm_project_table_merge_rule_fk" pk-table-ref="TAB1438" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1923" populated="true" fk-column-ref="COL1595" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1440" />
+   <relationship id="REL1924" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1594" fkCardinality="7" identifying="true" name="mm_project_table_merge_rule_fk" physicalName="mm_project_table_merge_rule_fk" pk-table-ref="TAB1438" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1925" populated="true" fk-column-ref="COL1597" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1440" />
    </relationship>
-   <relationship id="REL1924" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1438" fkCardinality="7" identifying="true" name="mm_folder_project_fk" physicalName="mm_folder_project_fk" pk-table-ref="TAB1733" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1925" populated="true" fk-column-ref="COL1441" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1735" />
+   <relationship id="REL1926" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1438" fkCardinality="7" identifying="true" name="mm_folder_project_fk" physicalName="mm_folder_project_fk" pk-table-ref="TAB1735" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1927" populated="true" fk-column-ref="COL1441" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1737" />
    </relationship>
-   <relationship id="REL1926" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1818" fkCardinality="7" identifying="true" name="mm_munge_step_parameter_fk" physicalName="mm_munge_step_parameter_fk" pk-table-ref="TAB1501" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1927" populated="true" fk-column-ref="COL1820" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1503" />
+   <relationship id="REL1928" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1820" fkCardinality="7" identifying="true" name="mm_munge_step_parameter_fk" physicalName="mm_munge_step_parameter_fk" pk-table-ref="TAB1501" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1929" populated="true" fk-column-ref="COL1822" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1503" />
    </relationship>
-   <relationship id="REL1928" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1501" fkCardinality="7" identifying="true" name="mm_munge_process_step_fk" physicalName="mm_munge_process_step_fk" pk-table-ref="TAB1518" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1929" populated="true" fk-column-ref="COL1504" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1520" />
-   </relationship>
-   <reference ref-id="REL1928" />
-   <reference ref-id="REL1918" />
-   <relationship id="REL1930" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1540" fkCardinality="7" identifying="true" name="TRANSLATE_GROUP_TRANSLATE_FK" physicalName="translate_group_translate_fk" pk-table-ref="TAB1552" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1931" populated="true" fk-column-ref="COL1543" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1554" />
+   <relationship id="REL1930" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1501" fkCardinality="7" identifying="true" name="mm_munge_process_step_fk" physicalName="mm_munge_process_step_fk" pk-table-ref="TAB1518" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1931" populated="true" fk-column-ref="COL1504" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1520" />
    </relationship>
    <reference ref-id="REL1930" />
    <reference ref-id="REL1920" />
-   <relationship id="REL1932" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1574" fkCardinality="7" identifying="true" name="mm_table_column_merge_rule_fk" physicalName="mm_table_column_merge_rule_fk" pk-table-ref="TAB1592" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1933" populated="true" fk-column-ref="COL1577" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1594" />
+   <relationship id="REL1932" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1540" fkCardinality="7" identifying="true" name="TRANSLATE_GROUP_TRANSLATE_FK" physicalName="translate_group_translate_fk" pk-table-ref="TAB1553" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1933" populated="true" fk-column-ref="COL1543" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1555" />
    </relationship>
    <reference ref-id="REL1932" />
    <reference ref-id="REL1922" />
-   <relationship id="REL1934" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1648" fkCardinality="7" identifying="true" name="PL_USER_NOTIFICATION_FK" physicalName="pl_user_notification_fk" pk-table-ref="TAB1623" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1935" populated="true" fk-column-ref="COL1650" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1625" />
-   </relationship>
-   <relationship id="REL1936" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1680" fkCardinality="7" identifying="true" name="USER_GROUP_FK_USER" physicalName="user_group_fk_user" pk-table-ref="TAB1623" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1937" populated="true" fk-column-ref="COL1682" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1625" />
-   </relationship>
-   <relationship id="REL1938" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1694" fkCardinality="7" identifying="true" name="USER_OBJECT_PRIVS_FK" physicalName="user_object_privs_fk" pk-table-ref="TAB1623" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1939" populated="true" fk-column-ref="COL1696" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1625" />
-   </relationship>
-   <relationship id="REL1940" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1714" fkCardinality="7" identifying="true" name="USER_SYSTEM_PRIVS_FK" physicalName="user_system_privs_fk" pk-table-ref="TAB1623" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1941" populated="true" fk-column-ref="COL1716" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1625" />
+   <relationship id="REL1934" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1576" fkCardinality="7" identifying="true" name="mm_table_column_merge_rule_fk" physicalName="mm_table_column_merge_rule_fk" pk-table-ref="TAB1594" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1935" populated="true" fk-column-ref="COL1579" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1596" />
    </relationship>
    <reference ref-id="REL1934" />
-   <reference ref-id="REL1936" />
-   <relationship id="REL1942" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1680" fkCardinality="7" identifying="true" name="USER_GROUP_FK_GROUP" physicalName="user_group_fk_group" pk-table-ref="TAB1748" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1943" populated="true" fk-column-ref="COL1683" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1750" />
-   </relationship>
-   <reference ref-id="REL1938" />
-   <reference ref-id="REL1940" />
    <reference ref-id="REL1924" />
+   <relationship id="REL1936" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1650" fkCardinality="7" identifying="true" name="PL_USER_NOTIFICATION_FK" physicalName="pl_user_notification_fk" pk-table-ref="TAB1625" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1937" populated="true" fk-column-ref="COL1652" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1627" />
+   </relationship>
+   <relationship id="REL1938" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1682" fkCardinality="7" identifying="true" name="USER_GROUP_FK_USER" physicalName="user_group_fk_user" pk-table-ref="TAB1625" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1939" populated="true" fk-column-ref="COL1684" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1627" />
+   </relationship>
+   <relationship id="REL1940" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1696" fkCardinality="7" identifying="true" name="USER_OBJECT_PRIVS_FK" physicalName="user_object_privs_fk" pk-table-ref="TAB1625" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1941" populated="true" fk-column-ref="COL1698" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1627" />
+   </relationship>
+   <relationship id="REL1942" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1716" fkCardinality="7" identifying="true" name="USER_SYSTEM_PRIVS_FK" physicalName="user_system_privs_fk" pk-table-ref="TAB1625" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1943" populated="true" fk-column-ref="COL1718" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1627" />
+   </relationship>
+   <reference ref-id="REL1936" />
+   <reference ref-id="REL1938" />
+   <relationship id="REL1944" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1682" fkCardinality="7" identifying="true" name="USER_GROUP_FK_GROUP" physicalName="user_group_fk_group" pk-table-ref="TAB1750" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1945" populated="true" fk-column-ref="COL1685" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1752" />
+   </relationship>
+   <reference ref-id="REL1940" />
    <reference ref-id="REL1942" />
-   <relationship id="REL1944" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1763" fkCardinality="7" identifying="true" name="PL_GROUP_NOTIFICATION_FK" physicalName="pl_group_notification_fk" pk-table-ref="TAB1748" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1945" populated="true" fk-column-ref="COL1765" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1750" />
-   </relationship>
-   <relationship id="REL1946" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1779" fkCardinality="7" identifying="true" name="GROUP_OBJECT_PRIVS_FK" physicalName="group_object_privs_fk" pk-table-ref="TAB1748" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1947" populated="true" fk-column-ref="COL1781" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1750" />
-   </relationship>
-   <relationship id="REL1948" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1799" fkCardinality="7" identifying="true" name="GROUP_SYSTEM_PRIVS_FK" physicalName="group_system_privs_fk" pk-table-ref="TAB1748" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP1949" populated="true" fk-column-ref="COL1801" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1750" />
-   </relationship>
+   <reference ref-id="REL1926" />
    <reference ref-id="REL1944" />
+   <relationship id="REL1946" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1765" fkCardinality="7" identifying="true" name="PL_GROUP_NOTIFICATION_FK" physicalName="pl_group_notification_fk" pk-table-ref="TAB1750" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1947" populated="true" fk-column-ref="COL1767" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1752" />
+   </relationship>
+   <relationship id="REL1948" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1781" fkCardinality="7" identifying="true" name="GROUP_OBJECT_PRIVS_FK" physicalName="group_object_privs_fk" pk-table-ref="TAB1750" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1949" populated="true" fk-column-ref="COL1783" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1752" />
+   </relationship>
+   <relationship id="REL1950" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1801" fkCardinality="7" identifying="true" name="GROUP_SYSTEM_PRIVS_FK" physicalName="group_system_privs_fk" pk-table-ref="TAB1750" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP1951" populated="true" fk-column-ref="COL1803" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1752" />
+   </relationship>
    <reference ref-id="REL1946" />
    <reference ref-id="REL1948" />
-   <reference ref-id="REL1926" />
+   <reference ref-id="REL1950" />
+   <reference ref-id="REL1928" />
   </relationships>
  </target-database>
  <ddl-generator type="ca.sqlpower.architect.ddl.PostgresDDLGenerator" allow-connection="true" target-schema="public"> </ddl-generator>
@@ -2506,41 +2508,41 @@
   <table-pane table-ref="TAB1438" x="1185" y="232" />
   <table-pane table-ref="TAB1501" x="2069" y="637" />
   <table-pane table-ref="TAB1518" x="1647" y="606" />
-  <table-pane table-ref="TAB1540" x="198" y="239" />
-  <table-pane table-ref="TAB1552" x="188" y="530" />
-  <table-pane table-ref="TAB1561" x="719" y="239" />
-  <table-pane table-ref="TAB1574" x="188" y="832" />
-  <table-pane table-ref="TAB1592" x="692" y="813" />
-  <table-pane table-ref="TAB1623" x="1246" y="2312" />
-  <table-pane table-ref="TAB1648" x="1846" y="2469" />
-  <table-pane table-ref="TAB1664" x="1860" y="2661" />
-  <table-pane table-ref="TAB1680" x="787" y="2408" />
-  <table-pane table-ref="TAB1694" x="1274" y="1925" />
-  <table-pane table-ref="TAB1714" x="1246" y="2754" />
-  <table-pane table-ref="TAB1733" x="1233" y="41" />
-  <table-pane table-ref="TAB1748" x="428" y="2394" />
-  <table-pane table-ref="TAB1763" x="41" y="2439" />
-  <table-pane table-ref="TAB1779" x="459" y="2041" />
-  <table-pane table-ref="TAB1799" x="438" y="2699" />
-  <table-pane table-ref="TAB1818" x="2103" y="972" />
-  <table-pane table-ref="TAB1829" x="2281" y="1962" />
-  <table-pane table-ref="TAB1909" x="230" y="71" />
-  <table-link relationship-ref="REL1926" pk-x="142" pk-y="191" fk-x="108" fk-y="0" />
-  <table-link relationship-ref="REL1948" pk-x="132" pk-y="159" fk-x="122" fk-y="0" />
-  <table-link relationship-ref="REL1946" pk-x="143" pk-y="0" fk-x="112" fk-y="207" />
-  <table-link relationship-ref="REL1944" pk-x="0" pk-y="102" fk-x="223" fk-y="57" />
-  <table-link relationship-ref="REL1942" pk-x="255" pk-y="77" fk-x="0" fk-y="63" />
-  <table-link relationship-ref="REL1924" pk-x="104" pk-y="127" fk-x="152" fk-y="0" />
-  <table-link relationship-ref="REL1940" pk-x="127" pk-y="319" fk-x="127" fk-y="0" />
-  <table-link relationship-ref="REL1938" pk-x="149" pk-y="0" fk-x="121" fk-y="207" />
-  <table-link relationship-ref="REL1936" pk-x="0" pk-y="159" fk-x="255" fk-y="63" />
-  <table-link relationship-ref="REL1934" pk-x="270" pk-y="228" fk-x="0" fk-y="71" />
-  <table-link relationship-ref="REL1922" pk-x="0" pk-y="684" fk-x="255" fk-y="103" />
-  <table-link relationship-ref="REL1932" pk-x="0" pk-y="113" fk-x="278" fk-y="94" />
-  <table-link relationship-ref="REL1920" pk-x="0" pk-y="260" fk-x="140" fk-y="111" />
-  <table-link relationship-ref="REL1930" pk-x="135" pk-y="0" fk-x="125" fk-y="111" />
-  <table-link relationship-ref="REL1918" pk-x="290" pk-y="477" fk-x="0" fk-y="103" />
-  <table-link relationship-ref="REL1928" pk-x="255" pk-y="102" fk-x="0" fk-y="71" />
+  <table-pane table-ref="TAB1540" x="196" y="486" />
+  <table-pane table-ref="TAB1553" x="202" y="260" />
+  <table-pane table-ref="TAB1563" x="719" y="239" />
+  <table-pane table-ref="TAB1576" x="188" y="832" />
+  <table-pane table-ref="TAB1594" x="692" y="813" />
+  <table-pane table-ref="TAB1625" x="1246" y="2312" />
+  <table-pane table-ref="TAB1650" x="1846" y="2469" />
+  <table-pane table-ref="TAB1666" x="1860" y="2661" />
+  <table-pane table-ref="TAB1682" x="787" y="2408" />
+  <table-pane table-ref="TAB1696" x="1274" y="1925" />
+  <table-pane table-ref="TAB1716" x="1246" y="2754" />
+  <table-pane table-ref="TAB1735" x="1233" y="41" />
+  <table-pane table-ref="TAB1750" x="428" y="2394" />
+  <table-pane table-ref="TAB1765" x="41" y="2439" />
+  <table-pane table-ref="TAB1781" x="459" y="2041" />
+  <table-pane table-ref="TAB1801" x="438" y="2699" />
+  <table-pane table-ref="TAB1820" x="2103" y="972" />
+  <table-pane table-ref="TAB1831" x="2281" y="1962" />
+  <table-pane table-ref="TAB1911" x="230" y="71" />
+  <table-link relationship-ref="REL1930" pk-x="255" pk-y="126" fk-x="0" fk-y="95" />
+  <table-link relationship-ref="REL1920" pk-x="290" pk-y="485" fk-x="0" fk-y="111" />
+  <table-link relationship-ref="REL1932" pk-x="122" pk-y="79" fk-x="128" fk-y="0" />
+  <table-link relationship-ref="REL1922" pk-x="0" pk-y="260" fk-x="140" fk-y="111" />
+  <table-link relationship-ref="REL1934" pk-x="0" pk-y="122" fk-x="278" fk-y="103" />
+  <table-link relationship-ref="REL1924" pk-x="0" pk-y="738" fk-x="255" fk-y="157" />
+  <table-link relationship-ref="REL1936" pk-x="270" pk-y="228" fk-x="0" fk-y="71" />
+  <table-link relationship-ref="REL1938" pk-x="0" pk-y="159" fk-x="255" fk-y="63" />
+  <table-link relationship-ref="REL1940" pk-x="149" pk-y="0" fk-x="121" fk-y="207" />
+  <table-link relationship-ref="REL1942" pk-x="127" pk-y="319" fk-x="127" fk-y="0" />
+  <table-link relationship-ref="REL1926" pk-x="104" pk-y="127" fk-x="152" fk-y="0" />
+  <table-link relationship-ref="REL1944" pk-x="255" pk-y="77" fk-x="0" fk-y="63" />
+  <table-link relationship-ref="REL1946" pk-x="0" pk-y="102" fk-x="223" fk-y="57" />
+  <table-link relationship-ref="REL1948" pk-x="143" pk-y="0" fk-x="112" fk-y="207" />
+  <table-link relationship-ref="REL1950" pk-x="132" pk-y="159" fk-x="122" fk-y="0" />
+  <table-link relationship-ref="REL1928" pk-x="142" pk-y="191" fk-x="108" fk-y="0" />
  </play-pen>
  <profiles topNCount="10">
   </profiles>
