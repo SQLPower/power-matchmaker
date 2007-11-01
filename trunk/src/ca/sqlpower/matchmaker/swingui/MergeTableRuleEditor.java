@@ -181,7 +181,7 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" up");
-			mmo.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow-1);
+			mmo.getTableMergeRulesFolder().moveChild(selectedRow, selectedRow-1);
 			mergeRulesTable.setRowSelectionInterval(selectedRow-1, selectedRow-1);
 		}
 	};
@@ -190,7 +190,7 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 		public void actionPerformed(ActionEvent e) {
 			final int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("moving merge rule "+selectedRow+" down");
-			mmo.getTableMergeRulesFolder().swapChildren(selectedRow, selectedRow+1);
+			mmo.getTableMergeRulesFolder().moveChild(selectedRow, selectedRow+1);
 			mergeRulesTable.setRowSelectionInterval(selectedRow+1, selectedRow+1);
 		}
 	};

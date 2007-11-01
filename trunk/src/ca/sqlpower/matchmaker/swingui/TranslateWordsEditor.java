@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +30,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -43,6 +44,8 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.Status;
@@ -62,66 +65,32 @@ import com.jgoodies.forms.layout.FormLayout;
  * An editor pane that allows the user to add/remove/move 
  * translate word pares
  */
-public class TranslateWordsEditor implements EditorPane {
+public class TranslateWordsEditor extends AbstractUndoableEditorPane<MatchMakerTranslateGroup, MatchMakerTranslateWord> {
 	
-	private JPanel panel;
 	private JScrollPane translateWordsScrollPane;
 	private JTable translateWordsTable;
-	private JTextField from;
-	private JTextField to;
-	private JTextField groupName;
+	private final JTextField from = new JTextField();
+	private final JTextField to = new JTextField();
+	private final JTextField groupName = new JTextField();
 	
-	private final MatchMakerSwingSession swingSession;
-	private final MatchMakerTranslateGroup group;
-		
 	private final FormValidationHandler handler;
 	private final StatusComponent status = new StatusComponent();
 
-	//keeps track of whether the editor pane has unsaved changes
-	private CustomTableModelListener tableListener;
-	
-	//keeps track of whether this is a new translate group
-	private boolean newTranslateGroup = false;
-	
 	private static final Logger logger = Logger.getLogger(TranslateWordsEditor.class);
 	
 	public TranslateWordsEditor(MatchMakerSwingSession swingSession,
 			MatchMakerTranslateGroup group) {
-		this.swingSession = swingSession;
-		this.group = group;
+		super(swingSession, group);
+		
 		List<Action> groupActions = new ArrayList<Action>();
         groupActions.add(saveGroupAction);
 		handler = new FormValidationHandler(status, groupActions);
 		
 		setupTable();
 		buildUI();
-		if (!swingSession.getTranslations().getChildren().contains(group)) {
-			//new group...has unsaved changes...
-			newTranslateGroup = true;
-			tableListener.setModified(true);
-		}
+		addListeners();
 	}
 
-	private void setupTable() {
-		translateWordsTable = new EditableJTable();
-        translateWordsTable.setName("Translate Words");
-        tableListener = new CustomTableModelListener();
-        TranslateWordsTableModel tm = new TranslateWordsTableModel(group);
-        tm.addTableModelListener(tableListener);
-        translateWordsTable.setModel (tm);
-        translateWordsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
-			public void valueChanged(ListSelectionEvent e) {
-				int row = translateWordsTable.getSelectedRow();
-				if (row >= 0) {
-					MatchMakerTranslateWord translateWord = group.getChildren().get(row); 
-					MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-					TreePath menuPath = treeModel.getPathForNode(translateWord);
-					swingSession.getTree().setSelectionPath(menuPath);
-				}
-			}
-		});
-	}
-	
 	private void buildUI() {
 	
 		//This created the layout for the internal panel at the top wit
@@ -145,16 +114,14 @@ public class TranslateWordsEditor implements EditorPane {
 		
 		row += 2;
 		internalPB.add(new JLabel ("Group Name:"), cc.xy(2,row,"r,t"));
-		groupName = new JTextField(group.getName());
+		groupName.setText(mmo.getName());
 		internalPB.add(groupName, cc.xy(4,row,"f,f"));
 		
 		row += 2;
 		internalPB.add(new JLabel ("From:"), cc.xy(2,row,"r,t"));
-		from = new JTextField();
 		internalPB.add(from, cc.xy(4,row,"f,f"));
 		
 		internalPB.add(new JLabel ("To:"), cc.xy(6,row,"r,t"));
-		to = new JTextField();
 		internalPB.add(to, cc.xy(8,row,"f,f"));
 		internalPB.add(new JButton(createWordsAction), cc.xy(10,row,"l,t"));
 		
@@ -198,12 +165,41 @@ public class TranslateWordsEditor implements EditorPane {
 		
         
         MMODuplicateValidator mmoValidator = new MMODuplicateValidator(swingSession.getTranslations(),
-                                    null, "translate group name", 35, group);
+                                    null, "translate group name", 35, mmo);
         handler.addValidateObject(groupName, mmoValidator);
         TranslateWordValidator wordValidator = new TranslateWordValidator(translateWordsTable);
         handler.addValidateObject(translateWordsTable, wordValidator);
         
 		panel = externalPB.getPanel();
+	}
+	
+	private void setupTable() {
+		translateWordsTable = new EditableJTable();
+        translateWordsTable.setName("Translate Words");
+        TranslateWordsTableModel tm = new TranslateWordsTableModel(mmo);
+        translateWordsTable.setModel (tm);
+        translateWordsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+			public void valueChanged(ListSelectionEvent e) {
+				int row = translateWordsTable.getSelectedRow();
+				if (row >= 0) {
+					MatchMakerTranslateWord translateWord = mmo.getChildren().get(row); 
+					MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+					TreePath menuPath = treeModel.getPathForNode(translateWord);
+					swingSession.getTree().setSelectionPath(menuPath);
+				}
+			}
+		});
+	}
+	
+	private void addListeners() {
+		groupName.addKeyListener(new KeyListener(){
+			public void keyPressed(KeyEvent e) {
+			}
+			public void keyReleased(KeyEvent e) {
+				mmo.setName(groupName.getText());
+			}
+			public void keyTyped(KeyEvent e) {
+			}});
 	}
 	
 	public boolean doSave() {
@@ -215,33 +211,20 @@ public class TranslateWordsEditor implements EditorPane {
                     JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        
-        if (group.getName() == null || !group.getName().equals(groupName.getText())) {
-            group.setName(groupName.getText());
-        }
-        if (newTranslateGroup) {
+
+        if (mmo.getParent() == null) {
         	// add the new node to the parent
-            swingSession.getTranslations().addChild(group);
+            swingSession.getTranslations().addChild(mmo);
         }
         
-        swingSession.getDAO(MatchMakerTranslateGroup.class).save(group);
-        tableListener.setModified(false);
-
-        return true;
-	}
-
-	public JComponent getPanel() {
-		return panel;
+        return super.doSave();
 	}
 
 	public boolean hasUnsavedChanges() {
-		if (group.getParent() == null) {
+		if (mmo.getParent() == null) {
 			return true;
-		} else if (!groupName.getText().equals(group.getName())) {
-			return true;
-		} else {
-			return tableListener.isModified();
-		}
+		} 
+		return super.hasUnsavedChanges();
 	}
 	
 	/**
@@ -263,8 +246,8 @@ public class TranslateWordsEditor implements EditorPane {
         	MatchMakerTranslateWord word = new MatchMakerTranslateWord();
             word.setFrom(from.getText());
             word.setTo(to.getText());
-            group.addChild(word);
-            translateWordsTable.scrollRectToVisible(translateWordsTable.getCellRect(group.getChildCount()-1,
+            mmo.addChild(word);
+            translateWordsTable.scrollRectToVisible(translateWordsTable.getCellRect(mmo.getChildCount()-1,
             		0, true).getBounds());
             from.setText("");
             to.setText("");
@@ -281,7 +264,7 @@ public class TranslateWordsEditor implements EditorPane {
                 selectedIndeces.add(new Integer(selectedRowIndex));
             }
             for (int i=selectedIndeces.size()-1;i >= 0; i--){
-                group.removeChild(group.getChildren().get((int)selectedIndeces.get(i)));
+                mmo.removeChild(mmo.getChildren().get((int)selectedIndeces.get(i)));
             }
         }
     };
@@ -290,12 +273,11 @@ public class TranslateWordsEditor implements EditorPane {
 
 		public void actionPerformed(ActionEvent e) {
             doSave();
-            if (newTranslateGroup) {
+            if (mmo.getParent() == null) {
             	// Selects the new node after save
     	        MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-    	        TreePath menuPath = treeModel.getPathForNode(group);
+    	        TreePath menuPath = treeModel.getPathForNode(mmo);
     	        swingSession.getTree().setSelectionPath(menuPath);
-    	        newTranslateGroup = false;
             }
 		}
 		
@@ -306,7 +288,7 @@ public class TranslateWordsEditor implements EditorPane {
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index > 0){
-					group.swapChildren(index, index-1);
+					mmo.moveChild(index, index-1);
 					translateWordsTable.setRowSelectionInterval(index-1, index-1);
 					scrollToSelected(index-1);
 				}
@@ -319,7 +301,7 @@ public class TranslateWordsEditor implements EditorPane {
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index < (translateWordsTable.getRowCount() -1) ){						
-					group.swapChildren(index+1, index);
+					mmo.moveChild(index, index+1);
 					translateWordsTable.setRowSelectionInterval(index+1, index+1);
 				 	scrollToSelected(index+1);
 				}
@@ -332,11 +314,7 @@ public class TranslateWordsEditor implements EditorPane {
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
 				if (translateWordsTable.getSelectedRowCount() == 1 && index > 0){
-
-                    MatchMakerTranslateWord selectedTranslate=group.getChildren().get(index);
-                    group.removeChild(selectedTranslate);
-                    group.addChild(0, selectedTranslate);
-
+					mmo.moveChild(index, 0);
 					translateWordsTable.setRowSelectionInterval(0,0);
 					scrollToSelected(0);
 				}
@@ -348,14 +326,10 @@ public class TranslateWordsEditor implements EditorPane {
 		public void actionPerformed(ActionEvent e) {
 			final int index = translateWordsTable.getSelectedRow();
 			if (index >=0 && index < translateWordsTable.getRowCount() ){
-				if (translateWordsTable.getSelectedRowCount() == 1 && index < (translateWordsTable.getRowCount() -1) ){						
-
-                    MatchMakerTranslateWord selectedTranslate=group.getChildren().get(index);
-                    group.removeChild(selectedTranslate);
-                    group.addChild(selectedTranslate);
-
- 					translateWordsTable.setRowSelectionInterval(group.getChildCount()-1,group.getChildCount()-1);
-					scrollToSelected(group.getChildCount()-1);
+				if (translateWordsTable.getSelectedRowCount() == 1 && index < (translateWordsTable.getRowCount() - 1) ){						
+					mmo.moveChild(index, mmo.getChildCount() - 1);
+ 					translateWordsTable.setRowSelectionInterval(mmo.getChildCount()-1,mmo.getChildCount()-1);
+					scrollToSelected(mmo.getChildCount()-1);
 				}
 			}
 		}
@@ -365,7 +339,7 @@ public class TranslateWordsEditor implements EditorPane {
 	 * @return Returns the MatchMakerTranslateGroup that this editor pane is editing
 	 */
 	public MatchMakerTranslateGroup getGroup() {
-		return group;
+		return mmo;
 	}
 	
 	/**
@@ -374,16 +348,17 @@ public class TranslateWordsEditor implements EditorPane {
 	 */
 	public void setSelectedWord(MatchMakerTranslateWord selectedWord) {
 		if (selectedWord != null) {
-			int selected = group.getChildren().indexOf(selectedWord);			
+			int selected = mmo.getChildren().indexOf(selectedWord);			
 			if (selected >= 0 && selected<translateWordsTable.getRowCount()) {
 				translateWordsTable.setRowSelectionInterval(selected, selected);
 			}
 		}
 	}
 
-	public boolean discardChanges() {
-		logger.debug("Cannot discard chagnes");
-		return false;
+	@Override
+	public void undoEventFired(
+			MatchMakerEvent<MatchMakerTranslateGroup, MatchMakerTranslateWord> evt) {
+		groupName.setText(mmo.getName());
 	}
 
 }
