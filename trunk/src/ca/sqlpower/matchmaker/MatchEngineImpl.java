@@ -164,7 +164,8 @@ public class MatchEngineImpl extends AbstractEngine {
 			logger.addAppender(fileAppender);
 			
 			if (getProject().getMungeSettings().getSendEmail()) {
-				emailAppender = new EmailAppender(email, greenUsers, yellowUsers, redUsers);
+				String emailSubject = "Project " + getProject().getName() + " Match Engine";
+				emailAppender = new EmailAppender(email, emailSubject, greenUsers, yellowUsers, redUsers);
 				logger.addAppender(emailAppender);
 			}
 			
@@ -203,15 +204,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			
 			progressMessage = "Match Engine finished successfully";
 			logger.info(progressMessage);
-			
-			if (getProject().getMungeSettings().getSendEmail()) {
-				try {
-					emailAppender.sendGreenEmail();
-				} catch (Exception e) {
-					logger.error("Sending emails failed: " + e.getMessage());
-				}
-			}
-			
+
 			return EngineInvocationResult.SUCCESS;
 		} catch (UserAbortException uce) {
 			logger.info("Match engine aborted by user");
@@ -220,22 +213,22 @@ public class MatchEngineImpl extends AbstractEngine {
 		} catch (Exception ex) {
 			progressMessage = "Match Engine failed";
 			logger.error(getMessage());
-			
-			if (getProject().getMungeSettings().getSendEmail()) {
-				try {
-					emailAppender.sendRedEmail();
-				} catch (Exception e) {
-					logger.error("Sending emails failed: " + e.getMessage());
-				}
-			}
-			
 			throw new RuntimeException(ex);
 		} finally {
 			logger.setLevel(oldLoggerLevel);
+			setFinished(true);
+			
+			if (emailAppender != null) {
+				try {
+					emailAppender.close();
+				} catch (RuntimeException e) {
+					logger.info("Error while sending emails! " + e.getStackTrace());
+				}
+				logger.removeAppender(emailAppender);
+			}
 			if (fileAppender != null) {
 				logger.removeAppender(fileAppender);
 			}
-			setFinished(true);
 		}
 	
 	}
