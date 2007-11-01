@@ -190,8 +190,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	public static final int DROP_AMOUNT = 5;
 	
-	private boolean expanded;
-	
 	private MatchMakerSwingSession session;
 	
 	private MungeComponentKeyListener mungeComKeyListener;
@@ -406,7 +404,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		root.setOpaque(false);
 		tmp.setOpaque(false);
-		expanded = false;
 		
 		buildInputNamesPanel();
 		buildOutputNamesPanel();
@@ -428,7 +425,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	private void buildInputNamesPanel() {
-		if (expanded && showInputNames) {
+		if (isExpanded() && showInputNames) {
 			root.remove(inputNames);
 		}
 		inputNames = new JPanel();
@@ -444,7 +441,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 			inputLables[x].setOpaque(false);
 		}
 		
-		if (expanded && showInputNames) {
+		if (isExpanded() && showInputNames) {
 			root.add(inputNames, BorderLayout.NORTH);
 			revalidate();
 		}	
@@ -532,14 +529,20 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * Resets the location and expandedness to the values in the step.
 	 */
-	public void configureFromStepProperties() {
-		int x = getStepParameter(MUNGECOMPONENT_X, 0);
-		int y = getStepParameter(MUNGECOMPONENT_Y, 0);
-		boolean exp = getStepParameter(MUNGECOMPONENT_EXPANDED, false);
-		setLocation(new Point(x,y));
-		setExpand(exp);
+	public void configureFromMMO() {
+		hideShow(isExpanded());
+		configureXFromMMO();
+		configureYFromMMO();
 	}
 	
+	public void configureXFromMMO() {
+		setLocation(getXFromMMO(), getY());
+	}
+	
+	public void configureYFromMMO() {
+		setLocation(getX(), getYFromMMO());
+	}
+
 	protected int getStepParameter(String key, int defaultValue) {
 		String val = step.getParameter(key);
 		if (val == null) {
@@ -570,21 +573,26 @@ public abstract class AbstractMungeComponent extends JPanel {
 			return val;
 		}
 	}
-
+	
 	/**
-	 * Tells the steps properties so that it can reload the GUI bits if needed.
+	 * Set the x y parameter to the current value if needed.
 	 */
-	public void updateStepProperties() {
+	public void updateStepPositionToMMO() {
 		MungeStep step = getStep();
+		if (!hasMoved()) return;
 		if (step instanceof AbstractMatchMakerObject) {
 			((AbstractMatchMakerObject) step).startCompoundEdit();
 		}
-		step.setParameter(MUNGECOMPONENT_EXPANDED, expanded);
 		step.setParameter(MUNGECOMPONENT_X, getX());
 		step.setParameter(MUNGECOMPONENT_Y, getY());
 		if (step instanceof AbstractMatchMakerObject) {
 			((AbstractMatchMakerObject) step).endCompoundEdit();
 		}
+	}
+	
+	public boolean hasMoved() {
+		MungeStep step = getStep();
+		return getXFromMMO() != getX() || getYFromMMO() != getY();
 	}
 
 	/**
@@ -664,7 +672,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public Point getInputPosition(int inputNum) {
 		int inputs = step.getInputs().size();
 		
-		if (!expanded || !showInputNames) {
+		if (!isExpanded() || !showInputNames) {
 			int xPos = (int) (((double)(inputNum+1)/((double)inputs+1))*getWidth());
 			return new Point(xPos,0);
 		}
@@ -686,7 +694,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		int xPos = (int) (((double)(outputNum+1)/((double)outputs+1))*getWidth());
 		Point orig =  new Point(xPos,getHeight() - getBorder().getBorderInsets(this).bottom);
 		
-		if (expanded && showOutputNames) {
+		if (isExpanded() && showOutputNames) {
 			orig.x = outputLables[outputNum].getX() + outputLables[outputNum].getWidth()/2;
 		}
 		return orig;
@@ -710,7 +718,19 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	public boolean isExpanded() {
-		return expanded;
+		return getStepParameter(MUNGECOMPONENT_EXPANDED, false);
+	}
+	
+	/**
+	 * note that this is not the true position value, it is the
+	 * positions stored in the MMO, which is not synchronized 
+	 * until a mouse release event is fired.
+	 */
+	public int getXFromMMO() {
+		return getStepParameter(MUNGECOMPONENT_X, 0);
+	}
+	public int getYFromMMO() {
+		return getStepParameter(MUNGECOMPONENT_Y, 0);
 	}
 	
 	@Override
@@ -918,8 +938,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * Hides or expands the component.
 	 */
-	public void hideShow(boolean fireEvent) {
-		expanded = !expanded;
+	public void hideShow(boolean expanded) {
 		if (expanded) {
 			if (showInputNames) {
 				root.add(inputNames, BorderLayout.NORTH);
@@ -930,26 +949,28 @@ public abstract class AbstractMungeComponent extends JPanel {
 				root.add(content,BorderLayout.SOUTH);
 			}
 		} else {
-			root.remove(content);
-			root.remove(inputNames);
-			root.remove(contentPlusNames);
+			if (content != null) {
+				root.remove(content);
+				root.remove(inputNames);
+				root.remove(contentPlusNames);
+			}
 		}
-		getPen().normalize();
+		if (getPen() != null) {
+			getPen().normalize();
+		}
 		validate();
 		root.updateUI();
-		if (fireEvent) {
-			updateStepProperties();
+	}
+	
+	public void setExpanded(boolean exp) {
+		if (isExpanded() != exp) {
+			step.setParameter(MUNGECOMPONENT_EXPANDED, exp);
 		}
 	}
 	
-	public void hideShow() {
-		hideShow(true);
-	}
-	
-	public void setExpand(boolean exp) {
-		if (expanded != exp) {
-			hideShow();
-		}
+	public void setExpandedToOpposite() {
+		boolean exp = !isExpanded();
+		step.setParameter(MUNGECOMPONENT_EXPANDED, exp);
 	}
 	
 	/**
@@ -957,7 +978,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	private class HideShowAction extends AbstractAction {
 		public void actionPerformed(ActionEvent e) {
-			hideShow();
+			setExpandedToOpposite();
 		}	
 	}
 	
@@ -1183,23 +1204,23 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 		public void mouseReleased(MouseEvent e) {
 			//resets the auto scroll bounds for the munge pen
-			getPen().lockAutoScroll(false);
+			MungePen mp = getPen();
+			mp.lockAutoScroll(false);
 			autoScrollTimer.stop();
-			if (startPoint != null && !startPoint.equals(getLocation())) {
-				updateStepProperties();
-			}
-			if (!maybeShowPopup(e) && getPen().isConnecting()) {
+			if (!maybeShowPopup(e) && mp.isConnecting()) {
 				Point abs = new Point(e.getX() + getX(),e.getY()+getY());
-				AbstractMungeComponent amc = getPen().getMungeComponentAt(abs);
+				AbstractMungeComponent amc = mp.getMungeComponentAt(abs);
 				if (amc == null || !amc.checkForIOConnectors(abs)) {
-					getPen().requestFocusInWindow();
+					mp.requestFocusInWindow();
 				}
-				getPen().repaint();
-				
+				mp.repaint();
+			} else {
+				mp.updatePositionsToMMO();
+				System.out.println(getStep());
 			}
-			getPen().normalize();
-			getPen().stopConnection();
-			getPen().revalidate();
+			mp.normalize();
+			mp.stopConnection();
+			mp.revalidate();
 		}
 		
 	}
@@ -1479,16 +1500,14 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * reloads the content pane from the matchmaker object
 	 */
 	public void reload() {
-		boolean old = expanded;
-		if (old) {
+		if (isExpanded()) {
 			hideShow(false);
 		}
-		
 		content = buildUI();
 		content.setOpaque(false);
 		deOpaquify(content);
-		if (old) {
-			hideShow(false);
+		if (isExpanded()) {
+			hideShow(true);
 		}
 		requestFocus();
 	}

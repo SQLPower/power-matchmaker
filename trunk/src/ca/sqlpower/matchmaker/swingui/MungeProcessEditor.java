@@ -60,7 +60,6 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.matchmaker.swingui.munge.MungeStepLibrary;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
@@ -288,14 +287,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			if (responds != JOptionPane.YES_OPTION) {
 				return false;
 	        }
-        }
-    	
-        //save all the positions of the components
-        for (Component com : mungePen.getComponents()) {
-        	if (com instanceof AbstractMungeComponent) {
-        		AbstractMungeComponent mcom = (AbstractMungeComponent) com;
-        		mcom.updateStepProperties();
-        	}
         }
 
         if (mmo.getParentProject() == null) {
