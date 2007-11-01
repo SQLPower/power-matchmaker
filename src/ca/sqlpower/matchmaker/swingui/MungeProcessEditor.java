@@ -49,6 +49,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.tree.TreePath;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.Project;
@@ -75,7 +77,9 @@ import com.jgoodies.forms.layout.FormLayout;
  * Implements the EditorPane functionality for editing a munge process (MatchRuleSet).
  */
 public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess, MungeStep> {
-    
+    private static final Logger logger = Logger.getLogger(MungeProcessEditor.class);
+
+	
     /**
      * The project that is or will be the parent of the process we're editing.
      * If this editor was created for a new process, it will not belong to this
@@ -211,7 +215,10 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		name.setText(mmo.getName());
 		if (mmo.getMatchPercent() != null) {
         	priority.setValue(mmo.getMatchPercent());
+        }else {
+        	mmo.setMatchPercent(new Short((short)0));
         }
+		
 		desc.setText(mmo.getDesc());
 		boolean hasColour = false;
        	for (int i = 0; i < color.getItemCount(); i++) {
@@ -227,6 +234,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
        		color.setSelectedItem(mmo.getColour());
        	} else {
        		color.setSelectedIndex(0);
+       		mmo.setColour((Color)color.getSelectedItem());
        	}
 	}
 	
@@ -379,10 +387,10 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         		return ValidateResult.createValidateResult(Status.WARN, "No priority set, assuming 0");
         	}
         	
-			int value = Integer.parseInt((String)contents);
+			short value = Short.parseShort((String)contents);
 		
 			for (MungeProcess mp : parentProject.getMungeProcessesFolder().getChildren()) {
-				if (mp.getMatchPercent() == value && mp != mmo) {
+				if (mp.getMatchPercent().shortValue() == value && mp != mmo) {
 					return ValidateResult.createValidateResult(Status.WARN, "Duplicate Priority. " + 
 							"If both the cleansing process are run at the same time there is no way to know there relitive order.");
 				}
