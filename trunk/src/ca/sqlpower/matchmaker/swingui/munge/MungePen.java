@@ -299,8 +299,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			SwingSessionContext ssc = ((SwingSessionContext) process.getSession().getContext());
 			AbstractMungeComponent mcom = ssc.getMungeComponent(ms, handler, process.getSession());
 			mcom.configureFromMMO();
-			System.out.println(mcom.getStep());
-			System.out.println(mcom.getX() + ", " + mcom.getY());
 			modelMap.put(ms, mcom);
 			add(mcom,DEFAULT_LAYER);
 		}

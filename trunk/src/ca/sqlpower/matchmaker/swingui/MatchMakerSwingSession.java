@@ -485,10 +485,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
 		fileMenu.add(exitAction);
-		JMenuItem undoItem = new JMenuItem(undoAction);
-		undoItem.setAccelerator( KeyStroke.getKeyStroke("ctrl Z") );
-		fileMenu.add(undoItem);
-		
+		fileMenu.add(undoAction);
 		fileMenu.add(redoAction);
 		
 		menuBar.add(fileMenu);
@@ -1264,7 +1261,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             super("Undo");
             setEnabled(false);
             putValue(MNEMONIC_KEY, KeyEvent.VK_U);
-			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
 
         }
 
@@ -1272,7 +1269,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             try {
                 undo.undo();
             } catch (CannotUndoException ex) {
-                System.out.println("Unable to undo: " + ex);
+                SPSUtils.showExceptionDialogNoReport(getFrame(),"Unable to undo: ", ex);
                 ex.printStackTrace();
             }
             updateUndoState();
@@ -1282,10 +1279,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         protected void updateUndoState() {
             if (undo.canUndo()) {
                 setEnabled(true);
-                //putValue(Action.NAME, undo.getUndoPresentationName());
             } else {
                 setEnabled(false);
-                //putValue(Action.NAME, "Undo");
             }
         }
     }
@@ -1305,7 +1300,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             try {
                 undo.redo();
             } catch (CannotRedoException ex) {
-                System.out.println("Unable to redo: " + ex);
+            	SPSUtils.showExceptionDialogNoReport(getFrame(),"Unable to undo: ", ex);
                 ex.printStackTrace();
             }
             updateRedoState();
