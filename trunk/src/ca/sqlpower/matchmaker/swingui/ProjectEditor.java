@@ -522,13 +522,22 @@ public class ProjectEditor implements EditorPane {
     	SQLTable resultTable = project.getResultTable();
     	if ( resultTable != null ) {
     		SQLCatalog cat = resultTable.getCatalog();
-    		SQLSchema sch = resultTable.getSchema();
+    		
     		if ( cat != null ) {
-    			resultChooser.getCatalogComboBox().setSelectedItem(cat);
+    			//this sets the selected item in the model because it refused to work 
+    			//when just the combobox set told to with new tables with the schema and it may cause 
+    			// problems when on platforms with catalogs.
+    			resultChooser.getCatalogComboBox().getModel().setSelectedItem(cat);
     		}
+    		
+    		SQLSchema sch = resultTable.getSchema();
+    		
     		if ( sch != null ) {
-    			resultChooser.getSchemaComboBox().setSelectedItem(sch);
-    		}
+    			//this sets the selected item in the model because it refused to work 
+    			//when just the combobox set told to with new tables. I have no idea why.
+				resultChooser.getSchemaComboBox().getModel().setSelectedItem(sch);
+    		} 
+    		
     		resultTableName.setText(project.getResultTable().getName());
     	}
 
