@@ -153,6 +153,29 @@ public class MergeEnginePanel implements EditorPane {
 	 * Keeps track of which level to show the logger info to the panel
 	 */
 	private JComboBox messageLevel;
+
+	/**
+	 * The abort button
+	 */
+	private JButton abortB;
+	
+	/**
+	 * The action that is called when the engine is finished
+	 */
+	private Runnable engineFinish = new Runnable(){
+		public void run() {
+			abortB.setEnabled(false);
+		}
+	};
+	
+	/**
+	 * The action that is called when the engine is started
+	 */
+	private Runnable engineStart = new Runnable(){
+		public void run() {
+			abortB.setEnabled(true);
+		}
+	};
 	
 	public MergeEnginePanel(MatchMakerSwingSession swingSession, Project project, JFrame parentFrame) {
 		this.swingSession = swingSession;
@@ -166,7 +189,7 @@ public class MergeEnginePanel implements EditorPane {
 		});
 		this.engineOutputPanel = new EngineOutputPanel(parentFrame);
 		this.engine = new MergeEngineImpl(swingSession, project);
-		this.runEngineAction = new RunEngineAction(swingSession, engine, "Run Merge Engine", engineOutputPanel, this);
+		this.runEngineAction = new RunEngineAction(swingSession, engine, "Run Merge Engine", engineOutputPanel, this, engineStart, engineFinish);
 		this.panel = buildUI();
 	}
 	
@@ -315,8 +338,18 @@ public class MergeEnginePanel implements EditorPane {
 		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
 				project, parentFrame)), cc.xy(2, 4, "f,f"));
 		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
+		
+		abortB = new JButton(new AbstractAction("Abort!"){
+			public void actionPerformed(ActionEvent e) {
+				engine.setCancelled(true);
+			}
+		});
+		
+		bbpb.add(abortB,cc.xy(6,4));
 
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
+		
+
 
 		JPanel engineAccessoryPanel = new JPanel(new BorderLayout());
 		engineAccessoryPanel.add(engineOutputPanel.getProgressBar(), BorderLayout.NORTH);

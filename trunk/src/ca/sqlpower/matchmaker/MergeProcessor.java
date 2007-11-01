@@ -155,6 +155,7 @@ public class MergeProcessor extends AbstractProcessor {
 		engineLogger.info("Merging records.");
 		for (PotentialMatchRecord pm : pmProcessOrder) {
 			if (recordsToProcess != 0 && processCount > recordsToProcess) break;
+			if (monitorableHelper.isCancelled()) return Boolean.TRUE;
 			processCount++;
 			monitorableHelper.incrementProgress();
 			
@@ -186,6 +187,7 @@ public class MergeProcessor extends AbstractProcessor {
 			engineLogger.info("Deleting duplicate records.");
 			for (PotentialMatchRecord pm : pmProcessOrder) {
 				if (recordsToProcess != 0 && processCount > recordsToProcess) break;
+				if (monitorableHelper.isCancelled()) return Boolean.TRUE;
 				processCount++;
 				ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
 				
@@ -208,6 +210,7 @@ public class MergeProcessor extends AbstractProcessor {
 			pm.setMatchStatus(MatchType.MERGED);
 			SourceTableRecord str = pm.getDuplicate();
 			for (PotentialMatchRecord pmr : pool.getPotentialMatches()) {
+				if (monitorableHelper.isCancelled()) return Boolean.TRUE;
 				//checks if the potential match record contains the duplicate record
 				if (pmr.getOriginalLhs().equals(str) || pmr.getOriginalRhs().equals(str)) {
 					if (pmr.getMatchStatus() != MatchType.MERGED) {
@@ -219,6 +222,7 @@ public class MergeProcessor extends AbstractProcessor {
 		}
 		
 		for (PotentialMatchRecord pm : toBeDeleted) {
+			if (monitorableHelper.isCancelled()) return Boolean.TRUE;
 			engineLogger.debug("Removing match pool record: " + pm);
 			pool.removePotentialMatch(pm);
 		}

@@ -85,9 +85,9 @@ public class MungeProcessor extends AbstractProcessor {
 			
 			// call until one step gives up
 			boolean finished = false;
-			while(!finished && (rowCount == -1 || monitorableHelper.getProgress() < rowCount)) {
+			while(!finished && !monitorableHelper.isCancelled() && (rowCount == -1 || monitorableHelper.getProgress() < rowCount)) {
 				for (MungeStep step: processOrder) {
-					boolean continuing = step.call();
+					boolean continuing = step.call() && !monitorableHelper.isCancelled();
 					if (!continuing) {
 						finished = true;
 						break;

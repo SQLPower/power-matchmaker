@@ -68,7 +68,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	/**
 	 * Gets set to true when the user attempts to cancel the engine run.
 	 */
-	private boolean cancelled;
+	protected boolean cancelled;
 	
 	/**
 	 * The users who should be emailed for a green status
@@ -258,6 +258,13 @@ public abstract class AbstractEngine implements MatchMakerEngine {
     	return messageLevel;
     }
     
+    protected class UserAbortException extends Exception {
+    	@Override
+    	public String getMessage() {
+    		return "Engine aborted by user";
+    	}    	
+    }
+    
 	/**
 	 * Returns true if the smtp host and localhost addresses 
 	 * are not null or empty, they are require to send the emails.
@@ -315,5 +322,4 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 		setupAddresses(yellowEmail, yellowUsers);
 		setupAddresses(redEmail, redUsers);
 	}
-	
 }

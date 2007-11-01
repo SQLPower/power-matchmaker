@@ -136,6 +136,7 @@ public class MergeEngineImpl extends AbstractEngine {
 	public EngineInvocationResult call() throws EngineSettingException {
 		Level oldLevel = logger.getLevel();
 		FileAppender fileAppender = null;
+		cancelled = false;
 		
 		try {
 			logger.setLevel(getMessageLevel());
@@ -162,6 +163,9 @@ public class MergeEngineImpl extends AbstractEngine {
 			logger.info(progressMessage);
 			merger = new MergeProcessor(getProject(), getSession(), getLogger());
 			merger.call();
+			if (cancelled) {
+				throw new UserAbortException();
+			}
 			progress += merger.getProgress();
 			
 			progressMessage = "Merge Engine finished successfully";
@@ -178,6 +182,9 @@ public class MergeEngineImpl extends AbstractEngine {
 			}
 			
 			return EngineInvocationResult.SUCCESS;
+		} catch (UserAbortException uce) {
+			logger.info("Merge aborted by user");
+			return EngineInvocationResult.ABORTED;
 		} catch (Exception ex) {
 			progressMessage = "Cleanse Engine failed";
 			logger.error(getMessage());
@@ -246,6 +253,14 @@ public class MergeEngineImpl extends AbstractEngine {
 			return progress + merger.getProgress();
 		} else {
 			return progress;
+		}
+	}
+	
+	@Override
+	public synchronized void setCancelled(boolean cancelled) {
+		super.setCancelled(cancelled);
+		if (cancelled) {
+			merger.setCancelled(true);
 		}
 	}
 }

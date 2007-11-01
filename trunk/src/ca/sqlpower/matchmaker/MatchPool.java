@@ -46,6 +46,7 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.DijkstrasAlgorithm;
 import ca.sqlpower.graph.GraphModel;
+import ca.sqlpower.matchmaker.MatchEngineImpl.Aborter;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.StoreState;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -315,13 +316,23 @@ public class MatchPool {
     }
     
     /**
+	 * This calls the regular store with a null aborter
+	 */
+    public void store() throws SQLException {
+    	store(null);
+    }
+    
+    /**
 	 * This algorithm stores and updates all of the potential match records
 	 * in the database. If the potential match record is dirty it will be updated.
 	 * If the potential match record is new it will be added to the database.
 	 * If a potential match record is in the deletedMatches set it will be deleted
 	 * from the database. If the record is clean it will not be modified in any way.
+	 * 
+	 * It periodicly checks the aborter to see if the process has be canceled
+	 * and if it has it returns.
 	 */
-    public void store() throws SQLException {
+    public void store(Aborter aborter) throws SQLException {
         logger.debug("Starting to store");
         SQLTable resultTable = project.getResultTable();
         Connection con = null;
@@ -346,6 +357,7 @@ public class MatchPool {
             ps = con.prepareStatement(lastSQL);
             
             for (Iterator<PotentialMatchRecord> it = deletedMatches.iterator(); it.hasNext(); ) {
+            	if (aborter != null && aborter.abort()) return;
             	PotentialMatchRecord pmr = it.next();
             	logger.debug("Dropping " + pmr + " from the database.");
             	for (int i = 0; i < numKeyValues; i++) {
@@ -377,6 +389,7 @@ public class MatchPool {
             ps = con.prepareStatement(lastSQL);
             
             for (PotentialMatchRecord pmr : potentialMatches) {
+            	if (aborter != null && aborter.abort()) return;
             	if (pmr.getStoreState() == StoreState.DIRTY) {
             		logger.debug("The potential match " + pmr + " was dirty, storing");
             		ps.setObject(1, pmr.getMatchStatus().getCode());
@@ -441,6 +454,7 @@ public class MatchPool {
             ps = con.prepareStatement(lastSQL);
             
             for (PotentialMatchRecord pmr : potentialMatches) {
+            	if (aborter != null && aborter.abort()) return;
             	if (pmr.getStoreState() == StoreState.NEW) {
             		logger.debug("The potential match " + pmr + " was new, storing");
             		for (int i = 0; i < numKeyValues; i++) {
@@ -1303,12 +1317,19 @@ public class MatchPool {
 	 * Completely removes all SourceTableRecords and PotentialMatchRecords, and also
 	 * removes all PotentialMatchRecords in the database repository for this MatchPool
 	 */
-	public void clear() throws SQLException {
+	public void clear(Aborter aborter) throws SQLException {
 		deletedMatches.addAll(potentialMatches);
 		deletedMatches.addAll(orphanedMatches);
-		store();
+		store(aborter);
 		sourceTableRecords.clear();
 		potentialMatches.clear();
 		orphanedMatches.clear();
+	}
+	
+	/**
+	 * Calls the regular clear with a null Aborter
+	 */
+	public void clear() throws SQLException {
+		clear(null);
 	}
 }

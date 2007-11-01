@@ -141,6 +141,7 @@ public class MatchEngineImpl extends AbstractEngine {
 		Level oldLoggerLevel = logger.getLevel();
 		logger.setLevel(getMessageLevel());
 		FileAppender fileAppender = null;
+		cancelled = false;
 		
 		try {
 			setFinished(false);
@@ -175,7 +176,11 @@ public class MatchEngineImpl extends AbstractEngine {
 			if (getProject().getMungeSettings().isClearMatchPool()) {
 				progressMessage = "Clearing Match Pool";
 				logger.info(progressMessage);
-				pool.clear();
+				pool.clear(new Aborter());
+			}
+			
+			if (cancelled) {
+				throw new UserAbortException();
 			}
 			
 			progressMessage = "Searching for matches";
@@ -184,7 +189,10 @@ public class MatchEngineImpl extends AbstractEngine {
 			
 			progressMessage = "Storing matches";
 			logger.info(progressMessage);
-			pool.store();
+			pool.store(new Aborter());
+			if (cancelled) {
+				throw new UserAbortException();
+			}
 			
 			progressMessage = "Match Engine finished successfully";
 			logger.info(progressMessage);
@@ -200,6 +208,10 @@ public class MatchEngineImpl extends AbstractEngine {
 			}
 			
 			return EngineInvocationResult.SUCCESS;
+		} catch (UserAbortException uce) {
+			logger.info("Match engine aborted by user");
+			setFinished(true);
+			return EngineInvocationResult.ABORTED;
 		} catch (Exception ex) {
 			progressMessage = "Match Engine failed";
 			logger.error(getMessage());
@@ -244,6 +256,9 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Matching munge process " + currentProcess.getName();
 			logger.debug(getMessage());
 			matcher.call();
+			if (cancelled) {
+				throw new UserAbortException();
+			}
 			progress += matcher.getProgress();
 			currentProcessor = null;
 		}
@@ -293,6 +308,26 @@ public class MatchEngineImpl extends AbstractEngine {
 			return progress + currentProcessor.getProgress();
 		} else {
 			return progress;
+		}
+	}
+	
+	@Override
+	public synchronized void setCancelled(boolean cancelled) {
+		super.setCancelled(cancelled);
+		if (cancelled) {
+			if (currentProcessor != null) {
+				currentProcessor.setCancelled(true);
+			}
+		}
+	}
+	
+	/**
+	 * A small class that can be passed to the merge pool that tells it to stop 
+	 * what its doing if the user presses cancel.
+	 */
+	public class Aborter {
+		public boolean abort() {
+			return cancelled;
 		}
 	}
 }

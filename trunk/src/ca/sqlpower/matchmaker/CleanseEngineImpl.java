@@ -125,8 +125,8 @@ public class CleanseEngineImpl extends AbstractEngine {
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException {
 		Level oldLevel = logger.getLevel();
+		cancelled = false;
 		FileAppender fileAppender = null;
-		
 		try {
 			logger.setLevel(getMessageLevel());
 			setFinished(false);
@@ -186,6 +186,9 @@ public class CleanseEngineImpl extends AbstractEngine {
 				progressMessage = "Running cleanse process " + currentProcess.getName();
 				logger.debug(getMessage());
 				munger.call();
+				if (cancelled) {
+					throw new UserAbortException();
+				}
 				progress += munger.getProgress();
 
 			}
@@ -206,6 +209,10 @@ public class CleanseEngineImpl extends AbstractEngine {
 			}
 			
 			return EngineInvocationResult.SUCCESS;
+		} catch (UserAbortException uce) {
+			//TODO: I don't know, clean up something?
+			logger.info("Cleanse engine terminated by user");
+			return EngineInvocationResult.ABORTED;
 		} catch (Exception ex) {
 			progressMessage = "Cleanse Engine failed";
 			logger.error(getMessage());
@@ -254,5 +261,14 @@ public class CleanseEngineImpl extends AbstractEngine {
 		} else {
 			return progress;
 		}
+	}
+	
+	public synchronized void setCancelled(boolean cancelled) {
+		super.setCancelled(cancelled);
+		this.cancelled = cancelled;
+		if (cancelled && currentProcessor != null) {
+			currentProcessor.setCancelled(true);
+		}
+		
 	}
 }

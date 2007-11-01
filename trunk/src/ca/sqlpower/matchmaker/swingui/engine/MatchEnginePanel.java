@@ -161,6 +161,30 @@ public class MatchEnginePanel implements EditorPane {
 	 * The combobox for choosing the messageLevel 
 	 */
 	private JComboBox messageLevel;
+
+	/**
+	 * The abort button
+	 */
+	private JButton abortB;
+	
+	
+	/**
+	 * The action that is called when the engine is finished
+	 */
+	private Runnable engineFinish = new Runnable(){
+		public void run() {
+			abortB.setEnabled(false);
+		}
+	};
+	
+	/**
+	 * The action that is called when the engine is started
+	 */
+	private Runnable engineStart = new Runnable(){
+		public void run() {
+			abortB.setEnabled(true);
+		}
+	};
 	
 	/**
 	 * @param swingSession The application Swing session
@@ -180,7 +204,7 @@ public class MatchEnginePanel implements EditorPane {
 		});
 		engineOutputPanel = new EngineOutputPanel(parentFrame);
 		engine = new MatchEngineImpl(swingSession, project);
-		runEngineAction = new RunEngineAction(swingSession, engine, "Run Match Engine", engineOutputPanel, this);
+		runEngineAction = new RunEngineAction(swingSession, engine, "Run Match Engine", engineOutputPanel, this, engineStart, engineFinish);
 		panel = buildUI();
 	}
 	
@@ -325,7 +349,7 @@ public class MatchEnginePanel implements EditorPane {
 		pb.add(messageLevel, cc.xy(4,y,"l,c"));
 		
 		FormLayout bbLayout = new FormLayout(
-				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu",
+				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu",
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		PanelBuilder bbpb;
 		JPanel bbp = logger.isDebugEnabled() ? new FormDebugPanel(bbLayout)
@@ -337,8 +361,20 @@ public class MatchEnginePanel implements EditorPane {
 		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
 				project, parentFrame)), cc.xy(2, 4, "f,f"));
 		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
-
+		
+		abortB = new JButton(new AbstractAction("Abort!"){
+			public void actionPerformed(ActionEvent e) {
+				engine.setCancelled(true);
+			}
+		});
+		abortB.setEnabled(false);
+		
+		bbpb.add(abortB,cc.xy(6, 4, "f,f"));
+		
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
+		
+	
+
 
 		JPanel engineAccessoryPanel = new JPanel(new BorderLayout());
 		engineAccessoryPanel.add(engineOutputPanel.getProgressBar(), BorderLayout.NORTH);

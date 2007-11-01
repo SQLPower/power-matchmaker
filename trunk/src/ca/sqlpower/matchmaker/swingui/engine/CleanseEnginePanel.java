@@ -174,6 +174,29 @@ public class CleanseEnginePanel implements EditorPane {
 	 * The combobox to select the message level for the logger to show
 	 */
 	private JComboBox messageLevel;
+
+	/**
+	 * The abort button
+	 */
+	private JButton abortB;
+	
+	/**
+	 * The action that is called when the engine is finished
+	 */
+	private Runnable engineFinish = new Runnable(){
+		public void run() {
+			abortB.setEnabled(false);
+		}
+	};
+	
+	/**
+	 * The action that is called when the engine is started
+	 */
+	private Runnable engineStart = new Runnable(){
+		public void run() {
+			abortB.setEnabled(true);
+		}
+	};
 	
 	/**
 	 * @param swingSession The application Swing session
@@ -194,7 +217,7 @@ public class CleanseEnginePanel implements EditorPane {
 		engineOutputPanel = new EngineOutputPanel(parentFrame);
 		engine = new CleanseEngineImpl(swingSession, project);
 		runEngineAction = new RunEngineAction(swingSession, engine,
-				"Run Cleanse Engine", engineOutputPanel, this);
+				"Run Cleanse Engine", engineOutputPanel, this, engineStart, engineFinish);
 		panel = buildUI();
 	}
 	
@@ -248,7 +271,7 @@ public class CleanseEnginePanel implements EditorPane {
 	 */
 	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
-				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,4dlu,pref,4dlu",
+				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,4dlu,pref,4dlu,pref,4dlu",
 				//  1         2    3         4     5     6    7     8
 				"10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		        //   1    2     3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21
@@ -338,9 +361,19 @@ public class CleanseEnginePanel implements EditorPane {
 		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, engine)), cc.xy(6, 2, "f,f"));
 		bbpb.add(new JButton(runEngineAction), cc.xy(4, 4, "f,f"));
 		bbpb.add(new JButton(new SaveAction()), cc.xy(6, 4, "f,f"));
-
+		
+		abortB = new JButton(new AbstractAction("Abort!"){
+			public void actionPerformed(ActionEvent e) {
+				engine.setCancelled(true);
+			}
+		});
+		
+		abortB.setEnabled(false);
+		
+		bbpb.add(abortB,cc.xy(4,6));
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
-
+		
+		
 		JPanel engineAccessoryPanel = new JPanel(new BorderLayout());
 		engineAccessoryPanel.add(engineOutputPanel.getProgressBar(), BorderLayout.NORTH);
 		engineAccessoryPanel.add(engineOutputPanel.getButtonBar(), BorderLayout.SOUTH);
