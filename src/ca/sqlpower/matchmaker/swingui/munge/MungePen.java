@@ -170,9 +170,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 */
 	private boolean normalizing;
 	
-	private final MungePenMungeStepListener mungeStepListener;
+	private final MungePenMungeStepListener mungeStepListener = new MungePenMungeStepListener();
 	
-	private FormValidationHandler handler;
+	private final FormValidationHandler handler;
 	
 	private Map<MungeStep,AbstractMungeComponent> modelMap = new HashMap<MungeStep, AbstractMungeComponent>();
 
@@ -198,23 +198,42 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 * 
 	 */
 	public MungePen(MungeProcess process, FormValidationHandler handler, Project project) throws ArchitectException {
-		
-		process.addMatchMakerListener(new MungePenMungeProcessListener());
-		mungeStepListener = new MungePenMungeStepListener();
+		this.handler = handler;
+		this.process = process;
 		
 		setFocusable(true);
-		addMouseListener(new MungePenMouseListener());
-		
 		setBackground(Color.WHITE);
 		setOpaque(true);
-		this.process = process;
-		this.handler = handler;
 		
+		if (process.getChildCount() == 0) {
+			SQLInputStep inputStep = new SQLInputStep(project, process.getSession());
+			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, true);
+			process.addChild(inputStep);
+			
+			MungeStep mungeResultStep = inputStep.getOuputStep();
+			
+			String x = new Integer(AUTO_SCROLL_INSET + 5).toString();
+			String y = new Integer(300).toString();
+			
+			//sets the input one just outside of the autoscroll bounds
+			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
+			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, x);
+			
+			//sets the location of the result step (resonalibly arbatrary location)
+			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
+			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
+			
+			process.addChild(mungeResultStep);
+			if (project.getType() == ProjectMode.FIND_DUPES) {
+				process.setOutputStep((MungeResultStep)mungeResultStep);
+			}
+		}
 		buildComponents(process);
 		buildPopup(((SwingSessionContext)process.getSession().getContext()).getStepMap());
 	
 		normalizing = false;
 		
+		addMouseListener(new MungePenMouseListener());
 		addMouseMotionListener(new MouseMotionAdapter(){
 			@Override
 			public void mouseMoved(MouseEvent e) {
@@ -228,34 +247,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				}
 			}
 		});
+		process.addMatchMakerListener(new MungePenMungeProcessListener());
 		
 		setDropTarget(new DropTarget(this,this));
-		
-		
-		if (process.getChildCount() == 0) {
-			SQLInputStep inputStep = new SQLInputStep(project, process.getSession());
-			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, true);
-			process.addChild(inputStep);
-			
-			MungeStep mungeResultStep = inputStep.getOuputStep();
-
-			String x = new Integer(AUTO_SCROLL_INSET + 5).toString();
-			String y = new Integer(300).toString();
-			
-			//sets the input one just outside of the autoscroll bounds
-			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
-			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, x);
-			
-			//sets the location of the result step (resonalibly arbatrary location)
-			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
-			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
-
-			process.addChild(mungeResultStep);
-			if (project.getType() == ProjectMode.FIND_DUPES) {
-				process.setOutputStep((MungeResultStep)mungeResultStep);
-			}
-		}
-		
 	}
 	
 	private JPopupMenu buildPopup(Map<Class, StepDescription> stepMap) {
@@ -304,9 +298,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			
 			SwingSessionContext ssc = ((SwingSessionContext) process.getSession().getContext());
 			AbstractMungeComponent mcom = ssc.getMungeComponent(ms, handler, process.getSession());
+			mcom.configureFromMMO();
+			System.out.println(mcom.getStep());
+			System.out.println(mcom.getX() + ", " + mcom.getY());
 			modelMap.put(ms, mcom);
 			add(mcom,DEFAULT_LAYER);
-			mcom.configureFromStepProperties();
 		}
 		
 		//This is done in an other loop to ensure that all the MungeComponets have been mapped
@@ -779,7 +775,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
 				add(mcom);
 				logger.debug("Generating positions from properites");
-				mcom.configureFromStepProperties();
+				mcom.configureFromMMO();
 			}
 			
 			//This is done in an other loop to ensure that all the MungeComponets have been mapped
@@ -812,11 +808,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		}
 	
 		public void mmPropertyChanged(MatchMakerEvent<MungeProcess, MungeStep> evt) {
-			repaint();
 		}
 	
 		public void mmStructureChanged(MatchMakerEvent<MungeProcess, MungeStep> evt) {
-			repaint();
 		}
     }
 	///////////////////////////////////// Listener for the MungeStep /////////////////////////
@@ -829,11 +823,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
     private class MungePenMungeStepListener implements MatchMakerListener<MungeStep, MungeStepOutput> {
 
 		public void mmChildrenInserted(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
-
 		}
 
 		public void mmChildrenRemoved(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
-			
 		}
 
 		public void mmPropertyChanged(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
@@ -876,12 +868,12 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 						}
 					} 
 				} 
-			} else if (evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED) ||
-					evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_X) ||
-					evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_Y)) {
-				if (evt.isUndoEvent()) {
-					modelMap.get(evt.getSource()).configureFromStepProperties();
-				}
+			} else if (evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED)) {
+				modelMap.get(evt.getSource()).hideShow(Boolean.parseBoolean((String)evt.getNewValue()));
+			} else if (evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_X)) {
+				modelMap.get(evt.getSource()).configureXFromMMO();
+			} else if (evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_Y)) {
+				modelMap.get(evt.getSource()).configureYFromMMO();
 			} else {
 				if (evt.isUndoEvent()) {
 					modelMap.get(evt.getSource()).reload();
@@ -1153,5 +1145,22 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		lockScrollInsets = lock;
 	}
 	
-	
+	public void updatePositionsToMMO () {
+		List<AbstractMungeComponent> changedComponents = new ArrayList<AbstractMungeComponent>();
+		for (Component com : getComponents()) {
+			if (com instanceof AbstractMungeComponent) {
+				AbstractMungeComponent mcom = (AbstractMungeComponent) com;
+				if (mcom.hasMoved()) {
+					changedComponents.add(mcom);
+				}
+			}
+		}
+		if (changedComponents.size() > 0) {
+			process.startCompoundEdit();
+			for (AbstractMungeComponent com : changedComponents) {
+				com.updateStepPositionToMMO();
+			}
+			process.endCompoundEdit();
+		}
+	}
 }
