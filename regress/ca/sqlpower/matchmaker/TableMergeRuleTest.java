@@ -80,14 +80,6 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		m1.setTableName("t1");
 		assertEquals("Two objects with the same parents and tables should be equal",m1,m2);
 		
-		m1.setDeleteDup(true);
-		m2.setDeleteDup(false);
-		assertFalse("Two objects with different delete dup values should not be equal",
-				m1.equals(m2));
-		
-		m2.setDeleteDup(true);
-		assertEquals("Two objects with same delete dup values should be equals", m1, m2);
-		
 		m1.setParentTable(t1);
 		m2.setParentTable(t2);
 		assertFalse("Two objects with different parent tables should not be equal",
