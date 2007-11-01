@@ -119,17 +119,21 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 	public void testSimpleCall() throws Exception{	
 		populateTables();
 
-		MungeStep mrs = step.getOuputStep();
 		UpperCaseMungeStep ucms = new UpperCaseMungeStep();
-		ucms.connectInput(0, step.getChildren().get(1));
-		mrs.connectInput(1, ucms.getChildren().get(0));
 
 		MungeProcess mungep = new MungeProcess();
 		mungep.addChild(step);
-		mungep.addChild(mrs);
 		mungep.addChild(ucms);
 		mungep.setName("test");
 		project.addMungeProcess(mungep);
+		
+		MungeStep mrs = step.getOuputStep();
+		mungep.addChild(mrs);
+		
+		step.open(logger);
+		step.close();
+		mrs.connectInput(1, ucms.getChildren().get(0));
+		ucms.connectInput(0, step.getChildren().get(1));
 		
 		engine.call();
 
