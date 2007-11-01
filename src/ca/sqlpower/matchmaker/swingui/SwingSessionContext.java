@@ -119,12 +119,10 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
     public Map<Class, StepDescription> getStepMap();
 
     /**
-     * Returns a new instance of the mungstep at index "index" in the 
-     * list of steps.
+     * Returns a new instance of the given munge step class.
      * 
-     * @param index The index to look in
      * @param session The session the mungeStep will added to
      * @return A new MungeStep of the type given by the list
      */
-    public MungeStep getMungeStep(Class create, MatchMakerSession session);
+    public MungeStep getMungeStep(Class<? extends MungeStep> create);
 }

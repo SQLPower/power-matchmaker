@@ -21,14 +21,14 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
 public class MungeResultStepTest extends TestCase {
 
@@ -61,7 +61,8 @@ public class MungeResultStepTest extends TestCase {
 		project.setSourceTableIndex(index);
 		
 		
-		step = new MungeResultStep(project, inputStep, new TestingMatchMakerSession());
+		step = new MungeResultStep();
+        step.setInputStep(inputStep);
 		MungeStepOutput<String> output = new MungeStepOutput<String>("munged", String.class);
 		output.setData("cow");
 		step.connectInput(0, output);

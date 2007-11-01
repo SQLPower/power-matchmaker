@@ -32,7 +32,6 @@ public class MungeSettings extends MatchMakerSettings {
         final int PRIME = 31;
         int result = super.hashCode();
         result = PRIME * result + ((autoMatchThreshold == null) ? 0 : autoMatchThreshold.hashCode());
-        result = PRIME * result + ((breakUpMatch == true) ? 123 : 234);
         result = PRIME * result + ((lastBackupNo == null) ? 0 : lastBackupNo.hashCode());
         result = PRIME * result + ((clearMatchPool == true) ? 345 : 456);
         return result;
@@ -43,26 +42,24 @@ public class MungeSettings extends MatchMakerSettings {
         if(!(obj instanceof MungeSettings)){
             return false;
         }
-        if (this == obj)
-            return true;
-        if (!super.equals(obj))
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (!super.equals(obj)) return false;
+        if (getClass() != obj.getClass()) return false;
         final MungeSettings other = (MungeSettings) obj;
         if (autoMatchThreshold == null) {
-            if (other.autoMatchThreshold != null)
-                return false;
-        } else if (!autoMatchThreshold.equals(other.autoMatchThreshold))
+            if (other.autoMatchThreshold != null) return false;
+        } else if (!autoMatchThreshold.equals(other.autoMatchThreshold)) {
             return false;
-        if (breakUpMatch != other.breakUpMatch )  return false;
-
+        }
+        
         if (lastBackupNo == null) {
-            if (other.lastBackupNo != null)
-                return false;
-        } else if (!lastBackupNo.equals(other.lastBackupNo))
+            if (other.lastBackupNo != null) return false;
+        } else if (!lastBackupNo.equals(other.lastBackupNo)) {
             return false;
+        }
+        
         if (clearMatchPool != other.clearMatchPool ) return false;
+        
         return true;
     }
 
@@ -77,23 +74,12 @@ public class MungeSettings extends MatchMakerSettings {
 	private Long lastBackupNo;
 
 	/**
-	 * Breakup the match after each rule set
-	 */
-	private boolean breakUpMatch = false;
-	/**
 	 * Truncate the candidate duplicate table
 	 */
 	private boolean clearMatchPool = false;
 
-	public boolean getBreakUpMatch() {
-		return breakUpMatch;
-	}
-
-	public void setBreakUpMatch(boolean breakUpMatch) {
-		boolean oldValue = this.breakUpMatch;
-		this.breakUpMatch = breakUpMatch;
-		getEventSupport().firePropertyChange("breakUpMatch", oldValue,
-				this.breakUpMatch);
+	public boolean getClearMatchPool() {
+		return clearMatchPool;
 	}
 
 	public boolean isClearMatchPool() {
@@ -131,9 +117,8 @@ public class MungeSettings extends MatchMakerSettings {
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        buf.append("MungeSettings [");
+        buf.append("[MungeSettings: ");
         buf.append("autoMatchThreshold->"+autoMatchThreshold+", ");
-        buf.append("breakUpMatch->"+breakUpMatch+", ");
         buf.append("lastBackupNo->"+lastBackupNo+", ");
         buf.append("clearMatchPool->"+clearMatchPool+", ");
         buf.append(super.toString());
@@ -150,7 +135,6 @@ public class MungeSettings extends MatchMakerSettings {
 		MungeSettings settings = new MungeSettings();
 		settings.setAppendToLog(getAppendToLog());
 		settings.setAutoMatchThreshold(getAutoMatchThreshold()==null?null:new Short(getAutoMatchThreshold()));
-		settings.setBreakUpMatch(getBreakUpMatch());
 		settings.setDebug(getDebug());
 		settings.setDescription(getDescription()==null?null:new String(getDescription()));
 		settings.setLastBackupNo(getLastBackupNo()==null?null:new Long(getLastBackupNo()));
@@ -160,7 +144,6 @@ public class MungeSettings extends MatchMakerSettings {
 		settings.setProcessCount(getProcessCount()==null?null:new Integer(getProcessCount()));
 		settings.setSendEmail(getSendEmail());
 		settings.setSession(s);
-		settings.setShowProgressFreq(getShowProgressFreq()==null?null:new Long(getShowProgressFreq()));
 		settings.setClearMatchPool(isClearMatchPool());
 		settings.setVisible(isVisible());
 		return settings;

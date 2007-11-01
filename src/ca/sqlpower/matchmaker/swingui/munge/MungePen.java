@@ -206,7 +206,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		setOpaque(true);
 		
 		if (process.getChildCount() == 0) {
-			SQLInputStep inputStep = new SQLInputStep(project, process.getSession());
+			SQLInputStep inputStep = new SQLInputStep();
 			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, true);
 			process.addChild(inputStep);
 			
@@ -270,9 +270,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 	
 	private class AddStepActon extends AbstractAction {
-		Class logic;
+		Class<? extends MungeStep> logic;
 		
-		public AddStepActon(Class logic) {
+		public AddStepActon(Class<? extends MungeStep> logic) {
 			this.logic = logic;
 		}
 
@@ -491,9 +491,8 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 	
 
-	private void addMungeStep(Class logicClass, Point location) {
-		MungeStep ms = ((SwingSessionContext)process.getSession().getContext()).getMungeStep(logicClass, 
-				process.getSession());
+	private void addMungeStep(Class<? extends MungeStep> logicClass, Point location) {
+		MungeStep ms = ((SwingSessionContext)process.getSession().getContext()).getMungeStep(logicClass);
 		int x = location.x + COM_DROP_OFFSET_X;
 		int y = location.y + COM_DROP_OFFSET_Y;
 		ms.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);

@@ -54,7 +54,7 @@ public interface MatchMakerSessionContext {
      * The minimum PL Schema version according to DEF_PARAM that we can work with.
      * Should be checked every time a session is created.
      */
-    public static final Version MIN_PL_SCHEMA_VERSION = new Version(5,0,30);
+    public static final Version MIN_PL_SCHEMA_VERSION = new Version(6, 0, 0);
     
     /**
      * Name of the preferences parameter for email host address

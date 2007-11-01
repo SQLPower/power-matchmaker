@@ -106,7 +106,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
 		return null;
 	}
 
-	public MungeStep getMungeStep(Class create, MatchMakerSession session) {
+	public MungeStep getMungeStep(Class create) {
 		logger.debug("Stub call: StubSwingSessionContext.getMungeStep()");
 		return null;
 	}

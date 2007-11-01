@@ -21,11 +21,9 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
-
 import junit.framework.TestCase;
+
+import org.apache.log4j.Logger;
 
 public class DoubleMetaphoneMungeStepTest extends TestCase {
 
@@ -37,7 +35,7 @@ public class DoubleMetaphoneMungeStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		step = new DoubleMetaphoneMungeStep(new TestingMatchMakerSession());
+		step = new DoubleMetaphoneMungeStep();
 	}
 
 	public void testCallonNormalString() throws Exception {

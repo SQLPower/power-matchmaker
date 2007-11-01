@@ -48,7 +48,6 @@ public abstract class MatchMakerSettings extends
         result = PRIME * result + ((log == null) ? 0 : log.hashCode());
         result = PRIME * result + ((processCount == null) ? 0 : processCount.hashCode());
         result = PRIME * result + ((sendEmail == true) ? 4567 : 5678);
-        result = PRIME * result + ((showProgressFreq == null) ? 0 : showProgressFreq.hashCode());
         return result;
     }
 
@@ -100,12 +99,6 @@ public abstract class MatchMakerSettings extends
 
         if (sendEmail != other.sendEmail ) return false;
 
-        if (showProgressFreq == null) {
-            if (other.showProgressFreq != null) return false;
-        } else if (!showProgressFreq.equals(other.showProgressFreq)) {
-            return false;
-        }
-
         return true;
     }
 
@@ -123,9 +116,6 @@ public abstract class MatchMakerSettings extends
 	/** Send an email when the job is done */
 	private boolean sendEmail = false;
 
-	/** show the progress every so often */
-	private Long showProgressFreq;
-
 	/**
 	 * Description of the process
 	 */
@@ -136,9 +126,6 @@ public abstract class MatchMakerSettings extends
 	 * The default value is 0, which is used to mean unlimited.
 	 * This field is usually used for debugging purposes where the
 	 * engine is run on a limited number of records for testing purposes.
-     *
-	 * Also, if showProgressFreq is true, process processCount records before a
-	 * progress message is printed
 	 */
 	private Integer processCount;
 
@@ -189,17 +176,6 @@ public abstract class MatchMakerSettings extends
 		getEventSupport().firePropertyChange("sendEmail", oldValue, sendEMail);
 	}
 
-	public Long getShowProgressFreq() {
-		return showProgressFreq;
-	}
-
-	public void setShowProgressFreq(Long showProgressFreq) {
-		Long oldValue = this.showProgressFreq;
-		this.showProgressFreq = showProgressFreq;
-		getEventSupport().firePropertyChange("showProgressFreq", oldValue,
-				showProgressFreq);
-	}
-
 	public File getLog() {
 		return log;
 	}
@@ -238,15 +214,14 @@ public abstract class MatchMakerSettings extends
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        buf.append("MatchMakerSetting [");
+        buf.append("[MatchMakerSettings: ");
         buf.append("appendToLog->"+appendToLog+", ");
         buf.append("debug->"+debug+", ");
         buf.append("description->"+description+", ");
         buf.append("lastRunDate->"+lastRunDate +", ");
         buf.append("log->"+log+", ");
         buf.append("processCount->"+processCount+", ");
-        buf.append("sendEmail->"+sendEmail+", ");
-        buf.append("showProgressFreq->"+showProgressFreq +"]");
+        buf.append("sendEmail->"+sendEmail+"]");
         return buf.toString();
     }
 

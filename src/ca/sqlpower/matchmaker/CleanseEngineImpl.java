@@ -219,6 +219,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 			return EngineInvocationResult.ABORTED;
 		} catch (Exception ex) {
 			progressMessage = "Cleanse Engine failed";
+
 			logger.error(getMessage());
 			
 			if (getProject().getMungeSettings().getSendEmail()) {

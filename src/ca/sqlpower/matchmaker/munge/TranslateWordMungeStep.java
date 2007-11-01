@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
@@ -65,8 +64,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
 	
 	
-	public TranslateWordMungeStep(MatchMakerSession session) {
-		super(session);
+	public TranslateWordMungeStep() {
 		setName("Translate Words");
 		out = new MungeStepOutput<String>("translateWordOutput", String.class);
 		addChild(out);

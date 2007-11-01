@@ -25,14 +25,14 @@ import java.sql.Types;
 import java.util.Date;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.testutil.MockJDBCConnection;
 import ca.sqlpower.testutil.MockJDBCResultSet;
@@ -87,7 +87,7 @@ public class SQLInputStepTest extends TestCase {
         process = new MungeProcess();
         project.addMungeProcess(process);
         
-        step = new SQLInputStep(project, new TestingMatchMakerSession());
+        step = new SQLInputStep();
         process.addChild(step);
     }
     

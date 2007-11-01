@@ -66,7 +66,7 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
 	public void testOneUpperCaseConnection() throws Exception {	
 
 	    MungeStep mrs = step.getOuputStep();
-	    UpperCaseMungeStep ucms = new UpperCaseMungeStep(project.getSession());
+	    UpperCaseMungeStep ucms = new UpperCaseMungeStep();
 	    ucms.connectInput(0, step.getChildren().get(0));
 	    mrs.connectInput(0, ucms.getChildren().get(0));
 

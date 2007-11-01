@@ -27,6 +27,8 @@ import javax.swing.JComponent;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.munge.MungeStep;
+
 /**
  * This is a class that holds all the information of a munge step. This includes
  * the name, the object class, the gui class, and the icon.
@@ -38,32 +40,78 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 
 	private static final String DEFAULT_ICON = "icons/famfamfam/color_wheel.png";
 	
-	
+	/**
+     * The name of the type of step this description represents.
+	 */
 	private String name;
-	private Class logicClass;
-	private Class guiClass;
+    
+    /**
+     * The class that implements the actual munging part of this step type.
+     */
+	private Class<? extends MungeStep> logicClass;
+    
+    /**
+     * The class that implements the user interface for this type of step.
+     */
+	private Class<? extends AbstractMungeComponent> guiClass;
+    
+    /**
+     * The icon that visually represents this type of step.
+     */
 	private Icon icon;
 
+    /**
+     * Creates a new step description that is invalid (its properties all start
+     * off null).
+     */
 	public StepDescription() {
 	}
 	
+    /**
+     * Interprets the given (name, value) pair according to special meanings that
+     * are attached to the name. Recognized names are:
+     * 
+     * <dl>
+     *  <dt>name  <dd>The name for this type of step
+     *  <dt>logic <dd>The fully-qualified Java class name implementing the step's logic.
+     *                This class must be available in the System Classloader, and must
+     *                implement the {@link MungeStep} interface.
+     *  <dt>gui   <dd>The class that implements this step type's graphical user interface.
+     *                This class must be available in the System Classloader, and must
+     *                be a subclass of {@link AbstractMungeComponent}.
+     *  <dt>icon  <dd>The name of a resource available on the system classpath, or the
+     *                path name of a file that resolves correctly when given to the {@link File}
+     *                constructor.  If this value does not exist as a system resource or a file,
+     *                a default icon will be used instead.
+     * </dl>
+     * 
+     * @param property The property name. Recognized property names are enumerated above;
+     * unrecognized property names are skipped.
+     * @param value The property value.  The meaning of the value depends on the property
+     * name.  See above for details.
+     * @throws ClassNotFoundException If the given property represents a Java class, and that
+     * class cannot be loaded.
+     */
 	public void setProperty(String property, String value) throws ClassNotFoundException {
 		if (property.equals("name")) {
 			setName(value);
 		} else if (property.equals("logic")) {
-			setLogicClass(Class.forName(value));
+            Class<?> logicClass = Class.forName(value);
+			setLogicClass(logicClass.asSubclass(MungeStep.class));
 		} else if (property.equals("gui")) {
-			setGuiClass(Class.forName(value));
+            Class<?> guiClass = Class.forName(value);
+			setGuiClass(guiClass.asSubclass(AbstractMungeComponent.class));
 		} else if (property.equals("icon")) {
-			 if (!value.equals("") && ClassLoader.getSystemResource(value) != null) {
+		    if (!value.equals("") && ClassLoader.getSystemResource(value) != null) {
 				setIcon(new ImageIcon(ClassLoader.getSystemResource(value)));
 			} else if (!value.equals("") && new File(value).exists()) {
 				setIcon(new ImageIcon(value));
 			} else {
 				setIcon(new ImageIcon(ClassLoader.getSystemResource(DEFAULT_ICON)));
 			}
-		}
-			
+		} else {
+		    logger.info("Skipping unknown step description property: " + property);
+        }
 	}
 	
 	public String getName() {
@@ -74,19 +122,19 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 		this.name = name;
 	}
 	
-	public Class getLogicClass() {
+	public Class<? extends MungeStep> getLogicClass() {
 		return logicClass;
 	}
 	
-	public void setLogicClass(Class logicClass) {
+	public void setLogicClass(Class<? extends MungeStep> logicClass) {
 		this.logicClass = logicClass;
 	}
 	
-	public Class getGuiClass() {
+	public Class<? extends AbstractMungeComponent> getGuiClass() {
 		return guiClass;
 	}
 	
-	public void setGuiClass(Class guiClass) {
+	public void setGuiClass(Class<? extends AbstractMungeComponent> guiClass) {
 		this.guiClass = guiClass;
 	}
 	

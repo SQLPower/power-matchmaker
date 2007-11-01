@@ -94,8 +94,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	@SuppressWarnings("unused")
 	private long oid;
 	
-	private boolean updateAction;
-	
 	private MergeActionType actionType = MergeActionType.USE_MASTER_VALUE;
 	
 	private boolean inPrimaryKey = false;
@@ -169,7 +167,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		columnRule.setSession(session);
 		columnRule.setName(getName());
 		columnRule.setActionType(actionType);
-		columnRule.setUpdateAction(updateAction);
 		columnRule.setInPrimaryKey(inPrimaryKey);
 		columnRule.setImportedKeyColumn(importedKeyColumn);
 		columnRule.setUpdateStatement(updateStatement);
@@ -268,18 +265,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		}
 		endCompoundEdit();
 	}
-
-
-	public boolean isUpdateAction() {
-		return updateAction;
-	}
-
-	public void setUpdateAction(boolean updateAction) {
-		boolean oldValue = this.updateAction;
-		this.updateAction = updateAction;
-		getEventSupport().firePropertyChange("updateAction", oldValue, this.updateAction);
-	}
-
 
 	public String getUpdateStatement() {
 		return updateStatement;

@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 
 /**
@@ -55,21 +54,11 @@ public class MungeResultStep extends AbstractMungeStep {
 		new ArrayList<MungeResult>();
 	
 	/**
-	 * The project that this MungeResultStep is working on.
-	 */
-	private final Project project;
-	
-	/**
-	 * A SQLIndex representing the unique index chosen by the user to
-	 * represent the data in this table.
-	 */
-	private final SQLIndex uniqueIndex;
-	
-	/**
 	 * The input MungeStep, from which this step will obtain the unique
-	 * key value data for each row that was processed in munging
+	 * key value data for each row that was processed in munging.  This
+     * value must be set up by client code before the call to {@link #open()}.
 	 */
-	private final MungeStep inputStep;
+	private MungeStep inputStep;
 	
 	/**
 	 * The munge step outputs of the input step that contain the
@@ -78,30 +67,46 @@ public class MungeResultStep extends AbstractMungeStep {
 	 * method is called.
 	 */
 	private MungeStepOutput[] indexValues;
-	
-	public MungeResultStep(Project project, MungeStep inputStep, MatchMakerSession session) throws ArchitectException {
-		super(session);
-		this.project = project;
-		this.inputStep = inputStep;
-		this.uniqueIndex = project.getSourceTableIndex();
+
+	public MungeResultStep() throws ArchitectException {
+		super();
 		setName("Munge Results");
 		InputDescriptor desc = new InputDescriptor("result1", Object.class);
 		super.addInput(desc);
 	}
 
-	
-	@Override
+
+    /**
+     * Sets the input step associated with this result step.  This has to
+     * be done before calling {@link #open(Logger)}.
+     */
+    public void setInputStep(MungeStep step) {
+        this.inputStep = step;
+    }
+
 	/**
 	 * This override of the open method initializes the array of MungeStepOutputs (MSO)
 	 * which contains the MSOs containing the unique key values. This assumes
 	 * that the input step contains outputs which correspond to the table's unique
-	 * key columns. If they are missing, then call() will throw a NullPointerException
+	 * key columns. If they are missing, then call() will throw a NullPointerException.
+     * Also, it is important that you have called {@link #setInputStep(MungeStep)} before
+     * attempting to open this munge step.
 	 */
+    @Override
 	public void open(Logger logger) throws Exception {
 		super.open(logger);
+        
+        if (inputStep == null) {
+            throw new IllegalStateException("Can't open when input step is null.");
+        }
+        
 		// results must be emptied out, or otherwise, it will
 		// contain the munge results from the last munge processor run.
 		results.clear();
+
+        Project project = getProject();
+        SQLIndex uniqueIndex = project.getSourceTableIndex();
+
 		indexValues = new MungeStepOutput[uniqueIndex.getChildCount()];
 		for (int i=0; i < uniqueIndex.getChildren().size(); i++) {
 			SQLIndex.Column c = uniqueIndex.getChild(i);
@@ -139,7 +144,7 @@ public class MungeResultStep extends AbstractMungeStep {
 			indexValueList.add(o.getData());
 		}
 		
-		SourceTableRecord source = new SourceTableRecord(getSession(), project, indexValueList);
+		SourceTableRecord source = new SourceTableRecord(getSession(), getProject(), indexValueList);
 		result.setSourceTableRecord(source);
 		
 		logger.debug("Adding MungeResult " + result);

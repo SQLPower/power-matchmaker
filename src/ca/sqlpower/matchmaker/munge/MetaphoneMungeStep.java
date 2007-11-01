@@ -21,8 +21,6 @@ package ca.sqlpower.matchmaker.munge;
 
 import org.apache.commons.codec.language.Metaphone;
 
-import ca.sqlpower.matchmaker.MatchMakerSession;
-
 /**
  * This munge step will output the metaphone code of the given input.
  */
@@ -30,8 +28,7 @@ public class MetaphoneMungeStep extends AbstractMungeStep {
 
 	private MungeStepOutput<String> out;
 	
-	public MetaphoneMungeStep(MatchMakerSession session) {
-		super(session);
+	public MetaphoneMungeStep() {
 		setName("Metaphone");
 		out = new MungeStepOutput<String>("metaphoneOutput", String.class);
 		addChild(out);

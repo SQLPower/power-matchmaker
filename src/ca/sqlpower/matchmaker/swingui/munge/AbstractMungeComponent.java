@@ -266,6 +266,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @param bg The background colour to the rectangle
 	 */
 	private AbstractMungeComponent(MungeStep step) {
+        if (step == null) throw new NullPointerException("Null step");
 		this.step = step;
 		setVisible(true);
 		setBackground(normalBackground);
@@ -435,7 +436,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 		inputLables = new JLabel[step.getInputs().size()];
 		
 		for (int x = 0; x < inputLables.length; x++) {
-			inputLables[x] = getCoolJLabel(step.getInputDescriptor(x).getName());
+			InputDescriptor id = step.getInputDescriptor(x);
+            inputLables[x] = getCoolJLabel(id.getName(), id.getType());
 			hide(inputLables[x]);
 			inputNames.add(inputLables[x]);
 			inputLables[x].setOpaque(false);
@@ -447,7 +449,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}	
 	}
 	
-	private void buildOutputNamesPanel() {
+    private void buildOutputNamesPanel() {
 		outputNames = new JPanel();
 		outputNames.setOpaque(false);
 		outputNames.setLayout(new FlowLayout());
@@ -455,16 +457,25 @@ public abstract class AbstractMungeComponent extends JPanel {
 		outputLables = new JLabel[step.getChildCount()];
 		
 		for (int x = 0; x < outputLables.length; x++) {
-			outputLables[x] = getCoolJLabel(step.getChildren().get(x).getName());
+			MungeStepOutput out = step.getChildren().get(x);
+            outputLables[x] = getCoolJLabel(out.getName(), out.getType());
 			hide(outputLables[x]);
 			outputNames.add(outputLables[x]);
 			outputLables[x].setOpaque(false);
 		}
 	}
 
-	private JLabel getCoolJLabel(String id) {
-		JLabel lab =new JLabel(id);
-		lab.setToolTipText(id);
+    /**
+     * Returns the unqualified name of the given class (no package name prefix).
+     */
+    private String shortClassName(Class type) {
+        if (type == null) return null;
+        return type.getName().substring(type.getName().lastIndexOf('.') + 1);
+    }
+
+	private JLabel getCoolJLabel(String id, Class type) {
+		JLabel lab = new JLabel(id);
+		lab.setToolTipText(id + " (" + shortClassName(type) + ")");
 		
 		lab.addMouseListener(new MouseAdapter(){
 			@Override
