@@ -18,7 +18,7 @@
  */
 
 
-package ca.sqlpower.matchmaker.swingui;
+package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,6 +52,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
@@ -173,6 +174,7 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 			}
 
 			try {
+				project.startCompoundEdit();
 				logger.debug("Beginning comparison on columns...");
 				rs = dbMeta.getColumns(null, null, null, null);
 				int count = 0;
@@ -250,10 +252,11 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 			} catch (Exception e1) {
 				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 						"Failed to derive related table information.", e1);
+			} finally {
+				project.endCompoundEdit();
 			}
 			
 			logger.debug("Finished in " + ((System.currentTimeMillis()-start)/1000) + " seconds!");
-			swingSession.save(project);
 			save.setEnabled(true);
 		}
 
@@ -265,7 +268,6 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
             	progressBar.setVisible(true);
             	logger.debug("Progress Bar has been set to visible");
             	ProgressWatcher watcher = new ProgressWatcher(progressBar, this);
-//            	watcher.setHideProgressBarWhenFinished(true);
             	watcher.start();
                 new Thread(this).start();
             } catch (Exception ex) {
