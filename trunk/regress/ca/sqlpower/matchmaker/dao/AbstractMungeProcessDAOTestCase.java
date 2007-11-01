@@ -39,26 +39,28 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 	Long count=0L;
     Project project;
     PlFolder folder;
-    public AbstractMungeProcessDAOTestCase() {
-        project= new Project();
-        project.setName("Munge Process Test Project");
-        project.setType(ProjectMode.BUILD_XREF);
-        folder = new PlFolder("main test folder");
-        project.setParent(folder);
-        try {
-            project.setSession(getSession());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
     
     public abstract MatchMakerHibernateSession getSession() throws Exception;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        
         PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
-		plFolderDAO.save(folder);
+        folder = new PlFolder("main test folder");
+        plFolderDAO.save(folder);
+        
+        project= new Project();
+        project.setName("Munge Process Test Project");
+        project.setType(ProjectMode.BUILD_XREF);
+        project.setParent(folder);
+        try {
+        	project.setSession(getSession());
+        } catch (Exception e) {
+        	throw new RuntimeException(e);
+        }
+        
+        assertNotNull(project.getSession());
         ProjectDAO matchDAO = new ProjectDAOHibernate(getSession());
         matchDAO.save(project);
     }

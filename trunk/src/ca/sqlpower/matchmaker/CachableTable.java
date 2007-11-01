@@ -65,6 +65,8 @@ public class CachableTable {
      * on behalf of mmo will report.
      */
     CachableTable(AbstractMatchMakerObject mmo,String propertyName) {
+    	if (mmo == null) throw new NullPointerException("Can't make a cachable table for a null owner");
+    	if (propertyName == null) throw new NullPointerException("Can't make a cachable table for a null property name");
 		this.propertyName = propertyName;
 		this.mmo = mmo;
     }
