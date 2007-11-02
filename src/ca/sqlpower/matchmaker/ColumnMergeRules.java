@@ -28,49 +28,57 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 	private static final Logger logger = Logger.getLogger(ColumnMergeRules.class);
 
+    /**
+     * An enumeration of all possible types of actions that can be
+     * performed during a column-to-column merge operation.  The
+     * toString() and getText() methods are equivalent; they both return
+     * a user-friendly (assuming the user speaks English) description
+     * of the action type.  For long-term storage of one of these action
+     * types, use the {@link #name()} method. We promise not to alter the
+     * names in the future, but the text might change.
+     */
 	public enum MergeActionType {
-		USE_MASTER_VALUE, AUGMENT, CONCAT, MIN, MAX, SUM, NA;
+        
+        /**
+         * This action type indicates that the corresponding column in
+         * the master record should be left untouched by the merge.
+         */
+		USE_MASTER_VALUE("Use master value"),
+        AUGMENT("Augment nulls"),
+        CONCAT("Concatenate"),
+        MIN("Minimum"),
+        MAX("Maximum"),
+        SUM("Sum"),
+        NA("Not applicable");
 		
-		public static MergeActionType getActionTypeFromString(String type) {
-			if ("Use master value".equals(type)){
-				return USE_MASTER_VALUE;
-			} else if ("Augment nulls".equals(type)){
-				return AUGMENT;
-			} else if ("Concatenate".equals(type)){
-				return CONCAT;
-			} else if ("Minimum".equals(type)){
-				return MIN;
-			} else if ("Maximum".equals(type)){
-				return MAX;
-			} else if ("Sum".equals(type)){
-				return SUM;
-			} else if ("Not applicable".equals(type)) {
-				return NA;
-			} else {
-				throw new IllegalStateException("No such merge action type: " + type);
-			} 
-		}
-		
+        /**
+         * The human-readable English text shown to the user for
+         * this action type.
+         */
+        private final String text;
+        
+        /**
+         * Private constructor, only possible for internal use of this enum.
+         */
+        private MergeActionType(String text) {
+            this.text = text;
+        }
+        
+        /**
+         * Returns the human-readable English text shown to the user for
+         * this action type.
+         */
+        public String getText() {
+            return text;
+        }
+        
+        /**
+         * Returns the human-readable English text shown to the user for
+         * this action type.
+         */
 		@Override
 		public String toString() {
-			switch (this) {
-			case USE_MASTER_VALUE:
-				return "Use master value";
-			case AUGMENT:
-				return "Augment nulls";
-			case CONCAT:
-				return "Concatenate";
-			case MIN:
-				return "Minimum";
-			case MAX:
-				return "Maximum";
-			case SUM:
-				return "Sum";
-			case NA:
-				return "Not applicable";
-			default:
-				throw new IllegalStateException("Invalid enumeration");
-			}
+            return getText();
 		}
 	}
 
