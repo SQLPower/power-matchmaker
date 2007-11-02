@@ -37,7 +37,14 @@
 		    <column name="index_column_name_8" length="60" />
 		    <column name="index_column_name_9" length="60" />
 		</property>
-
+		
+		<property name="childMergeAction">
+			<column name="CHILD_MERGE_ACTION" length="50" />
+		    <type name="ca.sqlpower.matchmaker.dao.hibernate.EnumUserType">
+		      <param name="enumClassName">ca.sqlpower.matchmaker.TableMergeRules$ChildMergeActionType</param>
+		    </type>
+		</property>
+		
 		<property name="visible"
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="visible_ind" length="1" />

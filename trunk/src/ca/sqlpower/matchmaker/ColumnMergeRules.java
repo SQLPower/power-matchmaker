@@ -37,18 +37,54 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
      * types, use the {@link #name()} method. We promise not to alter the
      * names in the future, but the text might change.
      */
-	public enum MergeActionType {
+	public static enum MergeActionType {
         
         /**
          * This action type indicates that the corresponding column in
          * the master record should be left untouched by the merge.
          */
 		USE_MASTER_VALUE("Use master value"),
+		
+		/**
+         * This action type indicates that the corresponding column in
+         * the master record should be set to the duplicate record's 
+         * value if it is null.
+         */
         AUGMENT("Augment nulls"),
+        
+        /**
+         * This action type indicates that the corresponding column in
+         * the master record should be concatenated with the duplicate 
+         * record's value.
+         */
         CONCAT("Concatenate"),
+        
+        /**
+         * This action type indicates that the corresponding column in
+         * the master record should be replaced with the duplicate 
+         * record's value if it has a higher value.
+         */
         MIN("Minimum"),
+        
+        /**
+         * This action type indicates that the corresponding column in
+         * the master record should be replaced with the duplicate 
+         * record's value if it has a lower value.
+         */
         MAX("Maximum"),
+        
+        /**
+         * This action type indicates that the corresponding column in
+         * the master record should be added to the duplicate record's
+         * value.
+         */
         SUM("Sum"),
+        
+        /**
+         * This action type indicates that the corresponding column in
+         * the master record is in the primary key and shall not be
+         * changed during a merge.
+         */
         NA("Not applicable");
 		
         /**
