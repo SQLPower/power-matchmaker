@@ -183,22 +183,20 @@ public class MergeProcessor extends AbstractProcessor {
 		
 		//delete duplicates
 		processCount = 0;
-		if (sourceTableMergeRule.isDeleteDup()) {
-			engineLogger.info("Deleting duplicate records.");
-			for (PotentialMatchRecord pm : pmProcessOrder) {
-				if (recordsToProcess != 0 && processCount > recordsToProcess) break;
-				if (monitorableHelper.isCancelled()) return Boolean.TRUE;
-				processCount++;
-				ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
-				
-				engineLogger.debug("Deleting duplicate record: " + dupKeyValues + " on table: " + sourceTable);
-				//delete the duplicate record
-				int rows = deleteRowByPrimaryKey(sourceTable, dupKeyValues);
-				
-				if (rows != 1) {
-					throw new IllegalStateException("The delete did not affect the correct " +
+		engineLogger.info("Deleting duplicate records.");
+		for (PotentialMatchRecord pm : pmProcessOrder) {
+			if (recordsToProcess != 0 && processCount > recordsToProcess) break;
+			if (monitorableHelper.isCancelled()) return Boolean.TRUE;
+			processCount++;
+			ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
+
+			engineLogger.debug("Deleting duplicate record: " + dupKeyValues + " on table: " + sourceTable);
+			//delete the duplicate record
+			int rows = deleteRowByPrimaryKey(sourceTable, dupKeyValues);
+
+			if (rows != 1) {
+				throw new IllegalStateException("The delete did not affect the correct " +
 						"number of rows: expected 1 but got " + rows); 
-				}
 			}
 		}
 		
