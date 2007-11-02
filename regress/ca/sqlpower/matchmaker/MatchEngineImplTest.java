@@ -23,6 +23,8 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import org.apache.log4j.Logger;
+
 import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
@@ -47,6 +49,7 @@ public class MatchEngineImplTest extends TestCase {
 	private Project project;
 	private TestingMatchMakerSession session;
 	private SQLTable sourceTable;
+    final private Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
 		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
@@ -104,12 +107,15 @@ public class MatchEngineImplTest extends TestCase {
 		MungeResultStep outputStep = new MungeResultStep();
         outputStep.setInputStep(inputStep);
 		outputStep.addInput(new InputDescriptor("result2", Object.class));
-		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
-		outputStep.connectInput(1, inputStep.getOutputByName("BAR"));
 		mungeProcessOne.addChild(outputStep);
 		mungeProcessOne.setOutputStep(outputStep);
 		
 		project.addMungeProcess(mungeProcessOne);
+
+		inputStep.open(logger);
+		inputStep.close();
+		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
+		outputStep.connectInput(1, inputStep.getOutputByName("BAR"));
 
 		engine = new MatchEngineImpl(session, project);
 	}
