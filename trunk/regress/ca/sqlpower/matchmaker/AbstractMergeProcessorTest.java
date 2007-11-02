@@ -29,6 +29,7 @@ import java.util.ArrayList;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -193,7 +194,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		ctmr.addChild(ccmr_date);
 		ctmr.addChild(ccmr_number);
 		ctmr.setTable(childTable);
-		ctmr.setParentTable(sourceTable);
+		ctmr.setParentMergeRule(tmr);
 		ctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
 		
 		ccmr_parent_id.setInPrimaryKey(true);
@@ -212,7 +213,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cctmr.addChild(cccmr_date);
 		cctmr.addChild(cccmr_number);
 		cctmr.setTable(grandChildTable);
-		cctmr.setParentTable(childTable);
+		cctmr.setParentMergeRule(ctmr);
 		cctmr.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
 		
 		cccmr_gparent_id.setInPrimaryKey(true);
@@ -296,6 +297,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    	"(5,4,10,'MATCH','N', 'test')";
 	    execSQL(con,sql);
 	    
+	    logger.setLevel(Level.DEBUG);
 	    mpor = new MergeProcessor(project, session, logger);
 	    
 	    // sets the default action type
@@ -669,7 +671,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	populateTables();
     	populateChildTable();
     	populateGrandChildTable();
-	
+    	
 		mpor.call();
 		
 		Statement stmt = con.createStatement();

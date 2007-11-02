@@ -252,6 +252,12 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         	} else {
         		return ChildMergeActionType.DELETE_ALL_DUP_CHILD;
         	}
+        } else if (property.getPropertyType() == TableMergeRules.class) {
+        	if (oldVal == null){
+        		return mmo;
+        	} else {
+        		return null;
+        	}
 		} else {
 			throw new RuntimeException("This test case lacks the ability to modify values for "
 					+ property.getName() + " (type "
@@ -424,9 +430,15 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
             }
         } else if (property.getPropertyType() == ChildMergeActionType.class) {
         	if (oldVal != null && oldVal.equals(ChildMergeActionType.DELETE_ALL_DUP_CHILD)){
-        		return ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT;
+        		newVal = ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT;
         	} else {
-        		return ChildMergeActionType.DELETE_ALL_DUP_CHILD;
+        		newVal = ChildMergeActionType.DELETE_ALL_DUP_CHILD;
+        	}
+        } else if (property.getPropertyType() == TableMergeRules.class) {
+        	if (oldVal == null){
+        		newVal = mmo;
+        	} else {
+        		newVal = null;
         	}
 		} else {
 			throw new RuntimeException("This test case lacks a value for "

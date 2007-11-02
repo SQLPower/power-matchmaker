@@ -47,6 +47,7 @@ import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
@@ -91,6 +92,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
         nonPersisting.add("oid");
         nonPersisting.add("session");
         nonPersisting.add("undoing");
+        nonPersisting.add("deleteDup");
         return nonPersisting;
     }
 
@@ -316,6 +318,12 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
                     		newVal = ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT;
                     	} else {
                     		newVal = ChildMergeActionType.DELETE_ALL_DUP_CHILD;
+                    	}
+                    } else if (property.getPropertyType() == TableMergeRules.class) {
+                    	if (oldVal == null) {
+                    		newVal = mmo;
+                    	} else {
+                    		newVal = null;
                     	}
 					} else {
 						throw new RuntimeException("This test case lacks a value for "

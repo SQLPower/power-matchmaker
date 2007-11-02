@@ -148,7 +148,7 @@ public class TableMergeRules
 	/**
 	 * The parent tableMergeRule
 	 */
-	private SQLTable parentTable;
+	private TableMergeRules parentMergeRule;
 	
 	public TableMergeRules() {
 		tableIndex = new TableIndex(this,cachableTable,"tableIndex");
@@ -187,12 +187,12 @@ public class TableMergeRules
 		if (isDeleteDup() != other.isDeleteDup()) {
 			return false;
 		}
-		if (getParentTable() == null) {
-			if (other.getParentTable() != null) {
+		if (getParentMergeRule() == null) {
+			if (other.getParentMergeRule() != null) {
 				return false;
 			}
 		} else {
-			if (other == null || !getParentTable().equals(other.getParentTable())) {
+			if (getParentMergeRule() != other.getParentMergeRule()) {
 				return false;
 			}
 		}
@@ -224,7 +224,7 @@ public class TableMergeRules
 		newMergeStrategy.setTableName(getTableName());
 		newMergeStrategy.setCatalogName(getCatalogName());
 		newMergeStrategy.setSchemaName(getSchemaName());
-		newMergeStrategy.setParentTable(getParentTable());
+		newMergeStrategy.setParentMergeRule(getParentMergeRule());
 		newMergeStrategy.setChildMergeAction(getChildMergeAction());
 		newMergeStrategy.setVisible(isVisible());
 		try {
@@ -311,7 +311,7 @@ public class TableMergeRules
 	@Override
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append("Merge Strategy@"+System.identityHashCode(this)+"->'").append(getName()).append("' ");
+		buf.append("Merge Strategy->'").append(getName()).append("' ");
 		buf.append("Parent->'").append(getParent()).append("' ");
 		buf.append("isDeletedDup()->'").append(isDeleteDup()).append("' ");
 		return buf.toString();
@@ -359,23 +359,23 @@ public class TableMergeRules
 		this.oid = oid;
 	}
 
-	public SQLTable getParentTable() {
-		return parentTable;
+	public TableMergeRules getParentMergeRule() {
+		return parentMergeRule;
 	}
 
-	public void setParentTable(SQLTable parentTable) {
-		if (this.parentTable == parentTable) return;
-		SQLTable oldValue = this.parentTable;
-		this.parentTable = parentTable;
-		getEventSupport().firePropertyChange("parentTable", oldValue, this.parentTable);
+	public void setParentMergeRule(TableMergeRules parentTable) {
+		if (this.parentMergeRule == parentTable) return;
+		TableMergeRules oldValue = this.parentMergeRule;
+		this.parentMergeRule = parentTable;
+		getEventSupport().firePropertyChange("parentMergeRule", oldValue, this.parentMergeRule);
 	}
 	
-	public void setParentTableAndImportedKeys(SQLTable parentTable) {
-		if (this.parentTable == parentTable) return;
+	public void setParentMergeRuleAndImportedKeys(TableMergeRules parentTable) {
+		if (this.parentMergeRule == parentTable) return;
 		startCompoundEdit();
-		setParentTable(parentTable);
+		setParentMergeRule(parentTable);
 		
-		List<SQLColumn> primarykeyCols = getParentTablePrimaryKey();
+		List<SQLColumn> primarykeyCols = getParentMergeRule().getPrimaryKey();
 		// Set each imported key column combo box to null
 		for (ColumnMergeRules cmr : getChildren()) {
 			if (cmr.getImportedKeyColumn() != null) {
@@ -419,23 +419,7 @@ public class TableMergeRules
 			return false;
 		}
 	}
-	
-	/**
-	 * Finds the parent table merge rule and returns the primary key of it.
-	 * If no such table is found then throw an exception. Returns null if
-	 * parentTable or the parent of this merge rule has not been set
-	 */
-	public List<SQLColumn> getParentTablePrimaryKey() {
-		if (getParentTable() != null && getParentProject() != null) {
-			for (TableMergeRules tmr : getParentProject().getTableMergeRules()) {
-				if (tmr.getSourceTable().equals(parentTable)) {
-					return tmr.getPrimaryKey();
-				}
-			}
-		}
-		return null;
-	}
-	
+
 	/**
 	 * Finds the primary key for the current table merge rule.
 	 */

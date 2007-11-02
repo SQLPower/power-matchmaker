@@ -167,10 +167,14 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 				return;
 			}
 			
-			// Finds all the merge rules that the project already has
+			// Finds all the merge rules that the project already has\
+			TableMergeRules sourceTableMergeRule = null;
 			List<String> mergeRules = new ArrayList<String>();
 			for (TableMergeRules tmr : project.getTableMergeRules()) {
 				mergeRules.add(tmr.getTableName());
+				if (tmr.isSourceMergeRule()) {
+					sourceTableMergeRule = tmr;
+				}
 			}
 
 			try {
@@ -217,7 +221,7 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 						SQLIndex index = table.getPrimaryKeyIndex();
 						mergeRule.setTable(table);
 						mergeRule.setTableIndex(index);
-						mergeRule.setParentTable(sourceTable);
+						mergeRule.setParentMergeRule(sourceTableMergeRule);
 						mergeRule.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
 						try {
 							List<SQLColumn> columns = new ArrayList<SQLColumn>(table.getColumns()); 

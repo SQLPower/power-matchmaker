@@ -64,7 +64,8 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
 	}
 	
 	public void testOneUpperCaseConnection() throws Exception {	
-
+		step.open(logger);
+		step.close();
 	    MungeStep mrs = step.getOuputStep();
 	    UpperCaseMungeStep ucms = new UpperCaseMungeStep();
 	    step.open(logger);
