@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroupDAOStub;
+import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 
 public class TranslateWordMungeStepTest extends TestCase {
 
@@ -44,6 +45,7 @@ public class TranslateWordMungeStepTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		step = new TranslateWordMungeStep();
+		step.setSession(new TestingMatchMakerSession());
 	}
 
 	/**
