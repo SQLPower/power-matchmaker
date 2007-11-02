@@ -66,6 +66,11 @@ public class MungeResultStepTest extends TestCase {
 		MungeStepOutput<String> output = new MungeStepOutput<String>("munged", String.class);
 		output.setData("cow");
 		step.connectInput(0, output);
+		
+		MungeProcess mp = new MungeProcess();
+		mp.addChild(inputStep);
+		mp.addChild(step);
+		project.addMungeProcess(mp);
 	}
 
 	public void test() throws Exception {
