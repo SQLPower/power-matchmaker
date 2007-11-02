@@ -24,11 +24,14 @@
 		<property name="columnName" type="string">
 			<column name="COLUMN_NAME" length="60" />
 		</property>
-
-		<property name="actionType" type="ca.sqlpower.matchmaker.dao.hibernate.ActionTypeStringToActionTypeEnum">
+		
+		<property name="actionType">
 			<column name="ACTION_TYPE" length="12" />
+		    <type name="ca.sqlpower.matchmaker.dao.hibernate.EnumUserType">
+		      <param name="enumClassName">ca.sqlpower.matchmaker.ColumnMergeRules$MergeActionType</param>
+		    </type>
 		</property>
-
+		
 		<property name="visible"
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="visible_ind" length="1" />

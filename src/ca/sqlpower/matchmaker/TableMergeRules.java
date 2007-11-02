@@ -41,44 +41,86 @@ public class TableMergeRules
 	extends AbstractMatchMakerObject<TableMergeRules, ColumnMergeRules> {
 
 	private static final Logger logger = Logger.getLogger(TableMergeRules.class);
-	
-	public enum ChildMergeActionType {
-		DELETE_ALL_DUP_CHILD, UPDATE_USING_SQL, UPDATE_FAIL_ON_CONFLICT, UPDATE_DELETE_ON_CONFLICT, MERGE_ON_CONFLICT;
+	/**
+     * An enumeration of all possible types of actions that can be
+     * performed during child table merge operation.  The
+     * toString() and getText() methods are equivalent; they both return
+     * a user-friendly (assuming the user speaks English) description
+     * of the action type.  For long-term storage of one of these action
+     * types, use the {@link #name()} method. We promise not to alter the
+     * names in the future, but the text might change.
+     */
+	public static enum ChildMergeActionType {
+        
+        /**
+         * This action type indicates that the all child records of the
+         * duplicate record shall be deleted
+         */
+		DELETE_ALL_DUP_CHILD("Delete all duplicate child records"),
 		
-		public static ChildMergeActionType getActionTypeFromString(String type) {
-			if ("Delete all duplicate child records".equals(type)){
-				return DELETE_ALL_DUP_CHILD;
-			} else if ("Update child records and fail if conflict".equals(type)){
-				return UPDATE_FAIL_ON_CONFLICT;
-			} else if ("Update child records and delete if conflictt".equals(type)){
-				return UPDATE_DELETE_ON_CONFLICT;
-			} else if ("Update child records using the provided sql".equals(type)){
-				return UPDATE_USING_SQL;
-			} else if ("Merge child records if conflict".equals(type)){
-				return MERGE_ON_CONFLICT;
-			} else {
-				throw new IllegalStateException("No such merge action type: " + type);
-			} 
-		}
+		/**
+         * This action type indicates that the child records of the
+         * duplicate record shall have their imported key updated to the
+         * master records' primary key and all other columns will be 
+         * updated according to the sql if provided.
+         */
+		UPDATE_USING_SQL("Update child records using the provided sql"),
 		
+		/**
+         * This action type indicates that the child records of the
+         * duplicate record shall have their imported key updated to the
+         * master records' primary key and the engine will fail if 
+         * there are conflicts generated during this process.
+         */
+		UPDATE_FAIL_ON_CONFLICT("Update child records and delete if conflictt"),
+		
+		/**
+         * This action type indicates that the child records of the
+         * duplicate record shall have their imported key updated to the
+         * master records' primary key and the engine will delete the child 
+         * record if the updated foreign key conflicts with another record.
+         */
+		UPDATE_DELETE_ON_CONFLICT("Update child records and fail if conflict"),
+		
+		/**
+         * This action type indicates that the child records of the
+         * duplicate record shall have their imported key updated to the
+         * master records' primary key and the engine will merge the records
+         * if the updated foreign key conflicts with another record.
+         */
+		MERGE_ON_CONFLICT("Merge child records if conflict");
+		
+        /**
+         * The human-readable English text shown to the user for
+         * this action type.
+         */
+        private final String text;
+        
+        /**
+         * Private constructor, only possible for internal use of this enum.
+         */
+        private ChildMergeActionType(String text) {
+            this.text = text;
+        }
+        
+        /**
+         * Returns the human-readable English text shown to the user for
+         * this action type.
+         */
+        public String getText() {
+            return text;
+        }
+        
+        /**
+         * Returns the human-readable English text shown to the user for
+         * this action type.
+         */
 		@Override
 		public String toString() {
-			switch (this) {
-			case DELETE_ALL_DUP_CHILD:
-				return "Delete all duplicate child records";
-			case UPDATE_FAIL_ON_CONFLICT:
-				return "Update child records and fail if conflict";
-			case UPDATE_DELETE_ON_CONFLICT:
-				return "Update child records and delete if conflict";
-			case UPDATE_USING_SQL:
-				return "Update child records using the provided sql";
-			case MERGE_ON_CONFLICT:
-				return "Merge child records if conflict";
-			default:
-				throw new IllegalStateException("Invalid enumeration");
-			}
+            return getText();
 		}
 	}
+
 	
 	private Long oid;
 
