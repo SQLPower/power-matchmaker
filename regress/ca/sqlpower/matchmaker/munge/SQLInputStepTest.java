@@ -63,6 +63,7 @@ public class SQLInputStepTest extends TestCase {
     }
     
     SQLInputStep step;
+    MungeResultStep resultStep;
     SQLDatabase db;
     Project project;
     MungeProcess process;
@@ -89,6 +90,8 @@ public class SQLInputStepTest extends TestCase {
         
         step = new SQLInputStep();
         process.addChild(step);
+	    resultStep = (MungeResultStep) step.getOuputStep();
+	    process.addChild(resultStep);
     }
     
     protected ProjectMode getProjectType() {

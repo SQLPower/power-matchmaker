@@ -38,7 +38,11 @@ public class MungeResultStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		MungeStep inputStep = new TestingMungeStep("input", 0, 3);
+		MungeStep inputStep = new SQLInputStep();
+		
+        for (int i = 0; i < 3; i++) {
+            inputStep.addChild(new MungeStepOutput<String>("output_"+i, String.class));
+        }
 		
 		Project project = new Project();
 		SQLIndex index = new SQLIndex();
@@ -60,9 +64,7 @@ public class MungeResultStepTest extends TestCase {
 		
 		project.setSourceTableIndex(index);
 		
-		
-		step = new MungeResultStep();
-        step.setInputStep(inputStep);
+		step = new DeDupeResultStep();
 		MungeStepOutput<String> output = new MungeStepOutput<String>("munged", String.class);
 		output.setData("cow");
 		step.connectInput(0, output);

@@ -168,5 +168,8 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      */
     public MungeStepOutput getOutputByName(String name);
     
-    
+    /**
+     * Returns true if this MungeStep is an input step, false otherwise. 
+     */
+    public boolean isInputStep();
 }

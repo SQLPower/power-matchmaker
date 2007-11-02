@@ -132,6 +132,8 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		
 		step.open(logger);
 		step.close();
+		mrs.open(logger);
+		mrs.close();
 		mrs.connectInput(1, ucms.getChildren().get(0));
 		ucms.connectInput(0, step.getChildren().get(1));
 		

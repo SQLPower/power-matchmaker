@@ -44,9 +44,6 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
         
         assertSame(project, step.getParent().getParent().getParent());
         assertSame(ProjectMode.CLEANSE, ((Project) (step.getParent().getParent().getParent())).getType());
-        
-	    MungeStep mrs = step.getOuputStep();
-        process.addChild(mrs);
 
 	    MungeProcessor mp = new MungeProcessor(process, logger);
 	    mp.call();
@@ -66,18 +63,15 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
 	public void testOneUpperCaseConnection() throws Exception {	
 		step.open(logger);
 		step.close();
-	    MungeStep mrs = step.getOuputStep();
 	    UpperCaseMungeStep ucms = new UpperCaseMungeStep();
-	    step.open(logger);
-	    step.close();
-	    ucms.connectInput(0, step.getChildren().get(0));
-	    mrs.connectInput(0, ucms.getChildren().get(0));
-
-	    process.addChild(mrs);
+	    resultStep.open(logger);
+	    resultStep.close();
 	    process.addChild(ucms);
+	    ucms.connectInput(0, step.getChildren().get(0));
+	    resultStep.connectInput(0, ucms.getChildren().get(0));
 
 	    MungeProcessor mp = new MungeProcessor(process, logger);
-        mp.call(10);
+        mp.call();
 
 	    Connection con = db.getConnection();
 	    Statement stmt = con.createStatement();

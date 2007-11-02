@@ -69,11 +69,9 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
@@ -224,9 +222,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
 			
 			process.addChild(mungeResultStep);
-			if (project.getType() == ProjectMode.FIND_DUPES) {
-				process.setOutputStep((MungeResultStep)mungeResultStep);
-			}
 		}
 		buildComponents(process);
 		buildPopup(((SwingSessionContext)process.getSession().getContext()).getStepMap());

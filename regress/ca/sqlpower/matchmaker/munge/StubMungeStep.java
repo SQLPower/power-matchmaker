@@ -212,4 +212,8 @@ public class StubMungeStep implements MungeStep {
 
 	public void setUndoing(boolean isUndoing) {
 	}
+
+	public boolean isInputStep() {
+		return false;
+	}
 }

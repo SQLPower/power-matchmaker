@@ -71,14 +71,8 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * @param child
      *            The child object to add. Must not be null.
      */
-	public void addChild(C child) {
-        logger.debug("addChild: children collection is a "+children.getClass().getName());
-        if(child== null) throw new NullPointerException("Cannot add a null child");
-		children.add(child);
-		child.setParent(this);
-		List<C> insertedChildren = new ArrayList<C>();
-		insertedChildren.add(child);
-		eventSupport.fireChildrenInserted("children",new int[] {children.size()-1},insertedChildren);
+	public final void addChild(C child) {
+        addImpl(children.size(), child);
 	}
 
 	/**
@@ -96,8 +90,12 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      * @param child
      *            The child object to add. Must not be null.
      */
-	public void addChild(int index, C child) {
-        logger.debug("addChild: children collection is a "+children.getClass().getName());
+	public final void addChild(int index, C child) {
+        addImpl(index, child);
+	}
+	
+	protected void addImpl(int index, C child) {
+		logger.debug("addChild: children collection is a "+children.getClass().getName());
         if(child== null) throw new NullPointerException("Cannot add a null child");
 		children.add(index, child);
 		child.setParent(this);
@@ -105,6 +103,8 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		insertedChildren.add(child);
 		eventSupport.fireChildrenInserted("children",new int[] {index},insertedChildren);
 	}
+	
+	
 
     /**
      * Returns the number of children in this MatchMakerObject. For those
