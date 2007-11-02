@@ -954,16 +954,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		return true;
 	}
 	
-	protected void tearDown() throws Exception {
-//		String sql = "DROP TABLE " + getFullTableName();
-//		execSQL(con, sql);
-//		sql = "DROP TABLE " + getFullTableName() + "_RESULT";
-//		execSQL(con, sql);
-//		sql = "DROP TABLE " + getFullTableName() + "_CHILD";
-//		execSQL(con, sql);
-//		con.close();
-	}
-	
 	protected abstract String getFullTableName();
 	
 	protected abstract SPDataSource getDS();

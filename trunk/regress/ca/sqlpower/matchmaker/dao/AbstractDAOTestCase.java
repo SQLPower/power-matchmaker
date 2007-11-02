@@ -278,8 +278,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						setAllSetters(mergeSettings, propertiesThatAreNotPersisted);
 						newVal = mergeSettings;
 					} else if (property.getPropertyType() == SQLTable.class) {
-						newVal = new SQLTable();
-						((SQLTable)newVal).setName("Fake Table");
+						newVal = getSession().findPhysicalTableByName("", "MM_TEST", "fake_table");
 					} else if (property.getPropertyType() == ViewSpec.class) {
 						newVal = new ViewSpec("select clause", "from clause", "where clause");
 					} else if (property.getPropertyType() == File.class) {

@@ -22,6 +22,7 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import ca.sqlpower.matchmaker.DBTestUtil;
@@ -41,6 +42,21 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         project = createNewObjectUnderTest();
+
+        Connection con = getSession().getConnection();
+        Statement stmt = con.createStatement();
+        String sql = "";
+
+        try {
+        	sql = "DROP TABLE fake_table";
+        	stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+        	// Ignoring exception when deleting a table that might not exist
+        	System.out.println(e.getStackTrace());
+        }
+        
+        sql = "CREATE TABLE fake_table (id NUMBER)";
+    	stmt.executeUpdate(sql);
     }
     
 	protected SPDataSource getDS() {
