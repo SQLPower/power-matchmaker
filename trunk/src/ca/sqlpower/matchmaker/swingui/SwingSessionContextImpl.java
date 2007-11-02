@@ -57,9 +57,9 @@ import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
-import ca.sqlpower.matchmaker.munge.MungeResultStep;
+import ca.sqlpower.matchmaker.munge.CleanseResultStep;
+import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
-import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.CleanseResultMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungeResultMungeComponent;
@@ -432,11 +432,11 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     public AbstractMungeComponent getMungeComponent(MungeStep ms,
 			FormValidationHandler handler, MatchMakerSession session) {
     	//special cases
-    	if (ms instanceof SQLInputStep) {
+    	if (ms.isInputStep()) {
 			return new SQLInputMungeComponent(ms, handler, session);
-		} else if (ms instanceof MungeResultStep) {
+		} else if (ms instanceof DeDupeResultStep) {
 			return new MungeResultMungeComponent(ms, handler, session);
-		} else if (ms instanceof SQLInputStep.CleanseResultStep) {
+		} else if (ms instanceof CleanseResultStep) {
 			return new CleanseResultMungeComponent(ms,handler,session);
 		}
 		

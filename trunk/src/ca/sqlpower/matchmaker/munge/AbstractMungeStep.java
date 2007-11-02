@@ -60,7 +60,6 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 */
 	private Map<String,String> parameters = new HashMap<String, String>();
 	
-	
 	/**
 	 * This refers to whether a open() call has been made on this munge step.
 	 */
@@ -163,7 +162,19 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	
 	public MungeStep duplicate(MatchMakerObject parent,
 			MatchMakerSession session) {
-		throw new UnsupportedOperationException("Duplicate is not supported yet");
+		Class stepClass = getClass();
+		AbstractMungeStep step = null;
+		try {
+			step = (AbstractMungeStep) stepClass.newInstance();
+			step.parameters = new HashMap<String, String>(this.parameters);
+			step.setParent(parent);
+			step.setSession(session);
+			step.setUndoing(this.isUndoing());
+			step.setVisible(this.isVisible());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return step;
 	}
 	
 	// TODO: Investigate whether this will break Hibernate 
@@ -348,5 +359,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     	}
     	result.append("]");
     	return result.toString();
+    }
+    
+    public boolean isInputStep() {
+    	return false;
     }
 }

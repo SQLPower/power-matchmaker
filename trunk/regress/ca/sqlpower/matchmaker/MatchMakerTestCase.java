@@ -48,6 +48,9 @@ import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
 /**
@@ -132,16 +135,48 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 				if(oldVal == null) {
 					throw new NullPointerException("We forgot to set "+property.getName());
 				} else {
-					assertEquals("The two values for property "+property.getDisplayName() + " in " + mmo.getClass().getName() + " should be equal",oldVal,copyVal);
-					
-					// Ok, the duplicate object's property value compared equal.
-					// Now we want to make sure if we modify that property on the original,
-					// it won't affect the copy.
-					Object newCopyVal = modifyObject(mmo, property, copyVal);
+					if (mmo instanceof MungeProcess && property.getDisplayName().equals("children")){
+						assertEquals("The number of MungeStep's are different.", ((List) oldVal).size(), ((List) copyVal).size());
+						for (int i = 0; i < ((List) oldVal).size(); i++) {
+							MungeStep oldStep = (MungeStep) ((List) oldVal).get(i);
+							MungeStep copyStep = (MungeStep) ((List) copyVal).get(i);
+							assertNotSame("The two MungeStep's share the same instance.", oldVal, copyVal);
 
-					assertFalse(
-							"The two values are the same mutable object for property "+property.getDisplayName() + " was "+oldVal+ " and " + copyVal,
-							oldVal.equals(newCopyVal));
+							assertEquals("The two names are different.", oldStep.getName(), copyStep.getName());
+							assertEquals("The two undoing properties are different.", oldStep.isUndoing(), copyStep.isUndoing());
+							assertEquals("The two visible properties are different.", oldStep.isVisible(), copyStep.isVisible());
+							assertEquals("The two lists of parameters are different.", oldStep.getParameterNames().size(), copyStep.getParameterNames().size());
+							for (String param : oldStep.getParameterNames()) {
+								assertEquals("The two values for parameter " + param + " are different",
+										oldStep.getParameter(param), copyStep.getParameter(param));
+							}
+						}
+					} else if (oldVal instanceof MungeStep) {
+						MungeStep oldStep = (MungeStep) oldVal;
+						MungeStep copyStep = (MungeStep) copyVal;
+						assertNotSame("The two MungeStep's share the same instance.", oldVal, copyVal);
+
+						assertEquals("The two names are different.", oldStep.getName(), copyStep.getName());
+						assertEquals("The two undoing properties are different.", oldStep.isUndoing(), copyStep.isUndoing());
+						assertEquals("The two visible properties are different.", oldStep.isVisible(), copyStep.isVisible());
+						assertEquals("The two lists of parameters are different.", oldStep.getParameterNames().size(), copyStep.getParameterNames().size());
+						for (String param : oldStep.getParameterNames()) {
+							assertEquals("The two values for parameter " + param + " are different",
+									oldStep.getParameter(param), copyStep.getParameter(param));
+						}
+					} else {
+						assertEquals("The two values for property "+property.getDisplayName() + " in " + mmo.getClass().getName() + " should be equal",oldVal,copyVal);
+
+
+						// Ok, the duplicate object's property value compared equal.
+						// Now we want to make sure if we modify that property on the original,
+						// it won't affect the copy.
+						Object newCopyVal = modifyObject(mmo, property, copyVal);
+
+						assertFalse(
+								"The two values are the same mutable object for property "+property.getDisplayName() + " was "+oldVal+ " and " + copyVal,
+								oldVal.equals(newCopyVal));
+					}
 				}
 			} catch (NoSuchMethodException e) {
 				System.out.println("Skipping non-settable property "+property.getName()+" on "+mmo.getClass().getName());
@@ -434,6 +469,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         	} else {
         		newVal = ChildMergeActionType.DELETE_ALL_DUP_CHILD;
         	}
+        } else if (property.getPropertyType() == DeDupeResultStep.class) {
+        	newVal = new DeDupeResultStep();
         } else if (property.getPropertyType() == TableMergeRules.class) {
         	if (oldVal == null){
         		newVal = mmo;

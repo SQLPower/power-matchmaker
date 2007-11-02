@@ -23,11 +23,8 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -37,7 +34,6 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLType;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 
@@ -75,7 +71,7 @@ public class SQLInputStep extends AbstractMungeStep {
     /**
      * The output step that is tied to this input step.
      */
-    private MungeStep outputStep;
+    private MungeResultStep outputStep;
     
     public SQLInputStep() {
     }
@@ -171,7 +167,7 @@ public class SQLInputStep extends AbstractMungeStep {
     @Override
     public void open(Logger logger) throws Exception {
     	super.open(logger);
-
+    	
     	if (rs != null) {
             throw new IllegalStateException("The input step is already open");
         }
@@ -181,9 +177,13 @@ public class SQLInputStep extends AbstractMungeStep {
         	this.table = project.getSourceTable();
         	setName(table.getName());
         }
-        for (SQLColumn c : table.getColumns()) {
-            MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), typeClass(c.getType()));
-            addChild(newOutput);
+
+        // TODO: Verify that outputs are the same with the table's columns.
+        if (getChildCount() == 0) {
+        	for (SQLColumn c : table.getColumns()) {
+        		MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), typeClass(c.getType()));
+        		addChild(newOutput);
+        	}
         }
 
         SQLDatabase db = table.getParentDatabase();
@@ -235,112 +235,24 @@ public class SQLInputStep extends AbstractMungeStep {
      * Creates or returns the output step for this input step.  There will only
      * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
-    public MungeStep getOuputStep() throws ArchitectException {
+    public MungeResultStep getOuputStep() throws ArchitectException {
         Project project = getProject();
         if (outputStep != null) {
             return outputStep;
         } else if (project.getType() == ProjectMode.CLEANSE) {
-    		outputStep = new CleanseResultStep(project, getSession());
+    		outputStep = new CleanseResultStep();
     	} else {
-    		outputStep = new MungeResultStep();
-            ((MungeResultStep) outputStep).setInputStep(this);
+    		outputStep = new DeDupeResultStep();
     	}
         return outputStep;
     }
     
-    public class CleanseResultStep extends AbstractMungeStep {
-    	SQLTable table;
-    	
-		private CleanseResultStep(Project project, MatchMakerSession session) throws ArchitectException {
-			table = project.getSourceTable();
-			setName(table.getName());
-			addInitialInputs();
-		}
-		
-		private void addInitialInputs() throws ArchitectException {
-			for (SQLColumn c : table.getColumns()) {
-	            InputDescriptor id = new InputDescriptor(c.getName(), typeClass(c.getType()));
-	            addInput(id);
-			}			
-		}
-		
-		@Override
-		public Boolean call() throws Exception {
-			super.call();
-			
-			List<MungeStepOutput> inputs = getInputs(); 
-			Object[] mungedData = new Object[inputs.size()];
-			
-			for (int i = 0; i < inputs.size(); i++) {
-				MungeStepOutput output = inputs.get(i);
-				if (output != null) {
-					mungedData[i] = output.getData();
-				} else {
-					mungedData[i] = null;
-				}
-			}
-			
-			String out = "[";
-			for (int x = 0; x < mungedData.length; x++) {
-				if (mungedData[x] != null) {
-					update(table.getColumn(x).getType(), x+1, mungedData[x]);
-					out += mungedData[x];
-				} else {
-					out += rs.getObject(x+1);
-				}
-				out += "], [";
-			}
-			out = out.substring(0, out.length()-3);
-			super.logger.debug(out);
-			return Boolean.TRUE;
-		}
-		
-		private void update(int type, int columnIndex, Object data) throws Exception {
-			
-			
-			switch (type) {
-				case Types.INTEGER:
-				case Types.BIGINT:
-				case Types.SMALLINT:
-				case Types.TINYINT:
-					rs.updateInt(columnIndex, ((BigDecimal) data).intValue());
-					break;
-				case Types.BOOLEAN:
-					rs.updateBoolean(columnIndex, ((Boolean) data).booleanValue());
-					break;
-				case Types.LONGVARCHAR:
-				case Types.CHAR:
-				case Types.VARCHAR:
-					logger.debug("attempting update : " + data + ", " + columnIndex);
-					rs.updateString(columnIndex, ((String) data));
-					break;
-				case Types.DOUBLE:
-				case Types.FLOAT:
-				case Types.NUMERIC:
-				case Types.DECIMAL:
-					rs.updateBigDecimal(columnIndex, ((BigDecimal) data));
-					break;
-				case Types.DATE:
-					Date d = (Date) data;
-					rs.updateDate(columnIndex, new java.sql.Date(d.getDate()));
-					break;
-				case Types.TIME:
-					rs.updateTime(columnIndex, new Time(((Date)data).getTime()));
-					break;
-				case Types.TIMESTAMP:
-					rs.updateTimestamp(columnIndex, new Timestamp(((Date)data).getTime()));
-					break;
-				default:
-					logger.error("Unsupported sql type! " + type);
-					break;
-			}
-			logger.debug("attempting updaterow");
-			rs.updateRow();
-		}
-
-		public boolean canAddInput() {
-			return false;
-		}
+    @Override
+    public boolean isInputStep() {
+    	return true;
     }
     
+    public ResultSet getResultSet() {
+    	return rs;
+    }
 }

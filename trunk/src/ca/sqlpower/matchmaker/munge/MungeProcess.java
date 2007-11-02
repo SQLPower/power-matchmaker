@@ -20,13 +20,14 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
+import ca.sqlpower.matchmaker.Project;
 
 /**
  * A set of MungeSteps. The child type is {@link MungeStep}.
@@ -81,7 +82,12 @@ public class MungeProcess
 	 * Any class can get the munge results by calling {@link #getResults()},
 	 * which will delegate to getting the results from this output step.
 	 */
-	private MungeResultStep outputStep;
+	private MungeResultStep resultStep;
+	
+	/**
+	 * The input steps that are presently here.	 
+	 */
+	private List<SQLInputStep> inputSteps = new ArrayList<SQLInputStep>();
 	
 	/**
      * Constructor that sets up a default Munge process.
@@ -212,10 +218,11 @@ public class MungeProcess
 		mungeProcess.setSession(s);
 		mungeProcess.setVisible(isVisible());
 		
-		for ( MungeStep step : getChildren()) {
+		for (MungeStep step : getChildren()) {
             MungeStep newStep = step.duplicate(mungeProcess,s);
 			mungeProcess.addChild(newStep);
 		}
+		
 		return mungeProcess;
 	}
 	
@@ -226,18 +233,43 @@ public class MungeProcess
 	 * @throws NullPointerException if the output step has not been set.
 	 */
 	public List<MungeResult> getResults() {
-		if (outputStep == null) {
+		if (resultStep == null) {
 			throw new NullPointerException("The output step for this process has not been set!");
 		}
-		return outputStep.getResults();
-	}
-
-	public void setOutputStep(MungeResultStep outputStep) {
-		this.outputStep = outputStep;
+		return resultStep.getResults();
 	}
 
 	@Override
 	public String toString() {
 		return getName();
+	}
+	
+	@Override
+	protected void addImpl(int index, MungeStep child) {
+		if (child instanceof SQLInputStep) {
+			inputSteps.add((SQLInputStep) child);
+			if (resultStep != null) {
+				resultStep.addInputStep((SQLInputStep) child);
+			}
+		} else if (child instanceof MungeResultStep) {
+			if (resultStep != null && resultStep != child) {
+				throw new IllegalStateException("A munge process can only have one munge result step");
+			} else if (resultStep == null) {
+				this.resultStep = (MungeResultStep) child;
+				for (SQLInputStep input : inputSteps) {
+					this.resultStep.addInputStep(input);
+				}
+			}
+		}
+		super.addImpl(index, child);
+	}
+	
+	@Override
+	public void removeChild(MungeStep child) {
+		if (child instanceof MungeResultStep) {
+			throw new IllegalStateException("Removal of munge result step not allowed!");
+		} else {
+			super.removeChild(child);
+		}
 	}
 }

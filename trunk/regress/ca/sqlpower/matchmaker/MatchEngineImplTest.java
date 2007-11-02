@@ -23,9 +23,10 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
@@ -104,19 +105,18 @@ public class MatchEngineImplTest extends TestCase {
 		mungeProcessOne.setName("Munge_Process_One");
 		SQLInputStep inputStep = new SQLInputStep();
 		mungeProcessOne.addChild(inputStep);
-		MungeResultStep outputStep = new MungeResultStep();
-        outputStep.setInputStep(inputStep);
-		outputStep.addInput(new InputDescriptor("result2", Object.class));
-		mungeProcessOne.addChild(outputStep);
-		mungeProcessOne.setOutputStep(outputStep);
 		
 		project.addMungeProcess(mungeProcessOne);
 
+		MungeResultStep outputStep = inputStep.getOuputStep();
+		mungeProcessOne.addChild(outputStep);
+
 		inputStep.open(logger);
 		inputStep.close();
+
+		outputStep.addInput(new InputDescriptor("result2", Object.class));
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
 		outputStep.connectInput(1, inputStep.getOutputByName("BAR"));
-
 		engine = new MatchEngineImpl(session, project);
 	}
 
@@ -128,7 +128,7 @@ public class MatchEngineImplTest extends TestCase {
 	
 	public void testCall() throws Exception {
 		engine.call();
-		
+
 		MatchPool pool = new MatchPool(project);
 		pool.findAll(null);
 		assertEquals(2, pool.getSourceTableRecords().size());
@@ -153,12 +153,10 @@ public class MatchEngineImplTest extends TestCase {
 		mungeProcessTwo.setName("Munge_Process_Two");
 		SQLInputStep inputStep = new SQLInputStep();
 		mungeProcessTwo.addChild(inputStep);
-		MungeResultStep outputStep = new MungeResultStep();
-        outputStep.setInputStep(inputStep);
+		project.addMungeProcess(mungeProcessTwo);
+		MungeResultStep outputStep = inputStep.getOuputStep();
 		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
 		mungeProcessTwo.addChild(outputStep);
-		mungeProcessTwo.setOutputStep(outputStep);
-		project.addMungeProcess(mungeProcessTwo);
 		
 		engine.call();
 		

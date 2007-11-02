@@ -75,9 +75,10 @@ public class MatchMakerTranslateWord
 	}
 	
 	@Override
-	public void addChild(MatchMakerObject child) {
+	protected void addImpl(int index, MatchMakerObject child) {
 		throw new IllegalStateException("MatchMakerTranslateWord does not allow child!");
 	}
+	
     @Override
     public boolean allowsChildren() {
         return false;

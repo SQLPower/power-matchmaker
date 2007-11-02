@@ -47,14 +47,13 @@
 		<!-- Hardcoding this list is not ideal.  These should be added dynamically by the session
 		     when it is created (based on the resource file that lists all the munge steps) -->
 		     
-		<!-- The cleanse result step is a non-static inner class, and cannot be persisted by Hibernate -->
-		
+		<subclass name="CleanseResultStep" />
 		<subclass name="ConcatMungeStep" />
 		<subclass name="DoubleMetaphoneMungeStep" />
 		<subclass name="GoogleAddressLookup" />
 		<subclass name="LowerCaseMungeStep" />
 		<subclass name="MetaphoneMungeStep" />
-		<subclass name="MungeResultStep" />
+		<subclass name="DeDupeResultStep" />
 		<subclass name="RefinedSoundexMungeStep" />
 		<subclass name="RetainCharactersMungeStep" />
 		<subclass name="SoundexMungeStep" />

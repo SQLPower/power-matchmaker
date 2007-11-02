@@ -52,6 +52,8 @@ import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
+import ca.sqlpower.matchmaker.munge.CleanseResultStep;
+import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
 public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends MatchMakerDAO> extends TestCase {
@@ -319,6 +321,10 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
                     	} else {
                     		newVal = ChildMergeActionType.DELETE_ALL_DUP_CHILD;
                     	}
+                    } else if (property.getPropertyType() == DeDupeResultStep.class) {
+                    	newVal = new DeDupeResultStep();
+                    } else if (property.getPropertyType() == CleanseResultStep.class) {
+                    	newVal = new CleanseResultStep();
                     } else if (property.getPropertyType() == TableMergeRules.class) {
                     	if (oldVal == null) {
                     		newVal = mmo;
