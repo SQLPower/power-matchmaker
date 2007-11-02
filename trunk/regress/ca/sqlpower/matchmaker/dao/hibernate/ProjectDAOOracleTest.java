@@ -29,6 +29,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
+import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
 import ca.sqlpower.sql.SPDataSource;
 
 
@@ -73,7 +74,7 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
             con = getSession().getConnection();
             stmt = con.createStatement();
             stmt.executeUpdate(
-                    "INSERT INTO pl_match (match_oid, match_id, match_type) " +
+                    "INSERT INTO mm_project (project_oid, project_name, project_type) " +
                     "VALUES ("+time+", '"+projectName+"', '"+ProjectMode.FIND_DUPES+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
@@ -83,7 +84,7 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
     }
 
     @Override
-    protected long insertSampleMungeStepData(long parentGroupOid, String lastUpdateUser) throws Exception {
+    protected long insertSampleMungeStepData(long parentProcessOid, String lastUpdateUser) throws Exception {
         final long time = System.currentTimeMillis();
         Connection con = null;
         Statement stmt = null;
@@ -91,8 +92,8 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
             con = getSession().getConnection();
             stmt = con.createStatement();
             stmt.executeUpdate(
-                    "INSERT INTO pl_match_criteria (group_oid, match_criteria_oid, column_name, last_update_user) " +
-                    "VALUES ("+parentGroupOid+", "+time+", 'fake_column_"+time+"', '"+lastUpdateUser+"')");
+                    "INSERT INTO mm_munge_step (munge_process_oid, step_oid, step_name, step_class, last_update_user) " +
+                    "VALUES ("+parentProcessOid+", "+time+", 'fake_column_"+time+"', '"+ConcatMungeStep.class.getName()+"', '"+lastUpdateUser+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it
@@ -101,7 +102,7 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
     }
 
     @Override
-    protected long insertSampleMungeProcessData(long parentProjectOid, String groupName) throws Exception {
+    protected long insertSampleMungeProcessData(long parentProjectOid, String processName) throws Exception {
         final long time = System.currentTimeMillis();
         Connection con = null;
         Statement stmt = null;
@@ -109,8 +110,8 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
             con = getSession().getConnection();
             stmt = con.createStatement();
             stmt.executeUpdate(
-                    "INSERT INTO pl_match_group (group_oid, match_oid, group_id) " +
-                    "VALUES ("+time+", "+parentProjectOid+", '"+groupName+"')");
+                    "INSERT INTO mm_munge_process (process_oid, project_oid, process_name) " +
+                    "VALUES ("+time+", "+parentProjectOid+", '"+processName+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it

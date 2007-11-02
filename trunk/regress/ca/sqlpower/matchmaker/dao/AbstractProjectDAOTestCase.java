@@ -77,6 +77,9 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
 		nonPersistingProperties.add("session");
         nonPersistingProperties.add("mungeProcesses");
         nonPersistingProperties.add("tableMergeRules");
+        nonPersistingProperties.add("cleansingEngine");
+        nonPersistingProperties.add("matchingEngine");
+        nonPersistingProperties.add("mergingEngine");
         
         // tested explicitly elsewhere
         nonPersistingProperties.add("sourceTable");
@@ -133,7 +136,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
             con = getSession().getConnection();
             stmt = con.createStatement();
             rs = stmt.executeQuery(
-                    "SELECT * FROM pl_match WHERE match_id='"+m.getName()+"'");
+                    "SELECT * FROM mm_project WHERE project_name='"+m.getName()+"'");
             
             if (!rs.next()) {
             	fail("No results found for project "+m.getName());
@@ -308,13 +311,15 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
             stmt = con.createStatement();
             try { 
                 rs = stmt.executeQuery(
-                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+process.getName()+"'");
+                    "SELECT project_name FROM mm_project,mm_munge_process" +
+                    " WHERE mm_project.project_oid=mm_munge_process.project_oid" +
+                    " AND mm_munge_process.process_name='"+process.getName()+"'");
             
                 if (!rs.next()) {
                     fail("No results found for project "+process.getName());
                 }
             
-                assertEquals("The setup failed to work","old", rs.getString("match_id"));
+                assertEquals("The setup failed to work","old", rs.getString("project_name"));
             } finally {
                 try { rs.close(); } catch (Exception e) { System.err.println("Couldn't close result set"); e.printStackTrace(); }
             }
@@ -330,13 +335,15 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
             
             try { 
                 rs = stmt.executeQuery(
-                    "SELECT match_id FROM pl_match,pl_match_group WHERE pl_match.match_oid=pl_match_group.match_oid AND pl_match_group.group_id='"+process.getName()+"'");
+                		"SELECT project_name FROM mm_project,mm_munge_process" +
+                        " WHERE mm_project.project_oid=mm_munge_process.project_oid" +
+                        " AND mm_munge_process.process_name='"+process.getName()+"'");
             
                 if (!rs.next()) {
                     fail("No results found for project "+process.getName());
                 }
             
-                assertEquals("move failed to work","new", rs.getString("match_id"));
+                assertEquals("move failed to work","new", rs.getString("project_name"));
             } finally {
                 try { rs.close(); } catch (Exception e) { System.err.println("Couldn't close result set"); e.printStackTrace(); }
             }
@@ -348,7 +355,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     }
     
     /**
-     * Inserts a sample entry in PL_MATCH, and returns its OID.  The match will
+     * Inserts a sample entry in mm_project, and returns its OID.  The match will
      * have its name (MATCH_ID) set to the given string value.  This is useful for
      * verifying that you are retrieving the same record that this method inserted.
      * <p>
@@ -361,7 +368,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
             String projectName, Long folderOid) throws Exception;
     
     /**
-     * Inserts a sample entry in PL_MATCH_GROUP, and returns its OID.  The munge process will
+     * Inserts a sample entry in mm_munge_process, and returns its OID.  The munge process will
      * its name (GROUP_ID) set to the given string value.  This is useful for
      * verifying that you are retrieving the same record that this method inserted.
      * <p>
@@ -374,7 +381,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
             long parentProjectOid, String mungeProcessName) throws Exception;
 
     /**
-     * Inserts a sample entry in PL_MATCH_CRITERIA, and returns its OID.  The rule will
+     * Inserts a sample entry in mm_munge_step, and returns its OID.  The rule will
      * have its LAST_UPDATE_USER set to the given string value (it doesn't use the name
      * because rule sets don't have names).  This is useful for
      * verifying that you are retrieving the same record that this method inserted.
