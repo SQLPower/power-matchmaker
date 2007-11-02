@@ -92,7 +92,7 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
             con = getSession().getConnection();
             stmt = con.createStatement();
             stmt.executeUpdate(
-                    "INSERT INTO mm_munge_step (munge_process_oid, step_oid, step_name, step_class, last_update_user) " +
+                    "INSERT INTO mm_munge_step (munge_process_oid, munge_step_oid, step_name, step_class, last_update_user) " +
                     "VALUES ("+parentProcessOid+", "+time+", 'fake_column_"+time+"', '"+ConcatMungeStep.class.getName()+"', '"+lastUpdateUser+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
@@ -110,7 +110,7 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
             con = getSession().getConnection();
             stmt = con.createStatement();
             stmt.executeUpdate(
-                    "INSERT INTO mm_munge_process (process_oid, project_oid, process_name) " +
+                    "INSERT INTO mm_munge_process (munge_process_oid, project_oid, process_name) " +
                     "VALUES ("+time+", "+parentProjectOid+", '"+processName+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }

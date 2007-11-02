@@ -67,6 +67,8 @@ public class MockJDBCCleanseTest extends SQLInputStepTest {
 
 	    MungeStep mrs = step.getOuputStep();
 	    UpperCaseMungeStep ucms = new UpperCaseMungeStep();
+	    step.open(logger);
+	    step.close();
 	    ucms.connectInput(0, step.getChildren().get(0));
 	    mrs.connectInput(0, ucms.getChildren().get(0));
 
