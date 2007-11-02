@@ -243,10 +243,9 @@ public class MergeProcessor extends AbstractProcessor {
 	throws ArchitectException, SQLException {
 		
 		engineLogger.debug("Merging duplicate record: " + parentDupRow + " into master record: " + parentMasterRow + " on table: " + parentTableMergeRule.getSourceTable());
-		SQLTable parentTable = parentTableMergeRule.getSourceTable();
 		
 		for (TableMergeRules childTableMergeRule : project.getTableMergeRules()) {
-			if (parentTable.equals(childTableMergeRule.getParentTable())) {
+			if (parentTableMergeRule == childTableMergeRule.getParentMergeRule()) {
 				
 				// populates the data required to merge the grand child tables	
 				List<ResultRow> childDupRows = findChildRowsByParentRow(parentDupRow, childTableMergeRule);

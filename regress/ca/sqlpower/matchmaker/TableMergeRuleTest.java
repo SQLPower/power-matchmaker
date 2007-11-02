@@ -80,12 +80,12 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		m1.setTableName("t1");
 		assertEquals("Two objects with the same parents and tables should be equal",m1,m2);
 		
-		m1.setParentTable(t1);
-		m2.setParentTable(t2);
+		m1.setParentMergeRule(m2);
+		m2.setParentMergeRule(m1);
 		assertFalse("Two objects with different parent tables should not be equal",
 				m1.equals(m2));
 		
-		m2.setParentTable(t1);
+		m2.setParentMergeRule(m2);
 		assertEquals("Two objects with same parent tables should be equal", m1, m2);
 		
 		m1.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);

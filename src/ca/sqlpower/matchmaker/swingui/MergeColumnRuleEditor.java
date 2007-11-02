@@ -52,7 +52,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -108,7 +107,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 			}
 			else {
 				TableMergeRules tableMergeRule = getMergeRule();
-				SQLTable parentTable = tableMergeRule.getParentTable();
+				TableMergeRules parentMergeRule = tableMergeRule.getParentMergeRule();
 				
 				// checks for invalid foreign keys types
 				for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
@@ -129,66 +128,59 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 				}
 				
 				// checks for invalid foreign keys
-				if (parentTable != null) {
-					for (TableMergeRules parentMergeRule : project.getTableMergeRules()) {
-						if (parentMergeRule.getSourceTable().equals(parentTable)) {
-							//parentMergeRule is parent
-							if (parentMergeRule.isSourceMergeRule()) {
-								try {
-									int count = 0;
-									for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
-										if (cmr.getImportedKeyColumn() != null) {
-											boolean found = false;
-											for (SQLIndex.Column column : project.getSourceTableIndex().getChildren()) {
-												if (column.getColumn().equals(cmr.getImportedKeyColumn())) {
-													count++;
-													found = true;
-													break;
-												}
-											}
-											if (!found) {
-												return ValidateResult.createValidateResult(Status.FAIL, 
-														"Invalid foreign imported key columns");
-											}
+				if (parentMergeRule != null) {
+					if (parentMergeRule.isSourceMergeRule()) {
+						try {
+							int count = 0;
+							for (ColumnMergeRules cmr : tableMergeRule.getChildren()) {
+								if (cmr.getImportedKeyColumn() != null) {
+									boolean found = false;
+									for (SQLIndex.Column column : project.getSourceTableIndex().getChildren()) {
+										if (column.getColumn().equals(cmr.getImportedKeyColumn())) {
+											count++;
+											found = true;
+											break;
 										}
 									}
-									if (count != project.getSourceTableIndex().getChildCount()) {
+									if (!found) {
 										return ValidateResult.createValidateResult(Status.FAIL, 
 												"Invalid foreign imported key columns");
 									}
-								} catch (ArchitectException e) {
-									throw new RuntimeException("Cannot find the source table index.");
-								}
-							} else {
-								int primaryKeyCount = 0;
-								int foreignKeyCount = 0;
-								for (ColumnMergeRules parentColumn : parentMergeRule.getChildren()) {
-									if (parentColumn.isInPrimaryKey()) {
-										primaryKeyCount++;
-									}
-								}
-								for (ColumnMergeRules childColumn : tableMergeRule.getChildren()) {
-									if (childColumn.getImportedKeyColumn() != null) {
-										boolean found = false;
-										for (ColumnMergeRules parentColumn : parentMergeRule.getChildren()) {
-											if (parentColumn.getColumn().equals(childColumn.getImportedKeyColumn())) {
-												foreignKeyCount++;
-												found = true;
-												break;
-											}
-										}
-										if (!found) {
-											return ValidateResult.createValidateResult(Status.FAIL, 
-													"Invalid foreign imported key columns");
-										}
-									}
-								}
-								if (primaryKeyCount != foreignKeyCount) {
-									return ValidateResult.createValidateResult(Status.FAIL, "Invalid foreign imported key columns");
 								}
 							}
-							
-							break;
+							if (count != project.getSourceTableIndex().getChildCount()) {
+								return ValidateResult.createValidateResult(Status.FAIL, 
+										"Invalid foreign imported key columns");
+							}
+						} catch (ArchitectException e) {
+							throw new RuntimeException("Cannot find the source table index.");
+						}
+					} else {
+						int primaryKeyCount = 0;
+						int foreignKeyCount = 0;
+						for (ColumnMergeRules parentColumn : parentMergeRule.getChildren()) {
+							if (parentColumn.isInPrimaryKey()) {
+								primaryKeyCount++;
+							}
+						}
+						for (ColumnMergeRules childColumn : tableMergeRule.getChildren()) {
+							if (childColumn.getImportedKeyColumn() != null) {
+								boolean found = false;
+								for (ColumnMergeRules parentColumn : parentMergeRule.getChildren()) {
+									if (parentColumn.getColumn().equals(childColumn.getImportedKeyColumn())) {
+										foreignKeyCount++;
+										found = true;
+										break;
+									}
+								}
+								if (!found) {
+									return ValidateResult.createValidateResult(Status.FAIL, 
+											"Invalid foreign imported key columns");
+								}
+							}
+						}
+						if (primaryKeyCount != foreignKeyCount) {
+							return ValidateResult.createValidateResult(Status.FAIL, "Invalid foreign imported key columns");
 						}
 					}
 				}
@@ -280,9 +272,9 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	private final JCheckBox deleteDup = new JCheckBox();
 
 	/**
-	 * allows the user to set the parentTable
+	 * allows the user to set the parentMergeRule
 	 */ 
-	private final JComboBox parentTable = new JComboBox();
+	private final JComboBox parentMergeRule = new JComboBox();
 
 	/**
 	 * allows the user to set the childMergeAction
@@ -350,12 +342,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
         ruleTable.getSelectionModel().addListSelectionListener(tablelistener);
         TableUtils.fitColumnWidths(ruleTable, 15);
 
-        for (TableMergeRules tmr : project.getTableMergeRules()) {
-        	if (!tmr.equals(mmo)) {
-        		parentTable.addItem(tmr.getSourceTable());
-        	}
-        }
-        
+        parentMergeRule.setModel(new DefaultComboBoxModel(project.getTableMergeRules().toArray()));
         
         buildUI();
         addListenerToComponents();
@@ -422,8 +409,8 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 		row += 2;
 		if (!mmo.isSourceMergeRule()) {
 			pb.add(new JLabel("Parent Table:"), cc.xy(2,row,"l,c"));
-			pb.add(parentTable, cc.xy(4,row,"f,c"));
-			parentTable.setSelectedItem(mmo.getParentTable());
+			pb.add(parentMergeRule, cc.xy(4,row,"f,c"));
+			parentMergeRule.setSelectedItem(mmo.getParentMergeRule());
 			pb.add(new JLabel("Merge Action:"), cc.xy(6,row,"r,c"));
 			pb.add(childMergeAction, cc.xy(8,row,"f,c"));
 			childMergeAction.setSelectedItem(mmo.getChildMergeAction());
@@ -442,9 +429,9 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	}
 	
 	private void addListenerToComponents() {
-		parentTable.addItemListener(new ItemListener() {
+		parentMergeRule.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				mmo.setParentTableAndImportedKeys((SQLTable) parentTable.getSelectedItem());
+				mmo.setParentMergeRuleAndImportedKeys((TableMergeRules) parentMergeRule.getSelectedItem());
 			}});
         childMergeAction.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e) {
@@ -484,17 +471,14 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	}
 	
 	protected JComboBox getParentTableComboBox() {
-		return parentTable;
+		return parentMergeRule;
 	}
 	
 	public List<SQLColumn> getParentTablePrimaryKeys() throws ArchitectException{
 		List<SQLColumn> primaryKeys = null;
-		if (parentTable.getSelectedItem() != null) {
-			for (TableMergeRules tmr : project.getTableMergeRules()) {
-				if (tmr.getSourceTable().equals(parentTable.getSelectedItem())) {
-					primaryKeys = tmr.getPrimaryKey();
-				}
-			}
+		if (parentMergeRule.getSelectedItem() != null) {
+			TableMergeRules tmr = (TableMergeRules) parentMergeRule.getSelectedItem();
+			primaryKeys = tmr.getPrimaryKey();
 		}
 		return primaryKeys;
 	}
@@ -522,7 +506,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 		if (mmo.isSourceMergeRule()) {
 			deleteDup.setSelected(mmo.isDeleteDup());
 		} else {
-			parentTable.setSelectedItem(mmo.getParentTable());
+			parentMergeRule.setSelectedItem(mmo.getParentMergeRule());
 			childMergeAction.setSelectedItem(mmo.getChildMergeAction());
 		}
 		handler.performFormValidation();

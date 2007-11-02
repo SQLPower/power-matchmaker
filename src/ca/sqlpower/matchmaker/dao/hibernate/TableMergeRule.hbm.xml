@@ -45,6 +45,11 @@
 		    </type>
 		</property>
 		
+		<many-to-one name="parentMergeRule"
+			class="ca.sqlpower.matchmaker.TableMergeRules" fetch="select" >
+			<column name="PARENT_MERGE_RULE_OID" />
+		</many-to-one>
+		
 		<property name="visible"
 			type="ca.sqlpower.matchmaker.util.CustomBooleanType">
 			<column name="visible_ind" length="1" />
