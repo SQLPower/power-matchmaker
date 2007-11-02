@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import ca.sqlpower.matchmaker.DBTestUtil;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
@@ -35,6 +36,29 @@ import ca.sqlpower.sql.SPDataSource;
 
 public class ProjectDAOSQLServerTest extends AbstractProjectDAOTestCase {
     
+private Project project;
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        project = createNewObjectUnderTest();
+
+        Connection con = getSession().getConnection();
+        Statement stmt = con.createStatement();
+        String sql = "";
+
+        try {
+        	sql = "DROP TABLE fake_table";
+        	stmt.executeUpdate(sql);
+        } catch (SQLException e) {
+        	// Ignoring exception when deleting a table that might not exist
+        	System.out.println(e.getStackTrace());
+        }
+        
+        sql = "CREATE TABLE fake_table (id NUMERIC)";
+    	stmt.executeUpdate(sql);
+    }
+	
 	protected SPDataSource getDS() {
 		return DBTestUtil.getSqlServerDS();
 	}
