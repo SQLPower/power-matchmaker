@@ -288,7 +288,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
 	    	"VALUES " + 
-	    	"(4,3,10,'UNMATCH','', 'test')";
+	    	"(6,3,10,'UNMATCH','', 'test')";
 	    execSQL(con,sql);
 	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
@@ -418,22 +418,19 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     public void testUnmatch() throws Exception {
     	populateTables();
     	
-		cmr_string.setActionType(MergeActionType.AUGMENT);
-		cmr_date.setActionType(MergeActionType.AUGMENT);
-		cmr_number.setActionType(MergeActionType.AUGMENT);
 		mpor.call();
 		
 		Statement stmt = con.createStatement();
 		ResultSet rs;
     	
-    	String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 4";
+    	String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
 		rs = stmt.executeQuery(sql);
 		if (!rs.next()) {
-			fail("Merge deleted master record with id = 4");
+			fail("Merge deleted master record with id = 6");
 		}
-		assertEquals("No changes should have been made.", "E", rs.getString(2));
-		assertEquals("No changes should have been made.", (new Date(1000*60*60*24*4)).toString(), rs.getDate(3).toString());
-		assertEquals("No changes should have been made.", 4, rs.getInt(4));    
+		assertEquals("Record should not be changed on unmatch: col_string was changed.", null, rs.getString(2));
+		assertEquals("Record should not be changed on unmatch: col_date was changed.", null, rs.getDate(3));
+		assertEquals("Record should not be changed on unmatch: col_number was changed.", 0, rs.getInt(4));    
     }
        
     /**
