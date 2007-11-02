@@ -75,7 +75,7 @@ public class MatchStatisticsPanel extends JPanel {
 
 	private void createUI() throws SQLException {
 
-		RowSet rs = getMatchStats(project);
+		RowSet rs = getProjectStats(project);
 		RowSetModel rsm = new RowSetModel(rs);
 
 		JTable table = new MatchStatisticTable(rsm);
@@ -88,10 +88,10 @@ public class MatchStatisticsPanel extends JPanel {
 		JTable tableGroup = null;
 		if ( table.getRowCount() > 0 && table.getValueAt(0,0) != null ) {
 			table.setRowSelectionInterval(0,0);
-			RowSet rsGroup = getMatchGroupStats(table);
+			RowSet rsGroup = getMungeProcessStats(table);
 			RowSetModel rsmGroup = new RowSetModel(rsGroup);
-			tableGroup = new JTable(new MatchGroupStatisticTableModel(rsmGroup));
-			setMatchGroupStatisticTableCellRenderer(tableGroup);
+			tableGroup = new JTable(new MungeProcessStatisticTableModel(rsmGroup));
+			setMungeProcessStatisticTableCellRenderer(tableGroup);
 		} else {
 			tableGroup = new JTable();
 		}
@@ -111,7 +111,7 @@ public class MatchStatisticsPanel extends JPanel {
 	}
 
 
-	private RowSet getMatchStats(Project project) throws SQLException {
+	private RowSet getProjectStats(Project project) throws SQLException {
     	Connection con = null;
     	Statement stmt = null;
     	ResultSet rs =  null;
@@ -128,7 +128,7 @@ public class MatchStatisticsPanel extends JPanel {
     		sql.append(" ORDER BY TRANS_RUN_NO DESC, START_DATE_TIME DESC");
     		lastSql = sql.toString();
     		PreparedStatement pstmt = con.prepareStatement(lastSql);
-    		pstmt.setString(1, "MATCH");
+    		pstmt.setString(1, "PROJECT");
     		pstmt.setString(2, project.getName());
     		rs = pstmt.executeQuery();
 
@@ -149,7 +149,7 @@ public class MatchStatisticsPanel extends JPanel {
     	}
     }
 
-	private RowSet getMatchGroupStats(Project match, int runNo, int total) throws SQLException {
+	private RowSet getMungeProcessStats(Project project, int runNo, int total) throws SQLException {
     	Connection con = null;
     	PreparedStatement pstmt = null;
     	ResultSet rs =  null;
@@ -161,13 +161,13 @@ public class MatchStatisticsPanel extends JPanel {
     		}
     		StringBuffer sql = new StringBuffer();
 
-    		sql.append("SELECT GROUP_ID,MATCH_PERCENT FROM PL_MATCH_GROUP WHERE MATCH_OID=? ORDER BY MATCH_PERCENT DESC");
+    		sql.append("SELECT PROCESS_NAME,MATCH_PERCENT FROM MM_MUNGE_PROCESS WHERE PROJECT_OID=? ORDER BY MATCH_PERCENT DESC");
     		pstmt = con.prepareStatement(sql.toString());
-    		pstmt.setLong(1, match.getOid());
+    		pstmt.setLong(1, project.getOid());
     		rs = pstmt.executeQuery();
-    		CachedRowSetImpl matchGroupSet = new CachedRowSetImpl();
-    		matchGroupSet.setReadOnly(true);
-    		matchGroupSet.populate(rs);
+    		CachedRowSetImpl mungeProcessSet = new CachedRowSetImpl();
+    		mungeProcessSet.setReadOnly(true);
+    		mungeProcessSet.populate(rs);
 
     		rs.close();
     		pstmt.close();
@@ -179,7 +179,7 @@ public class MatchStatisticsPanel extends JPanel {
     		sql.append(",NO_OF_REC_TOTAL, NO_OF_REC_PROCESSED");
     		sql.append(" FROM PL_STATS WHERE OBJECT_TYPE=? and TRANS_RUN_NO=?");
     		pstmt = con.prepareStatement(sql.toString());
-    		pstmt.setString(1, "MATCHGROUP");
+    		pstmt.setString(1, "MUNGE_PROCESS");
     		pstmt.setInt(2, runNo);
     		rs = pstmt.executeQuery();
     		CachedRowSetImpl statsSet = new CachedRowSetImpl();
@@ -187,7 +187,7 @@ public class MatchStatisticsPanel extends JPanel {
     		statsSet.populate(rs);
 
     		JoinRowSet jrs = new JoinRowSetImpl();
-    		jrs.addRowSet(matchGroupSet,1);
+    		jrs.addRowSet(mungeProcessSet,1);
     		jrs.addRowSet(statsSet,1);
 
 
@@ -208,7 +208,7 @@ public class MatchStatisticsPanel extends JPanel {
     	}
     }
 
-	private RowSet getMatchGroupStats(JTable t) throws SQLException {
+	private RowSet getMungeProcessStats(JTable t) throws SQLException {
 
 		if ( t.getSelectedRow() == -1 )
 			return null;
@@ -228,7 +228,7 @@ public class MatchStatisticsPanel extends JPanel {
 			totalFound = bTotalFound.intValue();
 		}
 
-		return getMatchGroupStats(project,runNo,totalFound);
+		return getMungeProcessStats(project,runNo,totalFound);
 	}
 
 
@@ -272,11 +272,11 @@ public class MatchStatisticsPanel extends JPanel {
 
 	}
 
-	private class MatchGroupStatisticTableModel extends AbstractTableModel {
+	private class MungeProcessStatisticTableModel extends AbstractTableModel {
 
 		private AbstractTableModel model;
 
-		public MatchGroupStatisticTableModel(AbstractTableModel model) {
+		public MungeProcessStatisticTableModel(AbstractTableModel model) {
 			this.model = model;
 		}
 		public int getRowCount() {
@@ -315,7 +315,7 @@ public class MatchStatisticsPanel extends JPanel {
 		}
 	}
 
-	private void setMatchGroupStatisticTableCellRenderer(JTable table) {
+	private void setMungeProcessStatisticTableCellRenderer(JTable table) {
 		TableColumnModel cm = table.getColumnModel();
 		for (int col = 0; col < cm.getColumnCount(); col++) {
 			TableColumn tc = cm.getColumn(col);
@@ -336,22 +336,22 @@ public class MatchStatisticsPanel extends JPanel {
 	}
 
 	private class SelectionListener implements ListSelectionListener {
-		private JTable matchTable;
-		private JTable matchGroupTable;
+		private JTable projectTable;
+		private JTable mungeProcessTable;
 
         // It is necessary to keep the table since it is not possible
         // to determine the table from the event's source
-        SelectionListener(JTable matchTable, JTable matchGroupTable) {
-            this.matchTable = matchTable;
-            this.matchGroupTable = matchGroupTable;
+        SelectionListener(JTable projectTable, JTable mungeProcessTable) {
+            this.projectTable = projectTable;
+            this.mungeProcessTable = mungeProcessTable;
         }
         public void valueChanged(ListSelectionEvent e) {
         	RowSet rsGroup;
 			try {
 
-				Object startDateTime = matchTable.getValueAt(
-						matchTable.getSelectedRow(),
-						matchTable.convertColumnIndexToView(1));
+				Object startDateTime = projectTable.getValueAt(
+						projectTable.getSelectedRow(),
+						projectTable.convertColumnIndexToView(1));
 				if ( startDateTime == null ) {
 					MatchStatisticsPanel.this.setStartDateTime(null);
 				} else if ( startDateTime instanceof Timestamp ) {
@@ -364,11 +364,11 @@ public class MatchStatisticsPanel extends JPanel {
 					MatchStatisticsPanel.this.setStartDateTime(null);
 				}
 
-				rsGroup = getMatchGroupStats(matchTable);
+				rsGroup = getMungeProcessStats(projectTable);
 				RowSetModel rsmGroup = new RowSetModel(rsGroup);
-				matchGroupTable.setModel(
-						new MatchGroupStatisticTableModel(rsmGroup));
-				setMatchGroupStatisticTableCellRenderer(matchGroupTable);
+				mungeProcessTable.setModel(
+						new MungeProcessStatisticTableModel(rsmGroup));
+				setMungeProcessStatisticTableCellRenderer(mungeProcessTable);
 			} catch (SQLException e1) {
 				MMSUtils.showExceptionDialog(MatchStatisticsPanel.this, "SQL Error", e1);
 			}
@@ -384,7 +384,7 @@ public class MatchStatisticsPanel extends JPanel {
     		sql.append("DELETE FROM PL_STATS WHERE OBJECT_TYPE=? ");
     		sql.append(" AND OBJECT_NAME=? ");
     		pstmt = con.prepareStatement(sql.toString());
-    		pstmt.setString(1, "MATCH");
+    		pstmt.setString(1, "PROJECT");
     		pstmt.setString(2, project.getName());
     		int rc = pstmt.executeUpdate();
     		con.commit();
@@ -411,7 +411,7 @@ public class MatchStatisticsPanel extends JPanel {
     		sql.append("DELETE FROM PL_STATS WHERE OBJECT_TYPE=? ");
     		sql.append(" AND OBJECT_NAME=? AND START_DATE_TIME<=?");
     		pstmt = con.prepareStatement(sql.toString());
-    		pstmt.setString(1, "MATCH");
+    		pstmt.setString(1, "PROJECT");
     		pstmt.setString(2, project.getName());
     		pstmt.setTimestamp(3, getStartDateTime());
     		int rc = pstmt.executeUpdate();
