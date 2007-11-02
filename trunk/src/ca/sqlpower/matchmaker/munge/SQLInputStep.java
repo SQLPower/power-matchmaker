@@ -291,7 +291,7 @@ public class SQLInputStep extends AbstractMungeStep {
 				out += "], [";
 			}
 			out = out.substring(0, out.length()-3);
-			logger.debug(out);
+			super.logger.debug(out);
 			return Boolean.TRUE;
 		}
 		
