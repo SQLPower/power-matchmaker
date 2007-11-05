@@ -255,17 +255,14 @@ public abstract class AbstractEngine implements MatchMakerEngine {
     }
     
 	/**
-	 * Returns true if the smtp host and localhost addresses 
-	 * are not null or empty, they are require to send the emails.
+	 * Returns true if the smtp host addresses are not
+	 * null or empty, they are require to send the emails.
 	 */
 	protected boolean validateEmailSetting(MatchMakerSessionContext context) {
 		boolean validate = false;
 		String host = context.getEmailSmtpHost();
-		String localhost = context.getEmailSmtpLocalhost();
 		validate = host != null &&
-					host.length() > 0 &&
-					localhost != null &&
-					localhost.length() > 0;
+					host.length() > 0;
 		return validate;
 	}
 	
@@ -291,9 +288,8 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 		findEmailUsers();
 		
 		String host = context.getEmailSmtpHost();
-		String localhost = context.getEmailSmtpLocalhost();
 		
-		email = new Email(host, localhost);
+		email = new Email(host);
 		email.setFromEmail(session.getAppUserEmail());
 		email.setFromName(session.getAppUser());
 	}

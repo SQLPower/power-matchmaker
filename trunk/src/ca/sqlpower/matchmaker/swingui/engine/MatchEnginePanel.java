@@ -113,8 +113,16 @@ public class MatchEnginePanel implements EditorPane {
 
 	/**
 	 * A flag for the engine to send emails or not.
+	 * 
+	 * TODO: This has been taken out temporarily, the coding 
+	 * 	     for the emailing function is complete but not the 
+	 *       gui. Code involving this checkbox has been commented out
+	 *       for now until those have been added. The gui has two
+	 *       parts, one for setting the SMTPHost in the context
+	 *       and one to set the recipients on the pl_user_notification
+	 *       and pl_group_notification
 	 */
-	private JCheckBox sendEmail;
+//	private JCheckBox sendEmail;
 
 	/**
 	 * The frame that this editor lives in.
@@ -302,7 +310,7 @@ public class MatchEnginePanel implements EditorPane {
 			}
 		});
 		clearMatchPool = new JCheckBox("Clear match pool?", settings.isClearMatchPool());
-		sendEmail = new JCheckBox("Send E-mails?", settings.getSendEmail());
+//		sendEmail = new JCheckBox("Send E-mails?", settings.getSendEmail());
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 		
 		messageLevel = new JComboBox(new Level[] {Level.ALL, Level.DEBUG, Level.ERROR, Level.FATAL, Level.INFO, Level.OFF, Level.WARN});
@@ -342,7 +350,7 @@ public class MatchEnginePanel implements EditorPane {
 		pb.add(clearMatchPool, cc.xy(4, y, "l,c"));
 		
 		y += 2;
-		pb.add(sendEmail, cc.xy(4, y, "l,c"));
+//		pb.add(sendEmail, cc.xy(4, y, "l,c"));
 		
 		y += 2;
 		pb.add(new JLabel("Message Level:"), cc.xy(2,y, "r,c"));
@@ -410,7 +418,7 @@ public class MatchEnginePanel implements EditorPane {
 		MungeSettings settings = project.getMungeSettings();
 		settings.setDebug(debugMode.isSelected());
 		settings.setClearMatchPool(clearMatchPool.isSelected());
-		settings.setSendEmail(sendEmail.isSelected());
+//		settings.setSendEmail(sendEmail.isSelected());
 		settings.setLog(new File(logFilePath.getText()));
 		settings.setAppendToLog(appendToLog.isSelected());
 		if (recordsToProcess.getValue().equals(new Integer(0))) {

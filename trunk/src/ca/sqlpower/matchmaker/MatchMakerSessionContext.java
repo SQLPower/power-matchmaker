@@ -61,11 +61,6 @@ public interface MatchMakerSessionContext {
      */
     public static final String EMAIL_HOST_PREFS = "email.host";
     
-    /**
-     * Name of the preferences parameter for email localhost address
-     */
-    public static final String EMAIL_LOCALHOST_PREFS = "email.localhost";
-
     public List<SPDataSource> getDataSources();
 
     /**
@@ -112,14 +107,4 @@ public interface MatchMakerSessionContext {
      * Sets the email smtp host address in the preferences 
      */
     public void setEmailSmtpHost(String host);
-    
-    /**
-     * Returns the email smtp localhost address set in the preferences 
-     */
-    public String getEmailSmtpLocalhost();
-    
-    /**
-     * Sets the email smtp localhost address in the preferences
-     */
-    public void setEmailSmtpLocalhost(String localhost);
 }

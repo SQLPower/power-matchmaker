@@ -73,16 +73,7 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 		return prefs.get(EMAIL_HOST_PREFS, "");
 	}
 
-	public String getEmailSmtpLocalhost() {
-		return prefs.get(EMAIL_LOCALHOST_PREFS, "");
-	}
-
 	public void setEmailSmtpHost(String host) {
 		prefs.put(EMAIL_HOST_PREFS, host);
 	}
-
-	public void setEmailSmtpLocalhost(String localhost) {
-		prefs.put(EMAIL_LOCALHOST_PREFS, localhost);
-	}
-
 }

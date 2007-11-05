@@ -117,23 +117,9 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 	}
 
 	/**
-	 * Returns the smtp localhost address
-	 */
-	public String getEmailSmtpLocalhost() {
-		return prefs.get(EMAIL_LOCALHOST_PREFS, "");
-	}
-
-	/**
 	 * Sets the smtp host address in the preferences
 	 */
 	public void setEmailSmtpHost(String host) {
 		prefs.put(EMAIL_HOST_PREFS, host);
 	}
-
-	/**
-	 * Sets the smtp localhost address in the preferences
-	 */
-	public void setEmailSmtpLocalhost(String localhost) {
-		prefs.put(EMAIL_LOCALHOST_PREFS, localhost);		
-	}   
 }

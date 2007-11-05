@@ -542,15 +542,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 		return context.getEmailSmtpHost();
 	}
 
-	public String getEmailSmtpLocalhost() {
-		return context.getEmailSmtpLocalhost();
-	}
-
 	public void setEmailSmtpHost(String host) {
 		context.setEmailSmtpHost(host);
-	}
-
-	public void setEmailSmtpLocalhost(String localhost) {
-		context.setEmailSmtpLocalhost(localhost);
 	}
 }
