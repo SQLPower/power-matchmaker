@@ -38,7 +38,17 @@ public class GoogleAddressLookup extends AbstractMungeStep {
     public static final String GOOGLE_MAPS_API_KEY = "GoogleMapsApiKey";
     public static final String GOOGLE_GEOCODER_URL = "GoogleGeocoderUrl";
 
+    /**
+     * The status code returned with the Google result.  Even if the lookup fails or the
+     * API key is incorrect, this three-digit status code will still be set.  It will only
+     * come out null if the URL for the geocoder service is incorrect (therefore there
+     * could be no response from the Google Maps Geocoder).
+     * <p>
+     * The meaning of the status codes is available in <a href="http://www.google.com/apis/maps/documentation/reference.html#GGeoStatusCode"
+     * >the Google Maps API documentation</a>.
+     */
     private final MungeStepOutput<BigDecimal> statusCode;
+    
     private final MungeStepOutput<String> country;
     private final MungeStepOutput<String> adminArea;
     private final MungeStepOutput<String> subAdminArea;
@@ -47,6 +57,12 @@ public class GoogleAddressLookup extends AbstractMungeStep {
     private final MungeStepOutput<String> postCode;
     private final MungeStepOutput<BigDecimal> latitude;
     private final MungeStepOutput<BigDecimal> longitude;
+    
+    /**
+     * The accuracy constant for the location information.  Constant codes are
+     * documented in <a href="http://www.google.com/apis/maps/documentation/reference.html#GGeoAddressAccuracy"
+     * >the Google Maps API documentation</a>.
+     */
     private final MungeStepOutput<BigDecimal> accuracy;
     
     public GoogleAddressLookup() {
@@ -107,7 +123,7 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         this.statusCode.setData(BigDecimal.valueOf(statusCode));
         
         if (!response.has("Placemark")) {
-            logger.error("Address lookup for " + address + " failed with. Google error code was " + statusCode + ".");
+            logger.error("Address lookup for " + address + " failed. Google error code was " + statusCode + ".");
             return Boolean.TRUE;
         }
         
@@ -122,17 +138,21 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         JSONObject adminArea = country.getJSONObject("AdministrativeArea");
         this.adminArea.setData(adminArea.getString("AdministrativeAreaName"));
 
-        JSONObject subAdminArea = adminArea.getJSONObject("SubAdministrativeArea");
-        this.subAdminArea.setData(subAdminArea.getString("SubAdministrativeAreaName"));
-        
-        JSONObject locality = subAdminArea.getJSONObject("Locality");
-        this.locality.setData(locality.getString("LocalityName"));
-        
-        JSONObject thoroughfare = locality.getJSONObject("Thoroughfare");
-        this.street.setData(thoroughfare.getString("ThoroughfareName"));
-        
-        JSONObject postalCode = locality.getJSONObject("PostalCode");
-        this.postCode.setData(postalCode.getString("PostalCodeNumber"));
+        if (adminArea.has("SubAdministrativeArea")) {
+            JSONObject subAdminArea = adminArea.getJSONObject("SubAdministrativeArea");
+            this.subAdminArea.setData(subAdminArea.getString("SubAdministrativeAreaName"));
+
+            if (subAdminArea.has("Locality")) {
+                JSONObject locality = subAdminArea.getJSONObject("Locality");
+                this.locality.setData(locality.getString("LocalityName"));
+
+                JSONObject thoroughfare = locality.getJSONObject("Thoroughfare");
+                this.street.setData(thoroughfare.getString("ThoroughfareName"));
+
+                JSONObject postalCode = locality.getJSONObject("PostalCode");
+                this.postCode.setData(postalCode.getString("PostalCodeNumber"));
+            }
+        }
         
         this.accuracy.setData(BigDecimal.valueOf(addressDetails.getInt("Accuracy")));
         
