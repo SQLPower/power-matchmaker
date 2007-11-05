@@ -41,7 +41,6 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        project = createNewObjectUnderTest();
 
         Connection con = getSession().getConnection();
         Statement stmt = con.createStatement();
@@ -57,6 +56,8 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
         
         sql = "CREATE TABLE fake_table (id NUMBER)";
     	stmt.executeUpdate(sql);
+    	
+    	project = createNewObjectUnderTest();
     }
     
 	protected SPDataSource getDS() {
