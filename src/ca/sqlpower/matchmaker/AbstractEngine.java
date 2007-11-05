@@ -67,7 +67,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 	/**
 	 * Gets set to true when the user attempts to cancel the engine run.
 	 */
-	protected boolean cancelled;
+	private boolean cancelled;
 	
 	/**
 	 * The users who should be emailed for a green status
@@ -300,5 +300,13 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 
 	public String getObjectName() {
 		return getProject().getOid().toString();
+	}
+	
+	protected synchronized boolean isCanceled() {
+		return cancelled;
+	}
+	
+	protected synchronized void setCanceled(boolean cancelled) {
+		this.cancelled = cancelled;
 	}
 }

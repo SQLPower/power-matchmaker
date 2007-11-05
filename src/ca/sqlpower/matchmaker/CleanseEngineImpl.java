@@ -126,7 +126,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException {
 		Level oldLevel = logger.getLevel();
-		cancelled = false;
+		setCanceled(false);
 		FileAppender fileAppender = null;
 		EmailAppender emailAppender = null;
 		
@@ -195,7 +195,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 				progressMessage = "Running cleanse process " + currentProcess.getName();
 				logger.debug(getMessage());
 				munger.call();
-				if (cancelled) {
+				if (isCanceled()) {
 					throw new UserAbortException();
 				}
 				progress += munger.getProgress();
@@ -265,7 +265,6 @@ public class CleanseEngineImpl extends AbstractEngine {
 	
 	public synchronized void setCancelled(boolean cancelled) {
 		super.setCancelled(cancelled);
-		this.cancelled = cancelled;
 		if (cancelled && currentProcessor != null) {
 			currentProcessor.setCancelled(true);
 		}

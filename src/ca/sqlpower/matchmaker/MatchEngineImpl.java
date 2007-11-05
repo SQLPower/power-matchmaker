@@ -143,7 +143,7 @@ public class MatchEngineImpl extends AbstractEngine {
 		logger.setLevel(getMessageLevel());
 		FileAppender fileAppender = null;
 		EmailAppender emailAppender = null;
-		cancelled = false;
+		setCancelled(false);
 		
 		try {
 			setFinished(false);
@@ -187,7 +187,7 @@ public class MatchEngineImpl extends AbstractEngine {
 				pool.clear(new Aborter());
 			}
 			
-			if (cancelled) {
+			if (isCanceled()) {
 				throw new UserAbortException();
 			}
 			
@@ -198,7 +198,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Storing matches";
 			logger.info(progressMessage);
 			pool.store(new Aborter());
-			if (cancelled) {
+			if (isCanceled()) {
 				throw new UserAbortException();
 			}
 			
@@ -251,7 +251,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Matching munge process " + currentProcess.getName();
 			logger.debug(getMessage());
 			matcher.call();
-			if (cancelled) {
+			if (isCanceled()) {
 				throw new UserAbortException();
 			}
 			progress += matcher.getProgress();
@@ -326,7 +326,7 @@ public class MatchEngineImpl extends AbstractEngine {
 	 */
 	public class Aborter {
 		public boolean abort() {
-			return cancelled;
+			return isCanceled();
 		}
 	}
 }
