@@ -34,6 +34,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLType;
+import ca.sqlpower.matchmaker.Project;
 
 public class CleanseResultStep extends AbstractMungeStep implements MungeResultStep {
 	private SQLTable table;
@@ -190,9 +191,13 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	
 	@Override
 	public void open(Logger logger) throws Exception {
+		open(logger, getProject());
+	}
+	
+	public void open(Logger logger, Project project) throws Exception {
 		super.open(logger);
 		
-		table = getProject().getSourceTable();
+		table = project.getSourceTable();
 		setName(table.getName());
 		addInitialInputs();
 	}

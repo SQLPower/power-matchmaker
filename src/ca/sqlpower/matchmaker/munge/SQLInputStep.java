@@ -167,12 +167,16 @@ public class SQLInputStep extends AbstractMungeStep {
     @Override
     public void open(Logger logger) throws Exception {
     	super.open(logger);
+    	open(logger, getProject());
+    }
+    
+    public void open(Logger logger, Project project) throws Exception {
+    	super.open(logger);
     	
     	if (rs != null) {
             throw new IllegalStateException("The input step is already open");
         }
 
-        Project project = getProject();
         if (table ==  null) { 
         	this.table = project.getSourceTable();
         	setName(table.getName());
@@ -236,7 +240,10 @@ public class SQLInputStep extends AbstractMungeStep {
      * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
     public MungeResultStep getOuputStep() throws ArchitectException {
-        Project project = getProject();
+        return getOuputStep(getProject());
+    }
+    
+    public MungeResultStep getOuputStep(Project project) throws ArchitectException {
         if (outputStep != null) {
             return outputStep;
         } else if (project.getType() == ProjectMode.CLEANSE) {
