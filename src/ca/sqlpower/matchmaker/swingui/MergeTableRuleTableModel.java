@@ -57,7 +57,7 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
 	}
 	
 	public int getColumnCount() {
-		return 4;
+		return 3;
 	}
 
 	public int getRowCount() {
@@ -71,8 +71,6 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
 			return project.getTableMergeRules().get(rowIndex).getSchemaName();
 		} else if (columnIndex == 2) {
 			return project.getTableMergeRules().get(rowIndex).getTableName();
-		} else if ( columnIndex == 3) {
-			return project.getTableMergeRules().get(rowIndex).isDeleteDup() ? "Yes" : "No";
 		} else {
 			return null;
 		}
@@ -91,8 +89,6 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
 			return SQLSchema.class;
 		} else if (columnIndex == 2) {
 			return SQLTable.class;
-		} else if ( columnIndex == 3) {
-			return String.class;
 		}
 		return super.getColumnClass(columnIndex);
 	}
@@ -105,8 +101,6 @@ public class MergeTableRuleTableModel extends AbstractTableModel implements Matc
 			return chooser.getSchemaTerm().getText();
 		} else if (columnIndex == 2) {
 			return "Name";
-		} else if ( columnIndex == 3) {
-			return "Delete Duplicates?";
 		}
 		return null;
 	}
