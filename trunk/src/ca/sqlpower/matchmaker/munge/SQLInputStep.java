@@ -211,6 +211,9 @@ public class SQLInputStep extends AbstractMungeStep {
             first = false;
         }
         sql.append("\nFROM ").append(DDLUtils.toQualifiedName(table));
+        if (project.getFilter() != null && project.getFilter().trim().length() > 0) {
+            sql.append("\nWHERE " + project.getFilter());
+        }
         
         logger.debug("Attempting to execute input query: " + sql);
         
