@@ -41,7 +41,6 @@ private Project project;
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        project = createNewObjectUnderTest();
 
         Connection con = getSession().getConnection();
         Statement stmt = con.createStatement();
@@ -57,6 +56,8 @@ private Project project;
         
         sql = "CREATE TABLE fake_table (id NUMERIC)";
     	stmt.executeUpdate(sql);
+    	
+    	project = createNewObjectUnderTest();
     }
 	
 	protected SPDataSource getDS() {
