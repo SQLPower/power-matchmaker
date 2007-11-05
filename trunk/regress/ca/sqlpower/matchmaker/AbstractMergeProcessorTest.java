@@ -297,7 +297,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    	"(5,4,10,'MATCH','N', 'test')";
 	    execSQL(con,sql);
 	    
-	    logger.setLevel(Level.DEBUG);
+	    logger.setLevel(Level.INFO);
 	    mpor = new MergeProcessor(project, session, logger);
 	    
 	    // sets the default action type

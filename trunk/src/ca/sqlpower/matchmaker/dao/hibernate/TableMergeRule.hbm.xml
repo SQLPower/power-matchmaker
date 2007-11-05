@@ -74,7 +74,7 @@
 		<bag name="children" cascade="all-delete-orphan"
 			inverse="true" lazy="false" fetch="subselect">
 			<key>
-				<column name="column_merge_rule_oid" not-null="true" />
+				<column name="table_merge_rule_oid" not-null="true" />
 			</key>
 			<one-to-many
 				class="ca.sqlpower.matchmaker.ColumnMergeRules" />

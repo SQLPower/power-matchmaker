@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
+import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
@@ -79,6 +80,17 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 			throw new RuntimeException(e);
 		}
 		return mergeRules;
+	}
+	
+	public ColumnMergeRules createColumnMergeRules(TableMergeRules tmr) throws Exception {
+		count++;
+		ColumnMergeRules cmr = new ColumnMergeRules();
+		cmr.setSession(getSession());
+		cmr.setName("ColumnMergeRule " + count);
+		cmr.setColumnName("Column " + count);
+		tmr.addChild(cmr);
+		return cmr;
+		
 	}
 
 	@Override
