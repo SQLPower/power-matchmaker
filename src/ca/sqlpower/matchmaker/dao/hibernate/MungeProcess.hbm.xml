@@ -52,10 +52,9 @@
 			<column name="colour"/>
 		</property>
 
-		<list name="children" cascade="all-delete-orphan" inverse="true">
+		<bag name="children" cascade="all-delete-orphan" inverse="true">
 			<key column="munge_process_oid" foreign-key="munge_process_oid"/>
-			<list-index column="seq_no" />
 			<one-to-many class="ca.sqlpower.matchmaker.munge.AbstractMungeStep"/>
-		</list>
+		</bag>
 	</class>
 </hibernate-mapping>
