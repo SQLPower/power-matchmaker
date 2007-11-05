@@ -132,6 +132,20 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 
 	}
 	
+	public class ColumnMergeRulesImportedCachableColumn extends CachableColumn {
+		public ColumnMergeRulesImportedCachableColumn() {
+			super(ColumnMergeRules.this, "importedKeyColumn");
+		}
+		
+		public SQLTable getTable() {
+			TableMergeRules tableMergeRules = (TableMergeRules) eventSource.getParent();
+	        if (tableMergeRules == null) throw new NullPointerException("Not attached to a parent");
+	        SQLTable st = tableMergeRules.getSourceTable();
+			return st;
+		}
+
+	}
+	
 	/**
 	 * This object's unique ID.  Required by Hibernate.
 	 */
@@ -142,11 +156,12 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	
 	private boolean inPrimaryKey = false;
 	
-	private SQLColumn importedKeyColumn;
-	
 	private String updateStatement;
 	
 	private ColumnMergeRulesCachableColumn cachedColumn = new ColumnMergeRulesCachableColumn();
+	
+	private ColumnMergeRulesImportedCachableColumn importedCachedColumn = new ColumnMergeRulesImportedCachableColumn();
+	
 	@Override
 	public int hashCode() {
 		final int PRIME = 31;
@@ -212,7 +227,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		columnRule.setName(getName());
 		columnRule.setActionType(actionType);
 		columnRule.setInPrimaryKey(inPrimaryKey);
-		columnRule.setImportedKeyColumn(importedKeyColumn);
+		columnRule.setImportedKeyColumn(getImportedKeyColumn());
 		columnRule.setUpdateStatement(updateStatement);
 		columnRule.setVisible(isVisible());
 		return columnRule;
@@ -247,7 +262,6 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	public void setColumn(SQLColumn column) {
 		cachedColumn.setColumn(column);
 	}
-
 
 	public void setColumnName(String columnName) {
 		cachedColumn.setColumnName(columnName);
@@ -289,17 +303,23 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	}
 
 	public SQLColumn getImportedKeyColumn() {
-		return importedKeyColumn;
+		return importedCachedColumn.getColumn();
 	}
 
+	public String getImportedKeyColumnName() {
+		return importedCachedColumn.getColumnName();
+	}
+	
 	public void setImportedKeyColumn(SQLColumn importedKeyColumn) {
-		SQLColumn oldValue = this.getImportedKeyColumn();
-		this.importedKeyColumn = importedKeyColumn;
-		getEventSupport().firePropertyChange("importedKeyColumn", oldValue, this.importedKeyColumn);
+		importedCachedColumn.setColumn(importedKeyColumn);
+	}
+	
+	public void setImportedKeyColumnName(String columnName) {
+		importedCachedColumn.setColumnName(columnName);
 	}
 	
 	public void setImportedKeyColumnAndAction(SQLColumn importedKeyColumn) {
-		if (this.importedKeyColumn == importedKeyColumn) return;
+		if (getImportedKeyColumn() == importedKeyColumn) return;
 		startCompoundEdit();
 		setImportedKeyColumn(importedKeyColumn);
 		if (importedKeyColumn != null) {

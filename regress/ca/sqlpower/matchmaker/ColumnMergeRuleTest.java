@@ -32,11 +32,14 @@ public class ColumnMergeRuleTest extends MatchMakerTestCase<ColumnMergeRules>{
 
 	public ColumnMergeRuleTest() {
 		propertiesToIgnoreForEventGeneration.add("columnName");
+		propertiesToIgnoreForEventGeneration.add("importedKeyColumnName");
 		propertiesToIgnoreForDuplication.add("columnName");
+		propertiesToIgnoreForDuplication.add("importedKeyColumnName");
 		
 		propertiesThatDifferOnSetAndGet.add("name");
 		
 		propertiesThatHaveSideEffects.add("column");
+		propertiesThatHaveSideEffects.add("importedKeyColumn");
 		propertiesThatHaveSideEffects.add("parent");
 	}
 	@Override
