@@ -24,19 +24,19 @@ package ca.sqlpower.matchmaker;
 
 public class MatchMakerFolderTest<C extends MatchMakerObject> extends MatchMakerTestCase<MatchMakerFolder> {
 
-	private MatchMakerFolder<C> folder;
+	private MatchMakerFolder<MatchMakerObject> folder;
 	final String appUserName = "THE_USER";
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		folder = new MatchMakerFolder<C>();
+		folder = new MatchMakerFolder<MatchMakerObject>(MatchMakerObject.class);
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		folder.setSession(session);
 	}
 
 	@Override
-	protected MatchMakerFolder<C> getTarget() {
+	protected MatchMakerFolder<MatchMakerObject> getTarget() {
 		return folder;
 	}
 

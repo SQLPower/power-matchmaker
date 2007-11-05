@@ -19,15 +19,31 @@
 
 package ca.sqlpower.matchmaker;
 
+import org.apache.log4j.Logger;
+
+import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+
 /**
- * A container class desigend to hold match maker objects
+ * A container class designed to hold match maker objects when a parent
+ * has to have children of multiple types.  Since this isn't allowed by
+ * the general MatchMakerObject contract, the parent can have a folder
+ * child for each type of child it needs, and each folder will hold the
+ * children of that type.
  */
 public class MatchMakerFolder<C extends MatchMakerObject>
 	extends AbstractMatchMakerObject<MatchMakerFolder, C> {
 
+	private static final Logger logger = Logger.getLogger(MatchMakerFolder.class);
+	
     private String folderDesc;
-
-	public MatchMakerFolder( ) {
+    
+    /**
+     * The class of child objects held by this folder.
+     */
+    private final Class<C> childClass;
+    
+	public MatchMakerFolder(Class<C> childClass) {
+		this.childClass = childClass;
 	}
 
 	public String getFolderDesc() {
@@ -74,6 +90,19 @@ public class MatchMakerFolder<C extends MatchMakerObject>
 	}
 
 
-
+	@Override
+	public void removeChild(C child) {
+		
+		// It's required by Hibernate to explicitly delete children before removing
+		// them from the parent collection in order to avoid not-null constraint violations.
+		MatchMakerDAO<C> dao = getSession().getDAO(childClass);
+		if (dao != null) {
+			dao.delete(child);
+		} else {
+			logger.warn("No DAO found for child type " + childClass.getName() + "; " +
+					"you may encounter a not-null constraint violation");
+		}
+		super.removeChild(child);
+	}
 
 }

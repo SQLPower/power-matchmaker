@@ -112,14 +112,14 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      * Contains the Munge Processes and the Munge Steps
      */
     private MatchMakerFolder<MungeProcess> mungeProcessesFolder =
-    	new MatchMakerFolder<MungeProcess>();
+    	new MatchMakerFolder<MungeProcess>(MungeProcess.class);
     
     /** 
      * Container for the TableMergeRules 
      * We have these folders so that we don't have to deal with multiple child types
      */ 
     private MatchMakerFolder<TableMergeRules> tableMergeRulesFolder =
-    	new MatchMakerFolder<TableMergeRules>();
+    	new MatchMakerFolder<TableMergeRules>(TableMergeRules.class);
     
     /**
      * Cached source table 
