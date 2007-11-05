@@ -175,10 +175,8 @@ public class EditableJTable extends JTable {
 	@Override
 	public void tableChanged(TableModelEvent e) {
 		super.tableChanged(e);
-		try {
+		//checks if the table has been initialized
+		if (getTableHeader() != null)
 			TableUtils.fitColumnWidths(this, 15);
-		} catch (Exception ex) {
-			//sometimes exceptions are thrown when the table is not yet fully initialized
-		}
 	}
 }
