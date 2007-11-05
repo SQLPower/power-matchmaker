@@ -52,7 +52,7 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
         	stmt.executeUpdate(sql);
         } catch (SQLException e) {
         	// Ignoring exception when deleting a table that might not exist
-        	System.out.println(e.getStackTrace());
+        	e.printStackTrace();
         }
         
         sql = "CREATE TABLE fake_table (id NUMBER)";

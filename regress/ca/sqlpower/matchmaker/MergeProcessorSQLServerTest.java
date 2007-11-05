@@ -49,7 +49,7 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 			execSQL(con,sql);
 		} catch (SQLException e) {
 			// Ignoring if the table did not exist before hand.
-			System.out.println(e.getStackTrace());
+			e.printStackTrace();
 		}
 		
 		sql = "DROP TABLE " + getFullTableName() + "_CHILD";
@@ -57,7 +57,7 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 			execSQL(con,sql);
 		} catch (SQLException e) {
 			// Ignoring if the table did not exist before hand.
-			System.out.println(e.getStackTrace());
+			e.printStackTrace();
 		}
 		
 		sql = "DROP TABLE " + getFullTableName();
@@ -65,7 +65,7 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 			execSQL(con,sql);
 		} catch (SQLException e) {
 			// Ignoring if the table did not exist before hand.
-			System.out.println(e.getStackTrace());
+			e.printStackTrace();
 		}
 		
 		// Creates the source table
