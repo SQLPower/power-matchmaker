@@ -758,7 +758,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		dim.width -= border.left+border.right;
 		dim.height -= border.top+border.bottom;
 		
-		g.drawImage(MMM_TOP, getWidth()-border.right-1, border.top - MMM_TOP.getHeight(null)+1, null);
+		g.drawImage(MMM_TOP, getWidth()-border.right-1, border.top - MMM_TOP.getHeight(null)+2, null);
 		g.drawImage(MMM_BOT, getWidth()-border.right-1, getHeight() - MMM_BOT.getHeight(null) - border.bottom - 1, null);
 		
 		int[] x = {0,						MMM_TOP.getHeight(null)-1,	dim.width + MMM_TOP.getWidth(null) -1,	dim.width-1};
