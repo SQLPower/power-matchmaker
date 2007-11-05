@@ -1009,7 +1009,7 @@
 						example that you can practice finding and
 						removing duplicates in. Choose a location for
 						the example table and click
-						<userinput>Create</userinput>
+						<userinput>Create</userinput> 
 					</para>
 				</listitem>
 				<listitem>
@@ -1063,6 +1063,13 @@
 						<userinput>Pick Columns</userinput>
 						after you have saved the project.
 					</para>
+					<sidebar>
+						<para>
+							Note: If you can not find the table you
+							created, close then open the MatchMaker and
+							try creating the project again.
+						</para>
+					</sidebar>
 				</listitem>
 				<listitem>
 					<para>
