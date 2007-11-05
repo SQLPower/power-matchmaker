@@ -327,11 +327,6 @@ public class ProjectEditor implements EditorPane {
 
         filterPanel = new FilterComponents(swingSession.getFrame());
 
-        sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
-        	public void itemStateChanged(ItemEvent e) {
-        		filterPanel.getFilterTextArea().setText("");
-        	}});
-
     	viewBuilder = new JButton(viewBuilderAction);
     	saveProject = new JButton(saveAction);
         createIndexButton = new JButton(createIndexAction );
