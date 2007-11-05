@@ -71,6 +71,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
@@ -208,6 +209,13 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, true);
 			process.addChild(inputStep);
 			
+			try {
+				inputStep.open(logger);
+				inputStep.close();
+			} catch (Exception e) {
+				throw new RuntimeException("Could not set up the input munge step!", e);
+			}
+			
 			MungeStep mungeResultStep = inputStep.getOuputStep();
 			
 			String x = new Integer(AUTO_SCROLL_INSET + 5).toString();
@@ -222,6 +230,15 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
 			
 			process.addChild(mungeResultStep);
+			
+			if (mungeResultStep instanceof CleanseResultStep) {
+				try {
+					mungeResultStep.open(logger);
+					mungeResultStep.close();
+				} catch (Exception e) {
+					throw new RuntimeException("Could not set up the result munge step!", e);
+				}
+			}
 		}
 		buildComponents(process);
 		buildPopup(((SwingSessionContext)process.getSession().getContext()).getStepMap());
