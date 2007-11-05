@@ -210,13 +210,13 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			process.addChild(inputStep);
 			
 			try {
-				inputStep.open(logger);
+				inputStep.open(logger, project);
 				inputStep.close();
 			} catch (Exception e) {
 				throw new RuntimeException("Could not set up the input munge step!", e);
 			}
 			
-			MungeStep mungeResultStep = inputStep.getOuputStep();
+			MungeStep mungeResultStep = inputStep.getOuputStep(project);
 			
 			String x = new Integer(AUTO_SCROLL_INSET + 5).toString();
 			String y = new Integer(300).toString();
@@ -233,7 +233,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			
 			if (mungeResultStep instanceof CleanseResultStep) {
 				try {
-					mungeResultStep.open(logger);
+					((CleanseResultStep)mungeResultStep).open(logger, project);
 					mungeResultStep.close();
 				} catch (Exception e) {
 					throw new RuntimeException("Could not set up the result munge step!", e);
