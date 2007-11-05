@@ -62,6 +62,8 @@ public class HibernateUtil {
 			return "org.hibernate.dialect.HSQLDialect";
 		} else if (dbString.contains("derby")) {
 			return "org.hibernate.dialect.DerbyDialect";
+		} else if (dbString.contains("mysql")) {
+			return "org.hibernate.dialect.MySQLDialect";
 		} else {
 			throw new IllegalArgumentException("I don't know the hibernate dialect for " + dbString);
 		}
