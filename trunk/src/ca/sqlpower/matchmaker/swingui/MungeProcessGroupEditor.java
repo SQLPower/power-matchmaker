@@ -349,9 +349,12 @@ public class MungeProcessGroupEditor extends AbstractUndoableEditorPane<Project,
 				}
 			}
 
-			setToolTipText("RGB value: " + newColor.getRed() + ", "
+            if (newColor != null) {
+                setToolTipText("RGB value: " + newColor.getRed() + ", "
 					+ newColor.getGreen() + ", "
 					+ newColor.getBlue());
+            }
+            
 			return this;
 		}
 	}
