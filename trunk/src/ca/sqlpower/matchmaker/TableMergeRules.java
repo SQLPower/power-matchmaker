@@ -30,7 +30,6 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 
 /**
  *
@@ -123,11 +122,6 @@ public class TableMergeRules
 
 	
 	private Long oid;
-
-	/**
-	 * Whether or not we should delete the duplicate row 
-	 */
-	private boolean deleteDup;
 	
 	/**
 	 * The action to take for this child table 
@@ -184,9 +178,6 @@ public class TableMergeRules
 				return false;
 			}
 		}
-		if (isDeleteDup() != other.isDeleteDup()) {
-			return false;
-		}
 		if (getParentMergeRule() == null) {
 			if (other.getParentMergeRule() != null) {
 				return false;
@@ -220,7 +211,6 @@ public class TableMergeRules
 		newMergeStrategy.setParent(parent);
 		newMergeStrategy.setName(getName());
 		newMergeStrategy.setSession(session);
-		newMergeStrategy.setDeleteDup(isDeleteDup());
 		newMergeStrategy.setTableName(getTableName());
 		newMergeStrategy.setCatalogName(getCatalogName());
 		newMergeStrategy.setSchemaName(getSchemaName());
@@ -278,42 +268,11 @@ public class TableMergeRules
 		setName(DDLUtils.toQualifiedName(getCatalogName(),getSchemaName(),sourceTableName));
 	}
 
-	public boolean isDeleteDup() {
-		return deleteDup;
-	}
-	
-	public void setDeleteDup(boolean deleteDup) {
-		boolean oldValue = this.deleteDup;
-		this.deleteDup = deleteDup;
-		getEventSupport().firePropertyChange("deleteDup", oldValue, this.deleteDup);
-	}
-	
-	public void setDeleteDupAndActionType(boolean deleteDup) {
-		startCompoundEdit();
-		setDeleteDup(deleteDup);
-		if (deleteDup) {
-			for (ColumnMergeRules cmr : getChildren()) {
-				if (cmr.getActionType() == MergeActionType.USE_MASTER_VALUE) {
-					cmr.setActionType(MergeActionType.AUGMENT);
-				}
-			}
-		} else {
-			for (ColumnMergeRules cmr : getChildren()) {
-				if (cmr.getActionType() == MergeActionType.AUGMENT) {
-					cmr.setActionType(MergeActionType.USE_MASTER_VALUE);
-				}
-			}
-		}
-		endCompoundEdit();
-	}
-	
-
 	@Override
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Merge Strategy->'").append(getName()).append("' ");
 		buf.append("Parent->'").append(getParent()).append("' ");
-		buf.append("isDeletedDup()->'").append(isDeleteDup()).append("' ");
 		return buf.toString();
 	}
 

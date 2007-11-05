@@ -94,7 +94,6 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
         nonPersisting.add("oid");
         nonPersisting.add("session");
         nonPersisting.add("undoing");
-        nonPersisting.add("deleteDup");
         return nonPersisting;
     }
 

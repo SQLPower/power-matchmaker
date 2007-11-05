@@ -33,7 +33,6 @@ import javax.swing.Action;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -266,11 +265,6 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	private final StatusComponent status = new StatusComponent();
 	private FormValidationHandler handler;
     
-    /**
-	 * allows the user to set whether to delete duplicates
-	 */ 
-	private final JCheckBox deleteDup = new JCheckBox();
-
 	/**
 	 * allows the user to set the parentMergeRule
 	 */ 
@@ -414,11 +408,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 			pb.add(new JLabel("Merge Action:"), cc.xy(6,row,"r,c"));
 			pb.add(childMergeAction, cc.xy(8,row,"f,c"));
 			childMergeAction.setSelectedItem(mmo.getChildMergeAction());
-		} else {
-			pb.add(new JLabel("Delete Dup:"), cc.xy(2,row,"r,c"));
-			pb.add(deleteDup, cc.xy(4, row, "l, c"));
-			deleteDup.setSelected(mmo.isDeleteDup());
-		}
+		} 
 		
 		row += 2;
 		pb.add(new JScrollPane(ruleTable), cc.xyw(4,row,5,"f,f"));
@@ -436,10 +426,6 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
         childMergeAction.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e) {
     			mmo.setChildMergeAction((ChildMergeActionType) childMergeAction.getSelectedItem());
-    		}});
-        deleteDup.addActionListener(new ActionListener() {
-    		public void actionPerformed(ActionEvent e) {
-    			mmo.setDeleteDupAndActionType(deleteDup.isSelected());
     		}});
 	}
 	
@@ -503,9 +489,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	@Override
 	public void undoEventFired(
 			MatchMakerEvent<TableMergeRules, ColumnMergeRules> evt) {
-		if (mmo.isSourceMergeRule()) {
-			deleteDup.setSelected(mmo.isDeleteDup());
-		} else {
+		if (!mmo.isSourceMergeRule()) {
 			parentMergeRule.setSelectedItem(mmo.getParentMergeRule());
 			childMergeAction.setSelectedItem(mmo.getChildMergeAction());
 		}
