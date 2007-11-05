@@ -272,11 +272,14 @@ public class BuildExampleTableDialog extends JDialog{
 	          schemaContainer = swingSession.getDatabase();
 	    }
 		
+	        
 		SQLObject tableContainer = schemaContainer.getChildByName(getTableSchema());
-        if (tableContainer == null) {
-            tableContainer = new SQLSchema(schemaContainer, getTableSchema(), true);
-            schemaContainer.addChild(tableContainer);
-        }
+		if (getTableSchema() != null) {
+	        if (tableContainer == null) {
+	            tableContainer = new SQLSchema(schemaContainer, getTableSchema(), true);
+	            schemaContainer.addChild(tableContainer);
+	        }
+		}
         
 		table = new SQLTable(tableContainer, tableName.getText(), null, "TABLE", true);
 		
