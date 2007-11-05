@@ -381,9 +381,14 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			short value = Short.parseShort((String)contents);
 		
 			for (MungeProcess mp : parentProject.getMungeProcessesFolder().getChildren()) {
-				if (mp.getMatchPercent().shortValue() == value && mp != mmo) {
+                if (mp == null) throw new NullPointerException("Null munge process in project!");
+				short otherPriority = 0;
+                if (mp.getMatchPercent() != null) {
+                    otherPriority = mp.getMatchPercent().shortValue();
+                }
+                if (otherPriority == value && mp != mmo) {
 					return ValidateResult.createValidateResult(Status.WARN, "Duplicate Priority. " + 
-							"If both the cleansing process are run at the same time there is no way to know there relitive order.");
+							"If two cleansing process have the same priority, they may not always run in the same order.");
 				}
 			}
 			return ValidateResult.createValidateResult(Status.OK, "");
