@@ -49,6 +49,7 @@ public class NewMungeProcessAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		MungeProcess g = new MungeProcess();
 		g.setName("New Munge Process");
+        parent.getMungeProcessesFolder().addChild(g);
 		MungeProcessEditor editor;
 		try {
 			editor = new MungeProcessEditor(swingSession,parent, g);
