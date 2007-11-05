@@ -166,13 +166,16 @@ public class BuildExampleTableDialog extends JDialog{
 			panel = new JPanel();
 		}
 		
-		FormLayout layout = new FormLayout(	"4dlu,pref,4dlu,pref,4dlu" , 
-											"4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
+		FormLayout layout = new FormLayout(	"4dlu,pref,4dlu,pref:grow,4dlu" , 
+											"4dlu,pref:grow,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		panel.setLayout(layout);
 		
 		CellConstraints cc = new CellConstraints();
 		
 		int row = 2;
+		panel.add(new JLabel("Note: If you cannot find the newly created table you may need to restart the application."), cc.xyw(2, row,3));
+		
+		row += 2;
 		panel.add(new JLabel("Example Table Location:"), cc.xyw(2, row, 3));
 		row += 2;
 		panel.add(new JLabel("Catalog:"), cc.xy(2, row));
