@@ -112,8 +112,7 @@ public class MatchEngineImpl extends AbstractEngine {
         	if (!validateEmailSetting(context)) {
         		throw new EngineSettingException(
         				"missing email setting information," +
-        				" the email sender requires smtp host name and" +
-        		" smtp localhost name!");
+        				" the email sender requires smtp host name!");
         	}
         	
         	// Then tries to set up the emails for each status
@@ -222,7 +221,7 @@ public class MatchEngineImpl extends AbstractEngine {
 				try {
 					emailAppender.close();
 				} catch (RuntimeException e) {
-					logger.info("Error while sending emails! " + e.getStackTrace());
+					logger.info("Error while sending emails! " + e.getStackTrace().toString());
 				}
 				logger.removeAppender(emailAppender);
 			}

@@ -109,8 +109,7 @@ public class MergeEngineImpl extends AbstractEngine {
         	if (!validateEmailSetting(context)) {
         		throw new EngineSettingException(
         				"missing email setting information," +
-        				" the email sender requires smtp host name and" +
-        		" smtp localhost name!");
+        				" the email sender requires smtp host name!");
         	}
         	
         	// Then creates the emails for each status

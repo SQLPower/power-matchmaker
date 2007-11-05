@@ -53,20 +53,12 @@ public class MatchMakerEngineImplTest extends TestCase {
 
 	public void testValidateEmailSettingsValid() throws SQLException, PLSchemaException{
 		context.setEmailSmtpHost("mail.sqlpower.ca");
-		context.setEmailSmtpLocalhost("www.sqlpower.ca");
 		assertTrue(matchMakerEngine.validateEmailSetting(context));
-	}
-	
-	public void testValidateEmailSettingsNoLocalhost() throws SQLException, PLSchemaException{
-		context.setEmailSmtpHost("mail.sqlpower.ca");
-		context.setEmailSmtpLocalhost("");
-		assertFalse("The email is valid without a smtp host address", matchMakerEngine.validateEmailSetting(context));
 	}
 	
 	public void testValidateEmailSettingsNoHost() throws SQLException, PLSchemaException{
 		context.setEmailSmtpHost("");
-		context.setEmailSmtpLocalhost("www.sqlpower.ca");
-		assertFalse("The email is valid without a smtp localhost address", matchMakerEngine.validateEmailSetting(context));
+		assertFalse("The email is valid without a smtp host address", matchMakerEngine.validateEmailSetting(context));
 	}
 
 	//   check for unwriteable file

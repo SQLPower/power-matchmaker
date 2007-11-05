@@ -121,16 +121,7 @@ public class StubSwingSessionContext implements SwingSessionContext {
 		return null;
 	}
 
-	public String getEmailSmtpLocalhost() {
-		logger.debug("Stub call: StubSwingSessionContext.getEmailSmtpLocalhost()");
-		return null;
-	}
-
 	public void setEmailSmtpHost(String smtpHost) {
 		logger.debug("Stub call: StubSwingSessionContext.setEmailSmtpHost()");
-	}
-
-	public void setEmailSmtpLocalhost(String smtpLocalHost) {
-		logger.debug("Stub call: StubSwingSessionContext.setEmailSmtpLocalhost()");
 	}
 }
