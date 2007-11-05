@@ -138,7 +138,7 @@ public class MergeEngineImpl extends AbstractEngine {
 		Level oldLevel = logger.getLevel();
 		FileAppender fileAppender = null;
 		EmailAppender emailAppender = null;
-		cancelled = false;
+		setCancelled(false);
 
 		try {
 			logger.setLevel(getMessageLevel());
@@ -171,7 +171,7 @@ public class MergeEngineImpl extends AbstractEngine {
 			logger.info(progressMessage);
 			merger = new MergeProcessor(getProject(), getSession(), getLogger());
 			merger.call();
-			if (cancelled) {
+			if (isCanceled()) {
 				throw new UserAbortException();
 			}
 			progress += merger.getProgress();
@@ -259,7 +259,7 @@ public class MergeEngineImpl extends AbstractEngine {
 	@Override
 	public synchronized void setCancelled(boolean cancelled) {
 		super.setCancelled(cancelled);
-		if (cancelled) {
+		if (cancelled && merger != null) {
 			merger.setCancelled(true);
 		}
 	}
