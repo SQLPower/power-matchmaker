@@ -136,7 +136,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      *
      * @param children
      */
-    void setChildren(List<C> children){
+    protected void setChildren(List<C> children){
         this.children = children;
         eventSupport.fireStructureChanged();
     }

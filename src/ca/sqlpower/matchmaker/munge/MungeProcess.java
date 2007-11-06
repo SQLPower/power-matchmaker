@@ -246,6 +246,16 @@ public class MungeProcess
 	
 	@Override
 	protected void addImpl(int index, MungeStep child) {
+		includeMungeStep(child);
+		super.addImpl(index, child);
+	}
+	
+	/**
+	 * Updates the result and input steps if nessary.
+	 * 
+	 * @param child The child to add to the process
+	 */
+	private void includeMungeStep(MungeStep child) {
 		if (child instanceof SQLInputStep) {
 			inputSteps.add((SQLInputStep) child);
 			if (resultStep != null) {
@@ -260,16 +270,23 @@ public class MungeProcess
 					this.resultStep.addInputStep(input);
 				}
 			}
-		}
-		super.addImpl(index, child);
+		}	
 	}
-	
+
 	@Override
 	public void removeChild(MungeStep child) {
 		if (child instanceof MungeResultStep) {
 			throw new IllegalStateException("Removal of munge result step not allowed!");
 		} else {
 			super.removeChild(child);
+		}
+	}
+	
+	@Override
+	protected void setChildren(List<MungeStep> children) {
+		super.setChildren(children);
+		for (MungeStep ms : children) {
+			includeMungeStep(ms);
 		}
 	}
 }
