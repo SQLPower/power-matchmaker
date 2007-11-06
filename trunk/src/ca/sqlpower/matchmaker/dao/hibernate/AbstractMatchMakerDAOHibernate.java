@@ -59,7 +59,9 @@ public abstract class AbstractMatchMakerDAOHibernate<T extends MatchMakerObject>
 		Transaction t = s.beginTransaction();
 		try {
 			s.delete(deleteMe);
-			deleteMe.getParent().removeChild(deleteMe);
+			if (deleteMe.getParent() != null) {
+				deleteMe.getParent().removeChild(deleteMe);
+			}
 			s.flush();
 			t.commit();
 		} catch (RuntimeException re) {
