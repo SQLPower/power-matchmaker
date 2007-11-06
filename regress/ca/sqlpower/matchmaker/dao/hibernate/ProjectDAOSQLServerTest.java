@@ -57,6 +57,9 @@ private Project project;
         sql = "CREATE TABLE fake_table (id NUMERIC)";
     	stmt.executeUpdate(sql);
     	
+    	stmt.close();
+    	con.close();
+    	
     	project = createNewObjectUnderTest();
     }
 	
