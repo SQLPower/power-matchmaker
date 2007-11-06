@@ -22,10 +22,10 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.dao.TableMergeRuleDAO;
+import ca.sqlpower.matchmaker.dao.TableMergeRulesDAO;
 
 public class TableMergeRulesDAOHibernate extends AbstractMatchMakerDAOHibernate<TableMergeRules>
-		implements TableMergeRuleDAO {
+		implements TableMergeRulesDAO {
 
 	public TableMergeRulesDAOHibernate(MatchMakerHibernateSession matchMakerSession) {
 		super(matchMakerSession);
