@@ -36,7 +36,7 @@ public class DeleteMungeStepAction extends AbstractAction {
 	MatchMakerSwingSession swingSession;
 	
 	public DeleteMungeStepAction(MatchMakerSwingSession swingSession, MungeStep step) {
-		super("Delete Rule");
+		super("Delete Step");
 		this.step = step;
 		this.swingSession = swingSession;
 	}
