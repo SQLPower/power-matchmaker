@@ -44,6 +44,15 @@
 			<element column="parameter_value" type="string"/>
 		</map>
 		
+		<bag name="children" cascade="all-delete-orphan"
+			inverse="true" lazy="false" fetch="subselect">
+			<key>
+				<column name="munge_step_oid" not-null="true" />
+			</key>
+			<one-to-many
+				class="ca.sqlpower.matchmaker.munge.MungeStepOutput" />
+		</bag>
+		
 		<!-- Hardcoding this list is not ideal.  These should be added dynamically by the session
 		     when it is created (based on the resource file that lists all the munge steps) -->
 		     

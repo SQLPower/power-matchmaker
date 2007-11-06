@@ -33,6 +33,9 @@ import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.munge.SQLInputStep;
 
 public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCase<MungeProcess,MungeProcessDAO>  {
 
@@ -122,4 +125,29 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
             stmt.close();
         }
     }
+    
+    public void testSaveAndLoadInTwoSessionsWithChildren() throws Exception {
+		MungeProcessDAO dao = getDataAccessObject();
+		List<MungeProcess> all;
+		MungeProcess item1 = createNewObjectUnderTest();
+		item1.setVisible(true);
+		MungeStep ms = new SQLInputStep();
+		item1.addChild(ms);
+		MungeStepOutput<String> mso = new MungeStepOutput<String>("TEST_MSO", String.class);
+		ms.addChild(mso);
+
+		dao.save(item1);
+		
+		resetSession();
+		dao = getDataAccessObject();
+		all = dao.findAll();
+        assertTrue("We want at least one item", 1 <= all.size());
+        MungeProcess savedItem1 = all.get(0);
+		for (MungeProcess item: all){
+			item.setSession(getSession());
+		}
+		assertEquals("MungeProcess should have 1 child.", 1, savedItem1.getChildren().size());
+		MungeStep saveMS = savedItem1.getChildren().get(0);
+		assertEquals("MungeStep should have 1 child.", 1, saveMS.getChildren().size());
+	}
 }

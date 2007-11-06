@@ -45,18 +45,31 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	private static final Logger logger = Logger.getLogger(MungeStepOutput.class);
 	
 	/**
+     * The object identifier for this munge step instance.  Required by
+     * the persistence layer, but otherwise unused.
+     */
+    @SuppressWarnings("unused")
+    private Long oid;
+    
+	/**
 	 * The type of data this step can hold.
 	 * <p>
 	 * This is a bound property. This object will fire a MatchMakerObject property
 	 * change event when this property is updated.
 	 */
-	private final Class<T> type;
+	private Class<T> type;
 	
 	/**
 	 * The current data value of this step.  This will change with every call to the
 	 * parent step at run time.
 	 */
 	private T data;
+	
+	/**
+	 * Default Constructor used by hibernate
+	 */
+	public MungeStepOutput() {
+	}
 	
 	/**
 	 * Creates a new MungeStepOutput with the given initial name (can be changed
@@ -166,5 +179,9 @@ public class MungeStepOutput<T> extends AbstractMatchMakerObject<MungeStepOutput
 	@Override
 	public String toString() {
 		return "<" + getName() + ": " + getData() + ">";
+	}
+
+	public void setType(Class<T> type) {
+		this.type = type;
 	}
 }
