@@ -177,15 +177,23 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		return step;
 	}
 	
-	// TODO: Investigate whether this will break Hibernate 
-	// when implementing the persistence stuff
+	/**
+	 * Warning: One should never mix instances--that is, one
+	 * should never put detached instances from different 
+	 * sessions into the same set because it will break this
+	 * implementation of equals and hashCode.
+	 */  
 	@Override
 	public boolean equals(Object obj) {
 		return this == obj;
 	}
 	
-	// TODO: Investigate whether this will break Hibernate 
-	// when implementing the persistence stuff
+	/**
+	 * Warning: One should never mix instances--that is, one
+	 * should never put detached instances from different 
+	 * sessions into the same set because it will break this
+	 * implementation of equals and hashCode.
+	 */  
 	@Override
 	public int hashCode() {
 		return System.identityHashCode(this);
