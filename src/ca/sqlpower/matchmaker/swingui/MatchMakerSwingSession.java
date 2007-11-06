@@ -76,7 +76,6 @@ import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
-import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
@@ -97,7 +96,6 @@ import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
@@ -1029,30 +1027,18 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	}
 
 	/**
-	 * Delete the MatchMakerObject passed in.  This will save the parent of the
-	 * mmo.
-	 *
-	 * XXX Push this into the match maker session interface
-	 * @param mmo
-	 */
+     * Deletes the MatchMakerObject passed in by asking the appropriate DAO to
+     * delete it directly. This will also remove <code>mmo</code> from its
+     * parent in the in-memory version of the object.
+     * 
+     * @param mmo The MatchMakerObject to delete, both from the persistence
+     * layer and by removing it from its parent object.
+     */
 	@SuppressWarnings("unchecked")
 	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
 		if (mmo.getParent() != null) {
-			
-            if (mmo instanceof MungeStep) {
-                // Munge Steps are special because they don't have a DAO of their own
-                MatchMakerObject mungeProcess = mmo.getParent();
-                MatchMakerDAO dao = getDAO(mungeProcess.getClass());
-                dao.save(mungeProcess);
-            } else if ( mmo instanceof ColumnMergeRules) {
-            	// so are column merge rules
-            	MatchMakerObject tableMergeRules = mmo.getParent();
-                MatchMakerDAO dao = getDAO(tableMergeRules.getClass());
-                dao.save(tableMergeRules);
-            } else {
-                MatchMakerDAO dao = getDAO(mmo.getClass());
-                dao.delete(mmo);
-            }
+		    MatchMakerDAO dao = getDAO(mmo.getClass());
+		    dao.delete(mmo);
         } else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
         }
