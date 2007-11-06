@@ -22,7 +22,7 @@
 package ca.sqlpower.matchmaker.dao.hibernate;
 
 import ca.sqlpower.matchmaker.dao.AbstractTableMergeRulesDAOTestCase;
-import ca.sqlpower.matchmaker.dao.TableMergeRuleDAO;
+import ca.sqlpower.matchmaker.dao.TableMergeRulesDAO;
 
 
 public class TableMergeRulesDAOOracleTest extends AbstractTableMergeRulesDAOTestCase {
@@ -41,7 +41,7 @@ public class TableMergeRulesDAOOracleTest extends AbstractTableMergeRulesDAOTest
 	}
     
 	@Override
-	public TableMergeRuleDAO getDataAccessObject() throws Exception {
+	public TableMergeRulesDAO getDataAccessObject() throws Exception {
 		return new TableMergeRulesDAOHibernate(getSession());
 	}
 

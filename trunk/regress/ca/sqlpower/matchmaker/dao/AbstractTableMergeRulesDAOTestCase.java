@@ -35,7 +35,7 @@ import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
 
-public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTestCase<TableMergeRules,TableMergeRuleDAO>  {
+public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTestCase<TableMergeRules,TableMergeRulesDAO>  {
 
 	Long count=0L;
     Project project;
@@ -128,7 +128,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 
             TableMergeRules mergeRules = project.getTableMergeRules().get(0);
             String tableName = mergeRules.getTableName();
-            TableMergeRuleDAO dao = getDataAccessObject();
+            TableMergeRulesDAO dao = getDataAccessObject();
             dao.save(mergeRules);
             
             stmt = con.createStatement();
@@ -149,7 +149,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
     }
     
     public void testSaveAndLoadInTwoSessionsWithChildren() throws Exception {
-		TableMergeRuleDAO dao = getDataAccessObject();
+		TableMergeRulesDAO dao = getDataAccessObject();
 		List<TableMergeRules> all;
 		TableMergeRules item1 = createNewObjectUnderTest();
 		item1.setVisible(true);

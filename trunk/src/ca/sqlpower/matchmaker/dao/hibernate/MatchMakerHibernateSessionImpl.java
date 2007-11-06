@@ -61,7 +61,7 @@ import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.dao.MungeStepDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
-import ca.sqlpower.matchmaker.dao.TableMergeRuleDAO;
+import ca.sqlpower.matchmaker.dao.TableMergeRulesDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
@@ -123,7 +123,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     private MungeProcessDAO mungeProcessDAO;
     private MungeStepDAO mungeStepDAO;
     private MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO;
-    private TableMergeRuleDAO tableMergeRulesDAO;
+    private TableMergeRulesDAO tableMergeRulesDAO;
     private ColumnMergeRulesDAO columnMergeRulesDAO;
 
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();

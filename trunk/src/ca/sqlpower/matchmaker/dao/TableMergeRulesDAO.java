@@ -29,6 +29,6 @@ import ca.sqlpower.matchmaker.TableMergeRules;
  *
  * Remember to program to this interface rather than an implemenation
  */
-public interface TableMergeRuleDAO extends MatchMakerDAO<TableMergeRules> {
+public interface TableMergeRulesDAO extends MatchMakerDAO<TableMergeRules> {
 
 }
