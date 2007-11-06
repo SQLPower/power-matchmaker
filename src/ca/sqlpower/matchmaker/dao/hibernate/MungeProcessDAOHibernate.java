@@ -19,7 +19,6 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 
@@ -34,15 +33,15 @@ public class MungeProcessDAOHibernate extends AbstractMatchMakerDAOHibernate<Mun
 		return MungeProcess.class;
 	}
 	
-	@Override
-	public void delete(MungeProcess deleteMe) {
-		
-		MatchMakerObject parent = deleteMe.getParent();
-		if (parent != null ){
-			parent.removeChild(deleteMe);
-		}
-		super.delete(deleteMe);
-		
-	}
+//	@Override
+//	public void delete(MungeProcess deleteMe) {
+//		
+//		MatchMakerObject parent = deleteMe.getParent();
+//		if (parent != null ){
+//			parent.removeChild(deleteMe);
+//		}
+//		super.delete(deleteMe);
+//		
+//	}
 
 }
