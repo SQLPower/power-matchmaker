@@ -57,6 +57,9 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
         sql = "CREATE TABLE fake_table (id NUMBER)";
     	stmt.executeUpdate(sql);
     	
+    	stmt.close();
+    	con.close();
+    	
     	project = createNewObjectUnderTest();
     }
     
