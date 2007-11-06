@@ -50,6 +50,5 @@ public class DeleteMungeProcessAction extends AbstractAction {
 		TreePath treePath = treeModel.getPathForNode(mungeProcess.getParent());
 		swingSession.getTree().setSelectionPath(treePath);
 		swingSession.delete(mungeProcess);
-		swingSession.setCurrentEditorComponent(null);
 	}
 }
