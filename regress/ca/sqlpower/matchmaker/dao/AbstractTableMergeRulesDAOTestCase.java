@@ -147,4 +147,26 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
         	}
         }
     }
+    
+    public void testSaveAndLoadInTwoSessionsWithChildren() throws Exception {
+		TableMergeRuleDAO dao = getDataAccessObject();
+		List<TableMergeRules> all;
+		TableMergeRules item1 = createNewObjectUnderTest();
+		item1.setVisible(true);
+		ColumnMergeRules cmr1 = createColumnMergeRules(item1);
+		ColumnMergeRules cmr2 = createColumnMergeRules(item1);
+		
+		dao.save(item1);
+		
+		resetSession();
+		dao = getDataAccessObject();
+		all = dao.findAll();
+        assertTrue("We want at least one item", 1 <= all.size());
+        TableMergeRules savedItem1 = all.get(0);
+		for (TableMergeRules item: all){
+			item.setSession(getSession());
+		}
+
+		assertEquals("TableMergeRules should have 2 children.", 2, savedItem1.getChildren().size());
+	}
 }
