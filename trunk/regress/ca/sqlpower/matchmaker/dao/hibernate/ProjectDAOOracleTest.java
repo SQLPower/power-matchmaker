@@ -58,7 +58,6 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
     	stmt.executeUpdate(sql);
     	
     	stmt.close();
-    	con.close();
     	
     	project = createNewObjectUnderTest();
     }
