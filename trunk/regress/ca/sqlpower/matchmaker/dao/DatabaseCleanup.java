@@ -43,6 +43,7 @@ public class DatabaseCleanup {
         tablesToDelete.add("pl_match_translate");
         tablesToDelete.add("pl_match_translate_group");
         tablesToDelete.add("mm_munge_step_parameter");
+        tablesToDelete.add("mm_munge_step_output");
         tablesToDelete.add("mm_munge_step");
         tablesToDelete.add("mm_munge_process");
         tablesToDelete.add("mm_column_merge_rule");
