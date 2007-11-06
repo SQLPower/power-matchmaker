@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -344,6 +345,12 @@ public class TableMergeRules
 		if (primarykeyCols != null) {
 			for (SQLColumn column : primarykeyCols) {
 				for (ColumnMergeRules cmr : getChildren()) {
+                    if (cmr.getColumnName() == null) {
+                        throw new IllegalStateException("Null column name in one of my column merge rules!");
+                    }
+                    if (column == null) {
+                        throw new IllegalStateException("Null primary key index column in parent table!");
+                    }
 					if (cmr.getColumnName().equals(column.getName())) {
 						cmr.setImportedKeyColumnAndAction(column);
 						break;
@@ -387,7 +394,16 @@ public class TableMergeRules
 		
 		if (isSourceMergeRule()) {
 			try {
+                logger.debug(getParentProject().getSourceTableIndex().getChildren());
 				for (SQLIndex.Column column : getParentProject().getSourceTableIndex().getChildren()) {
+                    try {
+                        logger.debug(BeanUtils.describe(column));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    if (column.getColumn() == null) {
+                        throw new IllegalStateException("Found an index column with a null column name!");
+                    }
 					columns.add(column.getColumn()); 
 				}
 			} catch (ArchitectException e) {

@@ -285,10 +285,13 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	
 	private ListSelectionListener tablelistener = new ListSelectionListener(){
 		public void valueChanged(ListSelectionEvent e) {
-            ColumnMergeRules mergeColumn = mmo.getChildren().get(ruleTable.getSelectedRow()); 
-            MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-	        TreePath menuPath = treeModel.getPathForNode(mergeColumn);
-	        swingSession.getTree().setSelectionPath(menuPath);
+            int selectedRow = ruleTable.getSelectedRow();
+            if (selectedRow >= 0) {
+                ColumnMergeRules mergeColumn = mmo.getChildren().get(selectedRow); 
+                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
+                TreePath menuPath = treeModel.getPathForNode(mergeColumn);
+                swingSession.getTree().setSelectionPath(menuPath);
+            }
 		}
 	};
 
