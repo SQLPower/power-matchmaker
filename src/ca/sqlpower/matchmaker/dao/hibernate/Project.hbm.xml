@@ -164,7 +164,9 @@
 			<column name="view_where_clause" length="2000" />
 		</property>
 
-		<list name="tableMergeRules" lazy="true" fetch="subselect" cascade="all-delete-orphan">
+		<!-- Note, must not be inverse=true, or the list indexes will come out null in the table -->
+		<list name="tableMergeRules" lazy="true" fetch="subselect"
+		      cascade="all-delete-orphan">
 			<key>
 				<column name="project_oid" not-null="true" />
 			</key>

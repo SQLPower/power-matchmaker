@@ -58,7 +58,6 @@ private Project project;
     	stmt.executeUpdate(sql);
     	
     	stmt.close();
-    	con.close();
     	
     	project = createNewObjectUnderTest();
     }

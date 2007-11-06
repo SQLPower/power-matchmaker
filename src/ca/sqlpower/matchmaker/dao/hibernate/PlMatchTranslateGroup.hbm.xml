@@ -26,8 +26,9 @@
 			<column name="visible_ind" length="1" />
 		</property>
 		
-		<list name="children" lazy="true" table="pl_match_translate" cascade="all-delete-orphan">
-		    <!--  	inverse="true" fetch="subselect"> -->
+		<!-- Note, must not be inverse=true, or the list indexes will come out null in the table -->
+		<list name="children" lazy="true" table="pl_match_translate"
+			 cascade="all-delete-orphan">
 			<key column="TRANSLATE_GROUP_OID"/>
 			<index column="SEQ_NO" />
 			<one-to-many class="ca.sqlpower.matchmaker.MatchMakerTranslateWord" />

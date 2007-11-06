@@ -2943,7 +2943,7 @@
   <table id="TAB2315" populated="true" name="mm_munge_step_output" objectType="TABLE" physicalName="MM_MUNGE_STEP_OUTPUT" remarks="" >
    <folder id="FOL2316" populated="true" name="Columns" physicalName="Columns" type="1" >
     <column id="COL2317" populated="true" autoIncrement="true" autoIncrementSequenceName="munge_step_output_oid_seq" name="munge_step_output_oid" nullable="0" physicalName="munge_step_output_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" type="4" />
-    <column id="COL2318" populated="true" autoIncrement="false" autoIncrementSequenceName="mm_munge_step_oid_seq" name="munge_step_oid" nullable="0" physicalName="munge_step_oid" precision="22" referenceCount="1" remarks="" scale="0" type="4" />
+    <column id="COL2318" populated="true" autoIncrement="false" autoIncrementSequenceName="mm_munge_step_oid_seq" name="munge_step_oid" nullable="1" physicalName="munge_step_oid" precision="22" referenceCount="1" remarks="" scale="0" type="4" />
     <column id="COL2319" populated="true" autoIncrement="false" autoIncrementSequenceName="new column_seq" name="seq_no" nullable="1" physicalName="seq_no" precision="22" referenceCount="1" remarks="" scale="0" type="3" />
     <column id="COL2320" populated="true" autoIncrement="false" name="output_name" nullable="0" physicalName="OUTPUT_NAME" precision="100" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL2321" populated="true" autoIncrement="false" name="output_type" nullable="0" physicalName="OUTPUT_TYPE" precision="1000" referenceCount="1" remarks="" scale="0" type="12" />
