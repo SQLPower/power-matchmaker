@@ -21,8 +21,6 @@ package ca.sqlpower.matchmaker;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-
 /**
  * A container class designed to hold match maker objects when a parent
  * has to have children of multiple types.  Since this isn't allowed by
@@ -88,21 +86,4 @@ public class MatchMakerFolder<C extends MatchMakerObject>
 	public MatchMakerFolder duplicate(MatchMakerObject parent, MatchMakerSession s) {
 		throw new RuntimeException("The match maker folder should never be duplicated.  It should be managed by the Match object");
 	}
-
-
-	@Override
-	public void removeChild(C child) {
-		
-		// It's required by Hibernate to explicitly delete children before removing
-		// them from the parent collection in order to avoid not-null constraint violations.
-		MatchMakerDAO<C> dao = getSession().getDAO(childClass);
-		if (dao != null) {
-			dao.delete(child);
-		} else {
-			logger.warn("No DAO found for child type " + childClass.getName() + "; " +
-					"you may encounter a not-null constraint violation");
-		}
-		super.removeChild(child);
-	}
-
 }
