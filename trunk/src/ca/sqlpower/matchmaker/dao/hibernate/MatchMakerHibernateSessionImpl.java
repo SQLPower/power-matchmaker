@@ -42,6 +42,7 @@ import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerObject;
@@ -53,13 +54,16 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
+import ca.sqlpower.matchmaker.dao.ColumnMergeRulesDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
+import ca.sqlpower.matchmaker.dao.MungeStepDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.dao.TableMergeRuleDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.security.PLSecurityManager;
@@ -117,8 +121,10 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     private PlFolderDAO folderDAO;
     private ProjectDAO projectDAO;
     private MungeProcessDAO mungeProcessDAO;
+    private MungeStepDAO mungeStepDAO;
     private MatchMakerTranslateGroupDAO matchMakerTranslateGroupDAO;
     private TableMergeRuleDAO tableMergeRulesDAO;
+    private ColumnMergeRulesDAO columnMergeRulesDAO;
 
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
 
@@ -208,8 +214,10 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         folderDAO = new PlFolderDAOHibernate(this);
         projectDAO = new ProjectDAOHibernate(this);
         mungeProcessDAO = new MungeProcessDAOHibernate(this);
+        mungeStepDAO = new MungeStepDAOHibernate(this);
         matchMakerTranslateGroupDAO = new MatchMakerTranslateGroupDAOHibernate(this);
         tableMergeRulesDAO = new TableMergeRulesDAOHibernate(this);
+        columnMergeRulesDAO = new ColumnMergeRulesDAOHibernate(this);
         con.close();
 	}
 
@@ -277,10 +285,14 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             return (MatchMakerDAO<T>) projectDAO;
         } else if (businessClass == MungeProcess.class){
             return (MatchMakerDAO<T>) mungeProcessDAO;
+        } else if (MungeStep.class.isAssignableFrom(businessClass)){
+            return (MatchMakerDAO<T>) mungeStepDAO;
         } else if (businessClass == MatchMakerTranslateGroup.class){
             return (MatchMakerDAO<T>) matchMakerTranslateGroupDAO;
         } else if (businessClass == TableMergeRules.class) {
-        	return (MatchMakerDAO<T>) tableMergeRulesDAO;
+            return (MatchMakerDAO<T>) tableMergeRulesDAO;
+        } else if (businessClass == ColumnMergeRules.class) {
+            return (MatchMakerDAO<T>) columnMergeRulesDAO;
         } else {
             throw new IllegalArgumentException("I don't know how to create a DAO for "+businessClass.getName());
         }
