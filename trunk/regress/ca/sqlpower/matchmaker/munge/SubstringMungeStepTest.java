@@ -65,6 +65,8 @@ public class SubstringMungeStepTest extends TestCase {
 		MungeStepOutput output = results.get(0);
 		String result = (String)output.getData();
 		assertEquals("ABCabc", result);
+        step.commit();
+        step.close();
 		
 		step.setParameter(step.BEGIN_PARAMETER_NAME, 90);
 		step.setParameter(step.END_PARAMETER_NAME, 100);
@@ -74,6 +76,8 @@ public class SubstringMungeStepTest extends TestCase {
 		output = results.get(0);
 		result = (String)output.getData();
 		assertEquals("", result);
+        step.commit();
+        step.close();
 		
 		step.setParameter(step.BEGIN_PARAMETER_NAME, -100);
 		step.setParameter(step.END_PARAMETER_NAME, 100);
@@ -84,6 +88,8 @@ public class SubstringMungeStepTest extends TestCase {
 		} catch (IndexOutOfBoundsException ex) {
 			// IndexOutOfBoundsException was thrown as expected
 		}
+        step.commit();
+        step.close();
 	}
 	
 	public void testCallonNull() throws Exception {

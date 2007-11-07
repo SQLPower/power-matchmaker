@@ -53,6 +53,7 @@ public class GoogleAddressLookupTest extends TestCase {
         step.call();
         assertEquals(BigDecimal.valueOf(43.765073), step.getOutputByName("Latitude").getData());
         assertEquals(BigDecimal.valueOf(-79.411909), step.getOutputByName("Longitude").getData());
+        step.commit();
         step.close();
     }
 
@@ -92,6 +93,7 @@ public class GoogleAddressLookupTest extends TestCase {
             step.call();
             assertEquals(1, ec.errorCount);
         } finally {
+            step.commit();
             step.close();
             logger.removeAppender(ec);
         }

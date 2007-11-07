@@ -112,6 +112,7 @@ public class MatchEngineImplTest extends TestCase {
 		mungeProcessOne.addChild(outputStep);
 
 		inputStep.open(logger);
+        inputStep.rollback();
 		inputStep.close();
 
 		outputStep.addInput(new InputDescriptor("result2", Object.class));

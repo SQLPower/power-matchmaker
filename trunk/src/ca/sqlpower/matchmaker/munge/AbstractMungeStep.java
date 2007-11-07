@@ -60,11 +60,21 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 */
 	private Map<String,String> parameters = new HashMap<String, String>();
 	
-	/**
-	 * This refers to whether a open() call has been made on this munge step.
-	 */
-	private boolean opened;
-	
+    /**
+     * Tracks whether a open() call has been made on this munge step.
+     */
+    private boolean opened;
+
+    /**
+     * Ttacks whether a commit() call has been made on this munge step.
+     */
+    private boolean committed;
+
+    /**
+     * Tracks whether a rollback() call has been made on this munge step.
+     */
+    private boolean rolledBack;
+
 	/**
 	 * The logger to print the inputs and outputs to
 	 */
@@ -322,7 +332,37 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     		logger.debug("Opening MungeStep " + getName());
     	}
     	
+        if (opened) {
+            throw new IllegalStateException("Step is already opened");
+        }
+        
         opened = true;
+        committed = false;
+        rolledBack = false;
+    }
+    
+    public void commit() {
+        if (!opened) {
+            throw new IllegalStateException("Can't commit because step is not opened");
+        }
+        if (committed || rolledBack) {
+            throw new IllegalStateException(
+                    "Can't commit because step is already committed or rolled back" +
+                    " (committed="+committed+"; rolledBack="+rolledBack+")");
+        }
+        committed = true;
+    }
+    
+    public void rollback() {
+        if (!opened) {
+            throw new IllegalStateException("Can't roll back because step is not opened");
+        }
+        if (committed || rolledBack) {
+            throw new IllegalStateException(
+                    "Can't roll back because step is already committed or rolled back" +
+                    " (committed="+committed+"; rolledBack="+rolledBack+")");
+        }
+        rolledBack = true;
     }
 
     /**
@@ -331,6 +371,14 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
      * too and clean up the resources.
      */
     public void close() throws Exception {
+        if (!opened) {
+            throw new IllegalStateException("Step not opened");
+        }
+        if (! (committed || rolledBack)) {
+            throw new IllegalStateException(
+                    "Can't close until step has been committed or rolled back" +
+                    " (committed="+committed+"; rolledBack="+rolledBack+")");
+        }
         if (logger == null) {
             System.err.println("Warning: Step " + getClass().getName() + " lost its logger");
         } else {
@@ -395,8 +443,14 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
      */
     public Boolean call() throws Exception {
     	if (!opened) {
-    		throw new IllegalStateException("A munge step must be opened before called.");
+    		throw new IllegalStateException("A munge step must be opened before it is called.");
     	}
+        if (rolledBack || committed) {
+            throw new IllegalStateException(
+                    "This step is already committed or rolled back." +
+                    " It must be closed and reopened before calling it again." +
+                    " (committed="+committed+"; rolledBack="+rolledBack+")");
+        }
         if (logger == null) {
             throw new NullPointerException("Step " + getClass().getName() + " lost its logger");
         }
@@ -433,8 +487,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     @Override
     public String toString() {
     	StringBuilder result = new StringBuilder();
-    	result.append(this.getName() + ": ");
-    	result.append("[Inputs:");
+    	result.append(this.getName()).append(":");
+        result.append(" opened=").append(opened);
+        result.append(" committed=").append(committed);
+        result.append(" rolledBack=").append(rolledBack);
+    	result.append(" [Inputs:");
     	for (MungeStepOutput mso : getMSOInputs()) {
     		result.append(" " + mso);
     	}
@@ -452,6 +509,18 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     
     public boolean isInputStep() {
     	return false;
+    }
+    
+    public boolean isOpen() {
+        return opened;
+    }
+    
+    public boolean isCommitted() {
+        return committed;
+    }
+    
+    public boolean isRolledBack() {
+        return rolledBack;
     }
     
     /**

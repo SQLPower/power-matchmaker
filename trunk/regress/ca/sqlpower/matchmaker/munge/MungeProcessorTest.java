@@ -39,7 +39,7 @@ import junit.framework.TestCase;
  *         v   v   |   v             Output 1 is connected to G
  *         E   F&lt;--+   G
  * </pre>
- * 
+ * <p>
  * Note, this setup was originally identical to the setup in the
  * MungeProcessGraphModelTest, but in order to allow modification
  * of this setup for one test case or the other, we elected to copy
@@ -59,37 +59,37 @@ public class MungeProcessorTest extends TestCase {
     /**
      * Step A as shown in the diagram in the class comment.
      */
-    private MungeStep a;
+    private TestingMungeStep a;
     
     /**
      * Step B as shown in the diagram in the class comment.
      */
-    private MungeStep b;
+    private TestingMungeStep b;
     
     /**
      * Step C as shown in the diagram in the class comment.
      */
-    private MungeStep c;
+    private TestingMungeStep c;
     
     /**
      * Step D as shown in the diagram in the class comment.
      */
-    private MungeStep d;
+    private TestingMungeStep d;
     
     /**
      * Step E as shown in the diagram in the class comment.
      */
-    private MungeStep e;
+    private TestingMungeStep e;
     
     /**
      * Step F as shown in the diagram in the class comment.
      */
-    private MungeStep f;
+    private TestingMungeStep f;
     
     /**
      * Step G as shown in the diagram in the class comment.
      */
-    private MungeStep g;
+    private TestingMungeStep g;
     
     private final Logger logger = Logger.getLogger("testLogger");
     
@@ -107,7 +107,7 @@ public class MungeProcessorTest extends TestCase {
         c = new TestingMungeStep("C", 1, 2);
         c.connectInput(0, a.getChildren().get(0));
 
-        d = new TestingMungeStep("D", 1, 1, false);
+        d = new TestingMungeStep("D", 1, 1);
 
         e = new TestingMungeStep("E", 1, 0);
         e.connectInput(0, b.getChildren().get(0));
@@ -155,5 +155,89 @@ public class MungeProcessorTest extends TestCase {
         	// mark the current step as 'called'
         	step.setParameter("called", "true");
         }
+    }
+    
+    public void testRollbackOnError() throws Exception {
+        d.setExceptionOnCall(true);
+        try {
+            mp.call();
+            fail("Call should have thrown an exception");
+        } catch (Exception ex) {
+            // expected because d will fail
+        }
+        assertTrue(a.isRolledBack());
+        assertTrue(b.isRolledBack());
+        assertTrue(c.isRolledBack());
+        assertTrue(d.isRolledBack());
+        assertTrue(e.isRolledBack());
+        assertTrue(f.isRolledBack());
+        assertTrue(g.isRolledBack());
+    }
+
+    public void testNoCommitOnError() throws Exception {
+        d.setExceptionOnCall(true);
+        try {
+            mp.call();
+            fail("Call should have thrown an exception");
+        } catch (Exception ex) {
+            // expected because d will fail
+        }
+        assertFalse(a.isCommitted());
+        assertFalse(b.isCommitted());
+        assertFalse(c.isCommitted());
+        assertFalse(d.isCommitted());
+        assertFalse(e.isCommitted());
+        assertFalse(f.isCommitted());
+        assertFalse(g.isCommitted());
+    }
+
+    public void testCommitOnSuccess() throws Exception {
+        mp.call();
+        assertTrue(a.isCommitted());
+        assertTrue(b.isCommitted());
+        assertTrue(c.isCommitted());
+        assertTrue(d.isCommitted());
+        assertTrue(e.isCommitted());
+        assertTrue(f.isCommitted());
+        assertTrue(g.isCommitted());
+    }
+
+    public void testNoRollbackOnSuccess() throws Exception {
+        mp.call();
+        assertFalse(a.isRolledBack());
+        assertFalse(b.isRolledBack());
+        assertFalse(c.isRolledBack());
+        assertFalse(d.isRolledBack());
+        assertFalse(e.isRolledBack());
+        assertFalse(f.isRolledBack());
+        assertFalse(g.isRolledBack());
+    }
+
+    public void testCloseOnSuccess() throws Exception {
+        mp.call();
+        assertFalse(a.isOpen());
+        assertFalse(b.isOpen());
+        assertFalse(c.isOpen());
+        assertFalse(d.isOpen());
+        assertFalse(e.isOpen());
+        assertFalse(f.isOpen());
+        assertFalse(g.isOpen());
+    }
+    
+    public void testCloseOnFailure() throws Exception {
+        d.setExceptionOnCall(true);
+        try {
+            mp.call();
+            fail("Call should have thrown an exception");
+        } catch (RuntimeException ex) {
+            // expected because step d will fail
+        }
+        assertFalse(a.isOpen());
+        assertFalse(b.isOpen());
+        assertFalse(c.isOpen());
+        assertFalse(d.isOpen());
+        assertFalse(e.isOpen());
+        assertFalse(f.isOpen());
+        assertFalse(g.isOpen());
     }
 }

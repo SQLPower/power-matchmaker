@@ -39,6 +39,7 @@ public class TestingAbstractMungeStep extends AbstractMungeStep {
 	}
 
 	public Boolean call() throws Exception {
+        super.call();
 		return true;
 	}
 

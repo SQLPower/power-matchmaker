@@ -159,7 +159,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 			
 			Integer processCount = getProject().getMungeSettings().getProcessCount();
 			int rowCount;
-			if (processCount == null || processCount == 0) {
+			if (processCount == null || processCount <= 0) {
 				Connection con = null;
 				Statement stmt = null;
 				try {

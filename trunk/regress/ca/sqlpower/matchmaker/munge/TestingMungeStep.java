@@ -31,18 +31,26 @@ public class TestingMungeStep extends AbstractMungeStep {
 	private static final Logger logger = Logger.getLogger(TestingMungeStep.class);
 	
 	/**
-	 * Indicates whether this test step will return false 
-	 * from the {@link #call()} method.
+	 * Indicates the number of times the {@link #call()} method can
+     * be called before it will return false.
 	 */
-	private boolean continuing;
+	private int callCount;
+    
+    /**
+     * If true, this step's call() method will throw an exception when it is called.
+     * This is useful for testing error-handling aspects of the system.
+     */
+    private boolean exceptionOnCall;
 	
     /**
      * Creates a new instance with the given name, number of input slots, 
      * and number of outputs (which are children of the step from the tree
      * model point of view).  All inputs and outputs are of type String.
      * <p>
-     * By default, this testing munge step will return false from its {@link #call()}
-     * method. To make it return false, use {@ #TestingMungeStep(String, int, int, boolean)}.
+     * By default, this testing munge step will return return true the first 3 times
+     * its {@link #call()} method is invoked. To alter that number, use
+     * {@link #TestingMungeStep(String, int, int, int)} and provide a different
+     * value for <tt>callCount</tt>.
      * 
      * @param name This step's name
      * @param inputs The number of input slots for this step. All slots will
@@ -50,7 +58,7 @@ public class TestingMungeStep extends AbstractMungeStep {
      * @param outputs The number of outputs for this step
      */
     public TestingMungeStep(String name, int inputs, int outputs) {
-        this(name, inputs, outputs, true);
+        this(name, inputs, outputs, 3);
     }
         
     /**
@@ -65,7 +73,7 @@ public class TestingMungeStep extends AbstractMungeStep {
      * @param continuing Set to true if the the MungeProcess should continue
      * after this step. Otherwise, return false.
      */
-    public TestingMungeStep(String name, int inputs, int outputs, boolean continuing) {
+    public TestingMungeStep(String name, int inputs, int outputs, int callCount) {
         setName(name);
         for (int i = 0; i < inputs; i++) {
             addInput(new InputDescriptor("input_" + i, String.class));
@@ -73,7 +81,7 @@ public class TestingMungeStep extends AbstractMungeStep {
         for (int i = 0; i < outputs; i++) {
             addChild(new MungeStepOutput<String>("output_"+i, String.class));
         }
-        this.continuing = continuing;
+        this.callCount = callCount;
     }
     
     /**
@@ -83,7 +91,11 @@ public class TestingMungeStep extends AbstractMungeStep {
     public Boolean call() throws Exception {
     	super.call();
     	logger.debug("Step '" + getName() + "' is being called");
-    	return continuing;
+        if (exceptionOnCall) {
+            throw new RuntimeException("Failing because exceptionOnCall == true");
+        }
+        callCount--;
+    	return callCount > 0;
     }
     
     /**
@@ -96,5 +108,9 @@ public class TestingMungeStep extends AbstractMungeStep {
     @Override
     public String toString() {
     	return getName();
+    }
+    
+    public void setExceptionOnCall(boolean exceptionOnCall) {
+        this.exceptionOnCall = exceptionOnCall;
     }
 }

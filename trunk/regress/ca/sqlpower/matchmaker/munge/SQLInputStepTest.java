@@ -106,6 +106,7 @@ public class SQLInputStepTest extends TestCase {
         } catch (IllegalStateException ex) {
             // good
         }
+        step.rollback();
         step.close();
     }
     
@@ -135,6 +136,7 @@ public class SQLInputStepTest extends TestCase {
         assertTrue(step.call());
         assertTrue(step.call());
         assertFalse(step.call());
+        step.commit();
         step.close();
     }
     
@@ -143,6 +145,7 @@ public class SQLInputStepTest extends TestCase {
         assertNull(step.getChildren().get(0).getData());
         assertNull(step.getChildren().get(1).getData());
         assertNull(step.getChildren().get(2).getData());
+        step.commit();
         step.close();
     }
 
@@ -152,6 +155,7 @@ public class SQLInputStepTest extends TestCase {
         assertNull(step.getChildren().get(0).getData());
         assertNull(step.getChildren().get(1).getData());
         assertNull(step.getChildren().get(2).getData());
+        step.commit();
         step.close();
     }
 
@@ -172,6 +176,7 @@ public class SQLInputStepTest extends TestCase {
         assertEquals(new BigDecimal("32"), step.getChildren().get(1).getData());
         assertEquals(new Date(5678),       step.getChildren().get(2).getData());
         
+        step.commit();
         step.close();
     }
 }
