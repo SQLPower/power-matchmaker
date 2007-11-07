@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
@@ -165,15 +166,14 @@ public class MergeEngineImpl extends AbstractEngine {
 			con.setAutoCommit(false);
 			merger = new MergeProcessor(getProject(), con, getLogger());
 			merger.call();
-			if (isCanceled()) {
-				con.rollback();
-				logger.info("Merge aborted by user");
-				return EngineInvocationResult.ABORTED;
-			}
+            checkCancelled();
 			con.commit();			
 			progressMessage = "Merge Engine finished successfully";
 			logger.info(progressMessage);
 			return EngineInvocationResult.SUCCESS;
+		} catch (CancellationException cex) {
+			logger.warn("Merge engine terminated by user");
+			return EngineInvocationResult.ABORTED;
 		} catch (Exception ex) {
 			progressMessage = "Merge Engine failed";
 			logger.error(getMessage());

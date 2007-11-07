@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -165,6 +166,18 @@ public abstract class AbstractEngine implements MatchMakerEngine {
         // TODO interrupt the engine thread
 	}
 
+    /**
+     * Checks if this engine has been cancelled by another thread.  If so,
+     * throws a CancellationException.
+     *
+     * @throws CancellationException if this engine has been cancelled
+     */
+    protected void checkCancelled() {
+        if (isCanceled()) {
+            throw new CancellationException("User-requested abort");
+        }
+    }
+    
 	/**
 	 * check the DSN setting for the current database connection,
 	 * that's required by the matchmaker odbc engine, since we will not
@@ -245,13 +258,6 @@ public abstract class AbstractEngine implements MatchMakerEngine {
     
     public Level getMessageLevel() {
     	return messageLevel;
-    }
-    
-    protected class UserAbortException extends Exception {
-    	@Override
-    	public String getMessage() {
-    		return "Engine aborted by user";
-    	}    	
     }
     
 	/**

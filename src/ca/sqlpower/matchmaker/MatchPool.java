@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.Logger;
 
@@ -329,19 +330,21 @@ public class MatchPool {
 	 * If a potential match record is in the deletedMatches set it will be deleted
 	 * from the database. If the record is clean it will not be modified in any way.
 	 * 
-	 * It periodicly checks the aborter to see if the process has be canceled
-	 * and if it has it returns.
+	 * @param aborter If this argument is not null, it will be checked from time to time.
+     * @throws CancellationException if the aborter's checkCancelled() method does. In this
+     * case, the changes to the match pool will be rolled back.
 	 */
     public void store(Aborter aborter) throws SQLException {
         logger.debug("Starting to store");
+        if (sourceTableRecords.size() == 0) return;
         SQLTable resultTable = project.getResultTable();
         Connection con = null;
         String lastSQL = null;
         PreparedStatement ps = null;
-        if (sourceTableRecords.size() == 0) return;
         int numKeyValues = ((SourceTableRecord)sourceTableRecords.values().toArray()[0]).getKeyValues().size();
         try {
             con = session.getConnection();
+            con.setAutoCommit(false);
             StringBuilder sql = new StringBuilder();
             sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
             sql.append("\n WHERE ");
@@ -357,7 +360,9 @@ public class MatchPool {
             ps = con.prepareStatement(lastSQL);
             
             for (Iterator<PotentialMatchRecord> it = deletedMatches.iterator(); it.hasNext(); ) {
-            	if (aborter != null && aborter.abort()) return;
+            	if (aborter != null) {
+            	    aborter.checkCancelled();
+                }
             	PotentialMatchRecord pmr = it.next();
             	logger.debug("Dropping " + pmr + " from the database.");
             	for (int i = 0; i < numKeyValues; i++) {
@@ -389,7 +394,9 @@ public class MatchPool {
             ps = con.prepareStatement(lastSQL);
             
             for (PotentialMatchRecord pmr : potentialMatches) {
-            	if (aborter != null && aborter.abort()) return;
+                if (aborter != null) {
+                    aborter.checkCancelled();
+                }
             	if (pmr.getStoreState() == StoreState.DIRTY) {
             		logger.debug("The potential match " + pmr + " was dirty, storing");
             		ps.setObject(1, pmr.getMatchStatus().getCode());
@@ -454,7 +461,9 @@ public class MatchPool {
             ps = con.prepareStatement(lastSQL);
             
             for (PotentialMatchRecord pmr : potentialMatches) {
-            	if (aborter != null && aborter.abort()) return;
+                if (aborter != null) {
+                    aborter.checkCancelled();
+                }
             	if (pmr.getStoreState() == StoreState.NEW) {
             		logger.debug("The potential match " + pmr + " was new, storing");
             		for (int i = 0; i < numKeyValues; i++) {
@@ -502,6 +511,8 @@ public class MatchPool {
             	}
             }
             
+            con.commit();
+            
         } catch (SQLException ex) {
             logger.error("Error in query: "+lastSQL, ex);
             session.handleWarning(
@@ -509,7 +520,23 @@ public class MatchPool {
                     "\nMessage: "+ex.getMessage() +
                     "\nSQL State: "+ex.getSQLState() +
                     "\nQuery: "+lastSQL);
+            try {
+                con.rollback();
+            } catch (SQLException doubleException) {
+                logger.error("Rollback failed. Squishing this exception since it would shadow the original one:", doubleException);
+            }
             throw ex;
+        } catch (Exception ex) {
+            try {
+                con.rollback();
+            } catch (SQLException doubleException) {
+                logger.error("Rollback failed. Squishing this exception since it would shadow the original one:", doubleException);
+            }
+            if (ex instanceof RuntimeException) {
+                throw (RuntimeException) ex;
+            } else {
+                throw new RuntimeException(ex);
+            }
         } finally {
             if (ps != null) try { ps.close(); } catch (SQLException ex) { logger.error("Couldn't close prepared statement", ex); }
             if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }

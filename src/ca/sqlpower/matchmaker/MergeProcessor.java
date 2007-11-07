@@ -97,7 +97,7 @@ public class MergeProcessor extends AbstractProcessor {
 			engineLogger.info("Merging records.");
 			for (PotentialMatchRecord pm : pmProcessOrder) {
 				if (monitorableHelper.getProgress() > monitorableHelper.getJobSize()) break;
-				if (monitorableHelper.isCancelled()) return Boolean.TRUE;
+                checkCancelled();
 				monitorableHelper.incrementProgress();
 				
 				ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
@@ -148,6 +148,9 @@ public class MergeProcessor extends AbstractProcessor {
 					pool.removePotentialMatch(pmr);
 				}
 			}
+
+            checkCancelled();
+
 			pool.store();
 			return Boolean.TRUE;
 		} finally {

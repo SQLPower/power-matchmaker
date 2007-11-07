@@ -298,11 +298,19 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
 
     /**
+     * Returns the database connection to the MatchMaker repository database.
+     * The returned connection will be in Auto-Commit mode, but you can turn
+     * auto-commit off if you like (almost always a good idea).
+     * 
      * @throws ArchitectRuntimeException If it fails to connect to the database
      */
     public Connection getConnection() {
     	try {
-            return database.getConnection();
+            Connection con = database.getConnection();
+            con.setAutoCommit(true);
+            return con;
+    	} catch (SQLException ex) {
+    	    throw new RuntimeException(ex);
         } catch (ArchitectException ex) {
             throw new ArchitectRuntimeException(ex);
         }
