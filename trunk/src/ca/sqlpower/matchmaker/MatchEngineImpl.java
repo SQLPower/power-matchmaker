@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
@@ -186,10 +187,8 @@ public class MatchEngineImpl extends AbstractEngine {
 				pool.clear(new Aborter());
 			}
 			
-			if (isCanceled()) {
-				throw new UserAbortException();
-			}
-			
+			checkCancelled();
+            
 			progressMessage = "Searching for matches";
 			logger.info(progressMessage);
 			mungeAndMatch(rowCount, mungeProcesses, pool);
@@ -197,17 +196,15 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Storing matches";
 			logger.info(progressMessage);
 			pool.store(new Aborter());
-			if (isCanceled()) {
-				throw new UserAbortException();
-			}
+            
+            checkCancelled();
 			
 			progressMessage = "Match Engine finished successfully";
 			logger.info(progressMessage);
 
 			return EngineInvocationResult.SUCCESS;
-		} catch (UserAbortException uce) {
-			logger.info("Match engine aborted by user");
-			setFinished(true);
+		} catch (CancellationException cex) {
+			logger.warn("Match engine terminated by user");
 			return EngineInvocationResult.ABORTED;
 		} catch (Exception ex) {
 			progressMessage = "Match Engine failed";
@@ -250,9 +247,7 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Matching munge process " + currentProcess.getName();
 			logger.debug(getMessage());
 			matcher.call();
-			if (isCanceled()) {
-				throw new UserAbortException();
-			}
+            checkCancelled();
 			progress += matcher.getProgress();
 			currentProcessor = null;
 		}
@@ -324,8 +319,8 @@ public class MatchEngineImpl extends AbstractEngine {
 	 * what its doing if the user presses cancel.
 	 */
 	public class Aborter {
-		public boolean abort() {
-			return isCanceled();
+		public void checkCancelled() {
+			MatchEngineImpl.this.checkCancelled();
 		}
 	}
 }

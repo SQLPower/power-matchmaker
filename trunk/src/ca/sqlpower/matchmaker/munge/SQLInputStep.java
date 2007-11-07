@@ -46,8 +46,6 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
  */
 public class SQLInputStep extends AbstractMungeStep {
 
-    private static final Logger logger = Logger.getLogger(SQLInputStep.class);
-    
     /**
      * The result set that provides input to this step.  The result set cursor will
      * be advanced on every call to {@link #call()}.  The result set is opened by
@@ -224,12 +222,14 @@ public class SQLInputStep extends AbstractMungeStep {
     @Override
     public void commit() throws Exception {
         super.commit();
+        logger.debug("Committing " + getName());
         con.commit();
     }
     
     @Override
     public void rollback() throws Exception {
         super.rollback();
+        logger.debug("Rolling back " + getName());
         con.rollback();
     }
 

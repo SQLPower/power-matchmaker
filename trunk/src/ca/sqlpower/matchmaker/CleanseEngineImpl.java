@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
@@ -194,11 +195,8 @@ public class CleanseEngineImpl extends AbstractEngine {
 				progressMessage = "Running cleanse process " + currentProcess.getName();
 				logger.debug(getMessage());
 				munger.call();
-				if (isCanceled()) {
-					throw new UserAbortException();
-				}
+                checkCancelled();
 				progress += munger.getProgress();
-
 			}
 			
 			currentProcessor = null;
@@ -206,9 +204,8 @@ public class CleanseEngineImpl extends AbstractEngine {
 			progressMessage = "Cleanse Engine finished successfully";
 			logger.info(progressMessage);
 			return EngineInvocationResult.SUCCESS;
-		} catch (UserAbortException uce) {
-			//TODO: I don't know, clean up something?
-			logger.info("Cleanse engine terminated by user");
+		} catch (CancellationException cex) {
+			logger.warn("Cleanse engine terminated by user");
 			return EngineInvocationResult.ABORTED;
 		} catch (Exception ex) {
 			progressMessage = "Cleanse Engine failed";

@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.util.concurrent.CancellationException;
+
 import ca.sqlpower.util.MonitorableImpl;
 
 /**
@@ -60,4 +62,15 @@ public abstract class AbstractProcessor implements Processor {
         monitorableHelper.setCancelled(cancelled);
     }
 
+    /**
+     * Checks if another thread has cancelled this process.  If so, a
+     * CancellationException is thrown.
+     *
+     * @throws CancellationException if this process has been aborted
+     */
+    protected void checkCancelled() {
+        if (isCancelled()) {
+            throw new CancellationException("User-requested abort");
+        }
+    }
 }
