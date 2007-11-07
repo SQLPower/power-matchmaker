@@ -165,7 +165,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 			break;
 		case Types.DATE:
 			Date d = (Date) data;
-			rs.updateDate(columnIndex, new java.sql.Date(d.getDate()));
+			rs.updateDate(columnIndex, new java.sql.Date(d.getTime()));
 			break;
 		case Types.TIME:
 			rs.updateTime(columnIndex, new Time(((Date)data).getTime()));
@@ -201,4 +201,28 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		setName(table.getName());
 		addInitialInputs();
 	}
+    
+    /**
+     * This override has no effect, but it is here for documentation purposes.
+     * <p>
+     * This step shares a connection, statement, and result set with the SQLInputStep 
+     * it's attached to.  That step is responsible for rolling back or committing the
+     * connection.
+     */
+    @Override
+    public void rollback() throws Exception {
+        super.rollback();
+    }
+
+    /**
+     * This override has no effect, but it is here for documentation purposes.
+     * <p>
+     * This step shares a connection, statement, and result set with the SQLInputStep 
+     * it's attached to.  That step is responsible for rolling back or committing the
+     * connection.
+     */
+    @Override
+    public void commit() throws Exception {
+        super.commit();
+    }
 }
