@@ -29,8 +29,6 @@ import java.util.regex.Pattern;
  */
 public class RetainCharactersMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<String> out;
-	
 	/**
 	 * This is the name of the parameter that decides whether this step will be
 	 * case sensitive. The only values accepted by the parameter are "true" and
@@ -58,7 +56,7 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	 */
 	public RetainCharactersMungeStep() {
 		setName("Retain Chars");
-		out = new MungeStepOutput<String>("retainCharactersOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("retainCharactersOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("retainCharacters", String.class);
 		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
@@ -89,7 +87,8 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	public Boolean call() throws Exception {
 		super.call();
 	
-		MungeStepOutput<String> in = getInputs().get(0);
+		MungeStepOutput<String> out = getOut();
+		MungeStepOutput<String> in = getMSOInputs().get(0);
 		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		String retainChars = getParameter(RETAIN_CHARACTERS_PARAMETER_NAME);

@@ -26,11 +26,9 @@ import org.apache.commons.codec.language.RefinedSoundex;
  */
 public class RefinedSoundexMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<String> out;
-	
 	public RefinedSoundexMungeStep() {
 		setName("Refined Soundex");
-		out = new MungeStepOutput<String>("refinedSoundexOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("refinedSoundexOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("refinedSoundex", String.class);
 		super.addInput(desc);
@@ -58,7 +56,8 @@ public class RefinedSoundexMungeStep extends AbstractMungeStep {
 	public Boolean call() throws Exception {
 		super.call();
 
-		MungeStepOutput<String> in = getInputs().get(0);
+		MungeStepOutput<String> out = getOut();
+		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		if (data != null) {
 			out.setData(new RefinedSoundex().soundex(data));

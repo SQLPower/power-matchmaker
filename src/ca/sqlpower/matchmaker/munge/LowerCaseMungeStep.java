@@ -26,11 +26,9 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class LowerCaseMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<String> out;
-	
 	public LowerCaseMungeStep() {
 		setName("Lower Case");
-		out = new MungeStepOutput<String>("lowerCaseOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("lowerCaseOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("lowerCase", String.class);
 		super.addInput(desc);
@@ -59,8 +57,9 @@ public class LowerCaseMungeStep extends AbstractMungeStep {
 	
 	public Boolean call() throws Exception {
 		super.call();
-
-		MungeStepOutput<String> in = getInputs().get(0);
+		
+		MungeStepOutput<String> out = getOut();
+		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		if (in.getData() != null) {
 			data = data.toLowerCase();

@@ -32,6 +32,7 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
+import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
@@ -135,6 +136,10 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 		item1.addChild(ms);
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("TEST_MSO", String.class);
 		ms.addChild(mso);
+		MungeStepOutput<String> mso2 = new MungeStepOutput<String>("TEST_MSO2", String.class);
+		ms.addChild(mso2);
+		ms.addInput(new InputDescriptor("asdf", String.class));
+		ms.connectInput(0, mso2);
 
 		dao.save(item1);
 		
@@ -148,6 +153,40 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 		}
 		assertEquals("MungeProcess should have 1 child.", 1, savedItem1.getChildren().size());
 		MungeStep saveMS = savedItem1.getChildren().get(0);
-		assertEquals("MungeStep should have 1 child.", 1, saveMS.getChildren().size());
+		assertEquals("MungeStep should have 2 child.", 2, saveMS.getChildren().size());
+		MungeStepOutput<String> saveMSO2 = saveMS.getChildren().get(1);
+		assertEquals("MungeStep should have its first input equals its second output.", saveMSO2, saveMS.getMSOInputs().get(0));
+	}
+    
+    public void testSaveAndLoadInTwoSessionsWithEmptyInput() throws Exception {
+		MungeProcessDAO dao = getDataAccessObject();
+		List<MungeProcess> all;
+		MungeProcess item1 = createNewObjectUnderTest();
+		item1.setVisible(true);
+		MungeStep ms = new SQLInputStep();
+		item1.addChild(ms);
+		MungeStepOutput<String> mso = new MungeStepOutput<String>("TEST_MSO", String.class);
+		ms.addChild(mso);
+		MungeStepOutput<String> mso2 = new MungeStepOutput<String>("TEST_MSO2", String.class);
+		ms.addChild(mso2);
+		ms.addInput(new InputDescriptor("TEST_INPUT", String.class));
+
+		dao.save(item1);
+		
+		resetSession();
+		dao = getDataAccessObject();
+		all = dao.findAll();
+        assertTrue("We want at least one item", 1 <= all.size());
+        MungeProcess savedItem1 = all.get(0);
+		for (MungeProcess item: all){
+			item.setSession(getSession());
+		}
+		assertEquals("MungeProcess should have 1 child.", 1, savedItem1.getChildren().size());
+		MungeStep saveMS = savedItem1.getChildren().get(0);
+		assertEquals("MungeStep should have 2 child.", 2, saveMS.getChildren().size());
+		MungeStepOutput<String> saveMSO2 = saveMS.getChildren().get(1);
+
+		assertNull("MungeStep should have a null input.", saveMS.getMSOInputs().get(0));
+		assertEquals("MungeStep should still have same input descriptor.", "TEST_INPUT", saveMS.getInputDescriptor(0).getName());
 	}
 }

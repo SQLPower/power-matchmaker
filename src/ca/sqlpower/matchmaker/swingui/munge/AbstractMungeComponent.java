@@ -299,7 +299,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		setName(step.getName());
 		
 		int borderTop;
-		if (!getStep().canAddInput() && getStep().getInputs().size() == 0) {
+		if (!getStep().canAddInput() && getStep().getMSOInputs().size() == 0) {
 			borderTop = MMM_TOP.getHeight(null);
 		} else {
 			 borderTop = ConnectorIcon.getHandleInstance(Object.class).getIconHeight() + PLUG_OFFSET;
@@ -433,7 +433,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		inputNames.setOpaque(false);
 		inputNames.setLayout(new FlowLayout());
 
-		inputLables = new JLabel[step.getInputs().size()];
+		inputLables = new JLabel[step.getMSOInputs().size()];
 		
 		for (int x = 0; x < inputLables.length; x++) {
 			InputDescriptor id = step.getInputDescriptor(x);
@@ -681,7 +681,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @return Point where the IOC is
 	 */
 	public Point getInputPosition(int inputNum) {
-		int inputs = step.getInputs().size();
+		int inputs = step.getMSOInputs().size();
 		
 		if (!isExpanded() || !showInputNames) {
 			int xPos = (int) (((double)(inputNum+1)/((double)inputs+1))*getWidth());
@@ -775,13 +775,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		
 		
-		for (int i = 0; i< getStep().getInputs().size(); i++) {
+		for (int i = 0; i< getStep().getMSOInputs().size(); i++) {
 			int xPos = getInputPosition(i).x;
 			Icon port = ConnectorIcon.getFemaleInstance(getStep().getInputDescriptor(i).getType());
 
 			port.paintIcon(this, g, xPos, border.top - port.getIconHeight());
 			
-			if (getStep().getInputs().get(i) != null || ghostIndex == i) {
+			if (getStep().getMSOInputs().get(i) != null || ghostIndex == i) {
 				ConnectorIcon handle = ConnectorIcon.getHandleInstance(getStep().getInputDescriptor(i).getType());
 				
 				Graphics2D g2 = (Graphics2D)g.create();
@@ -830,7 +830,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * @return the list
 	 */
 	public List<MungeStepOutput> getInputs() {
-		return step.getInputs();
+		return step.getMSOInputs();
 	}
 	
 	/**
@@ -1133,13 +1133,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 				((AbstractMatchMakerObject)step).startCompoundEdit();
 			}
 				
-			for (int x = 0; x< step.getInputs().size();x++) {
+			for (int x = 0; x< step.getMSOInputs().size();x++) {
 				int y;
-				if (step.getInputs().get(x) != null) {
-					for (y=x-1; y>=0 && step.getInputs().get(y) == null; y--);
+				if (step.getMSOInputs().get(x) != null) {
+					for (y=x-1; y>=0 && step.getMSOInputs().get(y) == null; y--);
 					y++;
 					if (y != x) {
-						step.connectInput(y, step.getInputs().get(x));						
+						step.connectInput(y, step.getMSOInputs().get(x));						
 						List<IOConnector> lines = getPen().getConnections();
 						for (IOConnector ioc : lines) {
 							if (ioc.getChildCom().equals(AbstractMungeComponent.this) && ioc.getChildNumber() == x) {
@@ -1150,7 +1150,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 				}
 			}
 			
-			for (int x = step.getInputs().size()-1;x>0 && step.getInputs().get(x) == null;x--) {
+			for (int x = step.getMSOInputs().size()-1;x>0 && step.getMSOInputs().get(x) == null;x--) {
 				step.removeInput(x);
 			}			
 			if (step instanceof AbstractMatchMakerObject) {
@@ -1342,7 +1342,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 			}
 			
 			selected = getClosestIOIndex(p, CLICK_TOLERANCE, true);
-			if (selected != -1 && getStep().getInputs().get(selected) == null) {
+			if (selected != -1 && getStep().getMSOInputs().get(selected) == null) {
 				if (ghostIndex != selected) {
 					setGhost(selected);
 				}
@@ -1398,7 +1398,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		int count;
 		if (checkInputs) {
-			count = getStep().getInputs().size();
+			count = getStep().getMSOInputs().size();
 		} else {
 			count = getStep().getChildren().size();
 		}

@@ -26,11 +26,9 @@ import org.apache.commons.codec.language.Metaphone;
  */
 public class MetaphoneMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<String> out;
-	
 	public MetaphoneMungeStep() {
 		setName("Metaphone");
-		out = new MungeStepOutput<String>("metaphoneOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("metaphoneOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("metaphone", String.class);
 		super.addInput(desc);
@@ -57,8 +55,9 @@ public class MetaphoneMungeStep extends AbstractMungeStep {
 	
 	public Boolean call() throws Exception {
 		super.call();
-
-		MungeStepOutput<String> in = getInputs().get(0);
+		
+		MungeStepOutput<String> out = getOut();
+		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		if (data != null) {
 			out.setData(new Metaphone().metaphone(data));

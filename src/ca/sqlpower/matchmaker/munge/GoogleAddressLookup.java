@@ -111,7 +111,7 @@ public class GoogleAddressLookup extends AbstractMungeStep {
 
         String key = getParameter(GOOGLE_MAPS_API_KEY);
         String url = getParameter(GOOGLE_GEOCODER_URL);
-        String address = (String) getInputs().get(0).getData();
+        String address = (String) getMSOInputs().get(0).getData();
         url += "?output=json&key="+key+"&q="+URLEncoder.encode(address, "utf-8");
         
         String responseText = readURL(url);

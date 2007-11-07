@@ -3,8 +3,8 @@
  <project-name>new mm_schema</project-name>
  <project-data-sources>
   <data-source id="DS0">
-   <property key="Logical" value="ben-deepthought-oracle" />
    <property key="Connection Type" value="Oracle 10g" />
+   <property key="Logical" value="ben-deepthought-oracle" />
    <property key="JDBC URL" value="jdbc:oracle:thin:@deepthought:1521:xe" />
    <property key="UID" value="ben" />
    <property key="PWD" value="ben" />
@@ -2321,7 +2321,7 @@
  <target-database dbcs-ref="DS0">
   <table id="TAB1830" populated="true" name="mm_project" objectType="TABLE" physicalName="MM_PROJECT" remarks="" >
    <folder id="FOL1831" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1832" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_project_oid_seq" name="project_oid" nullable="0" physicalName="project_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL528" type="4" />
+    <column id="COL1832" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_project_oid_seq" name="project_oid" nullable="0" physicalName="PROJECT_OID" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL528" type="4" />
     <column id="COL1833" populated="true" autoIncrement="false" name="FOLDER_OID" nullable="1" physicalName="FOLDER_OID" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL534" type="4" />
     <column id="COL1834" populated="true" autoIncrement="false" name="project_name" nullable="1" physicalName="PROJECT_NAME" precision="80" referenceCount="1" remarks="" scale="0" source-column-ref="COL529" type="12" />
     <column id="COL1835" populated="true" autoIncrement="false" name="project_type" nullable="0" physicalName="PROJECT_TYPE" precision="35" referenceCount="1" remarks="" scale="0" source-column-ref="COL585" type="12" />
@@ -2394,8 +2394,8 @@
   </table>
   <table id="TAB1896" populated="true" name="mm_munge_step" objectType="TABLE" physicalName="MM_MUNGE_STEP" remarks="" >
    <folder id="FOL1897" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1898" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_munge_step_oid_seq" name="munge_step_oid" nullable="0" physicalName="munge_step_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL623" type="4" />
-    <column id="COL1899" populated="true" autoIncrement="false" name="munge_process_oid" nullable="0" physicalName="munge_process_oid" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL622" type="4" />
+    <column id="COL1898" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_munge_step_oid_seq" name="munge_step_oid" nullable="0" physicalName="MUNGE_STEP_OID" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL623" type="4" />
+    <column id="COL1899" populated="true" autoIncrement="false" name="munge_process_oid" nullable="0" physicalName="MUNGE_PROCESS_OID" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL622" type="4" />
     <column id="COL1900" populated="true" autoIncrement="false" name="step_class" nullable="0" physicalName="STEP_CLASS" precision="1000" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL1901" populated="true" autoIncrement="false" name="step_name" nullable="1" physicalName="STEP_NAME" precision="100" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL1902" populated="true" autoIncrement="false" name="visible_ind" nullable="1" physicalName="VISIBLE_IND" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
@@ -2416,8 +2416,8 @@
   </table>
   <table id="TAB1912" populated="true" name="mm_munge_process" objectType="TABLE" physicalName="MM_MUNGE_PROCESS" remarks="" >
    <folder id="FOL1913" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1914" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_munge_process_oid_seq" name="munge_process_oid" nullable="0" physicalName="munge_process_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL660" type="4" />
-    <column id="COL1915" populated="true" autoIncrement="false" name="project_oid" nullable="1" physicalName="project_oid" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL661" type="4" />
+    <column id="COL1914" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_munge_process_oid_seq" name="munge_process_oid" nullable="0" physicalName="MUNGE_PROCESS_OID" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL660" type="4" />
+    <column id="COL1915" populated="true" autoIncrement="false" name="project_oid" nullable="1" physicalName="PROJECT_OID" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL661" type="4" />
     <column id="COL1916" populated="true" autoIncrement="false" name="process_name" nullable="1" physicalName="PROCESS_NAME" precision="100" referenceCount="1" remarks="" scale="0" source-column-ref="COL662" type="12" />
     <column id="COL1917" populated="true" autoIncrement="false" name="DESCRIPTION" nullable="1" physicalName="DESCRIPTION" precision="2000" referenceCount="1" remarks="" scale="0" source-column-ref="COL663" sourceDataTypeName="VARCHAR2" type="12" />
     <column id="COL1918" populated="true" autoIncrement="false" name="MATCH_PERCENT" nullable="1" physicalName="MATCH_PERCENT" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL664" sourceDataTypeName="NUMBER" type="3" />
@@ -2480,7 +2480,7 @@
   </table>
   <table id="TAB1957" populated="true" name="PL_MATCH_XREF_MAP" objectType="TABLE" physicalName="PL_MATCH_XREF_MAP" >
    <folder id="FOL1958" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1959" populated="true" autoIncrement="false" name="project_oid" nullable="0" physicalName="project_oid" precision="22" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL702" type="4" />
+    <column id="COL1959" populated="true" autoIncrement="false" name="project_oid" nullable="0" physicalName="PROJECT_OID" precision="22" primaryKeySeq="0" referenceCount="2" remarks="" scale="0" source-column-ref="COL702" type="4" />
     <column id="COL1960" populated="true" autoIncrement="false" name="MAPPING_SEQ_NO" nullable="0" physicalName="MAPPING_SEQ_NO" precision="22" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" source-column-ref="COL703" sourceDataTypeName="NUMBER" type="3" />
     <column id="COL1961" populated="true" autoIncrement="false" name="SOURCE_COLUMN_NAME" nullable="1" physicalName="SOURCE_COLUMN_NAME" precision="50" referenceCount="1" remarks="" scale="0" source-column-ref="COL704" sourceDataTypeName="VARCHAR2" type="12" />
     <column id="COL1962" populated="true" autoIncrement="false" name="TARGET_COLUMN_NAME" nullable="1" physicalName="TARGET_COLUMN_NAME" precision="50" referenceCount="1" remarks="" scale="0" source-column-ref="COL705" sourceDataTypeName="VARCHAR2" type="12" />
@@ -2499,8 +2499,8 @@
   </table>
   <table id="TAB1970" populated="true" name="mm_column_merge_rule" objectType="TABLE" physicalName="MM_COLUMN_MERGE_RULE" remarks="" >
    <folder id="FOL1971" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1972" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_column_merge_rule_oid_seq" name="column_merge_rule_oid" nullable="0" physicalName="column_merge_rule_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL715" type="4" />
-    <column id="COL1973" populated="true" autoIncrement="false" name="table_merge_rule_oid" nullable="0" physicalName="table_merge_rule_oid" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL716" type="4" />
+    <column id="COL1972" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_column_merge_rule_oid_seq" name="column_merge_rule_oid" nullable="0" physicalName="COLUMN_MERGE_RULE_OID" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL715" type="4" />
+    <column id="COL1973" populated="true" autoIncrement="false" name="table_merge_rule_oid" nullable="0" physicalName="TABLE_MERGE_RULE_OID" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL716" type="4" />
     <column id="COL1974" populated="true" autoIncrement="false" name="column_name" nullable="1" physicalName="COLUMN_NAME" precision="60" referenceCount="1" remarks="" scale="0" source-column-ref="COL717" type="12" />
     <column id="COL1975" populated="true" autoIncrement="false" name="in_primary_key_ind" nullable="1" physicalName="IN_PRIMARY_KEY_IND" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL1976" populated="true" autoIncrement="false" name="imported_key_column_name" nullable="1" physicalName="IMPORTED_KEY_COLUMN_NAME" precision="60" referenceCount="1" remarks="The column name within the parent table; see mm_table_merge_rule.parent_merge_rule_oid" scale="0" type="12" />
@@ -2523,11 +2523,11 @@
   </table>
   <table id="TAB1988" populated="true" name="mm_table_merge_rule" objectType="TABLE" physicalName="MM_TABLE_MERGE_RULE" remarks="" >
    <folder id="FOL1989" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL1990" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_table_merge_rule_oid_seq" name="table_merge_rule_oid" nullable="0" physicalName="table_merge_rule_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL732" type="4" />
-    <column id="COL1991" populated="true" autoIncrement="false" name="project_oid" nullable="1" physicalName="project_oid" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL733" type="4" />
-    <column id="COL1992" populated="true" autoIncrement="false" name="parent_merge_rule_oid" nullable="1" physicalName="parent_merge_rule_oid" precision="22" referenceCount="1" remarks="" scale="0" type="4" />
+    <column id="COL1990" populated="true" autoIncrement="true" autoIncrementSequenceName="mm_table_merge_rule_oid_seq" name="table_merge_rule_oid" nullable="0" physicalName="TABLE_MERGE_RULE_OID" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" source-column-ref="COL732" type="4" />
+    <column id="COL1991" populated="true" autoIncrement="false" name="project_oid" nullable="1" physicalName="PROJECT_OID" precision="22" referenceCount="2" remarks="" scale="0" source-column-ref="COL733" type="4" />
+    <column id="COL1992" populated="true" autoIncrement="false" name="parent_merge_rule_oid" nullable="1" physicalName="PARENT_MERGE_RULE_OID" precision="22" referenceCount="1" remarks="" scale="0" type="4" />
     <column id="COL1993" populated="true" autoIncrement="false" name="SEQ_NO" nullable="1" physicalName="SEQ_NO" precision="22" referenceCount="1" remarks="" scale="0" source-column-ref="COL741" sourceDataTypeName="NUMBER" type="3" />
-    <column id="COL1994" populated="true" autoIncrement="false" name="table_spdatasource" nullable="1" physicalName="table_spdatasource" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1994" populated="true" autoIncrement="false" name="table_spdatasource" nullable="1" physicalName="TABLE_SPDATASOURCE" precision="60" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL1995" populated="true" autoIncrement="false" name="table_catalog" nullable="1" physicalName="TABLE_CATALOG" precision="30" referenceCount="1" remarks="" scale="0" source-column-ref="COL735" type="12" />
     <column id="COL1996" populated="true" autoIncrement="false" name="table_schema" nullable="1" physicalName="TABLE_SCHEMA" precision="60" referenceCount="1" remarks="" scale="0" source-column-ref="COL734" type="12" />
     <column id="COL1997" populated="true" autoIncrement="false" name="table_name" nullable="1" physicalName="TABLE_NAME" precision="60" referenceCount="1" remarks="" scale="0" source-column-ref="COL736" type="12" />
@@ -2823,7 +2823,7 @@
   </table>
   <table id="TAB2215" populated="true" name="mm_munge_step_parameter" objectType="TABLE" physicalName="MM_MUNGE_STEP_PARAMETER" remarks="" >
    <folder id="FOL2216" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL2217" populated="true" autoIncrement="false" name="munge_step_oid" nullable="0" physicalName="munge_step_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" type="4" />
+    <column id="COL2217" populated="true" autoIncrement="false" name="munge_step_oid" nullable="0" physicalName="MUNGE_STEP_OID" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" type="4" />
     <column id="COL2218" populated="true" autoIncrement="false" name="parameter_name" nullable="0" physicalName="PARAMETER_NAME" precision="100" primaryKeySeq="1" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL2219" populated="true" autoIncrement="false" name="parameter_value" nullable="0" physicalName="PARAMETER_VALUE" precision="2000" referenceCount="1" remarks="" scale="0" type="12" />
    </folder>
@@ -2942,9 +2942,9 @@
   </table>
   <table id="TAB2315" populated="true" name="mm_munge_step_output" objectType="TABLE" physicalName="MM_MUNGE_STEP_OUTPUT" remarks="" >
    <folder id="FOL2316" populated="true" name="Columns" physicalName="Columns" type="1" >
-    <column id="COL2317" populated="true" autoIncrement="true" autoIncrementSequenceName="munge_step_output_oid_seq" name="munge_step_output_oid" nullable="0" physicalName="munge_step_output_oid" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" type="4" />
-    <column id="COL2318" populated="true" autoIncrement="false" autoIncrementSequenceName="mm_munge_step_oid_seq" name="munge_step_oid" nullable="1" physicalName="munge_step_oid" precision="22" referenceCount="1" remarks="" scale="0" type="4" />
-    <column id="COL2319" populated="true" autoIncrement="false" autoIncrementSequenceName="new column_seq" name="seq_no" nullable="1" physicalName="seq_no" precision="22" referenceCount="1" remarks="" scale="0" type="3" />
+    <column id="COL2317" populated="true" autoIncrement="true" autoIncrementSequenceName="munge_step_output_oid_seq" name="munge_step_output_oid" nullable="0" physicalName="MUNGE_STEP_OUTPUT_OID" precision="22" primaryKeySeq="0" referenceCount="1" remarks="" scale="0" type="4" />
+    <column id="COL2318" populated="true" autoIncrement="false" autoIncrementSequenceName="mm_munge_step_oid_seq" name="munge_step_oid" nullable="1" physicalName="MUNGE_STEP_OID" precision="22" referenceCount="1" remarks="" scale="0" type="4" />
+    <column id="COL2319" populated="true" autoIncrement="false" name="seq_no" nullable="1" physicalName="SEQ_NO" precision="22" referenceCount="1" remarks="" scale="0" type="3" />
     <column id="COL2320" populated="true" autoIncrement="false" name="output_name" nullable="0" physicalName="OUTPUT_NAME" precision="100" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL2321" populated="true" autoIncrement="false" name="output_type" nullable="0" physicalName="OUTPUT_TYPE" precision="1000" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL2322" populated="true" autoIncrement="false" name="visible_ind" nullable="1" physicalName="VISIBLE_IND" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
@@ -2962,80 +2962,103 @@
     </index>
    </folder>
   </table>
+  <table id="TAB2331" populated="true" name="mm_munge_step_input" objectType="TABLE" physicalName="MM_MUNGE_STEP_INPUT" remarks="Once architect supports indexes, we need to create a unique index on these keys." >
+   <folder id="FOL2332" populated="true" name="Columns" physicalName="Columns" type="1" >
+    <column id="COL2333" populated="true" autoIncrement="false" autoIncrementSequenceName="mm_munge_step_oid_seq" name="munge_step_oid" nullable="1" physicalName="MUNGE_STEP_OID" precision="22" referenceCount="1" remarks="" scale="0" type="4" />
+    <column id="COL2334" populated="true" autoIncrement="false" name="seq_no" nullable="1" physicalName="SEQ_NO" precision="22" referenceCount="1" remarks="" scale="0" type="3" />
+    <column id="COL2335" populated="true" autoIncrement="false" autoIncrementSequenceName="munge_step_output_oid_seq" name="munge_step_output_oid" nullable="1" physicalName="MUNGE_STEP_OUTPUT_OID" precision="22" referenceCount="1" remarks="" scale="0" type="4" />
+    <column id="COL2336" populated="true" autoIncrement="false" name="input_type" nullable="1" physicalName="INPUT_TYPE" precision="1000" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL2337" populated="true" autoIncrement="false" name="input_name" nullable="1" physicalName="INPUT_NAME" precision="100" referenceCount="1" remarks="" scale="0" type="12" />
+   </folder>
+   <folder id="FOL2338" populated="true" name="Exported Keys" physicalName="Exported Keys" type="3" >
+   </folder>
+   <folder id="FOL2339" populated="true" name="Imported Keys" physicalName="Imported Keys" type="2" >
+   </folder>
+   <folder id="FOL2340" populated="true" name="Indices" physicalName="Indices" type="4" >
+   </folder>
+  </table>
   <relationships>
-   <relationship id="REL2331" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1912" fkCardinality="7" identifying="true" name="mm_project_munge_process_fk" physicalName="mm_project_munge_process_fk" pk-table-ref="TAB1830" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2332" populated="true" fk-column-ref="COL1915" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1832" />
+   <relationship id="REL2341" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1912" fkCardinality="7" identifying="true" name="mm_project_munge_process_fk" physicalName="mm_project_munge_process_fk" pk-table-ref="TAB1830" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2342" populated="true" fk-column-ref="COL1915" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1832" />
    </relationship>
-   <relationship id="REL2333" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1957" fkCardinality="7" identifying="true" name="mm_project_xref_map_fk" physicalName="mm_project_xref_map_fk" pk-table-ref="TAB1830" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2334" populated="true" fk-column-ref="COL1959" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1832" />
+   <relationship id="REL2343" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1957" fkCardinality="7" identifying="true" name="mm_project_xref_map_fk" physicalName="mm_project_xref_map_fk" pk-table-ref="TAB1830" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2344" populated="true" fk-column-ref="COL1959" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1832" />
    </relationship>
-   <relationship id="REL2335" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1988" fkCardinality="7" identifying="true" name="mm_project_table_merge_rule_fk" physicalName="mm_project_table_merge_rule_fk" pk-table-ref="TAB1830" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2336" populated="true" fk-column-ref="COL1991" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1832" />
+   <relationship id="REL2345" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1988" fkCardinality="7" identifying="true" name="mm_project_table_merge_rule_fk" physicalName="mm_project_table_merge_rule_fk" pk-table-ref="TAB1830" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2346" populated="true" fk-column-ref="COL1991" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1832" />
    </relationship>
-   <relationship id="REL2337" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1830" fkCardinality="7" identifying="true" name="mm_folder_project_fk" physicalName="mm_folder_project_fk" pk-table-ref="TAB2130" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2338" populated="true" fk-column-ref="COL1833" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2132" />
+   <relationship id="REL2347" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1830" fkCardinality="7" identifying="true" name="mm_folder_project_fk" physicalName="mm_folder_project_fk" pk-table-ref="TAB2130" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2348" populated="true" fk-column-ref="COL1833" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2132" />
    </relationship>
-   <relationship id="REL2339" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2215" fkCardinality="7" identifying="true" name="mm_munge_step_parameter_fk" physicalName="mm_munge_step_parameter_fk" pk-table-ref="TAB1896" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2340" populated="true" fk-column-ref="COL2217" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1898" />
+   <relationship id="REL2349" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2215" fkCardinality="7" identifying="true" name="mm_munge_step_parameter_fk" physicalName="mm_munge_step_parameter_fk" pk-table-ref="TAB1896" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2350" populated="true" fk-column-ref="COL2217" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1898" />
    </relationship>
-   <relationship id="REL2341" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2315" fkCardinality="7" identifying="true" name="mm_munge_step_output_fk" physicalName="mm_munge_step_Munge_Step_Output_fk" pk-table-ref="TAB1896" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2342" populated="true" fk-column-ref="COL2318" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1898" />
+   <relationship id="REL2351" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2315" fkCardinality="7" identifying="true" name="mm_munge_step_output_fk" physicalName="mm_munge_step_Munge_Step_Output_fk" pk-table-ref="TAB1896" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2352" populated="true" fk-column-ref="COL2318" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1898" />
    </relationship>
-   <relationship id="REL2343" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1896" fkCardinality="7" identifying="true" name="mm_munge_process_step_fk" physicalName="mm_munge_process_step_fk" pk-table-ref="TAB1912" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2344" populated="true" fk-column-ref="COL1899" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1914" />
+   <relationship id="REL2353" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2331" fkCardinality="7" identifying="true" name="mm_munge_step_input_fk" physicalName="mm_munge_step_mm_munge_step_input_fk" pk-table-ref="TAB1896" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2354" populated="true" fk-column-ref="COL2333" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1898" />
    </relationship>
-   <reference ref-id="REL2343" />
-   <reference ref-id="REL2331" />
-   <relationship id="REL2345" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1934" fkCardinality="7" identifying="true" name="TRANSLATE_GROUP_TRANSLATE_FK" physicalName="translate_group_translate_fk" pk-table-ref="TAB1947" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2346" populated="true" fk-column-ref="COL1937" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1949" />
+   <relationship id="REL2355" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1896" fkCardinality="7" identifying="true" name="mm_munge_process_step_fk" physicalName="mm_munge_process_step_fk" pk-table-ref="TAB1912" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2356" populated="true" fk-column-ref="COL1899" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1914" />
    </relationship>
-   <reference ref-id="REL2345" />
-   <reference ref-id="REL2333" />
-   <relationship id="REL2347" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1970" fkCardinality="7" identifying="true" name="mm_table_column_merge_rule_fk" physicalName="mm_table_column_merge_rule_fk" pk-table-ref="TAB1988" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2348" populated="true" fk-column-ref="COL1973" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1990" />
-   </relationship>
-   <reference ref-id="REL2347" />
-   <reference ref-id="REL2335" />
-   <relationship id="REL2349" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2045" fkCardinality="7" identifying="true" name="PL_USER_NOTIFICATION_FK" physicalName="pl_user_notification_fk" pk-table-ref="TAB2020" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2350" populated="true" fk-column-ref="COL2047" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2022" />
-   </relationship>
-   <relationship id="REL2351" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2077" fkCardinality="7" identifying="true" name="USER_GROUP_FK_USER" physicalName="user_group_fk_user" pk-table-ref="TAB2020" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2352" populated="true" fk-column-ref="COL2079" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2022" />
-   </relationship>
-   <relationship id="REL2353" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2091" fkCardinality="7" identifying="true" name="USER_OBJECT_PRIVS_FK" physicalName="user_object_privs_fk" pk-table-ref="TAB2020" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2354" populated="true" fk-column-ref="COL2093" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2022" />
-   </relationship>
-   <relationship id="REL2355" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2111" fkCardinality="7" identifying="true" name="USER_SYSTEM_PRIVS_FK" physicalName="user_system_privs_fk" pk-table-ref="TAB2020" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2356" populated="true" fk-column-ref="COL2113" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2022" />
-   </relationship>
-   <reference ref-id="REL2349" />
-   <reference ref-id="REL2351" />
-   <relationship id="REL2357" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2077" fkCardinality="7" identifying="true" name="USER_GROUP_FK_GROUP" physicalName="user_group_fk_group" pk-table-ref="TAB2145" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2358" populated="true" fk-column-ref="COL2080" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2147" />
-   </relationship>
-   <reference ref-id="REL2353" />
    <reference ref-id="REL2355" />
-   <reference ref-id="REL2337" />
+   <reference ref-id="REL2341" />
+   <relationship id="REL2357" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1934" fkCardinality="7" identifying="true" name="TRANSLATE_GROUP_TRANSLATE_FK" physicalName="translate_group_translate_fk" pk-table-ref="TAB1947" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2358" populated="true" fk-column-ref="COL1937" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1949" />
+   </relationship>
    <reference ref-id="REL2357" />
-   <relationship id="REL2359" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2160" fkCardinality="7" identifying="true" name="PL_GROUP_NOTIFICATION_FK" physicalName="pl_group_notification_fk" pk-table-ref="TAB2145" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2360" populated="true" fk-column-ref="COL2162" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2147" />
-   </relationship>
-   <relationship id="REL2361" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2176" fkCardinality="7" identifying="true" name="GROUP_OBJECT_PRIVS_FK" physicalName="group_object_privs_fk" pk-table-ref="TAB2145" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2362" populated="true" fk-column-ref="COL2178" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2147" />
-   </relationship>
-   <relationship id="REL2363" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2196" fkCardinality="7" identifying="true" name="GROUP_SYSTEM_PRIVS_FK" physicalName="group_system_privs_fk" pk-table-ref="TAB2145" pkCardinality="2" updateRule="0" >
-    <column-mapping id="CMP2364" populated="true" fk-column-ref="COL2198" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2147" />
+   <reference ref-id="REL2343" />
+   <relationship id="REL2359" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB1970" fkCardinality="7" identifying="true" name="mm_table_column_merge_rule_fk" physicalName="mm_table_column_merge_rule_fk" pk-table-ref="TAB1988" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2360" populated="true" fk-column-ref="COL1973" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL1990" />
    </relationship>
    <reference ref-id="REL2359" />
+   <reference ref-id="REL2345" />
+   <relationship id="REL2361" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2045" fkCardinality="7" identifying="true" name="PL_USER_NOTIFICATION_FK" physicalName="pl_user_notification_fk" pk-table-ref="TAB2020" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2362" populated="true" fk-column-ref="COL2047" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2022" />
+   </relationship>
+   <relationship id="REL2363" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2077" fkCardinality="7" identifying="true" name="USER_GROUP_FK_USER" physicalName="user_group_fk_user" pk-table-ref="TAB2020" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2364" populated="true" fk-column-ref="COL2079" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2022" />
+   </relationship>
+   <relationship id="REL2365" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2091" fkCardinality="7" identifying="true" name="USER_OBJECT_PRIVS_FK" physicalName="user_object_privs_fk" pk-table-ref="TAB2020" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2366" populated="true" fk-column-ref="COL2093" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2022" />
+   </relationship>
+   <relationship id="REL2367" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2111" fkCardinality="7" identifying="true" name="USER_SYSTEM_PRIVS_FK" physicalName="user_system_privs_fk" pk-table-ref="TAB2020" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2368" populated="true" fk-column-ref="COL2113" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2022" />
+   </relationship>
    <reference ref-id="REL2361" />
    <reference ref-id="REL2363" />
-   <reference ref-id="REL2339" />
-   <reference ref-id="REL2341" />
+   <relationship id="REL2369" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2077" fkCardinality="7" identifying="true" name="USER_GROUP_FK_GROUP" physicalName="user_group_fk_group" pk-table-ref="TAB2145" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2370" populated="true" fk-column-ref="COL2080" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2147" />
+   </relationship>
+   <reference ref-id="REL2365" />
+   <reference ref-id="REL2367" />
+   <reference ref-id="REL2347" />
+   <reference ref-id="REL2369" />
+   <relationship id="REL2371" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2160" fkCardinality="7" identifying="true" name="PL_GROUP_NOTIFICATION_FK" physicalName="pl_group_notification_fk" pk-table-ref="TAB2145" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2372" populated="true" fk-column-ref="COL2162" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2147" />
+   </relationship>
+   <relationship id="REL2373" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2176" fkCardinality="7" identifying="true" name="GROUP_OBJECT_PRIVS_FK" physicalName="group_object_privs_fk" pk-table-ref="TAB2145" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2374" populated="true" fk-column-ref="COL2178" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2147" />
+   </relationship>
+   <relationship id="REL2375" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2196" fkCardinality="7" identifying="true" name="GROUP_SYSTEM_PRIVS_FK" physicalName="group_system_privs_fk" pk-table-ref="TAB2145" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2376" populated="true" fk-column-ref="COL2198" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2147" />
+   </relationship>
+   <reference ref-id="REL2371" />
+   <reference ref-id="REL2373" />
+   <reference ref-id="REL2375" />
+   <reference ref-id="REL2349" />
+   <relationship id="REL2377" populated="true" deferrability="5" deleteRule="0" fk-table-ref="TAB2331" fkCardinality="7" identifying="false" name="step_output_input_fk" physicalName="mm_munge_step_output_mm_munge_step_input_fk" pk-table-ref="TAB2315" pkCardinality="2" updateRule="0" >
+    <column-mapping id="CMP2378" populated="true" fk-column-ref="COL2335" name="Column Mapping" physicalName="Column Mapping" pk-column-ref="COL2317" />
+   </relationship>
+   <reference ref-id="REL2351" />
+   <reference ref-id="REL2353" />
+   <reference ref-id="REL2377" />
   </relationships>
  </target-database>
- <ddl-generator type="ca.sqlpower.architect.ddl.OracleDDLGenerator" allow-connection="false" target-schema="ben"> </ddl-generator>
- <compare-dm-settings  sqlScriptFormat="SQLServer 2000"  outputFormatAsString="SQL" >
-  <source-stuff   datastoreTypeAsString="DATABASE"   connectName="mm_test-deepthought-sqlserver"   filePath=""  />  <target-stuff   datastoreTypeAsString="PROJECT"   filePath=""  /> </compare-dm-settings>
+ <ddl-generator type="ca.sqlpower.architect.ddl.OracleDDLGenerator" allow-connection="true" target-schema="ben"> </ddl-generator>
+ <compare-dm-settings  sqlScriptFormat="Oracle 8i/9i/10g"  outputFormatAsString="SQL" >
+  <source-stuff   datastoreTypeAsString="DATABASE"   connectName="ben-deepthought-oracle"   filePath=""  />  <target-stuff   datastoreTypeAsString="PROJECT"   filePath=""  /> </compare-dm-settings>
  <create-kettle-job-settings filePath="" jobName="" schemaName="" kettleJoinType="0" savingToFile="true" />
  <play-pen relationship-style="rectilinear">
   <table-pane table-ref="TAB1830" x="1185" y="232" />
@@ -3057,27 +3080,30 @@
   <table-pane table-ref="TAB2160" x="41" y="2439" />
   <table-pane table-ref="TAB2176" x="459" y="2041" />
   <table-pane table-ref="TAB2196" x="438" y="2699" />
-  <table-pane table-ref="TAB2215" x="2103" y="972" />
+  <table-pane table-ref="TAB2215" x="2253" y="988" />
   <table-pane table-ref="TAB2226" x="2281" y="1962" />
   <table-pane table-ref="TAB2306" x="230" y="71" />
-  <table-pane table-ref="TAB2315" x="1700" y="983" />
-  <table-link relationship-ref="REL2343" pk-x="252" pk-y="126" fk-x="0" fk-y="95" />
-  <table-link relationship-ref="REL2331" pk-x="278" pk-y="485" fk-x="0" fk-y="111" />
-  <table-link relationship-ref="REL2345" pk-x="122" pk-y="79" fk-x="128" fk-y="0" />
-  <table-link relationship-ref="REL2333" pk-x="0" pk-y="260" fk-x="140" fk-y="111" />
-  <table-link relationship-ref="REL2347" pk-x="0" pk-y="122" fk-x="254" fk-y="103" />
-  <table-link relationship-ref="REL2335" pk-x="0" pk-y="738" fk-x="252" fk-y="157" />
-  <table-link relationship-ref="REL2349" pk-x="263" pk-y="228" fk-x="0" fk-y="71" />
-  <table-link relationship-ref="REL2351" pk-x="0" pk-y="159" fk-x="252" fk-y="63" />
-  <table-link relationship-ref="REL2353" pk-x="149" pk-y="0" fk-x="121" fk-y="207" />
-  <table-link relationship-ref="REL2355" pk-x="127" pk-y="319" fk-x="127" fk-y="0" />
-  <table-link relationship-ref="REL2337" pk-x="104" pk-y="127" fk-x="152" fk-y="0" />
-  <table-link relationship-ref="REL2357" pk-x="252" pk-y="77" fk-x="0" fk-y="63" />
-  <table-link relationship-ref="REL2359" pk-x="0" pk-y="102" fk-x="214" fk-y="57" />
-  <table-link relationship-ref="REL2361" pk-x="143" pk-y="0" fk-x="112" fk-y="207" />
-  <table-link relationship-ref="REL2363" pk-x="132" pk-y="159" fk-x="122" fk-y="0" />
-  <table-link relationship-ref="REL2339" pk-x="142" pk-y="175" fk-x="108" fk-y="0" />
-  <table-link relationship-ref="REL2341" pk-x="10" pk-y="175" fk-x="220" fk-y="0" />
+  <table-pane table-ref="TAB2315" x="1721" y="964" />
+  <table-pane table-ref="TAB2331" x="2069" y="1185" />
+  <table-link relationship-ref="REL2377" pk-x="245" pk-y="135" fk-x="12" fk-y="0" />
+  <table-link relationship-ref="REL2353" pk-x="95" pk-y="175" fk-x="95" fk-y="0" />
+  <table-link relationship-ref="REL2355" pk-x="252" pk-y="126" fk-x="0" fk-y="95" />
+  <table-link relationship-ref="REL2341" pk-x="278" pk-y="485" fk-x="0" fk-y="111" />
+  <table-link relationship-ref="REL2357" pk-x="122" pk-y="79" fk-x="128" fk-y="0" />
+  <table-link relationship-ref="REL2343" pk-x="0" pk-y="260" fk-x="140" fk-y="111" />
+  <table-link relationship-ref="REL2359" pk-x="0" pk-y="122" fk-x="254" fk-y="103" />
+  <table-link relationship-ref="REL2345" pk-x="0" pk-y="738" fk-x="252" fk-y="157" />
+  <table-link relationship-ref="REL2361" pk-x="263" pk-y="228" fk-x="0" fk-y="71" />
+  <table-link relationship-ref="REL2363" pk-x="0" pk-y="159" fk-x="252" fk-y="63" />
+  <table-link relationship-ref="REL2365" pk-x="149" pk-y="0" fk-x="121" fk-y="207" />
+  <table-link relationship-ref="REL2367" pk-x="127" pk-y="319" fk-x="127" fk-y="0" />
+  <table-link relationship-ref="REL2347" pk-x="104" pk-y="127" fk-x="152" fk-y="0" />
+  <table-link relationship-ref="REL2369" pk-x="252" pk-y="77" fk-x="0" fk-y="63" />
+  <table-link relationship-ref="REL2371" pk-x="0" pk-y="102" fk-x="214" fk-y="57" />
+  <table-link relationship-ref="REL2373" pk-x="143" pk-y="0" fk-x="112" fk-y="207" />
+  <table-link relationship-ref="REL2375" pk-x="132" pk-y="159" fk-x="122" fk-y="0" />
+  <table-link relationship-ref="REL2349" pk-x="228" pk-y="175" fk-x="44" fk-y="0" />
+  <table-link relationship-ref="REL2351" pk-x="10" pk-y="175" fk-x="220" fk-y="0" />
  </play-pen>
  <profiles topNCount="10">
   </profiles>

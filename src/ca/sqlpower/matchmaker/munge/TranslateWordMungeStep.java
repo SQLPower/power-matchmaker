@@ -36,8 +36,6 @@ import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
  */
 public class TranslateWordMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<String> out;
-	
 	/**
 	 * This is the translate group that holds all the target and replacement strings.
 	 */
@@ -66,7 +64,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	
 	public TranslateWordMungeStep() {
 		setName("Translate Words");
-		out = new MungeStepOutput<String>("translateWordOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("translateWordOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("translateWord", String.class);
 		super.addInput(desc);
@@ -104,8 +102,8 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		String to;
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
-		
-		MungeStepOutput<String> in = getInputs().get(0);
+		MungeStepOutput<String> out = getOut();
+		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		
 		if (data != null) {

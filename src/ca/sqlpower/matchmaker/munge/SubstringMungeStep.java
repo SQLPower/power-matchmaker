@@ -28,8 +28,6 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class SubstringMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<String> out;
-	
 	/**
 	 * This is the name of the parameter with the value of the beginIndex.
 	 */
@@ -44,7 +42,7 @@ public class SubstringMungeStep extends AbstractMungeStep {
 		setName("Substring");
 		setParameter(BEGIN_PARAMETER_NAME, 0);
 		setParameter(END_PARAMETER_NAME, 0);
-		out = new MungeStepOutput<String>("substringOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("substringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("substring", String.class);
 		super.addInput(desc);
@@ -78,8 +76,8 @@ public class SubstringMungeStep extends AbstractMungeStep {
 
 		int beginIndex = getIntegerParameter(BEGIN_PARAMETER_NAME);
 		int endIndex = getIntegerParameter(END_PARAMETER_NAME);
-		
-		MungeStepOutput<String> in = getInputs().get(0);
+		MungeStepOutput<String> out = getOut();
+		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		if (data != null) {
 			if (beginIndex < 0) {

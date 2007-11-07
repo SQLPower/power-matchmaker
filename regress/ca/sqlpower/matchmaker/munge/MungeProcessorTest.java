@@ -143,7 +143,7 @@ public class MungeProcessorTest extends TestCase {
         List<MungeStep> processOrder = mp.getProcessOrder();
 
         for (MungeStep step: processOrder) {
-        	List<MungeStepOutput> stepInputs = step.getInputs();
+        	List<MungeStepOutput> stepInputs = step.getMSOInputs();
         	
         	for (MungeStepOutput output: stepInputs) {
         		if (output != null) {
