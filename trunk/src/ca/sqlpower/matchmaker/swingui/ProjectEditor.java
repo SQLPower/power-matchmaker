@@ -718,8 +718,6 @@ public class ProjectEditor implements EditorPane {
 			
 			if (project.getType() != ProjectMode.CLEANSE) {
 				project.getTableMergeRulesFolder().addChild(0, mergeRule);
-			} else {
-				project.getTableMergeRulesFolder().setVisible(false);
 			}
         }
 		
