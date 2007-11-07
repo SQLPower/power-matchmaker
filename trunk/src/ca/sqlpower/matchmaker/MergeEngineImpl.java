@@ -20,9 +20,7 @@
 package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
@@ -31,7 +29,6 @@ import org.apache.log4j.PatternLayout;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.sql.SQL;
 import ca.sqlpower.util.EmailAppender;
 
 /**
@@ -43,8 +40,6 @@ public class MergeEngineImpl extends AbstractEngine {
 	
 	private static final String DB_OBJECT_TYPE = "MERGE_ENGINE";
 
-	private int jobSize;
-	private int progress;
 	private String progressMessage;
 	
 	private MergeProcessor merger;
@@ -138,12 +133,12 @@ public class MergeEngineImpl extends AbstractEngine {
 		FileAppender fileAppender = null;
 		EmailAppender emailAppender = null;
 		setCancelled(false);
-
+		Connection con = null;
+		
 		try {
 			logger.setLevel(getMessageLevel());
 			setFinished(false);
 			setStarted(true);
-			progress = 0;
 			progressMessage = "Checking Merge Engine Preconditions";
 			logger.info(progressMessage);
 			
@@ -164,27 +159,31 @@ public class MergeEngineImpl extends AbstractEngine {
 				logger.addAppender(emailAppender);
 			}
 			
-			jobSize = getNumRowsToProcess();
-
 			progressMessage = "Starting Merge Engine";
 			logger.info(progressMessage);
-			merger = new MergeProcessor(getProject(), getSession(), getLogger());
+			con = getSession().getConnection();
+			con.setAutoCommit(false);
+			merger = new MergeProcessor(getProject(), con, getLogger());
 			merger.call();
 			if (isCanceled()) {
-				throw new UserAbortException();
+				con.rollback();
+				logger.info("Merge aborted by user");
+				return EngineInvocationResult.ABORTED;
 			}
-			progress += merger.getProgress();
-			
+			con.commit();			
 			progressMessage = "Merge Engine finished successfully";
 			logger.info(progressMessage);
-			
 			return EngineInvocationResult.SUCCESS;
-		} catch (UserAbortException uce) {
-			logger.info("Merge aborted by user");
-			return EngineInvocationResult.ABORTED;
 		} catch (Exception ex) {
-			progressMessage = "Cleanse Engine failed";
+			progressMessage = "Merge Engine failed";
 			logger.error(getMessage());
+			if (con != null) {
+				try {
+					con.rollback();
+				} catch (SQLException e) {
+					logger.error("Cannot roll back after exception caught.", e);
+				}
+			}
 			throw new RuntimeException(ex);
 		} finally {
 			logger.setLevel(oldLevel);
@@ -201,53 +200,38 @@ public class MergeEngineImpl extends AbstractEngine {
 			if (fileAppender != null) {
 				logger.removeAppender(fileAppender);
 			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (SQLException e) {
+					logger.error("Cannot close connection after engine run.", e);
+				}
+			}
 			
 		}
-	}
-
-	private int getNumRowsToProcess() throws SQLException {
-		Integer processCount = getProject().getMergeSettings().getProcessCount();
-		int rowCount;
-		Connection con = null;
-		Statement stmt = null;
-		try {
-			con = getSession().getConnection();
-			stmt = con.createStatement();
-			String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + 
-				DDLUtils.toQualifiedName(getProject().getResultTable()) +
-				" WHERE MATCH_STATUS = " + SQL.quote("AUTO_MATCH") 
-				+ " OR MATCH_STATUS = " + SQL.quote("MATCH");
-			ResultSet result = stmt.executeQuery(rowCountSQL);
-			logger.debug("Getting result table row count with SQL statment " + rowCountSQL);
-			result.next();
-			rowCount = result.getInt("ROW_COUNT");
-		} finally {
-			if (stmt != null) stmt.close();
-			if (con != null) con.close();
-		}
-		if (processCount != null && processCount.intValue() > 0 && processCount.intValue() < rowCount) {
-			rowCount = processCount.intValue();
-		}
-		return rowCount;
 	}
 	
 	///////// Monitorable support ///////////
 	
 	@Override
 	public Integer getJobSize() {
-		return jobSize;
+		if (merger != null)
+			return merger.getJobSize();
+		else {
+			return 1;
+		}
 	}
 
 	@Override
 	public String getMessage() {
-		return getProgress() + "/" + jobSize + ": " + progressMessage;
+		return getProgress() + "/" + getJobSize() + ": " + progressMessage;
 	}
 
 	public int getProgress() {
 		if (merger != null) {
-			return progress + merger.getProgress();
+			return merger.getProgress();
 		} else {
-			return progress;
+			return 0;
 		}
 	}
 

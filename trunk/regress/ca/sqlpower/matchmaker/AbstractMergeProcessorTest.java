@@ -298,7 +298,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    execSQL(con,sql);
 	    
 	    logger.setLevel(Level.INFO);
-	    mpor = new MergeProcessor(project, session, logger);
 	    
 	    // sets the default action type
 	    cmr_id.setActionType(MergeActionType.USE_MASTER_VALUE);
@@ -420,7 +419,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     public void testUnmatch() throws Exception {
     	populateTables();
     	
-		mpor.call();
+		runProcessor();
 		
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -441,8 +440,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     public void testDeleteDup() throws Exception {
     	populateTables();
 		
-    	
-		mpor.call();
+		runProcessor();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -451,6 +449,12 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		rs = stmt.executeQuery(sql);
 		if (rs.next()) {
 			fail("Duplicate records not deleted.");
+		}
+		
+		sql = "SELECT * FROM " + getFullTableName() + "_RESULT WHERE MATCH_STATUS != 'MERGED'";
+		rs = stmt.executeQuery(sql);
+		if (rs.next()) {
+			fail("Result table not cleared.");
 		}
     }
     
@@ -461,7 +465,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
     	populateTables();
     	
-    	mpor.call();
+    	runProcessor();
 		
     	MatchPool matchPool = new MatchPool(project);
     	matchPool.findAll(new ArrayList<SQLColumn>());
@@ -478,7 +482,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_date.setActionType(MergeActionType.AUGMENT);
 		cmr_number.setActionType(MergeActionType.AUGMENT);
 		
-		mpor.call();
+		runProcessor();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -508,7 +512,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_date.setActionType(MergeActionType.CONCAT);
 		
 		try {
-			mpor.call();
+			runProcessor();
 			fail("Concat action should not be allowed on date datatypes.");
 		} catch (IllegalStateException e) {
 			// Correct exception thrown.
@@ -519,7 +523,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_number.setActionType(MergeActionType.CONCAT);
 		
 		try {
-			mpor.call();
+			runProcessor();
 			fail("Concat action should not be allowed on number datatypes.");
 		} catch (IllegalStateException e) {
 			// Correct exception thrown.
@@ -529,7 +533,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_date.setActionType(MergeActionType.USE_MASTER_VALUE);
 		cmr_number.setActionType(MergeActionType.USE_MASTER_VALUE);
 		
-		mpor.call();
+		runProcessor();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -560,7 +564,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_date.setActionType(MergeActionType.MIN);
 		cmr_number.setActionType(MergeActionType.MIN);
 		
-		mpor.call();
+		runProcessor();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -591,7 +595,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_date.setActionType(MergeActionType.MAX);
 		cmr_number.setActionType(MergeActionType.MAX);
 		
-		mpor.call();
+		runProcessor();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -621,7 +625,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_date.setActionType(MergeActionType.SUM);
 		
 		try {
-			mpor.call();
+			runProcessor();
 			fail("Sum action should not be allowed on date datatypes.");
 		} catch (IllegalStateException e) {
 			// Correct exception thrown.
@@ -632,7 +636,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_number.setActionType(MergeActionType.USE_MASTER_VALUE);
 		
 		try {
-			mpor.call();
+			runProcessor();
 			fail("Sum action should not be allowed on string datatypes.");
 		} catch (IllegalStateException e) {
 			// Correct exception thrown.
@@ -642,7 +646,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		cmr_date.setActionType(MergeActionType.USE_MASTER_VALUE);
 		cmr_number.setActionType(MergeActionType.SUM);
 		
-		mpor.call();
+		runProcessor();
 
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -672,7 +676,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	populateChildTable();
     	populateGrandChildTable();
     	
-		mpor.call();
+		runProcessor();
 		
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -716,7 +720,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
     	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
 		try {
-			mpor.call();
+			runProcessor();
 			fail("Merge processor should not have worked!");
 		} catch (IllegalStateException e) {
 		}
@@ -727,7 +731,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
     	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
     	cctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
-    	mpor.call();
+    	runProcessor();
     	
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -782,7 +786,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT);
     	cctmr.setChildMergeAction(ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT);
 	
-		mpor.call();
+		runProcessor();
     	
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -839,7 +843,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	cctmr.setChildMergeAction(ChildMergeActionType.UPDATE_USING_SQL);
     	cccmr_id.setUpdateStatement("(SELECT MAX(ID)+1 FROM " + getFullTableName() + "_GCHILD)");
     	
-		mpor.call();
+		runProcessor();
     	
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -901,7 +905,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	cccmr_date.setActionType(MergeActionType.MAX);
     	cccmr_number.setActionType(MergeActionType.SUM);
     	
-		mpor.call();
+    	runProcessor();
     	
 		Statement stmt = con.createStatement();
 		ResultSet rs;
@@ -959,4 +963,19 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	protected abstract String getFullTableName();
 	
 	protected abstract SPDataSource getDS();
+	
+	private void runProcessor() throws Exception {
+		Connection con = session.getConnection();
+		con.setAutoCommit(false);
+		try {
+			mpor = new MergeProcessor(project, con, logger);
+			mpor.call();
+			con.commit();
+		} catch (Exception e) {
+			con.rollback();
+			throw e;
+		} finally {
+			con.close();
+		}
+	}
 }

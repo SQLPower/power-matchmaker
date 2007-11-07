@@ -272,6 +272,7 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		StringBuffer buf = new StringBuffer();
 		buf.append("ColumnMergeRule ").append(getName());
 		buf.append(", Parent: ").append(getParent());
+		buf.append(", ActionType: ").append(getActionType());
 		return buf.toString();
 	}
 	
