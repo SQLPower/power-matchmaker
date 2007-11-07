@@ -186,9 +186,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             }
             logger.error(e);
 			SQLException exception = new SQLException(
-                    "Couldn't determine Repository schema version for database " + ds.getDisplayName() + ".\n" +
-                    "Please check that you have set the Repository Schema Owner correctly in the DataSource Configuration\n" +
-                    "(Repository Schema Owner currently " + plSchema + ").");
+                    "Couldn't determine the repository schema version!" +
+                    "\nPlease check the repository settings or create the respository.");
             exception.setNextException(e);
             throw exception;
         } finally {
