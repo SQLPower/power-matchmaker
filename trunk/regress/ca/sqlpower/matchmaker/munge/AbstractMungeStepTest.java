@@ -84,7 +84,7 @@ public class AbstractMungeStepTest extends TestCase {
 		MungeStepOutput o = new MungeStepOutput<String>("test", String.class);
 		mungeStep.connectInput(0, o);
 		assertEquals("Did not get event for connecting input",2,mml.getPropertyChangedCount());
-		assertTrue("Munge step output did not get connected", mungeStep.getInputs().contains(o));
+		assertTrue("Munge step output did not get connected", mungeStep.getMSOInputs().contains(o));
 	}
 	
 	public void testDisconnectInput() {
@@ -99,6 +99,6 @@ public class AbstractMungeStepTest extends TestCase {
 		assertEquals("Did not get event for connecting input",2,mml.getPropertyChangedCount());
 		mungeStep.disconnectInput(0);
 		assertEquals("Did not get any event for disconnecting input",3,mml.getPropertyChangedCount());
-		assertFalse("Munge step output did not get disconnected", mungeStep.getInputs().contains(o));
+		assertFalse("Munge step output did not get disconnected", mungeStep.getMSOInputs().contains(o));
 	}
 }

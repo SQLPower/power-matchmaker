@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
  */
 public class StringSubstitutionMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<String> out;
-	
 	/**
 	 * This is the name of the parameter containing the string to replace. The 
 	 * parameter would be interpreted as a regular expression if the option is 
@@ -57,7 +55,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	
 	public StringSubstitutionMungeStep() {
 		setName("String Substitution");
-		out = new MungeStepOutput<String>("stringSubstitutionOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("stringSubstitutionOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("stringSubstitution", String.class);
 		setParameter(USE_REGEX_PARAMETER_NAME, false);
@@ -91,8 +89,8 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 		String to = getParameter(TO_PARAMETER_NAME);
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
-		
-		MungeStepOutput<String> in = getInputs().get(0);
+		MungeStepOutput<String> out = getOut();
+		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		if (in.getData() == null) {
 			out.setData(null);

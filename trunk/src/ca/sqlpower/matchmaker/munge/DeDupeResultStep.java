@@ -110,7 +110,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 	public Boolean call() throws Exception {
 		super.call();
 		
-		List<MungeStepOutput> inputs = getInputs(); 
+		List<MungeStepOutput> inputs = getMSOInputs(); 
 		Object[] mungedData = new Object[inputs.size()];
 		
 		for (int i = 0; i < inputs.size(); i++) {

@@ -44,7 +44,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	}
 
 	private void addInitialInputs() throws ArchitectException {
-		if (getInputs().size() == 0) {
+		if (getMSOInputs().size() == 0) {
 			for (SQLColumn c : table.getColumns()) {
 				InputDescriptor id = new InputDescriptor(c.getName(), typeClass(c.getType()));
 				addInput(id);
@@ -60,7 +60,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	public Boolean call() throws Exception {
 		super.call();
 
-		List<MungeStepOutput> inputs = getInputs(); 
+		List<MungeStepOutput> inputs = getMSOInputs(); 
 		Object[] mungedData = new Object[inputs.size()];
 
 		for (int i = 0; i < inputs.size(); i++) {

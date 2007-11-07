@@ -317,8 +317,8 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		
 		//This is done in an other loop to ensure that all the MungeComponets have been mapped
 		for (MungeStep ms : process.getChildren()) {
-			for (int x = 0; x < ms.getInputs().size(); x++) {
-				MungeStepOutput link = ms.getInputs().get(x);
+			for (int x = 0; x < ms.getMSOInputs().size(); x++) {
+				MungeStepOutput link = ms.getMSOInputs().get(x);
 				if (link != null) {
 					MungeStep parent = (MungeStep)link.getParent();
 					int parNum = parent.getChildren().indexOf(link);
@@ -607,7 +607,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		}
 		
 		//see if a connection is complete
-		if (start != null && finish != null && finish.getStep().getInputs().get(finishNum) == null) {
+		if (start != null && finish != null && finish.getStep().getMSOInputs().get(finishNum) == null) {
 			logger.debug("Connection checking startNum:" + startNum + " EndNum " + finishNum);
 			Class startHas = start.getStep().getChildren().get(startNum).getType();
 			Class finishWants = finish.getStep().getInputDescriptor(finishNum).getType();
@@ -790,8 +790,8 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			//This is done in an other loop to ensure that all the MungeComponets have been mapped
 			for (int y : evt.getChangeIndices()) {
 				MungeStep ms = evt.getSource().getChildren().get(y);
-				for (int x = 0; x < ms.getInputs().size(); x++) {
-					MungeStepOutput link = ms.getInputs().get(x);
+				for (int x = 0; x < ms.getMSOInputs().size(); x++) {
+					MungeStepOutput link = ms.getMSOInputs().get(x);
 					if (link != null) {
 						MungeStep parent = (MungeStep)link.getParent();
 						int parNum = parent.getChildren().indexOf(link);
@@ -937,7 +937,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			
 			Class startHas = start.getStep().getChildren().get(startNum).getType();
 			Class finishWants = sel.getStep().getInputDescriptor(index).getType(); 
-			if (sel.getStep().getInputs().get(index) == null && 
+			if (sel.getStep().getMSOInputs().get(index) == null && 
 					(finishWants.equals(startHas) || finishWants.equals(Object.class))) {
 				Point ret = sel.getInputPosition(index);
 				ret.translate(sel.getX(), sel.getY());

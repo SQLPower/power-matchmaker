@@ -36,8 +36,6 @@ import java.util.regex.Pattern;
  */
 public class WordCountMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<BigDecimal> out;
-	
 	/**
 	 * The value of the String that will be used as the delimiter to determine
 	 * what is used to divide the String into words
@@ -64,7 +62,7 @@ public class WordCountMungeStep extends AbstractMungeStep {
 		setParameter(USE_REGEX_PARAMETER_NAME, false);
 		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
 		
-		out = new MungeStepOutput<BigDecimal>("wordCountOutput", BigDecimal.class);
+		MungeStepOutput<BigDecimal> out = new MungeStepOutput<BigDecimal>("wordCountOutput", BigDecimal.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("string", String.class);
 		super.addInput(desc);
@@ -95,7 +93,8 @@ public class WordCountMungeStep extends AbstractMungeStep {
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
 		
-		MungeStepOutput<String> in = getInputs().get(0);
+		MungeStepOutput<BigDecimal> out = getOut();
+		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		
 		int wordCount = 0;

@@ -73,7 +73,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	public AbstractMungeStep() {
 	}
 	
-	public List<MungeStepOutput> getInputs() {
+	public List<MungeStepOutput> getMSOInputs() {
 		List<MungeStepOutput> values = new ArrayList<MungeStepOutput>();
 		for (Input in: inputs) {
 			values.add(in.current);
@@ -82,7 +82,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	}
 	
 	public void connectInput(int index, MungeStepOutput o) {
-		if (index >= getInputs().size()) {
+		if (index >= getMSOInputs().size()) {
 			throw new IndexOutOfBoundsException("There is no input at the given index");
 		}
 		inputs.get(index).current = o;
@@ -90,7 +90,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	}
 
 	public void disconnectInput(int index) {
-		if (index >= getInputs().size()) {
+		if (index >= getMSOInputs().size()) {
 			throw new IndexOutOfBoundsException("There is no input at the given index");
 		}
 		getEventSupport().firePropertyChange("inputs", index,
@@ -99,7 +99,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	}
 	
 	public int addInput(InputDescriptor desc) {
-		Input in = new Input(null, desc);
+		Input in = new Input(null, desc, this);
 		inputs.add(in);
 		int index = inputs.size()-1;
 		getEventSupport().firePropertyChange("addInputs", index, null, desc);
@@ -208,21 +208,102 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 * The reason for this class is to avoid maintaining two separate collections of
 	 * MungeStepOutputs and their InputDescriptors.
 	 */
-	private class Input{
+	private static class Input{
+		
+		/**
+		 * used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private Long oid;
+		
+		private AbstractMungeStep parentStep;
 		
 		/**
 		 * The MungeStepOutput containing the value of this input.
 		 */
-		MungeStepOutput current;
+		private MungeStepOutput current;
 		
 		/**
 		 * The attributes of this input.
 		 */
-		InputDescriptor descriptor;
+		private InputDescriptor descriptor;
 		
-		Input(MungeStepOutput current, InputDescriptor descriptor) {
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private Input() {
+			descriptor = new InputDescriptor(null, null);
+		}
+		
+		Input(MungeStepOutput current, InputDescriptor descriptor, AbstractMungeStep step) {
 			this.current = current;
 			this.descriptor = descriptor;
+			this.parentStep = step;
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private AbstractMungeStep getParentStep() {
+			return parentStep;
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private void setParentStep(AbstractMungeStep parentStep) {
+			this.parentStep = parentStep;
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private MungeStepOutput getCurrent() {
+			return current;
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private void setCurrent(MungeStepOutput current) {
+			this.current = current;
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private String getName() {
+			return descriptor.getName();
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private Class getType() {
+			return descriptor.getType();
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private void setName(String name) {
+			descriptor.setName(name);
+		}
+
+		/**
+		 * only used by hibernate
+		 */
+		@SuppressWarnings("unused")
+		private void setType(Class type) {
+			descriptor.setType(type);
 		}
 	}
 
@@ -268,7 +349,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     protected void printInputs() {
     	if (logger.isDebugEnabled()) {
     		String out = getName() + " Inputs: ";
-    		for (MungeStepOutput mso : getInputs()) {
+    		for (MungeStepOutput mso : getMSOInputs()) {
     			if (mso == null) {
     				out += "[ null ] ";
     			} else {
@@ -354,7 +435,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     	StringBuilder result = new StringBuilder();
     	result.append(this.getName() + ": ");
     	result.append("[Inputs:");
-    	for (MungeStepOutput mso : getInputs()) {
+    	for (MungeStepOutput mso : getMSOInputs()) {
     		result.append(" " + mso);
     	}
     	result.append("] [Outputs:");
@@ -371,5 +452,32 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     
     public boolean isInputStep() {
     	return false;
+    }
+    
+    /**
+	 * returns the first child output
+	 */
+    protected MungeStepOutput getOut() {
+		if (getChildCount() != 1) {
+			throw new IllegalStateException(
+					"The concat step has the incorrect number of outputs");
+		}
+		return getChildren().get(0);
+    }
+    
+    /**
+	 * only used by hibernate
+	 */
+	@SuppressWarnings("unused")
+    private void setInputs(List<Input> inputs) {
+    	this.inputs = inputs;
+    }
+	
+	/**
+	 * only used by hibernate
+	 */
+	@SuppressWarnings("unused")
+    private List<Input> getInputs() {
+    	return inputs;
     }
 }

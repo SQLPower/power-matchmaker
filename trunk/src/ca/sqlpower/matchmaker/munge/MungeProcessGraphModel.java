@@ -106,7 +106,7 @@ public class MungeProcessGraphModel implements GraphModel<MungeStep, MungeProces
         nodes = new ArrayList<MungeStep>(steps);
         edges = new ArrayList<Edge>();
         for (MungeStep step : steps) {
-            for (MungeStepOutput o : step.getInputs()) {
+            for (MungeStepOutput o : step.getMSOInputs()) {
                 if (o != null) {
                     edges.add(new Edge(o, step));
                 }
@@ -116,7 +116,7 @@ public class MungeProcessGraphModel implements GraphModel<MungeStep, MungeProces
     
     public Collection<MungeStep> getAdjacentNodes(MungeStep node) {
         List<MungeStep> adj = new ArrayList<MungeStep>();
-        for (MungeStepOutput o : node.getInputs()) {
+        for (MungeStepOutput o : node.getMSOInputs()) {
             if (o != null) adj.add(o.getParent());
         }
         return adj;
@@ -128,7 +128,7 @@ public class MungeProcessGraphModel implements GraphModel<MungeStep, MungeProces
 
     public Collection<Edge> getInboundEdges(MungeStep step) {
         List<Edge> obe = new ArrayList<Edge>();
-        for (MungeStepOutput o : step.getInputs()) {
+        for (MungeStepOutput o : step.getMSOInputs()) {
             if (o != null) {
                 obe.add(new Edge(o, step));
             }

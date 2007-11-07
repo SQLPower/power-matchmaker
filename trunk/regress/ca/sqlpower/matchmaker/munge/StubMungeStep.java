@@ -68,7 +68,7 @@ public class StubMungeStep implements MungeStep {
         return null;
     }
 
-    public List<MungeStepOutput> getInputs() {
+    public List<MungeStepOutput> getMSOInputs() {
         logger.debug("Stub call: StubMungeStep.getInputs()");
         return null;
     }

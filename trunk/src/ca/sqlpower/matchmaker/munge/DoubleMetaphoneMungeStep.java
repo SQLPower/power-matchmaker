@@ -27,7 +27,6 @@ import org.apache.commons.codec.language.DoubleMetaphone;
  */
 public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<String> out;
 	
 	/**
 	 * This is the name of the parameter that decides whether this step will use
@@ -38,7 +37,7 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	
 	public DoubleMetaphoneMungeStep() {
 		setName("Double Metaphone");
-		out = new MungeStepOutput<String>("doubleMetaphoneOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("doubleMetaphoneOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("doubleMetaphone", String.class);
 		setParameter(USE_ALTERNATE_PARAMETER_NAME, false);
@@ -66,9 +65,10 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	
 	public Boolean call() throws Exception {
 		super.call();
-
+		
+		MungeStepOutput<String> out = getOut();
 		boolean useAlternate = getBooleanParameter(USE_ALTERNATE_PARAMETER_NAME);
-		MungeStepOutput<String> in = getInputs().get(0);
+		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		if (data != null) {
 			out.setData(new DoubleMetaphone().doubleMetaphone(data, useAlternate));

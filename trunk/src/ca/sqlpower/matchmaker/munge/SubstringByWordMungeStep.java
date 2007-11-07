@@ -34,8 +34,6 @@ import java.util.regex.Pattern;
  */
 public class SubstringByWordMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<String> out;
-	
 	/**
 	 * This is the name of the parameter with the value of the beginIndex.
 	 */
@@ -80,7 +78,7 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
 		setParameter(BEGIN_PARAMETER_NAME, 0);
 		setParameter(END_PARAMETER_NAME, 0);
-		out = new MungeStepOutput<String>("substringOutput", String.class);
+		MungeStepOutput<String> out = new MungeStepOutput<String>("substringOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("substring", String.class);
 		super.addInput(desc);
@@ -119,8 +117,9 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
 		String resultDelim = getParameter(RESULT_DELIM_PARAMETER_NAME);
-				
-		MungeStepOutput<String> in = getInputs().get(0);
+		
+		MungeStepOutput<String> out = getOut();
+		MungeStepOutput<String> in = getMSOInputs().get(0);
 		String data = in.getData();
 		StringBuilder results = new StringBuilder("");
 		if (data != null) {

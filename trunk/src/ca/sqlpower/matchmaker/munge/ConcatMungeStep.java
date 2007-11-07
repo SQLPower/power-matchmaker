@@ -25,11 +25,10 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class ConcatMungeStep extends AbstractMungeStep {
 
-	private MungeStepOutput<String> out;
-	
 	public ConcatMungeStep() {
 		setName("Concat");
-		out = new  MungeStepOutput<String>("concatOutput", String.class);
+		//This might be overriden by hibernate when loading from database.
+		MungeStepOutput<String> out = new MungeStepOutput<String>("concatOutput", String.class);
 		addChild(out);
 		InputDescriptor desc1 = new InputDescriptor("concat1", String.class);
 		InputDescriptor desc2 = new InputDescriptor("concat2", String.class);
@@ -52,10 +51,11 @@ public class ConcatMungeStep extends AbstractMungeStep {
 	
 	public Boolean call() throws Exception {
 		super.call();
-
+		MungeStepOutput<String> out = getOut();
+		
 		boolean allNulls = true;
 		StringBuilder data = new StringBuilder();
-		for (MungeStepOutput<String> in: getInputs()) {
+		for (MungeStepOutput<String> in: getMSOInputs()) {
 			if (in != null && in.getData() != null) {
 				data.append(in.getData());
 				allNulls = false;

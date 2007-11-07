@@ -121,7 +121,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * 
 	 * @return A non-modifiable list of the current inputs to this step.
 	 */
-	List<MungeStepOutput> getInputs();
+	List<MungeStepOutput> getMSOInputs();
 	
 	/**
 	 * Causes this munge step to evaluate its current input values and produce

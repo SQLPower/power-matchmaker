@@ -27,8 +27,8 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class InputDescriptor {
 	
-	private final Class type;
-	private final String name;
+	private Class type;
+	private String name;
 	
 	public InputDescriptor(String name, Class type) {
 		this.type = type;
@@ -41,5 +41,13 @@ public class InputDescriptor {
 	
 	public String getName() {
 		return name;
+	}
+
+	public void setType(Class type) {
+		this.type = type;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 }
