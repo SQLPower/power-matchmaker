@@ -341,7 +341,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
         rolledBack = false;
     }
     
-    public void commit() {
+    public void commit() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Can't commit because step is not opened");
         }
@@ -353,7 +353,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
         committed = true;
     }
     
-    public void rollback() {
+    public void rollback() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Can't roll back because step is not opened");
         }
