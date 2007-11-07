@@ -62,38 +62,122 @@ public class MergeProcessor extends AbstractProcessor {
      * The list of MungeSteps obtained from the MungeProcess that this processor will
      * process, sorted in the exact order that the processor will process them.
      */
-    private List<SourceTableRecord> processOrder;
     private List<PotentialMatchRecord> pmProcessOrder;
     
-    private MatchPoolDirectedGraphModel gm;
-    
-    private SQLTable sourceTable;
     private Connection con;
     private Statement stmt;
     
+    private TableMergeRules sourceTableMergeRule = null;
+    private boolean needsToCheckDup = false;
+    private Map<SQLColumn, ColumnMergeRules> columnMergeRuleMap = 
+    	new HashMap<SQLColumn, ColumnMergeRules>();
+    
     private final Logger engineLogger;
     
-	public MergeProcessor(Project project, MatchMakerSession session, Logger logger) 
+	public MergeProcessor(Project project, Connection con, Logger logger) 
 			throws SQLException, ArchitectException {
 		this.project = project;
 		this.engineLogger = logger;
+		this.con = con;
+		stmt = con.createStatement();
+	}
+	
+	/**
+	 * Call this method to run the merge engine. The avg action is 
+	 * currently not supported.
+	 */
+	public Boolean call() throws Exception {
 		
-		pool = new MatchPool(project);
+		try {
+			monitorableHelper.setStarted(true);
+			monitorableHelper.setFinished(false);
+			
+			initVariables();
+			
+			engineLogger.info("Merging records.");
+			for (PotentialMatchRecord pm : pmProcessOrder) {
+				if (monitorableHelper.getProgress() > monitorableHelper.getJobSize()) break;
+				if (monitorableHelper.isCancelled()) return Boolean.TRUE;
+				monitorableHelper.incrementProgress();
+				
+				ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
+				ResultRow masterKeyValues = new ResultRow(sourceTableMergeRule, pm.getMaster().getKeyValues());
+				
+				// Starts the recursive merging
+				mergeChildTables(dupKeyValues, masterKeyValues, sourceTableMergeRule);
+	
+				if (needsToCheckDup) {
+					engineLogger.debug("Updating source table columns according the merge actions...");
+					ResultRow dupRow = findRowByPrimaryKey(sourceTableMergeRule, dupKeyValues);
+					ResultRow masterRow = findRowByPrimaryKey(sourceTableMergeRule, masterKeyValues);
+					int rows = mergeRows(dupRow, masterRow, sourceTableMergeRule);
+					
+					if (rows != 1) {
+						throw new IllegalStateException("The update did not affect the correct " +
+								"number of rows: expected 1 but got " + rows); 
+					}
+				}
+				
+				//delete the duplicate record
+				engineLogger.debug("Deleting duplicate record: " + dupKeyValues + 
+						" on table: " + sourceTableMergeRule.getSourceTable());
+				int rows = deleteRowByPrimaryKey(sourceTableMergeRule.getSourceTable(), dupKeyValues);
+				if (rows != 1) {
+					throw new IllegalStateException("The delete did not affect the correct " +
+							"number of rows: expected 1 but got " + rows); 
+				}
+				
+				//clean up match pool
+				pm.setMatchStatus(MatchType.MERGED);
+				
+				// delete all potential match record related to the
+				// duplicate record (which is deleted). We need to add the
+				// pmr to a toBeDeleted list because we can't remove it
+				// from the pool as we are looping through the pool
+				SourceTableRecord str = pm.getDuplicate();
+				List<PotentialMatchRecord> toBeDeleted = new ArrayList<PotentialMatchRecord>();
+				for (PotentialMatchRecord pmr : pool.getPotentialMatches()) {
+					if (pmr.getOriginalLhs().equals(str) || pmr.getOriginalRhs().equals(str)) {
+						if (pmr.getMatchStatus() != MatchType.MERGED) {
+							engineLogger.debug("Removing match pool record: " + pmr);
+							toBeDeleted.add(pmr);
+						}
+					}
+				}
+				for (PotentialMatchRecord pmr : toBeDeleted) {
+					pool.removePotentialMatch(pmr);
+				}
+			}
+			pool.store();
+			return Boolean.TRUE;
+		} finally {
+			stmt.close();
+			monitorableHelper.setFinished(true);
+		}
 		
+	}
+	
+	private void initVariables() throws SQLException, ArchitectException {
 		//Initialize the match pool
+		engineLogger.info("Loading match pool.");
+		pool = new MatchPool(project);
 		pool.findAll(new ArrayList<SQLColumn>());
 		
 		//Topological sort
-        gm = new MatchPoolDirectedGraphModel(pool);
-        DepthFirstSearch<SourceTableRecord, PotentialMatchRecord> dfs = new DepthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+		engineLogger.info("Sorting matches.");
+		MatchPoolDirectedGraphModel gm = new MatchPoolDirectedGraphModel(pool);
+        DepthFirstSearch<SourceTableRecord, PotentialMatchRecord> dfs = 
+        	new DepthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
         dfs.performSearch(gm);
-        processOrder = dfs.getFinishOrder();
+        List<SourceTableRecord> processOrder = dfs.getFinishOrder();
         
+        //Finds the correct potential match records in the correct order
         pmProcessOrder = new ArrayList<PotentialMatchRecord>();
         for (SourceTableRecord str : processOrder) {
         	Collection<PotentialMatchRecord> edges = gm.getOutboundEdges(str);
         	if (edges.size() > 1) {
-				throw new IllegalStateException("Source Table Record: " + str + " has more than one master.");
+				throw new IllegalStateException(
+						"Source Table Record: " + str + " has more than one master.");
 			}
         	for (PotentialMatchRecord pmr : edges) {
         		pmProcessOrder.add(pmr);
@@ -101,135 +185,33 @@ public class MergeProcessor extends AbstractProcessor {
         }
         engineLogger.debug("Order of processing: " + processOrder);
         
-        sourceTable = project.getSourceTable();
-        con = session.getConnection();
-        stmt = con.createStatement();
-	}
-	
-	/**
-	 * Call this method to run the merge engine. Currently it only merges the data on 
-	 * the source table (not the child tables). The avg action is currently not
-	 * supported.
-	 */
-	public Boolean call() throws Exception {
-		int recordsToProcess;
-		if (project.getMergeSettings().getProcessCount() == null) {
-			recordsToProcess = 0;
-		} else {
-			recordsToProcess = project.getMergeSettings().getProcessCount();
-		}
-		int processCount = 0;
-        TableMergeRules sourceTableMergeRule = null;
-        boolean needsToCheckDup = false;
-        Map<SQLColumn, ColumnMergeRules> mapping = new HashMap<SQLColumn, ColumnMergeRules>();
-        
-		monitorableHelper.setStarted(true);
-		monitorableHelper.setFinished(false);
-        
-        // Finds the correct table merge rule according to the source table
+        // Sets the jobsize
+        monitorableHelper.setJobSize(pmProcessOrder.size());
+        Integer recordsToProcess = project.getMergeSettings().getProcessCount();
+		if (recordsToProcess != null && recordsToProcess > 0) {
+			monitorableHelper.setJobSize(Math.min(pmProcessOrder.size(), recordsToProcess));
+		} 
+		engineLogger.debug("The job size is: " + monitorableHelper.getJobSize());
+		
+		// Finds the correct table merge rule according to the source table
         sourceTableMergeRule = project.getTableMergeRules().get(0);
-        
-        if (!sourceTableMergeRule.getSourceTable().equals(sourceTable)) {
-        	throw new IllegalStateException("The first merge rule needs to be the source table merge rule.");
+        if (!sourceTableMergeRule.isSourceMergeRule()) {
+        	throw new IllegalStateException(
+        			"The first merge rule needs to be the source table merge rule.");
         }
-
+        engineLogger.debug("The source TableMergeRule is: " + sourceTableMergeRule);
+        
 		// Finds the columns that needs to be merged and maps it to the 
 		// corresponding column merge rule.
 		for (ColumnMergeRules cmr : sourceTableMergeRule.getChildren()) {
-			if (cmr.getActionType() != MergeActionType.USE_MASTER_VALUE && cmr.getActionType() != MergeActionType.NA) {
+			engineLogger.debug("ColumnMergeRule: " + cmr);
+			if (cmr.getActionType() != MergeActionType.USE_MASTER_VALUE 
+					&& cmr.getActionType() != MergeActionType.NA) {
 				needsToCheckDup = true;
 			}
-			mapping.put(cmr.getColumn(), cmr);
+			columnMergeRuleMap.put(cmr.getColumn(), cmr);
 		}
-		
-		if (recordsToProcess == 0) {
-			int rowCount = 0;
-			for (SourceTableRecord str: processOrder) {
-				rowCount += gm.getOutboundEdges(str).size();
-			}
-			monitorableHelper.setJobSize(rowCount);
-		} else {
-			monitorableHelper.setJobSize(recordsToProcess);
-		}
-		
-		engineLogger.info("Merging records.");
-		for (PotentialMatchRecord pm : pmProcessOrder) {
-			if (recordsToProcess != 0 && processCount > recordsToProcess) break;
-			if (monitorableHelper.isCancelled()) return Boolean.TRUE;
-			processCount++;
-			monitorableHelper.incrementProgress();
-			
-			ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
-			ResultRow masterKeyValues = new ResultRow(sourceTableMergeRule, pm.getMaster().getKeyValues());
-			
-			// Starts the recursive merging
-			mergeChildTables(dupKeyValues, masterKeyValues, sourceTableMergeRule);
-
-			if (needsToCheckDup) {
-				engineLogger.debug("Updating source table columns according the merge actions...");
-				ResultRow dupRow = findRowByPrimaryKey(sourceTableMergeRule, dupKeyValues);
-				ResultRow masterRow = findRowByPrimaryKey(sourceTableMergeRule, masterKeyValues);
-				//int rows = updateSourceTableRows(pm, mapping, sourceIndexColumnNames, masterKeyValues);
-				int rows = mergeRows(dupRow, masterRow, sourceTableMergeRule);
-				
-				if (rows != 1) {
-					throw new IllegalStateException("The update did not affect the correct " +
-							"number of rows: expected 1 but got " + rows); 
-				}
-			}
-		}
-		
-		
-		
-		//delete duplicates
-		processCount = 0;
-		engineLogger.info("Deleting duplicate records.");
-		for (PotentialMatchRecord pm : pmProcessOrder) {
-			if (recordsToProcess != 0 && processCount > recordsToProcess) break;
-			if (monitorableHelper.isCancelled()) return Boolean.TRUE;
-			processCount++;
-			ResultRow dupKeyValues = new ResultRow(sourceTableMergeRule, pm.getDuplicate().getKeyValues());
-
-			engineLogger.debug("Deleting duplicate record: " + dupKeyValues + " on table: " + sourceTable);
-			//delete the duplicate record
-			int rows = deleteRowByPrimaryKey(sourceTable, dupKeyValues);
-
-			if (rows != 1) {
-				throw new IllegalStateException("The delete did not affect the correct " +
-						"number of rows: expected 1 but got " + rows); 
-			}
-		}
-		
-		//clean up match pool
-		processCount = 0;
-		engineLogger.info("Cleaning up the match pool.");
-		List<PotentialMatchRecord> toBeDeleted = new ArrayList<PotentialMatchRecord>();
-		for (PotentialMatchRecord pm : pmProcessOrder) {
-			pm.setMatchStatus(MatchType.MERGED);
-			SourceTableRecord str = pm.getDuplicate();
-			for (PotentialMatchRecord pmr : pool.getPotentialMatches()) {
-				if (monitorableHelper.isCancelled()) return Boolean.TRUE;
-				//checks if the potential match record contains the duplicate record
-				if (pmr.getOriginalLhs().equals(str) || pmr.getOriginalRhs().equals(str)) {
-					if (pmr.getMatchStatus() != MatchType.MERGED) {
-						toBeDeleted.add(pmr);
-					}
-				}
-			}
-			
-		}
-		
-		for (PotentialMatchRecord pm : toBeDeleted) {
-			if (monitorableHelper.isCancelled()) return Boolean.TRUE;
-			engineLogger.debug("Removing match pool record: " + pm);
-			pool.removePotentialMatch(pm);
-		}
-		
-		pool.store();
-		stmt.close();
-		con.close();
-		monitorableHelper.setFinished(true);
-		return Boolean.TRUE;
+		engineLogger.debug("needsToCheckDup: " + needsToCheckDup);
 	}
 	
 	/**
