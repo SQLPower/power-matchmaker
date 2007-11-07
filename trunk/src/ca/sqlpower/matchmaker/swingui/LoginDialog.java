@@ -70,8 +70,9 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.ArchitectSessionContext;
 import ca.sqlpower.architect.ArchitectSessionContextImpl;
+import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
-import ca.sqlpower.architect.ddl.GenericDDLGenerator;
+import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.CommonCloseAction;
@@ -256,7 +257,7 @@ public class LoginDialog implements SwingWorkerRegistry {
             final ArchitectSession mmRepositorySession = mmRepositoryContext.createSession(reposProjectInStream);
             
             // Sets up the gui that is used to determine the destination of the repository
-            final GenericDDLGenerator ddlg = mmRepositorySession.getDDLGenerator();
+            final DDLGenerator ddlg = DDLUtils.createDDLGenerator(dbSource);
             final JDialog schemaDialog = new JDialog(frame, "Build default matchmaker schema", true);
         	JLabel catalogLabel = new JLabel("Target Catalog");
         	final JTextField catalogField = new JTextField();
@@ -297,7 +298,7 @@ public class LoginDialog implements SwingWorkerRegistry {
     	    		}
     	    		
     	    		try {
-						ddlg.generateDDL(mmRepositorySession.getTargetDatabase());
+						ddlg.generateDDLStatements(mmRepositorySession.getTargetDatabase().getTables());
 						generateDefaultSchemaSQL(ddlg);
 					} catch (Exception e1) {
 						throw new RuntimeException(e1);
@@ -347,7 +348,7 @@ public class LoginDialog implements SwingWorkerRegistry {
          * repository. It gets the sql statments from the given ddl generator and
          * a post_create.sql file.
         */
-        private void generateDefaultSchemaSQL(GenericDDLGenerator ddlg) {
+        private void generateDefaultSchemaSQL(DDLGenerator ddlg) {
         	final JDialog editor = new JDialog(frame,
     	    		"Create Example Table", true);
     	    JPanel cp = new JPanel();
