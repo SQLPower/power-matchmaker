@@ -235,6 +235,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			if (mungeResultStep instanceof CleanseResultStep) {
 				try {
 					((CleanseResultStep)mungeResultStep).open(logger, project);
+                    mungeResultStep.rollback();
 					mungeResultStep.close();
 				} catch (Exception e) {
 					throw new RuntimeException("Could not set up the result munge step!", e);
