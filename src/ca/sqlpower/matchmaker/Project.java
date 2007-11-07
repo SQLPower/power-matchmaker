@@ -497,6 +497,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	public void setType(ProjectMode type) {
 		ProjectMode oldValue = this.type;
 		this.type = type;
+		if (type == ProjectMode.CLEANSE) {
+			getTableMergeRulesFolder().setVisible(false);
+		}
 		getEventSupport().firePropertyChange("type", oldValue, this.type);
 	}
 
