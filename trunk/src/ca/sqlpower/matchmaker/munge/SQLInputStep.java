@@ -64,7 +64,8 @@ public class SQLInputStep extends AbstractMungeStep {
     private SQLTable table;
     
     /**
-     * This is the connection to the input table's database.
+     * This is the connection to the input table's database.  It will not be in
+     * auto-commit mode.
      */
     private Connection con;
 
@@ -198,6 +199,7 @@ public class SQLInputStep extends AbstractMungeStep {
         if (con == null) {
             throw new RuntimeException("Could not obtain a connection to the input table's database");
         }
+        con.setAutoCommit(false);
         
         Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
         
@@ -219,6 +221,18 @@ public class SQLInputStep extends AbstractMungeStep {
         rs = stmt.executeQuery(sql.toString());
     }
     
+    @Override
+    public void commit() throws Exception {
+        super.commit();
+        con.commit();
+    }
+    
+    @Override
+    public void rollback() throws Exception {
+        super.rollback();
+        con.rollback();
+    }
+
     @Override
     public void close() throws Exception {
     	super.close();

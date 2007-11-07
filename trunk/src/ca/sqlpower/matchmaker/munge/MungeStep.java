@@ -212,7 +212,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * to be aborted. Even if this method is called, the processor will still
      * call {@link close()} at a later time.
      */
-    void rollback();
+    void rollback() throws Exception;
 
     /**
      * Causes this step to commit (make permanent) any changes it has effected
@@ -224,7 +224,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * completed normally. After this method is called, the processor will still
      * call {@link close()} at a later time.
      */
-    void commit();
+    void commit() throws Exception;
 
     /**
      * Returns true if rollback() has been called on this step since it was last
