@@ -211,6 +211,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			
 			try {
 				inputStep.open(logger, project);
+                inputStep.rollback();
 				inputStep.close();
 			} catch (Exception e) {
 				throw new RuntimeException("Could not set up the input munge step!", e);

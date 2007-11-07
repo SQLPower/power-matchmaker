@@ -166,7 +166,6 @@ public class SQLInputStep extends AbstractMungeStep {
     
     @Override
     public void open(Logger logger) throws Exception {
-    	super.open(logger);
     	open(logger, getProject());
     }
     

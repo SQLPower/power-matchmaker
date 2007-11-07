@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import org.apache.log4j.Logger;
+
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 
@@ -101,4 +103,108 @@ public class AbstractMungeStepTest extends TestCase {
 		assertEquals("Did not get any event for disconnecting input",3,mml.getPropertyChangedCount());
 		assertFalse("Munge step output did not get disconnected", mungeStep.getMSOInputs().contains(o));
 	}
+    
+    public void testRollbackBeforeOpen() throws Exception {
+        try {
+            mungeStep.rollback();
+            fail("Rollback should fail when step not open");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+    }
+
+    public void testOpenWithNullLogger() throws Exception {
+        try {
+            mungeStep.open(null);
+            fail("Successfully opened step with null logger");
+        } catch (NullPointerException ex) {
+            // expected
+        }
+    }
+    
+    public void testRollback() throws Exception {
+        mungeStep.open(Logger.getLogger(getClass()));
+        mungeStep.rollback();
+        assertTrue(mungeStep.isRolledBack());
+    }
+    
+    public void testCommitBeforeOpen() throws Exception {
+        try {
+            mungeStep.commit();
+            fail("Commit should fail when step not open");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+    }
+
+    public void testCommit() throws Exception {
+        mungeStep.open(Logger.getLogger(getClass()));
+        mungeStep.commit();
+        assertTrue(mungeStep.isCommitted());
+    }
+    
+    public void testReopenAfterCommit() throws Exception {
+        mungeStep.open(Logger.getLogger(getClass()));
+        mungeStep.commit();
+        mungeStep.close();
+        assertTrue(mungeStep.isCommitted());
+        assertFalse(mungeStep.isRolledBack());
+        mungeStep.open(Logger.getLogger(getClass()));
+        assertFalse(mungeStep.isCommitted());
+        assertFalse(mungeStep.isRolledBack());
+    }
+    
+    public void testReopenImmediate() throws Exception {
+        mungeStep.open(Logger.getLogger(getClass()));
+        try {
+            mungeStep.open(Logger.getLogger(getClass()));
+            fail("Step should not reopen without closing first");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+    }
+    
+    public void testCloseBeforeCommitOrRollback() throws Exception {
+        mungeStep.open(Logger.getLogger(getClass()));
+        try {
+            mungeStep.close();
+            fail("Step should not close without commit or rollback");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+    }
+
+    public void testCloseBeforeOpen() throws Exception {
+        try {
+            mungeStep.close();
+            fail("Step should not close before opening");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+    }
+
+    public void testCallAfterRollback() throws Exception {
+        mungeStep.open(Logger.getLogger(getClass()));
+        mungeStep.call();
+        mungeStep.rollback();
+        assertTrue(mungeStep.isRolledBack());
+        try {
+            mungeStep.call();
+            fail("call after rollback should be illegal");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+    }
+    
+    public void testCallAfterCommit() throws Exception {
+        mungeStep.open(Logger.getLogger(getClass()));
+        mungeStep.call();
+        mungeStep.commit();
+        try {
+            mungeStep.call();
+            fail("call after commit should be illegal");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+    }
 }

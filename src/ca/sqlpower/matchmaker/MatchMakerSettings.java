@@ -155,6 +155,10 @@ public abstract class MatchMakerSettings extends
 		getEventSupport().firePropertyChange("debug", oldValue, debug);
 	}
 
+    /**
+     * The number of records the engine should process.  See {@link #processCount}
+     * for details.
+     */
 	public Integer getProcessCount() {
 		return processCount;
 	}

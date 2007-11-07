@@ -194,7 +194,6 @@ public class StubMungeStep implements MungeStep {
     }
 
 	public MungeStepOutput getOutputByName(String name) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMungeStep.getOutputByName()");
 		return null;
 	}
@@ -216,4 +215,27 @@ public class StubMungeStep implements MungeStep {
 	public boolean isInputStep() {
 		return false;
 	}
+
+    public void commit() {
+        logger.debug("Stub call: StubMungeStep.commit()");
+    }
+
+    public void rollback() {
+        logger.debug("Stub call: StubMungeStep.rollback()");
+    }
+
+    public boolean isCommitted() {
+        logger.debug("Stub call: StubMungeStep.isCommitted()");
+        return false;
+    }
+
+    public boolean isRolledBack() {
+        logger.debug("Stub call: StubMungeStep.isRolledBack()");
+        return false;
+    }
+
+    public boolean isOpen() {
+        logger.debug("Stub call: StubMungeStep.isOpen()");
+        return false;
+    }
 }

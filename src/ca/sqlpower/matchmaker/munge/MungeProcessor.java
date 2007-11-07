@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.munge;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -93,7 +94,10 @@ public class MungeProcessor extends AbstractProcessor {
 			}
 			while(!finished && !monitorableHelper.isCancelled() && (rowCount == -1 || monitorableHelper.getProgress() < rowCount)) {
 				for (MungeStep step: processOrder) {
-					boolean continuing = !monitorableHelper.isCancelled() && step.call();
+                    if (monitorableHelper.isCancelled()) {
+                        throw new CancellationException("User-requested abort");
+                    }
+					boolean continuing = step.call();
 					if (!continuing) {
 						finished = true;
 						break;
@@ -101,6 +105,27 @@ public class MungeProcessor extends AbstractProcessor {
 				}
 				monitorableHelper.incrementProgress();
 			}
+            
+            // Normal termination! Ask all steps to commit.
+            for (MungeStep step : processOrder) {
+                step.commit();
+            }
+            
+        } catch (Throwable t) {
+            for (MungeStep step : processOrder) {
+                try {
+                    step.rollback();
+                } catch (Throwable tt) {
+                    engineLogger.warn(
+                            "Failed to rollback a step. Proceeding with rollback," +
+                            " and ignoring the following exception:", tt);
+                }
+            }
+            if (t instanceof Exception) {
+                throw (Exception) t;
+            } else {
+                throw new Exception(t);
+            }
 		} finally {
 			// close everything
 			for (MungeStep step: processOrder) {
