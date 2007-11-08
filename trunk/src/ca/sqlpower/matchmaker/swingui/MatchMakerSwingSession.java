@@ -53,7 +53,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -101,8 +100,6 @@ import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.ProjectExportAction;
-import ca.sqlpower.matchmaker.swingui.action.ProjectImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
 import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
@@ -205,20 +202,20 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     private Action userPrefsAction = new AbstractAction("User Preferences...") {
 		public void actionPerformed(ActionEvent e) {
 			JOptionPane.showMessageDialog(MatchMakerSwingSession.this.frame,
-					"The User Preferences action for OS Xis not yet implemented",
+					"The User Preferences action for OS X is not yet implemented",
 					"Apologies",
 					JOptionPane.INFORMATION_MESSAGE);
 		}
     };
 
-	private Action aboutAction = new AbstractAction("About MatchMaker...") {
+	private Action aboutAction = new AbstractAction("About Power*MatchMaker...") {
 
 		public void actionPerformed(ActionEvent evt) {
 			// This is one of the few JDIalogs that can not get replaced
 			// with a call to ArchitectPanelBuilder, because an About
 			// box must have only ONE button...
 			final JDialog d = new JDialog(getFrame(),
-										  "About MatchMaker");
+										  "About Power*MatchMaker");
 			JPanel cp = new JPanel(new BorderLayout(12,12));
 			cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
 			final AboutPanel aboutPanel = new AboutPanel();
@@ -483,22 +480,25 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
 		fileMenu.add(exitAction);
-		fileMenu.add(undoAction);
-		fileMenu.add(redoAction);
-		
 		menuBar.add(fileMenu);
+		
+		JMenu editMenu = new JMenu("Edit");
+		editMenu.setMnemonic('e');
+		editMenu.add(undoAction);
+		editMenu.add(redoAction);
+		menuBar.add(editMenu);
 
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
 		JMenu databaseMenu = new JMenu("Database");
-		databaseMenu.setMnemonic('D');
+		databaseMenu.setMnemonic('d');
 		databaseMenu.add(loginAction);
 		databaseMenu.add(logoutAction);
 		databaseMenu.addSeparator();
 		databaseMenu.add(databaseConnectionAction );
 		menuBar.add(databaseMenu);
-
+		
 		JMenu projectMenu = new JMenu("Project");
-		projectMenu.setMnemonic('M');
+		projectMenu.setMnemonic('m');
 		projectMenu.add(newDeDupeAction);
 		projectMenu.add(newCleanseAction);
 		projectMenu.add(newXrefAction);
@@ -512,8 +512,14 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		projectMenu.addSeparator();
 		projectMenu.add(showMatchStatisticInfoAction);
 		projectMenu.addSeparator();
-        projectMenu.add(new JMenuItem(new ProjectImportAction(this, frame)));
-		projectMenu.add(new JMenuItem(new ProjectExportAction(this, frame)));
+		
+		// TODO: Use the commented code once the import and export
+		// functions have been implemented. 
+//		projectMenu.add(new ProjectImportAction(this, frame));
+//		projectMenu.add(new ProjectExportAction(this, frame));
+		projectMenu.add(new DummyAction(frame, "Import"));
+		projectMenu.add(new DummyAction(frame, "Export"));
+		
 		menuBar.add(projectMenu);
 
 		JMenu toolsMenu = new JMenu("Tools");
@@ -543,7 +549,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
         menuBar.add(helpMenu);
 		
-        
 		frame.setJMenuBar(menuBar);
 
 		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
@@ -974,7 +979,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		public void actionPerformed(ActionEvent e) {
 			JOptionPane.showMessageDialog(parent,
-				String.format("The %s action is not yet implemented", label),
+				String.format("The %s function is not yet implemented", label),
 				"Apologies",
 				JOptionPane.INFORMATION_MESSAGE);
 		}

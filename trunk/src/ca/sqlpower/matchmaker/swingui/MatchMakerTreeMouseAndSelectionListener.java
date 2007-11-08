@@ -27,6 +27,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
@@ -37,11 +38,11 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
@@ -50,19 +51,17 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
-import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.DeleteMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMergeRuleAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMungeStepAction;
 import ca.sqlpower.matchmaker.swingui.action.DeletePlFolderAction;
+import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMergeRuleAction;
+import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
+import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
-import ca.sqlpower.matchmaker.swingui.action.ProjectExportAction;
-import ca.sqlpower.matchmaker.swingui.action.ProjectImportAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
@@ -283,12 +282,25 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		}));
 		
 		m.addSeparator();
-		m
-				.add(new JMenuItem(new ProjectExportAction(swingSession,
-						owningFrame)));
-		m
-				.add(new JMenuItem(new ProjectImportAction(swingSession,
-						owningFrame)));
+		
+		// TODO: Implement the import and export functions and
+		// replace these dummy actions.
+		m.add(new JMenuItem(new AbstractAction("Import") {
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(owningFrame,
+				"Import is not yet available. We apologize for the inconvenience");				
+			}
+		}));
+		m.add(new JMenuItem(new AbstractAction("Export") {
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(owningFrame,
+				"Export is not yet available. We apologize for the inconvenience");				
+			}
+		}));
+//		m.add(new JMenuItem(new ProjectExportAction(swingSession,
+//						owningFrame)));
+//		m.add(new JMenuItem(new ProjectImportAction(swingSession,
+//						owningFrame)));
 
 		m.addSeparator();
 		m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
@@ -302,7 +314,17 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New Cleansing Project",Project.ProjectMode.CLEANSE)));
 		mm.add(new JMenuItem(new NewProjectAction(swingSession, "New X-ref Project", Project.ProjectMode.BUILD_XREF)));
 		m.add(mm);
-		m.add(new JMenuItem(new ProjectImportAction(swingSession, owningFrame)));
+		
+		// TODO: Implement the import and export functions and
+		// replace this dummy action.
+		m.add(new JMenuItem(new AbstractAction("Import") {
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(owningFrame,
+				"Import is not yet available. We apologize for the inconvenience");				
+			}
+		}));
+//		m.add(new JMenuItem(new ProjectImportAction(swingSession, owningFrame)));
+		
 		m.add(new JMenuItem(new DeletePlFolderAction(swingSession,
 				"Delete Folder", folder)));
 	}

@@ -38,6 +38,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -46,14 +47,13 @@ import javax.swing.SpinnerNumberModel;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MungeSettings;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -366,8 +366,18 @@ public class MatchEnginePanel implements EditorPane {
 		bbpb.add(new JButton(new ShowLogFileAction(logFilePath)), cc.xy(2, 2, "f,f"));
 		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, engine)), cc.xy(4, 2, "f,f"));
 		bbpb.add(new JButton(runEngineAction), cc.xy(6, 2, "f,f"));
-		bbpb.add(new JButton(new ShowMatchStatisticInfoAction(swingSession,
-				project, parentFrame)), cc.xy(2, 4, "f,f"));
+
+		// TODO: Match statistics has been disabled for now until we
+		// re-implement it.
+//		Action showMatchStatsActon = new ShowMatchStatisticInfoAction(swingSession, project, parentFrame);
+		Action showMatchStatsAction = new AbstractAction("Match Statistics...") {
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(parentFrame,
+				"Match statistics is not yet available. We apologize for the inconvenience");
+			}
+		};
+		bbpb.add(new JButton(showMatchStatsAction), cc.xy(2, 4, "f,f"));
+		
 		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
 		
 		abortB = new JButton(new AbstractAction("Abort!"){
