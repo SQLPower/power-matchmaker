@@ -19,14 +19,18 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
-import java.awt.FlowLayout;
-
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * This is a component for a concat munge step. It has two options, one button
@@ -36,20 +40,24 @@ public class ConcatMungeComponent extends AbstractMungeComponent {
 	
 	private JButton addInputButton;
 	private JButton removeInputsButton;
-
+	private JTextField delimiterField;
+    
 	public ConcatMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
 		super(ms, handler,session);
 	}
 	
 	@Override
 	protected JPanel buildUI() {
-		JPanel content = new JPanel();
 		addInputButton = new JButton(new AddInputAction("Add Input"));
-		removeInputsButton = new JButton(
-				new RemoveUnusedInputAction("Clean Up"));
-		content.setLayout(new FlowLayout());
-		content.add(addInputButton);
-		content.add(removeInputsButton);
+		removeInputsButton = new JButton(new RemoveUnusedInputAction("Clean Up"));
+        delimiterField = new JTextField(getStepParameter(ConcatMungeStep.DELIMITER_PARAMETER_NAME, ""));
+
+        FormLayout fl = new FormLayout("pref:grow,4dlu,pref:grow");
+        DefaultFormBuilder b = new DefaultFormBuilder(fl);
+        b.append("Delimiter", delimiterField);
+		b.append(ButtonBarFactory.buildAddRemoveBar(addInputButton, removeInputsButton), 3);
+		
+        content = b.getPanel();
 		return content;
 	}
 
