@@ -95,6 +95,7 @@
 		<subclass name="RetainCharactersMungeStep" />
 		<subclass name="SoundexMungeStep" />
 		<subclass name="SQLInputStep" />
+		<subclass name="StringConstantMungeStep" />
 		<subclass name="StringSubstitutionMungeStep" />
 		<subclass name="SubstringByWordMungeStep" />
 		<subclass name="SubstringMungeStep" />

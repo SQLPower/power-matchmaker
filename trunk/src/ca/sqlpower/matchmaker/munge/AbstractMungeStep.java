@@ -529,7 +529,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     protected MungeStepOutput getOut() {
 		if (getChildCount() != 1) {
 			throw new IllegalStateException(
-					"The concat step has the incorrect number of outputs");
+					"This step has the incorrect number of outputs");
 		}
 		return getChildren().get(0);
     }
