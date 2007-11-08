@@ -351,16 +351,16 @@ public class CleanseEnginePanel implements EditorPane {
 		pb.add(messageLevel, cc.xy(4,y,"l,c"));
 		
 		FormLayout bbLayout = new FormLayout(
-				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu",
+				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu",
 				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		PanelBuilder bbpb;
 		JPanel bbp = logger.isDebugEnabled() ? new FormDebugPanel(bbLayout)
 				: new JPanel(bbLayout);
 		bbpb = new PanelBuilder(bbLayout, bbp);
-		bbpb.add(new JButton(new ShowLogFileAction(logFilePath)), cc.xy(4, 2, "f,f"));
-		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, engine)), cc.xy(6, 2, "f,f"));
-		bbpb.add(new JButton(runEngineAction), cc.xy(4, 4, "f,f"));
-		bbpb.add(new JButton(new SaveAction()), cc.xy(6, 4, "f,f"));
+		bbpb.add(new JButton(new ShowLogFileAction(logFilePath)), cc.xy(2, 2, "f,f"));
+		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, engine)), cc.xy(4, 2, "f,f"));
+		bbpb.add(new JButton(runEngineAction), cc.xy(6, 2, "f,f"));
+		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
 		
 		abortB = new JButton(new AbstractAction("Abort!"){
 			public void actionPerformed(ActionEvent e) {
@@ -370,7 +370,7 @@ public class CleanseEnginePanel implements EditorPane {
 		
 		abortB.setEnabled(false);
 		
-		bbpb.add(abortB,cc.xy(4,6));
+		bbpb.add(abortB,cc.xy(6,4));
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
 		
 		
