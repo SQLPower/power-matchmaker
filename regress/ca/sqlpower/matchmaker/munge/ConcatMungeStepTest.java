@@ -75,7 +75,7 @@ public class ConcatMungeStepTest extends TestCase {
 		assertEquals("abc", result);
 	}
 	
-	public void testCallonNull() throws Exception {
+	public void testCallOnNull() throws Exception {
 		testInput = new MungeStepOutput<String>("test", String.class);
 		testInput.setData(null);
 		step.connectInput(0, testInput);
@@ -97,4 +97,103 @@ public class ConcatMungeStepTest extends TestCase {
 			// UnexpectedDataTypeException was thrown as expected
 		}
 	}
+    
+    public void testDelimiterTwoInputs() throws Exception {
+        
+        step.setDelimiter("!");
+        
+        testInput = new MungeStepOutput<String>("test1", String.class);
+        testInput.setData("abc");
+        step.connectInput(0, testInput);
+
+        MungeStepOutput<String> testInput2;
+        testInput2 = new MungeStepOutput<String>("test2", String.class);
+        testInput2.setData("def");
+        step.connectInput(1, testInput2);
+
+        step.open(logger);
+        step.call();
+        List<MungeStepOutput> results = step.getChildren(); 
+        MungeStepOutput output = results.get(0);
+        String result = (String) output.getData();
+        assertEquals("abc!def", result);
+    }
+
+    public void testDelimiterTwoNullInputs() throws Exception {
+        
+        step.setDelimiter("!");
+        
+        testInput = new MungeStepOutput<String>("test1", String.class);
+        testInput.setData(null);
+        step.connectInput(0, testInput);
+
+        MungeStepOutput<String> testInput2;
+        testInput2 = new MungeStepOutput<String>("test2", String.class);
+        testInput2.setData(null);
+        step.connectInput(1, testInput2);
+
+        step.open(logger);
+        step.call();
+        List<MungeStepOutput> results = step.getChildren(); 
+        MungeStepOutput output = results.get(0);
+        String result = (String) output.getData();
+        assertEquals("!", result);
+    }
+    
+    public void testDelimiterSecondInputDisconnected() throws Exception {
+        
+        step.setDelimiter("!");
+        
+        testInput = new MungeStepOutput<String>("test", String.class);
+        testInput.setData("cow");
+        step.connectInput(0, testInput);
+        step.open(logger);
+        step.call();
+        List<MungeStepOutput> results = step.getChildren(); 
+        MungeStepOutput output = results.get(0);
+        String result = (String)output.getData();
+        assertEquals("cow!", result);
+    }
+
+    public void testDelimiterOneInput() throws Exception {
+        
+        step.setDelimiter("!");
+        
+        testInput = new MungeStepOutput<String>("test", String.class);
+        testInput.setData("cow");
+        step.connectInput(0, testInput);
+        step.removeInput(1);
+        step.open(logger);
+        step.call();
+        List<MungeStepOutput> results = step.getChildren(); 
+        MungeStepOutput output = results.get(0);
+        String result = (String)output.getData();
+        assertEquals("cow", result);
+    }
+
+    public void testDelimiterNoInputs() throws Exception {
+        
+        step.setDelimiter("!");
+        
+        step.removeInput(0);
+        step.removeInput(0);
+        step.open(logger);
+        step.call();
+        List<MungeStepOutput> results = step.getChildren(); 
+        MungeStepOutput output = results.get(0);
+        String result = (String)output.getData();
+        assertEquals("", result);
+    }
+
+    public void testNoInputs() throws Exception {
+        step.removeInput(0);
+        step.removeInput(0);
+        step.open(logger);
+        step.call();
+        List<MungeStepOutput> results = step.getChildren(); 
+        MungeStepOutput output = results.get(0);
+        String result = (String)output.getData();
+        assertEquals(null, result);
+    }
+
 }
