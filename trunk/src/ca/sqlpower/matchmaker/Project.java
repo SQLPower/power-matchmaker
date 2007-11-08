@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,7 +156,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     /**
      * The Matching engine this will be created lazyily, because we only need one instance per project.
      */
-	private MergeEngineImpl mergingEngine;
+	private MergeEngineImpl mergingEngine = null;
     
 	public Project() {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
@@ -192,6 +194,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      */
 	public static boolean doesResultTableExist(MatchMakerSession session, Project project) throws ArchitectException {
 		return session.tableExists(
+							project.getResultTableSPDatasource(),
 							project.getResultTableCatalog(),
 							project.getResultTableSchema(),
 							project.getResultTableName());
@@ -203,6 +206,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 */
 	public static boolean doesSourceTableExist(MatchMakerSession session, Project project) throws ArchitectException {
 		return session.tableExists(
+				project.getSourceTableSPDatasource(),
 				project.getSourceTableCatalog(),
 				project.getSourceTableSchema(),
 				project.getSourceTableName());
@@ -412,7 +416,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 					"vertifyResultTableStruct()");
 		}
 
-		SQLTable table = session.findPhysicalTableByName(
+		SQLTable table = session.findPhysicalTableByName(resultTable.getParentDatabase().getDataSource().getName(),
 				resultTable.getCatalogName(),
 				resultTable.getSchemaName(),
 				resultTable.getName());
@@ -652,8 +656,10 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		newProject.setFilter(getFilter());
 		newProject.setMergeSettings(getMergeSettings().duplicate(newProject,s));
 		newProject.setMungeSettings(getMungeSettings().duplicate(newProject,s));
+		
 		newProject.setSourceTable(getSourceTable());
 		newProject.setResultTable(getResultTable());
+		
 		newProject.setXrefTable(getXrefTable());
 		newProject.setType(getType());
 		newProject.setView(getView()==null?null:getView().duplicate());
@@ -699,6 +705,14 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     public void setSourceTableName(String sourceTableName) {
         sourceTablePropertiesDelegate.setTableName(sourceTableName);
     }
+    
+    public void setSourceTableSPDatasource(String sourceTableSPDName) {
+    	sourceTablePropertiesDelegate.setSPDataSource(sourceTableSPDName);
+    }
+    
+    public String getSourceTableSPDatasource() {
+    	return sourceTablePropertiesDelegate.getSPDataSourceName();
+    }
 
     /////// The result table delegate methods //////
     public SQLTable getResultTable() {
@@ -726,6 +740,13 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         resultTablePropertiesDelegate.setSchemaName(resultTableSchema);
     }
 
+    public void setResultTableSPDatasource(String resultTableSPDName) {
+    	resultTablePropertiesDelegate.setSPDataSource(resultTableSPDName);
+    }
+    
+    public String getResultTableSPDatasource() {
+    	return resultTablePropertiesDelegate.getSPDataSourceName();
+    }
 
     /////// The xref table delegate methods //////
     public SQLTable getXrefTable() {
@@ -751,6 +772,14 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     }
     public void setXrefTableSchema(String xrefTableSchema) {
         xrefTablePropertiesDelegate.setSchemaName(xrefTableSchema);
+    }
+    
+    public void setXrefTableSPDatasource(String xrefTableSPDName) {
+    	xrefTablePropertiesDelegate.setSPDataSource(xrefTableSPDName);
+    }
+    
+    public String getXrefTableSPDatasource() {
+    	return xrefTablePropertiesDelegate.getSPDataSourceName();
     }
     
     /**
@@ -815,5 +844,27 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 			mergingEngine = new MergeEngineImpl(getSession(), this); 
 		}
 		return mergingEngine;
+	}
+	
+	/**
+	 * Returns the connection associated with the source table
+	 * @throws SQLException 
+	 */
+	public Connection createSourceTableConnection() throws SQLException {
+		if (sourceTablePropertiesDelegate.getSourceTable() != null) {
+			return sourceTablePropertiesDelegate.getSourceTable().getParentDatabase().getDataSource().createConnection();
+		} 
+		return null;
+	}
+	
+	/**
+	 * Returns the connection associated with the result table
+	 * @throws SQLException 
+	 */
+	public Connection createResultTableConnection() throws SQLException {
+		if (resultTablePropertiesDelegate.getSourceTable() != null) {
+			return resultTablePropertiesDelegate.getSourceTable().getParentDatabase().getDataSource().createConnection();
+		} 
+		return null;
 	}
 }

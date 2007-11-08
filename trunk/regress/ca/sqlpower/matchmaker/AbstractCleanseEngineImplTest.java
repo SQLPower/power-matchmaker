@@ -141,7 +141,7 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		
 		engine.call();
 
-		Connection con = db.getConnection();
+		Connection con = project.createSourceTableConnection();
 		Statement stmt = con.createStatement();
 		ResultSet rs = stmt.executeQuery("SELECT * FROM " + getFullTableName());
 

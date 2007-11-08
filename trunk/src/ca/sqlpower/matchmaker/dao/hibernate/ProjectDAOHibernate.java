@@ -31,6 +31,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 
 public class ProjectDAOHibernate extends AbstractMatchMakerDAOHibernate<Project> implements
@@ -102,9 +103,12 @@ public class ProjectDAOHibernate extends AbstractMatchMakerDAOHibernate<Project>
 		// that would have all the columns.
 		try {
 			MatchMakerSession session = saveMe.getSession();
-			SQLTable resultTable = session.findPhysicalTableByName(saveMe.getResultTableCatalog(),
-					saveMe.getResultTableSchema(), saveMe.getResultTableName());
-			saveMe.setResultTable(resultTable);
+
+			if (saveMe.getType() != ProjectMode.CLEANSE) {
+				SQLTable resultTable = session.findPhysicalTableByName(saveMe.getResultTableSPDatasource(), saveMe.getResultTableCatalog(),
+						saveMe.getResultTableSchema(), saveMe.getResultTableName());
+				saveMe.setResultTable(resultTable);
+			}
 		} catch (ArchitectException e) {
 			throw new RuntimeException(e);
 		}

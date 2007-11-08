@@ -24,6 +24,10 @@
 		<property name="tableName" type="string">
 			<column name="table_name" length="30" />
 		</property>
+		
+		<property name="spDataSource" type="string">
+			<column name="table_spdatasource" length="60" />
+		</property>
 			<property name="tableIndex" type="ca.sqlpower.matchmaker.util.ListToSQLIndex">
 			<column name="primary_key_index" length="60" />
 		    <column name="index_column_name_0" length="60" />

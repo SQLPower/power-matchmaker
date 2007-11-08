@@ -85,6 +85,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -158,7 +159,7 @@ public class ProjectEditor implements EditorPane {
         if (project == null) throw new NullPointerException("You can't edit a null project");
         this.project = project;
         this.folder = folder;
-        handler = new FormValidationHandler(status);
+        handler = new FormValidationHandler(status, true);
         panel = buildUI();
         setDefaultSelections();
         handler.addPropertyChangeListener(new PropertyChangeListener(){
@@ -207,11 +208,21 @@ public class ProjectEditor implements EditorPane {
         	};
         	parentFolder.addMatchMakerListener(projectRemovalListener);
         	
+        	sourceChooser.getDataSourceComboBox().setEnabled(false);
         	sourceChooser.getCatalogComboBox().setEnabled(false);
         	sourceChooser.getSchemaComboBox().setEnabled(false);
         	sourceChooser.getTableComboBox().setEnabled(false);
         	viewBuilder.setEnabled(false);
         }
+        
+    	//This is only good if the result choosers datasource's combo box is invisible.
+    	sourceChooser.getDataSourceComboBox().addItemListener(new ItemListener(){
+
+			public void itemStateChanged(ItemEvent e) {
+				resultChooser.getDataSourceComboBox().getModel().setSelectedItem(sourceChooser.getDataSourceComboBox().getSelectedItem());
+			}
+    		
+    	});
     }
 
     /**
@@ -333,7 +344,7 @@ public class ProjectEditor implements EditorPane {
 
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,40dlu,4dlu,pref,   4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,  4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,40dlu,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
 
 		PanelBuilder pb;
 
@@ -357,6 +368,9 @@ public class ProjectEditor implements EditorPane {
 		pb.add(new JLabel("Type:"), cc.xy(2,row,"r,c"));
 		pb.add(projectType, cc.xy(4,row));
         projectType.setEditable(false);
+        row+=2;
+        pb.add(new JLabel("DataSource"),cc.xy(2,row,"r,c"));
+        pb.add(sourceChooser.getDataSourceComboBox(),cc.xy(4, row));
 		row+=2;
 		pb.addTitle("Source Table", cc.xy(2, row));
 		row+=2;
@@ -406,7 +420,7 @@ public class ProjectEditor implements EditorPane {
 
     	final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
     	final SQLDatabase loginDB = swingSession.getDatabase();
-        sourceChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
+    	
         resultChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
 
         sourceChooser.getCatalogComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
@@ -438,17 +452,13 @@ public class ProjectEditor implements EditorPane {
         handler.addValidateObject(indexComboBox,v2a);
 
         if (project.getType() != ProjectMode.CLEANSE) { 
-        	if (resultChooser.getCatalogComboBox().isEnabled()) {
-        		Validator v3 = new ProjectResultCatalogSchemaValidator("Result "+
-        				resultChooser.getCatalogTerm().getText());
-        		handler.addValidateObject(resultChooser.getCatalogComboBox(),v3);
-        	}
-        	
-        	if (resultChooser.getSchemaComboBox().isEnabled()) {
-        		Validator v4 = new ProjectResultCatalogSchemaValidator("Result "+
-        				resultChooser.getSchemaTerm().getText());
-        		handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
-        	}
+    		Validator v3 = new ProjectResultCatalogSchemaValidator("Result "+
+    				resultChooser.getCatalogTerm().getText());
+    		handler.addValidateObject(resultChooser.getCatalogComboBox(),v3);
+    	
+    		Validator v4 = new ProjectResultCatalogSchemaValidator("Result "+
+    				resultChooser.getSchemaTerm().getText());
+    		handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
         	
         	Validator v5 = new ProjectResultTableNameValidator();
         	handler.addValidateObject(resultTableName,v5);
@@ -457,16 +467,31 @@ public class ProjectEditor implements EditorPane {
         Validator v6 = new AlwaysOKValidator();
         handler.addValidateObject(desc, v6);
         handler.addValidateObject(filterPanel.getFilterTextArea(), v6);
-
+        
+        handler.addValidateObject(sourceChooser.getDataSourceComboBox(), v6);
+        handler.addValidateObject(resultChooser.getDataSourceComboBox(), v6);
 
         if ( project.getSourceTable() != null ) {
         	SQLTable sourceTable = project.getSourceTable();
         	filterPanel.setTable(sourceTable);
         	SQLCatalog cat = sourceTable.getCatalog();
         	SQLSchema sch = sourceTable.getSchema();
-        	sourceChooser.getCatalogComboBox().setSelectedItem(cat);
-        	sourceChooser.getSchemaComboBox().setSelectedItem(sch);
-        	sourceChooser.getTableComboBox().setSelectedItem(sourceTable);
+        	
+        	if (project.getSourceTableSPDatasource().length() == 0) {
+        		sourceChooser.getDataSourceComboBox().getModel().setSelectedItem(loginDB.getDataSource());
+        	} else {
+        		for (int x = 0; x < sourceChooser.getDataSourceComboBox().getModel().getSize(); x++) {
+        			SPDataSource curr =(SPDataSource) sourceChooser.getDataSourceComboBox().getModel().getElementAt(x);
+        			if (curr.getName().equals(project.getSourceTableSPDatasource())) {
+        				sourceChooser.getDataSourceComboBox().setSelectedItem(curr);
+        				break;
+        			}
+        		}
+        	}
+        	
+        	sourceChooser.getCatalogComboBox().getModel().setSelectedItem(cat);
+        	sourceChooser.getSchemaComboBox().getModel().setSelectedItem(sch);
+        	sourceChooser.getTableComboBox().getModel().setSelectedItem(sourceTable);
     	}
 
         refreshIndexComboBox(project.getSourceTableIndex(),project.getSourceTable());
@@ -515,8 +540,10 @@ public class ProjectEditor implements EditorPane {
 
 
     	SQLTable resultTable = project.getResultTable();
+    	logger.debug("result table: " + resultTable);
     	if ( resultTable != null ) {
     		SQLCatalog cat = resultTable.getCatalog();
+    		resultChooser.getDataSourceComboBox().getModel().setSelectedItem(resultTable.getParentDatabase().getDataSource());
     		
     		if ( cat != null ) {
     			//this sets the selected item in the model because it refused to work 
@@ -650,6 +677,8 @@ public class ProjectEditor implements EditorPane {
 	        	resultTableParent = (SQLDatabase) resultChooser.getDb();
 	        }
 	
+	        project.setResultTableSPDatasource(((SPDataSource)(resultChooser.getDataSourceComboBox().getSelectedItem())).getName());
+	        
 	        if(resultChooser.getCatalogComboBox().getSelectedItem() != null) {
 	        	project.setResultTableCatalog( ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName());
 	        }
@@ -657,6 +686,8 @@ public class ProjectEditor implements EditorPane {
 	        	project.setResultTableSchema( ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName());
 	        }
 	        project.setResultTableName(resultTableName.getText());
+	        
+	        logger.debug(project.getResultTable());
         
 	        try {
 	        	if (!Project.doesResultTableExist(swingSession, project) ||
@@ -690,6 +721,7 @@ public class ProjectEditor implements EditorPane {
         }
 
         if (project.getParent() == null) {
+        	sourceChooser.getDataSourceComboBox().setEnabled(false);
         	sourceChooser.getCatalogComboBox().setEnabled(false);
         	sourceChooser.getSchemaComboBox().setEnabled(false);
         	sourceChooser.getTableComboBox().setEnabled(false);
@@ -721,6 +753,7 @@ public class ProjectEditor implements EditorPane {
 			}
         }
 		
+        logger.debug(project.getResultTable());
 		logger.debug("Saving Project:" + project.getName());
         
         PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
@@ -728,7 +761,9 @@ public class ProjectEditor implements EditorPane {
             swingSession.move(project,selectedFolder);
         	swingSession.save(selectedFolder);
         } 
-
+        
+        logger.debug(project.getResultTable());
+        logger.debug("saving");
         swingSession.save(project);
         handler.resetHasValidated();
 
@@ -746,8 +781,8 @@ public class ProjectEditor implements EditorPane {
 		throws InstantiationException, IllegalAccessException,
 		HeadlessException, SQLException, ArchitectException, ClassNotFoundException {
 
-		final DDLGenerator ddlg = DDLUtils.createDDLGenerator(
-				swingSession.getDatabase().getDataSource());
+		final DDLGenerator ddlg = DDLUtils.createDDLGenerator((SPDataSource) resultChooser.getDataSourceComboBox().getSelectedItem());
+		
 		if (ddlg == null) {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
 					"Couldn't create DDL Generator for database type\n"+
@@ -819,7 +854,7 @@ public class ProjectEditor implements EditorPane {
 				Statement stmt = null;
 				String sql = null;
 				try {
-					con = swingSession.getConnection();
+					con = project.createResultTableConnection();
 					stmt = con.createStatement();
 					int successCount = 0;
 

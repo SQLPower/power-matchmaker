@@ -66,6 +66,7 @@ private Project project;
 		return DBTestUtil.getSqlServerDS();
 	}
 	
+	
     @Override
     public ProjectDAO getDataAccessObject() throws Exception {
         return new ProjectDAOHibernate(getSession());
@@ -199,5 +200,10 @@ private Project project;
             // connection didn't come from a pool so we can't close it
         }
     }
+
+	@Override
+	protected SPDataSource getAlternateDS() {
+		return DBTestUtil.getOracleDS();
+	}
 
 }

@@ -101,6 +101,11 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     static MatchMakerSession getSpecificInstance(String mmSessionId) {
         return sessions.get(mmSessionId);
     }
+    
+    /**
+     * The map of SQLDatabases to SPDatasources so they can be cached.
+     */
+    private Map<SPDataSource, SQLDatabase> databases = new HashMap<SPDataSource, SQLDatabase>();
 
     /**
      * The ID of this instance. A string version of this value is the key in the {@link #sessions} map.
@@ -225,6 +230,9 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     }
 
 	public SQLDatabase getDatabase() {
+		if (databases.get(database.getDataSource()) == null) {
+			databases.put(database.getDataSource(),database);
+		}
 		return database;
 	}
 
@@ -445,27 +453,52 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     public Version getPLSchemaVersion() {
         return plSchemaVersion;
     }
-
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
-    	logger.debug("Session.findSQLTableByName:" +
+    
+    
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
+    	logger.debug("Session.findSQLTableByName: ds=" + spDataSourceName + ", " + 
     			catalog + "." + schema + "." + tableName);
-    	if (tableName == null || tableName.length() == 0) return null;
-		SQLDatabase currentDB = getDatabase();
-		SQLDatabase tempDB = null;
-		try {
-			tempDB = new SQLDatabase(currentDB.getDataSource());
-			return tempDB.getTableByName(
-					catalog,
-					schema,
-					tableName);
-		} finally {
-			if (tempDB != null) tempDB.disconnect();
-		}
+    	
+    	SPDataSource ds = null;
+    	
+    	if (spDataSourceName == null || spDataSourceName.length() == 0) {
+    		ds = getDatabase().getDataSource();
+    	} else {
+    		for (SPDataSource spd : context.getDataSources()) {
+    			if (spd.getName().equals(spDataSourceName)) {
+    				ds = spd;
+    			}
+    		}
+    		if (ds == null) {
+    	 		throw new IllegalArgumentException("Error: No database connection named " + spDataSourceName + 
+	        			" please create a database connection named " + spDataSourceName + " and try again.");
+    		}
+    	}
+    	
+    	SQLDatabase tempDB = null;
+    	try {
+    		tempDB = new SQLDatabase(ds);
+    		return tempDB.getTableByName(
+    				catalog,
+    				schema,
+    				tableName);
+    	} finally {
+    		if (tempDB != null) tempDB.disconnect();
+    	}
+    }
+    
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+    	return findPhysicalTableByName(getDatabase().getDataSource().getName(), catalog, schema, tableName);
     }
 
     public boolean tableExists(String catalog, String schema,
     		String tableName) throws ArchitectException {
     	return (findPhysicalTableByName(catalog,schema,tableName) != null);
+    }
+    
+    public boolean tableExists(String spDataSourceName, String catalog, String schema,
+    		String tableName) throws ArchitectException {
+    	return (findPhysicalTableByName(spDataSourceName, catalog,schema,tableName) != null);
     }
 
     public boolean tableExists(SQLTable table) throws ArchitectException {
@@ -481,35 +514,47 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      */
     public boolean canSelectTable(SQLTable table) {
 
-		Connection con = null;
-		Statement stmt = null;
-		StringBuffer sql = new StringBuffer();
+    	Connection conn;
 		try {
-            con = getConnection();
-			sql.append("select * from ");
-			sql.append(DDLUtils.toQualifiedName(table));
-			stmt = con.createStatement();
-			stmt.executeQuery(sql.toString());
-			return true;
-		} catch (SQLException e) {
-			logger.debug("sql error: select statement:[" +
-					sql.toString() + "]\n" + e.getMessage() );
+			conn = table.getParentDatabase().getDataSource().createConnection();
+		} catch (SQLException e1) {
+			logger.debug("Cannot create connection to table: " + table);
 			return false;
-		} finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                logger.warn("Couldn't close statement", e);
-            }
-            try {
-                if (con != null) {
-                    con.close();
-                }
-            } catch (SQLException e) {
-                logger.warn("Couldn't close connection", e);
-            }
 		}
+
+    	Statement stmt = null;
+    	StringBuffer sql = new StringBuffer();
+    	try {
+    		sql.append("select * from ");
+    		sql.append(DDLUtils.toQualifiedName(table));
+    		stmt = conn.createStatement();
+    		stmt.executeQuery(sql.toString());
+	    	try {
+	    		stmt.close();
+	    		conn.close();
+			} catch (SQLException e1) {
+				logger.debug("Could not close stamtment or connection");
+			}
+    		return true;
+    	} catch (SQLException e) {
+    		logger.debug("sql error: select statement:[" +
+    				sql.toString() + "]\n" + e.getMessage() );
+    		try {
+				stmt.close();
+				conn.close();
+			} catch (SQLException e1) {
+				logger.debug("Could not close stamtment or connection");
+			}
+    		return false;
+    	} 
+    }
+
+	public SQLDatabase getDatabase(SPDataSource dataSource) {
+		SQLDatabase db = databases.get(dataSource);
+		if (db == null) {
+			db = new SQLDatabase(dataSource);
+			databases.put(dataSource,db);
+		}
+		return db;
 	}
 }

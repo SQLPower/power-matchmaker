@@ -30,6 +30,9 @@
 		<property name="sourceTableSchema" type="string">
 			<column name="source_table_schema" length="60" />
 		</property>
+		<property name="sourceTableSPDatasource" type="string">
+			<column name="source_table_spdatasource" length="60" />
+		</property>
 		<property name="sourceTableName" type="string">
 			<column name="source_table_name" length="60" />
 		</property>
@@ -56,7 +59,14 @@
 		<property name="resultTableName" type="string">
 			<column name="result_table_name" length="60" />
 		</property>
+		<property name="resultTableSPDatasource" type="string">
+			<column name="result_table_spdatasource" length="60" />
+		</property>
 		
+		
+		<property name="xrefTableSPDatasource" type="string">	
+			<column name="xref_table_spdatasource" length="60" />
+		</property>
 		<property name="xrefTableCatalog" type="string">	
 			<column name="xref_table_catalog" length="30" />
 		</property>

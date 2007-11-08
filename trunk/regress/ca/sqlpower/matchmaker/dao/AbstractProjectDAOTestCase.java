@@ -87,14 +87,17 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         nonPersistingProperties.add("sourceTableSchema");
         nonPersistingProperties.add("sourceTableName");
         nonPersistingProperties.add("sourceTableIndex");
+        nonPersistingProperties.add("sourceTableSPDatasource");
         
         nonPersistingProperties.add("resultTableCatalog");
         nonPersistingProperties.add("resultTableSchema");
         nonPersistingProperties.add("resultTableName");
+        nonPersistingProperties.add("resultTableSPDatasource");
         
         nonPersistingProperties.add("xrefTableCatalog");
         nonPersistingProperties.add("xrefTableSchema");
         nonPersistingProperties.add("xrefTableName");
+        nonPersistingProperties.add("xrefTableSPDatasource");
       
 		return nonPersistingProperties;
 	}
@@ -355,6 +358,45 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     }
     
     /**
+     * Test spDataSources persist
+     */
+    public void testSPDataSourcesPersist() throws Exception{
+   	
+    	 MungeProcess process = new MungeProcess();
+         process.setName("munge process");
+         
+         Project oldProject = new Project();
+         oldProject.setName("old");
+         oldProject.setType(ProjectMode.FIND_DUPES);
+        
+         oldProject.setSession(getSession());
+         
+         String dsName = getAlternateDS().getName();
+         oldProject.setResultTableSPDatasource(dsName);
+         oldProject.setSourceTableSPDatasource(dsName);
+         oldProject.setXrefTableSPDatasource(dsName);
+         
+         PlFolder f = new PlFolder();
+         oldProject.setParent(f);
+
+         f.setName("test folder");
+         PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+         plFolderDAO.save(f);
+
+         oldProject.addMungeProcess(process);
+
+         ProjectDAO dao = getDataAccessObject();
+
+         dao.save(oldProject);
+         
+         Project loadedProject = getDataAccessObject().findByName("old");
+         assertEquals(loadedProject.getSourceTableSPDatasource(), oldProject.getSourceTableSPDatasource());
+         assertEquals(loadedProject.getResultTableSPDatasource(), oldProject.getResultTableSPDatasource());
+         assertEquals(loadedProject.getXrefTableSPDatasource(), oldProject.getXrefTableSPDatasource());
+    	
+    }
+    
+    /**
      * Inserts a sample entry in mm_project, and returns its OID.  The match will
      * have its name (MATCH_ID) set to the given string value.  This is useful for
      * verifying that you are retrieving the same record that this method inserted.
@@ -395,4 +437,5 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
             long parentGroupOid, String lastUpdateUser) throws Exception;
     
 	protected abstract SPDataSource getDS();
+	protected abstract SPDataSource getAlternateDS();
 }

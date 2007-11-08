@@ -210,7 +210,7 @@ public class TableQueryFrame extends JFrame {
 			cachedDatabase = null;
 		} else if (cachedDatabase == null
 				|| !cachedDatabase.getDataSource().equals(ds)) {
-			cachedDatabase = new SQLDatabase(ds);
+			cachedDatabase = swingSession.getDatabase(ds);
 		}
 		return cachedDatabase;
 	}

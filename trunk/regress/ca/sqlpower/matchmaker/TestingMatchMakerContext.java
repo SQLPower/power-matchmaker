@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -33,16 +34,22 @@ import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 
 public class TestingMatchMakerContext implements MatchMakerSessionContext {
-	List<SPDataSource> dataSources;
+	List<SPDataSource> dataSources = new ArrayList<SPDataSource>();
 	DataSourceCollection plDotIni;
 	MatchMakerSession session;
 	Preferences prefs = PreferencesManager.getRootNode();
+	
+	public TestingMatchMakerContext() {
+		dataSources.add(DBTestUtil.getHSQLDBInMemoryDS());
+		dataSources.add(DBTestUtil.getOracleDS());
+		dataSources.add(DBTestUtil.getSqlServerDS());
+	}
 	
 	public List<SPDataSource> getDataSources() {
 		return dataSources;
 	}
 
-	public void setDataSources(List<SPDataSource> dataSources) {
+	public void setDataSou2rces(List<SPDataSource> dataSources) {
 		this.dataSources = dataSources;
 	}
 

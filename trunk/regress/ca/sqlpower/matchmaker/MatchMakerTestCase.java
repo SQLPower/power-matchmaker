@@ -48,8 +48,8 @@ import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
@@ -76,7 +76,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 
 	protected void setUp() throws Exception {
 		super.setUp();
-
 	}
 
 	protected void tearDown() throws Exception {
@@ -105,6 +104,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForDuplication.add("matchingEngine");
         propertiesToIgnoreForDuplication.add("cleansingEngine");
         propertiesToIgnoreForDuplication.add("undoing");
+        
+        //this throws an exception if the DS does not exist
+        propertiesToIgnoreForDuplication.add("spDataSource");
         
         // First pass set all settable properties
 		for (PropertyDescriptor property : settableProperties) {

@@ -162,7 +162,7 @@ public class MergeEngineImpl extends AbstractEngine {
 			
 			progressMessage = "Starting Merge Engine";
 			logger.info(progressMessage);
-			con = getSession().getConnection();
+			con = getProject().createSourceTableConnection();
 			con.setAutoCommit(false);
 			merger = new MergeProcessor(getProject(), con, getLogger());
 			merger.call();

@@ -79,6 +79,8 @@ public class SQLObjectChooser {
 	private SQLTable table;
 
 	private SQLDatabase db;
+	
+	private MatchMakerSwingSession session;
 
 	/**
 	 * Creates a new SQLObjectChooser component set.
@@ -92,10 +94,12 @@ public class SQLObjectChooser {
 	 *            contain.
 	 */
 	public SQLObjectChooser(final MatchMakerSwingSession session) {
-
+		
+		this.session = session;
+			
 		db = session.getDatabase();
 		dataSource = db.getDataSource();
-		dataSourceComboBox.addItem(dataSource);
+		setComboBoxStateAndItem(dataSourceComboBox, session.getContext().getDataSources(), -1);
 		dataSourceComboBox.setSelectedItem(dataSource);
 
 		catalogComboBox.removeAllItems();
@@ -148,15 +152,7 @@ public class SQLObjectChooser {
 			}
 		};
 
-		
-        
-        /*
-         *  data source is fixed now
-         *  (what does this mean? should this code be deleted?)
-
-		dataSourceComboBox.addItemListener(itemListener);
-		 */
-        
+		dataSourceComboBox.addItemListener(itemListener);        
 		catalogComboBox.addItemListener(itemListener);
 		schemaComboBox.addItemListener(itemListener);
 		tableComboBox.addItemListener(itemListener);
@@ -214,7 +210,7 @@ public class SQLObjectChooser {
 
 				dataSource = (SPDataSource) dataSourceComboBox
 						.getSelectedItem();
-				db = new SQLDatabase(dataSource);
+				db = session.getDatabase(dataSource);
 				db.populate();
 
 				if (db.isCatalogContainer()) {

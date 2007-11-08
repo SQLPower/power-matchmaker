@@ -156,7 +156,7 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 			String lastSchemaName = "";
 			String lastCatalogName = "";
 			
-			Connection con = swingSession.getConnection();
+			Connection con = project.createSourceTableConnection();
 			DatabaseMetaData dbMeta;
 			ResultSet rs;
 			try {
@@ -216,7 +216,7 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 					// of the source table's primary keys
 					if (count == primaryKeys.size()) {
 						TableMergeRules mergeRule = new TableMergeRules();
-						SQLTable table = swingSession.getDatabase().getTableByName(catalogName,
+						SQLTable table = sourceTable.getParentDatabase().getTableByName(catalogName,
 								schemaName, tableName);
 						SQLIndex index = table.getPrimaryKeyIndex();
 						mergeRule.setTable(table);

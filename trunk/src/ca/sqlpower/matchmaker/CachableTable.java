@@ -26,6 +26,7 @@ import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.sql.SPDataSource;
 
 /**
  * Provides the ability to maintain the SQLTable properties of the Project via
@@ -50,6 +51,8 @@ public class CachableTable {
     private String schemaName;
     private String tableName;
     private SQLTable cachedTable;
+    
+    private String dsName = null;
 
     /**
      * Creates a new cachable table object that uses the database and
@@ -68,7 +71,7 @@ public class CachableTable {
     	if (mmo == null) throw new NullPointerException("Can't make a cachable table for a null owner");
     	if (propertyName == null) throw new NullPointerException("Can't make a cachable table for a null property name");
 		this.propertyName = propertyName;
-		this.mmo = mmo;
+		this.mmo = mmo;		
     }
 
     public String getCatalogName() {
@@ -119,6 +122,52 @@ public class CachableTable {
         cachedTable = null;
         this.schemaName = sourceTableSchema;
     }
+    
+    /**
+     * Sets the database that the table will be taken from. The string
+     * that is passed in is the name of the spDataSource taken from the
+     * list of connections.
+     * 
+     * @param spDataSourceName The name of the datasource.
+     */
+    public void setSPDataSource(String spDataSourceName) {
+    	cachedTable = null;
+    	this.dsName = spDataSourceName;
+    }
+    
+    /**
+     * Gets the name of the spDataSource that the database is coming
+     * from.
+     * 
+     */
+    public String getSPDataSourceName() {
+    	if (cachedTable != null && cachedTable.getParentDatabase() != null && 
+    			cachedTable.getParentDatabase().getDataSource() != null) {
+    		return cachedTable.getParentDatabase().getDataSource().getName();
+    	}
+    	return dsName == null ? "" : dsName;
+    }
+    
+    /**
+     * Returns the SPDataSource for the current table
+     */
+    public SPDataSource getSPDataSource() {
+    	if (cachedTable != null) {
+    		return cachedTable.getParentDatabase().getDataSource();
+    	}
+    	for (SPDataSource spd : mmo.getSession().getContext().getDataSources()) {
+			if (spd != null && spd.getName() != null && spd.getName().equals(dsName)) {
+				return spd;
+			}
+		}
+    	if (dsName == null || dsName.length() == 0) {
+    		//this will be handled as a default DS
+    		return null;
+    	}
+    	//The DS name does not exist this is an issue
+    	throw new IllegalArgumentException("Error: No database connection named " + dsName + 
+    			" please create a database connection named " + dsName + " and try again.");
+    }
 
     /**
      * Performs some magic to synchronize the sourceTableCatalog,
@@ -140,17 +189,25 @@ public class CachableTable {
      */
     public SQLTable getSourceTable() {  // XXX rename to getTable
     	logger.debug("GetSourceTable(): "+this);
+    	
         if (cachedTable != null) {
-            return cachedTable;
+        	return cachedTable;
         }
         if (tableName == null) {
         	return null;
         }
 
         try {
-			logger.debug("Project.getSourceTable("+catalogName+","+schemaName+","+tableName+")");
+			logger.debug("Project.getSourceTable(" + dsName + ","+catalogName+","+schemaName+","+tableName+")");
 			logger.debug("mmo.parent="+mmo.getParent());
-			SQLDatabase db = mmo.getSession().getDatabase();
+			
+			SQLDatabase db = null;
+			if (getSPDataSource() == null) {
+				db = mmo.getSession().getDatabase();
+			} else {
+				db = mmo.getSession().getDatabase(getSPDataSource());
+			}
+			
 			if (ArchitectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
 				SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
 				if (table == null) {
@@ -177,6 +234,8 @@ public class CachableTable {
      * @param table
      */
     public void setTable(SQLTable table) {
+    	logger.debug("Set Table: " + table);
+    	
         final SQLTable oldValue = cachedTable;
         final SQLTable newValue = table;
 
@@ -184,6 +243,7 @@ public class CachableTable {
         schemaName = null;
         tableName = null;
         cachedTable = table;
+        dsName = null;
 
         // XXX create an InternalMatchMakerObject package-private interface that lets us do this,
         //     and don't declare mmo as AbstractMatchMakerObject anymore
@@ -194,7 +254,8 @@ public class CachableTable {
     public String toString() {
     	return "CachableTable:" +
     			" mmo="+(mmo == null ? "null" : mmo.getClass().getName() + System.identityHashCode(mmo)) + 
-    			" catalogName="+catalogName+
+    			" ds=" + getSPDataSourceName() +
+    			" catalogName=" + catalogName +
     			" schemaName="+schemaName+
     			" tableName="+tableName+
     			" cachedTable="+(cachedTable == null ? "null" : cachedTable.getName()) +

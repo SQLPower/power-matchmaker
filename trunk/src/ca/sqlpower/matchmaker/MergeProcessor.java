@@ -756,10 +756,12 @@ public class MergeProcessor extends AbstractProcessor {
 		
 		public boolean isInPrimaryKey(int column) throws ArchitectException {
 			ColumnMergeRules cmr = tableMergeRule.getChildren().get(column);
+
 			if (tableMergeRule.isSourceMergeRule()) {
 				SQLColumn temp = cmr.getColumn();
 				return tableMergeRule.getPrimaryKey().contains(temp);
 			} else {
+				
 				return cmr.isInPrimaryKey();
 			}
 		}

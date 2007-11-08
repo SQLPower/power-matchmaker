@@ -160,7 +160,7 @@ public class SourceTableRecord {
         ResultSet rs = null;
         String lastSQL = null;
         try {
-            con = session.getConnection();
+            con =project.createResultTableConnection();
             stmt = con.createStatement();
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT ");
