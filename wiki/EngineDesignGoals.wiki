@@ -1,7 +1,7 @@
 Engine Requirements
 
   * Ability to handle millions of records
-  * Easy API for contributing new match rule
+  * Easy API for contributing new match rule (now done; see CreatingMungeSteps)
     * Divide into steps (lego pieces) 
       * Allow creation of custom steps and custom groups of steps
       * _Transformation of steps into SQL functions_
