@@ -188,11 +188,35 @@ public interface MatchMakerSession {
      */
     public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException;
     
+    /**
+     * find the sql table that exists in the given spDataSource
+     * (i.e. not just in memory), throws an error if the dsName
+     * is not empty and it is not found.
+     * 
+     * @param spDataSourceName the name of the data source to get the db from
+     * @param catalog	catalog of the table
+     * @param schema	schema of the table
+     * @param tableName name of the table
+     * @return SQLTable if found or null if not
+     * session's database
+     */
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException;
+
+    
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
      */
     public boolean tableExists(String catalog, String schema, String tableName) throws ArchitectException;
+    
+    
+    /**
+     * Returns true if the SQLTable exists in the database 
+     * of the given spDataSource, throws an error if the dsName is not empty 
+     * and not found.
+     */
+    public boolean tableExists(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException;
+    
 	/**
      * Returns true if the SQL table exists
      * in the session's database; false otherwise.
@@ -206,4 +230,11 @@ public interface MatchMakerSession {
      * false if the user has no select privilege
      */
     public boolean canSelectTable(SQLTable table);
+    
+    /**
+     * Returns the database associated with the given datasource. If 
+     * one already exists it will be returned, if it does not one will
+     * be created and remembered for next time.
+     */
+    public SQLDatabase getDatabase(SPDataSource dataSource);
 }

@@ -179,7 +179,7 @@ public class MatchPool {
         ResultSet rs = null;
         String lastSQL = null;
         try {
-            con = session.getConnection();
+            con = project.createResultTableConnection();
             stmt = con.createStatement();
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT ");
@@ -343,7 +343,7 @@ public class MatchPool {
         PreparedStatement ps = null;
         int numKeyValues = ((SourceTableRecord)sourceTableRecords.values().toArray()[0]).getKeyValues().size();
         try {
-            con = session.getConnection();
+            con = project.createResultTableConnection();
             con.setAutoCommit(false);
             StringBuilder sql = new StringBuilder();
             sql.append("DELETE FROM ").append(DDLUtils.toQualifiedName(resultTable));
@@ -664,7 +664,7 @@ public class MatchPool {
         ResultSet rs = null;
         String lastSQL = null;
         try {
-            con = session.getConnection();
+            con = project.createResultTableConnection();
             stmt = con.createStatement();
             StringBuilder sql = new StringBuilder();
 

@@ -60,16 +60,35 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
         propertiesToIgnoreForEventGeneration.add("sourceTableCatalog");
         propertiesToIgnoreForEventGeneration.add("sourceTableSchema");
         propertiesToIgnoreForEventGeneration.add("sourceTableName");
+        propertiesToIgnoreForEventGeneration.add("sourceTableSPDatasource");
         propertiesToIgnoreForEventGeneration.add("resultTableCatalog");
         propertiesToIgnoreForEventGeneration.add("resultTableSchema");
         propertiesToIgnoreForEventGeneration.add("resultTableName");
+        propertiesToIgnoreForEventGeneration.add("resultTableSPDatasource");
         propertiesToIgnoreForEventGeneration.add("xrefTableCatalog");
         propertiesToIgnoreForEventGeneration.add("xrefTableSchema");
         propertiesToIgnoreForEventGeneration.add("xrefTableName");
+        propertiesToIgnoreForEventGeneration.add("xrefTableSPDatasource");
+        propertiesToIgnoreForEventGeneration.add("spDatasource");
         propertiesToIgnoreForDuplication.add("mungeProcesses");
+        
+        propertiesToIgnoreForDuplication.add("resultTableSPDatasource");
+        propertiesToIgnoreForDuplication.add("sourceTableSPDatasource");
+        propertiesToIgnoreForDuplication.add("xrefTableSPDatasource");
+
         // These set other properties to null that describe the same object
         propertiesToIgnoreForDuplication.add("resultTable");
         propertiesToIgnoreForDuplication.add("sourceTable");
+        propertiesToIgnoreForDuplication.add("xrefTable");
+        
+        
+        //These don't really differ on set and get but there are checks in
+        //place that ensure that the dataSource exists and this on will not. 
+        propertiesThatDifferOnSetAndGet.add("xrefTableSPDatasource");
+        propertiesThatDifferOnSetAndGet.add("sourceTableSPDatasource");
+        propertiesThatDifferOnSetAndGet.add("resultTableSPDatasource");
+        
+        
         
         propertiesToIgnoreForDuplication.add("sourceTableIndex");
         
@@ -450,6 +469,10 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	}
     	assertNotNull("DDLGenerator error", ddlg);
 		ddlg.setTargetSchema(ds.getPlSchema());
+		
+//		List<SPDataSource> dss = new ArrayList<SPDataSource>();
+//		dss.add(ds);
+//		((TestingMatchMakerContext)session.getContext()).setDataSources(dss);
 		
 		if (Project.doesResultTableExist(session, project)) {
 			ddlg.dropTable(project.getResultTable());

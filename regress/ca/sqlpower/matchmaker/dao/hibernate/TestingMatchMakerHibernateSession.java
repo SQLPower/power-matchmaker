@@ -23,7 +23,9 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Session;
@@ -51,7 +53,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         
     private final SPDataSource dataSource;
     private final SessionFactory hibernateSessionFactory;
-    private TestingMatchMakerContext context;
+    private TestingMatchMakerContext context = new TestingMatchMakerContext();
     private final TestingConnection con;
     private SQLDatabase db;
     private List<String> warnings = new ArrayList<String>();
@@ -59,6 +61,11 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
 	private Session hSession;
     
+    /**
+     * The map of SQLDatabases to SPDatasources so they can be cached.
+     */
+    private Map<SPDataSource, SQLDatabase> databases = new HashMap<SPDataSource, SQLDatabase>();
+	
     /**
      * Creates a new session that is really connected to a datasource.  
      * This session does not create a SQLDatabase
@@ -131,9 +138,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     }
 
     public MatchMakerSessionContext getContext() {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: TestingMatchMakerHibernateSession.getContext()");
-        return null;
+        return context;
     }
 
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
@@ -148,9 +153,12 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         return null;
     }
 
-    public SQLDatabase getDatabase() {
-        return db;
-    }
+	public SQLDatabase getDatabase() {
+		if (databases.get(db.getDataSource()) == null) {
+			databases.put(db.getDataSource(),db);
+		}
+		return db;
+	}
     
     public void setDatabase(SQLDatabase db) {
         this.db = db;
@@ -256,37 +264,87 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		return false;
 	}
 
-	public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) 
-			throws ArchitectException{
-    	logger.debug("Session.findSQLTableByName:" +
-    			catalog + "." + schema + "." + tableName);
-    	if (tableName == null || tableName.length() == 0) return null;
-		SQLDatabase currentDB = getDatabase();
-		SQLDatabase tempDB = null;
-		try {
-			tempDB = new SQLDatabase(dataSource);
-			return tempDB.getTableByName(
-					catalog,
-					schema,
-					tableName);
-		} finally {
-			if (tempDB != null) tempDB.disconnect();
-		}
-	}
+	 public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
+	    	logger.debug("Session.findSQLTableByName:" + spDataSourceName + " " + 
+	    			catalog + "." + schema + "." + tableName);
+	    	
+	    	if (tableName == null || tableName.length() == 0) return null;
+	    	
+	    	if (spDataSourceName == null || spDataSourceName.length() == 0) {
+	    		return findPhysicalTableByName(catalog, schema, tableName);
+	    	}
+	    	
+	    	SPDataSource ds = null;
+	    	SQLDatabase tempDB = null;
+	    	if (context == null || context.getDataSources() == null) {
+	    		tempDB = getDatabase();
+	    	} else {
+		    	for (SPDataSource spd : context.getDataSources()) {
+		    		if (spd.getName().equals(spDataSourceName)) {
+		    			ds = spd;
+		    		}
+		    	}
+		    	if (ds == null) {
+		    		throw new IllegalArgumentException("Error: No database connection named " + spDataSourceName + 
+		    				" please create a database connection named " + spDataSourceName + " and try again.");
+		    	}
+		    	tempDB = new SQLDatabase(ds);
+	    	}
+	    	
+	    	try {
+	    		return tempDB.getTableByName(
+	    				catalog,
+	    				schema,
+	    				tableName);
+	    	} finally {
+	    		if (tempDB != null) tempDB.disconnect();
+	    	}
+	    }
+	    
+	 	//Right now the other findPhicialTableByName uses this method, don't call it from here using an empty data source.
+	    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+	    	if (tableName == null || tableName.length() == 0) return null;
+	    	SQLDatabase tempDB = new SQLDatabase(dataSource);
+	    	try {
+	    		SQLTable table = tempDB.getTableByName(
+	    				catalog,
+	    				schema,
+	    				tableName);
+				return table;
+	    	} finally {
+	    		if (tempDB != null) tempDB.disconnect();
+	    	}
+	    }
 
-	public boolean tableExists(String catalog, String schema, String tableName) {
-		logger.debug("Stub call: TestingMatchMakerHibernateSession.tableExists()");
-		return false;
-	}
+	    public boolean tableExists(String catalog, String schema,
+	    		String tableName) throws ArchitectException {
+	    	return (findPhysicalTableByName(catalog,schema,tableName) != null);
+	    }
+	    
+	    public boolean tableExists(String spDataSourceName, String catalog, String schema,
+	    		String tableName) throws ArchitectException {
+	    	return (findPhysicalTableByName(spDataSourceName, catalog,schema,tableName) != null);
+	    }
 
-	public boolean tableExists(SQLTable table) {
-		logger.debug("Stub call: TestingMatchMakerHibernateSession.tableExists()");
-		return false;
-	}
+	    public boolean tableExists(SQLTable table) throws ArchitectException {
+	    	if ( table == null ) return false;
+	    	return tableExists(table.getCatalogName(),
+	    			table.getSchemaName(),
+	    			table.getName());
+	    }
 
 	public String getAppUserEmail() {
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.getAppUserEmail()");
 		return null;
 	}
 
+
+	public SQLDatabase getDatabase(SPDataSource dataSource) {
+		SQLDatabase db = databases.get(dataSource);
+		if (db == null) {
+			db = new SQLDatabase(dataSource);
+			databases.put(dataSource,db);
+		}
+		return db;
+	}
 }

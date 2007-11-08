@@ -65,6 +65,12 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
 	protected SPDataSource getDS() {
 		return DBTestUtil.getOracleDS();
 	}
+	
+	@Override
+	protected SPDataSource getAlternateDS() {
+		return DBTestUtil.getSqlServerDS();
+	}
+
     
 	@Override
 	public ProjectDAO getDataAccessObject() throws Exception {

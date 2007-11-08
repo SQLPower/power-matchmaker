@@ -104,6 +104,11 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
         nonPersistingProperties.add("parentProject");
         nonPersistingProperties.add("oid");
         nonPersistingProperties.add("name");
+        
+        //This will persist but there is a check to ensure that the given DS
+        //exists, and this one will not. (Tested later)
+        nonPersistingProperties.add("spDataSource");
+        
 		return nonPersistingProperties;
 	}
 	

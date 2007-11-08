@@ -132,7 +132,7 @@ public class TableMergeRules
 	/**
 	 * The table on which we're merging
 	 */
-	private CachableTable cachableTable = new CachableTable(this, "table");;
+	private CachableTable cachableTable = new CachableTable(this, "table");
 	
 	
 	/**
@@ -213,6 +213,7 @@ public class TableMergeRules
 		newMergeStrategy.setName(getName());
 		newMergeStrategy.setSession(session);
 		newMergeStrategy.setTableName(getTableName());
+		newMergeStrategy.setSpDataSource(getSpDataSource());
 		newMergeStrategy.setCatalogName(getCatalogName());
 		newMergeStrategy.setSchemaName(getSchemaName());
 		newMergeStrategy.setParentMergeRule(getParentMergeRule());
@@ -249,6 +250,14 @@ public class TableMergeRules
 	
 	public String getTableName() {
 		return cachableTable.getTableName();
+	}
+	
+	public String getSpDataSource() {
+		return cachableTable.getSPDataSourceName();
+	}
+	
+	public void setSpDataSource(String spDataSourceName) {
+		cachableTable.setSPDataSource(spDataSourceName);
 	}
 
 	public void setCatalogName(String sourceTableCatalog) {

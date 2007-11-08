@@ -64,6 +64,8 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	static Project project;
 	static MergeProcessor mpor;
 	static TestingMatchMakerSession session;
+	static Connection rCon;
+	static Connection sCon;
 	static Connection con;
 	static SQLDatabase db;
 	static SPDataSource ds;
@@ -121,6 +123,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 				return new StubMatchMakerDAO<T>(businessClass);
 			}
 		};
+		
 		session.setDatabase(db);
 
 		project.setSession(session);
@@ -133,11 +136,14 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 
 		//This is different for Oracle and SQL Server
 		createTables();
-
+		
+		rCon = project.createResultTableConnection();
+		sCon = project.createSourceTableConnection();
+		
 		// Creates the result Table
         DDLGenerator ddlg = null;
     	try {
-    		ddlg = DDLUtils.createDDLGenerator(ds);
+    		ddlg = DDLUtils.createDDLGenerator(project.getResultTable().getParentDatabase().getDataSource());
     	} catch (ClassNotFoundException e) {
     		fail("DDLUtils.createDDLGenerator(SPDataSource) threw a ClassNotFoundException");
     	}
@@ -152,7 +158,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
 	    	sql = sqlStatement.getSQLText();
-	    	execSQL(con,sql);
+	    	execSQL(rCon,sql);
 	    }
 
 	    tmr = new TableMergeRules();
@@ -256,12 +262,12 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 			sql = "INSERT INTO " + getFullTableName() + " VALUES(" +
 				i + ", " +
 				SQL.quote(testString.charAt(i)) + ", " +
-				SQL.escapeDateTime(con, new Date((long) i*1000*60*60*24)) + ", " +
+				SQL.escapeDateTime(sCon, new Date((long) i*1000*60*60*24)) + ", " +
 				i + ")";
-			execSQL(con,sql);
+			execSQL(sCon,sql);
 		}
         sql = "INSERT INTO " + getFullTableName() + " (ID) VALUES(6)";
-        execSQL(con,sql);
+        execSQL(sCon,sql);
         
 		//6 is the master of 4, which is the master of 5, 
 		//which is the master of 1, which is the master of 0. 
@@ -270,32 +276,32 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
 	    	"VALUES " + 
 	    	"(6,4,10,'AUTO_MATCH','Y', 'test')";
-	    execSQL(con,sql);
+	    execSQL(sCon,sql);
 	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
 	    	"VALUES " + 
 	    "(0,1,10,'AUTO_MATCH','N', 'test')";
-	    execSQL(con,sql);
+	    execSQL(sCon,sql);
 	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
 	    	"VALUES " + 
 	    	"(1,5,10,'AUTO_MATCH','N', 'test')";
-	    execSQL(con,sql);
+	    execSQL(sCon,sql);
 	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
 	    	"VALUES " + 
 	    	"(2,3,10,'MATCH','Y', 'test')";
-	    execSQL(con,sql);
+	    execSQL(sCon,sql);
 	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
 	    	"VALUES " + 
 	    	"(6,3,10,'UNMATCH','', 'test')";
-	    execSQL(con,sql);
+	    execSQL(sCon,sql);
 	    sql = "INSERT INTO " + getFullTableName() + "_RESULT " +
 	    	"(DUP_CANDIDATE_10, DUP_CANDIDATE_20, MATCH_PERCENT, MATCH_STATUS, DUP1_MASTER_IND, GROUP_ID)" +
 	    	"VALUES " + 
 	    	"(5,4,10,'MATCH','N', 'test')";
-	    execSQL(con,sql);
+	    execSQL(sCon,sql);
 	    
 	    logger.setLevel(Level.INFO);
 	    
@@ -317,9 +323,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 					i + ", " +
 					j + ", " +
 					SQL.quote(testString.charAt(j)) + ", " +
-					SQL.escapeDateTime(con, new Date((long) j*1000*60*60*24)) + ", " +
+					SQL.escapeDateTime(sCon, new Date((long) j*1000*60*60*24)) + ", " +
 					(i+j) + ")";
-				execSQL(con,sql);
+				execSQL(sCon,sql);
 			}
 		}
 		
@@ -337,9 +343,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 				i + ", " +
 				i + ", " +
 				SQL.quote(testString.charAt(i)) + ", " +
-				SQL.escapeDateTime(con, new Date((long) i*1000*60*60*24)) + ", " +
+				SQL.escapeDateTime(sCon, new Date((long) i*1000*60*60*24)) + ", " +
 				(i+i) + ")";
-			execSQL(con,sql);
+			execSQL(sCon,sql);
 		}
 		
 		//sets the default action type
@@ -359,9 +365,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 				i + ", " +
 				k + ", " +
 				SQL.quote(testString.charAt(k)) + ", " +
-				SQL.escapeDateTime(con, new Date((long) k*1000*60*60*24)) + ", " +
+				SQL.escapeDateTime(sCon, new Date((long) k*1000*60*60*24)) + ", " +
 				(i+i+k) + ")";
-				execSQL(con,sql);
+				execSQL(sCon,sql);
 			}
 		}
 		
@@ -382,9 +388,9 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 						j + ", " +
 						k + ", " +
 						SQL.quote(testString.charAt(k)) + ", " +
-						SQL.escapeDateTime(con, new Date((long) k*1000*60*60*24)) + ", " +
+						SQL.escapeDateTime(sCon, new Date((long) k*1000*60*60*24)) + ", " +
 						(i+j+k) + ")";
-					execSQL(con,sql);
+					execSQL(sCon,sql);
 				}
 			}
 		}
@@ -398,19 +404,19 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
     	//delete everything from grand child table
     	sql = "DELETE FROM " + getFullTableName() + "_GCHILD";
-    	execSQL(con, sql);
+    	execSQL(sCon, sql);
     	
     	//delete everything from child table
 		sql = "DELETE FROM " + getFullTableName() + "_CHILD";
-		execSQL(con, sql);
+		execSQL(sCon, sql);
 		
 		//delete everything from source table
 		sql = "DELETE FROM " + getFullTableName();
-		execSQL(con, sql);
+		execSQL(sCon, sql);
 		
 		// delete everything from result table
 		sql = "DELETE FROM " + getFullTableName() + "_RESULT";
-		execSQL(con, sql);
+		execSQL(sCon, sql);
     }
     
     /**
@@ -421,7 +427,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
 		runProcessor();
 		
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
     	
     	String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
@@ -442,7 +448,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		runProcessor();
 
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
 		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 1 OR ID = 3";
@@ -484,7 +490,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		runProcessor();
 
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
 		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
@@ -535,7 +541,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		runProcessor();
 
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
 		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
@@ -566,7 +572,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		runProcessor();
 
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
 		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
@@ -597,7 +603,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		runProcessor();
 
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
 		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
@@ -648,7 +654,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		runProcessor();
 
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
 		String sql = "SELECT * FROM " + getFullTableName() + " WHERE ID = 6";
@@ -678,7 +684,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
 		runProcessor();
 		
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
 		StringBuilder sql = new StringBuilder();
@@ -733,7 +739,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	cctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
     	runProcessor();
     	
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
     	StringBuilder sql = new StringBuilder();
@@ -788,7 +794,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	
 		runProcessor();
     	
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
     	StringBuilder sql = new StringBuilder();
@@ -845,7 +851,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
 		runProcessor();
     	
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
     	StringBuilder sql = new StringBuilder();
@@ -907,7 +913,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
     	
     	runProcessor();
     	
-		Statement stmt = con.createStatement();
+		Statement stmt = sCon.createStatement();
 		ResultSet rs;
 		
     	StringBuilder sql = new StringBuilder();
@@ -965,7 +971,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	protected abstract SPDataSource getDS();
 	
 	private void runProcessor() throws Exception {
-		Connection con = session.getConnection();
+		Connection con = project.createSourceTableConnection();
 		con.setAutoCommit(false);
 		try {
 			mpor = new MergeProcessor(project, con, logger);

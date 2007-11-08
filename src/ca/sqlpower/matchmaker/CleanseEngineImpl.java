@@ -164,7 +164,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 				Connection con = null;
 				Statement stmt = null;
 				try {
-					con = getSession().getConnection();
+					con = getProject().createSourceTableConnection();
 					stmt = con.createStatement();
 					String rowCountSQL = "SELECT COUNT(*) AS ROW_COUNT FROM " + DDLUtils.toQualifiedName(getProject().getSourceTable());
 					ResultSet result = stmt.executeQuery(rowCountSQL);

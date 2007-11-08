@@ -106,6 +106,7 @@ import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
 import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.sql.PLSchemaException;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.JDefaultButton;
@@ -1060,7 +1061,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	@SuppressWarnings("unchecked")
 	public void move(MatchMakerObject objectToMove, MatchMakerObject destination) {
 		if (!destination.allowsChildren()) throw new IllegalArgumentException("The destination object "+destination+" Does not support children");
-
 		MatchMakerObject oldParent = objectToMove.getParent();
 		if (oldParent != null) {
 			oldParent.removeChild(objectToMove);
@@ -1122,9 +1122,18 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     	return sessionImpl.findPhysicalTableByName(catalog, schema, tableName);
 	}
 
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
+    	return sessionImpl.findPhysicalTableByName(spDataSourceName, catalog, schema, tableName);
+	}
+    
     public boolean tableExists(String catalog, String schema,
     		String tableName) throws ArchitectException {
     	return sessionImpl.tableExists(catalog, schema, tableName);
+	}
+    
+    public boolean tableExists(String spDataSourceName, String catalog, String schema,
+    		String tableName) throws ArchitectException {
+    	return sessionImpl.tableExists(spDataSourceName, catalog, schema, tableName);
 	}
 
      public boolean tableExists(SQLTable table) throws ArchitectException {
@@ -1344,5 +1353,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 */
 	public boolean isEnginesEnabled() {
 		return enginesEnabled;
+	}
+
+	public SQLDatabase getDatabase(SPDataSource dataSource) {
+		return sessionImpl.getDatabase(dataSource);
 	}
 }

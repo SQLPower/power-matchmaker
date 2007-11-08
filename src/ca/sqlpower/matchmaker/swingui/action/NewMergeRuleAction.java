@@ -78,6 +78,8 @@ public class NewMergeRuleAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		dialog.setPreferredSize(new Dimension(400, 230));
 		final SQLObjectChooser chooser = new SQLObjectChooser(swingSession);
+		//this is hidden from the user but important
+		chooser.getDataSourceComboBox().getModel().setSelectedItem(parent.getSourceTable().getParentDatabase().getDataSource());
 		
 		Action okAction = new AbstractAction("OK") {
 			public void actionPerformed(ActionEvent e) {

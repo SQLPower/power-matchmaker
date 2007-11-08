@@ -32,6 +32,7 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		propertiesToIgnoreForEventGeneration.add("tableName");
 		propertiesToIgnoreForEventGeneration.add("schemaName");
 		propertiesToIgnoreForEventGeneration.add("catalogName");
+		propertiesToIgnoreForEventGeneration.add("spDataSource");
 		
 		propertiesToIgnoreForDuplication.add("sourceTable");
         propertiesToIgnoreForDuplication.add("name");
@@ -41,6 +42,10 @@ public class TableMergeRuleTest extends MatchMakerTestCase<TableMergeRules>{
 		
 		propertiesThatDifferOnSetAndGet.add("name");
 		propertiesThatDifferOnSetAndGet.add("parent");
+		
+		//this should not differ but there is a check that ensues that the DS
+		//exists
+		propertiesThatDifferOnSetAndGet.add("spDataSource");
 	}
 	@Override
 	protected TableMergeRules getTarget() {

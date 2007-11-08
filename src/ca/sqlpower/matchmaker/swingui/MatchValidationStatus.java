@@ -93,7 +93,7 @@ public class MatchValidationStatus extends NoEditEditorPane {
     	ResultSet rs =  null;
 
     	try {
-    		con = swingSession.getConnection();
+    		con =  project.createResultTableConnection();
     		StringBuffer sql = new StringBuffer();
     		sql.append("SELECT GROUP_ID,MATCH_PERCENT,MATCH_STATUS");
     		sql.append(",COUNT(*)");

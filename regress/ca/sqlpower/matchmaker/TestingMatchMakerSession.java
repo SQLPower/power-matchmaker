@@ -25,7 +25,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -34,6 +36,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.Version;
 
 public class TestingMatchMakerSession implements MatchMakerSession {
@@ -50,6 +53,11 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	MatchMakerSessionContext context;
 	Connection con;
 	List<String> warnings = new ArrayList<String>();
+	
+    /**
+     * The map of SQLDatabases to SPDatasources so they can be cached.
+     */
+    private Map<SPDataSource, SQLDatabase> databases = new HashMap<SPDataSource, SQLDatabase>();
     
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
@@ -66,6 +74,9 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	}
 
 	public SQLDatabase getDatabase() {
+		if (databases.get(db.getDataSource()) == null) {
+			databases.put(db.getDataSource(),db);
+		}
 		return db;
 	}
 
@@ -205,11 +216,27 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
 
-    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
-    	SQLDatabase currentDB = getDatabase();
+    public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
+
+    	SPDataSource ds = null;
+    	
+    	if (spDataSourceName == null || spDataSourceName.length() == 0) {
+    		ds = getDatabase().getDataSource();
+    	} else {
+	    	for (SPDataSource spd : context.getDataSources()) {
+	    		if (spd.getName().equals(spDataSourceName)) {
+	    			ds = spd;
+	    		}
+	    	}
+	    	if (ds == null) {
+	    		throw new IllegalArgumentException("Error: No database connection named " + spDataSourceName + 
+	        			" please create a database connection named " + spDataSourceName + " and try again.");
+	    	}
+    	}
+    	
     	SQLDatabase tempDB = null;
     	try {
-    		tempDB = new SQLDatabase(currentDB.getDataSource());
+    		tempDB = new SQLDatabase(ds);
     		return tempDB.getTableByName(
     				catalog,
     				schema,
@@ -218,10 +245,19 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     		if (tempDB != null) tempDB.disconnect();
     	}
     }
+    
+    public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
+    	return findPhysicalTableByName(getDatabase().getDataSource().getName(), catalog, schema, tableName);
+    }
 
     public boolean tableExists(String catalog, String schema, 
     		String tableName) throws ArchitectException {
     	return (findPhysicalTableByName(catalog,schema,tableName) != null);
+    }
+    
+    public boolean tableExists(String spDataSourceName, String catalog, String schema, 
+    		String tableName) throws ArchitectException {
+    	return (findPhysicalTableByName(spDataSourceName, catalog,schema,tableName) != null);
     }
 
     public boolean tableExists(SQLTable table) throws ArchitectException {
@@ -233,7 +269,14 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 
     public boolean canSelectTable(SQLTable table) {
 
-    	Connection conn = getConnection();
+    	Connection conn;
+		try {
+			conn = table.getParentDatabase().getDataSource().createConnection();
+		} catch (SQLException e1) {
+			logger.debug("Cannot create connection to table: " + table);
+			return false;
+		}
+
     	Statement stmt = null;
     	StringBuffer sql = new StringBuffer();
     	try {
@@ -241,25 +284,37 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     		sql.append(DDLUtils.toQualifiedName(table));
     		stmt = conn.createStatement();
     		stmt.executeQuery(sql.toString());
+	    	try {
+	    		stmt.close();
+	    		conn.close();
+			} catch (SQLException e1) {
+				logger.debug("Could not close stamtment or connection");
+			}
     		return true;
     	} catch (SQLException e) {
     		logger.debug("sql error: select statement:[" +
     				sql.toString() + "]\n" + e.getMessage() );
-    		return false;
-    	} finally {
     		try {
-    			if (stmt != null) {
-    				stmt.close();
-    			}
-    		} catch (SQLException e) {
-    			logger.debug("unknown sql error when close result set and " +
-    					"statement. " + e.getMessage());
-    		}
-    	}
+				stmt.close();
+				conn.close();
+			} catch (SQLException e1) {
+				logger.debug("Could not close stamtment or connection");
+			}
+    		return false;
+    	} 
     }
 
 	public String getAppUserEmail() {
 		return appUserEmail;
+	}
+	
+	public SQLDatabase getDatabase(SPDataSource dataSource) {
+		SQLDatabase db = databases.get(dataSource);
+		if (db == null) {
+			db = new SQLDatabase(dataSource);
+			databases.put(dataSource,db);
+		}
+		return db;
 	}
 
 }

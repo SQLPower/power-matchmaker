@@ -106,7 +106,7 @@ public class MatchPoolDotExport {
             out.println("digraph " + project.getName());
             out.println("{");
             
-            con = project.getSession().getConnection();
+            con = project.createResultTableConnection();
             stmt = con.createStatement();
             StringBuilder sql = new StringBuilder();
             String sourceTableName = DDLUtils.toQualifiedName(project.getResultTable());
