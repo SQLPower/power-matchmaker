@@ -215,7 +215,6 @@ public class SQLInputStep extends AbstractMungeStep {
         }
         
         logger.debug("Attempting to execute input query: " + sql);
-        System.out.println(sql);
         rs = stmt.executeQuery(sql.toString());
     }
     
