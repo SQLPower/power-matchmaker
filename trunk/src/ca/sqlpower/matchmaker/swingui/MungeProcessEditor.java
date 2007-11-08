@@ -151,7 +151,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		CellConstraints cc = new CellConstraints();
 		JPanel subPanel = new JPanel(layout);
         subPanel.add(status, cc.xyw(2, 2, 7));
-        subPanel.add(new JLabel("Munge Process Name: "), cc.xy(2, 4));
+        subPanel.add(new JLabel("Process Name: "), cc.xy(2, 4));
         
         subPanel.add(name, cc.xy(4, 4));
         subPanel.add(new JLabel("Priority: "), cc.xy(6, 4));
@@ -159,7 +159,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         priority.setPreferredSize(new Dimension(100, 20));
         subPanel.add(priority, cc.xy(8, 4));
         
-        subPanel.add(new JLabel("Munge Process Desc: "), cc.xy(2, 6));
+        subPanel.add(new JLabel("Description: "), cc.xy(2, 6));
         
         subPanel.add(desc, cc.xy(4, 6));
         subPanel.add(new JLabel("Color: "), cc.xy(6, 6));
