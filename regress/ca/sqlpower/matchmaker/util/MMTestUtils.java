@@ -622,7 +622,8 @@ public class MMTestUtils {
 		stmt.executeUpdate("CREATE TABLE pl.source_table ("
 				+ "\n PK1 integer not null,"
 				+ "\n FOO varchar(10),"
-				+ "\n BAR  varchar(10)" + "\n)");
+				+ "\n BAR varchar(10)," 
+				+ "\n CONSTRAINT SOURCE_TABLE_PK PRIMARY KEY (PK1)" + "\n)");
 		stmt.close();
 	}
 	
