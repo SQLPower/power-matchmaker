@@ -19,7 +19,9 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -258,7 +260,7 @@ public class LoginDialog implements SwingWorkerRegistry {
             
             // Sets up the gui that is used to determine the destination of the repository
             final DDLGenerator ddlg = DDLUtils.createDDLGenerator(dbSource);
-            final JDialog schemaDialog = new JDialog(frame, "Build default matchmaker schema", true);
+            final JDialog schemaDialog = new JDialog(frame, "Build Default Schema", true);
         	JLabel catalogLabel = new JLabel("Target Catalog");
         	final JTextField catalogField = new JTextField();
         	JLabel schemaLabel = new JLabel("Target Schema");
@@ -313,6 +315,7 @@ public class LoginDialog implements SwingWorkerRegistry {
             
             dbPanel.add(buttonPanel, cc.xy(4,row, "c,c"));
             
+            // Sets the terms for the catalog and schema 
             if (ddlg.getCatalogTerm() != null) {
             	catalogLabel.setText(ddlg.getCatalogTerm());
             	catalogLabel.setEnabled(true);
@@ -323,7 +326,6 @@ public class LoginDialog implements SwingWorkerRegistry {
             	catalogField.setText(null);
             	catalogField.setEnabled(false);
             }
-
             if (ddlg.getSchemaTerm() != null) {
             	schemaLabel.setText(ddlg.getSchemaTerm());
             	schemaLabel.setEnabled(true);
@@ -336,7 +338,7 @@ public class LoginDialog implements SwingWorkerRegistry {
             }
 
             schemaDialog.setContentPane(dbPanel);
-            schemaDialog.setLocationRelativeTo(null);
+            schemaDialog.setLocationRelativeTo(frame);
             schemaDialog.pack();
             schemaDialog.setVisible(true);
             
@@ -350,9 +352,10 @@ public class LoginDialog implements SwingWorkerRegistry {
         */
         private void generateDefaultSchemaSQL(DDLGenerator ddlg) {
         	final JDialog editor = new JDialog(frame,
-    	    		"Create Example Table", true);
+    	    		"Create Default Schema", true);
     	    JPanel cp = new JPanel();
     	    CellConstraints cc = new CellConstraints();
+    	    JButton executeButton;
 
     	    Box statementsBox = Box.createVerticalBox();
     	    final List<JTextArea> sqlTextFields = new ArrayList<JTextArea>();
@@ -361,7 +364,33 @@ public class LoginDialog implements SwingWorkerRegistry {
     			statementsBox.add(sqlTextArea);
     			sqlTextFields.add(sqlTextArea);
     	    }
-
+    	    
+    	    // Just to separate the build and post_create statements
+    	    statementsBox.add(new JTextArea("\n"));
+    	    sqlTextFields.add(new JTextArea("\n"));
+    	    
+			// Loads the sql statments that needs to be executed after building the repository.
+			InputStream postCreateScripts = ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/dao/hibernate/post_create.sql");
+            BufferedReader br = new BufferedReader(new InputStreamReader(postCreateScripts));
+            StringBuilder sqlBuilder = new StringBuilder();
+            
+            try {
+            	String line = br.readLine();
+            	while (line != null) {
+            		if (";".equals(line.trim())) {
+            			final JTextArea sqlTextArea = new JTextArea(sqlBuilder.toString());
+            			statementsBox.add(sqlTextArea);
+    					sqlTextFields.add(sqlTextArea);
+            			sqlBuilder.setLength(0);
+            		} else if (!line.startsWith("--")) {
+            			sqlBuilder.append(line + "\n");
+            		}
+            		line = br.readLine();
+            	}
+            } catch (IOException e1) {
+            	throw new RuntimeException(e1);
+            }
+    	    
     	    Action saveAction = new AbstractAction("Save") {
     			public void actionPerformed(ActionEvent e) {
     				AbstractDocument doc = new DefaultStyledDocument();
@@ -394,7 +423,34 @@ public class LoginDialog implements SwingWorkerRegistry {
     	    };
     	    Action executeAction = new AbstractAction("Execute") {
     			public void actionPerformed(ActionEvent e) {
-
+    				// Builds the gui part of the error pane that will be used
+    				// if a sql statement fails
+    				JPanel errorPanel = new JPanel(new FormLayout("4dlu,300dlu,4dlu",
+    					"4dlu,pref,4dlu,pref,4dlu,200dlu,4dlu,pref,4dlu"));
+    				CellConstraints cc = new CellConstraints();
+    				
+    				JLabel topLabel = new JLabel();
+    				JTextArea errorMsgLabel = new JTextArea();
+    				errorMsgLabel.setLineWrap(true);
+    				errorMsgLabel.setWrapStyleWord(true);
+    				errorMsgLabel.setPreferredSize(new Dimension(300, 40));
+    				
+    				JLabel bottomLabel = new JLabel();
+    				JTextArea errorStmtLabel = new JTextArea();
+    				JScrollPane errorStmtPane = new JScrollPane(errorStmtLabel);
+    				errorStmtPane.setPreferredSize(new Dimension(300, 300));
+    				errorStmtPane.scrollRectToVisible(new Rectangle(0,0));
+    				
+    				int row = 2;
+    				errorPanel.add(topLabel, cc.xy(2, row));
+    				row += 2;
+    				errorPanel.add(errorMsgLabel, cc.xy(2, row));
+    				row += 2;
+    				errorPanel.add(errorStmtPane, cc.xy(2,row));
+    				row += 2;
+    				errorPanel.add(bottomLabel, cc.xy(2,row, "f,f"));
+    				
+    				// Does the actual work of executing the sql statments
     				Connection con = null;
     				Statement stmt = null;
     				String sql = null;
@@ -402,45 +458,22 @@ public class LoginDialog implements SwingWorkerRegistry {
     					con = dbSource.createConnection();
     					stmt = con.createStatement();
     					int successCount = 0;
-    					
     					boolean ignoreAll = false;
-    					
-    					// Loads the sql statments that needs to be executed after building the repository.
-						InputStream postCreateScripts = ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/dao/hibernate/post_create.sql");
-                        BufferedReader br = new BufferedReader(new InputStreamReader(postCreateScripts));
-                        StringBuilder sqlBuilder = new StringBuilder();
                         
-                        try {
-                        	String line = br.readLine();
-                        	while (line != null) {
-                        		if (";".equals(line.trim())) {
-                					sqlTextFields.add(new JTextArea(sqlBuilder.toString()));
-                        			sqlBuilder.setLength(0);
-                        		} else {
-                        			sqlBuilder.append(line + "\n");
-                        		}
-                        		line = br.readLine();
-                        	}
-                        } catch (IOException e1) {
-                        	throw new RuntimeException(e1);
-                        }
-                        
-    					// Does the actual work of executing the sql statments
                         for (JTextArea sqlText : sqlTextFields ) {
-    						sql = sqlText.getText();
+    						sql = sqlText.getText().trim();
     						try {
     							stmt.executeUpdate(sql);
     							successCount += 1;
     						} catch (SQLException e1) {
-    							
     							// TODO: Improve this so it deals with conflicts.
     							if (!ignoreAll) {
+    								topLabel.setText("There was an error in the SQL statement: ");
+    								errorMsgLabel.setText(e1.getMessage());
+    								errorStmtLabel.setText(sql);
+    								bottomLabel.setText("Do you want to continue executing the create script?");
     								int choice = JOptionPane.showOptionDialog(editor,
-    										"The following SQL statement failed:\n" +
-    										sql +
-    										"\nThe error was: " + e1.getMessage() +
-    										"\n\nDo you want to continue executing the create script?",
-    										"SQL Error", JOptionPane.YES_NO_OPTION,
+    										errorPanel, "SQL Error", JOptionPane.YES_NO_OPTION,
     										JOptionPane.ERROR_MESSAGE, null,
     										new String[] {"Abort", "Ignore", "Ignore All"}, "Ignore" );
     								if (choice == 2) {
@@ -501,14 +534,16 @@ public class LoginDialog implements SwingWorkerRegistry {
     	    ButtonBarBuilder bbb = ButtonBarBuilder.createLeftToRightBuilder();
     	    bbb.addGridded(new JButton(saveAction));
     	    bbb.addGridded(new JButton(copyAction));
-    	    bbb.addGridded(new JButton(executeAction));
+    	    executeButton = new JButton(executeAction);
+    	    bbb.addGridded(executeButton);
     	    bbb.addGridded(new JButton(cancelAction));
     	    cp.add(bbb.getPanel(), cc.xy(2,row, "c,c"));
 
     	    editor.setContentPane(cp);
     	    editor.pack();
-    	    editor.setLocationRelativeTo(null);
+    	    editor.setLocationRelativeTo(frame);
     	    editor.setVisible(true);
+    	    executeButton.requestFocus();
         }
 
 		public Integer getJobSize() {

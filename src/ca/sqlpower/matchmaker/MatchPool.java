@@ -1359,4 +1359,8 @@ public class MatchPool {
 	public void clear() throws SQLException {
 		clear(null);
 	}
+
+	Set<PotentialMatchRecord> getOrphanedMatches() {
+		return orphanedMatches;
+	}
 }
