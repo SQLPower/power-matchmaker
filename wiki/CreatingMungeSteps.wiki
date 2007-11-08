@@ -1,0 +1,106 @@
+#summary How to create a new munge step for the MatchMaker
+
+= Introduction =
+
+This document explains all steps necessary to create a new MungeStep for the MatchMaker.  We assume you are familiar with using the MatchMaker via its graphical user interface.
+
+We also assume you are already familiar with developing software in the Java programming language.  If you are not, you are probably better off commissioning someone to create the step for you.  Get them to play with the MatchMaker for a litte while, then point them to this page, and they'll have your new step up and running in no time!
+
+= Making a New Munge Step =
+
+The MungeStep interface is as simple and general-purpose as we could make it.  Take a look at the interface definition [http://power-matchmaker.googlecode.com/svn/trunk/src/ca/sqlpower/matchmaker/munge/MungeStep.java here].
+
+In the vast majority of cases, you will not have to implement the MungeStep interface from scratch.  The AbstractMungeStep class provides a nearly-complete munge step that does nothing.  Your job in creating a step is essentially to fill in the blanks.
+
+== A Simple Example ==
+
+Let's use the lower-case munge step as a running example.  It's a munge step with a String-valued input and a String-valued output.  The output value is the lower-case version of the input value.  Here is the code for that step implementation:
+
+{{{
+public class LowerCaseMungeStep extends AbstractMungeStep {
+
+	public LowerCaseMungeStep() {
+		setName("Lower Case");
+		MungeStepOutput<String> out = new MungeStepOutput<String>("lowerCaseOutput", String.class);
+		addChild(out);
+		InputDescriptor desc = new InputDescriptor("lowerCase", String.class);
+		super.addInput(desc);
+	}
+	
+	public Boolean call() throws Exception {
+		super.call();
+		
+		MungeStepOutput<String> in = getMSOInputs().get(0);
+		String data = in.getData();
+		if (in.getData() != null) {
+			data = data.toLowerCase();
+		}
+
+		MungeStepOutput<String> out = getOut();
+		out.setData(data);
+
+		printOutputs();
+
+		return true;
+	}
+
+	public boolean canAddInput() {
+		return false;
+	}
+}
+
+}}}
+
+=== The Constructor ===
+
+Let's start with the constructor.  What's important here?
+
+First, the call to `setName()`. Every step should have a reasonable name.  This is the text that will appear on the visual representation of the step in the MungePen.
+
+Next, we create this step's output.  A MungeStep is actually part of a larger tree of objects that make up all of the folders, projects, munge processes, and so on.  This tree is represented quite literally along the left-hand side of the MatchMaker's Swing user interface.  All that's important to you at this point is, your step's children are its outputs (in this case, there is only one output).  In case you were wondering, your step's parent is the MungeProcess it belongs to.  But that's not important right now.
+
+Finally, the constructor creates and adds an input.  This step has only one input, which accepts data of type String.
+
+
+=== The call() Method ===
+
+The `call()` method is the meat of your step.  At data processing time, your `call()` method will be invoked exactly once for every row of data being processed.  It is the responsibility of the `call()` method to:
+
+ #invoke super.call(), which helps enforce MungeStepLifeCycle requirements
+ #read the input values to the step (if any)
+ #do whatever processing is needed to come up with output value(s)
+ #assign the new output values to each of the step's output(s)
+
+You can see this process in our lower-case example.
+
+First, the call to `super.call()`
+
+Next, the input value is read.  Notice that the input itself is actually an instance of `MungeStepOutput`!  This is a reference to another step's output, and you are guaranteed that it has already been called to process this row of data.  So you can just read its current value using the `getData()` method.
+
+Now, after ensuring the current data value isn't `null`, we obtain the lower-case version of the input string.
+
+Next, we get a reference to to this step's output.  The `getOut()` method is a convenience method provided by the `AbstractMungeStep` for steps that have only one output (by far the most common situation).  It simply returns the step's one and only child.  If your step has multiple outputs, you can obtain them "by first principles" using the `getChild(int)` method.
+
+With a reference to the output, we can now put the lower-case string into our step's output, using the `setData()` method.  Note that if the input value was `null`, we will be providing `null` as the output value too.  This is customary behaviour for a MungeStep.
+
+Penultimately, we invoke the `printOutputs()` method.  This causes a DEBUG-level logger message which prints out all the output values of the current step.  This is extremely helpful to users when debugging their munge processes.
+
+Finally, we return `Boolean.TRUE`.  During processing, the munge processor checks the return value of every `call()` method it invokes.  If a `call()` method returns false, this is the signal to the munge processor that processing has terminated normally, and the results of the munge process can be committed.  In almost all cases, steps you write should return `Boolean.TRUE`, which means to keep going.  If your step encounters a fatal error, it should throw an exception.  Any type of exception will do the same thing: All the results of the current munge process will be rolled back, and the whole processing run will be logged as having ended in failure.  Your user will see the message string from the e exception you threw, so take the time to provide lots of useful information in that message.
+
+=== The canAddInput() Method ===
+
+This is just a bit of housekeeping.  Some steps allow a variable number of inputs.  For instance, the string concatenation step can have any number of inputs, so it implements a `canAddInput()` method that always returns true. The user will be allowed to add and remove inputs while designing their munge process.
+
+Most steps, however, will have a fixed number of inputs with specific meanings.  In this case, the `canAddInput()` method should return false, and the AbstractMungeStep will ensure no inputs are added or removed from your step by the user.
+
+
+== A More Complex Example ==
+
+The simple example above is a fully-functional step that behaves properly.  The vast majority of steps need not be more complicated than that simple example. However, some steps will need to take advantage of the more advanced features of the MungeStep API:
+
+ * User-supplied parameters
+ * Variable numbers of inputs and outputs
+ * Opening and closing your step to allocate and deallocate a resource you need during each `call()`
+ * Committing and rolling back changes
+
+If you need to do any of these things, join the matchmaker-developers mailing list and let us know.  We'll be happy to provide you with extra assistance, and maybe even put up a second example that uses the particular advanced features you're interested in.
