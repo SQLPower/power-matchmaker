@@ -1,5 +1,4 @@
 <?xml version='1.0'?>
-<?xml-stylesheet href="/Users/sean/Desktop/docbook-css-0.4/driver.css" type="text/css"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.0//EN" 
 	"http://www.oasis-open.org/docbook/xml/simple/1.0/sdocbook.dtd">
 
@@ -1004,12 +1003,12 @@
 					<para>
 						To begin click on the help menu in the top menu
 						bar and choose
-						<userinput>Build Example Table</userinput>.
-						This will create the base table for this
+						<userinput>Build Example Table</userinput>
+						. This will create the base table for this
 						example that you can practice finding and
 						removing duplicates in. Choose a location for
 						the example table and click
-						<userinput>Create</userinput> 
+						<userinput>Create</userinput>
 					</para>
 				</listitem>
 				<listitem>
@@ -1020,7 +1019,8 @@
 						<userinput>Current Project</userinput>
 						folder on the tree of items to the right, and
 						choose
-						<userinput>New Folder</userinput>.
+						<userinput>New Folder</userinput>
+						.
 					</para>
 				</listitem>
 				<listitem>
@@ -1710,7 +1710,8 @@
 					This is the graphical representation of your work in
 					the Power*MatchMaker in the form of a tree. It is
 					where you will interact with the application to
-					navigate through your work.
+					navigate through your work. Click on the various
+					nodes in the tree to go to the corresponding panes.
 				</para>
 
 				<para>
@@ -1721,289 +1722,8 @@
 						</imageobject>
 					</inlinemediaobject>
 				</para>
-
-				<section id="How_To_Use.GUI.Tree.Current_Projects">
-					<title>Current Projects Folder</title>
-					<para>
-						This is one of the three main folders at the top
-						level of the Power*MatchMaker Tree that holds
-						all the Projects Folders that you have been
-						working on in the application.
-					</para>
-
-					<section
-						id="How_To_Use.GUI.Tree.Current_Projects.Menu">
-						<title>Right-Click Menu</title>
-						<itemizedlist>
-							<listitem>
-								<para>
-									<emphasis>
-										New Projects Folder
-									</emphasis>
-									- opens up the Projects Folder
-									Editor Pane for a new Projects
-									Folder.
-								</para>
-							</listitem>
-						</itemizedlist>
-					</section>
-				</section>
-
-				<section id="How_To_Use.GUI.Tree.Backup_Projects">
-					<title>Backup Projects Folder</title>
-					<para>
-						This folder is not used in the current version
-						of the Power*MatchMaker.
-					</para>
-				</section>
-
-				<section
-					id="How_To_Use.GUI.Tree.Translation_Groups_Folder">
-					<title>Translation Groups Folder</title>
-					<para>
-						This is one of the three main folders at the top
-						level of the Power*MatchMaker Tree that holds
-						all the Translation Groups that you have
-						created.
-					</para>
-
-					<section
-						id="How_To_Use.GUI.Tree.Translation_Groups_Folder.Menu">
-						<title>Right-Click Menu</title>
-						<itemizedlist>
-							<listitem>
-								<para>
-									<emphasis>
-										New Translation Group
-									</emphasis>
-									- opens up the Translation Group
-									Editor Pane for a new Translation
-									Group.
-								</para>
-							</listitem>
-						</itemizedlist>
-					</section>
-				</section>
-
-				<section id="How_To_Use.GUI.Tree.Projects_Folders">
-					<title>Projects Folders</title>
-					<para>
-						Each of these folders contains a group of
-						Projects.
-					</para>
-
-					<section
-						id="How_To_Use.GUI.Tree.Projects_Folders.Menu">
-						<title>Right-Click Menu</title>
-						<itemizedlist>
-							<listitem>
-								<para>
-									<emphasis>New Project</emphasis>
-									- opens up a Project Editor of the
-									selected Project Type for a new
-									Project.
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>Import</emphasis>
-									- this function is not implemented
-									yet.
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>Delete Folder</emphasis>
-									- deletes the current selected
-									Projects Folder.
-								</para>
-							</listitem>
-						</itemizedlist>
-					</section>
-				</section>
-
-				<section id="How_To_Use.GUI.Tree.Projects">
-					<title>Projects</title>
-					<para>
-						Opens up the Project Editor Pane for the
-						selected Project.
-					</para>
-
-					<section id="How_To_Use.GUI.Tree.Project.Menus">
-						<title>Right-Click Menu</title>
-						<itemizedlist>
-							<listitem>
-								<para>
-									<emphasis>
-										New Munge Process
-									</emphasis>
-									- opens up the Munge Process Editor
-									Pane for a new Munge Process.
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>New Merge Rule</emphasis>
-									- opens up the Table Merge Rule
-									Editor Pane for a new Table Merge
-									Rule.
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>Run Match</emphasis>
-									- opens up the Match Engine Pane for
-									the selected Project.
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>Run Merge</emphasis>
-									- opens up the Merge Engine Pane for
-									the selected Project.
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>
-										Match Statistics
-									</emphasis>
-									- opens up the Match Statistics
-									Window for the selected Project
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>
-										Audit Information
-									</emphasis>
-									- opens up the Match Statistics
-									Window for the selected Project
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>Export</emphasis>
-									- this function is not implemented
-									yet.
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>Import</emphasis>
-									- this function is not implemented
-									yet.
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>Delete Project</emphasis>
-									- deletes the selected Project.
-								</para>
-							</listitem>
-
-							<listitem>
-								<para>
-									<emphasis>
-										Duplicate Project
-									</emphasis>
-									- opens up a window that lets you
-									choose a location to place a
-									duplicate of the selected Project
-								</para>
-							</listitem>
-						</itemizedlist>
-					</section>
-				</section>
-			</section>
-
-
-			<section id="How_To_Use.GUI.New_De-dupe_Project">
-
-				<title>New De-dupe Project</title>
-
-				<para>
-					De-dupe projects are used to find duplicates of
-					records in a table. For example if a customer
-					database contained information on a Joe Smith and a
-					Joeseph Smith, this project would help you determine
-					if that customer was the same person and merge them
-					if they are. There are 3 basic steps to create this
-					type of Match project; 1. Define Munge Processes, 2.
-					Run the engine, 3. Validate Matches.
-				</para>
-
-				<para>
-					<inlinemediaobject>
-						<imageobject>
-							<imagedata
-								fileref="doc/images/mmdedup_project.png" format="PNG"
-								width="4in" />
-						</imageobject>
-					</inlinemediaobject>
-				</para>
-
-				<itemizedlist>
-					<listitem>
-						<para>
-							"Match ID", the name of the match project
-							you are creating. This field must be filled
-							in to create a match project. It can be any
-							combination of characters.
-						</para>
-					</listitem>
-
-					<listitem>
-						<para>
-							"Folder", designates in which folder you
-							would like the match project to be saved to.
-						</para>
-					</listitem>
-				</itemizedlist>
-
-				<para>
-					Enter the Source Table; schema, and table name. The
-					Unique Index field will automatically be populated
-					and the Filter field is optional. The source table
-					is the table that is to be De-duped.
-				</para>
-
-				<para>
-					Enter the Output Table; schema and table name. The
-					output table is the table to be written to.
-				</para>
-
-				<para>
-					Once all the fields have been filled click on the
-					save button near the bottom of the screen and the
-					new project will appear in the Power*Matchmaker
-					tree. The match project created in the picture below
-					was named Trial. Once a new project is created some
-					files are automatically created.
-				</para>
-
-				<para>
-					<inlinemediaobject>
-						<imageobject>
-							<imagedata
-								fileref="doc/images/mmtree_newdedupe.png" format="PNG"
-								width="4in" />
-						</imageobject>
-					</inlinemediaobject>
-				</para>
 			</section>
 		</section>
-
 	</chapter>
 
 </book>
