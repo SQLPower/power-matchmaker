@@ -64,6 +64,8 @@ public class MatchPoolTest extends TestCase {
 
 	private MungeProcess mungeProcessOne;
 
+	private MungeProcess mungeProcessTwo;
+
 	@Override
 	protected void setUp() throws Exception {
 		SPDataSource dataSource = DBTestUtil.getHSQLDBInMemoryDS();
@@ -112,7 +114,7 @@ public class MatchPoolTest extends TestCase {
 		mungeProcessOne.setName("Munge_Process_One");
 		project.addMungeProcess(mungeProcessOne);
 
-		MungeProcess mungeProcessTwo = new MungeProcess();
+		mungeProcessTwo = new MungeProcess();
 		mungeProcessTwo.setName("Munge_Process_Two");
 		project.addMungeProcess(mungeProcessTwo);
 		
@@ -223,6 +225,87 @@ public class MatchPoolTest extends TestCase {
 		// FIXME need to be able to retrieve a particular PMR by key values
 	}
 
+	/**
+	 * Tests to ensure that findAll() finds all orphaned potential matches
+	 * (PotentialMatchRecords that have no MungeProcess, or the MungeProcess
+	 * got deleted or renamed)
+	 * @throws Exception
+	 */
+	public void testFindAllOrphanedMatches() throws Exception {
+		this.pool = new MatchPool(project);
+		insertSourceTableRecord(con, "1");
+		insertSourceTableRecord(con, "2");
+		insertSourceTableRecord(con, "3");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
+		insertResultTableRecord(con, "1", "3", 15, "Orphan");
+		pool.findAll(null);
+		assertEquals(2, pool.getSourceTableRecords().size());
+		assertEquals(1, pool.getPotentialMatches().size());
+		assertEquals(1, pool.getOrphanedMatches().size());
+	}
+	
+	/**
+	 * Test to ensure that orphaned matches are overwritten when adding
+	 * another Potential match with the same source table records (i.e. would
+	 * cause a unique constraint violation in the DB if orphan didn't get overwritten)
+	 */
+	public void testReplaceOrphanedMatch() throws Exception {
+		this.pool = new MatchPool(project);
+		insertSourceTableRecord(con, "1");
+		insertSourceTableRecord(con, "2");
+		insertSourceTableRecord(con, "3");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
+		insertResultTableRecord(con, "1", "3", 15, "Orphan");
+		pool.findAll(null);
+		
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("1");
+		SourceTableRecord str1 = pool.getSourceTableRecord(keyList);
+		assertNotNull(str1);
+		keyList = new ArrayList<Object>();
+		keyList.add("3");
+		SourceTableRecord str2 = new SourceTableRecord(project.getSession(), project, keyList);
+		PotentialMatchRecord overwrite = new PotentialMatchRecord(mungeProcessOne,MatchType.UNMATCH, str1, str2, false);
+		pool.addPotentialMatch(overwrite);
+		assertTrue(pool.getPotentialMatches().contains(overwrite));
+		assertEquals(2, pool.getPotentialMatches().size());
+		// Store should work without exception
+		pool.store();
+		
+	}
+	
+	public void testAddPotentialMatchWithDuplicateMatch() throws Exception {
+		this.pool = new MatchPool(project);
+		insertSourceTableRecord(con, "1");
+		insertSourceTableRecord(con, "2");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
+		pool.findAll(null);
+		mungeProcessOne.setMatchPercent(Short.valueOf("15"));
+		mungeProcessTwo.setMatchPercent(Short.valueOf("30"));
+		
+		List<Object> keyList = new ArrayList<Object>();
+		keyList.add("1");
+		SourceTableRecord str1 = pool.getSourceTableRecord(keyList);
+		assertNotNull(str1);
+		keyList = new ArrayList<Object>();
+		keyList.add("2");
+		SourceTableRecord str2 = pool.getSourceTableRecord(keyList);
+		assertNotNull(str1);
+		PotentialMatchRecord overwrite = new PotentialMatchRecord(mungeProcessOne,MatchType.UNMATCH, str1, str2, false);
+		pool.addPotentialMatch(overwrite);
+		
+		// overwrite should not have been added (match percent was equal)
+		assertEquals(1, pool.getPotentialMatches().size());
+		
+		overwrite = new PotentialMatchRecord(mungeProcessTwo,MatchType.UNMATCH, str1, str2, false);
+		pool.addPotentialMatch(overwrite);
+		// overwrite should have overwritten the original
+		assertEquals(1, pool.getPotentialMatches().size());
+		List<PotentialMatchRecord> matches = pool.getAllPotentialMatchByMungeProcess(mungeProcessTwo);
+		assertEquals(1, matches.size());
+		
+	}
+	
 	/**
 	 * Sets the master of a node in a graph when no masters have been set.
 	 * <p>
@@ -4062,6 +4145,15 @@ public class MatchPoolTest extends TestCase {
 	}
 	
 	public void testClear() throws Exception {
+		this.pool = new MatchPool(project);
+		insertSourceTableRecord(con, "1");
+		insertSourceTableRecord(con, "2");
+		insertSourceTableRecord(con, "3");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
+		insertResultTableRecord(con, "1", "3", 15, "Orphan");
+		pool.findAll(null);
+		
+		
 		assertTrue(pool.getPotentialMatches().size() != 0);
 		assertTrue(pool.getSourceTableRecords().size() != 0);
 		
@@ -4070,11 +4162,5 @@ public class MatchPoolTest extends TestCase {
 		
 		assertEquals(0, pool.getPotentialMatches().size());
 		assertEquals(0, pool.getSourceTableRecords().size());
-		
-		Statement stmt = con.createStatement();
-		ResultSet rs = stmt.executeQuery("SELECT * FROM "
-				+ DDLUtils.toQualifiedName(resultTable)
-				+ " WHERE DUP_CANDIDATE_10='a1' AND DUP_CANDIDATE_20='a3'");
-		rs.next();
 	}
 }
