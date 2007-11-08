@@ -45,6 +45,7 @@ import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
@@ -56,9 +57,9 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 	final private Icon validateIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/tick.png"));
 	final private Icon infoIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/page_white_gear.png"));
 	final private Icon matchEngineIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/cog_go.png"));
-	final private Icon mungeCompIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/application_form.png"));
 	final private Icon mergeEngineIcon = new ImageIcon(getClass().getResource("/icons/cog_double_go.png"));
 	final private Icon translateWordIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/cog_edit.png"));
+	final private Icon mungeCompIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/color_wheel.png"));
 
 	public Component getTreeCellRendererComponent(JTree tree, Object value,
 			boolean selected, boolean expanded, boolean leaf, int row,
@@ -108,7 +109,14 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 		} else if (value instanceof MatchMakerTranslateWord) {
 			setIcon(translateWordIcon);
 		} else if (value instanceof AbstractMungeStep) {
-			setIcon(mungeCompIcon);
+			MatchMakerSwingSession session = (MatchMakerSwingSession) ((AbstractMungeStep)value).getSession();
+			SwingSessionContext context = (SwingSessionContext) session.getContext();
+			StepDescription stepDesc = context.getStepMap().get(value);
+			if (stepDesc == null) {
+				setIcon(mungeCompIcon);
+			} else {
+				setIcon(stepDesc.getIcon());
+			}
 		} 
 		return this;
 	}
