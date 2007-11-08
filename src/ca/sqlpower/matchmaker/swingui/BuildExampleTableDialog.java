@@ -498,7 +498,7 @@ public class BuildExampleTableDialog extends JDialog{
 			Connection con = null;
 			try {
 				con = db.getConnection();
-				stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+				stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
 				ResultSet rs = stmt.executeQuery("SELECT ID,FirstName,LastName,Email,Address,HomePhone,CellPhone FROM " + DDLUtils.toQualifiedName(table));
 				
 				//Uses the same seed so that all of the examples look the same
@@ -551,7 +551,7 @@ public class BuildExampleTableDialog extends JDialog{
 				
 				//This scrambles some of the data
 				
-				stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+				stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
 				rs = stmt.executeQuery("SELECT ID,FirstName,LastName,Email,Address,HomePhone,CellPhone FROM " + DDLUtils.toQualifiedName(table));
 				
 				
