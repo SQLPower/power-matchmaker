@@ -175,7 +175,7 @@ public class MergeEngineImpl extends AbstractEngine {
 			logger.warn("Merge engine terminated by user");
 			return EngineInvocationResult.ABORTED;
 		} catch (Exception ex) {
-			progressMessage = "Merge Engine failed";
+			progressMessage = "Merge Engine failed, rolling back.";
 			logger.error(getMessage());
 			if (con != null) {
 				try {
