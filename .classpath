@@ -28,6 +28,8 @@
 	<classpathentry kind="lib" path="lib/commons-codec-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/mail.jar"/>
 	<classpathentry kind="lib" path="lib/architect_lib.jar" sourcepath="/architect/src"/>
+	<classpathentry kind="lib" path="lib/commons-pool.jar"/>
+	<classpathentry kind="lib" path="lib/commons-dbcp.jar"/>
 	<classpathentry kind="src" path="regress"/>
 	<classpathentry kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="src" path="testbed"/>

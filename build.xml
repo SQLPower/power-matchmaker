@@ -8,13 +8,42 @@
 	<property name="build" value="build"/>
 	<property name="lib" value="lib"/>
 	<property name="buildlib" value="buildlib"/>
+	<!-- The staging directory is a temp dir that is used as a base for all
+	     the OS-dependant distributions -->
+	<property name="staging.dir" value="staging"/>
+	<property name="dist.base" value="dist"/>
 	
 	<!-- Compiles the MatchMaker and places the .class files into build-->
-	<target name="compile" depends="sqlpower.library">
+	<target name="compile" depends="sqlpower.library, copyfiles">
 		<mkdir dir="${build}"/>
 		<javac 	srcdir="${src}" 
 				destdir="${build}" 
 				classpathref="compile.path"/>
+	</target>
+	
+	<target name="copyfiles">
+		<mkdir dir="${build}/icons"/>
+	    <copy todir="${build}/icons">
+			<fileset dir="src/icons/">
+				<include name="**/*.gif"/>
+				<include name="**/*.png"/>
+				<include name="**/*.icns"/>
+			</fileset>
+		</copy>
+		
+		<copy todir="${build}/ca/sqlpower/matchmaker/dao/hibernate">
+			<fileset dir="src/ca/sqlpower/matchmaker/dao/hibernate">
+				<include name="*.xml"/>
+				<include name="*.sql"/>
+				<include name="*.architect"/>
+			</fileset>
+		</copy>
+		
+		<!-- copies the template log4j config file into the build dir -->
+		<copy tofile="${build}/log4j.properties"
+			file="src/log4j.properties.example"/>
+		<copy tofile="${build}/ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"
+			file="src/ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"/>
 	</target>
 	
 	<!-- A path that will include all jars in the lib and buildlib folders -->
@@ -26,6 +55,130 @@
 			<include name="*.jar"/>
 		</fileset>
 	</path>
+	
+
+	<target name="compile-tests" depends="compile">
+	</target>
+	
+	<target name="dist">
+	</target>
+
+	<target name="stage" depends="getAppVersion, compile">
+		<mkdir dir="${dist.dir}" />
+        <mkdir dir="${staging.dir}"/>
+        <mkdir dir="${staging.dir}/lib"/>
+        <mkdir dir="${staging.dir}/jdbc"/>
+    	<mkdir dir="${staging.dir}/doc"/>
+		
+		<manifestclasspath property="matchmaker.jar.classpath" jarfile="${staging.dir}/matchmaker.jar">
+    		<classpath>
+	    		<pathelement path="${staging.dir}/jdbc"/>
+    			<fileset dir="${staging.dir}/">
+    				<include name="lib/*.jar"/>
+    			</fileset>
+    		</classpath>
+    	 </manifestclasspath>
+
+    	<manifest file="${build}/manifest">
+    		<attribute name="Main-Class" value="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"/>
+    		<attribute name="Class-Path" value="${matchmaker.jar.classpath}" />
+    	</manifest>
+
+    	<jar destfile="${staging.dir}/matchmaker.jar" update="no"
+    				basedir="${build}" 
+    				includes="ca/** org/** icons/** log4j.properties default_database_types.ini"
+    				manifest="${build}/manifest">
+    	</jar>
+		
+		<copy todir="${staging.dir}/lib">
+    	    <fileset dir="lib" includes="*.jar"/>
+    		<!--fileset dir="${build}" includes="architecthelp.jar" /-->
+    	</copy>
+		
+		<copy todir="${staging.dir}/jdbc">
+		    <fileset dir="jdbc_drivers" includes="*.jar"/>
+			<fileset dir="src" includes="default_database_types.ini"/>
+	    </copy>
+		
+		<copy todir="${staging.dir}" file="LICENSE"/>
+		<copy todir="${staging.dir}" file="LEGAL"/>
+		
+	</target>
+	
+	<target name="getAppVersion">
+		<mkdir dir="${build}"/>
+		<!-- get the version number from source code ArchitectUtils -->
+		<javac srcdir="${src}" destdir="${build}" classpathref="compile.path" includes="ca/sqlpower/matchmaker/MatchMakerVersion.java" debug="true"/>
+		<taskdef name="genVersion"
+					classname="ca.sqlpower.matchmaker.MatchMakerVersion"
+			        classpath="${build}"/>
+		<genVersion/>
+		<tstamp>
+			<format property="date" pattern="yyyyMMdd"/>
+		</tstamp>
+		<condition property="app.ver.suffix" value="-${date}">
+			<isset property="nightly"/>
+		</condition>
+		<!-- Else, if app_ver_suffix is empty, then don't use a suffix -->
+		<condition property="app.ver.suffix" value="">
+			<and>
+				<equals arg1="${app_ver_suffix}" arg2=""/>
+				<not><isset property="app.ver.suffix"/></not>
+			</and>
+		</condition>
+		<!-- otherwise, use the normal app_ver_suffix as the suffix -->
+		<condition property="app.ver.suffix" value="-${app_ver_suffix}">
+			<not><isset property="app.ver.suffix"/></not>
+		</condition>
+
+		<property name="app.version" value="${app_ver_major}.${app_ver_minor}.${app_ver_tiny}${app.ver.suffix}"/>
+		<property name="dist.dir" value="${dist.base}/${app.version}"/>
+	</target>
+	
+	
+    <target name="generic_jdbc_install" depends="stage">
+		<tar destfile="${dist.dir}/MatchMaker-generic-jdbc-${app.version}.tar.gz"
+			compression="gzip">
+			<tarfileset
+			    prefix="matchmaker-${app.version}"
+				dir="${staging.dir}"
+				includes="LICENSE, lib/*.jar, matchmaker.jar, jdbc/*.ini, jdbc/*.jar" />
+			<tarfileset
+			    prefix="matchmaker-${app.version}"
+				dir="doc"
+				includes="README.generic" />
+		</tar>
+    </target>
+	
+	<target name="osx_jdbc_dist" depends="stage">
+		<!-- The pre-compiled osx adapter class (it only compiles on OS X) -->
+		<copy file="osx_packaging_utils/osx_adapter.jar" todir="${staging.dir}/lib"/>
+
+		<!-- jarbundler is from sourceforge, defined near top of file -->
+		<jarbundler dir="${staging.dir}"
+           name="Power*MatchMaker JDBC"
+           version="${app.version}.jdbc"
+           mainclass="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"
+           icon="src/icons/matchmaker.icns"
+           jvmversion="1.5+"
+           shortname="MatchMaker"
+           stubfile="osx_packaging_utils/PowerArchitectStub"
+           vmoptions="-Xmx600m">
+			<jarfileset dir="${staging.dir}" includes="lib/*.jar"/>
+			<jarfileset dir="${staging.dir}" includes="architect.jar"/>
+			<!-- Add any jdbc drivers as resources the directory jdbc is referenced
+					in the manifest as well as various targets. -->
+			<javafileset dir="${staging.dir}" includes="jdbc/*.jar jdbc/*.ini"/>
+			<extraclasspathfilelist dir="KICKME" files="jdbc"/>
+		</jarbundler>
+
+		<!-- XXX this is stupid. we should modify the jarbundler task to allow literal strings in the classpath -->
+		<replace file="${staging.dir}/Power Architect JDBC.app/Contents/Info.plist"
+				 token="${basedir}/KICKME"
+				 value="$JAVAROOT" />
+
+	</target>
+	
 	
 	<!-- 
 		This build target checks for the sqlpower-library project, which is
@@ -45,10 +198,19 @@
 			<property name="build" value="${sqlpower.library.home}/build"/>
 		</ant>
 		<copy file="${sqlpower.library.home}/deploy/sqlpower_library.jar" todir="${lib}"/>
+		
+		<copy todir="${build}/ca/sqlpower/validation/swingui">
+			<fileset dir="${sqlpower.library.home}/src/ca/sqlpower/validation/swingui/">
+				<include name="**/*.png"/>
+			</fileset>
+		</copy>
 	</target>
 	
 	<target name="clean">
 		<delete dir="${build}"/>
 	</target>
 
+	<target name="dist-clean" depends="clean">
+		<delete dir="${dist.base}"/>
+	</target>
 </project>
