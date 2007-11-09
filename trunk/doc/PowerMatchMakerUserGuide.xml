@@ -1,5 +1,4 @@
 <?xml version='1.0'?>
-<?xml-stylesheet href="docbook-css-0.4/driver.css" type="text/css"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.0//EN" 
 	"http://www.oasis-open.org/docbook/xml/simple/1.0/sdocbook.dtd">
 
@@ -247,8 +246,8 @@
 
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="doc/images/mm_munge.png"
-							format="PNG" width="4in" />
+						<imagedata fileref="doc/images/munge_pen.png"
+							format="PNG"/>
 					</imageobject>
 				</mediaobject>
 
@@ -444,7 +443,6 @@
 						required Munge Steps.
 					</para>
 				</section>
-
 			</section>
 
 			<section id="Introduction.Basic_Concepts.Merge">
@@ -632,10 +630,8 @@
 		<section id="Introduction.License">
 			<title>License</title>
 
-			<para>
-				Copyright (c) 2007, SQL Power Group Inc.
-			</para>
-			
+			<para>Copyright (c) 2007, SQL Power Group Inc.</para>
+
 			<para>
 				Power*MatchMaker is free software; you can redistribute
 				it and/or modify it under the terms of the GNU General
@@ -643,7 +639,7 @@
 				Foundation; either version 3 of the License, or (at your
 				option) any later version.
 			</para>
-			
+
 			<para>
 				Power*MatchMaker is distributed in the hope that it will
 				be useful, but WITHOUT ANY WARRANTY; without even the
@@ -827,8 +823,8 @@
 			<para>
 				<inlinemediaobject>
 					<imageobject>
-						<imagedata fileref="doc/images/jbdcdrivers.png"
-							format="PNG" width="4in" />
+						<imagedata fileref="doc/images/jdbc_drivers_window.png"
+							format="PNG"/>
 					</imageobject>
 				</inlinemediaobject>
 			</para>
@@ -934,8 +930,7 @@
 				<inlinemediaobject>
 					<imageobject>
 						<imagedata
-							fileref="doc/images/mmdatabaseconnect.png" format="PNG"
-							width="4in" />
+							fileref="doc/images/db_con_manager.png" format="PNG"/>
 					</imageobject>
 				</inlinemediaobject>
 			</para>
@@ -1001,7 +996,9 @@
 				Start by choosing the repository database connection you
 				wish to work with. This will default the user id and
 				password information that has been previously specified
-				when setting up the database connection.
+				when setting up the database connection. If this is your
+				first login it will ask to create a repository schema
+				for you.
 			</para>
 
 			<para>
@@ -1020,7 +1017,8 @@
 			<para>
 				This section will give you a step by step example of
 				using the MatchMaker to create a small De-Duping
-				project.
+				project. This assumes that you have setup a connection
+				and a repository that you can login to.
 			</para>
 
 			<orderedlist>
@@ -1029,12 +1027,13 @@
 						Welcome to the Match Maker Example, this will
 						take you through an example De-Duping project
 						and highlight some of the key features of the
-						Power*MatchMaker.
+						Power*MatchMaker. Start by logging into your 
+						repository.
 					</para>
 				</listitem>
 				<listitem>
 					<para>
-						To begin click on the help menu in the top menu
+						Click on the help menu in the top menu
 						bar and choose
 						<userinput>Build Example Table</userinput>
 						. This will create the base table for this
@@ -1461,8 +1460,8 @@
 				<para>
 					<inlinemediaobject>
 						<imageobject>
-							<imagedata fileref="doc/images/mmlogin.png"
-								format="PNG" width="4in" />
+							<imagedata
+								fileref="doc/images/login_window.png" format="PNG"/>
 						</imageobject>
 					</inlinemediaobject>
 				</para>
@@ -1520,6 +1519,12 @@
 
 			<section id="How_To_Use.GUI.Database_Connection_Manager">
 				<title>Database Connection Manager</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata
+							fileref="doc/images/db_con_manager.png" format="PNG" />
+					</imageobject>
+				</mediaobject>
 				<para>
 					This is the window where you can manage and
 					configure your database connections. The list on the
@@ -1586,6 +1591,12 @@
 
 			<section id="How_To_Use.GUI.Database_Connection_Window">
 				<title>Database Connection Window</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata
+							fileref="doc/images/db_con_window.png" format="PNG" />
+					</imageobject>
+				</mediaobject>
 				<para>
 					This is the window where you can set the specific
 					settings for a database connection.
@@ -1656,6 +1667,12 @@
 
 			<section id="How_To_Use.GUI.JDBC_Drivers_Window">
 				<title>JDBC Drivers Window</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata
+							fileref="doc/images/jdbc_drivers_window.png" format="PNG" />
+					</imageobject>
+				</mediaobject>
 				<para>
 					This is the window where you can specific the JDBC
 					drivers to use for each database type. A
@@ -1729,6 +1746,12 @@
 
 			<section id="How_To_Use.GUI.Main_Editor_Pane">
 				<title>Main Editor Pane</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata
+							fileref="doc/images/main_window.png" format="PNG" />
+					</imageobject>
+				</mediaobject>
 				<para>
 					This is the screen that you will see after logging
 					in. It will display the current version of the

@@ -99,6 +99,7 @@ import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
+import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
