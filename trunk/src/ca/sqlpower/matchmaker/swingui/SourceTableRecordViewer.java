@@ -42,6 +42,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 public class SourceTableRecordViewer {
 
@@ -129,9 +130,17 @@ public class SourceTableRecordViewer {
         Font font = label.getFont();
         Font sameFont = font.deriveFont(Font.PLAIN);
         Color sameBackground = Color.WHITE;
+        if (view != master) {
+        	MungeProcess mp = view.getMatchRecordByOriginalAdjacentSourceTableRecord(master).getMungeProcess();
+        	if (mp == null) {
+        		sameBackground = Color.WHITE;
+        	} else {
+        		sameBackground = shallowerColor(mp.getColour());
+        	}
+        }
         Font differentFont = font.deriveFont(Font.BOLD);
-        Color differentBackground = new Color(240, 200, 200);
-
+        Color differentBackground = deeperColor(sameBackground);
+        
         Iterator<Object> viewIt = view.fetchValues().iterator();
         Iterator<Object> masterIt = master.fetchValues().iterator();
         boolean darkRow = false;
@@ -209,6 +218,23 @@ public class SourceTableRecordViewer {
         return new Color(
                 Math.max((int) (c.getRed() * FACTOR), 0),
                 Math.max((int) (c.getGreen() * FACTOR), 0),
-                Math.max((int) (c.getBlue() * FACTOR), 0));
+                Math.max((int) (c.getBlue() * FACTOR), 0),
+                Math.min(c.getAlpha() + 15, 255));
+    }
+    
+    /**
+     * 	Returns a colour that is less transparent than the given.
+     */
+    private static Color deeperColor(Color c) {
+    	final float FACTOR = 2.5f;
+    	return new Color (c.getRed(), c.getGreen(), c.getBlue(), (int) Math.min(c.getAlpha() * FACTOR, 255));
+    }
+    
+    /**
+     *	Returns a colour that is more transparent than the given. 
+     */
+    private static Color shallowerColor(Color c) {
+    	final int FACTOR = 70;
+        return new Color(c.getRed(), c.getGreen(), c.getBlue(), FACTOR);
     }
 }
