@@ -32,6 +32,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,9 +62,9 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.graph.BreadthFirstSearch;
 import ca.sqlpower.graph.ConnectedComponentFinder;
 import ca.sqlpower.graph.GraphModel;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchPool;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.graph.MatchPoolDotExport;
@@ -335,6 +336,7 @@ public class MatchResultVisualizer implements EditorPane {
                 recordViewerHeader.removeAll();
                 BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
                     new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
+                bfs.setComparator(new SourceTableRecordsComparator(node));
                 List<SourceTableRecord> reachableNodes = bfs.performSearch(graphModel, node);
                 for (SourceTableRecord rec : reachableNodes) {
                     final SourceTableRecord str = rec;
@@ -641,5 +643,92 @@ public class MatchResultVisualizer implements EditorPane {
 		logger.debug("Cannot discard chagnes");
 		return false;
 	}
-
+	
+	/**
+	 * A comparator that compares SourceTableRecords based on match status and match priority.
+	 */
+	private class SourceTableRecordsComparator implements Comparator<SourceTableRecord> {
+		private SourceTableRecord master;
+		private MatchTypeComparator matchTypeComp;
+		
+		/**
+		 *	The master is the basis for comparison, mostly just used
+		 *	to get the match priority. 
+		 */
+		public SourceTableRecordsComparator(SourceTableRecord master) {
+			this.master = master;
+			matchTypeComp = new MatchTypeComparator();
+		}
+		
+		public int compare(SourceTableRecord o1, SourceTableRecord o2) {
+			// Assumes the basis as the smallest
+			if (o1 == master) {
+				return -1;
+			} else if (o2 == master) {
+				return 1;
+			}
+			
+			// Finds the "highest" match status related to each SourceTableRecords
+			List<PotentialMatchRecord> pmrs1 = new ArrayList<PotentialMatchRecord>(o1.getOriginalMatchEdges());
+			MatchType t1 = MatchType.UNMATCH;
+			for (PotentialMatchRecord pmr : pmrs1) {
+				if (matchTypeComp.compare(pmr.getMatchStatus(), t1) > 0) {
+					t1 = pmr.getMatchStatus();
+				}
+			}
+			List<PotentialMatchRecord> pmrs2 = new ArrayList<PotentialMatchRecord>(o2.getOriginalMatchEdges());
+			MatchType t2 = MatchType.UNMATCH;
+			for (PotentialMatchRecord pmr : pmrs2) {
+				if (matchTypeComp.compare(pmr.getMatchStatus(), t2) > 0) {
+					t2 = pmr.getMatchStatus();
+				}
+			}
+			
+			// Compares the SourceTableRecords based on the higher match status
+			if (matchTypeComp.compare(t1, t2) != 0) {
+				return matchTypeComp.compare(t1, t2);
+			}
+			
+			// Assumes any SourceTableRecords not directly adjacent to the master to be larger
+			PotentialMatchRecord pmr1 = o1.getMatchRecordByOriginalAdjacentSourceTableRecord(master);
+			PotentialMatchRecord pmr2 = o2.getMatchRecordByOriginalAdjacentSourceTableRecord(master);
+			if (pmr1 == null) {
+				return 1;
+			} else if (pmr2 == null) {
+				return -1;
+			}
+			
+			// Compares based on the match priority of the corresponding munge process 
+			int percent1 = 0;
+			if (pmr1.getMungeProcess().getMatchPercent() != null) {
+				percent1 = pmr1.getMungeProcess().getMatchPercent().shortValue();
+			}
+			int percent2 = 0;
+			if (pmr2.getMungeProcess().getMatchPercent() != null) {
+				percent2 = pmr2.getMungeProcess().getMatchPercent().shortValue();
+			}
+			return percent1 - percent2;
+		}
+		
+		/**
+		 * A comparator that compares MatchTypes in the following order:
+		 * UNMATCH < AUTOMATCH < MATCH < NOMATCH < MERGED
+		 */
+		private class MatchTypeComparator implements Comparator<MatchType> {
+			
+			private List<MatchType> types = new ArrayList<MatchType>();
+			
+			public MatchTypeComparator() {
+				types.add(MatchType.UNMATCH);
+				types.add(MatchType.AUTOMATCH);
+				types.add(MatchType.MATCH);
+				types.add(MatchType.NOMATCH);
+				types.add(MatchType.MERGED);
+			}
+			
+			public int compare(MatchType o1, MatchType o2) {
+				return types.indexOf(o1) - types.indexOf(o2);
+			}			
+		}
+	}	
 }
