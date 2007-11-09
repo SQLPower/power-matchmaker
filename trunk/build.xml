@@ -13,6 +13,28 @@
 	<property name="staging.dir" value="staging"/>
 	<property name="dist.base" value="dist"/>
 	
+	<!-- Windows installer tool: izpack (needs both a jar and its own
+		     directory to run properly) -->
+	<property name="izpack.dir" value="ext-tools/izpack"/>
+	<taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
+		     classname="com.izforge.izpack.ant.IzPackTask"/>
+
+	<!-- Base directory for the izpack (Windows) installer output -->
+	<property name="installer.dir" value="installer"/>
+	
+	<!-- When the build runs on a Mac, we can create the .dmg disk image
+	     using the native hdiutil program.  Otherwise, we just make a .tar.gz.
+	-->
+	<condition property="isMac">
+		<os family="mac"/>
+	</condition>
+
+	<condition property="isNotMac">
+		<not>
+			<os family="mac"/>
+		</not>
+	</condition>
+	
 	<!-- Compiles the MatchMaker and places the .class files into build-->
 	<target name="compile" depends="sqlpower.library, copyfiles">
 		<mkdir dir="${build}"/>
@@ -20,6 +42,7 @@
 				destdir="${build}" 
 				classpathref="compile.path"/>
 	</target>
+	
 	
 	<target name="copyfiles">
 		<mkdir dir="${build}/icons"/>
@@ -46,6 +69,7 @@
 			file="src/ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"/>
 	</target>
 	
+	
 	<!-- A path that will include all jars in the lib and buildlib folders -->
 	<path id="compile.path">
 		<fileset dir="${lib}">
@@ -63,6 +87,7 @@
 	<target name="dist">
 	</target>
 
+	
 	<target name="stage" depends="getAppVersion, compile">
 		<mkdir dir="${dist.dir}" />
         <mkdir dir="${staging.dir}"/>
@@ -105,6 +130,7 @@
 		
 	</target>
 	
+	
 	<target name="getAppVersion">
 		<mkdir dir="${build}"/>
 		<!-- get the version number from source code ArchitectUtils -->
@@ -136,13 +162,99 @@
 	</target>
 	
 	
-    <target name="generic_jdbc_install" depends="stage">
-		<tar destfile="${dist.dir}/MatchMaker-generic-jdbc-${app.version}.tar.gz"
+	<target name="windows_jdbc_installer" depends="stage">
+		<izpack output="${dist.dir}/MatchMaker-Setup-Windows-${app.version}.jar"
+		        installerType="standard"
+			    basedir="${installer.dir}"
+		        izPackDir="${izpack.dir}/">
+			<config><![CDATA[
+				<installation version="1.0">
+					<!-- comment -->
+					<info>
+						<appname>Power*MatchMaker</appname>
+						<appversion>@{app.version}</appversion>
+						<url>http://www.sqlpower.ca/</url>
+						<javaversion>1.5</javaversion>
+					</info>
+					<guiprefs height="600" resizable="yes" width="800">
+						<laf name="metouia">
+							<os family="unix"/>
+						</laf>
+					</guiprefs>
+	
+					<locale>
+						<langpack iso3="eng"/>
+					</locale>
+					<resources>
+						<res id="Installer.image" src="../src/icons/matchmaker_huge.png"/>
+						<res src="MatchMakerShortcut.xml" id="shortcutSpec.xml"/>
+						<res id="LicencePanel.licence" src="../LICENSE" />
+					</resources>
+					<panels>
+						<panel classname="HelloPanel"/>
+						<panel classname="LicencePanel"/>
+						<panel classname="TargetPanel"/>
+						<panel classname="InstallPanel"/>
+						<panel classname="ShortcutPanel"/>
+						<panel classname="SimpleFinishPanel"/>
+					</panels>
+					<packs>
+						<pack name="Core" required="yes">
+							<description>MatchMaker Core Files</description>
+							<fileset dir="../staging/" targetdir="$INSTALL_PATH">
+								<include name="matchmaker.jar"/>
+							</fileset>
+							<fileset dir="../staging/lib" targetdir="$INSTALL_PATH/lib">
+								<include name="*.jar"/>
+							</fileset>
+							<!-- the directory jdbc is referenced in the manifest as well as
+								various targets. -->
+							<fileset dir="../staging/jdbc" targetdir="$INSTALL_PATH/jdbc">
+								<include name="*.jar"/>
+								<include name="*.ini"/>
+							</fileset>
+							<fileset dir="../staging/" targetdir="$INSTALL_PATH">
+								<include name="LICENSE"/>
+							</fileset>
+							<fileset dir="../staging/" targetdir="$INSTALL_PATH">
+								<include name="LEGAL"/>
+							</fileset>
+							<fileset dir="." targetdir="$INSTALL_PATH">
+								<include name="*.reg"/>
+							</fileset>
+							<fileset dir="../src/icons" targetdir="$INSTALL_PATH">
+								<include name="*.ico"/>
+							</fileset>
+							<parsable targetfile="${INSTALL_PATH}/matchmaker_file_association.reg" type="windowsreg"/>
+							<executable targetfile="regedit.exe" stage="postinstall" keep="true">
+							   <args>
+							     <arg value="\/s"/>
+							     <arg value="$INSTALL_PATH/matchmaker_file_association.reg"/>
+						      </args>
+						   </executable>
+							<executable targetfile="regedit.exe" stage="uninstall" keep="true">
+							   <args>
+							     <arg value="\/s"/>
+							     <arg value="$INSTALL_PATH/uninstall.reg"/>
+						      </args>
+						   </executable>
+						</pack>
+					</packs>
+					<native type="izpack" name="ShellLink.dll"/>
+				</installation>
+				]]>
+			</config>
+		</izpack>
+	</target>
+	
+	
+    <target name="generic_install" depends="stage">
+		<tar destfile="${dist.dir}/MatchMaker-generic-${app.version}.tar.gz"
 			compression="gzip">
 			<tarfileset
 			    prefix="matchmaker-${app.version}"
 				dir="${staging.dir}"
-				includes="LICENSE, lib/*.jar, matchmaker.jar, jdbc/*.ini, jdbc/*.jar" />
+				includes="LICENSE, LEGAL, lib/*.jar, matchmaker.jar, jdbc/*.ini, jdbc/*.jar" />
 			<tarfileset
 			    prefix="matchmaker-${app.version}"
 				dir="doc"
@@ -150,22 +262,29 @@
 		</tar>
     </target>
 	
-	<target name="osx_jdbc_dist" depends="stage">
+	
+	<!-- OS X .app bundling tool: jarbundler -->
+	<taskdef name="jarbundler" 
+		classpath="osx_packaging_utils/jarbundler.jar:osx_packaging_utils/xercesImpl.jar:osx_packaging_utils/xml-apis.jar"
+		classname="net.sourceforge.jarbundler.JarBundler"/>
+	
+	
+	<target name="osx_dist" depends="stage">
 		<!-- The pre-compiled osx adapter class (it only compiles on OS X) -->
 		<copy file="osx_packaging_utils/osx_adapter.jar" todir="${staging.dir}/lib"/>
 
 		<!-- jarbundler is from sourceforge, defined near top of file -->
 		<jarbundler dir="${staging.dir}"
-           name="Power*MatchMaker JDBC"
-           version="${app.version}.jdbc"
+           name="Power*MatchMaker"
+           version="${app.version}"
            mainclass="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"
            icon="src/icons/matchmaker.icns"
            jvmversion="1.5+"
            shortname="MatchMaker"
-           stubfile="osx_packaging_utils/PowerArchitectStub"
+           stubfile="osx_packaging_utils/PowerMatchMakerStub"
            vmoptions="-Xmx600m">
 			<jarfileset dir="${staging.dir}" includes="lib/*.jar"/>
-			<jarfileset dir="${staging.dir}" includes="architect.jar"/>
+			<jarfileset dir="${staging.dir}" includes="matchmaker.jar"/>
 			<!-- Add any jdbc drivers as resources the directory jdbc is referenced
 					in the manifest as well as various targets. -->
 			<javafileset dir="${staging.dir}" includes="jdbc/*.jar jdbc/*.ini"/>
@@ -173,11 +292,75 @@
 		</jarbundler>
 
 		<!-- XXX this is stupid. we should modify the jarbundler task to allow literal strings in the classpath -->
-		<replace file="${staging.dir}/Power Architect JDBC.app/Contents/Info.plist"
+		<replace file="${staging.dir}/Power*MatchMaker.app/Contents/Info.plist"
 				 token="${basedir}/KICKME"
 				 value="$JAVAROOT" />
 
 	</target>
+	
+	
+	<target name="osx_tgz" depends="osx_dist" if="isNotMac">
+		<tar destfile="${dist.dir}/MatchMaker-OSX-${app.version}.tar.gz"
+					compression="gzip">
+			<tarfileset dir="${staging.dir}" includes="Power*MatchMaker.app/**"/>
+			<tarfileset dir="${staging.dir}" includes="jdbc/*"/>
+		</tar>
+	</target>
+	
+	
+	<target name="osx_dmg" depends="osx_dist" if="isMac">
+		<!-- hdiutil create -size 50m -fs HFS+ -volname "Power*Architect" RWArchitect.dmg
+				     hdiutil attach RWArchitect.dmg
+				     (copy architect.app over, position it, etc)
+				     /Developer/Tools/SetFile -a V /Volumes/Power\*Architect/install_folder_background.png
+				     hdiutil detach /Volumes/Power\*Architect/
+				     rm Power_Architect-1.0.19.dmg
+				     hdiutil convert -format UDCO -o Power_Architect-1.0.19.dmg RWArchitect.dmg
+				  -->
+		<copy file="osx_packaging_utils/RWMatchMaker.dmg.sparseimage" tofile="${staging.dir}/RWMatchMaker.dmg.sparseimage" overwrite="true" />
+		<exec executable="hdiutil">
+					<arg value="detach" />
+					<arg value="/Volumes/Power*MatchMaker" />
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="attach" />
+			<arg value="${staging.dir}/RWMatchMaker.dmg.sparseimage" />
+		</exec>
+		<delete dir="/Volumes/Power*MatchMaker/Power*MatchMaker.app/Contents/Resources/Java"/>
+		<copy todir="/Volumes/Power*MatchMaker/Power*MatchMaker.app/" overwrite="true"  >
+			<fileset dir="${staging.dir}/Power*MatchMaker.app"></fileset>
+		</copy>
+		<exec executable="chmod">
+			<arg value="a+x"/>
+			<arg value="/Volumes/Power*MatchMaker/Power*MatchMaker.app/Contents/MacOS/PowerMatchMakerStub"/>
+		</exec>
+		<exec executable="hdiutil">
+			<arg value="detach" />
+			<arg value="/Volumes/Power*MatchMaker" />
+		</exec>
+		<delete file="${dist.dir}/MatchMaker-OSX-${app.version}.dmg" />
+		<exec executable="hdiutil">
+			<arg value="convert"/>
+			<arg value="${staging.dir}/RWMatchMaker.dmg.sparseimage"/>
+			<arg value="-format"/>
+			<arg value="UDCO"/>
+			<arg value="-o"/>
+			<arg value="${dist.dir}/MatchMaker-OSX-${app.version}.dmg"/>
+		</exec>
+
+		<javac srcdir="osx_packaging_utils"
+		   			   destdir="${build}"
+					   includes="ca/sqlpower/antbuild/AddLicenseToDMGTask.java"
+					   />
+		
+		<taskdef name="addLicenseToDMG"
+				 classname="ca.sqlpower.antbuild.AddLicenseToDMGTask"
+			     classpath="${build}"/>
+		<addLicenseToDMG
+				dmgFile="${dist.dir}/MatchMaker-OSX-${app.version}.dmg"
+                licenseFile="${staging.dir}/LICENSE"
+		        resourceTemplateFile="osx_packaging_utils/sla_template.r"/>
+    </target>
 	
 	
 	<!-- 
@@ -206,10 +389,13 @@
 		</copy>
 	</target>
 	
+	
 	<target name="clean">
 		<delete dir="${build}"/>
+		<delete dir="${staging.dir}"/>
 	</target>
 
+	
 	<target name="dist-clean" depends="clean">
 		<delete dir="${dist.base}"/>
 	</target>
