@@ -40,9 +40,9 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 public class SourceTableRecordViewer {
 
@@ -131,11 +131,11 @@ public class SourceTableRecordViewer {
         Font sameFont = font.deriveFont(Font.PLAIN);
         Color sameBackground = Color.WHITE;
         if (view != master) {
-        	MungeProcess mp = view.getMatchRecordByOriginalAdjacentSourceTableRecord(master).getMungeProcess();
-        	if (mp == null) {
+        	PotentialMatchRecord pmr = view.getMatchRecordByOriginalAdjacentSourceTableRecord(master);
+        	if (pmr == null ||pmr.getMungeProcess() == null) {
         		sameBackground = Color.WHITE;
         	} else {
-        		sameBackground = shallowerColor(mp.getColour());
+        		sameBackground = shallowerColor(pmr.getMungeProcess().getColour());
         	}
         }
         Font differentFont = font.deriveFont(Font.BOLD);
