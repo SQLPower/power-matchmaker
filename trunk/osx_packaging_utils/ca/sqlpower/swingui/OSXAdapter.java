@@ -88,7 +88,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Copyright © 2005 Apple Computer, Inc., All Rights Reserved
 
 */
-package ca.sqlpower.architect.swingui;
+package ca.sqlpower.swingui;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
