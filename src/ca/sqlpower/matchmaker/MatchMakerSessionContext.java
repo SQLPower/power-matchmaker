@@ -48,7 +48,7 @@ public interface MatchMakerSessionContext {
 	/**
      * The version of this MatchMaker front end.
      */
-    public static final Version APP_VERSION = new Version(5,13,13);
+    public static final Version APP_VERSION = new Version(0, 9, 0);
 
     /**
      * The minimum PL Schema version according to DEF_PARAM that we can work with.
