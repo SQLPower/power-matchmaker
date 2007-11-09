@@ -184,6 +184,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		
 		//set the column and tabler merge rules
 	    tmr.setTable(sourceTable);
+	    tmr.setTableIndex(sourceTable.getPrimaryKeyIndex());
 	    tmr.addChild(cmr_id);
 		tmr.addChild(cmr_string);
 		tmr.addChild(cmr_date);

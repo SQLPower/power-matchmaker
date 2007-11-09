@@ -65,7 +65,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLCatalog;
-import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLObject;
@@ -626,56 +625,50 @@ public class ProjectEditor implements EditorPane {
     		return false;
     	}
 
-    	final String projectName = projectId.getText().trim();
-        project.getMungeSettings().setDescription(desc.getText());
-
-        project.setSourceTable(((SQLTable) sourceChooser.getTableComboBox().getSelectedItem()));
-        project.setSourceTableIndex(((SQLIndex) indexComboBox.getSelectedItem()));
-
-        if ((projectName == null || projectName.length() == 0) &&
-        		project.getSourceTable() == null ) {
-        	JOptionPane.showMessageDialog(getPanel(),
-        			"Project Name can not be empty",
-        			"Error",
-        			JOptionPane.ERROR_MESSAGE);
-        	return false;
+        //sets the sourceTable
+        SQLTable sourceTable = (SQLTable) sourceChooser.getTableComboBox().getSelectedItem();
+        SQLIndex sourceTableIndex = (SQLIndex) indexComboBox.getSelectedItem();
+        if (sourceTable == null || sourceTableIndex == null) {
+        	throw new IllegalStateException("Source table/index not found.");
         }
+        project.setSourceTable(sourceTable);
+        project.setSourceTableIndex(sourceTableIndex);
+        project.setFilter(filterPanel.getFilterTextArea().getText());
 
-        String id = projectName;
-        if ( id == null || id.length() == 0 ) {
+        //sets the project name, id and desc
+        final String projectName = projectId.getText().trim();
+        project.getMungeSettings().setDescription(desc.getText());
+        String id = projectId.getText();
+        if ( projectName == null || projectName.length() == 0 ) {
         	StringBuffer s = new StringBuffer();
         	s.append("PROJECT_");
-        	SQLTable table = project.getSourceTable();
-			if ( table != null &&
-					table.getCatalogName() != null &&
-        			table.getCatalogName().length() > 0 ) {
-        		s.append(table.getCatalogName()).append("_");
+			if (sourceTable.getCatalogName() != null &&
+        			sourceTable.getCatalogName().length() > 0 ) {
+        		s.append(sourceTable.getCatalogName()).append("_");
         	}
-			if ( table != null &&
-					table.getSchemaName() != null &&
-        			table.getSchemaName().length() > 0 ) {
-        		s.append(table.getSchemaName()).append("_");
+			if (sourceTable.getSchemaName() != null &&
+        			sourceTable.getSchemaName().length() > 0 ) {
+        		s.append(sourceTable.getSchemaName()).append("_");
         	}
-			if ( table != null ) {
-				s.append(table.getName());
-			}
+			s.append(sourceTable.getName());
         	id = s.toString();
         	projectId.setText(id);
         }
+		if (!id.equals(project.getName())) {
+        	if (!swingSession.isThisProjectNameAcceptable(id)) {
+        		JOptionPane.showMessageDialog(getPanel(),
+        				"<html>Project name \"" + projectId.getText() +
+        					"\" does not exist or is invalid.\n" +
+        					"The project has not been saved",
+        				"Project name invalid",
+        				JOptionPane.ERROR_MESSAGE);
+        		return false;
+        	}
+        	project.setName(id);
+        }
 
         if (project.getType() != ProjectMode.CLEANSE) {
-	        SQLObject resultTableParent;
-	        if ( resultChooser.getSchemaComboBox().isEnabled() &&
-	        		resultChooser.getSchemaComboBox().getSelectedItem() != null ) {
-	        	resultTableParent =
-	        		(SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem();
-	        } else if ( resultChooser.getCatalogComboBox().isEnabled() &&
-	        		resultChooser.getCatalogComboBox().getSelectedItem() != null ) {
-	        	resultTableParent =
-	        		(SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem();
-	        } else {
-	        	resultTableParent = (SQLDatabase) resultChooser.getDb();
-	        }
+        	//sets the result table
 	
 	        project.setResultTableSPDatasource(((SPDataSource)(resultChooser.getDataSourceComboBox().getSelectedItem())).getName());
 	        
@@ -704,22 +697,6 @@ public class ProjectEditor implements EditorPane {
 			}
         }
 
-        project.setFilter(filterPanel.getFilterTextArea().getText());
-
-        String projectIdText = projectId.getText();
-		if (!projectIdText.equals(project.getName())) {
-        	if (!swingSession.isThisProjectNameAcceptable(projectIdText)) {
-        		JOptionPane.showMessageDialog(getPanel(),
-        				"<html>Project name \"" + projectId.getText() +
-        					"\" does not exist or is invalid.\n" +
-        					"The project has not been saved",
-        				"Project name invalid",
-        				JOptionPane.ERROR_MESSAGE);
-        		return false;
-        	}
-        	project.setName(projectIdText);
-        }
-
         if (project.getParent() == null) {
         	sourceChooser.getDataSourceComboBox().setEnabled(false);
         	sourceChooser.getCatalogComboBox().setEnabled(false);
@@ -727,30 +704,19 @@ public class ProjectEditor implements EditorPane {
         	sourceChooser.getTableComboBox().setEnabled(false);
         	viewBuilder.setEnabled(false);
         	
-        	TableMergeRules mergeRule = new TableMergeRules();
-        	mergeRule.setTable(project.getSourceTable());
-			try {
-				mergeRule.setTableIndex(project.getSourceTableIndex());
-			} catch (ArchitectException e) {
-				throw new ArchitectRuntimeException(e);
-			}
-	        
-			try {
-				List<SQLColumn> columns = new ArrayList<SQLColumn>(
-						(project.getSourceTable()).getColumns()); 
-				for (SQLColumn column : columns) {
-					ColumnMergeRules newRules = new ColumnMergeRules();
-					newRules.setActionType(MergeActionType.USE_MASTER_VALUE);
-					mergeRule.addChild(newRules);
-					newRules.setColumn(column);
+        	if (project.getType() != ProjectMode.CLEANSE) {
+	        	// defaults the merge rules
+				TableMergeRules mergeRule = new TableMergeRules();
+				mergeRule.setTable(sourceTable);
+				mergeRule.setTableIndex(sourceTableIndex);
+				mergeRule.deriveColumnMergeRules();
+				for (ColumnMergeRules cmr : mergeRule.getChildren()) {
+					if (mergeRule.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
+						cmr.setActionType(MergeActionType.NA);
+					}
 				}
-			} catch (Exception ex) {
-				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "An exception occured while deriving collison criteria", ex);
-			}
-			
-			if (project.getType() != ProjectMode.CLEANSE) {
-				project.getTableMergeRulesFolder().addChild(0, mergeRule);
-			}
+				project.getTableMergeRulesFolder().addChild(mergeRule);
+        	}
         }
 		
         logger.debug(project.getResultTable());

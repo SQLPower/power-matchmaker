@@ -50,7 +50,6 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.MonitorableWorker;
@@ -222,33 +221,19 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 						mergeRule.setTable(table);
 						mergeRule.setTableIndex(index);
 						mergeRule.setParentMergeRule(sourceTableMergeRule);
-						mergeRule.setChildMergeAction(ChildMergeActionType.DELETE_ALL_DUP_CHILD);
-						try {
-							List<SQLColumn> columns = new ArrayList<SQLColumn>(table.getColumns()); 
-							for (SQLColumn column : columns) {
-								ColumnMergeRules newRules = new ColumnMergeRules();
-								newRules.setActionType(MergeActionType.USE_MASTER_VALUE);
-								mergeRule.addChild(newRules);
-								newRules.setColumn(column);
-								newRules.setColumnName(column.getName());
-								if (index != null) {
-									for (SQLIndex.Column indexCol : index.getChildren()) {
-										if (column.equals(indexCol.getColumn())) {
-											newRules.setInPrimaryKey(true);
-										}
-									}
+						mergeRule.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
+						mergeRule.deriveColumnMergeRules();
+						for (ColumnMergeRules cmr : mergeRule.getChildren()) {
+							if (index != null) {
+								if (mergeRule.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
+									cmr.setInPrimaryKeyAndAction(true);
 								}
-								if (primaryKeys.contains(column.getName())) {
-									newRules.setImportedKeyColumn(sourceTable.getColumnByName(column.getName()));
-								}
-								
 							}
-						} catch (Exception ex) {
-							SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
-									"An exception occured while deriving collison criteria", ex);
+							if (primaryKeys.contains(cmr.getColumnName())) {
+								cmr.setImportedKeyColumnAndAction(sourceTable.getColumnByName(cmr.getColumnName()));
+							}
 						}
-
-						project.getTableMergeRulesFolder().addChild(mergeRule);
+						project.addTableMergeRule(mergeRule);
 						count = 0;
 					}
 				}

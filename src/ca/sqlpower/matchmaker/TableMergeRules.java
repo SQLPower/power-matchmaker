@@ -31,6 +31,7 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 
 /**
  *
@@ -146,7 +147,9 @@ public class TableMergeRules
 	private TableMergeRules parentMergeRule;
 	
 	public TableMergeRules() {
+		//set defaults
 		tableIndex = new TableIndex(this,cachableTable,"tableIndex");
+		setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
 	}
 
 	@Override
@@ -286,8 +289,12 @@ public class TableMergeRules
 		return buf.toString();
 	}
 
-	public SQLIndex getTableIndex() throws ArchitectException {
-		return tableIndex.getTableIndex();
+	public SQLIndex getTableIndex() {
+		try {
+			return tableIndex.getTableIndex();
+		} catch (ArchitectException e) {
+			throw new RuntimeException("Error getting index from table.", e);
+		}
 	}
 
 	public void setTableIndex(SQLIndex index) {
@@ -305,6 +312,23 @@ public class TableMergeRules
         } else {
             return (Project) parentFolder.getParent();
         }
+    }
+    
+    public void deriveColumnMergeRules() {
+    	if (getSourceTable() == null) {
+    		throw new IllegalStateException(
+    				"cannot derive column merge rules because source table is null");
+    	}
+    	try {
+			for (SQLColumn column : getSourceTable().getColumns()) {
+				ColumnMergeRules newRules = new ColumnMergeRules();
+				newRules.setColumn(column);
+				newRules.setActionType(MergeActionType.AUGMENT);
+				addChild(newRules);
+			}
+		} catch (ArchitectException e) {
+			throw new RuntimeException("Error deriving column merge rules.", e);
+		}
     }
 
     /**
@@ -395,30 +419,44 @@ public class TableMergeRules
 		}
 	}
 
+	public List<SQLColumn> getPrimaryKeyFromIndex()  {
+		if (getSourceTable() == null) {
+			return null;
+		}
+		
+		List<SQLColumn> columns = new ArrayList<SQLColumn>();
+		try {
+			SQLIndex index = getTableIndex();
+			if (index == null) index = getSourceTable().getPrimaryKeyIndex();
+			if (index == null) {
+				return null;
+			}
+			for (SQLIndex.Column column : index.getChildren()) {
+			    try {
+			        logger.debug(BeanUtils.describe(column));
+			    } catch (Exception e) {
+			        e.printStackTrace();
+			    }
+			    if (column.getColumn() == null) {
+			        throw new IllegalStateException("Found an index column with a null column name!");
+			    }
+				columns.add(column.getColumn()); 
+			}
+		} catch (ArchitectException e) {
+			throw new RuntimeException("Error getting primary key from index.", e);
+		}
+		return columns;
+	}
 	/**
 	 * Finds the primary key for the current table merge rule.
 	 */
 	public List<SQLColumn> getPrimaryKey()  {
-		List<SQLColumn> columns = new ArrayList<SQLColumn>();
+		List<SQLColumn> columns;
 		
 		if (isSourceMergeRule()) {
-			try {
-                logger.debug(getParentProject().getSourceTableIndex().getChildren());
-				for (SQLIndex.Column column : getParentProject().getSourceTableIndex().getChildren()) {
-                    try {
-                        logger.debug(BeanUtils.describe(column));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    if (column.getColumn() == null) {
-                        throw new IllegalStateException("Found an index column with a null column name!");
-                    }
-					columns.add(column.getColumn()); 
-				}
-			} catch (ArchitectException e) {
-				throw new IllegalStateException("Error when getting primary keys");
-			}
+			columns = getPrimaryKeyFromIndex();
 		} else {
+			columns = new ArrayList<SQLColumn>();
 			for (ColumnMergeRules cmr : getChildren()) {
 				if (cmr.isInPrimaryKey()) {
 					columns.add(cmr.getColumn());
@@ -444,5 +482,11 @@ public class TableMergeRules
 			}
 		}
 		return columns;
+	}
+	
+	public void fixColumnMergeAction() {
+		//TODO: make a method that fixes the column 
+		//merge rules actions when the index changes...
+		
 	}
 }

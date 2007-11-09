@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -41,7 +40,6 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 public abstract class AbstractMergeColumnRuleTableModel extends AbstractTableModel implements MatchMakerListener, CleanupModel {
 
 	protected TableMergeRules mergeRule;
-	protected List<Integer> primaryKeys = new ArrayList<Integer>();
 	
 	public abstract int getColumnCount();
 	
