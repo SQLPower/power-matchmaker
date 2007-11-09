@@ -140,8 +140,12 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 		public SQLTable getTable() {
 			TableMergeRules tableMergeRules = (TableMergeRules) eventSource.getParent();
 	        if (tableMergeRules == null) throw new NullPointerException("Not attached to a parent");
-	        SQLTable st = tableMergeRules.getSourceTable();
-			return st;
+	        if (tableMergeRules.getParentMergeRule() == null) {
+	        	return null;
+	        } else {
+	        	SQLTable st = tableMergeRules.getParentMergeRule().getSourceTable();
+	        	return st;
+	        }
 		}
 
 	}

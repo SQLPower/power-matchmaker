@@ -33,18 +33,14 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 
-import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MergeColumnRuleEditor;
 import ca.sqlpower.matchmaker.swingui.SQLObjectChooser;
-import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
@@ -86,17 +82,7 @@ public class NewMergeRuleAction extends AbstractAction {
 				mergeRule = new TableMergeRules();
 				mergeRule.setTable((SQLTable) chooser.getTableComboBox().getSelectedItem());
 				mergeRule.setTableIndex((SQLIndex) chooser.getUniqueKeyComboBox().getSelectedItem());
-		        
-				try {
-					List<SQLColumn> columns = new ArrayList<SQLColumn>(
-							((SQLTable) chooser.getTableComboBox().getSelectedItem()).getColumns()); 
-					for (SQLColumn column : columns) {
-						ColumnMergeRules newRules = newColumnRule();
-						newRules.setColumn(column);
-					}
-				} catch (Exception ex) {
-					SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "An exception occured while deriving collison criteria", ex);
-				}
+		        mergeRule.deriveColumnMergeRules();
 				
 				swingSession.setCurrentEditorComponent(new MergeColumnRuleEditor(swingSession,
 						parent,mergeRule));
@@ -161,17 +147,6 @@ public class NewMergeRuleAction extends AbstractAction {
         dialog.pack();
 		dialog.setLocationRelativeTo(swingSession.getFrame());
         dialog.setVisible(true);
-	}
-	
-	/**
-	 * Creates a new column merge rule
-	 * @return returns the newly created column merge rule
-	 */
-	private ColumnMergeRules newColumnRule() {
-		ColumnMergeRules newRules = new ColumnMergeRules();
-		newRules.setActionType(MergeActionType.USE_MASTER_VALUE);
-		mergeRule.addChild(newRules);
-		return newRules;
 	}
 
 	/**

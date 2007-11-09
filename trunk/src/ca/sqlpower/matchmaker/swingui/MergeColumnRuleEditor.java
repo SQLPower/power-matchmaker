@@ -396,16 +396,13 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 		row += 2;
 		pb.add(new JLabel("Index Name:"), cc.xy(2,row,"r,c"));
 		String indexName = "";
-		try {
-			if (mmo.getTableIndex() == null) {
-				indexName = "";
-			} else {
-				indexName = mmo.getTableIndex().getName();
-			}
-		} catch (ArchitectException e1) {
-			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
-					"An exception occured while creating the merge column rules editor", e1);
+
+		if (mmo.getTableIndex() == null) {
+			indexName = "";
+		} else {
+			indexName = mmo.getTableIndex().getName();
 		}
+
 		temp = new JTextField(indexName);
 		temp.setEditable(false);
 		pb.add(temp, cc.xyw(4,row,5,"f,c"));

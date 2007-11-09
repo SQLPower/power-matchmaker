@@ -96,6 +96,9 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 	@Override
 	public List<String> getNonPersitingProperties() {
 		List<String> nonPersistingProperties = super.getNonPersitingProperties();
+		nonPersistingProperties.add("primaryKey");
+		nonPersistingProperties.add("primaryKeyFromIndex");
+		nonPersistingProperties.add("parentMergeRuleAndImportedKeys");
 		nonPersistingProperties.add("lastUpdateOSUser");
 		nonPersistingProperties.add("lastUpdateDate");
 		nonPersistingProperties.add("lastUpdateAppUser");
@@ -159,6 +162,7 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 		TableMergeRules item1 = createNewObjectUnderTest();
 		item1.setVisible(true);
 		ColumnMergeRules cmr1 = createColumnMergeRules(item1);
+		cmr1.setImportedKeyColumnName("NEW_COLUMN");
 		ColumnMergeRules cmr2 = createColumnMergeRules(item1);
 		
 		dao.save(item1);
@@ -173,5 +177,9 @@ public abstract class AbstractTableMergeRulesDAOTestCase extends AbstractDAOTest
 		}
 
 		assertEquals("TableMergeRules should have 2 children.", 2, savedItem1.getChildren().size());
+		ColumnMergeRules savedcmr1 = savedItem1.getChildren().get(0);
+		assertEquals("Imported key column is not persisted.", cmr1.getImportedKeyColumnName(), savedcmr1.getImportedKeyColumnName());
+
+		
 	}
 }
