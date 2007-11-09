@@ -269,6 +269,8 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	 * allows the user to set the parentMergeRule
 	 */ 
 	private final JComboBox parentMergeRule = new JComboBox();
+	
+	private final List<TableMergeRules> mergeRules;
 
 	/**
 	 * allows the user to set the childMergeAction
@@ -339,7 +341,12 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
         ruleTable.getSelectionModel().addListSelectionListener(tablelistener);
         TableUtils.fitColumnWidths(ruleTable, 15);
 
-        parentMergeRule.setModel(new DefaultComboBoxModel(project.getTableMergeRules().toArray()));
+        mergeRules = project.getTableMergeRules();
+        for (TableMergeRules tmr : project.getTableMergeRules()) {
+        	if (!mmo.equals(tmr)) {
+        		parentMergeRule.addItem(tmr.getSourceTable());
+        	}
+        }
         
         buildUI();
         addListenerToComponents();
@@ -407,7 +414,11 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 		if (!mmo.isSourceMergeRule()) {
 			pb.add(new JLabel("Parent Table:"), cc.xy(2,row,"l,c"));
 			pb.add(parentMergeRule, cc.xy(4,row,"f,c"));
-			parentMergeRule.setSelectedItem(mmo.getParentMergeRule());
+			if (mmo.getParentMergeRule() != null) {
+				parentMergeRule.setSelectedItem(mmo.getParentMergeRule().getSourceTable());
+			} else {
+				parentMergeRule.setSelectedItem(null);
+			}
 			pb.add(new JLabel("Merge Action:"), cc.xy(6,row,"r,c"));
 			pb.add(childMergeAction, cc.xy(8,row,"f,c"));
 			childMergeAction.setSelectedItem(mmo.getChildMergeAction());
@@ -424,7 +435,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	private void addListenerToComponents() {
 		parentMergeRule.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
-				mmo.setParentMergeRuleAndImportedKeys((TableMergeRules) parentMergeRule.getSelectedItem());
+				mmo.setParentMergeRuleAndImportedKeys((TableMergeRules) mergeRules.get(parentMergeRule.getSelectedIndex()));
 			}});
         childMergeAction.addActionListener(new ActionListener(){
     		public void actionPerformed(ActionEvent e) {
@@ -463,10 +474,10 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 		return parentMergeRule;
 	}
 	
-	public List<SQLColumn> getParentTablePrimaryKeys() throws ArchitectException{
+	private List<SQLColumn> getParentTablePrimaryKeys() throws ArchitectException{
 		List<SQLColumn> primaryKeys = null;
 		if (parentMergeRule.getSelectedItem() != null) {
-			TableMergeRules tmr = (TableMergeRules) parentMergeRule.getSelectedItem();
+			TableMergeRules tmr = mergeRules.get(parentMergeRule.getSelectedIndex());
 			primaryKeys = tmr.getPrimaryKey();
 		}
 		return primaryKeys;
@@ -493,7 +504,11 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	public void undoEventFired(
 			MatchMakerEvent<TableMergeRules, ColumnMergeRules> evt) {
 		if (!mmo.isSourceMergeRule()) {
-			parentMergeRule.setSelectedItem(mmo.getParentMergeRule());
+			if (mmo.getParentMergeRule() != null) {
+				parentMergeRule.setSelectedItem(mmo.getParentMergeRule().getSourceTable());
+			} else {
+				parentMergeRule.setSelectedItem(null);
+			}
 			childMergeAction.setSelectedItem(mmo.getChildMergeAction());
 		}
 		handler.performFormValidation();
