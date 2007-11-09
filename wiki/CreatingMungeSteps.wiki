@@ -93,10 +93,22 @@ This is just a bit of housekeeping.  Some steps allow a variable number of input
 
 Most steps, however, will have a fixed number of inputs with specific meanings.  In this case, the `canAddInput()` method should return false, and the AbstractMungeStep will ensure no inputs are added or removed from your step by the user.
 
+== The User Interface Component ==
 
-== A More Complex Example ==
+Coming soon!
 
-The simple example above is a fully-functional step that behaves properly.  The vast majority of steps need not be more complicated than that simple example. However, some steps will need to take advantage of the more advanced features of the MungeStep API:
+== Getting Your Step Into The Toolbox ==
+
+Coming soon!
+
+== Making Sure Your Step Saves And Loads ==
+
+Coming soon!
+
+
+= A More Complex Example =
+
+The simple example above is a fully-functional step that behaves properly.  Many steps need not be more complicated than that simple example. However, some steps will need to take advantage of the more advanced features of the MungeStep API:
 
  * User-supplied parameters
  * Variable numbers of inputs and outputs
