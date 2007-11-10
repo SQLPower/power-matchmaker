@@ -86,14 +86,176 @@
 	
 	<target name="dist">
 	</target>
-
 	
-	<target name="stage" depends="getAppVersion, compile">
+	<!-- DOCUMENTATION
+		There are THREE main documentation targets, all built from the
+		docbook XML file docs/PowerArchitectUsersGuide:
+			help - JavaHelp (jarred and shipped)
+			html - for quick viewing on our web site
+			PDF - because we can :-)
+	-->
+
+	<!-- NOTE: All XSLT steps currently require xalan on classpath since JDK1.5 is behind -->
+	<path id="docbookclasspath">
+		<fileset dir="doc/tools/xalan">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+
+	<target name="userguide" depends="help,pdf" description="Creates user guide in HTML and PDF">
+	</target>
+
+	<!-- Create an intermediate docbook document - for use both by help and html -
+	with no width attributes on the images (the Swing HTML browser chokes
+	when there is width but no height in an image tag)
+	-->
+	<target name="xslt-stripwidths">
+		<xslt
+			style="doc/tools/strip-width.xsl"
+			in="doc/PowerMatchMakerUserGuide.xml"
+			out="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
+			classpathref="docbookclasspath">
+		</xslt>
+	</target>
+
+	<!-- Build the Help (JavaHelp, HTML-based format).
+	 ** Note that at this time you must NOT have spaces in your
+	 ** path (e.g., an Eclipse Workspace under "Documents and Settings"
+	 ** will fail out because it changes spaces in filenames to %20.
+	 -->
+	<target name="help" depends="checkBuildPath, xslt-stripwidths" description="Create JavaHelp">
+		<mkdir dir="${build}/help"/>
+		<!-- This XSLT element is what's causing the problem with the
+			directories with spaces not working. It outputs the results
+			to a new directory with spaces replaced with '%20'-->
+		<xslt
+			style="doc/tools/xslt/javahelp/javahelp.xsl"
+			in="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
+			out="${build}/help/zzz"
+			classpathref="docbookclasspath">
+		</xslt>
+
+		<!-- Index it I: limited-terms index: created manually, just copy it,
+		 *** overwriting empty one that DocBook Javahelp made.
+		 -->
+		<copy file="doc/jhelpidx.xml" todir="${build}/help" overwrite="true"/>
+
+		<!-- Index it II: full text search -->
+		<!-- DO NOT USE as it seems to have a built-in assumption
+		 *** that the help is all in one file.
+		<java classname="com.sun.java.help.search.Indexer"
+			classpath="lib/jhall.jar"
+			fork="true" failonerror="true">
+			<arg value="${build}/help"/>
+		</java>
+		<mkdir dir="${build}/help/JavaHelpSearch"/>
+		<move todir="${build}/help/JavaHelpSearch">
+			<fileset dir="JavaHelpSearch" includes="**"/>
+		</move>
+		-->
+		<!-- So, remove the search view from the JavaHelp config -->
+		<replace file="${build}/help/jhelpset.hs" value="">
+			<replacetoken><![CDATA[<view><name>Search</name><label>Search</label><type>javax.help.SearchView</type><data engine="com.sun.java.help.search.DefaultSearchEngine">JavaHelpSearch</data></view>]]></replacetoken>
+		</replace>
+
+		<!-- Add the Favorites/Bookmarks views into the JavaHelp Config -->
+		<replace file="${build}/help/jhelpset.hs"
+			token="jhelpidx.xml&lt;/data>&lt;/view>&lt;/helpset>"
+			value="jhelpidx.xml&lt;/data>&lt;/view>&lt;view>&lt;name>favorites&lt;/name>&lt;label>Favorites&lt;/label>&lt;type>javax.help.FavoritesView&lt;/type>&lt;/view>&lt;/helpset>"/>
+
+		<!-- Copy the images and icons; the DocBook files have
+			these horrid "src/" and "doc/" paths prepended
+			so we have to preserve these here -->
+		<mkdir dir="${build}/help/doc/images"/>
+		<copy todir="${build}/help/doc/images" overwrite="true">
+			<fileset dir="doc/images">
+				<include name="*.png"/>
+			</fileset>
+		</copy>
+
+		<mkdir dir="${build}/help/src/icons"/>
+		<copy todir="${build}/help/src/icons" overwrite="true">
+			<fileset dir="src/icons">
+				<include name="*.gif"/>
+				<include name="*.png"/>
+			</fileset>
+		</copy>
+
+		<!-- Jar the whole mess up and add to working classpath -->
+		<jar file="${build}/matchmakerhelp.jar" basedir="${build}/help" update="false">
+		</jar>
+	</target>
+
+	<!-- Build the HTML -->
+	<target name="html" depends="checkBuildPath, xslt-stripwidths" description="Create user guide in HTML">
+		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/" />
+
+		<xslt
+			style="doc/tools/xslt/html/chunk.xsl"
+			in="${java.io.tmpdir}/MatchMakerUserGuide-nowidth.xml"
+			out="${build}/ca/sqlpower/architect/doc/MatchMakerUserGuide.html"
+			classpathref="docbookclasspath">
+		</xslt>
+
+		<!-- Warning: This is an extremely evil hack to get the product out the door!
+		              See bugzilla 1195 for details -->
+		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/doc/images" />
+		<copy todir="${build}/ca/sqlpower/matchmaker/doc/doc/images" overwrite="true">
+			<fileset dir="doc/images">
+				<include name="*.png"/>
+			</fileset>
+		</copy>
+		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/src/icons" />
+		<copy todir="${build}/ca/sqlpower/matchmaker/doc/src/icons" overwrite="true">
+			<fileset dir="src/icons">
+				<include name="*.gif"/>
+				<include name="*.png"/>
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- Convert User Manual from XML to FO -->
+	<!-- USED to depend on init in architect, not sure if it is needed -->
+	<target name="fo" description="Create user guide in XML Formatting Objects">
+		<mkdir dir="${build}/doc/" />
+        <xslt
+			style="doc/tools/xslt/fo/docbook.xsl"
+			in="doc/PowerMatchMakerUserGuide.xml"
+			out="${build}/doc/PowerMatchMakerUserGuide-${app.version}.fo"
+			classpathref="docbookclasspath">
+		</xslt>
+	</target>
+
+	<!-- Finish it, from FO to PDF -->
+	<target name="pdf" depends="fo" description="Create user guide in PDF">
+		<path id="fop-classpath">
+			<fileset dir="doc/tools/xalan">
+			  <include name="*.jar"/>
+			</fileset>
+			<fileset dir="doc/tools/fop">
+			  <include name="*.jar"/>
+			</fileset>
+		</path>
+		<taskdef name="fop" classname="org.apache.fop.tools.anttasks.Fop" classpathref="fop-classpath"/>
+        <fop format="application/pdf" messagelevel="verbose" relativebase="true" >
+			<fileset dir="${build}/doc/">
+				<include name="*.fo"/>
+			</fileset>
+		</fop>
+
+    </target>
+
+	<target name="stage" depends="getAppVersion, compile, userguide">
 		<mkdir dir="${dist.dir}" />
         <mkdir dir="${staging.dir}"/>
         <mkdir dir="${staging.dir}/lib"/>
         <mkdir dir="${staging.dir}/jdbc"/>
     	<mkdir dir="${staging.dir}/doc"/>
+		
+    	<copy todir="${staging.dir}/lib">
+    	    <fileset dir="lib" includes="*.jar"/>
+    		<fileset dir="${build}" includes="architecthelp.jar" />
+    	</copy>
 		
 		<manifestclasspath property="matchmaker.jar.classpath" jarfile="${staging.dir}/matchmaker.jar">
     		<classpath>
@@ -298,6 +460,61 @@
 
 	</target>
 	
+	<!-- This is needed to prevent a problem with DocBook help file generation 
+		 in which the XSLT replaces the spaces in the path name with '%20', and
+		 doesn't convert it back when saving the files. It looks like this is
+		 related to the DocBook chunking functionality.
+		 We don't know of any good way to fix this yet, so we have this
+		 check for the time being.-->
+	<target name="checkBuildPath" 
+		description="Ensure the build path contains no spaces.">
+		<echo message="Note: Your build path cannot contain any spaces at this point because of a problem with help file generation."/>
+		<echo message="Checking build path..."/>
+		<!-- Check if the build path is absolute. If so, set buildPath -->
+		<condition property="buildPath" value="${build}">
+			<or>
+				<!-- Check for Windows style absolute pathnames-->
+				<and>
+					<or>
+						<!-- pathname with backslash only -->
+						<matches string="${build}" pattern="^\\{1}.*"/>
+						<!-- pathname with drive letter -->
+						<matches string="${build}" pattern="^[a-zA-Z]{1}:\\.*"/>
+					</or>
+					<os family="windows"/>
+				</and>
+				<!-- Check for Unix style absolute pathnames -->
+				<and>
+					<matches string="${build}" pattern="^//{1}.*"/>
+					<not>
+						<os family="windows"/>
+					</not>
+				</and>
+			</or>
+		</condition>
+		<!-- Check if buildPath is set. If not, then it's a relative buildpath-->
+		<condition property="buildPath" value="${basedir}\${build}">
+			<and>
+				<not>
+					<isset property="buildPath"/>
+				</not>
+				<os family="windows"/>
+			</and>
+		</condition>
+		<!-- Check if buildPath is set. If not, then it's not a windows buildpath (i.e. doesn't use '\')-->
+		<condition property="buildPath" value="${basedir}/${build}">
+			<not>
+				<isset property="buildPath"/>
+			</not>
+		</condition>
+		<echo message="Your build path is ${buildPath}"/>
+		<!-- Now check the build path for spaces -->
+	    <fail message="Your build path MUST NOT contain any spaces. See the file 'build.properties.example' to see how to set property 'build' to an absolute pathname that does not contain any spaces">
+	    	<condition>
+				<contains string="${buildPath}" substring=" "/>
+	    	</condition>
+		</fail>
+	</target>
 	
 	<target name="osx_tgz" depends="osx_dist" if="isNotMac">
 		<tar destfile="${dist.dir}/MatchMaker-OSX-${app.version}.tar.gz"
