@@ -1,4 +1,4 @@
-<project name="matchmaker" default="compile" basedir=".">
+<project name="matchmaker" default="dist" basedir=".">
 
 	<!-- $Id$ -->
 	<!-- get the version number from source code MatchMakerUtils -->
@@ -105,7 +105,27 @@
 			debug="true"/>
 	</target>
 	
-	<target name="dist">
+	<target name="dist" depends="userguide,osx_tgz,osx_dmg,windows_jdbc_installer,generic_install">
+		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
+		<mkdir dir="${dist.dir}/doc"/>
+		<copy todir="${dist.dir}/doc" overwrite="true">
+			<fileset dir="${staging.dir}/doc">
+				<include name="*.txt"/>
+			</fileset>
+		</copy>
+		<copy todir="${dist.dir}" overwrite="true">
+			<fileset dir="${staging.dir}/doc">
+				<include name="*-${app.version}.pdf"/>
+			</fileset>
+		</copy>
+	    <get dest="${dist.dir}/index.html" src="http://www.sqlpower.ca/page/matchmaker_download_template"/>
+		<replace file="${dist.dir}/index.html">
+			<replacefilter token="&lt;head&gt;" value="&lt;head&gt;&lt;base href=&quot;http://www.sqlpower.ca/page/&quot;&gt;"/>
+			<replacefilter token="@@app_version" value="${app.version}"/>
+			<replacefilter token="@@downloadLinkBase" value="${downloadLinkBase}"/>
+			<replacefilter token="@@docLinkBase" value="${docLinkBase}"/>
+		</replace>
+		<echo>Did you forget to turn off all the debugging in log4j.properties?!</echo>
 	</target>
 	
 	<!-- DOCUMENTATION
@@ -301,9 +321,14 @@
 		
     	<copy todir="${staging.dir}/lib">
     	    <fileset dir="lib" includes="*.jar"/>
-    		<fileset dir="${build}" includes="architecthelp.jar" />
+    		<fileset dir="${build}" includes="matchmakerhelp.jar" />
     	</copy>
 		
+    	<copy todir="${staging.dir}/doc">
+        	<fileset dir="${build}/doc" includes="*-${app.version}.pdf"/>
+    	   	<fileset dir="${build}/doc" includes="*.txt"/>
+    	</copy>
+
 		<manifestclasspath property="matchmaker.jar.classpath" jarfile="${staging.dir}/matchmaker.jar">
     		<classpath>
 	    		<pathelement path="${staging.dir}/jdbc"/>
