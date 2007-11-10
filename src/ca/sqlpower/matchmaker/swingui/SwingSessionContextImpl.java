@@ -405,6 +405,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
             }
         }
+        
         //XXX: We should NOT be using ArchitectSession for this
         prefs.put(ArchitectSession.PREFS_PL_INI_PATH, plDotIniPath);
         return new MatchMakerHibernateSessionContext(prefs, plDotIni);
@@ -420,6 +421,16 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         }
 
         DataSourceCollection pld = new PlDotIni();
+        
+        // First, read the defaults
+        try {
+            logger.debug("Reading PL.INI defaults");
+            pld.read(SwingSessionContextImpl.class.getClassLoader().getResourceAsStream("ca/sqlpower/sql/default_database_types.ini"));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read system resource default_database_types.ini", e);
+        }
+        
+        // Now, merge in the user's own config
         try {
             pld.read(pf);
             return pld;
