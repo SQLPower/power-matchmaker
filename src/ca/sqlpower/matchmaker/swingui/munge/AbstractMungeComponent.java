@@ -163,14 +163,14 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 */
 	protected Set<Class<? extends JComponent>> opaqueComponents = new HashSet<Class<? extends JComponent>>();
 	
-	private static final Image MMM_TOP = new ImageIcon(ClassLoader.getSystemResource("icons/mmm_top.png")).getImage(); 
-	private static final Image MMM_BOT = new ImageIcon(ClassLoader.getSystemResource("icons/mmm_bot.png")).getImage(); 
+	private static final Image MMM_TOP = new ImageIcon(AbstractMungeComponent.class.getClassLoader().getResource("icons/mmm_top.png")).getImage(); 
+	private static final Image MMM_BOT = new ImageIcon(AbstractMungeComponent.class.getClassLoader().getResource("icons/mmm_bot.png")).getImage(); 
 	
-	private static final ImageIcon EXPOSE_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/expose_off.png"));
-	private static final ImageIcon EXPOSE_ON = new ImageIcon(ClassLoader.getSystemResource("icons/expose_on.png"));
+	private static final ImageIcon EXPOSE_OFF = new ImageIcon(AbstractMungeComponent.class.getClassLoader().getResource("icons/expose_off.png"));
+	private static final ImageIcon EXPOSE_ON = new ImageIcon(AbstractMungeComponent.class.getClassLoader().getResource("icons/expose_on.png"));
 	
-	private static final ImageIcon PLUS_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/plus_off.png"));
-	private static final ImageIcon PLUS_ON = new ImageIcon(ClassLoader.getSystemResource("icons/plus_on.png"));
+	private static final ImageIcon PLUS_OFF = new ImageIcon(AbstractMungeComponent.class.getClassLoader().getResource("icons/plus_off.png"));
+	private static final ImageIcon PLUS_ON = new ImageIcon(AbstractMungeComponent.class.getClassLoader().getResource("icons/plus_on.png"));
 	
 	private static final int PLUG_OFFSET = 2;
 	public static final int CLICK_TOLERANCE = 15;
