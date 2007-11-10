@@ -9,6 +9,22 @@
 	<property name="build.tests" value="${build}"/>
 	<property name="lib" value="lib"/>
 	<property name="buildlib" value="buildlib"/>
+	
+	<condition property="downloadLinkBase" value="http://nightlybuild.sqlpower.ca/matchmaker/nightly/${app.version}">
+		<isset property="nightly"/>
+	</condition>
+	<condition property="docLinkBase" value="${downloadLinkBase}">
+		<isset property="nightly"/>		
+	</condition>
+	<condition property="downloadLinkBase"
+		value="http://power-matchmaker.googlecode.com/files">
+		<not><isset property="downloadLinkBase"/></not>
+	</condition>
+	<condition property="docLinkBase" 
+		value="http://download.sqlpower.ca/matchmaker/${app.version}">
+		<not><isset property="docLinkBase"/></not>
+	</condition>
+
 	<!-- The staging directory is a temp dir that is used as a base for all
 	     the OS-dependant distributions -->
 	<property name="staging.dir" value="staging"/>
