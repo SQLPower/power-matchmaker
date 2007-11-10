@@ -13,7 +13,7 @@
 		<mediaobject>
 			<imageobject id="matchmaker_logo">
 				<imagedata fileref="doc/images/matchmaker_logo.png"
-					format="PNG" />
+					format="PNG" width="4in" />
 			</imageobject>
 		</mediaobject>
 
@@ -247,7 +247,7 @@
 				<mediaobject>
 					<imageobject>
 						<imagedata fileref="doc/images/munge_pen.png"
-							format="PNG"/>
+							format="PNG" width="4in" />
 					</imageobject>
 				</mediaobject>
 
@@ -823,8 +823,9 @@
 			<para>
 				<inlinemediaobject>
 					<imageobject>
-						<imagedata fileref="doc/images/jdbc_drivers_window.png"
-							format="PNG"/>
+						<imagedata
+							fileref="doc/images/jdbc_drivers_window.png" format="PNG"
+							width="4in" />
 					</imageobject>
 				</inlinemediaobject>
 			</para>
@@ -930,7 +931,7 @@
 				<inlinemediaobject>
 					<imageobject>
 						<imagedata
-							fileref="doc/images/db_con_manager.png" format="PNG"/>
+							fileref="doc/images/db_con_manager.png" format="PNG" width="4in" />
 					</imageobject>
 				</inlinemediaobject>
 			</para>
@@ -1027,14 +1028,14 @@
 						Welcome to the Match Maker Example, this will
 						take you through an example De-Duping project
 						and highlight some of the key features of the
-						Power*MatchMaker. Start by logging into your 
+						Power*MatchMaker. Start by logging into your
 						repository.
 					</para>
 				</listitem>
 				<listitem>
 					<para>
-						Click on the help menu in the top menu
-						bar and choose
+						Click on the help menu in the top menu bar and
+						choose
 						<userinput>Build Example Table</userinput>
 						. This will create the base table for this
 						example that you can practice finding and
@@ -1461,7 +1462,7 @@
 					<inlinemediaobject>
 						<imageobject>
 							<imagedata
-								fileref="doc/images/login_window.png" format="PNG"/>
+								fileref="doc/images/login_window.png" format="PNG" width="4in" />
 						</imageobject>
 					</inlinemediaobject>
 				</para>
@@ -1522,7 +1523,7 @@
 				<mediaobject>
 					<imageobject>
 						<imagedata
-							fileref="doc/images/db_con_manager.png" format="PNG" />
+							fileref="doc/images/db_con_manager.png" format="PNG" width="4in" />
 					</imageobject>
 				</mediaobject>
 				<para>
@@ -1594,7 +1595,7 @@
 				<mediaobject>
 					<imageobject>
 						<imagedata
-							fileref="doc/images/db_con_window.png" format="PNG" />
+							fileref="doc/images/db_con_window.png" format="PNG" width="4in" />
 					</imageobject>
 				</mediaobject>
 				<para>
@@ -1670,7 +1671,8 @@
 				<mediaobject>
 					<imageobject>
 						<imagedata
-							fileref="doc/images/jdbc_drivers_window.png" format="PNG" />
+							fileref="doc/images/jdbc_drivers_window.png" format="PNG"
+							width="4in" />
 					</imageobject>
 				</mediaobject>
 				<para>
@@ -1748,8 +1750,8 @@
 				<title>Main Editor Pane</title>
 				<mediaobject>
 					<imageobject>
-						<imagedata
-							fileref="doc/images/main_window.png" format="PNG" />
+						<imagedata fileref="doc/images/main_window.png"
+							format="PNG" width="4in" />
 					</imageobject>
 				</mediaobject>
 				<para>
