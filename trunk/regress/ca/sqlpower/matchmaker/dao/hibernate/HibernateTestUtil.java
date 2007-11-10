@@ -22,10 +22,10 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.util.HibernateUtil;
+import ca.sqlpower.sql.SPDataSource;
 
 public class HibernateTestUtil {
 
@@ -45,7 +45,8 @@ public class HibernateTestUtil {
 	static SessionFactory buildHibernateSessionFactory(SPDataSource ds) {
 		Configuration cfg = new Configuration();
 		SessionFactory sessionFactory = null;
-        cfg.configure(ClassLoader.getSystemResource("ca/sqlpower/matchmaker/dao/hibernate/hibernate.cfg.xml"));
+		
+        cfg.configure(HibernateTestUtil.class.getClassLoader().getResource("ca/sqlpower/matchmaker/dao/hibernate/hibernate.cfg.xml"));
          
 		// last-minute configuration overrides for stuff that can only be known
 		// at runtime

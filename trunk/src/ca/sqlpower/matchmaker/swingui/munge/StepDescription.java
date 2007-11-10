@@ -102,12 +102,12 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
             Class<?> guiClass = Class.forName(value);
 			setGuiClass(guiClass.asSubclass(AbstractMungeComponent.class));
 		} else if (property.equals("icon")) {
-		    if (!value.equals("") && ClassLoader.getSystemResource(value) != null) {
-				setIcon(new ImageIcon(ClassLoader.getSystemResource(value)));
+		    if (!value.equals("") && getClass().getClassLoader().getResource(value) != null) {
+				setIcon(new ImageIcon(getClass().getClassLoader().getResource(value)));
 			} else if (!value.equals("") && new File(value).exists()) {
 				setIcon(new ImageIcon(value));
 			} else {
-				setIcon(new ImageIcon(ClassLoader.getSystemResource(DEFAULT_ICON)));
+				setIcon(new ImageIcon(getClass().getClassLoader().getResource(DEFAULT_ICON)));
 			}
 		} else {
 		    logger.info("Skipping unknown step description property: " + property);

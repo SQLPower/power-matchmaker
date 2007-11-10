@@ -6,6 +6,7 @@
 	<property file="build.properties"/>
 	<property name="src" value="src"/>
 	<property name="build" value="build"/>
+	<property name="build.tests" value="${build}"/>
 	<property name="lib" value="lib"/>
 	<property name="buildlib" value="buildlib"/>
 	<!-- The staging directory is a temp dir that is used as a base for all
@@ -35,12 +36,33 @@
 		</not>
 	</condition>
 	
+	<!-- A path that will include all jars in the lib and buildlib folders -->
+	<path id="compile.classpath">
+		<fileset dir="${lib}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${buildlib}">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+	
+	<path id="test.classpath">
+		<pathelement location="${build}"/>
+		<pathelement location="${sqlpower.library.home}/build/tests"/>
+		<fileset dir="lib">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="buildlib">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+	
 	<!-- Compiles the MatchMaker and places the .class files into build-->
-	<target name="compile" depends="sqlpower.library, copyfiles">
+	<target name="compile" depends="sqlpower.library, getAppVersion, copyfiles">
 		<mkdir dir="${build}"/>
 		<javac 	srcdir="${src}" 
 				destdir="${build}" 
-				classpathref="compile.path"/>
+				classpathref="compile.classpath"/>
 	</target>
 	
 	
@@ -70,18 +92,17 @@
 	</target>
 	
 	
-	<!-- A path that will include all jars in the lib and buildlib folders -->
-	<path id="compile.path">
-		<fileset dir="${lib}">
-			<include name="*.jar"/>
-		</fileset>
-		<fileset dir="${buildlib}">
-			<include name="*.jar"/>
-		</fileset>
-	</path>
 	
 
+	<!-- Compiles the regression test suite -->
 	<target name="compile-tests" depends="compile">
+		<ant dir="${sqlpower.library.home}" target="compile-tests">
+			<property name="build" value="${sqlpower.library.home}/build"/>
+		</ant>
+		<mkdir dir="${build.tests}"/>
+		<javac srcdir="regress" destdir="${build.tests}"
+			classpathref="test.classpath"
+			debug="true"/>
 	</target>
 	
 	<target name="dist">
@@ -245,6 +266,32 @@
 
     </target>
 
+	<!-- Runs the Business and Auto test suites. The Swing UI test suite is
+	 	 not run because it fails randomly -->
+	<target name="junit" depends="compile-tests">
+	 	<mkdir dir="${reports}"/>
+		<property name="reports.junit" value="${reports}/junit"/>
+		<mkdir dir="${reports.junit}"/>
+		<!-- Output all System.out and System.err messages -->
+	   <junit printsummary="on" maxmemory="512m">
+	   	   <sysproperty key="ca.sqlpower.matchmaker.test.dir" value="${build.tests}"/>
+	       <classpath>
+	       		<path refid="test.classpath"/>
+	       		<path path="${build.tests}"/>
+	       </classpath>
+	       <test name="ca.sqlpower.matchmaker.MatchMakerAllTests" todir="${reports.junit}"/>
+	   	   <formatter type="xml"/>
+	   </junit>
+		<!-- Generate HTML report -->
+		<junitreport todir="${reports.junit}">
+		  <fileset dir="${reports.junit}">
+		    <include name="TEST-*.xml" />
+		  </fileset>
+		  <report todir="${reports.junit}" />
+		</junitreport>
+	</target>
+	
+	
 	<target name="stage" depends="getAppVersion, compile, userguide">
 		<mkdir dir="${dist.dir}" />
         <mkdir dir="${staging.dir}"/>
@@ -296,7 +343,7 @@
 	<target name="getAppVersion">
 		<mkdir dir="${build}"/>
 		<!-- get the version number from source code ArchitectUtils -->
-		<javac srcdir="${src}" destdir="${build}" classpathref="compile.path" includes="ca/sqlpower/matchmaker/MatchMakerVersion.java" debug="true"/>
+		<javac srcdir="${src}" destdir="${build}" classpathref="compile.classpath" includes="ca/sqlpower/matchmaker/MatchMakerVersion.java" debug="true"/>
 		<taskdef name="genVersion"
 					classname="ca.sqlpower.matchmaker.MatchMakerVersion"
 			        classpath="${build}"/>
@@ -321,6 +368,7 @@
 
 		<property name="app.version" value="${app_ver_major}.${app_ver_minor}.${app_ver_tiny}${app.ver.suffix}"/>
 		<property name="dist.dir" value="${dist.base}/${app.version}"/>
+		<property name="reports" value="${dist.dir}/reports"/>
 	</target>
 	
 	
@@ -333,7 +381,7 @@
 				<installation version="1.0">
 					<!-- comment -->
 					<info>
-						<appname>Power*MatchMaker</appname>
+						<appname>Power MatchMaker</appname>
 						<appversion>@{app.version}</appversion>
 						<url>http://www.sqlpower.ca/</url>
 						<javaversion>1.5</javaversion>
@@ -387,7 +435,7 @@
 							<fileset dir="../src/icons" targetdir="$INSTALL_PATH">
 								<include name="*.ico"/>
 							</fileset>
-							<parsable targetfile="${INSTALL_PATH}/matchmaker_file_association.reg" type="windowsreg"/>
+							<parsable targetfile="${INSTALL_PATH}/matchmaker_file_association.reg" type="plain"/>				
 							<executable targetfile="regedit.exe" stage="postinstall" keep="true">
 							   <args>
 							     <arg value="\/s"/>

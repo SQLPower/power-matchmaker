@@ -498,7 +498,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	   	Properties steps = new Properties();
 	   	Map<String, StepDescription> stepProps = new HashMap<String, StepDescription>();
 	   	
-		steps.load(ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"));
+		steps.load(getClass().getClassLoader().getResourceAsStream("ca/sqlpower/matchmaker/swingui/munge/munge_components.properties"));
 		
 		try {
 			steps.load(new FileInputStream((System.getProperty("user.home") + "/.matchmaker/munge_components.properties")));
