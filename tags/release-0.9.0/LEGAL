@@ -1,0 +1,71 @@
+Copyright 2007 SQL Power Group Inc. All rights reserved.
+
+Power*MatchMaker is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 3 of the
+License, or (at your option) any later version.
+
+Power*MatchMaker is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program (see the LICENSE file).  If not, see
+<http://www.gnu.org/licenses/>.
+
+Linking Power*MatchMaker statically or dynamically with other modules
+is making a combined work based on Power*MatchMaker.  Thus, the terms
+and conditions of the GNU General Public License cover the whole
+combination.
+
+In addition, as a special exception, SQL Power gives you permission to
+combine Power*MatchMaker program with free software programs or
+libraries that are released under the GNU LGPL and with the standard
+release of the Java(TM) Transaction API (JTA) reference implementation
+from Sun Microsystems, Inc. (or modified versions of such code, with
+unchanged license).  You may copy and distribute such a system
+following the terms of the GNU GPL for Power*MatchMaker and the
+licenses of the other code concerned.
+
+As an additional special exception, SQL Power gives you permission to
+use Power*MatchMaker together with publicly available JDBC drivers
+whether or not they are licensed compatibly with the GPL.
+
+As a final special exception, SQL Power gives you permission to use
+Power*MatchMaker together with any release of the JUnit test
+framework, which is licensed under the Common Public License (CPL).
+
+Note that people who make modified versions of Power*MatchMaker are
+not obligated to grant this special exception for their modified
+versions; it is their choice whether to do so.  The GNU General Public
+License gives permission to release a modified version without this
+exception; this exception also makes it possible to release a modified
+version which carries forward this exception.
+
+
+Additional Restrictions for the Bundled SQL Server 2005 JDBC Driver
+
+The MatchMaker is bundled with Microsoft's JDBC driver for Microsoft
+SQL Server.  That driver (the file sqlserver_2005.jar) is distributed
+under these additional restrictions:
+
+1. You may not redistribute copies of the MatchMaker download which
+   includes the Oracle and/or Microsoft SQL Server JDBC drivers.  If
+   you wish to redistribute the MatchMaker, you must obtain and
+   distribute the version which does not include these bundled drivers.
+
+2. You may not publish benchmark information about performance related
+   to your use of any of the 3rd-party JDBC drivers.
+
+3. You may not reverse engineer, de-compile, or disassemble the 3rd
+   party JDBC drivers.
+
+4. You must comply with all domestic and international United States
+   export laws when downloading and redistributing the software.  In
+   particular, you may not download the MatchMaker which includes bundled
+   3rd-party drivers to, or allow your copy of the MatchMaker with 3rd
+   party bundled drivers to be exported to a country on one of the
+   export-controlled countries lists.
+   
+   For details, see http://www.microsoft.com/exporting

@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+	"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- Generated 19-Sep-2006 12:38:16 PM by Hibernate Tools 3.2.0.beta7 -->
+<hibernate-mapping>
+
+	<class name="ca.sqlpower.matchmaker.PlFolder" table="pl_folder2">
+		<id name="oid" type="long" access="field">
+			<column name="folder_oid"/>
+			<generator class="native">
+				<param name="sequence">pl_folder2_oid_seq</param>
+			</generator>
+		</id>
+
+		<property name="name" type="string">
+			<column name="folder_name" />
+		</property>
+		<property name="folderDesc" type="string">
+			<column name="folder_desc" />
+		</property>
+		<property name="folderStatus" type="string">
+			<column name="folder_status" length="12" />
+		</property>
+		<property name="lastBackupNo" type="long">
+			<column name="last_backup_no" precision="18" scale="0" />
+		</property>
+
+		<bag name="children" access="field" lazy="false"
+			inverse="true" fetch="subselect" cascade="all" order-by="project_name">
+			<key>
+				<column name="folder_oid" length="80" not-null="true" />
+			</key>
+			<one-to-many class="ca.sqlpower.matchmaker.Project"  />
+		</bag>
+
+	</class>
+
+</hibernate-mapping>
