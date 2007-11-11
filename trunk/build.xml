@@ -121,7 +121,7 @@
 			debug="true"/>
 	</target>
 	
-	<target name="dist" depends="userguide,osx_tgz,osx_dmg,windows_jdbc_installer,generic_install">
+	<target name="dist" depends="junit,userguide,osx_tgz,osx_dmg,windows_jdbc_installer,generic_install">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
 		<copy todir="${dist.dir}/doc" overwrite="true">
