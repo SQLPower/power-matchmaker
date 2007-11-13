@@ -51,6 +51,17 @@ public final class NewProjectAction extends AbstractAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		
+		// TODO: Cross referencing projects disabled for now 
+		// until properly implemented.
+		if (type == ProjectMode.BUILD_XREF) {
+			JOptionPane.showMessageDialog(swingSession.getFrame(),
+					"Cross referencing projects are not yet implemented",
+					"Apologies",
+					JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		
 		PlFolder<Project> folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
 		if (folder == null) {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
