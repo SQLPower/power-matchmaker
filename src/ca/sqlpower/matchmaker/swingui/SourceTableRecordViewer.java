@@ -24,8 +24,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
@@ -48,14 +46,14 @@ public class SourceTableRecordViewer {
 
 	/**
 	 * A panel whose preferred width is never less than
-	 * {@link #toolBarPrefWidth}.
+	 * {@link #toolBarMinWidth}.
 	 */
 	private class RecordViewerPanel extends JPanel {
 		@Override
 		public Dimension getPreferredSize() {
 			Dimension ps = super.getPreferredSize();
 			
-			ps.width = Math.max(toolBarPrefWidth, ps.width);
+			ps.width = Math.max(toolBarMinWidth, ps.width);
 			
 			return ps;
 		}
@@ -78,7 +76,7 @@ public class SourceTableRecordViewer {
      * This is our minimum preferred width constraint for the source table
      * record panel itself.
      */
-	private int toolBarPrefWidth;
+	private int toolBarMinWidth;
 	
     private static final Logger logger = Logger.getLogger(SourceTableRecordViewer.class);
 
@@ -98,31 +96,7 @@ public class SourceTableRecordViewer {
         	toolBar.add(a);
         }
 
-        toolBarPrefWidth = toolBar.getPreferredSize().width;
-        
-        logger.debug("toolBar preferred width is " + toolBarPrefWidth);
-        
-        panel.addComponentListener(new ComponentListener() {
-
-            void syncSize(int width) {
-                toolBar.setPreferredSize(new Dimension(panel.getWidth(), toolBar.getPreferredSize().height));
-            }
-            public void componentHidden(ComponentEvent e) {
-                syncSize(panel.getWidth());
-            }
-
-            public void componentMoved(ComponentEvent e) {
-                syncSize(panel.getWidth());
-            }
-
-            public void componentResized(ComponentEvent e) {
-                syncSize(panel.getWidth());
-            }
-
-            public void componentShown(ComponentEvent e) {
-                syncSize(panel.getWidth());
-            }
-        });
+        toolBarMinWidth = toolBar.getPreferredSize().width;
 
         JLabel label = new JLabel();  // just a label to read defaults from
         Color differentForeground = label.getForeground();
@@ -173,8 +147,10 @@ public class SourceTableRecordViewer {
             darkRow = !darkRow;
         }
 
+        toolBar.setPreferredSize(new Dimension(panel.getPreferredSize().width, toolBar.getPreferredSize().height));
+        logger.debug("toolBar min width is " + toolBarMinWidth + "; actual is " + toolBar.getPreferredSize().width);
     }
-    
+
     public JPanel getPanel() {
         return panel;
     }
