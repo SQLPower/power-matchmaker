@@ -72,9 +72,13 @@ public class MatchPool {
     private final MatchMakerSession session;
     
     /**
-     * The edge list for this graph.
+     * The edge list for this graph.  This is a Map rather than a Set because
+     * we need to be able to retrieve the exact same instances of PotentialMatchRecord
+     * that we put in, and the Set interface doesn't provide a means of getting
+     * back the objects it contains (other than an iterator, but that would not
+     * perform adequately).
      */
-    private final Set<PotentialMatchRecord> potentialMatches;
+    private final Map<PotentialMatchRecord, PotentialMatchRecord> potentialMatches;
 
     /**
      * A map of keys to node instances for this graph.  The values() set of
@@ -97,15 +101,11 @@ public class MatchPool {
     private final Set<PotentialMatchRecord> orphanedMatches = new HashSet<PotentialMatchRecord>();
     
     public MatchPool(Project match) {
-        this(match, new HashSet<PotentialMatchRecord>());
-    }
-    
-    public MatchPool(Project match, Set<PotentialMatchRecord> potentialMatches) {
         this.project = match;
         this.session = match.getSession();
-        this.potentialMatches = potentialMatches;
+        this.potentialMatches = new HashMap<PotentialMatchRecord, PotentialMatchRecord>();
     }
-
+    
     public Project getProject() {
         return project;
     }
@@ -120,7 +120,7 @@ public class MatchPool {
                         (String mungeProcessName) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
-        for (PotentialMatchRecord pmr : potentialMatches){
+        for (PotentialMatchRecord pmr : potentialMatches.keySet()){
             if (pmr.getMungeProcess().getName().equals(mungeProcessName)){
                 matchList.add(pmr);
             }
@@ -137,7 +137,7 @@ public class MatchPool {
     public List<PotentialMatchRecord> getAllPotentialMatchByMungeProcess(MungeProcess mungeProcess) {
         List<PotentialMatchRecord> matchList =
             new ArrayList<PotentialMatchRecord>();
-        for (PotentialMatchRecord pmr : potentialMatches){
+        for (PotentialMatchRecord pmr : potentialMatches.keySet()){
             if (pmr.getMungeProcess() == mungeProcess){
                 matchList.add(pmr);
             }
@@ -151,7 +151,7 @@ public class MatchPool {
 	 * it connects. Nor does this modify the database.
 	 */
     public void removePotentialMatchesInMungeProcess(String processName){
-        potentialMatches.removeAll(getAllPotentialMatchByMungeProcess(processName));        
+        potentialMatches.keySet().removeAll(getAllPotentialMatchByMungeProcess(processName));        
     }
     
     /**
@@ -290,7 +290,7 @@ public class MatchPool {
                 
                 if (mungeProcess != null) {
                 	addPotentialMatch(pmr);
-                	logger.debug("Number of PotentialMatchRecords is now " + potentialMatches.size());
+                	logger.debug("Number of PotentialMatchRecords is now " + potentialMatches.keySet().size());
                 } else {
                 	if (orphanedMatches.add(pmr)) {
                 		if (pmr.getMatchStatus() == null) {
@@ -393,7 +393,7 @@ public class MatchPool {
             
             ps = con.prepareStatement(lastSQL);
             
-            for (PotentialMatchRecord pmr : potentialMatches) {
+            for (PotentialMatchRecord pmr : potentialMatches.keySet()) {
                 if (aborter != null) {
                     aborter.checkCancelled();
                 }
@@ -460,7 +460,7 @@ public class MatchPool {
             
             ps = con.prepareStatement(lastSQL);
             
-            for (PotentialMatchRecord pmr : potentialMatches) {
+            for (PotentialMatchRecord pmr : potentialMatches.keySet()) {
                 if (aborter != null) {
                     aborter.checkCancelled();
                 }
@@ -585,19 +585,17 @@ public class MatchPool {
      * @param pmr The record to add
      */
     public void addPotentialMatch(PotentialMatchRecord pmr) {
-    	if (potentialMatches.contains(pmr)) {
+        PotentialMatchRecord existing = potentialMatches.get(pmr);
+    	if (existing != null) {
     		logger.debug("Found duplicate match of " + pmr);
-    		List<PotentialMatchRecord> temp = new ArrayList<PotentialMatchRecord>(potentialMatches);
-    		int index = temp.indexOf(pmr);
-    		PotentialMatchRecord other = temp.get(index);
-    		Short otherMatchPercent = other.getMungeProcess().getMatchPercent();
+    		Short otherMatchPercent = existing.getMungeProcess().getMatchPercent();
 			Short pmrMatchPercent = pmr.getMungeProcess().getMatchPercent();
 			if (pmrMatchPercent == null || otherMatchPercent != null && otherMatchPercent >= pmrMatchPercent) { 
     			logger.debug("other's matchPercent is equal or higher, so NOT replacing with pmr");
     			return;
     		} else {
     			logger.debug("pmr's matchPercent is higher, so removing other");
-    			removePotentialMatch(other);
+    			removePotentialMatch(existing);
     		}
     	}
     	if (orphanedMatches.contains(pmr)) {
@@ -606,14 +604,16 @@ public class MatchPool {
     		PotentialMatchRecord other = temp.get(index);
     		deletedMatches.add(other);
     	}
-    	if (potentialMatches.add(pmr)) {
-    		logger.debug("added " + pmr + " to MatchPool");
-    		pmr.setPool(this);
-    		pmr.getOriginalLhs().addPotentialMatch(pmr);
-    		pmr.getOriginalRhs().addPotentialMatch(pmr);
-    		if (pmr.getMatchStatus() == null) {
-    			pmr.setMatchStatus(MatchType.UNMATCH);
-    		}
+    	if (potentialMatches.containsKey(pmr)) {
+            throw new IllegalStateException("Potential match is already in pool (it should not be)");
+        }
+    	potentialMatches.put(pmr, pmr);
+    	logger.debug("added " + pmr + " to MatchPool");
+    	pmr.setPool(this);
+    	pmr.getOriginalLhs().addPotentialMatch(pmr);
+    	pmr.getOriginalRhs().addPotentialMatch(pmr);
+    	if (pmr.getMatchStatus() == null) {
+    	    pmr.setMatchStatus(MatchType.UNMATCH);
     	}
     }
     
@@ -628,7 +628,7 @@ public class MatchPool {
      * @return The current list of potential match records.
      */
     public Set<PotentialMatchRecord> getPotentialMatches() {
-        return potentialMatches;
+        return potentialMatches.keySet();
     }
     
     /**
@@ -1109,11 +1109,8 @@ public class MatchPool {
 	 *            A starting list of nodes that will not be crossed when looking
 	 *            for the ultimate master.
 	 * @return The source table record that represents the ultimate master
-	 * 
-	 * XXX This is package private for the pre merge data fudger. Once the pre
-	 * merge data fudger goes away we can make this private again.
 	 */
-	SourceTableRecord findUltimateMaster(
+	private SourceTableRecord findUltimateMaster(
 			GraphModel<SourceTableRecord, PotentialMatchRecord> graph,
 			SourceTableRecord startingPoint,
 			List<SourceTableRecord> nodesToSkip) {
@@ -1168,7 +1165,7 @@ public class MatchPool {
 	 * removed.
 	 */
 	public void resetPool() {
-		for (Iterator<PotentialMatchRecord> it = potentialMatches.iterator(); it.hasNext(); ) {
+		for (Iterator<PotentialMatchRecord> it = potentialMatches.keySet().iterator(); it.hasNext(); ) {
         	PotentialMatchRecord pmr = it.next();
 			if (pmr.isSynthetic()) {
 				it.remove();
@@ -1188,7 +1185,7 @@ public class MatchPool {
 	 * match record from the database.
 	 */
 	public void removePotentialMatch(PotentialMatchRecord pmr) {
-		if (potentialMatches.remove(pmr)) {
+		if (potentialMatches.remove(pmr) != null) {
 			pmr.getOriginalLhs().removePotentialMatch(pmr);
 			pmr.getOriginalRhs().removePotentialMatch(pmr);
 		}
@@ -1345,7 +1342,7 @@ public class MatchPool {
 	 * removes all PotentialMatchRecords in the database repository for this MatchPool
 	 */
 	public void clear(Aborter aborter) throws SQLException {
-		deletedMatches.addAll(potentialMatches);
+		deletedMatches.addAll(potentialMatches.keySet());
 		deletedMatches.addAll(orphanedMatches);
 		store(aborter);
 		sourceTableRecords.clear();
