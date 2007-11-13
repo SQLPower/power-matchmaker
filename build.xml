@@ -74,7 +74,7 @@
 	</path>
 	
 	<!-- Compiles the MatchMaker and places the .class files into build-->
-	<target name="compile" depends="sqlpower.library, getAppVersion, copyfiles">
+	<target name="compile" depends="sqlpower.library, copyfiles">
 		<mkdir dir="${build}"/>
 		<javac 	srcdir="${src}" 
 				destdir="${build}" 
@@ -121,6 +121,7 @@
 			debug="true"/>
 	</target>
 	
+	<!-- Creates distributables for all supported OSes -->
 	<target name="dist" depends="junit,userguide,osx_tgz,osx_dmg,windows_jdbc_installer,generic_install">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
@@ -408,8 +409,9 @@
 		</condition>
 
 		<property name="app.version" value="${app_ver_major}.${app_ver_minor}.${app_ver_tiny}${app.ver.suffix}"/>
-		<property name="dist.dir" value="${dist.base}/${app.version}"/>
+		<property name="dist.dir" value="${dist.base}/matchmaker-${app.version}"/>
 		<property name="reports" value="${dist.dir}/reports"/>
+		<echo message="Building Power*MatchMaker version: ${app.version}"/>
 	</target>
 	
 	
