@@ -39,6 +39,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -72,6 +73,9 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.architect.ArchitectSessionContext;
 import ca.sqlpower.architect.ArchitectSessionContextImpl;
+import ca.sqlpower.architect.SQLObject;
+import ca.sqlpower.architect.SQLObjectRoot;
+import ca.sqlpower.architect.SQLRelationship;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -202,21 +206,21 @@ public class LoginDialog implements SwingWorkerRegistry {
                 	if (getDoStuffException() instanceof PLSchemaException) {
                 		PLSchemaException ex = (PLSchemaException) getDoStuffException();
                 		SPSUtils.showExceptionDialogNoReport(frame,
-                                "PLSchema Exception",
+                                "MatchMaker Repository Problem",
                                 "Existing version: "+ex.getCurrentVersion() +
                                 "\nRequired Version: "+ex.getRequiredVersion(),
                                 ex);
                 	} else if (getDoStuffException() instanceof SQLException) {
                 		int response = JOptionPane.showOptionDialog(frame,
                 			getDoStuffException().getMessage() + "\n\nTry to create the respository schema?",
-                			"Schema Version Error", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE,
+                			"Repository Schema Version Error", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE,
                 			null, null, null);
                 		if  (response == 0) {
                 			try {
 								createDefaultSchema();
 							} catch (Exception e) {
 								SPSUtils.showExceptionDialogNoReport(frame,
-									"Failed to create the default schema!", e);
+									"Failed to create the default repository schema!", e);
 							}
                 		}
                 	} else {
@@ -258,19 +262,28 @@ public class LoginDialog implements SwingWorkerRegistry {
             InputStream reposProjectInStream = ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/dao/hibernate/mm_repository.architect");
             final ArchitectSession mmRepositorySession = mmRepositoryContext.createSession(reposProjectInStream);
             
+            projectSanityCheck(mmRepositorySession.getRootObject());
+            
             // Sets up the gui that is used to determine the destination of the repository
             final DDLGenerator ddlg = DDLUtils.createDDLGenerator(dbSource);
+            final JLabel targetDBTypeLabel = new JLabel(ddlg.getName());
             final JDialog schemaDialog = new JDialog(frame, "Build Default Schema", true);
         	JLabel catalogLabel = new JLabel("Target Catalog");
         	final JTextField catalogField = new JTextField();
         	JLabel schemaLabel = new JLabel("Target Schema");
         	final JTextField schemaField = new JTextField();
-        	JPanel dbPanel = new JPanel(new FormLayout("10dlu,pref,4dlu,pref,10dlu",
-        		"10dlu,pref,4dlu,pref,4dlu,pref,10dlu"));
+        	JPanel dbPanel = new JPanel(new FormLayout(
+        			"10dlu,pref,4dlu,pref,10dlu",
+        			"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"));
         	CellConstraints cc = new CellConstraints();
         	JPanel buttonPanel = new JPanel(new FlowLayout());
-        	
+
+       		projectSanityCheck(mmRepositorySession.getRootObject());
+
         	int row = 2;
+            dbPanel.add(new JLabel("Target Database Type:"), cc.xy(2, row));
+            dbPanel.add(targetDBTypeLabel, cc.xy(4, row));
+            row += 2;
             dbPanel.add(catalogLabel, cc.xy(2, row));
             dbPanel.add(catalogField, cc.xy(4, row));
             row += 2;
@@ -299,13 +312,19 @@ public class LoginDialog implements SwingWorkerRegistry {
     	    			}
     	    		}
     	    		
+    	            projectSanityCheck(mmRepositorySession.getRootObject());
+
     	    		try {
+    	    			mmRepositorySession.getTargetDatabase().setDataSource(dbSource);
+    	                projectSanityCheck(mmRepositorySession.getRootObject());
 						ddlg.generateDDLStatements(mmRepositorySession.getTargetDatabase().getTables());
 						generateDefaultSchemaSQL(ddlg);
 					} catch (Exception e1) {
+						schemaDialog.dispose();
+						SPSUtils.showExceptionDialogNoReport(frame,
+								"Failed to create the default repository schema!", e1);
 						throw new RuntimeException(e1);
 					}
-					schemaDialog.dispose();
     			}
             });
             buttonPanel.add(okButton);
@@ -338,14 +357,59 @@ public class LoginDialog implements SwingWorkerRegistry {
             }
 
             schemaDialog.setContentPane(dbPanel);
-            schemaDialog.setLocationRelativeTo(frame);
+            schemaDialog.getRootPane().setDefaultButton(okButton);
+            SPSUtils.makeJDialogCancellable(schemaDialog, cancelButton.getAction(), false);
             schemaDialog.pack();
+            schemaDialog.setLocationRelativeTo(frame);
             schemaDialog.setVisible(true);
             
             reposProjectInStream.close();
         }
         
         /**
+         *	A check at the parent pointers in the loaded session. This was
+         *	a previous bug where some of the parent pointers were null. The
+         *	cause of an error would be in the Architect CoreProject load method.
+         */
+        private void projectSanityCheck(SQLObjectRoot rootObject) {
+            try {
+				recursiveSanityCheck(rootObject, "Root");
+			} catch (Exception e) {
+				throw new IllegalStateException("Error in loading the repository schema file.", e);
+			} 
+		}
+        
+        /**
+         * Does the recursive checks from {@link #projectSanityCheck(SQLObjectRoot)}.
+         * Ignores the Imported Keys folder when it's the parent because the parents
+         * of SQLRelationship's are defaulted to the Exported Keys folder.
+         */
+        private void recursiveSanityCheck(SQLObject o, String path) throws Exception {
+            logger.debug("Checking children of " + path);
+            for (Iterator it = o.getChildren().iterator(); it.hasNext();) {
+                SQLObject child = (SQLObject) it.next();
+                if (o instanceof SQLObjectRoot) {
+                    // skip, because database parent pointers are null
+                } else if (child instanceof SQLRelationship && o.getName().startsWith("Imported Keys")) {
+                    // skip, because the exported keys folder should be the parent
+                    // Note, if this is failing, maybe you renamed the "Imported Keys" folder! :)
+                } else {
+                    if (!o.equals(child.getParent())) {
+                    	String expected = o.getName();
+                    	String actual;
+                    	if (child.getParent() != null) {
+                    		actual = child.getParent().getName();
+                    	} else {
+                    		actual = "Null Parent";
+                    	}
+                    	throw new AssertionError(path + ": " + expected + "; " + actual);
+                    }
+                }
+                recursiveSanityCheck(child, path + "/" + child.getName());
+            }
+        }
+
+		/**
          * Executes the sql statements to create the default schema for the default
          * repository. It gets the sql statments from the given ddl generator and
          * a post_create.sql file.
@@ -356,7 +420,7 @@ public class LoginDialog implements SwingWorkerRegistry {
     	    JPanel cp = new JPanel();
     	    CellConstraints cc = new CellConstraints();
     	    JButton executeButton;
-
+    	    
     	    Box statementsBox = Box.createVerticalBox();
     	    final List<JTextArea> sqlTextFields = new ArrayList<JTextArea>();
     	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
@@ -540,10 +604,11 @@ public class LoginDialog implements SwingWorkerRegistry {
     	    cp.add(bbb.getPanel(), cc.xy(2,row, "c,c"));
 
     	    editor.setContentPane(cp);
+    	    SPSUtils.makeJDialogCancellable(editor, cancelAction, false);
+    	    editor.getRootPane().setDefaultButton(executeButton);
     	    editor.pack();
     	    editor.setLocationRelativeTo(frame);
     	    editor.setVisible(true);
-    	    executeButton.requestFocus();
         }
 
 		public Integer getJobSize() {
@@ -619,8 +684,15 @@ public class LoginDialog implements SwingWorkerRegistry {
 	private JLabel dbSourceName;
     private JButton loginButton = new JButton();
     private JProgressBar progressBar = new JProgressBar();
+    
+    /**
+     * The SPDatasource object the user picked from the combo box on the login dialog.
+     * Once the login process has been initiated, this is the data source of the repository
+     * database.
+     */
     private SPDataSource dbSource;
-	private ConnectionComboBoxModel connectionModel;
+	
+    private ConnectionComboBoxModel connectionModel;
 	private JComponent panel;
 
     private ActionListener loginAction = new LoginAction(this);
