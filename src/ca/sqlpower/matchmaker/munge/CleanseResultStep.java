@@ -36,6 +36,20 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLType;
 import ca.sqlpower.matchmaker.Project;
 
+/**
+ * The Cleanse Result Step is the ultimate destination for munge data in a data
+ * cleansing project. Each of its inputs represents one column in the table
+ * being cleansed; you can think of it as a mirror to the SQL Input Step, which
+ * has one <i>output</i> per column in your table.
+ * <p>
+ * For every row in the table you are cleansing, this step reads the value on
+ * each of its inputs and uses those values to update the row. For inputs that
+ * are not connected to anything, their corresponding columns remain untouched.
+ * This means, for example, that it is perfectly safe to create a munge process
+ * that only affects a single column: Just connect a munge step to that column's
+ * input, and leave all the other columns' inputs disconnected. They will not be
+ * affected.
+ */
 public class CleanseResultStep extends AbstractMungeStep implements MungeResultStep {
 	private SQLTable table;
 	private SQLInputStep inputStep;
@@ -61,28 +75,19 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		super.call();
 
 		List<MungeStepOutput> inputs = getMSOInputs(); 
-		Object[] mungedData = new Object[inputs.size()];
 
-		for (int i = 0; i < inputs.size(); i++) {
-			MungeStepOutput output = inputs.get(i);
+		StringBuilder out = new StringBuilder();
+		for (int x = 0; x < inputs.size(); x++) {
+		    if (x > 0) out.append(", ");
+		    MungeStepOutput output = inputs.get(x);
 			if (output != null) {
-				mungedData[i] = output.getData();
+                Object data = output.getData();
+				update(table.getColumn(x).getType(), x+1, data);
+				out.append("[").append(data).append("]");
 			} else {
-				mungedData[i] = null;
+				out.append("<not connected>");
 			}
 		}
-
-		String out = "[";
-		for (int x = 0; x < mungedData.length; x++) {
-			if (mungedData[x] != null) {
-				update(table.getColumn(x).getType(), x+1, mungedData[x]);
-				out += mungedData[x];
-			} else {
-				out += inputStep.getResultSet().getObject(x+1);
-			}
-			out += "], [";
-		}
-		out = out.substring(0, out.length()-3);
 		super.logger.debug(out);
 		return Boolean.TRUE;
 	}
