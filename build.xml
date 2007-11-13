@@ -10,21 +10,6 @@
 	<property name="lib" value="lib"/>
 	<property name="buildlib" value="buildlib"/>
 	
-	<condition property="downloadLinkBase" value="http://nightlybuild.sqlpower.ca/matchmaker/nightly/${app.version}">
-		<isset property="nightly"/>
-	</condition>
-	<condition property="docLinkBase" value="${downloadLinkBase}">
-		<isset property="nightly"/>		
-	</condition>
-	<condition property="downloadLinkBase"
-		value="http://power-matchmaker.googlecode.com/files">
-		<not><isset property="downloadLinkBase"/></not>
-	</condition>
-	<condition property="docLinkBase" 
-		value="http://download.sqlpower.ca/matchmaker/${app.version}">
-		<not><isset property="docLinkBase"/></not>
-	</condition>
-
 	<!-- The staging directory is a temp dir that is used as a base for all
 	     the OS-dependant distributions -->
 	<property name="staging.dir" value="staging"/>
@@ -303,9 +288,8 @@
 
     </target>
 
-	<!-- Runs the Business and Auto test suites. The Swing UI test suite is
-	 	 not run because it fails randomly -->
-	<target name="junit" depends="compile-tests">
+	<!-- Runs the test suite -->
+	<target name="junit" depends="getAppVersion, compile-tests">
 	 	<mkdir dir="${reports}"/>
 		<property name="reports.junit" value="${reports}/junit"/>
 		<mkdir dir="${reports.junit}"/>
@@ -411,6 +395,23 @@
 		<property name="app.version" value="${app_ver_major}.${app_ver_minor}.${app_ver_tiny}${app.ver.suffix}"/>
 		<property name="dist.dir" value="${dist.base}/matchmaker-${app.version}"/>
 		<property name="reports" value="${dist.dir}/reports"/>
+
+		<condition property="downloadLinkBase" value="http://nightlybuild.sqlpower.ca/matchmaker/nightly/${app.version}">
+			<isset property="nightly"/>
+		</condition>
+		
+		<condition property="docLinkBase" value="${downloadLinkBase}">
+			<isset property="nightly"/>		
+		</condition>
+		<condition property="downloadLinkBase"
+			value="http://power-matchmaker.googlecode.com/files">
+			<not><isset property="downloadLinkBase"/></not>
+		</condition>
+		<condition property="docLinkBase" 
+			value="http://download.sqlpower.ca/matchmaker/${app.version}">
+			<not><isset property="docLinkBase"/></not>
+		</condition>
+
 		<echo message="Building Power*MatchMaker version: ${app.version}"/>
 	</target>
 	
@@ -550,7 +551,7 @@
 				 value="$JAVAROOT" />
 
 	</target>
-	
+		
 	<!-- This is needed to prevent a problem with DocBook help file generation 
 		 in which the XSLT replaces the spaces in the path name with '%20', and
 		 doesn't convert it back when saving the files. It looks like this is
