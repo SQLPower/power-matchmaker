@@ -152,7 +152,7 @@ public class ConcatMungeStepTest extends TestCase {
         List<MungeStepOutput> results = step.getChildren(); 
         MungeStepOutput output = results.get(0);
         String result = (String)output.getData();
-        assertEquals("cow!", result);
+        assertEquals("cow", result);
     }
 
     public void testDelimiterOneInput() throws Exception {
@@ -196,4 +196,13 @@ public class ConcatMungeStepTest extends TestCase {
         assertEquals(null, result);
     }
 
+    public void testConnectInput() throws Exception {
+    	testInput = new MungeStepOutput<String>("test1", String.class);
+        step.connectInput(0, testInput);
+        testInput = new MungeStepOutput<String>("test2", String.class);
+        step.connectInput(1, testInput);
+        
+        assertEquals(3, step.getMSOInputs().size());
+        assertEquals(String.class, step.getInputDescriptor(2).getType());
+    }
 }

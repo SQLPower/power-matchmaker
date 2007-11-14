@@ -80,8 +80,15 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 */
 	protected Logger logger;
 	
-	public AbstractMungeStep() {
-	}
+	/**
+	 * The default object type of this Munge Step's input. The default value is {@link Object#class}.
+	 * This is used for Munge Steps with variable inputs as the default class to use when adding an new input
+	 * which now happens when connecting an input into the last empty input. 
+	 * When extending the AbstractMungeStep, if your expected input object type isn't Object (for example, 
+	 * {@link ConcatMungeStep} expects String), then use the {@link #setDefaultInputClass(Class)} to set your
+	 * expected input type.   
+	 */
+	private Class defaultInputClass = Object.class;
 	
 	public List<MungeStepOutput> getMSOInputs() {
 		List<MungeStepOutput> values = new ArrayList<MungeStepOutput>();
@@ -97,6 +104,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		}
 		inputs.get(index).current = o;
 		getEventSupport().firePropertyChange("inputs", index, null, o);
+		boolean noEmptyInputs = true;
+		for (Input input: inputs) {
+			if (input.getCurrent() == null) noEmptyInputs = false;
+		}
+		if (canAddInput() && noEmptyInputs) {
+			addInput(new InputDescriptor("", defaultInputClass));
+		}
 	}
 
 	public void disconnectInput(int index) {
@@ -549,4 +563,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     private List<Input> getInputs() {
     	return inputs;
     }
+
+	/**
+	 * Sets the expected input object type for new Inputs. Typically used by classes that extend AbstractMungeStep
+	 * and expect a default Input class that is not Object. It is currently default access for now, since all
+	 * Munge Steps are placed in the ca.sqlpower.matchmaker.munge package anyway. 
+	 */
+	void setDefaultInputClass(Class defaultInputClass) {
+		this.defaultInputClass = defaultInputClass;
+	}
 }

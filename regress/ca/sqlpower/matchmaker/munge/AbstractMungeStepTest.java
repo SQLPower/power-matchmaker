@@ -84,8 +84,10 @@ public class AbstractMungeStepTest extends TestCase {
 		mungeStep.addInput(desc);
 		assertEquals("Did not get event for adding input",1,mml.getPropertyChangedCount());
 		MungeStepOutput o = new MungeStepOutput<String>("test", String.class);
+		int oldInputCount = mungeStep.getMSOInputs().size();
 		mungeStep.connectInput(0, o);
-		assertEquals("Did not get event for connecting input",2,mml.getPropertyChangedCount());
+		assertEquals(oldInputCount + 1, mungeStep.getMSOInputs().size());
+		assertEquals("Did not get event for connecting input",3,mml.getPropertyChangedCount());
 		assertTrue("Munge step output did not get connected", mungeStep.getMSOInputs().contains(o));
 	}
 	
@@ -98,9 +100,9 @@ public class AbstractMungeStepTest extends TestCase {
 		assertEquals("Did not get event for adding input",1,mml.getPropertyChangedCount());
 		MungeStepOutput o = new MungeStepOutput<String>("test", String.class);
 		mungeStep.connectInput(0, o);
-		assertEquals("Did not get event for connecting input",2,mml.getPropertyChangedCount());
+		assertEquals("Did not get event for connecting input",3,mml.getPropertyChangedCount());
 		mungeStep.disconnectInput(0);
-		assertEquals("Did not get any event for disconnecting input",3,mml.getPropertyChangedCount());
+		assertEquals("Did not get any event for disconnecting input",4,mml.getPropertyChangedCount());
 		assertFalse("Munge step output did not get disconnected", mungeStep.getMSOInputs().contains(o));
 	}
     

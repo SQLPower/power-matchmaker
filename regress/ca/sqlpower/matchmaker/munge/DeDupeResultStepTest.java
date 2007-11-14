@@ -30,9 +30,9 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 
-public class MungeResultStepTest extends TestCase {
+public class DeDupeResultStepTest extends TestCase {
 
-	private MungeResultStep step;
+	private DeDupeResultStep step;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
@@ -79,6 +79,13 @@ public class MungeResultStepTest extends TestCase {
 		step.open(logger);
 		step.call();
 
+		// Connecting an input in the setup should
+		// result in a new empty input being created.
+		assertEquals(2, step.getMSOInputs().size());
+		assertEquals(null, step.getMSOInputs().get(1));
+		
+		// The empty input should have been ignored when getting
+		// the results.
 		List<MungeResult> results = step.getResults();
 		assertEquals(1, results.size());
 		

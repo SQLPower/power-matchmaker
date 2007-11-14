@@ -29,7 +29,9 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 
 /**
- * This is a specific result step for a deduping project.
+ * This is a specific result step for a deduping project. Note that any inputs
+ * in the step that do not have an actual connector in them will be ignored during
+ * matching.
  */
 public class DeDupeResultStep extends AbstractMungeStep implements MungeResultStep {
 
@@ -111,16 +113,21 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 		super.call();
 		
 		List<MungeStepOutput> inputs = getMSOInputs(); 
-		Object[] mungedData = new Object[inputs.size()];
+//		Object[] mungedData = new Object[inputs.size()];
+		
+		List<Object> mungedDataList = new ArrayList<Object>();
 		
 		for (int i = 0; i < inputs.size(); i++) {
 			MungeStepOutput output = inputs.get(i);
 			if (output != null) {
-				mungedData[i] = output.getData();
+				mungedDataList.add(output.getData());
+//				mungedData[i] = output.getData();
 			} else {
-				mungedData[i] = null;
+//				mungedData[i] = null;
 			}
 		}
+		
+		Object[] mungedData = mungedDataList.toArray();
 		
 		MungeResult result = new MungeResult();
 		result.setMungedData(mungedData);
