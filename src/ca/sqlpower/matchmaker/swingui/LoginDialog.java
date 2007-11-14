@@ -81,6 +81,7 @@ import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.SQL;
 import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.JDefaultButton;
@@ -447,6 +448,12 @@ public class LoginDialog implements SwingWorkerRegistry {
     					sqlTextFields.add(sqlTextArea);
             			sqlBuilder.setLength(0);
             		} else if (!line.startsWith("--")) {
+                        
+                        // Some platforms don't support the USER keyword
+                        // This simplistic fix will, of course, break if anything has "USER" as a substring
+                        // But we control the contents of this script, so we can ensure that won't happen.
+                        line = line.replace("{USER}", SQL.quote(dbSource.getUser()));
+                        
             			sqlBuilder.append(line + "\n");
             		}
             		line = br.readLine();
