@@ -1,4 +1,10 @@
 # A user-specific file to configure the MatchMaker build script
 
+# Unix-based build pathname example 
+# build=/absolute/path
+
+# Windows-based build pathname example 
+# build=C:\\absolute\\path
+
 # SQL Power Library project directory (set this to the sqlpower-library project directory)
 # sqlpower.library.home=/path/to/sqlpower_library/
