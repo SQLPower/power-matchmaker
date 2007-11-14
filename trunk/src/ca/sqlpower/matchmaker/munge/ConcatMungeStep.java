@@ -27,7 +27,9 @@ package ca.sqlpower.matchmaker.munge;
  * <p>
  * If there is no delimiter specified and all input values are null, the output will
  * also be null.  However, if at least one input is not null, the output will not be
- * null.  Null input values are treated as the empty string for purposes of concatenation.
+ * null.  Null input values (that is, an input that has a connector, but the data in the 
+ * input is null, are treated as the empty string for purposes of concatenation.
+ * However, Null inputs themselves (i.e. an input with no connector in it) will be ignored.
  * If you want a special value to stand for null in your concatenated string, pass the
  * inputs through NVL steps.
  */
@@ -49,6 +51,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		InputDescriptor desc2 = new InputDescriptor("concat2", String.class);
 		super.addInput(desc1);
 		super.addInput(desc2);
+		super.setDefaultInputClass(String.class);
 	}
 	
 	public int addInput(InputDescriptor desc) {
@@ -77,6 +80,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
         boolean first = true;
 		StringBuilder data = new StringBuilder();
 		for (MungeStepOutput<String> in: getMSOInputs()) {
+			if (in == null) continue;
 		    if (!first) {
                 data.append(delimiter);
             }
