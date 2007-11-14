@@ -227,7 +227,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 			case 0:  return mungeProcess.getName();
 			case 1:  return mungeProcess.getDesc();
 			case 2:  return mungeProcess.getColour();
-			case 3:  return mungeProcess.getMatchPercent();
+			case 3:  return mungeProcess.getMatchPriority();
 			default: return null;
 			}
 		}

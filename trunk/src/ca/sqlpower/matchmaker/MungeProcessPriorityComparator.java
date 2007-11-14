@@ -25,6 +25,6 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 public class MungeProcessPriorityComparator implements Comparator<MungeProcess> {
 	public int compare(MungeProcess o1, MungeProcess o2) {
-		return o1.getMatchPercent().compareTo(o2.getMatchPercent());
+		return o1.getMatchPriority().compareTo(o2.getMatchPriority());
 	}
 }
