@@ -533,9 +533,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         //toolsMenu.add(new SQLRunnerAction(frame));
 		menuBar.add(toolsMenu);
 
-        JMenu windowMenu = new JMenu("Window");
-        windowMenu.setMnemonic('w');
-        menuBar.add(windowMenu);
+		// Commented the 'Window' menu until we actually have something to put in it
+//        JMenu windowMenu = new JMenu("Window");
+//        windowMenu.setMnemonic('w');
+//        menuBar.add(windowMenu);
         
         helpAction = new HelpAction(frame);
 
