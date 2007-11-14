@@ -259,7 +259,7 @@
 
 	<!-- Convert User Manual from XML to FO -->
 	<!-- USED to depend on init in architect, not sure if it is needed -->
-	<target name="fo" description="Create user guide in XML Formatting Objects">
+	<target name="fo" depends="getAppVersion" description="Create user guide in XML Formatting Objects">
 		<mkdir dir="${build}/doc/" />
         <xslt
 			style="doc/tools/xslt/fo/docbook.xsl"
