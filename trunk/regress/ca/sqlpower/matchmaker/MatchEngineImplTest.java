@@ -108,7 +108,7 @@ public class MatchEngineImplTest extends TestCase {
 		
 		project.addMungeProcess(mungeProcessOne);
 
-		MungeResultStep outputStep = inputStep.getOuputStep();
+		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessOne.addChild(outputStep);
 
 		inputStep.open(logger);
@@ -149,15 +149,22 @@ public class MatchEngineImplTest extends TestCase {
 		}
 	}
 	
-	public void testCallOnMultipleMungeProcesses() throws Exception {
+	public void testCallOnMultipleMungeProcesses() throws Exception {		
 		MungeProcess mungeProcessTwo = new MungeProcess();
 		mungeProcessTwo.setName("Munge_Process_Two");
 		SQLInputStep inputStep = new SQLInputStep();
 		mungeProcessTwo.addChild(inputStep);
+		
 		project.addMungeProcess(mungeProcessTwo);
-		MungeResultStep outputStep = inputStep.getOuputStep();
-		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
+		
+		MungeResultStep outputStep = inputStep.getOutputStep();
 		mungeProcessTwo.addChild(outputStep);
+
+		inputStep.open(logger);
+		inputStep.rollback();
+		inputStep.close();
+
+		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
 		
 		engine.call();
 		

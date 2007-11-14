@@ -90,7 +90,7 @@ public class SQLInputStepTest extends TestCase {
         
         step = new SQLInputStep();
         process.addChild(step);
-	    resultStep = (MungeResultStep) step.getOuputStep();
+	    resultStep = (MungeResultStep) step.getOutputStep();
 	    process.addChild(resultStep);
     }
     

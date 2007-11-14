@@ -254,11 +254,11 @@ public class SQLInputStep extends AbstractMungeStep {
      * Creates or returns the output step for this input step.  There will only
      * ever be one output step created for a given instance of {@link SQLInputStep}.
      */
-    public MungeResultStep getOuputStep() throws ArchitectException {
-        return getOuputStep(getProject());
+    public MungeResultStep getOutputStep() throws ArchitectException {
+        return getOutputStep(getProject());
     }
     
-    public MungeResultStep getOuputStep(Project project) throws ArchitectException {
+    public MungeResultStep getOutputStep(Project project) throws ArchitectException {
         if (outputStep != null) {
             return outputStep;
         } else if (project.getType() == ProjectMode.CLEANSE) {
