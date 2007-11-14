@@ -237,11 +237,17 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 						count = 0;
 					}
 				}
-				con.close();
 			} catch (Exception e1) {
 				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 						"Failed to derive related table information.", e1);
 			} finally {
+				try {
+					if (con != null) {
+						con.close();
+					}
+				} catch (SQLException e) {
+					logger.error("Error closing connection" + e);
+				}
 				project.endCompoundEdit();
 			}
 			

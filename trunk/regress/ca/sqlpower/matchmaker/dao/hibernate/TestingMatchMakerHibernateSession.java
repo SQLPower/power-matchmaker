@@ -292,10 +292,13 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	    	}
 	    	
 	    	try {
-	    		return tempDB.getTableByName(
+	    		SQLTable table = tempDB.getTableByName(
 	    				catalog,
 	    				schema,
 	    				tableName);
+	    		table.getColumns();
+	    		table.getImportedKeys();
+	    		return table;
 	    	} finally {
 	    		if (tempDB != null) tempDB.disconnect();
 	    	}
@@ -310,6 +313,9 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	    				catalog,
 	    				schema,
 	    				tableName);
+	    		if (table == null) return null;
+	    		table.getColumns();
+	    		table.getImportedKeys();
 				return table;
 	    	} finally {
 	    		if (tempDB != null) tempDB.disconnect();

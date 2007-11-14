@@ -28,6 +28,7 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Expression;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
@@ -105,8 +106,18 @@ public class ProjectDAOHibernate extends AbstractMatchMakerDAOHibernate<Project>
 			MatchMakerSession session = saveMe.getSession();
 
 			if (saveMe.getType() != ProjectMode.CLEANSE) {
+				
 				SQLTable resultTable = session.findPhysicalTableByName(saveMe.getResultTableSPDatasource(), saveMe.getResultTableCatalog(),
 						saveMe.getResultTableSchema(), saveMe.getResultTableName());
+				if (resultTable != null 
+						&& saveMe.getResultTableSPDatasource().equals(saveMe.getSourceTableSPDatasource())) {
+					SQLTable oldTable = saveMe.getResultTable();
+					if (oldTable != null) {
+						SQLObject sqlobject = oldTable.getParent();
+						sqlobject.removeChild(oldTable);
+						sqlobject.addChild(resultTable);
+					}
+				}
 				saveMe.setResultTable(resultTable);
 			}
 		} catch (ArchitectException e) {

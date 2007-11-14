@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
 
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
@@ -58,6 +59,7 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
         project.setName("Munge Process Test Project");
         project.setType(ProjectMode.BUILD_XREF);
         project.setParent(folder);
+        project.setResultTable(new SQLTable());
         try {
         	project.setSession(getSession());
         } catch (Exception e) {

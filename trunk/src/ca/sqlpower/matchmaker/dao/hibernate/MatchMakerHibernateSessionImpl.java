@@ -454,7 +454,10 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         return plSchemaVersion;
     }
     
-    
+    /**
+     * If you change this method, you must also change the methods in TestingMatchMakerSession and 
+     * TestingMatchMakerSession because they are actually the same method......
+     */
     public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {
     	logger.debug("Session.findSQLTableByName: ds=" + spDataSourceName + ", " + 
     			catalog + "." + schema + "." + tableName);
@@ -478,10 +481,14 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
     	SQLDatabase tempDB = null;
     	try {
     		tempDB = new SQLDatabase(ds);
-    		return tempDB.getTableByName(
+    		SQLTable table = tempDB.getTableByName(
     				catalog,
     				schema,
     				tableName);
+    		if (table == null) return null;
+    		table.getColumns().size();
+    		table.getImportedKeys();
+    		return table;
     	} finally {
     		if (tempDB != null) tempDB.disconnect();
     	}
@@ -493,12 +500,41 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     public boolean tableExists(String catalog, String schema,
     		String tableName) throws ArchitectException {
-    	return (findPhysicalTableByName(catalog,schema,tableName) != null);
+    	return tableExists(null, catalog, schema, tableName);
     }
     
     public boolean tableExists(String spDataSourceName, String catalog, String schema,
     		String tableName) throws ArchitectException {
-    	return (findPhysicalTableByName(spDataSourceName, catalog,schema,tableName) != null);
+        logger.debug("Session.findSQLTableByName: ds=" + spDataSourceName + ", " + 
+                catalog + "." + schema + "." + tableName);
+        
+        SPDataSource ds = null;
+        
+        if (spDataSourceName == null || spDataSourceName.length() == 0) {
+            ds = getDatabase().getDataSource();
+        } else {
+            for (SPDataSource spd : context.getDataSources()) {
+                if (spd.getName().equals(spDataSourceName)) {
+                    ds = spd;
+                }
+            }
+            if (ds == null) {
+                throw new IllegalArgumentException("Error: No database connection named " + spDataSourceName + 
+                        " please create a database connection named " + spDataSourceName + " and try again.");
+            }
+        }
+        
+        SQLDatabase tempDB = null;
+        try {
+            tempDB = new SQLDatabase(ds);
+            SQLTable table = tempDB.getTableByName(
+                    catalog,
+                    schema,
+                    tableName);
+            return table != null;
+        } finally {
+            if (tempDB != null) tempDB.disconnect();
+        }
     }
 
     public boolean tableExists(SQLTable table) throws ArchitectException {
