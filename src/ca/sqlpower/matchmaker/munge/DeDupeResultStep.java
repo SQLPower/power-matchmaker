@@ -113,7 +113,6 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 		super.call();
 		
 		List<MungeStepOutput> inputs = getMSOInputs(); 
-//		Object[] mungedData = new Object[inputs.size()];
 		
 		List<Object> mungedDataList = new ArrayList<Object>();
 		
@@ -121,9 +120,6 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 			MungeStepOutput output = inputs.get(i);
 			if (output != null) {
 				mungedDataList.add(output.getData());
-//				mungedData[i] = output.getData();
-			} else {
-//				mungedData[i] = null;
 			}
 		}
 		
