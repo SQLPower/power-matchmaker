@@ -194,7 +194,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			}});
 		priority.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
-				mmo.setMatchPercent(Short.valueOf(priority.getValue().toString()));
+				mmo.setMatchPriority(Short.valueOf(priority.getValue().toString()));
 			}});
 		desc.addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e) {
@@ -212,10 +212,10 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 	
 	private void setDefaults() {
 		name.setText(mmo.getName());
-		if (mmo.getMatchPercent() != null) {
-        	priority.setValue(mmo.getMatchPercent());
+		if (mmo.getMatchPriority() != null) {
+        	priority.setValue(mmo.getMatchPriority());
         }else {
-        	mmo.setMatchPercent(new Short((short)0));
+        	mmo.setMatchPriority(new Short((short)0));
         }
 		
 		desc.setText(mmo.getDesc());
@@ -383,8 +383,8 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			for (MungeProcess mp : parentProject.getMungeProcessesFolder().getChildren()) {
                 if (mp == null) throw new NullPointerException("Null munge process in project!");
 				short otherPriority = 0;
-                if (mp.getMatchPercent() != null) {
-                    otherPriority = mp.getMatchPercent().shortValue();
+                if (mp.getMatchPriority() != null) {
+                    otherPriority = mp.getMatchPriority().shortValue();
                 }
                 if (otherPriority == value && mp != mmo) {
 					return ValidateResult.createValidateResult(Status.WARN, "Duplicate Priority. " + 

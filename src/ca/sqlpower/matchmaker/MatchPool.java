@@ -470,7 +470,7 @@ public class MatchPool {
             			ps.setObject(i * 2 + 1, pmr.getOriginalLhs().getKeyValues().get(i));
             			ps.setObject(i * 2 + 2, pmr.getOriginalRhs().getKeyValues().get(i));
             		}
-            		ps.setObject(numKeyValues * 2 + 1, pmr.getMungeProcess().getMatchPercent());
+            		ps.setObject(numKeyValues * 2 + 1, pmr.getMungeProcess().getMatchPriority());
             		ps.setObject(numKeyValues * 2 + 2, pmr.getMungeProcess().getName());
             		ps.setObject(numKeyValues * 2 + 3, pmr.getMatchStatus().getCode());
             		
@@ -580,7 +580,8 @@ public class MatchPool {
     /**
      * Adds the given potential match to this pool. If another 
      * PotentialMatchRecord p exists in this pool, where p.equals(pmr) = true,
-     * then it will not get added.
+     * then if p has a higher match priority, then it will not get added.
+     * (Note that a lower number represents a higher match priority)
      * 
      * @param pmr The record to add
      */
@@ -588,13 +589,13 @@ public class MatchPool {
         PotentialMatchRecord existing = potentialMatches.get(pmr);
     	if (existing != null) {
     		logger.debug("Found duplicate match of " + pmr);
-    		Short otherMatchPercent = existing.getMungeProcess().getMatchPercent();
-			Short pmrMatchPercent = pmr.getMungeProcess().getMatchPercent();
-			if (pmrMatchPercent == null || otherMatchPercent != null && otherMatchPercent >= pmrMatchPercent) { 
-    			logger.debug("other's matchPercent is equal or higher, so NOT replacing with pmr");
+    		Short otherPriority = existing.getMungeProcess().getMatchPriority();
+			Short pmrPriority = pmr.getMungeProcess().getMatchPriority();
+			if (pmrPriority == null || otherPriority != null && otherPriority <= pmrPriority) { 
+    			logger.debug("other's priority is equal or higher, so NOT replacing with pmr");
     			return;
     		} else {
-    			logger.debug("pmr's matchPercent is higher, so removing other");
+    			logger.debug("pmr's priority is higher, so removing other");
     			removePotentialMatch(existing);
     		}
     	}

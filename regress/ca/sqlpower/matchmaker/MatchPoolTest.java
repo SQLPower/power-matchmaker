@@ -280,8 +280,8 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "2");
 		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
 		pool.findAll(null);
-		mungeProcessOne.setMatchPercent(Short.valueOf("15"));
-		mungeProcessTwo.setMatchPercent(Short.valueOf("30"));
+		mungeProcessOne.setMatchPriority(Short.valueOf("2"));
+		mungeProcessTwo.setMatchPriority(Short.valueOf("1"));
 		
 		List<Object> keyList = new ArrayList<Object>();
 		keyList.add("1");
@@ -304,6 +304,8 @@ public class MatchPoolTest extends TestCase {
 		List<PotentialMatchRecord> matches = pool.getAllPotentialMatchByMungeProcess(mungeProcessTwo);
 		assertEquals(1, matches.size());
 		
+		matches = pool.getAllPotentialMatchByMungeProcess(mungeProcessOne);
+		assertEquals(0, matches.size());
 	}
 	
 	/**

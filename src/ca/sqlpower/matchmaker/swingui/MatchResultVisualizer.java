@@ -700,12 +700,12 @@ public class MatchResultVisualizer implements EditorPane {
 			
 			// Compares based on the match priority of the corresponding munge process 
 			int percent1 = 0;
-			if (pmr1.getMungeProcess().getMatchPercent() != null) {
-				percent1 = pmr1.getMungeProcess().getMatchPercent().shortValue();
+			if (pmr1.getMungeProcess().getMatchPriority() != null) {
+				percent1 = pmr1.getMungeProcess().getMatchPriority().shortValue();
 			}
 			int percent2 = 0;
-			if (pmr2.getMungeProcess().getMatchPercent() != null) {
-				percent2 = pmr2.getMungeProcess().getMatchPercent().shortValue();
+			if (pmr2.getMungeProcess().getMatchPriority() != null) {
+				percent2 = pmr2.getMungeProcess().getMatchPriority().shortValue();
 			}
 			return percent1 - percent2;
 		}

@@ -31,7 +31,7 @@ import ca.sqlpower.matchmaker.Project;
 
 /**
  * A set of MungeSteps. The child type is {@link MungeStep}.
- * {@link #matchPercent} can be NULL, and the constructor
+ * {@link #matchPriority} can be NULL, and the constructor
  * sets it to NULL by default.
  */
 public class MungeProcess
@@ -53,11 +53,12 @@ public class MungeProcess
 	private String desc;
     
     /**
-     * The user's confidence that this munge process produces
-     * actual matches.  Will usually be NULL or in the range 0-100, but
-     * this range is not enforced.
+     * The priority that this munge process will get evaluated relative to other MungeProcess'
+     * priority.  A lower number means a higher priority. Will usually be NULL or in the range 
+     * of 0-100, but this range is not enforced.
+     * 
      */
-	private Short matchPercent;
+	private Short matchPriority;
     
     /**
      * A SQL Where fragment that restricts this set of rules to a subset
@@ -139,14 +140,14 @@ public class MungeProcess
 		getEventSupport().firePropertyChange("desc", oldDesc, desc);
 	}
 
-	public Short getMatchPercent() {
-		return matchPercent;
+	public Short getMatchPriority() {
+		return matchPriority;
 	}
 
-	public void setMatchPercent(Short matchPercent) {
-        Short oldValue = this.matchPercent;
-		this.matchPercent = matchPercent;
-		getEventSupport().firePropertyChange("matchPercent", oldValue, matchPercent);
+	public void setMatchPriority(Short matchPriority) {
+        Short oldValue = this.matchPriority;
+		this.matchPriority = matchPriority;
+		getEventSupport().firePropertyChange("matchPriority", oldValue, matchPriority);
 	}
 
 	public boolean getActive() {
@@ -213,7 +214,7 @@ public class MungeProcess
 		mungeProcess.setDesc(getDesc()==null?null:new String(getDesc()));
 		mungeProcess.setFilter(getFilter()==null?null:new String(getFilter()));
         mungeProcess.setColour(getColour() == null ? null : new Color(getColour().getRGB()));
-		mungeProcess.setMatchPercent(getMatchPercent()==null?null:new Short(getMatchPercent()));
+		mungeProcess.setMatchPriority(getMatchPriority()==null?null:new Short(getMatchPriority()));
 		mungeProcess.setName(getName()==null?null:new String(getName()));
 		mungeProcess.setSession(s);
 		mungeProcess.setVisible(isVisible());
