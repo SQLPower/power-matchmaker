@@ -1,0 +1,10 @@
+0.9.1
+
+* Fixed a serious bug that prevented creating a new repository schema.
+* When all the input connections for a Munge Step are used up, an empty one is automatically generated if the step supports
+  adding new inputs. Unconnected inputs for these steps are now treated as if they didn't exist, so that the use isn't
+  forced to clean up these inputs before running the engines.
+
+0.9.0
+
+* Initial open-source release
