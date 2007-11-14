@@ -318,6 +318,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 	private Action helpAction;
 	private Action buildExampleTableAction;
+	private Action supportOnTheWebAction;
 	
 	private Action tableQueryAction = new AbstractAction("Table Explorer") {
 		public void actionPerformed(ActionEvent e) {
@@ -549,6 +550,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         buildExampleTableAction = new BuildExampleTableAction(this);
         helpMenu.add(buildExampleTableAction);
 
+        supportOnTheWebAction = SPSUtils.forumAction;
+        helpMenu.add(supportOnTheWebAction);
+        
         menuBar.add(helpMenu);
 		
 		frame.setJMenuBar(menuBar);
