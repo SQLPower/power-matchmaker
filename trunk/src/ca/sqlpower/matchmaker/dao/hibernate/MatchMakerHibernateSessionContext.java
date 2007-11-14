@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -34,6 +35,7 @@ import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.SPDataSourceType;
 import ca.sqlpower.util.UnknownFreqCodeException;
 import ca.sqlpower.util.VersionFormatException;
 
@@ -71,8 +73,38 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      */
     public MatchMakerHibernateSessionContext(Preferences prefs, DataSourceCollection plIni) {
         logger.debug("Creating new session context");
+        ensureHSQLDBSetup(plIni);
         this.plDotIni = plIni;
         this.prefs = prefs;
+    }
+
+    /**
+     * Makes sure the built-in HSQLDB database type is set up correctly in the
+     * given data source collection.
+     */
+    private void ensureHSQLDBSetup(DataSourceCollection plIni) {
+        List<SPDataSourceType> types = plIni.getDataSourceTypes();
+        SPDataSourceType hsql = null;
+        for (SPDataSourceType dst : types) {
+            if ("HSQLDB".equals(dst.getName())) {
+                hsql = dst;
+                break;
+            }
+        }
+        if (hsql == null) {
+            logger.error("HSQLDB connection type is missing! Built-in repository is unlikely to work properly!");
+            return;
+        }
+        if (hsql.getJdbcJarList().isEmpty()) {
+            hsql.addJdbcJar("builtin:hsqldb-1.8.0.9.jar");
+        }
+        List<String> jdbcJarList = hsql.getJdbcJarList();
+        for (String jar : jdbcJarList) {
+            File jarFile = new File(jar);
+            if (!jarFile.exists()) {
+                logger.error("HSQLDB Driver File missing: " + jarFile);
+            }
+        }
     }
 
     /* (non-Javadoc)
