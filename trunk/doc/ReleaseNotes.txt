@@ -4,6 +4,8 @@
 * When all the input connections for a Munge Step are used up, an empty one is automatically generated if the step supports
   adding new inputs. Unconnected inputs for these steps are now treated as if they didn't exist, so that the use isn't
   forced to clean up these inputs before running the engines.
+* Fixed a bug that could result in the MatchMaker using up all available database connections.
+* Temporarily removed the X-Ref project option until it is fully implemented.
 
 0.9.0
 
