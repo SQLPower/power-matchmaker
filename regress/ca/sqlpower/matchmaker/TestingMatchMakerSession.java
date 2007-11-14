@@ -237,10 +237,14 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     	SQLDatabase tempDB = null;
     	try {
     		tempDB = new SQLDatabase(ds);
-    		return tempDB.getTableByName(
+    		SQLTable table = tempDB.getTableByName(
     				catalog,
     				schema,
     				tableName);
+    		if (table == null) return null;
+    		table.getColumns();
+    		table.getImportedKeys();
+    		return table;
     	} finally {
     		if (tempDB != null) tempDB.disconnect();
     	}

@@ -972,7 +972,6 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 	protected abstract SPDataSource getDS();
 	
 	private void runProcessor() throws Exception {
-		Connection con = project.createSourceTableConnection();
 		con.setAutoCommit(false);
 		try {
 			mpor = new MergeProcessor(project, con, logger);
@@ -982,7 +981,7 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 			con.rollback();
 			throw e;
 		} finally {
-			con.close();
+//			con.close();
 		}
 	}
 }
