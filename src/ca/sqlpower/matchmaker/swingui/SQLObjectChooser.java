@@ -205,6 +205,7 @@ public class SQLObjectChooser {
 		schemaTerm.setEnabled(false);
 
         try {
+            db.populate();
             if (db.isCatalogContainer()) {
                 List<SQLCatalog> catalogs = db.getChildren();
                 setComboBoxStateAndItem(catalogComboBox, catalogs, -1);
