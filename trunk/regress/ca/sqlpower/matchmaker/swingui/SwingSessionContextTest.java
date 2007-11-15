@@ -123,6 +123,11 @@ public class SwingSessionContextTest extends TestCase {
                 return null;
             }
 
+            public MatchMakerSession createDefaultSession() {
+                System.out.println("Stub MMSContext.createDefaultSession()");
+                return null;
+            }
+
             public List<SPDataSource> getDataSources() {
                 System.out.println("Stub MMSContext.getDataSources()");
                 return dsCollection.getConnections();

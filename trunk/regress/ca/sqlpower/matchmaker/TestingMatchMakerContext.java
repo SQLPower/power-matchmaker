@@ -76,6 +76,10 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 		return session;
 	}
 
+    public MatchMakerSession createDefaultSession() {
+        return session;
+    }
+
 	public String getEmailSmtpHost() {
 		return prefs.get(EMAIL_HOST_PREFS, "");
 	}

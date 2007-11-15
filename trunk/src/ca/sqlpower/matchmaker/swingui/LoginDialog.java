@@ -19,78 +19,41 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectSession;
-import ca.sqlpower.architect.ArchitectSessionContext;
-import ca.sqlpower.architect.ArchitectSessionContextImpl;
-import ca.sqlpower.architect.SQLObject;
-import ca.sqlpower.architect.SQLObjectRoot;
-import ca.sqlpower.architect.SQLRelationship;
-import ca.sqlpower.architect.ddl.DDLGenerator;
-import ca.sqlpower.architect.ddl.DDLStatement;
-import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SQL;
-import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.ConnectionComboBoxModel;
-import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
-import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -211,19 +174,6 @@ public class LoginDialog implements SwingWorkerRegistry {
                                 "Existing version: "+ex.getCurrentVersion() +
                                 "\nRequired Version: "+ex.getRequiredVersion(),
                                 ex);
-                	} else if (getDoStuffException() instanceof SQLException) {
-                		int response = JOptionPane.showOptionDialog(frame,
-                			getDoStuffException().getMessage() + "\n\nTry to create the respository schema?",
-                			"Repository Schema Version Error", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE,
-                			null, null, null);
-                		if  (response == 0) {
-                			try {
-								createDefaultSchema();
-							} catch (Exception e) {
-								SPSUtils.showExceptionDialogNoReport(frame,
-									"Failed to create the default repository schema!", e);
-							}
-                		}
                 	} else {
                 		SPSUtils.showExceptionDialogNoReport(frame, "Login failed", getDoStuffException());
                 	}
@@ -251,373 +201,6 @@ public class LoginDialog implements SwingWorkerRegistry {
             }
         }
         
-        /**
-         * Loads from an architect file to create the default repository schema.
-         * Also asks the user for a destination for the repository.
-         */
-        private void createDefaultSchema() throws ArchitectException, IOException,
-        		InstantiationException, IllegalAccessException, ClassNotFoundException {
-            
-        	// Loads the architect file containing the default repository schema
-        	ArchitectSessionContext mmRepositoryContext = new ArchitectSessionContextImpl();
-            InputStream reposProjectInStream = ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/dao/hibernate/mm_repository.architect");
-            final ArchitectSession mmRepositorySession = mmRepositoryContext.createSession(reposProjectInStream);
-            
-            projectSanityCheck(mmRepositorySession.getRootObject());
-            
-            // Sets up the gui that is used to determine the destination of the repository
-            final DDLGenerator ddlg = DDLUtils.createDDLGenerator(dbSource);
-            final JLabel targetDBTypeLabel = new JLabel(ddlg.getName());
-            final JDialog schemaDialog = new JDialog(frame, "Build Default Schema", true);
-        	JLabel catalogLabel = new JLabel("Target Catalog");
-        	final JTextField catalogField = new JTextField();
-        	JLabel schemaLabel = new JLabel("Target Schema");
-        	final JTextField schemaField = new JTextField();
-        	JPanel dbPanel = new JPanel(new FormLayout(
-        			"10dlu,pref,4dlu,pref,10dlu",
-        			"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"));
-        	CellConstraints cc = new CellConstraints();
-        	JPanel buttonPanel = new JPanel(new FlowLayout());
-
-       		projectSanityCheck(mmRepositorySession.getRootObject());
-
-        	int row = 2;
-            dbPanel.add(new JLabel("Target Database Type:"), cc.xy(2, row));
-            dbPanel.add(targetDBTypeLabel, cc.xy(4, row));
-            row += 2;
-            dbPanel.add(catalogLabel, cc.xy(2, row));
-            dbPanel.add(catalogField, cc.xy(4, row));
-            row += 2;
-            dbPanel.add(schemaLabel, cc.xy(2, row));
-            dbPanel.add(schemaField, cc.xy(4, row));
-            row += 2;
-            
-            JDefaultButton okButton = new JDefaultButton(new AbstractAction("Create") {
-    			public void actionPerformed(ActionEvent e) {
-    				if (catalogField.isEnabled()) {
-    	    			if (catalogField.getText() == null || catalogField.getText().trim().length() == 0) {
-    	    				JOptionPane.showMessageDialog
-    	    				(schemaDialog, "Please provide a valid database catalog.");
-    	    				return;
-    	    			} else {	
-    	    				ddlg.setTargetCatalog(catalogField.getText());
-    	    			}
-    	    		}
-    	    		if (schemaField.isEnabled()) {
-    	    			if (schemaField.getText() == null || schemaField.getText().trim().length() == 0) {
-    	    				JOptionPane.showMessageDialog
-    	    				(schemaDialog, "Please provide a valid schema name.");
-    	    				return;
-    	    			} else {	
-    	    				ddlg.setTargetSchema(schemaField.getText());
-    	    			}
-    	    		}
-    	    		
-    	            projectSanityCheck(mmRepositorySession.getRootObject());
-
-    	    		try {
-    	    			mmRepositorySession.getTargetDatabase().setDataSource(dbSource);
-    	                projectSanityCheck(mmRepositorySession.getRootObject());
-						ddlg.generateDDLStatements(mmRepositorySession.getTargetDatabase().getTables());
-						generateDefaultSchemaSQL(ddlg);
-					} catch (Exception e1) {
-						schemaDialog.dispose();
-						SPSUtils.showExceptionDialogNoReport(frame,
-								"Failed to create the default repository schema!", e1);
-						throw new RuntimeException(e1);
-					}
-    			}
-            });
-            buttonPanel.add(okButton);
-            
-            JButton cancelButton = new JButton(new CommonCloseAction(schemaDialog));   
-            buttonPanel.add(cancelButton);
-            
-            dbPanel.add(buttonPanel, cc.xy(4,row, "c,c"));
-            
-            // Sets the terms for the catalog and schema 
-            if (ddlg.getCatalogTerm() != null) {
-            	catalogLabel.setText(ddlg.getCatalogTerm());
-            	catalogLabel.setEnabled(true);
-            	catalogField.setEnabled(true);
-            } else {
-            	catalogLabel.setText("(no catalog)");
-            	catalogLabel.setEnabled(false);
-            	catalogField.setText(null);
-            	catalogField.setEnabled(false);
-            }
-            if (ddlg.getSchemaTerm() != null) {
-            	schemaLabel.setText(ddlg.getSchemaTerm());
-            	schemaLabel.setEnabled(true);
-            	schemaField.setEnabled(true);
-            } else {
-            	schemaLabel.setText("(no schema)");
-            	schemaLabel.setEnabled(false);
-            	schemaField.setText(null);
-            	schemaField.setEnabled(false);
-            }
-
-            schemaDialog.setContentPane(dbPanel);
-            schemaDialog.getRootPane().setDefaultButton(okButton);
-            SPSUtils.makeJDialogCancellable(schemaDialog, cancelButton.getAction(), false);
-            schemaDialog.pack();
-            schemaDialog.setLocationRelativeTo(frame);
-            schemaDialog.setVisible(true);
-            
-            reposProjectInStream.close();
-        }
-        
-        /**
-         *	A check at the parent pointers in the loaded session. This was
-         *	a previous bug where some of the parent pointers were null. The
-         *	cause of an error would be in the Architect CoreProject load method.
-         */
-        private void projectSanityCheck(SQLObjectRoot rootObject) {
-            try {
-				recursiveSanityCheck(rootObject, "Root");
-			} catch (Exception e) {
-				throw new IllegalStateException("Error in loading the repository schema file.", e);
-			} 
-		}
-        
-        /**
-         * Does the recursive checks from {@link #projectSanityCheck(SQLObjectRoot)}.
-         * Ignores the Imported Keys folder when it's the parent because the parents
-         * of SQLRelationship's are defaulted to the Exported Keys folder.
-         */
-        private void recursiveSanityCheck(SQLObject o, String path) throws Exception {
-            logger.debug("Checking children of " + path);
-            for (Iterator it = o.getChildren().iterator(); it.hasNext();) {
-                SQLObject child = (SQLObject) it.next();
-                if (o instanceof SQLObjectRoot) {
-                    // skip, because database parent pointers are null
-                } else if (child instanceof SQLRelationship && o.getName().startsWith("Imported Keys")) {
-                    // skip, because the exported keys folder should be the parent
-                    // Note, if this is failing, maybe you renamed the "Imported Keys" folder! :)
-                } else {
-                    if (!o.equals(child.getParent())) {
-                    	String expected = o.getName();
-                    	String actual;
-                    	if (child.getParent() != null) {
-                    		actual = child.getParent().getName();
-                    	} else {
-                    		actual = "Null Parent";
-                    	}
-                    	throw new AssertionError(path + ": " + expected + "; " + actual);
-                    }
-                }
-                recursiveSanityCheck(child, path + "/" + child.getName());
-            }
-        }
-
-		/**
-         * Executes the sql statements to create the default schema for the default
-         * repository. It gets the sql statments from the given ddl generator and
-         * a post_create.sql file.
-        */
-        private void generateDefaultSchemaSQL(DDLGenerator ddlg) {
-        	final JDialog editor = new JDialog(frame,
-    	    		"Create Default Schema", true);
-    	    JPanel cp = new JPanel();
-    	    CellConstraints cc = new CellConstraints();
-    	    JButton executeButton;
-    	    
-    	    Box statementsBox = Box.createVerticalBox();
-    	    final List<JTextArea> sqlTextFields = new ArrayList<JTextArea>();
-    	    for (DDLStatement sqlStatement : ddlg.getDdlStatements()) {
-    	    	final JTextArea sqlTextArea = new JTextArea(sqlStatement.getSQLText());
-    			statementsBox.add(sqlTextArea);
-    			sqlTextFields.add(sqlTextArea);
-    	    }
-    	    
-    	    // Just to separate the build and post_create statements
-    	    statementsBox.add(new JTextArea("\n"));
-    	    sqlTextFields.add(new JTextArea("\n"));
-    	    
-			// Loads the sql statments that needs to be executed after building the repository.
-			InputStream postCreateScripts = ClassLoader.getSystemResourceAsStream("ca/sqlpower/matchmaker/dao/hibernate/post_create.sql");
-            BufferedReader br = new BufferedReader(new InputStreamReader(postCreateScripts));
-            StringBuilder sqlBuilder = new StringBuilder();
-            
-            try {
-            	String line = br.readLine();
-            	while (line != null) {
-            		if (";".equals(line.trim())) {
-            			final JTextArea sqlTextArea = new JTextArea(sqlBuilder.toString());
-            			statementsBox.add(sqlTextArea);
-    					sqlTextFields.add(sqlTextArea);
-            			sqlBuilder.setLength(0);
-            		} else if (!line.startsWith("--")) {
-                        
-                        // Some platforms don't support the USER keyword
-                        // This simplistic fix will, of course, break if anything has "USER" as a substring
-                        // But we control the contents of this script, so we can ensure that won't happen.
-                        line = line.replace("{USER}", SQL.quote(dbSource.getUser()));
-                        
-            			sqlBuilder.append(line + "\n");
-            		}
-            		line = br.readLine();
-            	}
-            } catch (IOException e1) {
-            	throw new RuntimeException(e1);
-            }
-    	    
-    	    Action saveAction = new AbstractAction("Save") {
-    			public void actionPerformed(ActionEvent e) {
-    				AbstractDocument doc = new DefaultStyledDocument();
-    				for (JTextArea sqlText : sqlTextFields ) {
-    			    	try {
-    						doc.insertString(doc.getLength(),
-    										sqlText.getText(),
-    										null);
-    						doc.insertString(doc.getLength(),";\n",null);
-    					} catch (BadLocationException e1) {
-    						SPSUtils.showExceptionDialogNoReport(frame, "Unexcepted Document Error",e1);
-    					}
-    			    }
-    				SPSUtils.saveDocument(frame, doc,
-    						(FileExtensionFilter)SPSUtils.SQL_FILE_FILTER);
-    			}
-    	    };
-    	    Action copyAction = new AbstractAction("Copy to Clipboard") {
-    			public void actionPerformed(ActionEvent e) {
-    				StringBuffer buf = new StringBuffer();
-    				for (JTextArea sqlText : sqlTextFields ) {
-    					buf.append(sqlText.getText());
-    					buf.append(";\n");
-    			    }
-    				StringSelection selection = new StringSelection(buf.toString());
-    				Clipboard clipboard = Toolkit.getDefaultToolkit()
-    						.getSystemClipboard();
-    				clipboard.setContents(selection, selection);
-    			}
-    	    };
-    	    Action executeAction = new AbstractAction("Execute") {
-    			public void actionPerformed(ActionEvent e) {
-    				// Builds the gui part of the error pane that will be used
-    				// if a sql statement fails
-    				JPanel errorPanel = new JPanel(new FormLayout("4dlu,300dlu,4dlu",
-    					"4dlu,pref,4dlu,pref,4dlu,200dlu,4dlu,pref,4dlu"));
-    				CellConstraints cc = new CellConstraints();
-    				
-    				JLabel topLabel = new JLabel();
-    				JTextArea errorMsgLabel = new JTextArea();
-    				errorMsgLabel.setLineWrap(true);
-    				errorMsgLabel.setWrapStyleWord(true);
-    				errorMsgLabel.setPreferredSize(new Dimension(300, 40));
-    				
-    				JLabel bottomLabel = new JLabel();
-    				JTextArea errorStmtLabel = new JTextArea();
-    				JScrollPane errorStmtPane = new JScrollPane(errorStmtLabel);
-    				errorStmtPane.setPreferredSize(new Dimension(300, 300));
-    				errorStmtPane.scrollRectToVisible(new Rectangle(0,0));
-    				
-    				int row = 2;
-    				errorPanel.add(topLabel, cc.xy(2, row));
-    				row += 2;
-    				errorPanel.add(errorMsgLabel, cc.xy(2, row));
-    				row += 2;
-    				errorPanel.add(errorStmtPane, cc.xy(2,row));
-    				row += 2;
-    				errorPanel.add(bottomLabel, cc.xy(2,row, "f,f"));
-    				
-    				// Does the actual work of executing the sql statments
-    				Connection con = null;
-    				Statement stmt = null;
-    				String sql = null;
-    				try {
-    					con = dbSource.createConnection();
-    					stmt = con.createStatement();
-    					int successCount = 0;
-    					boolean ignoreAll = false;
-                        
-                        for (JTextArea sqlText : sqlTextFields ) {
-    						sql = sqlText.getText().trim();
-    						try {
-    							stmt.executeUpdate(sql);
-    							successCount += 1;
-    						} catch (SQLException e1) {
-    							// TODO: Improve this so it deals with conflicts.
-    							if (!ignoreAll) {
-    								topLabel.setText("There was an error in the SQL statement: ");
-    								errorMsgLabel.setText(e1.getMessage());
-    								errorStmtLabel.setText(sql);
-    								bottomLabel.setText("Do you want to continue executing the create script?");
-    								int choice = JOptionPane.showOptionDialog(editor,
-    										errorPanel, "SQL Error", JOptionPane.YES_NO_OPTION,
-    										JOptionPane.ERROR_MESSAGE, null,
-    										new String[] {"Abort", "Ignore", "Ignore All"}, "Ignore" );
-    								if (choice == 2) {
-    									ignoreAll = true;
-    								} else if (choice == 0) {
-    									break;
-    								}
-    							}
-    						}
-    					}
-
-    					JOptionPane.showMessageDialog(editor,
-    							"Successfully executed " + successCount + " of " +
-    							sqlTextFields.size() + " SQL Statements." +
-    							(successCount == 0 ? "\n\nTry, try, try again." : ""));
-
-                        //closes the dialog if all the statement is executed successfully
-                        //if not, the dialog remains on the screen
-                        if (successCount == sqlTextFields.size()){
-    					    editor.dispose();
-                        }
-    				} catch (SQLException ex) {
-    					JOptionPane.showMessageDialog(editor,
-    							"Create Script Failure",
-    							"Couldn't allocate a Statement:\n" + ex.getMessage(),
-    							JOptionPane.ERROR_MESSAGE);
-    				} finally {
-                        try {
-                            if (stmt != null) {
-                                stmt.close();
-                            }
-                        } catch (SQLException ex) {
-                            logger.warn("Couldn't close statement", ex);
-                        }
-                        try {
-                            if (con != null) {
-                                con.close();
-                            }
-                        } catch (SQLException ex) {
-                            logger.warn("Couldn't close connection", ex);
-                        }
-    				}
-    			}
-    	    };
-    	    Action cancelAction = new AbstractAction("Close") {
-    			public void actionPerformed(ActionEvent e) {
-    				editor.dispose();
-    			}
-    	    };
-
-    	    // the gui layout part
-    	    cp.setLayout(new FormLayout("10dlu,350dlu,10dlu", "10dlu,350dlu,4dlu,pref,10dlu"));
-
-    	    int row = 2;
-    	    cp.add(new JScrollPane(statementsBox), cc.xy(2,row));
-    	    row += 2;
-
-    	    ButtonBarBuilder bbb = ButtonBarBuilder.createLeftToRightBuilder();
-    	    bbb.addGridded(new JButton(saveAction));
-    	    bbb.addGridded(new JButton(copyAction));
-    	    executeButton = new JButton(executeAction);
-    	    bbb.addGridded(executeButton);
-    	    bbb.addGridded(new JButton(cancelAction));
-    	    cp.add(bbb.getPanel(), cc.xy(2,row, "c,c"));
-
-    	    editor.setContentPane(cp);
-    	    SPSUtils.makeJDialogCancellable(editor, cancelAction, false);
-    	    editor.getRootPane().setDefaultButton(executeButton);
-    	    editor.pack();
-    	    editor.setLocationRelativeTo(frame);
-    	    editor.setVisible(true);
-        }
-
 		public Integer getJobSize() {
 			return null;
 		}

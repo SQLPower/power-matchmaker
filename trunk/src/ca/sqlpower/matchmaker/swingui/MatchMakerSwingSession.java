@@ -807,7 +807,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		    public void run() {
 		    	try {
 		    		SwingSessionContext context = new SwingSessionContextImpl(PreferencesManager.getRootNode());
-                    context.showLoginDialog(null);
+                    context.launchDefaultSession();
 		    	} catch (Exception ex) {
 		    		JDialog d = SPSUtils.showExceptionDialogNoReport(null, "Couldn't start application!", ex);
 		    		d.addWindowListener(new WindowAdapter() {

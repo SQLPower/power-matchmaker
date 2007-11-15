@@ -92,7 +92,14 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	 * The array that looks like the set of types we are expecting for the correct constructor for any munge component
 	 *  (excluding the input and output steps).
 	 */
-	private static final Type[] MUNGECOM_CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class}; 
+	private static final Type[] MUNGECOM_CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class};
+
+    /**
+     * The preference key that specifies whether or not auto-login is enabled.
+     * The preference is boolean-valued. If the key is missing in the prefs, the
+     * default value should be assumed to be true.
+     */
+    private static final String AUTO_LOGIN_PREF_KEY = "autoLoginEnabled"; 
 
 	/**
 	 * The list of information about mungeSteps, which stores their StepClass, GUIClass, name and icon
@@ -254,6 +261,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         return new MatchMakerSwingSession(this, context.createSession(ds, username, password));
     }
 
+    public MatchMakerSession createDefaultSession() {
+        return context.createDefaultSession();
+    }
+    
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#getDataSources()
      */
@@ -342,6 +353,29 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         loginDialog.showLoginDialog(selectedDataSource);
     }
 
+    /**
+     * This is the normal way of starting up the MatchMaker GUI. Based on the
+     * user's preferences, this method either presents the repository login
+     * dialog, or delegates the "launch default" operation to the delegate
+     * context.
+     * <p>
+     * Under normal circumstances, the delegate context will be a
+     * MatchMakerHibernateSession, so delegating the operation ends up (creating
+     * and) logging into the local HSQLDB repository.
+     */
+    public void launchDefaultSession() {
+        try {
+            if (!isAutoLoginEnabled()) {
+                showLoginDialog(getLastLoginDataSource());
+            } else {
+                MatchMakerSession sessionDelegate = context.createDefaultSession();
+                MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
+                session.showGUI();
+            }
+        } catch (Exception ex) {
+            SPSUtils.showExceptionDialogNoReport("MatchMaker Startup Failed", ex);
+        }
+    }
 
     ///////// Private implementation details ///////////
 
@@ -556,4 +590,12 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	public void setEmailSmtpHost(String host) {
 		context.setEmailSmtpHost(host);
 	}
+    
+    public boolean isAutoLoginEnabled() {
+        return swingPrefs.getBoolean(AUTO_LOGIN_PREF_KEY, true);
+    }
+
+    public void setAutoLoginEnabled(boolean enabled) {
+        swingPrefs.putBoolean(AUTO_LOGIN_PREF_KEY, enabled);
+    }
 }

@@ -124,4 +124,22 @@ public class StubSwingSessionContext implements SwingSessionContext {
 	public void setEmailSmtpHost(String smtpHost) {
 		logger.debug("Stub call: StubSwingSessionContext.setEmailSmtpHost()");
 	}
+
+    public boolean isAutoLoginEnabled() {
+        logger.debug("Stub call: StubSwingSessionContext.isAutoLoginEnabled()");
+        return false;
+    }
+
+    public void setAutoLoginEnabled(boolean enabled) {
+        logger.debug("Stub call: StubSwingSessionContext.setAutoLoginEnabled()");
+    }
+
+    public void launchDefaultSession() {
+        logger.debug("Stub call: StubSwingSessionContext.launchDefaultSession()");
+    }
+
+    public MatchMakerSession createDefaultSession() {
+        logger.debug("Stub call: StubSwingSessionContext.createDefaultSession()");
+        return null;
+    }
 }

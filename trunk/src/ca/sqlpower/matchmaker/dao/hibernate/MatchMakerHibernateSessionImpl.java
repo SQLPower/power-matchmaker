@@ -200,11 +200,11 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             if (stmt != null) stmt.close();
         }
 
-        if (plSchemaVersion.compareTo(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION) < 0) {
+        if (plSchemaVersion.compareTo(RepositoryUtil.MIN_PL_SCHEMA_VERSION) < 0) {
             throw new PLSchemaException(
                     "The MatchMaker requires a newer version of the Repository Schema" +
                     " than is installed in the "+ds.getDisplayName()+" database.",
-                    plSchemaVersion.toString(), MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.toString());
+                    plSchemaVersion.toString(), RepositoryUtil.MIN_PL_SCHEMA_VERSION.toString());
         }
         sm = new PLSecurityManager(con,
 				 					dbUser.toUpperCase(),

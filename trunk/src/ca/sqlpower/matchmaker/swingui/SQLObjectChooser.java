@@ -21,11 +21,15 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
 
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
@@ -35,10 +39,15 @@ import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.SPSUtils;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * A set of Swing components that allow the user to select a
@@ -50,6 +59,84 @@ import ca.sqlpower.swingui.SPSUtils;
  */
 public class SQLObjectChooser {
 	
+    /**
+     * Presents a modal dialog with combo boxes for database connections,
+     * catalogs, and schemas. Initially, there is no selection in the database
+     * combo box, and the others are empty. As databases are chosen by the user,
+     * the other combo boxes become enabled depending on the containment
+     * hierarchy of the selected datbase (for instance, some databases have
+     * catalogs but not schemas; others have schemas but not catalogs; others
+     * have both; and still others just have tables directly inside the
+     * top-level database connection).
+     * <p>
+     * The type of the return value depends on the containment hierarchy of the selected database (the possibilities are described above).
+     * The guarantee is that the returned object will itself be a "table container;" that is, its
+     * children are of type SQLTable.
+     * 
+     * @param session
+     * @param owner
+     * @param title
+     * @return The selected "table container" object, or <tt>null</tt> if the user cancels or
+     * closes the dialog.
+     * @throws ArchitectException If there are problems connecting to or populating the chosen databases
+     */
+    public static SQLObject showSchemaChooserDialog(MatchMakerSwingSession session, Component owner, String title) throws ArchitectException {
+        SQLObjectChooser soc = new SQLObjectChooser(session);
+        
+        // single boolean in final array so the buttons can modify its value
+        final boolean[] dialogAccepted = new boolean[1];
+        final JDialog d = SPSUtils.makeOwnedDialog(owner, title);
+        
+        FormLayout layout = new FormLayout("pref,4dlu,pref");
+        DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        builder.append("Connection", soc.getDataSourceComboBox());
+        builder.append(soc.getCatalogTerm(), soc.getCatalogComboBox());
+        builder.append(soc.getSchemaTerm(), soc.getSchemaComboBox());
+        
+        JButton okButton = new JButton("OK");
+        okButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                dialogAccepted[0] = true;
+                d.dispose();
+            }
+        });
+        
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                d.dispose();
+            }
+        });
+        
+        builder.append(ButtonBarFactory.buildOKCancelBar(okButton, cancelButton), 3);
+        
+        d.setContentPane(builder.getPanel());
+        d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        d.setModal(true);
+        d.pack();
+        d.setLocationRelativeTo(owner);
+        
+        for (;;) {
+            dialogAccepted[0] = false;
+            d.setVisible(true);
+
+            if (!dialogAccepted[0]) {
+                return null;
+            }
+
+            // post-mortem: figure out if we're returning a database, catalog, or schema
+            if (soc.schema != null) {
+                return soc.schema;
+            } else if (soc.catalog != null && !soc.catalog.isSchemaContainer()) {
+                return soc.catalog;
+            } else if (soc.db != null && (! (soc.db.isSchemaContainer() || soc.db.isCatalogContainer()))) {
+                return soc.db;
+            } else {
+                return null;
+            }
+        }
+    }
+    
 	private JComboBox dataSourceComboBox = new JComboBox();
 
 	private JComboBox catalogComboBox = new JComboBox();

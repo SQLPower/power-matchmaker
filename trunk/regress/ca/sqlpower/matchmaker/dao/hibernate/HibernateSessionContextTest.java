@@ -70,9 +70,9 @@ public class HibernateSessionContextTest extends TestCase {
         SPDataSource ds = DBTestUtil.getHSQLDBInMemoryDS();
 
         Version v = new Version();
-        v.setMajor(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.getMajor() - 1);
-        v.setMinor(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.getMinor());
-        v.setTiny(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.getTiny());
+        v.setMajor(RepositoryUtil.MIN_PL_SCHEMA_VERSION.getMajor() - 1);
+        v.setMinor(RepositoryUtil.MIN_PL_SCHEMA_VERSION.getMinor());
+        v.setTiny(RepositoryUtil.MIN_PL_SCHEMA_VERSION.getTiny());
         
         // this is very simplistic, and assumes that the startup sequence of
         // MatchMakerHibernateSessionImpl checks the schema version before accessing
@@ -91,7 +91,7 @@ public class HibernateSessionContextTest extends TestCase {
             ctx.createSession(ds, ds.getUser(), ds.getPass());
             fail("Session init failed to report bad schema version");
         } catch (PLSchemaException ex) {
-            assertEquals(MatchMakerSessionContext.MIN_PL_SCHEMA_VERSION.toString(), ex.getRequiredVersion());
+            assertEquals(RepositoryUtil.MIN_PL_SCHEMA_VERSION.toString(), ex.getRequiredVersion());
             assertEquals(v.toString(), ex.getCurrentVersion());
         }
     }

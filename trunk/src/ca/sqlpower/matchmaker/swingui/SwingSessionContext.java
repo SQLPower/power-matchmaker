@@ -91,12 +91,25 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
     public void showDatabaseConnectionManager(Window owner);
 
     /**
-     * Shows the login dialog.
+     * Shows the login dialog, which can lead to the creation of a new session within
+     * this context.
      * 
      * @param selectedDataSource The data source that should be selected in the dialog.
      * If null, the dialog's selected data source will remain unchanged.
      */
     public void showLoginDialog(SPDataSource selectedDataSource);
+    
+    /**
+     * This is the normal way of starting up the MatchMaker GUI. Based on the
+     * user's preferences, this method either presents the repository login
+     * dialog, or delegates the "create default session" operation to the delegate
+     * context.
+     * <p>
+     * Under normal circumstances, the delegate context will be a
+     * MatchMakerHibernateSession, so delegating the operation ends up (creating
+     * and) logging into the local HSQLDB repository.
+     */
+    public void launchDefaultSession();
     
     /**
      * Returns a new instance of the appropriate MungeComponent that is associated with the given MungeStep.
@@ -125,4 +138,17 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      * @return A new MungeStep of the type given by the list
      */
     public MungeStep getMungeStep(Class<? extends MungeStep> create);
+    
+    /**
+     * Preference: Should the launchDefaultSession method automatically create
+     * the default session, or should it present a login dialog?
+     */
+    public boolean isAutoLoginEnabled();
+
+    /**
+     * Preference: Should the launchDefaultSession method automatically create
+     * the default session, or should it present a login dialog?
+     */
+    public void setAutoLoginEnabled(boolean enabled);
+
 }
