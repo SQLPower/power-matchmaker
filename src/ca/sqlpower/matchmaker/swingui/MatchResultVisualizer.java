@@ -53,7 +53,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 
 import org.apache.log4j.Logger;
 
@@ -94,6 +96,8 @@ public class MatchResultVisualizer implements EditorPane {
 	final private Icon nomatchIcon = new ImageIcon(getClass().getResource("/icons/nomatch.png"));
 	final private Icon unmatchIcon = new ImageIcon(getClass().getResource("/icons/unmatch.png"));
     
+	private static final int RECORD_VIEWER_ROW_HEADER_LAYOUT_PADDING = 4;
+	
     /**
      * Pops up a save dialog and saves the match pool to the chosen DOT file.
      */
@@ -325,17 +329,24 @@ public class MatchResultVisualizer implements EditorPane {
 
         public void nodeDeselected(SourceTableRecord node) {
             recordViewerPanel.removeAll();
+            recordViewerPanel.add(SourceTableRecordViewer.getNoNodeSelectedLabel());
             recordViewerPanel.revalidate();
             recordViewerColumnHeader.removeAll();
             recordViewerColumnHeader.revalidate();
-            recordViewerRowHeader.remove(recordViewerRowHeader.getComponentCount() - 1);
+            recordViewerRowHeader.removeAll();
             recordViewerRowHeader.revalidate();
+            recordViewerCornerPanel.removeAll();
+            recordViewerCornerPanel.revalidate();
         }
 
         public void nodeSelected(final SourceTableRecord node) {
             try {
                 recordViewerPanel.removeAll();
                 recordViewerColumnHeader.removeAll();
+                recordViewerRowHeader.removeAll();
+                recordViewerCornerPanel.removeAll();
+                JPanel headerPanel = SourceTableRecordViewer.headerPanel(match);
+                recordViewerRowHeader.add(headerPanel);
                 BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
                     new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
                 bfs.setComparator(new SourceTableRecordsComparator(node));
@@ -345,6 +356,11 @@ public class MatchResultVisualizer implements EditorPane {
                 	    SourceTableRecordViewer recordViewer = 
 	                        new SourceTableRecordViewer(
 	                            rec, node, getActions(node, rec));
+                	    JToolBar toolBar = recordViewer.getToolBar();
+                	    EmptyBorder emptyBorder = new EmptyBorder(0, headerPanel.getPreferredSize().width
+                	    		+ RECORD_VIEWER_ROW_HEADER_LAYOUT_PADDING, 0, 0);
+						toolBar.setBorder(emptyBorder);
+                	    recordViewerCornerPanel.add(toolBar);
                 	    recordViewerRowHeader.add(recordViewer.getPanel());
                 	} else {
 	                	final SourceTableRecord str = rec;
@@ -376,6 +392,7 @@ public class MatchResultVisualizer implements EditorPane {
             recordViewerPanel.revalidate();
             recordViewerColumnHeader.revalidate();
             recordViewerRowHeader.revalidate();
+            recordViewerCornerPanel.revalidate();
         }     
     }
     
@@ -453,8 +470,15 @@ public class MatchResultVisualizer implements EditorPane {
      * in a second column the values of the source table record from the selected node. This is
      * to prevent the selected record from scrolling out of view when scrolling through the records.
      */
-    private final JPanel recordViewerRowHeader = new JPanel(new RecordViewerLayout(4));
+    private final JPanel recordViewerRowHeader = new JPanel(new RecordViewerLayout(RECORD_VIEWER_ROW_HEADER_LAYOUT_PADDING));
 
+    /**
+     * The component that is placed in the upper left corner of the record viewer.
+     * Typically, if no node is selected, then it will be an empty panel. Otherwise, it
+     * would contain a toolbar for the source table record column of the selected node. 
+     */
+    private final JPanel recordViewerCornerPanel = new JPanel(new RecordViewerLayout(0));
+    
     private final MyGraphSelectionListener selectionListener = new MyGraphSelectionListener();
 
     private final MatchPool pool;
@@ -502,6 +526,7 @@ public class MatchResultVisualizer implements EditorPane {
         graphPanel.add(new JScrollPane(graph), BorderLayout.CENTER);
         graphPanel.add(autoMatchPanel, BorderLayout.SOUTH);
                 
+        recordViewerPanel.add(SourceTableRecordViewer.getNoNodeSelectedLabel());
         final JScrollPane recordViewerScrollPane =
             new JScrollPane(recordViewerPanel,
                     JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -513,9 +538,9 @@ public class MatchResultVisualizer implements EditorPane {
         recordViewerScrollPane.getVerticalScrollBar().setUnitIncrement(15);
         
         recordViewerScrollPane.setColumnHeaderView(recordViewerColumnHeader);
-        recordViewerRowHeader.add(SourceTableRecordViewer.headerPanel(project));
 		recordViewerScrollPane.setRowHeaderView(recordViewerRowHeader);
-
+		recordViewerScrollPane.setCorner(JScrollPane.UPPER_LEFT_CORNER, recordViewerCornerPanel);
+		
         // put it all together
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 graphPanel,
