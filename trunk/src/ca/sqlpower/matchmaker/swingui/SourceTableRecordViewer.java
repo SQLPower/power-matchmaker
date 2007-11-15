@@ -78,7 +78,10 @@ public class SourceTableRecordViewer {
      */
 	private int toolBarMinWidth;
 	
-    private static final Logger logger = Logger.getLogger(SourceTableRecordViewer.class);
+	private static final JLabel NO_NODE_SELECTED_LABEL = new JLabel("Please select a node in the graph to see the" +
+																	" contents of its source table record.", JLabel.CENTER); 
+
+	private static final Logger logger = Logger.getLogger(SourceTableRecordViewer.class);
 
     public SourceTableRecordViewer(SourceTableRecord view, SourceTableRecord master, List<Action>buttonActions) 
     	throws ArchitectException, SQLException {
@@ -213,4 +216,8 @@ public class SourceTableRecordViewer {
     	final int FACTOR = 70;
         return new Color(c.getRed(), c.getGreen(), c.getBlue(), FACTOR);
     }
+
+	public static JLabel getNoNodeSelectedLabel() {
+		return NO_NODE_SELECTED_LABEL;
+	}
 }
