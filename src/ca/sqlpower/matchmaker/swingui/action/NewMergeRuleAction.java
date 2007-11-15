@@ -19,10 +19,11 @@
 
 package ca.sqlpower.matchmaker.swingui.action;
 
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
@@ -72,8 +74,28 @@ public class NewMergeRuleAction extends AbstractAction {
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		dialog.setPreferredSize(new Dimension(400, 230));
+//		dialog.setPreferredSize(new Dimension(4000, 2300));
 		final SQLObjectChooser chooser = new SQLObjectChooser(swingSession);
+		
+		ItemListener il = new ItemListener(){
+			public void itemStateChanged(ItemEvent e) {
+			//	dialog.setSize(new Dimension(
+				//		(int)Math.max(dialog.getPreferredSize().getWidth(),
+				//				((JComboBox)e.getSource()).getWidth() + chooser.getCatalogTerm().getWidth() + 200), 
+				///		dialog.getHeight()));
+				
+				SwingUtilities.invokeLater(new Runnable(){
+
+					public void run() {	
+						dialog.setSize(dialog.getPreferredSize());
+					}
+				});
+			}
+		};
+		
+		chooser.getCatalogComboBox().addItemListener(il);
+		chooser.getSchemaComboBox().addItemListener(il);
+		chooser.getTableComboBox().addItemListener(il);
 		//this is hidden from the user but important
 		chooser.getDataSourceComboBox().getModel().setSelectedItem(parent.getSourceTable().getParentDatabase().getDataSource());
 		
@@ -106,7 +128,8 @@ public class NewMergeRuleAction extends AbstractAction {
 		});
 		
 		FormLayout layout = new FormLayout(
-			"10dlu,pref,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow,10dlu", 
+			//"10dlu,pref,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow,10dlu",
+				"10dlu,pref,4dlu,fill:max(pref;" + 5*new JComboBox().getMinimumSize().getWidth() + "px):grow,10dlu", 
         	"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu");
         	//1    2    3    4    5     6    7   8    9 
 		CellConstraints cc = new CellConstraints();
