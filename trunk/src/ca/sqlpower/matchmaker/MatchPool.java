@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -190,9 +191,10 @@ public class MatchPool {
                 sql.append(col.getName());
                 first = false;
             }
-            if (displayColumns == null || displayColumns.size() == 0) {
+            SQLIndex sourceTableIndex = project.getSourceTableIndex();
+			if (displayColumns == null || displayColumns.size() == 0) {
             	displayColumns = new ArrayList<SQLColumn>();
-            	for (SQLIndex.Column col: (List<SQLIndex.Column>)project.getSourceTableIndex().getChildren()) {
+            	for (SQLIndex.Column col: (List<SQLIndex.Column>)sourceTableIndex.getChildren()) {
             		displayColumns.add(col.getColumn());
             	}
             }
@@ -217,7 +219,7 @@ public class MatchPool {
             sql.append(DDLUtils.toQualifiedName(sourceTable));
             sql.append(" source2");
             int index = 0;
-            for (SQLIndex.Column col: (List<SQLIndex.Column>)project.getSourceTableIndex().getChildren()) {
+            for (SQLIndex.Column col: (List<SQLIndex.Column>)sourceTableIndex.getChildren()) {
             	if (index == 0) { 
             		sql.append("\n WHERE");
             	} else {
@@ -249,12 +251,25 @@ public class MatchPool {
                             "\". Ignoring it.");
                     continue;
                 }
-                int indexSize = project.getSourceTableIndex().getChildCount();
+                
+                int indexSize = sourceTableIndex.getChildCount();
                 List<Object> lhsKeyValues = new ArrayList<Object>(indexSize);
                 List<Object> rhsKeyValues = new ArrayList<Object>(indexSize);
                 for (int i = 0; i < indexSize; i++) {
-                    lhsKeyValues.add(rs.getObject("DUP_CANDIDATE_1"+i));
-                    rhsKeyValues.add(rs.getObject("DUP_CANDIDATE_2"+i));
+                	Class typeClass = TypeMap.typeClass(sourceTableIndex.getChild(i).getColumn().getType());
+					if (typeClass == BigDecimal.class) {
+                		lhsKeyValues.add(rs.getBigDecimal("DUP_CANDIDATE_1"+i));
+                		rhsKeyValues.add(rs.getBigDecimal("DUP_CANDIDATE_2"+i));
+                	} else if (typeClass == Date.class) {
+                		lhsKeyValues.add(rs.getDate("DUP_CANDIDATE_1"+i));
+                		rhsKeyValues.add(rs.getDate("DUP_CANDIDATE_2"+i));
+                	} else if (typeClass == Boolean.class) {
+                		lhsKeyValues.add(rs.getBoolean("DUP_CANDIDATE_1"+i));
+                		rhsKeyValues.add(rs.getBoolean("DUP_CANDIDATE_2"+i));
+                	} else {
+                		lhsKeyValues.add(rs.getString("DUP_CANDIDATE_1"+i));
+                		rhsKeyValues.add(rs.getString("DUP_CANDIDATE_2"+i));
+                	}
                 }
                 List<Object> lhsDisplayValues = new ArrayList<Object>();
                 List<Object> rhsDisplayValues = new ArrayList<Object>();
