@@ -34,137 +34,97 @@
 		<title>Introduction</title>
 
 		<para>
-			Data needs to be contained, clean and complete to be useful
-			in today's workplace. The Power*MatchMaker is the tool that
-			allows you to get a consolidated view of your customers,
-			products or other key dimensions. This tool will help to
-			provide you with clean data, build connections between
-			disconnected data sources and to provide a single view for
-			each customer, product or person by creating conformed
-			dimensions. The Power*Matchmaker can even deal with
-			different source systems that use different identifiers for
-			the same customer, product or person.
+			Data needs to be clean, and complete to be useful in today's
+			workplace. The Power*MatchMaker is the tool that allows you
+			to get a consolidated view of your customers, products, or
+			other key dimensions.
 		</para>
 
 		<para>
-			Power*Matchmaker allows you to successfully build conformed
-			dimensions which results in having concise and complete
-			views of key dimensions. This aids executives and
-			decision-makers in seeing the complete picture and allows
-			them to make informed decisions based on the entire set of
-			available data. The Power*MatchMaker builds conformed
-			dimensions and eliminates duplicates from your database.
+			SQL Power Group&apos;s Power*MatchMaker will cleanse your
+			data, validate and correct addresses, identify and remove
+			duplicates, and build cross-references between source and
+			target tables. This provides business users with complete
+			and accurate data, and a single 360º view of each customer,
+			product, sales rep, and business unit.
 		</para>
 
 		<para>
 			The Power*Matchmaker is a user-friendly and highly intuitive
-			data consolidating tool. The tool is created by data
-			warehouse designers, and has many features geared for anyone
-			dealing with data, including:
+			data cleansing tool created by data warehouse designers, and
+			has many features geared for anyone dealing with information
+			systems, including:
 		</para>
 
 		<itemizedlist>
 
 			<listitem>
-
-				<para>Accepts user-defined data matching criteria</para>
-
+				<para>
+					Innovative interface for user verification of
+					duplicates
+				</para>
 			</listitem>
 
 			<listitem>
+				<para>
+					Intuitive 'munge' process interface that allows Data
+					Conversion workflow to be manipulated easily by
+					arranging and connecting individual process steps.
+				</para>
+			</listitem>
 
+			<listitem>
+				<para>Validates and corrects address information</para>
+			</listitem>
+
+			<listitem>
+				<para>Accepts user-defined data matching criteria</para>
+			</listitem>
+
+			<listitem>
 				<para>
 					Allows for user confirmation of duplicates through
 					the on-line verification facility
 				</para>
-
 			</listitem>
 
 			<listitem>
-
 				<para>
 					Builds cross-reference tables to link source
 					systems' identifiers (PK's) to the target database
 					identifiers
 				</para>
-
 			</listitem>
 
 			<listitem>
-
 				<para>
 					Merges duplicate records and their related data
 				</para>
-
 			</listitem>
 
 			<listitem>
-
 				<para>
-					Allows for Backup of impacted records prior to
+					Allows for backup of affected records prior to
 					merging of data
 				</para>
-
 			</listitem>
 
 			<listitem>
-
 				<para>
-					Power*Matchmaker can be run against the entire
-					database to perform initial data cleanup, or they
-					can be incorporated into the data load process to
-					identify and eliminate potential duplicates on an
-					ongoing basis.
+					Runs against the entire database to perform initial
+					data cleanup, or incorporated into the data load
+					process
 				</para>
-
-			</listitem>
-
-			<listitem>
-
-				<para>
-					Whether you're building a Data Warehouse, Data Mart
-					or a CRM system, the Power*MatchMaker will go a long
-					way towards ensuring the integrity of your data for
-					your decision support environment.
-				</para>
-
 			</listitem>
 
 		</itemizedlist>
 
 		<para>
-			Power*Matchmaker can open multiple source databases
-			concurrently, even those from competing database vendors.
-			Another key feature of the Power*Matchmaker that sets it
-			apart from other data de-duping tools is that ??????
+			Whether you're building a Data Warehouse, Data Mart or a CRM
+			system, the Power*MatchMaker will go a long way towards
+			ensuring the integrity of your data for your decision
+			support environment.
 		</para>
-
-		<para>
-			Whether you're building or maintaining your Data Warehouse
-			data model, the Power*Matchmaker will provide you a complete
-			view of all your dimensions and allow the decision makers to
-			make a well informed decision.
-		</para>
-
-		<para>We firmly believe you can...</para>
-
-		<sidebar>
-
-			<para>
-				Clean and de-dupe your data in a fraction of the time
-				with Power*Matchmaker.
-			</para>
-
-		</sidebar>
-
-		<epigraph>
-
-			<para>
-				Power*Matchmaker is a necessary tool for anyone dealing
-				with large amounts of data.
-			</para>
-
-		</epigraph>
 
 		<section id="Introduction.Basic_Concepts">
 			<title>Basic Concepts</title>
