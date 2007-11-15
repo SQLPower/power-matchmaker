@@ -326,46 +326,56 @@ public class MatchResultVisualizer implements EditorPane {
         public void nodeDeselected(SourceTableRecord node) {
             recordViewerPanel.removeAll();
             recordViewerPanel.revalidate();
-            recordViewerHeader.removeAll();
-            recordViewerHeader.revalidate();
+            recordViewerColumnHeader.removeAll();
+            recordViewerColumnHeader.revalidate();
+            recordViewerRowHeader.remove(recordViewerRowHeader.getComponentCount() - 1);
+            recordViewerRowHeader.revalidate();
         }
 
         public void nodeSelected(final SourceTableRecord node) {
             try {
                 recordViewerPanel.removeAll();
-                recordViewerHeader.removeAll();
+                recordViewerColumnHeader.removeAll();
                 BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord> bfs =
                     new BreadthFirstSearch<SourceTableRecord, PotentialMatchRecord>();
                 bfs.setComparator(new SourceTableRecordsComparator(node));
                 List<SourceTableRecord> reachableNodes = bfs.performSearch(graphModel, node);
                 for (SourceTableRecord rec : reachableNodes) {
-                    final SourceTableRecord str = rec;
-                    
-                    SourceTableRecordViewer recordViewer = 
-                        new SourceTableRecordViewer(
-                            str, node, getActions(node, str));
-                    recordViewer.getPanel().addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mousePressed(MouseEvent e) {
-                            if (SwingUtilities.isLeftMouseButton(e)){
-                                if (e.getClickCount() == 1) {
-                                    graph.setFocusedNode(str);
-                                    graph.scrollNodeToVisible(str);
-                                } else if (e.getClickCount() == 2) {
-                                    graph.setSelectedNode(str);
-                                    graph.scrollNodeToVisible(str);
-                                }
-                            }
-                        }
-                    });
-                    recordViewerPanel.add(recordViewer.getPanel());
-                    recordViewerHeader.add(recordViewer.getToolBar());
+                	if (rec.equals(node)) {
+                	    SourceTableRecordViewer recordViewer = 
+	                        new SourceTableRecordViewer(
+	                            rec, node, getActions(node, rec));
+                	    recordViewerRowHeader.add(recordViewer.getPanel());
+                	} else {
+	                	final SourceTableRecord str = rec;
+	                    
+	                    SourceTableRecordViewer recordViewer = 
+	                        new SourceTableRecordViewer(
+	                            str, node, getActions(node, str));
+	                    recordViewer.getPanel().addMouseListener(new MouseAdapter() {
+	                        @Override
+	                        public void mousePressed(MouseEvent e) {
+	                            if (SwingUtilities.isLeftMouseButton(e)){
+	                                if (e.getClickCount() == 1) {
+	                                    graph.setFocusedNode(str);
+	                                    graph.scrollNodeToVisible(str);
+	                                } else if (e.getClickCount() == 2) {
+	                                    graph.setSelectedNode(str);
+	                                    graph.scrollNodeToVisible(str);
+	                                }
+	                            }
+	                        }
+	                    });
+	                    recordViewerPanel.add(recordViewer.getPanel());
+	                    recordViewerColumnHeader.add(recordViewer.getToolBar());
+                	}
                 }
             } catch (Exception ex) {
                 MMSUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex);
             }
             recordViewerPanel.revalidate();
-            recordViewerHeader.revalidate();
+            recordViewerColumnHeader.revalidate();
+            recordViewerRowHeader.revalidate();
         }     
     }
     
@@ -434,7 +444,16 @@ public class MatchResultVisualizer implements EditorPane {
      * in the header when laying out the body, but we can't have the two layout
      * managers wrestle each other.
      */
-    private final JPanel recordViewerHeader = new JPanel(new RecordViewerLayout(0));
+    private final JPanel recordViewerColumnHeader = new JPanel(new RecordViewerLayout(0));
+
+    /**
+     * The row header component that is placed on the left side of the record viewer panel.
+     * If no node is selected, it would contain only one panel with the names of the columns
+     * of the source table record to be displayed. If a node is selected, it will also contain
+     * in a second column the values of the source table record from the selected node. This is
+     * to prevent the selected record from scrolling out of view when scrolling through the records.
+     */
+    private final JPanel recordViewerRowHeader = new JPanel(new RecordViewerLayout(4));
 
     private final MyGraphSelectionListener selectionListener = new MyGraphSelectionListener();
 
@@ -493,8 +512,9 @@ public class MatchResultVisualizer implements EditorPane {
         recordViewerScrollPane.getVerticalScrollBar().setBlockIncrement(100);
         recordViewerScrollPane.getVerticalScrollBar().setUnitIncrement(15);
         
-        recordViewerScrollPane.setColumnHeaderView(recordViewerHeader);
-        recordViewerScrollPane.setRowHeaderView(SourceTableRecordViewer.headerPanel(project));
+        recordViewerScrollPane.setColumnHeaderView(recordViewerColumnHeader);
+        recordViewerRowHeader.add(SourceTableRecordViewer.headerPanel(project));
+		recordViewerScrollPane.setRowHeaderView(recordViewerRowHeader);
 
         // put it all together
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
