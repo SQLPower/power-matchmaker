@@ -620,7 +620,7 @@ public class MMTestUtils {
 	public static void createSourceTable(Connection con) throws SQLException {
 		Statement stmt = con.createStatement();
 		stmt.executeUpdate("CREATE TABLE pl.source_table ("
-				+ "\n PK1 integer not null,"
+				+ "\n PK1 varchar(50) not null,"
 				+ "\n FOO varchar(10),"
 				+ "\n BAR varchar(10)," 
 				+ "\n CONSTRAINT SOURCE_TABLE_PK PRIMARY KEY (PK1)" + "\n)");
