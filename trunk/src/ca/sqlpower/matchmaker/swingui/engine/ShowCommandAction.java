@@ -95,8 +95,8 @@ class ShowCommandAction extends AbstractAction {
 				"MatchMaker Engine Command Line");
 
 		FormLayout layout = new FormLayout(
-				"4dlu,fill:min(pref;200dlu):grow,4dlu", // columns
-				"4dlu,fill:min(pref;200dlu):grow,4dlu,pref,4dlu"); // rows
+				"4dlu,fill:pref:grow,4dlu", // columns
+				"4dlu,fill:pref:grow,4dlu,pref,4dlu"); // rows
 		// 1 2 3 4 5
 
 		PanelBuilder pb;
@@ -105,7 +105,7 @@ class ShowCommandAction extends AbstractAction {
 		pb = new PanelBuilder(layout, p);
 		CellConstraints cc = new CellConstraints();
 
-		final JTextArea cmdText = new JTextArea(15, 120);
+		final JTextArea cmdText = new JTextArea(15, 60);
 		for (String arg : cmd) {
 			boolean hasSpace = arg.contains(" ");
 			if (hasSpace) {
