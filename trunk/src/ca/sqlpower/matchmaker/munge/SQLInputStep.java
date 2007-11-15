@@ -23,7 +23,6 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -32,9 +31,9 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLType;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.TypeMap;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 
 /**
@@ -75,57 +74,6 @@ public class SQLInputStep extends AbstractMungeStep {
     public SQLInputStep() {
     }
 
-    /**
-     * Returns the Java class associated with the given SQL type code.
-     * 
-     * @param type
-     *            The type ID number. See {@link SQLType} for the official list.
-     * @return The class for the given type. Defaults to java.lang.String if the
-     *         type code is unknown, since almost every SQL type can be
-     *         represented as a string if necessary.
-     */
-    private Class<?> typeClass(int type) {
-        switch (type) {
-        case Types.VARCHAR:
-        case Types.VARBINARY:
-        case Types.STRUCT:
-        case Types.REF:
-        case Types.OTHER:
-        case Types.NULL:
-        case Types.LONGVARCHAR:
-        case Types.LONGVARBINARY:
-        case Types.JAVA_OBJECT:
-        case Types.DISTINCT:
-        case Types.DATALINK:
-        case Types.CLOB:
-        case Types.CHAR:
-        case Types.BLOB:
-        case Types.BINARY:
-        case Types.ARRAY:
-        default:
-            return String.class;
-
-        case Types.TINYINT:
-        case Types.SMALLINT:
-        case Types.REAL:
-        case Types.NUMERIC:
-        case Types.INTEGER:
-        case Types.FLOAT:
-        case Types.DOUBLE:
-        case Types.DECIMAL:
-        case Types.BIGINT:
-            return BigDecimal.class;
-
-        case Types.BIT:
-        case Types.BOOLEAN:
-            return Boolean.class;
-        
-        case Types.TIMESTAMP:
-        case Types.TIME:
-        case Types.DATE:
-            return Date.class;
-        }
-    }
 
     public Boolean call() throws Exception {
         super.call();
@@ -183,7 +131,7 @@ public class SQLInputStep extends AbstractMungeStep {
         // TODO: Verify that outputs are the same with the table's columns.
         if (getChildCount() == 0) {
         	for (SQLColumn c : table.getColumns()) {
-        		MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), typeClass(c.getType()));
+        		MungeStepOutput<?> newOutput = new MungeStepOutput(c.getName(), TypeMap.typeClass(c.getType()));
         		addChild(newOutput);
         	}
         }
