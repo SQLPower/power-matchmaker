@@ -900,6 +900,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			if (!warningDialog.isVisible()) {
 				warningDialog.pack();
 				warningDialog.setVisible(true);
+				warningDialog.setLocationRelativeTo(frame);
 			}
 			warningDialog.requestFocus();
 
