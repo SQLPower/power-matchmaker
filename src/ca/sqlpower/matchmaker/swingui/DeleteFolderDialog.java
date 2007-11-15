@@ -90,12 +90,19 @@ public class DeleteFolderDialog {
         pb.add(moveContent, cc.xy(2,4));
         pb.add(moveTo, cc.xy(2,6));
         
+        if (folders.size() == 0) {
+        	moveContent.setEnabled(false);
+        	moveTo.setEnabled(false);
+        	deleteAll.setSelected(true);
+        }
+        
         pb.add(ButtonBarFactory.buildOKCancelBar(okButton, cancelButton), cc.xy(2,8));
         
-        dialog = new JDialog(parent,"Delete " + folder.getName());
+        dialog = new JDialog(parent,"Delete " + folder.getName() + " folder");
         pb.setBorder(new EmptyBorder(10,10,10,10));
         dialog.setContentPane(pb.getPanel());
         dialog.pack();
+        dialog.setLocationRelativeTo(parent);
         dialog.setVisible(true);
     }
     
