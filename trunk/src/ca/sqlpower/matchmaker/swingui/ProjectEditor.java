@@ -234,18 +234,14 @@ public class ProjectEditor implements EditorPane {
 		public void actionPerformed(final ActionEvent e) {
             try {
                 boolean ok = doSave();
-                if (ok) {
+                if (!ok) { 
                 	JOptionPane.showMessageDialog(swingSession.getFrame(),
-                			"Project Interface Saved Successfully",
-                			"Saved",JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                	JOptionPane.showMessageDialog(swingSession.getFrame(),
-                			"Project Interface Not Saved",
+                			"Project Not Saved",
                 			"Not Saved",JOptionPane.WARNING_MESSAGE);
                 }
             } catch (Exception ex) {
                 MMSUtils.showExceptionDialog(swingSession.getFrame(),
-                		"Project Interface Not Saved", ex);
+                		"Project Not Saved", ex);
             }
 		}
 	};
