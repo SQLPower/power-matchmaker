@@ -53,6 +53,8 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 
 	private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionContext.class);
 
+    private static final String DEFAULT_REPOSITORY_DATA_SOURCE_NAME = "MatchMaker Default Repository";
+
     /**
      * The list of database connections that this session context knows about.  This
      * implementation uses the <blink><marquee>AWESOME</marquee></blink> pl.ini file
@@ -73,7 +75,6 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      */
     public MatchMakerHibernateSessionContext(Preferences prefs, DataSourceCollection plIni) {
         logger.debug("Creating new session context");
-        ensureHSQLDBSetup(plIni);
         this.plDotIni = plIni;
         this.prefs = prefs;
     }
@@ -82,8 +83,8 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      * Makes sure the built-in HSQLDB database type is set up correctly in the
      * given data source collection.
      */
-    private void ensureHSQLDBSetup(DataSourceCollection plIni) {
-        List<SPDataSourceType> types = plIni.getDataSourceTypes();
+    private void ensureHSQLDBIsSetup() {
+        List<SPDataSourceType> types = plDotIni.getDataSourceTypes();
         SPDataSourceType hsql = null;
         for (SPDataSourceType dst : types) {
             if ("HSQLDB".equals(dst.getName())) {
@@ -135,6 +136,54 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         } catch (UnknownFreqCodeException ex) {
             throw new RuntimeException("This user doesn't have a valid default Dashboard date frequency, so you can't log in?!", ex);
         }
+    }
+    
+    public MatchMakerSession createDefaultSession() {
+        ensureHSQLDBIsSetup();
+        SPDataSource ds = makeDefaultDataSource();
+        
+        // this throws an exception if there is a non-recoverable schema problem
+        RepositoryUtil.createOrUpdateRepositorySchema(ds);
+        
+        try {
+            return createSession(ds, ds.getUser(), ds.getPass());
+        } catch (Exception ex) {
+            throw new RuntimeException(
+                    "Couldn't create session. See nested exception for details.", ex);
+        }
+    }
+
+    /**
+     * Finds the default repository schema entry in this context's data source
+     * collection, or if it's not found, creates a new repository data source
+     * and adds it to the collection.
+     */
+    private SPDataSource makeDefaultDataSource() {
+        SPDataSource ds = getPlDotIni().getDataSource(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
+        if (ds == null) {
+            ds = new SPDataSource(getPlDotIni());
+            ds.setName(DEFAULT_REPOSITORY_DATA_SOURCE_NAME);
+            ds.setPlSchema("public");
+            ds.setUser("sa");
+            ds.setPass("");
+            ds.setUrl("jdbc:hsqldb:file:"+System.getProperty("user.home")+"/.mm/hsql_repository");
+
+            // find HSQLDB parent type
+            SPDataSourceType hsqldbType = null;
+            for (SPDataSourceType type : getPlDotIni().getDataSourceTypes()) {
+                if ("HSQLDB".equals(type.getName())) {
+                    hsqldbType = type;
+                    break;
+                }
+            }
+            if (hsqldbType == null) {
+                throw new RuntimeException("HSQLDB Database type is missing in pl.ini");
+            }
+            ds.setParentType(hsqldbType);
+            
+            getPlDotIni().addDataSource(ds);
+        }
+        return ds;
     }
 
     public DataSourceCollection getPlDotIni() {

@@ -73,6 +73,7 @@ import ca.sqlpower.util.Monitorable;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
+import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -190,7 +191,6 @@ public class BuildExampleTableDialog extends JDialog{
 		panel.add(tableName,cc.xy(4, row));
 		
 		row += 2;
-		ButtonBarBuilder bbb = ButtonBarBuilder.createLeftToRightBuilder();
 		cancel = new JButton(new AbstractAction("Close"){
 			public void actionPerformed(ActionEvent e) {
 				dispose();
@@ -208,10 +208,7 @@ public class BuildExampleTableDialog extends JDialog{
 			}
 		});
 		
-		bbb.addGridded(create);
-		bbb.addGridded(cancel);
-		
-		panel.add(bbb.getPanel(), cc.xyw(2, row, 3));
+		panel.add(ButtonBarFactory.buildOKCancelBar(create, cancel), cc.xyw(2, row, 3));
 		
 		row += 2;
 		progress = new JProgressBar(0, NUM_RECORDS);

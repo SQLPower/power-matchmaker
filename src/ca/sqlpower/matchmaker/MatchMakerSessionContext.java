@@ -51,12 +51,6 @@ public interface MatchMakerSessionContext {
     public static final Version APP_VERSION = new Version(0, 9, 0);
 
     /**
-     * The minimum PL Schema version according to DEF_PARAM that we can work with.
-     * Should be checked every time a session is created.
-     */
-    public static final Version MIN_PL_SCHEMA_VERSION = new Version(6, 0, 0);
-    
-    /**
      * Name of the preferences parameter for email host address
      */
     public static final String EMAIL_HOST_PREFS = "email.host";
@@ -88,6 +82,13 @@ public interface MatchMakerSessionContext {
             SQLException, IOException, PLSchemaException, VersionFormatException,
             ArchitectException, MatchMakerConfigurationException;
 
+    /**
+     * Creates a session using some default repository data source. If the
+     * default repository data source doesn't exist, it will be created
+     * automatically.
+     */
+    public MatchMakerSession createDefaultSession();
+    
     /**
      * Returns the PlDotIni object that manages this context's list of data sources.
      *
