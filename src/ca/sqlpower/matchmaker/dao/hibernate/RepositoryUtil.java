@@ -119,12 +119,11 @@ public class RepositoryUtil {
         
         // Now get the post-creation script and all all its statements to the script
         logger.debug("Post-Create Script Statements Follow:");
-        InputStream postCreateScript = null;
-        BufferedReader br = new BufferedReader(new InputStreamReader(postCreateScript));
-        
+        BufferedReader br = null;
         try {
-            postCreateScript = RepositoryUtil.class.getClassLoader().getResourceAsStream(
+            InputStream postCreateScript = RepositoryUtil.class.getClassLoader().getResourceAsStream(
                 "ca/sqlpower/matchmaker/dao/hibernate/post_create.sql");
+            br = new BufferedReader(new InputStreamReader(postCreateScript));
             StringBuilder statement = new StringBuilder();
             String line = br.readLine();
             while (line != null) {
@@ -145,8 +144,8 @@ public class RepositoryUtil {
                 line = br.readLine();
             }
         } finally {
-            if (postCreateScript != null) {
-                postCreateScript.close();
+            if (br != null) {
+                br.close();
             }
         }
 
