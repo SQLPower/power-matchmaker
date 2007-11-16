@@ -1,0 +1,2953 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.0//EN" 
+	"http://www.oasis-open.org/docbook/xml/simple/1.0/sdocbook.dtd">
+
+<book id="Power_MatchMaker_User_Guide" lang="en">
+
+	<bookinfo>
+
+		<!-- $Id$ -->
+
+		<title id="book">Power*MatchMaker User Guide</title>
+
+		<mediaobject>
+			<imageobject id="matchmaker_logo">
+				<imagedata fileref="doc/images/matchmaker_logo.png"
+					format="PNG" width="4in" />
+			</imageobject>
+		</mediaobject>
+
+		<corpauthor>
+			<ulink url="http://www.sqlpower.ca">SQL Power</ulink>
+			Group Inc.
+		</corpauthor>
+
+		<date>Last Modified</date>
+
+		<copyright>
+			<year>2007</year>
+			<holder>SQL Power Group Inc.</holder>
+		</copyright>
+	</bookinfo>
+
+	<chapter id="Introduction">
+		<title>Introduction</title>
+
+		<para>
+			Data needs to be clean, and complete to be useful in today's
+			workplace. The Power*MatchMaker is the tool that allows you
+			to get a consolidated view of your customers, products, or
+			other key dimensions.
+		</para>
+
+		<para>
+			SQL Power Group&apos;s Power*MatchMaker will cleanse your
+			data, validate and correct addresses, identify and remove
+			duplicates, and build cross-references between source and
+			target tables. This provides business users with complete
+			and accurate data, and a single 360º view of each customer,
+			product, sales rep, and business unit.
+		</para>
+
+		<para>
+			The Power*Matchmaker is a user-friendly and highly intuitive
+			data cleansing tool created by data warehouse designers, and
+			has many features geared for anyone dealing with information
+			systems, including:
+		</para>
+
+		<itemizedlist>
+
+			<listitem>
+				<para>
+					Innovative interface for user verification of
+					duplicates
+				</para>
+			</listitem>
+
+			<listitem>
+				<para>
+					Intuitive 'munge' process interface that allows Data
+					Conversion workflow to be manipulated easily by
+					arranging and connecting individual process steps.
+				</para>
+			</listitem>
+
+			<listitem>
+				<para>Validates and corrects address information</para>
+			</listitem>
+
+			<listitem>
+				<para>Accepts user-defined data matching criteria</para>
+			</listitem>
+
+			<listitem>
+				<para>
+					Allows for user confirmation of duplicates through
+					the on-line verification facility
+				</para>
+			</listitem>
+
+			<listitem>
+				<para>
+					Builds cross-reference tables to link source
+					systems' identifiers (PK's) to the target database
+					identifiers
+				</para>
+			</listitem>
+
+			<listitem>
+				<para>
+					Merges duplicate records and their related data
+				</para>
+			</listitem>
+
+			<listitem>
+				<para>
+					Allows for backup of affected records prior to
+					merging of data
+				</para>
+			</listitem>
+
+			<listitem>
+				<para>
+					Runs against the entire database to perform initial
+					data cleanup, or incorporated into the data load
+					process
+				</para>
+			</listitem>
+
+		</itemizedlist>
+
+		<para>
+			Whether you're building a Data Warehouse, Data Mart or a CRM
+			system, the Power*MatchMaker will go a long way towards
+			ensuring the integrity of your data for your decision
+			support environment.
+		</para>
+
+		<section id="Introduction.Basic_Concepts">
+			<title>Basic Concepts</title>
+
+			<section id="Introduction.Basic_Concepts.Drivers">
+				<title>Drivers</title>
+				<para>
+					Most programs need a distinct driver program to
+					communicate with each different type of database.
+					The Power*Matchmaker uses Java-based drivers, which
+					normally come from the database vendor in the form
+					of "JAR"
+					<footnote>
+						<para>
+							Java Archive files; these are an extension
+							to the file format used by PKZip/WinZip
+							archives
+						</para>
+					</footnote>
+					files. You need to inform Power*Matchmaker about
+					each driver before you can use it; do this from the
+					JDBC Drivers window that can be accessed from the
+					Database Connection Manager window. If you do not
+					have the JDBC driver for a given database, you can
+					usually obtain one from the database vendor. If that
+					fails, you can find a directory of databases drivers
+					on
+					<ulink
+						url="http://developers.sun.com/product/jdbc/drivers">
+						Sun&apos;s web site
+					</ulink>
+					.
+				</para>
+			</section>
+
+			<section id="Introduction.Basic_Concepts.Projects">
+				<title>Projects</title>
+				<para>
+					There are 3 different types of Power*Matchmaker
+					projects that you can use to work with your data.
+				</para>
+
+				<section
+					id="Introduction.Basic_Concepts.Projects.Find_Duplicates_Projects">
+					<title>Find Duplicates Projects</title>
+					<para>
+						This type of project allows you to identify and
+						merge duplicate records that are found within
+						the same table in the database.
+					</para>
+				</section>
+
+				<section
+					id="Introduction.Basic_Concepts.Projects.Cleanse_Projects">
+					<title>Cleanse Projects</title>
+					<para>
+						This type of project allows you to reformat data
+						to create a more uniform and professional
+						appearance.
+					</para>
+				</section>
+
+				<section
+					id="Introduction.Basic_Concepts.Projects.Cross_Reference_Projects">
+					<title>Cross Reference Projects</title>
+					<para>
+						This type of project allows you to create a
+						cross referencing table that links two different
+						tables together. The new table will relate the
+						primary key from one table to the primary key of
+						the other related table to show the relationship
+						between the two records.
+					</para>
+				</section>
+			</section>
+
+			<section id="Introduction.Basic_Concepts.Munge">
+				<title>Munge</title>
+
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="doc/images/munge_pen.png"
+							format="PNG" width="4in" />
+					</imageobject>
+				</mediaobject>
+
+				<para>
+					The term Munge means to transform and manipulate
+					data. Munging is a method used throughout the
+					Power*MatchMaker as preparation for the project
+					actions. Within the Power*MatchMaker application,
+					Munging is broken down into Munge Processes and
+					Munge Steps.
+				</para>
+
+				<section
+					id="Introduction.Basic_Concepts.Munge.Munge_Processes">
+					<title>Munge Processes</title>
+					<para>
+						Munge Processes are the collections of
+						individual Munge Steps that perform data
+						manipulation. In each Munge Process, there are
+						at least one input and one output Munge Steps.
+						Various intermediate steps are added to modify
+						the data.
+					</para>
+				</section>
+
+				<section
+					id="Introduction.Basic_Concepts.Munge.Munge_Steps">
+					<title>Munge Steps</title>
+					<para>
+						Munge steps are the individual data manipulation
+						actions.
+					</para>
+
+					<itemizedlist>
+						<listitem>
+							<para>
+								<emphasis>Concatenation</emphasis>
+							</para>
+							<itemizedlist>
+								<listitem>
+									<para>
+										This step allows you to join the
+										contents of multiple inputs. The
+										output is the result of the
+										join.
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+
+						<listitem>
+							<para>
+								<emphasis>
+									Double Metaphone, Metaphone, Refined
+									Soundex, Soundex
+								</emphasis>
+							</para>
+
+							<itemizedlist>
+								<listitem>
+									<para>
+										These are steps that code the
+										given data phonetically
+										according to their corresponding
+										algorithms.
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+
+						<listitem>
+							<para>
+								<emphasis>
+									Lowercase, Uppercase
+								</emphasis>
+							</para>
+
+							<itemizedlist>
+								<listitem>
+									<para>
+										These are steps that convert the
+										given data to the appropriate
+										case.
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+
+						<listitem>
+							<para>
+								<emphasis>Retain Characters</emphasis>
+							</para>
+
+							<itemizedlist>
+								<listitem>
+									<para>
+										This step removes all
+										occurrences of characters in the
+										given data not specified by the
+										user.
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+
+						<listitem>
+							<para>
+								<emphasis>String Substitution</emphasis>
+							</para>
+
+							<itemizedlist>
+								<listitem>
+									<para>
+										This step replaces all
+										occurrences of a user specified
+										word to another in the data.
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+
+						<listitem>
+							<para>
+								<emphasis>Substring</emphasis>
+							</para>
+
+							<itemizedlist>
+								<listitem>
+									<para>
+										This step returns a part of the
+										given data
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+
+						<listitem>
+							<para>
+								<emphasis>Substring by Word</emphasis>
+							</para>
+
+							<itemizedlist>
+								<listitem>
+									<para>
+										This step returns a subset of
+										each word from the given data.
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+
+						<listitem>
+							<para>
+								<emphasis>Translate Word</emphasis>
+							</para>
+
+							<itemizedlist>
+								<listitem>
+									<para>
+										This step replaces all
+										occurrences of words with other
+										words as specified by translate
+										words set up by you.
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+
+						<listitem>
+							<para>
+								<emphasis>Word Count</emphasis>
+							</para>
+
+							<itemizedlist>
+								<listitem>
+									<para>
+										This step counts the number of
+										words in the given data.
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+					</itemizedlist>
+				</section>
+
+				<section
+					id="Introduction.Basic_Concepts.Munge.Munge_Pen">
+					<title>Munge Pen</title>
+					<para>
+						This is the area where you will create Munge
+						Processes. This is done in a user-friendly
+						environment by a simple drag-and-drop of your
+						required Munge Steps.
+					</para>
+				</section>
+			</section>
+
+			<section id="Introduction.Basic_Concepts.Merge">
+				<title>Merge</title>
+				<para>
+					The term Merge refers to the action of combining
+					duplicate records into single records. Within the
+					Power*MatchMaker application, this is done with
+					Merge Rules.
+				</para>
+
+				<section
+					id="Introduction.Basic_Concepts.Merge.Table_Merge_Rules">
+					<title>Table Merge Rules</title>
+					<para>
+						Table Merge Rules are collections of individual
+						Column Merge Rules that deal with merging data
+						in a database table. The two types of Table
+						Merge Rules are Source Table Merge Rules and
+						Related Table Merge Rules.
+					</para>
+
+					<itemizedlist>
+						<listitem>
+							<para>
+								<emphasis>
+									Source Table Merge Rules
+								</emphasis>
+							</para>
+
+							<itemizedlist>
+								<listitem>
+									<para>
+										These are the essential rules
+										that deal with the Merging on
+										the source table in the
+										database.
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+
+						<listitem>
+							<para>
+								<emphasis>
+									Related Table Merge Rules
+								</emphasis>
+							</para>
+
+							<itemizedlist>
+								<listitem>
+									<para>
+										These are the additional rules
+										that deal with the Merging on
+										children, grandchildren or other
+										related tables of the source
+										table in the database.
+									</para>
+								</listitem>
+							</itemizedlist>
+						</listitem>
+					</itemizedlist>
+				</section>
+
+				<section
+					id="Introduction.Basic_Concepts.Merge.Column_Merge_Rules">
+					<title>Column Merge Rules</title>
+					<para>
+						Column Merge Rules contains the Merging
+						instructions for a specific column in the
+						database. The possible Merging actions for
+						Column Merge Rules are: use the master value,
+						augment nulls, concatenate the values, use the
+						maximum value, minimum value, and to set the sum
+						as the value.
+					</para>
+				</section>
+			</section>
+
+			<section id="Introduction.Basic_Concepts.Engines">
+				<title>Engines</title>
+				<para>
+					These are the components of the application that
+					does the actual work on the database when they are
+					ran.
+				</para>
+
+				<section
+					id="Introduction.Basic_Concepts.Engines.Match_Engine">
+					<title>Match Engine</title>
+					<para>
+						The Match Engine finds the duplicate records in
+						the database based on the data from the results
+						of Munging.
+					</para>
+				</section>
+
+				<section
+					id="Introduction.Basic_Concepts.Engines.Merge_Engine">
+					<title>Merge Engine</title>
+					<para>
+						The Merge Engine combines the duplicate records
+						in the database according to the Merge actions
+						specified in the Merge Rules.
+					</para>
+				</section>
+
+				<section
+					id="Introduction.Basic_Concepts.Engines.Cleansing_Engine">
+					<title>Cleansing Engine</title>
+					<para>
+						The Cleansing Engine replaces the records in the
+						database with the reformatted data from the
+						results of Munging.
+					</para>
+				</section>
+			</section>
+
+			<section id="Introduction.Basic_Concepts.Translation">
+				<title>Translation</title>
+				<para>
+					The term Translate usually refers to the action of
+					expressing in different words. In the
+					Power*MatchMaker, Translation helps you to search
+					and replace words with a different term. A common
+					use would be to replace abbreviations with the
+					corresponding words. Translation is broken down in
+					the Power*MatchMaker into Translation Groups and
+					Translate Words.
+				</para>
+
+				<section
+					id="Introduction.Basic_Concepts.Translation.Translation_Groups">
+					<title>Translation Groups</title>
+					<para>
+						Translation Groups are the collections of the
+						individual Translate Words. Each group should
+						but are not limited to holding all related
+						Translate Words.
+					</para>
+				</section>
+
+				<section
+					id="Introduction.Basic_Concepts.Translation.Translate_Words">
+					<title>Translate Words</title>
+					<para>
+						Translate Words contains the individual
+						instruction on the words to replace and the
+						replacement term.
+					</para>
+				</section>
+			</section>
+		</section>
+
+		<section id="Introduction.Who_This_Book_Is_For">
+
+			<title>Who this book is for</title>
+
+			<para>
+				This book is a step-by-step guide on how to use the full
+				capabilities of Power*Matchmaker. It covers topics from
+				how to install the Power*MatchMaker through setting up
+				database connections to running Munge Processes.
+			</para>
+
+			<para>
+				We assume you are familiar with basic database terms. If
+				you meet any terms that are unfamiliar, please refer to
+				the Glossary at the end of this book.
+			</para>
+
+			<para>
+				This book also assumes you are familiar with basic
+				computer operations.
+			</para>
+
+			<para>
+				We also assume you have SQL Power&apos;s
+				Power*Matchmaker software installed on your computer; if
+				not, please refer to the Installation Guide below.
+			</para>
+
+		</section>
+
+		<section id="Introduction.License">
+			<title>License</title>
+
+			<para>Copyright (c) 2007, SQL Power Group Inc.</para>
+
+			<para>
+				Power*MatchMaker is free software; you can redistribute
+				it and/or modify it under the terms of the GNU General
+				Public License as published by the Free Software
+				Foundation; either version 3 of the License, or (at your
+				option) any later version.
+			</para>
+
+			<para>
+				Power*MatchMaker is distributed in the hope that it will
+				be useful, but WITHOUT ANY WARRANTY; without even the
+				implied warranty of MERCHANTABILITY or FITNESS FOR A
+				PARTICULAR PURPOSE. See the GNU General Public License
+				for more details.
+			</para>
+
+			<para>
+				You should have received a copy of the GNU General
+				Public License along with this program. If not, see
+				<ulink url="http://www.gnu.org/licenses/">
+					http://www.gnu.org/licenses/.
+				</ulink>
+			</para>
+		</section>
+
+	</chapter>
+
+	<chapter id="Installation_Guide">
+
+		<title>Installation Guide</title>
+
+		<section id="Installation_Guide.Prerequisites">
+
+			<title>Power*Matchmaker Prerequisites</title>
+			<para>
+
+				To run the Power*Matchmaker you need a Java 1.5 or newer
+				Java Runtime ("Java VM" or "JVM"). A current version of
+				the Java VM for common platforms can be obtained from
+				<ulink
+					url="http://java.sun.com/javase/downloads/index.html">
+					Sun Microsystems
+				</ulink>
+				. To ensure that your JVM is up-to-date, Apple Macintosh
+				users should use Software Update (from the Apple Menu)
+				while others should use the Java Updater (from, e.g.,
+				the Microsoft Windows Control Panel).
+			</para>
+
+		</section>
+
+		<section id="Installation_Guide.Get_Power_MatchMaker">
+
+			<title>How to Obtain the Power*Matchmaker Software</title>
+
+			<para>
+				Power*Matchmaker can be obtained from the
+				<ulink url="http://download.sqlpower.ca">
+					download section
+				</ulink>
+				of the
+				<ulink url="http://www.sqlpower.ca/">
+					SQLPower Website
+				</ulink>
+				. You should only need to download one file, choosing
+				the platform-appropriate distribution (Windows-Installer
+				for Microsoft Windows, "DMG" for Apple Macintosh, and
+				".tar.gz" for UNIX/Linux/other platforms). You should
+				normally choose the download with the highest revision
+				number available.
+			</para>
+
+		</section>
+
+		<section id="Installation_Guide.How_To_Install">
+
+			<title>How to Install Power*Matchmaker</title>
+
+			<section id="Installation_Guide.How_To_Install.Win">
+
+				<title>Microsoft Windows</title>
+
+				<para>
+					Double click on the
+					Matchmaker-setup-Windows-n.m.jar. This will launch
+					the Microsoft Windows installer. Follow the
+					on-screen instructions.
+				</para>
+
+			</section>
+
+			<section id="Installation_Guide.How_To_Install.Mac">
+
+				<title>Macintosh OS X</title>
+
+				<para>
+					Drag the matchmaker-n.m.dmg file to the Applications
+					folder
+				</para>
+
+			</section>
+
+			<section id="Installation_Guide.How_To_Install.Other">
+
+				<title>Other Platforms</title>
+
+				<para>
+					Extract the Matchmaker-generic-n.m.tar.gz package
+					into the desired directory.
+				</para>
+
+			</section>
+
+		</section>
+
+		<section id="Installation_Guide.How_To_Run">
+
+			<title>How to Run Power*MatchMaker</title>
+
+			<section id="Installation_Guide.How_To_Run.Win">
+
+				<title>Microsoft Windows</title>
+
+				<para>
+					From the start menu, select All Programs. Then
+					select the Power Loader Suite program group. Finally
+					click on the Power shortcut.
+				</para>
+
+			</section>
+
+			<section id="Installation_Guide.How_To_Run.Mac">
+
+				<title>Macintosh OS X</title>
+
+				<para>
+					From the Finder, select Applications, then select
+					Power*MatchMaker. To enable launching of the
+					MatchMaker directly from the Dock, either drag the
+					image there or, while it is running, Apple-Click on
+					the running icon and select Keep In Dock.
+				</para>
+
+			</section>
+
+			<section id="Installation_Guide.How_To_Run.Other">
+
+				<title>Other Platforms</title>
+
+				<para>
+					In the directory into which you extracted the
+					Power*MatchMaker, run the command
+					<command>java -jar matchmaker.jar</command>
+					. If you have a visual browser, you may be able to
+					launch the MatchMaker by clicking (or
+					double-clicking) on the matchmaker.jar file.
+				</para>
+
+			</section>
+
+		</section>
+
+	</chapter>
+
+	<chapter id="How_To_Use">
+
+		<title>How to Use the Power*MatchMaker</title>
+
+		<section id="How_To_Use.Getting_Started">
+			<title>Getting Started with Power*MatchMaker</title>
+			<para>
+				<emphasis>Defining Database Types</emphasis>
+				The tie-in between Drivers and Connections might seem a
+				bit indirect if you are not used to using Java JDBC. In
+				this section you are telling the Power*MatchMaker where
+				the drivers are so that they can be used when necessary.
+				Definition of the database type must be completed before
+				a new database connection can be configured.
+			</para>
+
+			<para>
+				Clicking on the Manage Connections... button will open
+				the Database Connection Manager window. In this window
+				click on JBDC drivers button to define a database
+				connection. The JDBC drivers window will appear as shown
+				below.
+			</para>
+
+			<para>
+				<inlinemediaobject>
+					<imageobject>
+						<imagedata
+							fileref="doc/images/jdbc_drivers_window.png" format="PNG"
+							width="4in" />
+					</imageobject>
+				</inlinemediaobject>
+			</para>
+
+			<para>
+				The column on the left hand side contains a list of
+				pre-defined database connection types. To connect to one
+				of the pre-defined database connections you must first
+				tell Power*MatchMaker where to find the JAR file.
+				Highlight the desired database type in the left column,
+				click on the Add JAR... button, and navigate to the
+				correct JAR file for the database type. The Add JAR...
+				and Remove JAR buttons are used to point the
+				Power*MatchMaker to the locations of the JAR files that
+				contain the proper JDBC Driver. Once, you select a JAR
+				file, if there is a valid driver in it, a file tree will
+				appear in the area below the buttons. This is a
+				representation of the JAR file and its JDBC contents.
+				Select the driver you wish to use and click the "OK"
+				button at the bottom.
+			</para>
+
+			<para>
+				To edit the properties of the drivers click on the item
+				in the list and edit the fields to the right. If you
+				wish to create a database type that is not
+				pre-defined,click on the + button in the lower left
+				corner of the window. Type in the name of the Database
+				connection, the Driver Class, and the Connection String
+				Template (i.e. jbdc:...).
+			</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>
+						The "Name" field is used to assign a name to the
+						database connection. It will appear in the
+						column on the left. These names will also be
+						used to assign a type to a new connection that
+						you are defining.
+					</para>
+				</listitem>
+
+				<listitem>
+					<para>
+						The "Driver Class" is the class name of the
+						driver.
+					</para>
+				</listitem>
+			</itemizedlist>
+
+			<para>
+				<emphasis>Connection String Template</emphasis>
+				Used to define a URL template. The URL template is used
+				by the Power*MatchMaker to create a URL that is used to
+				attempt a database connection. The pattern that the
+				string must conform to is not trivial but is made up of
+				two simpler parts, literals and variables. Literals are
+				entered like normal text but may not contain angle
+				brackets (&lt; or &gt;) because they are reserved for
+				defining variables. As their name implies, literals
+				appear in the URL in the same position and way they
+				appear in the template. Variables are used to make it
+				easier for things that change such as the schema or
+				database name you wish to connect to. They are defined
+				in the template by
+				"&lt;variable_name:default_value&gt;". Once a variable
+				is defined in the template, a field labeled with the
+				variable's name will appear below with the default value
+				in it just below the template as a preview to what you
+				will later be able to modify in "Connection Properties".
+			</para>
+
+			<para>
+				Note: Default values are often useful, but are optional.
+				If you do not want a variable to have a default value,
+				define it as "&lt;variable_name&gt;". The default value
+				for these variables is blank. For example, if we wanted
+				to connect to a Microsoft SQL Server database, the URL
+				template might look like
+				"jdbc:sqlserver://&lt;Hostname&gt;:&lt;Port:1433&gt;".
+				The URL this template will output is
+				"jdbc:sqlserver://:1433" where the 1433 was a default
+				value. If we were to enter "localhost" in the Hostname
+				field, we would get the URL
+				"jdbc:sqlserver://localhost:1433". By defining the
+				"Hostname" variable, we make it easier and quicker to
+				connect to a generic SQL Server instance. SQL Server
+				databases listen to port 1433 by default but can be
+				configured to listen to others so, by giving the
+				variable this default, we can have the most common value
+				inserted automatically while allowing us to modify what
+				is in the field to change the port in specific cases.
+			</para>
+
+			<para>
+				<emphasis>Defining Database Connections</emphasis>
+				In the “Database Connection Manager” window click on new
+				to add a new connection.
+			</para>
+
+			<para>
+				<inlinemediaobject>
+					<imageobject>
+						<imagedata
+							fileref="doc/images/db_con_manager.png" format="PNG" width="4in" />
+					</imageobject>
+				</inlinemediaobject>
+			</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>
+						"Connection Name" - This an arbitrary name for
+						the database connection. It will appear in the
+						left hand column of the Database Connection
+						Manager window as well as in a drop down list on
+						the Login window. Name the connection something
+						that is easily identifiable for the next time
+						you open up Power*MatchMaker.
+					</para>
+				</listitem>
+
+				<listitem>
+					<para>
+						"Database Type" - This is the type of database
+						you wish to connect to. The database types must
+						be defined before attempting to define the
+						database connection with that type. All of the
+						database types that have been defined will
+						appear in a drop down list.
+					</para>
+				</listitem>
+
+				<listitem>
+					<para>
+						"Connect Options" - These options are the
+						variables, such as schema and database name that
+						can be modified to connect to the defined
+						database types. They are the variables in the
+						database type definition stage.
+					</para>
+				</listitem>
+
+				<listitem>
+					<para>
+						"Repository Schema Owner" - This field is only
+						filled in if this database connection is the one
+						to be written to, the repository database. The
+						contents entered to this field will
+						automatically become a prefix to the repository
+						tables.
+					</para>
+				</listitem>
+			</itemizedlist>
+
+			<para>
+				Once all the fields are completed click on the OK
+				button. This will take you back to the Database
+				Connection Manager window.
+			</para>
+
+			<para>
+				<emphasis>Login in to Power*Matchmaker</emphasis>
+				From the Database Connection Manager window you can
+				highlight the repository database connection and click
+				on Login. If starting up a brand new session, the
+				Power*MatchMaker Login window will automatically appear.
+				Start by choosing the repository database connection you
+				wish to work with. This will default the user id and
+				password information that has been previously specified
+				when setting up the database connection. If this is your
+				first login it will ask to create a repository schema
+				for you.
+			</para>
+
+			<para>
+				Power*Matchmaker has the capability to connect to
+				multiple different databases in one session but it can
+				only be connected to one repository database per
+				session. The other database connections are
+				automatically accessible due to the database connection
+				definitions made earlier. You can open multiple sessions
+				simultaneously to access different repositories.
+			</para>
+		</section>
+
+		<section id="MM_Example">
+			<title>A Small Power*MatchMaker Example</title>
+			<para>
+				This section will give you a step by step example of
+				using the MatchMaker to create a small De-Duping
+				project. This assumes that you have setup a connection
+				and a repository that you can login to.
+			</para>
+
+			<orderedlist>
+				<listitem>
+					<para>
+						Welcome to the Match Maker Example, this will
+						take you through an example De-Duping project
+						and highlight some of the key features of the
+						Power*MatchMaker. Start by logging into your
+						repository.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Click on the help menu in the top menu bar and
+						choose
+						<userinput>Build Example Table</userinput>
+						. This will create the base table for this
+						example that you can practice finding and
+						removing duplicates in. Choose a location for
+						the example table and click
+						<userinput>Create</userinput>
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						We now need to create an new folder to store
+						this project. To create the folder, right click
+						on the
+						<userinput>Current Project</userinput>
+						folder on the tree of items to the right, and
+						choose
+						<userinput>New Folder</userinput>
+						.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now press
+						<userinput>Save</userinput>
+						. If you expand the Current Project folder you
+						will see that there is a new folder inside with
+						the name you gave the project.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Right Click on the newly created folder and
+						choose
+						<userinput>New Project</userinput>
+						-&gt;
+						<userinput>New De-Duping Project</userinput>
+						.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						In the new window enter a title for the new
+						project.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Next in the
+						<userinput>Source Table</userinput>
+						section, enter the location of the newly created
+						example table. Choose Catalog, Schema and Table
+						appropriately. The unique index option lets you
+						choose which fields are needed uniquely identify
+						the records. By default the primary key is
+						selected, but if there is no primary key or the
+						primary key is inappropriate, the unique index
+						can be modified by clicking
+						<userinput>Pick Columns</userinput>
+						after you have saved the project.
+					</para>
+					<sidebar>
+						<para>
+							Note: If you can not find the table you
+							created, close then open the MatchMaker and
+							try creating the project again.
+						</para>
+					</sidebar>
+				</listitem>
+				<listitem>
+					<para>
+						Now select the result table for the information
+						to be stored. If the table does not exist one
+						will be created for you. If the table exists but
+						is not correctly formated you will be given the
+						option to drop the table and create a new one.
+						Press
+						<userinput>Save</userinput>
+						to save the project.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Next expand the new folder you created in step 1
+						and then expand the project you just created. In
+						the folder labeled
+						<userinput>Munge Process</userinput>
+						Right-Click and choose
+						<userinput>New Munge Process</userinput>
+						. The Editor that comes up is the Munge Editor.
+						In the Editor there are three major parts. First
+						is the editor options in the top area. Second is
+						the white center area that is the Munge Pen.
+						Finally there is the Munge Step toolbar on the
+						right.
+					</para>
+
+					<para>
+						In the Munge Pen You will see the two default
+						steps for a De-Duping Project. At the top there
+						there is the input step labeled with the table's
+						name. This step contains all of the initial data
+						from your table. Clicking
+						<userinput>Show All</userinput>
+						will display the labels of all the table's
+						columns.
+					</para>
+
+					<para>
+						The other step in the Munge Pen is the output
+						step, labeled
+						<emphasis>Result Step</emphasis>
+						. This is where the transformed data will be
+						places so that it can be compared while
+						matching.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						As a simple start, drag the peg under HomePhone
+						in the input step into the plug in the output
+						step. This would match all records in the table
+						that have the exact same home phone number. This
+						is a good start but not all that useful, as
+						there are many ways to enter a phone number and
+						this will only find a match between two phone
+						numbers if they were entered in the exact same
+						way.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						To counter this problem we can add a Munge Step.
+						Bring the
+						<userinput>Retain Characters</userinput>
+						Munge Step into the Munge Pen. This can be done
+						by either dragging the step form the toolbar or
+						by right clicking in the Munge Pen and selecting
+						it from the list. This munge step allow you to
+						take in a string and remove all but the given
+						characters. A detailed description of all the
+						munge steps can be found later in the user guide
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						To configure the step open the step's options,
+						by clicking on the
+						<userinput>Expand Button</userinput>
+						beside the name. Because this a phone number we
+						will want to strip all the characters except the
+						numbers.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						In the text field either enter the numbers
+						<emphasis>0123456789</emphasis>
+						or enable regular expressions and use
+						<emphasis>[0-9]</emphasis>
+						.
+					</para>
+					<para>
+						More information or regular expressions can be
+						found of the Interweb.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now remove the connection between HomePhone and
+						the output step by either Right-Clicking on the
+						connection line and choosing
+						<userinput>delete</userinput>
+						or dragging the peg out of the result step and
+						letting it drop in the white area.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Connect the HomePhone peg in the input step to
+						the plug in the Retain Characters, and the peg
+						coming out of the Retain Characters step into
+						the plug in the output step. This will now match
+						all the records that have the same digits in
+						there phone numbers regardless of how they were
+						entered.
+					</para>
+					<para>
+						For example now (416) 555-1234, 416-555-1234 and
+						4165551234 will all match.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						To add a second set of data to compare on, open
+						the output step's options by clicking on the
+						button next to the name and click
+						<userinput>Add Input</userinput>
+						.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now create an identical Retain Characters step
+						and use to the also compare the cellPhone
+						column. Now any two records that have both an
+						home phone number and a cell phone Number with
+						the same digits will be considered possible
+						matches.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Next Give the process a name and press
+						<userinput>Save</userinput>
+						. It is helpful to give a process a good name so
+						that it can be easily identified later.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Next click on
+						<userinput>Run Match Engine</userinput>
+						in the Tree on the left. Running the match
+						engine will not modify your data in anyway.
+					</para>
+				</listitem>
+				<listitem>
+					<para>There are many options here:</para>
+					<para>
+						Log file is where the info from the run will be
+						stored.
+					</para>
+					<para>
+						Selecting clear match pool will remove all
+						previous matches that were found
+					</para>
+					<para>
+						Message level indicates what amount of
+						information will be displayed, it is recommended
+						that you limit the number of records to process
+						if the message level is set to
+						<userinput>DEBUG</userinput>
+						, because there is a large amount of information
+						printed and this can take a very long time.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						For now you can leave the default setting and
+						click
+						<userinput>Run Match Engine</userinput>
+						.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						This has found all possible records that share
+						both a cell and a home phone number. How ever it
+						did not combine any of the data, first it must
+						be manually checked over to ensure no records
+						are merged accidently.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Click on
+						<userinput>Validate Matches</userinput>
+						in the tree on the left to see the matches that
+						were found.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						On the left there are a series of shapes that
+						represent groups of the records that have the
+						same home and cell numbers and their
+						relationships to the other records. If you click
+						on a number on the left the data from the
+						records in the group will be displayed on the
+						right with differences in red. All of this is
+						relative most lefterly record, which is they on
+						you clicked on.
+					</para>
+					<para>
+						Right now all of the lines are drawn in red but
+						if there were more then one Munge Process they
+						all display in different colours.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Presently only the id is shown in the left side
+						to identify the records but to make them easier
+						to see you can click
+						<userinput>Choose Displayed Value</userinput>
+						to change what values you see. Lets Change it to
+						show people full names. Click
+						<userinput>Choose Display Names</userinput>
+						and select FirstName then LastName.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now its time to manually look at all of the
+						matches and verify the correct ones. Click on a
+						name in the first group. On the right you can
+						see the differences between all of the records
+						relative to the one you clicked on.
+					</para>
+					<para>
+						Above each column there is a set of buttons that
+						show the different ways these can be connected.
+					</para>
+					<para>
+						Above the selected record there are the three
+						buttons "Master of All", "No Match to Any" and
+						"Unmatch All" Above all the other records there
+						are the buttons "Master", "Duplicate", "No
+						Match". The first set effect all the records in
+						the group. While the second set of buttons
+						effect only the record they are over top of.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Play around with these until you have a good set
+						of selected matches. You will notice three
+						different line types Dashed, Dotted and Solid
+						with a circle at one end.
+					</para>
+					<para>
+						A
+						<emphasis>dashed</emphasis>
+						line means that it is undecided.
+					</para>
+					<para>
+						A
+						<emphasis>dotted</emphasis>
+						line means it has been identified as not a
+						match.
+					</para>
+					<para>
+						A
+						<emphasis>solid</emphasis>
+						line means it is a match, making the record with
+						the circle near it the master record, which is
+						the one that will be kept after merging.
+					</para>
+					<para>
+						At the bottom there is a
+						<userinput>Auto-Match</userinput>
+						button, pressing this will declare that all of
+						the undecided possible matches are matches and
+						choose a master record at random. This is not
+						recommended as serious data loss could occur if
+						the records are not manually checked.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now that some of the records have been matched
+						they need to be merged. This is where your data
+						will be modified. But first we need to define a
+						set of rules for merging. Open the
+						<userinput>Merge Rules</userinput>
+						folder by clicking on it in the tree. Here you
+						can define child and grandchild tables, that
+						will also be merged when the current table is to
+						prevent orphaning records. In this example there
+						are not child tables.
+					</para>
+					<para>
+						The
+						<userinput>Derive Related Tables</userinput>
+						button will search through the database and look
+						for tables that may be related to the selected
+						one based on there primary key. You can manually
+						add others by pressing the
+						<userinput>New Merge Rule</userinput>
+						button.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Click on the example table's name in the tree in
+						the
+						<emphasis>Merge Rules</emphasis>
+						folder. Here you can define what is to be done
+						when merging two records for each column. For
+						this example "Augment nulls" will be fine as it
+						will leave all of the master record's columns
+						alone except if they have nulls, which it will
+						try to fill in the missing data from the
+						duplicate records.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+						Now to finally run the merge and update the data
+						click on the
+						<userinput>Run Merge Engine</userinput>
+						option on the tree on the left. After choosing a
+						log file press
+						<userinput>Run Merge Engine</userinput>
+						and the selected records will be merged.
+					</para>
+				</listitem>
+				<listitem>
+					<para>You data has now been merged.</para>
+					<para>
+						More detail on everything covered here can be
+						found in the user guide.
+					</para>
+				</listitem>
+			</orderedlist>
+		</section>
+
+		<section id="How_To_Use.GUI">
+			<title>Understanding the User Interface</title>
+			<section id="How_To_Use.GUI.Login_Window">
+				<title>Login Window</title>
+
+				<para>
+					<inlinemediaobject>
+						<imageobject>
+							<imagedata
+								fileref="doc/images/login_window.png" format="PNG" width="4in" />
+						</imageobject>
+					</inlinemediaobject>
+				</para>
+
+				<para>
+					The Login Window is the window you will screen when
+					you start the Power*MatchMaker, shown above. It
+					could also be accessed by selecting the Login menu
+					item from the Database menu once the
+					Power*MatchMaker has been started.
+				</para>
+
+				<section
+					id="How_To_Use.GUI.Login_Window.Choosing_Database">
+					<title>Choosing a Database</title>
+					<para>
+						Select a pre-configured database connection from
+						the combo box. If you are using the
+						Power*MatchMaker for the first time, you would
+						want to setup a new database connection first in
+						the Database Connection Manager.
+					</para>
+				</section>
+
+				<section id="How_To_Use.GUI.Login_Window.Login_Info">
+					<title>User ID &amp; Password</title>
+					<para>
+						Enter your login user id and password in these
+						corresponding text fields.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.Login_Window.Manage_Connections">
+					<title>Manage Connections</title>
+					<para>
+						Click this button to open up the Database
+						Connection Manager to manage and configure your
+						database connections. If you are using the
+						Power*MatchMaker for the first time, click here
+						to configure your first database connection.
+					</para>
+				</section>
+
+				<section id="How_To_Use.GUI.Login_Window.Login">
+					<title>Login</title>
+					<para>
+						Click this button to connect and login to the
+						selected database. If you are using the
+						Power*MatchMaker for the first time, you would
+						need to setup a new database connection first.
+					</para>
+				</section>
+			</section>
+
+			<section id="How_To_Use.GUI.Database_Connection_Manager">
+				<title>Database Connection Manager</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata
+							fileref="doc/images/db_con_manager.png" format="PNG" width="4in" />
+					</imageobject>
+				</mediaobject>
+				<para>
+					This is the window where you can manage and
+					configure your database connections. The list on the
+					left displays all your currently configured database
+					connections.
+				</para>
+
+				<section
+					id="How_To_Use.GUI.Database_Connection_Manager.New">
+					<title>New...</title>
+					<para>
+						Click this button to create a new database
+						connection. If you are using the
+						Power*MatchMaker for the first time, click here.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.Database_Connection_Manager.Edit">
+					<title>Edit...</title>
+					<para>
+						Click this button to edit the configurations of
+						the selected database connection. If you are
+						using the Power*MatchMaker for the first time,
+						you would need to create a new database
+						connection first.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.Database_Connection_Manager.Remove">
+					<title>Remove</title>
+					<para>
+						Click this button to remove the selected
+						database connection from your list of
+						connections.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.Database_Connection_Manager.JDBC_Drivers">
+					<title>JDBC Drivers</title>
+					<para>
+						Click this button to edit your JDBC drivers. If
+						you are using a database with drivers that were
+						not supplied with the Power*MatchMaker or wish
+						to use different drivers than previously
+						configured, click here.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.Database_Connection_Manager.Login">
+					<title>Login</title>
+					<para>
+						Click this button once you have configured a
+						database connection and wish to connect and
+						login to that database. It will bring you back
+						to the Login Window with the specified database
+						connection selected.
+					</para>
+				</section>
+			</section>
+
+			<section id="How_To_Use.GUI.Database_Connection_Window">
+				<title>Database Connection Window</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata
+							fileref="doc/images/db_con_window.png" format="PNG" width="4in" />
+					</imageobject>
+				</mediaobject>
+				<para>
+					This is the window where you can set the specific
+					settings for a database connection.
+				</para>
+
+				<section
+					id="How_To_Use.GUI.Database_Connection_Window.Name">
+					<title>Connection Name</title>
+					<para>
+						Enter an arbitrary name for the database
+						connection. It will appear in the left hand
+						column of the Database Connection Manager window
+						as well as in a drop down list on the Login
+						window. Name the connection something that is
+						easily identifiable for the next time you open
+						up Power*MatchMaker.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.Database_Connection_Window.Type">
+					<title>Database Type</title>
+					<para>
+						Select the type of database you wish to connect
+						to. The database types must be defined before
+						attempting to define the database connection
+						with that type. All of the database types that
+						have been defined will appear in a drop down
+						list.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.Database_Connection_Window.Properties">
+					<title>Connect Options &amp; JDBC URL</title>
+					<para>
+						These two text fields work together to form an
+						URL that is used by the Power*MatchMaker to
+						connect to the database. The text entered in the
+						Connect Options fields replace the corresponding
+						variables as defined by the database type to
+						form the URL. Modify either text fields to form
+						the URL.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.Database_Connection_Window.LoginInfo">
+					<title>Username &amp; Password</title>
+					<para>
+						Enter your login username and password in the
+						corresponding text fields.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.Database_Connection_Window.Owner">
+					<title>Repository Schema Owner</title>
+					<para>
+						Fill this text field only if this database
+						connection connects to the repository database.
+						The contents entered in this field will
+						automatically become a prefix to the repository
+						tables.
+					</para>
+				</section>
+			</section>
+
+			<section id="How_To_Use.GUI.JDBC_Drivers_Window">
+				<title>JDBC Drivers Window</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata
+							fileref="doc/images/jdbc_drivers_window.png" format="PNG"
+							width="4in" />
+					</imageobject>
+				</mediaobject>
+				<para>
+					This is the window where you can specific the JDBC
+					drivers to use for each database type. A
+					specification for a database type must be completed
+					here before creating a database connection of that
+					type.
+				</para>
+
+				<section
+					id="How_To_Use.GUI.JDBC_Drivers_Window.Selection">
+					<title>Selecting a Database Type</title>
+					<para>
+						You can choose to modify a database type's
+						specifications by selecting it on the list to
+						the left. If your database type does not exist
+						on the list, click the + button under the list
+						to add a new database type. If your database
+						type was not supported by the Power*MatchMaker,
+						click this + button to add it.
+					</para>
+				</section>
+
+				<section id="How_To_Use.GUI.JDBC_Drivers_Window.Name">
+					<title>Name</title>
+					<para>
+						Enter in this text field to assign a name to the
+						database type. A database type's name is used
+						when assigning a type to a database connection.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.JDBC_Drivers_Window.Class">
+					<title>Driver Class</title>
+					<para>
+						Enter the Java class name of the driver in this
+						text field.
+					</para>
+				</section>
+
+				<section
+					id="How_To_Use.GUI.JDBC_Drivers_Window.Template">
+					<title>Connection String Template</title>
+					<para>
+						Enter the string template that will be used by
+						database connections of this type to generate
+						JDBC URLs in this field. The pattern of a
+						template should consist of two simpler parts:
+						literals and variables. Literals are entered as
+						is and will appear in the URL in exactly the
+						same form. Variables are surrounded by &lt; and
+						&gt; and will take the corresponding values as
+						specified in the database connection settings to
+						form the URL. An example for an Oracle database
+						would be
+						jdbc:oracle:thin:@&lt;hostname&gt;:&lt;Port:1521&gt;:&lt;SID&gt;.
+					</para>
+				</section>
+
+				<section id="How_To_Use.GUI.JDBC_Drivers_Window.JAR">
+					<title>JAR Settings</title>
+					<para>
+						The JDBC driver files of a database type needed
+						to connect to a database are contained in JAR
+						files. Use the Add JAR... and Remove JAR buttons
+						to add or remove the JAR files containing the
+						required JDBC driver class file.
+					</para>
+				</section>
+			</section>
+
+			<section id="How_To_Use.GUI.Main_Editor_Pane">
+				<title>Main Editor Pane</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="doc/images/main_window.png"
+							format="PNG" width="4in" />
+					</imageobject>
+				</mediaobject>
+				<para>
+					This is the screen that you will see after logging
+					in. It will display the current version of the
+					Power*MatchMaker and information about the connected
+					database.
+				</para>
+			</section>
+
+			<section id="How_To_Use.GUI.Tree">
+				<title>The Power*MatchMaker Tree</title>
+				<para>
+					This is the graphical representation of your work in
+					the Power*MatchMaker in the form of a tree. It is
+					where you will interact with the application to
+					navigate through your work. Click on the various
+					nodes in the tree to go to the corresponding panes.
+				</para>
+
+				<para>
+					<inlinemediaobject>
+						<imageobject>
+							<imagedata fileref="doc/images/mmtree.png"
+								format="PNG" width="4in" />
+						</imageobject>
+					</inlinemediaobject>
+				</para>
+			</section>
+		</section>
+	</chapter>
+
+	<chapter id="acknowledgements">
+		<title>Acknowledgements</title>
+
+		<section id="silk-icons">
+			<title>The FAMFAMFAM Silk Icon Set</title>
+
+			<para>
+				The Power*MatchMaker development team is grateful to
+				Mark James for the beautiful Silk icon set which is used
+				extensively throughout the MatchMaker's user interface.
+			</para>
+
+			<para>
+				The Silk icons are freely available under the
+				<ulink
+					url="http://creativecommons.org/licenses/by/2.5/">
+					Creative Commons Attribution 2.5 License
+				</ulink>
+				. If you want to use these icons in your own work (and
+				why wouldn't you?), you can obtain the full set from
+				<ulink url="http://www.famfamfam.com/lab/icons/silk/">
+					the FAMFAMFAM web site
+				</ulink>
+				.
+			</para>
+		</section>
+
+		<section id="ASF">
+			<title>The Apache Software Foundation</title>
+			<para>
+				The Power*MatchMaker development team is grateful to the
+				Apache Software Foundation and their contributors; their
+				high-quality reusable Java libraries have been
+				invaluable in the development of the MatchMaker. The
+				text of the Apache License follows, because we are
+				redistributing several Apache libraries upon which the
+				MatchMaker depends.
+			</para>
+
+			<para>
+				The following license applies to these library jar
+				files, which are distributed as part of the MatchMaker
+				download:
+			</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>commons-beanutils.jar</para>
+				</listitem>
+				<listitem>
+					<para>commons-digester.jar</para>
+				</listitem>
+				<listitem>
+					<para>commons-logging.jar</para>
+				</listitem>
+				<listitem>
+					<para>commons-beanutils-bean-collections.jar</para>
+				</listitem>
+				<listitem>
+					<para>commons-beanutils-core.jar</para>
+				</listitem>
+				<listitem>
+					<para>jakarta-regexp-1.2.jar</para>
+				</listitem>
+				<listitem>
+					<para>commons-collections-3.1.jar</para>
+				</listitem>
+				<listitem>
+					<para>commons-dbcp-1.2.1.jar</para>
+				</listitem>
+				<listitem>
+					<para>commons-pool-1.3.jar</para>
+				</listitem>
+				<listitem>
+					<para>commons-vfs-1.0.jar</para>
+				</listitem>
+				<listitem>
+					<para>log4j.jar</para>
+				</listitem>
+			</itemizedlist>
+
+			<literallayout>
+				Apache License Version 2.0, January 2004
+				http://www.apache.org/licenses/
+
+				TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND
+				DISTRIBUTION
+
+				1. Definitions.
+
+				"License" shall mean the terms and conditions for use,
+				reproduction, and distribution as defined by Sections 1
+				through 9 of this document.
+
+				"Licensor" shall mean the copyright owner or entity
+				authorized by the copyright owner that is granting the
+				License.
+
+				"Legal Entity" shall mean the union of the acting entity
+				and all other entities that control, are controlled by,
+				or are under common control with that entity. For the
+				purposes of this definition, "control" means (i) the
+				power, direct or indirect, to cause the direction or
+				management of such entity, whether by contract or
+				otherwise, or (ii) ownership of fifty percent (50%) or
+				more of the outstanding shares, or (iii) beneficial
+				ownership of such entity.
+
+				"You" (or "Your") shall mean an individual or Legal
+				Entity exercising permissions granted by this License.
+
+				"Source" form shall mean the preferred form for making
+				modifications, including but not limited to software
+				source code, documentation source, and configuration
+				files.
+
+				"Object" form shall mean any form resulting from
+				mechanical transformation or translation of a Source
+				form, including but not limited to compiled object code,
+				generated documentation, and conversions to other media
+				types.
+
+				"Work" shall mean the work of authorship, whether in
+				Source or Object form, made available under the License,
+				as indicated by a copyright notice that is included in
+				or attached to the work (an example is provided in the
+				Appendix below).
+
+				"Derivative Works" shall mean any work, whether in
+				Source or Object form, that is based on (or derived
+				from) the Work and for which the editorial revisions,
+				annotations, elaborations, or other modifications
+				represent, as a whole, an original work of authorship.
+				For the purposes of this License, Derivative Works shall
+				not include works that remain separable from, or merely
+				link (or bind by name) to the interfaces of, the Work
+				and Derivative Works thereof.
+
+				"Contribution" shall mean any work of authorship,
+				including the original version of the Work and any
+				modifications or additions to that Work or Derivative
+				Works thereof, that is intentionally submitted to
+				Licensor for inclusion in the Work by the copyright
+				owner or by an individual or Legal Entity authorized to
+				submit on behalf of the copyright owner. For the
+				purposes of this definition, "submitted" means any form
+				of electronic, verbal, or written communication sent to
+				the Licensor or its representatives, including but not
+				limited to communication on electronic mailing lists,
+				source code control systems, and issue tracking systems
+				that are managed by, or on behalf of, the Licensor for
+				the purpose of discussing and improving the Work, but
+				excluding communication that is conspicuously marked or
+				otherwise designated in writing by the copyright owner
+				as "Not a Contribution."
+
+				"Contributor" shall mean Licensor and any individual or
+				Legal Entity on behalf of whom a Contribution has been
+				received by Licensor and subsequently incorporated
+				within the Work.
+
+				2. Grant of Copyright License. Subject to the terms and
+				conditions of this License, each Contributor hereby
+				grants to You a perpetual, worldwide, non-exclusive,
+				no-charge, royalty-free, irrevocable copyright license
+				to reproduce, prepare Derivative Works of, publicly
+				display, publicly perform, sublicense, and distribute
+				the Work and such Derivative Works in Source or Object
+				form.
+
+				3. Grant of Patent License. Subject to the terms and
+				conditions of this License, each Contributor hereby
+				grants to You a perpetual, worldwide, non-exclusive,
+				no-charge, royalty-free, irrevocable (except as stated
+				in this section) patent license to make, have made, use,
+				offer to sell, sell, import, and otherwise transfer the
+				Work, where such license applies only to those patent
+				claims licensable by such Contributor that are
+				necessarily infringed by their Contribution(s) alone or
+				by combination of their Contribution(s) with the Work to
+				which such Contribution(s) was submitted. If You
+				institute patent litigation against any entity
+				(including a cross-claim or counterclaim in a lawsuit)
+				alleging that the Work or a Contribution incorporated
+				within the Work constitutes direct or contributory
+				patent infringement, then any patent licenses granted to
+				You under this License for that Work shall terminate as
+				of the date such litigation is filed.
+
+				4. Redistribution. You may reproduce and distribute
+				copies of the Work or Derivative Works thereof in any
+				medium, with or without modifications, and in Source or
+				Object form, provided that You meet the following
+				conditions:
+
+				(a) You must give any other recipients of the Work or
+				Derivative Works a copy of this License; and
+
+				(b) You must cause any modified files to carry prominent
+				notices stating that You changed the files; and
+
+				(c) You must retain, in the Source form of any
+				Derivative Works that You distribute, all copyright,
+				patent, trademark, and attribution notices from the
+				Source form of the Work, excluding those notices that do
+				not pertain to any part of the Derivative Works; and
+
+				(d) If the Work includes a "NOTICE" text file as part of
+				its distribution, then any Derivative Works that You
+				distribute must include a readable copy of the
+				attribution notices contained within such NOTICE file,
+				excluding those notices that do not pertain to any part
+				of the Derivative Works, in at least one of the
+				following places: within a NOTICE text file distributed
+				as part of the Derivative Works; within the Source form
+				or documentation, if provided along with the Derivative
+				Works; or, within a display generated by the Derivative
+				Works, if and wherever such third-party notices normally
+				appear. The contents of the NOTICE file are for
+				informational purposes only and do not modify the
+				License. You may add Your own attribution notices within
+				Derivative Works that You distribute, alongside or as an
+				addendum to the NOTICE text from the Work, provided that
+				such additional attribution notices cannot be construed
+				as modifying the License.
+
+				You may add Your own copyright statement to Your
+				modifications and may provide additional or different
+				license terms and conditions for use, reproduction, or
+				distribution of Your modifications, or for any such
+				Derivative Works as a whole, provided Your use,
+				reproduction, and distribution of the Work otherwise
+				complies with the conditions stated in this License.
+
+				5. Submission of Contributions. Unless You explicitly
+				state otherwise, any Contribution intentionally
+				submitted for inclusion in the Work by You to the
+				Licensor shall be under the terms and conditions of this
+				License, without any additional terms or conditions.
+				Notwithstanding the above, nothing herein shall
+				supersede or modify the terms of any separate license
+				agreement you may have executed with Licensor regarding
+				such Contributions.
+
+				6. Trademarks. This License does not grant permission to
+				use the trade names, trademarks, service marks, or
+				product names of the Licensor, except as required for
+				reasonable and customary use in describing the origin of
+				the Work and reproducing the content of the NOTICE file.
+
+				7. Disclaimer of Warranty. Unless required by applicable
+				law or agreed to in writing, Licensor provides the Work
+				(and each Contributor provides its Contributions) on an
+				"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+				KIND, either express or implied, including, without
+				limitation, any warranties or conditions of TITLE,
+				NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+				PARTICULAR PURPOSE. You are solely responsible for
+				determining the appropriateness of using or
+				redistributing the Work and assume any risks associated
+				with Your exercise of permissions under this License.
+
+				8. Limitation of Liability. In no event and under no
+				legal theory, whether in tort (including negligence),
+				contract, or otherwise, unless required by applicable
+				law (such as deliberate and grossly negligent acts) or
+				agreed to in writing, shall any Contributor be liable to
+				You for damages, including any direct, indirect,
+				special, incidental, or consequential damages of any
+				character arising as a result of this License or out of
+				the use or inability to use the Work (including but not
+				limited to damages for loss of goodwill, work stoppage,
+				computer failure or malfunction, or any and all other
+				commercial damages or losses), even if such Contributor
+				has been advised of the possibility of such damages.
+
+				9. Accepting Warranty or Additional Liability. While
+				redistributing the Work or Derivative Works thereof, You
+				may choose to offer, and charge a fee for, acceptance of
+				support, warranty, indemnity, or other liability
+				obligations and/or rights consistent with this License.
+				However, in accepting such obligations, You may act only
+				on Your own behalf and on Your sole responsibility, not
+				on behalf of any other Contributor, and only if You
+				agree to indemnify, defend, and hold each Contributor
+				harmless for any liability incurred by, or claims
+				asserted against, such Contributor by reason of your
+				accepting any such warranty or additional liability.
+
+				END OF TERMS AND CONDITIONS
+
+				APPENDIX: How to apply the Apache License to your work.
+
+				To apply the Apache License to your work, attach the
+				following boilerplate notice, with the fields enclosed
+				by brackets "[]" replaced with your own identifying
+				information. (Don't include the brackets!) The text
+				should be enclosed in the appropriate comment syntax for
+				the file format. We also recommend that a file or class
+				name and description of purpose be included on the same
+				"printed page" as the copyright notice for easier
+				identification within third-party archives.
+
+				Copyright [yyyy] [name of copyright owner]
+
+				Licensed under the Apache License, Version 2.0 (the
+				"License"); you may not use this file except in
+				compliance with the License. You may obtain a copy of
+				the License at
+
+				http://www.apache.org/licenses/LICENSE-2.0
+
+				Unless required by applicable law or agreed to in
+				writing, software distributed under the License is
+				distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+				CONDITIONS OF ANY KIND, either express or implied. See
+				the License for the specific language governing
+				permissions and limitations under the License.
+			</literallayout>
+		</section>
+
+		<section id="JGoodies">
+			<title>JGoodies Karsten Lentzsch</title>
+
+			<para>
+				The Power*MatchMaker team is also grateful to JGoodies
+				for their excellent forms layout manager for Swing.
+				JGoodies forms is released under the BSD license,
+				reproduced below.
+			</para>
+
+			<para>
+				The following license applies to these library jar
+				files, which are distributed as part of the MatchMaker
+				download:
+			</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>forms-1.1.0.jar</para>
+				</listitem>
+			</itemizedlist>
+
+			<literallayout>
+				The BSD License for the JGoodies Forms
+				======================================
+
+				Copyright (c) 2002-2006 JGoodies Karsten Lentzsch. All
+				rights reserved.
+
+				Redistribution and use in source and binary forms, with
+				or without modification, are permitted provided that the
+				following conditions are met:
+
+				o Redistributions of source code must retain the above
+				copyright notice, this list of conditions and the
+				following disclaimer.
+
+				o Redistributions in binary form must reproduce the
+				above copyright notice, this list of conditions and the
+				following disclaimer in the documentation and/or other
+				materials provided with the distribution.
+
+
+				o Neither the name of JGoodies Karsten Lentzsch nor the
+				names of its contributors may be used to endorse or
+				promote products derived from this software without
+				specific prior written permission.
+
+				THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+				CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+				WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+				WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+				PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+				COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY
+				DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+				CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+				PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+				USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+				CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+				CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+				NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+				USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+				OF SUCH DAMAGE.
+			</literallayout>
+		</section>
+		
+		<section id="GoogleGData">
+			<title>Google GData API</title>
+
+			<para>
+				The Power*MatchMaker team would like to thank the Google
+				GData API team for providing the API as well as the
+				backend services.
+			</para>
+
+			<para>
+				The GData is released under the Apache 2.0 License (It
+				can be found in the The Apache Software Foundation
+				section), The license applies to these library jar
+				files, which are distributed as part of the MatchMaker
+				download:
+			</para>
+			
+			<itemizedlist>
+				<listitem>
+					<para>gdata-client-1.0.jar</para>
+				</listitem>
+								<listitem>
+					<para>gdata-core-1.0.jar</para>
+				</listitem>
+				<listitem>
+					<para>gdata-base-1.0.jar</para>
+				</listitem>
+				<listitem>
+					<para>gdata-spreadsheet-1.0.jar</para>
+				</listitem>
+				<listitem>
+					<para>gdata-spreadsheet-meta-1.0.jar</para>
+				</listitem>
+			</itemizedlist>
+			
+		</section>
+
+		<section id="PostgreSqlJdbcDriver">
+			<title>PostgreSQL JDBC Driver</title>
+
+			<para>
+				The Power*MatchMaker team would like to thank the
+				PostgreSQL JDBC Driver team for their JDBC driver.
+			</para>
+
+			<para>
+				The following license applies to these library jar
+				files, which are distributed as part of the MatchMaker
+				download:
+			</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>postgresql_8.jar</para>
+				</listitem>
+			</itemizedlist>
+
+			<literallayout>
+				Copyright (c) 1997-2005, PostgreSQL Global Development
+				Group All rights reserved.
+
+				Redistribution and use in source and binary forms, with
+				or without modification, are permitted provided that the
+				following conditions are met:
+
+				1. Redistributions of source code must retain the above
+				copyright notice, this list of conditions and the
+				following disclaimer. 2. Redistributions in binary form
+				must reproduce the above copyright notice, this list of
+				conditions and the following disclaimer in the
+				documentation and/or other materials provided with the
+				distribution. 3. Neither the name of the PostgreSQL
+				Global Development Group nor the names of its
+				contributors may be used to endorse or promote products
+				derived from this software without specific prior
+				written permission.
+
+				THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+				CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
+				WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+				WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+				PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+				COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY
+				DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+				CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+				PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+				USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+				CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+				CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+				NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+				USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+				OF SUCH DAMAGE.
+			</literallayout>
+		</section>
+
+		<section id="JFree">
+			<title>JFree</title>
+			<para>
+				The Power*MatchMaker team is also grateful to the JFree
+				team for their top-notch charting library, which has a
+				nice API as well as nice-looking output.
+			</para>
+
+			<para>
+				The following license applies to these library jar
+				files, which are distributed as part of the MatchMaker
+				download:
+			</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>jcommon-1.0.0.jar</para>
+				</listitem>
+				<listitem>
+					<para>jfreechart-1.0.1.jar</para>
+				</listitem>
+			</itemizedlist>
+
+			<literallayout>
+				GNU LESSER GENERAL PUBLIC LICENSE
+
+				Version 3, 29 June 2007
+
+				Copyright (C) 2007 Free Software Foundation, Inc.
+				&lt;http://fsf.org/&gt;
+
+				Everyone is permitted to copy and distribute verbatim
+				copies of this license document, but changing it is not
+				allowed.
+
+				This version of the GNU Lesser General Public License
+				incorporates the terms and conditions of version 3 of
+				the GNU General Public License, supplemented by the
+				additional permissions listed below. 0. Additional
+				Definitions.
+
+				As used herein, “this License” refers to version 3 of
+				the GNU Lesser General Public License, and the “GNU GPL”
+				refers to version 3 of the GNU General Public License.
+
+				“The Library” refers to a covered work governed by this
+				License, other than an Application or a Combined Work as
+				defined below.
+
+				An “Application” is any work that makes use of an
+				interface provided by the Library, but which is not
+				otherwise based on the Library. Defining a subclass of a
+				class defined by the Library is deemed a mode of using
+				an interface provided by the Library.
+
+				A “Combined Work” is a work produced by combining or
+				linking an Application with the Library. The particular
+				version of the Library with which the Combined Work was
+				made is also called the “Linked Version”.
+
+				The “Minimal Corresponding Source” for a Combined Work
+				means the Corresponding Source for the Combined Work,
+				excluding any source code for portions of the Combined
+				Work that, considered in isolation, are based on the
+				Application, and not on the Linked Version.
+
+				The “Corresponding Application Code” for a Combined Work
+				means the object code and/or source code for the
+				Application, including any data and utility programs
+				needed for reproducing the Combined Work from the
+				Application, but excluding the System Libraries of the
+				Combined Work. 1. Exception to Section 3 of the GNU GPL.
+
+				You may convey a covered work under sections 3 and 4 of
+				this License without being bound by section 3 of the GNU
+				GPL. 2. Conveying Modified Versions.
+
+				If you modify a copy of the Library, and, in your
+				modifications, a facility refers to a function or data
+				to be supplied by an Application that uses the facility
+				(other than as an argument passed when the facility is
+				invoked), then you may convey a copy of the modified
+				version:
+
+				* a) under this License, provided that you make a good
+				faith effort to ensure that, in the event an Application
+				does not supply the function or data, the facility still
+				operates, and performs whatever part of its purpose
+				remains meaningful, or * b) under the GNU GPL, with none
+				of the additional permissions of this License applicable
+				to that copy.
+
+				3. Object Code Incorporating Material from Library
+				Header Files.
+
+				The object code form of an Application may incorporate
+				material from a header file that is part of the Library.
+				You may convey such object code under terms of your
+				choice, provided that, if the incorporated material is
+				not limited to numerical parameters, data structure
+				layouts and accessors, or small macros, inline functions
+				and templates (ten or fewer lines in length), you do
+				both of the following:
+
+				* a) Give prominent notice with each copy of the object
+				code that the Library is used in it and that the Library
+				and its use are covered by this License. * b) Accompany
+				the object code with a copy of the GNU GPL and this
+				license document.
+
+				4. Combined Works.
+
+				You may convey a Combined Work under terms of your
+				choice that, taken together, effectively do not restrict
+				modification of the portions of the Library contained in
+				the Combined Work and reverse engineering for debugging
+				such modifications, if you also do each of the
+				following:
+
+				* a) Give prominent notice with each copy of the
+				Combined Work that the Library is used in it and that
+				the Library and its use are covered by this License. *
+				b) Accompany the Combined Work with a copy of the GNU
+				GPL and this license document. * c) For a Combined Work
+				that displays copyright notices during execution,
+				include the copyright notice for the Library among these
+				notices, as well as a reference directing the user to
+				the copies of the GNU GPL and this license document. *
+				d) Do one of the following: o 0) Convey the Minimal
+				Corresponding Source under the terms of this License,
+				and the Corresponding Application Code in a form
+				suitable for, and under terms that permit, the user to
+				recombine or relink the Application with a modified
+				version of the Linked Version to produce a modified
+				Combined Work, in the manner specified by section 6 of
+				the GNU GPL for conveying Corresponding Source. o 1) Use
+				a suitable shared library mechanism for linking with the
+				Library. A suitable mechanism is one that (a) uses at
+				run time a copy of the Library already present on the
+				user's computer system, and (b) will operate properly
+				with a modified version of the Library that is
+				interface-compatible with the Linked Version. * e)
+				Provide Installation Information, but only if you would
+				otherwise be required to provide such information under
+				section 6 of the GNU GPL, and only to the extent that
+				such information is necessary to install and execute a
+				modified version of the Combined Work produced by
+				recombining or relinking the Application with a modified
+				version of the Linked Version. (If you use option 4d0,
+				the Installation Information must accompany the Minimal
+				Corresponding Source and Corresponding Application Code.
+				If you use option 4d1, you must provide the Installation
+				Information in the manner specified by section 6 of the
+				GNU GPL for conveying Corresponding Source.)
+
+				5. Combined Libraries.
+
+				You may place library facilities that are a work based
+				on the Library side by side in a single library together
+				with other library facilities that are not Applications
+				and are not covered by this License, and convey such a
+				combined library under terms of your choice, if you do
+				both of the following:
+
+				* a) Accompany the combined library with a copy of the
+				same work based on the Library, uncombined with any
+				other library facilities, conveyed under the terms of
+				this License. * b) Give prominent notice with the
+				combined library that part of it is a work based on the
+				Library, and explaining where to find the accompanying
+				uncombined form of the same work.
+
+				6. Revised Versions of the GNU Lesser General Public
+				License.
+
+				The Free Software Foundation may publish revised and/or
+				new versions of the GNU Lesser General Public License
+				from time to time. Such new versions will be similar in
+				spirit to the present version, but may differ in detail
+				to address new problems or concerns.
+
+				Each version is given a distinguishing version number.
+				If the Library as you received it specifies that a
+				certain numbered version of the GNU Lesser General
+				Public License “or any later version” applies to it, you
+				have the option of following the terms and conditions
+				either of that published version or of any later version
+				published by the Free Software Foundation. If the
+				Library as you received it does not specify a version
+				number of the GNU Lesser General Public License, you may
+				choose any version of the GNU Lesser General Public
+				License ever published by the Free Software Foundation.
+
+				If the Library as you received it specifies that a proxy
+				can decide whether future versions of the GNU Lesser
+				General Public License shall apply, that proxy's public
+				statement of acceptance of any version is permanent
+				authorization for you to choose that version for the
+				Library.
+			</literallayout>
+		</section>
+
+		<section id="darwinsys">
+			<title>Darwin Systems</title>
+			<para>
+				Thanks to Ian Darwin of Darwin Systems for his many
+				contributions to the Power*MatchMaker.
+			</para>
+
+			<para>The following license applies to:</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>darwinsys.jar</para>
+				</listitem>
+			</itemizedlist>
+			<literallayout>
+				Copyright (c) Ian F. Darwin, http://www.darwinsys.com/,
+				1996-2006. All rights reserved. Software written by Ian
+				F. Darwin and others.
+
+				Redistribution and use in source and binary forms, with
+				or without modification, are permitted provided that the
+				following conditions are met: 1. Redistributions of
+				source code must retain the above copyright notice, this
+				list of conditions and the following disclaimer. 2.
+				Redistributions in binary form must reproduce the above
+				copyright notice, this list of conditions and the
+				following disclaimer in the documentation and/or other
+				materials provided with the distribution. 3. Neither the
+				name of the author nor the names of any contributors may
+				be used to endorse or promote products derived from this
+				software without specific prior written permission.
+
+				THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS
+				``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+				INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+				MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+				DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS
+				BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+				EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+				LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+				LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+				HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+				IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+				NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+				USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+				OF SUCH DAMAGE.
+			</literallayout>
+		</section>
+
+		<section id="JUnit">
+			<title>JUnit</title>
+			<para>
+				The Power*MatchMaker team would also like to extend our
+				sincere thanks to the JUnit.org team. JUnit forms an
+				invaluable part of our development process, but it is
+				not redistributed as part of the MatchMaker download so
+				its license is not reproduced here.
+			</para>
+
+			<para>
+				If you develop software, you should become test infected
+				too! Learn about JUnit at
+				<ulink url="http://www.junit.org/">
+					http://www.junit.org/
+				</ulink>
+				.
+			</para>
+
+		</section>
+
+		<section id="eclipse">
+			<title>The Eclipse Foundation</title>
+			<para>
+				The Power*Archited was primarily developed and tested
+				using the
+				<ulink url="http://www.sqlpower.ca/">Eclipse</ulink>
+				Java Development Tools, one of the more productive Java
+				environments around.
+			</para>
+		</section>
+
+		<section id="SUNW">
+			<title>Sun Microsystems</title>
+
+			<para>
+				Last but not least, many thanks to
+				<ulink url="http://java.sun.com/">
+					Sun Microsystems
+				</ulink>
+				and their various Java development teams for creating,
+				extending, bugfixing, documenting, and supporting the
+				Java platform over the past
+				<emphasis>N</emphasis>
+				years!
+			</para>
+
+			<para>
+				We redistribute the JavaHelp runtime library with the
+				MatchMaker. Although the JavaHelp website says that the
+				system will be redistributable royalty-free, it does not
+				actually link to the specific license terms. If someone
+				can point us to the license text for JavaHelp
+				redistributions, we would be grateful!
+			</para>
+
+			<para>
+				The portion of JavaHelp that we redistribute is in the
+				following JAR file:
+			</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>jhall.jar</para>
+				</listitem>
+			</itemizedlist>
+
+			<para>
+				We also redistribute the JavaMail library and the
+				JavaBeans Activation Framework, on which it depends
+				(Kettle depends on JavaMail).
+			</para>
+
+			<para>
+				The following JAR files are covered by the CDDL,
+				reproduced below:
+			</para>
+
+			<itemizedlist>
+				<listitem>
+					<para>mail.jar</para>
+				</listitem>
+				<listitem>
+					<para>activation.jar</para>
+				</listitem>
+			</itemizedlist>
+
+			<literallayout>
+				COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL)
+				Version 1.0 1.
+
+				Definitions.
+
+				1.1. Contributor means each individual or entity that
+				creates or contributes to the creation of Modifications.
+
+				1.2. Contributor Version means the combination of the
+				Original Software, prior Modifications used by a
+				Contributor (if any), and the Modifications made by that
+				particular Contributor.
+
+				1.3. Covered Software means (a) the Original Software,
+				or (b) Modifications, or (c) the combination of files
+				containing Original Software with files containing
+				Modifications, in each case including portions thereof.
+
+				1.4. Executable means the Covered Software in any form
+				other than Source Code.
+
+				1.5. Initial Developer means the individual or entity
+				that first makes Original Software available under this
+				License.
+
+				1.6. Larger Work means a work which combines Covered
+				Software or portions thereof with code not governed by
+				the terms of this License.
+
+				1.7. License means this document.
+
+				1.8. Licensable means having the right to grant, to the
+				maximum extent possible, whether at the time of the
+				initial grant or subsequently acquired, any and all of
+				the rights conveyed herein.
+
+				1.9. Modifications means the Source Code and Executable
+				form of any of the following: A. Any file that results
+				from an addition to, deletion from or modification of
+				the contents of a file containing Original Software or
+				previous Modifications; B. Any new file that contains
+				any part of the Original Software or previous
+				Modification; or C. Any new file that is contributed or
+				otherwise made available under the terms of this
+				License.
+
+				1.10. Original Software means the Source Code and
+				Executable form of computer software code that is
+				originally released under this License.
+
+				1.11. Patent Claims means any patent claim(s), now owned
+				or hereafter acquired, including without limitation,
+				method, process, and apparatus claims, in any patent
+				Licensable by grantor.
+
+				1.12. Source Code means (a) the common form of computer
+				software code in which modifications are made and (b)
+				associated documentation included in or with such code.
+
+				1.13. You (or Your) means an individual or a legal
+				entity exercising rights under, and complying with all
+				of the terms of, this License. For legal entities, You
+				includes any entity which controls, is controlled by, or
+				is under common control with You. For purposes of this
+				definition, control means (a) the power, direct or
+				indirect, to cause the direction or management of such
+				entity, whether by contract or otherwise, or (b)
+				ownership of more than fifty percent (50%) of the
+				outstanding shares or beneficial ownership of such
+				entity.
+
+				2. License Grants.
+
+				2.1. The Initial Developer Grant. Conditioned upon Your
+				compliance with Section 3.1 below and subject to third
+				party intellectual property claims, the Initial
+				Developer hereby grants You a world-wide, royalty-free,
+				non-exclusive license:
+
+				(a) under intellectual property rights (other than
+				patent or trademark) Licensable by Initial Developer, to
+				use, reproduce, modify, display, perform, sublicense and
+				distribute the Original Software (or portions thereof),
+				with or without Modifications, and/or as part of a
+				Larger Work; and
+
+				(b) under Patent Claims infringed by the making, using
+				or selling of Original Software, to make, have made,
+				use, practice, sell, and offer for sale, and/or
+				otherwise dispose of the Original Software (or portions
+				thereof);
+
+				(c) The licenses granted in Sections 2.1(a) and (b) are
+				effective on the date Initial Developer first
+				distributes or otherwise makes the Original Software
+				available to a third party under the terms of this
+				License;
+
+				(d) Notwithstanding Section 2.1(b) above, no patent
+				license is granted: (1) for code that You delete from
+				the Original Software, or (2) for infringements caused
+				by: (i) the modification of the Original Software, or
+				(ii) the combination of the Original Software with other
+				software or devices.
+
+				2.2. Contributor Grant. Conditioned upon Your compliance
+				with Section 3.1 below and subject to third party
+				intellectual property claims, each Contributor hereby
+				grants You a world-wide, royalty-free, non-exclusive
+				license:
+
+				(a) under intellectual property rights (other than
+				patent or trademark) Licensable by Contributor to use,
+				reproduce, modify, display, perform, sublicense and
+				distribute the Modifications created by such Contributor
+				(or portions thereof), either on an unmodified basis,
+				with other Modifications, as Covered Software and/or as
+				part of a Larger Work; and
+
+				(b) under Patent Claims infringed by the making, using,
+				or selling of Modifications made by that Contributor
+				either alone and/or in combination with its Contributor
+				Version (or portions of such combination), to make, use,
+				sell, offer for sale, have made, and/or otherwise
+				dispose of: (1) Modifications made by that Contributor
+				(or portions thereof); and (2) the combination of
+				Modifications made by that Contributor with its
+				Contributor Version (or portions of such combination).
+
+				(c) The licenses granted in Sections 2.2(a) and 2.2(b)
+				are effective on the date Contributor first distributes
+				or otherwise makes the Modifications available to a
+				third party.
+
+				(d) Notwithstanding Section 2.2(b) above, no patent
+				license is granted: (1) for any code that Contributor
+				has deleted from the Contributor Version; (2) for
+				infringements caused by: (i) third party modifications
+				of Contributor Version, or (ii) the combination of
+				Modifications made by that Contributor with other
+				software (except as part of the Contributor Version) or
+				other devices; or (3) under Patent Claims infringed by
+				Covered Software in the absence of Modifications made by
+				that Contributor.
+
+				3. Distribution Obligations.
+
+				3.1. Availability of Source Code. Any Covered Software
+				that You distribute or otherwise make available in
+				Executable form must also be made available in Source
+				Code form and that Source Code form must be distributed
+				only under the terms of this License. You must include a
+				copy of this License with every copy of the Source Code
+				form of the Covered Software You distribute or otherwise
+				make available. You must inform recipients of any such
+				Covered Software in Executable form as to how they can
+				obtain such Covered Software in Source Code form in a
+				reasonable manner on or through a medium customarily
+				used for software exchange.
+
+				3.2. Modifications. The Modifications that You create or
+				to which You contribute are governed by the terms of
+				this License. You represent that You believe Your
+				Modifications are Your original creation(s) and/or You
+				have sufficient rights to grant the rights conveyed by
+				this License.
+
+				3.3. Required Notices. You must include a notice in each
+				of Your Modifications that identifies You as the
+				Contributor of the Modification. You may not remove or
+				alter any copyright, patent or trademark notices
+				contained within the Covered Software, or any notices of
+				licensing or any descriptive text giving attribution to
+				any Contributor or the Initial Developer.
+
+				3.4. Application of Additional Terms. You may not offer
+				or impose any terms on any Covered Software in Source
+				Code form that alters or restricts the applicable
+				version of this License or the recipients rights
+				hereunder. You may choose to offer, and to charge a fee
+				for, warranty, support, indemnity or liability
+				obligations to one or more recipients of Covered
+				Software. However, you may do so only on Your own
+				behalf, and not on behalf of the Initial Developer or
+				any Contributor. You must make it absolutely clear that
+				any such warranty, support, indemnity or liability
+				obligation is offered by You alone, and You hereby agree
+				to indemnify the Initial Developer and every Contributor
+				for any liability incurred by the Initial Developer or
+				such Contributor as a result of warranty, support,
+				indemnity or liability terms You offer.
+
+				3.5. Distribution of Executable Versions. You may
+				distribute the Executable form of the Covered Software
+				under the terms of this License or under the terms of a
+				license of Your choice, which may contain terms
+				different from this License, provided that You are in
+				compliance with the terms of this License and that the
+				license for the Executable form does not attempt to
+				limit or alter the recipients rights in the Source Code
+				form from the rights set forth in this License. If You
+				distribute the Covered Software in Executable form under
+				a different license, You must make it absolutely clear
+				that any terms which differ from this License are
+				offered by You alone, not by the Initial Developer or
+				Contributor. You hereby agree to indemnify the Initial
+				Developer and every Contributor for any liability
+				incurred by the Initial Developer or such Contributor as
+				a result of any such terms You offer.
+
+				3.6. Larger Works. You may create a Larger Work by
+				combining Covered Software with other code not governed
+				by the terms of this License and distribute the Larger
+				Work as a single product. In such a case, You must make
+				sure the requirements of this License are fulfilled for
+				the Covered Software.
+
+				4. Versions of the License.
+
+				4.1. New Versions. Sun Microsystems, Inc. is the initial
+				license steward and may publish revised and/or new
+				versions of this License from time to time. Each version
+				will be given a distinguishing version number. Except as
+				provided in Section 4.3, no one other than the license
+				steward has the right to modify this License.
+
+				4.2. Effect of New Versions. You may always continue to
+				use, distribute or otherwise make the Covered Software
+				available under the terms of the version of the License
+				under which You originally received the Covered
+				Software. If the Initial Developer includes a notice in
+				the Original Software prohibiting it from being
+				distributed or otherwise made available under any
+				subsequent version of the License, You must distribute
+				and make the Covered Software available under the terms
+				of the version of the License under which You originally
+				received the Covered Software. Otherwise, You may also
+				choose to use, distribute or otherwise make the Covered
+				Software available under the terms of any subsequent
+				version of the License published by the license steward.
+
+				4.3. Modified Versions. When You are an Initial
+				Developer and You want to create a new license for Your
+				Original Software, You may create and use a modified
+				version of this License if You: (a) rename the license
+				and remove any references to the name of the license
+				steward (except to note that the license differs from
+				this License); and (b) otherwise make it clear that the
+				license contains terms which differ from this License.
+
+				5. DISCLAIMER OF WARRANTY. COVERED SOFTWARE IS PROVIDED
+				UNDER THIS LICENSE ON AN AS IS BASIS, WITHOUT WARRANTY
+				OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING,
+				WITHOUT LIMITATION, WARRANTIES THAT THE COVERED SOFTWARE
+				IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR
+				PURPOSE OR NON-INFRINGING. THE ENTIRE RISK AS TO THE
+				QUALITY AND PERFORMANCE OF THE COVERED SOFTWARE IS WITH
+				YOU. SHOULD ANY COVERED SOFTWARE PROVE DEFECTIVE IN ANY
+				RESPECT, YOU (NOT THE INITIAL DEVELOPER OR ANY OTHER
+				CONTRIBUTOR) ASSUME THE COST OF ANY NECESSARY SERVICING,
+				REPAIR OR CORRECTION. THIS DISCLAIMER OF WARRANTY
+				CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE. NO USE OF
+				ANY COVERED SOFTWARE IS AUTHORIZED HEREUNDER EXCEPT
+				UNDER THIS DISCLAIMER.
+
+				6. TERMINATION.
+
+				6.1. This License and the rights granted hereunder will
+				terminate automatically if You fail to comply with terms
+				herein and fail to cure such breach within 30 days of
+				becoming aware of the breach. Provisions which, by their
+				nature, must remain in effect beyond the termination of
+				this License shall survive.
+
+				6.2. If You assert a patent infringement claim
+				(excluding declaratory judgment actions) against Initial
+				Developer or a Contributor (the Initial Developer or
+				Contributor against whom You assert such claim is
+				referred to as Participant) alleging that the
+				Participant Software (meaning the Contributor Version
+				where the Participant is a Contributor or the Original
+				Software where the Participant is the Initial Developer)
+				directly or indirectly infringes any patent, then any
+				and all rights granted directly or indirectly to You by
+				such Participant, the Initial Developer (if the Initial
+				Developer is not the Participant) and all Contributors
+				under Sections 2.1 and/or 2.2 of this License shall,
+				upon 60 days notice from Participant terminate
+				prospectively and automatically at the expiration of
+				such 60 day notice period, unless if within such 60 day
+				period You withdraw Your claim with respect to the
+				Participant Software against such Participant either
+				unilaterally or pursuant to a written agreement with
+				Participant.
+
+				6.3. In the event of termination under Sections 6.1 or
+				6.2 above, all end user licenses that have been validly
+				granted by You or any distributor hereunder prior to
+				termination (excluding licenses granted to You by any
+				distributor) shall survive termination.
+
+				7. LIMITATION OF LIABILITY. UNDER NO CIRCUMSTANCES AND
+				UNDER NO LEGAL THEORY, WHETHER TORT (INCLUDING
+				NEGLIGENCE), CONTRACT, OR OTHERWISE, SHALL YOU, THE
+				INITIAL DEVELOPER, ANY OTHER CONTRIBUTOR, OR ANY
+				DISTRIBUTOR OF COVERED SOFTWARE, OR ANY SUPPLIER OF ANY
+				OF SUCH PARTIES, BE LIABLE TO ANY PERSON FOR ANY
+				INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+				OF ANY CHARACTER INCLUDING, WITHOUT LIMITATION, DAMAGES
+				FOR LOST PROFITS, LOSS OF GOODWILL, WORK STOPPAGE,
+				COMPUTER FAILURE OR MALFUNCTION, OR ANY AND ALL OTHER
+				COMMERCIAL DAMAGES OR LOSSES, EVEN IF SUCH PARTY SHALL
+				HAVE BEEN INFORMED OF THE POSSIBILITY OF SUCH DAMAGES.
+				THIS LIMITATION OF LIABILITY SHALL NOT APPLY TO
+				LIABILITY FOR DEATH OR PERSONAL INJURY RESULTING FROM
+				SUCH PARTYS NEGLIGENCE TO THE EXTENT APPLICABLE LAW
+				PROHIBITS SUCH LIMITATION. SOME JURISDICTIONS DO NOT
+				ALLOW THE EXCLUSION OR LIMITATION OF INCIDENTAL OR
+				CONSEQUENTIAL DAMAGES, SO THIS EXCLUSION AND LIMITATION
+				MAY NOT APPLY TO YOU.
+
+				8. U.S. GOVERNMENT END USERS. The Covered Software is a
+				commercial item, as that term is defined in 48 C.F.R.
+				2.101 (Oct. 1995), consisting of commercial computer
+				software (as that term is defined at 48 C.F.R.
+				252.227-7014(a)(1)) and commercial computer software
+				documentation as such terms are used in 48 C.F.R. 12.212
+				(Sept. 1995). Consistent with 48 C.F.R. 12.212 and 48
+				C.F.R. 227.7202-1 through 227.7202-4 (June 1995), all
+				U.S. Government End Users acquire Covered Software with
+				only those rights set forth herein. This U.S. Government
+				Rights clause is in lieu of, and supersedes, any other
+				FAR, DFAR, or other clause or provision that addresses
+				Government rights in computer software under this
+				License.
+
+				9. MISCELLANEOUS. This License represents the complete
+				agreement concerning subject matter hereof. If any
+				provision of this License is held to be unenforceable,
+				such provision shall be reformed only to the extent
+				necessary to make it enforceable. This License shall be
+				governed by the law of the jurisdiction specified in a
+				notice contained within the Original Software (except to
+				the extent applicable law, if any, provides otherwise),
+				excluding such jurisdictions conflict-of-law provisions.
+				Any litigation relating to this License shall be subject
+				to the jurisdiction of the courts located in the
+				jurisdiction and venue specified in a notice contained
+				within the Original Software, with the losing party
+				responsible for costs, including, without limitation,
+				court costs and reasonable attorneys fees and expenses.
+				The application of the United Nations Convention on
+				Contracts for the International Sale of Goods is
+				expressly excluded. Any law or regulation which provides
+				that the language of a contract shall be construed
+				against the drafter shall not apply to this License. You
+				agree that You alone are responsible for compliance with
+				the United States export administration regulations (and
+				the export control laws and regulation of any other
+				countries) when You use, distribute or otherwise make
+				available any Covered Software.
+
+				10. RESPONSIBILITY FOR CLAIMS. As between Initial
+				Developer and the Contributors, each party is
+				responsible for claims and damages arising, directly or
+				indirectly, out of its utilization of rights under this
+				License and You agree to work with Initial Developer and
+				Contributors to distribute such responsibility on an
+				equitable basis. Nothing herein is intended or shall be
+				deemed to constitute any admission of liability.
+
+				NOTICE PURSUANT TO SECTION 9 OF THE COMMON DEVELOPMENT
+				AND DISTRIBUTION LICENSE (CDDL) The code released under
+				the CDDL shall be governed by the laws of the State of
+				California (excluding conflict-of-law provisions). Any
+				litigation relating to this License shall be subject to
+				the jurisdiction of the Federal Courts of the Northern
+				District of California and the state courts of the State
+				of California, with venue lying in Santa Clara County,
+				California.
+			</literallayout>
+		</section>
+
+	</chapter>
+
+</book>

@@ -1,0 +1,15 @@
+0.9.1
+
+* Fixed a serious bug that prevented creating a new repository schema.
+* When all the input connections for a Munge Step are used up, an empty one is automatically generated if the step supports
+  adding new inputs. Unconnected inputs for these steps are now treated as if they didn't exist, so that the use isn't
+  forced to clean up these inputs before running the engines.
+* Fixed a bug that could result in the MatchMaker using up all available database connections.
+* Temporarily removed the X-Ref project option until it is fully implemented.
+* In the Match Validation screen, the source table record for the node you have selected in the graph will not scroll 
+  off the screen when you scroll through the source table records. This makes it easier to compare the record you have
+  selected with the other potential duplicate records.
+
+0.9.0
+
+* Initial open-source release
