@@ -97,6 +97,7 @@ import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
+import ca.sqlpower.matchmaker.swingui.action.CreateRepositoryAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
@@ -252,24 +253,15 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	    }
 	};
 
-	private Action loginAction = new AbstractAction("Login") {
+	private Action remoteLoginAction = new AbstractAction("Connect to Remote Repository...") {
 		public void actionPerformed(ActionEvent e) {
 			sessionContext.showLoginDialog(null);
 		}
 
 	};
 
-	private Action logoutAction = new AbstractAction("Logout") {
-		public void actionPerformed(ActionEvent e) {
-			logger.debug("Stub call: .actionPerformed()");
-			JOptionPane.showMessageDialog(MatchMakerSwingSession.this.frame,
-					"The logout action is not yet implemented",
-					"Apologies",
-					JOptionPane.INFORMATION_MESSAGE);
-		}
-
-	};
-
+    private CreateRepositoryAction createRepositoryAction = new CreateRepositoryAction(this);
+    
 	private Action newDeDupeAction = null;
 	private Action newXrefAction = null;
 	private Action newCleanseAction = null;
@@ -330,7 +322,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	};
 
 
-	private Action databaseConnectionAction = new AbstractAction("Database Connection...") {
+	private Action databaseConnectionAction = new AbstractAction("Manage Database Connections...") {
 
 		public void actionPerformed(ActionEvent e) {
             sessionContext.showDatabaseConnectionManager(frame);
@@ -494,10 +486,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
 		JMenu databaseMenu = new JMenu("Database");
 		databaseMenu.setMnemonic('d');
-		databaseMenu.add(loginAction);
-		databaseMenu.add(logoutAction);
-		databaseMenu.addSeparator();
-		databaseMenu.add(databaseConnectionAction );
+		databaseMenu.add(remoteLoginAction);
+        databaseMenu.add(createRepositoryAction);
+		databaseMenu.add(databaseConnectionAction);
 		menuBar.add(databaseMenu);
 		
 		JMenu projectMenu = new JMenu("Project");
@@ -560,9 +551,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
 
-		toolBar.add(loginAction);
-		toolBar.addSeparator();
-		toolBar.addSeparator();
 		toolBar.add(newDeDupeAction);
 		toolBar.add(newCleanseAction);
 		toolBar.add(newXrefAction);
