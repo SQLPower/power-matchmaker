@@ -334,7 +334,8 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
 	    public boolean tableExists(SQLTable table) throws ArchitectException {
 	    	if ( table == null ) return false;
-	    	return tableExists(table.getCatalogName(),
+	    	return tableExists(table.getParentDatabase().getDataSource().getName(),
+	    			table.getCatalogName(),
 	    			table.getSchemaName(),
 	    			table.getName());
 	    }

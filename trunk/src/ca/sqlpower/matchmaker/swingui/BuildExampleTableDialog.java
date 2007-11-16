@@ -26,6 +26,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -55,15 +56,16 @@ import javax.swing.text.DefaultStyledDocument;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
+import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
@@ -154,6 +156,7 @@ public class BuildExampleTableDialog extends JDialog{
 		tableName = new JTextField(30);
 		tableName.setText("MMExampleTable");
 		buildGUI();
+		setModal(false);
 	}
 	
 	/**
@@ -168,16 +171,22 @@ public class BuildExampleTableDialog extends JDialog{
 		}
 		
 		FormLayout layout = new FormLayout(	"4dlu,pref,4dlu,pref:grow,4dlu" , 
-											"4dlu,pref:grow,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
+											"4dlu,pref:grow,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		panel.setLayout(layout);
 		
 		CellConstraints cc = new CellConstraints();
 		
 		int row = 2;
 		panel.add(new JLabel("Note: If you cannot find the newly created table you may need to restart the application."), cc.xyw(2, row,3));
-		
+				
 		row += 2;
 		panel.add(new JLabel("Example Table Location:"), cc.xyw(2, row, 3));
+		
+		row += 2;
+		panel.add(new JLabel("Data Source:"), cc.xy(2, row));
+		panel.add(sourceChooser.getDataSourceComboBox(),cc.xy(4, row));
+		
+		
 		row += 2;
 		panel.add(new JLabel("Catalog:"), cc.xy(2, row));
 		panel.add(sourceChooser.getCatalogComboBox(),cc.xy(4, row));
@@ -231,12 +240,11 @@ public class BuildExampleTableDialog extends JDialog{
 		throws InstantiationException, IllegalAccessException,
 		HeadlessException, SQLException, ArchitectException, ClassNotFoundException {
 
-		final DDLGenerator ddlg = DDLUtils.createDDLGenerator(
-				swingSession.getDatabase().getDataSource());
+		final DDLGenerator ddlg = DDLUtils.createDDLGenerator(getDataSource());
 		if (ddlg == null) {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
 					"Couldn't create DDL Generator for database type\n"+
-					swingSession.getDatabase().getDataSource().getDriverClass());
+					getDataSource().getDriverClass());
 			return;
 		}
 		
@@ -245,7 +253,9 @@ public class BuildExampleTableDialog extends JDialog{
 		ddlg.setTargetCatalog(getTableCatalog());
 		ddlg.setTargetSchema(getTableSchema());
 		
-		table = swingSession.getDatabase().getTableByName(getTableCatalog(), getTableSchema(), tableName.getText());
+		table = swingSession.getDatabase(getDataSource()).getTableByName(getTableCatalog(), getTableSchema(), tableName.getText());
+		System.out.println(table);
+		
 		
 		if (swingSession.tableExists(table)) {
 			int answer = JOptionPane.showConfirmDialog(swingSession.getFrame(),
@@ -256,33 +266,13 @@ public class BuildExampleTableDialog extends JDialog{
 				return;
 			}
 			ddlg.dropTable(table);
+			
+			while (table.getColumns().size() != 0) {
+				table.removeColumn(0);
+			}
+		} else {
+			table = ArchitectUtils.addSimulatedTable(swingSession.getDatabase(getDataSource()), getTableCatalog(), getTableSchema(), tableName.getText());
 		}
-		
-		SQLObject schemaContainer;
-	        if (getTableCatalog() != null) {
-	            if (!swingSession.getDatabase().isCatalogContainer()) {
-	                throw new ArchitectException("You tried to add a table with a catalog ancestor to a database that doesn't support catalogs.");
-	            }
-	            schemaContainer = swingSession.getDatabase().getCatalogByName(getTableCatalog());
-	            if (schemaContainer == null) {
-	                schemaContainer = new SQLCatalog(swingSession.getDatabase(), getTableCatalog(), true);
-	                swingSession.getDatabase().addChild(schemaContainer);
-	            }
-	        } else {
-	          schemaContainer = swingSession.getDatabase();
-	    }
-		
-	        
-		SQLObject tableContainer = schemaContainer.getChildByName(getTableSchema());
-		if (getTableSchema() != null) {
-	        if (tableContainer == null) {
-	            tableContainer = new SQLSchema(schemaContainer, getTableSchema(), true);
-	            schemaContainer.addChild(tableContainer);
-	        }
-		}
-        
-		table = new SQLTable(tableContainer, tableName.getText(), null, "TABLE", true);
-		
 		
 		SQLColumn id = new SQLColumn(table,"ID",Types.INTEGER,10,0);
 		id.setPrimaryKeySeq(0);
@@ -349,7 +339,7 @@ public class BuildExampleTableDialog extends JDialog{
 				Statement stmt = null;
 				String sql = null;
 				try {
-					con = swingSession.getConnection();
+					con = swingSession.getDatabase(getDataSource()).getConnection();
 					stmt = con.createStatement();
 					int successCount = 0;
 
@@ -390,6 +380,9 @@ public class BuildExampleTableDialog extends JDialog{
 							"Create Script Failure",
 							"Couldn't allocate a Statement:\n" + ex.getMessage(),
 							JOptionPane.ERROR_MESSAGE);
+				} catch (ArchitectException ex) {
+					SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
+							"Error Generating Example table", ex);
 				} finally {
                     try {
                         if (stmt != null) {
@@ -454,6 +447,13 @@ public class BuildExampleTableDialog extends JDialog{
 	}
 	
 	/**
+	 * Gets the selected datasource
+	 */
+	private SPDataSource getDataSource() {
+		return (SPDataSource)sourceChooser.getDataSourceComboBox().getSelectedItem();
+	}
+	
+	/**
 	 * A swing worker that runs the population of the table so there can be a progress bar.
 	 */
 	private class PopulateTableWorker extends SPSwingWorker { 
@@ -490,14 +490,12 @@ public class BuildExampleTableDialog extends JDialog{
 				}
 			}
 	
-			SQLDatabase db = swingSession.getDatabase();
+			SQLDatabase db = swingSession.getDatabase(getDataSource());
 			Statement stmt = null;
 			Connection con = null;
 			try {
 				con = db.getConnection();
-				stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-				ResultSet rs = stmt.executeQuery("SELECT ID,FirstName,LastName,Email,Address,HomePhone,CellPhone FROM " + DDLUtils.toQualifiedName(table));
-				
+				PreparedStatement ps = con.prepareStatement("INSERT INTO " + DDLUtils.toQualifiedName(table) + " (ID,FirstName,LastName,Email,Address,HomePhone,CellPhone) VALUES (?,?,?,?,?,?,?)");
 				//Uses the same seed so that all of the examples look the same
 				Random r = new Random(0);
 					
@@ -522,35 +520,30 @@ public class BuildExampleTableDialog extends JDialog{
 					homePhone = getPhoneNumber(r);
 					cell = getPhoneNumber(r);
 				
-					rs.moveToInsertRow();
-					rs.updateInt(1, x);
-					rs.updateString(2, first);
-					rs.updateString(3, last);
+					ps.setInt(1, x);
+					ps.setString(2, first);
+					ps.setString(3, last);
 					if (r.nextInt(20) != 0) {
-						rs.updateString(4, email);
+						ps.setString(4, email);
 					}
 					
-					rs.updateString(5, st);
+					ps.setString(5, st);
 					if (r.nextInt(20) != 0) {
-						rs.updateString(6, homePhone);
+						ps.setString(6, homePhone);
 					}
 					
 					if (r.nextInt(20) != 0) {
-						rs.updateString(7, cell);
+						ps.setString(7, cell);
 					}
-					rs.insertRow();
-					rs.moveToCurrentRow();
+					ps.execute();
 				}
-				
-				rs.close();
-				stmt.close();
 				
 				
 				//This scrambles some of the data
 				
 				stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-				rs = stmt.executeQuery("SELECT ID,FirstName,LastName,Email,Address,HomePhone,CellPhone FROM " + DDLUtils.toQualifiedName(table));
-				
+				ResultSet rs = stmt.executeQuery("SELECT ID,FirstName,LastName,Email,Address,HomePhone,CellPhone FROM " + DDLUtils.toQualifiedName(table));
+				ps = con.prepareStatement("UPDATE " + DDLUtils.toQualifiedName(table) + " SET FirstName=?, LastName=?, Email=?, Address=?, HomePhone=?, CellPhone=? WHERE ID=?");
 				
 				for (int x = 0; x < 15; x++) {
 					int dup = r.nextInt(2000);
@@ -600,15 +593,16 @@ public class BuildExampleTableDialog extends JDialog{
 							}
 						}
 						
-						rs.absolute(curr);
-						rs.updateString(2, first);
-						rs.updateString(3, last);
-						rs.updateString(4, email);
 						
-						rs.updateString(5, st);
-						rs.updateString(6, homePhone);
-						rs.updateString(7, cell);
-						rs.updateRow();
+						ps.setString(1, first);
+						ps.setString(2, last);
+						ps.setString(3, email);
+						ps.setString(4,st);
+						ps.setString(5, homePhone);
+						ps.setString(6, cell);
+
+						ps.setInt(7,curr);
+						ps.execute();
 					}
 				}
 				
