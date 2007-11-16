@@ -31,10 +31,14 @@ import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
  * merge rules of a source merge rule. It has two columns: column name and action.
  */
 public class SourceMergeColumnRuleTableModel extends
-		AbstractMergeColumnRuleTableModel {
+		AbstractMatchMakerTableModel<TableMergeRules, ColumnMergeRules> {
 	
 	public SourceMergeColumnRuleTableModel(TableMergeRules mergeRule) {
 		super(mergeRule);
+	}
+
+	public int getColumnCount() {
+		return 2;
 	}
 
 	@Override
@@ -49,11 +53,6 @@ public class SourceMergeColumnRuleTableModel extends
 	}
 
 	@Override
-	public int getColumnCount() {
-		return 2;
-	}
-
-	@Override
 	public String getColumnName(int column) {
 		if (column == 0) {
 			return "Column";
@@ -64,12 +63,11 @@ public class SourceMergeColumnRuleTableModel extends
 		}
 	}
 
-	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
 		if (columnIndex == 0) {
-			return mergeRule.getChildren().get(rowIndex).getColumn();
+			return mmo.getChildren().get(rowIndex).getColumn();
 		} else if (columnIndex == 1) {
-			return mergeRule.getChildren().get(rowIndex).getActionType();
+			return mmo.getChildren().get(rowIndex).getActionType();
 		} else {
 			throw new RuntimeException("getValueAt: Unexcepted column index:"+columnIndex);
 		}	
@@ -81,7 +79,7 @@ public class SourceMergeColumnRuleTableModel extends
 	}
 
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-		ColumnMergeRules rule = mergeRule.getChildren().get(rowIndex);
+		ColumnMergeRules rule = mmo.getChildren().get(rowIndex);
 		if (columnIndex == 0) {
 			rule.setColumn((SQLColumn) aValue);
 		} else if (columnIndex == 1) {

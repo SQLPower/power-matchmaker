@@ -57,6 +57,22 @@ public class MatchMakerUtils {
 			listenToHierarchy(listener, obj);
 		}
 	}
+	
+	/**
+	 * This method is similar to listenToHierarchy but only listens to the 
+	 * first two levels in the tree, i.e. the listener is not added to the 
+	 * grand children of the root. See 
+	 * {@link #lisenToHierachy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root)}
+	 */
+	public static <T extends MatchMakerObject, C extends MatchMakerObject>
+		void listenToShallowHierarchy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root) {
+		root.addMatchMakerListener(listener);
+		logger.debug("listenToShallowHierarchy: \"" + root.getName() + "\" (" +
+				root.getClass().getName() + ") children: " + root.getChildren());
+		for (MatchMakerObject<T,C> obj : root.getChildren()) {
+			obj.addMatchMakerListener(listener);
+		}
+	}
 
 	/**
 	 * Removes the given listener from the given root MatchMakerObject and each
