@@ -398,7 +398,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * A map that links an engine to a panel. This is used so that only
      * one of each engine and panel ever exist per project.
      */
-	private Map<MatchEngineImpl, MatchEnginePanel> matchEnginPanels;
+	private Map<MatchEngineImpl, MatchEnginePanel> matchEnginePanels;
 	
 	 /**
      * A map that links an engine to a panel. This is used so that only
@@ -424,7 +424,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         this.sessionContext = context;
         this.smallMMIcon = new ImageIcon(getClass().getResource("/icons/matchmaker_24.png"));
         
-        matchEnginPanels = new HashMap<MatchEngineImpl, MatchEnginePanel>();
+        matchEnginePanels = new HashMap<MatchEngineImpl, MatchEnginePanel>();
         mergeEnginPanels = new HashMap<MergeEngineImpl, MergeEnginePanel>();
         cleanseEnginPanels = new HashMap<CleanseEngineImpl, CleanseEnginePanel>();
 
@@ -1216,10 +1216,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param project The current project
 	 */
 	public MatchEnginePanel getMatchEnginePanel(MatchEngineImpl mei, Project project) {
-		MatchEnginePanel ep = matchEnginPanels.get(mei);
+		MatchEnginePanel ep = matchEnginePanels.get(mei);
 		if (ep == null) {
 			ep = new MatchEnginePanel(this,project, getFrame());
-			matchEnginPanels.put(mei,ep); 
+			matchEnginePanels.put(mei,ep); 
 			ep.setEngineEnabled(enginesEnabled);
 		}
 		return ep;
@@ -1331,7 +1331,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 */
 	public void setAllEnginesEnabled(boolean enabled){
 		enginesEnabled  = enabled;
-		for (MatchEnginePanel ep: matchEnginPanels.values()) {
+		for (MatchEnginePanel ep: matchEnginePanels.values()) {
 			ep.setEngineEnabled(enabled);
 		}
 		for (MergeEnginePanel ep : mergeEnginPanels.values()){
@@ -1353,4 +1353,5 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	public SQLDatabase getDatabase(SPDataSource dataSource) {
 		return sessionImpl.getDatabase(dataSource);
 	}
+	
 }

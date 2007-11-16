@@ -51,7 +51,6 @@ import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
@@ -436,9 +435,8 @@ public class MatchEnginePanel implements EditorPane {
 		} else {
 			settings.setProcessCount((Integer) recordsToProcess.getValue());
 		}
-		
-		MatchMakerDAO<Project> dao = swingSession.getDAO(Project.class);
-		dao.save(project);
+
+		swingSession.save(project);
 
 		return true;
 	}
