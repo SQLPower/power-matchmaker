@@ -82,6 +82,7 @@ public class CreateRepositoryAction extends AbstractAction {
         try {
             SQLObject target = SQLObjectChooser.showSchemaChooserDialog(
                     session, session.getFrame(), "New Repository");
+            if (target == null) return;
             List<String> sqlScript = RepositoryUtil.makeRepositoryCreationScript(target);
             SQLDatabase targetDB = ArchitectUtils.getAncestor(target, SQLDatabase.class);
             showSQLScriptDialog(targetDB, sqlScript);
