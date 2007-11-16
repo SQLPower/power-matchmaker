@@ -360,6 +360,7 @@
 			<fileset dir="src" includes="default_database_types.ini"/>
 	    </copy>
 		
+		<copy todir="${staging.dir}/doc" file="doc/ReleaseNotes.txt"/>
 		<copy todir="${staging.dir}" file="LICENSE"/>
 		<copy todir="${staging.dir}" file="LEGAL"/>
 		
