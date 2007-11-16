@@ -34,11 +34,11 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
@@ -219,6 +219,8 @@ public class MatchMakerTreeModel implements TreeModel {
 	
 	
 	private TreeModelEventAdapter listener = new TreeModelEventAdapter();
+	
+	private ActionCacheEventAdapter cacheLisener = new ActionCacheEventAdapter();
 
     /**
      * Creates a new tree model with two children of the root node (the given
@@ -245,6 +247,12 @@ public class MatchMakerTreeModel implements TreeModel {
 		root.addChild(translate);
         
 		MatchMakerUtils.listenToHierarchy(listener, root);
+		current.addMatchMakerListener(cacheLisener);
+		for (PlFolder folder : current.getChildren()) {
+			folder.addMatchMakerListener(cacheLisener);
+		}
+		
+		
 	}
 
     /**
@@ -520,5 +528,38 @@ public class MatchMakerTreeModel implements TreeModel {
 	
 	public void addFolderToCurrent(PlFolder folder){
 		current.addChild(folder);
+	}
+	
+	private class ActionCacheEventAdapter<T extends MatchMakerObject, C extends MatchMakerObject>
+		implements MatchMakerListener<T, C>{
+
+		public void mmChildrenInserted(MatchMakerEvent<T, C> evt) {
+			if (evt.getSource() instanceof FolderParent) {
+				for (C folder : evt.getChildren()) {
+					folder.addMatchMakerListener(this);
+				}
+			}
+		}
+
+		public void mmChildrenRemoved(MatchMakerEvent<T, C> evt) {
+			if (evt.getSource() instanceof FolderParent) {
+				for (C folder : evt.getChildren()) {
+					for (Object project : folder.getChildren()) {
+						matchActionCache.remove(project);
+					}
+					folder.removeMatchMakerListener(this);
+				}
+			} else if (evt.getSource() instanceof PlFolder) {
+				for (C project : evt.getChildren()) {
+					matchActionCache.remove(project);
+				}
+			}
+		}
+
+		public void mmPropertyChanged(MatchMakerEvent<T, C> evt) {
+		}
+
+		public void mmStructureChanged(MatchMakerEvent<T, C> evt) {
+		}
 	}
 }
