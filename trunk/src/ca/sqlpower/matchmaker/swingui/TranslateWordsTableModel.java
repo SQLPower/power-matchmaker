@@ -20,27 +20,16 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
-import javax.swing.table.AbstractTableModel;
-
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
-import ca.sqlpower.matchmaker.MatchMakerUtils;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
-public class TranslateWordsTableModel extends AbstractTableModel implements MatchMakerListener {
+public class TranslateWordsTableModel extends AbstractMatchMakerTableModel<MatchMakerTranslateGroup, MatchMakerTranslateWord> {
     
     
-	MatchMakerTranslateGroup translate;
 	
 	public  TranslateWordsTableModel(MatchMakerTranslateGroup translate){ 
-		super();
-		this.translate = translate; 
-		MatchMakerUtils.listenToHierarchy(this, this.translate);
+		super(translate);
 	}
 
 	public int getColumnCount() {		
@@ -48,14 +37,8 @@ public class TranslateWordsTableModel extends AbstractTableModel implements Matc
 	}
     
     public MatchMakerObject getMatchMakerObject(int index){
-        return translate.getChildren().get(index);
+        return mmo.getChildren().get(index);
     }
-
-	public int getRowCount() {
-		if(translate == null) return 0;
-		int size = translate.getChildCount();		
-		return size;
-	}
 
 	@Override
 	public String getColumnName(int column) {
@@ -91,7 +74,7 @@ public class TranslateWordsTableModel extends AbstractTableModel implements Matc
 		MatchMakerTranslateWord trans = getRow(rowIndex);
 		switch(columnIndex) {
 		case 0:
-			for (MatchMakerTranslateWord t: translate.getChildren()){
+			for (MatchMakerTranslateWord t: mmo.getChildren()){
 				if ((t.getFrom() == null ? t.getFrom() == aValue : t.getFrom().equals(aValue)) &&
 						(t.getTo() == null ? t.getTo() == trans.getTo() : t.getTo().equals(trans.getTo()))) {
 					// We would have a collision.
@@ -101,7 +84,7 @@ public class TranslateWordsTableModel extends AbstractTableModel implements Matc
 			trans.setFrom((String)aValue);
 			break;
 		case 1:
-			for (MatchMakerTranslateWord t: translate.getChildren()){
+			for (MatchMakerTranslateWord t: mmo.getChildren()){
 				if ((t.getTo() == null ? t.getTo() == aValue : t.getTo().equals(aValue)) &&
 						(t.getFrom() == null ? t.getFrom() == trans.getFrom() : t.getFrom().equals(trans.getFrom()))) {
 					// We would have a collision.
@@ -116,58 +99,7 @@ public class TranslateWordsTableModel extends AbstractTableModel implements Matc
 	}
 	
 	public MatchMakerTranslateWord getRow(int rowIndex) {
-		return translate.getChildren().get(rowIndex );
+		return mmo.getChildren().get(rowIndex);
 	}
 
-    public void mmChildrenInserted(MatchMakerEvent evt) {
-        if(evt.getSource() instanceof MatchMakerTranslateGroup){
-            int[] changed = evt.getChangeIndices();
-            ArrayList<Integer> changedIndices = new ArrayList<Integer>();
-            for (int selectedRowIndex:changed){
-                changedIndices.add(new Integer(selectedRowIndex));
-            }
-            Collections.sort(changedIndices);
-            for (int i=1; i < changedIndices.size(); i++){
-                if (changedIndices.get(i-1)!=changedIndices.get(i)-1){
-                    fireTableStructureChanged();
-                    return;
-                }
-            }
-            for (Object word:evt.getChildren()){
-                ((MatchMakerTranslateWord) word).addMatchMakerListener(this);
-            }
-            fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
-        }
-    }
-
-    public void mmChildrenRemoved(MatchMakerEvent evt) {
-        if(evt.getSource() instanceof MatchMakerTranslateGroup) {
-            int[] changed = evt.getChangeIndices();
-            ArrayList<Integer> changedIndices = new ArrayList<Integer>();
-            for (int selectedRowIndex:changed){
-                changedIndices.add(new Integer(selectedRowIndex));
-            }
-            Collections.sort(changedIndices);
-            for (int i=1; i < changedIndices.size(); i++) {
-                if (changedIndices.get(i-1)!=changedIndices.get(i)-1) {
-                    fireTableStructureChanged();
-                    return;
-                }
-            }
-            for (Object word:evt.getChildren()) {
-                ((MatchMakerTranslateWord) word).removeMatchMakerListener(this);
-            }
-            fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
-        }
-    }
-
-    public void mmPropertyChanged(MatchMakerEvent evt) { 
-        if(evt.getSource() instanceof MatchMakerTranslateWord) {
-            fireTableRowsUpdated(translate.getChildren().indexOf(evt.getSource()), translate.getChildren().indexOf(evt.getSource()));
-        }
-    }
-
-    public void mmStructureChanged(MatchMakerEvent evt) {
-        fireTableStructureChanged();
-    }
 }
