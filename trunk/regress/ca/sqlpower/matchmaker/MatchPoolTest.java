@@ -133,13 +133,13 @@ public class MatchPoolTest extends TestCase {
 	 */
 	private static void insertResultTableRecord(Connection con,
 			String originalLhsKey, String originalRhsKey, int matchPercent,
-			String mungeProcessName) throws SQLException {
+			String mungeProcessName, PotentialMatchRecord.MatchType type) throws SQLException {
 		Statement stmt = con.createStatement();
 		stmt.executeUpdate("INSERT into pl.match_results VALUES ("
 				+ SQL.quote(originalLhsKey) + "," + SQL.quote(originalRhsKey) + "," + SQL.quote(originalLhsKey)
 				+ "," + SQL.quote(originalRhsKey) + "," + "null," + "null," + "null,"
 				+ "null," + matchPercent + "," + SQL.quote(mungeProcessName) + ","
-				+ "{ts '2006-11-30 17:01:06.0'}," + "'UNMATCH',"
+				+ "{ts '2006-11-30 17:01:06.0'}," + "'" + type.getCode() + "',"
 				+ "{ts '2006-11-30 17:01:06.0'}," + "null," + "null)");
 		stmt.close();
 
@@ -158,7 +158,7 @@ public class MatchPoolTest extends TestCase {
 	 */
 	public void testFindAllPotentialMatches() throws Exception {
 		MatchPool pool = new MatchPool(project);
-		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		pool.findAll(new ArrayList<SQLColumn>());
@@ -184,8 +184,8 @@ public class MatchPoolTest extends TestCase {
 	 */
 	public void testFindSourceTableRecords() throws Exception {
 		MatchPool pool = new MatchPool(project);
-		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
-		insertResultTableRecord(con, "1", "3", 15, "Munge_Process_One");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
+		insertResultTableRecord(con, "1", "3", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
@@ -213,8 +213,8 @@ public class MatchPoolTest extends TestCase {
 	/** Tests that findAll() hooks up inbound and outbound matches properly. */
 	public void testFindAllEdgeHookup() throws Exception {
 		MatchPool pool = new MatchPool(project);
-		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
-		insertResultTableRecord(con, "1", "3", 15, "Munge_Process_One");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
+		insertResultTableRecord(con, "1", "3", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
@@ -236,8 +236,8 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
-		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
-		insertResultTableRecord(con, "1", "3", 15, "Orphan");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
+		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
 		pool.findAll(null);
 		assertEquals(2, pool.getSourceTableRecords().size());
 		assertEquals(1, pool.getPotentialMatches().size());
@@ -254,8 +254,8 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
-		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
-		insertResultTableRecord(con, "1", "3", 15, "Orphan");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
+		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
 		pool.findAll(null);
 		
 		List<Object> keyList = new ArrayList<Object>();
@@ -274,11 +274,39 @@ public class MatchPoolTest extends TestCase {
 		
 	}
 	
+	public void testReplaceMergedMatch() throws Exception {
+		this.pool = new MatchPool(project);
+		insertSourceTableRecord(con, "1");
+		insertSourceTableRecord(con, "2");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.MERGED);
+		pool.findAll(null);
+		
+		List<Object> keyList1 = new ArrayList<Object>();
+		keyList1.add("1");
+		SourceTableRecord str1 = new SourceTableRecord(project.getSession(), project, keyList1);
+		assertNotNull(str1);
+		List<Object> keyList2 = new ArrayList<Object>();
+		keyList2.add("2");
+		SourceTableRecord str2 = new SourceTableRecord(project.getSession(), project, keyList2);
+		PotentialMatchRecord overwrite = new PotentialMatchRecord(mungeProcessOne,MatchType.UNMATCH, str1, str2, false);
+		pool.addPotentialMatch(overwrite);
+		assertTrue(pool.getPotentialMatches().contains(overwrite));
+		assertEquals(1, pool.getPotentialMatches().size());
+		for (PotentialMatchRecord pmr :pool.getPotentialMatches()) {
+			assertEquals(keyList1, pmr.getOriginalLhs().getKeyValues());
+			assertEquals(keyList2, pmr.getOriginalRhs().getKeyValues());
+			assertEquals(pmr.getMatchStatus(), PotentialMatchRecord.MatchType.UNMATCH);
+		}
+		// Store should work without exception
+		pool.store();
+		
+	}
+	
 	public void testAddPotentialMatchWithDuplicateMatch() throws Exception {
 		this.pool = new MatchPool(project);
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
-		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
 		pool.findAll(null);
 		mungeProcessOne.setMatchPriority(Short.valueOf("2"));
 		mungeProcessTwo.setMatchPriority(Short.valueOf("1"));
@@ -4151,8 +4179,8 @@ public class MatchPoolTest extends TestCase {
 		insertSourceTableRecord(con, "1");
 		insertSourceTableRecord(con, "2");
 		insertSourceTableRecord(con, "3");
-		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One");
-		insertResultTableRecord(con, "1", "3", 15, "Orphan");
+		insertResultTableRecord(con, "1", "2", 15, "Munge_Process_One", PotentialMatchRecord.MatchType.UNMATCH);
+		insertResultTableRecord(con, "1", "3", 15, "Orphan", PotentialMatchRecord.MatchType.UNMATCH);
 		pool.findAll(null);
 		
 		
