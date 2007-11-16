@@ -89,6 +89,8 @@ public class SQLObjectChooser {
         
         FormLayout layout = new FormLayout("pref,4dlu,pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+        builder.setDefaultDialogBorder();
+        
         builder.append("Connection", soc.getDataSourceComboBox());
         builder.append(soc.getCatalogTerm(), soc.getCatalogComboBox());
         builder.append(soc.getSchemaTerm(), soc.getSchemaComboBox());
