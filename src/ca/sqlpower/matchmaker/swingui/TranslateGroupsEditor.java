@@ -22,7 +22,10 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -40,11 +43,17 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
+import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
+import com.google.gdata.client.spreadsheet.SpreadsheetService;
+import com.google.gdata.data.spreadsheet.CellEntry;
+import com.google.gdata.data.spreadsheet.CellFeed;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
@@ -130,6 +139,31 @@ public class TranslateGroupsEditor implements EditorPane {
 		pb.add(translateGroupsScrollPane, cc.xy(4,row,"f,f"));
 		
 		ButtonBarBuilder bbb = new ButtonBarBuilder();
+		//this needs to be cleaned
+		bbb.addGridded(new JButton(new AbstractAction("Get Online List"){
+			public void actionPerformed(ActionEvent e) {
+				int opt = JOptionPane.showConfirmDialog(swingSession.getFrame(), "Download Online list?\n" +
+						"The list can be viewed at: http://spreadsheets.google.com/pub?key=pIOfRi4wZwIh1eNPmWCRhPQ","Download Online List", JOptionPane.YES_NO_OPTION);
+				if (opt == JOptionPane.YES_OPTION) {
+					for (MatchMakerTranslateGroup mmtg : translateGroups) {
+						if (mmtg.getName().equals("SQLPower Translate Words")) {
+							if (JOptionPane.showConfirmDialog(swingSession.getFrame(),"You already have a translation group named, SQLPower Translate Words, would you like to rebuild it?", "Update Translate Words",JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
+								return;
+							} else {
+								translateGroupsTableModel.removeGroup(translateGroups.indexOf(mmtg));
+								break;
+							}
+						}
+					}
+					try {
+					MatchMakerTranslateGroup mmtg = getOnlineTranslateGroup();
+					swingSession.setCurrentEditorComponent(new TranslateWordsEditor(swingSession, mmtg));
+					} catch (ArchitectException ex) {
+						SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Could not generate online list", ex);
+					}
+				}
+			}
+		}));
 		//new actions for delete and save should be extracted and be put into its own file.
 		bbb.addGridded(new JButton(new NewTranslateGroupAction(swingSession)));
 		bbb.addRelatedGap();
@@ -250,6 +284,60 @@ public class TranslateGroupsEditor implements EditorPane {
 				fireTableDataChanged();
 			}
 		}
+	}
+	
+	/**
+	 * Creates a matchMaker translate group from the Google spread sheet at pIOfRi4wZwIh1eNPmWCRhPQ
+	 * The sheet is owned by matchmaker@sqlpower.ca called TranslationWords.
+	 * 
+	 * @return The MatchMakerTranslateWord group from the spread sheet 
+	 * @throws ArchitectException If something goes wrong
+	 */
+	private MatchMakerTranslateGroup getOnlineTranslateGroup() throws ArchitectException {
+		SpreadsheetService sss = new SpreadsheetService("SQLPower-Power*MatchMaker-0.9.1");
+		CellFeed cf;
+		
+		try {
+			URL url = new URL("http://spreadsheets.google.com/feeds/cells/pIOfRi4wZwIh1eNPmWCRhPQ/1/public/values");
+			cf = sss.getFeed(url, CellFeed.class);
+		} catch (Exception e) {
+			throw new ArchitectException("Error could not generate translation words from google spreadsheet!",e);
+		}
+
+		
+		//This bit is kind of silly but we don't get entries for empty cells
+		int length = 0;
+		Map<String, String> entries = new HashMap<String, String>();
+		for (CellEntry ce: cf.getEntries()) {
+			length = Math.max(length, ce.getCell().getRow());
+			entries.put(ce.getCell().getRow() + ":" + ce.getCell().getCol(), ce.getCell().getValue());
+		}
+		
+		
+		String[][] vals= new String[2][length];
+		for (int y = 1; y<=length;y++) {
+			for (int x = 1; x <=2; x++) {
+				String key = y + ":" + x;
+				vals[x-1][y-1] = entries.get(key);
+			}
+		}
+		
+
+		MatchMakerTranslateGroup mmtg = new MatchMakerTranslateGroup();
+		mmtg.setName("SQLPower Translate Words");
+		
+		for (int x = 1; x<vals[0].length; x++) {
+			//this should remove holes in the list
+			if (vals[0][x] != null) {
+				MatchMakerTranslateWord mmtw = new MatchMakerTranslateWord();
+				mmtw.setFrom(vals[0][x]);
+				mmtw.setTo(vals[1][x]);
+				mmtg.addChild(mmtw);
+			}
+		}
+		
+		return mmtg;
+	
 	}
 
 }
