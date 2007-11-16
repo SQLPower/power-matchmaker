@@ -2130,6 +2130,43 @@
 				OF SUCH DAMAGE.
 			</literallayout>
 		</section>
+		
+		<section id="GoogleGData">
+			<title>Google GData API</title>
+
+			<para>
+				The Power*MatchMaker team would like to thank the Google
+				GData API team for providing the API as well as the
+				backend services.
+			</para>
+
+			<para>
+				The GData is released under the Apache 2.0 License (It
+				can be found in the The Apache Software Foundation
+				section), The license applies to these library jar
+				files, which are distributed as part of the MatchMaker
+				download:
+			</para>
+			
+			<itemizedlist>
+				<listitem>
+					<para>gdata-client-1.0.jar</para>
+				</listitem>
+								<listitem>
+					<para>gdata-core-1.0.jar</para>
+				</listitem>
+				<listitem>
+					<para>gdata-base-1.0.jar</para>
+				</listitem>
+				<listitem>
+					<para>gdata-spreadsheet-1.0.jar</para>
+				</listitem>
+				<listitem>
+					<para>gdata-spreadsheet-meta-1.0.jar</para>
+				</listitem>
+			</itemizedlist>
+			
+		</section>
 
 		<section id="PostgreSqlJdbcDriver">
 			<title>PostgreSQL JDBC Driver</title>
