@@ -247,12 +247,7 @@ public class MatchMakerTreeModel implements TreeModel {
 		root.addChild(translate);
         
 		MatchMakerUtils.listenToHierarchy(listener, root);
-		current.addMatchMakerListener(cacheLisener);
-		for (PlFolder folder : current.getChildren()) {
-			folder.addMatchMakerListener(cacheLisener);
-		}
-		
-		
+		MatchMakerUtils.listenToShallowHierarchy(cacheLisener, current);
 	}
 
     /**

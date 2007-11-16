@@ -151,9 +151,12 @@ public class SQLObjectChooser {
 
 	private JComboBox uniqueKeyComboBox = new JComboBox();
 
-	private JLabel catalogTerm = new JLabel("Catalog");
+	public static final String CATALOG_STRING = "Catalog";
+	public static final String SCHEMA_STRING = "Schema";
+	
+	private JLabel catalogTerm = new JLabel(CATALOG_STRING);
 
-	private JLabel schemaTerm = new JLabel("Schema");
+	private JLabel schemaTerm = new JLabel(SCHEMA_STRING);
 
 	private JProgressBar progressBar = new JProgressBar();
 

@@ -24,8 +24,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -43,16 +41,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerUtils;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.swingui.table.TableUtils;
@@ -93,7 +87,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 	}
 	
 	private void setupTable() {
-		mungeProcessTableModel = new MungeProcessTableModel(swingSession, project);
+		mungeProcessTableModel = new MungeProcessTableModel(project);
 		mungeProcessTable = new JTable(mungeProcessTableModel);
 		TableCellRenderer renderer = new ColorRenderer(true);
         mungeProcessTable.setDefaultRenderer(Color.class, renderer );
@@ -205,24 +199,18 @@ public class MungeProcessGroupEditor implements EditorPane {
 	 * 								multiple munge process produce the same match
 	 * </dl>
 	 */
-	private class MungeProcessTableModel extends AbstractTableModel implements MatchMakerListener{
+	private class MungeProcessTableModel extends AbstractMatchMakerTableModel<MatchMakerFolder<MungeProcess>, MungeProcess>{
 
-		private Project project;
-		public MungeProcessTableModel(MatchMakerSwingSession swingSession, Project project) {
-			this.project = project;
-			MatchMakerUtils.listenToHierarchy(this, this.project);
+		public MungeProcessTableModel(Project project) {
+			super(project.getMungeProcessesFolder());
 		}
 
 		public int getColumnCount() {
 			return 4;
 		}
 
-		public int getRowCount() {
-			return project.getMungeProcesses().size();
-		}
-
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			MungeProcess mungeProcess = project.getMungeProcesses().get(rowIndex);
+			MungeProcess mungeProcess = mmo.getChildren().get(rowIndex);
 			switch (columnIndex) {
 			case 0:  return mungeProcess.getName();
 			case 1:  return mungeProcess.getDesc();
@@ -259,57 +247,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 			}
 		}
 		
-	    public void mmChildrenInserted(MatchMakerEvent evt) {
-	        if(evt.getSource() instanceof Project || evt.getSource() == project.getMungeProcessesFolder()){
-	            int[] changed = evt.getChangeIndices();
-	            ArrayList<Integer> changedIndices = new ArrayList<Integer>();
-	            for (int selectedRowIndex:changed){
-	                changedIndices.add(new Integer(selectedRowIndex));
-	            }
-	            Collections.sort(changedIndices);
-	            for (int i=1; i < changedIndices.size(); i++){
-	                if (changedIndices.get(i-1)!=changedIndices.get(i)-1){
-	                    fireTableStructureChanged();
-	                    return;
-	                }
-	            }
-	            for (Object mungeProcess :evt.getChildren()){
-	                ((MungeProcess) mungeProcess).addMatchMakerListener(this);
-	            }
-	            fireTableRowsInserted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
-	        }
-	    }
-
-	    public void mmChildrenRemoved(MatchMakerEvent evt) {
-	        if(evt.getSource() instanceof Project || evt.getSource() == project.getMungeProcessesFolder()) {
-	            int[] changed = evt.getChangeIndices();
-	            ArrayList<Integer> changedIndices = new ArrayList<Integer>();
-	            for (int selectedRowIndex:changed){
-	                changedIndices.add(new Integer(selectedRowIndex));
-	            }
-	            Collections.sort(changedIndices);
-	            for (int i=1; i < changedIndices.size(); i++) {
-	                if (changedIndices.get(i-1)!=changedIndices.get(i)-1) {
-	                    fireTableStructureChanged();
-	                    return;
-	                }
-	            }
-	            for (Object mungeProcess:evt.getChildren()) {
-	                ((MungeProcess) mungeProcess).removeMatchMakerListener(this);
-	            }
-	            fireTableRowsDeleted(changedIndices.get(0), changedIndices.get(changedIndices.size()-1));
-	        }
-	    }
-
-	    public void mmPropertyChanged(MatchMakerEvent evt) { 
-	        if(evt.getSource() instanceof TableMergeRules) {
-	            fireTableRowsUpdated(project.getTableMergeRules().indexOf(evt.getSource()), project.getTableMergeRules().indexOf(evt.getSource()));
-	        }
-	    }
-
-	    public void mmStructureChanged(MatchMakerEvent evt) {
-	        fireTableStructureChanged();
-	    }
+	    
 	}
 	
 	private class ColorRenderer extends JLabel

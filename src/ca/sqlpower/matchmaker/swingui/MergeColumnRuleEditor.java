@@ -195,12 +195,13 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	 * rules. It returns a combo box of {@link SQLColumn} in the parent table for 
 	 * column 2.
 	 */
-	private class RelatedColumnMergeRulesTable extends AbstractColumnMergeRulesTable {
-		
-		public RelatedColumnMergeRulesTable(AbstractMergeColumnRuleTableModel columnRuleTableModel) {
-			super(columnRuleTableModel);
+	private class RelatedColumnMergeRulesTable extends EditableJTable {
+
+		public RelatedColumnMergeRulesTable(
+				AbstractMatchMakerTableModel<TableMergeRules, ColumnMergeRules> ruleTableModel) {
+			super(ruleTableModel);
 		}
-		
+
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
 			if (column == 2) {
@@ -235,12 +236,13 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	 * Implementation of {@link AbstractColumnMergeRulesTable} for source merge
 	 * rules. It returns a combo box of the {@link MergeActionType} in the third column.
 	 */
-	private class SourceColumnMergeRulesTable extends AbstractColumnMergeRulesTable {
+	private class SourceColumnMergeRulesTable extends EditableJTable {
 		
-		public SourceColumnMergeRulesTable(AbstractMergeColumnRuleTableModel columnRuleTableModel) {
-			super(columnRuleTableModel);
+		public SourceColumnMergeRulesTable(
+				AbstractMatchMakerTableModel<TableMergeRules, ColumnMergeRules> ruleTableModel) {
+			super(ruleTableModel);
 		}
-		
+
 		@Override
 		public TableCellEditor getCellEditor(int row, int column) {
 			if (column == 1) {
@@ -281,9 +283,9 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	/**
 	 * The table that lists the column merge rules
 	 */
-	private AbstractMergeColumnRuleTableModel ruleTableModel;
+	private AbstractMatchMakerTableModel<TableMergeRules, ColumnMergeRules> ruleTableModel;
 
-	private AbstractColumnMergeRulesTable ruleTable; 
+	private EditableJTable ruleTable; 
 	
 	private ListSelectionListener tablelistener = new ListSelectionListener(){
 		public void valueChanged(ListSelectionEvent e) {
@@ -504,23 +506,6 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 			childMergeAction.setSelectedItem(mmo.getChildMergeAction());
 		}
 		handler.performFormValidation();
-	}
-
-	/**
-	 * Abstract EditableJTable class for the column merge rules. 
-	 * Different merge rules require different cell editors and should override
-	 * the method.
-	 */
-	private class AbstractColumnMergeRulesTable extends EditableJTable {
-	
-		public AbstractColumnMergeRulesTable(AbstractMergeColumnRuleTableModel columnMergeRuleTableModel) {
-			super(columnMergeRuleTableModel);
-		}
-	
-		@Override
-		public TableCellEditor getCellEditor(int row, int column) {
-			return super.getCellEditor(row, column);
-		}
 	}
 
 }

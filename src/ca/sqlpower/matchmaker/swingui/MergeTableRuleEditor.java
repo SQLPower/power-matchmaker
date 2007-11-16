@@ -85,7 +85,7 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 	}
 	
 	private void setupRulesTable(MatchMakerSwingSession swingSession, Project project) {
-		mergeTableRuleTableModel = new MergeTableRuleTableModel(project,swingSession);
+		mergeTableRuleTableModel = new MergeTableRuleTableModel(project);
 
 		mergeRulesTable = new EditableJTable(mergeTableRuleTableModel);
         mergeRulesTable.setName("Merge Tables");
