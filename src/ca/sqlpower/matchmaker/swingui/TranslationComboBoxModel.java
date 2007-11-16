@@ -38,7 +38,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
  * groups.  The first item in this list is always null, which allows users of the
  * combo box to choose not to use a translation group.
  */
-public class TranslationComboBoxModel implements ComboBoxModel, MatchMakerListener<TranslateGroupParent, MatchMakerTranslateGroup> {
+public class TranslationComboBoxModel implements ComboBoxModel {
 
     private static final Logger logger = Logger
             .getLogger(TranslationComboBoxModel.class);
@@ -56,7 +56,7 @@ public class TranslationComboBoxModel implements ComboBoxModel, MatchMakerListen
     
 	public TranslationComboBoxModel(TranslateGroupParent tgp) {
 		this.tgp = tgp;
-        tgp.addMatchMakerListener(this);
+        tgp.addMatchMakerListener(new ComboBoxModelEventAdapter());
 	}
 	
 	public Object getElementAt(int index) {
@@ -155,29 +155,7 @@ public class TranslationComboBoxModel implements ComboBoxModel, MatchMakerListen
             }
         }
     }
-    public void mmChildrenInserted(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
-        logger.debug("Received child added event");
-        fireIntervalAdded(evt);
-    }
-
-    public void mmChildrenRemoved(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
-        logger.debug("Received child removed event");
-        if (!tgp.getChildren().contains(selectedItem))
-        {
-            selectedItem = null;
-        }
-        fireIntervalRemoved(evt);
-    }
-
-    public void mmPropertyChanged(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
-        // not used
-    }
-
-    public void mmStructureChanged(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
-        logger.debug("Received structure changed event");
-        fireChanged();
-    }
-
+    
 	public boolean isFirstItemNull() {
 		return firstItemNull;
 	}
@@ -185,5 +163,30 @@ public class TranslationComboBoxModel implements ComboBoxModel, MatchMakerListen
 	public void setFirstItemNull(boolean firstItemNull) {
 		this.firstItemNull = firstItemNull;
 	}
+	
+    private class ComboBoxModelEventAdapter implements MatchMakerListener<TranslateGroupParent, MatchMakerTranslateGroup> {
+    	public void mmChildrenInserted(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
+            logger.debug("Received child added event");
+            fireIntervalAdded(evt);
+        }
+
+        public void mmChildrenRemoved(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
+            logger.debug("Received child removed event");
+            if (!tgp.getChildren().contains(selectedItem))
+            {
+                selectedItem = null;
+            }
+            fireIntervalRemoved(evt);
+        }
+
+        public void mmPropertyChanged(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
+            // not used
+        }
+
+        public void mmStructureChanged(MatchMakerEvent<TranslateGroupParent, MatchMakerTranslateGroup> evt) {
+            logger.debug("Received structure changed event");
+            fireChanged();
+        }
+    }
 
 }
