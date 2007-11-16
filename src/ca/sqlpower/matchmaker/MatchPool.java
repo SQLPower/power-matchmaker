@@ -94,12 +94,21 @@ public class MatchPool {
     private final Set<PotentialMatchRecord> deletedMatches = new HashSet<PotentialMatchRecord>();
     
     /**
-     * A set of PotentialMatchRecords that do not have a munge process that exists in the repository.
+     * A Map of PotentialMatchRecords that do not have a munge process that exists in the repository.
      * These orphaned matches may come about from munge processes that got deleted or renamed.
      * The MatchPool will not consider these to be official matches, but keeps a record of them
      * so that they can be removed properly if a new match is created with the same source table records.
      */
-    private final Set<PotentialMatchRecord> orphanedMatches = new HashSet<PotentialMatchRecord>();
+    private final Map<PotentialMatchRecord, PotentialMatchRecord> orphanedMatches = 
+    	new HashMap<PotentialMatchRecord, PotentialMatchRecord>();
+    
+    /**
+     * A Map of PotentialMatchRecords with the status of {@link MatchType#MERGED}. The MatchPool needs
+     * to be aware of merged results so that it knows to delete them before writing new PotentialMatchRecords
+     * that may conflict with the merged results (i.e. have the same lhs and rhs key values).
+     */
+    private final Map<PotentialMatchRecord, PotentialMatchRecord> mergedMatches = 
+    	new HashMap<PotentialMatchRecord, PotentialMatchRecord>();
     
     public MatchPool(Project match) {
         this.project = match;
@@ -236,7 +245,6 @@ public class MatchPool {
             	sql.append("source2." + col.getColumn().getName());
             	index++;
             }
-            sql.append(" AND MATCH_STATUS != 'MERGED'");
             lastSQL = sql.toString();
             logger.debug("MatchPool's findAll method SQL: \n" + lastSQL);
             rs = stmt.executeQuery(lastSQL);
@@ -281,7 +289,7 @@ public class MatchPool {
                 SourceTableRecord rhs = null;
             	SourceTableRecord lhs = null;
                 
-                if (mungeProcess != null) {
+                if (mungeProcess != null && matchStatus != MatchType.MERGED) {
                 	rhs = makeSourceTableRecord(rhsDisplayValues, rhsKeyValues);
                 	lhs = makeSourceTableRecord(lhsDisplayValues, lhsKeyValues);
                 } else {
@@ -303,15 +311,16 @@ public class MatchPool {
                 }
                 pmr.setStoreState(StoreState.CLEAN);
                 
-                if (mungeProcess != null) {
-                	addPotentialMatch(pmr);
-                	logger.debug("Number of PotentialMatchRecords is now " + potentialMatches.keySet().size());
-                } else {
-                	if (orphanedMatches.add(pmr)) {
-                		if (pmr.getMatchStatus() == null) {
-                			pmr.setMatchStatus(MatchType.UNMATCH);
-                		}
+                if (matchStatus == MatchType.MERGED) {
+                	mergedMatches.put(pmr, pmr);
+                } else if (mungeProcess == null) {
+                	if (pmr.getMatchStatus() == null) {
+               			pmr.setMatchStatus(MatchType.UNMATCH);
                 	}
+                	orphanedMatches.put(pmr, pmr);
+            	} else {
+            		addPotentialMatch(pmr);
+            		logger.debug("Number of PotentialMatchRecords is now " + potentialMatches.size());
                 }
             }
             
@@ -601,8 +610,14 @@ public class MatchPool {
      * @param pmr The record to add
      */
     public void addPotentialMatch(PotentialMatchRecord pmr) {
-        PotentialMatchRecord existing = potentialMatches.get(pmr);
-    	if (existing != null) {
+    	
+    	PotentialMatchRecord merged = mergedMatches.get(pmr);
+    	if (merged != null) {
+    		deletedMatches.add(merged);
+    		pmr.setMatchStatus(MatchType.UNMATCH);
+    	}
+    	PotentialMatchRecord existing = potentialMatches.get(pmr);
+    	if (existing != null) { 
     		logger.debug("Found duplicate match of " + pmr);
     		Short otherPriority = existing.getMungeProcess().getMatchPriority();
 			Short pmrPriority = pmr.getMungeProcess().getMatchPriority();
@@ -614,11 +629,10 @@ public class MatchPool {
     			removePotentialMatch(existing);
     		}
     	}
-    	if (orphanedMatches.contains(pmr)) {
-    		List<PotentialMatchRecord> temp = new ArrayList<PotentialMatchRecord>(orphanedMatches);
-    		int index = temp.indexOf(pmr);
-    		PotentialMatchRecord other = temp.get(index);
-    		deletedMatches.add(other);
+    	// If an equivalent orphaned match (a match with no munge process) is found, mark it for deletion from db
+    	PotentialMatchRecord orphan = orphanedMatches.get(pmr);
+    	if (orphan != null) {
+    		deletedMatches.add(orphan);
     	}
     	if (potentialMatches.containsKey(pmr)) {
             throw new IllegalStateException("Potential match is already in pool (it should not be)");
@@ -1359,7 +1373,7 @@ public class MatchPool {
 	 */
 	public void clear(Aborter aborter) throws SQLException {
 		deletedMatches.addAll(potentialMatches.keySet());
-		deletedMatches.addAll(orphanedMatches);
+		deletedMatches.addAll(orphanedMatches.keySet());
 		store(aborter);
 		sourceTableRecords.clear();
 		potentialMatches.clear();
@@ -1372,8 +1386,12 @@ public class MatchPool {
 	public void clear() throws SQLException {
 		clear(null);
 	}
-
-	Set<PotentialMatchRecord> getOrphanedMatches() {
+	
+	/**
+	 * A package private mdthod for getting the set of orphaned matches.
+	 * This is mainly used for unit testing purposes. 
+	 */
+	Map<PotentialMatchRecord, PotentialMatchRecord> getOrphanedMatches() {
 		return orphanedMatches;
 	}
 }
