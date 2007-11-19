@@ -90,6 +90,7 @@
 		<subclass name="GoogleAddressLookup" />
 		<subclass name="LowerCaseMungeStep" />
 		<subclass name="MetaphoneMungeStep" />
+		<subclass name="NumberToStringMungeStep" />
 		<subclass name="DeDupeResultStep" />
 		<subclass name="RefinedSoundexMungeStep" />
 		<subclass name="RetainCharactersMungeStep" />
@@ -103,6 +104,7 @@
 		<subclass name="TrimSpacesMungeStep" />
 		<subclass name="UpperCaseMungeStep" />
 		<subclass name="WordCountMungeStep" />
+		<subclass name="StringToNumberMungeStep" />
 		
 	</class>
 </hibernate-mapping>
