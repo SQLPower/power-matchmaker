@@ -111,6 +111,7 @@ import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.swingui.CommonCloseAction;
+import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
@@ -362,7 +363,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * screens (via the JTree), this variable is invoked to go back to the original
      * screen so the unsaved change method would still work properly.
      */
-    private EditorPane oldPane;
+    private DataEntryPanel oldPane;
 
     /**
      * The number of times in a row this session has handled a warning message with
@@ -380,7 +381,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * A space filler with semi-useful information about the application, and the database
      * this session is connected to.
      */
-    private EditorPane splashScreen;
+    private DataEntryPanel splashScreen;
 
     /**
      * Tracks whether or not we are currently in the middle of updating the
@@ -682,7 +683,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 *            null, then no editor will be showing.
      * @throws SQLException
 	 */
-	public void setCurrentEditorComponent(EditorPane pane) {
+	public void setCurrentEditorComponent(DataEntryPanel pane) {
 		if (pane == oldPane && pane != null) {
 			return;	// User clicked on same item, don't hassle them
 		}
@@ -730,18 +731,14 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 }
                 if (save) {
                     if (oldPane != null) {
-                        doit = oldPane.doSave();
+                        doit = oldPane.applyChanges();
                         if (!doit){
                             tree.setSelectionPath(lastTreePath);
                         }
                     }
                 } else if (doit) {
                 	if (oldPane != null) {
-                        doit = oldPane.discardChanges();
-                        if (!doit){
-                        	logger.debug("Cannot Discard Changes");
-                            //tree.setSelectionPath(lastTreePath);
-                        }
+                        oldPane.discardChanges();
                         doit = true;
                     }
                 }
@@ -1191,7 +1188,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	/**
 	 * @return Returns the original editor pane.
 	 */
-	public EditorPane getOldPane() {
+	public DataEntryPanel getOldPane() {
 		return oldPane;
 	}
 	

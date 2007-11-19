@@ -212,7 +212,7 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 			if (selectedRow > 0) {
 				mergeRulesTable.setRowSelectionInterval(selectedRow, selectedRow);
 			}
-			doSave();
+			applyChanges();
 		}
 	};
 	
@@ -222,7 +222,7 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(final ActionEvent e) {
             try {
-                doSave();
+                applyChanges();
             } catch (Exception ex) {
                 MMSUtils.showExceptionDialog(swingSession.getFrame(),
                 		"Merge Interface Not Saved", ex);

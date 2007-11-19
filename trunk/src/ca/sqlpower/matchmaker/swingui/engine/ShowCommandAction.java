@@ -36,7 +36,7 @@ import javax.swing.JTextArea;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerEngine;
-import ca.sqlpower.matchmaker.swingui.EditorPane;
+import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 
@@ -63,7 +63,7 @@ class ShowCommandAction extends AbstractAction {
 	/**
 	 * The editor to save before attempting to generate the engine command-line.
 	 */
-	private final EditorPane editor;
+	private final DataEntryPanel editor;
 	
 	/**
 	 * The engine instance to generate the command-line for.
@@ -77,7 +77,7 @@ class ShowCommandAction extends AbstractAction {
 	 * @param editor The editor to save before attempting to generate the engine command-line.
 	 * @param engine The engine instance to generate the command-line for.
 	 */
-	public ShowCommandAction(JFrame parentFrame, EditorPane editor, MatchMakerEngine engine) {
+	public ShowCommandAction(JFrame parentFrame, DataEntryPanel editor, MatchMakerEngine engine) {
 		super("Show Command...");
 		this.parent = parentFrame;
 		this.editor = editor;
@@ -89,7 +89,7 @@ class ShowCommandAction extends AbstractAction {
 	 * Displays the resulting command line to the user in a pop-up dialog.
 	 */
 	public void actionPerformed(ActionEvent e) {
-		editor.doSave();
+		editor.applyChanges();
 		final String[] cmd = engine.createCommandLine();
 		final JDialog d = new JDialog(parent,
 				"MatchMaker Engine Command Line");

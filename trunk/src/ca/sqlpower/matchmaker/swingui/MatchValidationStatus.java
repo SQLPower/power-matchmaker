@@ -51,7 +51,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.sun.rowset.CachedRowSetImpl;
 
 /**
- * An EditorPane that shows a table of status information about one Project object.
+ * An DataEntryPanel that shows a table of status information about one Project object.
  * If you want to see a status table for a different project, create a new one of these.
  */
 public class MatchValidationStatus extends NoEditEditorPane {
@@ -69,7 +69,7 @@ public class MatchValidationStatus extends NoEditEditorPane {
 	private final JTable status = new JTable();
 	
 	/**
-	 * The session to which this EditorPane belongs.
+	 * The session to which this DataEntryPanel belongs.
 	 */
     private final MatchMakerSwingSession swingSession;
     
@@ -77,7 +77,7 @@ public class MatchValidationStatus extends NoEditEditorPane {
 		super(null);
 		this.swingSession = swingSession;
 		this.project = project;
-		super.setPanel(createUI());
+		super.setPanel(buildUI());
 	}
 
 	/**
@@ -164,7 +164,7 @@ public class MatchValidationStatus extends NoEditEditorPane {
 	/**
 	 * Returns a panel that displays all the status information 
 	 */
-	private JPanel createUI() {
+	private JPanel buildUI() {
 		RowSetModel rsm = null;
 		try {
 			rsm = new RowSetModel(getMatchStats());

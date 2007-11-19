@@ -24,9 +24,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
 import ca.sqlpower.matchmaker.MatchMakerEngine;
-import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.event.TaskTerminationEvent;
 import ca.sqlpower.swingui.event.TaskTerminationListener;
 
@@ -52,9 +52,9 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 	private MatchMakerEngine engine;
 	
 	/**
-	 * The EditorPane (ideally the engine panel) that the engine is being executed from.
+	 * The DataEntryPanel (ideally the engine panel) that the engine is being executed from.
 	 */
-	private EditorPane editorPane;
+	private DataEntryPanel editorPane;
 	
 	/**
 	 * The "action" that is run when the engine finishes
@@ -74,7 +74,7 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 	 * @param finishAction An action to be run when the engine is finished. Can be null.
 	 */
 	public RunEngineAction(MatchMakerSwingSession session, MatchMakerEngine engine, String name, 
-			EngineOutputPanel engineOutputPanel, EditorPane editorPane, Runnable startAction, 
+			EngineOutputPanel engineOutputPanel, DataEntryPanel editorPane, Runnable startAction, 
 			Runnable finishAction) {
 		super(name);
 		this.session = session;
@@ -89,7 +89,7 @@ class RunEngineAction extends AbstractAction implements TaskTerminationListener{
 		if (startAction != null) {
 			startAction.run();
 		}
-		editorPane.doSave();
+		editorPane.applyChanges();
 		engineOutputPanel.getProgressBar().getModel().setValue(0);
 		session.setAllEnginesEnabled(false);
 		try {

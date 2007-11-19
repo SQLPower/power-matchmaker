@@ -38,10 +38,11 @@ import javax.swing.tree.TreeModel;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
+import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -55,10 +56,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * An EditorPane for displaying and editing information about a folder such as
+ * An DataEntryPanel for displaying and editing information about a folder such as
  * its name and description.
  */
-public class FolderEditor implements EditorPane {
+public class FolderEditor implements DataEntryPanel {
 
 	private static final Logger logger = Logger.getLogger(ProjectEditor.class);
 	private JPanel panel;
@@ -146,11 +147,11 @@ public class FolderEditor implements EditorPane {
 			 * of the saving process for the swing session to know if it needs
 			 * to bring the panel back or not.
 			 */
-            doSave();
+            applyChanges();
         }
 	};
 
-	public boolean doSave() {
+	public boolean applyChanges() {
         List<String> fail = handler.getFailResults();
         List<String> warn = handler.getWarnResults();
 
@@ -235,9 +236,8 @@ public class FolderEditor implements EditorPane {
 		return handler.hasPerformedValidation();
 	}
 
-	public boolean discardChanges() {
-		logger.debug("Cannot discard changes");
-		return false;
+	public void discardChanges() {
+		logger.error("Cannot discard changes");
 	}
 
 }

@@ -21,18 +21,27 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import javax.swing.JComponent;
+
+import org.apache.log4j.Logger;
+
+import ca.sqlpower.swingui.DataEntryPanel;
 /**
  * Editor Pane for those panels that have nothing to edit.
  */
-class NoEditEditorPane implements EditorPane {
+public class NoEditEditorPane implements DataEntryPanel {
 
+	private static final Logger logger = Logger.getLogger(NoEditEditorPane.class);
+	
 	/**
-	 * The non-editable display for this EditorPane.
+	 * The non-editable display for this DataEntryPanel.
 	 */
-	private JComponent panel;
+	private JComponent panel = null;
+	
+	public NoEditEditorPane() {
+	}
 	
 	public NoEditEditorPane(JComponent panel) {
-		this.panel =panel;
+		this.panel = panel;
 	}
 	
 	/**
@@ -40,15 +49,16 @@ class NoEditEditorPane implements EditorPane {
 	 * Since nothing changes, nothing needs to be saved, so we just say that
 	 * saving worked.
 	 */
-	public boolean doSave() {
-		return true;
+	public boolean applyChanges() {
+		logger.error("Cannot apply changes because this pane is not editable.");
+		return false;
 	}
 
 	/**
 	 * Since nothing changes, no changes are discarded.
 	 */
-	public boolean discardChanges() {
-		return false;
+	public void discardChanges() {
+		logger.error("Cannot discard changes because this pane is not editable.");
 	}
 	
 	/**
@@ -66,6 +76,5 @@ class NoEditEditorPane implements EditorPane {
 	public void setPanel(JComponent panel) {
 		this.panel = panel;
 	}
-
 	
 }

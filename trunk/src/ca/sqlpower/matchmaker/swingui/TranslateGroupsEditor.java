@@ -31,7 +31,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -64,13 +63,12 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * A panel to edit the translate words groups
  */
-public class TranslateGroupsEditor implements EditorPane {
+public class TranslateGroupsEditor extends NoEditEditorPane {
 
 	private static final Logger logger = Logger.getLogger(TranslateGroupsEditor.class);
 
     public static final String TRANSLATE_WORDS_SPREADSHEET_KEY = "pIOfRi4wZwIh1eNPmWCRhPQ";
 	
-	private JPanel panel;
 	private JScrollPane translateGroupsScrollPane;
 	TranslateGroupsTableModel translateGroupsTableModel;
 	private JTable translateGroupsTable;
@@ -84,17 +82,19 @@ public class TranslateGroupsEditor implements EditorPane {
 	StatusComponent status = new StatusComponent();
 	
 	public TranslateGroupsEditor(MatchMakerSwingSession swingSession) {
+		super();
 		this.swingSession = swingSession;
 		this.translateGroups = swingSession.getTranslations().getChildren();
 		
 		setupTable();
-        buildUI();
+        super.setPanel(buildUI());
         handler = new FormValidationHandler(status);
         handler.resetHasValidated();
 		
 		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
 		menuPath = treeModel.getPathForNode(swingSession.getTranslations());
 		swingSession.getTree().setSelectionPath(menuPath);
+		
 	}
 	
 	private void setupTable() {
@@ -118,7 +118,7 @@ public class TranslateGroupsEditor implements EditorPane {
         translateGroupsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	}
 	
-	private void buildUI() {
+	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
 				"4dlu,46dlu,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow,4dlu,50dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,fill:40dlu:grow,4dlu,pref,10dlu"); // rows
@@ -175,26 +175,7 @@ public class TranslateGroupsEditor implements EditorPane {
 		row+=2;
 		pb.add(bbb.getPanel(), cc.xy(4,row,"c,c"));
 		
-		panel = pb.getPanel();
-	}
-
-	public boolean doSave() {
-		logger.debug("Do Save: Not implemented :(");
-		return false;
-	}
-
-	public boolean discardChanges() {
-		logger.debug("Cannot discard chagnes");
-		return false;
-	}
-
-	public JComponent getPanel() {
-		return panel;
-	}
-
-	public boolean hasUnsavedChanges() {
-		logger.debug("Has unsaved changes: Not implemented :(");
-		return false;
+		return pb.getPanel();
 	}
 	
 	Action deleteGroupAction = new AbstractAction("Delete Group") {

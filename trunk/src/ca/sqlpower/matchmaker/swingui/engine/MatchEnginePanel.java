@@ -51,9 +51,9 @@ import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
+import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -67,7 +67,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * An editor pane to allow the user to configure, run and monitor the engine.
  */
-public class MatchEnginePanel implements EditorPane {
+public class MatchEnginePanel implements DataEntryPanel {
 
 	private static final Logger logger = Logger.getLogger(MatchEnginePanel.class);
 
@@ -134,7 +134,7 @@ public class MatchEnginePanel implements EditorPane {
 	private Project project;
 	
 	/**
-	 * The panel that holds all components of this EditorPane.
+	 * The panel that holds all components of this DataEntryPanel.
 	 */
 	private JPanel panel;
 
@@ -253,7 +253,7 @@ public class MatchEnginePanel implements EditorPane {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			doSave();
+			applyChanges();
 		}
 	}
 
@@ -406,7 +406,7 @@ public class MatchEnginePanel implements EditorPane {
 		return anotherP;
 	}
 	
-	/*===================== EditorPane implementation ==================*/
+	/*===================== DataEntryPanel implementation ==================*/
 
 	public JPanel getPanel() {
 		return panel;
@@ -422,7 +422,7 @@ public class MatchEnginePanel implements EditorPane {
 	 * Updates the engine settings in the project based on the current values in
 	 * the GUI, then stores the project using its DAO.
 	 */
-	public boolean doSave() {
+	public boolean applyChanges() {
 		refreshActionStatus();
 		MungeSettings settings = project.getMungeSettings();
 		settings.setDebug(debugMode.isSelected());
@@ -441,9 +441,8 @@ public class MatchEnginePanel implements EditorPane {
 		return true;
 	}
 
-	public boolean discardChanges() {
-		logger.debug("Cannot discard changes");
-		return false;
+	public void discardChanges() {
+		logger.error("Cannot discard changes");
 	}
 
 }

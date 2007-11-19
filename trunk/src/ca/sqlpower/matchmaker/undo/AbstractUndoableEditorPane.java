@@ -27,11 +27,11 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.swingui.CleanupModel;
-import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MMOChangeUndoWatcher;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.swingui.DataEntryPanel;
 
-public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C extends MatchMakerObject> implements EditorPane, CleanupModel {
+public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C extends MatchMakerObject> implements DataEntryPanel, CleanupModel {
 	
 	private static final Logger logger = Logger.getLogger(AbstractUndoableEditorPane.class);
 	
@@ -56,7 +56,7 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C ex
 	/**
 	 * Saves the mmo
 	 */
-	public boolean doSave() {
+	public boolean applyChanges() {
 		logger.debug("saving object: " + mmo);
 		swingSession.save(mmo);
 		undo.setHasChanged(false);
@@ -66,8 +66,8 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C ex
 	/**
 	 * Discards the changes by reverting to the original state
 	 */
-	public boolean discardChanges() {
-		return undo.undoAll();
+	public void discardChanges() {
+		undo.undoAll();
 	}
 
 	/**

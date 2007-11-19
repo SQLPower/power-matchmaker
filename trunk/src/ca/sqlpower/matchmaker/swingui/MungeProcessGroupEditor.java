@@ -30,7 +30,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -62,7 +61,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * A panel to edit the munge process group
  */
-public class MungeProcessGroupEditor implements EditorPane {
+public class MungeProcessGroupEditor extends NoEditEditorPane {
 
 	private static final Logger logger = Logger.getLogger(MungeProcessGroupEditor.class);
 	
@@ -71,16 +70,16 @@ public class MungeProcessGroupEditor implements EditorPane {
 	private JTable mungeProcessTable;
 	private MatchMakerSwingSession swingSession;
 	private Project project;
-	private JPanel panel;
 	
 	private final FormValidationHandler handler;
 	private final StatusComponent status = new StatusComponent();
 	
 	public MungeProcessGroupEditor(MatchMakerSwingSession swingSession, Project project) {
+		super();
 		this.project = project;
 		this.swingSession = swingSession;
 		setupTable();
-        buildUI();
+		super.setPanel(buildUI());
         handler = new FormValidationHandler(status);
         handler.resetHasValidated();
         deleteAction.setEnabled(false);
@@ -122,7 +121,7 @@ public class MungeProcessGroupEditor implements EditorPane {
         TableUtils.fitColumnWidths(mungeProcessTable, 15);
 	}
 	
-	private void buildUI() {
+	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
 				"4dlu,46dlu,4dlu,fill:min(pref;"+3*(new JComboBox().getMinimumSize().width)+"px):grow,4dlu,50dlu", // columns
 				"10dlu,pref,4dlu,pref,4dlu,fill:40dlu:grow,4dlu,pref,10dlu"); // rows
@@ -154,7 +153,7 @@ public class MungeProcessGroupEditor implements EditorPane {
 		row+=2;
 		pb.add(bbb.getPanel(), cc.xy(4,row,"c,c"));
 		
-		panel = pb.getPanel();
+		return pb.getPanel();
 	}
 
 	Action deleteAction = new AbstractAction("Delete Munge Process") {
@@ -293,22 +292,4 @@ public class MungeProcessGroupEditor implements EditorPane {
 		}
 	}
 
-	public boolean discardChanges() {
-		logger.debug("Stub call: MungeProcessGroupEditor.discardChanges()");
-		return false;
-	}
-
-	public boolean doSave() {
-		logger.debug("Stub call: MungeProcessGroupEditor.doSave()");
-		return false;
-	}
-
-	public JComponent getPanel() {
-		return panel;
-	}
-
-	public boolean hasUnsavedChanges() {
-		logger.debug("Stub call: MungeProcessGroupEditor.hasUnsavedChanges()");
-		return false;
-	}
 }

@@ -85,6 +85,8 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.DataEntryPanel;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -103,7 +105,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * The MatchEditor is the GUI for editing all aspects of a {@link Project} instance.
  */
-public class ProjectEditor implements EditorPane {
+public class ProjectEditor implements DataEntryPanel {
 
 	private static final Logger logger = Logger.getLogger(ProjectEditor.class);
 
@@ -233,7 +235,7 @@ public class ProjectEditor implements EditorPane {
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(final ActionEvent e) {
             try {
-                boolean ok = doSave();
+                boolean ok = applyChanges();
                 if (!ok) { 
                 	JOptionPane.showMessageDialog(swingSession.getFrame(),
                 			"Project Not Saved",
@@ -312,8 +314,18 @@ public class ProjectEditor implements EditorPane {
 				return;
 			}
 			try {
-				new MatchMakerIndexBuilder(project,swingSession);
+				MatchMakerIndexBuilder indexBuilder = new MatchMakerIndexBuilder(project,swingSession);
+				JDialog d = DataEntryPanelBuilder.createDataEntryPanelDialog(
+						indexBuilder,
+						swingSession.getFrame(),
+						"Choose the index",
+						"OK");
+				d.pack();
+				d.setLocationRelativeTo(swingSession.getFrame());
+				d.setVisible(true);
+				
 			} catch (Exception ex) {
+				ex.printStackTrace();
 				SPSUtils.showExceptionDialogNoReport(panel, "An exception occured while picking columns", ex);
 			}
 		}
@@ -606,7 +618,7 @@ public class ProjectEditor implements EditorPane {
      * @return true if save OK
      * @throws ArchitectRuntimeException if we cannot set the result table on a project
      */
-    public boolean doSave() {
+    public boolean applyChanges() {
     	List<String> fail = handler.getFailResults();
 
     	if ( fail.size() > 0 ) {
@@ -1056,8 +1068,7 @@ public class ProjectEditor implements EditorPane {
 		return handler.hasPerformedValidation();
 	}
 
-	public boolean discardChanges() {
-		logger.debug("Cannot discard chagnes");
-		return false;
+	public void discardChanges() {
+		logger.error("Cannot discard chagnes");
 	}
 }

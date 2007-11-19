@@ -112,4 +112,9 @@ public class UserPreferencesEditor implements DataEntryPanel {
     public JComponent getPanel() {
         return panel;
     }
+
+	public boolean hasUnsavedChanges() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

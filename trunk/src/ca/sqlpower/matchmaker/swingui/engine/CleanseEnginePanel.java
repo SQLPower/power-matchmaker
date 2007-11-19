@@ -60,9 +60,9 @@ import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
+import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -76,7 +76,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * An editor pane to allow the user to configure, run and monitor the engine.
  */
-public class CleanseEnginePanel implements EditorPane {
+public class CleanseEnginePanel implements DataEntryPanel {
 
 	private static final Logger logger = Logger.getLogger(CleanseEnginePanel.class);
 
@@ -120,7 +120,7 @@ public class CleanseEnginePanel implements EditorPane {
 	private Project project;
 	
 	/**
-	 * The panel that holds all components of this EditorPane.
+	 * The panel that holds all components of this DataEntryPanel.
 	 */
 	private JPanel panel;
 
@@ -259,7 +259,7 @@ public class CleanseEnginePanel implements EditorPane {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			doSave();
+			applyChanges();
 		}
 	}
 
@@ -520,7 +520,7 @@ public class CleanseEnginePanel implements EditorPane {
 		return processMenu;
 	}
 	
-	/*===================== EditorPane implementation ==================*/
+	/*===================== DataEntryPanel implementation ==================*/
 
 	public JPanel getPanel() {
 		return panel;
@@ -536,7 +536,7 @@ public class CleanseEnginePanel implements EditorPane {
 	 * Updates the engine settings in the project based on the current values in
 	 * the GUI, then stores the project using its DAO.
 	 */
-	public boolean doSave() {
+	public boolean applyChanges() {
 		refreshActionStatus();
 		MungeSettings settings = project.getMungeSettings();
 		settings.setLog(new File(logFilePath.getText()));
@@ -552,9 +552,8 @@ public class CleanseEnginePanel implements EditorPane {
 		return true;
 	}
 
-	public boolean discardChanges() {
-		logger.debug("Cannot discard changes");
-		return false;
+	public void discardChanges() {
+		logger.error("Cannot discard changes");
 	}
 
 }

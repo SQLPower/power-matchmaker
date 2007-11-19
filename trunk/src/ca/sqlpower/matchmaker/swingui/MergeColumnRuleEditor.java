@@ -191,8 +191,8 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	}
 
 	/**
-	 * Implementation of {@link AbstractColumnMergeRulesTable} for related merge 
-	 * rules. It returns a combo box of {@link SQLColumn} in the parent table for 
+	 * EditableJTable implementation for related merge rules. It returns 
+	 * a combo box of {@link SQLColumn} in the parent table for 
 	 * column 2.
 	 */
 	private class RelatedColumnMergeRulesTable extends EditableJTable {
@@ -232,9 +232,10 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 			}
 		}
 	}
+	
 	/**
-	 * Implementation of {@link AbstractColumnMergeRulesTable} for source merge
-	 * rules. It returns a combo box of the {@link MergeActionType} in the third column.
+	 * EditableJTable implementation for source merge rules. It returns 
+	 * a combo box of the {@link MergeActionType} in the third column.
 	 */
 	private class SourceColumnMergeRulesTable extends EditableJTable {
 		
@@ -301,7 +302,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(ActionEvent e) {
-			if ( doSave() ) {
+			if ( applyChanges() ) {
 				MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
 				TreePath menuPath = treeModel.getPathForNode(mmo);
 				swingSession.getTree().setSelectionPath(menuPath);
@@ -438,7 +439,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 	}
 	
 	@Override
-	public boolean doSave() {
+	public boolean applyChanges() {
 		if ( !handler.hasPerformedValidation() ) {
 			ruleTableModel.fireTableChanged(new TableModelEvent(ruleTableModel));
 		}
@@ -456,7 +457,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 			project.getTableMergeRulesFolder().addChild(mmo);
 		}
 
-		return super.doSave();
+		return super.applyChanges();
 	}
 	
 	

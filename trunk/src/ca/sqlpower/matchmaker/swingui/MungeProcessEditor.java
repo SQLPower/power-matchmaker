@@ -73,7 +73,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * Implements the EditorPane functionality for editing a munge process (MatchRuleSet).
+ * Implements the DataEntryPanel functionality for editing a munge process (MatchRuleSet).
  */
 public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess, MungeStep> {
     private static final Logger logger = Logger.getLogger(MungeProcessEditor.class);
@@ -239,7 +239,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 	
 	Action saveAction = new AbstractAction("Save Munge Process"){
 		public void actionPerformed(ActionEvent e) {
-            doSave();
+            applyChanges();
             
             // if the munge process is new, select it on the tree
             if (mmo.getParentProject() == null) {
@@ -263,7 +263,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
      * Saves the process, possibly adding it to the parent project given in the
      * constructor if the process is not already a child of that project.
      */
-    public boolean doSave() {
+    public boolean applyChanges() {
     	ValidateResult result = handler.getWorstValidationStatus();
         if ( result.getStatus() == Status.FAIL) {
             JOptionPane.showMessageDialog(swingSession.getFrame(),
@@ -292,7 +292,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         if (mmo.getParentProject() == null) {
             parentProject.addMungeProcess(mmo);
         }
-        return super.doSave();
+        return super.applyChanges();
     }
 
     public boolean hasUnsavedChanges() {
