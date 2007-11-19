@@ -136,7 +136,6 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		}
 		
 		out.setData(data);
-		printOutputs();
 		return true;
 	}
 

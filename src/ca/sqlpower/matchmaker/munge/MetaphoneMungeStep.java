@@ -63,7 +63,6 @@ public class MetaphoneMungeStep extends AbstractMungeStep {
 		} else {
 			out.setData(null);
 		}
-		printOutputs();
 		return true;
 	}
 }

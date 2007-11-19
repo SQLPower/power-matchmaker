@@ -120,7 +120,6 @@ public class WordCountMungeStep extends AbstractMungeStep {
 		}
 		
 		out.setData(new BigDecimal(wordCount));
-		printOutputs();
 		return true;
 	}
 }

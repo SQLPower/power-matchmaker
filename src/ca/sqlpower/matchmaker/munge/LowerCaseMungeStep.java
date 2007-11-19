@@ -64,7 +64,6 @@ public class LowerCaseMungeStep extends AbstractMungeStep {
 			data = data.toLowerCase();
 		}
 		out.setData(data);
-		printOutputs();
 		return true;
 	}
 }

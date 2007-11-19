@@ -89,7 +89,6 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		if (allNulls && delimiter.length() == 0) {
 			out.setData(null);
 		}
-		printOutputs();
 		return true;
 	}
     

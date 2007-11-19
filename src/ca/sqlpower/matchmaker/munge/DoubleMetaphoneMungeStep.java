@@ -73,7 +73,6 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 		} else {
 			out.setData(null);
 		}
-		printOutputs();
 		return true;
 	}
 }
