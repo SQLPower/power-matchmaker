@@ -95,7 +95,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 * This will throw a NullPointerException if the
 	 * translate group has not been set.
 	 */
-	public Boolean goCall() throws Exception {
+	public Boolean doCall() throws Exception {
 
 		String from;
 		String to;
