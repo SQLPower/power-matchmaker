@@ -72,4 +72,9 @@ public class AboutPanel extends JPanel implements DataEntryPanel {
 	public JPanel getPanel() {
 		return this;
 	}
+
+	public boolean hasUnsavedChanges() {
+		// does not have changes
+		return false;
+	}
 }

@@ -27,7 +27,6 @@ import java.util.concurrent.Callable;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -35,12 +34,12 @@ import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.MatchMakerObjectComboBoxCellRenderer;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
-import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -65,7 +64,7 @@ public class DuplicateProjectAction extends AbstractAction {
 		handler = new FormValidationHandler(status);
 	}
 	
-	private class DuplicatePanel implements DataEntryPanel {
+	private class DuplicatePanel extends NoEditEditorPane {
 
 		
 		private final JPanel panel;
@@ -79,17 +78,7 @@ public class DuplicateProjectAction extends AbstractAction {
 			panel.add(new JLabel(""));
 			panel.add(folderComboBox);
 		}
-		
-		public boolean applyChanges() {
-			return true;
-		}
 
-		public void discardChanges() {
-		}
-
-		public JComponent getPanel() {
-			return panel;
-		}
 		public String getDupName() {
 			return targetNameField.getText();
 		}
@@ -97,6 +86,7 @@ public class DuplicateProjectAction extends AbstractAction {
 		public JTextField getProjectNameField() {
 			return targetNameField;
 		}
+
 	}
 	public void actionPerformed(ActionEvent e) {
 

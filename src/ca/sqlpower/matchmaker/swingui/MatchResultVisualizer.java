@@ -45,7 +45,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -84,7 +83,7 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
  * The MatchResultVisualizer produces graphical representations of the matches
  * in a Match Result Table.
  */
-public class MatchResultVisualizer implements EditorPane {
+public class MatchResultVisualizer extends NoEditEditorPane {
     
     private static final Logger logger = Logger.getLogger(MatchResultVisualizer.class);
 
@@ -107,14 +106,14 @@ public class MatchResultVisualizer implements EditorPane {
                 File dotFile = new File(
                         System.getProperty("user.home"), "matchmaker_graph_"+match.getName()+".dot");
                 JFileChooser fc = new JFileChooser(dotFile);
-                int choice = fc.showSaveDialog(panel);
+                int choice = fc.showSaveDialog(getPanel());
                 if (choice == JFileChooser.APPROVE_OPTION) {
                     MatchPoolDotExport exporter = new MatchPoolDotExport(match);
                     exporter.setDotFile(fc.getSelectedFile());
                     exporter.exportDotFile();
                 }
             } catch (Exception ex) {
-                SPSUtils.showExceptionDialogNoReport(panel, "Couldn't export dot file!", ex);
+                SPSUtils.showExceptionDialogNoReport(getPanel(), "Couldn't export dot file!", ex);
             }
         }
     };
@@ -125,7 +124,7 @@ public class MatchResultVisualizer implements EditorPane {
 	 */
     private final Action resetPoolAction = new AbstractAction("Reset All") {
     	public void actionPerformed(ActionEvent e) {
-			if (JOptionPane.showConfirmDialog(panel,
+			if (JOptionPane.showConfirmDialog(getPanel(),
 							"You are about to reset the entire match pool! Do you really wish to do this?",
 							"Reset Entire Match Pool",
 							JOptionPane.YES_NO_OPTION,
@@ -134,7 +133,7 @@ public class MatchResultVisualizer implements EditorPane {
 				pool.resetPool();
 				pool.store();
     		}catch (SQLException ex) {
-            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"store changes to the database.", ex);
             }
     		graph.repaint();
@@ -183,7 +182,7 @@ public class MatchResultVisualizer implements EditorPane {
     	
     	public void actionPerformed(ActionEvent e) {
     		try {
-    			dialog = SPSUtils.makeOwnedDialog(panel, "Select Graph Display Values");
+    			dialog = SPSUtils.makeOwnedDialog(getPanel(), "Select Graph Display Values");
 				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer)graph.getNodeRenderer(), match);
 				JPanel tablePanel = chooser.makeGUI();
 				JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(new JButton(okAction), new JButton(cancelAction));
@@ -219,10 +218,10 @@ public class MatchResultVisualizer implements EditorPane {
 				pool.defineNoMatch(record1, record2);
 				pool.store();
             } catch (ArchitectException ex) {
-            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"define " + record1 + " and " + record2 + " to not be duplicates.", ex);
             } catch (SQLException ex) {
-            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"store changes to the database.", ex);
             }
             selectionListener.nodeSelected(record1);
@@ -250,10 +249,10 @@ public class MatchResultVisualizer implements EditorPane {
 				pool.defineUnmatched(record1, record2);
 				pool.store();
 			} catch (ArchitectException ex) {
-				MMSUtils.showExceptionDialog(panel, "An exception occurred when trying to " +
+				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying to " +
 						"unmatch " + record1 + " and " + record2, ex);
 			} catch (SQLException ex) {
-            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"store changes to the database.", ex);
             }
             selectionListener.nodeSelected(record1);
@@ -282,10 +281,10 @@ public class MatchResultVisualizer implements EditorPane {
 				pool.defineMaster(master, duplicate);
 				pool.store();
 			} catch (ArchitectException ex) {
-				MMSUtils.showExceptionDialog(panel, "An exception occurred when trying " +
+				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying " +
 						"to set " + master + " to be the master of " + duplicate, ex);
 			} catch (SQLException ex) {
-            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"store changes to the database.", ex);
             }
             selectionListener.nodeSelected(duplicate);
@@ -314,10 +313,10 @@ public class MatchResultVisualizer implements EditorPane {
 				pool.defineMaster(master, duplicate);
 				pool.store();
             } catch (ArchitectException ex) {
-				MMSUtils.showExceptionDialog(panel, "An exception occurred when trying " +
+				MMSUtils.showExceptionDialog(getPanel(), "An exception occurred when trying " +
 						"to set " + duplicate + " to be a duplicate of " + master, ex);
 			} catch (SQLException ex) {
-            	MMSUtils.showExceptionDialog(panel, "An exception occurred while trying to " +
+            	MMSUtils.showExceptionDialog(getPanel(), "An exception occurred while trying to " +
             			"store changes to the database.", ex);
             }
             selectionListener.nodeSelected(master);
@@ -387,7 +386,7 @@ public class MatchResultVisualizer implements EditorPane {
                 	}
                 }
             } catch (Exception ex) {
-                MMSUtils.showExceptionDialog(panel, "Couldn't show potential matches", ex);
+                MMSUtils.showExceptionDialog(getPanel(), "Couldn't show potential matches", ex);
             }
             recordViewerPanel.revalidate();
             recordViewerColumnHeader.revalidate();
@@ -415,14 +414,14 @@ public class MatchResultVisualizer implements EditorPane {
     	}
     	
 		public void actionPerformed(ActionEvent e) {
-			int response = JOptionPane.showConfirmDialog(panel, warningMessage, "WARNING", JOptionPane.OK_CANCEL_OPTION);
+			int response = JOptionPane.showConfirmDialog(getPanel(), warningMessage, "WARNING", JOptionPane.OK_CANCEL_OPTION);
 			if (response == JOptionPane.OK_OPTION) {
 				try {
 					pool.doAutoMatch((String) mungeProcessComboBox.getSelectedItem());
 					pool.store();
 					graph.repaint();
 				} catch (Exception ex) {
-					MMSUtils.showExceptionDialog(panel, "Auto-Match failed, most likely a database connection error", ex);
+					MMSUtils.showExceptionDialog(getPanel(), "Auto-Match failed, most likely a database connection error", ex);
 				}
 			}
 		}
@@ -432,11 +431,6 @@ public class MatchResultVisualizer implements EditorPane {
      * This is the match whose result table we're visualizing.
      */
     private final Project match;
-    
-    /**
-     * The panel that holds all the GUI components.
-     */
-    private final JPanel panel;
 
     /**
      * The visual component that actually displays the match results graph.
@@ -494,6 +488,7 @@ public class MatchResultVisualizer implements EditorPane {
     private List<SQLColumn> displayColumns = new ArrayList<SQLColumn>();
     
     public MatchResultVisualizer(Project project) throws SQLException, ArchitectException {
+    	super();
         this.match = project;
 
         JPanel buttonPanel = new JPanel(new GridLayout(2,2));
@@ -546,8 +541,9 @@ public class MatchResultVisualizer implements EditorPane {
                 graphPanel,
                 recordViewerScrollPane);
         
-        panel = new JPanel(new BorderLayout(12, 12));
+        JPanel panel = new JPanel(new BorderLayout(12, 12));
         panel.add(splitPane, BorderLayout.CENTER);
+        super.setPanel(panel);
     }
     
     /**
@@ -665,30 +661,11 @@ public class MatchResultVisualizer implements EditorPane {
         	
     	return actionsAllowed;
     }
-    
-    // ======= EditorPane stuff ========
-
-    public boolean doSave() {
-        return true;
-    }
-
-    public JComponent getPanel() {
-        return panel;
-    }
-
-    public boolean hasUnsavedChanges() {
-        return false;
-    }
 
 	MatchPool getPool() {
 		return pool;
 	}
 
-	public boolean discardChanges() {
-		logger.debug("Cannot discard chagnes");
-		return false;
-	}
-	
 	/**
 	 * A comparator that compares SourceTableRecords based on match status and match priority.
 	 */

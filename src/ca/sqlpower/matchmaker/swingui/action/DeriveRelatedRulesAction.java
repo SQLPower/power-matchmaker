@@ -38,7 +38,6 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
 
 import org.apache.log4j.Logger;
 
@@ -51,7 +50,9 @@ import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
+import ca.sqlpower.matchmaker.swingui.ColumnChooserTableModel;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
+import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
@@ -92,7 +93,7 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 	private JButton exit;
 
 	private SQLTable sourceTable;
-	private PrimaryKeyColumnTableModel columnTableModel;
+	private ColumnChooserTableModel columnTableModel;
 	
 	private ActionListener deriveAction = new DeriveAction(this); 
 	
@@ -138,8 +139,8 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 			
 			// Adds all the user defined primary keys to the list that will be checked
 			primaryKeys = new ArrayList<String>();
-			for (CustomTableColumn column : columnTableModel.getSelectedColumns()) {
-				primaryKeys.add(column.getSQLColumn().getName());
+			for (SQLColumn column : columnTableModel.getSelectedSQLColumns()) {
+				primaryKeys.add(column.getName());
 			}
 			logger.debug("Sorted list of selected columns: "+primaryKeys);
 
@@ -353,8 +354,8 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 		try {
 			sourceTable = project.getSourceTable();
 			SQLIndex oldIndex = project.getSourceTableIndex();
-			columnTableModel = new PrimaryKeyColumnTableModel(sourceTable,oldIndex);
-			columnTable = new JTable(columnTableModel);
+			columnTableModel = new ColumnChooserTableModel(sourceTable, oldIndex, false);
+			columnTable = new EditableJTable(columnTableModel);
 			columnTable.addColumnSelectionInterval(1, 1);
 			TableUtils.fitColumnWidths(columnTable, 10);
 		} catch (ArchitectException ex) {
@@ -385,171 +386,6 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 	}
 
 	/**
-	 * This class represents the table row model of the pick your own
-	 * column for primary keys, which has only 2 columns.
-	 */
-	private class CustomTableColumn implements Comparable<CustomTableColumn> {
-		private boolean key;
-		private Integer position;
-		private SQLColumn sqlColumn;
-
-		public CustomTableColumn(boolean key, Integer position, SQLColumn column) {
-			this.key = key;
-			this.position = position;
-			this.sqlColumn = column;
-		}
-
-		public void setSqlColumn(SQLColumn column) {
-			this.sqlColumn = column;
-		}
-
-		public void setKey(boolean key) {
-			this.key = key;
-			if ( !key ) {
-				position = null;
-			}
-		}
-
-		public void setPosition(Integer position) {
-			this.position = position;
-		}
-
-		public SQLColumn getSQLColumn() {
-			return sqlColumn;
-		}
-
-		public boolean isKey() {
-			return key;
-		}
-
-		public Integer getPosition() {
-			return position;
-		}
-
-		public int compareTo(CustomTableColumn o) {
-			if (getPosition() == null)
-				return -1;
-			else if ( o.getPosition() == null )
-				return 1;
-			else
-				return getPosition().compareTo(o.getPosition());
-		}
-
-		@Override
-		public String toString() {
-			return "[CustomTableColumn: key="+key+"; position="+position+"; column="+sqlColumn.getName()+"]";
-		}
-	}
-
-	/**
-	 * This class represents the table model of the pick your own
-	 * column for primary keys table. It has 2 columns.
-	 */
-	private class PrimaryKeyColumnTableModel extends AbstractTableModel {
-
-		private List<CustomTableColumn> candidateColumns = new ArrayList<CustomTableColumn>();
-		public PrimaryKeyColumnTableModel(SQLTable sqlTable, SQLIndex oldIndex) throws ArchitectException {
-
-			for ( SQLColumn column : sqlTable.getColumns()) {
-				int positionInIndex = oldIndex.getIndexOfChildByName(column.getName());
-				candidateColumns.add(
-						new CustomTableColumn(
-								(positionInIndex >= 0),
-								(positionInIndex >= 0 ? positionInIndex +1 : null),
-								column));
-			}
-		}
-
-		@Override
-		public String getColumnName(int column) {
-			if (column == 0) {
-				return "In Primary Key?";
-			} else if (column == 1) {
-				return "Column Name";
-			} else {
-				throw new IndexOutOfBoundsException("No such column in table: "+column);
-			}
-		}
-
-		public int getColumnCount() {
-			return 2;
-		}
-
-		public int getRowCount() {
-			return candidateColumns.size();
-		}
-
-		public Object getValueAt(int rowIndex, int columnIndex) {
-			if ( columnIndex == 0 ) {
-				return candidateColumns.get(rowIndex).isKey();
-			}  else if ( columnIndex == 1 ) {
-				return candidateColumns.get(rowIndex).getSQLColumn();
-			} else {
-				throw new IllegalArgumentException("unknown columnIndex: " + columnIndex);
-			}
-		}
-
-
-		@Override
-		public Class<?> getColumnClass(int columnIndex) {
-			if ( columnIndex == 0 ) {
-				return Boolean.class;
-			}  else if ( columnIndex == 1 ) {
-				return SQLColumn.class;
-			} else {
-				throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
-			}
-		}
-
-		@Override
-		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			if ( columnIndex == 0 ) {
-				candidateColumns.get(rowIndex).setKey((Boolean) aValue);
-				if ( (Boolean) aValue ) {
-					int max = -1;
-					for ( CustomTableColumn column : candidateColumns ) {
-						if ( column.getPosition() != null && max < column.getPosition().intValue()) {
-							max = column.getPosition().intValue();
-						}
-					}
-					candidateColumns.get(rowIndex).setPosition(new Integer(max+1));
-				} else {
-					candidateColumns.get(rowIndex).setPosition(null);
-				}
-			}  else if ( columnIndex == 1 ) {
-			} else {
-				throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
-			}
-			fireTableDataChanged();
-		}
-
-		@Override
-		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			if ( columnIndex == 0 ) {
-				return true;
-			}  else if ( columnIndex == 1 ) {
-				return false;
-			} else {
-				throw new IllegalArgumentException("unknown columnIndex: "+ columnIndex);
-			}
-		}
-
-		public List<CustomTableColumn> getCandidateColumns() {
-			return candidateColumns;
-		}
-		
-		public List<CustomTableColumn> getSelectedColumns() {
-			List<CustomTableColumn> columns = new ArrayList<CustomTableColumn>();
-			for (CustomTableColumn column : columnTableModel.getCandidateColumns()) {
-				if (column.isKey()) {
-					columns.add(column);
-				}
-			}
-			return columns;
-		}
-	}
-
-	/**
 	 * This is a simple validator that checks if there is atleast one column selected. It
 	 * only works on a {@link PrimaryKeyColumnTableModel}. 
 	 * <p>
@@ -564,8 +400,8 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 	        this.table = table;
 	    }
 	    public ValidateResult validate(Object contents) {
-	    	PrimaryKeyColumnTableModel model = (PrimaryKeyColumnTableModel)table.getModel();
-	    	if (model.getSelectedColumns().size() == 0) {
+	    	ColumnChooserTableModel model = (ColumnChooserTableModel)table.getModel();
+	    	if (model.getSelectedSQLColumns().size() == 0) {
 	    		return ValidateResult.createValidateResult(Status.FAIL, 
 	    			"Atleast one primary key column must be selected.");
 	    	}

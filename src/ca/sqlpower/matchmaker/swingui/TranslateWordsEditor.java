@@ -202,7 +202,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane<MatchMakerT
 			}});
 	}
 	
-	public boolean doSave() {
+	public boolean applyChanges() {
         ValidateResult result = handler.getWorstValidationStatus();
         if ( result.getStatus() == Status.FAIL) {
             JOptionPane.showMessageDialog(swingSession.getFrame(),
@@ -217,7 +217,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane<MatchMakerT
             swingSession.getTranslations().addChild(mmo);
         }
         
-        return super.doSave();
+        return super.applyChanges();
 	}
 
 	public boolean hasUnsavedChanges() {
@@ -272,7 +272,7 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane<MatchMakerT
 	Action saveGroupAction = new AbstractAction("Save Group"){
 
 		public void actionPerformed(ActionEvent e) {
-            doSave();
+            applyChanges();
             if (mmo.getParent() == null) {
             	// Selects the new node after save
     	        MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();

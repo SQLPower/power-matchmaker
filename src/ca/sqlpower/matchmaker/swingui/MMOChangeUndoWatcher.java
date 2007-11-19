@@ -37,7 +37,7 @@ import ca.sqlpower.matchmaker.undo.MMOPropertyChangeUndoableEdit;
 /**
  * Utility class that registers every change to a subtree of MatchMakerObjects
  * by flipping its hasChanged flag to true. Mainly intended to support the
- * hasUnsavedChanges feature of EditorPane.
+ * hasUnsavedChanges feature of DataEntryPanel.
  */
 public class MMOChangeUndoWatcher <T extends MatchMakerObject,C extends MatchMakerObject>
 implements MatchMakerListener<T,C> {
@@ -216,12 +216,11 @@ implements MatchMakerListener<T,C> {
     /**
      * Undo everything!
      */
-    public boolean undoAll() {
+    public void undoAll() {
     	while (undo.canUndo()) {
 			undo.undo();
 		}
     	setHasChanged(false);
-		return true;
     }
     
     /**

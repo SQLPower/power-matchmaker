@@ -53,9 +53,9 @@ import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.MergeSettings;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.swingui.EditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
+import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -70,7 +70,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * A panel that provides a GUI for setting the parameters for running the Merge engine,
  * as well as running the Merge engine itself and displaying its output on the GUI.
  */
-public class MergeEnginePanel implements EditorPane {
+public class MergeEnginePanel implements DataEntryPanel {
 
 	private static final Logger logger = Logger.getLogger(MergeEnginePanel.class);
 
@@ -231,7 +231,7 @@ public class MergeEnginePanel implements EditorPane {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			doSave();
+			applyChanges();
 		}
 	}
 	
@@ -377,7 +377,7 @@ public class MergeEnginePanel implements EditorPane {
 	/**
 	 * Runs the form validation, and then saves the merge settings into the database.
 	 */
-	public boolean doSave() {
+	public boolean applyChanges() {
 		logger.debug("doSave called");
 		refreshActionStatus();
 		MergeSettings mergeSettings = project.getMergeSettings();
@@ -404,9 +404,8 @@ public class MergeEnginePanel implements EditorPane {
 		return false;
 	}
 
-	public boolean discardChanges() {
-		logger.debug("Cannot discard chagnes");
-		return false;
+	public void discardChanges() {
+		logger.error("Cannot discard chagnes");
 	}
 
 }
