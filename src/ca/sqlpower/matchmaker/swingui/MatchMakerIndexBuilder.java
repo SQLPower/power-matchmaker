@@ -40,6 +40,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.swingui.ValidatedObject;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.RegExValidator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -53,7 +54,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Opens a dialog that allows the user to choose index
  */
-public class MatchMakerIndexBuilder implements DataEntryPanel{
+public class MatchMakerIndexBuilder implements DataEntryPanel, ValidatedObject{
 
 	private static final Logger logger = Logger.getLogger(MatchMakerIndexBuilder.class);
 	private final MatchMakerSwingSession swingSession;
@@ -67,9 +68,7 @@ public class MatchMakerIndexBuilder implements DataEntryPanel{
     /** Displays validation results */
     private StatusComponent statusComponent;
 
-    /**
-     * Handles the validation rules for this form.
-     */
+    /** Handles the validation rules for this form. */
     private FormValidationHandler validationHandler;
 
 	public MatchMakerIndexBuilder(Project project, MatchMakerSwingSession swingSession) throws ArchitectException {
@@ -92,7 +91,7 @@ public class MatchMakerIndexBuilder implements DataEntryPanel{
 		columnChooserTableModel = new ColumnChooserTableModel(sqlTable, oldIndex, true);
 		final EditableJTable columntable = new EditableJTable(columnChooserTableModel);
 		columntable.addColumnSelectionInterval(1, 1);
-		TableUtils.fitColumnWidths(columntable, 6);
+		TableUtils.fitColumnWidths(columntable, 15);
 
 		FormLayout layout = new FormLayout(
 				"4dlu,fill:pref:grow,4dlu",
@@ -128,7 +127,6 @@ public class MatchMakerIndexBuilder implements DataEntryPanel{
 	}
 
 	public boolean applyChanges() {
-
 		
 		List<SQLColumn> selectedColumns = columnChooserTableModel.getSelectedSQLColumns();
 
@@ -139,6 +137,7 @@ public class MatchMakerIndexBuilder implements DataEntryPanel{
 		SQLIndex index = new SQLIndex(indexName.getText(),true,null,IndexType.OTHER,null);
 		try {
 			for (SQLColumn column : selectedColumns) {
+				System.out.println(column);
 				index.addChild(index.new Column(column,false,false));
 			}
 			logger.debug("Index columns after save: "+index.getChildren());
@@ -154,29 +153,14 @@ public class MatchMakerIndexBuilder implements DataEntryPanel{
 
 	public void discardChanges() {
 		//does nothing for now...
-//		if (hasUnsavedChanges()) {
-//			int choice = JOptionPane.showOptionDialog(
-//					panel,
-//					"Your index has unsaved changes", "Unsaved Changes", 0, 0, null,
-//                    new String[] { "Save", "Discard", "Cancel" }, "Save");
-//            if (choice == 0) {
-//                boolean success = applyChanges();
-//                if (!success) {
-//                    JOptionPane.showMessageDialog(panel, "Validation Error.  Can't save.");
-//                    return;
-//                }
-//            } else if (choice == 1) {
-//                // fall through
-//            } else if (choice == 2 || choice == -1) {
-//                return;
-//            } else {
-//                throw new IllegalStateException("Unknown choice: "+choice);
-//            }
-//		}
 	}
 
 	public JComponent getPanel() {
 		return panel;
+	}
+
+	public FormValidationHandler getHandler() {
+		return validationHandler;
 	}
 
 }

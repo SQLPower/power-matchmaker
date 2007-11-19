@@ -95,24 +95,27 @@ public class ColumnChooserTableModel extends AbstractTableModel{
 		modified = true;
 		if (columnIndex == 0) {
 			boolean value = (Boolean) aValue;
-			column.setKey(value);
-			if (value && showPosition) {
-				int max = -1;
-				for ( CustomTableColumn ctc : candidateColumns ) {
-					if (ctc.getPosition() != null && max < ctc.getPosition().intValue()) {
-						max = ctc.getPosition();
+			if (column.isKey() != value) {
+				column.setKey(value);
+				if (value && showPosition) {
+					int max = -1;
+					for ( CustomTableColumn ctc : candidateColumns ) {
+						if (ctc.getPosition() != null && max < ctc.getPosition().intValue()) {
+							max = ctc.getPosition();
+						}
 					}
+					column.setPosition(new Integer(max+1));
+				} else {
+					column.setPosition(null);
 				}
-				column.setPosition(new Integer(max+1));
-			} else {
-				column.setPosition(null);
+				fireTableDataChanged();
 			}
 		} else if (columnIndex == 1 && showPosition) {
 			column.setPosition((Integer) aValue);
 		} else {
 			throw new IllegalArgumentException("unknown columnIndex or index not editable: "+ columnIndex);
 		}
-		fireTableDataChanged();
+		
 	}
 
 	@Override
