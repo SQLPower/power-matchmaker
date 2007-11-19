@@ -114,7 +114,6 @@ public class UserPreferencesEditor implements DataEntryPanel {
     }
 
 	public boolean hasUnsavedChanges() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 }

@@ -141,12 +141,10 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	}
 
     public String createNewUniqueName() {
-        // TODO Auto-generated method stub
         return null;
     }
 
 	public boolean isThisProjectNameAcceptable(String name) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -184,14 +182,12 @@ public class TestingMatchMakerSession implements MatchMakerSession {
      * Does nothing.
      */
     public void addWarningListener(WarningListener l) {
-        // TODO Auto-generated method stub
     }
 
     /**
      * Does nothing.
      */
     public void removeWarningListener(WarningListener l) {
-    	// TODO Auto-generated method stub
     }
 
     public TranslateGroupParent getTranslations() {

@@ -29,12 +29,8 @@ public class TableMergeRulesDAOOracleTest extends AbstractTableMergeRulesDAOTest
     
     public TableMergeRulesDAOOracleTest() throws Exception {
 		super();
-		// TODO Auto-generated constructor stub
 	}
-	@Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+	
     @Override
 	public void resetSession() throws Exception {
 		((TestingMatchMakerHibernateSession) getSession()).resetSession();

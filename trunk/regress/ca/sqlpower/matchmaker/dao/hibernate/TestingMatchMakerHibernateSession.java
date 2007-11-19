@@ -120,19 +120,16 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     ///////// Unimplemented MatchMakerHibernateSession methods are below this line //////////
     
     public String createNewUniqueName() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.createNewUniqueName()");
         return null;
     }
 
     public PlFolder findFolder(String foldername) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.findFolder()");
         return null;
     }
 
     public String getAppUser() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.getAppUser()");
         return null;
     }
@@ -142,13 +139,11 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     }
 
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.getDAO()");
         return null;
     }
 
     public String getDBUser() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.getDBUser()");
         return null;
     }
@@ -165,37 +160,31 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     }
 
     public List<PlFolder> getFolders() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.getFolders()");
         return null;
     }
 
     public Project getProjectByName(String name) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.getProjectByName()");
         return null;
     }
 
     public Date getSessionStartTime() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.getSessionStartTime()");
         return null;
     }
 
     public boolean isThisProjectNameAcceptable(Project project, String name) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.isThisProjectNameAcceptable()");
         return false;
     }
 
     public boolean isThisProjectNameAcceptable(String name) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.isThisProjectNameAcceptable()");
         return false;
     }
 
     public long countProjectByName(String name) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: TestingMatchMakerHibernateSession.countProjectByName()");
         return 0;
     }
@@ -243,13 +232,11 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	}
 
 	public FolderParent getBackupFolderParent() {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.getBackupFolderParent()");
 		return null;
 	}
 
 	public FolderParent getCurrentFolderParent() {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.getCurrentFolderParent()");
 		return null;
 	}
@@ -259,7 +246,6 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     }
 
 	public boolean canSelectTable(SQLTable table) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.canSelectTable()");
 		return false;
 	}

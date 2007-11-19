@@ -33,32 +33,25 @@ public class MatchMakerTranslateGroupDAOStub implements
             .getLogger(MatchMakerTranslateGroupDAOStub.class);
     
     public MatchMakerTranslateGroup findByName(String name) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: MatchMakerTranslateGroupDAOStub.findByName()");
         return null;
     }
 
     public void delete(MatchMakerTranslateGroup deleteMe) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: MatchMakerTranslateGroupDAOStub.delete()");
-
     }
 
     public List<MatchMakerTranslateGroup> findAll() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: MatchMakerTranslateGroupDAOStub.findAll()");
         return null;
     }
 
     public Class<MatchMakerTranslateGroup> getBusinessClass() {
-        // TODO Auto-generated method stub
-        logger
-                .debug("Stub call: MatchMakerTranslateGroupDAOStub.getBusinessClass()");
+        logger.debug("Stub call: MatchMakerTranslateGroupDAOStub.getBusinessClass()");
         return null;
     }
 
     public void save(MatchMakerTranslateGroup saveMe) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: MatchMakerTranslateGroupDAOStub.save()");
 
     }
