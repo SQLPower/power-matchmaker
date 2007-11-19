@@ -95,13 +95,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	private static final Type[] MUNGECOM_CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class};
 
     /**
-     * The preference key that specifies whether or not auto-login is enabled.
-     * The preference is boolean-valued. If the key is missing in the prefs, the
-     * default value should be assumed to be true.
-     */
-    private static final String AUTO_LOGIN_PREF_KEY = "autoLoginEnabled"; 
-
-	/**
 	 * The list of information about mungeSteps, which stores their StepClass, GUIClass, name and icon
 	 */
 	private final Map<Class, StepDescription> stepProperties = new HashMap<Class, StepDescription>();
@@ -322,7 +315,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#setLastLoginDataSource(ca.sqlpower.sql.SPDataSource)
      */
     public void setLastLoginDataSource(SPDataSource dataSource) {
-    	swingPrefs.put(MatchMakerSwingUserSettings.LAST_LOGIN_DATA_SOURCE, dataSource.getName());
+        swingPrefs.put(MatchMakerSwingUserSettings.LAST_LOGIN_DATA_SOURCE, dataSource.getName());
     }
 
     /* (non-Javadoc)
@@ -331,6 +324,21 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     public SPDataSource getLastLoginDataSource() {
         String lastDSName = swingPrefs.get(MatchMakerSwingUserSettings.LAST_LOGIN_DATA_SOURCE, null);
         if (lastDSName == null) return null;
+        for (SPDataSource ds : getDataSources()) {
+            if (ds.getName().equals(lastDSName)) return ds;
+        }
+        return null;
+    }
+
+    public void setAutoLoginDataSource(SPDataSource ds) {
+        swingPrefs.put(MatchMakerSwingUserSettings.AUTO_LOGIN_DATA_SOURCE, ds.getName());
+    }
+
+    public SPDataSource getAutoLoginDataSource() {
+        String lastDSName = swingPrefs.get(MatchMakerSwingUserSettings.AUTO_LOGIN_DATA_SOURCE, null);
+        if (lastDSName == null) {
+            lastDSName = DEFAULT_REPOSITORY_DATA_SOURCE_NAME;
+        }
         for (SPDataSource ds : getDataSources()) {
             if (ds.getName().equals(lastDSName)) return ds;
         }
@@ -592,10 +600,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	}
     
     public boolean isAutoLoginEnabled() {
-        return swingPrefs.getBoolean(AUTO_LOGIN_PREF_KEY, true);
+        return swingPrefs.getBoolean(MatchMakerSwingUserSettings.AUTO_LOGIN_ENABLED, true);
     }
 
     public void setAutoLoginEnabled(boolean enabled) {
-        swingPrefs.putBoolean(AUTO_LOGIN_PREF_KEY, enabled);
+        swingPrefs.putBoolean(MatchMakerSwingUserSettings.AUTO_LOGIN_ENABLED, enabled);
     }
 }

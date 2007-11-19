@@ -53,8 +53,6 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 
 	private static final Logger logger = Logger.getLogger(MatchMakerHibernateSessionContext.class);
 
-    private static final String DEFAULT_REPOSITORY_DATA_SOURCE_NAME = "MatchMaker Default Repository";
-
     /**
      * The list of database connections that this session context knows about.  This
      * implementation uses the <blink><marquee>AWESOME</marquee></blink> pl.ini file

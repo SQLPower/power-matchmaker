@@ -25,7 +25,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
 
@@ -53,8 +53,8 @@ public class AboutPanel extends JPanel implements DataEntryPanel {
         String message =
             "<html>" +
             "<h1>Power*MatchMaker</h1>" +
-            "<p>Version " + MatchMakerSessionContext.APP_VERSION + "</p>" +
-            "<p>Copyright 2006 SQL Power Group Inc.</p>" +
+            "<p>Version " + MatchMakerVersion.APP_VERSION + "</p>" +
+            "<p>Copyright 2007 SQL Power Group Inc.</p>" +
             "</html>";
 		content = new JLabel(message);
 		add(content);

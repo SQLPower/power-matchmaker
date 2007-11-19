@@ -151,4 +151,18 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      */
     public void setAutoLoginEnabled(boolean enabled);
 
+    /**
+     * Returns the data source for the auto-login repository.  If {@link #isAutoLoginEnabled()}
+     * is true, the MatchMaker will attempt to connect to this data source
+     * and use it as the repository.
+     */
+    public SPDataSource getAutoLoginDataSource();
+
+    /**
+     * Sets the data source for the auto-login repository.  If you want
+     * auto-login to actually happen when the application starts, you will
+     * have to enable it with the flag {@link #setAutoLoginEnabled(boolean)}.
+     */
+    public void setAutoLoginDataSource(SPDataSource selectedItem);
+
 }

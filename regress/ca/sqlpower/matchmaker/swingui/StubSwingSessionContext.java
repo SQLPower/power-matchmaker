@@ -142,4 +142,13 @@ public class StubSwingSessionContext implements SwingSessionContext {
         logger.debug("Stub call: StubSwingSessionContext.createDefaultSession()");
         return null;
     }
+
+    public SPDataSource getAutoLoginDataSource() {
+        logger.debug("Stub call: StubSwingSessionContext.getAutoLoginDataSource()");
+        return null;
+    }
+
+    public void setAutoLoginDataSource(SPDataSource selectedItem) {
+        logger.debug("Stub call: StubSwingSessionContext.setAutoLoginDataSource()");
+    }
 }
