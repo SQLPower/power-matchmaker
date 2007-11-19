@@ -46,6 +46,7 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
+import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -66,6 +67,8 @@ import com.jgoodies.forms.layout.FormLayout;
 public class TranslateGroupsEditor implements EditorPane {
 
 	private static final Logger logger = Logger.getLogger(TranslateGroupsEditor.class);
+
+    public static final String TRANSLATE_WORDS_SPREADSHEET_KEY = "pIOfRi4wZwIh1eNPmWCRhPQ";
 	
 	private JPanel panel;
 	private JScrollPane translateGroupsScrollPane;
@@ -143,7 +146,7 @@ public class TranslateGroupsEditor implements EditorPane {
 		bbb.addGridded(new JButton(new AbstractAction("Get Online List"){
 			public void actionPerformed(ActionEvent e) {
 				int opt = JOptionPane.showConfirmDialog(swingSession.getFrame(), "Download Online list?\n" +
-						"The list can be viewed at: http://spreadsheets.google.com/pub?key=pIOfRi4wZwIh1eNPmWCRhPQ","Download Online List", JOptionPane.YES_NO_OPTION);
+						"The list can be viewed at: http://spreadsheets.google.com/pub?key=" + TRANSLATE_WORDS_SPREADSHEET_KEY,"Download Online List", JOptionPane.YES_NO_OPTION);
 				if (opt == JOptionPane.YES_OPTION) {
 					for (MatchMakerTranslateGroup mmtg : translateGroups) {
 						if (mmtg.getName().equals("SQLPower Translate Words")) {
@@ -287,18 +290,19 @@ public class TranslateGroupsEditor implements EditorPane {
 	}
 	
 	/**
-	 * Creates a matchMaker translate group from the Google spread sheet at pIOfRi4wZwIh1eNPmWCRhPQ
-	 * The sheet is owned by matchmaker@sqlpower.ca called TranslationWords.
+	 * Creates a matchMaker translate group from the Google spread sheet with key
+     * {@link #TRANSLATE_WORDS_SPREADSHEET_KEY}.
+	 * The sheet is owned by matchmaker@sqlpower.ca and it's called TranslationWords.
 	 * 
 	 * @return The MatchMakerTranslateWord group from the spread sheet 
 	 * @throws ArchitectException If something goes wrong
 	 */
 	private MatchMakerTranslateGroup getOnlineTranslateGroup() throws ArchitectException {
-		SpreadsheetService sss = new SpreadsheetService("SQLPower-Power*MatchMaker-0.9.1");
+		SpreadsheetService sss = new SpreadsheetService("SQLPower-Power*MatchMaker-" + MatchMakerVersion.APP_VERSION);
 		CellFeed cf;
 		
 		try {
-			URL url = new URL("http://spreadsheets.google.com/feeds/cells/pIOfRi4wZwIh1eNPmWCRhPQ/1/public/values");
+			URL url = new URL("http://spreadsheets.google.com/feeds/cells/" + TRANSLATE_WORDS_SPREADSHEET_KEY + "/1/public/values");
 			cf = sss.getFeed(url, CellFeed.class);
 		} catch (Exception e) {
 			throw new ArchitectException("Error could not generate translation words from google spreadsheet!",e);
