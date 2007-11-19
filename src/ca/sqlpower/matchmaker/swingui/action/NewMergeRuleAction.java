@@ -74,16 +74,10 @@ public class NewMergeRuleAction extends AbstractAction {
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-//		dialog.setPreferredSize(new Dimension(4000, 2300));
 		final SQLObjectChooser chooser = new SQLObjectChooser(swingSession);
 		
 		ItemListener il = new ItemListener(){
-			public void itemStateChanged(ItemEvent e) {
-			//	dialog.setSize(new Dimension(
-				//		(int)Math.max(dialog.getPreferredSize().getWidth(),
-				//				((JComboBox)e.getSource()).getWidth() + chooser.getCatalogTerm().getWidth() + 200), 
-				///		dialog.getHeight()));
-				
+			public void itemStateChanged(ItemEvent e) {			
 				SwingUtilities.invokeLater(new Runnable(){
 
 					public void run() {	
