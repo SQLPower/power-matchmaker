@@ -95,7 +95,6 @@ public class SubstringMungeStep extends AbstractMungeStep {
 			out.setData(null);
 		}
 		
-		printOutputs();
 		return true;
 	}
 }

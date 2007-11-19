@@ -107,7 +107,6 @@ public class SQLInputStep extends AbstractMungeStep {
             }
         }
         
-        printOutputs();
         return true;
     }
     

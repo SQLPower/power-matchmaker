@@ -138,7 +138,6 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 		
 		logger.debug("Adding MungeResult " + result);
 		results.add(result);
-		printOutputs();
 		return Boolean.TRUE;
 	}
 	

@@ -169,7 +169,6 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 			out.setData(null);
 		}
 		
-		printOutputs();
 		return true;
 	}
 }

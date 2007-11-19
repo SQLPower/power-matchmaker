@@ -526,7 +526,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
             throw new NullPointerException("Step " + getClass().getName() + " lost its logger");
         }
     	printInputs();
-    	return doCall();
+    	Boolean ret =  doCall();
+    	printOutputs();
+    	return ret;
     }
 
     /**

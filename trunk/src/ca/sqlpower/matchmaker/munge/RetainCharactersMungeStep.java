@@ -124,7 +124,6 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 		} else {
 			out.setData(null);
 		}
-		printOutputs();
 		return true;
 	}
 }
