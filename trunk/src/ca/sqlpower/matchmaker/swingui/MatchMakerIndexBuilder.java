@@ -40,9 +40,9 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
-import ca.sqlpower.swingui.ValidatedObject;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.RegExValidator;
+import ca.sqlpower.validation.Validated;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
 
@@ -54,7 +54,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Opens a dialog that allows the user to choose index
  */
-public class MatchMakerIndexBuilder implements DataEntryPanel, ValidatedObject{
+public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 
 	private static final Logger logger = Logger.getLogger(MatchMakerIndexBuilder.class);
 	private final MatchMakerSwingSession swingSession;
