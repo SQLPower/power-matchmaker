@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import ca.sqlpower.architect.AbstractUserSetting;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 
 /**
  * This class is used as a front end to the UserSettings interface
@@ -56,4 +57,20 @@ public class MatchMakerSwingUserSettings extends AbstractUserSetting {
     
     public static final String LAST_IMPORT_EXPORT_PATH
             = "last.importexport.path";
+
+    /**
+     * The preference key that specifies whether or not auto-login is enabled.
+     * The preference is boolean-valued. If the key is missing in the prefs, the
+     * default value should be assumed to be true.
+     */
+    public static final String AUTO_LOGIN_ENABLED = "SwingUserSettings.AUTO_LOGIN_ENABLED";
+
+    /**
+     * If auto login is enabled, this is the name of the repository 
+     * data source to connect to on startup. If this key is null-valued
+     * or missing, the assumed default value should be
+     * {@link MatchMakerSessionContext#DEFAULT_REPOSITORY_DATA_SOURCE_NAME}.
+     */
+    public static final String AUTO_LOGIN_DATA_SOURCE = "SwingUserSettings.AUTO_LOGIN_DATA_SOURCE";
+
 }

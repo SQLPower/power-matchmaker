@@ -28,7 +28,6 @@ import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.util.Version;
 import ca.sqlpower.util.VersionFormatException;
 
 /**
@@ -45,10 +44,15 @@ import ca.sqlpower.util.VersionFormatException;
  */
 public interface MatchMakerSessionContext {
 
-	/**
-     * The version of this MatchMaker front end.
+    /**
+     * The name of the data source that the local default repository is
+     * in. Technically, this is only a concern when using the MatchMaker
+     * with a repository provider (DAO layer) that uses data sources,
+     * but several different session context implementations need to know
+     * this shared piece of information, and those implementations definitely
+     * shouldn't know about each other.
      */
-    public static final Version APP_VERSION = new Version(0, 9, 0);
+    public static final String DEFAULT_REPOSITORY_DATA_SOURCE_NAME = "MatchMaker Default Repository";
 
     /**
      * Name of the preferences parameter for email host address

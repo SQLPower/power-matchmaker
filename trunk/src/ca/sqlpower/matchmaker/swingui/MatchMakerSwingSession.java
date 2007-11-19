@@ -111,6 +111,7 @@ import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.swingui.CommonCloseAction;
+import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
@@ -204,10 +205,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     
     private Action userPrefsAction = new AbstractAction("User Preferences...") {
 		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(MatchMakerSwingSession.this.frame,
-					"The User Preferences action for OS X is not yet implemented",
-					"Apologies",
-					JOptionPane.INFORMATION_MESSAGE);
+            JDialog d = DataEntryPanelBuilder.createDataEntryPanelDialog(
+                    new UserPreferencesEditor((SwingSessionContext) getContext()),
+                    frame, "User Preferences", "OK");
+            d.setLocationRelativeTo(frame);
+            d.setVisible(true);
 		}
     };
 

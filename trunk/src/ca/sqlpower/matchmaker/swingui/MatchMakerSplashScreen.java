@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.sql.DataSourceCollection;
@@ -99,16 +100,18 @@ public class MatchMakerSplashScreen {
         spgLogo.add(new JLabel(new ImageIcon(getClass().getResource("/icons/sqlpower_alpha_gradient.png"))));
         
 		JLabel mmLogo = new JLabel(new ImageIcon(getClass().getResource("/icons/matchmaker_huge.png")), JLabel.CENTER);
-		JLabel title  = new JLabel("<html>" + "Power*MatchMaker " + MatchMakerSessionContext.APP_VERSION + "</html>", JLabel.CENTER);
+		JLabel title  = new JLabel("<html>" + "Power*MatchMaker " + MatchMakerVersion.APP_VERSION + "</html>", JLabel.CENTER);
 		Font f = title.getFont();
 		Font newf = new Font(f.getName(), f.getStyle(), (int) (f.getSize() * 1.5));
 		title.setFont(newf);
         
         StringBuilder summary = new StringBuilder();
         summary.append("<html><table><tr>");
+        summary.append("<th colspan=2>Repository Information<br><br></th>");
+        summary.append("</tr><tr>");
         summary.append("<td>Database:</td><td>").append(session.getDatabase().getName()).append("</td>");
         summary.append("</tr><tr>");
-        summary.append("<td>Database User Name:</td><td>").append(session.getDBUser()).append("</td>");
+        summary.append("<td>User Name:</td><td>").append(session.getDBUser()).append("</td>");
         summary.append("</tr><tr>");
         
         Connection con = null;
@@ -160,14 +163,14 @@ public class MatchMakerSplashScreen {
 		rowCount++;
 		
         pb.add(title, c.xy(2, rowCount));
-		pb.appendRow(new RowSpec("60px"));
+		pb.appendRow(new RowSpec("40px"));
 		rowCount++;
 		
         pb.appendRow(new RowSpec("fill:pref"));
 		rowCount++;
 		
         pb.add(summaryLabel,c.xy(2, rowCount));
-		pb.appendRow(new RowSpec("50px"));
+		pb.appendRow(new RowSpec("40px"));
         rowCount++;
         
         pb.appendRow(new RowSpec("fill:pref"));
