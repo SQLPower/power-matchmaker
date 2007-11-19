@@ -161,7 +161,7 @@ public class TranslateGroupsEditor extends NoEditEditorPane {
 					try {
 					MatchMakerTranslateGroup mmtg = getOnlineTranslateGroup();
 					swingSession.setCurrentEditorComponent(new TranslateWordsEditor(swingSession, mmtg));
-					} catch (ArchitectException ex) {
+					} catch (Exception ex) {
 						SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Could not generate online list", ex);
 					}
 				}
@@ -278,7 +278,7 @@ public class TranslateGroupsEditor extends NoEditEditorPane {
 	 * @return The MatchMakerTranslateWord group from the spread sheet 
 	 * @throws ArchitectException If something goes wrong
 	 */
-	private MatchMakerTranslateGroup getOnlineTranslateGroup() throws ArchitectException {
+	private MatchMakerTranslateGroup getOnlineTranslateGroup() {
 		SpreadsheetService sss = new SpreadsheetService("SQLPower-Power*MatchMaker-" + MatchMakerVersion.APP_VERSION);
 		CellFeed cf;
 		
@@ -286,7 +286,7 @@ public class TranslateGroupsEditor extends NoEditEditorPane {
 			URL url = new URL("http://spreadsheets.google.com/feeds/cells/" + TRANSLATE_WORDS_SPREADSHEET_KEY + "/1/public/values");
 			cf = sss.getFeed(url, CellFeed.class);
 		} catch (Exception e) {
-			throw new ArchitectException("Error could not generate translation words from google spreadsheet!",e);
+			throw new RuntimeException("Error could not generate translation words from google spreadsheet!",e);
 		}
 
 		
