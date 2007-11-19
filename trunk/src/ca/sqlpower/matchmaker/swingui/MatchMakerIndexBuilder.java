@@ -137,7 +137,6 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, ValidatedObject{
 		SQLIndex index = new SQLIndex(indexName.getText(),true,null,IndexType.OTHER,null);
 		try {
 			for (SQLColumn column : selectedColumns) {
-				System.out.println(column);
 				index.addChild(index.new Column(column,false,false));
 			}
 			logger.debug("Index columns after save: "+index.getChildren());
