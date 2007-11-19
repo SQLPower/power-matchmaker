@@ -284,12 +284,12 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	}
 	
 	@Override
-	public void doOpen(Logger logger) throws Exception {
-		//checks if the database support updatable result sets.
-		usePS = !getProject().getSourceTable().getParentDatabase()
-			.getDataSource().acceptsUpdateableResultSets();
-		
+	public void doOpen(Logger logger) throws Exception {		
 		table = getProject().getSourceTable();
+		
+		//checks if the database support updatable result sets.
+		usePS = !table.getParentDatabase().getDataSource().acceptsUpdateableResultSets();
+		
 		setName(table.getName());
 		addInitialInputs();
 	}
