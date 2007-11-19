@@ -57,7 +57,7 @@ public class WordCountMungeStep extends AbstractMungeStep {
 	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
 	
 	public WordCountMungeStep() {
-		setName("Word Count");
+		super("Word Count",false);
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
 		setParameter(USE_REGEX_PARAMETER_NAME, false);
 		setParameter(CASE_SENSITIVE_PARAMETER_NAME, true);
@@ -87,8 +87,7 @@ public class WordCountMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	public Boolean call() throws Exception {
-		super.call();
+	public Boolean doCall() throws Exception {
 		String delimiter = getParameter(DELIMITER_PARAMETER_NAME);
 		boolean useRegex = getBooleanParameter(USE_REGEX_PARAMETER_NAME);
 		boolean caseSensitive = getBooleanParameter(CASE_SENSITIVE_PARAMETER_NAME);
@@ -123,9 +122,5 @@ public class WordCountMungeStep extends AbstractMungeStep {
 		out.setData(new BigDecimal(wordCount));
 		printOutputs();
 		return true;
-	}
-
-	public boolean canAddInput() {
-		return false;
 	}
 }

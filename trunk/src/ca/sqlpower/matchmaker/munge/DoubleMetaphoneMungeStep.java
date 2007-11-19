@@ -36,7 +36,7 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 	public static final String USE_ALTERNATE_PARAMETER_NAME = "useAlternate";
 	
 	public DoubleMetaphoneMungeStep() {
-		setName("Double Metaphone");
+		super("Double Metaphone",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("doubleMetaphoneOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("doubleMetaphone", String.class);
@@ -63,9 +63,7 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	public Boolean call() throws Exception {
-		super.call();
-		
+	public Boolean doCall() throws Exception {		
 		MungeStepOutput<String> out = getOut();
 		boolean useAlternate = getBooleanParameter(USE_ALTERNATE_PARAMETER_NAME);
 		MungeStepOutput<String> in = getMSOInputs().get(0);
@@ -77,9 +75,5 @@ public class DoubleMetaphoneMungeStep extends AbstractMungeStep {
 		}
 		printOutputs();
 		return true;
-	}
-
-	public boolean canAddInput() {
-		return false;
 	}
 }

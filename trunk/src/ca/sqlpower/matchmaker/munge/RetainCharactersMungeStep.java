@@ -55,7 +55,7 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 	 * munge step as defaults.
 	 */
 	public RetainCharactersMungeStep() {
-		setName("Retain Chars");
+		super("Retain Chars",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("retainCharactersOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("retainCharacters", String.class);
@@ -84,8 +84,7 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	public Boolean call() throws Exception {
-		super.call();
+	public Boolean doCall() throws Exception {
 	
 		MungeStepOutput<String> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
@@ -127,9 +126,5 @@ public class RetainCharactersMungeStep extends AbstractMungeStep {
 		}
 		printOutputs();
 		return true;
-	}
-
-	public boolean canAddInput() {
-		return false;
 	}
 }

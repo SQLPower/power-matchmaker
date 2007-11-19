@@ -81,6 +81,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	protected Logger logger;
 	
 	/**
+	 * Stores if the munge step can have inputs added to it "on the fly"
+	 */
+	private boolean canAddInputs;
+	
+	/**
 	 * The default object type of this Munge Step's input. The default value is {@link Object#class}.
 	 * This is used for Munge Steps with variable inputs as the default class to use when adding an new input
 	 * which now happens when connecting an input into the last empty input. 
@@ -89,6 +94,37 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 * expected input type.   
 	 */
 	private Class defaultInputClass = Object.class;
+	
+	
+	public AbstractMungeStep(String name, boolean canAddInputs) {
+		setName(name);
+		this.canAddInputs = canAddInputs;
+	}
+	
+	//The set of methods that can be to be overwritten by the subclasses. 
+	/**
+	 * A method that is called when a step is opened. Default is No-op. 
+	 */
+	public void doOpen(Logger log) throws Exception {}
+	
+	/**
+	 * A method that is called when an step is "run/called". Default is No-op. 
+	 */
+	public Boolean doCall() throws Exception{return Boolean.TRUE;}
+	/**
+	 * A method that is called when a step is attempting to rollback. Default is No-op. 
+	 */
+	public void doRollback() throws Exception {}
+	
+	/**
+	 * A method that is called when a step is trying to commit. Default is No-op. 
+	 */
+	public void doCommit() throws Exception{}
+	
+	/**
+	 * A method that is called when a step is closed. Default is No-op. 
+	 */
+	public void doClose() throws Exception{}
 	
 	public List<MungeStepOutput> getMSOInputs() {
 		List<MungeStepOutput> values = new ArrayList<MungeStepOutput>();
@@ -139,6 +175,8 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 				inputs.get(index).descriptor, null);
 		inputs.remove(index);
 	}
+	
+
 
     public Collection<String> getParameterNames() {
         return Collections.unmodifiableSet(parameters.keySet());
@@ -330,13 +368,20 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 			descriptor.setType(type);
 		}
 	}
+	
+	/**
+	 * returns if the method can have inputs added
+	 */
+	public final boolean canAddInput() {
+		return canAddInputs;
+	}
 
     /**
      * Only sets the logger, because most steps do not need to allocate any resources.
      * If your step needs to allocate resources (perform a database query, open
      * a file, connect to a server, and so on), you should override this method.
      */
-    public void open(Logger logger) throws Exception {
+    public final void open(Logger logger) throws Exception {
     	this.logger = logger;
         if (logger == null) {
             throw new NullPointerException("Step " + getClass().getName() + " was given a null logger");
@@ -350,12 +395,18 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
             throw new IllegalStateException("Step is already opened");
         }
         
+        doOpen(logger);
+
         opened = true;
         committed = false;
         rolledBack = false;
     }
     
-    public void commit() throws Exception {
+    /**
+     * Called when the step tries to commit. This called doCommit(). doCommit should
+     * be overridden if the step is to do anything when commit is called.
+     */
+    public final void commit() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Can't commit because step is not opened");
         }
@@ -364,10 +415,15 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
                     "Can't commit because step is already committed or rolled back" +
                     " (committed="+committed+"; rolledBack="+rolledBack+")");
         }
+        doCommit();
         committed = true;
     }
     
-    public void rollback() throws Exception {
+    /**
+     * Called when the step tries to rollback. This called doRollback(). doRollback() should
+     * be overridden if the step is to do anything when commit is called.
+     */
+    public final void rollback() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Can't roll back because step is not opened");
         }
@@ -376,15 +432,15 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
                     "Can't roll back because step is already committed or rolled back" +
                     " (committed="+committed+"; rolledBack="+rolledBack+")");
         }
+        doRollback();
         rolledBack = true;
     }
 
     /**
-     * Does nothing, because most steps do not need to allocate any resources.
-     * If you override the {@link #open()} method, you should override this method
-     * too and clean up the resources.
+     * Called when this step is closed. This calls doClose(). doClose should be overridden if 
+     * the step needs to do anything on close.
      */
-    public void close() throws Exception {
+    public final void close() throws Exception {
         if (!opened) {
             throw new IllegalStateException("Step not opened");
         }
@@ -401,6 +457,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
             }
             logger = null;
         }
+        doClose();
         opened = false;
     }
     
@@ -451,11 +508,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
     
     
     /** 
-     * Any implementation of this class that implements call() must call super.call()
-     * as this validates that the step has been opened before the call. This will throw
-     * an {@link IllegalStateException} if the munge step has not be opened.
+     * The method called to start the step. This is a final method and cannot be
+     * over written. This step calls doCall(), any subclass should override doCall 
+     * if the step is to do anything. 
      */
-    public Boolean call() throws Exception {
+    public final Boolean call() throws Exception {
     	if (!opened) {
     		throw new IllegalStateException("A munge step must be opened before it is called.");
     	}
@@ -469,7 +526,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
             throw new NullPointerException("Step " + getClass().getName() + " lost its logger");
         }
     	printInputs();
-    	return true;
+    	return doCall();
     }
 
     /**

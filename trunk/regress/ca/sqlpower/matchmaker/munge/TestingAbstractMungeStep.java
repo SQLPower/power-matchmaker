@@ -26,6 +26,7 @@ package ca.sqlpower.matchmaker.munge;
 public class TestingAbstractMungeStep extends AbstractMungeStep {
 
 	public TestingAbstractMungeStep() {
+		super("Testing Abstract Munge Step", true);
 	}
 	
 	@Override
@@ -38,12 +39,7 @@ public class TestingAbstractMungeStep extends AbstractMungeStep {
 		return 0;
 	}
 
-	public Boolean call() throws Exception {
-        super.call();
-		return true;
-	}
-
-	public boolean canAddInput() {
+	public Boolean doCall() throws Exception {
 		return true;
 	}
 }

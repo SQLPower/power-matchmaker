@@ -71,7 +71,7 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
 	
 	public SubstringByWordMungeStep() {
-		setName("Substring by Word");
+		super("Substring by Word",false);
 		setParameter(DELIMITER_PARAMETER_NAME, " ");
 		setParameter(RESULT_DELIM_PARAMETER_NAME, " ");
 		setParameter(USE_REGEX_PARAMETER_NAME, false);
@@ -107,9 +107,7 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 	 * This call() throws an {@link IndexOutOfBoundsException} if the given
 	 * indices were not in the range of the input
 	 */
-	public Boolean call() throws Exception {
-		super.call();
-
+	public Boolean doCall() throws Exception {
 		int beginIndex = getIntegerParameter(BEGIN_PARAMETER_NAME);
 		int endIndex = getIntegerParameter(END_PARAMETER_NAME);
 		
@@ -173,9 +171,5 @@ public class SubstringByWordMungeStep extends AbstractMungeStep {
 		
 		printOutputs();
 		return true;
-	}
-
-	public boolean canAddInput() {
-		return false;
 	}
 }

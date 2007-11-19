@@ -58,9 +58,12 @@ import ca.sqlpower.matchmaker.Project;
 public class CleanseResultStep extends AbstractMungeStep implements MungeResultStep {
 	private SQLTable table;
 	private SQLInputStep inputStep;
-	PreparedStatement ps = null;
-
+	private PreparedStatement ps = null;
+	private boolean usePS = false; 
+	
+	
 	public CleanseResultStep() throws ArchitectException {
+		super("Table!", false);
 	}
 
 	private void addInitialInputs() throws ArchitectException {
@@ -77,8 +80,12 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 	}
 
 	@Override
-	public Boolean call() throws Exception {
-		super.call();
+	public Boolean doCall() throws Exception {
+		
+		//This is the Updatable stuff
+		if (usePS && ps == null) {
+			ps = getUpdateStatment(getMSOInputs());
+		}
 		
 		List<MungeStepOutput> inputs = getMSOInputs(); 
 
@@ -271,33 +278,30 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		logger.debug("attempting updaterow");
 		rs.updateRow();
 	}
-
-	public boolean canAddInput() {
-		return false;
-	}
-
+	
 	public List<MungeResult> getResults() {
 		return Collections.emptyList();
 	}
 	
 	@Override
-	public void open(Logger logger) throws Exception {
-		open(logger, getProject());
-	}
-	
-	public void open(Logger logger, Project project) throws Exception {
-		super.open(logger);
+	public void doOpen(Logger logger) throws Exception {
+		//checks if the database support updatable result sets.
+		usePS = !getProject().getSourceTable().getParentDatabase()
+			.getDataSource().acceptsUpdateableResultSets();
 		
-		table = project.getSourceTable();
+		table = getProject().getSourceTable();
 		setName(table.getName());
 		addInitialInputs();
-		
-		//stops it from crashing when it is initially made. updatble
-		if (ps == null && getProject() != null 
-				&& !getProject().getSourceTable().getParentDatabase()
-					.getDataSource().acceptsUpdateableResultSets()) {
-			ps = getUpdateStatment(getMSOInputs());
+	}
+	
+	
+	@Override
+	public Project getProject() {
+		Project p = super.getProject();
+		if (p == null && inputStep != null) {
+			p = inputStep.getProject();
 		}
+		return p;
 	}
     
     /**
@@ -308,8 +312,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
      * connection.
      */
     @Override
-    public void rollback() throws Exception {
-        super.rollback();
+    public void doRollback() throws Exception {
     }
 
     /**
@@ -320,8 +323,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
      * connection.
      */
     @Override
-    public void commit() throws Exception {
-        super.commit();
+    public void doCommit() throws Exception {
     }
     
     private PreparedStatement getUpdateStatment(List<MungeStepOutput> inputs) throws ArchitectException, SQLException{

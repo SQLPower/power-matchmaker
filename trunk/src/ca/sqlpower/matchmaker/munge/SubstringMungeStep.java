@@ -39,7 +39,7 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	public static final String END_PARAMETER_NAME = "endIndex";
 	
 	public SubstringMungeStep() {
-		setName("Substring");
+		super("Substring",false);
 		setParameter(BEGIN_PARAMETER_NAME, 0);
 		setParameter(END_PARAMETER_NAME, 0);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("substringOutput", String.class);
@@ -71,8 +71,7 @@ public class SubstringMungeStep extends AbstractMungeStep {
 	 * This call() throws an {@link IndexOutOfBoundsException} if the given
 	 * indices were not in the range of the input
 	 */
-	public Boolean call() throws Exception {
-		super.call();
+	public Boolean doCall() throws Exception {
 
 		int beginIndex = getIntegerParameter(BEGIN_PARAMETER_NAME);
 		int endIndex = getIntegerParameter(END_PARAMETER_NAME);
@@ -98,9 +97,5 @@ public class SubstringMungeStep extends AbstractMungeStep {
 		
 		printOutputs();
 		return true;
-	}
-
-	public boolean canAddInput() {
-		return false;
 	}
 }

@@ -136,11 +136,30 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         if (process.getSession() == null) {
         	process.setSession(swingSession);
         }
+        
+        boolean save = false;
+        
+        //adds the process to the tree
+        if (mmo.getParentProject() == null) {
+        	int x;
+        	for (x = 1; parentProject.getMungeProcessByName("New Munge Process " + x) != null ; x++);
+        	mmo.setName("New Munge Process " + x);
+            parentProject.addMungeProcess(mmo);
+            save = true;
+        }
+        
         this.mungePen = new MungePen(process, handler, parentProject);
         
         buildUI();
         setDefaults();
         addListenerToComponents();
+        
+        //Saves the process initaly so that the 
+        //it always comes back if it looks like 
+        //it is in the tree.
+        if (save) {
+        	swingSession.save(process);
+        }
     }
 
 	private void buildUI() throws ArchitectException {
