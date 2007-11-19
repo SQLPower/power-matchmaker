@@ -66,10 +66,10 @@ Finally, the constructor creates and adds an input.  This step has only one inpu
 
 The `call()` method is the meat of your step.  At data processing time, your `call()` method will be invoked exactly once for every row of data being processed.  It is the responsibility of the `call()` method to:
 
- #invoke super.call(), which helps enforce MungeStepLifeCycle requirements
- #read the input values to the step (if any)
- #do whatever processing is needed to come up with output value(s)
- #assign the new output values to each of the step's output(s)
+ # invoke super.call(), which helps enforce MungeStepLifeCycle requirements
+ # read the input values to the step (if any)
+ # do whatever processing is needed to come up with output value(s)
+ # assign the new output values to each of the step's output(s)
 
 You can see this process in our lower-case example.
 
