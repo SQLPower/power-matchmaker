@@ -43,7 +43,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
     public static final String DELIMITER_PARAMETER_NAME = "delimiter";
     
 	public ConcatMungeStep() {
-		setName("Concat");
+		super("Concat", true);
 		//This might be overriden by hibernate when loading from database.
 		MungeStepOutput<String> out = new MungeStepOutput<String>("concatOutput", String.class);
 		addChild(out);
@@ -52,10 +52,6 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		super.addInput(desc1);
 		super.addInput(desc2);
 		super.setDefaultInputClass(String.class);
-	}
-	
-	public int addInput(InputDescriptor desc) {
-		return super.addInput(desc);
 	}
 	
 	public void connectInput(int index, MungeStepOutput o) {
@@ -67,8 +63,7 @@ public class ConcatMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	public Boolean call() throws Exception {
-		super.call();
+	public Boolean doCall() throws Exception {
 		MungeStepOutput<String> out = getOut();
         
 		String delimiter = getDelimiter();
@@ -95,10 +90,6 @@ public class ConcatMungeStep extends AbstractMungeStep {
 			out.setData(null);
 		}
 		printOutputs();
-		return true;
-	}
-
-	public boolean canAddInput() {
 		return true;
 	}
     

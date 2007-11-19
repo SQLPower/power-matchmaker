@@ -72,11 +72,11 @@ public class SQLInputStep extends AbstractMungeStep {
     private MungeResultStep outputStep;
     
     public SQLInputStep() {
+    	super("Input Step", false);
     }
 
 
-    public Boolean call() throws Exception {
-        super.call();
+    public Boolean doCall() throws Exception {
         
         if (!rs.next()) {
             for (int i = 0; i < table.getColumns().size(); i++) {
@@ -112,19 +112,14 @@ public class SQLInputStep extends AbstractMungeStep {
     }
     
     @Override
-    public void open(Logger logger) throws Exception {
-    	open(logger, getProject());
-    }
-    
-    public void open(Logger logger, Project project) throws Exception {
-    	super.open(logger);
+    public void doOpen(Logger logger) throws Exception {
     	
-    	if (rs != null) {
+      	if (rs != null) {
             throw new IllegalStateException("The input step is already open");
         }
 
         if (table ==  null) { 
-        	this.table = project.getSourceTable();
+        	this.table = getProject().getSourceTable();
         	setName(table.getName());
         }
 
@@ -158,8 +153,8 @@ public class SQLInputStep extends AbstractMungeStep {
             first = false;
         }
         sql.append("\nFROM ").append(DDLUtils.toQualifiedName(table));
-        if (project.getFilter() != null && project.getFilter().trim().length() > 0) {
-            sql.append("\nWHERE " + project.getFilter());
+        if (getProject().getFilter() != null && getProject().getFilter().trim().length() > 0) {
+            sql.append("\nWHERE " + getProject().getFilter());
         }
         
         logger.debug("Attempting to execute input query: " + sql);
@@ -167,23 +162,19 @@ public class SQLInputStep extends AbstractMungeStep {
     }
     
     @Override
-    public void commit() throws Exception {
-        super.commit();
+    public void doCommit() throws Exception {
         logger.debug("Committing " + getName());
         con.commit();
     }
     
     @Override
-    public void rollback() throws Exception {
-        super.rollback();
+    public void doRollback() throws Exception {
         logger.debug("Rolling back " + getName());
         con.rollback();
     }
 
     @Override
-    public void close() throws Exception {
-    	super.close();
-    	
+    public void doClose() throws Exception { 	
         Statement stmt = rs.getStatement();
         rs.close();
         rs = null;
@@ -191,13 +182,6 @@ public class SQLInputStep extends AbstractMungeStep {
         con.close();
     }
 
-    /**
-     * Always returns false. There are no inputs to this step other than the result set.
-     */
-    public boolean canAddInput() {
-        return false;
-    }
-    
     /**
      * Creates or returns the output step for this input step.  There will only
      * ever be one output step created for a given instance of {@link SQLInputStep}.

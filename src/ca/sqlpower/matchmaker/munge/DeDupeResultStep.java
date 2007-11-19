@@ -61,8 +61,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 	private MungeStepOutput[] indexValues;
 
 	public DeDupeResultStep() {
-		super();
-		setName("Munge Results");
+		super("Munge Results",true);
 		InputDescriptor desc = new InputDescriptor("result1", Object.class);
 		super.addInput(desc);
 	}
@@ -85,8 +84,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
      * attempting to open this munge step.
 	 */
     @Override
-	public void open(Logger logger) throws Exception {
-		super.open(logger);
+	public void doOpen(Logger logger) throws Exception {
         
         if (inputStep == null) {
             throw new IllegalStateException("Can't open when input step is null.");
@@ -109,9 +107,7 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 	}
 	
 	@Override
-	public Boolean call() throws Exception {
-		super.call();
-		
+	public Boolean doCall() throws Exception {
 		List<MungeStepOutput> inputs = getMSOInputs(); 
 		
 		List<Object> mungedDataList = new ArrayList<Object>();
@@ -144,10 +140,6 @@ public class DeDupeResultStep extends AbstractMungeStep implements MungeResultSt
 		results.add(result);
 		printOutputs();
 		return Boolean.TRUE;
-	}
-	
-	public boolean canAddInput() {
-		return true;
 	}
 	
 	public List<MungeResult> getResults() {

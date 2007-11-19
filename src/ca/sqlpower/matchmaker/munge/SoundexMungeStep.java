@@ -27,7 +27,7 @@ import org.apache.commons.codec.language.Soundex;
 public class SoundexMungeStep extends AbstractMungeStep {
 
 	public SoundexMungeStep() {
-		setName("Soundex");
+		super("Soundex",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("soundexOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("soundex", String.class);
@@ -53,8 +53,7 @@ public class SoundexMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	public Boolean call() throws Exception {
-		super.call();
+	public Boolean doCall() throws Exception {
 
 		MungeStepOutput<String> out = getOut();
 		MungeStepOutput<String> in = getMSOInputs().get(0);
@@ -66,9 +65,5 @@ public class SoundexMungeStep extends AbstractMungeStep {
 		}
 		printOutputs();
 		return true;
-	}
-
-	public boolean canAddInput() {
-		return false;
 	}
 }

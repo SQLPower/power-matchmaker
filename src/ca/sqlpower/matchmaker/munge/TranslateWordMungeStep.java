@@ -63,7 +63,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	
 	
 	public TranslateWordMungeStep() {
-		setName("Translate Words");
+		super("Translate Words",false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("translateWordOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("translateWord", String.class);
@@ -95,8 +95,7 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 	 * This will throw a NullPointerException if the
 	 * translate group has not been set.
 	 */
-	public Boolean call() throws Exception {
-		super.call();
+	public Boolean goCall() throws Exception {
 
 		String from;
 		String to;
@@ -141,22 +140,18 @@ public class TranslateWordMungeStep extends AbstractMungeStep {
 		return true;
 	}
 
-	public boolean canAddInput() {
-		return false;
-	}
 	
 	/**
 	 * This munge step overrides the open() method to set its translate group from
 	 * the parameter.
 	 */
 	@Override
-	public void open(Logger logger) throws Exception {
+	public void doOpen(Logger logger) throws Exception {
 		String oid = getParameter(TRANSLATE_GROUP_PARAMETER_NAME);
 		MatchMakerTranslateGroupDAO groupDAO = (MatchMakerTranslateGroupDAO) (getSession().getDAO(MatchMakerTranslateGroup.class));
 		translateGroup = groupDAO.findByOID(Long.valueOf(oid));
 		if(translateGroup == null) {
 			throw new NullPointerException("Translate group with " + oid + " not found");
 		}
-		super.open(logger);
 	}
 }

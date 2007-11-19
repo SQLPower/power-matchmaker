@@ -74,7 +74,7 @@ public class TestingMungeStep extends AbstractMungeStep {
      * after this step. Otherwise, return false.
      */
     public TestingMungeStep(String name, int inputs, int outputs, int callCount) {
-        setName(name);
+        super(name,false);
         for (int i = 0; i < inputs; i++) {
             addInput(new InputDescriptor("input_" + i, String.class));
         }
@@ -88,8 +88,7 @@ public class TestingMungeStep extends AbstractMungeStep {
      * Returns true if the parameter {@link #continuing} is set to true. Otherwise,
      * returns false.
      */
-    public Boolean call() throws Exception {
-    	super.call();
+    public Boolean doCall() throws Exception {
     	logger.debug("Step '" + getName() + "' is being called");
         if (exceptionOnCall) {
             throw new RuntimeException("Failing because exceptionOnCall == true");
@@ -97,13 +96,7 @@ public class TestingMungeStep extends AbstractMungeStep {
         callCount--;
     	return callCount > 0;
     }
-    
-    /**
-     * Returns false.
-     */
-    public boolean canAddInput() {
-        return false;
-    }
+
     
     @Override
     public String toString() {

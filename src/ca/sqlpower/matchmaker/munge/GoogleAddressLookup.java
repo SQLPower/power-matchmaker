@@ -66,9 +66,7 @@ public class GoogleAddressLookup extends AbstractMungeStep {
     private final MungeStepOutput<BigDecimal> accuracy;
     
     public GoogleAddressLookup() {
-        super();
-        
-        setName("Google Maps Address Lookup");
+        super("Google Maps Address Lookup",false);
         
         super.addInput(new InputDescriptor("Address", String.class));
         
@@ -86,14 +84,9 @@ public class GoogleAddressLookup extends AbstractMungeStep {
         setParameter(GOOGLE_MAPS_API_KEY, "");
         setParameter(GOOGLE_GEOCODER_URL, "http://maps.google.com/maps/geo");
     }
-
-    public boolean canAddInput() {
-        return false;
-    }
     
     @Override
-    public void open(Logger logger) throws Exception {
-        super.open(logger);
+    public void doOpen(Logger logger) throws Exception {
         String key = getParameter(GOOGLE_MAPS_API_KEY);
         if (key == null || key.length() == 0) {
             throw new IllegalStateException("Can't open step: Google Maps API Key is required.");
@@ -101,9 +94,7 @@ public class GoogleAddressLookup extends AbstractMungeStep {
     }
 
     @Override
-    public Boolean call() throws Exception {
-        super.call();
-        
+    public Boolean doCall() throws Exception {
         // Clear out all the output values in case the request fails!
         for (MungeStepOutput<?> output : getChildren()) {
             output.setData(null);

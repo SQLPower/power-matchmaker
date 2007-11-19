@@ -35,17 +35,12 @@ public class StringConstantMungeStep extends AbstractMungeStep {
     public static final String VALUE_PARAMETER_NAME = "value";
 
     public StringConstantMungeStep() {
-        setName("String constant");
+        super("String constant", false);
         addChild(new MungeStepOutput<String>("Value", String.class));
-    }
-
-    public boolean canAddInput() {
-        return false;
     }
     
     @Override
-    public Boolean call() throws Exception {
-        super.call();
+    public Boolean doCall() throws Exception {
      
         getOut().setData(getValue());
         

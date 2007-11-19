@@ -54,7 +54,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 	public static final String CASE_SENSITIVE_PARAMETER_NAME = "caseSensitive";
 	
 	public StringSubstitutionMungeStep() {
-		setName("String Substitution");
+		super("String Substitution", false);
 		MungeStepOutput<String> out = new MungeStepOutput<String>("stringSubstitutionOutput", String.class);
 		addChild(out);
 		InputDescriptor desc = new InputDescriptor("stringSubstitution", String.class);
@@ -82,8 +82,7 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 		}
 	}
 	
-	public Boolean call() throws Exception {
-		super.call();
+	public Boolean doCall() throws Exception {
 
 		String from = getParameter(FROM_PARAMETER_NAME);
 		String to = getParameter(TO_PARAMETER_NAME);
@@ -119,9 +118,5 @@ public class StringSubstitutionMungeStep extends AbstractMungeStep {
 
 		printOutputs();
 		return true;
-	}
-
-	public boolean canAddInput() {
-		return false;
 	}
 }
