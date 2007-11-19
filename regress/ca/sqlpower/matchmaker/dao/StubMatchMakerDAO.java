@@ -20,25 +20,21 @@ public class StubMatchMakerDAO<T> implements MatchMakerDAO<T> {
 	}
 	
 	public void delete(Object deleteMe) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerDAO.delete()");
 
 	}
 
 	public List<T> findAll() {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerDAO.findAll()");
 		return Collections.emptyList();
 	}
 
 	public Class<T> getBusinessClass() {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerDAO.getBusinessClass()");
 		return businessClass;
 	}
 
 	public void save(Object saveMe) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerDAO.save()");
 
 	}

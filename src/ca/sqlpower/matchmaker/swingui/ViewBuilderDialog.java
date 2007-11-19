@@ -203,8 +203,7 @@ public class ViewBuilderDialog extends JDialog {
     Action viewPasteAction = new AbstractAction("Paste"){
 
         public void actionPerformed(ActionEvent e) {
-            // TODO Auto-generated method stub
-
+        	// XXX do something
         }
 
     };
@@ -212,16 +211,14 @@ public class ViewBuilderDialog extends JDialog {
     Action selectPasteAction = new AbstractAction("Paste"){
 
         public void actionPerformed(ActionEvent e) {
-            // TODO Auto-generated method stub
-
+        	// XXX do something
         }
 
     };
     Action wherePasteAction = new AbstractAction("Paste"){
 
         public void actionPerformed(ActionEvent e) {
-            // TODO Auto-generated method stub
-
+        	// XXX do something
         }
 
     };

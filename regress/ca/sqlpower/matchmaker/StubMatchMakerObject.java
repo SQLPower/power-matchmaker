@@ -47,7 +47,6 @@ public class StubMatchMakerObject implements MatchMakerObject {
     }
 
     public void addMatchMakerListener(MatchMakerListener l) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerObject.addMatchMakerListener()");
 
     }
@@ -57,7 +56,6 @@ public class StubMatchMakerObject implements MatchMakerObject {
     }
 
     public int getChildCount() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerObject.getChildCount()");
         return 0;
     }
@@ -72,7 +70,6 @@ public class StubMatchMakerObject implements MatchMakerObject {
     }
 
     public MatchMakerObject getParent() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerObject.getParent()");
         return null;
     }
@@ -82,20 +79,16 @@ public class StubMatchMakerObject implements MatchMakerObject {
     }
 
     public void removeChild(MatchMakerObject child) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerObject.removeChild()");
 
     }
 
     public void removeMatchMakerListener(MatchMakerListener l) {
-        // TODO Auto-generated method stub
-        logger
-                .debug("Stub call: StubMatchMakerObject.removeMatchMakerListener()");
+        logger.debug("Stub call: StubMatchMakerObject.removeMatchMakerListener()");
 
     }
 
     public void setParent(MatchMakerObject parent) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerObject.setParent()");
 
     }
@@ -105,31 +98,26 @@ public class StubMatchMakerObject implements MatchMakerObject {
     }
 
     public Date getCreateDate() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerObject.getCreateDate()");
         return null;
     }
 
     public String getLastUpdateAppUser() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerObject.getLastUpdateAppUser()");
         return null;
     }
 
     public Date getLastUpdateDate() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerObject.getLastUpdateDate()");
         return null;
     }
 
     public String getLastUpdateOSUser() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerObject.getLastUpdateOSUser()");
         return null;
     }
 
     public void registerUpdate() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: StubMatchMakerObject.registerUpdate()");
 
     }
@@ -139,13 +127,11 @@ public class StubMatchMakerObject implements MatchMakerObject {
     }
 
 	public MatchMakerObject duplicate(MatchMakerObject parent, MatchMakerSession s) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerObject.duplicate()");
 		return null;
 	}
 
 	public void setName(String string) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerObject.setName()");
 		
 	}

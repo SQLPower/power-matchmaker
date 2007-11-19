@@ -131,13 +131,11 @@ public class StubMatchMakerSession implements MatchMakerSession{
     }
 
 	public FolderParent getBackupFolderParent() {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.getBackupFolderParent()");
 		return null;
 	}
 
 	public FolderParent getCurrentFolderParent() {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.getCurrentFolderParent()");
 		return null;
 	}
@@ -148,25 +146,21 @@ public class StubMatchMakerSession implements MatchMakerSession{
     }
 
 	public boolean canSelectTable(SQLTable table) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.canSelectTable()");
 		return false;
 	}
 
 	public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.findSQLTableByName()");
 		return null;
 	}
 
 	public boolean tableExists(String catalog, String schema, String tableName) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.tableExists()");
 		return false;
 	}
 
 	public boolean tableExists(SQLTable table) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.tableExists()");
 		return false;
 	}
@@ -177,7 +171,6 @@ public class StubMatchMakerSession implements MatchMakerSession{
 
 	public boolean tableExists(String spDataSourceName, String catalog,
 			String schema, String tableName) throws ArchitectException {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.tableExists()");
 		return false;
 	}
@@ -185,13 +178,11 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	public SQLTable findPhysicalTableByName(String spDataSourceName,
 			String catalog, String schema, String tableName)
 			throws ArchitectException {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.findPhysicalTableByName()");
 		return null;
 	}
 
 	public SQLDatabase getDatabase(SPDataSource dataSource) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: StubMatchMakerSession.getDatabase()");
 		return null;
 	}

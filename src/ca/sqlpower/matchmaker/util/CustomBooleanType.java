@@ -124,12 +124,14 @@ public class CustomBooleanType implements UserType {
 	}
 
 	public Object assemble(Serializable arg0, Object arg1) throws HibernateException {
-		// TODO Auto-generated method stub
+		// TODO figure out what this does and return the correct value
+		// (the correct way seems to be returning arg0)
 		return null;
 	}
 
 	public Serializable disassemble(Object arg0) throws HibernateException {
-		// TODO Auto-generated method stub
+		// TODO figure out what this does and return the correct value
+		// (the correct way seems to be returning (Serializable)arg0)
 		return null;
 	}
 
