@@ -19,55 +19,49 @@
 
 package ca.sqlpower.matchmaker.munge;
 
-import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 /**
  * This munge step will return a string representation of the given date.
- * The options for this step are format and style. Formats include displaying
- * the date only, time only, or both. Styles include full, long, medium and short.
- */
+ * It uses a format parameter that specifies the date format pattern.
+*/
 public class DateToStringMungeStep extends AbstractMungeStep {
 
 	/**
-	 * This is the name of the parameter that determines the style of the
-	 * date portion. The parameter will be stored as an integer according
-	 * to the location in {@value #STYLES}. 
+	 * The pattern used to format the Date.
 	 */
-	public static final String DATE_STYLE_PARAMETER_NAME = "dateStyle";
-
+	public static final String FORMAT_PARAM = "format";
+	
 	/**
-	 * This is the name of the parameter that determines the style of the
-	 * time portion. The parameter will be stored as an integer according
-	 * to the location in {@value #STYLES}. 
+	 * The date portion of the pattern that helps to build the format.
 	 */
-	public static final String TIME_STYLE_PARAMETER_NAME = "timeStyle";
-
+	public static final String DATE_FORMAT_PARAM = "dateFormat";
+	
 	/**
-	 * This is the name of the parameter that determines the which portions
-	 * of a Date to include in the string representation. The list of options
-	 * are in {@value #FORMATS}.
+	 * The time portion of the pattern that helps to build the format.
 	 */
-	public static final String FORMAT_PARAMETER_NAME = "dateTime";
-
+	public static final String TIME_FORMAT_PARAM = "timeFormat";
+	
 	/**
-	 * This is a list of the different possible styles.
+	 * List of default date formats.
 	 */
-	public static final List<String> STYLES = Arrays.asList("Full", "Long", "Medium", "Short");
-
+	public static final List<String> DATE_FORMATS = Arrays.asList("", "M/d/yyyy", "M/d/yy",
+			"MM/dd/yy", "MM/dd/yyyy", "yy/MM/dd", "yyyy/MM/dd", "dd/MMM/yy", "EEE/MMMM/dd/yyyy",
+			"MMMM/dd/yyyy", "EEEE/dd/MMMM/yyyy", "dd/MMMM/yyyy");
+	
 	/**
-	 * This is a list of the different possible formats.
+	 * List of default time formats.
 	 */
-	public static final List<String> FORMATS = Arrays.asList("Date Only", "Time Only", "Date and Time");
-
+	public static final List<String> TIME_FORMATS = Arrays.asList("", "h:mm:ss a",
+			"hh:mm:ss a", "H:mm:ss", "HH:mm:ss");
+	
 	public DateToStringMungeStep() {
 		super("Date to String", false);
-
-		setParameter(DATE_STYLE_PARAMETER_NAME, 2);
-		setParameter(TIME_STYLE_PARAMETER_NAME, 2);
-		setParameter(FORMAT_PARAMETER_NAME, FORMATS.get(0));
+		setDateFormat(DATE_FORMATS.get(1));
+		setTimeFormat(TIME_FORMATS.get(1));
 
 		MungeStepOutput<String> out = new MungeStepOutput<String>("dateToStringOutput", String.class);
 		addChild(out);
@@ -98,60 +92,62 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 		MungeStepOutput<String> out = getOut();
 		MungeStepOutput<Date> in = getMSOInputs().get(0);
 		Date data = in.getData();
-
 		String result = null;
-		DateFormat formatter = null;
+		String format = getParameter(FORMAT_PARAM);
+		
 		if (data != null) {
-			String format = getParameter(FORMAT_PARAMETER_NAME);
-			int dateStyle = getIntegerParameter(DATE_STYLE_PARAMETER_NAME);
-			int timeStyle = getIntegerParameter(TIME_STYLE_PARAMETER_NAME);
-			int loc = FORMATS.indexOf(format);
-			
-			if (loc > -1) {
-				if (loc == 0) {
-					formatter = DateFormat.getDateInstance(dateStyle);
-				} else if (loc == 1) {
-					formatter = DateFormat.getTimeInstance(timeStyle);
-				} else {
-					formatter = DateFormat.getDateTimeInstance(dateStyle, timeStyle);
-				}
-				result = formatter.format(in.getData());
-			}
+			SimpleDateFormat sdf = new SimpleDateFormat(format);
+			result = sdf.format(data);
 		}
+		
 		out.setData(result);
 		printOutputs();
 		return true;
 	}
 	
 	public void setFormat(String format) {
-		if (FORMATS.contains(format)) {
-			setParameter(FORMAT_PARAMETER_NAME, format);
-		}
+		setParameter(FORMAT_PARAM, format);
 	}
 	
 	public String getFormat() {
-		return getParameter(FORMAT_PARAMETER_NAME);
+		return getParameter(FORMAT_PARAM);
 	}
 	
-	public void setDateStyle(String style) {
-		int loc = STYLES.indexOf(style);
-		if (loc > -1) {
-			setParameter(DATE_STYLE_PARAMETER_NAME, loc);
-		}
+	/**
+	 * Sets the date portion of the pattern and updates the format pattern.
+	 */
+	public void setDateFormat(String format) {
+		setParameter(DATE_FORMAT_PARAM, format);
+		updateFormat();
 	}
 	
-	public String getDateStyle() {
-		return STYLES.get(getIntegerParameter(DATE_STYLE_PARAMETER_NAME));
+	/**
+	 * Returns the date portion of the format pattern. 
+	 */
+	public String getDateFormat() {
+		return getParameter(DATE_FORMAT_PARAM);
 	}
 	
-	public void setTimeStyle(String style) {
-		int loc = STYLES.indexOf(style);
-		if (loc > -1) {
-			setParameter(TIME_STYLE_PARAMETER_NAME, loc);
-		}
+	/**
+	 * Sets the time portion of the pattern and updates the format pattern.
+	 */
+	public void setTimeFormat(String format) {
+		setParameter(TIME_FORMAT_PARAM, format);
+		updateFormat();
 	}
 	
-	public String getTimeStyle() {
-		return STYLES.get(getIntegerParameter(TIME_STYLE_PARAMETER_NAME));
+	/**
+	 * Returns the time portion of the format pattern. 
+	 */
+	public String getTimeFormat() {
+		return getParameter(TIME_FORMAT_PARAM);
+	}
+	
+	/**
+	 * Updates the format parameter to the concatenation of the date format
+	 * and the time format.
+	 */
+	private void updateFormat() {
+		setParameter(FORMAT_PARAM, getDateFormat() + " " + getTimeFormat());
 	}
 }
