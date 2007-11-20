@@ -104,6 +104,7 @@
 		<subclass name="TrimSpacesMungeStep" />
 		<subclass name="UpperCaseMungeStep" />
 		<subclass name="WordCountMungeStep" />
+		<subclass name="DateToStringMungeStep" />
 		<subclass name="StringToNumberMungeStep" />
 		
 	</class>
