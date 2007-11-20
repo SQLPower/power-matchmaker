@@ -23,7 +23,8 @@ import java.math.BigDecimal;
 
 
 /**
- * This munge step will trim white space from the start and end of strings. 
+ * This munge step will convert a string to a number. If the conversion fails there are two options.
+ * If continue on error has been selected it returns null. If not it throws a Numberformat error.
  */
 public class StringToNumberMungeStep extends AbstractMungeStep {
 	
