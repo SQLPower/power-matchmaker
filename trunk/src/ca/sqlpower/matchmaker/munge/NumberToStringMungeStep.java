@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 
 
 /**
- * This munge step will trim white space from the start and end of strings. 
+ * This munge step will convert a number to a string.
  */
 public class NumberToStringMungeStep extends AbstractMungeStep {
 
