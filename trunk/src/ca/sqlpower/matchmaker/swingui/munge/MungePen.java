@@ -39,6 +39,8 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.ContainerAdapter;
+import java.awt.event.ContainerEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -56,6 +58,7 @@ import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -264,6 +267,32 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		process.addMatchMakerListener(new MungePenMungeProcessListener());
 		
 		setDropTarget(new DropTarget(this,this));
+		
+		addContainerListener(new ContainerAdapter(){
+			@Override
+			public void componentRemoved(ContainerEvent e) {
+				super.componentRemoved(e);
+				removeAllValidation(e.getChild());
+			}
+		});
+			
+	}
+	
+	/**
+	 * Tries to remove all of the validation from the removed munge step.
+	 * @param com
+	 */
+	private void removeAllValidation(Component com) {
+		if (com instanceof JComponent) {
+			JComponent jcom = (JComponent) com;
+			this.handler.removeValidateObject(jcom);
+		}
+		
+		if (com instanceof Container) {
+			for (Component c : ((Container)com).getComponents()) {
+				removeAllValidation(c);
+			}
+		}
 	}
 	
 	private JPopupMenu buildPopup(Map<Class, StepDescription> stepMap) {
