@@ -36,6 +36,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.sql.SPDataSourceType;
 import ca.sqlpower.testutil.MockJDBCConnection;
 import ca.sqlpower.testutil.MockJDBCResultSet;
 
@@ -67,8 +68,13 @@ public class SQLInputStepTest extends TestCase {
         public SPDataSource getDataSource() {
         	return new SPDataSource((DataSourceCollection)null) {
         		@Override
-        		public boolean acceptsUpdateableResultSets() {
-        			return true;
+        		public SPDataSourceType getParentType() {
+        			return new SPDataSourceType() {
+        				@Override
+        				public boolean getSupportsUpdateableResultSets() {
+        					return true;
+        				}
+        			};
         		}
         	};
         };
