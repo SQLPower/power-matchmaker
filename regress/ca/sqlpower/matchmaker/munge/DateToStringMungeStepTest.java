@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker.munge;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -34,86 +33,65 @@ public class DateToStringMungeStepTest extends TestCase {
 	
 	private Date date;
 	
-	private final String[] EXPECTED_DATE = {"Tuesday, December 11, 2007", "December 11, 2007", "Dec 11, 2007", "12/11/07"};
-	private final String[] EXPECTED_TIME = {"11:11:11 AM EST", "11:11:11 AM EST", "11:11:11 AM", "11:11 AM"};
-	
-	private final List<String> FORMATS = DateToStringMungeStep.FORMATS;
-	private final List<String> STYLES = DateToStringMungeStep.STYLES;
-	
 	private MungeStepOutput testInput;
 	
 	private final Logger logger = Logger.getLogger("testLogger");
 	
 	protected void setUp() throws Exception {
 		step = new DateToStringMungeStep();
-		Calendar c = new GregorianCalendar();
-		c.set(2007, 11, 11, 11, 11, 11);
+		Calendar c = Calendar.getInstance();
+		c.set(2007, 1, 1, 13, 1, 1);
 		date = c.getTime();
 	}
 
-	public void testCallonDateFormat() throws Exception {
-		String result = null;
-		
+	public void testCallonDateOnly() throws Exception {
+		String[] exDate = {"", "2/1/2007", "2/1/07", "02/01/07", "02/01/2007",
+				"07/02/01", "2007/02/01", "01/Feb/07", "Thu/February/01/2007",
+				"February/01/2007", "Thursday/01/February/2007", "01/February/2007"};
+		int i = 0;
 		testInput = new MungeStepOutput<Date>("test", Date.class);
 		testInput.setData(date);
 		step.connectInput(0, testInput);
-		step.setFormat(FORMATS.get(0));
 		step.open(logger);
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
-
-		for (int i=0; i < STYLES.size(); i++) {
-			step.setDateStyle(STYLES.get(i));
+		for (String format : DateToStringMungeStep.DATE_FORMATS) {
+			step.setFormat(format);
 			step.call();
-			result = (String)output.getData();
-			assertEquals("Incorrect at " + STYLES.get(i) +
-					" style for date only format.", EXPECTED_DATE[i], result);
+			assertEquals(exDate[i++], output.getData());
 		}
 	}
 	
-	public void testCallonTimeFormat() throws Exception {
-		String[] expected = {"11:11:11 AM EST", "11:11:11 AM EST", "11:11:11 AM", "11:11 AM"};
-		String result = null;
-		
+	public void testCallonTimeOnly() throws Exception {
+		String[] exTime = {"", "1:01:01 PM",
+				"01:01:01 PM", "13:01:01", "13:01:01"};
+		int i = 0;
 		testInput = new MungeStepOutput<Date>("test", Date.class);
 		testInput.setData(date);
 		step.connectInput(0, testInput);
-		step.setFormat(FORMATS.get(1));
 		step.open(logger);
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
-
-		for (int i=0; i < STYLES.size(); i++) {
-			step.setTimeStyle(STYLES.get(i));
+		for (String format : DateToStringMungeStep.TIME_FORMATS) {
+			step.setFormat(format);
 			step.call();
-			result = (String)output.getData();
-			assertEquals("Incorrect at " + STYLES.get(i) +
-					" style for time only format.", EXPECTED_TIME[i], result);
+			assertEquals(exTime[i++], output.getData());
 		}
 	}
 	
-	public void testCallonDateTimeFormat() throws Exception {
-		String result = null;
-		
+	public void testCallonDateTime() throws Exception {
 		testInput = new MungeStepOutput<Date>("test", Date.class);
 		testInput.setData(date);
 		step.connectInput(0, testInput);
-		step.setFormat(FORMATS.get(2));
 		step.open(logger);
 		List<MungeStepOutput> results = step.getChildren(); 
 		MungeStepOutput output = results.get(0);
-
-		for (int i=0; i < STYLES.size(); i++) {
-			step.setDateStyle(STYLES.get(i));
-			for (int j=0; j < STYLES.size(); j++) {
-				step.setTimeStyle(STYLES.get(j));
-				step.call();
-				result = (String)output.getData();
-				assertEquals("Incorrect at " + STYLES.get(i) + " date style, " +
-						STYLES.get(j) + " time style for date and time format.",
-						EXPECTED_DATE[i] + " " + EXPECTED_TIME[j], result);
-			}
-		}
+		step.call();
+		assertEquals("2/1/2007 1:01:01 PM", output.getData());
+		
+		step.setFormat(DateToStringMungeStep.DATE_FORMATS.get(10) + " " + DateToStringMungeStep.TIME_FORMATS.get(2));
+		step.call();
+		assertEquals("Thursday/01/February/2007 01:01:01 PM", output.getData());
 	}
 	
 	public void testCallonNull() throws Exception {
