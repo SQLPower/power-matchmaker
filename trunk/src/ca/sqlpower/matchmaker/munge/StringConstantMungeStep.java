@@ -22,7 +22,8 @@ package ca.sqlpower.matchmaker.munge;
 
 /**
  * The String Constant Step provides a user-specified String value on its output
- * every time it is called. It is useful where boilerplate values are required
+ * every time it is called, if the RETURN_NULL parameter is set it will always 
+ * return null. It is useful where boilerplate values are required
  * as inputs to other steps, or in a data cleansing situation where each row
  * processed needs a column set to a specific value (perhaps to indicate that
  * the cleansing process has been completed on that row).
@@ -33,17 +34,21 @@ public class StringConstantMungeStep extends AbstractMungeStep {
      * The value this step should provide on its output.
      */
     public static final String VALUE_PARAMETER_NAME = "value";
-
+    
+    /**
+     * The value to set if the step is to return null
+     */
+    public static final String RETURN_NULL = "return null";
+    
     public StringConstantMungeStep() {
         super("String constant", false);
+        setParameter(RETURN_NULL, "False");
         addChild(new MungeStepOutput<String>("Value", String.class));
     }
     
     @Override
     public Boolean doCall() throws Exception {
-     
-        getOut().setData(getValue());
-        
+    	getOut().setData(getValue());
         return Boolean.TRUE;
     }
     
@@ -52,6 +57,18 @@ public class StringConstantMungeStep extends AbstractMungeStep {
     }
     
     public String getValue() {
-        return getParameter(VALUE_PARAMETER_NAME);
+    	if (!isReturningNull()) {
+    		return getParameter(VALUE_PARAMETER_NAME);
+    	} else {
+    		return null;
+    	}
+    }
+    
+    public boolean isReturningNull() {
+    	return getBooleanParameter(RETURN_NULL).booleanValue();
+    }
+    
+    public void setReturningNull(boolean b) {
+    	setParameter(RETURN_NULL, String.valueOf(b));
     }
 }
