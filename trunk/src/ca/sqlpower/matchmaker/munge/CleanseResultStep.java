@@ -288,7 +288,7 @@ public class CleanseResultStep extends AbstractMungeStep implements MungeResultS
 		table = getProject().getSourceTable();
 		
 		//checks if the database support updatable result sets.
-		usePS = !table.getParentDatabase().getDataSource().acceptsUpdateableResultSets();
+		usePS = !table.getParentDatabase().getDataSource().getParentType().getSupportsUpdateableResultSets();
 		
 		setName(table.getName());
 		addInitialInputs();
