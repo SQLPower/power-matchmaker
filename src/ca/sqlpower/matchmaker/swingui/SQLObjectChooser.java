@@ -74,19 +74,20 @@ public class SQLObjectChooser {
      * The guarantee is that the returned object will itself be a "table container;" that is, its
      * children are of type SQLTable.
      * 
-     * @param session
-     * @param owner
-     * @param title
+     * @param session The current MatchMaker session
+     * @param owner The component that owns the dialog
+     * @param dialogTitle The title to give the dialog
+     * @param okButtonLabel The text that should appear on the OK button
      * @return The selected "table container" object, or <tt>null</tt> if the user cancels or
      * closes the dialog.
      * @throws ArchitectException If there are problems connecting to or populating the chosen databases
      */
-    public static SQLObject showSchemaChooserDialog(MatchMakerSwingSession session, Component owner, String title) throws ArchitectException {
+    public static SQLObject showSchemaChooserDialog(MatchMakerSwingSession session, Component owner, String dialogTitle, String okButtonLabel) throws ArchitectException {
         SQLObjectChooser soc = new SQLObjectChooser(session);
         
         // single boolean in final array so the buttons can modify its value
         final boolean[] dialogAccepted = new boolean[1];
-        final JDialog d = SPSUtils.makeOwnedDialog(owner, title);
+        final JDialog d = SPSUtils.makeOwnedDialog(owner, dialogTitle);
         
         FormLayout layout = new FormLayout("pref,4dlu,pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
@@ -96,7 +97,7 @@ public class SQLObjectChooser {
         builder.append(soc.getCatalogTerm(), soc.getCatalogComboBox());
         builder.append(soc.getSchemaTerm(), soc.getSchemaComboBox());
         
-        JButton okButton = new JButton("OK");
+        JButton okButton = new JButton(okButtonLabel);
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 dialogAccepted[0] = true;
