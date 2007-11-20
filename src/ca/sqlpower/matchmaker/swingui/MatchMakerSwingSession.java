@@ -80,7 +80,6 @@ import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -619,7 +618,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         return frame;
     }
 
-    public MatchMakerSessionContext getContext() {
+    public SwingSessionContext getContext() {
         return sessionContext;
     }
 
