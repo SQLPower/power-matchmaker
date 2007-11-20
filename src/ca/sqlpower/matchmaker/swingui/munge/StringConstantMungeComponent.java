@@ -19,6 +19,10 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -53,9 +57,22 @@ public class StringConstantMungeComponent extends AbstractMungeComponent {
             public void removeUpdate(DocumentEvent e) { change(); }
         });
         
+        final JCheckBox retNull = new JCheckBox("Return null");
+        retNull.addActionListener(new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				boolean b = retNull.isSelected();
+				valueField.setEnabled(!b);
+				getStep().setParameter(StringConstantMungeStep.RETURN_NULL, String.valueOf(b));
+			}
+        });
+        
+        retNull.setSelected(new Boolean(getStep().getParameter(StringConstantMungeStep.RETURN_NULL)).booleanValue());
+        valueField.setEnabled(!retNull.isSelected());
+        
         FormLayout layout = new FormLayout("pref,4dlu,pref:grow");
         DefaultFormBuilder fb = new DefaultFormBuilder(layout);
         fb.append("Value:", valueField);
+        fb.append("",retNull);
         
         return fb.getPanel();
     }
