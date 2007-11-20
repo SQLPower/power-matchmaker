@@ -30,7 +30,7 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
- * This is a component for a concat munge step. It has two options, one button
+ * This is a component for dedupe reslt munge step. It has two options, one button
  * that adds inputs and one button to clean up the unused inputs.
  */
 public class MungeResultMungeComponent extends AbstractMungeComponent {

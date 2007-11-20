@@ -32,8 +32,8 @@ import ca.sqlpower.matchmaker.munge.StringToNumberMungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
- * This is the component for a double metaphone munge step. It has only one option,
- * a checkbox to decide whether to use regular expressions.
+ * the munge component for the string to number munge component. It only has one check box 
+ * indicating if the program should terminate on an error.
  */
 public class StringToNumberMungeComponent extends AbstractMungeComponent {
 

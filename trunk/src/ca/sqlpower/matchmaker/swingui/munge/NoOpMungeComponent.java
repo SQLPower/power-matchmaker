@@ -26,7 +26,7 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
- * This is a component for a upper case munge step. It has no options at all.
+ * This is a component for any step that has no options at all.
  */
 public class NoOpMungeComponent extends AbstractMungeComponent {
 
