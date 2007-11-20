@@ -43,6 +43,7 @@ import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.ConnectionComboBoxModel;
 import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -58,7 +59,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * lay them out in a way that makes sense for the particular application.
  */
 public class SQLObjectChooser {
-	
+
     /**
      * Presents a modal dialog with combo boxes for database connections,
      * catalogs, and schemas. Initially, there is no selection in the database
@@ -191,7 +192,7 @@ public class SQLObjectChooser {
 			
 		db = session.getDatabase();
 		dataSource = db.getDataSource();
-		setComboBoxStateAndItem(dataSourceComboBox, session.getContext().getDataSources(), -1);
+        dataSourceComboBox.setModel(new ConnectionComboBoxModel(session.getContext().getPlDotIni()));
 		dataSourceComboBox.setSelectedItem(dataSource);
 
 		catalogComboBox.removeAllItems();
