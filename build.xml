@@ -231,27 +231,20 @@
 
 	<!-- Build the HTML -->
 	<target name="html" depends="checkBuildPath, xslt-stripwidths" description="Create user guide in HTML">
-		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/" />
+		<mkdir dir="${build}/doc/html" />
 
 		<xslt
 			style="doc/tools/xslt/html/chunk.xsl"
-			in="${java.io.tmpdir}/MatchMakerUserGuide-nowidth.xml"
-			out="${build}/ca/sqlpower/architect/doc/MatchMakerUserGuide.html"
+			in="${java.io.tmpdir}/PowerMatchMakerUserGuide-nowidth.xml"
+			out="${build}/doc/html/PowerMatchMakerUserGuide.html"
 			classpathref="docbookclasspath">
 		</xslt>
 
 		<!-- Warning: This is an extremely evil hack to get the product out the door!
 		              See bugzilla 1195 for details -->
 		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/doc/images" />
-		<copy todir="${build}/ca/sqlpower/matchmaker/doc/doc/images" overwrite="true">
+		<copy todir="${build}/doc/html/doc/images" overwrite="true">
 			<fileset dir="doc/images">
-				<include name="*.png"/>
-			</fileset>
-		</copy>
-		<mkdir dir="${build}/ca/sqlpower/matchmaker/doc/src/icons" />
-		<copy todir="${build}/ca/sqlpower/matchmaker/doc/src/icons" overwrite="true">
-			<fileset dir="src/icons">
-				<include name="*.gif"/>
 				<include name="*.png"/>
 			</fileset>
 		</copy>
