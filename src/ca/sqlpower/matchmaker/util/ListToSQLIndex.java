@@ -93,42 +93,36 @@ public class ListToSQLIndex implements UserType  {
      * appear in one appear in both in the same order.
      */
 	public boolean equals(Object x, Object y) throws HibernateException {
-        if (x == null && y == null)
-            return true;
-        if (logger.isDebugEnabled()){
-        	logger.debug("neither null");
-        }
-        if ((x instanceof SQLIndex) && (y instanceof SQLIndex)) {
-        	SQLIndex indexX = (SQLIndex) x;
-        	SQLIndex indexY = (SQLIndex) y;
-        	try {
-				if (indexX.getName() == null ? indexX.getName() != indexY.getName():!indexX.getName().equals(indexY.getName())){
-					if (logger.isDebugEnabled()){
-						logger.debug("different pk name was " + indexY.getName()+ " expecting "+ indexX.getName());
-					}
+		logger.debug("comparing " + x + " and " + y);
+		if (x == y) return true;
+		if (!(x instanceof SQLIndex) || !(y instanceof SQLIndex)) return false;
+		SQLIndex indexX = (SQLIndex) x;
+    	SQLIndex indexY = (SQLIndex) y;
+    	if (indexX.getName() == null ? 
+    			indexY.getName() != null : 
+    			!indexX.getName().equals(indexY.getName())){
+    		logger.debug("different pk name was " + indexY.getName()+ " expecting "+ indexX.getName());
+    		return false;
+    	} 
+    	
+    	try {
+			if (indexX.getChildCount() != indexY.getChildCount()) {
+				logger.debug("different child count was "+ indexY.getChildCount()+ " expecting "+ indexX.getChildCount());
+				return false;
+			} 
+			for (int i=0; i < indexX.getChildCount(); i++){
+				if (indexX.getChild(i).getName() == null ? 
+						indexY.getChild(i).getName() != null :
+						!indexX.getChild(i).getName().equals(indexY.getChild(i).getName())){
+					logger.debug("different column name was " + indexY.getChild(i).getName()+ " expecting "+ indexX.getChild(i).getName());
 					return false;
-				} else if (indexX.getChildCount() != indexY.getChildCount()) {
-					if (logger.isDebugEnabled()){
-						logger.debug("different child count was "+ indexY.getChildCount()+ " expecting "+ indexX.getChildCount());
-					}
-					return false;
-				} else {
-					for (int i=0; i < indexX.getChildCount(); i++){
-						if (indexX.getChild(i).getName() == null ? indexX.getChild(i).getName() != indexY.getChild(i).getName():!indexX.getChild(i).getName().equals(indexY.getChild(i).getName())){
-							if (logger.isDebugEnabled()){
-								logger.debug("different column name was " + indexY.getChild(i).getName()+ " expecting "+ indexX.getChild(i).getName());
-							}
-							return false;
-						}
-					}
-					return true;
 				}
-			} catch (ArchitectException e) {
-				throw new ArchitectRuntimeException(e);
 			}
-        } else {
-            return false;
-        }
+			return true;
+		} catch (ArchitectException e) {
+			throw new ArchitectRuntimeException(e);
+		}
+
     }
 
     public int hashCode(Object x) throws HibernateException {
@@ -171,15 +165,12 @@ public class ListToSQLIndex implements UserType  {
 
 	public void nullSafeSet(PreparedStatement st, Object value, int index)
             throws HibernateException, SQLException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("nullSafeSet(pstmt," + value + "," + index + ")");
-        }
+        logger.debug("nullSafeSet(pstmt," + value + "," + index + ")");
         if (value instanceof SQLIndex) {
             SQLIndex ind = (SQLIndex) value;
             int indexItemPos = index;
-            if (logger.isDebugEnabled()) {
-                logger.debug("           setting param " + indexItemPos + " to \"" + ind.getName() + "\"");
-            }
+
+            logger.debug("binding '" + ind.getName() + "' to parameter: " + indexItemPos);
             st.setString(indexItemPos, ind.getName());
             try {
 				// It is required to increment the index by 1 since the inital
@@ -187,16 +178,12 @@ public class ListToSQLIndex implements UserType  {
 				// to synchronize with setting the values of the columns
 				for (SQLIndex.Column c : (List<SQLIndex.Column>) ind.getChildren()) {
 					indexItemPos++;
-					if (logger.isDebugEnabled()) {
-						logger.debug("           setting param " + indexItemPos + " to \"" + c.getName() + "\"");
-					}
+					logger.debug("binding '" + c.getName() + "' to parameter: " + indexItemPos);
 					st.setString(indexItemPos, c.getName());
 				}
 				// fill in the rest of the values
 				for (int i = indexItemPos + 1; i < COLUMN_COUNT + index; i++) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("           setting param " + i + " to \"" + null + "\"");
-					}
+					logger.debug("binding null to parameter: " + i);
 					st.setNull(i, Types.VARCHAR);
 				}
 			} catch (ArchitectException e) {
@@ -204,9 +191,7 @@ public class ListToSQLIndex implements UserType  {
 			}
         } else if (value == null) {
         	for (int i = index; i < COLUMN_COUNT + index; i++) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("           setting param " + i + " to \"" + null + "\"");
-                }
+        		logger.debug("binding null to parameter: " + i);
                 st.setNull(i, Types.VARCHAR);
             }
         } else {
