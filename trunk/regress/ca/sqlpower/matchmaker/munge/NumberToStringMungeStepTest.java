@@ -35,6 +35,15 @@ public class NumberToStringMungeStepTest extends TestCase {
 		step.open(Logger.getLogger(NumberToStringMungeStepTest.class));
 	}
 	
+	public void testNull() throws Exception{
+		MungeStepOutput<BigDecimal> mso = new MungeStepOutput<BigDecimal>("test", BigDecimal.class);
+		mso.setData(null);
+		step.connectInput(0, mso);
+		step.call();
+		MungeStepOutput out = step.getChildren().get(0);
+		assertNull(out.getData());
+	}
+	
 	public void test0() throws Exception{
 		MungeStepOutput<BigDecimal> mso = new MungeStepOutput<BigDecimal>("test", BigDecimal.class);
 		mso.setData(new BigDecimal(0));

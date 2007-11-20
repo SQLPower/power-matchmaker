@@ -63,6 +63,15 @@ public class StringToNumberMungeStepTest extends TestCase {
 		assertEquals(new BigDecimal(-1), (BigDecimal)out.getData());
 	}
 	
+	public void testNull() throws Exception {
+		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
+		mso.setData(null);
+		step.connectInput(0, mso);
+		step.call();
+		MungeStepOutput out = step.getChildren().get(0);
+		assertNull(out.getData());
+	}
+	
 	public void testExceptionThrown() throws Exception{
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("test", String.class);
 		mso.setData("One Billion Dollars!!!!!");
