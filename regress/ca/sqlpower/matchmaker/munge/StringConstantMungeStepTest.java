@@ -61,4 +61,17 @@ public class StringConstantMungeStepTest extends AbstractMungeStepTest {
         step.call();
         assertEquals("meowcat", step.getOut().getData());
     }
+    
+    public void testReturnNull() throws Exception {
+    	step.setReturningNull(true);
+    	step.setValue("moocow");
+        step.open(Logger.getLogger(getClass()));
+        step.call();
+        assertNull(step.getOut().getData());
+    	step.setReturningNull(false);
+        step.setValue("moocow2");
+        step.call();
+        assertEquals("moocow2", step.getOut().getData());
+    }
+   
 }
