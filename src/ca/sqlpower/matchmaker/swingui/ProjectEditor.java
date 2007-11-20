@@ -496,7 +496,7 @@ public class ProjectEditor implements DataEntryPanel {
         	} else {
         		for (int x = 0; x < sourceChooser.getDataSourceComboBox().getModel().getSize(); x++) {
         			SPDataSource curr =(SPDataSource) sourceChooser.getDataSourceComboBox().getModel().getElementAt(x);
-        			if (curr.getName().equals(project.getSourceTableSPDatasource())) {
+        			if (curr != null && curr.getName().equals(project.getSourceTableSPDatasource())) {
         				sourceChooser.getDataSourceComboBox().setSelectedItem(curr);
         				break;
         			}
