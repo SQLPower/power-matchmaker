@@ -226,6 +226,12 @@ public class ProjectEditor implements DataEntryPanel {
     	});
     }
 
+    private Action showConnectionManagerAction = new AbstractAction("Manage Connections...") {
+        public void actionPerformed(ActionEvent e) {
+            swingSession.getContext().showDatabaseConnectionManager(swingSession.getFrame());
+        }
+    };
+    
     /**
      * Saves the current project (which is referenced in the plMatch member variable of this editor instance).
      * If there is no current plMatch, a new one will be created and its properties will be set just like
@@ -376,8 +382,9 @@ public class ProjectEditor implements DataEntryPanel {
 		pb.add(projectType, cc.xy(4,row));
         projectType.setEditable(false);
         row+=2;
-        pb.add(new JLabel("DataSource"),cc.xy(2,row,"r,c"));
+        pb.add(new JLabel("Data Source:"),cc.xy(2,row,"r,c"));
         pb.add(sourceChooser.getDataSourceComboBox(),cc.xy(4, row));
+        pb.add(new JButton(showConnectionManagerAction), cc.xy(6, row));
 		row+=2;
 		pb.addTitle("Source Table", cc.xy(2, row));
 		row+=2;
