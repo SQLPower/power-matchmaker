@@ -107,7 +107,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit,userguide,osx_tgz,osx_dmg,windows_jdbc_installer,generic_install">
+	<target name="dist" depends="junit,userguide,osx_tgz,osx_dmg,windows_jdbc_installer,generic_install,source_only_tgz">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
 		<copy todir="${dist.dir}/doc" overwrite="true">
@@ -546,6 +546,30 @@
 
 	</target>
 		
+	<!-- Creates a tarball containing only the Java source files -->
+	<target name="source_only_tgz" depends="getAppVersion"
+		description="Builds a source only tarball of the Architect">
+		<mkdir dir="${dist.dir}"/>
+		<tar destfile="${dist.dir}/MatchMaker-src-only-${app.version}.tar.gz"
+			 compression="gzip" longfile="gnu">
+			<tarfileset dir="."
+				prefix="matchmaker-src-only-${app.version}"
+				includes="${src}/**/*.java,
+					  ${src}/**/*.png,
+					  ${src}/**/*.gif,
+					  ${src}/**/*.xml,
+					  ${src}/**/*.sql,
+					  ${src}/**/*.architect,
+					  regress/**/*.java,
+					  build.xml,
+					  build.properties.example,
+					  LICENSE,
+					  README.sourceonly
+					  "/>
+		</tar>
+	</target>
+	
+	
 	<!-- This is needed to prevent a problem with DocBook help file generation 
 		 in which the XSLT replaces the spaces in the path name with '%20', and
 		 doesn't convert it back when saving the files. It looks like this is
