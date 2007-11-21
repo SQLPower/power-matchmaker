@@ -106,6 +106,7 @@
 		<subclass name="WordCountMungeStep" />
 		<subclass name="DateToStringMungeStep" />
 		<subclass name="StringToNumberMungeStep" />
+		<subclass name="StringToDateMungeStep" />
 		<subclass name="NumberConstantMungeStep" />
 		<subclass name="BooleanConstantMungeStep" />
 		

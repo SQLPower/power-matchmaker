@@ -19,12 +19,15 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,8 +36,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.munge.DateToStringMungeStep;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.StringToDateMungeStep;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
@@ -42,41 +46,70 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * This is the component for a date to string munge step. It has three options,
+ * This is the component for a string to date munge step. It has four options,
  * combo boxes for choosing from lists of default date and time format patterns,
- * a text field for entering a custom format pattern. Choosing from either lists
- * has a side effect of updating the format pattern to the concatenation of the
- * date and time portions.
+ * a text field for entering a custom format pattern, combo box for choosing 
+ * the output format, and a checkbox that decides whether to ignore errors. 
+ * Choosing from either lists has a side effect of updating the format pattern 
+ * to the concatenation of the date and time portions.
  */
-public class DateToStringMungeComponent extends AbstractMungeComponent {
+public class StringToDateMungeComponent extends AbstractMungeComponent {
 
 	private JTextField sample;
-	private JTextField format;
+	private JTextField inputFormat;
+	
 	private JComboBox dateFormat;
 	private JComboBox timeFormat;
 	
+	private JComboBox outputFormat;
+	
+	private JCheckBox ignoreError;
+	
 	private static final Date SAMPLE_DATE = Calendar.getInstance().getTime();
 	
-	public DateToStringMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
+	public StringToDateMungeComponent(MungeStep ms, FormValidationHandler handler, MatchMakerSession session) {
 		super(ms, handler, session);
-		handler.addValidateObject(format, new DateFormatPatternValidator());
+		handler.addValidateObject(inputFormat, new DateFormatPatternValidator());
 	}
 
 	@Override
 	protected JPanel buildUI() {
 		JPanel content = new JPanel(new FormLayout(
 				"4dlu,pref,4dlu,pref,4dlu",
-				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu"));
-		final DateToStringMungeStep temp = (DateToStringMungeStep) getStep();
-		final String[] dateFormats = DateToStringMungeStep.DATE_FORMATS.toArray(new String[]{});
-		final String[] timeFormats = DateToStringMungeStep.TIME_FORMATS.toArray(new String[]{});
+				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu"));
+		final StringToDateMungeStep temp = (StringToDateMungeStep) getStep();
+		
+		/**
+		 * Gets the lists of formats from the step and converts them into arrays 
+		 * so that it's easier to make the combo boxes.
+		 */
+		final String[] dateFormats = StringToDateMungeStep.DATE_FORMATS.toArray(new String[]{});
+		final String[] timeFormats = StringToDateMungeStep.TIME_FORMATS.toArray(new String[]{});
+		final String[] outputFormats = StringToDateMungeStep.OUTPUT_FORMATS.toArray(new String[]{});
+		
+		SimpleDateFormat sdf = new SimpleDateFormat(temp.getInputFormat());
+		sample = new JTextField(sdf.format(StringToDateMungeComponent.SAMPLE_DATE));
+		sample.setEditable(false);
+
+		ignoreError = new JCheckBox("Continue on Error");
+		ignoreError.setSelected(((AbstractMungeStep)getStep()).getBooleanParameter(
+				StringToDateMungeStep.IGNORE_ERROR_PARAM));
+		
+		ignoreError.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				AbstractMungeStep temp = (AbstractMungeStep) getStep();
+				temp.setParameter(StringToDateMungeStep.IGNORE_ERROR_PARAM,
+						ignoreError.isSelected());
+			}
+			
+		});
 		
 		dateFormat = new JComboBox(dateFormats);
 		dateFormat.setSelectedItem(temp.getDateFormat());
 		dateFormat.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				temp.setDateFormat((String) e.getItem());
-				format.setText(temp.getFormat());
+				inputFormat.setText(temp.getInputFormat());
 			}
 		});
 		
@@ -85,12 +118,12 @@ public class DateToStringMungeComponent extends AbstractMungeComponent {
 		timeFormat.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				temp.setTimeFormat((String) e.getItem());
-				format.setText(temp.getFormat());
+				inputFormat.setText(temp.getInputFormat());
 			}
 		});
 		
-		format = new JTextField(temp.getFormat());
-		format.getDocument().addDocumentListener(new DocumentListener(){
+		inputFormat = new JTextField(temp.getInputFormat());
+		inputFormat.getDocument().addDocumentListener(new DocumentListener(){
             public void insertUpdate(DocumentEvent e) {
                 doStuff();
             }
@@ -101,16 +134,21 @@ public class DateToStringMungeComponent extends AbstractMungeComponent {
                 doStuff();
             }
             private void doStuff() {
-				temp.setFormat(format.getText());
+				temp.setInputFormat(inputFormat.getText());
 				if (getHandler().getWorstValidationStatus().getStatus() == Status.OK) {
-					SimpleDateFormat sdf = new SimpleDateFormat(temp.getFormat());
-					sample.setText(sdf.format(DateToStringMungeComponent.SAMPLE_DATE));
+					SimpleDateFormat sdf = new SimpleDateFormat(temp.getInputFormat());
+					sample.setText(sdf.format(StringToDateMungeComponent.SAMPLE_DATE));
 				}
             }
         });
-		SimpleDateFormat sdf = new SimpleDateFormat(temp.getFormat());
-		sample = new JTextField(sdf.format(DateToStringMungeComponent.SAMPLE_DATE));
-		sample.setEditable(false);
+		
+		outputFormat = new JComboBox(outputFormats);
+		outputFormat.setSelectedItem(temp.getOutputFormat());
+		outputFormat.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				temp.setOutputFormat((String) e.getItem());
+			}
+		});
 		
 		CellConstraints cc = new CellConstraints();
 		int row = 2;
@@ -123,8 +161,13 @@ public class DateToStringMungeComponent extends AbstractMungeComponent {
 		content.add(new JLabel("Time Format: "), cc.xy(2, row));
 		content.add(timeFormat, cc.xy(4, row));
 		row += 2;
-		content.add(new JLabel("Format: "), cc.xy(2, row));
-		content.add(format, cc.xy(4, row));
+		content.add(new JLabel("Input Format: "), cc.xy(2, row));
+		content.add(inputFormat, cc.xy(4, row));
+		row += 2;
+		content.add(new JLabel("Output Format: "), cc.xy(2, row));
+		content.add(outputFormat, cc.xy(4, row));
+		row += 2;
+		content.add(ignoreError, cc.xyw(2, row, 3, "c,c"));
 		
 		return content;
 	}

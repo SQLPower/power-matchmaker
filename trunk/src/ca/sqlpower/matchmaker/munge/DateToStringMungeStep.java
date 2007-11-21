@@ -148,6 +148,7 @@ public class DateToStringMungeStep extends AbstractMungeStep {
 	 * and the time format.
 	 */
 	private void updateFormat() {
-		setParameter(FORMAT_PARAM, getDateFormat() + " " + getTimeFormat());
+		String format = getDateFormat() + " " + getTimeFormat();
+		setParameter(FORMAT_PARAM, format.trim());
 	}
 }
