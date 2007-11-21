@@ -56,7 +56,6 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     /**
      * The list of database connections that this session context knows about.  This
      * implementation uses the <blink><marquee>AWESOME</marquee></blink> pl.ini file
-     * format for storing its connection infos.
      */
     private final DataSourceCollection plDotIni;
     
@@ -164,7 +163,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
             ds.setPlSchema("public");
             ds.setUser("sa");
             ds.setPass("");
-            ds.setUrl("jdbc:hsqldb:file:"+System.getProperty("user.home")+"/.mm/hsql_repository");
+            ds.setUrl("jdbc:hsqldb:file:"+System.getProperty("user.home")+"/.mm/hsql_repository;shutdown=true");
 
             // find HSQLDB parent type
             SPDataSourceType hsqldbType = null;
@@ -180,6 +179,12 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
             ds.setParentType(hsqldbType);
             
             getPlDotIni().addDataSource(ds);
+        } else if (ds.getName().equalsIgnoreCase(DEFAULT_REPOSITORY_DATA_SOURCE_NAME)) {
+        	if (!ds.getUrl().contains("shutdown=true")) {
+        		getPlDotIni().removeDataSource(ds);
+        		ds.setUrl(ds.getUrl() + ";shutdown=true");
+        		getPlDotIni().addDataSource(ds);
+        	}
         }
         return ds;
     }
@@ -202,3 +207,4 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 		prefs.put(EMAIL_HOST_PREFS, host);
 	}
 }
+
