@@ -54,7 +54,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -256,7 +255,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	};
 
 	private Window getParentWindow() {
-	    return SwingUtilities.getWindowAncestor(panel);
+	    return SPSUtils.getWindowInHierarchy(panel);
 	}
 
     /**
@@ -328,8 +327,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     private JPanel buildUI() {
 
     	projectId.setName("Project ID");
-		sourceChooser = new SQLObjectChooser(swingSession);
-        resultChooser = new SQLObjectChooser(swingSession);
+		sourceChooser = new SQLObjectChooser(swingSession, swingSession.getFrame());
+        resultChooser = new SQLObjectChooser(swingSession, swingSession.getFrame());
         sourceChooser.getTableComboBox().setName("Source Table");
         resultChooser.getCatalogComboBox().setName("Result "+
         		resultChooser.getCatalogTerm().getText());

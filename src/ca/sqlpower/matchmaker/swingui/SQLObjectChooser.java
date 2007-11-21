@@ -83,11 +83,10 @@ public class SQLObjectChooser {
      * @throws ArchitectException If there are problems connecting to or populating the chosen databases
      */
     public static SQLObject showSchemaChooserDialog(MatchMakerSwingSession session, Component owner, String dialogTitle, String okButtonLabel) throws ArchitectException {
-        SQLObjectChooser soc = new SQLObjectChooser(session);
-        
         // single boolean in final array so the buttons can modify its value
         final boolean[] dialogAccepted = new boolean[1];
         final JDialog d = SPSUtils.makeOwnedDialog(owner, dialogTitle);
+        SQLObjectChooser soc = new SQLObjectChooser(session, d);
         
         FormLayout layout = new FormLayout("pref,4dlu,pref");
         DefaultFormBuilder builder = new DefaultFormBuilder(layout);
@@ -187,8 +186,7 @@ public class SQLObjectChooser {
 	 *            The list of data sources that the datasource chooser will
 	 *            contain.
 	 */
-	public SQLObjectChooser(final MatchMakerSwingSession session) {
-		
+	public SQLObjectChooser(final MatchMakerSwingSession session, final Component owner) {
 		this.session = session;
 			
 		db = session.getDatabase();
@@ -242,7 +240,7 @@ public class SQLObjectChooser {
                 try {
                     validate();
                 } catch (Exception ex) {
-                    SPSUtils.showExceptionDialogNoReport((Component) e.getSource(), "Database Error", ex);
+                    SPSUtils.showExceptionDialogNoReport(owner, "Database Error", ex);
                 }
 			}
 		};
