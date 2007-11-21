@@ -74,7 +74,7 @@ public class NewMergeRuleAction extends AbstractAction {
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		final SQLObjectChooser chooser = new SQLObjectChooser(swingSession);
+		final SQLObjectChooser chooser = new SQLObjectChooser(swingSession, dialog);
 		
 		ItemListener il = new ItemListener(){
 			public void itemStateChanged(ItemEvent e) {			
