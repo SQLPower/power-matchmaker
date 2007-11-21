@@ -33,6 +33,7 @@ import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.TranslateGroupParent;
 
 public class MatchMakerSwingSessionTest extends TestCase {
     
@@ -82,6 +83,11 @@ public class MatchMakerSwingSessionTest extends TestCase {
                 return null;
             }
             
+            @Override
+            public TranslateGroupParent getTranslations() {
+                TranslateGroupParent tgp = new TranslateGroupParent(this);
+                return tgp;
+            }
         };
         
         session = new MatchMakerSwingSession(stubContext, stubSessionImp);

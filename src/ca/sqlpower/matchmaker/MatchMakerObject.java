@@ -131,4 +131,10 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
 	 * Sets if the object is undoing.
 	 */
 	public void setUndoing(boolean isUndoing);
+	
+	/**
+	 * Returns true if the sub-hierarchy of this matchmaker object
+	 * contains the passed in mmo.
+	 */
+	public boolean hierarchyContains(MatchMakerObject mmo);
 }

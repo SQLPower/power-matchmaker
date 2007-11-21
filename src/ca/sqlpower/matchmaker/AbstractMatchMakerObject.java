@@ -336,6 +336,24 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 		this.isUndoing = isUndoing;
 	}
 	
+	/**
+	 * Searches through the tree recursively to find if the mmo 
+	 * is part of the hierarchy.
+	 */
+	public boolean hierarchyContains(MatchMakerObject mmo) {
+		if (allowsChildren()) {
+			if (getChildren().contains(mmo)) {
+				return true;
+			}
+			for (C child : getChildren()) {
+				if (child.hierarchyContains(mmo)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	public void startCompoundEdit() {
 		getEventSupport().firePropertyChange("UNDOSTATE", false, true);
 	}
