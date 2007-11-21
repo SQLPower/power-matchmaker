@@ -21,9 +21,7 @@ package ca.sqlpower.matchmaker.playground;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Panel;
 import java.awt.event.ActionEvent;
-import java.net.Socket;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -34,11 +32,16 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+/**
+ * Fixed by changing the panel to a JPanel/
+ * 
+ * 
+ * No idea why it was a panel in the first place
+ */
+
+
 public class StupidDialogTest {
 	public static void main(String[] args) throws Exception {
-		Socket s = new Socket("demiroot.com", 80);
-		System.out.println(s.getInetAddress());
-		
 		
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run() {
@@ -72,7 +75,7 @@ public class StupidDialogTest {
 			}
 		};
         
-		Panel p = new Panel(new FlowLayout());
+		JPanel p = new JPanel(new FlowLayout());
 
 		p.add (new JTextField(30));
 		p.add(new JButton(cancelAction));
