@@ -20,6 +20,7 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
@@ -61,6 +63,7 @@ public class MatchMakerSwingSessionTest extends TestCase {
         
         MatchMakerSession stubSessionImp = new StubMatchMakerSession(){
         	FolderParent folders;
+        	SQLDatabase db = null;
         	
             @Override
             public FolderParent getCurrentFolderParent() {
@@ -72,7 +75,10 @@ public class MatchMakerSwingSessionTest extends TestCase {
             
             @Override
             public SQLDatabase getDatabase() {
-                return new SQLDatabase(ds);
+            	if (db == null) {
+            		db = new SQLDatabase(ds);
+            	} 
+            	return db;
             }
            
             @Override
@@ -87,6 +93,15 @@ public class MatchMakerSwingSessionTest extends TestCase {
             public TranslateGroupParent getTranslations() {
                 TranslateGroupParent tgp = new TranslateGroupParent(this);
                 return tgp;
+            }
+            
+            @Override
+            public Connection getConnection() {
+            	try {
+            	return getDatabase().getConnection();
+            	} catch (ArchitectException e) {
+            		throw new RuntimeException("Error getting Connection!", e);
+            	}
             }
         };
         
@@ -104,5 +119,13 @@ public class MatchMakerSwingSessionTest extends TestCase {
         assertNull("There is at least one folder that should not exist", session.findFolder("Randomness"));
         assertEquals("Got the wrong folder", folder1, session.findFolder("Test Folder"));
         assertEquals("Got the wrong folder", folder2, session.findFolder("Test Folder2"));
-    }          
+    }  
+    
+    public void testConnectionCloses() {
+    	//opens the connection
+    	session.getConnection();
+    	assertTrue("Test is not very usefull if the connection starts closed!",session.getDatabase().isConnected());
+    	session.close();
+    	assertFalse("Database connection is not closed! ", session.getDatabase().isConnected());
+    }
 }

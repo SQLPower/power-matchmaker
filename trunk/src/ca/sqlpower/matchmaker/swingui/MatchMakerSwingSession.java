@@ -1191,6 +1191,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             	return false;
             }
         }
+		
+		//closes the connection to the repository database.
+		getDatabase().disconnect();
 		return true;
 	}
 	
