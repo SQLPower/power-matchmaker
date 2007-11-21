@@ -49,8 +49,10 @@ import javax.swing.text.DefaultStyledDocument;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectUtils;
+import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLObject;
+import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.matchmaker.dao.hibernate.RepositoryUtil;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
@@ -80,12 +82,34 @@ public class CreateRepositoryAction extends AbstractAction {
     
     public void actionPerformed(ActionEvent e) {
         try {
+            
             SQLObject target = SQLObjectChooser.showSchemaChooserDialog(
                     session, session.getFrame(), "New Repository", "Create...");
+            
+            // check if user cancelled
             if (target == null) return;
-            List<String> sqlScript = RepositoryUtil.makeRepositoryCreationScript(target);
+            
             SQLDatabase targetDB = ArchitectUtils.getAncestor(target, SQLDatabase.class);
+            SQLCatalog targetCatalog = ArchitectUtils.getAncestor(target, SQLCatalog.class);
+            SQLSchema targetSchema = ArchitectUtils.getAncestor(target, SQLSchema.class);
+            
+            // set the repository owner in the data source
+            StringBuilder targetOwner = new StringBuilder();
+            if (targetCatalog != null) {
+                targetOwner.append(targetCatalog.getName());
+            }
+            if (targetCatalog != null && targetSchema != null) {
+                targetOwner.append(".");
+            }
+            if (targetSchema != null) {
+                targetOwner.append(targetSchema.getName());
+            }
+            targetDB.getDataSource().setPlSchema(targetOwner.toString());
+            
+            // create the schema itself
+            List<String> sqlScript = RepositoryUtil.makeRepositoryCreationScript(target);
             showSQLScriptDialog(targetDB, sqlScript);
+            
         } catch (Exception ex) {
             MMSUtils.showExceptionDialog(session.getFrame(), "Repository Creation Failed", ex);
         }
