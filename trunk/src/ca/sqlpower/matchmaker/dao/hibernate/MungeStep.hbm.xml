@@ -109,6 +109,8 @@
 		<subclass name="StringToDateMungeStep" />
 		<subclass name="NumberConstantMungeStep" />
 		<subclass name="BooleanConstantMungeStep" />
+		<subclass name="StringToBooleanMungeStep" />
+		<subclass name="BooleanToStringMungeStep" />
 		
 	</class>
 </hibernate-mapping>
