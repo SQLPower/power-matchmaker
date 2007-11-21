@@ -29,8 +29,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -55,6 +53,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -74,18 +73,13 @@ import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.event.MatchMakerEvent;
-import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
@@ -105,7 +99,7 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * The MatchEditor is the GUI for editing all aspects of a {@link Project} instance.
  */
-public class ProjectEditor implements DataEntryPanel {
+public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
 	private static final Logger logger = Logger.getLogger(ProjectEditor.class);
 
@@ -124,16 +118,13 @@ public class ProjectEditor implements DataEntryPanel {
 	 */
 	private final JPanel panel;
 
-	StatusComponent status = new StatusComponent();
+	private StatusComponent status = new StatusComponent();
     private JTextField projectId = new JTextField();
     private JComboBox folderComboBox = new JComboBox();
     private JComboBox indexComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
     private JTextField projectType = new JTextField();
     private JTextField resultTableName = new JTextField();
-    private JButton viewBuilder;
-    private JButton createIndexButton;
-    private JButton saveProject;
     
     private FilterComponents filterPanel;
 
@@ -147,85 +138,95 @@ public class ProjectEditor implements DataEntryPanel {
 	private final PlFolder<Project> folder;
 	private FormValidationHandler handler;
 
+	
 	/**
 	 * Construct a ProjectEditor; for a project that is not new, we create a backup for it,
 	 * and give it the name of the old one, when we save it, we will remove
 	 * the backup from the folder, and insert the new one.
 	 * @param swingSession  -- a MatchMakerSession
 	 * @param project the project Object to be edited
-	 * @param folder the project's parent folder (XXX isn't this just project.getParent()?)
+	 * @param folder the project's parent folder
 	 */
     public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder) throws ArchitectException {
+        if (project == null) throw new IllegalArgumentException("You can't edit a null project");
+        if (folder == null) throw new IllegalArgumentException("Project must be in a folder");
+        
         this.swingSession = swingSession;
-        if (project == null) throw new NullPointerException("You can't edit a null project");
         this.project = project;
         this.folder = folder;
         handler = new FormValidationHandler(status, true);
+        handler.setValidatedAction(saveAction);
         panel = buildUI();
         setDefaultSelections();
-        handler.addPropertyChangeListener(new PropertyChangeListener(){
-			public void propertyChange(PropertyChangeEvent evt) {
-				refreshActionStatus();
-			}
-        });
+        addListeners();
+        addValidators();
+        
         handler.resetHasValidated(); // avoid false hits when newly created
 
-        /**
-         * listen to the parent of the project, to handle the project removal
-         * from the tree. if this currently editting project was deleted
-         * from the tree, we want to close this panel without saving.
-         */
         if ( project.getParent() != null ) {
-        	final Project project2 = project;
-        	final PlFolder<Project> parentFolder = (PlFolder<Project>) project.getParent();
-        	final JPanel panel = getPanel();
-        	final MatchMakerListener<PlFolder, Project> projectRemovalListener = new MatchMakerListener<PlFolder, Project>(){
-
-        		// we don't care
-        		public void mmChildrenInserted(MatchMakerEvent<PlFolder, Project> evt) {}
-
-        		public void mmChildrenRemoved(MatchMakerEvent<PlFolder, Project> evt) {
-        			if (!panel.isVisible() || !panel.isDisplayable()) {
-        				return;
-        			}
-        			final List<Project> projects = evt.getChildren();
-        			boolean found = false;
-        			for ( Project m : projects ) {
-        				if ( m == project2 ) found = true;
-        			}
-        			if ( found ) {
-        				logger.debug("This project is deleted from somewhere");
-        				logger.debug("we have to close the editor without saving");
-        				handler.resetHasValidated();
-        				panel.setVisible(false);
-        				swingSession.setCurrentEditorComponent(null);
-        				parentFolder.removeMatchMakerListener(this);
-        			}
-        		}
-        		// we don't care
-        		public void mmPropertyChanged(MatchMakerEvent<PlFolder, Project> evt) {}
-        		// we don't care
-        		public void mmStructureChanged(MatchMakerEvent<PlFolder, Project> evt) {}
-        	};
-        	parentFolder.addMatchMakerListener(projectRemovalListener);
-        	
         	sourceChooser.getDataSourceComboBox().setEnabled(false);
         	sourceChooser.getCatalogComboBox().setEnabled(false);
         	sourceChooser.getSchemaComboBox().setEnabled(false);
         	sourceChooser.getTableComboBox().setEnabled(false);
-        	viewBuilder.setEnabled(false);
+        	viewBuilderAction.setEnabled(false);
         }
-        
+    }
+
+    private void addListeners() {
     	//This is only good if the result choosers datasource's combo box is invisible.
     	sourceChooser.getDataSourceComboBox().addItemListener(new ItemListener(){
-
 			public void itemStateChanged(ItemEvent e) {
 				resultChooser.getDataSourceComboBox().getModel().setSelectedItem(sourceChooser.getDataSourceComboBox().getSelectedItem());
 			}
-    		
     	});
-    }
+    	
+    	// listen to the table change
+        sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
+        	public void itemStateChanged(ItemEvent e) {
+        		SQLTable sourceTable = (SQLTable)(sourceChooser.getTableComboBox().getSelectedItem());
+				refreshIndexComboBoxAndAction(sourceTable);
+				if (sourceTable != null) {
+					String trimmedResultTableName = sourceTable.getName();
+					trimmedResultTableName += "_RESULT";
+					resultTableName.setText(trimmedResultTableName);
+				}
+				filterPanel.setTable(sourceTable);
+        	}
+        });
 
+    }
+    
+    private void addValidators() {
+    	Validator v = new ProjectNameValidator(swingSession,project);
+        handler.addValidateObject(projectId,v);
+
+        Validator v2 = new ProjectSourceTableValidator(Collections.singletonList(saveAction));
+        handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
+
+        Validator v2a = new ProjectSourceTableIndexValidator();
+        handler.addValidateObject(indexComboBox,v2a);
+
+        if (project.getType() != ProjectMode.CLEANSE) { 
+    		Validator v3 = new ProjectResultCatalogSchemaValidator("Result "+
+    				resultChooser.getCatalogTerm().getText());
+    		handler.addValidateObject(resultChooser.getCatalogComboBox(),v3);
+    	
+    		Validator v4 = new ProjectResultCatalogSchemaValidator("Result "+
+    				resultChooser.getSchemaTerm().getText());
+    		handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
+        	
+        	Validator v5 = new ProjectResultTableNameValidator();
+        	handler.addValidateObject(resultTableName,v5);
+        }
+        	
+        Validator v6 = new AlwaysOKValidator();
+        handler.addValidateObject(desc, v6);
+        handler.addValidateObject(filterPanel.getFilterTextArea(), v6);
+        
+        handler.addValidateObject(sourceChooser.getDataSourceComboBox(), v6);
+        handler.addValidateObject(resultChooser.getDataSourceComboBox(), v6);
+    }
+    
     private Action showConnectionManagerAction = new AbstractAction("Manage Connections...") {
         public void actionPerformed(ActionEvent e) {
             swingSession.getContext().showDatabaseConnectionManager(swingSession.getFrame());
@@ -251,22 +252,6 @@ public class ProjectEditor implements DataEntryPanel {
                 MMSUtils.showExceptionDialog(swingSession.getFrame(),
                 		"Project Not Saved", ex);
             }
-		}
-	};
-
-	private Action newMungeProcessAction = new AbstractAction("New Munge Process") {
-		public void actionPerformed(ActionEvent arg0) {
-			MungeProcessEditor editor = null;
-			try {
-				editor = new MungeProcessEditor(swingSession,
-					project,
-					new MungeProcess());
-				swingSession.setCurrentEditorComponent(editor);
-			} catch (ArchitectException e) {
-				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
-						"Error Loading Source Table", 
-						"There was an error loading the source table", e);
-			}
 		}
 	};
 
@@ -312,18 +297,21 @@ public class ProjectEditor implements DataEntryPanel {
 		}
 	};
 
+	
+		
 	private Action createIndexAction = new AbstractAction("Pick Columns"){
 		public void actionPerformed(ActionEvent e) {
-			if ( project.getSourceTable() == null ) {
+			SQLTable sourceTable = (SQLTable)sourceChooser.getTableComboBox().getSelectedItem();
+			if (sourceTable == null) {
 				JOptionPane.showMessageDialog(panel,
 						"You have to select a source table and save before picking columns" );
 				return;
 			}
 			try {
-				MatchMakerIndexBuilder indexBuilder = new MatchMakerIndexBuilder(project,swingSession);
+				MatchMakerIndexBuilder indexBuilder = new MatchMakerIndexBuilder(sourceTable, (MutableComboBoxModel)indexComboBox.getModel(),swingSession);
 				JDialog d = DataEntryPanelBuilder.createDataEntryPanelDialog(
 						indexBuilder,
-						swingSession.getFrame(),
+						getParentWindow(),
 						"Choose the index",
 						"OK");
 				d.pack();
@@ -349,11 +337,17 @@ public class ProjectEditor implements DataEntryPanel {
         		resultChooser.getSchemaTerm().getText());
         resultTableName.setName("Result Table");
 
+        sourceChooser.getCatalogComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
+        sourceChooser.getSchemaComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
+        sourceChooser.getTableComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
+        resultChooser.getCatalogComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
+        resultChooser.getSchemaComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
+
         filterPanel = new FilterComponents(swingSession.getFrame());
 
-    	viewBuilder = new JButton(viewBuilderAction);
-    	saveProject = new JButton(saveAction);
-        createIndexButton = new JButton(createIndexAction );
+    	JButton viewBuilder = new JButton(viewBuilderAction);
+    	JButton saveProject = new JButton(saveAction);
+        JButton createIndexButton = new JButton(createIndexAction );
 
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,4dlu", // columns
@@ -419,6 +413,11 @@ public class ProjectEditor implements DataEntryPanel {
 			pb.add(resultTableName, cc.xy(4,row));
 			row+=2;
 		}
+		
+        final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
+        folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
+        folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
+
 		// We don't want the save button to take up the whole column width
 		// so we wrap it in a JPanel with a FlowLayout. If there is a better
 		// way, please fix this.
@@ -432,59 +431,15 @@ public class ProjectEditor implements DataEntryPanel {
 
     private void setDefaultSelections() throws ArchitectException {
 
-    	final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
     	final SQLDatabase loginDB = swingSession.getDatabase();
-    	
-        resultChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
 
-        sourceChooser.getCatalogComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
-        sourceChooser.getSchemaComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
-        sourceChooser.getTableComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
-        resultChooser.getCatalogComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
-        resultChooser.getSchemaComboBox().setRenderer(new SQLObjectComboBoxCellRenderer());
-
-        folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
-        folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
-        if (project.getParent() != null) {
-       		folderComboBox.setSelectedItem(project.getParent());
-        } else if ( folder != null ) {
-        	folderComboBox.setSelectedItem(folder);
-        }
-
+        folderComboBox.setSelectedItem(folder);
         projectId.setText(project.getName());
         desc.setText(project.getMungeSettings().getDescription());
         projectType.setText(project.getType().toString());
         filterPanel.getFilterTextArea().setText(project.getFilter());
 
-        Validator v = new ProjectNameValidator(swingSession,project);
-        handler.addValidateObject(projectId,v);
-
-        Validator v2 = new ProjectSourceTableValidator(Collections.singletonList(saveAction));
-        handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
-
-        Validator v2a = new ProjectSourceTableIndexValidator();
-        handler.addValidateObject(indexComboBox,v2a);
-
-        if (project.getType() != ProjectMode.CLEANSE) { 
-    		Validator v3 = new ProjectResultCatalogSchemaValidator("Result "+
-    				resultChooser.getCatalogTerm().getText());
-    		handler.addValidateObject(resultChooser.getCatalogComboBox(),v3);
-    	
-    		Validator v4 = new ProjectResultCatalogSchemaValidator("Result "+
-    				resultChooser.getSchemaTerm().getText());
-    		handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
-        	
-        	Validator v5 = new ProjectResultTableNameValidator();
-        	handler.addValidateObject(resultTableName,v5);
-        }
-        	
-        Validator v6 = new AlwaysOKValidator();
-        handler.addValidateObject(desc, v6);
-        handler.addValidateObject(filterPanel.getFilterTextArea(), v6);
-        
-        handler.addValidateObject(sourceChooser.getDataSourceComboBox(), v6);
-        handler.addValidateObject(resultChooser.getDataSourceComboBox(), v6);
-
+        //sets the sourceChooser defaults
         if ( project.getSourceTable() != null ) {
         	SQLTable sourceTable = project.getSourceTable();
         	filterPanel.setTable(sourceTable);
@@ -508,51 +463,10 @@ public class ProjectEditor implements DataEntryPanel {
         	sourceChooser.getTableComboBox().getModel().setSelectedItem(sourceTable);
     	}
 
-        refreshIndexComboBox(project.getSourceTableIndex(),project.getSourceTable());
-
-        // listen to the table change
-        sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
-        	public void itemStateChanged(ItemEvent e) {
-        		try {
-					refreshIndexComboBox(null,(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
-				} catch (ArchitectException e1) {
-					throw new ArchitectRuntimeException(e1);
-				}
-		        String trimmedResultTableName = resultTableName.getText().trim();
-		        if (trimmedResultTableName == null || trimmedResultTableName.length() == 0) {
-		        	SQLTable sourceTable = (SQLTable)(sourceChooser.getTableComboBox().getSelectedItem());
-		        	if (sourceTable != null) {
-		        		trimmedResultTableName = sourceTable.getName();
-		        		trimmedResultTableName += "_RESULT";
-		        		resultTableName.setText(trimmedResultTableName);
-		        	}
-		        }
-        	}
-        });
-
-        // listen to the sourceTableIndex changes,
-        // for update the index combobox selection
-        project.addMatchMakerListener(new MatchMakerListener<Project, MatchMakerFolder>(){
-
-        	// don't care
-        	public void mmChildrenInserted(MatchMakerEvent<Project, MatchMakerFolder> evt) {}
-        	//don't care
-        	public void mmChildrenRemoved(MatchMakerEvent<Project, MatchMakerFolder> evt) {}
-
-        	public void mmPropertyChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {
-        		if ( evt.getPropertyName().equals("sourceTableIndex")) {
-        			try {
-						refreshIndexComboBox(project.getSourceTableIndex(),(SQLTable) sourceChooser.getTableComboBox().getSelectedItem());
-					} catch (ArchitectException e) {
-						throw new ArchitectRuntimeException(e);
-					}
-        		}
-        	}
-        	//don't care
-        	public void mmStructureChanged(MatchMakerEvent<Project, MatchMakerFolder> evt) {}
-        });
-
-
+        refreshIndexComboBoxAndAction(project.getSourceTable());
+        
+        //sets the resultChooser defaults
+        resultChooser.getDataSourceComboBox().setSelectedItem(loginDB.getDataSource());
     	SQLTable resultTable = project.getResultTable();
     	logger.debug("result table: " + resultTable);
     	if ( resultTable != null ) {
@@ -576,42 +490,28 @@ public class ProjectEditor implements DataEntryPanel {
     		
     		resultTableName.setText(project.getResultTable().getName());
     	}
-
-        //This listener is put here to update the SQLTable in FilterPanel so the
-        //FilterMakerDialog two dropdown boxes can work properly
-        sourceChooser.getTableComboBox().addItemListener(new ItemListener(){
-            public void itemStateChanged(ItemEvent e) {
-                filterPanel.setTable((SQLTable)(sourceChooser.getTableComboBox().getSelectedItem()));
-            }
-         });
     }
 
     /**
-     * refersh combobox item
-     * @param newIndex       the project object, if the custom pick index is not a
-     * part of the table, we will add it to the combobox as well
+     * refresh combo box item
      * @param newTable    the sqlTable contains unique index
      */
-	private void refreshIndexComboBox(SQLIndex newIndex, SQLTable newTable) throws ArchitectException {
-
+	private void refreshIndexComboBoxAndAction(SQLTable newTable) {
 		indexComboBox.removeAllItems();
 		if ( newTable != null ) {
-			boolean contains = false;
-			for ( SQLIndex index : newTable.getUniqueIndices() ) {
-				indexComboBox.addItem(index);
-				if ( newIndex != null && index.getName().equalsIgnoreCase(newIndex.getName())) {
-					contains = true;
+			try {
+				for ( SQLIndex index : newTable.getUniqueIndices() ) {
+					indexComboBox.addItem(index);
 				}
+			} catch (ArchitectException e) {
+				throw new RuntimeException(e);
 			}
-			if ( !contains && newIndex != null ) {
-				indexComboBox.addItem(newIndex);
-				indexComboBox.setSelectedItem(newIndex);
-			} else if ( indexComboBox.getItemCount() > 0 ) {
+			if ( indexComboBox.getItemCount() > 0 ) {
 				indexComboBox.setSelectedIndex(0);
 			}
-		} else if ( newIndex!= null ){
-			indexComboBox.addItem(newIndex);
-			indexComboBox.setSelectedItem(newIndex);
+			createIndexAction.setEnabled(true);
+		} else {
+			createIndexAction.setEnabled(false);
 		}
 	}
 
@@ -717,7 +617,7 @@ public class ProjectEditor implements DataEntryPanel {
         	sourceChooser.getCatalogComboBox().setEnabled(false);
         	sourceChooser.getSchemaComboBox().setEnabled(false);
         	sourceChooser.getTableComboBox().setEnabled(false);
-        	viewBuilder.setEnabled(false);
+        	viewBuilderAction.setEnabled(false);
         	
         	if (project.getType() != ProjectMode.CLEANSE) {
 	        	// defaults the merge rules
@@ -748,8 +648,6 @@ public class ProjectEditor implements DataEntryPanel {
         swingSession.save(project);
         handler.resetHasValidated();
 
-        // bring back some buttons like create index...
-        refreshActionStatus();
 		return true;
     }
     
@@ -916,29 +814,7 @@ public class ProjectEditor implements DataEntryPanel {
 	    editor.setLocationRelativeTo(null);
 	    editor.setVisible(true);
 	}
-
-    private void refreshActionStatus() {
-    	ValidateResult worst = handler.getWorstValidationStatus();
-    	saveAction.setEnabled(true);
-		newMungeProcessAction.setEnabled(true);
-
-    	if ( worst.getStatus() == Status.FAIL ) {
-    		saveAction.setEnabled(false);
-    		newMungeProcessAction.setEnabled(false);
-    	}
-    	if (sourceChooser.getTableComboBox().getSelectedItem() == null){
-    		newMungeProcessAction.setEnabled(false);
-    		createIndexAction.setEnabled(false);
-    	} else {
-    		if (sourceChooser.getTableComboBox().getSelectedItem() !=
-        		project.getSourceTable() ) {
-        		createIndexAction.setEnabled(false);
-        	} else {
-        		createIndexAction.setEnabled(true);
-        	}
-    	}
-    }
-
+	
     private class ProjectSourceTableValidator implements Validator {
 
         List<Action> actionsToDisable;
@@ -1077,5 +953,9 @@ public class ProjectEditor implements DataEntryPanel {
 
 	public void discardChanges() {
 		logger.error("Cannot discard chagnes");
+	}
+
+	public Project getCurrentEditingMMO() {
+		return project;
 	}
 }

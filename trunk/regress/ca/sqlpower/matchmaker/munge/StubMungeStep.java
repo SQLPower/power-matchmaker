@@ -238,4 +238,9 @@ public class StubMungeStep implements MungeStep {
         logger.debug("Stub call: StubMungeStep.isOpen()");
         return false;
     }
+
+	public boolean hierarchyContains(MatchMakerObject mmo) {
+		logger.debug("Stub call: StubMungeStep.hierarchyContains()");
+		return false;
+	}
 }

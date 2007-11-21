@@ -27,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.MutableComboBoxModel;
 
 import org.apache.log4j.Logger;
 
@@ -36,7 +37,6 @@ import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.SPSUtils;
@@ -58,7 +58,8 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 
 	private static final Logger logger = Logger.getLogger(MatchMakerIndexBuilder.class);
 	private final MatchMakerSwingSession swingSession;
-	private final Project project;
+	private final MutableComboBoxModel indexModel;
+	private final SQLTable table;
 
 	private final JPanel panel;
 	private final JTextField indexName;
@@ -71,24 +72,24 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
     /** Handles the validation rules for this form. */
     private FormValidationHandler validationHandler;
 
-	public MatchMakerIndexBuilder(Project project, MatchMakerSwingSession swingSession) throws ArchitectException {
-		this.project = project;
+	public MatchMakerIndexBuilder(final SQLTable table, final MutableComboBoxModel indexModel, final MatchMakerSwingSession swingSession) throws ArchitectException {
+		this.table = table;
+		this.indexModel = indexModel;
 		this.swingSession = swingSession;
 
-		final SQLTable sqlTable = project.getSourceTable();
-		final SQLIndex oldIndex = project.getSourceTableIndex();
+		final SQLIndex oldIndex = (SQLIndex)indexModel.getSelectedItem();
 
 		if (oldIndex != null &&
-				sqlTable.getIndexByName(oldIndex.getName()) == null) {
+				table.getIndexByName(oldIndex.getName()) == null) {
 			oldName = oldIndex.getName();
 		} else {
 			for( int i=0; ;i++) {
-				oldName = project.getSourceTableName()+"_UPK"+(i==0?"":String.valueOf(i));
-				if (sqlTable.getIndexByName(oldName) == null) break;
+				oldName = table.getName()+"_UPK"+(i==0?"":String.valueOf(i));
+				if (table.getIndexByName(oldName) == null) break;
 			}
 		}
 
-		columnChooserTableModel = new ColumnChooserTableModel(sqlTable, oldIndex, true);
+		columnChooserTableModel = new ColumnChooserTableModel(table, oldIndex, true);
 		final EditableJTable columntable = new EditableJTable(columnChooserTableModel);
 		columntable.addColumnSelectionInterval(1, 1);
 		TableUtils.fitColumnWidths(columntable, 15);
@@ -107,7 +108,7 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 		
 		statusComponent = new StatusComponent();
         pb.add(statusComponent, cc.xy(2, 2));
-		pb.add(new JLabel("Table: " + DDLUtils.toQualifiedName(project.getSourceTable())),
+		pb.add(new JLabel("Table: " + DDLUtils.toQualifiedName(table)),
 					cc.xy(2, 4));
 		indexName = new JTextField(oldName,15);
 		pb.add(indexName, cc.xy(2, 6));
@@ -128,26 +129,45 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 
 	public boolean applyChanges() {
 		
-		List<SQLColumn> selectedColumns = columnChooserTableModel.getSelectedSQLColumns();
+		if (validationHandler.getFailResults().size() != 0) return false;
 
+		List<SQLColumn> selectedColumns = columnChooserTableModel.getSelectedSQLColumns();
 		if (selectedColumns.size() == 0) return false;
 
-        if (validationHandler.getFailResults().size() != 0) return false;
-
-		SQLIndex index = new SQLIndex(indexName.getText(),true,null,IndexType.OTHER,null);
-		try {
-			for (SQLColumn column : selectedColumns) {
-				index.addChild(index.new Column(column,false,false));
+        String newName = indexName.getText();
+        SQLIndex index = null;
+        boolean contains = false;
+        try {
+	        for (int i = 0; i < indexModel.getSize(); i++) {
+				index = (SQLIndex)indexModel.getElementAt(i);
+				if (index.getName().equalsIgnoreCase(newName)) {
+					index.setUnique(true);
+					index.setQualifier(null);
+					index.setType(IndexType.OTHER);
+					index.setFilterCondition(null);
+					for (int j = 0; j < index.getChildCount(); j++) {
+						index.removeChild(0);
+					}
+					contains = true;
+				}
 			}
+	        if (!contains) {
+	        	index = new SQLIndex(newName,true,null,IndexType.OTHER,null);
+	    		indexModel.addElement(index);
+	        }
+	        
+	        for (SQLColumn column : selectedColumns) {
+	    		index.addChild(index.new Column(column,false,false));
+			}
+	    	indexModel.setSelectedItem(index);
 			logger.debug("Index columns after save: "+index.getChildren());
+			return true;
 		} catch (ArchitectException e) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
 				            "Unexpected error when adding Column to the Index",
 				            e);
+			return false;
 		}
-
-		project.setSourceTableIndex(index);
-		return true;
 	}
 
 	public void discardChanges() {

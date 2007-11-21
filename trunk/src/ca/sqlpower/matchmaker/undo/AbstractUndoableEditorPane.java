@@ -28,16 +28,20 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.swingui.CleanupModel;
 import ca.sqlpower.matchmaker.swingui.MMOChangeUndoWatcher;
+import ca.sqlpower.matchmaker.swingui.MatchMakerEditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.swingui.DataEntryPanel;
 
-public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C extends MatchMakerObject> implements DataEntryPanel, CleanupModel {
+public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C extends MatchMakerObject> implements MatchMakerEditorPane<T>, CleanupModel {
 	
 	private static final Logger logger = Logger.getLogger(AbstractUndoableEditorPane.class);
 	
 	protected final MatchMakerSwingSession swingSession;
 	protected final T mmo;
+	/**
+	 * The panel that holds this editor's GUI.
+	 */
 	protected JPanel panel;
+
 	
 	/**
 	 * keeps track of whether the table has unsaved changes and all the 
@@ -92,4 +96,7 @@ public abstract class AbstractUndoableEditorPane<T extends MatchMakerObject,C ex
 
 	public abstract void undoEventFired(MatchMakerEvent<T,C> evt);
 	
+	public T getCurrentEditingMMO() {
+		return mmo;
+	}
 }

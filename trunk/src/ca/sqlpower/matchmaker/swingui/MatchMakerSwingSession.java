@@ -81,6 +81,7 @@ import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
+import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
@@ -93,6 +94,8 @@ import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
 import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
+import ca.sqlpower.matchmaker.event.MatchMakerEvent;
+import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
@@ -123,6 +126,8 @@ import ca.sqlpower.util.Version;
  * the conventional way to start the application running.
  */
 public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerRegistry {
+
+	private final RemoveEditorListener removeEditorListener = new RemoveEditorListener();
 
 	private static Logger logger = Logger.getLogger(MatchMakerSwingSession.class);
 
@@ -450,6 +455,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         buttonPanel.add(new JButton(clearWarningsAction));
         buttonPanel.add(new JButton(closeWarningDialogAction));
         cp.add(buttonPanel, BorderLayout.SOUTH);
+        
+        MatchMakerUtils.listenToHierarchy(removeEditorListener, getCurrentFolderParent());
+        MatchMakerUtils.listenToHierarchy(removeEditorListener, getTranslateGroupParent());
 	}
 
 	void showGUI() {
@@ -745,9 +753,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             if (doit) {
             	// clears the undo stack and the listeners to the match
             	// maker object
-            	if (oldPane instanceof AbstractUndoableEditorPane) {
-            		((AbstractUndoableEditorPane) oldPane).cleanup();
+            	if (oldPane instanceof CleanupModel) {
+            		((CleanupModel) oldPane).cleanup();
             	}
+            	
+            	//TODO change this to a InitModel
             	if (pane instanceof AbstractUndoableEditorPane) {
             		((AbstractUndoableEditorPane) pane).initUndo();
             	}
@@ -1350,6 +1360,46 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 	public SQLDatabase getDatabase(SPDataSource dataSource) {
 		return sessionImpl.getDatabase(dataSource);
+	}
+	
+	/**
+	 * Listens for child removed events and sets the current
+	 * editor pane to null if the current editor pane is editing
+	 * the child being removed
+	 */
+	private class RemoveEditorListener implements MatchMakerListener {
+
+		public void mmChildrenInserted(MatchMakerEvent evt) {
+			// don't care
+			for (MatchMakerObject mmo : (List<MatchMakerObject>)evt.getChildren()) {				
+				MatchMakerUtils.listenToHierarchy(this, mmo);
+			}
+		}
+
+		public void mmChildrenRemoved(MatchMakerEvent evt) {
+			//sets the current editor pane to null if object is removed.
+			if (oldPane instanceof MatchMakerEditorPane) {
+				for (MatchMakerObject removedChild : (List<MatchMakerObject>)evt.getChildren()) {
+					MatchMakerObject editorMMO = ((MatchMakerEditorPane)oldPane).getCurrentEditingMMO();
+					if (removedChild.equals(editorMMO) || removedChild.hierarchyContains(editorMMO)) {
+						MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+						TreePath treePath = treeModel.getPathForNode(evt.getSource());
+						getTree().setSelectionPath(treePath);
+					}
+				}
+			}
+			for (MatchMakerObject mmo : (List<MatchMakerObject>)evt.getChildren()) {				
+				MatchMakerUtils.unlistenToHierarchy(this, mmo);
+			}
+		}
+
+		public void mmPropertyChanged(MatchMakerEvent evt) {
+			// don't care
+		}
+
+		public void mmStructureChanged(MatchMakerEvent evt) {
+			// don't care
+		}
 	}
 	
 }

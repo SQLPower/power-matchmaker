@@ -150,4 +150,8 @@ public class StubMatchMakerObject implements MatchMakerObject {
 	public void setUndoing(boolean isUndoing) {
 	}
 
+	public boolean hierarchyContains(MatchMakerObject mmo) {
+		return false;
+	}
+
 }
