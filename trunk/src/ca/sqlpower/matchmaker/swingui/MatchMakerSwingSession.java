@@ -127,7 +127,7 @@ import ca.sqlpower.util.Version;
  */
 public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerRegistry {
 
-	private final RemoveEditorListener removeEditorListener = new RemoveEditorListener();
+	private final SelectRemoveEditorListener removeEditorListener = new SelectRemoveEditorListener();
 
 	private static Logger logger = Logger.getLogger(MatchMakerSwingSession.class);
 
@@ -1370,10 +1370,20 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * editor pane to null if the current editor pane is editing
 	 * the child being removed
 	 */
-	private class RemoveEditorListener implements MatchMakerListener {
+	private class SelectRemoveEditorListener implements MatchMakerListener {
 
 		public void mmChildrenInserted(MatchMakerEvent evt) {
-			// don't care
+			// selects the new child on the tree if one new child is added
+			if (evt.getChildren().size() == 1) {
+				final MatchMakerObject removedMMO = (MatchMakerObject)evt.getChildren().get(0);
+				SwingUtilities.invokeLater(new Runnable(){
+					public void run() {
+						MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+						TreePath treePath = treeModel.getPathForNode(removedMMO);
+						getTree().setSelectionPath(treePath);
+					}
+				});
+			}
 			for (MatchMakerObject mmo : (List<MatchMakerObject>)evt.getChildren()) {				
 				MatchMakerUtils.listenToHierarchy(this, mmo);
 			}
@@ -1396,13 +1406,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			}
 		}
 
-		public void mmPropertyChanged(MatchMakerEvent evt) {
-			// don't care
-		}
+		// don't care
+		public void mmPropertyChanged(MatchMakerEvent evt) {}
 
-		public void mmStructureChanged(MatchMakerEvent evt) {
-			// don't care
-		}
+		// don't care
+		public void mmStructureChanged(MatchMakerEvent evt) {}
 	}
 	
 }

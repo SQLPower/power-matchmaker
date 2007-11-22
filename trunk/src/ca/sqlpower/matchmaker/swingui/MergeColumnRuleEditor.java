@@ -302,11 +302,7 @@ public class MergeColumnRuleEditor extends AbstractUndoableEditorPane<TableMerge
 
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(ActionEvent e) {
-			if ( applyChanges() ) {
-				MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-				TreePath menuPath = treeModel.getPathForNode(mmo);
-				swingSession.getTree().setSelectionPath(menuPath);
-			} else {
+			if (!applyChanges()) {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
 						"Merge Column rules not saved.",
 						"Save",

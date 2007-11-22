@@ -187,10 +187,14 @@ public class SQLObjectChooser {
 	 *            contain.
 	 */
 	public SQLObjectChooser(final MatchMakerSwingSession session, final Component owner) {
+		this(session, owner, session.getDatabase().getDataSource());
+	}
+
+	public SQLObjectChooser(final MatchMakerSwingSession session, final Component owner, final SPDataSource defaultDS) {
 		this.session = session;
 			
-		db = session.getDatabase();
-		dataSource = db.getDataSource();
+		db = session.getDatabase(defaultDS);
+		dataSource = defaultDS;
         dataSourceComboBox.setModel(new ConnectionComboBoxModel(session.getContext().getPlDotIni()));
 		dataSourceComboBox.setSelectedItem(dataSource);
 
@@ -250,7 +254,7 @@ public class SQLObjectChooser {
 		schemaComboBox.addItemListener(itemListener);
 		tableComboBox.addItemListener(itemListener);
 	}
-
+	
     /**
      * Updates all of the appropriate components after one of them has had a
      * selection change. This method is really a subroutine of the anonymous
