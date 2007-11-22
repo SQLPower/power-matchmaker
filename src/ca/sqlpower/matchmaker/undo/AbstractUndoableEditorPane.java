@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.swingui.CleanupModel;
-import ca.sqlpower.matchmaker.swingui.MMOChangeUndoWatcher;
 import ca.sqlpower.matchmaker.swingui.MatchMakerEditorPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 

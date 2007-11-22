@@ -27,12 +27,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.Expression;
 
-import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.SQLObject;
-import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 
 public class ProjectDAOHibernate extends AbstractMatchMakerDAOHibernate<Project> implements
@@ -97,31 +92,6 @@ public class ProjectDAOHibernate extends AbstractMatchMakerDAOHibernate<Project>
 			throw new RuntimeException("The project parent folder is null");
 		}
 		super.save(saveMe);
-		
-		// Saving the project clears out the columns of the result table
-		// if the table was created the first time. This block of code
-		// finds and sets the result table from the physical database 
-		// that would have all the columns.
-		try {
-			MatchMakerSession session = saveMe.getSession();
 
-			if (saveMe.getType() != ProjectMode.CLEANSE) {
-				
-				SQLTable resultTable = session.findPhysicalTableByName(saveMe.getResultTableSPDatasource(), saveMe.getResultTableCatalog(),
-						saveMe.getResultTableSchema(), saveMe.getResultTableName());
-				if (resultTable != null 
-						&& saveMe.getResultTableSPDatasource().equals(saveMe.getSourceTableSPDatasource())) {
-					SQLTable oldTable = saveMe.getResultTable();
-					if (oldTable != null) {
-						SQLObject sqlobject = oldTable.getParent();
-						sqlobject.removeChild(oldTable);
-						sqlobject.addChild(resultTable);
-					}
-				}
-				saveMe.setResultTable(resultTable);
-			}
-		} catch (ArchitectException e) {
-			throw new RuntimeException(e);
-		}
 	}
 }

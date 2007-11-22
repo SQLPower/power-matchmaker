@@ -65,10 +65,10 @@ public class NewTableMergeRuleChooserPane implements DataEntryPanel, Resizable, 
 	public NewTableMergeRuleChooserPane(MatchMakerSwingSession swingSession, Project project) {
 		this.project = project;
 		this.swingSession = swingSession;
-		this.panel = buildUI();
 		this.chooser = new SQLObjectChooser(
-				swingSession, panel,
+				swingSession, swingSession.getFrame(),
 				project.getSourceTable().getParentDatabase().getDataSource());
+		this.panel = buildUI();
 		addValidators();
 		handler.resetHasValidated();
 	}
