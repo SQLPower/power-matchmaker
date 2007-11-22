@@ -53,18 +53,6 @@ public class MungeProcessor extends AbstractProcessor {
     public MungeProcessor(MungeProcess mungeProcess, Logger logger) {
         this.mungeProcess = mungeProcess;
         this.engineLogger = logger;
-        if (mungeProcess.getParentProject().getMungeSettings().getDebug()) {
-        	logger.setLevel(Level.DEBUG);
-        }
-        List<MungeStep> steps = new ArrayList<MungeStep>(mungeProcess.getChildren());
-        
-        // topo sort
-        MungeProcessGraphModel gm = new MungeProcessGraphModel(steps);
-        DepthFirstSearch<MungeStep, Edge> dfs = new DepthFirstSearch<MungeStep, Edge>();
-        dfs.performSearch(gm);
-        processOrder = dfs.getFinishOrder();
-        Collections.reverse(processOrder);
-        logger.debug("Order of processing: " + processOrder);
     }
     
     public Boolean call() throws Exception {
@@ -72,6 +60,11 @@ public class MungeProcessor extends AbstractProcessor {
     }
     
     public Boolean call(int rowCount) throws Exception {
+    	if (mungeProcess.getParentProject().getMungeSettings().getDebug()) {
+    		logger.setLevel(Level.DEBUG);
+    	}
+    	
+    	determineProcessOrder();
         
     	try {
 			monitorableHelper.setStarted(true);
@@ -140,6 +133,21 @@ public class MungeProcessor extends AbstractProcessor {
         
         return Boolean.TRUE;
     }
+
+    /**
+     * Determines the order that the munge steps should be processed in. It is set to
+     * default accessibility so that the unit test can call it.
+     */
+	void determineProcessOrder() {
+		List<MungeStep> steps = new ArrayList<MungeStep>(mungeProcess.getChildren());
+    	// topo sort
+    	MungeProcessGraphModel gm = new MungeProcessGraphModel(steps);
+    	DepthFirstSearch<MungeStep, Edge> dfs = new DepthFirstSearch<MungeStep, Edge>();
+    	dfs.performSearch(gm);
+    	processOrder = dfs.getFinishOrder();
+    	Collections.reverse(processOrder);
+    	logger.debug("Order of processing: " + processOrder);
+	}
     
     /**
      * A package private method that will return the MungeSteps in the order that
