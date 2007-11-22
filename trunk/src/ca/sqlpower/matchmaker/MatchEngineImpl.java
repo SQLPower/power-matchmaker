@@ -37,6 +37,7 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
 import ca.sqlpower.matchmaker.munge.MungeResult;
 import ca.sqlpower.util.EmailAppender;
+import ca.sqlpower.util.Monitorable;
 
 /**
  * The MatchMaker's matching engine.  Runs all of the munge steps in the correct
@@ -59,7 +60,9 @@ public class MatchEngineImpl extends AbstractEngine {
 
 	private String progressMessage;
 
-	private Processor currentProcessor;
+	private Monitorable currentProcessor;
+
+	private int rowCount;
 	
 	public MatchEngineImpl(MatchMakerSession session, Project project) {
 		this.setSession(session);
@@ -172,19 +175,23 @@ public class MatchEngineImpl extends AbstractEngine {
 			progressMessage = "Starting Match Engine";
 			logger.info(progressMessage);
 			
-			int rowCount = getNumRowsToProcess();
-			
+			rowCount = getNumRowsToProcess();
 			List<MungeProcess> mungeProcesses = getProject().getMungeProcessesFolder().getChildren();
-			jobSize = rowCount * mungeProcesses.size() * 2;
+			jobSize = rowCount * mungeProcesses.size() * 2 + rowCount;
 			
 			MatchPool pool = new MatchPool(getProject());
 			// Fill pool with pre-existing matches
 			pool.findAll(null);
 			
 			if (getProject().getMungeSettings().isClearMatchPool()) {
+				int clearJobSize = pool.getPotentialMatches().size() + pool.getOrphanedMatches().size();
+				jobSize += clearJobSize;
 				progressMessage = "Clearing Match Pool";
 				logger.info(progressMessage);
+				currentProcessor = pool;
 				pool.clear(new Aborter());
+				progress += clearJobSize;
+				currentProcessor = null;
 			}
 			
 			checkCancelled();
@@ -194,11 +201,13 @@ public class MatchEngineImpl extends AbstractEngine {
 			mungeAndMatch(rowCount, mungeProcesses, pool);
 			
 			progressMessage = "Storing matches";
+			currentProcessor = pool;
 			logger.info(progressMessage);
 			pool.store(new Aborter());
-            
             checkCancelled();
-			
+            progress += rowCount;
+            currentProcessor = null;
+            
 			progressMessage = "Match Engine finished successfully";
 			logger.info(progressMessage);
 
@@ -294,11 +303,18 @@ public class MatchEngineImpl extends AbstractEngine {
 	}
 
 	public int getProgress() {
-		if (currentProcessor != null) {
-			return progress + currentProcessor.getProgress();
+		int currentProgress;
+		if (currentProcessor != null && currentProcessor instanceof Processor) {
+			currentProgress = progress + currentProcessor.getProgress();
+		} else if (currentProcessor != null && currentProcessor instanceof MatchPool) {
+			float poolProgress = currentProcessor.getProgress();
+			float poolJobSize = currentProcessor.getJobSize();
+			float matchPoolProgress = poolProgress / poolJobSize * rowCount;
+			currentProgress = progress + Math.round(matchPoolProgress);
 		} else {
-			return progress;
+			currentProgress = progress;
 		}
+		return currentProgress;
 	}
 
 	public String getObjectType() {

@@ -56,6 +56,7 @@ import ca.sqlpower.matchmaker.graph.GraphConsideringOnlyGivenNodes;
 import ca.sqlpower.matchmaker.graph.NonDirectedUserValidatedMatchPoolGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.SQL;
+import ca.sqlpower.util.MonitorableImpl;
 
 /**
  * The MatchPool class represents the set of matching records for
@@ -64,7 +65,7 @@ import ca.sqlpower.sql.SQL;
  * the edges between those records represented by the list of
  * PotentialMatchRecords.
  */
-public class MatchPool {
+public class MatchPool extends MonitorableImpl {
     
     private static final Logger logger = Logger.getLogger(MatchPool.class);
     
@@ -109,7 +110,7 @@ public class MatchPool {
      */
     private final Map<PotentialMatchRecord, PotentialMatchRecord> mergedMatches = 
     	new HashMap<PotentialMatchRecord, PotentialMatchRecord>();
-    
+	
     public MatchPool(Project match) {
         this.project = match;
         this.session = match.getSession();
@@ -360,6 +361,9 @@ public class MatchPool {
 	 */
     public void store(Aborter aborter) throws SQLException {
         logger.debug("Starting to store");
+
+        setJobSize(new Integer(deletedMatches.size() + potentialMatches.size() * 2));
+        
         if (sourceTableRecords.size() == 0) return;
         SQLTable resultTable = project.getResultTable();
         Connection con = null;
@@ -384,6 +388,7 @@ public class MatchPool {
             ps = con.prepareStatement(lastSQL);
             
             for (Iterator<PotentialMatchRecord> it = deletedMatches.iterator(); it.hasNext(); ) {
+            	incrementProgress();
             	if (aborter != null) {
             	    aborter.checkCancelled();
                 }
@@ -418,6 +423,8 @@ public class MatchPool {
             ps = con.prepareStatement(lastSQL);
             
             for (PotentialMatchRecord pmr : potentialMatches.keySet()) {
+            	incrementProgress();
+            	
                 if (aborter != null) {
                     aborter.checkCancelled();
                 }
@@ -485,6 +492,7 @@ public class MatchPool {
             ps = con.prepareStatement(lastSQL);
             
             for (PotentialMatchRecord pmr : potentialMatches.keySet()) {
+            	incrementProgress();
                 if (aborter != null) {
                     aborter.checkCancelled();
                 }
@@ -540,7 +548,7 @@ public class MatchPool {
         } catch (SQLException ex) {
             logger.error("Error in query: "+lastSQL, ex);
             session.handleWarning(
-                    "Error in SQL Query!" +
+                    "Error in SQL Query while storing the Match Pool!" +
                     "\nMessage: "+ex.getMessage() +
                     "\nSQL State: "+ex.getSQLState() +
                     "\nQuery: "+lastSQL);
@@ -562,6 +570,7 @@ public class MatchPool {
                 throw new RuntimeException(ex);
             }
         } finally {
+        	setFinished(true);
             if (ps != null) try { ps.close(); } catch (SQLException ex) { logger.error("Couldn't close prepared statement", ex); }
             if (con != null) try { con.close(); } catch (SQLException ex) { logger.error("Couldn't close connection", ex); }
         }
