@@ -47,7 +47,6 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
@@ -242,13 +241,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 	Action saveAction = new AbstractAction("Save Munge Process"){
 		public void actionPerformed(ActionEvent e) {
             applyChanges();
-            
-            // if the munge process is new, select it on the tree
-            if (mmo.getParentProject() == null) {
-                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-    			TreePath menuPath = treeModel.getPathForNode(mmo);
-    			swingSession.getTree().setSelectionPath(menuPath);
-            }
 		}
 	};
 	Action customColour = new AbstractAction("Custom Colour") {

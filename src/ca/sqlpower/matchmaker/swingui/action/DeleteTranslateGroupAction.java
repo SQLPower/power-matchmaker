@@ -23,11 +23,9 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
-import javax.swing.tree.TreePath;
 
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
 
 public class DeleteTranslateGroupAction extends AbstractAction {
@@ -53,9 +51,6 @@ public class DeleteTranslateGroupAction extends AbstractAction {
 				"This translation group is in use, and cannot be deleted.");
 		} else {
 			swingSession.delete(group);
-			MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();
-			TreePath treePath = treeModel.getPathForNode(swingSession.getTranslations());
-			swingSession.getTree().setSelectionPath(treePath);
 		}
 	}
 }
