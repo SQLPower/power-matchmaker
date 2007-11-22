@@ -97,6 +97,9 @@ import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeResultStep;
+import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
 import ca.sqlpower.matchmaker.swingui.action.CreateRepositoryAction;
@@ -1375,14 +1378,18 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		public void mmChildrenInserted(MatchMakerEvent evt) {
 			// selects the new child on the tree if one new child is added
 			if (evt.getChildren().size() == 1) {
-				final MatchMakerObject removedMMO = (MatchMakerObject)evt.getChildren().get(0);
-				SwingUtilities.invokeLater(new Runnable(){
-					public void run() {
-						MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-						TreePath treePath = treeModel.getPathForNode(removedMMO);
-						getTree().setSelectionPath(treePath);
-					}
-				});
+				final MatchMakerObject insertedMMO = (MatchMakerObject)evt.getChildren().get(0);
+				if (!(insertedMMO instanceof SQLInputStep
+						|| insertedMMO instanceof MungeResultStep
+						|| insertedMMO instanceof MungeStepOutput)) {
+					SwingUtilities.invokeLater(new Runnable(){
+						public void run() {
+							MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+							TreePath treePath = treeModel.getPathForNode(insertedMMO);
+							getTree().setSelectionPath(treePath);
+						}
+					});
+				}
 			}
 			for (MatchMakerObject mmo : (List<MatchMakerObject>)evt.getChildren()) {				
 				MatchMakerUtils.listenToHierarchy(this, mmo);
