@@ -105,7 +105,7 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 		});
         
         //adds an action listener that looks for a double click, that opens the selected 
-        //merge rule editor pane  
+        //munge process editor pane  
         mungeProcessTable.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {

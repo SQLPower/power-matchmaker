@@ -273,12 +273,6 @@ public class TranslateWordsEditor extends AbstractUndoableEditorPane<MatchMakerT
 
 		public void actionPerformed(ActionEvent e) {
             applyChanges();
-            if (mmo.getParent() == null) {
-            	// Selects the new node after save
-    	        MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-    	        TreePath menuPath = treeModel.getPathForNode(mmo);
-    	        swingSession.getTree().setSelectionPath(menuPath);
-            }
 		}
 		
 	};

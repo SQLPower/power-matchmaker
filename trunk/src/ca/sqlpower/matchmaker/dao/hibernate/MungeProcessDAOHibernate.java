@@ -32,16 +32,5 @@ public class MungeProcessDAOHibernate extends AbstractMatchMakerDAOHibernate<Mun
 	public Class<MungeProcess> getBusinessClass() {
 		return MungeProcess.class;
 	}
-	
-//	@Override
-//	public void delete(MungeProcess deleteMe) {
-//		
-//		MatchMakerObject parent = deleteMe.getParent();
-//		if (parent != null ){
-//			parent.removeChild(deleteMe);
-//		}
-//		super.delete(deleteMe);
-//		
-//	}
 
 }

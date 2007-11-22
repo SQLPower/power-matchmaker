@@ -103,7 +103,7 @@ public class TranslateGroupsEditor extends NoEditEditorPane {
         translateGroupsTable.setName("Translate Groups");
         
         //adds an action listener that looks for a double click, that opens the selected 
-        //merge rule editor pane  
+        //translate word editor pane  
         translateGroupsTable.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {

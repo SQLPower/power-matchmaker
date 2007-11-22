@@ -23,11 +23,9 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
-import javax.swing.tree.TreePath;
 
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
 
 public class DeleteMungeProcessAction extends AbstractAction {
@@ -46,9 +44,6 @@ public class DeleteMungeProcessAction extends AbstractAction {
 		"Are you sure you want to delete the munge process?");
 		if (responds != JOptionPane.YES_OPTION)
 			return;
-		MatchMakerTreeModel treeModel = (MatchMakerTreeModel)swingSession.getTree().getModel();
-		TreePath treePath = treeModel.getPathForNode(mungeProcess.getParent());
-		swingSession.getTree().setSelectionPath(treePath);
 		swingSession.delete(mungeProcess);
 	}
 }
