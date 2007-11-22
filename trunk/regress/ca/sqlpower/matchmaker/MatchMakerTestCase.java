@@ -380,7 +380,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			if (oldVal == null)
 				newVal = new Short("0");
 			else {
-				newVal = ((Short) oldVal) + 1;
+				Integer temp = (Short) oldVal + 1;
+				newVal = Short.valueOf(temp.toString());
 			}
 		} else if (property.getPropertyType() == String.class) {
 			// make sure it's unique
