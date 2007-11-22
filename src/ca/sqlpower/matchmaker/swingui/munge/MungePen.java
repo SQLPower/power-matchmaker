@@ -74,11 +74,9 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
@@ -115,7 +113,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	/**
 	 * The max distance from the side the mouse can be to start an autoscroll
 	 */
-	private static final int AUTO_SCROLL_INSET = 25; 
+	public static final int AUTO_SCROLL_INSET = 25; 
 	
 	/**
 	 * The speed at which auto scroll happens
@@ -206,45 +204,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		setFocusable(true);
 		setBackground(Color.WHITE);
 		setOpaque(true);
-		
-		if (process.getChildCount() == 0) {
-			SQLInputStep inputStep = new SQLInputStep();
-			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, true);
-			process.addChild(inputStep);
-			
-			try {
-				inputStep.open(logger);
-                inputStep.rollback();
-				inputStep.close();
-			} catch (Exception e) {
-				throw new RuntimeException("Could not set up the input munge step!", e);
-			}
-			
-			MungeStep mungeResultStep = inputStep.getOutputStep(project);
-			
-			String x = new Integer(AUTO_SCROLL_INSET + 5).toString();
-			String y = new Integer(300).toString();
-			
-			//sets the input one just outside of the autoscroll bounds
-			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
-			inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, x);
-			
-			//sets the location of the result step (resonalibly arbatrary location)
-			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
-			mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
-			
-			process.addChild(mungeResultStep);
-			
-			if (mungeResultStep instanceof CleanseResultStep) {
-				try {
-					((CleanseResultStep)mungeResultStep).open(logger);
-                    mungeResultStep.rollback();
-					mungeResultStep.close();
-				} catch (Exception e) {
-					throw new RuntimeException("Could not set up the result munge step!", e);
-				}
-			}
-		}
+
 		buildComponents(process);
 		buildPopup(((SwingSessionContext)process.getSession().getContext()).getStepMap());
 	

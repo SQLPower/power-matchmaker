@@ -46,6 +46,11 @@ public class MungeProcess
 	public static final String SYNTHETIC_MATCHES = "Synthetic_matches";
 
 	/**
+	 * The default color of a munge process is red
+	 */
+	public static final Color DEFAULT_COLOR = new Color(255, 0, 0);
+	
+	/**
 	 * Object ID needed by Hibernate 
 	 */
 	private Long oid;
@@ -58,7 +63,7 @@ public class MungeProcess
      * of 0-100, but this range is not enforced.
      * 
      */
-	private Short matchPriority;
+	private Short matchPriority = 0;
     
     /**
      * A SQL Where fragment that restricts this set of rules to a subset
@@ -76,7 +81,7 @@ public class MungeProcess
      * The colour associated with this munge process by the user.  Useful
      * in the GUI.
      */
-	private Color colour;
+	private Color colour = DEFAULT_COLOR;
 
 	/**
 	 * The MungeStep that is used to accumulate the resulting munged data.

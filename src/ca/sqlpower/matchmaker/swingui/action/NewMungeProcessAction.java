@@ -23,41 +23,82 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.MungeProcessEditor;
-import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
+import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 
 /**
  * A simple action to adds a new munge process to the swing session and
  * opens up the editor for the new munge process.
  */
 public class NewMungeProcessAction extends AbstractAction {
-    
+	private static final Logger logger = Logger.getLogger(NewMungeProcessAction.class);
     private final MatchMakerSwingSession swingSession;
-	private final Project parent;
+	private final Project project;
 
 	public NewMungeProcessAction(MatchMakerSwingSession swingSession, Project parent) {
 	    super("New Munge Process");
         this.swingSession = swingSession;
-        this.parent = parent;
+        this.project = parent;
         if (parent == null) throw new IllegalArgumentException("Parent must be non null");
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		MungeProcess g = new MungeProcess();
-		g.setName("New Munge Process");
-		MungeProcessEditor editor;
+		MungeProcess process = new MungeProcess();
+		int count;
+    	for (count = 1; project.getMungeProcessByName("New Munge Process " + count) != null ; count++);
+    	process.setName("New Munge Process " + count);
+    	project.addMungeProcess(process);
+    	SQLInputStep inputStep = new SQLInputStep();
+		inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, true);
+		process.addChild(inputStep);
+		
 		try {
-			editor = new MungeProcessEditor(swingSession,parent, g);
-			swingSession.setCurrentEditorComponent(editor);
-		} catch (ArchitectException ex) {
-			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
-					"Error Loading Source Table", 
-					"There was an error loading the source table", ex);
-		} 
+			inputStep.open(logger);
+            inputStep.rollback();
+			inputStep.close();
+		} catch (Exception ex) {
+			throw new RuntimeException("Could not set up the input munge step!", ex);
+		}
+		
+		MungeStep mungeResultStep;
+		try {
+			mungeResultStep = inputStep.getOutputStep(project);
+		} catch (ArchitectException e1) {
+			throw new RuntimeException(e1);
+		}
+		
+		String x = new Integer(MungePen.AUTO_SCROLL_INSET + 5).toString();
+		String y = new Integer(300).toString();
+		
+		//sets the input one just outside of the autoscroll bounds
+		inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
+		inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, x);
+		
+		//sets the location of the result step (resonalibly arbatrary location)
+		mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
+		mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
+		
+		process.addChild(mungeResultStep);
+		
+		if (mungeResultStep instanceof CleanseResultStep) {
+			try {
+				((CleanseResultStep)mungeResultStep).open(logger);
+                mungeResultStep.rollback();
+				mungeResultStep.close();
+			} catch (Exception ex) {
+				throw new RuntimeException("Could not set up the result munge step!", ex);
+			}
+		}
+    	swingSession.save(process);
 	}
 
 }
