@@ -140,6 +140,12 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	void disconnectInput(int index);
 	
 	/**
+	 * Disconnects the input at the given index by removing the 
+	 * MungeStepOutput
+	 */
+	void disconnectInput(MungeStepOutput mso);
+	
+	/**
 	 * Returns the list of input sources for this step. These items are actually
 	 * outputs that belong to other steps.
 	 * 

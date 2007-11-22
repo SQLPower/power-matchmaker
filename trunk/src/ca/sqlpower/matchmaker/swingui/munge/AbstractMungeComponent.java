@@ -75,6 +75,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
@@ -602,7 +603,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	public boolean hasMoved() {
-		MungeStep step = getStep();
 		return getXFromMMO() != getX() || getYFromMMO() != getY();
 	}
 
@@ -904,46 +904,16 @@ public abstract class AbstractMungeComponent extends JPanel {
 			remove();
 		}
 	}
-	
+
 	/**
-	 * Removes the this MC and all connected lines. And connects the ends.
-	 * This should only be called of there is one input and one output 
-	 */
-	public void removeSingle() {
-		MungeStep step = getStep();
-		MatchMakerObject mmo = step.getParent();
-		if (mmo instanceof AbstractMatchMakerObject) {
-			((AbstractMatchMakerObject) mmo).startCompoundEdit();
-		}
-		getPen().removeMungeStepSingles(getStep());
-		MungePen.removeAllListeners(hideShow);
-		if (mmo instanceof AbstractMatchMakerObject) {
-			((AbstractMatchMakerObject) mmo).endCompoundEdit();
-		}
-	}
-	
-	/** 
-	 * Removes this munge step and disconnects all input and output IOCs
-	 */
-	public void removeNormal() {
-		MungeStep step = getStep();
-		MatchMakerObject mmo = step.getParent();
-		if (mmo instanceof AbstractMatchMakerObject) {
-			((AbstractMatchMakerObject) mmo).startCompoundEdit();
-		}
-		getPen().removeMungeStep(step);
-		MungePen.removeAllListeners(hideShow);
-		if (mmo instanceof AbstractMatchMakerObject) {
-			((AbstractMatchMakerObject) mmo).endCompoundEdit();
-		}
-	}
-	
-	/**
-	 * The remove action for the component. This defaults to normal deletion, but
-	 * can be over ridden to use the delete single or a custom action (not recommended).
+	 * The remove action for the component. 
 	 */
 	public void remove() {
-		removeNormal();
+		MungeStep step = getStep();
+		MatchMakerObject mmo = step.getParent();
+		if (mmo instanceof MungeProcess) {
+			((MungeProcess)mmo).removeChildAndInputs(getStep());
+		}
 	}
 	
 	/**
