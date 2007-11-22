@@ -140,6 +140,7 @@ public class MungeProcessorTest extends TestCase {
      * The idea is that no MungeStep should be called before its parents, if any.
      */
     public void testCorrectProcessingOrder() throws Exception {
+    	mp.determineProcessOrder();
         List<MungeStep> processOrder = mp.getProcessOrder();
 
         for (MungeStep step: processOrder) {
