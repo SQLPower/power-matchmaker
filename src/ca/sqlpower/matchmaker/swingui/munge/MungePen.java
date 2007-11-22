@@ -471,31 +471,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		}
 		return lines;
 	}
-	
-	/**
-	 * Removes the given munge step from this pen. This will remove the given
-	 * munge step from its parent process as well as disconnect all its inputs.
-	 * 
-	 * @param ms
-	 *            The step to be removed
-	 */
-	public void removeMungeStep(MungeStep ms) {
-		
-		List <IOConnector> lines = getConnections();
-		List<IOConnector> killed = new ArrayList<IOConnector>();
-		
-		for (int x = 0;x <lines.size();x++) {
-			IOConnector ioc = lines.get(x);
-			if (ioc.getParentCom().getStep().equals(ms) || ioc.getChildCom().getStep().equals(ms)) {
-				killed.add(ioc);
-			}
-		}		
-		for (IOConnector ioc : killed) {
-			ioc.remove();
-		}
-		process.removeChild(ms);
-	}
-	
 
 	private void addMungeStep(Class<? extends MungeStep> logicClass, Point location) {
 		MungeStep ms = ((SwingSessionContext)process.getSession().getContext()).getMungeStep(logicClass);
@@ -504,47 +479,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		ms.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
 		ms.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
 		process.addChild(ms);
-	}
-	
-	/**
-	 * Removes the given munge step, but preserves the overall data flow by
-	 * connecting the old source step to the old target step. It is an error to
-	 * call this method for a munge step that doesn't have exactly one input and
-	 * one output.
-	 * 
-	 * @param ms
-	 *            mungestep to delete
-	 */
-	public void removeMungeStepSingles(MungeStep ms) {
-		
-		List <IOConnector> lines = getConnections();
-		List<IOConnector> killed = new ArrayList<IOConnector>();
-		MungeStep parent = null;
-		int parNum = 0;
-		MungeStep child = null;
-		int childNum = 0;
-		
-		for (int x = 0;x <lines.size();x++) {
-			IOConnector ioc = lines.get(x);
-			if (ioc.getParentCom().getStep().equals(ms) || ioc.getChildCom().getStep().equals(ms)) {
-				killed.add(ioc);
-				if (ioc.getParentCom().getStep().equals(ms)) {
-					child = ioc.getChildCom().getStep();
-					childNum = ioc.getChildNumber();
-				} else {
-					parent = ioc.getParentCom().getStep();
-					parNum = ioc.getParentNumber();
-				}
-			}
-		}		
-		for (IOConnector ioc : killed) {
-			ioc.remove();
-		}
-		process.removeChild(ms);
-		
-		if (parent != null && child != null) {
-			child.connectInput(childNum, parent.getChildren().get(parNum));
-		}
 	}
 	
 	/**

@@ -158,6 +158,22 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		inputs.get(index).current = null;
 	}
 	
+	/**
+	 * Disconnects the input at the given index by removing the 
+	 * MungeStepOutput, note that this may remove more than
+	 * one input
+	 */
+	public void disconnectInput(MungeStepOutput mso) {
+		for (int i = 0; i < inputs.size(); i++) {
+			Input in = inputs.get(i);
+			if (in.current == mso) {
+				getEventSupport().firePropertyChange("inputs", i,
+					in.current, null);
+				in.current = null;
+			}
+		}
+	}
+	
 	public int addInput(InputDescriptor desc) {
 		Input in = new Input(null, desc, this);
 		inputs.add(in);

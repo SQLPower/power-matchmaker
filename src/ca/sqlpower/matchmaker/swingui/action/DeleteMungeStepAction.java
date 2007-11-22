@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.tree.TreePath;
 
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
@@ -42,10 +43,12 @@ public class DeleteMungeStepAction extends AbstractAction {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		MungeProcess mp = (MungeProcess) step.getParent();
+		mp.removeChildAndInputs(step);
+		
 		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-		TreePath treePath = treeModel.getPathForNode(step.getParent());
+		TreePath treePath = treeModel.getPathForNode(mp);
 		swingSession.getTree().setSelectionPath(treePath);
-		swingSession.delete(step);
 	}
 
 }
