@@ -600,6 +600,11 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	        	if (!Project.doesResultTableExist(swingSession, project) ||
 	        			!project.verifyResultTableStruct()) {
 	        		generateResultTableSQL();
+	        		
+	        		SQLTable resultTable = swingSession.findPhysicalTableByName(project.getResultTableSPDatasource(), project.getResultTableCatalog(),
+	        				project.getResultTableSchema(), project.getResultTableName());
+					if (resultTable == null) return false;
+					project.setResultTable(resultTable);
 	        	}
 	        	if (!Project.doesResultTableExist(swingSession, project) ||
 	        			!project.verifyResultTableStruct()) {

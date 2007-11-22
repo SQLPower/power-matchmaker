@@ -23,12 +23,10 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
-import javax.swing.tree.TreePath;
 
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel;
 
 /**
  * A simple action for deleting a merge rule.
@@ -53,10 +51,6 @@ public class DeleteMergeRuleAction extends AbstractAction {
 		Project project = mergeRule.getParentProject();
 		project.removeTableMergeRule(mergeRule);
 		swingSession.save(project);
-
-		MatchMakerTreeModel treeModel = (MatchMakerTreeModel) swingSession.getTree().getModel();
-		TreePath treePath = treeModel.getPathForNode(project.getTableMergeRulesFolder());
-		swingSession.getTree().setSelectionPath(treePath);
 	}
 
 }

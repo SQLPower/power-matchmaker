@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
 
-package ca.sqlpower.matchmaker.swingui;
+package ca.sqlpower.matchmaker.undo;
 
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
@@ -29,10 +29,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
-import ca.sqlpower.matchmaker.undo.MMOChildrenInsertUndoableEdit;
-import ca.sqlpower.matchmaker.undo.MMOChildrenRemoveUndoableEdit;
-import ca.sqlpower.matchmaker.undo.MMOPropertyChangeUndoableEdit;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 
 /**
  * Utility class that registers every change to a subtree of MatchMakerObjects
@@ -142,6 +139,7 @@ implements MatchMakerListener<T,C> {
     public void mmPropertyChanged(MatchMakerEvent<T,C> evt) {
         hasChanged = true;
         logger.debug("Watcher: " + this + ", Property: " + evt.getPropertyName() + " from " + evt.getSource().toString() + " has changed.");
+        logger.debug("old value: " + evt.getOldValue() + ", new value: " + evt.getNewValue());
         if (!evt.isUndoEvent()) {
 			UndoableEdit ue = new MMOPropertyChangeUndoableEdit(evt, null);
 			
