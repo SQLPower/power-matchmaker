@@ -232,6 +232,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			@Override
 			public void componentRemoved(ContainerEvent e) {
 				super.componentRemoved(e);
+				if (e.getChild() instanceof AbstractMungeComponent) {
+					removeAllValidation(((AbstractMungeComponent)e.getChild()).content);
+				}
 				removeAllValidation(e.getChild());
 			}
 		});
@@ -239,7 +242,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 	
 	/**
-	 * Tries to remove all of the validation from the removed munge step.
+	 * Tries to remove all of the validation from the removed coponent.
 	 * @param com
 	 */
 	private void removeAllValidation(Component com) {

@@ -372,7 +372,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         		return ValidateResult.createValidateResult(Status.WARN, "No priority set, assuming 0");
         	}
         	
-			short value = Short.parseShort((String)contents);
+			short value = Short.parseShort((String)contents.toString());
 		
 			for (MungeProcess mp : parentProject.getMungeProcessesFolder().getChildren()) {
                 if (mp == null) throw new NullPointerException("Null munge process in project!");
