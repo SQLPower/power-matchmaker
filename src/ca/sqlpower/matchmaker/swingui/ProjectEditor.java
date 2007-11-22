@@ -635,9 +635,10 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		
         logger.debug(project.getResultTable());
 		logger.debug("Saving Project:" + project.getName());
+		handler.resetHasValidated();
         
         PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
-        if (!selectedFolder.getChildren().contains(project)) {
+        if (project.getParent() != selectedFolder) {
             swingSession.move(project,selectedFolder);
         	swingSession.save(selectedFolder);
         } 
@@ -645,7 +646,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         logger.debug(project.getResultTable());
         logger.debug("saving");
         swingSession.save(project);
-        handler.resetHasValidated();
 
 		return true;
     }
