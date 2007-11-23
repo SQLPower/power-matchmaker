@@ -136,7 +136,9 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 					}
 				} else {
 					if (value instanceof InputDescriptor) { 
-						step.addInput((InputDescriptor) value);
+						for(int index : undoEvent.getChangeIndices()) {
+							step.addInput((InputDescriptor) value, index);
+						}
 					} else {
 						throw new IllegalStateException("input descriptor of wrong type: " + value.getClass());
 					}

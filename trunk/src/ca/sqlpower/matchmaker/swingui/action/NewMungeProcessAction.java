@@ -32,7 +32,6 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 
 /**
@@ -58,7 +57,7 @@ public class NewMungeProcessAction extends AbstractAction {
     	process.setName("New Munge Process " + count);
     	project.addMungeProcess(process);
     	SQLInputStep inputStep = new SQLInputStep();
-		inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED, true);
+		inputStep.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
 		process.addChild(inputStep);
 		
 		try {
@@ -80,12 +79,12 @@ public class NewMungeProcessAction extends AbstractAction {
 		String y = new Integer(300).toString();
 		
 		//sets the input one just outside of the autoscroll bounds
-		inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
-		inputStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, x);
+		inputStep.setParameter(MungeStep.MUNGECOMPONENT_X, x);
+		inputStep.setParameter(MungeStep.MUNGECOMPONENT_Y, x);
 		
 		//sets the location of the result step (resonalibly arbatrary location)
-		mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
-		mungeResultStep.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
+		mungeResultStep.setParameter(MungeStep.MUNGECOMPONENT_X, x);
+		mungeResultStep.setParameter(MungeStep.MUNGECOMPONENT_Y, y);
 		
 		process.addChild(mungeResultStep);
 		

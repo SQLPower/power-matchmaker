@@ -243,4 +243,21 @@ public class StubMungeStep implements MungeStep {
 		logger.debug("Stub call: StubMungeStep.hierarchyContains()");
 		return false;
 	}
+
+	public void disconnectInput(MungeStepOutput mso) {
+		logger.debug("Stub call: StubMungeStep.disconnectInput()");
+	}
+
+	public void removeUnusedInput() {
+		logger.debug("Stub call: StubMungeStep.removeUnusedInput()");
+	}
+
+	public void addInput(InputDescriptor desc, int index) {
+		logger.debug("Stub call: StubMungeStep.addInput()");
+	}
+
+	public void setPosition(int x, int y) {
+		logger.debug("Stub call: StubMungeStep.setPosition()");
+		
+	}
 }

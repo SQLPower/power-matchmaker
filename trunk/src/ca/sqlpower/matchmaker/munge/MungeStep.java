@@ -43,6 +43,9 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
  */
 public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>, Callable<Boolean> {
 
+	public static final String MUNGECOMPONENT_X = "x";
+	public static final String MUNGECOMPONENT_Y = "y";
+	public static final String MUNGECOMPONENT_EXPANDED ="expanded";
 	
 	/**
      * Returns the String representation of the parameter value associated with
@@ -91,6 +94,11 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      */
 	void setParameter(String name, int newValue);
 
+	/**
+	 * sets the position of the munge step
+	 */
+	void setPosition(int x, int y);
+	
     /**
      * Enumerates the list of all parameter names currently in place in this munge step.
      */
@@ -109,7 +117,14 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * Note that this method may throw {@link UnsupportedOperationException)
 	 * if the munge step does not allow adding new IOConnectors.
 	 */
-	int addInput(InputDescriptor desc);
+    int addInput(InputDescriptor desc);
+    
+    /**
+	 * Adds a IOConnectors with the given InputDescriptor at the 
+	 * specified index. For more information, see 
+	 * {@link MungeStep#addInput(InputDescriptor)}
+	 */
+	void addInput(InputDescriptor desc, int index);
 
 	/**
 	 * Removes the IOConnectors at given index from this step.  This method is normally
@@ -124,6 +139,11 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 *         wasn't.
 	 */
 	void removeInput(int index);
+	
+	/**
+	 * Removes the inputs that are not used.
+	 */
+	void removeUnusedInput();
 
 	/**
 	 * Connects the input at index to the given MungeStepOutput which would be

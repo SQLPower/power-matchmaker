@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.apache.log4j.Logger;
 
@@ -175,24 +177,56 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	}
 	
 	public int addInput(InputDescriptor desc) {
-		Input in = new Input(null, desc, this);
-		inputs.add(in);
-		int index = inputs.size()-1;
-		getEventSupport().firePropertyChange("addInputs", index, null, desc);
+		int index = inputs.size();
+		addInput(desc, index);
 		return index;
+	}
+	
+	public void addInput(InputDescriptor desc, int index) {
+		if (index > inputs.size()) {
+			throw new IndexOutOfBoundsException(
+					"Cannot add at position: " + index);
+		}
+		Input in = new Input(null, desc, this);
+		inputs.add(index, in);
+		getEventSupport().firePropertyChange("addInputs", index, null, desc);
 	}
 
 	public void removeInput(int index) {
+		InputDescriptor old = inputs.get(index).descriptor;
 		if (index >= inputs.size()) {
 			throw new IndexOutOfBoundsException(
-			"There is no IOConnector at the give index.");
+				"There is no IOConnector at the give index.");
 		}
-		getEventSupport().firePropertyChange("addInputs", index,
-				inputs.get(index).descriptor, null);
 		inputs.remove(index);
+		getEventSupport().firePropertyChange("addInputs", index,
+				old, null);
 	}
 	
+	public void removeUnusedInput() {
+		startCompoundEdit();
+		Queue<Integer> freeIndexQueue = new LinkedList<Integer>();
 
+		for (int i = 0; i < inputs.size(); i++) {
+			if (inputs.get(i).current == null) {
+				freeIndexQueue.offer(i);
+			} else {
+				if (freeIndexQueue.size() > 0) {
+					//swap inputs
+					MungeStepOutput temp = inputs.get(i).getCurrent();
+					int index = freeIndexQueue.remove();
+					disconnectInput(i);
+					connectInput(index, temp);
+					freeIndexQueue.add(i);
+				}
+			}
+		}
+		while (inputs.get(inputs.size() - 1).getCurrent() == null && inputs.size() > 1) {
+			removeInput(inputs.size() - 1);
+		}
+		
+		endCompoundEdit();
+	}
 
     public Collection<String> getParameterNames() {
         return Collections.unmodifiableSet(parameters.keySet());
@@ -218,6 +252,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		} else {
 			return null;
 		}
+	}
+	
+	public void setPosition(int x, int y) {
+		startCompoundEdit();
+		setParameter(MUNGECOMPONENT_X, x);
+		setParameter(MUNGECOMPONENT_Y, y);
+		endCompoundEdit();
 	}
 	
 	public void setParameter(String name, String newValue) {
