@@ -304,7 +304,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			
 			SwingSessionContext ssc = ((SwingSessionContext) process.getSession().getContext());
 			AbstractMungeComponent mcom = ssc.getMungeComponent(ms, handler, process.getSession());
-			mcom.configureFromMMO();
 			modelMap.put(ms, mcom);
 			add(mcom,DEFAULT_LAYER);
 		}
@@ -476,8 +475,8 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		MungeStep ms = ((SwingSessionContext)process.getSession().getContext()).getMungeStep(logicClass);
 		int x = location.x + COM_DROP_OFFSET_X;
 		int y = location.y + COM_DROP_OFFSET_Y;
-		ms.setParameter(AbstractMungeComponent.MUNGECOMPONENT_X, x);
-		ms.setParameter(AbstractMungeComponent.MUNGECOMPONENT_Y, y);
+		ms.setParameter(MungeStep.MUNGECOMPONENT_X, x);
+		ms.setParameter(MungeStep.MUNGECOMPONENT_Y, y);
 		process.addChild(ms);
 	}
 	
@@ -712,7 +711,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
 				add(mcom);
 				logger.debug("Generating positions from properites");
-				mcom.configureFromMMO();
 			}
 			
 			//This is done in an other loop to ensure that all the MungeComponets have been mapped
@@ -805,18 +803,12 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 						}
 					} 
 				} 
-			} else if (evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_EXPANDED)) {
-				modelMap.get(evt.getSource()).hideShow(Boolean.parseBoolean((String)evt.getNewValue()));
-			} else if (evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_X)) {
-				modelMap.get(evt.getSource()).configureXFromMMO();
-			} else if (evt.getPropertyName().equals(AbstractMungeComponent.MUNGECOMPONENT_Y)) {
-				modelMap.get(evt.getSource()).configureYFromMMO();
-			} else {
-				if (evt.isUndoEvent()) {
-					modelMap.get(evt.getSource()).reload();
-				}
-			}
-			repaint();
+				SwingUtilities.invokeLater(new Runnable(){
+					public void run() {
+						repaint();
+					}
+				});
+			} 
 		}
 
 		public void mmStructureChanged(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
@@ -1087,7 +1079,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		for (Component com : getComponents()) {
 			if (com instanceof AbstractMungeComponent) {
 				AbstractMungeComponent mcom = (AbstractMungeComponent) com;
-				if (mcom.hasMoved()) {
+				if (mcom.hasUnsavedChanges()) {
 					changedComponents.add(mcom);
 				}
 			}
@@ -1095,7 +1087,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		if (changedComponents.size() > 0) {
 			process.startCompoundEdit();
 			for (AbstractMungeComponent com : changedComponents) {
-				com.updateStepPositionToMMO();
+				com.applyChanges();
 			}
 			process.endCompoundEdit();
 		}

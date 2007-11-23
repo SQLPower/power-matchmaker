@@ -140,6 +140,11 @@ implements MatchMakerListener<T,C> {
         hasChanged = true;
         logger.debug("Watcher: " + this + ", Property: " + evt.getPropertyName() + " from " + evt.getSource().toString() + " has changed.");
         logger.debug("old value: " + evt.getOldValue() + ", new value: " + evt.getNewValue());
+        if (evt.getChangeIndices() != null) {
+	        for (int i : evt.getChangeIndices()) {
+	        	logger.debug("index: " + i);
+	        }
+        }
         if (!evt.isUndoEvent()) {
 			UndoableEdit ue = new MMOPropertyChangeUndoableEdit(evt, null);
 			
