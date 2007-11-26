@@ -297,14 +297,17 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	}
 	
 	public void setInPrimaryKeyAndAction(boolean inPrimaryKey) {
-		startCompoundEdit();
-		setInPrimaryKey(inPrimaryKey);
-		if (inPrimaryKey) {
-			setActionType(MergeActionType.NA);
-		} else if (getImportedKeyColumn() == null){
-			setActionType(MergeActionType.USE_MASTER_VALUE);
+		try {
+			startCompoundEdit();
+			setInPrimaryKey(inPrimaryKey);
+			if (inPrimaryKey) {
+				setActionType(MergeActionType.NA);
+			} else if (getImportedKeyColumn() == null){
+				setActionType(MergeActionType.USE_MASTER_VALUE);
+			}
+		} finally {
+			endCompoundEdit();
 		}
-		endCompoundEdit();
 	}
 
 	public SQLColumn getImportedKeyColumn() {
@@ -325,14 +328,17 @@ public class ColumnMergeRules extends AbstractMatchMakerObject<ColumnMergeRules,
 	
 	public void setImportedKeyColumnAndAction(SQLColumn importedKeyColumn) {
 		if (getImportedKeyColumn() == importedKeyColumn) return;
-		startCompoundEdit();
-		setImportedKeyColumn(importedKeyColumn);
-		if (importedKeyColumn != null) {
-			setActionType(MergeActionType.NA);
-		} else if (!isInPrimaryKey()) {
-			setActionType(MergeActionType.USE_MASTER_VALUE);
+		try {
+			startCompoundEdit();
+			setImportedKeyColumn(importedKeyColumn);
+			if (importedKeyColumn != null) {
+				setActionType(MergeActionType.NA);
+			} else if (!isInPrimaryKey()) {
+				setActionType(MergeActionType.USE_MASTER_VALUE);
+			}
+		} finally {
+			endCompoundEdit();
 		}
-		endCompoundEdit();
 	}
 
 	public String getUpdateStatement() {

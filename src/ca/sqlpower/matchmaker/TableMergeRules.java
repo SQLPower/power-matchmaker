@@ -365,34 +365,36 @@ public class TableMergeRules
 	
 	public void setParentMergeRuleAndImportedKeys(TableMergeRules parentTable) {
 		if (this.parentMergeRule == parentTable) return;
-		startCompoundEdit();
-		setParentMergeRule(parentTable);
-		
-		List<SQLColumn> primarykeyCols = getParentMergeRule().getPrimaryKey();
-		// Set each imported key column combo box to null
-		for (ColumnMergeRules cmr : getChildren()) {
-			if (cmr.getImportedKeyColumn() != null) {
-				cmr.setImportedKeyColumnAndAction(null);
+		try {
+			startCompoundEdit();
+			setParentMergeRule(parentTable);
+
+			List<SQLColumn> primarykeyCols = getParentMergeRule().getPrimaryKey();
+			// Set each imported key column combo box to null
+			for (ColumnMergeRules cmr : getChildren()) {
+				if (cmr.getImportedKeyColumn() != null) {
+					cmr.setImportedKeyColumnAndAction(null);
+				}
 			}
-		}
-		if (primarykeyCols != null) {
-			for (SQLColumn column : primarykeyCols) {
-				for (ColumnMergeRules cmr : getChildren()) {
-                    if (cmr.getColumnName() == null) {
-                        throw new IllegalStateException("Null column name in one of my column merge rules!");
-                    }
-                    if (column == null) {
-                        throw new IllegalStateException("Null primary key index column in parent table!");
-                    }
-					if (cmr.getColumnName().equals(column.getName())) {
-						cmr.setImportedKeyColumnAndAction(column);
-						break;
+			if (primarykeyCols != null) {
+				for (SQLColumn column : primarykeyCols) {
+					for (ColumnMergeRules cmr : getChildren()) {
+						if (cmr.getColumnName() == null) {
+							throw new IllegalStateException("Null column name in one of my column merge rules!");
+						}
+						if (column == null) {
+							throw new IllegalStateException("Null primary key index column in parent table!");
+						}
+						if (cmr.getColumnName().equals(column.getName())) {
+							cmr.setImportedKeyColumnAndAction(column);
+							break;
+						}
 					}
 				}
 			}
+		} finally {
+			endCompoundEdit();
 		}
-		
-		endCompoundEdit();
 	}
 
 	public ChildMergeActionType getChildMergeAction() {
