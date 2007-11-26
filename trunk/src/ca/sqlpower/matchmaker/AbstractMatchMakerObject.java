@@ -172,35 +172,41 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
      */
 	public void swapChildren(int i, int j) {
 		final List<C> l = getChildren();
-		startCompoundEdit();
-		int less;
-		int more;
-		if (i < j) {
-			less = i;
-			more = j;
-		} else {
-			less = j;
-			more = i;
+		try {
+			startCompoundEdit();
+			int less;
+			int more;
+			if (i < j) {
+				less = i;
+				more = j;
+			} else {
+				less = j;
+				more = i;
+			}
+			C child1 = l.get(less);
+			C child2 = l.get(more);
+
+			removeChild(child1);
+			removeChild(child2);
+
+			addChild(less, child2);
+			addChild(more, child1);
+		} finally {
+			endCompoundEdit();
 		}
-		C child1 = l.get(less);
-		C child2 = l.get(more);
-		
-		removeChild(child1);
-		removeChild(child2);
-		
-		addChild(less, child2);
-		addChild(more, child1);
-		endCompoundEdit();
 	}
 	
 	public void moveChild(int from, int to) {
 		if (to == from) return;
 		final List<C> l = getChildren();
 		C child = l.get(from);
-		startCompoundEdit();
-		removeChild(l.get(from));
-		addChild(to, child);
-		endCompoundEdit();
+		try {
+			startCompoundEdit();
+			removeChild(l.get(from));
+			addChild(to, child);
+		} finally {
+			endCompoundEdit();
+		}
 	}
 	
 	public String getLastUpdateAppUser() {
@@ -357,16 +363,24 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	/**
 	 * Starts a compound edit so that the whole compound edit can
 	 * be undo'ed at the same time. Note that one must call endCompoundEdit after or the
-	 * undo listeners will not work properly. <p>
-	 * see {@link AbstractMatchMakerObject#endCompoundEdit()} 
+	 * undo listeners will not work properly. Use the following code snippet to ensure 
+	 * that endCompoundEdit() is called. <p>
+	 * <code> try { 
+	 * startCompoundEdit();
+	 * ... mutate objects ...
+	 * } finally {
+	 * endCompoundEdit();
+	 * }
+	 * </code>
+     * @see AbstractMatchMakerObject#endCompoundEdit()
 	 */
 	public void startCompoundEdit() {
 		getEventSupport().firePropertyChange("UNDOSTATE", false, true);
 	}
 	
 	/**
-	 * Ends a compound edit, for more information, 
-	 * see {@link AbstractMatchMakerObject#startCompoundEdit()} 
+	 * Ends a compound edit.
+	 * @see AbstractMatchMakerObject#startCompoundEdit()
 	 */
 	public void endCompoundEdit() {
 		getEventSupport().firePropertyChange("UNDOSTATE", true, false);

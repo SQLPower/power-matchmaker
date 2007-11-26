@@ -204,28 +204,30 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	}
 	
 	public void removeUnusedInput() {
-		startCompoundEdit();
-		Queue<Integer> freeIndexQueue = new LinkedList<Integer>();
-
-		for (int i = 0; i < inputs.size(); i++) {
-			if (inputs.get(i).current == null) {
-				freeIndexQueue.offer(i);
-			} else {
-				if (freeIndexQueue.size() > 0) {
-					//swap inputs
-					MungeStepOutput temp = inputs.get(i).getCurrent();
-					int index = freeIndexQueue.remove();
-					disconnectInput(i);
-					connectInput(index, temp);
-					freeIndexQueue.add(i);
+		try {
+			startCompoundEdit();
+			Queue<Integer> freeIndexQueue = new LinkedList<Integer>();
+	
+			for (int i = 0; i < inputs.size(); i++) {
+				if (inputs.get(i).current == null) {
+					freeIndexQueue.offer(i);
+				} else {
+					if (freeIndexQueue.size() > 0) {
+						//swap inputs
+						MungeStepOutput temp = inputs.get(i).getCurrent();
+						int index = freeIndexQueue.remove();
+						disconnectInput(i);
+						connectInput(index, temp);
+						freeIndexQueue.add(i);
+					}
 				}
 			}
+			while (inputs.get(inputs.size() - 1).getCurrent() == null && inputs.size() > 1) {
+				removeInput(inputs.size() - 1);
+			}
+		} finally {
+			endCompoundEdit();
 		}
-		while (inputs.get(inputs.size() - 1).getCurrent() == null && inputs.size() > 1) {
-			removeInput(inputs.size() - 1);
-		}
-		
-		endCompoundEdit();
 	}
 
     public Collection<String> getParameterNames() {
@@ -255,10 +257,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	}
 	
 	public void setPosition(int x, int y) {
-		startCompoundEdit();
-		setParameter(MUNGECOMPONENT_X, x);
-		setParameter(MUNGECOMPONENT_Y, y);
-		endCompoundEdit();
+		try {
+			startCompoundEdit();
+			setParameter(MUNGECOMPONENT_X, x);
+			setParameter(MUNGECOMPONENT_Y, y);
+		} finally {
+			endCompoundEdit();
+		}
 	}
 	
 	public void setParameter(String name, String newValue) {

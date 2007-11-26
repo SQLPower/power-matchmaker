@@ -289,25 +289,28 @@ public class MungeProcess
 	}
 	
 	public void removeChildAndInputs(MungeStep ms) {
-		startCompoundEdit();
-		
-		//disconnect inputs
-		for (int x = 0; x < ms.getMSOInputs().size(); x++) {
-			MungeStepOutput link = ms.getMSOInputs().get(x);
-			if (link != null) {
-				ms.disconnectInput(x);
+		try {
+			startCompoundEdit();
+			
+			//disconnect inputs
+			for (int x = 0; x < ms.getMSOInputs().size(); x++) {
+				MungeStepOutput link = ms.getMSOInputs().get(x);
+				if (link != null) {
+					ms.disconnectInput(x);
+				}
 			}
-		}
-		
-		//disconnect outputs
-		for (MungeStepOutput mso : ms.getChildren()) {
-			for (MungeStep child : getChildren()) {
-				child.disconnectInput(mso);
+			
+			//disconnect outputs
+			for (MungeStepOutput mso : ms.getChildren()) {
+				for (MungeStep child : getChildren()) {
+					child.disconnectInput(mso);
+				}
 			}
+			
+			removeChild(ms);
+		} finally {
+			endCompoundEdit();
 		}
-		
-		removeChild(ms);
-		endCompoundEdit();
 	}
 	
 	@Override
