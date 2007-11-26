@@ -306,6 +306,7 @@ public class TableQueryFrame extends JFrame {
         this.swingSession = swingSession;
 		setTitle("Display Database Tables");
 		getContentPane().add(createPanel());
+		setLocationRelativeTo(swingSession.getFrame());
 	}
 
 	/**
