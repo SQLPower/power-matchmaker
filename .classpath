@@ -36,6 +36,7 @@
 	<classpathentry kind="lib" path="lib/gdata-base-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-spreadsheet-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gdata-spreadsheet-meta-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/opencsv-1.8.jar" sourcepath="C:/Documents and Settings/Kevin/Desktop"/>
 	<classpathentry kind="src" path="regress"/>
 	<classpathentry kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="src" path="testbed"/>
