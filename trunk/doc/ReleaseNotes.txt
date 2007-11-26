@@ -1,5 +1,10 @@
 0.9.2
 
+* Added a user preference for auto-login into a repository. The user can choose to log in automatically into a repository of their
+choice, or have the application prompt the user for a repository each time they start the application.
+* Added some new munge steps, including data type conversion steps (ex. Date-to-String), and a CSV writer step
+* The example table can now be created properly in HSQLDB
+
 0.9.1
 
 * Changed the default login process to log into (and first create if necessary) a local HSQLDB repository database.  This greatly simplifies the process of getting started for new users.
