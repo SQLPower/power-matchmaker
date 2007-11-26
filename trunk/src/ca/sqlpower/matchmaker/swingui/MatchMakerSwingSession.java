@@ -1368,27 +1368,34 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		return sessionImpl.getDatabase(dataSource);
 	}
 	
+	public void setSelectNewChild(Boolean selectNewChild) {
+		removeEditorListener.setSelectNewChild(selectNewChild);
+	}
+	
 	/**
 	 * Listens for child removed events and sets the current
 	 * editor pane to null if the current editor pane is editing
 	 * the child being removed
 	 */
 	private class SelectRemoveEditorListener implements MatchMakerListener {
+		private Boolean selectNewChild = true;
 
 		public void mmChildrenInserted(MatchMakerEvent evt) {
 			// selects the new child on the tree if one new child is added
-			if (evt.getChildren().size() == 1) {
-				final MatchMakerObject insertedMMO = (MatchMakerObject)evt.getChildren().get(0);
-				if (!(insertedMMO instanceof SQLInputStep
-						|| insertedMMO instanceof MungeResultStep
-						|| insertedMMO instanceof MungeStepOutput)) {
-					SwingUtilities.invokeLater(new Runnable(){
-						public void run() {
-							MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-							TreePath treePath = treeModel.getPathForNode(insertedMMO);
-							getTree().setSelectionPath(treePath);
-						}
-					});
+			if (selectNewChild && !evt.isUndoEvent()) {
+				if (evt.getChildren().size() == 1) {
+					final MatchMakerObject insertedMMO = (MatchMakerObject)evt.getChildren().get(0);
+					if (!(insertedMMO instanceof SQLInputStep
+							|| insertedMMO instanceof MungeResultStep
+							|| insertedMMO instanceof MungeStepOutput)) {
+						SwingUtilities.invokeLater(new Runnable(){
+							public void run() {
+								MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
+								TreePath treePath = treeModel.getPathForNode(insertedMMO);
+								getTree().setSelectionPath(treePath);
+							}
+						});
+					}
 				}
 			}
 			for (MatchMakerObject mmo : (List<MatchMakerObject>)evt.getChildren()) {				
@@ -1418,6 +1425,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		// don't care
 		public void mmStructureChanged(MatchMakerEvent evt) {}
+
+		public void setSelectNewChild(Boolean selectNewChild) {
+			this.selectNewChild = selectNewChild;
+		}
 	}
 	
 }
