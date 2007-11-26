@@ -56,6 +56,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.swingui.DataEntryPanel;
+import ca.sqlpower.validation.FileNameValidator;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -262,7 +263,7 @@ public class MergeEnginePanel implements DataEntryPanel {
 		
 		File logFile = settings.getLog();
 		logFilePath = new JTextField(logFile.getAbsolutePath());
-		handler.addValidateObject(logFilePath, new LogFileNameValidator());
+		handler.addValidateObject(logFilePath, new FileNameValidator("Log"));
 		
 		browseLogFileAction = new BrowseFileAction(parentFrame, logFilePath);
 		

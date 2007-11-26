@@ -112,6 +112,7 @@
 		<subclass name="StringToBooleanMungeStep" />
 		<subclass name="BooleanToStringMungeStep" />
 		<subclass name="DateConstantMungeStep" />
+		<subclass name="CSVWriterMungeStep" />
 		
 	</class>
 </hibernate-mapping>
