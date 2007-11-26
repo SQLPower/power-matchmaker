@@ -103,38 +103,52 @@ public interface MatchMakerObject<T extends MatchMakerObject, C extends MatchMak
     /**
      * Returns the current session that this object is associated with.
      */
-    public MatchMakerSession getSession();
+    MatchMakerSession getSession();
     
 	/**
 	 * Associates the given session with this object.  All ensuing database and
      * DAO access will be done via this session.
 	 */
-	public void setSession(MatchMakerSession matchMakerSession);
+	void setSession(MatchMakerSession matchMakerSession);
 	
 	/**
 	 * Sets if the object will be shown in the tree.
 	 */
-	public void setVisible(boolean v);
+	void setVisible(boolean v);
 
 	/**
 	 * Returns if this item is visible in the tree.
 	 */
-	public boolean isVisible();
+	boolean isVisible();
 	
 	
 	/**
 	 * Returns true if the object is undoing.
 	 */
-	public boolean isUndoing();
+	boolean isUndoing();
 	
 	/**
 	 * Sets if the object is undoing.
 	 */
-	public void setUndoing(boolean isUndoing);
+	void setUndoing(boolean isUndoing);
 	
 	/**
 	 * Returns true if the sub-hierarchy of this matchmaker object
 	 * contains the passed in mmo.
 	 */
-	public boolean hierarchyContains(MatchMakerObject mmo);
+	boolean hierarchyContains(MatchMakerObject mmo);
+	
+	/**
+	 * Starts a compound edit so that the whole compound edit can
+	 * be undo'ed at the same time. Note that one must call endCompoundEdit after or the
+	 * undo listeners will not work properly. <p>
+	 * see {@link AbstractMatchMakerObject#endCompoundEdit()} 
+	 */
+	void startCompoundEdit();
+	
+	/**
+	 * Ends a compound edit, for more information, 
+	 * see {@link AbstractMatchMakerObject#startCompoundEdit()} 
+	 */
+	void endCompoundEdit();
 }
