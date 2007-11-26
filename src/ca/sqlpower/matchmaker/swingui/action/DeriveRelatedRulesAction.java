@@ -56,7 +56,6 @@ import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.MonitorableWorker;
 import ca.sqlpower.swingui.ProgressWatcher;
 import ca.sqlpower.swingui.SPSUtils;
-import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.swingui.table.TableUtils;
 import ca.sqlpower.validation.Status;
@@ -79,7 +78,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * Currently it only find grand child tables if the grand child table
  * contains the source table's primary key.
  */
-public class DeriveRelatedRulesAction extends AbstractAction implements SwingWorkerRegistry {
+public class DeriveRelatedRulesAction extends AbstractAction {
 
 	private static final Logger logger = Logger.getLogger(DeriveRelatedRulesAction.class);
 	
@@ -95,7 +94,7 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 	private SQLTable sourceTable;
 	private ColumnChooserTableModel columnTableModel;
 	
-	private ActionListener deriveAction = new DeriveAction(this); 
+	private final ActionListener deriveAction; 
 	
 	/** Displays validation results */
 	private StatusComponent statusComponent;
@@ -312,16 +311,8 @@ public class DeriveRelatedRulesAction extends AbstractAction implements SwingWor
 		super("Derive Related Rules");
 		this.project = project;
 		this.swingSession = swingSession;
+		this.deriveAction = new DeriveAction(swingSession);
 		dialog = new JDialog(swingSession.getFrame(), "Derive Related Rules");
-	}
-	
-
-	public void registerSwingWorker(SPSwingWorker worker) {
-		swingSession.registerSwingWorker(worker);
-	}
-
-	public void removeSwingWorker(SPSwingWorker worker) {
-		swingSession.removeSwingWorker(worker);
 	}
 
 	public void actionPerformed(ActionEvent e) {

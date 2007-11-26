@@ -74,7 +74,11 @@ public final class NewProjectAction extends AbstractAction {
 		final Project project = new Project();
 		project.setSession(swingSession);	
 		project.setType(type);
-		project.setName("New Project");
+		int count = 1;
+		while (!swingSession.isThisProjectNameAcceptable("New Project " + count)) {
+			count++;
+		}
+		project.setName("New Project " + count);
 		final String dsName = swingSession.getDatabase().getDataSource().getName();
 		project.setSourceTableSPDatasource(dsName);
 		project.setResultTableSPDatasource(dsName);
