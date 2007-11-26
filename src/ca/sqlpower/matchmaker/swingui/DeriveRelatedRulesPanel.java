@@ -101,7 +101,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 	private final Project project;
 	private final MatchMakerSwingSession swingSession;
 
-	private JDialog dialog;
+	private JDialog dialog = null;
 	
 	private final JPanel panel;
 	
@@ -141,7 +141,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 		public void cleanup() throws Exception {
         	logger.debug("DeriveRelatedRulesAction.cleanup() starting");
         	finished = true;
-        	dialog.dispose();
+        	if (dialog != null) dialog.dispose();
         	swingSession.setSelectNewChild(true);
 		}
 
@@ -158,7 +158,7 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 			logger.debug("Sorted list of selected columns: "+primaryKeys);
 
 			if (primaryKeys.size() == 0) {
-				dialog.dispose();
+				if (dialog != null) dialog.dispose();
 				return;
 			}
 
