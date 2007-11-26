@@ -1,5 +1,8 @@
+0.9.2
+
 0.9.1
 
+* Changed the default login process to log into (and first create if necessary) a local HSQLDB repository database.  This greatly simplifies the process of getting started for new users.
 * Fixed a serious bug that prevented creating a new repository schema.
 * When all the input connections for a Munge Step are used up, an empty one is automatically generated if the step supports
   adding new inputs. Unconnected inputs for these steps are now treated as if they didn't exist, so that the use isn't
@@ -13,3 +16,16 @@
 0.9.0
 
 * Initial open-source release
+
+
+Wish List of Future Features (see also our Bugzilla bug tracker at http://trillian.sqlpower.ca/bugzilla/)
+
+* Don't require updatable result sets when they're unavailable (HSQLDB doesn't support them)
+* Expand the "Small Example" section of the user guide into a complete chapter, complete with screenshots where appropriate
+* Create a "tips" facility which will pop up a new helpful tip every time the app is started.
+  Tips should be presented in increasing level of sophistication.  For example:
+   -The best way to get started is to watch the walkthrough movie on the SQL Power web site. (live link to wink demo)
+   -Learn more about the MatchMaker by working through the example in the "A Simple Example" chapter of the user guide.
+   -Define connections to your databases using the Databases->Manage Database Conncetions... menu item.
+   -If you are working together with others, you can create a shared repository in any database.  Use the Databases->Create Repository... menu item to create one.
+   
