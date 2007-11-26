@@ -199,8 +199,11 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = mergeRulesTable.getSelectedRow();
 			logger.debug("deleting merge rule:"+selectedRow);
-			int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-				"Are you sure you want to delete the merge rule?");
+			int responds = JOptionPane.showConfirmDialog(
+					swingSession.getFrame(),
+					"Are you sure you want to delete the merge rule?", 
+					"Delete Confirmation", 
+					JOptionPane.YES_NO_OPTION);
 			if (responds != JOptionPane.YES_OPTION)
 				return;
 
@@ -212,7 +215,6 @@ public class MergeTableRuleEditor extends AbstractUndoableEditorPane<Project, Ta
 			if (selectedRow > 0) {
 				mergeRulesTable.setRowSelectionInterval(selectedRow, selectedRow);
 			}
-			applyChanges();
 		}
 	};
 	
