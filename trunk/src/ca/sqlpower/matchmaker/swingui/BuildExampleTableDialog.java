@@ -211,7 +211,7 @@ public class BuildExampleTableDialog extends JDialog{
 				try {
 					generateTableSQL();
 				} catch (Exception ex) {
-					SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+					SPSUtils.showExceptionDialogNoReport(BuildExampleTableDialog.this,
 							"Error while trying to create example table", ex);
 				}
 			}
@@ -311,7 +311,7 @@ public class BuildExampleTableDialog extends JDialog{
 										null);
 						doc.insertString(doc.getLength(),";\n",null);
 					} catch (BadLocationException e1) {
-						SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Unexcepted Document Error",e1);
+						SPSUtils.showExceptionDialogNoReport(BuildExampleTableDialog.this, "Unexcepted Document Error",e1);
 					}
 			    }
 				SPSUtils.saveDocument(swingSession.getFrame(),
@@ -381,7 +381,7 @@ public class BuildExampleTableDialog extends JDialog{
 							"Couldn't allocate a Statement:\n" + ex.getMessage(),
 							JOptionPane.ERROR_MESSAGE);
 				} catch (ArchitectException ex) {
-					SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), 
+					SPSUtils.showExceptionDialogNoReport(BuildExampleTableDialog.this, 
 							"Error Generating Example table", ex);
 				} finally {
                     try {
@@ -422,7 +422,7 @@ public class BuildExampleTableDialog extends JDialog{
 	    cp.add(bbb.getPanel(), BorderLayout.SOUTH);
 
 	    editor.pack();
-	    editor.setLocationRelativeTo(null);
+	    editor.setLocationRelativeTo(BuildExampleTableDialog.this);
 	    editor.setVisible(true);
 	}
 
@@ -609,7 +609,7 @@ public class BuildExampleTableDialog extends JDialog{
 				JOptionPane.showMessageDialog(BuildExampleTableDialog.this, "Table Created Successfully", "Example Table", JOptionPane.INFORMATION_MESSAGE);
 				dispose();
 			} catch (Exception e) {
-				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+				SPSUtils.showExceptionDialogNoReport(BuildExampleTableDialog.this,
 						"Error while trying to insert into example table", e);
 			} finally {
 				popMon.stop();
@@ -622,7 +622,7 @@ public class BuildExampleTableDialog extends JDialog{
 						stmt.close();
 					}
 				} catch (SQLException e) {
-					SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
+					SPSUtils.showExceptionDialogNoReport(BuildExampleTableDialog.this,
 							"Error while trying to close connection or statment", e);
 				}
 			}
