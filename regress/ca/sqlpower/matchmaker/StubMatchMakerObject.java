@@ -154,4 +154,10 @@ public class StubMatchMakerObject implements MatchMakerObject {
 		return false;
 	}
 
+	public void endCompoundEdit() {
+	}
+
+	public void startCompoundEdit() {
+	}
+
 }

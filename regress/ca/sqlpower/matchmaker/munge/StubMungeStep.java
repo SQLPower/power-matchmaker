@@ -260,4 +260,12 @@ public class StubMungeStep implements MungeStep {
 		logger.debug("Stub call: StubMungeStep.setPosition()");
 		
 	}
+
+	public void endCompoundEdit() {
+		logger.debug("Stub call: StubMungeStep.endCompoundEdit()");
+	}
+
+	public void startCompoundEdit() {
+		logger.debug("Stub call: StubMungeStep.startCompoundEdit()");
+	}
 }

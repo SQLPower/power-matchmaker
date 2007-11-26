@@ -356,9 +356,7 @@ public abstract class AbstractMatchMakerObject<T extends MatchMakerObject, C ext
 	
 	/**
 	 * Starts a compound edit so that the whole compound edit can
-	 * be undo'ed at the same time, this is not in the MatchMakerObject
-	 * interface because it should not be called outside of the objects
-	 * themselves. Note that one must call endCompoundEdit after or the
+	 * be undo'ed at the same time. Note that one must call endCompoundEdit after or the
 	 * undo listeners will not work properly. <p>
 	 * see {@link AbstractMatchMakerObject#endCompoundEdit()} 
 	 */
