@@ -1702,15 +1702,9 @@
 				<para>
 					On Unix-like systems, you probably already know
 					where your home directory is... it's the one you end
-					up in when you issue a
-					<command>cd</command>
-					command with no arguments. On Windows systems, your
-					home directory is usually in
-					<filename>
-						C:\Documents and Settings\
-						<replaceable>Your Name</replaceable>
-					</filename>
-					.
+					up in when you issue a <command>cd</command> command with no
+					arguments. On Windows systems, your home directory
+					is usually in <filename>C:\Documents and Settings\<replaceable>Your Name</replaceable></filename>.
 				</para>
 			</footnote>
 			You can (and should!) make backups of this data (your "local
@@ -1815,9 +1809,8 @@
 				Once you have chosen which database will house your
 				repository, use its vendor-supplied tools to create a
 				new database user for the MatchMaker. Typically, this
-				user is called
-				<literal>mm</literal>
-				, but you can use any name you like.
+				user is called <literal>mm</literal>, but you can use
+				any name you like.
 			</para>
 
 			<para>
@@ -1830,36 +1823,28 @@
 			<para>
 				First, you have to create a new data source so the
 				MatchMaker knows how to connect to your new repository.
-				Under the
-				<systemitem>Databases</systemitem>
-				menu, choose the
+				Under the <systemitem>Databases</systemitem> menu, choose the
 				<systemitem>Manage Database Connections</systemitem>
-				item. The Database Connection Manager will appear.
-				Follow the usual procedure (described elsewhere in this
-				user guide) for defining a new data source.
+				item. The Database Connection Manager will
+				appear. Follow the usual procedure (described elsewhere
+				in this user guide) for defining a new data source.
 			</para>
 
 			<para>
 				Now that you have defined the repository's data source,
 				you can ask the MatchMaker to create all of the
-				repository tables in it. Under the
-				<systemitem>Databases</systemitem>
-				menu, choose
-				<systemitem>Create Repository...</systemitem>
-				. The following dialog will appear:
+				repository tables in it. Under the <systemitem>Databases</systemitem> menu,
+				choose <systemitem>Create Repository...</systemitem>. The following dialog will
+				appear:
 			</para>
 
 			<mediaobject>
 				<imageobject>
-					<imagedata
-						fileref="doc/images/repositories.new_repos_dialog.png"
+					<imagedata fileref="doc/images/repositories.new_repos_dialog.png"
 						format="PNG" width="4in" />
 				</imageobject>
 				<caption>
-					<para>
-						The New Repository dialog prompts for the
-						desired location for the new repository
-					</para>
+					<para>The New Repository dialog prompts for the desired location for the new repository</para>
 				</caption>
 			</mediaobject>
 
@@ -1868,33 +1853,32 @@
 				combo box, then choose the appropriate catalog and
 				schema from the next two combo boxes. Your database
 				platform may not have catalogs or schemas, so one or
-				both of the corresponding combo boxes may be disabled.
-				In any case, all you need to do is to locate your new,
-				empty repository location within the available options.
+				both of the corresponding combo boxes may
+				be disabled. In any case, all you need to do is to
+				locate your new, empty repository location within the
+				available options.
 			</para>
 
 			<para>
 				Once you've picked the correct target location for
 				creating the new repository, click the
-				<systemitem>Create...</systemitem>
-				button. In a few moments, the repository creation script
-				for your target database will appear. Pressing the
-				Execute button will run the script, thereby creating the
+				<systemitem>Create...</systemitem> button.
+				In a few moments, the repository creation script for
+				your target database will appear. Pressing the Execute
+				button will run the script, thereby creating the
 				repository.
 			</para>
 
 			<mediaobject>
 				<imageobject>
-					<imagedata
-						fileref="doc/images/repositories.script_dialog.png" format="PNG"
-						width="4in" />
+					<imagedata fileref="doc/images/repositories.script_dialog.png"
+						format="PNG" width="4in" />
 				</imageobject>
 				<caption>
 					<para>
-						The script dialog allows you to preview and
-						execute the SQL script that creates the
-						repository, or copy the script out and use a
-						3rd-party tool to execute the script
+						The script dialog allows you to preview and execute the SQL script
+						that creates the repository, or copy the script out and use a 3rd-party
+						tool to execute the script
 					</para>
 				</caption>
 			</mediaobject>
@@ -1938,8 +1922,8 @@
 			<para>
 				Once you or someone else has created a repository (the
 				process is explained in the previous section), you can
-				tell the MatchMaker to connect to it, and then you'll be
-				able to start doing work in that repository.
+				tell the MatchMaker to connect to it, and then you'll
+				be able to start doing work in that repository.
 			</para>
 
 			<para>
@@ -1951,38 +1935,29 @@
 				title bar. The title bar says which user you are
 				connected as, followed by an @ sign, followed by the
 				data source name for the repository. Your local default
-				repository is called
-				<literal>MatchMaker Default Repository</literal>
-				.
+				repository is called <literal>MatchMaker Default Repository</literal>.
 			</para>
 
 			<para>
 				To create a new session in a repository, select
 				<systemitem>Connect to Remote Repository...</systemitem>
-				under the
-				<systemitem>Database</systemitem>
-				menu. Select the data source for the repository you want
-				to connect to, fill in the password (if you have saved
-				your password with the other data source information,
-				the password field will already be filled in), then
-				click the
-				<systemitem>Login</systemitem>
-				button. In a few moments, the login dialog will
-				disappear, and you will see the window for your new
+				under the <systemitem>Database</systemitem> menu. Select
+				the data source for the repository you want to connect
+				to, fill in the password (if you have saved your
+				password with the other data source information, the
+				password field will already be filled in), then click
+				the <systemitem>Login</systemitem> button. In a few moments, the login dialog
+				will disappear, and you will see the window for your new
 				session in your chosen repository.
 			</para>
 
 			<mediaobject>
 				<imageobject>
-					<imagedata
-						fileref="doc/images/repositories.login_dialog.png" format="PNG"
-						width="4in" />
+					<imagedata fileref="doc/images/repositories.login_dialog.png"
+						format="PNG" width="4in" />
 				</imageobject>
 				<caption>
-					<para>
-						The login dialog allows you to connect to a
-						remote repository
-					</para>
+					<para>The login dialog allows you to connect to a remote repository</para>
 				</caption>
 			</mediaobject>
 
@@ -2052,52 +2027,39 @@
 				preferences dialog. If you are using the MatchMaker on
 				Mac OS X, you can get to the preferences dialog just as
 				you would with any application: It's under the
-				<systemitem>MatchMaker</systemitem>
-				application menu, and it's also accessible by the
-				standard keyboard shortcut Command-comma. On all other
-				platforms (Windows, Linux, BSD, etc), select
-				<systemitem>User Preferences...</systemitem>
-				under the
-				<systemitem>File</systemitem>
-				menu.
+				<systemitem>MatchMaker</systemitem> application menu,
+				and it's also accessible by the standard keyboard shortcut
+				Command-comma. On all other platforms (Windows, Linux, BSD,
+				etc), select <systemitem>User Preferences...</systemitem>
+				under the <systemitem>File</systemitem> menu.
 			</para>
 
 			<mediaobject>
 				<imageobject>
-					<imagedata
-						fileref="doc/images/repositories.preferences_dialog.png"
+					<imagedata fileref="doc/images/repositories.preferences_dialog.png"
 						format="PNG" width="4in" />
 				</imageobject>
 				<caption>
-					<para>
-						The user preferences dialog provides several
-						startup options
-					</para>
+					<para>The user preferences dialog provides several startup options</para>
 				</caption>
 			</mediaobject>
 
 			<para>
 				The options here are pretty straightforward: If you want
 				to start up by connecting to a specific database, ensure
-				the
-				<systemitem>
-					Automatically connect to this repository
-				</systemitem>
-				option is selected, and choose the desired repository
-				from the combo box. If you'd prefer to see a login
-				dialog when the MatchMaker starts, just select the "Show
-				the Login Dialog" option. Your choice will be in effect
-				next time the MatchMaker starts up.
+				the <systemitem>Automatically connect to this repository</systemitem> option is
+				selected, and choose the desired repository from the
+				combo box. If you'd prefer to see a login dialog when
+				the MatchMaker starts, just select the "Show the Login
+				Dialog" option. Your choice will be in effect next time
+				the MatchMaker starts up.
 			</para>
 
 			<para>
 				If you want to revert back to the MatchMaker's default
 				startup behaviour, select
-				<systemitem>
-					Automatically connect to this repository
-				</systemitem>
-				, and then select
-				<systemitem>MatchMaker Default Repository</systemitem>
+				<systemitem>Automatically connect to this repository</systemitem>,
+				and then select <systemitem>MatchMaker Default Repository</systemitem>
 				in the combo box.
 			</para>
 
@@ -2557,7 +2519,7 @@
 			</itemizedlist>
 
 		</section>
-
+		
 		<section id="OpenCSV">
 			<title>OpenCSV</title>
 
@@ -2568,8 +2530,8 @@
 			</para>
 
 			<para>
-				The CSVWriter is released under the Apache 2.0 License
-				(It can be found in the The Apache Software Foundation
+				The CSVWriter is released under the Apache 2.0 License (It
+				can be found in the The Apache Software Foundation
 				section), The license applies to these library jar
 				files, which are distributed as part of the MatchMaker
 				download:
