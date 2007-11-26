@@ -114,6 +114,6 @@ public class UserPreferencesEditor implements DataEntryPanel {
     }
 
 	public boolean hasUnsavedChanges() {
-		return false;
+		return true;
 	}
 }
