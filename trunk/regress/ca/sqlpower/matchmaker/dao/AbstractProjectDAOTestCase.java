@@ -29,6 +29,7 @@ import java.sql.Types;
 import java.util.List;
 
 import ca.sqlpower.architect.SQLColumn;
+import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.Column;
@@ -218,7 +219,8 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
      * of a project would be cleared out after saving the project. 
      */
     public void testResultTableColumnsExistAfterSave() throws Exception {
-    	SQLTable sourceTable = new SQLTable(getSession().getDatabase(),
+    	SQLDatabase db = getSession().getDatabase();
+    	SQLTable sourceTable = new SQLTable(db,
     			"my_COOL_source_table", "", "TABLE", true);
     	SQLIndex sourceTableIndex = new SQLIndex("my_COOL_source_table_index",
     			true, null, IndexType.CLUSTERED, null);
@@ -233,6 +235,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     	project.setSourceTableIndex(sourceTableIndex);
     	
     	project.setResultTableName("my_COOL_result_table");
+    	project.setResultTableSPDatasource(getDS().getName());
     	SQLTable resultTable = project.createResultTable();
     	
     	// Sets up the sql statements needed for the result table
@@ -265,6 +268,10 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     			e.printStackTrace(); 
     		}
     	}
+    	
+    	
+    	resultTable = getSession().findPhysicalTableByName(project.getResultTableSPDatasource(), project.getResultTableCatalog(),
+				project.getResultTableSchema(), project.getResultTableName());
     	
     	assertEquals("Wrong number of columns for result table before save",
     			15, project.getResultTable().getColumns().size());
