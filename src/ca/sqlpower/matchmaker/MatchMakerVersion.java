@@ -19,10 +19,16 @@
 
 package ca.sqlpower.matchmaker;
 
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
-
-public class MatchMakerVersion extends Task {
+/**
+ * The MatchMakerVersion class exists as a means of finding out which
+ * version of the MatchMaker application you are dealing with.  It is
+ * also used during the build process in order to determine which version
+ * number to put in the archive file names.
+ * <p>
+ * It is extremely important that this class has no dependancies aside
+ * from the standard Java libraries.
+ */
+public class MatchMakerVersion {
 
 	/**
      * The major version number. Currently we're working toward the 1.0 release.
@@ -54,7 +60,7 @@ public class MatchMakerVersion extends Task {
      * Full releases do not have a suffix.  In that case, the suffix is the empty
      * string (not null).
      */
-    public static final String APP_VERSION_SUFFIX = "alpha";
+    public static final String APP_VERSION_SUFFIX = "";
     
     /**
      * The full version number, formatted as Major.Minor.Tiny[-Suffix].  Note the square
@@ -67,12 +73,4 @@ public class MatchMakerVersion extends Task {
                                             (APP_VERSION_SUFFIX.length() > 0
                                               ? "-" + APP_VERSION_SUFFIX
                                               : "");
-	
-    // The method executing the task
-    public void execute() throws BuildException {
-    	getProject().setNewProperty("app_ver_major", APP_VERSION_MAJOR );
-        getProject().setNewProperty("app_ver_minor", APP_VERSION_MINOR );
-        getProject().setNewProperty("app_ver_tiny", APP_VERSION_TINY );
-        getProject().setNewProperty("app_ver_suffix", APP_VERSION_SUFFIX);
-    }
 }
