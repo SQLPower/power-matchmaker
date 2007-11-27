@@ -198,7 +198,7 @@ public class CachableTable {
         }
 
         try {
-			logger.debug("Project.getSourceTable(" + dsName + ","+catalogName+","+schemaName+","+tableName+")");
+			logger.debug("getSourceTable(" + dsName + ","+catalogName+","+schemaName+","+tableName+")");
 			logger.debug("mmo.parent="+mmo.getParent());
 			
 			SQLDatabase db = null;
@@ -211,10 +211,10 @@ public class CachableTable {
 			if (ArchitectUtils.isCompatibleWithHierarchy(db, catalogName, schemaName, tableName)){
 				SQLTable table = db.getTableByName(catalogName, schemaName, tableName);
 				if (table == null) {
-					Project.logger.debug("     Not found.  Adding simulated...");
+					logger.debug("     Not found.  Adding simulated...");
 					table = ArchitectUtils.addSimulatedTable(db, catalogName, schemaName, tableName);
 				} else {
-					Project.logger.debug("     Found!");
+					logger.debug("     Found!");
 				}
 				cachedTable = table;
 				return cachedTable;
