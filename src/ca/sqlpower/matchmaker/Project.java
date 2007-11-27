@@ -217,7 +217,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	/**
 	 * Creates the result table for this Project based on the properties
 	 * of the current source table. The result table name will be the
-	 * current setting for resultTableName.
+	 * current setting for resultTableName.  The SQLTable itself will
+     * be added into its correct location in the correct SQLDatabase
+     * child object. 
 	 * <p>
 	 * This method only sets up an in-memory SQLTable.  You still have
 	 * to do the physical creation operation in the database yourself.
@@ -256,6 +258,12 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		logger.debug("createResultTable: si="+si+" si.children.size="+si.getChildCount());
 		
 		SQLTable t = buildResultTable(oldResultTable, si);
+        
+        // Now replace the in-memory cached version of the result table
+        SQLObject resultTableParent = oldResultTable.getParent();
+        resultTableParent.removeChild(oldResultTable);
+        resultTableParent.addChild(t);
+        
 		setResultTable(t);
 
 		return t;

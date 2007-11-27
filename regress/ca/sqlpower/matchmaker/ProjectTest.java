@@ -624,4 +624,29 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 	    }
 		return true;
 	}
+    
+    public void testNoEmptySimulatedTable() throws Exception {
+        
+        SQLTable sourceTable = new SQLTable(session.getDatabase(), true);
+        session.getDatabase().addChild(sourceTable);
+        sourceTable.addColumn(new SQLColumn(sourceTable, "pk1", Types.INTEGER, 10, 0));
+        sourceTable.getColumn(0).setPrimaryKeySeq(0);
+        
+        project.setSourceTable(sourceTable);
+        project.setSourceTableIndex(sourceTable.getPrimaryKeyIndex());
+        
+        project.setResultTableCatalog(null);
+        project.setResultTableSchema(null);
+        project.setResultTableName("new_table_that_doesnt_exist");
+        
+        project.createResultTable();
+        
+        SQLTable newTable = project.getResultTable();
+        assertTrue(newTable.getColumns().size() > 0);
+        
+        SQLTable newTableInDatabase = (SQLTable) session.getDatabase().getChildByName("new_table_that_doesnt_exist");
+        assertNotNull(newTableInDatabase);
+        assertTrue(newTableInDatabase.getColumns().size() > 0);
+        assertSame(newTable, newTableInDatabase);
+    }
 }
