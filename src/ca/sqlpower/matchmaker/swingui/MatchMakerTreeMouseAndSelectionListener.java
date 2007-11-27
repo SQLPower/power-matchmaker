@@ -36,6 +36,7 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
@@ -310,6 +311,41 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
 		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
 
+        if (logger.isDebugEnabled()) {
+            m.addSeparator();
+            m.add(new JMenuItem(new AbstractAction("Show Result Table Columns...") {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        SQLTable resultTable = project.getResultTable();
+                        logger.debug("Result table dump for project " + project.getName());
+                        logger.debug("Table: " + resultTable);
+                        logger.debug("Columns: " + resultTable.getColumns());
+                        logger.debug("Result Table Catalog: " + project.getResultTableCatalog());
+                        logger.debug("Result Table Schema:  " + project.getResultTableSchema());
+                        logger.debug("Result Table Name:    " + project.getResultTableName());
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }));
+            m.add(new JMenuItem(new AbstractAction("Reset Result Table") {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        String cat = project.getResultTableCatalog();
+                        String sch = project.getResultTableSchema();
+                        String nam = project.getResultTableName();
+                        project.setResultTableCatalog(null);
+                        project.setResultTableSchema(null);
+                        project.setResultTableName(null);
+                        project.setResultTableCatalog(cat);
+                        project.setResultTableSchema(sch);
+                        project.setResultTableName(nam);
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }));
+        }
 	}
 
 	private void addFolderMenuItems(JPopupMenu m, final PlFolder folder) {
