@@ -3,7 +3,9 @@
 * Added a user preference for auto-login into a repository. The user can choose to log in automatically into a repository of their
 choice, or have the application prompt the user for a repository each time they start the application.
 * Added some new munge steps, including data type conversion steps (ex. Date-to-String), and a CSV writer step
+* It is now possible to specify a set of columns to use as the unqiue index, even if the table doesn't have a primary key or unique index.
 * The example table can now be created properly in HSQLDB
+* Matching, merging, and cleansing projects now fully work in HSQLDB
 
 0.9.1
 
