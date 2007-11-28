@@ -50,7 +50,6 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
-import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.sql.SPDataSource;
@@ -91,7 +90,15 @@ public class TableQueryFrame extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			SQLTable table = (SQLTable) tableDropdown.getSelectedItem();
 			if ( table != null ) {
-				sqlStatement.setText("SELECT * FROM " + ArchitectUtils.toQualifiedName(table));
+				StringBuilder sql = new StringBuilder("SELECT * FROM ");
+				if (table.getCatalog() != null) {
+					sql.append(table.getCatalogName() + ".");
+				}
+				if (table.getSchema() != null) {
+					sql.append(table.getSchemaName() + ".");
+				}
+				sql.append(table.getName());
+				sqlStatement.setText(sql.toString());
 				columnInformation.setName(sqlStatement.getText());
 			}
 		}
@@ -122,11 +129,11 @@ public class TableQueryFrame extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 			db = getDatabase();
 
+			tableDropdown.setEnabled(false);
 			if (db != null) {
 				new Thread(this).start();
 			} else {
 				tableDropdown.removeAllItems();
-				tableDropdown.setEnabled(false);
 			}
 		}
 
@@ -140,11 +147,14 @@ public class TableQueryFrame extends JFrame {
 			ProgressWatcher.watchProgress(progressBar, this);
 			try {
 			    started = true;
+			    finished = false;
 				db.populate();
 			} catch (ArchitectException e) {
 				throw new ArchitectRuntimeException(e);
 			} finally {
 			    finished = true;
+			    started = false;
+			    tableDropdown.setEnabled(true);
 			}
 		}
 
