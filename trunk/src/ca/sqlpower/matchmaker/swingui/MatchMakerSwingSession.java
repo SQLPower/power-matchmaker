@@ -432,7 +432,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, SchemaVersionFormatException, PLSchemaException, SQLException {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
-        this.smallMMIcon = new ImageIcon(getClass().getResource("/icons/matchmaker_24.png"));
+        this.smallMMIcon = MMSUtils.getFrameImageIcon();
         
         matchEnginePanels = new HashMap<MatchEngineImpl, MatchEnginePanel>();
         mergeEnginPanels = new HashMap<MergeEngineImpl, MergeEnginePanel>();
@@ -808,7 +808,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		    		SwingSessionContext context = new SwingSessionContextImpl(PreferencesManager.getRootNode());
                     context.launchDefaultSession();
 		    	} catch (Exception ex) {
-		    		JDialog d = SPSUtils.showExceptionDialogNoReport(null, "Couldn't start application!", ex);
+		    		JDialog d = MMSUtils.showExceptionDialogNoReport("Couldn't start application!", ex);
 		    		d.addWindowListener(new WindowAdapter() {
 		    			public void windowClosing(WindowEvent e) {
 		    				System.exit(0);

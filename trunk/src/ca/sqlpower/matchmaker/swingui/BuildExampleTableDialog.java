@@ -311,7 +311,7 @@ public class BuildExampleTableDialog extends JDialog{
 										null);
 						doc.insertString(doc.getLength(),";\n",null);
 					} catch (BadLocationException e1) {
-						SPSUtils.showExceptionDialogNoReport(BuildExampleTableDialog.this, "Unexcepted Document Error",e1);
+						SPSUtils.showExceptionDialogNoReport(editor, "Unexcepted Document Error",e1);
 					}
 			    }
 				SPSUtils.saveDocument(swingSession.getFrame(),
@@ -376,12 +376,10 @@ public class BuildExampleTableDialog extends JDialog{
 					    new Thread(new PopulateTableWorker(swingSession, table)).start();
                     }
 				} catch (SQLException ex) {
-					JOptionPane.showMessageDialog(editor,
-							"Create Script Failure",
-							"Couldn't allocate a Statement:\n" + ex.getMessage(),
-							JOptionPane.ERROR_MESSAGE);
+					SPSUtils.showExceptionDialogNoReport(editor,
+							"Create Script Failure", ex);
 				} catch (ArchitectException ex) {
-					SPSUtils.showExceptionDialogNoReport(BuildExampleTableDialog.this, 
+					SPSUtils.showExceptionDialogNoReport(editor, 
 							"Error Generating Example table", ex);
 				} finally {
                     try {

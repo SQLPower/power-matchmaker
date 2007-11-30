@@ -772,10 +772,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 					    editor.dispose();
                     }
 				} catch (SQLException ex) {
-					JOptionPane.showMessageDialog(editor,
-							"Create Script Failure",
-							"Couldn't allocate a Statement:\n" + ex.getMessage(),
-							JOptionPane.ERROR_MESSAGE);
+					SPSUtils.showExceptionDialogNoReport(editor, "Create Script Failure", ex);
 				} finally {
                     try {
                         if (stmt != null) {

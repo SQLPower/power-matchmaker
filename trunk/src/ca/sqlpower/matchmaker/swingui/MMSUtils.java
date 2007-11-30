@@ -24,7 +24,9 @@ import java.awt.Component;
 import java.awt.Window;
 import java.util.concurrent.Callable;
 
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
@@ -107,6 +109,33 @@ public class MMSUtils {
     }
     
     /**
+     * Returns an icon that is suitable for use as a frame icon image
+     * in the MatchMaker.
+     */
+    public static ImageIcon getFrameImageIcon() {
+        return SPSUtils.createIcon("matchmaker_24", "MatchMaker Logo");
+    }
+
+    /**
+     * 
+     * Displays a dialog box with the given message and exception,
+     * allowing the user to examine the stack trace.  The dialog will
+     * not have a parent component so it will be displayed on top of 
+     * everything.
+     * 
+     * @deprecated This method will create a dialog, but because it
+     * has no parent component, it will stay over everything.
+     * 
+     * @param message A user visible string that should explain the problem
+     * @param t The exception that warranted a dialog
+     */
+    public static JDialog showExceptionDialogNoReport(String message, Throwable t) {
+        JFrame f = new JFrame();
+        f.setIconImage(getFrameImageIcon().getImage());
+        return SPSUtils.showExceptionDialogNoReport(f, message, t);
+    }
+
+    /**
 	 * Displays a dialog box with the given message and exception, allowing the
 	 * user to examine the stack trace.
 	 * <p>
@@ -120,7 +149,7 @@ public class MMSUtils {
 	 * @param t
 	 *            The exception that warranted a dialog
 	 */
-    public static void showExceptionDialog(Component parent, String message, Throwable t) {
+    public static JDialog showExceptionDialog(Component parent, String message, Throwable t) {
     	try {
     		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION, "MatchMaker");
     		logger.debug(report.toString());
@@ -129,7 +158,7 @@ public class MMSUtils {
     		logger.error("Couldn't generate and send exception report!  Note that this is not the primary problem; it's a side effect of trying to report the real problem.", seriousProblem);
     		JOptionPane.showMessageDialog(null, "Error reporting failed: "+seriousProblem.getMessage()+"\nAdditional information is available in the application log.");
     	} finally {
-    		SPSUtils.showExceptionDialogNoReport(parent, message, t);
+    		return SPSUtils.showExceptionDialogNoReport(parent, message, t);
     	}
     }
     

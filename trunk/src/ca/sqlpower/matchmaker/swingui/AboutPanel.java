@@ -41,12 +41,10 @@ public class AboutPanel extends JPanel implements DataEntryPanel {
 		setLayout(new FlowLayout());
 
         // Include the product's 128x128 Icon
-        String realPath = "/icons/matchmaker_128.png";
-        java.net.URL imgURL = SPSUtils.class.getResource(realPath);
+		ImageIcon icon = SPSUtils.createIcon("matchmaker_128", "MatchMaker Logo");
 
-        if (imgURL != null) {
-            ImageIcon imageIcon = new ImageIcon(imgURL, "MatchMaker Logo");
-            add(new JLabel(imageIcon));
+        if (icon != null) {
+            add(new JLabel(icon));
         } else {
         	System.err.println("ICON IS NULL");
         }
