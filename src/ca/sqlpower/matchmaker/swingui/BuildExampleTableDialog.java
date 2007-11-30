@@ -34,6 +34,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -60,6 +61,7 @@ import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLCatalog;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
+import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
@@ -72,6 +74,11 @@ import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
 import ca.sqlpower.swingui.SPSUtils.FileExtensionFilter;
 import ca.sqlpower.util.Monitorable;
+import ca.sqlpower.validation.Status;
+import ca.sqlpower.validation.ValidateResult;
+import ca.sqlpower.validation.Validator;
+import ca.sqlpower.validation.swingui.FormValidationHandler;
+import ca.sqlpower.validation.swingui.StatusComponent;
 
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import com.jgoodies.forms.debug.FormDebugPanel;
@@ -145,9 +152,15 @@ public class BuildExampleTableDialog extends JDialog{
 	 * The list of parsed last names taken from the array at the bottom.
 	 */
 	private List<String> lastNames = new ArrayList<String>();
+	
+    /**
+     * Validation handler for errors in the dialog
+     */
+	private FormValidationHandler handler;
+	private StatusComponent status = new StatusComponent();
 
 	/**
-	 * Creates a new Dialog
+	 * Creates a new Dialog with options needed for creating a new example table
 	 */
 	public BuildExampleTableDialog(MatchMakerSwingSession swingSession) {
 		super(swingSession.getFrame(),"Create Example Table");
@@ -157,6 +170,27 @@ public class BuildExampleTableDialog extends JDialog{
 		tableName.setText("MMExampleTable");
 		buildGUI();
 		setModal(false);
+		
+		addValidators();
+	}
+	
+	/**
+	 * Adds the appropriate validators for this dialog
+	 */
+	private void addValidators() {
+		handler = new FormValidationHandler(status, true);
+		handler.setValidatedAction(create.getAction());
+		
+		Validator v1 = new CatalogSchemaValidator(
+				sourceChooser.getCatalogTerm());
+		handler.addValidateObject(sourceChooser.getCatalogComboBox(),v1);
+	
+		Validator v2 = new CatalogSchemaValidator(
+				sourceChooser.getSchemaTerm());
+		handler.addValidateObject(sourceChooser.getSchemaComboBox(),v2);
+    	
+    	Validator v3 = new TableNameValidator();
+    	handler.addValidateObject(tableName, v3);
 	}
 	
 	/**
@@ -177,8 +211,8 @@ public class BuildExampleTableDialog extends JDialog{
 		CellConstraints cc = new CellConstraints();
 		
 		int row = 2;
-		panel.add(new JLabel("Note: If you cannot find the newly created table you may need to restart the application."), cc.xyw(2, row,3));
-				
+		panel.add(status, cc.xyw(2,row,3));
+		
 		row += 2;
 		panel.add(new JLabel("Example Table Location:"), cc.xyw(2, row, 3));
 		
@@ -188,11 +222,11 @@ public class BuildExampleTableDialog extends JDialog{
 		
 		
 		row += 2;
-		panel.add(new JLabel("Catalog:"), cc.xy(2, row));
+		panel.add(sourceChooser.getCatalogTerm(), cc.xy(2, row));
 		panel.add(sourceChooser.getCatalogComboBox(),cc.xy(4, row));
 		
 		row += 2;
-		panel.add(new JLabel("Schema:"), cc.xy(2, row));
+		panel.add(sourceChooser.getSchemaTerm(), cc.xy(2, row));
 		panel.add(sourceChooser.getSchemaComboBox(),cc.xy(4, row));
 		
 		row += 2;
@@ -886,6 +920,59 @@ public class BuildExampleTableDialog extends JDialog{
 				start();
 			}
 		}
-		
 	}
+	
+	/**
+	 * Validator for comboxes of catalog or schema that only checks
+	 * if one is selected.
+	 */
+    private class CatalogSchemaValidator implements Validator {
+
+    	private JLabel nameLabel;
+    	
+    	/**
+    	 * This takes in a JLabel that contains the correct
+    	 * term for the validated object.
+    	 * @param nameLabel The label containing the correct term.
+    	 */
+    	public CatalogSchemaValidator(JLabel nameLabel) {
+    		this.nameLabel = nameLabel;
+		}
+    	
+		public ValidateResult validate(Object contents) {
+			SQLObject value = (SQLObject)contents;
+			if ( value == null ) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						nameLabel.getText() + " is required");
+			}
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+    }
+
+    /**
+     * A validator that checks the given object for a correct table name.
+     * It checks if the name is not empty, contians valid characters and
+     * is wthin a size of 30.
+     */
+    private class TableNameValidator implements Validator {
+        private static final int MAX_CHAR_RESULT_TABLE = 30;
+
+		public ValidateResult validate(Object contents) {
+			final Pattern sqlIdentifierPattern =
+				Pattern.compile("[a-z_][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
+
+			String value = (String)contents;
+			if ( value == null || value.length() == 0 ) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						"Table name is required");
+			} else if (value.length() > MAX_CHAR_RESULT_TABLE){
+			    return ValidateResult.createValidateResult(Status.FAIL, "The table name " +
+                        "cannot be longer than " +  MAX_CHAR_RESULT_TABLE + " characters long");
+            } else if (!sqlIdentifierPattern.matcher(value).matches()) {
+				return ValidateResult.createValidateResult(Status.FAIL,
+						"Table name is not a valid SQL identifier");
+			} 
+			return ValidateResult.createValidateResult(Status.OK, "");
+		}
+    }
 }
