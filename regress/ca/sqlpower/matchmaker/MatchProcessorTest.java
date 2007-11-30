@@ -40,7 +40,7 @@ import ca.sqlpower.sql.SPDataSource;
 
 public class MatchProcessorTest extends TestCase {
 
-	private static final Logger logger = Logger.getLogger(MatchProcessor.class);
+	private static final Logger logger = Logger.getLogger(MatchProcessorTest.class);
 	
 	private MatchProcessor matcher;
 	private SQLTable resultTable;
@@ -167,7 +167,7 @@ public class MatchProcessorTest extends TestCase {
 		MungeProcess process = new MungeProcess();
 		process.setParentProject(project);
 		pool = new MatchPool(project);
-		matcher = new MatchProcessor(pool, process, results);
+		matcher = new MatchProcessor(pool, process, results, logger);
 	}
 	
 	public void tearDown() throws Exception {

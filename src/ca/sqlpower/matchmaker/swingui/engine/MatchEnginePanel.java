@@ -312,8 +312,7 @@ public class MatchEnginePanel implements DataEntryPanel {
 		clearMatchPool = new JCheckBox("Clear match pool?", settings.isClearMatchPool());
 //		sendEmail = new JCheckBox("Send E-mails?", settings.getSendEmail());
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
-		
-		messageLevel = new JComboBox(new Level[] {Level.ALL, Level.DEBUG, Level.ERROR, Level.FATAL, Level.INFO, Level.OFF, Level.WARN});
+		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});
 		messageLevel.setSelectedItem(engine.getMessageLevel());
 		messageLevel.setRenderer(new DefaultListCellRenderer(){
 			@Override

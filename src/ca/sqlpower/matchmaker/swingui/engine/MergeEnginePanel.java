@@ -287,7 +287,7 @@ public class MergeEnginePanel implements DataEntryPanel {
 			}
 		});
 		
-		messageLevel = new JComboBox(new Level[] {Level.ALL, Level.DEBUG, Level.ERROR, Level.FATAL, Level.INFO, Level.OFF, Level.WARN});
+		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});
 		messageLevel.setSelectedItem(engine.getMessageLevel());
 		messageLevel.setRenderer(new DefaultListCellRenderer(){
 			@Override

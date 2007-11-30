@@ -251,7 +251,7 @@ public class MatchEngineImpl extends AbstractEngine {
 
 			List<MungeResult> results = currentProcess.getResults();
 			
-			matcher = new MatchProcessor(pool, currentProcess, results);
+			matcher = new MatchProcessor(pool, currentProcess, results, logger);
 			currentProcessor = matcher;
 			progressMessage = "Matching munge process " + currentProcess.getName();
 			logger.debug(getMessage());

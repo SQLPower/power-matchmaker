@@ -50,13 +50,17 @@ public class MatchProcessor extends AbstractProcessor {
 	 */
 	private MungeProcess mungeProcess;
 	
+    private final Logger engineLogger;
+	
 	/**
 	 * The MatchPool that will be used to store the PotentialMatchRecords
 	 * and SourceTableRecords that will be marked as the potential matches
 	 */
 	private MatchPool pool;
 	
-	public MatchProcessor(MatchPool pool, MungeProcess process, List<MungeResult> matchData) {
+	public MatchProcessor(MatchPool pool, MungeProcess process,
+			List<MungeResult> matchData, Logger logger) {
+		this.engineLogger = logger;
 		this.matchData = matchData;
 		this.pool = pool;
 		this.mungeProcess = process; 
@@ -80,7 +84,7 @@ public class MatchProcessor extends AbstractProcessor {
 					boolean nullMatch = false;
 					for (int j = 0; j < data.getMungedData().length; j++) {
 						if (data.getMungedData()[j] == null && matchData.get(i).getMungedData()[j] == null) {
-							logger.debug("Ignoring match on null data");
+							engineLogger.debug("Ignoring match on null data");
 							nullMatch = true;
 							break;
 						}
@@ -88,7 +92,7 @@ public class MatchProcessor extends AbstractProcessor {
 					
 					if (!nullMatch) {
 						// Potential Match! so store in Match Result Table
-						logger.debug("Found Match!\nRecord 1:" + data
+						engineLogger.debug("Found Match!\nRecord 1:" + data
 								+ "\nRecord 2:" + matchData.get(i));
 						PotentialMatchRecord pmr = new PotentialMatchRecord(
 								mungeProcess, MatchType.UNMATCH, data
