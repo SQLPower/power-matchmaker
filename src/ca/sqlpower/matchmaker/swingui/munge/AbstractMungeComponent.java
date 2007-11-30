@@ -993,7 +993,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 		Point startPoint;
 		
 		public void mouseClicked(MouseEvent e) {
-			maybeShowPopup(e);
+			boolean showPopup = maybeShowPopup(e);
+			if (!showPopup && e.getClickCount() == 2){; 
+				step.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, !isExpanded());
+			}
 			bustGhost();
 			autoScrollTimer.stop();
 		}
