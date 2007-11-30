@@ -381,7 +381,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 session.showGUI();
             }
         } catch (Exception ex) {
-            SPSUtils.showExceptionDialogNoReport("MatchMaker Startup Failed", ex);
+           	MMSUtils.showExceptionDialogNoReport("MatchMaker Startup Failed", ex);
         }
     }
 
@@ -477,7 +477,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             pld.read(pf);
             return pld;
         } catch (IOException e) {
-            SPSUtils.showExceptionDialogNoReport("Could not read " + pf, e);
+            MMSUtils.showExceptionDialogNoReport("Could not read " + pf, e);
             return null;
         }
     }

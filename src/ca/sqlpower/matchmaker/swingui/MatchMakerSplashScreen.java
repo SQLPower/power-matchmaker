@@ -46,6 +46,7 @@ import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -99,7 +100,7 @@ public class MatchMakerSplashScreen {
         spgLogo.add(new JLabel("<html><div align='center'>SQL Power Group Inc.<br>http://www.sqlpower.ca/</div></html>", JLabel.CENTER));
         spgLogo.add(new JLabel(new ImageIcon(getClass().getResource("/icons/sqlpower_alpha_gradient.png"))));
         
-		JLabel mmLogo = new JLabel(new ImageIcon(getClass().getResource("/icons/matchmaker_huge.png")), JLabel.CENTER);
+		JLabel mmLogo = new JLabel(SPSUtils.createIcon("matchmaker_huge", "MatchMaker Huge Icon"), JLabel.CENTER);
 		JLabel title  = new JLabel("<html>" + "Power*MatchMaker " + MatchMakerVersion.APP_VERSION + "</html>", JLabel.CENTER);
 		Font f = title.getFont();
 		Font newf = new Font(f.getName(), f.getStyle(), (int) (f.getSize() * 1.5));
