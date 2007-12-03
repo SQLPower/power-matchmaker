@@ -19,24 +19,24 @@ Let's use the lower-case munge step as a running example.  It's a munge step wit
 {{{
 public class LowerCaseMungeStep extends AbstractMungeStep {
 
-	public LowerCaseMungeStep() {
-		super("Lower Case",false);
-		MungeStepOutput<String> out = new MungeStepOutput<String>("lowerCaseOutput", String.class);
-		addChild(out);
-		InputDescriptor desc = new InputDescriptor("lowerCase", String.class);
-		super.addInput(desc);
-	}
+  public LowerCaseMungeStep() {
+    super("Lower Case", false);
+    MungeStepOutput<String> out = new MungeStepOutput<String>("lowerCaseOutput", String.class);
+    addChild(out);
+    InputDescriptor desc = new InputDescriptor("lowerCase", String.class);
+    super.addInput(desc);
+  }
 
-	public Boolean doCall() throws Exception {
-		MungeStepOutput<String> in = getMSOInputs().get(0);
-		String data = in.getData();
-		if (data != null) {
-			data = data.toLowerCase();
-		}
-		MungeStepOutput<String> out = getOut();
-		out.setData(data);
-		return true;
-	}
+  public Boolean doCall() throws Exception {
+    MungeStepOutput<String> in = getMSOInputs().get(0);
+    String data = in.getData();
+    if (data != null) {
+      data = data.toLowerCase();
+    }
+    MungeStepOutput<String> out = getOut();
+    out.setData(data);
+    return true;
+  }
 }
 }}}
 
