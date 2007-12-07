@@ -240,6 +240,10 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         loginDialog = new LoginDialog(this);
         
         generatePropertiesList();
+        
+        // sets the icon so exception dialogs handled by SPSUtils instead
+        // of MMSUtils can still have the correct icon
+        SPSUtils.setMasterIcon(MMSUtils.getFrameImageIcon());
     }
 
 
