@@ -855,7 +855,8 @@ public class BuildExampleTableDialog extends JDialog{
 		private int size;
 		private int prog;
 		private boolean running;
-		
+		private boolean cancelled;
+        
 		/**
 		 * Sets up using the initial size.
 		 * 
@@ -914,12 +915,17 @@ public class BuildExampleTableDialog extends JDialog{
 		}
 
 		public void setCancelled(boolean cancelled) {
+            this.cancelled = cancelled;
 			if (cancelled) {
 				stop();
 			} else {
 				start();
 			}
 		}
+        
+        public boolean isCancelled() {
+            return cancelled;
+        }
 	}
 	
 	/**

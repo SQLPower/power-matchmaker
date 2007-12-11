@@ -165,6 +165,10 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 		this.cancelled = cancelled;
         // TODO interrupt the engine thread
 	}
+    
+    public synchronized boolean isCancelled() {
+        return cancelled;
+    }
 
     /**
      * Checks if this engine has been cancelled by another thread.  If so,
@@ -173,7 +177,7 @@ public abstract class AbstractEngine implements MatchMakerEngine {
      * @throws CancellationException if this engine has been cancelled
      */
     protected void checkCancelled() {
-        if (isCanceled()) {
+        if (isCancelled()) {
             throw new CancellationException("User-requested abort");
         }
     }
@@ -302,13 +306,5 @@ public abstract class AbstractEngine implements MatchMakerEngine {
 
 	public String getObjectName() {
 		return getProject().getOid().toString();
-	}
-	
-	protected synchronized boolean isCanceled() {
-		return cancelled;
-	}
-	
-	protected synchronized void setCanceled(boolean cancelled) {
-		this.cancelled = cancelled;
 	}
 }
