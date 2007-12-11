@@ -126,7 +126,7 @@ public class CleanseEngineImpl extends AbstractEngine {
 	@Override
 	public EngineInvocationResult call() throws EngineSettingException {
 		Level oldLevel = logger.getLevel();
-		setCanceled(false);
+		setCancelled(false);
 		FileAppender fileAppender = null;
 		EmailAppender emailAppender = null;
 		
