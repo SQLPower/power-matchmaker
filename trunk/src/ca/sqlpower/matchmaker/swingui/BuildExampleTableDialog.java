@@ -20,7 +20,9 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.HeadlessException;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -205,16 +207,13 @@ public class BuildExampleTableDialog extends JDialog{
 		}
 		
 		FormLayout layout = new FormLayout(	"4dlu,pref,4dlu,pref:grow,4dlu" , 
-											"4dlu,pref:grow,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
+											"4dlu,pref:grow,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		panel.setLayout(layout);
 		
 		CellConstraints cc = new CellConstraints();
 		
 		int row = 2;
 		panel.add(status, cc.xyw(2,row,3));
-		
-		row += 2;
-		panel.add(new JLabel("Example Table Location:"), cc.xyw(2, row, 3));
 		
 		row += 2;
 		panel.add(new JLabel("Data Source:"), cc.xy(2, row));
@@ -282,19 +281,15 @@ public class BuildExampleTableDialog extends JDialog{
 			return;
 		}
 		
-		
-		
 		ddlg.setTargetCatalog(getTableCatalog());
 		ddlg.setTargetSchema(getTableSchema());
 		
 		table = swingSession.getDatabase(getDataSource()).getTableByName(getTableCatalog(), getTableSchema(), tableName.getText());
-		System.out.println(table);
-		
 		
 		if (swingSession.tableExists(table)) {
 			int answer = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-					"Example table exists, do you want to drop and recreate it?",
-					"Table exists",
+					"Example table already exists, do you want to drop and recreate it?",
+					"Table already exists",
 					JOptionPane.YES_NO_OPTION);
 			if ( answer != JOptionPane.YES_OPTION ) {
 				return;
@@ -321,7 +316,6 @@ public class BuildExampleTableDialog extends JDialog{
 		
 		ddlg.addTable(table);
 		
-		
 
 	    final JDialog editor = new JDialog(swingSession.getFrame(),
 	    		"Create Example Table", true);
@@ -345,7 +339,7 @@ public class BuildExampleTableDialog extends JDialog{
 										null);
 						doc.insertString(doc.getLength(),";\n",null);
 					} catch (BadLocationException e1) {
-						SPSUtils.showExceptionDialogNoReport(editor, "Unexcepted Document Error",e1);
+						SPSUtils.showExceptionDialogNoReport(editor, "Unexcepted Document Error", e1);
 					}
 			    }
 				SPSUtils.saveDocument(swingSession.getFrame(),
@@ -368,7 +362,34 @@ public class BuildExampleTableDialog extends JDialog{
 	    };
 	    Action executeAction = new AbstractAction("Execute") {
 			public void actionPerformed(ActionEvent e) {
-
+                
+				// Builds the gui part of the error pane that will be used
+                // if a sql statement fails
+                JPanel errorPanel = new JPanel(new FormLayout("4dlu,300dlu,4dlu",
+                    "4dlu,pref,4dlu,pref,4dlu,200dlu,4dlu,pref,4dlu"));
+                CellConstraints cc = new CellConstraints();
+                
+                JLabel topLabel = new JLabel();
+                JTextArea errorMsgLabel = new JTextArea();
+                errorMsgLabel.setLineWrap(true);
+                errorMsgLabel.setWrapStyleWord(true);
+                errorMsgLabel.setPreferredSize(new Dimension(300, 40));
+                
+                JLabel bottomLabel = new JLabel();
+                JTextArea errorStmtLabel = new JTextArea();
+                JScrollPane errorStmtPane = new JScrollPane(errorStmtLabel);
+                errorStmtPane.setPreferredSize(new Dimension(300, 300));
+                errorStmtPane.scrollRectToVisible(new Rectangle(0,0));
+                
+                int row = 2;
+                errorPanel.add(topLabel, cc.xy(2, row));
+                row += 2;
+                errorPanel.add(errorMsgLabel, cc.xy(2, row));
+                row += 2;
+                errorPanel.add(errorStmtPane, cc.xy(2,row));
+                row += 2;
+                errorPanel.add(bottomLabel, cc.xy(2,row, "f,f"));
+				
 				Connection con = null;
 				Statement stmt = null;
 				String sql = null;
@@ -383,14 +404,14 @@ public class BuildExampleTableDialog extends JDialog{
 							stmt.executeUpdate(sql);
 							successCount += 1;
 						} catch (SQLException e1) {
-							int choice = JOptionPane.showOptionDialog(editor,
-									"The following SQL statement failed:\n" +
-									sql +
-									"\nThe error was: " + e1.getMessage() +
-									"\n\nDo you want to continue executing the create script?",
-									"SQL Error", JOptionPane.YES_NO_OPTION,
-									JOptionPane.ERROR_MESSAGE, null,
-									new String[] {"Abort", "Continue"}, "Continue" );
+							topLabel.setText("There was an error in the SQL statement: ");
+                            errorMsgLabel.setText(e1.getMessage());
+                            errorStmtLabel.setText(sql);
+                            bottomLabel.setText("Do you want to continue executing the create script?");
+                            int choice = JOptionPane.showOptionDialog(editor,
+                                    errorPanel, "SQL Error", JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.ERROR_MESSAGE, null,
+                                    new String[] {"Abort", "Continue"}, "Continue" );
 							if (choice != 1) {
 								break;
 							}
