@@ -467,6 +467,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	    buildGUI();
         frame.setVisible(true);
 		splitPane.setDividerLocation(0.2);
+		
+		// adds a widget that allows the user to expand/collapse the splitpane
+		splitPane.setDividerSize(10);
+		splitPane.setOneTouchExpandable(true);
     }
 
     private void buildGUI() {
