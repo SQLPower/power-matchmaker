@@ -87,6 +87,7 @@
 		<subclass name="CleanseResultStep" />
 		<subclass name="ConcatMungeStep" />
 		<subclass name="DoubleMetaphoneMungeStep" />
+		<subclass name="MD5CheckSumMungeStep" />
 		<subclass name="GoogleAddressLookup" />
 		<subclass name="LowerCaseMungeStep" />
 		<subclass name="MetaphoneMungeStep" />
