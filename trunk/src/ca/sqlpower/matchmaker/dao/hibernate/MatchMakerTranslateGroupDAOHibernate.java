@@ -20,6 +20,7 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -57,9 +58,10 @@ public class MatchMakerTranslateGroupDAOHibernate extends AbstractMatchMakerDAOH
             MatchMakerTranslateGroup translateGroup = (MatchMakerTranslateGroup) matches.get(0);
 			translateGroup.setSession(getMatchMakerSession());
 			boolean tgChanged = false;
-			for (MatchMakerTranslateWord tw : translateGroup.getChildren()) {
-				if (tw == null) {
-					translateGroup.removeChild(tw);
+			for (Iterator<MatchMakerTranslateWord> iter = translateGroup.getChildren().iterator(); iter.hasNext();) {
+				MatchMakerTranslateWord mmtw = iter.next();
+				if (mmtw == null) {
+					iter.remove();
 					tgChanged = true;
 				}
 			}
