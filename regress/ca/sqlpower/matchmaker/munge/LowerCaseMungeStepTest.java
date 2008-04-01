@@ -75,7 +75,7 @@ public class LowerCaseMungeStepTest extends TestCase {
 		assertEquals(null, result);
 	}
 	
-	public void testCallonInteger() throws Exception {
+	public void testConnectIntegerInput() throws Exception {
 		testInput = new MungeStepOutput<Integer>("test", Integer.class);
 		testInput.setData(new Integer(1));
 		try {
@@ -85,4 +85,23 @@ public class LowerCaseMungeStepTest extends TestCase {
 			// UnexpectedDataTypeException was thrown as expected
 		}
 	}
+    
+    public void testRemoveInput() throws Exception {
+        try {
+            step.removeInput(0);
+            fail("UnsupportedOperationException should have been thrown");
+        } catch (UnsupportedOperationException ex) {
+            // good
+        }
+    }
+    
+    public void testAddInput() throws Exception {
+        try {
+            step.addInput(new InputDescriptor("This should not work", String.class));
+            fail("UnsupportedOperationException should have been thrown");
+        } catch (UnsupportedOperationException ex) {
+            // good
+        }
+    }
+
 }

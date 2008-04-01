@@ -45,15 +45,6 @@ public class LowerCaseMungeStep extends AbstractMungeStep {
 		throw new UnsupportedOperationException(
 			"Lower case munge step does not support removeInput()");
 	}
-
-	public void connectInput(int index, MungeStepOutput o) {
-		if (o.getType() != getInputDescriptor(index).getType()) {
-			throw new UnexpectedDataTypeException(
-				"Lower case munge step does not accept non-String inputs");
-		} else {
-			super.connectInput(index, o);
-		}
-	}
 	
 	public Boolean doCall() throws Exception {
 		

@@ -151,7 +151,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * {@link UnexpectedDataTypeException} if the give output is not of correct
 	 * type or {@link IndexOutOfBoundsException} if given index does not exist.
 	 */
-	void connectInput(int index, MungeStepOutput o);
+	void connectInput(int index, MungeStepOutput<?> o);
 
 	/**
 	 * Disconnects the input at the given index by removing the 
