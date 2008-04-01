@@ -136,10 +136,17 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		return values;
 	}
 	
-	public void connectInput(int index, MungeStepOutput o) {
+	public void connectInput(int index, MungeStepOutput<?> o) {
 		if (index >= getMSOInputs().size()) {
-			throw new IndexOutOfBoundsException("There is no input at the given index");
+			throw new IndexOutOfBoundsException(
+                    "There is no input at index " + index +
+                    " (inputs.size = " + getMSOInputs().size() + ")");
 		}
+        if (!inputs.get(index).getType().isAssignableFrom(o.getType())) {
+            throw new UnexpectedDataTypeException(
+                    "Input " + index + " of step " + getName() +
+                    " does not support data type " + o.getType());
+        }
 		inputs.get(index).current = o;
 		getEventSupport().firePropertyChange("inputs", index, null, o);
 		boolean noEmptyInputs = true;
@@ -407,10 +414,13 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		}
 
 		/**
-		 * only used by hibernate
-		 */
+         * Returns the data type expected by this input.
+         * <p>
+         * Note: This method is used reflectively by Hibernate. Do not remove
+         * this method even if it appears unused.
+         */
 		@SuppressWarnings("unused")
-		private Class getType() {
+		private Class<?> getType() {
 			return descriptor.getType();
 		}
 
