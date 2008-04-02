@@ -107,7 +107,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit,userguide,osx_tgz,osx_dmg,windows_jdbc_installer,generic_install,source_only_tgz">
+	<target name="dist" depends="junit,userguide,osx_tgz,osx_dmg,windows_exe_installer,generic_install,source_only_tgz">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
 		<copy todir="${dist.dir}/doc" overwrite="true">
@@ -410,7 +410,7 @@
 	</target>
 	
 	
-	<target name="windows_jdbc_installer" depends="stage">
+	<target name="windows_jar_installer" depends="stage">
 		<izpack output="${dist.dir}/MatchMaker-Setup-Windows-${app.version}.jar"
 		        installerType="standard"
 			    basedir="${installer.dir}"
@@ -495,6 +495,20 @@
 		</izpack>
 	</target>
 	
+	<property name="izpack2exe.dir" value="${izpack.dir}/utils/izpack2exe"/>
+	
+	<!-- 
+		Uses izpack python script to convert the Windows JDBC JAR installer into EXE executables
+		Note that this target requires the python command to be in your PATH
+	 -->
+	<target name="windows_exe_installer" depends="windows_jar_installer">
+	  <exec executable="python" dir="${izpack2exe.dir}">
+	    <arg value="izpack2exe.py"/>
+	    <arg value="--file=../../../../${dist.dir}/MatchMaker-Setup-Windows-${app.version}.jar"/>
+	    <arg value="--no-upx"/>
+	  	<arg value="--output=../../../../${dist.dir}/MatchMaker-Setup-Windows-${app.version}.exe"/>
+	  </exec>
+	</target>
 	
     <target name="generic_install" depends="stage">
 		<tar destfile="${dist.dir}/MatchMaker-generic-${app.version}.tar.gz"

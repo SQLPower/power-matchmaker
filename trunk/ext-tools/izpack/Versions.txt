@@ -1,5 +1,113 @@
 [ The list of the different public versions of IzPack ]
 
+  > 3.11.0 (build 2008.02.12)
+
+- Added ignore as possible value for failure argument in executables (Dennis Reil)
+- Added Conditional expressions (Dennis Reil)
+- Fixed selection of default language in LanguageSelectionDialog (Dennis Reil)
+- Fixed RegularExpressionValidator (Dennis Reil)
+- Added corrupt volume detection (Dennis Reil)
+- Added file and dir fields in UserInputPanel (Dennis Reil)
+- Modifications to keep original file dates and times in _dist directory and in the installer jar
+  (Ari Voutilainen via Julien Ponge)
+- UserInputPanel: force users to select an existing directory or file
+  (Michael Hagedorn via Julien Ponge)
+- Default path for JDKPathPanel will be got from Windows registry if possible (Klaus Bartz)  
+- New Farsi langpack (Parastou Kohvaei via Klaus Bartz)
+- Dynamic control re-rendering (show/hide) on radio and checkbox selection events (Vladimir Ralev)
+- Locale support of Shortcut specification file (Klaus Bartz using a hint of Loic)
+- Enabled distributed pack-definitions (Hans Aikema based on patch by Syed Khadeer)
+- Update of the Liquid and JGoodies look and feel libraries (Julien Ponge).
+- Support for the toned-down Substance look and feel themes (Julien Ponge).
+- Added main frame GUI properties 'headingForegroundColor' and 'headingImageBorderSize'
+  (Daniel Azarov, Exadel Inc via Vladimir Ralev)
+- Unix shortcuts fixes (Vladimir Ralev)
+- TreePacksPanel, a hierarchical packs selection panel (Vladimir Ralev)
+- HTMLInfoPanel to launch links in external browser on any Windows and Linux (Vladimir Ralev)
+- PacksModel fix (Markus Schlegel via Julien Ponge).
+- Workaround for layout problems in UserInputPanel when clicking previous button (Dennis Reil)
+- Nimbus look and feel support (Julien Ponge)
+- Try to load a 64-bit dll if the 32-bit load fails and 64-bit ShellLink (Vladimir Ralev)
+- File / fileset Os constraints: addition of a JRE version test (e.g., <os jre="1.5" />)
+  (Gilles Wiart via Julien Ponge)
+- Hungarian langpack update (Kerekes Balazs via Julien Ponge)
+- InstallGroupPanel: sortable InstallGroups (Markus Schlegel via Julien Ponge)
+- chmod only applies and executes when file type is set to bin (Andreas Guenther via Julien Ponge)
+- LayoutManager bug at handling EditorPanes fixed (width to small) (Klaus Bartz)
+- Fixed NPE when ypcat not installed on linux. (Dick Hollenbeck via Marc Eppelmann)
+- Updated web installer (Vladimir Ralev)
+- Unix shortcuts allow programGroup icon. Fixed appearing multiple times bug in Fedora 7.
+  (Vladimir Ralev)
+- TreePacksPanel with more user-friendly click logic. Added automated installer helper.
+  (Vladimir Ralev)
+- Updated installation listener interface (Vladimir Ralev)
+- Re-entrant ShortcutPanel (WALLEM Pascal, AWL-T&P via Vladimir Ralev)
+- FileExecutor: allow Java classpath specification in targetfile attribute using
+  either : or ; delimiter, and support classpath loading of all jar files within a given folder,
+  e.g. targetfile="$INSTALL_PATH/lib/allMyJars (Andreas Guenther via Julien Ponge)
+- Support of a new 'uninstall' (yes/no) attribute on pack elements to allow certains pack to be
+  kept on uninstallation (Gildas Le Louarn via Julien Ponge)
+- Uninstaller: in GUI mode, users don't see the 'force uninstallation' checkbox unless the
+  '-x' command-line flag is used (Gildas Le Louarn via Julien Ponge)
+- Fixed wrong display size of really big packs (Dennis Reil) 
+- Tango icons (Julien Ponge)
+- Refreshed installer border images (Julien Ponge)
+- Fixed conditions in PacksPanel/PacksModel (Dennis Reil)
+- Added conditions for jobs in ProcessPanel (Dennis Reil) 
+- Fixed wrong required size of packs (Dennis Reil)
+- Added condition-attribute to pack element in installer.xml (Dennis Reil)
+- Spanish langpack update (Sergio Banos Calvo via Julien Ponge)
+- Various fixes (Loic via Julien Ponge)
+- Added conditions-definition to installer xml (Dennis Reil)
+- Added dynamic variables (Dennis Reil)
+- IzPack installer: check that users are actually launching the latest version by checking from
+  the http://izpack.org/ website (Julien Ponge)
+- Added debugging for variables and conditions (Dennis Reil)
+- Added built-in conditions (Dennis Reil)
+- ProcessPanel: make the progress bar advance after the current process has run, not before
+  (Julien Ponge)
+- JDKPathPanel: Mac OS X fix (Julien Ponge)
+- PathInputPanel: add some space between the text and the input field (Julien Ponge)
+- Installer files: support of a 'requiresjdk' element to specify wether a JDK is required for the
+  software to install (instead of just a JRE). This is a light test performed like 'javaversion'
+  before the installer frame appears. (Julien Ponge)
+- Support of XInclude-like constructs (Matthew Fudge, Volantis Systems Ltd.
+  via Julien Ponge)
+- Spanish langpack update (Sergio Banos Calvo via Julien Ponge)
+- OsVersion class: detect X86, PPC and SPARC architectures (Julien Ponge)
+- RulesEngines: new built-in rules: izpack.solarisinstall.x86 and izpack.solarisinstall.sparc (Julien Ponge)
+- New Galician translation (Xabier Cancela via Julien Ponge)
+- build.xml: include the new L&F jars (Jeff Gordon via Julien Ponge)
+- FileExecutor: fix a blank dialog prompting the user to continue if there's a failure (Jeff Gordon via Julien Ponge)
+- Italian translation update (Roberto Boriotti, Sylvain Gaudard via Julien Ponge)
+- PacksPanelAutomationHelper fix (Jeff Gordon via Julien Ponge)
+- 'parsexml' attribute for resources (Matthew Fudge via Julien Ponge)
+- InstallationGroupPanel UI improvements (Jeff Gordon via Julien Ponge)
+- HTMLInfoPanel: open external links in a web browser on Mac OS X as well (Alexander Maslov via Julien Ponge)
+- UserInputPanel: some variables were not saved for silent installers (Piotr Skowronek via Julien Ponge)
+- Text fields now can support validators (Piotr Skowronek via Julien Ponge)
+- UserInputPanel: substitution support for text fields (Piotr Skowronek via Julien Ponge)
+- TextInputField: Vertical layout issue fixed. (Jeff Gordon)
+- RegularExpressionValidator: Added ability to use with password fields. (Jeff Gordon)
+- PasswordEqualityValidator: Implementation of sample validator for use in any installer. 
+  Shows how to get at validator parameters as well. (Jeff Gordon)
+- PasswordKeystoreValidator: Validates keystore and/or key access using password field. (Jeff Gordon)
+- CompilerConfig: Changed uninstaller name to allow file name without jar extension. (Jeff Gordon)
+- UserPathPanel: Implemented copy of PathPanel as an alternative to dir type in UserInputPanel. (Jeff Gordon)
+- ValidatorContainer: Added supporting class for using multiple validators. (Jeff Gordon)
+- PasswordGroup: Added usage of ValidatorContainer to support multiple validators. (Jeff Gordon)
+- UserInputPanel: Changes to support multiple validators in password field and better error messages. (Jeff Gordon)
+- build.xml: Added ValidatorContainer and section for UserPathPanel. (Jeff Gordon)
+- eng.xml: Grammatical corrections, added UserPathPanel headline, messages, and captions,
+  added UserInputPanel.dir.* messages and captions, added UserInputPanel.file.* messages and captions.
+  (Need to add/test with alternative lang packs)  (Jeff Gordon)
+- PacksPanelBase: the packs would be selected / deselected on any list event (e.g., by navigating using the keys).
+  This funky behavior has been fixed (Julien Ponge).
+- Changed File.toURL() to File.toURI().toURL() to get rid of deprecation messages in Java 6. (Jeff Gordon)
+- ProcessPanel: the installation success is set to false in case an error has occurred (Julien Ponge)
+- VariableSubstitutor: parameters can also contain dashes (without need to use braces) (Piotr Skowronek)
+- IzPack is now a Codehaus project
+
   > 3.10.2 (build 2007.05.11)
 
 - Vista/Java6 fixes (Stefan Wachter via Julien Ponge)
@@ -11,6 +119,7 @@
 - French langpack updates (Loic, via Julien Ponge)
 - Documentation update (Scott Plante via Julien Ponge)
 - AutomatedUninstaller.writeUninstallData() out of sync with InstallerFrame fixed (Marius Nicolae via Marc Eppelmann)
+- Finnish langpack updates (Ari Voutilainen via Julien Ponge)
 
   > 3.10.1 (build 2007.03.29)
 
