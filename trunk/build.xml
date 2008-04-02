@@ -561,7 +561,7 @@
 
 		<!-- jarbundler is from sourceforge, defined near top of file -->
 		<jarbundler dir="${staging.dir}"
-           name="Power*MatchMaker"
+           name="Power MatchMaker"
            version="${app.version}"
            mainclass="ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession"
            icon="src/icons/matchmaker.icns"
@@ -578,7 +578,7 @@
 		</jarbundler>
 
 		<!-- XXX this is stupid. we should modify the jarbundler task to allow literal strings in the classpath -->
-		<replace file="${staging.dir}/Power*MatchMaker.app/Contents/Info.plist"
+		<replace file="${staging.dir}/Power MatchMaker.app/Contents/Info.plist"
 				 token="${basedir}/KICKME"
 				 value="$JAVAROOT" />
 
@@ -667,7 +667,7 @@
 	<target name="osx_tgz" depends="osx_dist" if="isNotMac">
 		<tar destfile="${dist.dir}/MatchMaker-OSX-${app.version}.tar.gz"
 					compression="gzip">
-			<tarfileset dir="${staging.dir}" includes="Power*MatchMaker.app/**"/>
+			<tarfileset dir="${staging.dir}" includes="Power MatchMaker.app/**"/>
 			<tarfileset dir="${staging.dir}" includes="jdbc/*"/>
 		</tar>
 	</target>
@@ -693,7 +693,7 @@
 		</exec>
 		<delete dir="/Volumes/Power*MatchMaker/Power*MatchMaker.app/Contents/Resources/Java"/>
 		<copy todir="/Volumes/Power*MatchMaker/Power*MatchMaker.app/" overwrite="true"  >
-			<fileset dir="${staging.dir}/Power*MatchMaker.app"></fileset>
+			<fileset dir="${staging.dir}/Power MatchMaker.app"></fileset>
 		</copy>
 		<exec executable="chmod">
 			<arg value="a+x"/>
@@ -742,6 +742,9 @@
 			</condition>
 		</fail>
 		<echo message="Attempting to build sqlpower-library project..."/>
+		<ant dir="${sqlpower.library.home}" target="clean">
+			<property name="build" value="${sqlpower.library.home}/build"/>
+		</ant>
 		<ant dir="${sqlpower.library.home}">
 			<property name="build" value="${sqlpower.library.home}/build"/>
 		</ant>
