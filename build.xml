@@ -37,6 +37,20 @@
 		</not>
 	</condition>
 	
+	<!-- When the build runs on Windows, we can create the .exe executable
+	     using the izpack2exe's exe tool. Otherwise, we would use python
+	     along with the python izpack2exe python script.
+	-->
+	<condition property="isWindows">
+		<os family="windows"/>
+	</condition>
+
+	<condition property="isNotWindows">
+		<not>
+			<os family="windows"/>
+		</not>
+	</condition>
+	
 	<!-- A path that will include all jars in the lib and buildlib folders -->
 	<path id="compile.classpath">
 		<fileset dir="${lib}">
@@ -107,7 +121,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit,userguide,osx_tgz,osx_dmg,windows_exe_installer,generic_install,source_only_tgz">
+	<target name="dist" depends="junit,userguide,osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
 		<copy todir="${dist.dir}/doc" overwrite="true">
@@ -501,12 +515,22 @@
 		Uses izpack python script to convert the Windows JDBC JAR installer into EXE executables
 		Note that this target requires the python command to be in your PATH
 	 -->
-	<target name="windows_exe_installer" depends="windows_jar_installer">
+	<target name="windows_exe_installer_with_python" depends="windows_jar_installer" if="isNotWindows">
 	  <exec executable="python" dir="${izpack2exe.dir}">
 	    <arg value="izpack2exe.py"/>
 	    <arg value="--file=../../../../${dist.dir}/MatchMaker-Setup-Windows-${app.version}.jar"/>
 	    <arg value="--no-upx"/>
 	  	<arg value="--output=../../../../${dist.dir}/MatchMaker-Setup-Windows-${app.version}.exe"/>
+	  </exec>
+	</target>
+	
+	<target name="windows_exe_installer_without_python" depends="windows_jar_installer" if="isWindows">
+	  <exec executable="cmd" dir="${izpack2exe.dir}">
+  	    <arg value="/c"/>
+  	    <arg value="izpack2exe.exe"/>
+	    <arg value="--file=..\..\..\..\${dist.dir}\MatchMaker-Setup-Windows-${app.version}.jar"/>
+	    <arg value="--no-upx"/>
+	  	<arg value="--output=..\..\..\..\${dist.dir}\MatchMaker-Setup-Windows-${app.version}.exe"/>
 	  </exec>
 	</target>
 	
