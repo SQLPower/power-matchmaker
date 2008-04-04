@@ -104,7 +104,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * How often to call auto scroll
 	 */
-	private static final int AUTO_SCROLL_TIME = 55;
+	public static final int AUTO_SCROLL_TIME = 55;
 	
 	
 	/**
@@ -847,7 +847,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 			if (showOutputNames) {
 				root.add(contentPlusNames,BorderLayout.SOUTH);
 			} else {
+				if (content != null ) {
 				root.add(content,BorderLayout.SOUTH);
+				}
 			}
 		} else {
 			if (content != null) {
@@ -1363,6 +1365,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 		} else {
 			return val;
 		}
+	}
+	
+	private Point getDifferencePoint() {
+		return this.diff;
 	}
 	
 }
