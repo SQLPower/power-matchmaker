@@ -26,7 +26,9 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.PointerInfo;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.Transferable;
@@ -42,6 +44,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -78,6 +81,7 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
+import ca.sqlpower.matchmaker.swingui.action.AddLabelAction;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
@@ -149,6 +153,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	private int startNum;
 	
 	/**
+	 * This boolean indicates if the labels can move multiple components at once.
+	 */
+	private boolean moveMutiples;
+	
+	/**
 	 * The index of the input that is being dragged. The value is meaningless when
 	 * {@link #finish} is null.
 	 */
@@ -192,6 +201,12 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 * This is done to allow the pen to auto scroll to area that does not exist.
 	 */
 	private Point magic = new Point(0,0);
+	
+	/**
+	 * This is the number that will be used by the JLayeredPane, in order to 
+	 * correctly add Labels to the munge pen.
+	 */
+	public static int LABELS_LAYER = new Integer(Integer.MIN_VALUE);
 	
 	/**
 	 * Creates a new empty mungepen.
@@ -238,7 +253,34 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				removeAllValidation(e.getChild());
 			}
 		});
+		
+		addKeyListener(new KeyListener() {
 			
+			public void keyTyped(KeyEvent e) {
+			}
+		
+			public void keyReleased(KeyEvent e) {
+				if((e.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) == 0){
+					moveMutiples = false;
+				}
+			}
+		
+			public void keyPressed(KeyEvent e) {
+				if((e.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) != 0){
+					moveMutiples = true;
+				}
+			}
+		
+		});
+			
+	}
+	
+	/**
+	 * Tells us if we can move multiple components or not.
+	 * @return
+	 */
+	public boolean getMoveMultiples() {
+		return this.moveMutiples;
 	}
 	
 	/**
@@ -262,7 +304,15 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		JPopupMenu pop = new JPopupMenu();
 		
 		JMenu add = new JMenu("Add Munge Step");
+		JMenuItem labelMenuItem = new JMenuItem("Add Label");
+		//figure out where the user clicked
+		
+		PointerInfo pi = MouseInfo.getPointerInfo();
+        Point startLocation = pi.getLocation();
+        SwingUtilities.convertPointFromScreen(startLocation,this);
+        labelMenuItem.addActionListener(new AddLabelAction(this, startLocation));
 		pop.add(add);
+		pop.add(labelMenuItem);
 		
 		StepDescription[] sds = stepMap.values().toArray(new StepDescription[0]);
 		Arrays.sort(sds);
