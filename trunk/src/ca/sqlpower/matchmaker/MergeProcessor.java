@@ -451,7 +451,10 @@ public class MergeProcessor extends AbstractProcessor {
 		}
 		sql.append(" FROM ");
 		sql.append(DDLUtils.toQualifiedName(tableMergeRule.getSourceTable()));
-		sql.append(generateWhereStatement(row));
+		String whereStatement = generateWhereStatement(row);
+		if (whereStatement.length() == 0) return null;
+		sql.append(whereStatement);
+		engineLogger.debug("MergeProcessor.findRowByPrimaryKey: Executing SQL Statement: " + sql.toString());
 		ResultSet rs = stmt.executeQuery(sql.toString());
 		if (rs.next()) {
 			ResultRow result = new ResultRow(tableMergeRule, rs);
@@ -592,14 +595,29 @@ public class MergeProcessor extends AbstractProcessor {
 		}
 	}
 	
+	/**
+	 * Returns a WHERE clause for use in a SQL statement to find the specific
+	 * row given by primary key of the given parameter 'row'.
+	 * 
+	 * @param row
+	 *            The specific row for which we are trying to form a WHERE
+	 *            clause to find based on its primary key.
+	 * @return The WHERE clause in String form. If the given row does not have
+	 *         any columns in the primary key, then it returns an empty String.
+	 * @throws SQLException
+	 * @throws ArchitectException
+	 */
 	private String generateWhereStatement(ResultRow row) throws SQLException, ArchitectException {
 		boolean first = true;
 		StringBuilder sql = new StringBuilder();
-		sql.append("\n WHERE ");
 		for (int i = 0; i < row.size(); i ++) {
 			if (row.isInPrimaryKey(i)) {
-				if (!first) sql.append(" AND ");
-				first = false;
+				if (!first) {
+					sql.append(" AND ");
+				} else {
+					sql.append("\n WHERE ");
+					first = false;
+				}
 				sql.append(row.getColumnName(i));
 				Object ival = row.getValue(i);
 				if (ival == null) {
@@ -754,6 +772,17 @@ public class MergeProcessor extends AbstractProcessor {
 			return null;
 		}
 		
+		/**
+		 * Check if the column specified with the given index number is a
+		 * primary key column.
+		 * 
+		 * @param column
+		 *            An int representing the index of the column we are
+		 *            checking.
+		 * @return Returns true if the ColumnMergeRule with the given index is
+		 *         for a column in the primary key. Otherwise returns false;
+		 * @throws ArchitectException
+		 */
 		public boolean isInPrimaryKey(int column) throws ArchitectException {
 			ColumnMergeRules cmr = tableMergeRule.getChildren().get(column);
 

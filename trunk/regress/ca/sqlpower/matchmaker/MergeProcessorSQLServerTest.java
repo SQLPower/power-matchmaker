@@ -82,11 +82,8 @@ public class MergeProcessorSQLServerTest extends AbstractMergeProcessorTest {
 			"\n ID NUMERIC NOT NULL," +
 			"\n COL_STRING VARCHAR(20) NULL," +
 			"\n COL_DATE DATETIME NULL," +
-			"\n COL_NUMBER NUMERIC NULL)";
-		execSQL(con,sql);
-		
-		sql = "ALTER TABLE " + getFullTableName() + "_CHILD " +
-			"\n ADD PRIMARY KEY (PARENT_ID, ID)";
+			"\n COL_NUMBER NUMERIC NULL," +
+			"\n CONSTRAINT CHILD_PK PRIMARY KEY (PARENT_ID, ID))";
 		execSQL(con,sql);
 		
 		// Creates the grand child table

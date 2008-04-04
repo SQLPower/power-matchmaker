@@ -784,6 +784,54 @@ public abstract class AbstractMergeProcessorTest extends TestCase {
 		assertFalse("Duplicate grandchild records not merged.", rs.next());
     }
     
+    // This test checks for MatchMaker Bug #1544
+    public void testUpdateFailOnConflictOnChildTableWithNoPK() throws Exception {
+    	Statement stmt = sCon.createStatement();
+    	ResultSet rs;
+    	
+    	StringBuilder sql = new StringBuilder();
+    	sql.append("ALTER TABLE ");
+    	sql.append(getFullTableName() + "_GCHILD");
+    	sql.append("\n DROP CONSTRAINT fk_MERGE_TEST_GCHILD");
+    	stmt.executeUpdate(sql.toString());
+		
+		sql = new StringBuilder();
+		sql.append("ALTER TABLE ");
+		sql.append(getFullTableName() + "_CHILD");
+		sql.append("\n DROP CONSTRAINT CHILD_PK");
+		stmt.executeUpdate(sql.toString());
+		
+		populateTables();
+    	populateChildTableForUpdate();
+    	populateGrandChildTableForUpdate();
+    	
+		ccmr_parent_id.setInPrimaryKey(false);
+		ccmr_id.setInPrimaryKey(false);
+    	
+    	ctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
+    	cctmr.setChildMergeAction(ChildMergeActionType.UPDATE_FAIL_ON_CONFLICT);
+    	runProcessor();
+    	
+    	// Should not have thrown an exception by this point. With the old bug this is testing for,
+    	// It would throw an SQLException regarding the missing WHERE clause.
+    	
+    	// Post clean-up to place back the PK constraints in the tables and column merge rules
+    	sql = new StringBuilder();
+    	sql.append("ALTER TABLE ");
+    	sql.append(getFullTableName() + "_CHILD");
+    	sql.append("\n ADD CONSTRAINT CHILD_PK PRIMARY KEY (PARENT_ID, ID)");
+    	stmt.executeUpdate(sql.toString());
+
+    	sql = new StringBuilder();
+    	sql.append("ALTER TABLE ");
+    	sql.append(getFullTableName() + "_GCHILD");
+    	sql.append("\n ADD CONSTRAINT fk_MERGE_TEST_GCHILD FOREIGN KEY (GPARENT_ID, PARENT_ID) REFERENCES " + getFullTableName() + "_CHILD(PARENT_ID, ID)");
+    	stmt.executeUpdate(sql.toString());
+		
+		ccmr_parent_id.setInPrimaryKey(true);
+		ccmr_id.setInPrimaryKey(true);
+    }
+    
     public void testUpdateDeleteOnConflict() throws Exception{
 
     	populateTables();
