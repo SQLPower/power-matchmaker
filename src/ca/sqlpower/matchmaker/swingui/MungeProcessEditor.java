@@ -113,6 +113,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
     public MungeProcessEditor(MatchMakerSwingSession swingSession,
             Project project, MungeProcess process) throws ArchitectException {
         super(swingSession, process);
+        logger.debug("Creating a new munge process editor");
         
         this.parentProject = project;
         if (mmo.getParentProject() != null && mmo.getParentProject() != parentProject) {
@@ -404,6 +405,10 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 	@Override
 	public void undoEventFired(MatchMakerEvent<MungeProcess, MungeStep> evt) {
 		setDefaults();
+	}
+
+	public MungePen getMungePen() {
+		return mungePen;
 	}
 
 }

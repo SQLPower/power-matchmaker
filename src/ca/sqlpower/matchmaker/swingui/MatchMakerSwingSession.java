@@ -105,6 +105,7 @@ import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
 import ca.sqlpower.matchmaker.swingui.action.CreateRepositoryAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
+import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
@@ -363,7 +364,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             warningDialog.setVisible(false);
         }
     };
-
+    
     /**
      * This is a special variable to remember the panel that was last on
      * the right side of the splitpane.  If the user decides to cancel on switching
@@ -491,6 +492,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		//Settingup
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
+		fileMenu.add(new ExportMungePenToPDFAction(this));
 		fileMenu.add(exitAction);
 		menuBar.add(fileMenu);
 		
