@@ -66,17 +66,16 @@ public class DuplicateProjectAction extends AbstractAction {
 	
 	private class DuplicatePanel extends NoEditEditorPane {
 
-		
-		private final JPanel panel;
 		private JTextField targetNameField;
 
 		public DuplicatePanel(String newName, JComboBox folderComboBox) {
-			panel = new JPanel(new GridLayout(5,1));
+			JPanel panel = new JPanel(new GridLayout(5,1));
 			panel.add(status);
 			targetNameField = new JTextField(newName,60);
 			panel.add(targetNameField);
 			panel.add(new JLabel(""));
 			panel.add(folderComboBox);
+			setPanel(panel);
 		}
 
 		public String getDupName() {
@@ -86,8 +85,8 @@ public class DuplicateProjectAction extends AbstractAction {
 		public JTextField getProjectNameField() {
 			return targetNameField;
 		}
-
 	}
+	
 	public void actionPerformed(ActionEvent e) {
 
 		String newName = null;
