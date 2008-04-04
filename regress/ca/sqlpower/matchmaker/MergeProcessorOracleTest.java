@@ -86,11 +86,8 @@ public class MergeProcessorOracleTest extends AbstractMergeProcessorTest {
 					"\n ID NUMBER(22,0) NOT NULL," +
 					"\n COL_STRING VARCHAR2(20) NULL," +
 					"\n COL_DATE DATE NULL," +
-					"\n COL_NUMBER NUMBER(22,0) NULL)";
-		execSQL(con,sql);
-		
-		sql = "ALTER TABLE " + getFullTableName() + "_CHILD " +
-					"\n ADD PRIMARY KEY (PARENT_ID, ID)";
+					"\n COL_NUMBER NUMBER(22,0) NULL," +
+					"\n CONSTRAINT CHILD_PK PRIMARY KEY (PARENT_ID, ID))";
 		execSQL(con,sql);
 		
 		// Creates the grand child table
