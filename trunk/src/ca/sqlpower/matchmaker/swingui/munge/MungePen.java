@@ -372,7 +372,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 * current clipping area of the given graphics.
 	 */
 	@Override
-	protected void paintComponent(Graphics g) {
+	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		
 		//painting area
