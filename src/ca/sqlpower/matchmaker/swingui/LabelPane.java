@@ -77,21 +77,6 @@ public class LabelPane extends JPanel {
 	private static final Logger logger = Logger.getLogger(LabelPane.class);
 
 	/**
-	 * This is the color of the Panel
-	 */
-	private Color color;
-
-	/**
-	 * This is the text that will be displayed on this colored label.
-	 */
-	private String text;
-
-	/**
-	 * This is the location of this label in the munge pen.
-	 */
-	private Point p;
-
-	/**
 	 * The point to auto scroll to
 	 */
 	private Point autoScrollPoint;
@@ -102,7 +87,7 @@ public class LabelPane extends JPanel {
 	private Point componentReferencePoint;
 
 	/**
-	 * This is the mungepen that contains the Label.
+	 * This is the MungePen that contains the Label.
 	 */
 	private MungePen mp;
 
@@ -182,8 +167,6 @@ public class LabelPane extends JPanel {
 		setSize(DEFAULT_SIZE);
 		textAreaList = new ArrayList<JTextArea>();
 		this.mp = mp;
-		this.p = p;
-		this.color = color;
 		this.componentReferencePoint = new Point();
 		setUpColorChanger();
 		setLocation(p);
@@ -263,7 +246,7 @@ public class LabelPane extends JPanel {
 			 * are moved out of the viewport.
 			 */
 			@Override
-			public void mouseReleased(MouseEvent arg0) {
+			public void mouseReleased(MouseEvent e) {
 				mp.lockAutoScroll(false);
 				autoScrollTimer.stop();
 				mp.normalize();
@@ -369,11 +352,34 @@ public class LabelPane extends JPanel {
 	}
 
 	/**
-	 * Move label to the back of the Mungepen in order to avoid overlapping with
-	 * other components.
+	 * Move label to the lowest layer of the MungePne in order to avoid overlapping
+	 * with other Munge Components, and possibly other labels.
 	 */
 	protected void moveLabelToBack() {
-		mp.moveToBack(this);
+		mp.setLayer(this,mp.lowestLayer());
+	}
+	
+	/**
+	 * Move the labels to the highest layer of all the labels.
+	 */
+	protected void moveLabelToFront() {
+		mp.setLayer(this, findHighestLabelLayer() + 1);
+	}
+
+	/**
+	 * This method will find the highest layer of all the labels in the MungePen.
+	 * This method will be used to bring a label to the top of it's own layer in order
+	 * to avoid overlapping with other Munge Components in the MungePen.
+	 * @return The layer index of the label with the highest z-ordering.
+	 */
+	private int findHighestLabelLayer() {
+		int highest = Integer.MIN_VALUE;
+		for(LabelPane label : mp.getLabels()){
+			if(mp.getLayer(label) > highest){
+				highest = mp.getLayer(label);
+			}
+		}
+		return highest;
 	}
 
 	/**
@@ -420,6 +426,22 @@ public class LabelPane extends JPanel {
 
 			public void actionPerformed(ActionEvent e) {
 				addText(point);
+			}
+		});
+		
+		JMenuItem moveToBack = new JMenuItem("Move To Back");
+		popup.add(moveToBack);
+		moveToBack.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				moveLabelToBack();
+			}
+		});
+		
+		JMenuItem moveToFront = new JMenuItem("Move To Front");
+		popup.add(moveToFront);
+		moveToFront.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				moveLabelToFront();
 			}
 		});
 
@@ -484,7 +506,7 @@ public class LabelPane extends JPanel {
 		add(area);
 		area.setBackground(getBackground());
 		area.setSize(area.getPreferredSize());
-		area.setToolTipText("To move: Hold ALT and drag");
+		area.setToolTipText("To move: Hold ALT or Middle Mouse Button and drag");
 		area.repaint();
 		revalidateComp(area, false);
 		area.getDocument().addDocumentListener(new DocumentListener() {
@@ -554,7 +576,23 @@ public class LabelPane extends JPanel {
 					area.setSize(area.getPreferredSize());
 				}
 			}
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+				super.mousePressed(e);
+				if(e.getButton() == MouseEvent.BUTTON2){
+					dragTextArea = true;
+				}
+			}
 
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				super.mouseReleased(e);
+				if(e.getButton() == MouseEvent.BUTTON2){
+					dragTextArea = false;
+				}
+			}
+			
 			public void mouseEntered(MouseEvent e) {
 				area.setBorder(BorderFactory.createEtchedBorder());
 				area.setSize(area.getPreferredSize());
@@ -834,5 +872,3 @@ public class LabelPane extends JPanel {
 	}
 
 }
-
-

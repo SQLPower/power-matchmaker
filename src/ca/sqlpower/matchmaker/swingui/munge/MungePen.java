@@ -80,6 +80,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.swingui.LabelPane;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 import ca.sqlpower.matchmaker.swingui.action.AddLabelAction;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -208,6 +209,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 */
 	public static int LABELS_LAYER = new Integer(Integer.MIN_VALUE);
 	
+	
+	private List<LabelPane> labelsList;
+	
 	/**
 	 * Creates a new empty mungepen.
 	 * 
@@ -272,7 +276,22 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			}
 		
 		});
+		
+		labelsList = new ArrayList<LabelPane>();
 			
+	}
+	
+	/**
+	 * This will return a list of LabelPane objects that have been added to
+	 * MungePen. Even thought we add all of these components to the MungePen itself, it
+	 * would be nice to have this alternate place to search for the labels, instead of
+	 * traversing every component in the MungePen and picking out all of the labels.
+	 * This is normally used to switch the z-ordering of the labels in the MungePen,
+	 * yet keep them isolated from all of the other munge components.
+	 * @return
+	 */
+	public List<LabelPane> getLabels(){
+		return this.labelsList;
 	}
 	
 	/**

@@ -47,13 +47,17 @@ public class AddLabelAction extends AbstractAction {
 		this.mp=mp;
 		this.p = p;
 	}
-
+	
 	/**
 	 * When we add the Label, we have to make sure it is on a lower Layer on the 
 	 * Munge pen such that it does not interfere with the other MungeComponents
 	 */
 	public void actionPerformed(ActionEvent arg0) {
-		mp.add(new LabelPane(mp, new Color(0xc5, 0xdd, 0xf8).darker(), p), MungePen.LABELS_LAYER);
+		LabelPane label = new LabelPane(mp, new Color(0xc5, 0xdd, 0xf8).darker(), p);
+		mp.add(label);
+		mp.setLayer(label, MungePen.LABELS_LAYER);
+		mp.getLabels().add(label);
+		MungePen.LABELS_LAYER++;
 	}
 
 }
