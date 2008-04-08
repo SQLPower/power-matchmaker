@@ -121,7 +121,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit,userguide,osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz">
+	<target name="dist" depends="junit, pmd, pmd-cpd, userguide,osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
 		<copy todir="${dist.dir}/doc" overwrite="true">
@@ -766,5 +766,42 @@
 	
 	<target name="dist-clean" depends="clean">
 		<delete dir="${dist.base}"/>
+	</target>
+	
+	
+	<property name="pmd.home" value="ext-tools/pmd"/>
+	<property name="pmd.jar" value="${pmd.home}/lib/pmd-4.2.jar"/>
+	
+	<target name="pmd" depends="getAppVersion"
+		description="Runs the PMD code checking tool, saving results to a file."
+		>
+	 	<mkdir dir="${reports}"/>
+		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask"
+			classpath="${pmd.jar}"/>
+		<property name="pmd-results" value="${reports}/pmd-ant-results.html"/>
+		<pmd shortFilenames="true" targetjdk="1.5">
+			<ruleset>basic,imports</ruleset>
+			<formatter type="html" toFile="${pmd-results}"/>
+			<fileset dir="${src}">
+				<include name="ca/sqlpower/**/*.java"/>
+			</fileset>
+		</pmd>
+		<echo message="PMD completed, output is in ${pmd-results}."/>
+	</target>
+	
+	<target name="pmd-cpd" depends="getAppVersion"
+		description="Runs the PMD Copy/Paste Detection tool, and saves results to a file">
+	 	<mkdir dir="${reports}"/>
+		<taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask"
+			classpath="${pmd.jar}"/>
+		<property name="cpd-results" value="${reports}/cpd-ant-results.xml"/>
+		<cpd encoding="UTF-8" minimumTokenCount="120" format="xml" outputfile="${cpd-results}">
+			<fileset dir="${src}">
+				<include name="ca/sqlpower/**/*.java"/>
+				<exclude name="generated/**.java"/>
+			</fileset>
+		</cpd>
+		<xslt in="${cpd-results}" style="${pmd.home}/etc/xslt/cpdhtml.xslt" out="${reports}/cpd-ant-results.html" />
+		<echo message="CPD completed, output is in ${reports}/cpd-ant-results.html."/>
 	</target>
 </project>
