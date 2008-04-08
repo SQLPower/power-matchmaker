@@ -19,14 +19,18 @@
 package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
@@ -65,8 +69,46 @@ public class ExportMungePenToPDFAction extends ProgressAction {
      */
     private static int OUTSIDE_PADDING = 10; 
     
+    /**
+     * This is the paintComponent method on the JComponent
+     * class retrieved through reflection. If this parameter
+     * is null then the {@link #paintComponent(JComponent, Graphics)}
+     * method has not been called yet to initialize this variable.
+     */
+	private static Method paintComponent;
+	
+	/**
+     * This is the paintBorder method on the JComponent
+     * class retrieved through reflection. If this parameter
+     * is null then the {@link #paintBorder(JComponent, Graphics)}
+     * method has not been called yet to initialize this variable.
+     */
+	private static Method paintBorder;
+    
     public ExportMungePenToPDFAction(MatchMakerSwingSession session) {
         super(session, "Export Munge Pen to PDF", "Export Munge Pen to PDF");
+
+        try {
+        	paintComponent = JComponent.class.getDeclaredMethod("paintComponent", Graphics.class);
+        	paintComponent.setAccessible(true);
+        } catch (SecurityException e) {
+        	e.printStackTrace();
+        	throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+        	e.printStackTrace();
+        	throw new RuntimeException(e);
+        }
+
+        try {
+        	paintBorder = JComponent.class.getDeclaredMethod("paintBorder", Graphics.class);
+        	paintBorder.setAccessible(true);
+        } catch (SecurityException e) {
+        	e.printStackTrace();
+        	throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+        	e.printStackTrace();
+        	throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -113,6 +155,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
         logger.debug("Saving to file: "+file.getName()+" (" +file.getPath()+")");
     
         properties.put(FILE_KEY,file);
+        
         return true;
     }
     
@@ -126,6 +169,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
         if (!(session.getOldPane() instanceof MungeProcessEditor)) {
         	throw new IllegalStateException("We only allow PDF exports of the munge pen at current.");
         }
+
         MungePen mungePen = ((MungeProcessEditor) session.getOldPane()).getMungePen();
         
         /* We translate the graphics to (OUTSIDE_PADDING, OUTSIDE_PADDING) 
@@ -153,17 +197,25 @@ public class ExportMungePenToPDFAction extends ProgressAction {
             Graphics2D g = cb.createGraphicsShapes(width, height);
             // ensure a margin
             g.translate(OUTSIDE_PADDING, OUTSIDE_PADDING);
+            
+            mungePen.paintComponent(g);
+
+            int j = 0;
             //paint each component individually to show progress
-            int j=0;
             for (int i = mungePen.getComponentCount() - 1; i >= 0; i--) {
-                Component mpc = mungePen.getComponent(i);
-                g.translate(mpc.getLocation().x, mpc.getLocation().y);
-                mpc.paint(g);
-                g.translate(-mpc.getLocation().x, -mpc.getLocation().y);
+            	JComponent mpc = (JComponent) mungePen.getComponent(i);
+            	
+            	//set text and foreground as paintComponent
+            	//does not normally do this
+            	g.setColor(mpc.getForeground());
+            	g.setFont(mpc.getFont());
+                
+                logger.debug("Printing " + mpc.getName() + " to PDF");
+                paintComponentAndChildren(mpc, g);
+                
                 monitor.setProgress(j);
                 j++;
             }
-            mungePen.paintComponent(g);
             g.dispose();
         } catch (Exception ex) {
             SPSUtils.showExceptionDialogNoReport(session.getFrame(), 
@@ -191,6 +243,33 @@ public class ExportMungePenToPDFAction extends ProgressAction {
             }
         }
     }
+    
+    /**
+	 * This will paint the given component and all of its children. Painting of
+	 * the child components will be done with a recursive call to this method
+	 * and painting will be done using reflection to call paintComponent.
+	 * <p>
+	 * NOTE: This method will not paint any children that are not subclasses
+	 * of JComponent.
+	 */
+    private void paintComponentAndChildren(JComponent jc, Graphics g) {
+    	
+    	g.translate(jc.getLocation().x, jc.getLocation().y);
+    	if (logger.isDebugEnabled()) {
+    		g.drawRect(0, 0, jc.getWidth(), jc.getHeight());
+    	}
+    	
+    	paintComponent(jc, g);
+    	paintBorder(jc, g);
+    	logger.debug("Painting " + jc.getName() + " at location " + jc.getLocation() + " with dimensions " + jc.getWidth() + ", " + jc.getHeight());
+    	for (Component child : jc.getComponents()){
+    		if (child instanceof JComponent) {
+    			paintComponentAndChildren((JComponent) child, g.create());
+    		}
+    	}
+    	logger.debug("Finished Painting " + jc.getName() + " at location " + jc.getLocation() + " with dimensions " + jc.getWidth() + ", " + jc.getHeight());
+       	g.translate(-jc.getLocation().x, -jc.getLocation().y);
+    }
 
     @Override
     public String getDialogMessage() {
@@ -200,5 +279,49 @@ public class ExportMungePenToPDFAction extends ProgressAction {
     @Override
     public String getButtonText() {
         return "Run in Background";
+    }
+    
+    /**
+     * This method calls the JComponent's paintComponent method
+     * through reflection. This way we can paint any specific
+     * component we need to a graphics object. To increase performance
+     * the paintComponent method is only retrieved once and stored
+     * locally.
+     */
+    public static void paintComponent(JComponent jc, Graphics g) {
+    	try {
+			paintComponent.invoke(jc, g);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+    }
+    
+    /**
+     * This method calls the JComponent's paintBorder method
+     * through reflection. This way we can paint any specific
+     * component we need to a graphics object. To increase performance
+     * the paintComponent method is only retrieved once and stored
+     * locally.
+     */
+    public static void paintBorder(JComponent jc, Graphics g) {
+    	try {
+			paintBorder.invoke(jc, g);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
     }
 }
