@@ -295,6 +295,23 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 	
 	/**
+	 * This method will find the highest layer of all the labels in the MungePen.
+	 * This method will be used to bring a label to the top of it's own layer in order
+	 * to avoid overlapping with other Munge Components in the MungePen.
+	 * @return The layer index of the label with the highest z-ordering.
+	 */
+	public int findHighestLabelLayer() {
+		int highest = Integer.MIN_VALUE;
+		for(LabelPane label : getLabels()){
+			if(getLayer(label) > highest){
+				highest = getLayer(label);
+			}
+		}
+		return highest+1;
+	}
+
+	
+	/**
 	 * Tells us if we can move multiple components or not.
 	 * @return
 	 */

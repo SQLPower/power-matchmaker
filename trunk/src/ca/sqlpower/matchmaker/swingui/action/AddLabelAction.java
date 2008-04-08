@@ -55,9 +55,8 @@ public class AddLabelAction extends AbstractAction {
 	public void actionPerformed(ActionEvent arg0) {
 		LabelPane label = new LabelPane(mp, new Color(0xc5, 0xdd, 0xf8).darker(), p);
 		mp.add(label);
-		mp.setLayer(label, MungePen.LABELS_LAYER);
+		mp.setLayer(label, mp.findHighestLabelLayer());
 		mp.getLabels().add(label);
-		MungePen.LABELS_LAYER++;
 	}
 
 }
