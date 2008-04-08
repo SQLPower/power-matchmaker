@@ -121,7 +121,8 @@ public class ExportMungePenToPDFAction extends ProgressAction {
         JFileChooser chooser = new JFileChooser();
         chooser.addChoosableFileFilter(SPSUtils.PDF_FILE_FILTER);
         if (!(session.getOldPane() instanceof MungeProcessEditor)) {
-        	throw new IllegalStateException("We only allow PDF exports of the munge pen at current.");
+        	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the munge pen at current.", "Cannot Export MungePen", JOptionPane.WARNING_MESSAGE);
+        	return false;
         }
         monitor.setJobSize(((MungeProcessEditor) session.getOldPane()).getMungePen().getComponentCount());
         
@@ -167,7 +168,8 @@ public class ExportMungePenToPDFAction extends ProgressAction {
     @Override
     public void doStuff(MonitorableImpl monitor, Map<String, Object> properties) {
         if (!(session.getOldPane() instanceof MungeProcessEditor)) {
-        	throw new IllegalStateException("We only allow PDF exports of the munge pen at current.");
+        	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the munge pen at current.", "Cannot Export MungePen", JOptionPane.WARNING_MESSAGE);
+        	return;
         }
 
         MungePen mungePen = ((MungeProcessEditor) session.getOldPane()).getMungePen();
