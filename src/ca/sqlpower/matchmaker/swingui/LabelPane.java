@@ -29,8 +29,6 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ContainerAdapter;
-import java.awt.event.ContainerEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
@@ -54,6 +52,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
@@ -136,10 +135,15 @@ public class LabelPane extends JPanel {
 	private JColorChooser colorPanel;
 
 	/**
-	 * This indecates if we are in a state in which a JTextAre object is being
+	 * This indicates if we are in a state in which a JTextArea object is being
 	 * dragged
 	 */
 	private boolean dragTextArea;
+	
+	/**
+	 * This indicates if we are in a state in which a label is being dragged
+	 */
+	private boolean dragLabel;
 
 	/**
 	 * When choosing a color, this is the Component that we are making the color
@@ -153,6 +157,11 @@ public class LabelPane extends JPanel {
 	 * looks relatively good.
 	 */
 	private int DEFAULT_INSET = 7;
+
+	/**
+	 * This is the previous point the label was at before it was dragged
+	 */
+	private Point previousLocation;
 
 	/**
 	 * This will crate a new label with a certain color and a text caption.
@@ -250,6 +259,7 @@ public class LabelPane extends JPanel {
 				mp.lockAutoScroll(false);
 				autoScrollTimer.stop();
 				mp.normalize();
+				dragLabel = false;
 				mp.stopConnection();
 				mp.revalidate();
 			}
@@ -260,7 +270,9 @@ public class LabelPane extends JPanel {
 			 */
 			@Override
 			public void mousePressed(MouseEvent e) {
+				requestFocus();
 				determineReferencePoint(e);
+				previousLocation = getLocation();
 				int y = (int) componentReferencePoint.getY();
 				int x = (int) componentReferencePoint.getX();
 				if (x > getWidth() - DEFAULT_INSET
@@ -276,9 +288,8 @@ public class LabelPane extends JPanel {
 			 */
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				requestFocus();
 				repaint();
-				if (arg0.getButton() == MouseEvent.BUTTON3) {
+				if (SwingUtilities.isRightMouseButton(arg0)) {
 					showRightClickMenu(arg0.getPoint());
 				}
 				autoScrollTimer.stop();
@@ -332,14 +343,7 @@ public class LabelPane extends JPanel {
 			}
 
 		});
-
-		mp.addContainerListener(new ContainerAdapter() {
-			public void componentAdded(ContainerEvent arg0) {
-				moveLabelToBack();
-			}
-
-		});
-
+		
 	}
 
 	/**
@@ -352,34 +356,28 @@ public class LabelPane extends JPanel {
 	}
 
 	/**
-	 * Move label to the lowest layer of the MungePne in order to avoid overlapping
-	 * with other Munge Components, and possibly other labels.
+	 * Move label to the lowest layer of the MungePne in order to avoid
+	 * overlapping with other MungeComponents, and possibly other labels.
 	 */
 	protected void moveLabelToBack() {
-		mp.setLayer(this,mp.lowestLayer());
+		mp.setLayer(this, mp.lowestLayer());
+		for (LabelPane l : mp.getLabels()) {
+			if (l != this) {
+				mp.setLayer(l, mp.getLayer(l) + 1);
+			}
+		}
 	}
-	
+
 	/**
 	 * Move the labels to the highest layer of all the labels.
 	 */
 	protected void moveLabelToFront() {
-		mp.setLayer(this, findHighestLabelLayer() + 1);
-	}
-
-	/**
-	 * This method will find the highest layer of all the labels in the MungePen.
-	 * This method will be used to bring a label to the top of it's own layer in order
-	 * to avoid overlapping with other Munge Components in the MungePen.
-	 * @return The layer index of the label with the highest z-ordering.
-	 */
-	private int findHighestLabelLayer() {
-		int highest = Integer.MIN_VALUE;
-		for(LabelPane label : mp.getLabels()){
-			if(mp.getLayer(label) > highest){
-				highest = mp.getLayer(label);
+		for (LabelPane l : mp.getLabels()) {
+			if (l != this) {
+				mp.setLayer(l, mp.getLayer(l) - 1);
 			}
 		}
-		return highest;
+		mp.setLayer(this, mp.findHighestLabelLayer());
 	}
 
 	/**
@@ -428,7 +426,7 @@ public class LabelPane extends JPanel {
 				addText(point);
 			}
 		});
-		
+
 		JMenuItem moveToBack = new JMenuItem("Move To Back");
 		popup.add(moveToBack);
 		moveToBack.addActionListener(new ActionListener() {
@@ -436,7 +434,7 @@ public class LabelPane extends JPanel {
 				moveLabelToBack();
 			}
 		});
-		
+
 		JMenuItem moveToFront = new JMenuItem("Move To Front");
 		popup.add(moveToFront);
 		moveToFront.addActionListener(new ActionListener() {
@@ -506,7 +504,8 @@ public class LabelPane extends JPanel {
 		add(area);
 		area.setBackground(getBackground());
 		area.setSize(area.getPreferredSize());
-		area.setToolTipText("To move: Hold ALT or Middle Mouse Button and drag");
+		area
+				.setToolTipText("To move: Hold ALT or Middle Mouse Button and drag");
 		area.repaint();
 		revalidateComp(area, false);
 		area.getDocument().addDocumentListener(new DocumentListener() {
@@ -576,11 +575,11 @@ public class LabelPane extends JPanel {
 					area.setSize(area.getPreferredSize());
 				}
 			}
-			
+
 			@Override
 			public void mousePressed(MouseEvent e) {
 				super.mousePressed(e);
-				if(e.getButton() == MouseEvent.BUTTON2){
+				if (SwingUtilities.isMiddleMouseButton(e)) {
 					dragTextArea = true;
 				}
 			}
@@ -588,18 +587,18 @@ public class LabelPane extends JPanel {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				super.mouseReleased(e);
-				if(e.getButton() == MouseEvent.BUTTON2){
+				if (SwingUtilities.isMiddleMouseButton(e)) {
 					dragTextArea = false;
 				}
 			}
-			
+
 			public void mouseEntered(MouseEvent e) {
 				area.setBorder(BorderFactory.createEtchedBorder());
 				area.setSize(area.getPreferredSize());
 			}
 
 			public void mouseClicked(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON3) {
+				if (SwingUtilities.isRightMouseButton(e)) {
 					JPopupMenu popupOnArea = new JPopupMenu();
 					JMenuItem delete = new JMenuItem("Delete Text");
 					popupOnArea.add(delete);
@@ -612,26 +611,34 @@ public class LabelPane extends JPanel {
 							removeTextFromLabel(area);
 						}
 					});
-					
-					
+
 					JMenuItem font = new JMenuItem("Change Font");
 					popupOnArea.add(font);
-					
+
 					font.addActionListener(new ActionListener() {
 						public void actionPerformed(ActionEvent e) {
-							final FontSelector fontSelector = new FontSelector((JFrame)mp.getTopLevelAncestor().getParent(), area.getFont());
-							fontSelector.getApplyButton().addActionListener(new ActionListener() {
-								public void actionPerformed(ActionEvent e) {
-									logger.debug("We have changed the font to: "+fontSelector.getFont());
-									area.setFont(fontSelector.getSelectedFont());
-									area.setSize(area.getPreferredSize());
-									revalidateComp(area, false);
-								}
-							});
+							final FontSelector fontSelector = new FontSelector(
+									(JFrame) mp.getTopLevelAncestor()
+											.getParent(), area.getFont());
+							fontSelector.getApplyButton().addActionListener(
+									new ActionListener() {
+										public void actionPerformed(
+												ActionEvent e) {
+											logger
+													.debug("We have changed the font to: "
+															+ fontSelector
+																	.getFont());
+											area.setFont(fontSelector
+													.getSelectedFont());
+											area.setSize(area
+													.getPreferredSize());
+											revalidateComp(area, false);
+										}
+									});
 							fontSelector.setVisible(true);
 						}
 					});
-					
+
 					popupOnArea.show(area, (int) e.getX(), (int) e.getY());
 				}
 			}
@@ -740,6 +747,9 @@ public class LabelPane extends JPanel {
 					setLocation((int) (e.getX() - componentReferencePoint
 							.getX()), (int) (e.getY() - componentReferencePoint
 							.getY()));
+					
+
+					previousLocation = getLocation();
 
 					// checks if auto scrolling is a good idea at the present
 					// time
@@ -800,6 +810,7 @@ public class LabelPane extends JPanel {
 		}
 	}
 
+
 	/**
 	 * This method will re-validate the size of the Label.
 	 */
@@ -825,26 +836,25 @@ public class LabelPane extends JPanel {
 						+ yDiff + DEFAULT_INSET);
 			}
 			if (!resize) {
-				if (c.getLocation().x <=0) {
+				if (c.getLocation().x <= 0) {
 					setSize((int) getSize().getWidth()
-							+ Math.abs(c.getLocation().x ),
-							(int) getSize().getHeight());
-					setLocation(getLocation().x + c.getLocation().x
-							, getLocation().y);
+							+ Math.abs(c.getLocation().x), (int) getSize()
+							.getHeight());
+					setLocation(getLocation().x + c.getLocation().x,
+							getLocation().y);
 					for (JTextArea area : textAreaList) {
 						if (area != c) {
 							area.setLocation(area.getLocation().x
-									- c.getLocation().x, area
-									.getLocation().y);
+									- c.getLocation().x, area.getLocation().y);
 						}
 					}
 				}
 				if (c.getLocation().y <= 0) {
 					setSize((int) getSize().getWidth(), (int) getSize()
 							.getHeight()
-							+ Math.abs(c.getLocation().y ));
+							+ Math.abs(c.getLocation().y));
 					setLocation(getLocation().x, getLocation().y
-							+ c.getLocation().y );
+							+ c.getLocation().y);
 					for (JTextArea area : textAreaList) {
 						if (area != c) {
 							area.setLocation(area.getLocation().x, area
