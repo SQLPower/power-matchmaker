@@ -23,7 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JPanel;
+import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
@@ -33,6 +34,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.swingui.table.TableUtils;
 
 /**
  * A dialog that is used to create a list of columns that will later
@@ -271,10 +273,11 @@ public class DisplayedNodeValueChooser {
 		this.match = match;
 	}
 	
-	public JPanel makeGUI() throws ArchitectException {
-		JPanel tablePanel = new JPanel();
-		tablePanel.add(new JTable(new OrderedColumnChooserTableModel(match.getSourceTable())));
-		return tablePanel;
+	public JComponent makeGUI() throws ArchitectException {
+		JTable table = new JTable(new OrderedColumnChooserTableModel(match.getSourceTable()));
+        TableUtils.fitColumnWidths(table, 250, 10);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        return new JScrollPane(table);
 	}
 
 	/**

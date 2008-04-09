@@ -75,6 +75,7 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphNodeRenderer;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphSelectionListener;
 import ca.sqlpower.matchmaker.swingui.graphViewer.GraphViewer;
+import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -184,13 +185,15 @@ public class MatchResultVisualizer extends NoEditEditorPane {
     		try {
     			dialog = SPSUtils.makeOwnedDialog(getPanel(), "Select Graph Display Values");
 				chooser = new DisplayedNodeValueChooser((SourceTableNodeRenderer)graph.getNodeRenderer(), match);
-				JPanel tablePanel = chooser.makeGUI();
-				JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(new JButton(okAction), new JButton(cancelAction));
+				JDefaultButton okButton = new JDefaultButton(okAction);
+                JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, new JButton(cancelAction));
 				JPanel panel = new JPanel(new BorderLayout());
-				panel.add(tablePanel, BorderLayout.CENTER);
+				panel.add(chooser.makeGUI(), BorderLayout.CENTER);
 				panel.add(buttonPanel, BorderLayout.SOUTH);
 				dialog.getContentPane().add(panel);
     			dialog.pack();
+                dialog.getRootPane().setDefaultButton(okButton);
+                SPSUtils.makeJDialogCancellable(dialog, cancelAction, false);
     			dialog.setLocationRelativeTo((Component) e.getSource());
     			dialog.setVisible(true);
     		} catch (ArchitectException ex) {
