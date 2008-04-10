@@ -67,6 +67,13 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 	 * on the munge component is desired.
 	 */
 	private Icon mainIcon;
+	
+	/**
+	 * The category that this step belongs to. The categories will allow grouping
+	 * multiple steps into one folder in the step library. All steps with the
+	 * same category name will be in the same group.
+	 */
+	private String category;
 
     /**
      * Creates a new step description that is invalid (its properties all start
@@ -97,6 +104,9 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
      *                constructor.  If this value does not exist as a system resource or a file,
      *                a default icon will be used instead. This is a larger icon that will be displayed
      *                on a munge step if it is needed.
+     *  <dt>category<dd>The name of the category this step belongs to. Categories with the same
+     *  			  name will be grouped together in the library of steps in the right hand
+     *  			  side of the munge editor.
      * </dl>
      * 
      * @param property The property name. Recognized property names are enumerated above;
@@ -135,6 +145,8 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 				setMainIcon(new ImageIcon(getClass().getClassLoader().getResource(DEFAULT_MAIN_ICON)));
 			}
 			logger.debug("Main icon is now " + getMainIcon());
+		} else if (property.equals("category")) {
+			setCategory(value);
 		} else {
 		    logger.info("Skipping unknown step description property: " + property);
         }
@@ -182,5 +194,13 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 
 	public void setMainIcon(Icon mainIcon) {
 		this.mainIcon = mainIcon;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
 	}
 }
