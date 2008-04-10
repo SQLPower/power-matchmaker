@@ -83,6 +83,11 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 		text.setDocument(doc);
 		text.setText(getStep().getName());
 		
+		String stepText = ((ProjectPlannerMungeStep) getStep()).getText();
+		if (stepText != null && stepText.trim().length() != 0) {
+			text.setText(stepText);
+		}
+		
 		doc.addDocumentListener(new DocumentListener() {
 		
 			public void removeUpdate(DocumentEvent e) {

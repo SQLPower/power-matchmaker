@@ -61,9 +61,7 @@ public class ProjectPlannerMungeStep extends AbstractMungeStep {
     }
     
     public String getText() {
-    	String text = getParameter(TEXT_PARAMETER_NAME);
-    	logger.debug("We stored the text " + text);
-    	return text;
+    	return getParameter(TEXT_PARAMETER_NAME);
     }
 
 }
