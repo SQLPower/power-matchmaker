@@ -336,7 +336,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		}
 	}
 	
-	private JPopupMenu buildPopup(Map<Class, StepDescription> stepMap) {
+	private JPopupMenu buildPopup(Map<String, StepDescription> stepMap) {
 		JPopupMenu pop = new JPopupMenu();
 		
 		JMenu add = new JMenu("Add Munge Step");
@@ -354,7 +354,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		Arrays.sort(sds);
 		for (StepDescription sd : sds) {
 			JMenuItem item = new JMenuItem(sd.getName(), sd.getIcon());
-			item.addActionListener(new AddStepActon(sd.getLogicClass()));
+			item.addActionListener(new AddStepActon(sd));
 			add.add(item);
 		}
 		
@@ -362,14 +362,14 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 	
 	private class AddStepActon extends AbstractAction {
-		Class<? extends MungeStep> logic;
+		StepDescription sd;
 		
-		public AddStepActon(Class<? extends MungeStep> logic) {
-			this.logic = logic;
+		public AddStepActon(StepDescription logic) {
+			this.sd = logic;
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			addMungeStep(logic, new Point(mouseX,mouseY));
+			addMungeStep(sd, new Point(mouseX,mouseY));
 		}
 	}
 
@@ -557,7 +557,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		return lines;
 	}
 
-	private void addMungeStep(Class<? extends MungeStep> logicClass, Point location) {
+	private void addMungeStep(StepDescription logicClass, Point location) {
 		MungeStep ms = ((SwingSessionContext)process.getSession().getContext()).getMungeStep(logicClass);
 		int x = location.x + COM_DROP_OFFSET_X;
 		int y = location.y + COM_DROP_OFFSET_Y;
@@ -1030,7 +1030,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		Transferable t = dtde.getTransferable();
 		try {
 			StepDescription sd = (StepDescription)t.getTransferData(MungeStepLibrary.STEP_DESC_FLAVOR);
-			addMungeStep(sd.getLogicClass(), dtde.getLocation());
+			addMungeStep(sd, dtde.getLocation());
 			repaint();
 			dtde.dropComplete(true);
 			return;

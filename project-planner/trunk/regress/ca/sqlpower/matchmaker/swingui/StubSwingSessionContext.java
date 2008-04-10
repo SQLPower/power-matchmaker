@@ -106,12 +106,12 @@ public class StubSwingSessionContext implements SwingSessionContext {
 		return null;
 	}
 
-	public MungeStep getMungeStep(Class create) {
+	public MungeStep getMungeStep(StepDescription create) {
 		logger.debug("Stub call: StubSwingSessionContext.getMungeStep()");
 		return null;
 	}
 
-	public Map<Class, StepDescription> getStepMap() {
+	public Map<String, StepDescription> getStepMap() {
 		logger.debug("Stub call: StubSwingSessionContext.getStepList()");
 		return null;
 	}

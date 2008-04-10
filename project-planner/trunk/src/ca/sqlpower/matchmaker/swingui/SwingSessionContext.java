@@ -129,7 +129,7 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
     * 
     * @return The list
     */
-    public Map<Class, StepDescription> getStepMap();
+    public Map<String, StepDescription> getStepMap();
 
     /**
      * Returns a new instance of the given munge step class.
@@ -137,7 +137,7 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
      * @param session The session the mungeStep will added to
      * @return A new MungeStep of the type given by the list
      */
-    public MungeStep getMungeStep(Class<? extends MungeStep> create);
+    public MungeStep getMungeStep(StepDescription create);
     
     /**
      * Preference: Should the launchDefaultSession method automatically create

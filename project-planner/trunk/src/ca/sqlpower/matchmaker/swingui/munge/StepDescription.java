@@ -39,6 +39,8 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 	private static final Logger logger = Logger.getLogger(StepDescription.class);
 
 	private static final String DEFAULT_ICON = "icons/famfamfam/color_wheel.png";
+
+	private static final String DEFAULT_MAIN_ICON = "icons/wt_sqlp_logo.png";
 	
 	/**
      * The name of the type of step this description represents.
@@ -59,6 +61,12 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
      * The icon that visually represents this type of step.
      */
 	private Icon icon;
+	
+	/**
+	 * The icon that will appear in the munge component itself when an image
+	 * on the munge component is desired.
+	 */
+	private Icon mainIcon;
 
     /**
      * Creates a new step description that is invalid (its properties all start
@@ -82,7 +90,13 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
      *  <dt>icon  <dd>The name of a resource available on the system classpath, or the
      *                path name of a file that resolves correctly when given to the {@link File}
      *                constructor.  If this value does not exist as a system resource or a file,
-     *                a default icon will be used instead.
+     *                a default icon will be used instead. This icon is the smaller icon that 
+     *                appears in the right hand list of munge steps.
+     *  <dt>mainIcon<dd>The name of a resource available on the system classpath, or the
+     *                path name of a file that resolves correctly when given to the {@link File}
+     *                constructor.  If this value does not exist as a system resource or a file,
+     *                a default icon will be used instead. This is a larger icon that will be displayed
+     *                on a munge step if it is needed.
      * </dl>
      * 
      * @param property The property name. Recognized property names are enumerated above;
@@ -107,8 +121,20 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 			} else if (!value.equals("") && new File(value).exists()) {
 				setIcon(new ImageIcon(value));
 			} else {
+				logger.debug("Could not find icon resource " + value);
 				setIcon(new ImageIcon(getClass().getClassLoader().getResource(DEFAULT_ICON)));
 			}
+		} else if (property.equals("mainIcon")) {
+			logger.debug("An icon was set for " + getName() + " with icon value " + value);
+			if (!value.equals("") && getClass().getClassLoader().getResource(value) != null) {
+				setMainIcon(new ImageIcon(getClass().getClassLoader().getResource(value)));
+			} else if (!value.equals("") && new File(value).exists()) {
+				setMainIcon(new ImageIcon(value));
+			} else {
+				logger.debug("Could not find icon resource " + value);
+				setMainIcon(new ImageIcon(getClass().getClassLoader().getResource(DEFAULT_MAIN_ICON)));
+			}
+			logger.debug("Main icon is now " + getMainIcon());
 		} else {
 		    logger.info("Skipping unknown step description property: " + property);
         }
@@ -148,5 +174,13 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 	
 	public int compareTo(StepDescription o) {
 		return getName().compareTo(o.getName());
+	}
+
+	public Icon getMainIcon() {
+		return mainIcon;
+	}
+
+	public void setMainIcon(Icon mainIcon) {
+		this.mainIcon = mainIcon;
 	}
 }

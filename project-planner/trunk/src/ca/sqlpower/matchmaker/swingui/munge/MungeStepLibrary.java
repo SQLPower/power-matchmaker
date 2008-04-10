@@ -60,7 +60,7 @@ public class MungeStepLibrary {
 	private JButton hideShow;
 	private boolean hidden;
 	
-	public MungeStepLibrary(MungePen mungePen, Map<Class, StepDescription> stepMap) {
+	public MungeStepLibrary(MungePen mungePen, Map<String, StepDescription> stepMap) {
 		logger.debug("Creating Library");
 	
 		pen = mungePen;
@@ -70,6 +70,7 @@ public class MungeStepLibrary {
 		
 		StepDescription[] vals = stepMap.values().toArray(new StepDescription[0]);
 		Arrays.sort(vals);
+		logger.debug("We have " + vals.length + " step descriptions to display.");
 		
 		this.list = new JList(vals);
 		list.setTransferHandler(th);

@@ -42,6 +42,7 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -57,13 +58,8 @@ import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
-import ca.sqlpower.matchmaker.munge.CleanseResultStep;
-import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
-import ca.sqlpower.matchmaker.swingui.munge.CleanseResultMungeComponent;
-import ca.sqlpower.matchmaker.swingui.munge.MungeResultMungeComponent;
-import ca.sqlpower.matchmaker.swingui.munge.SQLInputMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
@@ -92,12 +88,17 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	 * The array that looks like the set of types we are expecting for the correct constructor for any munge component
 	 *  (excluding the input and output steps).
 	 */
-	private static final Type[] MUNGECOM_CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class};
+	private static final Type[] MUNGECOM_CONSTRUCTOR_PARAMS = {MungeStep.class, FormValidationHandler.class, MatchMakerSession.class, Icon.class};
+	
+	/**
+	 * The array that looks like the set of types we are expecting for the correct munge step constructor.
+	 */
+	private static final Type[] MUNGESTEP_CONSTRUCTOR_PARAMS = {String.class};
 
     /**
 	 * The list of information about mungeSteps, which stores their StepClass, GUIClass, name and icon
 	 */
-	private final Map<Class, StepDescription> stepProperties = new HashMap<Class, StepDescription>();
+	private final Map<String, StepDescription> stepProperties = new HashMap<String, StepDescription>();
     
     /**
      * The underlying context that will deal with Hibernate for us.
@@ -486,19 +487,17 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         }
     }
     
+    /**
+     * NOTE: This method creates a new munge component, it does not get an existing one!
+     * <p>
+     * This will create a new {@link AbstractMungeComponent} through reflection
+     * using the given parameters.
+     */
     public AbstractMungeComponent getMungeComponent(MungeStep ms,
 			FormValidationHandler handler, MatchMakerSession session) {
-    	//special cases
-    	if (ms.isInputStep()) {
-			return new SQLInputMungeComponent(ms, handler, session);
-		} else if (ms instanceof DeDupeResultStep) {
-			return new MungeResultMungeComponent(ms, handler, session);
-		} else if (ms instanceof CleanseResultStep) {
-			return new CleanseResultMungeComponent(ms,handler,session);
-		}
 		
-    	StepDescription sd = stepProperties.get(ms.getClass());
-		if (sd.getLogicClass().equals(ms.getClass())) {
+    	StepDescription sd = stepProperties.get(ms.getName());
+		if (sd.getName().equals(ms.getName())) {
 			Constructor[] constructors = sd.getGuiClass().getDeclaredConstructors();
 			
 			for (Constructor con : constructors) {
@@ -506,14 +505,15 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 				
 				if (arrayEquals(paramTypes,MUNGECOM_CONSTRUCTOR_PARAMS)) {
 					try {
-						return (AbstractMungeComponent)con.newInstance(ms, handler, session);
+						logger.debug("Passing the icon " + sd.getMainIcon() + " to the new " + sd.getGuiClass());
+						return (AbstractMungeComponent)con.newInstance(ms, handler, session, sd.getMainIcon());
 					} catch (Throwable t) {
 						throw new RuntimeException("Error generating munge step component: " + sd.getGuiClass().getName() + ". " 
 								+ "Possibly caused by an error thrown in the constructor.", t);
 					}
 				}
 			}
-			throw new NoSuchMethodError("Error: No constructor (MungeStep, FormValidationHandler, MatchMakerSession) was found for the MungeComponent :"
+			throw new NoSuchMethodError("Error: No constructor (MungeStep, FormValidationHandler, MatchMakerSession, Icon) was found for the MungeComponent :"
 					+ sd.getGuiClass());
 		}
 		
@@ -560,17 +560,19 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 						String newKey = st.nextToken();
 					if (!stepProps.containsKey(newKey)) {
 						stepProps.put(newKey, new StepDescription());
+						logger.debug("Added new step description for " + newKey);
 					}
 					stepProps.get(newKey).setProperty(st.nextToken(), steps.getProperty(key));
 				}
 			}
 		}
+		logger.debug("We have " + stepProps.size() + " step descriptions.");
 		
 		for (StepDescription sd : stepProps.values()) {
             if (sd.getLogicClass() == null) {
                 throw new IllegalStateException("Step Description " + sd + " does not have logicClass set");
             }
-			stepProperties.put(sd.getLogicClass(), sd);
+			stepProperties.put(sd.getName(), sd);
 		}
 	}
 	
@@ -578,20 +580,36 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * Creates a new instance of the given class, wrapping any possible
      * exceptions into a RuntimeException.
      * 
-     * @param create The class to create a new instance of
+     * @param sd The class to create a new instance of
      * @return A new instance of the given class.
      * @throws RuntimeException if anything goes wrong with creating an instance
      */
-	public MungeStep getMungeStep(Class<? extends MungeStep> create) {
+	public MungeStep getMungeStep(StepDescription sd) {
         try {
-            return create.newInstance();
+        	Constructor[] constructors = sd.getLogicClass().getDeclaredConstructors();
+			
+			for (Constructor con : constructors) {
+				Type[] paramTypes = con.getGenericParameterTypes();	
+				
+				if (arrayEquals(paramTypes,MUNGESTEP_CONSTRUCTOR_PARAMS)) {
+					try {
+						logger.debug("Passing the icon " + sd.getMainIcon() + " to the new " + sd.getGuiClass());
+						return (MungeStep)con.newInstance(sd.getName());
+					} catch (Throwable t) {
+						throw new RuntimeException("Error generating munge step component: " + sd.getGuiClass().getName() + ". " 
+								+ "Possibly caused by an error thrown in the constructor.", t);
+					}
+				}
+			}
+			throw new NoSuchMethodError("Error: No constructor (MungeStep, FormValidationHandler, MatchMakerSession, Icon) was found for the MungeComponent :"
+					+ sd.getGuiClass());
         } catch (Throwable t) {
-            throw new RuntimeException("Error generating munge step: " + create.getName() + ". " 
+            throw new RuntimeException("Error generating munge step: " + sd.getName() + ". " 
                     + "Possibly caused by an error thrown in the constructor.", t);
         }
 	}
 
-	public Map<Class, StepDescription> getStepMap() {
+	public Map<String, StepDescription> getStepMap() {
 		return stepProperties;
 	}
 

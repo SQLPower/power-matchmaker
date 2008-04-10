@@ -50,7 +50,6 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -61,7 +60,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JToolBar;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.TreePath;
@@ -164,8 +162,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 	private FormValidationHandler handler;
 	
-	private final JButton hideShow;
-
 	private final int[] connected;
 	
 	/**
@@ -230,12 +226,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * Sets the background and border colours to given colours.
 	 * 
 	 * @param step The step connected to the UI
-	 * @param border The colour for the border around the rectangle
-	 * @param bg The background colour to the rectangle
+	 * @param mainIcon the main icon for this munge component. May be null.
 	 */
-	private AbstractMungeComponent(MungeStep step) {
+	private AbstractMungeComponent(MungeStep step, Icon mainIcon) {
         if (step == null) throw new NullPointerException("Null step");
 		this.step = step;
+		this.mainIcon = mainIcon;
 		setVisible(true);
 		setBackground(normalBackground);
 		
@@ -295,36 +291,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		JPanel tmp = new JPanel( new FlowLayout());
 		tmp.setBackground(Color.BLUE);
-		tmp.add(new JLabel(step.getName()));
-		
-		
-		hideShow = new JButton(new HideShowAction());
-		hideShow.setIcon(EXPOSE_OFF);
 		
 		setupOpaqueComponents();
 		content = buildUI();
-		//returning null will prevent the +/- button form showing up
-		if (content != null) {
-			deOpaquify(content);
-			JToolBar tb = new JToolBar();
-			hideShow.setBorder(null);
-			hideShow.addMouseListener(new MouseAdapter(){
-				public void mouseEntered(MouseEvent e) {
-					hideShow.setIcon(EXPOSE_ON);
-					hideShow.setBorder(null);
-				}
-				
-				public void mouseExited(MouseEvent e) {
-					hideShow.setIcon(EXPOSE_OFF);
-					hideShow.setBorder(null);
-				}
-			});
-			
-			tb.setBorder(null);
-			tb.add(hideShow);
-			tb.setFloatable(false);
-			tmp.add(tb);
-		}
 		
 		root.add(tmp,BorderLayout.CENTER);
 		add(root);
@@ -391,6 +360,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		// stuff added here in the constructor (most importantly, the +/- button)
 		deOpaquify(this);
 		deOpaquify(inputNames);
+		setExpanded(true);
 	}
 	
 	private void buildInputNamesPanel() {
@@ -594,13 +564,19 @@ public abstract class AbstractMungeComponent extends JPanel {
 	protected abstract JPanel buildUI();
 	
 	/**
+	 * The icon that will appear in the munge component itself when an image
+	 * on the munge component is desired.
+	 */
+	private Icon mainIcon;
+	
+	/**
 	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen, 
 	 * setting default colours
 	 * 
 	 * @param step The step connecting to the UI
 	 */
-	public AbstractMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session) {
-		this(step);
+	public AbstractMungeComponent(MungeStep step, FormValidationHandler handler, MatchMakerSession session, Icon mainIcon) {
+		this(step, mainIcon);
 		this.session = (MatchMakerSwingSession)session;
 		this.handler = handler;
 		setDefaults();
@@ -667,7 +643,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	private boolean isExpanded() {
-		return getStepParameter(MungeStep.MUNGECOMPONENT_EXPANDED, false);
+		return getStepParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
 	}
 	
 	/**
@@ -1369,6 +1345,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 	
 	private Point getDifferencePoint() {
 		return this.diff;
+	}
+
+	public Icon getMainIcon() {
+		return mainIcon;
 	}
 	
 }

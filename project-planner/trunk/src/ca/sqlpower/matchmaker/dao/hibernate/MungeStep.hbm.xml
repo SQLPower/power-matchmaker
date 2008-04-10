@@ -115,6 +115,7 @@
 		<subclass name="DateConstantMungeStep" />
 		<subclass name="CSVWriterMungeStep" />
 		<subclass name="EmptyStringToNullMungeStep" />
+		<subclass name="ProjectPlannerMungeStep" />
 		
 	</class>
 </hibernate-mapping>
