@@ -48,10 +48,8 @@ import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 import ca.sqlpower.matchmaker.swingui.action.DeleteMergeRuleAction;
@@ -215,9 +213,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMungeStepMenuItems(JPopupMenu m, MungeStep step) {
-		if (!(step instanceof SQLInputStep || step instanceof MungeResultStep)) {
-			m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
-		}
+		m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
 	}
 
 	/**

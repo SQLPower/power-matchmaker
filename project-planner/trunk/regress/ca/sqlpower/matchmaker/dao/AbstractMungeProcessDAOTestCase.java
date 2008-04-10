@@ -33,11 +33,9 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
 import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
-import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.munge.SQLInputStep;
 
 public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCase<MungeProcess,MungeProcessDAO>  {
 
@@ -134,14 +132,8 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 		List<MungeProcess> all;
 		MungeProcess item1 = createNewObjectUnderTest();
 		item1.setVisible(true);
-		MungeStep ms = new SQLInputStep();
-		item1.addChild(ms);
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("TEST_MSO", String.class);
-		ms.addChild(mso);
 		MungeStepOutput<String> mso2 = new MungeStepOutput<String>("TEST_MSO2", String.class);
-		ms.addChild(mso2);
-		ms.addInput(new InputDescriptor("asdf", String.class));
-		ms.connectInput(0, mso2);
 
 		dao.save(item1);
 		
@@ -165,13 +157,8 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 		List<MungeProcess> all;
 		MungeProcess item1 = createNewObjectUnderTest();
 		item1.setVisible(true);
-		MungeStep ms = new SQLInputStep();
-		item1.addChild(ms);
 		MungeStepOutput<String> mso = new MungeStepOutput<String>("TEST_MSO", String.class);
-		ms.addChild(mso);
 		MungeStepOutput<String> mso2 = new MungeStepOutput<String>("TEST_MSO2", String.class);
-		ms.addChild(mso2);
-		ms.addInput(new InputDescriptor("TEST_INPUT", String.class));
 
 		dao.save(item1);
 		

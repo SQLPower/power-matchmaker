@@ -33,10 +33,7 @@ import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
-import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeResultStep;
-import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.util.MMTestUtils;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SQL;
@@ -103,21 +100,9 @@ public class MatchEngineImplTest extends TestCase {
 		
 		MungeProcess mungeProcessOne = new MungeProcess();
 		mungeProcessOne.setName("Munge_Process_One");
-		SQLInputStep inputStep = new SQLInputStep();
-		mungeProcessOne.addChild(inputStep);
 		
 		project.addMungeProcess(mungeProcessOne);
 
-		MungeResultStep outputStep = inputStep.getOutputStep();
-		mungeProcessOne.addChild(outputStep);
-
-		inputStep.open(logger);
-        inputStep.rollback();
-		inputStep.close();
-
-		outputStep.addInput(new InputDescriptor("result2", Object.class));
-		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
-		outputStep.connectInput(1, inputStep.getOutputByName("BAR"));
 		engine = new MatchEngineImpl(session, project);
 	}
 
@@ -152,19 +137,8 @@ public class MatchEngineImplTest extends TestCase {
 	public void testCallOnMultipleMungeProcesses() throws Exception {		
 		MungeProcess mungeProcessTwo = new MungeProcess();
 		mungeProcessTwo.setName("Munge_Process_Two");
-		SQLInputStep inputStep = new SQLInputStep();
-		mungeProcessTwo.addChild(inputStep);
 		
 		project.addMungeProcess(mungeProcessTwo);
-		
-		MungeResultStep outputStep = inputStep.getOutputStep();
-		mungeProcessTwo.addChild(outputStep);
-
-		inputStep.open(logger);
-		inputStep.rollback();
-		inputStep.close();
-
-		outputStep.connectInput(0, inputStep.getOutputByName("FOO"));
 		
 		engine.call();
 		

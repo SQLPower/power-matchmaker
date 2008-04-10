@@ -25,14 +25,9 @@ import javax.swing.AbstractAction;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeStep;
-import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 
 /**
  * A simple action to adds a new munge process to the swing session and
@@ -56,47 +51,7 @@ public class NewMungeProcessAction extends AbstractAction {
     	for (count = 1; project.getMungeProcessByName("New Munge Process " + count) != null ; count++);
     	process.setName("New Munge Process " + count);
     	project.addMungeProcess(process);
-    	SQLInputStep inputStep = new SQLInputStep();
-		inputStep.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
-		process.addChild(inputStep);
 		
-		try {
-			inputStep.open(logger);
-            inputStep.rollback();
-			inputStep.close();
-		} catch (Exception ex) {
-			throw new RuntimeException("Could not set up the input munge step!", ex);
-		}
-		
-		MungeStep mungeResultStep;
-		try {
-			mungeResultStep = inputStep.getOutputStep(project);
-		} catch (ArchitectException e1) {
-			throw new RuntimeException(e1);
-		}
-		
-		String x = new Integer(MungePen.AUTO_SCROLL_INSET + 5).toString();
-		String y = new Integer(300).toString();
-		
-		//sets the input one just outside of the autoscroll bounds
-		inputStep.setParameter(MungeStep.MUNGECOMPONENT_X, x);
-		inputStep.setParameter(MungeStep.MUNGECOMPONENT_Y, x);
-		
-		//sets the location of the result step (resonalibly arbatrary location)
-		mungeResultStep.setParameter(MungeStep.MUNGECOMPONENT_X, x);
-		mungeResultStep.setParameter(MungeStep.MUNGECOMPONENT_Y, y);
-		
-		process.addChild(mungeResultStep);
-		
-		if (mungeResultStep instanceof CleanseResultStep) {
-			try {
-				((CleanseResultStep)mungeResultStep).open(logger);
-                mungeResultStep.rollback();
-				mungeResultStep.close();
-			} catch (Exception ex) {
-				throw new RuntimeException("Could not set up the result munge step!", ex);
-			}
-		}
     	swingSession.save(process);
 	}
 

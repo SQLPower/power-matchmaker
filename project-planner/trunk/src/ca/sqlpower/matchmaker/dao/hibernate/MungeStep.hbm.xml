@@ -84,7 +84,6 @@
 		<!-- Hardcoding this list is not ideal.  These should be added dynamically by the session
 		     when it is created (based on the resource file that lists all the munge steps) -->
 		     
-		<subclass name="CleanseResultStep" />
 		<subclass name="ConcatMungeStep" />
 		<subclass name="DoubleMetaphoneMungeStep" />
 		<subclass name="MD5CheckSumMungeStep" />
@@ -92,11 +91,9 @@
 		<subclass name="LowerCaseMungeStep" />
 		<subclass name="MetaphoneMungeStep" />
 		<subclass name="NumberToStringMungeStep" />
-		<subclass name="DeDupeResultStep" />
 		<subclass name="RefinedSoundexMungeStep" />
 		<subclass name="RetainCharactersMungeStep" />
 		<subclass name="SoundexMungeStep" />
-		<subclass name="SQLInputStep" />
 		<subclass name="StringConstantMungeStep" />
 		<subclass name="StringSubstitutionMungeStep" />
 		<subclass name="SubstringByWordMungeStep" />

@@ -35,7 +35,6 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessor;
-import ca.sqlpower.matchmaker.munge.MungeResult;
 import ca.sqlpower.util.EmailAppender;
 import ca.sqlpower.util.Monitorable;
 
@@ -249,9 +248,6 @@ public class MatchEngineImpl extends AbstractEngine {
 			progress += munger.getProgress();
 			currentProcessor = null;
 
-			List<MungeResult> results = currentProcess.getResults();
-			
-			matcher = new MatchProcessor(pool, currentProcess, results, logger);
 			currentProcessor = matcher;
 			progressMessage = "Matching munge process " + currentProcess.getName();
 			logger.debug(getMessage());

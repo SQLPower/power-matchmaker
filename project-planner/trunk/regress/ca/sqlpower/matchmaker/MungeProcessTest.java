@@ -22,8 +22,6 @@ package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
-import ca.sqlpower.matchmaker.munge.MungeResultStep;
 
 
 public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
@@ -39,8 +37,6 @@ public class MungeProcessTest extends MatchMakerTestCase<MungeProcess> {
 	protected void setUp() throws Exception {
 		super.setUp();
 		target = new MungeProcess();
-		MungeResultStep resultStep = new DeDupeResultStep();
-		target.addChild(resultStep);
 		MatchMakerSession session = new TestingMatchMakerSession();
 		((TestingMatchMakerSession)session).setAppUser(appUserName);
 		target.setSession(session);

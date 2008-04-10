@@ -269,6 +269,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         }
         
         MungeProcessGraphModel gm = new MungeProcessGraphModel(mmo.getChildren());
+        logger.debug("There are " + mmo.getChildren().size() + " children in the current process");
         DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge> dfs = new DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge>();
         dfs.performSearch(gm);
         

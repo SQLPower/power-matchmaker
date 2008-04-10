@@ -48,7 +48,6 @@ import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
-import ca.sqlpower.matchmaker.munge.DeDupeResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.util.ViewSpec;
@@ -472,8 +471,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         	} else {
         		newVal = ChildMergeActionType.DELETE_ALL_DUP_CHILD;
         	}
-        } else if (property.getPropertyType() == DeDupeResultStep.class) {
-        	newVal = new DeDupeResultStep();
         } else if (property.getPropertyType() == TableMergeRules.class) {
         	if (oldVal == null){
         		newVal = mmo;

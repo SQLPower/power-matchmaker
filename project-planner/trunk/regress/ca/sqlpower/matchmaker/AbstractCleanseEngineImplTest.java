@@ -38,8 +38,6 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeStep;
-import ca.sqlpower.matchmaker.munge.SQLInputStep;
 import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SQL;
@@ -51,7 +49,6 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
     SQLDatabase db;
     SPDataSource ds;
     SQLTable sourceTable;
-    SQLInputStep step;
     CleanseEngineImpl engine;
     final Logger logger = Logger.getLogger("testLogger");
     
@@ -86,7 +83,6 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 
 		//This is different for Oracle and SQL Server
 		createTables();
-		step = new SQLInputStep();
 
 		MungeSettings settings = new MungeSettings();
 		File file = File.createTempFile("cleanseTest", "log");
@@ -122,22 +118,9 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		UpperCaseMungeStep ucms = new UpperCaseMungeStep();
 
 		MungeProcess mungep = new MungeProcess();
-		mungep.addChild(step);
 		mungep.addChild(ucms);
 		mungep.setName("test");
 		project.addMungeProcess(mungep);
-		
-		MungeStep mrs = step.getOutputStep();
-		mungep.addChild(mrs);
-		
-		step.open(logger);
-        step.rollback();
-		step.close();
-		mrs.open(logger);
-        mrs.rollback();
-		mrs.close();
-		mrs.connectInput(1, ucms.getChildren().get(0));
-		ucms.connectInput(0, step.getChildren().get(1));
 		
 		engine.call();
 

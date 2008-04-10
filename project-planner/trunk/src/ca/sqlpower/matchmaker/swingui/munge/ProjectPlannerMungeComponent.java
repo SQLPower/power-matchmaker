@@ -23,23 +23,38 @@ import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
+import ca.sqlpower.matchmaker.munge.ProjectPlannerMungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+/**
+ * This is the munge component for the {@link ProjectPlannerMungeStep}.
+ * This will display the munge step for all of the Project Planner steps
+ * in the munge pen.
+ */
 public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 	
 	private static final Logger logger = Logger.getLogger(ProjectPlannerMungeComponent.class);
+	
+	/**
+	 * The text pane used to display a description of this munge step
+	 * to the user. The user can update this field as they wish.
+	 */
+	private JTextPane text;
 
 	public ProjectPlannerMungeComponent(MungeStep step,
 			FormValidationHandler handler, MatchMakerSession session, Icon mainIcon) {
@@ -57,16 +72,31 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 		
 		JLabel iconLabel = new JLabel(getMainIcon());
 		
-		JTextPane text = new JTextPane();
+		text = new JTextPane();
 		text.setBorder(null);
 		text.setBackground(null);
 		text.setOpaque(false);
-		DefaultStyledDocument doc = new DefaultStyledDocument();
+		StyledDocument doc = new DefaultStyledDocument();
 		MutableAttributeSet standard = new SimpleAttributeSet();
 		StyleConstants.setAlignment(standard, StyleConstants.ALIGN_CENTER);
 		doc.setParagraphAttributes(0, 0, standard, true);
 		text.setDocument(doc);
 		text.setText(getStep().getName());
+		
+		doc.addDocumentListener(new DocumentListener() {
+		
+			public void removeUpdate(DocumentEvent e) {
+				logger.debug("The document's text changed to " + text.getText());
+				((ProjectPlannerMungeStep) getStep()).setText(text.getText());
+			}
+			public void insertUpdate(DocumentEvent e) {
+				logger.debug("The document's text changed to " + text.getText());
+				((ProjectPlannerMungeStep) getStep()).setText(text.getText());
+			}
+			public void changedUpdate(DocumentEvent e) {
+			}
+		
+		});
 		
 		panel.add(iconLabel, cc.xy(1, 1));
 		panel.add(text, cc.xy(1, 2));

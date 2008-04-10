@@ -52,7 +52,7 @@ public interface MatchMakerSessionContext {
      * this shared piece of information, and those implementations definitely
      * shouldn't know about each other.
      */
-    public static final String DEFAULT_REPOSITORY_DATA_SOURCE_NAME = "MatchMaker Default Repository";
+    public static final String DEFAULT_REPOSITORY_DATA_SOURCE_NAME = "Project Planner Default Repository";
 
     /**
      * Name of the preferences parameter for email host address

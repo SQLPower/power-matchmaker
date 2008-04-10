@@ -20,7 +20,6 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
@@ -82,18 +81,6 @@ public class MungeProcess
      * in the GUI.
      */
 	private Color colour = DEFAULT_COLOR;
-
-	/**
-	 * The MungeStep that is used to accumulate the resulting munged data.
-	 * Any class can get the munge results by calling {@link #getResults()},
-	 * which will delegate to getting the results from this output step.
-	 */
-	private MungeResultStep resultStep;
-	
-	/**
-	 * The input steps that are presently here.	 
-	 */
-	private List<SQLInputStep> inputSteps = new ArrayList<SQLInputStep>();
 	
 	/**
      * Constructor that sets up a default Munge process.
@@ -231,19 +218,6 @@ public class MungeProcess
 		
 		return mungeProcess;
 	}
-	
-	/**
-	 * Get the results of the munging process, as a list of MungeResult.
-	 * This list will be empty if the munge process has not been run through
-	 * a munge processor.
-	 * @throws NullPointerException if the output step has not been set.
-	 */
-	public List<MungeResult> getResults() {
-		if (resultStep == null) {
-			throw new NullPointerException("The output step for this process has not been set!");
-		}
-		return resultStep.getResults();
-	}
 
 	@Override
 	public String toString() {
@@ -252,40 +226,12 @@ public class MungeProcess
 	
 	@Override
 	protected void addImpl(int index, MungeStep child) {
-		includeMungeStep(child);
 		super.addImpl(index, child);
-	}
-	
-	/**
-	 * Updates the result and input steps if nessary.
-	 * 
-	 * @param child The child to add to the process
-	 */
-	private void includeMungeStep(MungeStep child) {
-		if (child instanceof SQLInputStep) {
-			inputSteps.add((SQLInputStep) child);
-			if (resultStep != null) {
-				resultStep.addInputStep((SQLInputStep) child);
-			}
-		} else if (child instanceof MungeResultStep) {
-			if (resultStep != null && resultStep != child) {
-				throw new IllegalStateException("A munge process can only have one munge result step");
-			} else if (resultStep == null) {
-				this.resultStep = (MungeResultStep) child;
-				for (SQLInputStep input : inputSteps) {
-					this.resultStep.addInputStep(input);
-				}
-			}
-		}	
 	}
 
 	@Override
 	public void removeChild(MungeStep child) {
-		if (child instanceof MungeResultStep) {
-			throw new IllegalStateException("Removal of munge result step not allowed!");
-		} else {
-			super.removeChild(child);
-		}
+		super.removeChild(child);
 	}
 	
 	public void removeChildAndInputs(MungeStep ms) {
@@ -316,8 +262,5 @@ public class MungeProcess
 	@Override
 	protected void setChildren(List<MungeStep> children) {
 		super.setChildren(children);
-		for (MungeStep ms : children) {
-			includeMungeStep(ms);
-		}
 	}
 }

@@ -25,6 +25,11 @@ package ca.sqlpower.matchmaker.munge;
  */
 public class ProjectPlannerMungeStep extends AbstractMungeStep {
 	
+	/**
+	 * The parameter key for the text in this munge step.
+	 */
+	private static final String TEXT_PARAMETER_NAME = "text";
+
 	public ProjectPlannerMungeStep(String name) {
 		super(name, true);
 		defineIO();
@@ -50,5 +55,15 @@ public class ProjectPlannerMungeStep extends AbstractMungeStep {
 		super("", true);
 		defineIO();
 	}
+	
+    public void setText(String newValue) {
+        setParameter(TEXT_PARAMETER_NAME, newValue);
+    }
+    
+    public String getText() {
+    	String text = getParameter(TEXT_PARAMETER_NAME);
+    	logger.debug("We stored the text " + text);
+    	return text;
+    }
 
 }

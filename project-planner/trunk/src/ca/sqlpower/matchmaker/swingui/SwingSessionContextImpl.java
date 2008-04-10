@@ -497,6 +497,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 			FormValidationHandler handler, MatchMakerSession session) {
 		
     	StepDescription sd = stepProperties.get(ms.getName());
+    	logger.debug("looking for step " + ms.getName());
 		if (sd.getName().equals(ms.getName())) {
 			Constructor[] constructors = sd.getGuiClass().getDeclaredConstructors();
 			

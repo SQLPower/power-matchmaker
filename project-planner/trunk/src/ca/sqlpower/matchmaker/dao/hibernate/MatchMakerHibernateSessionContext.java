@@ -163,7 +163,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
             ds.setPlSchema("public");
             ds.setUser("sa");
             ds.setPass("");
-            ds.setUrl("jdbc:hsqldb:file:"+System.getProperty("user.home")+"/.mm/hsql_repository;shutdown=true");
+            ds.setUrl("jdbc:hsqldb:file:"+System.getProperty("user.home")+"/.pp/hsql_repository;shutdown=true");
 
             // find HSQLDB parent type
             SPDataSourceType hsqldbType = null;
