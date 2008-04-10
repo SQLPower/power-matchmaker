@@ -93,7 +93,7 @@ public class MungeStepLibrary {
 				CategoryToStepMap.get(sd.getCategory()).add(sd);
 			} else {
 				if (CategoryToStepMap.get("") == null) {
-					CategoryToStepMap.put(sd.getCategory(), new ArrayList<StepDescription>());
+					CategoryToStepMap.put("", new ArrayList<StepDescription>());
 				}
 				CategoryToStepMap.get("").add(sd);
 			}
