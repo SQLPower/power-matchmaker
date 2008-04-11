@@ -59,6 +59,11 @@ public interface MatchMakerSessionContext {
      */
     public static final String EMAIL_HOST_PREFS = "email.host";
     
+    /**
+     * Name of the preferences parameter for the PL.INI path
+     */
+    public static final String PREFS_PL_INI_PATH = "PL.INI.PATH";
+    
     public List<SPDataSource> getDataSources();
 
     /**

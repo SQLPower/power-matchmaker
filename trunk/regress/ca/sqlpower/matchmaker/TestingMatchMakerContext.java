@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
@@ -37,7 +36,13 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	List<SPDataSource> dataSources = new ArrayList<SPDataSource>();
 	DataSourceCollection plDotIni;
 	MatchMakerSession session;
-	Preferences prefs = PreferencesManager.getRootNode();
+	
+	/**
+	 * The Preferences node for the TestingMatchMakerContext. We want to keep
+	 * this separate from the regular MatchMaker Preferences to ensure the test
+	 * suite doesn't interfere with the user's preferences.
+	 */
+	Preferences prefs = Preferences.userNodeForPackage(TestingMatchMakerContext.class).node("test");
 	
 	public TestingMatchMakerContext() {
 		dataSources.add(DBTestUtil.getHSQLDBInMemoryDS());

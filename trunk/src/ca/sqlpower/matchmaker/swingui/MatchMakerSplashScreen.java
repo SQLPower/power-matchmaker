@@ -25,27 +25,18 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.LayoutManager;
-import java.io.File;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerVersion;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
-import ca.sqlpower.matchmaker.prefs.PreferencesManager;
-import ca.sqlpower.sql.DataSourceCollection;
-import ca.sqlpower.sql.PlDotIni;
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.SPSUtils;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -189,21 +180,4 @@ public class MatchMakerSplashScreen {
 	public JPanel getSplashScreen() {
 		return splashScreen;
 	}
-    
-    
-    public static void main(String[] args) throws Exception {
-        final JFrame f = new JFrame("Preview");
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        DataSourceCollection plini = new PlDotIni();
-        plini.read(new File(System.getProperty("user.home"), "pl.ini"));
-        MatchMakerSessionContext context = new MatchMakerHibernateSessionContext(PreferencesManager.getRootNode(), plini);
-        SPDataSource ds = plini.getDataSource("deepthought-oracle-mm");
-        f.setContentPane(new MatchMakerSplashScreen(context.createSession(ds, ds.getUser(), ds.getPass())).getSplashScreen());
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                f.pack();
-                f.setVisible(true);
-            }
-        });
-    }
 }

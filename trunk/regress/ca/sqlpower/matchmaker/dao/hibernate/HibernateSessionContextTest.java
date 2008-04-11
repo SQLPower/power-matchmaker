@@ -23,12 +23,12 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.prefs.Preferences;
 
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.PlDotIni;
@@ -48,13 +48,20 @@ public class HibernateSessionContextTest extends TestCase {
      */
 	private SPDataSource ds;
     
+	/**
+	 * The Preferences node that we will use in this test. We want to keep
+	 * this separate from the regular MatchMaker Preferences to ensure the test
+	 * suite doesn't interfere with the user's preferences.
+	 */
+	Preferences prefs = Preferences.userNodeForPackage(MatchMakerHibernateSessionContext.class).node("test");
+	
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         DataSourceCollection ini = new PlDotIni();
         ds = DBTestUtil.getOracleDS();
         ini.addDataSource(ds);
-        ctx = new MatchMakerHibernateSessionContext(PreferencesManager.getRootNode(), ini);
+        ctx = new MatchMakerHibernateSessionContext(prefs, ini);
     }
     
     public void testGetDataSources() {
