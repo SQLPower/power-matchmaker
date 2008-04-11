@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -80,6 +81,7 @@ import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
+import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
@@ -98,7 +100,6 @@ import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.prefs.PreferencesManager;
 import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
 import ca.sqlpower.matchmaker.swingui.action.CreateRepositoryAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
@@ -809,7 +810,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		SwingUtilities.invokeLater(new Runnable() {
 		    public void run() {
 		    	try {
-		    		SwingSessionContext context = new SwingSessionContextImpl(PreferencesManager.getRootNode());
+		    		Preferences prefs = Preferences.userNodeForPackage(MatchMakerSessionContext.class);
+		    		SwingSessionContext context = new SwingSessionContextImpl(prefs);
                     context.launchDefaultSession();
 		    	} catch (Exception ex) {
 		    		JDialog d = MMSUtils.showExceptionDialogNoReport("Couldn't start application!", ex);

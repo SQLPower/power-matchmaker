@@ -53,7 +53,6 @@ import javax.swing.UIManager;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectSession;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -398,8 +397,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      */
     private static MatchMakerSessionContext createDelegateContext(Preferences prefs) throws IOException {
         DataSourceCollection plDotIni = null;
-        //XXX: We should NOT be using ArchitectSession for this
-        String plDotIniPath = prefs.get(ArchitectSession.PREFS_PL_INI_PATH, null);
+        String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
         while ((plDotIni = readPlDotIni(plDotIniPath)) == null) {
             logger.debug("readPlDotIni returns null, trying again...");
             String message;
@@ -453,8 +451,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             }
         }
         
-        //XXX: We should NOT be using ArchitectSession for this
-        prefs.put(ArchitectSession.PREFS_PL_INI_PATH, plDotIniPath);
+        prefs.put(MatchMakerSessionContext.PREFS_PL_INI_PATH, plDotIniPath);
         return new MatchMakerHibernateSessionContext(prefs, plDotIni);
     }
 
