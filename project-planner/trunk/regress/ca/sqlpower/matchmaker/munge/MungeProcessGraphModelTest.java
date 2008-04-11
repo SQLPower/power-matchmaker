@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
+
 import junit.framework.TestCase;
 
 /**
@@ -85,31 +87,45 @@ public class MungeProcessGraphModelTest extends TestCase {
         super.setUp();
         List<MungeStep> steps = new ArrayList<MungeStep>();
 
-        a = new TestingMungeStep("A", 0, 1);
+        StepDescription sd = new StepDescription();
+        sd.setName("A");
+        a = new TestingMungeStep(sd, 0, 1);
         steps.add(a);
 
-        b = new TestingMungeStep("B", 1, 1);
+        sd = new StepDescription();
+        sd.setName("B");
+        b = new TestingMungeStep(sd, 1, 1);
         b.connectInput(0, a.getChildren().get(0));
         steps.add(b);
 
-        c = new TestingMungeStep("C", 1, 2);
+        sd = new StepDescription();
+        sd.setName("C");
+        c = new TestingMungeStep(sd, 1, 2);
         c.connectInput(0, a.getChildren().get(0));
         steps.add(c);
 
-        d = new TestingMungeStep("D", 1, 1);
+        sd = new StepDescription();
+        sd.setName("D");
+        d = new TestingMungeStep(sd, 1, 1);
         steps.add(d);
 
-        e = new TestingMungeStep("E", 1, 0);
+        sd = new StepDescription();
+        sd.setName("E");
+        e = new TestingMungeStep(sd, 1, 0);
         e.connectInput(0, b.getChildren().get(0));
         steps.add(e);
 
-        f = new TestingMungeStep("F", 3, 0);
+        sd = new StepDescription();
+        sd.setName("F");
+        f = new TestingMungeStep(sd, 3, 0);
         f.connectInput(0, a.getChildren().get(0));
         // purposely leaving input 1 not connected (for testing)
         f.connectInput(2, c.getChildren().get(0));
         steps.add(f);
 
-        g = new TestingMungeStep("G", 1, 1);
+        sd = new StepDescription();
+        sd.setName("G");
+        g = new TestingMungeStep(sd, 1, 1);
         g.connectInput(0, c.getChildren().get(1));
         steps.add(g);
 

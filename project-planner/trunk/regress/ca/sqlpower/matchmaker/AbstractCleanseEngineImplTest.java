@@ -38,7 +38,8 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.StubMatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.UpperCaseMungeStep;
+import ca.sqlpower.matchmaker.munge.ProjectPlannerMungeStep;
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SQL;
 
@@ -115,7 +116,9 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 	public void testSimpleCall() throws Exception{	
 		populateTables();
 
-		UpperCaseMungeStep ucms = new UpperCaseMungeStep();
+		StepDescription sd = new StepDescription();
+		sd.setName("Test");
+		ProjectPlannerMungeStep ucms = new ProjectPlannerMungeStep(sd);
 
 		MungeProcess mungep = new MungeProcess();
 		mungep.addChild(ucms);

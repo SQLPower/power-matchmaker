@@ -30,7 +30,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
-import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
+import ca.sqlpower.matchmaker.munge.ProjectPlannerMungeStep;
 import ca.sqlpower.sql.SPDataSource;
 
 
@@ -118,7 +118,7 @@ public class ProjectDAOOracleTest extends AbstractProjectDAOTestCase {
             stmt = con.createStatement();
             stmt.executeUpdate(
                     "INSERT INTO mm_munge_step (munge_process_oid, munge_step_oid, step_name, step_class, last_update_user) " +
-                    "VALUES ("+parentProcessOid+", "+time+", 'fake_column_"+time+"', '"+ConcatMungeStep.class.getName()+"', '"+lastUpdateUser+"')");
+                    "VALUES ("+parentProcessOid+", "+time+", 'fake_column_"+time+"', '"+ProjectPlannerMungeStep.class.getName()+"', '"+lastUpdateUser+"')");
         } finally {
             try { stmt.close(); } catch (Exception e) { System.err.println("Couldn't close statement"); e.printStackTrace(); }
             // connection didn't come from a pool so we can't close it

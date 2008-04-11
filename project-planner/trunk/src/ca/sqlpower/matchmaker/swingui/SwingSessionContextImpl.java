@@ -93,7 +93,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	/**
 	 * The array that looks like the set of types we are expecting for the correct munge step constructor.
 	 */
-	private static final Type[] MUNGESTEP_CONSTRUCTOR_PARAMS = {String.class};
+	private static final Type[] MUNGESTEP_CONSTRUCTOR_PARAMS = {StepDescription.class};
 
     /**
 	 * The list of information about mungeSteps, which stores their StepClass, GUIClass, name and icon
@@ -595,7 +595,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 				if (arrayEquals(paramTypes,MUNGESTEP_CONSTRUCTOR_PARAMS)) {
 					try {
 						logger.debug("Passing the icon " + sd.getMainIcon() + " to the new " + sd.getGuiClass());
-						return (MungeStep)con.newInstance(sd.getName());
+						return (MungeStep)con.newInstance(sd);
 					} catch (Throwable t) {
 						throw new RuntimeException("Error generating munge step component: " + sd.getGuiClass().getName() + ". " 
 								+ "Possibly caused by an error thrown in the constructor.", t);

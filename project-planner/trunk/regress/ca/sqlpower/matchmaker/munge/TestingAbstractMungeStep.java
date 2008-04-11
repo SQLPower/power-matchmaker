@@ -19,14 +19,16 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
+
 /**
  * A bare bones test implementation of an AbstractMungeStep for
  * unit testing purposes only.
  */
 public class TestingAbstractMungeStep extends AbstractMungeStep {
 
-	public TestingAbstractMungeStep() {
-		super("Testing Abstract Munge Step", true);
+	public TestingAbstractMungeStep(StepDescription sd) {
+		super(sd, true);
 	}
 	
 	@Override

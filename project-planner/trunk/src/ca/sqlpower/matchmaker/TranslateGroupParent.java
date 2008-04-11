@@ -20,7 +20,6 @@
 package ca.sqlpower.matchmaker;
 
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.TranslateWordMungeStep;
 
 
 /** 
@@ -76,16 +75,6 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
      * @return true if <tt>tg</tt> is used by <tt>mmo</tt> or one of its descendants; false otherwise.
      */
     private boolean checkMMOContainsTranslateGroup(MatchMakerObject mmo,MatchMakerTranslateGroup tg){
-        if (mmo instanceof TranslateWordMungeStep) {
-            TranslateWordMungeStep step = (TranslateWordMungeStep) mmo;
-            String oidStr = step.getParameter(TranslateWordMungeStep.TRANSLATE_GROUP_PARAMETER_NAME);
-            if (oidStr != null) {
-                Long oid = new Long(oidStr);
-                if (tg.getOid().equals(oid)) {
-                    return true;
-                }
-            }
-        }
         if (mmo instanceof Project) {
             Project projectChild = (Project) mmo;
             for (MungeProcess critGroup : projectChild.getMungeProcesses()) {

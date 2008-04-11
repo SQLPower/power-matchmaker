@@ -34,6 +34,7 @@ import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 
 /**
  * An abstract implementation of the MungeStep interface. The only
@@ -88,6 +89,11 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	private boolean canAddInputs;
 	
 	/**
+	 * A description of this munge step to be displayed to the user.
+	 */
+	private String description;
+	
+	/**
 	 * The default object type of this Munge Step's input. The default value is {@link Object#class}.
 	 * This is used for Munge Steps with variable inputs as the default class to use when adding an new input
 	 * which now happens when connecting an input into the last empty input. 
@@ -98,8 +104,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	private Class defaultInputClass = Object.class;
 	
 	
-	public AbstractMungeStep(String name, boolean canAddInputs) {
-		setName(name);
+	public AbstractMungeStep(StepDescription sd, boolean canAddInputs) {
+		setName(sd.getName());
+		description = sd.getDescription();
 		this.canAddInputs = canAddInputs;
 	}
 	
@@ -702,5 +709,9 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	 */
 	void setDefaultInputClass(Class defaultInputClass) {
 		this.defaultInputClass = defaultInputClass;
+	}
+
+	public String getDescription() {
+		return description;
 	}
 }

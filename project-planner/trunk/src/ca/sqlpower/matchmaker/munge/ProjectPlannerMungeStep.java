@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
+
 /**
  * This is the default munge step for the Project Planner. This
  * step will be used for every munge step in the munge pen.
@@ -30,8 +32,8 @@ public class ProjectPlannerMungeStep extends AbstractMungeStep {
 	 */
 	private static final String TEXT_PARAMETER_NAME = "text";
 
-	public ProjectPlannerMungeStep(String name) {
-		super(name, true);
+	public ProjectPlannerMungeStep(StepDescription sd) {
+		super(sd, true);
 		defineIO();
 	}
 
@@ -52,7 +54,7 @@ public class ProjectPlannerMungeStep extends AbstractMungeStep {
 	 */
 	@SuppressWarnings("unused")
 	private ProjectPlannerMungeStep() {
-		super("", true);
+		super(new StepDescription(), true);
 		defineIO();
 	}
 	

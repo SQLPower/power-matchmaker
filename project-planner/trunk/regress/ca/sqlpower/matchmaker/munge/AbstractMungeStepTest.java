@@ -19,10 +19,12 @@
 
 package ca.sqlpower.matchmaker.munge;
 
+import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
-import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 
 public class AbstractMungeStepTest extends TestCase {
 
@@ -30,7 +32,9 @@ public class AbstractMungeStepTest extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		mungeStep = new TestingAbstractMungeStep();
+		StepDescription sd = new StepDescription();
+		sd.setName("Testing Abstract Munge Step");
+		mungeStep = new TestingAbstractMungeStep(sd);
 	}
 
 	/**

@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.munge;
 
 import org.apache.log4j.Logger;
 
+import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
+
 /**
  * A simple munge step implementation that can be created with any number of inputs
  * and outputs.  The outputs are always null, and the <tt>call</tt> method does
@@ -57,8 +59,8 @@ public class TestingMungeStep extends AbstractMungeStep {
      * be initially not connected.
      * @param outputs The number of outputs for this step
      */
-    public TestingMungeStep(String name, int inputs, int outputs) {
-        this(name, inputs, outputs, 3);
+    public TestingMungeStep(StepDescription sd, int inputs, int outputs) {
+        this(sd, inputs, outputs, 3);
     }
         
     /**
@@ -73,8 +75,8 @@ public class TestingMungeStep extends AbstractMungeStep {
      * @param continuing Set to true if the the MungeProcess should continue
      * after this step. Otherwise, return false.
      */
-    public TestingMungeStep(String name, int inputs, int outputs, int callCount) {
-        super(name,false);
+    public TestingMungeStep(StepDescription sd, int inputs, int outputs, int callCount) {
+        super(sd,false);
         for (int i = 0; i < inputs; i++) {
             addInput(new InputDescriptor("input_" + i, String.class));
         }

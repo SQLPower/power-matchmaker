@@ -30,7 +30,7 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.AbstractProjectDAOTestCase;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
-import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
+import ca.sqlpower.matchmaker.munge.ProjectPlannerMungeStep;
 import ca.sqlpower.sql.SPDataSource;
 
 
@@ -93,7 +93,7 @@ private Project project;
             stmt = con.createStatement();
             stmt.executeUpdate(
                     "INSERT INTO mm_munge_step (munge_process_oid, step_name, step_class, last_update_user) " +
-                    "VALUES ("+parentProcessOid+", 'fake_column_"+time+"', '"+ConcatMungeStep.class.getName()+"', '"+lastUpdateUser+"')");
+                    "VALUES ("+parentProcessOid+", 'fake_column_"+time+"', '"+ProjectPlannerMungeStep.class.getName()+"', '"+lastUpdateUser+"')");
             keysRS = stmt.executeQuery(
                     "SELECT munge_step_oid FROM mm_munge_step " +
                     "WHERE munge_process_oid='"+parentProcessOid+"' AND step_name='fake_column_"+time+"'");

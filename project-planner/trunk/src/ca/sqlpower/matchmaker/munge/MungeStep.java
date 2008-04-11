@@ -270,4 +270,9 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * recent call to open().
      */
     boolean isOpen();
+
+    /**
+     * Returns a description of this step to be displayed to the user.
+     */
+	String getDescription();
 }

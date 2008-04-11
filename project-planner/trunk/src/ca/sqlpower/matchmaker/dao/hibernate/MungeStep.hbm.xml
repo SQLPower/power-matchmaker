@@ -84,34 +84,6 @@
 		<!-- Hardcoding this list is not ideal.  These should be added dynamically by the session
 		     when it is created (based on the resource file that lists all the munge steps) -->
 		     
-		<subclass name="ConcatMungeStep" />
-		<subclass name="DoubleMetaphoneMungeStep" />
-		<subclass name="MD5CheckSumMungeStep" />
-		<subclass name="GoogleAddressLookup" />
-		<subclass name="LowerCaseMungeStep" />
-		<subclass name="MetaphoneMungeStep" />
-		<subclass name="NumberToStringMungeStep" />
-		<subclass name="RefinedSoundexMungeStep" />
-		<subclass name="RetainCharactersMungeStep" />
-		<subclass name="SoundexMungeStep" />
-		<subclass name="StringConstantMungeStep" />
-		<subclass name="StringSubstitutionMungeStep" />
-		<subclass name="SubstringByWordMungeStep" />
-		<subclass name="SubstringMungeStep" />
-		<subclass name="TranslateWordMungeStep" />
-		<subclass name="TrimSpacesMungeStep" />
-		<subclass name="UpperCaseMungeStep" />
-		<subclass name="WordCountMungeStep" />
-		<subclass name="DateToStringMungeStep" />
-		<subclass name="StringToNumberMungeStep" />
-		<subclass name="StringToDateMungeStep" />
-		<subclass name="NumberConstantMungeStep" />
-		<subclass name="BooleanConstantMungeStep" />
-		<subclass name="StringToBooleanMungeStep" />
-		<subclass name="BooleanToStringMungeStep" />
-		<subclass name="DateConstantMungeStep" />
-		<subclass name="CSVWriterMungeStep" />
-		<subclass name="EmptyStringToNullMungeStep" />
 		<subclass name="ProjectPlannerMungeStep" />
 		
 	</class>

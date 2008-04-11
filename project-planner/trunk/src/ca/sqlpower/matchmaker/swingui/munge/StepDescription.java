@@ -74,6 +74,11 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 	 * same category name will be in the same group.
 	 */
 	private String category;
+	
+	/**
+	 * A description to be displayed to the user for this step.
+	 */
+	private String description;
 
     /**
      * Creates a new step description that is invalid (its properties all start
@@ -107,6 +112,7 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
      *  <dt>category<dd>The name of the category this step belongs to. Categories with the same
      *  			  name will be grouped together in the library of steps in the right hand
      *  			  side of the munge editor.
+     *  <dt>description<dd>The description of this step to be displayed to users.
      * </dl>
      * 
      * @param property The property name. Recognized property names are enumerated above;
@@ -147,6 +153,8 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 			logger.debug("Main icon is now " + getMainIcon());
 		} else if (property.equals("category")) {
 			setCategory(value);
+		} else if (property.equals("description")) {
+			setDescription(value);
 		} else {
 		    logger.info("Skipping unknown step description property: " + property);
         }
@@ -202,5 +210,13 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 
 	public void setCategory(String category) {
 		this.category = category;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 }
