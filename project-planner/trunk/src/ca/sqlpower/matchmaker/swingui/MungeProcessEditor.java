@@ -20,38 +20,25 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel;
@@ -87,9 +74,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
      * The actual GUI component that provides the editing interface.
      */
     private final JTextField name = new JTextField();
-    private final JSpinner priority = new JSpinner();
-    private final JTextField desc = new JTextField();
-    private final JComboBox color = new JComboBox(ColorScheme.BREWER_SET19);
 	
     private final MungePen mungePen;
     
@@ -124,9 +108,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         actions.add(saveAction);
         this.handler = new FormValidationHandler(status, actions);
         handler.addValidateObject(name, new MungeProcessNameValidator());
-        if (project.getType() == ProjectMode.CLEANSE) {
-        	handler.addValidateObject(priority, new CleanseProjectProcessPriorityValidator());
-        }
 
         //For some reason some process don't have sessions and this causes a null
         //pointer barrage when it tries to find the tree when it gets focus, then fails and 
@@ -146,28 +127,16 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 	private void buildUI(MungeProcess process) throws ArchitectException {
 		panel = new JPanel(new BorderLayout());
 		FormLayout layout = new FormLayout(
-				"4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu,pref,4dlu", // columns
-				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu"); // rows
+				"4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu", // columns
+				"4dlu,pref,4dlu,pref,4dlu"); // rows
 		CellConstraints cc = new CellConstraints();
 		JPanel subPanel = new JPanel(layout);
-        subPanel.add(status, cc.xyw(2, 2, 7));
+        subPanel.add(status, cc.xyw(2, 2, 5));
         subPanel.add(new JLabel("Process Name: "), cc.xy(2, 4));
         
         subPanel.add(name, cc.xy(4, 4));
-        subPanel.add(new JLabel("Priority: "), cc.xy(6, 4));
         
-        priority.setPreferredSize(new Dimension(100, 20));
-        subPanel.add(priority, cc.xy(8, 4));
-        
-        subPanel.add(new JLabel("Description: "), cc.xy(2, 6));
-        
-        subPanel.add(desc, cc.xy(4, 6));
-        subPanel.add(new JLabel("Color: "), cc.xy(6, 6));
-        ColorCellRenderer renderer = new ColorCellRenderer();
-        color.setRenderer(renderer);
-        subPanel.add(color, cc.xy(8, 6));
-		subPanel.add(new JButton(saveAction), cc.xy(2,8));
-		subPanel.add(new JButton(customColour), cc.xy(8,8));
+		subPanel.add(new JButton(saveAction), cc.xy(6,4));
         panel.add(subPanel,BorderLayout.NORTH);
         
         panel.add(new JScrollPane(mungePen), BorderLayout.CENTER);
@@ -183,63 +152,15 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			}
 			public void keyTyped(KeyEvent e) {
 			}});
-		priority.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				mmo.setMatchPriority(Short.valueOf(priority.getValue().toString()));
-			}});
-		desc.addKeyListener(new KeyListener() {
-			public void keyPressed(KeyEvent e) {
-			}
-			public void keyReleased(KeyEvent e) {
-				mmo.setDesc(desc.getText());
-			}
-			public void keyTyped(KeyEvent e) {
-			}});
-		color.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-		    	mmo.setColour((Color)color.getSelectedItem());
-			}});
 	}
 	
 	private void setDefaults() {
 		name.setText(mmo.getName());
-		if (mmo.getMatchPriority() != null) {
-        	priority.setValue(mmo.getMatchPriority());
-        }else {
-        	mmo.setMatchPriority(new Short((short)0));
-        }
-		
-		desc.setText(mmo.getDesc());
-		boolean hasColour = false;
-       	for (int i = 0; i < color.getItemCount(); i++) {
-       		if (color.getItemAt(i).equals(mmo.getColour())) {
-       			hasColour = true;
-       			break;
-       		}
-       	}
-       	if (!hasColour) {
-       		color.addItem(mmo.getColour());
-       	}
-       	if (mmo.getColour() != null) {
-       		color.setSelectedItem(mmo.getColour());
-       	} else {
-       		color.setSelectedIndex(0);
-       		mmo.setColour((Color)color.getSelectedItem());
-       	}
 	}
 	
 	Action saveAction = new AbstractAction("Save Munge Process"){
 		public void actionPerformed(ActionEvent e) {
             applyChanges();
-		}
-	};
-	Action customColour = new AbstractAction("Custom Colour") {
-		public void actionPerformed(ActionEvent arg0) {
-			Color colour = swingSession.getCustomColour(mmo.getColour());
-		    if (colour != null) {
-		    	color.addItem(colour);
-		    	color.setSelectedItem(colour);
-		    }
 		}
 	};
     
@@ -261,18 +182,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         logger.debug("There are " + mmo.getChildren().size() + " children in the current process");
         DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge> dfs = new DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge>();
         dfs.performSearch(gm);
-        
-        if (dfs.isCyclic()) {
-        	int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-				"Your munge process contains at least one cycle, " + 
-				"and may result in unexpected results. \n" + 
-				"Do you want to continue saving?", 
-				"Save",
-                JOptionPane.WARNING_MESSAGE);
-			if (responds != JOptionPane.YES_OPTION) {
-				return false;
-	        }
-        }
 
         if (mmo.getParentProject() == null) {
             parentProject.addMungeProcess(mmo);
@@ -285,54 +194,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			return true;
 		}
         return super.hasUnsavedChanges();
-    }
-    /**
-     * Renders a rectangle of colour in a list cell.  The colour is determined
-     * by the list item value, which must be of type java.awt.Color.
-     */
-    private class ColorCellRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus);
-            if (value == null) {
-            	value = Color.BLACK;
-            }
-            setBackground((Color) value);
-            setOpaque(true);
-            setPreferredSize(new Dimension(50, 50));
-            setIcon(new ColorIcon((Color) value));
-            return this;
-        }
-    }
-    
-    /**
-     * This class converts a Color into an icon that has width of 85 pixels
-     * and height of 50 pixels.
-     */
-    private class ColorIcon implements Icon {
-        private int HEIGHT = 50;
-        
-        // width of 50 would make sense as the cell has dimensions 50x50 but
-        // the cell would only fill with the color icon if width is 85.
-        private int WIDTH = 85;
-        private Color colour;
-     
-        public ColorIcon(Color colour) {
-            this.colour = colour;
-        }
-     
-        public int getIconHeight() {
-            return HEIGHT;
-        }
-     
-        public int getIconWidth() {
-            return WIDTH;
-        }
-     
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            g.setColor(colour);
-            g.fillRect(x, y, WIDTH - 1, HEIGHT - 1);
-        }
     }
     
 	private class MungeProcessNameValidator implements Validator {
@@ -352,30 +213,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
             } else if (mmo.getParent() == null && parentProject.getMungeProcessByName(name.getText()) != null) {
             	return ValidateResult.createValidateResult(Status.FAIL, "Munge Process name is invalid or already exists.");
             }
-			return ValidateResult.createValidateResult(Status.OK, "");
-		}
-    }
-	
-	private class CleanseProjectProcessPriorityValidator implements Validator {
-        public ValidateResult validate(Object contents) {
-        	
-        	if (contents == null) {
-        		return ValidateResult.createValidateResult(Status.WARN, "No priority set, assuming 0");
-        	}
-        	
-			short value = Short.parseShort((String)contents.toString());
-		
-			for (MungeProcess mp : parentProject.getMungeProcessesFolder().getChildren()) {
-                if (mp == null) throw new NullPointerException("Null munge process in project!");
-				short otherPriority = 0;
-                if (mp.getMatchPriority() != null) {
-                    otherPriority = mp.getMatchPriority().shortValue();
-                }
-                if (otherPriority == value && mp != mmo) {
-					return ValidateResult.createValidateResult(Status.WARN, "Duplicate Priority. " + 
-							"If two cleansing process have the same priority, they may not always run in the same order.");
-				}
-			}
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
     }
