@@ -275,4 +275,21 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
      * Returns a description of this step to be displayed to the user.
      */
 	String getDescription();
+
+	/**
+	 * Returns a URL of a web page that gives more information about a step to 
+	 * the user.
+	 */
+	String getInfoURL();
+
+    /**
+     * Sets the description of this step to be displayed to the user.
+     */
+	void setDescription(String description);
+
+	/**
+	 * Sets a URL of a web page that gives more information about a step to 
+	 * the user.
+	 */
+	void setInfoURL(String infoURL);
 }

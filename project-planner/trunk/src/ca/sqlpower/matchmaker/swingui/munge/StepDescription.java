@@ -80,6 +80,12 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 	 */
 	private String description;
 
+	/**
+	 * a URL of a web page that gives more information about a step to 
+	 * the user.
+	 */
+	private String infoURL;
+
     /**
      * Creates a new step description that is invalid (its properties all start
      * off null).
@@ -113,6 +119,8 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
      *  			  name will be grouped together in the library of steps in the right hand
      *  			  side of the munge editor.
      *  <dt>description<dd>The description of this step to be displayed to users.
+     *  <dt>infoURL<dd>a URL of a web page that gives more information about a step to 
+	 * 				  the user.
      * </dl>
      * 
      * @param property The property name. Recognized property names are enumerated above;
@@ -155,6 +163,8 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 			setCategory(value);
 		} else if (property.equals("description")) {
 			setDescription(value);
+		} else if (property.equals("infoURL")) {
+			setInfoURL(value);
 		} else {
 		    logger.info("Skipping unknown step description property: " + property);
         }
@@ -218,5 +228,13 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getInfoURL() {
+		return infoURL;
+	}
+
+	public void setInfoURL(String infoURL) {
+		this.infoURL = infoURL;
 	}
 }

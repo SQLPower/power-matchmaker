@@ -32,7 +32,6 @@ import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -44,7 +43,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -60,7 +58,7 @@ import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
-import ca.sqlpower.matchmaker.swingui.munge.MungeStepLibrary;
+import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -139,13 +137,13 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         
         this.mungePen = new MungePen(process, handler, parentProject);
         
-        buildUI();
+        buildUI(process);
         setDefaults();
         addListenerToComponents();
 
     }
 
-	private void buildUI() throws ArchitectException {
+	private void buildUI(MungeProcess process) throws ArchitectException {
 		panel = new JPanel(new BorderLayout());
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu,pref,4dlu", // columns
@@ -172,17 +170,8 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		subPanel.add(new JButton(customColour), cc.xy(8,8));
         panel.add(subPanel,BorderLayout.NORTH);
         
-        JToolBar t = new JToolBar();
-        
-        MungeStepLibrary msl = new MungeStepLibrary(mungePen, ((SwingSessionContext) swingSession.getContext()).getStepMap());
-        t.setBackground(Color.WHITE);
-        t.setLayout(new BorderLayout());
-        t.add(msl.getHideShowButton(), BorderLayout.NORTH);
-        t.add(new JScrollPane(msl.getList()), BorderLayout.CENTER);
-        t.setBorder(BorderFactory.createRaisedBevelBorder());
-        t.setFloatable(false);
         panel.add(new JScrollPane(mungePen), BorderLayout.CENTER);
-        panel.add(t,BorderLayout.EAST);
+        panel.add(new MungePenSideBar(mungePen, swingSession, process).getToolbar(), BorderLayout.EAST);
     }
     
 	private void addListenerToComponents() {

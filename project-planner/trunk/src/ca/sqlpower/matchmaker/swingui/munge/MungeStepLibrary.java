@@ -19,12 +19,11 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
@@ -35,11 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.AbstractAction;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.TransferHandler;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -59,18 +56,30 @@ public class MungeStepLibrary {
 	
 	private static final Logger logger = Logger.getLogger(MungeStepLibrary.class);
 	public static final DataFlavor STEP_DESC_FLAVOR = new DataFlavor(StepDescription.class, "Step Description");
+	
+	/**
+	 * The light blue colour to be used as a background to the munge step
+	 * library.
+	 */
+	private static final Color LIGHT_BLUE = new Color(0xe5eaf2);
 
-	private static final Icon PLUS_ON = new ImageIcon(ClassLoader.getSystemResource("icons/chevrons_left2.png"));
-	private static final Icon PLUS_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/chevrons_left1.png"));
-	
-	private static final Icon MINUS_ON = new ImageIcon(ClassLoader.getSystemResource("icons/chevrons_right2.png"));
-	private static final Icon MINUS_OFF = new ImageIcon(ClassLoader.getSystemResource("icons/chevrons_right1.png"));
-	
+	/**
+	 * The tree that contains all of the munge steps
+	 * in the session.
+	 */
 	private JTree tree; 
+	
+	/**
+	 * The scroll pane that holds the tree of munge steps.
+	 */
+	private JScrollPane libraryPane;
+	
+	/**
+	 * The munge pen this class will allow the drag of components
+	 * to as well as listen for selections to provide more information.
+	 */
 	private final MungePen pen;
 	private final TransferHandler th;
-	private JButton hideShow;
-	private boolean hidden;
 	
 	public MungeStepLibrary(MungePen mungePen, Map<String, StepDescription> stepMap) {
 		logger.debug("Creating Library");
@@ -78,7 +87,6 @@ public class MungeStepLibrary {
 		pen = mungePen;
 		tree = new JTree();
 		th = new StepDescriptionTransferHandler();
-		hidden = false;
 		
 		Collection<StepDescription> vals = stepMap.values();
 		logger.debug("We have " + vals.size() + " step descriptions to display.");
@@ -141,14 +149,8 @@ public class MungeStepLibrary {
 				} else {
 					nodeText = node.getUserObject().toString();
 				}
-				logger.debug("Adding " + nodeText + " to the step library.");
-				if (!hidden) {
-					super.getTreeCellRendererComponent(tree, nodeText, sel, expanded, leaf, row, hasFocus);
-					setToolTipText(null);
-				} else {
-					super.getTreeCellRendererComponent(tree, "", sel, expanded, leaf, row, hasFocus);
-					setToolTipText(nodeText);
-				}
+				super.getTreeCellRendererComponent(tree, nodeText, sel, expanded, leaf, row, hasFocus);
+				setBackgroundNonSelectionColor(null);
 				
 				if (node.getUserObject() instanceof StepDescription) {
 					setIcon(((StepDescription) node.getUserObject()).getIcon());
@@ -168,55 +170,16 @@ public class MungeStepLibrary {
 		TreeSelectionModel selectionModel = new DefaultTreeSelectionModel();
 		selectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tree.setSelectionModel(selectionModel);
+		tree.setBackground(null);
 		
-		hideShow = new JButton(new AbstractAction(){
-			public void actionPerformed(ActionEvent e) {
-				hidden = !hidden;
-				
-				tree.updateUI();
-				hideShow.updateUI();
-
-				if (hidden) {
-					hideShow.setIcon(PLUS_ON);
-				} else {
-					hideShow.setIcon(MINUS_ON);
-				}
-				
-				hideShow.repaint();
-			}
-		});
+		libraryPane = new JScrollPane(tree);
+		libraryPane.getViewport().setBackground(LIGHT_BLUE);
 		
-		hideShow.addMouseListener(new MouseAdapter(){
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				if (hidden) {
-					hideShow.setIcon(PLUS_ON);
-				} else {
-					hideShow.setIcon(MINUS_ON);
-				}
-			}
-			
-			@Override
-			public void mouseExited(MouseEvent e) {
-				if (hidden) {
-					hideShow.setIcon(PLUS_OFF);
-				} else {
-					hideShow.setIcon(MINUS_OFF);
-				}
-			}
-		});
-		
-		hideShow.setIcon(MINUS_OFF);
 	}
 	
-	public JTree getList() {
-		return tree;
+	public JScrollPane getScrollPane() {
+		return libraryPane;
 	}
-	
-	public JButton getHideShowButton() {
-		return hideShow;
-	}
-
 	
 	private class StepDescriptionTransferHandler extends TransferHandler {
 		 public boolean importData(JComponent c, Transferable t) {

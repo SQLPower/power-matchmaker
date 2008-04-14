@@ -94,6 +94,12 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	private String description;
 	
 	/**
+	 * A URL of a web page that gives more information about a step to 
+	 * the user.
+	 */
+	private String infoURL;
+	
+	/**
 	 * The default object type of this Munge Step's input. The default value is {@link Object#class}.
 	 * This is used for Munge Steps with variable inputs as the default class to use when adding an new input
 	 * which now happens when connecting an input into the last empty input. 
@@ -107,6 +113,7 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 	public AbstractMungeStep(StepDescription sd, boolean canAddInputs) {
 		setName(sd.getName());
 		description = sd.getDescription();
+		infoURL = sd.getInfoURL();
 		this.canAddInputs = canAddInputs;
 	}
 	
@@ -713,5 +720,17 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 
 	public String getDescription() {
 		return description;
+	}
+
+	public String getInfoURL() {
+		return infoURL;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setInfoURL(String infoURL) {
+		this.infoURL = infoURL;
 	}
 }

@@ -24,6 +24,12 @@
 		<property name="name" type="string">
 			<column name="step_name" length="100" />
 		</property>
+		<property name="description" type="string">
+            <column name="step_desc" length="255" />
+        </property>
+        <property name="infoURL" type="string">
+            <column name="step_info_url" length="100" />
+        </property>
 		<property name="lastUpdateDate" type="timestamp" access="field">
 			<column name="last_update_date" length="23" />
 		</property>

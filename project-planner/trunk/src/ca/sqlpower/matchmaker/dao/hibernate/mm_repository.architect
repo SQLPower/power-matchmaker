@@ -88,6 +88,8 @@
     <column id="COL1899" populated="true" autoIncrement="false" name="munge_process_oid" nullable="0" physicalName="MUNGE_PROCESS_OID" precision="22" referenceCount="2" remarks="" scale="0" type="4" />
     <column id="COL1900" populated="true" autoIncrement="false" name="step_class" nullable="0" physicalName="STEP_CLASS" precision="1000" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL1901" populated="true" autoIncrement="false" name="step_name" nullable="1" physicalName="STEP_NAME" precision="100" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1901" populated="true" autoIncrement="false" name="step_desc" nullable="1" physicalName="STEP_DESC" precision="255" referenceCount="1" remarks="" scale="0" type="12" />
+    <column id="COL1901" populated="true" autoIncrement="false" name="step_info_url" nullable="1" physicalName="STEP_INFO_URL" precision="100" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL1902" populated="true" autoIncrement="false" name="visible_ind" nullable="1" physicalName="VISIBLE_IND" precision="1" referenceCount="1" remarks="" scale="0" type="12" />
     <column id="COL1903" populated="true" autoIncrement="false" name="LAST_UPDATE_DATE" nullable="1" physicalName="LAST_UPDATE_DATE" precision="7" referenceCount="1" remarks="" scale="0" type="91" />
     <column id="COL1904" populated="true" autoIncrement="false" name="LAST_UPDATE_USER" nullable="1" physicalName="LAST_UPDATE_USER" precision="30" referenceCount="1" remarks="" scale="0" type="12" />
