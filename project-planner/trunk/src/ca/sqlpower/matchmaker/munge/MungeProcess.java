@@ -25,7 +25,6 @@ import java.util.List;
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
 
 /**

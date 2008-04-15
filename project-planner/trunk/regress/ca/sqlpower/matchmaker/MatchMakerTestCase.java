@@ -44,9 +44,7 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.SQLIndex.IndexType;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -241,12 +239,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			} else {
 				return ProjectMode.BUILD_XREF;
 			}
-		} else if (property.getPropertyType() == MergeActionType.class) {
-			if (oldVal == MergeActionType.AUGMENT) {
-				return MergeActionType.SUM;
-			} else {
-				return MergeActionType.AUGMENT;
-			}
 		} else if (property.getPropertyType() == MatchMakerObject.class) {
 			((MatchMakerObject) oldVal).setName("Testing New Name");
 			return oldVal;
@@ -263,11 +255,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			return oldVal;
 		} else if (property.getPropertyType() == List.class) {
 			if (property.getName().equals("children")) {
-				if (mmo instanceof TableMergeRules) {
-					((List) oldVal).add(new ColumnMergeRules());
-				} else {
-					((List) oldVal).add(new StubMatchMakerObject());
-				}
+				((List) oldVal).add(new StubMatchMakerObject());
 			} else {
 				((List)oldVal).add("Test");
 			}
@@ -282,18 +270,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
                 Color oldColor = (Color) oldVal;
                 return new Color( (oldColor.getRGB()+0xF00) % 0x1000000);
             }
-        } else if (property.getPropertyType() == ChildMergeActionType.class) {
-        	if (oldVal != null && oldVal.equals(ChildMergeActionType.DELETE_ALL_DUP_CHILD)){
-        		return ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT;
-        	} else {
-        		return ChildMergeActionType.DELETE_ALL_DUP_CHILD;
-        	}
-        } else if (property.getPropertyType() == TableMergeRules.class) {
-        	if (oldVal == null){
-        		return mmo;
-        	} else {
-        		return null;
-        	}
 		} else {
 			throw new RuntimeException("This test case lacks the ability to modify values for "
 					+ property.getName() + " (type "
@@ -437,12 +413,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			} else {
 				newVal = ProjectMode.BUILD_XREF;
 			}
-		} else if (property.getPropertyType() == MergeActionType.class) {
-			if (oldVal == MergeActionType.AUGMENT) {
-				newVal = MergeActionType.SUM;
-			} else {
-				newVal = MergeActionType.AUGMENT;
-			}
 		}else if (property.getPropertyType() == MatchMakerTranslateGroup.class) {
 			newVal = new MatchMakerTranslateGroup();
 		} else if (property.getPropertyType() == MatchMakerObject.class) {
@@ -465,18 +435,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
                 Color oldColor = (Color) oldVal;
                 newVal = new Color( (oldColor.getRGB()+0xF00) % 0x1000000);
             }
-        } else if (property.getPropertyType() == ChildMergeActionType.class) {
-        	if (oldVal != null && oldVal.equals(ChildMergeActionType.DELETE_ALL_DUP_CHILD)){
-        		newVal = ChildMergeActionType.UPDATE_DELETE_ON_CONFLICT;
-        	} else {
-        		newVal = ChildMergeActionType.DELETE_ALL_DUP_CHILD;
-        	}
-        } else if (property.getPropertyType() == TableMergeRules.class) {
-        	if (oldVal == null){
-        		newVal = mmo;
-        	} else {
-        		newVal = null;
-        	}
 		} else {
 			throw new RuntimeException("This test case lacks a value for "
 					+ property.getName() + " (type "

@@ -77,17 +77,14 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
-import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
@@ -109,8 +106,6 @@ import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
-import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
-import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
@@ -397,18 +392,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * seemingly contradictory questions one after the other.
      */
     private boolean editorComponentUpdateInProgress = false;
-
-    /**
-     * A map that links an engine to a panel. This is used so that only
-     * one of each engine and panel ever exist per project.
-     */
-	private Map<MergeEngineImpl, MergeEnginePanel> mergeEnginPanels;
-	
-	 /**
-     * A map that links an engine to a panel. This is used so that only
-     * one of each engine and panel ever exist per project.
-     */
-	private Map<MatchEngineImpl, MatchEnginePanel> matchEnginePanels;
 	
 	 /**
      * A map that links an engine to a panel. This is used so that only
@@ -434,8 +417,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         this.sessionContext = context;
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
         
-        matchEnginePanels = new HashMap<MatchEngineImpl, MatchEnginePanel>();
-        mergeEnginPanels = new HashMap<MergeEngineImpl, MergeEnginePanel>();
         cleanseEnginPanels = new HashMap<CleanseEngineImpl, CleanseEnginePanel>();
 
         // this grabs warnings from the business model and DAO's and lets us handle them.
@@ -618,6 +599,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	public FolderParent getCurrentFolderParent() {
 		FolderParent current = sessionImpl.getCurrentFolderParent();
         logger.debug("getCurrentFolderParent(): Found folder list: "+current.getChildren());
+        return current;
+	}
+	
+	public MatchMakerFolder<Project> getProjects() {
+		MatchMakerFolder<Project> current = sessionImpl.getProjects();
+        logger.debug("getMungeProcesses(): Found munge processes: "+current.getChildren());
         return current;
 	}
 	
@@ -1024,10 +1011,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			Project project = (Project)mmo.getParent();
 			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
 			dao.save(project);
-		} else if (mmo instanceof TableMergeRules) {
-			Project project = ((TableMergeRules)mmo).getParentProject();
-			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
-			dao.save(project);
 		} else if (mmo instanceof PlFolder){
 			PlFolderDAO dao = (PlFolderDAO) getDAO(PlFolder.class);
 			dao.save((PlFolder) mmo);
@@ -1219,38 +1202,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param mei The current engine
 	 * @param project The current project
 	 */
-	public MergeEnginePanel getMergeEnginePanel(MergeEngineImpl mei, Project project) {
-		MergeEnginePanel ep = mergeEnginPanels.get(mei);
-		if (mergeEnginPanels.get(mei) == null) {
-			ep = new MergeEnginePanel(this,project, getFrame());
-			mergeEnginPanels.put(mei,ep); 
-			ep.setEngineEnabled(enginesEnabled);
-		}
-		return ep;
-	}
-	
-	/**
-	 * Returns or creates the editor panel linked to the given engine
-	 * 
-	 * @param mei The current engine
-	 * @param project The current project
-	 */
-	public MatchEnginePanel getMatchEnginePanel(MatchEngineImpl mei, Project project) {
-		MatchEnginePanel ep = matchEnginePanels.get(mei);
-		if (ep == null) {
-			ep = new MatchEnginePanel(this,project, getFrame());
-			matchEnginePanels.put(mei,ep); 
-			ep.setEngineEnabled(enginesEnabled);
-		}
-		return ep;
-	}
-	
-	/**
-	 * Returns or creates the editor panel linked to the given engine
-	 * 
-	 * @param mei The current engine
-	 * @param project The current project
-	 */
 	public CleanseEnginePanel getCleanseEnginePanel(CleanseEngineImpl mei, Project project) {
 		CleanseEnginePanel ep = cleanseEnginPanels.get(mei);
 		if (ep == null) {
@@ -1351,12 +1302,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 */
 	public void setAllEnginesEnabled(boolean enabled){
 		enginesEnabled  = enabled;
-		for (MatchEnginePanel ep: matchEnginePanels.values()) {
-			ep.setEngineEnabled(enabled);
-		}
-		for (MergeEnginePanel ep : mergeEnginPanels.values()){
-			ep.setEngineEnabled(enabled);
-		}
 		for (CleanseEnginePanel ep : cleanseEnginPanels.values()) {
 			ep.setEngineEnabled(enabled);
 		}

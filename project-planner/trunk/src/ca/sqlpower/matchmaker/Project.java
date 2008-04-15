@@ -116,13 +116,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     private MatchMakerFolder<MungeProcess> mungeProcessesFolder =
     	new MatchMakerFolder<MungeProcess>(MungeProcess.class);
     
-    /** 
-     * Container for the TableMergeRules 
-     * We have these folders so that we don't have to deal with multiple child types
-     */ 
-    private MatchMakerFolder<TableMergeRules> tableMergeRulesFolder =
-    	new MatchMakerFolder<TableMergeRules>(TableMergeRules.class);
-    
     /**
      * Cached source table 
      */
@@ -148,24 +141,12 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      */
     private CleanseEngineImpl cleansingEngine = null;
 
-    /**
-     * The Merging engine this will be created lazyily, because we only need one instance per project.
-     */
-    private MatchEngineImpl matchingEngine = null;
-
-    /**
-     * The Matching engine this will be created lazyily, because we only need one instance per project.
-     */
-	private MergeEngineImpl mergingEngine = null;
-    
 	public Project() {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
 	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
 	    xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
 		mungeProcessesFolder.setName(MUNGE_PROCESSES_FOLDER_NAME);
         this.addChild(mungeProcessesFolder);
-		tableMergeRulesFolder.setName(MERGE_RULES_FOLDER_NAME);
-        this.addChild(tableMergeRulesFolder);
         
         setType(ProjectMode.FIND_DUPES);
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
@@ -509,9 +490,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	public void setType(ProjectMode type) {
 		ProjectMode oldValue = this.type;
 		this.type = type;
-		if (type == ProjectMode.CLEANSE) {
-			getTableMergeRulesFolder().setVisible(false);
-		}
 		getEventSupport().firePropertyChange("type", oldValue, this.type);
 	}
 
@@ -589,39 +567,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         sb.append("; view=").append(view);
         return sb.toString();
     }
-
-    /**
-     * Add a TableMergeRule rule to the TableMergeRules folder of this Project
-     */
-    public void addTableMergeRule(TableMergeRules rule) {
-        // The folder will fire the child inserted event
-        tableMergeRulesFolder.addChild(rule);
-    }
-
-    /**
-     * Removes the TableMergeRule rule from the TableMergeRules folder of this project
-     */
-    public void removeTableMergeRule(TableMergeRules rule) {
-        // The folder will fire the child removed event
-    	tableMergeRulesFolder.removeChild(rule);
-    }
-
-    public List<TableMergeRules> getTableMergeRules(){
-        return tableMergeRulesFolder.getChildren();
-    }
-
-    /**
-     *  Allow bulk replacement of all table merge rules for this project
-     *  This should only be used by the DAOs. Assumes that you never
-     *  pass in a null list 
-     */
-    public void setTableMergeRules(List<TableMergeRules> rules){
-    	tableMergeRulesFolder.setChildren(rules);
-    }
-
-    public MatchMakerFolder<TableMergeRules> getTableMergeRulesFolder() {
-        return tableMergeRulesFolder;
-    }
     
     /**
      * Adds a munge process to the munge process folder of this project
@@ -677,11 +622,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		for (MungeProcess g : getMungeProcesses()) {
 			MungeProcess newGroup = g.duplicate(newProject.getMungeProcessesFolder(),s);
 			newProject.addMungeProcess(newGroup);
-		}
-
-		for (TableMergeRules g : getTableMergeRules()) {
-			TableMergeRules newMergeRule = g.duplicate(newProject.getTableMergeRulesFolder(),s);
-			newProject.addTableMergeRule(newMergeRule);
 		}
 		
 		return newProject;
@@ -828,30 +768,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 			cleansingEngine = new CleanseEngineImpl(getSession(), this); 
 		}
 		return cleansingEngine;
-	}
-	
-	/**
-	 * Gets the cleansing engine editor panel. This is done to ensure that only one panel is created per project.
-	 * 
-	 * @return The editor panel.
-	 */
-	public MatchEngineImpl getMatchingEngine() {
-		if (matchingEngine == null) {
-			matchingEngine = new MatchEngineImpl(getSession(), this); 
-		}
-		return matchingEngine;
-	}
-	
-	/**
-	 * Gets the cleansing engine editor panel. This is done to ensure that only one panel is created per project.
-	 * 
-	 * @return The editor panel.
-	 */
-	public MergeEngineImpl getMergingEngine() {
-		if (mergingEngine == null) {
-			mergingEngine = new MergeEngineImpl(getSession(), this); 
-		}
-		return mergingEngine;
 	}
 	
 	/**

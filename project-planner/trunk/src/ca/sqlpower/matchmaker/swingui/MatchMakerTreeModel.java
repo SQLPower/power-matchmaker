@@ -19,7 +19,7 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,13 +34,13 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.FolderParent;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 
@@ -249,6 +249,12 @@ public class MatchMakerTreeModel implements TreeModel {
 		MatchMakerUtils.listenToHierarchy(listener, root);
 		MatchMakerUtils.listenToShallowHierarchy(cacheLisener, current);
 	}
+	
+	public MatchMakerTreeModel(MatchMakerFolder<Project> mungeProcesses, MatchMakerSession s) {
+		session = s;
+		root.setSession(s);
+		root.addChild(mungeProcesses);
+	}
 
     /**
      * Returns (and possibly creates) the list of action nodes associated with the given match
@@ -260,21 +266,7 @@ public class MatchMakerTreeModel implements TreeModel {
      * @return The unique list of action nodes for the given project.
      */
     private List<MatchActionNode> getActionNodes(Project project) {
-        List<MatchActionNode> actionNodes = matchActionCache.get(project);
-        if (actionNodes == null) {
-            actionNodes = new ArrayList<MatchActionNode>();
-            if (project.getType() == ProjectMode.FIND_DUPES) {
-	            for (MatchActionType type : DE_DUP_ACTIONS) {
-	                actionNodes.add(new MatchActionNode(type, project));
-	            }
-            } else if (project.getType() == ProjectMode.CLEANSE) {
-            	for (MatchActionType type : CLEANSING_ACTIONS) {
-            		actionNodes.add(new MatchActionNode(type, project));
-            	}
-            }
-            matchActionCache.put(project, actionNodes);
-        }
-        return actionNodes;
+        return Collections.emptyList();
     }
     
 	public Object getChild(Object parent, int index) {

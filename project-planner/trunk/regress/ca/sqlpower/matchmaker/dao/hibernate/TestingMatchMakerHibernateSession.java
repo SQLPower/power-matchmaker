@@ -31,20 +31,21 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingMatchMakerContext;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.Version;
 
 public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSession {
@@ -238,6 +239,11 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 
 	public FolderParent getCurrentFolderParent() {
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.getCurrentFolderParent()");
+		return null;
+	}
+	
+	public MatchMakerFolder<Project> getProjects() {
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.getProjects()");
 		return null;
 	}
     

@@ -100,7 +100,7 @@ public abstract class AbstractCleanseEngineImplTest extends TestCase{
 		execSQL(con, sql);
 		
 		//Populates the source table
-		String testString = "abcdef";
+		String testString = "ABCDEF";
 		for (int i = 0; i < 6; i++) {
 			sql = "INSERT INTO " + getFullTableName() + " VALUES(" +
 				i + ", " +

@@ -39,7 +39,6 @@ import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TableMergeRules;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -51,8 +50,6 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 
 	final private Icon projectIcon = new ImageIcon(getClass().getResource("/icons/match_project.png"));
 	final private Icon mungeIcon = new ImageIcon(getClass().getResource("/icons/cog.png"));
-	final private Icon mergeIcon = new ImageIcon(getClass().getResource("/icons/cog_double.png"));
-	final private Icon sourceMergeIcon = new ImageIcon(getClass().getResource("/icons/cog_double_star.png"));
 	final private Icon folderIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/folder.png"));
 	final private Icon validateIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/tick.png"));
 	final private Icon infoIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/page_white_gear.png"));
@@ -83,13 +80,6 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
             } else {
                 setIcon(new ColoredIcon(mungeIcon, mungeProcess.getColour()));
             }
-		} else if (value instanceof TableMergeRules) {
-			TableMergeRules rule = (TableMergeRules) value;
-			if (rule.isSourceMergeRule()) {
-				setIcon(sourceMergeIcon);
-			} else {
-				setIcon(mergeIcon);
-			}
 		} else if (value instanceof MatchActionNode) {
 			MatchActionType val = ((MatchActionNode) value).getActionType();
 			if (val.equals(MatchActionType.VALIDATE_MATCHES)) {

@@ -71,11 +71,8 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
-import ca.sqlpower.matchmaker.ColumnMergeRules;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.TableMergeRules;
-import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.SPDataSource;
@@ -622,20 +619,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         	sourceChooser.getSchemaComboBox().setEnabled(false);
         	sourceChooser.getTableComboBox().setEnabled(false);
         	viewBuilderAction.setEnabled(false);
-        	
-        	if (project.getType() != ProjectMode.CLEANSE) {
-	        	// defaults the merge rules
-				TableMergeRules mergeRule = new TableMergeRules();
-				mergeRule.setTable(sourceTable);
-				mergeRule.setTableIndex(sourceTableIndex);
-				mergeRule.deriveColumnMergeRules();
-				for (ColumnMergeRules cmr : mergeRule.getChildren()) {
-					if (mergeRule.getPrimaryKeyFromIndex().contains(cmr.getColumn())) {
-						cmr.setActionType(MergeActionType.NA);
-					}
-				}
-				project.getTableMergeRulesFolder().addChild(mergeRule);
-        	}
         }
 		
         logger.debug(project.getResultTable());

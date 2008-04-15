@@ -30,11 +30,12 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -137,6 +138,11 @@ public class StubMatchMakerSession implements MatchMakerSession{
 
 	public FolderParent getCurrentFolderParent() {
 		logger.debug("Stub call: StubMatchMakerSession.getCurrentFolderParent()");
+		return null;
+	}
+	
+	public MatchMakerFolder<Project> getProjects() {
+		logger.debug("Stub call: StubMatchMakerSession.getMungeProcesses()");
 		return null;
 	}
 

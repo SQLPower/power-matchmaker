@@ -176,6 +176,11 @@ public interface MatchMakerSession {
 	 */
 	public FolderParent getCurrentFolderParent();
 	
+	/**
+	 * Retrieves all available projects.
+	 */
+	public MatchMakerFolder<Project> getProjects();
+	
 	
 	/**
      * find the sql table that exists in the session's database 

@@ -206,6 +206,10 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     	current.getChildren().addAll(folders);
     	return current;
     }
+    
+    public MatchMakerFolder<Project> getProjects() {
+    	throw new UnsupportedOperationException("getProjects() has not been implemented!");
+    }
 
     public Version getPLSchemaVersion() {
     	throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");
