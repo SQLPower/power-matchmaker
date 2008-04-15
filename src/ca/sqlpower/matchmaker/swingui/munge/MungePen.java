@@ -535,7 +535,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				plug.paintIcon(this, g, end.x, end.y - dragPlugOffset);
 			} else {
                 CubicCurve2D c = IOConnector.createConnectorPath(
-                        fixed.x, fixed.y, end.x, end.y);
+                        end.x, end.y, fixed.x, fixed.y);
                 g.draw(c);
 			}
 		}
