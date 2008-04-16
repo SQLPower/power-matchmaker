@@ -150,7 +150,7 @@ public class MungeStepLibrary {
 					nodeText = node.getUserObject().toString();
 				}
 				super.getTreeCellRendererComponent(tree, nodeText, sel, expanded, leaf, row, hasFocus);
-				setBackgroundNonSelectionColor(null);
+				setBackgroundNonSelectionColor(tree.getBackground());
 				
 				if (node.getUserObject() instanceof StepDescription) {
 					setIcon(((StepDescription) node.getUserObject()).getIcon());
@@ -170,7 +170,9 @@ public class MungeStepLibrary {
 		TreeSelectionModel selectionModel = new DefaultTreeSelectionModel();
 		selectionModel.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tree.setSelectionModel(selectionModel);
-		tree.setBackground(null);
+		tree.setBackground(LIGHT_BLUE);
+		tree.setRootVisible(false);
+        tree.setShowsRootHandles(true);
 		
 		libraryPane = new JScrollPane(tree);
 		libraryPane.getViewport().setBackground(LIGHT_BLUE);
