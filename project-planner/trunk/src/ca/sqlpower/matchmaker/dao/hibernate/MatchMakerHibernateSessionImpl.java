@@ -44,7 +44,6 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -119,13 +118,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 
     private FolderParent currentProjectFolderParent;
     
-    /**
-     * Stores the munge processes loaded from the database.
-     * This is done for convenience so we don't have to connect
-     * to the database as frequently.
-     */
-    private MatchMakerFolder<Project> currentMungeProcesses;
-    
     private FolderParent backupProjectFolderParent;
 
     private PlFolderDAO folderDAO;
@@ -144,6 +136,12 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * The version of the Power*Loader schema we're connected to.
      */
     private final Version plSchemaVersion;
+    
+    /**
+     * The default folder all projects are saved in. This is to keep the databases
+     * the same between the MatchMaker and the Project Planner.
+     */
+    private PlFolder<Project> defaultPlFolder;
 
     /**
      * XXX this is untestable unless you're connected to a database right now.
@@ -165,7 +163,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         this.context = context;
 		database = new SQLDatabase(ds);
 		dbUser = ds.getUser();
-
+		
 		final Connection con = database.getConnection();
 		final DatabaseMetaData dbmd = con.getMetaData();
         logger.info("Connected to repository database.");
@@ -223,7 +221,20 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
         mungeProcessDAO = new MungeProcessDAOHibernate(this);
         mungeStepDAO = new MungeStepDAOHibernate(this);
         matchMakerTranslateGroupDAO = new MatchMakerTranslateGroupDAOHibernate(this);
+        
         con.close();
+        
+        if (defaultPlFolder == null) {
+    		//Confirm that the default PlFolder exists.
+    		//All projects will be saved here and this is needed to keep
+    		//the database structure the same as MatchMaker.
+    		PlFolderDAOHibernate folderDAO = new PlFolderDAOHibernate(this);
+    		defaultPlFolder = folderDAO.findByName(DEFAULT_PLFOLDER_NAME);
+    		if (defaultPlFolder == null) {
+    			defaultPlFolder = new PlFolder<Project>(DEFAULT_PLFOLDER_NAME);
+    			folderDAO.save(defaultPlFolder);
+    		}
+    	}
 	}
 
     public MatchMakerSessionContext getContext() {
@@ -431,22 +442,6 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 		}
 		return currentProjectFolderParent;
 	}
-	
-	/**
-	 * Retrieves all projects from the database if they have
-	 * not been retrieved yet and returns them in a FolderParent object.
-	 */
-	public MatchMakerFolder<Project> getProjects() {
-		if (currentMungeProcesses == null) {
-			currentMungeProcesses = new MatchMakerFolder<Project>(Project.class);
-			currentMungeProcesses.setName("Current Projects");
-			ProjectDAO projectDAO = (ProjectDAO) getDAO(Project.class);
-			for(Project f :projectDAO.findAll()) {
-				currentMungeProcesses.addChild(f);
-			}
-		}
-		return currentMungeProcesses;
-	}
 
 	/**
      * Retrieves all the PL Folders from the database that have backed-up project
@@ -606,5 +601,9 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 			databases.put(dataSource,db);
 		}
 		return db;
+	}
+	
+	public PlFolder<Project> getDefaultPlFolder() {
+		return defaultPlFolder;
 	}
 }

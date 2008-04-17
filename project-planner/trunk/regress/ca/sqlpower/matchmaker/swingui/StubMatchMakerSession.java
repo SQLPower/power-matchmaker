@@ -30,7 +30,6 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -140,11 +139,6 @@ public class StubMatchMakerSession implements MatchMakerSession{
 		logger.debug("Stub call: StubMatchMakerSession.getCurrentFolderParent()");
 		return null;
 	}
-	
-	public MatchMakerFolder<Project> getProjects() {
-		logger.debug("Stub call: StubMatchMakerSession.getMungeProcesses()");
-		return null;
-	}
 
     public Version getPLSchemaVersion() {
         logger.debug("Stub call: StubMatchMakerSession.getPLSchemaVersion()");
@@ -191,6 +185,11 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	public SQLDatabase getDatabase(SPDataSource dataSource) {
 		logger.debug("Stub call: StubMatchMakerSession.getDatabase()");
 		return null;
+	}
+	
+	public PlFolder<Project> getDefaultPlFolder() {
+		logger.debug("Stub call: StubMatchMakerSession.getDefaultPlFolder()");
+		return new PlFolder<Project>(DEFAULT_PLFOLDER_NAME);
 	}
 
 }

@@ -47,6 +47,11 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 
 public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
+	
+    /**
+     * The light orange background color for use in the saved projects tree.
+     */
+    public static final Color LIGHT_ORANGE = new Color(0xfff5e5);
 
 	final private Icon projectIcon = new ImageIcon(getClass().getResource("/icons/match_project.png"));
 	final private Icon mungeIcon = new ImageIcon(getClass().getResource("/icons/cog.png"));
@@ -57,6 +62,15 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 	final private Icon mergeEngineIcon = new ImageIcon(getClass().getResource("/icons/cog_double_go.png"));
 	final private Icon translateWordIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/cog_edit.png"));
 	final private Icon mungeCompIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/color_wheel.png"));
+
+	/**
+	 * This is the session that contains the tree this renderer is being used on.
+	 */
+	private final MatchMakerSwingSession swingSession;
+	
+	public MatchMakerTreeCellRenderer(MatchMakerSwingSession swingSession) {
+		this.swingSession = swingSession;
+	}
 
 	public Component getTreeCellRendererComponent(JTree tree, Object value,
 			boolean selected, boolean expanded, boolean leaf, int row,
@@ -108,6 +122,7 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 				setIcon(stepDesc.getIcon());
 			}
 		} 
+		setBackgroundNonSelectionColor(tree.getBackground());
 		return this;
 	}
 

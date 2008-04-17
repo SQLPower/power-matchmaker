@@ -36,7 +36,6 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -241,11 +240,6 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.getCurrentFolderParent()");
 		return null;
 	}
-	
-	public MatchMakerFolder<Project> getProjects() {
-		logger.debug("Stub call: TestingMatchMakerHibernateSession.getProjects()");
-		return null;
-	}
     
     public Version getPLSchemaVersion() {
         throw new UnsupportedOperationException("Called getPLSchmaVersion on mock object");
@@ -254,6 +248,11 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 	public boolean canSelectTable(SQLTable table) {
 		logger.debug("Stub call: TestingMatchMakerHibernateSession.canSelectTable()");
 		return false;
+	}
+	
+	public PlFolder<Project> getDefaultPlFolder() {
+		logger.debug("Stub call: TestingMatchMakerHibernateSession.getDefaultPlFolder()");
+		return null;
 	}
 
 	 public SQLTable findPhysicalTableByName(String spDataSourceName, String catalog, String schema, String tableName) throws ArchitectException {

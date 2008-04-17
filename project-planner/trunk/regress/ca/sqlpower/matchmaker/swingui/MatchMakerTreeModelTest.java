@@ -49,7 +49,7 @@ public class MatchMakerTreeModelTest extends TestCase {
 		FolderParent current = new FolderParent(new TestingMatchMakerSession());
 		FolderParent backup = new FolderParent(new TestingMatchMakerSession());
 		TranslateGroupParent translate  = new TranslateGroupParent(new TestingMatchMakerSession());
-		treeModel = new MatchMakerTreeModel(current,backup,translate,new TestingMatchMakerSession());
+		treeModel = new MatchMakerTreeModel(current,new TestingMatchMakerSession());
 		currentFoldersNode = (MatchMakerObject<MatchMakerObject, PlFolder>) treeModel.getChild(treeModel.getRoot(), 0);
 		currentFoldersNode.addChild(folder);
 	}

@@ -145,7 +145,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 */
     public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder) throws ArchitectException {
         if (project == null) throw new IllegalArgumentException("You can't edit a null project");
-        if (folder == null) throw new IllegalArgumentException("Project must be in a folder");
+        folder = swingSession.getDefaultPlFolder();
         
         this.swingSession = swingSession;
         this.project = project;
@@ -625,11 +625,10 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		logger.debug("Saving Project:" + project.getName());
 		handler.resetHasValidated();
         
-        PlFolder selectedFolder = (PlFolder) folderComboBox.getSelectedItem();
-        if (project.getParent() != selectedFolder) {
-            swingSession.move(project,selectedFolder);
-        	swingSession.save(selectedFolder);
-        } 
+        if (project.getParent() != swingSession.getDefaultPlFolder()) {
+        	swingSession.getDefaultPlFolder().addChild(project);
+        }
+        logger.debug("Parent is " + project.getParent().getName());
         
         logger.debug(project.getResultTable());
         logger.debug("saving");

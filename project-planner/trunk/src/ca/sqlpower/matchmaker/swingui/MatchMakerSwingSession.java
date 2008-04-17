@@ -106,6 +106,7 @@ import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
+import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
@@ -128,6 +129,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private final SelectRemoveEditorListener removeEditorListener = new SelectRemoveEditorListener();
 
 	private static Logger logger = Logger.getLogger(MatchMakerSwingSession.class);
+	
+    /**
+     * The dark orange colour to be used as a background to the saved project
+     * files in the side bar title.
+     */
+    private static final Color DARK_ORANGE = new Color(0xff9a00);
 
     /**
      * Controls a few GUI tweaks that we do on OS X, such as moving menu items around.
@@ -155,7 +162,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * icon images).
      */
 	private final ImageIcon smallMMIcon;
-
+	
 	/**
 	 * The main part of the UI; the tree lives on the left and the current editor lives on the right.
      *
@@ -267,7 +274,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
     private CreateRepositoryAction createRepositoryAction = new CreateRepositoryAction(this);
     
-	private Action newDeDupeAction = null;
+    /**
+     * This will create a new project to add processes to.
+     */
+	private Action newProjectAction = null;
 	private Action newXrefAction = null;
 	private Action newCleanseAction = null;
 	
@@ -416,6 +426,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
+
+        //Need to set the session on the default folder so it is a swing session
+        sessionImpl.getDefaultPlFolder().setSession(this);
         
         cleanseEnginPanels = new HashMap<CleanseEngineImpl, CleanseEnginePanel>();
 
@@ -447,7 +460,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	void showGUI() {
 	    buildGUI();
         frame.setVisible(true);
-		splitPane.setDividerLocation(0.2);
+        splitPane.setDividerLocation(0.2);
 		
 		// adds a widget that allows the user to expand/collapse the splitpane
 		splitPane.setDividerSize(10);
@@ -460,10 +473,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler(frame));
         frame.setIconImage(smallMMIcon.getImage());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
-		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-
-		newDeDupeAction = new NewProjectAction(this, "New De-duping Project", Project.ProjectMode.FIND_DUPES);
+		newProjectAction = new NewProjectAction(this, "New Project", Project.ProjectMode.FIND_DUPES);
 		newXrefAction = new NewProjectAction(this, "New X-refing Project", Project.ProjectMode.BUILD_XREF);
 		newCleanseAction = new NewProjectAction(this, "New Cleansing Project", Project.ProjectMode.CLEANSE);
 		
@@ -492,9 +505,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		
 		JMenu projectMenu = new JMenu("Project");
 		projectMenu.setMnemonic('m');
-		projectMenu.add(newDeDupeAction);
-		projectMenu.add(newCleanseAction);
-		projectMenu.add(newXrefAction);
+		projectMenu.add(newProjectAction);
 		projectMenu.addSeparator();
 		projectMenu.add(editProjectAction);
 		projectMenu.add(deleteProjectAction);
@@ -550,14 +561,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
 
-		toolBar.add(newDeDupeAction);
-		toolBar.add(newCleanseAction);
-		toolBar.add(newXrefAction);
-        toolBar.addSeparator();
-        toolBar.add(runMatchAction);
-        toolBar.add(runMergeAction);
-        toolBar.add(runCleanseAction);
-        toolBar.addSeparator();
+		toolBar.add(newProjectAction);
         toolBar.addSeparator();
         toolBar.add(helpAction);
         toolBar.add(exitAction);
@@ -570,19 +574,21 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
-		tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(),getBackupFolderParent(),getTranslateGroupParent(), this));
+        tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(), this));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
 		tree.addMouseListener(matchMakerTreeMouseAndSelectionListener);
 		tree.addTreeSelectionListener(matchMakerTreeMouseAndSelectionListener);
-		tree.setCellRenderer(new MatchMakerTreeCellRenderer());
+		tree.setCellRenderer(new MatchMakerTreeCellRenderer(this));
 		tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
-
-        JScrollPane treePane = new JScrollPane(tree);
-        treePane.setMinimumSize(new Dimension(5,5));
-        treePane.setPreferredSize(new Dimension(1,1));
-		splitPane.setLeftComponent(treePane);
+        tree.setBackground(MatchMakerTreeCellRenderer.LIGHT_ORANGE);
+        JScrollPane savedProcessesPanel = new JScrollPane(tree);
+        savedProcessesPanel.getViewport().setBackground(MatchMakerTreeCellRenderer.LIGHT_ORANGE);
+        JPanel hiddenPanel = new JPanel();
+        hiddenPanel.setVisible(false);
+        splitPane.setLeftComponent(new MungePenSideBar(hiddenPanel, savedProcessesPanel, "SAVED PROJECTS", "(Double-click to open)", DARK_ORANGE).getToolbar());
+        
 		setCurrentEditorComponent(null);
 		cp.add(splitPane);
 
@@ -599,12 +605,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	public FolderParent getCurrentFolderParent() {
 		FolderParent current = sessionImpl.getCurrentFolderParent();
         logger.debug("getCurrentFolderParent(): Found folder list: "+current.getChildren());
-        return current;
-	}
-	
-	public MatchMakerFolder<Project> getProjects() {
-		MatchMakerFolder<Project> current = sessionImpl.getProjects();
-        logger.debug("getMungeProcesses(): Found munge processes: "+current.getChildren());
         return current;
 	}
 	
@@ -763,7 +763,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                     // If this line is not here, the divider would refuse to
                     // move and the left component would not be visible.
                     pane.getPanel().setMinimumSize(new Dimension(5,5));
-                    splitPane.setRightComponent(pane.getPanel());
+					splitPane.setRightComponent(pane.getPanel());
                     oldPane = pane;
                 } else {
                     // If this line is not here, the divider would refuse to
@@ -1379,5 +1379,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			this.selectNewChild = selectNewChild;
 		}
 	}
+	
+    public PlFolder<Project> getDefaultPlFolder() {
+    	return sessionImpl.getDefaultPlFolder();
+    }
 	
 }

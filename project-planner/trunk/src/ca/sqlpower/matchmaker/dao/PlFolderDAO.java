@@ -27,4 +27,11 @@ import ca.sqlpower.matchmaker.PlFolder;
  */
 public interface PlFolderDAO extends MatchMakerDAO<PlFolder> {
 	
+	/**
+	 * Finds a PlFolder in the Hibernate database with the given name. If the
+	 * folder is not found null will be returned. If more than one folder with
+	 * the given name is found an exception will be thrown.
+	 */
+	public PlFolder findByName(String name);
+	
 }

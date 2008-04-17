@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -46,6 +47,8 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
+import ca.sqlpower.matchmaker.swingui.munge.MungeStepInfoComponent;
+import ca.sqlpower.matchmaker.swingui.munge.MungeStepLibrary;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
@@ -61,8 +64,13 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess, MungeStep> {
     private static final Logger logger = Logger.getLogger(MungeProcessEditor.class);
-
 	
+	/**
+	 * The dark blue colour to be used as a background to the project steps
+	 * side bar title.
+	 */
+	private static final Color DARK_BLUE = new Color(0x003082);
+    
     /**
      * The project that is or will be the parent of the process we're editing.
      * If this editor was created for a new process, it will not belong to this
@@ -116,7 +124,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         	process.setSession(swingSession);
         }
         
-        this.mungePen = new MungePen(process, handler, parentProject);
+        this.mungePen = new MungePen(process, handler, swingSession);
         
         buildUI(process);
         setDefaults();
@@ -140,7 +148,13 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         panel.add(subPanel,BorderLayout.NORTH);
         
         panel.add(new JScrollPane(mungePen), BorderLayout.CENTER);
-        panel.add(new MungePenSideBar(mungePen, swingSession, process).getToolbar(), BorderLayout.EAST);
+        MungeStepLibrary msl = new MungeStepLibrary(mungePen, ((SwingSessionContext) swingSession.getContext()).getStepMap());
+        panel.add(new MungePenSideBar(new MungeStepInfoComponent(mungePen).getPanel(),
+        							  msl.getScrollPane(), "PROJECT STEPS", "(Drag into playpen)",
+        							  DARK_BLUE).getToolbar()
+        		, BorderLayout.EAST);
+        
+
     }
     
 	private void addListenerToComponents() {

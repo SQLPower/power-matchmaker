@@ -20,6 +20,11 @@
 
 package ca.sqlpower.matchmaker.dao.hibernate;
 
+import java.util.List;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
+
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.dao.PlFolderDAO;
 
@@ -35,6 +40,27 @@ public class PlFolderDAOHibernate extends AbstractMatchMakerDAOHibernate<PlFolde
 
 	public Class<PlFolder> getBusinessClass() {
 		return PlFolder.class;
+	}
+	
+	/**
+	 * Finds a PlFolder in the Hibernate database with the given name. If the
+	 * folder is not found null will be returned. If more than one folder with
+	 * the given name is found an exception will be thrown.
+	 */
+	public PlFolder findByName(String name) {
+		Session session = getHibernateSession();
+		Query query = session.createQuery("from PlFolder m where m.name = :name");
+		query.setParameter("name", name);
+		List plFolders = query.list();
+		if (plFolders.size() == 0) {
+			return null;
+		} else if (plFolders.size() == 1) {
+			PlFolder plFolder = (PlFolder) plFolders.get(0);
+			plFolder.setSession(getMatchMakerSession());
+			return plFolder;
+		} else {
+			throw new IllegalStateException("More than one PlFolder with name \""+name+"\"");
+		}
 	}
 
 

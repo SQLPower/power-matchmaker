@@ -29,7 +29,6 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.ProjectEditor;
 import ca.sqlpower.swingui.SPSUtils;
@@ -62,14 +61,7 @@ public final class NewProjectAction extends AbstractAction {
 			return;
 		}
 		
-		PlFolder<Project> folder = MMSUtils.getTreeObject(swingSession.getTree(), PlFolder.class);
-		if (folder == null) {
-			JOptionPane.showMessageDialog(swingSession.getFrame(),
-					"Please select a folder first",
-					"Warning",
-					JOptionPane.INFORMATION_MESSAGE);
-			return;
-		}
+		PlFolder<Project> folder = swingSession.getDefaultPlFolder();
 
 		final Project project = new Project();
 		project.setSession(swingSession);	

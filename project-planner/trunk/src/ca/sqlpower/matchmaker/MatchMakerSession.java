@@ -45,6 +45,12 @@ import ca.sqlpower.util.Version;
  * @version $Id$
  */
 public interface MatchMakerSession {
+	
+    /**
+	 * The default PlFolder name. All projects should have this folder as its parent.
+	 * This folder should always exist or be created if it doesn't.
+	 */
+	public static final String DEFAULT_PLFOLDER_NAME = "Default"; 
 
     /**
      * The session context that created this session.
@@ -81,6 +87,17 @@ public interface MatchMakerSession {
 	 * The time this session was created.
 	 */
 	public Date getSessionStartTime();
+	
+    /**
+     * This will retrieve the default {@link PlFolder} that contains all of the 
+     * projects. All projects are stored in this folder to keep the hibernate
+     * database the same as the MatchMaker's database and we don't need this folder
+     * in the ProjectPlanner. 
+     * <p>
+     * This value should never change or be changed once it
+     * is set!
+     */
+    public PlFolder<Project> getDefaultPlFolder();
 
     /**
      * Returns the folder that matches with the name
@@ -174,13 +191,7 @@ public interface MatchMakerSession {
 	/**
 	 * All of the projects that the current user can see that are active.
 	 */
-	public FolderParent getCurrentFolderParent();
-	
-	/**
-	 * Retrieves all available projects.
-	 */
-	public MatchMakerFolder<Project> getProjects();
-	
+	public FolderParent getCurrentFolderParent();	
 	
 	/**
      * find the sql table that exists in the session's database 

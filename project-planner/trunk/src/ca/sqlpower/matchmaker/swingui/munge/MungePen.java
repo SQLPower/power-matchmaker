@@ -74,13 +74,13 @@ import javax.swing.SwingUtilities;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.LabelPane;
+import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 import ca.sqlpower.matchmaker.swingui.action.AddLabelAction;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -213,19 +213,25 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	private List<LabelPane> labelsList;
 	
 	/**
+	 * The session this munge pen belongs to.
+	 */
+	private final MatchMakerSwingSession session;
+	
+	/**
 	 * Creates a new empty mungepen.
 	 * 
 	 */
-	public MungePen(MungeProcess process, FormValidationHandler handler, Project project) throws ArchitectException {
+	public MungePen(MungeProcess process, FormValidationHandler handler, MatchMakerSwingSession session) throws ArchitectException {
 		this.handler = handler;
 		this.process = process;
+		this.session = session;
 		
 		setFocusable(true);
 		setBackground(Color.WHITE);
 		setOpaque(true);
 
 		buildComponents(process);
-		buildPopup(((SwingSessionContext)process.getSession().getContext()).getStepMap());
+		buildPopup((session.getContext()).getStepMap());
 	
 		normalizing = false;
 		
@@ -388,8 +394,8 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		for (MungeStep ms : process.getChildren()) {
 			ms.addMatchMakerListener(mungeStepListener);
 			
-			SwingSessionContext ssc = ((SwingSessionContext) process.getSession().getContext());
-			AbstractMungeComponent mcom = ssc.getMungeComponent(ms, handler, process.getSession());
+			SwingSessionContext ssc = (session.getContext());
+			AbstractMungeComponent mcom = ssc.getMungeComponent(ms, handler, session);
 			modelMap.put(ms, mcom);
 			add(mcom,DEFAULT_LAYER);
 		}
@@ -558,7 +564,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 
 	private void addMungeStep(StepDescription logicClass, Point location) {
-		MungeStep ms = ((SwingSessionContext)process.getSession().getContext()).getMungeStep(logicClass);
+		MungeStep ms = (session.getContext()).getMungeStep(logicClass);
 		int x = location.x + COM_DROP_OFFSET_X;
 		int y = location.y + COM_DROP_OFFSET_Y;
 		ms.setParameter(MungeStep.MUNGECOMPONENT_X, x);
@@ -656,7 +662,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 
 		private void maybeShowPopup(MouseEvent e) {
 			if (e.isPopupTrigger()) {
-				JPopupMenu pop = buildPopup(((SwingSessionContext)process.getSession().getContext()).getStepMap());
+				JPopupMenu pop = buildPopup((session.getContext()).getStepMap());
 				pop.show(MungePen.this, (int)e.getX(), (int)e.getY());
 			}
 		}
@@ -791,9 +797,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			
 			for (int x : evt.getChangeIndices()) {
 				evt.getSource().getChildren().get(x).addMatchMakerListener(mungeStepListener);
-				SwingSessionContext ssc = (SwingSessionContext) process.getSession().getContext();
+				SwingSessionContext ssc = session.getContext();
 				AbstractMungeComponent mcom = (ssc.getMungeComponent(evt.getSource().getChildren().get(x),
-						handler, process.getSession()));
+						handler, session));
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
 				add(mcom);
 				logger.debug("Generating positions from properites");
