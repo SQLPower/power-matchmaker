@@ -108,7 +108,8 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 			}
 		} else if (value instanceof PlFolder || value instanceof MatchMakerFolder ||
 				value instanceof TranslateGroupParent || 
-				value instanceof FolderParent || value instanceof MatchMakerTranslateGroup){
+				value instanceof FolderParent || value instanceof MatchMakerTranslateGroup ||
+				value instanceof DisconnectedTreeModelSpecificContainer){
 			setIcon(folderIcon);
 		} else if (value instanceof MatchMakerTranslateWord) {
 			setIcon(translateWordIcon);

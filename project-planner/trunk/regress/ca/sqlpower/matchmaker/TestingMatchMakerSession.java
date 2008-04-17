@@ -58,11 +58,17 @@ public class TestingMatchMakerSession implements MatchMakerSession {
      * The map of SQLDatabases to SPDatasources so they can be cached.
      */
     private Map<SPDataSource, SQLDatabase> databases = new HashMap<SPDataSource, SQLDatabase>();
+
+    /**
+     * The folder that contains all projects for this session.
+     */
+	private PlFolder<Project> defaultFolder;
     
 	public TestingMatchMakerSession() {
 		folders =  new ArrayList<PlFolder>();
         translateGroupParent= new TranslateGroupParent(this);
         context = new TestingMatchMakerContext();
+        defaultFolder = new PlFolder<Project>(DEFAULT_PLFOLDER_NAME);
 	}
 
 	public String getAppUser() {
@@ -319,7 +325,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	}
 	
 	public PlFolder<Project> getDefaultPlFolder() {
-		return new PlFolder<Project>(DEFAULT_PLFOLDER_NAME);
+		return defaultFolder;
 	}
 	
 }

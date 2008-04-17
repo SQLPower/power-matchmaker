@@ -26,9 +26,10 @@ import javax.swing.event.TreeModelEvent;
 
 import junit.framework.TestCase;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
@@ -38,20 +39,22 @@ public class MatchMakerTreeModelTest extends TestCase {
 	MatchMakerTreeEventCounter counter;
 	MatchMakerTreeModel treeModel;
 	private MatchMakerObject<MatchMakerObject, PlFolder> currentFoldersNode;
-	private final PlFolder<TestingAbstractMatchMakerObject> folder =
+	private PlFolder folder =
 		new PlFolder<TestingAbstractMatchMakerObject>("Test Folder");
 	private final TestingAbstractMatchMakerObject mmo =
 		new TestingAbstractMatchMakerObject();
 
 	protected void setUp() throws Exception {
 		super.setUp();
+		MatchMakerSession session = new TestingMatchMakerSession();
 		counter = new MatchMakerTreeEventCounter();
-		FolderParent current = new FolderParent(new TestingMatchMakerSession());
-		FolderParent backup = new FolderParent(new TestingMatchMakerSession());
-		TranslateGroupParent translate  = new TranslateGroupParent(new TestingMatchMakerSession());
-		treeModel = new MatchMakerTreeModel(current,new TestingMatchMakerSession());
+		folder = session.getDefaultPlFolder();
+		FolderParent current = new FolderParent(session);
+		current.addChild(folder);
+		FolderParent backup = new FolderParent(session);
+		TranslateGroupParent translate  = new TranslateGroupParent(session);
+		treeModel = new MatchMakerTreeModel(current, session);
 		currentFoldersNode = (MatchMakerObject<MatchMakerObject, PlFolder>) treeModel.getChild(treeModel.getRoot(), 0);
-		currentFoldersNode.addChild(folder);
 	}
 
 	/**
@@ -155,8 +158,6 @@ public class MatchMakerTreeModelTest extends TestCase {
 	}
 
 	public void testTreeNodeStructChangeEvent() {
-		final PlFolder<TestingAbstractMatchMakerObject> folder =
-			new PlFolder<TestingAbstractMatchMakerObject>("Test Folder");
 		currentFoldersNode.addChild(folder);
 
 		final TestingAbstractMatchMakerObject mmo =

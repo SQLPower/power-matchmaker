@@ -214,14 +214,6 @@ public class MatchMakerTreeModel implements TreeModel {
 	private ActionCacheEventAdapter cacheLisener = new ActionCacheEventAdapter();
 	
 	/**
-	 * This is the listener for the hidden PlFolder containing all of the Projects.
-	 * This will allow the tree to listen to the PlFolder for newly added projects
-	 * and place them into the tree model and allow all of the tree model events to
-	 * fire.
-	 */
-	private ProjectFolderEventAdapter hiddenPlFolderListener = new ProjectFolderEventAdapter();
-	
-	/**
 	 * Takes in a FolderParent containing a PlFolder holding all of the available
 	 * Projects. The FolderParent will be held internally to monitor adding and 
 	 * removing of new Projects while the tree will only display the Projects
@@ -232,21 +224,18 @@ public class MatchMakerTreeModel implements TreeModel {
 		root.setSession(s);
 		this.current = current;
 		
-		myProjectsFolder = new PlFolder<Project>("My Projects");
+		myProjectsFolder = new DisconnectedTreeModelSpecificContainer<Project>("My Projects", s);
 		for (PlFolder folder : current.getChildren()) {
 			for (Object o : folder.getChildren()) {
 				Project p = (Project) o;
 				
-				//Need to preserve the parent, addChild will change the parent
-				MatchMakerObject parent = p.getParent();
 				myProjectsFolder.addChild(p);
-				p.setParent(parent);
 			}
 		}
 		root.addChild(myProjectsFolder);
 		
-		MatchMakerUtils.listenToHierarchy(listener, root);
-		MatchMakerUtils.listenToHierarchy(hiddenPlFolderListener, current);
+		root.addMatchMakerListener(listener);
+		MatchMakerUtils.listenToHierarchy(listener, current);
 		MatchMakerUtils.listenToShallowHierarchy(cacheLisener, current);
 	}
 
@@ -364,7 +353,7 @@ public class MatchMakerTreeModel implements TreeModel {
 	 * At current this is all of the projects but this should be a sub set once
 	 * we can define permissions.
 	 */
-	private PlFolder<Project> myProjectsFolder;
+	private DisconnectedTreeModelSpecificContainer<Project> myProjectsFolder;
 
 	public void addTreeModelListener(TreeModelListener l) {
 		treeModelListeners.add(l);
@@ -422,47 +411,6 @@ public class MatchMakerTreeModel implements TreeModel {
 	public void refresh() {
 		fireTreeNodesChanged(new TreeModelEvent(root, new TreePath(root)));
 	}
-	
-	/**
-	 * This listener will listen to the project folder that this class
-	 * represents. This is done to add and remove new projects to the tree when
-	 * they are added to the default PlFolder. We cannot directly place the
-	 * PlFolder in the tree as we do not want the PlFolder visible but the
-	 * Project objects still need to be in a PlFolder.
-	 */
-	private class ProjectFolderEventAdapter<T extends MatchMakerObject, C extends MatchMakerObject>
-			implements MatchMakerListener<T, C> {
-
-		public void mmChildrenInserted(MatchMakerEvent<T, C> evt) {
-			for(Object child : evt.getChildren()) {
-				if (child instanceof Project) {
-					Project project = (Project) child;
-
-					//Need to preserve the parent, addChild will change the parent
-					MatchMakerObject parent = project.getParent();
-					myProjectsFolder.addChild(project);
-					project.setParent(parent);
-					logger.debug("My Projects should contain " + myProjectsFolder.getChildCount() + " children.");
-				}
-			}
-		}
-
-		public void mmChildrenRemoved(MatchMakerEvent<T, C> evt) {
-			for(Object child : evt.getChildren()) {
-				if (child instanceof Project) {
-					Project p = (Project) child;
-					myProjectsFolder.removeChild(p);
-				}
-			}
-		}
-
-		public void mmPropertyChanged(MatchMakerEvent<T, C> evt) {
-		}
-
-		public void mmStructureChanged(MatchMakerEvent<T, C> evt) {
-		}
-		
-	}
 
 	private class TreeModelEventAdapter<T extends MatchMakerObject, C extends MatchMakerObject>
 			implements MatchMakerListener<T, C> {
@@ -476,6 +424,15 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 
 		public void mmChildrenInserted(MatchMakerEvent<T, C> evt) {
+			for(Object child : evt.getChildren()) {
+				if (child instanceof Project) {
+					Project project = (Project) child;
+
+					myProjectsFolder.addChild(project);
+					logger.debug("My Projects should contain " + myProjectsFolder.getChildCount() + " children.");
+				}
+			}
+			
 			TreePath paths = getPathForNode(evt.getSource());
 			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths, evt
 					.getChangeIndices(), evt.getChildren().toArray());
@@ -507,6 +464,13 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 
 		public void mmChildrenRemoved(MatchMakerEvent<T, C> evt) {
+			for(Object child : evt.getChildren()) {
+				if (child instanceof Project) {
+					Project p = (Project) child;
+					myProjectsFolder.removeChild(p);
+				}
+			}
+			
 			TreePath path = getPathForNode(evt.getSource());
             if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children removed event!");
@@ -549,15 +513,19 @@ public class MatchMakerTreeModel implements TreeModel {
 	public TreePath getPathForNode(MatchMakerObject<?, ?> source) {
 		List<MatchMakerObject> path = new LinkedList<MatchMakerObject>();
 		while (source != null) {
-			path.add(0, source);
 			
-			//The path to the node should be for the tree, hence prject
+			//The path to the node should be for the tree, hence project
 			//parents are always the myProjectsFolder
-			if (source instanceof Project) {
-				source = myProjectsFolder;
+			if (source == session.getDefaultPlFolder()) {
+				logger.debug("Adding my project folder");
+				path.add(0, myProjectsFolder);
+				source = myProjectsFolder.getParent();
 			} else {
+				logger.debug("Adding source is " + source + " with name " + source.getName());
+				path.add(0, source);
 				source = source.getParent();
 			}
+			
 		}
 		return new TreePath(path.toArray());
 	}
