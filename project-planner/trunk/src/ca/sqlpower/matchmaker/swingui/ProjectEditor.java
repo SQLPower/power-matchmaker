@@ -33,7 +33,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -73,7 +72,6 @@ import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
@@ -195,32 +193,9 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     private void addValidators() {
     	Validator v = new ProjectNameValidator(swingSession,project);
         handler.addValidateObject(projectId,v);
-
-        Validator v2 = new ProjectSourceTableValidator(Collections.singletonList(saveAction));
-        handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
-
-        Validator v2a = new ProjectSourceTableIndexValidator();
-        handler.addValidateObject(indexComboBox,v2a);
-
-        if (project.getType() != ProjectMode.CLEANSE) { 
-    		Validator v3 = new ProjectResultCatalogSchemaValidator("Result "+
-    				resultChooser.getCatalogTerm().getText());
-    		handler.addValidateObject(resultChooser.getCatalogComboBox(),v3);
-    	
-    		Validator v4 = new ProjectResultCatalogSchemaValidator("Result "+
-    				resultChooser.getSchemaTerm().getText());
-    		handler.addValidateObject(resultChooser.getSchemaComboBox(),v4);
-        	
-        	Validator v5 = new ProjectResultTableNameValidator();
-        	handler.addValidateObject(resultTableName,v5);
-        }
         	
         Validator v6 = new AlwaysOKValidator();
         handler.addValidateObject(desc, v6);
-        handler.addValidateObject(filterPanel.getFilterTextArea(), v6);
-        
-        handler.addValidateObject(sourceChooser.getDataSourceComboBox(), v6);
-        handler.addValidateObject(resultChooser.getDataSourceComboBox(), v6);
     }
     
     private Action showConnectionManagerAction = new AbstractAction("Manage Connections...") {
@@ -347,7 +322,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
     	FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,40dlu,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref, 4dlu,32dlu,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,10dlu"); // rows
+				"10dlu,pref,4dlu,pref,4dlu,80dlu,4dlu,pref,10dlu"); // rows
 
 		PanelBuilder pb;
 
@@ -360,55 +335,11 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		pb.add(new JLabel("Project ID:"), cc.xy(2,row,"r,c"));
 		pb.add(projectId, cc.xy(4,row));
 		row += 2;
-		pb.add(new JLabel("Folder:"), cc.xy(2,row,"r,c"));
-		pb.add(folderComboBox, cc.xy(4,row));
-		row += 2;
         desc.setWrapStyleWord(true);
         desc.setLineWrap(true);
 		pb.add(new JLabel("Description:"), cc.xy(2,row,"r,t"));
 		pb.add(new JScrollPane(desc), cc.xy(4,row,"f,f"));
 		row += 2;
-		pb.add(new JLabel("Type:"), cc.xy(2,row,"r,c"));
-		pb.add(projectType, cc.xy(4,row));
-        projectType.setEditable(false);
-        row+=2;
-        pb.add(new JLabel("Data Source:"),cc.xy(2,row,"r,c"));
-        pb.add(sourceChooser.getDataSourceComboBox(),cc.xy(4, row));
-        pb.add(new JButton(showConnectionManagerAction), cc.xy(6, row));
-		row+=2;
-		pb.addTitle("Source Table", cc.xy(2, row));
-		row+=2;
-		pb.add(viewBuilder, cc.xy(6,row,"f,f"));
-		pb.add(sourceChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
-		pb.add(sourceChooser.getCatalogComboBox(), cc.xy(4,row));
-		row+=2;
-		pb.add(sourceChooser.getSchemaTerm(), cc.xy(2,row,"r,c"));
-		pb.add(sourceChooser.getSchemaComboBox(), cc.xy(4,row));
-		row+=2;
-		pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,c"));
-		pb.add(sourceChooser.getTableComboBox(), cc.xy(4,row));
-		row+=2;
-		pb.add(new JLabel("Unique Index:"), cc.xy(2,row,"r,t"));
-		pb.add(indexComboBox, cc.xy(4,row,"f,f"));
-		pb.add(createIndexButton, cc.xy(6,row,"f,f"));
-		row+=2;
-		pb.add(new JLabel("Filter:"), cc.xy(2,row,"r,t"));
-		pb.add(new JScrollPane(filterPanel.getFilterTextArea()), cc.xy(4,row,"f,f"));
-        pb.add(filterPanel.getEditButton(), cc.xy(6,row));
-		row+=2;
-		if (project.getType() != ProjectMode.CLEANSE) {
-			pb.addTitle("Output Table", cc.xy(2, row));
-			row+=2;
-			pb.add(resultChooser.getCatalogTerm(), cc.xy(2,row,"r,c"));
-			pb.add(resultChooser.getCatalogComboBox(), cc.xy(4,row));
-			row+=2;
-			pb.add(resultChooser.getSchemaTerm(), cc.xy(2,row,"r,c"));
-			pb.add(resultChooser.getSchemaComboBox(), cc.xy(4,row));
-			row+=2;
-			pb.add(new JLabel("Table Name:"), cc.xy(2,row,"r,c"));
-			pb.add(resultTableName, cc.xy(4,row));
-			row+=2;
-		}
 		
         final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
         folderComboBox.setModel(new DefaultComboBoxModel(folders.toArray()));
@@ -536,35 +467,11 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     		return false;
     	}
 
-        //sets the sourceTable
-        SQLTable sourceTable = (SQLTable) sourceChooser.getTableComboBox().getSelectedItem();
-        SQLIndex sourceTableIndex = (SQLIndex) indexComboBox.getSelectedItem();
-        if (sourceTable == null || sourceTableIndex == null) {
-        	throw new IllegalStateException("Source table/index not found.");
-        }
-        project.setSourceTable(sourceTable);
-        project.setSourceTableIndex(sourceTableIndex);
-        project.setFilter(filterPanel.getFilterTextArea().getText());
-
         //sets the project name, id and desc
         final String projectName = projectId.getText().trim();
         project.getMungeSettings().setDescription(desc.getText());
         String id = projectId.getText();
-        if ( projectName == null || projectName.length() == 0 ) {
-        	StringBuffer s = new StringBuffer();
-        	s.append("PROJECT_");
-			if (sourceTable.getCatalogName() != null &&
-        			sourceTable.getCatalogName().length() > 0 ) {
-        		s.append(sourceTable.getCatalogName()).append("_");
-        	}
-			if (sourceTable.getSchemaName() != null &&
-        			sourceTable.getSchemaName().length() > 0 ) {
-        		s.append(sourceTable.getSchemaName()).append("_");
-        	}
-			s.append(sourceTable.getName());
-        	id = s.toString();
-        	projectId.setText(id);
-        }
+
 		if (!id.equals(project.getName())) {
         	if (!swingSession.isThisProjectNameAcceptable(id)) {
         		JOptionPane.showMessageDialog(getPanel(),
@@ -576,41 +483,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         		return false;
         	}
         	project.setName(id);
-        }
-
-        if (project.getType() != ProjectMode.CLEANSE) {
-        	//sets the result table
-	
-	        project.setResultTableSPDatasource(((SPDataSource)(resultChooser.getDataSourceComboBox().getSelectedItem())).getName());
-	        
-	        if(resultChooser.getCatalogComboBox().getSelectedItem() != null) {
-	        	project.setResultTableCatalog( ((SQLCatalog) resultChooser.getCatalogComboBox().getSelectedItem()).getName());
-	        }
-	        if(resultChooser.getSchemaComboBox().getSelectedItem() != null) {
-	        	project.setResultTableSchema( ((SQLSchema) resultChooser.getSchemaComboBox().getSelectedItem()).getName());
-	        }
-	        project.setResultTableName(resultTableName.getText());
-	        
-	        logger.debug(project.getResultTable());
-        
-	        try {
-	        	if (!Project.doesResultTableExist(swingSession, project) ||
-	        			!project.verifyResultTableStruct()) {
-	        		generateResultTableSQL();
-	        		
-	        		SQLTable resultTable = swingSession.findPhysicalTableByName(project.getResultTableSPDatasource(), project.getResultTableCatalog(),
-	        				project.getResultTableSchema(), project.getResultTableName());
-					if (resultTable == null) return false;
-					project.setResultTable(resultTable);
-	        	}
-	        	if (!Project.doesResultTableExist(swingSession, project) ||
-	        			!project.verifyResultTableStruct()) {
-	        		return false;
-	        	}
-			} catch (Exception e) {
-				SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(),
-					"Error in trying to update result table while saving", e);
-			}
         }
 
         if (project.getParent() == null) {
