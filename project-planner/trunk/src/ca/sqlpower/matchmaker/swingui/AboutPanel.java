@@ -41,7 +41,7 @@ public class AboutPanel extends JPanel implements DataEntryPanel {
 		setLayout(new FlowLayout());
 
         // Include the product's 128x128 Icon
-		ImageIcon icon = SPSUtils.createIcon("matchmaker_128", "MatchMaker Logo");
+		ImageIcon icon = SPSUtils.createIcon("pp", "Project Planner Logo");
 
         if (icon != null) {
             add(new JLabel(icon));
@@ -50,9 +50,9 @@ public class AboutPanel extends JPanel implements DataEntryPanel {
         }
         String message =
             "<html>" +
-            "<h1>Power*MatchMaker</h1>" +
+            "<h1>Project Planner</h1>" +
             "<p>Version " + MatchMakerVersion.APP_VERSION + "</p>" +
-            "<p>Copyright 2007 SQL Power Group Inc.</p>" +
+            "<p>Copyright 2008 SQL Power Group Inc.</p>" +
             "</html>";
 		content = new JLabel(message);
 		add(content);
