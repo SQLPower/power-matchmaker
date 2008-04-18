@@ -33,6 +33,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
@@ -147,14 +148,20 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		subPanel.add(new JButton(saveAction), cc.xy(6,4));
         panel.add(subPanel,BorderLayout.NORTH);
         
-        panel.add(new JScrollPane(mungePen), BorderLayout.CENTER);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setResizeWeight(0.8);
+		
+		// adds a widget that allows the user to expand/collapse the splitpane
+		splitPane.setDividerSize(10);
+		splitPane.setOneTouchExpandable(true);
+		
+        splitPane.setLeftComponent(new JScrollPane(mungePen));
         MungeStepLibrary msl = new MungeStepLibrary(mungePen, ((SwingSessionContext) swingSession.getContext()).getStepMap());
-        panel.add(new MungePenSideBar(new MungeStepInfoComponent(mungePen).getPanel(),
+        splitPane.setRightComponent(new MungePenSideBar(new MungeStepInfoComponent(mungePen).getPanel(),
         							  msl.getScrollPane(), "PROJECT STEPS", "(Drag into playpen)",
-        							  DARK_BLUE).getToolbar()
-        		, BorderLayout.EAST);
+        							  DARK_BLUE).getToolbar());
+        panel.add(splitPane, BorderLayout.CENTER);
         
-
     }
     
 	private void addListenerToComponents() {
