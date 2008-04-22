@@ -1139,7 +1139,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		if (!lockScrollInsets) {
 			setAutoScrollInsets();
 		}
-		logger.debug(lockedScrollInsets);
 		return lockedScrollInsets;
 	}
 	
@@ -1171,7 +1170,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		for (Component com : getComponents()) {
 			if (com instanceof AbstractMungeComponent) {
 				AbstractMungeComponent mcom = (AbstractMungeComponent) com;
-				if (mcom.hasUnsavedChanges()) {
+				if (mcom.hasPositionChanged() || mcom.hasSizeChanged()) {
 					changedComponents.add(mcom);
 				}
 			}

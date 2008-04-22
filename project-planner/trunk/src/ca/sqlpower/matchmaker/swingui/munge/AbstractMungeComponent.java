@@ -81,6 +81,20 @@ import ca.sqlpower.validation.swingui.FormValidationHandler;
 public abstract class AbstractMungeComponent extends JPanel {
 	
 	private static  final Logger logger = org.apache.log4j.Logger.getLogger(AbstractMungeComponent.class); 
+	
+	/**
+	 * An enumeration that describes the different ways a mouse drag event can affect
+	 * this component.
+	 */
+	private enum DragState {
+		MOVING,
+		RESIZING
+	}
+	
+	/**
+	 * The current mode of dragging.
+	 */
+	private DragState currentDragState = null;
 		
 	protected JPanel content;
 	protected JPanel contentPlusNames;
@@ -155,6 +169,17 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * The amount to drop the nib after each interval
 	 */
 	public static final int DROP_AMOUNT = 5;
+
+	/**
+	 * The dimensions of the resize icon in the bottom right of the munge components.
+	 */
+	public static final Dimension RESIZE_ICON_SIZE = new Dimension(15, 15);
+	
+	/**
+	 * The image to be placed in the bottom right corner of the component to allow users
+	 * to drag and resize the component.
+	 */
+	private static final Image RESIZE_ICON = new ImageIcon(AbstractMungeComponent.class.getClassLoader().getResource("icons/resize_icon.png")).getImage();
 	
 	private MatchMakerSwingSession session;
 	
@@ -361,6 +386,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		deOpaquify(this);
 		deOpaquify(inputNames);
 		setExpanded(true);
+
 	}
 	
 	private void buildInputNamesPanel() {
@@ -493,6 +519,9 @@ public abstract class AbstractMungeComponent extends JPanel {
 		setExpanded(isExpanded());
 		configureXFromMMO();
 		configureYFromMMO();
+		configureWidthFromMMO();
+		configureHeightFromMMO();
+		logger.debug("default size is " + getSize());
 	}
 	
 	private void configureXFromMMO() {
@@ -503,18 +532,33 @@ public abstract class AbstractMungeComponent extends JPanel {
 		setLocation(getX(), getYFromMMO());
 	}
 
-
+	private void configureWidthFromMMO() {
+		content.setSize(getWidthFromMMO(), content.getHeight());
+		setSize(getPreferredSize());
+	}
+	
+	private void configureHeightFromMMO() {
+		content.setSize(content.getWidth(), getHeightFromMMO());
+		setSize(getPreferredSize());
+	}
 	
 	/**
 	 * Set the x y parameter to the current value if needed.
+	 * Also sets the width and height parameters.
 	 */
 	public void applyChanges() {
 		MungeStep step = getStep();
-		if (hasUnsavedChanges()) step.setPosition(getX(), getY());
+		if (hasPositionChanged()) step.setPosition(getX(), getY());
+		logger.debug("If the size has changed (" + hasSizeChanged() + ") then we will store the size " + content.getWidth() + ", " + content.getHeight());
+		if (hasSizeChanged()) step.setSize(content.getWidth(), content.getHeight());
 	}
 	
-	public boolean hasUnsavedChanges() {
+	public boolean hasPositionChanged() {
 		return getXFromMMO() != getX() || getYFromMMO() != getY();
+	}
+	
+	public boolean hasSizeChanged() {
+		return getWidthFromMMO() != content.getWidth() || getHeightFromMMO() != content.getHeight();
 	}
 
 	/**
@@ -558,6 +602,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * to your preferences panel, and it's being made non-opaque against your wishes,
 	 * add its class to the {@link #opaqueComponents} set in your {@link #setupOpaqueComponents()}
 	 * method.
+	 * <p>
+	 * Important note for resizing: The panel returned here will have its size set
+	 * as the component is being resized. The minimum size of the panel will also
+	 * be used to determine how small the component can be shrunk. Override
+	 * {@link JPanel#setSize(int, int)} and {@link JPanel#getMinimumSize()} as required.
 	 * 
 	 * @return The option panel or null
 	 */
@@ -658,13 +707,15 @@ public abstract class AbstractMungeComponent extends JPanel {
 		return getStepParameter(MungeStep.MUNGECOMPONENT_Y, 0);
 	}
 	
+	private int getWidthFromMMO() {
+		return getStepParameter(MungeStep.MUNGECOMPONENT_WIDTH, (int)content.getMinimumSize().getWidth());
+	}
+	private int getHeightFromMMO() {
+		return getStepParameter(MungeStep.MUNGECOMPONENT_HEIGHT, (int)content.getMinimumSize().getHeight());
+	}
+	
 	@Override
 	protected void paintComponent(Graphics g) {
-		
-		if (getPreferredSize().width != getWidth() || getPreferredSize().height != getHeight()) {
-			setBounds(getX(), getY(), getPreferredSize().width, getPreferredSize().height);
-			revalidate();
-		}
 		
 		Insets border = getBorder().getBorderInsets(this);
 		Dimension dim = getSize();
@@ -732,6 +783,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 		g.fillRect(0, 0, dim.width-1, dim.height-1);
 		
+		g.drawImage(RESIZE_ICON, dim.width - RESIZE_ICON_SIZE.width, dim.height - RESIZE_ICON_SIZE.height, null);
 	}
 	
 	/**
@@ -859,6 +911,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 				configureXFromMMO();
 			} else if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_Y)) {
 				configureYFromMMO();
+			} else if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_WIDTH)) {
+				configureWidthFromMMO();
+			} else if (evt.getPropertyName().equals(MungeStep.MUNGECOMPONENT_HEIGHT)) {
+				configureHeightFromMMO();
 			} else if (evt.getPropertyName().equals("addInputs")){
 				repaint();
 			} else if (!evt.getPropertyName().equals("inputs")
@@ -972,9 +1028,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		public void mouseClicked(MouseEvent e) {
 			boolean showPopup = maybeShowPopup(e);
-			if (!showPopup && e.getClickCount() == 2){; 
-				step.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, !isExpanded());
-			}
 			bustGhost();
 			autoScrollTimer.stop();
 		}
@@ -997,6 +1050,13 @@ public abstract class AbstractMungeComponent extends JPanel {
 					requestFocusInWindow();
 				}
 				startPoint = getLocation();
+				
+				if(diff.getX() > getWidth() - RESIZE_ICON_SIZE.getWidth() - getInsets().right 
+						&& diff.getY() > getHeight() - RESIZE_ICON_SIZE.getHeight() - getInsets().bottom) {
+					currentDragState = DragState.RESIZING;
+				} else {
+					currentDragState = DragState.MOVING;
+				}
 			}
 		}
 
@@ -1005,6 +1065,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 			MungePen mp = getPen();
 			mp.lockAutoScroll(false);
 			autoScrollTimer.stop();
+			logger.debug("Mouse released: connecting? " + (!maybeShowPopup(e) && mp.isConnecting()));
 			if (!maybeShowPopup(e) && mp.isConnecting()) {
 				Point abs = new Point(e.getX() + getX(),e.getY()+getY());
 				AbstractMungeComponent amc = mp.getMungeComponentAt(abs);
@@ -1018,6 +1079,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 			mp.normalize();
 			mp.stopConnection();
 			mp.revalidate();
+			
+			currentDragState = null;
 		}
 	}
 	
@@ -1070,35 +1133,63 @@ public abstract class AbstractMungeComponent extends JPanel {
 					//unlocks the bounds (because the pen has no idea when the mouse is moving
 					getPen().lockAutoScroll(false);
 					e.translatePoint(getX(), getY());
-					setLocation((int)(e.getX() - diff.getX()), (int)(e.getY()-diff.getY()));
 					
-					//checks if auto scrolling is a good idea at the present time
-					MungePen pen = getPen();
-					Insets autoScroll = pen.getAutoscrollInsets();
-					//does not use the mouse point because this looks better
-					autoScrollPoint = new Point(pen.getWidth()/2, pen.getHeight()/2);
-					boolean asChanged = false;
-					if (getX() + getWidth() > pen.getWidth() - autoScroll.right) {
-						autoScrollPoint.x = getX() + getWidth();
-						asChanged = true;
-					}
-					if (getY() + getHeight() > pen.getHeight() - autoScroll.bottom) {
-						autoScrollPoint.y = getY() + getHeight();
-						asChanged = true;
-					}
-					if (getX() < autoScroll.left) {
-						autoScrollPoint.x = getX();
-						asChanged = true;
-					}
-					if (getY() < autoScroll.top) {
-						autoScrollPoint.y = getY();
-						asChanged = true;
-					}
+					if (currentDragState.equals(DragState.RESIZING)) {
+						int xModifier = (int)(e.getX() - diff.getX() - getX());
+						int yModifier = (int)(e.getY()-diff.getY() - getY());
+						
+						if (content.getMinimumSize().getWidth() < content.getWidth() + xModifier) {
+							content.setSize(content.getWidth() + xModifier, content.getHeight());
+							diff.setLocation(diff.getX() + xModifier, diff.getY());
+						} else {
+							content.setSize((int)content.getMinimumSize().getWidth(), content.getHeight());
+							diff.setLocation(getPreferredSize().getWidth() - getInsets().right, diff.getY());
+						}
+						
+						logger.debug("Minimum height is " + content.getMinimumSize().getHeight() + ", user changing to " + content.getHeight() + " + " + yModifier);
+						if (content.getMinimumSize().getHeight() < content.getHeight() + yModifier) {
+							content.setSize(content.getWidth(), content.getHeight() + yModifier);
+							diff.setLocation(diff.getX(), diff.getY() + yModifier);
+						} else {
+							content.setSize(content.getWidth(), (int)content.getMinimumSize().getHeight());
+							diff.setLocation(diff.getX(), getPreferredSize().getHeight() - getInsets().bottom);
+						}
+						
+						setSize(getPreferredSize());
+						revalidate();
+					} else if (currentDragState.equals(DragState.MOVING)){
+						setLocation((int)(e.getX() - diff.getX()), (int)(e.getY()-diff.getY()));						
 					
-					if (!asChanged) {
-						autoScrollTimer.stop();
-					} else {
-						autoScrollTimer.restart();
+
+
+						//checks if auto scrolling is a good idea at the present time
+						MungePen pen = getPen();
+						Insets autoScroll = pen.getAutoscrollInsets();
+						//does not use the mouse point because this looks better
+						autoScrollPoint = new Point(pen.getWidth()/2, pen.getHeight()/2);
+						boolean asChanged = false;
+						if (getX() + getWidth() > pen.getWidth() - autoScroll.right) {
+							autoScrollPoint.x = getX() + getWidth();
+							asChanged = true;
+						}
+						if (getY() + getHeight() > pen.getHeight() - autoScroll.bottom) {
+							autoScrollPoint.y = getY() + getHeight();
+							asChanged = true;
+						}
+						if (getX() < autoScroll.left) {
+							autoScrollPoint.x = getX();
+							asChanged = true;
+						}
+						if (getY() < autoScroll.top) {
+							autoScrollPoint.y = getY();
+							asChanged = true;
+						}
+
+						if (!asChanged) {
+							autoScrollTimer.stop();
+						} else {
+							autoScrollTimer.restart();
+						}
 					}
 					
 				}

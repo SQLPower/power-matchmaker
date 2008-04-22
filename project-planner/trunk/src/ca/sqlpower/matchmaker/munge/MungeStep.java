@@ -48,6 +48,18 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	public static final String MUNGECOMPONENT_EXPANDED ="expanded";
 	
 	/**
+	 * The width of the munge component. This needs to be stored since we allow
+	 * the user to resize components.
+	 */
+	public static final String MUNGECOMPONENT_WIDTH = "width";
+	
+	/**
+	 * The height of the munge component. This needs to be stored since we allow
+	 * the user to resize components.
+	 */
+	public static final String MUNGECOMPONENT_HEIGHT = "height";
+	
+	/**
      * Returns the String representation of the parameter value associated with
      * the given name.
      * 
@@ -98,6 +110,11 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * sets the position of the munge step
 	 */
 	void setPosition(int x, int y);
+	
+	/**
+	 * Sets the size of the munge step
+	 */
+	void setSize(int width, int height);
 	
     /**
      * Enumerates the list of all parameter names currently in place in this munge step.

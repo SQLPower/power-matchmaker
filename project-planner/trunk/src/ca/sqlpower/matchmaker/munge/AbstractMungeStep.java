@@ -287,6 +287,16 @@ public abstract class AbstractMungeStep extends AbstractMatchMakerObject<MungeSt
 		}
 	}
 	
+	public void setSize(int width, int height) {
+		try {
+			startCompoundEdit();
+			setParameter(MUNGECOMPONENT_WIDTH, width);
+			setParameter(MUNGECOMPONENT_HEIGHT, height);
+		} finally {
+			endCompoundEdit();
+		}
+	}
+	
 	public void setParameter(String name, String newValue) {
 		String oldValue = parameters.get(name);
 		parameters.put(name, newValue);

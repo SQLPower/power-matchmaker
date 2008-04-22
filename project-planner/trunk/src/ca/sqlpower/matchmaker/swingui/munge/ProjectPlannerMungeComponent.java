@@ -19,6 +19,8 @@
 
 package ca.sqlpower.matchmaker.swingui.munge;
 
+import java.awt.Dimension;
+
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -39,7 +41,9 @@ import ca.sqlpower.matchmaker.munge.ProjectPlannerMungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.RowSpec;
 
 /**
  * This is the munge component for the {@link ProjectPlannerMungeStep}.
@@ -51,10 +55,20 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 	private static final Logger logger = Logger.getLogger(ProjectPlannerMungeComponent.class);
 	
 	/**
+	 * The minimum width components can be in pixels.
+	 */
+	private static final int MIN_COMPONENT_WIDTH = 100;
+	
+	/**
 	 * The text pane used to display a description of this munge step
 	 * to the user. The user can update this field as they wish.
 	 */
 	private JTextPane text;
+
+	/**
+	 * The label that holds the icon displayed on this component.
+	 */
+	private JLabel iconLabel;
 
 	public ProjectPlannerMungeComponent(MungeStep step,
 			FormValidationHandler handler, MatchMakerSession session, Icon mainIcon) {
@@ -63,15 +77,42 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 
 	@Override
 	protected JPanel buildUI() {
-		JPanel panel = new JPanel();
-		FormLayout layout = new FormLayout("100px", "pref, pref:grow");
+		JPanel panel = new JPanel() {
+			@Override
+			public void setSize(int width, int height) {
+				int minimumWidth = (int)getMinimumSize().getWidth();
+				if (width <= minimumWidth) {
+					width = minimumWidth;
+				}
+				int minimumHeight = (int)getMinimumSize().getHeight();
+				if (height <= minimumHeight) {
+					height = minimumHeight;
+				}
+				super.setSize(width, height);
+				
+				//Sets the layout sizes otherwise the text field won't expand fully.
+				FormLayout formLayout = ((FormLayout) getLayout());
+				formLayout.setColumnSpec(1, new ColumnSpec(width + "px"));
+				double preferredIconHeight = iconLabel.getPreferredSize().getHeight();
+				formLayout.setRowSpec(2, new RowSpec("fill:" + (height - preferredIconHeight) + "px"));
+				logger.debug("Panel width is now " + width + " and height is " + height  + " - " + preferredIconHeight);
+			}
+
+			@Override
+			public Dimension getMinimumSize() {
+				Dimension d = new Dimension();
+				d.width = MIN_COMPONENT_WIDTH;
+				d.height = (int)(iconLabel.getPreferredSize().getHeight() + text.getPreferredSize().getHeight());
+				return d;
+			}
+		};
+		FormLayout layout = new FormLayout("100px", "pref, fill:pref:grow");
 		panel.setLayout(layout);
 		CellConstraints cc = new CellConstraints();
 		
 		logger.debug("The main icon for this component is " + getMainIcon());
 		
-		JLabel iconLabel = new JLabel(getMainIcon());
-		
+		iconLabel = new JLabel(getMainIcon());
 		text = new JTextPane();
 		text.setBorder(null);
 		text.setBackground(null);
