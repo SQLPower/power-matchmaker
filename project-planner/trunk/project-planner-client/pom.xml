@@ -1,0 +1,69 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>ca.sqlpower.</groupId>
+	<parent>
+		<groupId>ca.sqlpower</groupId>
+		<artifactId>project-planner</artifactId>
+	</parent>
+	<artifactId>project-planner-client</artifactId>
+	<packaging>jar</packaging>
+	<version>0.9-SNAPSHOT</version>
+	<name>project-planner</name>
+
+	<organization>
+		<name>SQL Power Group Inc.</name>
+		<url>http://www.sqlpower.ca/</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>GNU Public License Version 3</name>
+			<url>
+				http://www.gnu.org/licenses/gpl.html
+			</url>
+		</license>
+	</licenses>
+	
+	<developers>
+  		<developer>
+	  		<id>fuerth</id>
+	  		<name>Jonathan Fuerth</name>
+	  		<email>fuerth@sqlpower.ca</email>
+	  		<url>http://www.sqlpower.ca</url>
+	  		<organization>SQL Power Group Inc.</organization>
+	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
+	  		<roles>
+	  			<role>Director of Global Variables</role>
+	  		</roles>
+	  		<timezone>-5</timezone>
+	  	</developer>
+	  	
+	  	<developer>
+	  		<id>jeffrey</id>
+	  		<name>Jeffrey Mo</name>
+	  		<email>jeffrey@sqlpower.ca</email>
+	  		<url>http://www.sqlpower.ca</url>
+	  		<organization>SQL Power Group Inc.</organization>
+	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
+	  		<roles>
+	  			<role>Developer</role>
+	  		</roles>
+	  		<timezone>-5</timezone>
+	  	</developer>
+	  	
+	  	<developer>
+	  		<id>thomas</id>
+	  		<name>Thomas O'Brien</name>
+	  		<email>thomas@sqlpower.ca</email>
+	  		<url>http://www.sqlpower.ca</url>
+	  		<organization>SQL Power Group Inc.</organization>
+	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
+	  		<roles>
+	  			<role>Developer</role>
+	  		</roles>
+	  		<timezone>-5</timezone>
+	  	</developer>
+	</developers>
+</project>
