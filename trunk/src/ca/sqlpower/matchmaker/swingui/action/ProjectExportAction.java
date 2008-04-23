@@ -21,8 +21,9 @@ package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -32,6 +33,7 @@ import javax.swing.JOptionPane;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.dao.xml.ProjectDAOXML;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.SPSUtils;
@@ -82,13 +84,11 @@ public class ProjectExportAction extends AbstractAction {
 		fc.setSelectedFile(
 				new File("export_project_"+project.getName()+"."+
 						((FileExtensionFilter) SPSUtils.XML_FILE_FILTER).getFilterExtension(0)));
-		fc.setApproveButtonText("Save");
-
 
 		File export = null;
 
 		while (true) {
-			int fcChoice = fc.showOpenDialog(owningFrame);
+			int fcChoice = fc.showSaveDialog(owningFrame);
 			if (fcChoice == JFileChooser.APPROVE_OPTION) {
 				export = fc.getSelectedFile();
 				swingSession.setLastImportExportAccessPath(export.getAbsolutePath());
@@ -111,10 +111,11 @@ public class ProjectExportAction extends AbstractAction {
 		}
 
 		if ( export != null ) {
-        	PrintWriter out = null;
+        	OutputStream out = null;
         	try {
-        		out = new PrintWriter(export);
-                throw new RuntimeException("Export is not currently implemented.");
+        		out = new FileOutputStream(export);
+                ProjectDAOXML xmldao = new ProjectDAOXML(out);
+                xmldao.save(project);
         	} catch (IOException ioe) {
         		SPSUtils.showExceptionDialogNoReport(owningFrame, 
         				"There was an exception while writing to the file " + export.getName(), ioe);
@@ -122,7 +123,11 @@ public class ProjectExportAction extends AbstractAction {
 				SPSUtils.showExceptionDialogNoReport(owningFrame, 
         				"There was an exception while doing the export", ex);
 			} finally {
-			    if (out != null) out.close();
+                try {
+                    if (out != null) out.close();
+                } catch (IOException ex) {
+                    logger.error("Failed to close output stream! Squishing this exception:", ex);
+                }
             }
         }
 

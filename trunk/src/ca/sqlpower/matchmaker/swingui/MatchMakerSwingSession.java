@@ -109,6 +109,8 @@ import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.ProjectExportAction;
+import ca.sqlpower.matchmaker.swingui.action.ProjectImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
 import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
@@ -527,12 +529,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		projectMenu.add(showMatchStatisticInfoAction);
 		projectMenu.addSeparator();
 		
-		// TODO: Use the commented code once the import and export
-		// functions have been implemented. 
-//		projectMenu.add(new ProjectImportAction(this, frame));
-//		projectMenu.add(new ProjectExportAction(this, frame));
-		projectMenu.add(new DummyAction(frame, "Import"));
-		projectMenu.add(new DummyAction(frame, "Export"));
+		projectMenu.add(new ProjectImportAction(this, frame));
+		projectMenu.add(new ProjectExportAction(this, frame));
 		
 		menuBar.add(projectMenu);
 
