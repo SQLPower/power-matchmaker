@@ -98,7 +98,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	/** the settings for the merge engine */
     private MergeSettings mergeSettings = new MergeSettings();
 
-	/** a filter for the tables that are matched */
+	/** Optional SQL WHERE clause for the source table. If no filer is desired, this value is null. */
     private String filter;
 
 	/** an optional source for the match created from a view */
