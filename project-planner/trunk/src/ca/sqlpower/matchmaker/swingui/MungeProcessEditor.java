@@ -21,11 +21,17 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -65,6 +71,16 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess, MungeStep> {
     private static final Logger logger = Logger.getLogger(MungeProcessEditor.class);
+    
+    /**
+     * The width of all thumbnails generated from the munge pen on a save.
+     */
+    private static final int THUMBNAIL_WIDTH = 150;
+    
+    /**
+     * The height of all thumbnails generated from the munge pen on a save.
+     */
+    private static final int THUMBNAIL_HEIGHT = 100;
 	
 	/**
 	 * The dark blue colour to be used as a background to the project steps
@@ -207,10 +223,37 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         if (mmo.getParentProject() == null) {
             parentProject.addMungeProcess(mmo);
         }
+        
+        generateMungePenImage();
+        
         return super.applyChanges();
     }
 
-    public boolean hasUnsavedChanges() {
+    /**
+     * Generates a small image of the munge pen to be used as a thumbnail
+     * on the website.
+     */
+    private void generateMungePenImage() {
+    	Dimension mungePenArea = getMungePen().getUsedArea();
+    	double scaleFactor = Math.max(THUMBNAIL_WIDTH/mungePenArea.getWidth(), THUMBNAIL_HEIGHT/mungePenArea.getHeight());
+		BufferedImage imageBuffer = new BufferedImage((int)(scaleFactor * mungePenArea.getWidth()), (int)(scaleFactor * mungePenArea.getHeight()), BufferedImage.TYPE_INT_RGB);
+    	
+    	Graphics2D g = (Graphics2D)imageBuffer.getGraphics();
+    	g.scale(scaleFactor, scaleFactor);
+    	getMungePen().paint(g);
+    	g.dispose();
+    	
+    	File thumbnail = new File(mmo.getName() + ".png");
+    	try {
+			ImageIO.write(imageBuffer, "png", thumbnail);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+    	
+	}
+
+	public boolean hasUnsavedChanges() {
     	if (mmo.getParent() == null) {
 			return true;
 		}
