@@ -22,48 +22,6 @@
 		</license>
 	</licenses>
 	
-	<developers>
-  		<developer>
-	  		<id>fuerth</id>
-	  		<name>Jonathan Fuerth</name>
-	  		<email>fuerth@sqlpower.ca</email>
-	  		<url>http://www.sqlpower.ca</url>
-	  		<organization>SQL Power Group Inc.</organization>
-	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
-	  		<roles>
-	  			<role>Director of Global Variables</role>
-	  		</roles>
-	  		<timezone>-5</timezone>
-	  	</developer>
-	  	
-	  	<developer>
-	  		<id>jeffrey</id>
-	  		<name>Jeffrey Mo</name>
-	  		<email>jeffrey@sqlpower.ca</email>
-	  		<url>http://www.sqlpower.ca</url>
-	  		<organization>SQL Power Group Inc.</organization>
-	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
-	  		<roles>
-	  			<role>Developer</role>
-	  		</roles>
-	  		<timezone>-5</timezone>
-	  	</developer>
-	  	
-	  	<developer>
-	  		<id>thomas</id>
-	  		<name>Thomas O'Brien</name>
-	  		<email>thomas@sqlpower.ca</email>
-	  		<url>http://www.sqlpower.ca</url>
-	  		<organization>SQL Power Group Inc.</organization>
-	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
-	  		<roles>
-	  			<role>Developer</role>
-	  		</roles>
-	  		<timezone>-5</timezone>
-	  	</developer>
-	</developers>
-
-
 	<modules>
 		<module>project-planner-client</module>
 		<module>project-planner-server</module>
@@ -89,21 +47,15 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-report-plugin</artifactId>
-				<configuration>
-					<outputDirectory>reports</outputDirectory>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>test</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
+	
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

@@ -25,45 +25,4 @@
 			</url>
 		</license>
 	</licenses>
-	
-	<developers>
-  		<developer>
-	  		<id>fuerth</id>
-	  		<name>Jonathan Fuerth</name>
-	  		<email>fuerth@sqlpower.ca</email>
-	  		<url>http://www.sqlpower.ca</url>
-	  		<organization>SQL Power Group Inc.</organization>
-	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
-	  		<roles>
-	  			<role>Director of Global Variables</role>
-	  		</roles>
-	  		<timezone>-5</timezone>
-	  	</developer>
-	  	
-	  	<developer>
-	  		<id>jeffrey</id>
-	  		<name>Jeffrey Mo</name>
-	  		<email>jeffrey@sqlpower.ca</email>
-	  		<url>http://www.sqlpower.ca</url>
-	  		<organization>SQL Power Group Inc.</organization>
-	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
-	  		<roles>
-	  			<role>Developer</role>
-	  		</roles>
-	  		<timezone>-5</timezone>
-	  	</developer>
-	  	
-	  	<developer>
-	  		<id>thomas</id>
-	  		<name>Thomas O'Brien</name>
-	  		<email>thomas@sqlpower.ca</email>
-	  		<url>http://www.sqlpower.ca</url>
-	  		<organization>SQL Power Group Inc.</organization>
-	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
-	  		<roles>
-	  			<role>Developer</role>
-	  		</roles>
-	  		<timezone>-5</timezone>
-	  	</developer>
-	</developers>
 </project>

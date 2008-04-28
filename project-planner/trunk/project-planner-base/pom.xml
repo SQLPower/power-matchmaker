@@ -3,10 +3,6 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ca.sqlpower.</groupId>
-	<parent>
-		<groupId>ca.sqlpower</groupId>
-		<artifactId>project-planner</artifactId>
-	</parent>
 	<artifactId>project-planner-base</artifactId>
 	<packaging>jar</packaging>
 	<version>0.9-SNAPSHOT</version>
@@ -26,44 +22,175 @@
 		</license>
 	</licenses>
 	
-	<developers>
-  		<developer>
-	  		<id>fuerth</id>
-	  		<name>Jonathan Fuerth</name>
-	  		<email>fuerth@sqlpower.ca</email>
-	  		<url>http://www.sqlpower.ca</url>
-	  		<organization>SQL Power Group Inc.</organization>
-	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
-	  		<roles>
-	  			<role>Director of Global Variables</role>
-	  		</roles>
-	  		<timezone>-5</timezone>
-	  	</developer>
-	  	
-	  	<developer>
-	  		<id>jeffrey</id>
-	  		<name>Jeffrey Mo</name>
-	  		<email>jeffrey@sqlpower.ca</email>
-	  		<url>http://www.sqlpower.ca</url>
-	  		<organization>SQL Power Group Inc.</organization>
-	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
-	  		<roles>
-	  			<role>Developer</role>
-	  		</roles>
-	  		<timezone>-5</timezone>
-	  	</developer>
-	  	
-	  	<developer>
-	  		<id>thomas</id>
-	  		<name>Thomas O'Brien</name>
-	  		<email>thomas@sqlpower.ca</email>
-	  		<url>http://www.sqlpower.ca</url>
-	  		<organization>SQL Power Group Inc.</organization>
-	  		<organizationUrl>http://www.sqlpower.ca</organizationUrl>
-	  		<roles>
-	  			<role>Developer</role>
-	  		</roles>
-	  		<timezone>-5</timezone>
-	  	</developer>
-	</developers>
+	<build>
+		<directory>dist</directory>
+		<sourceDirectory>src</sourceDirectory>
+		<testSourceDirectory>../regress</testSourceDirectory>
+		<outputDirectory>build</outputDirectory>
+		<testOutputDirectory>build-tests</testOutputDirectory>
+		
+		<resources>
+			<resource>
+				<directory>src/icons</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+				<targetPath>icons</targetPath>
+			</resource>
+			<resource>
+				<directory>src/ca/sqlpower/matchmaker/dao/hibernate</directory>
+				<includes>
+					<include>*.xml</include>
+					<include>*.sql</include>
+					<include>*.architect</include>
+				</includes>
+				<targetPath>ca/sqlpower/matchmaker/dao/hibernate</targetPath>
+			</resource>
+			<resource>
+				<directory>src/ca/sqlpower/matchmaker/swingui/munge</directory>
+				<includes>
+					<include>munge_components.properties</include>
+				</includes>
+				<targetPath>ca/sqlpower/matchmaker/swingui/munge</targetPath>
+			</resource>
+			<resource>
+				<directory>src</directory>
+				<includes>
+					<include>log4j.properties</include>
+				</includes>
+			</resource>
+		</resources>
+		
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+				  <reportsDirectory>dist/reports</reportsDirectory>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+			  <artifactId>maven-assembly-plugin</artifactId>
+			  <configuration>
+			    <descriptorRefs>
+			      <descriptorRef>jar-with-dependencies</descriptorRef>
+			    </descriptorRefs>
+			  </configuration>
+			</plugin>
+		</plugins>
+	</build>
+	
+	<dependencies>
+		<dependency>
+			<groupId>ca.sqlpower</groupId>
+			<artifactId>sqlpower-library</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>ca.sqlpower</groupId>
+			<artifactId>architect-lib</artifactId>
+			<version>0.9.9-alpha</version>
+		</dependency>
+		<dependency>
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		    <version>1.2.8</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.jgoodies</groupId>
+		    <artifactId>forms</artifactId>
+		    <version>1.1.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>commons-beanutils</groupId>
+		    <artifactId>commons-beanutils</artifactId>
+		    <version>1.6</version>
+		</dependency>
+		<dependency>
+		    <groupId>javax.help</groupId>
+		    <artifactId>javahelp</artifactId>
+		    <version>2.0.02</version>
+		</dependency>
+		<dependency>
+		    <groupId>javax.help</groupId>
+		    <artifactId>javahelp</artifactId>
+		    <version>2.0.02</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.ant</groupId>
+		    <artifactId>ant</artifactId>
+		    <version>1.7.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.lowagie</groupId>
+		    <artifactId>itext</artifactId>
+		    <version>2.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.darwinsys</groupId>
+			<artifactId>darwinsys</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>gdata-client</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>gdata-core</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>gdata-base</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>gdata-spreadsheet</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>gdata-spreadsheet-meta</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.hibernate</groupId>
+		    <artifactId>hibernate</artifactId>
+		    <version>3.2.0.cr4</version>
+		</dependency>
+		<dependency>
+		    <groupId>gsbase</groupId>
+		    <artifactId>gsbase</artifactId>
+		    <version>2.0.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>commons-collections</groupId>
+		    <artifactId>commons-collections</artifactId>
+		    <version>2.1.1</version>
+		</dependency>
+		 <dependency>
+		    <groupId>hsqldb</groupId>
+		    <artifactId>hsqldb</artifactId>
+		    <version>1.8.0.9</version>
+		</dependency>
+	</dependencies>
 </project>
