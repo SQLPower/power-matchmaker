@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="project-planner-base/src"/>
+	<classpathentry kind="src" path="project-planner-base/regress"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="buildlib/ant.jar"/>
 	<classpathentry kind="lib" path="lib/darwinsys.jar"/>
@@ -38,7 +39,6 @@
 	<classpathentry kind="lib" path="lib/iText-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate3.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate-tools.jar"/>
-	<classpathentry kind="src" path="regress"/>
 	<classpathentry kind="var" path="JUNIT_HOME/junit.jar"/>
 	<classpathentry kind="src" path="testbed"/>
 	<classpathentry kind="lib" path="lib/commons-digester.jar"/>
