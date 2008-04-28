@@ -25,7 +25,7 @@
 	<build>
 		<directory>dist</directory>
 		<sourceDirectory>src</sourceDirectory>
-		<testSourceDirectory>../regress</testSourceDirectory>
+		<testSourceDirectory>regress</testSourceDirectory>
 		<outputDirectory>build</outputDirectory>
 		<testOutputDirectory>build-tests</testOutputDirectory>
 		
