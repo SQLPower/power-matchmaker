@@ -75,7 +75,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-				  <reportsDirectory>dist/reports</reportsDirectory>
+				  <reportsDirectory>dist/test-results</reportsDirectory>
 				</configuration>
 			</plugin>
 			
@@ -89,6 +89,19 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<reporting>
+	  <plugins>
+	    <plugin>
+	      <groupId>org.apache.maven.plugins</groupId>
+	      <artifactId>maven-surefire-report-plugin</artifactId>
+	      <configuration>
+	      	<outputDirectory>dist/reports</outputDirectory>
+	      	<reportsDirectory>dist/test-results</reportsDirectory>
+	      </configuration>
+	    </plugin>
+	  </plugins>
+	</reporting>
 	
 	<dependencies>
 		<dependency>
