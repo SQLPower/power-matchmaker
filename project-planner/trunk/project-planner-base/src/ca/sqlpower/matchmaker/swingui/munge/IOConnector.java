@@ -47,9 +47,9 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 
 /**
- *Used to store a line between the IOConnections.
- *This does not draw the line but holds its position.
- *Each IOC is recreated every time the munge pen is redrawn 
+ * A class representing the connecting lines in the munge pen. These lines
+ * are components, and are stored as children of the munge pen alongside the
+ * various munge components.
  */
 public class IOConnector extends JComponent implements MouseListener {
 	
@@ -91,7 +91,7 @@ public class IOConnector extends JComponent implements MouseListener {
 	/**
 	 * The amount of space to add as padding around the line that is to drawn.
 	 */
-	private int boundsPadding = 10;
+	private int boundsPadding = RIGIDITY;
 	
 	/**
 	 * The amount of downward shift to apply to the line where it meets the plug handle. 
@@ -216,9 +216,10 @@ public class IOConnector extends JComponent implements MouseListener {
 		recentlyResized = true;
 		
 		bottom = childCom.getInputPosition(childNumber);
+		bottom.translate(childCom.getX(), childCom.getY());
+
 		top = parentCom.getOutputPosition(parentNumber);
 		top.translate(parentCom.getX(), parentCom.getY());
-		bottom.translate(childCom.getX(), childCom.getY());
 		
 		int width;
 		int height;
@@ -250,8 +251,8 @@ public class IOConnector extends JComponent implements MouseListener {
 			} else {
 				x = bottom.x;
 				y = bottom.y;
-				bottom = new Point(width,height);
-				top = new Point(0,0);
+				bottom = new Point(0,0);
+				top = new Point(width,height);
 			} 
 		}
 		
@@ -337,9 +338,9 @@ public class IOConnector extends JComponent implements MouseListener {
 	}
 	
 	public static CubicCurve2D createConnectorPath(int x1, int y1, int x2, int y2) {
-        int rigidity = Math.min(RIGIDITY, Math.abs(y1 - y2));
-        if (y2 < y1) {
-            rigidity = -rigidity;
+	    int rigidity = RIGIDITY;
+	    if (Math.abs(y2 - y1) < RIGIDITY) {
+	        rigidity = Math.abs(y2 - y1);
         }
         return new CubicCurve2D.Double(
                 x1, y1,
