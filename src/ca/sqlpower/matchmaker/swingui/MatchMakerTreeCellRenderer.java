@@ -111,7 +111,7 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 		} else if (value instanceof AbstractMungeStep) {
 			MatchMakerSwingSession session = (MatchMakerSwingSession) ((AbstractMungeStep)value).getSession();
 			SwingSessionContext context = (SwingSessionContext) session.getContext();
-			StepDescription stepDesc = context.getStepMap().get(value);
+			StepDescription stepDesc = context.getStepMap().get(((AbstractMungeStep)value).getName());
 			if (stepDesc == null) {
 				setIcon(mungeCompIcon);
 			} else {
