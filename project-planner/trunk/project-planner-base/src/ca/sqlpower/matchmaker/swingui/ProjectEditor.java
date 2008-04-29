@@ -195,7 +195,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     private void setDefaultSelections() throws ArchitectException {
 
         projectName.setText(project.getName());
-        desc.setText(project.getMungeSettings().getDescription());
+        desc.setText(project.getDescription());
 
     }
 
@@ -225,7 +225,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     	}
 
         //sets the project name, id and desc
-        project.getMungeSettings().setDescription(desc.getText());
+        project.setDescription(desc.getText());
         String id = projectName.getText();
 
 		if (!id.equals(project.getName())) {

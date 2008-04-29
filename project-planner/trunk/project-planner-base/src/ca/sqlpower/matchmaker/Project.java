@@ -104,6 +104,8 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	/** an optional source for the match created from a view */
     private ViewSpec view;
 
+    private String description;
+    
     /** Folder name for merge rules (table). */
     public static final String MERGE_RULES_FOLDER_NAME = "Merge Rules";
     
@@ -447,7 +449,15 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		throw new NotImplementedException();
 	}
 
-	public String getFilter() {
+	public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getFilter() {
 		return filter;
 	}
 

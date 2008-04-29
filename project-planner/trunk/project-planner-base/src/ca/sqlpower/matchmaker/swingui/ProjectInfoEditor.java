@@ -84,7 +84,7 @@ public class ProjectInfoEditor extends NoEditEditorPane {
 
 		pb.add(new JLabel(project.getName()), cc.xy(4,2));
 		pb.add(new JLabel(folderName), cc.xy(4,4));
-		JTextArea descriptionText = new JTextArea(project.getMungeSettings().getDescription(), 3, 3);
+		JTextArea descriptionText = new JTextArea(project.getDescription(), 3, 3);
 		descriptionText.setEditable(false);
 		pb.add(new JScrollPane(descriptionText), cc.xy(4,6,"f,f"));
 		pb.add(new JLabel(project.getType().toString()), cc.xy(4,8));

@@ -240,6 +240,8 @@ public class ProjectDAOXML implements ProjectDAO {
         niprintln(">");
         indent++;
         
+        printElement("description", p.getDescription());
+        
         if (p.getSourceTable() != null) {
             print("<source-table");
             printAttribute("datasource", p.getSourceTableSPDatasource());
@@ -956,6 +958,8 @@ public class ProjectDAOXML implements ProjectDAO {
                 } else if (qName.equals("description")) {
                     if (parentIs("munge-process")) {
                         process.setDesc(text.toString());
+                    } else if (parentIs("project")) {
+                        project.setDescription(text.toString());
                     }
                 } else if (qName.equals("parameter")) {
                     if (parentIs("munge-step")) {
