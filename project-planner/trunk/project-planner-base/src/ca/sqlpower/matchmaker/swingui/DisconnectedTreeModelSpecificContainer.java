@@ -102,7 +102,6 @@ class DisconnectedTreeModelSpecificContainer<C extends MatchMakerObject>
 	 */
 	public void addChild(C child) {
 		childList.add(child);
-		logger.error("added child " + child + ". Child count is now " + childList.size(), new Exception());
 	}
 
 	/**
