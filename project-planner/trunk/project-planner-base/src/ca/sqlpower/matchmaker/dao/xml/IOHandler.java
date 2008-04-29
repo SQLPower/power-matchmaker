@@ -22,18 +22,23 @@ package ca.sqlpower.matchmaker.dao.xml;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import ca.sqlpower.matchmaker.Project;
+
 public interface IOHandler {
     
     /**
-     * Returns an input stream containing all project definitions.
-     * Later, we'll want a variant of this method that only returns
-     * certain projects.
+     * Returns an input stream containing all project definitions that the
+     * current user has access to. Later, we'll want a variant of this method
+     * that only returns certain projects.
      */
     InputStream createInputStream();
     
     /**
-     * Returns an output stream where any project definitions can be written
-     * (as a single XML document).
+     * Returns an output stream where a single project definition can be written
+     * (as a single XML document). Don't try to write more than one XML document
+     * to the returned stream; call this method again for a new output stream.
+     * 
+     * @param project The project you intend to save.
      */
-    OutputStream createOutputStream();
+    OutputStream createOutputStream(Project project);
 }

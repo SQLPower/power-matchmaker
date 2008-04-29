@@ -224,7 +224,7 @@ public class ProjectDAOXML implements ProjectDAO {
     }
 
     public void save(Project p) {
-        this.out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(ioHandler.createOutputStream())));
+        this.out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(ioHandler.createOutputStream(p))));
 
         println("<?xml version='1.0' encoding='UTF-8'?>");
         println("");

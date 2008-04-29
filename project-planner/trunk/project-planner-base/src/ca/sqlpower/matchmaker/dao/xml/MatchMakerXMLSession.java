@@ -152,7 +152,7 @@ public class MatchMakerXMLSession implements MatchMakerSession {
 
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
         if (businessClass == Project.class) {
-            IOHandler ioh = new LocalFileIOHandler();
+            IOHandler ioh = new WebsiteIOHandler();
             return (MatchMakerDAO<T>) new ProjectDAOXML(this, ioh);
         } else {
             return null;

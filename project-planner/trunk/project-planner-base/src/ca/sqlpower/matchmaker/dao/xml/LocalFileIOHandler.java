@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import ca.sqlpower.matchmaker.Project;
+
 public final class LocalFileIOHandler implements IOHandler {
     
     /**
@@ -50,7 +52,7 @@ public final class LocalFileIOHandler implements IOHandler {
         }
     }
 
-    public OutputStream createOutputStream() {
+    public OutputStream createOutputStream(Project p) {
         try {
             return new FileOutputStream(projectFile);
         } catch (FileNotFoundException e) {
