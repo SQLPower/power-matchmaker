@@ -19,6 +19,9 @@
 
 package ca.sqlpower.matchmaker.dao.xml;
 
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,9 +30,20 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.swingui.JDefaultButton;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.factories.ButtonBarFactory;
+import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * An IO Handler that provides bidirectional communication with the SQL Power web site.
@@ -46,8 +60,8 @@ public class WebsiteIOHandler implements IOHandler {
 
     private String sessionCookie = null;
     
-    private String username = "cowmoo"; // FIXME
-    private String password = "moo"; // FIXME
+    private String username = null;
+    private String password = null;
     
     public InputStream createInputStream() {
         return null; // FIXME
@@ -77,7 +91,11 @@ public class WebsiteIOHandler implements IOHandler {
             super.close();
             
             try {
-                login();
+                if (!login()) {
+                    JOptionPane.showMessageDialog(null, "Project not saved!", "Login failed", JOptionPane.WARNING_MESSAGE);
+                    password = null;
+                    return;
+                }
                 
                 String xmlDoc = new String(toByteArray());
                 StringBuilder sb = new StringBuilder();
@@ -114,13 +132,20 @@ public class WebsiteIOHandler implements IOHandler {
         }
     }
     
-    private void login() throws IOException {
+    private boolean login() throws IOException {
+        if (username == null || password == null) {
+            if (!showLoginPrompt()){
+                return false;
+            }
+        }
+        
         HttpURLConnection.setFollowRedirects(false);
 
         StringBuilder sb = new StringBuilder();
         sb.append("username=").append(URLEncoder.encode(username, "UTF-8"));
         sb.append("&password=").append(URLEncoder.encode(password, "UTF-8"));
         sb.append("&doLogin=").append(URLEncoder.encode("true", "UTF-8"));
+        sb.append("&nextUri=THE_LOGIN_WORKED");
 
         URL baseURL = new URL(WEBSITE_BASE_URL);
         URL url = new URL(baseURL, "login");
@@ -156,5 +181,61 @@ public class WebsiteIOHandler implements IOHandler {
             throw new IllegalStateException("Failed to log in (no set-cookie header found).");
         }
         
+        // If the login worked, we will be redirected to the nextAction specified in the request
+        String redirectLocation = urlc.getHeaderField("Location");
+        if (redirectLocation != null && redirectLocation.contains("THE_LOGIN_WORKED")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+     * Breaks all the rules about MVC separation, and prompts the user to log in using a JDialog.
+     * @return Whether or not the user accepted to login.
+     */
+    private boolean showLoginPrompt() {
+        final JDialog d = new JDialog();
+        final JTextField usernameField = new JTextField(username);
+        final JPasswordField passwordField = new JPasswordField(password);
+        JDefaultButton okButton = new JDefaultButton("OK");
+        JButton cancelButton = new JButton("Cancel");
+        
+        okButton.addActionListener(new ActionListener(){
+
+            public void actionPerformed(ActionEvent e) {
+                username = usernameField.getText();
+                password = new String(passwordField.getPassword());
+                usernameField.putClientProperty("doLogin", Boolean.TRUE);
+                d.dispose();
+            }
+            
+        });
+        
+        cancelButton.addActionListener(new ActionListener(){
+
+            public void actionPerformed(ActionEvent e) {
+                d.dispose();
+            }
+            
+        });
+        
+        DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("pref,3dlu,30dlu:grow"));
+        b.append("Username", usernameField);
+        b.append("Password", passwordField);
+        b.append(ButtonBarFactory.buildOKCancelBar(okButton,cancelButton), 3);
+        b.setDefaultDialogBorder();
+        passwordField.setPreferredSize(new Dimension(200, 20));
+        
+        d.setTitle("Please log in to the SQL Power Web Site");
+        d.setModal(true);
+        d.getRootPane().setDefaultButton(okButton);
+        d.setContentPane(b.getPanel());
+        d.pack();
+        d.setLocationRelativeTo(null);
+        d.setVisible(true);
+        
+        Boolean doLogin = (Boolean) usernameField.getClientProperty("doLogin");
+        return doLogin != null && doLogin == true;
     }
 }

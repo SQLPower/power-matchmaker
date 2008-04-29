@@ -65,6 +65,8 @@ public class MatchMakerXMLSession implements MatchMakerSession {
     private final Date startTime = new Date();
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
     private String dbUser = "SQL Power Person";
+
+    private final ProjectDAOXML projectDAO = new ProjectDAOXML(this, new WebsiteIOHandler());
     
     public MatchMakerXMLSession(MatchMakerSessionContext context) {
         this.context = context;
@@ -152,8 +154,7 @@ public class MatchMakerXMLSession implements MatchMakerSession {
 
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
         if (businessClass == Project.class) {
-            IOHandler ioh = new WebsiteIOHandler();
-            return (MatchMakerDAO<T>) new ProjectDAOXML(this, ioh);
+            return (MatchMakerDAO<T>) projectDAO;
         } else {
             return null;
         }
