@@ -121,6 +121,7 @@ public class ProjectDAOXML implements ProjectDAO {
         acceptableMungeStepOutputTypes.add("java.lang.Boolean");
         acceptableMungeStepOutputTypes.add("java.lang.Object");
     }
+    
     /**
      * The output stream this DAO instance writes to, if this DAO instance is
      * capable of output. If this is not an output instance, the output stream

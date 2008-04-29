@@ -25,7 +25,9 @@ import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -37,6 +39,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.swingui.JDefaultButton;
@@ -100,7 +103,9 @@ public class WebsiteIOHandler implements IOHandler {
                 String xmlDoc = new String(toByteArray());
                 StringBuilder sb = new StringBuilder();
                 sb.append("projectXML=").append(URLEncoder.encode(xmlDoc, "UTF-8"));
-//                sb.append("&projectId=").append(URLEncoder.encode("1234", "UTF-8")); // FIXME
+                if (project.getOid() != null) {
+                    sb.append("&projectId=").append(project.getOid());
+                }
                 sb.append("&projectName=").append(URLEncoder.encode(project.getName(), "UTF-8"));
                 sb.append("&projectDescription=").append(URLEncoder.encode(project.getDescription(), "UTF-8"));
 
@@ -121,8 +126,21 @@ public class WebsiteIOHandler implements IOHandler {
                 out.close();
                 
                 // have to read in order to send request!
-                InputStream in = urlc.getInputStream();
-                in.read();
+                Reader in = new InputStreamReader(urlc.getInputStream());
+                StringBuilder responseString = new StringBuilder();
+                char[] buf = new char[2000];
+                while (in.read(buf) > 0) {
+                    responseString.append(buf);
+                }
+                
+                JSONObject response = new JSONObject(responseString.toString());
+                boolean success = response.getBoolean("success");
+                if (!success) {
+                    throw new IOException("Failed to save: " + response.getString("message"));
+                } else {
+                    long oid = response.getLong("projectId");
+                    project.setOid(oid);
+                }
                 in.close();
                 
                 urlc.disconnect();

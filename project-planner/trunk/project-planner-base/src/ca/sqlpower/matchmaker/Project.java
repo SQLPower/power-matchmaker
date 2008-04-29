@@ -86,7 +86,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		}
 	}
 
-	/** the oid for the project */
+	/** This project's unique ID in the website database. Null if this project has not been saved yet. */
 	private Long oid;
 
 	/** The type of project */
@@ -449,6 +449,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		throw new NotImplementedException();
 	}
 
+    
 	public String getDescription() {
         return description;
     }
