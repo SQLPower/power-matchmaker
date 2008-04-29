@@ -231,6 +231,10 @@ public class DeriveRelatedRulesPanel implements MonitorableDataEntryPanel, Valid
 						TableMergeRules mergeRule = new TableMergeRules();
 						SQLTable table = sourceTable.getParentDatabase().getTableByName(catalogName,
 								schemaName, tableName);
+						// TODO: This is just a temporary fix for handling the problem when we are trying
+						// to derive column merge rules from a non-table. This resulted in an NPE before
+						// A better thing to do would be to only run this on tables.
+						if (table == null) continue;
 						SQLIndex index = table.getPrimaryKeyIndex();
 						mergeRule.setTable(table);
 						mergeRule.setTableIndex(index);
