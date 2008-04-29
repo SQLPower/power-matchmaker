@@ -118,7 +118,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private final JPanel panel;
 
 	private StatusComponent status = new StatusComponent();
-    private JTextField projectId = new JTextField();
+    private JTextField projectName = new JTextField();
     private JComboBox folderComboBox = new JComboBox();
     private JComboBox indexComboBox = new JComboBox();
     private JTextArea desc = new JTextArea();
@@ -197,7 +197,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     
     private void addValidators() {
     	Validator v = new ProjectNameValidator(swingSession,project);
-        handler.addValidateObject(projectId,v);
+        handler.addValidateObject(projectName,v);
 
         Validator v2 = new ProjectSourceTableValidator(Collections.singletonList(saveAction));
         handler.addValidateObject(sourceChooser.getTableComboBox(),v2);
@@ -326,7 +326,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
     private JPanel buildUI() {
 
-    	projectId.setName("Project ID");
+    	projectName.setName("Project Name");
 		sourceChooser = new SQLObjectChooser(swingSession, swingSession.getFrame());
         resultChooser = new SQLObjectChooser(swingSession, swingSession.getFrame());
         sourceChooser.getTableComboBox().setName("Source Table");
@@ -360,8 +360,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		int row = 2;
 		pb.add(status, cc.xy(4,row));
 		row += 2;
-		pb.add(new JLabel("Project ID:"), cc.xy(2,row,"r,c"));
-		pb.add(projectId, cc.xy(4,row));
+		pb.add(new JLabel("Project Name:"), cc.xy(2,row,"r,c"));
+		pb.add(projectName, cc.xy(4,row));
 		row += 2;
 		pb.add(new JLabel("Folder:"), cc.xy(2,row,"r,c"));
 		pb.add(folderComboBox, cc.xy(4,row));
@@ -433,7 +433,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     	final SQLDatabase loginDB = swingSession.getDatabase();
 
         folderComboBox.setSelectedItem(folder);
-        projectId.setText(project.getName());
+        projectName.setText(project.getName());
         desc.setText(project.getMungeSettings().getDescription());
         projectType.setText(project.getType().toString());
         filterPanel.getFilterTextArea().setText(project.getFilter());
@@ -550,10 +550,10 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         project.setFilter(filterPanel.getFilterTextArea().getText());
 
         //sets the project name, id and desc
-        final String projectName = projectId.getText().trim();
+        final String pName = projectName.getText().trim();
         project.getMungeSettings().setDescription(desc.getText());
-        String id = projectId.getText();
-        if ( projectName == null || projectName.length() == 0 ) {
+        String id = projectName.getText();
+        if ( pName == null || pName.length() == 0 ) {
         	StringBuffer s = new StringBuffer();
         	s.append("PROJECT_");
 			if (sourceTable.getCatalogName() != null &&
@@ -566,12 +566,12 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
         	}
 			s.append(sourceTable.getName());
         	id = s.toString();
-        	projectId.setText(id);
+        	projectName.setText(id);
         }
 		if (!id.equals(project.getName())) {
         	if (!swingSession.isThisProjectNameAcceptable(id)) {
         		JOptionPane.showMessageDialog(getPanel(),
-        				"<html>Project name \"" + projectId.getText() +
+        				"<html>Project name \"" + projectName.getText() +
         					"\" does not exist or is invalid.\n" +
         					"The project has not been saved",
         				"Project name invalid",
