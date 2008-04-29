@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,21 +117,9 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     private final Action loginDatabaseConnectionAction = new AbstractAction("Login") {
 
 		public void actionPerformed(ActionEvent e) {
-			SPDataSource dbcs = dbConnectionManager.getSelectedConnection();
-			if (dbcs == null) {
-				logger.debug("getSelectedConnection returned null");
-				return;
-			}
-			dbConnectionManager.closeDialog();
-            showLoginDialog(dbcs);
+            throw new UnsupportedOperationException("Not implemented");
 		}
 	};
-
-    /**
-     * The database connection manager GUI for this session context (because all sessions
-     * share the same set of database connections).
-     */
-    private final DatabaseConnectionManager dbConnectionManager;
 
     /**
      * This factory just passes the request through to the {@link MMSUtils#showDbcsDialog(Window, SPDataSource, Runnable)}
@@ -196,12 +183,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     };
     
     /**
-     * The login dialog for this app.  The session context will only create one login
-     * dialog.
-     */
-    private final LoginDialog loginDialog;
-
-    /**
      * Creates a new Swing session context, which is a holding place for all the basic
      * settings in the MatchMaker GUI application.  This constructor creates its own delegate
      * session context object based on information in the given prefs node, or failing that,
@@ -235,9 +216,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         // Set a login action property so that if there is no connection selected 
         // in the dbConnectionManager GUI, the corresponding button will be disabled.
         loginDatabaseConnectionAction.putValue(DatabaseConnectionManager.DISABLE_IF_NO_CONNECTION_SELECTED, Boolean.TRUE);
-        
-        dbConnectionManager = new DatabaseConnectionManager(getPlDotIni(), dsDialogFactory,dsTypeDialogFactory, Collections.singletonList(loginDatabaseConnectionAction));
-        loginDialog = new LoginDialog(this);
         
         generatePropertiesList();
         
@@ -355,14 +333,14 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#showDatabaseConnectionManager()
      */
     public void showDatabaseConnectionManager(Window owner) {
-        dbConnectionManager.showDialog(owner);
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /* (non-Javadoc)
      * @see ca.sqlpower.matchmaker.swingui.SwingSessionContext#showLoginDialog(ca.sqlpower.sql.SPDataSource)
      */
     public void showLoginDialog(SPDataSource selectedDataSource) {
-        loginDialog.showLoginDialog(selectedDataSource);
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -620,7 +598,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	}
     
     public boolean isAutoLoginEnabled() {
-        return swingPrefs.getBoolean(MatchMakerSwingUserSettings.AUTO_LOGIN_ENABLED, true);
+        return true;
     }
 
     public void setAutoLoginEnabled(boolean enabled) {

@@ -37,6 +37,15 @@ public class ProjectPlannerMungeStep extends AbstractMungeStep {
 		defineIO();
 	}
 
+    /**
+     * This constructor is for the persistence layer.
+     */
+    @SuppressWarnings("unused")
+    public ProjectPlannerMungeStep() {
+        super(new StepDescription(), true);
+        defineIO();
+    }
+
 	/**
 	 * Sets the first input and output for this munge component
 	 * as required to have inputs and outputs.
@@ -47,17 +56,7 @@ public class ProjectPlannerMungeStep extends AbstractMungeStep {
 		InputDescriptor desc1 = new InputDescriptor("input", String.class);
 		super.addInput(desc1);
 	}
-	
-	/**
-	 * This private constructor is required for hibernate to load in 
-	 * the project through reflection. 
-	 */
-	@SuppressWarnings("unused")
-	private ProjectPlannerMungeStep() {
-		super(new StepDescription(), true);
-		defineIO();
-	}
-	
+		
     public void setText(String newValue) {
         setParameter(TEXT_PARAMETER_NAME, newValue);
     }

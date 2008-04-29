@@ -192,4 +192,8 @@ public class StubMatchMakerSession implements MatchMakerSession{
 		return new PlFolder<Project>(DEFAULT_PLFOLDER_NAME);
 	}
 
+    public void save(MatchMakerObject mmo) {
+        logger.debug("Stub call: StubMatchMakerSession.save()");
+    }
+
 }

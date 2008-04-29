@@ -25,9 +25,6 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.LayoutManager;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -97,45 +94,6 @@ public class MatchMakerSplashScreen {
 		Font newf = new Font(f.getName(), f.getStyle(), (int) (f.getSize() * 1.5));
 		title.setFont(newf);
         
-        StringBuilder summary = new StringBuilder();
-        summary.append("<html><table><tr>");
-        summary.append("<th colspan=2>Repository Information<br><br></th>");
-        summary.append("</tr><tr>");
-        summary.append("<td>Database:</td><td>").append(session.getDatabase().getName()).append("</td>");
-        summary.append("</tr><tr>");
-        summary.append("<td>User Name:</td><td>").append(session.getDBUser()).append("</td>");
-        summary.append("</tr><tr>");
-        
-        Connection con = null;
-        try {
-            con = session.getConnection();
-            DatabaseMetaData dbmd = con.getMetaData();
-            summary.append("<td>Database Product Name:</td><td>").append(dbmd.getDatabaseProductName()).append("</td>");
-            summary.append("</tr><tr>");
-            summary.append("<td>Database Product Version:</td><td>").append(dbmd.getDatabaseProductVersion()).append("</td>");
-            summary.append("</tr><tr>");
-            summary.append("<td>Database Driver Name:</td><td>").append(dbmd.getDriverName()).append("</td>");
-            summary.append("</tr><tr>");
-            summary.append("<td>Database Driver Version:</td><td>").append(dbmd.getDriverVersion()).append("</td>");
-        } catch (SQLException e) {
-            logger.error("Couldn't get database metadata!", e);
-            summary.append("<td colspan=2>Database information not available: ")
-                    .append(e.getMessage()).append("</td>");
-        } finally {
-            try {
-                if (con != null) {
-                    con.close();
-                }
-            } catch (SQLException ex) {
-                logger.warn("Couldn't close connection", ex);
-            }
-        }
-        
-        summary.append("</tr><tr>");
-        summary.append("<td>Power*Loader Schema Version:</td><td>").append(session.getPLSchemaVersion()).append("</td>");
-        summary.append("</tr></table></html>");
-        JLabel summaryLabel = new JLabel(summary.toString(), JLabel.CENTER);
-        
         FormLayout layout = new FormLayout("4dlu, pref:grow, 4dlu ");
 		int rowCount =0;
 		PanelBuilder pb = new PanelBuilder(layout);
@@ -160,10 +118,6 @@ public class MatchMakerSplashScreen {
 		
         pb.appendRow(new RowSpec("fill:pref"));
 		rowCount++;
-		
-        pb.add(summaryLabel,c.xy(2, rowCount));
-		pb.appendRow(new RowSpec("40px"));
-        rowCount++;
         
         pb.appendRow(new RowSpec("fill:pref"));
         rowCount++;

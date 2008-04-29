@@ -253,4 +253,11 @@ public interface MatchMakerSession {
      * be created and remembered for next time.
      */
     public SQLDatabase getDatabase(SPDataSource dataSource);
+
+    /**
+     * Saves the given object using this session's persistence method.
+     * 
+     * @param mmo The object to save.
+     */
+    public void save(MatchMakerObject mmo);
 }

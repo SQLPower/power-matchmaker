@@ -71,10 +71,9 @@ public final class NewProjectAction extends AbstractAction {
 			count++;
 		}
 		project.setName("New Project " + count);
-		final String dsName = swingSession.getDatabase().getDataSource().getName();
-		project.setSourceTableSPDatasource(dsName);
-		project.setResultTableSPDatasource(dsName);
 		
+        swingSession.getDefaultPlFolder().addChild(project);
+        
 		try {
 			ProjectEditor me = new ProjectEditor(swingSession, project, folder);
 			swingSession.setCurrentEditorComponent(me);

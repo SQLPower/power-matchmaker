@@ -226,7 +226,9 @@ public class MatchMakerTreeModel implements TreeModel {
 		
 		myProjectsFolder = new DisconnectedTreeModelSpecificContainer<Project>("My Projects", s);
 		for (PlFolder folder : current.getChildren()) {
+            logger.debug("Looking at folder " + folder);
 			for (Object o : folder.getChildren()) {
+                logger.debug("   Looking at project " + o);
 				Project p = (Project) o;
 				
 				myProjectsFolder.addChild(p);

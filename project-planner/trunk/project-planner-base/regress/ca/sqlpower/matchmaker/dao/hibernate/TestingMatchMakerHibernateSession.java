@@ -345,4 +345,8 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		}
 		return db;
 	}
+
+    public void save(MatchMakerObject mmo) {
+        logger.debug("Stub call: TestingMatchMakerHibernateSession.save()");
+    }
 }

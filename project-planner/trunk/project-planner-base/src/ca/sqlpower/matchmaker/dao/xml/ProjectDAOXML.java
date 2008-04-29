@@ -20,8 +20,10 @@
 package ca.sqlpower.matchmaker.dao.xml;
 
 import java.awt.Color;
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
-import java.io.OutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.text.DateFormat;
@@ -29,9 +31,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
@@ -50,9 +58,12 @@ import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
+import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.munge.AbstractMungeStep.Input;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.SQLPowerUtils;
@@ -98,6 +109,19 @@ public class ProjectDAOXML implements ProjectDAO {
     private static final Logger logger = Logger.getLogger(ProjectDAOXML.class);
     
     /**
+     * All of the allowable classes for munge step inputs/outputs. We enumerate these
+     * here so that we can't be compromised when someone feeds us a project file and
+     * tricks us into creating a class with a dangerous static initializer.
+     */
+    private static Set<String> acceptableMungeStepOutputTypes = new HashSet<String>();
+    static {
+        acceptableMungeStepOutputTypes.add("java.math.BigDecimal");
+        acceptableMungeStepOutputTypes.add("java.lang.String");
+        acceptableMungeStepOutputTypes.add("java.util.Date");
+        acceptableMungeStepOutputTypes.add("java.lang.Boolean");
+        acceptableMungeStepOutputTypes.add("java.lang.Object");
+    }
+    /**
      * The output stream this DAO instance writes to, if this DAO instance is
      * capable of output. If this is not an output instance, the output stream
      * will be null.
@@ -114,6 +138,14 @@ public class ProjectDAOXML implements ProjectDAO {
      * Date format used to represent all date/time values in the XML file.
      */
     private final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+
+    /**
+     * The thing that provides input and output streams for us to read/write XML
+     * to/from.
+     */
+    private final IOHandler ioHandler;
+
+    private final MatchMakerXMLSession session;
     
     /**
      * Creates a new write-only Project DAO. All of the findXXX() methods of
@@ -121,8 +153,9 @@ public class ProjectDAOXML implements ProjectDAO {
      * 
      * @param out The output stream the XML project description will be written to.
      */
-    public ProjectDAOXML(OutputStream out) {
-        this.out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out)));
+    public ProjectDAOXML(MatchMakerXMLSession session, IOHandler ioHandler) {
+        this.session = session;
+        this.ioHandler = ioHandler;
     }
     
     public long countProjectByName(String name) {
@@ -156,9 +189,29 @@ public class ProjectDAOXML implements ProjectDAO {
     }
 
     public List<Project> findAll() {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: ProjectDAOXML.findAll()");
-        return null;
+        InputStream inStream = new BufferedInputStream(ioHandler.createInputStream());
+        ProjectSAXHandler handler = new ProjectSAXHandler(session.getContext(), session.getDefaultPlFolder());
+        try {
+            SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+            // turn off validation parser.setProperty()
+            parser.parse(inStream, handler);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } catch (SAXException ex) {
+            if (ex.getException() != null) {
+                throw new RuntimeException(ex.getException());
+            }
+            throw new RuntimeException(ex);
+        } catch (ParserConfigurationException ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            try {
+                inStream.close();
+            } catch (IOException ex) {
+                logger.error("Couldn't close input stream", ex);
+            }
+        }
+        return handler.getProjects();
     }
 
     public Class<Project> getBusinessClass() {
@@ -166,6 +219,8 @@ public class ProjectDAOXML implements ProjectDAO {
     }
 
     public void save(Project p) {
+        this.out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(ioHandler.createOutputStream())));
+
         println("<?xml version='1.0' encoding='UTF-8'?>");
         println("");
         println("<matchmaker-projects>");
@@ -308,12 +363,14 @@ public class ProjectDAOXML implements ProjectDAO {
                 printAttribute("ref", steps.get(step));
                 niprintln(">");
                 indent++;
-                for (MungeStepOutput<?> mso : step.getMSOInputs()) {
+                for (Input msi : ((AbstractMungeStep) step).getInputs()) {
                     print("<input");
-                    if (mso == null) {
+                    printAttribute("name", msi.getName());
+                    printAttribute("data-type", msi.getType());
+                    if (msi.getCurrent() == null) {
                         printAttribute("connected", false);
                     } else {
-                        printAttribute("from-ref", outputs.get(mso));
+                        printAttribute("from-ref", outputs.get(msi.getCurrent()));
                     }
                     niprintln(" />");
                 }
@@ -439,11 +496,13 @@ public class ProjectDAOXML implements ProjectDAO {
         String strval;
         if (value instanceof Enum) {
             strval = ((Enum) value).name();
+        } else if (value instanceof Class) {
+                strval = ((Class) value).getName();
         } else if (value instanceof Date) {
                 strval = df.format((Date) value);
         } else if (value instanceof Color) {
             Color c = (Color) value;
-            strval = String.format("%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+            strval = String.format("0x%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
         } else {
             strval = String.valueOf(value);
         }
@@ -511,7 +570,7 @@ public class ProjectDAOXML implements ProjectDAO {
         /**
          * The current nesting location in the XML file.
          */
-        Stack<String> xmlContext;
+        Stack<String> xmlContext = new Stack<String>();
 
         /**
          * The parent folder we add the loaded projects to.
@@ -531,11 +590,51 @@ public class ProjectDAOXML implements ProjectDAO {
          * element, this will be null.
          */
         private MungeProcess process;
+
+        /**
+         * The current munge step we're reading from the file.  If not under a munge-step
+         * element, this will be null.
+         */
+        private AbstractMungeStep step;
+
+        /**
+         * Mapping of step ids to step instances within the current munge process.
+         */
+        private Map<String, AbstractMungeStep> mungeStepIdMap;
+
+        /**
+         * The name of the current parameter we're reading. This value will be null if not
+         * under a parameter element.
+         */
+        private String parameterName;
+
+        /**
+         * Mapping of munge step output ids to output instances within the current munge step.
+         */
+        private Map<String, MungeStepOutput<?>> mungeStepOutputIdMap;
+
+        /**
+         * Child list of the current munge step we're loading. The step's normal child list will
+         * be replaced by this list in the step's endElement handler.
+         */
+        private List<MungeStepOutput> stepChildren;
+
+        /**
+         * Inputs of the current munge step we're processing. The step's normal input list will be
+         * replaced by this one in endElement.
+         */
+        private List<Input> stepInputs;
+
+        private List<AbstractMungeStep> steps;
         
         ProjectSAXHandler(MatchMakerSessionContext sessionContext, PlFolder<Project> parentFolder) {
             this.sessionContext = sessionContext;
             this.parentFolder = parentFolder;
             
+        }
+        
+        public List<Project> getProjects() {
+            return projects;
         }
         
         @Override
@@ -549,7 +648,6 @@ public class ProjectDAOXML implements ProjectDAO {
 
                 } else if (qName.equals("project")) {
                     project = new Project();
-                    parentFolder.addChild(project);
                     projects.add(project);
                     
                     String id = null;
@@ -644,7 +742,10 @@ public class ProjectDAOXML implements ProjectDAO {
                     
                 } else if (qName.equals("munge-process")) {
                     process = new MungeProcess();
-                    
+                    mungeStepIdMap = new HashMap<String, AbstractMungeStep>();
+                    mungeStepOutputIdMap = new HashMap<String, MungeStepOutput<?>>();
+                    steps = new ArrayList<AbstractMungeStep>();
+
                     String id = null;
                     
                     for (int i = 0; i < attributes.getLength(); i++) {
@@ -674,11 +775,16 @@ public class ProjectDAOXML implements ProjectDAO {
 
                     project.addMungeProcess(process);
                     
-                } else if (qName.equals("munge-step")) {
+                } else if (qName.equals("munge-step") && parentIs("munge-process")) {
                     String type = attributes.getValue("step-type");
                     if (!type.startsWith("ca.sqlpower.matchmaker.munge")) {
                         throw new SAXException("Illegal step type " + type);
                     }
+                    
+                    Class<?> c = Class.forName(type);
+                    Class<? extends AbstractMungeStep> stepClass = c.asSubclass(AbstractMungeStep.class);
+                    step = stepClass.newInstance();
+                    
                     String id = null;
                     
                     for (int i = 0; i < attributes.getLength(); i++) {
@@ -686,29 +792,150 @@ public class ProjectDAOXML implements ProjectDAO {
                         String aval = attributes.getValue(i);
                         
                         if (aname.equals("id")) {
+                            mungeStepIdMap.put(aval, step);
                             id = aval;
+                        } else if (aname.equals("type")) {
+                            // taken care of above (so we could create the instance!)
                         } else if (aname.equals("name")) {
-                            process.setName(aval);
+                            step.setName(aval);
                         } else if (aname.equals("visible")) {
-                            process.setVisible(Boolean.valueOf(aval));
-                        } else if (aname.equals("active")) {
-                            process.setActive(Boolean.valueOf(aval));
-                        } else if (aname.equals("colour")) {
-                            process.setColour(Color.decode(aval));
-                        } else if (aname.equals("priority")) {
-                            process.setMatchPriority(Short.valueOf(aval));
+                            step.setVisible(Boolean.valueOf(aval));
                         } else {
-                            logger.warn("Unexpected attribute of <munge-process>: " + aname + "=" + aval + " at " + locator);
+                            logger.warn("Unexpected attribute of <munge-step>: " + aname + "=" + aval + " at " + locator);
                         }
                         
                     }
                     
                     checkMandatory("id", id);
-                    checkMandatory("name", process.getName());
+                    checkMandatory("name", step.getName());
+                    
+                    stepChildren = new ArrayList<MungeStepOutput>();
+                    System.out.println("enqueuing step " + step.getName());
+                    steps.add(step);
 
+                } else if (qName.equals("parameter") && parentIs("munge-step")) {
+                    
+                    parameterName = attributes.getValue("name");
+                    text = new StringBuilder();
+                    // we recover the name and value in endElement()
+
+                } else if (qName.equals("output") && parentIs("munge-step")) {
+
+                    MungeStepOutput mso = new MungeStepOutput();
+
+                    String id = null;
+                    
+                    for (int i = 0; i < attributes.getLength(); i++) {
+                        String aname = attributes.getQName(i);
+                        String aval = attributes.getValue(i);
+                        
+                        if (aname.equals("id")) {
+                            mungeStepOutputIdMap.put(aval, mso);
+                            id = aval;
+                        } else if (aname.equals("name")) {
+                            mso.setName(aval);
+                        } else if (aname.equals("visible")) {
+                            mso.setVisible(Boolean.valueOf(aval));
+                        } else if (aname.equals("data-type")) {
+                            checkAcceptableOutputType(aval);
+                            mso.setType(Class.forName(aval));
+                        } else {
+                            logger.warn("Unexpected attribute of <munge-step>: " + aname + "=" + aval + " at " + locator);
+                        }
+                        
+                    }
+                    
+                    checkMandatory("id", id);
+                    checkMandatory("name", mso.getName());
+                    checkMandatory("type", mso.getType());
+                    
+                    // all children get attached to step in endElement()
+                    mso.setParent(step);
+                    stepChildren.add(mso);
+
+                } else if (qName.equals("connections") && parentIs("munge-process")) {
+                    // container element
+
+                } else if (qName.equals("munge-step") && parentIs("connections")) {
+                    String stepId = attributes.getValue("ref");
+                    checkMandatory("ref", stepId);
+                    
+                    step = mungeStepIdMap.get(stepId);
+                    if (step == null) {
+                        throw new SAXException("Bad munge step reference \"" + stepId + "\" at " + locator);
+                    }
+
+                    stepInputs = new ArrayList<Input>();
+                    
+                } else if (qName.equals("input") && parentIs("munge-step")) {
+                    
+                    String name = null;
+                    Class type = null;
+                    MungeStepOutput fromOutput = null;
+                    boolean connected = true;
+                    
+                    for (int i = 0; i < attributes.getLength(); i++) {
+                        String aname = attributes.getQName(i);
+                        String aval = attributes.getValue(i);
+                        
+                        if (aname.equals("name")) {
+                            name = aval;
+                        } else if (aname.equals("data-type")) {
+                            checkAcceptableOutputType(aval);
+                            type = Class.forName(aval);
+                        } else if (aname.equals("connected")) {
+                            connected = Boolean.valueOf(aval);
+                        } else if (aname.equals("from-ref")) {
+                            fromOutput = mungeStepOutputIdMap.get(aval);
+                            if (fromOutput == null) {
+                                throw new SAXException("Bad munge step output reference \""+aval+"\" at " + locator);
+                            }
+                        } else {
+                            logger.warn("Unexpected attribute of <input>: " + aname + "=" + aval + " at " + locator);
+                        }
+                        
+                    }
+                    
+                    checkMandatory("name", name);
+                    checkMandatory("type", type);
+                    if (connected) {
+                        checkMandatory("from-ref", fromOutput);
+                    } else {
+                        if (fromOutput != null) {
+                            throw new SAXException("Found an input connection on an unconnected input! at " + locator);
+                        }
+                    }
+                    InputDescriptor inDesc = new InputDescriptor(name, type);
+                    Input in = new Input(null, inDesc, step);
+                    if (connected) {
+                        in.setCurrent(fromOutput);
+                    }
+
+                    stepInputs.add(in);
+                    
                 }
+                
             } catch (ArchitectException e) {
                 throw new SAXException("Failed to read database structure at " + locator, e);
+            } catch (ClassNotFoundException e) {
+                throw new SAXException("Class not found at " + locator, e);
+            } catch (InstantiationException e) {
+                throw new SAXException("Could not create instance at " + locator, e);
+            } catch (IllegalAccessException e) {
+                throw new SAXException("No public constructor found at " + locator, e);
+            }
+        }
+
+        /**
+         * Throws an exception if the given class name is not an acceptable MungeStepOutput
+         * data type.
+         * 
+         * @param className The class name to verify
+         * @throws SAXException If the given class name is not acceptable.
+         */
+        private void checkAcceptableOutputType(String className) throws SAXException {
+            if (!acceptableMungeStepOutputTypes.contains(className)) {
+                throw new SAXException("Illegal munge step output type \"" + className + "\" at " + locator);
             }
         }
 
@@ -716,17 +943,41 @@ public class ProjectDAOXML implements ProjectDAO {
         public void endElement(String uri, String localName, String qName) throws SAXException {
             if (text != null) {
                 if (qName.equals("where-filter")) {
-                    if (xmlContext.peek().equals("source-table")) {
+                    if (parentIs("source-table")) {
                         project.setFilter(text.toString());
-                    } else if (qName.equals("munge-process")) {
+                    } else if (parentIs("munge-process")) {
                         process.setFilter(text.toString());
                     }
                 } else if (qName.equals("description")) {
-                    if (qName.equals("munge-process")) {
+                    if (parentIs("munge-process")) {
                         process.setDesc(text.toString());
                     }
+                } else if (qName.equals("parameter")) {
+                    if (parentIs("munge-step")) {
+                        step.setParameter(parameterName, text.toString());
+                    }
                 }
-            }            
+            }
+            
+            if (qName.equals("project")) {
+                project = null;
+            } else if (qName.equals("munge-process") && parentIs("project")) {
+                for (AbstractMungeStep step : steps) {
+                    System.out.println("adding step " + step.getName());
+                    process.addChild(step);
+                }
+                process = null;
+                mungeStepOutputIdMap = null;
+            } else if (qName.equals("munge-step") && parentIs("munge-process")) {
+                System.out.println("setting children to " + stepChildren);
+                step.setChildren(stepChildren);
+                stepChildren = null;
+                step = null;
+            } else if (qName.equals("munge-step") && parentIs("connections")) {
+                step.setInputs(stepInputs);
+                stepInputs = null;
+                step = null;
+            }
             text = null;
             xmlContext.pop();
         }
@@ -754,6 +1005,17 @@ public class ProjectDAOXML implements ProjectDAO {
             if (value == null) {
                 throw new SAXException("Missing mandatory attribute \""+attName+"\" of element \""+xmlContext.peek()+"\" at " + locator);
             }
+        }
+        
+        /**
+         * Returns true if the name of the parent element in the XML context
+         * (the one just below the top of the stack) is the given name.
+         * 
+         * @param qName The name to check for equality with the parent element name.
+         * @return If qName == parent element name
+         */
+        private boolean parentIs(String qName) {
+            return xmlContext.get(xmlContext.size() - 2).equals(qName);
         }
     }
 }

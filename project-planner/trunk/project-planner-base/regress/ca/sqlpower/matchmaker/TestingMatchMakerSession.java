@@ -327,6 +327,10 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	public PlFolder<Project> getDefaultPlFolder() {
 		return defaultFolder;
 	}
+
+    public void save(MatchMakerObject mmo) {
+        logger.debug("Stub call: TestingMatchMakerSession.save()");
+    }
 	
 }
 

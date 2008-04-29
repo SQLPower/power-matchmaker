@@ -77,11 +77,9 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
@@ -89,13 +87,8 @@ import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
-import ca.sqlpower.matchmaker.dao.MatchMakerTranslateGroupDAO;
-import ca.sqlpower.matchmaker.dao.MungeProcessDAO;
-import ca.sqlpower.matchmaker.dao.PlFolderDAO;
-import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
 import ca.sqlpower.matchmaker.swingui.action.CreateRepositoryAction;
@@ -439,7 +432,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			}
 		});
 
-        frame = new JFrame("Power*MatchMaker: "+sessionImpl.getDBUser()+"@"+sessionImpl.getDatabase().getName());
+        frame = new JFrame("Power*MatchMaker: "+sessionImpl.getDBUser());
 
         warningDialog = new JFrame("Power*MatchMaker Warnings");
         warningDialog.setIconImage(smallMMIcon.getImage());
@@ -454,7 +447,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         cp.add(buttonPanel, BorderLayout.SOUTH);
         
         MatchMakerUtils.listenToHierarchy(removeEditorListener, getCurrentFolderParent());
-        MatchMakerUtils.listenToHierarchy(removeEditorListener, getTranslateGroupParent());
 	}
 
 	void showGUI() {
@@ -1003,28 +995,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param mmo
 	 */
 	public void save(MatchMakerObject mmo) {
-		if (mmo instanceof Project){
-			Project project = (Project)mmo;
-			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
-			dao.save(project);
-		} else if (mmo instanceof MatchMakerFolder){
-			Project project = (Project)mmo.getParent();
-			ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
-			dao.save(project);
-		} else if (mmo instanceof PlFolder){
-			PlFolderDAO dao = (PlFolderDAO) getDAO(PlFolder.class);
-			dao.save((PlFolder) mmo);
-		} else if (mmo instanceof MungeProcess) {
-			MungeProcess cg = (MungeProcess)mmo;
-			MungeProcessDAO dao = (MungeProcessDAO) getDAO(MungeProcess.class);
-			dao.save(cg);
-		} else if (mmo instanceof MatchMakerTranslateGroup) {
-			MatchMakerTranslateGroup tg = (MatchMakerTranslateGroup)mmo;
-			MatchMakerTranslateGroupDAO dao = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
-			dao.save(tg);
-		} else {
-			throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");
-		}
+        sessionImpl.save(mmo);
 	}
 
 	/**
@@ -1184,12 +1155,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             }
         }
 		
-		//closes the connection to the repository database.
-		getDatabase().disconnect();
+        // TODO sessionImpl.close();
+        
 		return true;
 	}
-	
-	/**
+
+    /**
 	 * @return Returns the original editor pane.
 	 */
 	public DataEntryPanel getOldPane() {

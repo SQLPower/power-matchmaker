@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
@@ -50,6 +52,8 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 class DisconnectedTreeModelSpecificContainer<C extends MatchMakerObject> 
 		implements MatchMakerObject<DisconnectedTreeModelSpecificContainer, C> {
 
+    private static final Logger logger = Logger.getLogger(DisconnectedTreeModelSpecificContainer.class);
+    
 	/**
 	 * The list of children this container holds.
 	 */
@@ -98,6 +102,7 @@ class DisconnectedTreeModelSpecificContainer<C extends MatchMakerObject>
 	 */
 	public void addChild(C child) {
 		childList.add(child);
+		logger.error("added child " + child + ". Child count is now " + childList.size(), new Exception());
 	}
 
 	/**

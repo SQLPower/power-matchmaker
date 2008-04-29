@@ -44,6 +44,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
+import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
@@ -606,4 +607,29 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	public PlFolder<Project> getDefaultPlFolder() {
 		return defaultPlFolder;
 	}
+
+    public void save(MatchMakerObject mmo) {
+        if (mmo instanceof Project){
+            Project project = (Project)mmo;
+            ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
+            dao.save(project);
+        } else if (mmo instanceof MatchMakerFolder){
+            Project project = (Project)mmo.getParent();
+            ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
+            dao.save(project);
+        } else if (mmo instanceof PlFolder){
+            PlFolderDAO dao = (PlFolderDAO) getDAO(PlFolder.class);
+            dao.save((PlFolder) mmo);
+        } else if (mmo instanceof MungeProcess) {
+            MungeProcess cg = (MungeProcess)mmo;
+            MungeProcessDAO dao = (MungeProcessDAO) getDAO(MungeProcess.class);
+            dao.save(cg);
+        } else if (mmo instanceof MatchMakerTranslateGroup) {
+            MatchMakerTranslateGroup tg = (MatchMakerTranslateGroup)mmo;
+            MatchMakerTranslateGroupDAO dao = (MatchMakerTranslateGroupDAO) getDAO(MatchMakerTranslateGroup.class);
+            dao.save(tg);
+        } else {
+            throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");
+        }
+    }
 }
