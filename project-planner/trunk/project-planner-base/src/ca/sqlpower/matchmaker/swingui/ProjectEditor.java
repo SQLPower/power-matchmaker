@@ -67,7 +67,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private final JPanel panel;
 
 	private StatusComponent status = new StatusComponent();
-    private JTextField projectId = new JTextField();
+    private JTextField projectName = new JTextField();
     private JTextArea desc = new JTextArea();
 
     private final MatchMakerSwingSession swingSession;
@@ -108,7 +108,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
     private void addValidators() {
     	Validator v = new ProjectNameValidator(swingSession,project);
-        handler.addValidateObject(projectId,v);
+        handler.addValidateObject(projectName,v);
         	
         Validator v6 = new AlwaysOKValidator();
         handler.addValidateObject(desc, v6);
@@ -157,7 +157,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
     private JPanel buildUI() {
 
-    	projectId.setName("Project ID");
+    	projectName.setName("Project Name");
     	JButton saveProject = new JButton(saveAction);
 
     	FormLayout layout = new FormLayout(
@@ -172,8 +172,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		int row = 2;
 		pb.add(status, cc.xy(4,row));
 		row += 2;
-		pb.add(new JLabel("Project ID:"), cc.xy(2,row,"r,c"));
-		pb.add(projectId, cc.xy(4,row));
+		pb.add(new JLabel("Project Name:"), cc.xy(2,row,"r,c"));
+		pb.add(projectName, cc.xy(4,row));
 		row += 2;
         desc.setWrapStyleWord(true);
         desc.setLineWrap(true);
@@ -194,7 +194,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
     private void setDefaultSelections() throws ArchitectException {
 
-        projectId.setText(project.getName());
+        projectName.setText(project.getName());
         desc.setText(project.getMungeSettings().getDescription());
 
     }
@@ -225,14 +225,13 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
     	}
 
         //sets the project name, id and desc
-        final String projectName = projectId.getText().trim();
         project.getMungeSettings().setDescription(desc.getText());
-        String id = projectId.getText();
+        String id = projectName.getText();
 
 		if (!id.equals(project.getName())) {
         	if (!swingSession.isThisProjectNameAcceptable(id)) {
         		JOptionPane.showMessageDialog(getPanel(),
-        				"<html>Project name \"" + projectId.getText() +
+        				"<html>Project name \"" + projectName.getText() +
         					"\" does not exist or is invalid.\n" +
         					"The project has not been saved",
         				"Project name invalid",
