@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
@@ -68,7 +69,7 @@ public class MatchMakerXMLSession implements MatchMakerSession {
     /**
      * just temporary for testing. real thing uses client/server communication.
      */
-    private final File projectFile = new File("/Users/fuerth/mm-planner-file.xml");
+    private final File projectFile = new File(System.getProperty("user.home"), "mm-planner-file.xml");
     
     private final MatchMakerSessionContext context;
     private final FolderParent folderParent = new FolderParent(this);
@@ -167,9 +168,13 @@ public class MatchMakerXMLSession implements MatchMakerSession {
 
                 public InputStream createInputStream() {
                     try {
-                        FileInputStream in = new FileInputStream(projectFile);
-                        return in;
-                    } catch (FileNotFoundException e) {
+                        if (!projectFile.exists()) {
+                            return null;
+                        } else {
+                            FileInputStream in = new FileInputStream(projectFile);
+                            return in;
+                        }
+                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }

@@ -189,7 +189,12 @@ public class ProjectDAOXML implements ProjectDAO {
     }
 
     public List<Project> findAll() {
-        InputStream inStream = new BufferedInputStream(ioHandler.createInputStream());
+        InputStream rawInputStream = ioHandler.createInputStream();
+        if (rawInputStream == null) {
+            return new ArrayList<Project>();
+        }
+        InputStream inStream = new BufferedInputStream(rawInputStream);
+        
         ProjectSAXHandler handler = new ProjectSAXHandler(session.getContext(), session.getDefaultPlFolder());
         try {
             SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
