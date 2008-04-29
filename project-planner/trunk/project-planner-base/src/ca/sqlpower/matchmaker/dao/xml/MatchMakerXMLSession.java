@@ -19,13 +19,6 @@
 
 package ca.sqlpower.matchmaker.dao.xml;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -65,11 +58,6 @@ import ca.sqlpower.util.Version;
 public class MatchMakerXMLSession implements MatchMakerSession {
 
     private static final Logger logger = Logger.getLogger(MatchMakerXMLSession.class);
-    
-    /**
-     * just temporary for testing. real thing uses client/server communication.
-     */
-    private final File projectFile = new File(System.getProperty("user.home"), "mm-planner-file.xml");
     
     private final MatchMakerSessionContext context;
     private final FolderParent folderParent = new FolderParent(this);
@@ -164,29 +152,7 @@ public class MatchMakerXMLSession implements MatchMakerSession {
 
     public <T extends MatchMakerObject> MatchMakerDAO<T> getDAO(Class<T> businessClass) {
         if (businessClass == Project.class) {
-            IOHandler ioh = new IOHandler() {
-
-                public InputStream createInputStream() {
-                    try {
-                        if (!projectFile.exists()) {
-                            return null;
-                        } else {
-                            FileInputStream in = new FileInputStream(projectFile);
-                            return in;
-                        }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-                public OutputStream createOutputStream() {
-                    try {
-                        return new FileOutputStream(projectFile);
-                    } catch (FileNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            };
+            IOHandler ioh = new LocalFileIOHandler();
             return (MatchMakerDAO<T>) new ProjectDAOXML(this, ioh);
         } else {
             return null;
