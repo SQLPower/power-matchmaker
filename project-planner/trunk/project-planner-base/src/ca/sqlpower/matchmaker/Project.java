@@ -127,7 +127,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
                 if (!populated) {
                     try {
                         populating = true;  
-                        logger.error("Populating project!", new Exception("stack trace"));
                         populated = true;
                         dao.refresh(Project.this);
                     } finally {
