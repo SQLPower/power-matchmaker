@@ -45,5 +45,6 @@ public class DeleteMungeProcessAction extends AbstractAction {
 		if (responds != JOptionPane.YES_OPTION)
 			return;
 		swingSession.delete(mungeProcess);
+        
 	}
 }

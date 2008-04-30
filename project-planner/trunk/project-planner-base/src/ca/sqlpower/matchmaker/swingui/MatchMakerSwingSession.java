@@ -86,8 +86,10 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
@@ -887,8 +889,13 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	@SuppressWarnings("unchecked")
 	public <T extends MatchMakerObject> void delete(MatchMakerObject<T, ?> mmo) {
 		if (mmo.getParent() != null) {
-		    MatchMakerDAO dao = getDAO(mmo.getClass());
-		    dao.delete(mmo);
+		    if (mmo instanceof Project) {
+		        ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
+		        dao.delete((Project) mmo);
+            }
+            if (!(mmo instanceof MungeStep)) {
+                mmo.getParent().removeChild(mmo);
+            }
         } else {
             throw new IllegalStateException("I don't know how to delete a parentless object");
         }
@@ -1248,5 +1255,4 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     public PlFolder<Project> getDefaultPlFolder() {
     	return sessionImpl.getDefaultPlFolder();
     }
-	
 }

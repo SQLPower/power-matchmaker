@@ -70,5 +70,5 @@ public interface ProjectDAO extends MatchMakerDAO<Project> {
      * @param project The project instance to refresh. Its oid must be non-null.
      */
     public void refresh(Project project);
-	
+
 }

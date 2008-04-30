@@ -58,4 +58,11 @@ public interface IOHandler {
      * @param dao The new parent DAO.
      */
     public void setDAO(ProjectDAOXML dao);
+
+    /**
+     * Performs the deletion of the given project.
+     * 
+     * @param project The project you intend to delete.
+     */
+    void delete(Project project);
 }

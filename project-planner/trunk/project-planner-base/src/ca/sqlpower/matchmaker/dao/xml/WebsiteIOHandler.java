@@ -343,4 +343,41 @@ public class WebsiteIOHandler implements IOHandler {
             throw new RuntimeException(e);
         }
     }
+
+    public void delete(Project project) {
+        try {
+            if (!login()) {
+                JOptionPane.showMessageDialog(null, "Project not deleted!", "Login failed", JOptionPane.WARNING_MESSAGE);
+                password = null;
+                // If login failed, the next request will also fail and it will provide the appropriate error message
+            }
+            
+            URL baseURL = new URL(WEBSITE_BASE_URL);
+            URL url = new URL(baseURL, "delete_pp_project?projectId="+project.getOid());
+            HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+            urlc.setRequestMethod("GET");
+            urlc.setRequestProperty("Cookie", sessionCookie);
+            urlc.setDoOutput(false);
+            urlc.setDoInput(true);
+            urlc.connect();
+
+            // have to read in order to send request!
+            Reader in = new InputStreamReader(urlc.getInputStream());
+            StringBuilder responseString = new StringBuilder();
+            char[] buf = new char[2000];
+            while (in.read(buf) > 0) {
+                responseString.append(buf);
+            }
+            in.close();
+            urlc.disconnect();
+
+            JSONObject response = new JSONObject(responseString.toString());
+            boolean success = response.getBoolean("success");
+            if (!success) {
+                throw new IOException("Failed to delete: " + response.getString("message"));
+            }             
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }        
+    }
 }

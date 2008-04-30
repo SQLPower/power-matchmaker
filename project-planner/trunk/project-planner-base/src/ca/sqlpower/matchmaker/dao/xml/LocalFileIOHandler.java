@@ -77,4 +77,8 @@ public final class LocalFileIOHandler implements IOHandler {
     public void setDAO(ProjectDAOXML dao) {
         this.dao = dao;
     }
+
+    public void delete(Project project) {
+        throw new UnsupportedOperationException("Not implemented yet...");
+    }
 }

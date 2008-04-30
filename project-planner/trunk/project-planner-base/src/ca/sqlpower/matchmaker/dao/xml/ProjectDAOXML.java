@@ -183,12 +183,6 @@ public class ProjectDAOXML implements ProjectDAO {
         return true;
     }
 
-    public void delete(Project deleteMe) {
-        // TODO Auto-generated method stub
-        logger.debug("Stub call: ProjectDAOXML.delete()");
-        
-    }
-    
     /**
      * Refreshes the given project by reading in the appropriate project description
      * XML file.
@@ -1022,6 +1016,12 @@ public class ProjectDAOXML implements ProjectDAO {
          */
         private boolean parentIs(String qName) {
             return xmlContext.get(xmlContext.size() - 2).equals(qName);
+        }
+    }
+
+    public void delete(Project project) {
+        if (project.getOid() != null) {
+            ioHandler.delete(project);
         }
     }
 }

@@ -259,4 +259,5 @@ public interface MatchMakerSession {
      * @param mmo The object to save.
      */
     public void save(MatchMakerObject mmo);
+
 }
