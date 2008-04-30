@@ -111,7 +111,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     private boolean populating = false;
 
     /** indicates whether the project has been deleted in the persistent layer */
-    private boolean deleted;
+    private boolean deleted = false;
     
     /** Folder name for merge rules (table). */
     public static final String MERGE_RULES_FOLDER_NAME = "Merge Rules";
