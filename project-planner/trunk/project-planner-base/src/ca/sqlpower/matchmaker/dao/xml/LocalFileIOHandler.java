@@ -29,6 +29,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.Project;
 
@@ -38,18 +42,24 @@ public final class LocalFileIOHandler implements IOHandler {
      * just temporary for testing. real thing uses client/server communication.
      */
     private final File projectFile = new File(System.getProperty("user.home"), "mm-planner-file.xml");
+    
+    private static final Logger logger = Logger.getLogger(LocalFileIOHandler.class);
 
-    public InputStream createInputStream() {
+    private ProjectDAOXML dao;
+
+    public InputStream getInputStream(Project project) {
+        FileInputStream in;
         try {
             if (!projectFile.exists()) {
-                return null;
+                throw new IllegalStateException("Couldn't update project info (file not found)");
             } else {
-                FileInputStream in = new FileInputStream(projectFile);
-                return in;
+               in = new FileInputStream(projectFile);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        
+        return in;
     }
 
     public OutputStream createOutputStream(Project p) {
@@ -58,5 +68,13 @@ public final class LocalFileIOHandler implements IOHandler {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<Project> createProjectList() {
+        return new ArrayList<Project>();
+    }
+
+    public void setDAO(ProjectDAOXML dao) {
+        this.dao = dao;
     }
 }

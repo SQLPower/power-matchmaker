@@ -51,8 +51,18 @@ public class MatchMakerUtils {
 	public static <T extends MatchMakerObject, C extends MatchMakerObject>
 		void listenToHierarchy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root) {
 		root.addMatchMakerListener(listener);
-		logger.debug("listenToHierarchy: \"" + root.getName() + "\" (" +
-				root.getClass().getName() + ") children: " + root.getChildren());
+
+        if (root.getParent() instanceof Project) {
+            if (!((Project) root.getParent()).isPopulated()) {
+                // don't force projects to populate just so we can listen to them
+                // (the listeners will get attached later when the project
+                return;
+            }
+        }
+        
+        logger.debug("listenToHierarchy: \"" + root.getName() + "\" (" +
+                root.getClass().getName() + ") children: " + root.getChildren());
+        
 		for (MatchMakerObject<T,C> obj : root.getChildren()) {
 			listenToHierarchy(listener, obj);
 		}

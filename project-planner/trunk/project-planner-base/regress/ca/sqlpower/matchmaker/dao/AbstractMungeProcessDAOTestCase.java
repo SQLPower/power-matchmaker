@@ -27,12 +27,10 @@ import java.sql.Statement;
 import java.util.List;
 
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
-import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
-import ca.sqlpower.matchmaker.dao.hibernate.ProjectDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
@@ -43,13 +41,13 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
     Project project;
     PlFolder folder;
     
-    public abstract MatchMakerHibernateSession getSession() throws Exception;
+    public abstract MatchMakerSession getSession() throws Exception;
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         
-        PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+        PlFolderDAO plFolderDAO = (PlFolderDAO) getSession().getDAO(PlFolder.class);
         folder = new PlFolder("main test folder");
         plFolderDAO.save(folder);
         
@@ -65,7 +63,7 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
         }
         
         assertNotNull(project.getSession());
-        ProjectDAO matchDAO = new ProjectDAOHibernate(getSession());
+        ProjectDAO matchDAO = (ProjectDAO) getSession().getDAO(Project.class);
         matchDAO.save(project);
     }
 

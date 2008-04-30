@@ -21,93 +21,21 @@
 package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Component;
-import java.awt.Window;
-import java.util.concurrent.Callable;
 
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectVersion;
-import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.swingui.DataEntryPanel;
-import ca.sqlpower.swingui.DataEntryPanelBuilder;
 import ca.sqlpower.swingui.SPSUtils;
-import ca.sqlpower.util.ExceptionReport;
 
 public class MMSUtils {
 	
 	private static final Logger logger = Logger.getLogger(MMSUtils.class);
 	
-    /**
-     * Pops up a dialog box that lets the user inspect and change the given db's
-     * connection spec. This is very similar to the showDbcsDialog in the Architect's
-     * ASUtils class because it is. Architect has additional tabs for additional data
-     * source information (eg Kettle) which is not included in MatchMaker.
-     * <p>
-     * We considered making some sort of generic API in the library for creating a
-     * connection dialog with optional extra tabs, but there's honestly not very
-     * much code in this method, and it's hard to justify a whole API for something
-     * this lightweight.
-     * 
-     * @param parentWindow
-     *            The window that owns the dialog
-     * @param dataSource
-     *            the data source to edit (null not allowed)
-     * @param onAccept
-     *            this runnable will be invoked if the user OKs the dialog and
-     *            validation succeeds. If you don't need to do anything in this
-     *            situation, just pass in null for this parameter.
-     */
-    public static JDialog showDbcsDialog(
-            final Window parentWindow,
-            final SPDataSource dataSource,
-            final Runnable onAccept) {
-        
-        final DataEntryPanel dbcsPanel = new MMDataSourcePanel(dataSource);
-        
-        Callable<Boolean> okCall = new Callable<Boolean>() {
-            public Boolean call() {
-                if (dbcsPanel.applyChanges()) {
-                    if (onAccept != null) {
-                    	try {
-                    		dataSource.getParentCollection().write();
-                    	} catch (Exception ex) {
-                    		MMSUtils.showExceptionDialog(parentWindow, "Couldn't save connection information", ex);
-                    	}
-                        onAccept.run();
-                    }
-                    return new Boolean(true);
-                }
-                return new Boolean(false);
-            }
-        };
-    
-        Callable<Boolean> cancelCall = new Callable<Boolean>() {
-            public Boolean call() {
-                dbcsPanel.discardChanges();
-                return new Boolean(true);
-            }
-        };
-    
-        JDialog d = DataEntryPanelBuilder.createDataEntryPanelDialog(
-                dbcsPanel, parentWindow,
-                "Database Connection: " + dataSource.getDisplayName(),
-                DataEntryPanelBuilder.OK_BUTTON_LABEL,
-                okCall, cancelCall);
-    
-        d.pack();
-        d.setLocationRelativeTo(parentWindow);
-    
-        d.setVisible(true);
-        return d;
-    }
-    
     /**
      * Returns an icon that is suitable for use as a frame icon image
      * in the MatchMaker.
@@ -150,16 +78,7 @@ public class MMSUtils {
 	 *            The exception that warranted a dialog
 	 */
     public static JDialog showExceptionDialog(Component parent, String message, Throwable t) {
-    	try {
-    		ExceptionReport report = new ExceptionReport(t, ExceptionHandler.DEFAULT_REPORT_URL, ArchitectVersion.APP_VERSION, "MatchMaker");
-    		logger.debug(report.toString());
-    		report.send();
-    	} catch (Throwable seriousProblem) {
-    		logger.error("Couldn't generate and send exception report!  Note that this is not the primary problem; it's a side effect of trying to report the real problem.", seriousProblem);
-    		JOptionPane.showMessageDialog(null, "Error reporting failed: "+seriousProblem.getMessage()+"\nAdditional information is available in the application log.");
-    	} finally {
-    		return SPSUtils.showExceptionDialogNoReport(parent, message, t);
-    	}
+        return SPSUtils.showExceptionDialogNoReport(parent, message, t);
     }
     
     /**

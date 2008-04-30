@@ -39,6 +39,7 @@ import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
+import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.util.ViewSpec;
 
@@ -105,6 +106,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     private ViewSpec view;
 
     private String description;
+
+    /** indicates whether the project is in midst of updating info */
+    private boolean populating = false;
     
     /** Folder name for merge rules (table). */
     public static final String MERGE_RULES_FOLDER_NAME = "Merge Rules";
@@ -116,7 +120,23 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      * Contains the Munge Processes and the Munge Steps
      */
     private MatchMakerFolder<MungeProcess> mungeProcessesFolder =
-    	new MatchMakerFolder<MungeProcess>(MungeProcess.class);
+    	new MatchMakerFolder<MungeProcess>(MungeProcess.class) {
+            
+            @Override
+            public List<MungeProcess> getChildren() {
+                if (!populated) {
+                    try {
+                        populating = true;  
+                        logger.error("Populating project!", new Exception("stack trace"));
+                        populated = true;
+                        dao.refresh(Project.this);
+                    } finally {
+                        populating  = false;
+                    }
+                }
+                return super.getChildren();
+            }
+        };
     
     /**
      * Cached source table 
@@ -143,6 +163,19 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      */
     private CleanseEngineImpl cleansingEngine = null;
 
+    /**
+     * The DAO that can populate this project, if it is not already populated. If the project
+     * starts off populated, this field will probably be null.
+     */
+    private ProjectDAO dao;
+
+    /**
+     * True if all properties and children of this object are up-to-date with the DAO's idea
+     * of them. If false, the dao will be asked to refresh this object before those "unpopulated"
+     * fields are accessed.
+     */
+    private boolean populated = true;
+
 	public Project() {
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
 	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
@@ -154,7 +187,16 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
 	}
 	
-	/**
+	public Project(long oid, String name, String description, ProjectDAO dao) {
+        this();
+        setOid(oid);
+        setDescription(description);
+        setName(name);
+        this.dao = dao;
+        this.populated = false;
+    }
+    
+    /**
 	 * FIXME Implement me
 	 *
 	 */
@@ -529,30 +571,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		return null;
 	}
 
-	@Override
-    public int hashCode() {
-        final int PRIME = 31;
-        int result = 0;
-        result = PRIME * result + ((getName() == null) ? 0 : getName().hashCode());
-        return result;
-    }
-
-	@Override
-    public boolean equals(Object obj) {
-		if ( !(obj instanceof Project) ) {
-			return false;
-		}
-        if (this == obj) {
-            return true;
-        }
-        final Project other = (Project) obj;
-        if (getName() == null) {
-            if (other.getName() != null)
-                return false;
-        } else if (!getName().equals(other.getName()))
-            return false;
-        return true;
-    }
 	public Long getOid() {
 		return oid;
 	}
@@ -802,4 +820,22 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		} 
 		return null;
 	}
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj;
+    }
+
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
+    }
+
+    public boolean isPopulated() {
+        return populated;
+    }
+
+    public boolean isPopulating() {
+        return populating;
+    }
 }

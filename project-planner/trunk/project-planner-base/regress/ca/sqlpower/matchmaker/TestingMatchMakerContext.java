@@ -45,9 +45,6 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
  	Preferences prefs = Preferences.userNodeForPackage(TestingMatchMakerContext.class).node("test");
 	
 	public TestingMatchMakerContext() {
-		dataSources.add(DBTestUtil.getHSQLDBInMemoryDS());
-		dataSources.add(DBTestUtil.getOracleDS());
-		dataSources.add(DBTestUtil.getSqlServerDS());
 	}
 	
 	public List<SPDataSource> getDataSources() {

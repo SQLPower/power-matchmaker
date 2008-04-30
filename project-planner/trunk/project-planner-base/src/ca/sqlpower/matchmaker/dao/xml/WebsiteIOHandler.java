@@ -31,6 +31,10 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -39,6 +43,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ca.sqlpower.matchmaker.Project;
@@ -66,8 +71,61 @@ public class WebsiteIOHandler implements IOHandler {
     private String username = null;
     private String password = null;
     
-    public InputStream createInputStream() {
-        return null; // FIXME
+    /**
+     * The DAO that's using this IO Handler. Gets set when this handler is given
+     * to the DAO.
+     */
+    private ProjectDAOXML dao;
+    
+    public List<Project> createProjectList() {
+        try {
+            if (!login()) {
+                throw new RuntimeException("Couldn't retrieve projects (login failed)");
+            }
+            
+            URL baseURL = new URL(WEBSITE_BASE_URL);
+            URL url = new URL(baseURL, "get_pp_project_list");
+            HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+            urlc.setRequestMethod("GET");
+            urlc.setRequestProperty("Cookie", sessionCookie);
+            urlc.setDoOutput(false);
+            urlc.setDoInput(true);
+            urlc.connect();
+
+            Reader in = new InputStreamReader(urlc.getInputStream());
+            StringBuilder responseString = new StringBuilder();
+            char[] buf = new char[2000];
+            while (in.read(buf) > 0) {
+                responseString.append(buf);
+            }
+            in.close();
+            urlc.disconnect();
+            
+            List<Project> projects = new ArrayList<Project>();
+            Set<Long> oids = new HashSet<Long>();
+
+            JSONArray response = new JSONArray(responseString.toString());
+            for (int i = 0; i < response.length(); i++) {
+                JSONObject pdesc = response.getJSONObject(i);
+                
+                long oid = pdesc.getLong("projectId");
+                if (oids.contains(oid)) {
+                    logger.error("Duplicate project from server!");
+                } else {
+                    String description = null;
+                    if (!pdesc.isNull("projectDescription")) {
+                        description = pdesc.getString("projectDescription");
+                    }
+                    Project p = new Project(oid, pdesc.getString("projectName"), description, dao);
+                    projects.add(p);
+                    oids.add(p.getOid());
+                }
+            }
+            
+            return projects;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public OutputStream createOutputStream(Project project) {
@@ -107,7 +165,9 @@ public class WebsiteIOHandler implements IOHandler {
                     sb.append("&projectId=").append(project.getOid());
                 }
                 sb.append("&projectName=").append(URLEncoder.encode(project.getName(), "UTF-8"));
-                sb.append("&projectDescription=").append(URLEncoder.encode(project.getDescription(), "UTF-8"));
+                if (project.getDescription() != null) {
+                    sb.append("&projectDescription=").append(URLEncoder.encode(project.getDescription(), "UTF-8"));
+                }
 
                 URL baseURL = new URL(WEBSITE_BASE_URL);
                 URL url = new URL(baseURL, "save_pp_project");
@@ -132,6 +192,8 @@ public class WebsiteIOHandler implements IOHandler {
                 while (in.read(buf) > 0) {
                     responseString.append(buf);
                 }
+                in.close();
+                urlc.disconnect();
                 
                 JSONObject response = new JSONObject(responseString.toString());
                 boolean success = response.getBoolean("success");
@@ -140,10 +202,8 @@ public class WebsiteIOHandler implements IOHandler {
                 } else {
                     long oid = response.getLong("projectId");
                     project.setOid(oid);
+                    logger.debug("Saved project " + project.getName() + " (oid=" + project.getOid() + ")");
                 }
-                in.close();
-                
-                urlc.disconnect();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -255,5 +315,32 @@ public class WebsiteIOHandler implements IOHandler {
         
         Boolean doLogin = (Boolean) usernameField.getClientProperty("doLogin");
         return doLogin != null && doLogin == true;
+    }
+    
+    public void setDAO(ProjectDAOXML dao) {
+        this.dao = dao;
+    }
+
+    public InputStream getInputStream(Project project) {
+        try {
+            if (!login()) {
+                JOptionPane.showMessageDialog(null, "Project not updated!", "Login failed", JOptionPane.WARNING_MESSAGE);
+                password = null;
+                // If login failed, the next request will also fail and it will provide the appropriate error message
+            }
+            
+            URL baseURL = new URL(WEBSITE_BASE_URL);
+            URL url = new URL(baseURL, "load_pp_project?projectId="+project.getOid());
+            HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+            urlc.setRequestMethod("GET");
+            urlc.setRequestProperty("Cookie", sessionCookie);
+            urlc.setDoOutput(false);
+            urlc.setDoInput(true);
+            urlc.connect();
+
+            return urlc.getInputStream();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

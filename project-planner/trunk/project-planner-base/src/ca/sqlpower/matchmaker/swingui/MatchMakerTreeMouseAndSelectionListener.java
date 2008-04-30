@@ -36,7 +36,6 @@ import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
@@ -60,7 +59,6 @@ import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
-import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
 
 /**
@@ -214,77 +212,10 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		}
 
 		m.addSeparator();
-		if (project.getType() != ProjectMode.CLEANSE) {
-			m.add(new JMenuItem(new ShowMatchStatisticInfoAction(swingSession,
-					project, owningFrame)));
-		}
-		m.add(new JMenuItem(new AbstractAction("Audit Information") {
-			public void actionPerformed(ActionEvent e) {
-				swingSession.setCurrentEditorComponent(new ProjectInfoEditor(
-						project));
-			}
-		}));
-		
-		m.addSeparator();
-		
-		// TODO: Implement the import and export functions and
-		// replace these dummy actions.
-		m.add(new JMenuItem(new AbstractAction("Import") {
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(owningFrame,
-				"Import is not yet available. We apologize for the inconvenience");				
-			}
-		}));
-		m.add(new JMenuItem(new AbstractAction("Export") {
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(owningFrame,
-				"Export is not yet available. We apologize for the inconvenience");				
-			}
-		}));
-//		m.add(new JMenuItem(new ProjectExportAction(swingSession,
-//						owningFrame)));
-//		m.add(new JMenuItem(new ProjectImportAction(swingSession,
-//						owningFrame)));
 
-		m.addSeparator();
-		m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
+        m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
 		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
 
-        if (logger.isDebugEnabled()) {
-            m.addSeparator();
-            m.add(new JMenuItem(new AbstractAction("Show Result Table Columns...") {
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        SQLTable resultTable = project.getResultTable();
-                        logger.debug("Result table dump for project " + project.getName());
-                        logger.debug("Table: " + resultTable);
-                        logger.debug("Columns: " + resultTable.getColumns());
-                        logger.debug("Result Table Catalog: " + project.getResultTableCatalog());
-                        logger.debug("Result Table Schema:  " + project.getResultTableSchema());
-                        logger.debug("Result Table Name:    " + project.getResultTableName());
-                    } catch (Exception ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-            }));
-            m.add(new JMenuItem(new AbstractAction("Reset Result Table") {
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        String cat = project.getResultTableCatalog();
-                        String sch = project.getResultTableSchema();
-                        String nam = project.getResultTableName();
-                        project.setResultTableCatalog(null);
-                        project.setResultTableSchema(null);
-                        project.setResultTableName(null);
-                        project.setResultTableCatalog(cat);
-                        project.setResultTableSchema(sch);
-                        project.setResultTableName(nam);
-                    } catch (Exception ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-            }));
-        }
 	}
 
 	private void addFolderMenuItems(JPopupMenu m, final PlFolder folder) {
@@ -382,11 +313,11 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					MungeProcess mp = (MungeProcess)((MungeStep) o).getParent();
 					Project m = mp.getParentProject();
 					if (swingSession.getOldPane() instanceof MungeProcessEditor) {
-						MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
-						if (originalPane.getProcess() == mp) {
-							originalPane.setSelectedStep((MungeStep) o);
-							return;
-						}
+					    MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
+					    if (originalPane.getProcess() == mp) {
+					        originalPane.setSelectedStep((MungeStep) o);
+					        return;
+					    }
 					}
 					MungeProcessEditor editor = new MungeProcessEditor(swingSession, m, mp);
 					logger.debug("Created new munge process editor " + System.identityHashCode(editor));
@@ -423,10 +354,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						swingSession
 								.setCurrentEditorComponent(new ProjectInfoEditor(
 										node.getProject()));
-					} else if (node.getActionType() == MatchActionType.VALIDATION_STATUS) {
-						swingSession
-								.setCurrentEditorComponent(new MatchValidationStatus(
-										swingSession, node.getProject()));
 					} else if (node.getActionType() == MatchActionType.RUN_CLEANSING) {
 						swingSession.setCurrentEditorComponent(swingSession.getCleanseEnginePanel(node.getProject().getCleansingEngine(), node.getProject()));
 					}

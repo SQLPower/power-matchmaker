@@ -40,8 +40,6 @@ import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSession;
-import ca.sqlpower.matchmaker.dao.hibernate.PlFolderDAOHibernate;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.sql.SPDataSource;
 
@@ -59,7 +57,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
 			project.setName("Project "+count);
 			
 			PlFolder f = new PlFolder("test folder" + count);
-			PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+			PlFolderDAO plFolderDAO = (PlFolderDAO) getSession().getDAO(PlFolder.class);
 			plFolderDAO.save(f);
 			
             project.setParent(f);
@@ -196,7 +194,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         
         PlFolder f = new PlFolder();
 		f.setName("test folder");
-		PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+		PlFolderDAO plFolderDAO = (PlFolderDAO) getSession().getDAO(PlFolder.class);
 		plFolderDAO.save(f);
         
         final long projectOid = insertSampleProjectData(projectName, f.getOid());
@@ -296,7 +294,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
 		oldProject.setParent(f);
         
 		f.setName("test folder");
-		PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+        PlFolderDAO plFolderDAO = (PlFolderDAO) getSession().getDAO(PlFolder.class);
 		plFolderDAO.save(f);
         
         Project newProject = new Project();
@@ -387,7 +385,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
          oldProject.setParent(f);
 
          f.setName("test folder");
-         PlFolderDAOHibernate plFolderDAO = new PlFolderDAOHibernate((MatchMakerHibernateSession) getSession());
+         PlFolderDAO plFolderDAO = (PlFolderDAO) getSession().getDAO(PlFolder.class);
          plFolderDAO.save(f);
 
          oldProject.addMungeProcess(process);

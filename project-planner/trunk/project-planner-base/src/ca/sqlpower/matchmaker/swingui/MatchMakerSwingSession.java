@@ -85,19 +85,14 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.swingui.action.BuildExampleTableAction;
-import ca.sqlpower.matchmaker.swingui.action.CreateRepositoryAction;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.EditTranslateAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
 import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
@@ -216,14 +211,14 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		}
     };
 
-	private Action aboutAction = new AbstractAction("About Power*MatchMaker...") {
+	private Action aboutAction = new AbstractAction("About Project Planner...") {
 
 		public void actionPerformed(ActionEvent evt) {
 			// This is one of the few JDIalogs that can not get replaced
 			// with a call to ArchitectPanelBuilder, because an About
 			// box must have only ONE button...
 			final JDialog d = new JDialog(getFrame(),
-										  "About Power*MatchMaker");
+										  "About SQL Power Project Planner");
 			JPanel cp = new JPanel(new BorderLayout(12,12));
 			cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
 			final AboutPanel aboutPanel = new AboutPanel();
@@ -258,98 +253,17 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	    }
 	};
 
-	private Action remoteLoginAction = new AbstractAction("Connect to Remote Repository...") {
-		public void actionPerformed(ActionEvent e) {
-			sessionContext.showLoginDialog(null);
-		}
-
-	};
-
-    private CreateRepositoryAction createRepositoryAction = new CreateRepositoryAction(this);
-    
     /**
      * This will create a new project to add processes to.
      */
 	private Action newProjectAction = null;
-	private Action newXrefAction = null;
-	private Action newCleanseAction = null;
 	
 	private Action editProjectAction = new EditProjectAction("Edit Project");
 	private Action deleteProjectAction = new DeleteProjectAction(this);
 
-	private Action runMatchAction = new AbstractAction("Run Match") {
-
-		public void actionPerformed(ActionEvent e) {
-			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (match != null && match.getType() == ProjectMode.FIND_DUPES) {
-				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-			    TreePath treePath = 
-			    	treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,2));
-			    getTree().setSelectionPath(treePath);
-			}
-		}
-	};
-
-	private Action runMergeAction = new AbstractAction("Run Merge") {
-
-		public void actionPerformed(ActionEvent e) {
-			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (match != null && match.getType() == ProjectMode.FIND_DUPES) {
-				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-				TreePath treePath = 
-					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,5));
-				getTree().setSelectionPath(treePath);
-			}
-		}
-	};
-	
-	private Action runCleanseAction = new AbstractAction("Run Cleanse") {
-
-		public void actionPerformed(ActionEvent e) {
-			Project match = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (match != null && match.getType() == ProjectMode.CLEANSE) {
-				MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
-				TreePath treePath = 
-					treeModel.getPathForNode((MatchMakerObject<?,?>) treeModel.getChild(match,1));
-				getTree().setSelectionPath(treePath);
-			}
-		}
-	};
-
 	private Action helpAction;
-	private Action buildExampleTableAction;
 	private Action supportOnTheWebAction;
 	
-	private Action tableQueryAction = new AbstractAction("Table Explorer") {
-		public void actionPerformed(ActionEvent e) {
-			TableQueryFrame f = new TableQueryFrame(MatchMakerSwingSession.this);
-			f.setIconImage(new ImageIcon(getClass().getResource("/icons/matchmaker_24.png")).getImage());
-			f.pack();
-			f.setVisible(true);
-		}
-	};
-
-
-	private Action databaseConnectionAction = new AbstractAction("Manage Database Connections...") {
-
-		public void actionPerformed(ActionEvent e) {
-            sessionContext.showDatabaseConnectionManager(frame);
-		}
-	};
-
-	private Action showMatchStatisticInfoAction = new AbstractAction("Match Statistics") {
-
-		public void actionPerformed(ActionEvent e) {
-			Project project = MMSUtils.getTreeObject(getTree(),Project.class);
-			if (project == null || project.getType() == ProjectMode.CLEANSE)
-				return;
-
-			ShowMatchStatisticInfoAction sm = new ShowMatchStatisticInfoAction(
-					MatchMakerSwingSession.this,project,frame);
-			sm.actionPerformed(e);
-		}
-	};
-
     private Action clearWarningsAction = new AbstractAction("Clear") {
         public void actionPerformed(ActionEvent e) {
             warningTextArea.setText("");
@@ -469,8 +383,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
 		newProjectAction = new NewProjectAction(this, "New Project", Project.ProjectMode.FIND_DUPES);
-		newXrefAction = new NewProjectAction(this, "New X-refing Project", Project.ProjectMode.BUILD_XREF);
-		newCleanseAction = new NewProjectAction(this, "New Cleansing Project", Project.ProjectMode.CLEANSE);
 		
         JMenuBar menuBar = new JMenuBar();
 
@@ -487,14 +399,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		editMenu.add(redoAction);
 		menuBar.add(editMenu);
 
-		// the connections menu is set up when a new project is created (because it depends on the current DBTree)
-		JMenu databaseMenu = new JMenu("Database");
-		databaseMenu.setMnemonic('d');
-		databaseMenu.add(remoteLoginAction);
-        databaseMenu.add(createRepositoryAction);
-		databaseMenu.add(databaseConnectionAction);
-		menuBar.add(databaseMenu);
-		
 		JMenu projectMenu = new JMenu("Project");
 		projectMenu.setMnemonic('m');
 		projectMenu.add(newProjectAction);
@@ -502,30 +406,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		projectMenu.add(editProjectAction);
 		projectMenu.add(deleteProjectAction);
 		projectMenu.addSeparator();
-		projectMenu.add(runMatchAction);
-		projectMenu.add(runMergeAction);
-		projectMenu.add(runCleanseAction);
-		projectMenu.addSeparator();
-		projectMenu.add(showMatchStatisticInfoAction);
-		projectMenu.addSeparator();
 		
-		// TODO: Use the commented code once the import and export
-		// functions have been implemented. 
-//		projectMenu.add(new ProjectImportAction(this, frame));
-//		projectMenu.add(new ProjectExportAction(this, frame));
-		projectMenu.add(new DummyAction(frame, "Import"));
-		projectMenu.add(new DummyAction(frame, "Export"));
-		
-		menuBar.add(projectMenu);
-
-		JMenu toolsMenu = new JMenu("Tools");
-		toolsMenu.setMnemonic('t');
-		toolsMenu.add(tableQueryAction);
-		toolsMenu.add(new EditTranslateAction(this));
-		// We will add this back in if we need the SQLRunner later
-        //toolsMenu.add(new SQLRunnerAction(frame));
-		menuBar.add(toolsMenu);
-
 		// Commented the 'Window' menu until we actually have something to put in it
 //        JMenu windowMenu = new JMenu("Window");
 //        windowMenu.setMnemonic('w');
@@ -541,9 +422,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         }
         helpMenu.add(helpAction);
 		
-        buildExampleTableAction = new BuildExampleTableAction(this);
-        helpMenu.add(buildExampleTableAction);
-
         supportOnTheWebAction = SPSUtils.forumAction;
         helpMenu.add(supportOnTheWebAction);
         
@@ -557,8 +435,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         toolBar.addSeparator();
         toolBar.add(helpAction);
         toolBar.add(exitAction);
-		toolBar.setToolTipText("MatchMaker Toolbar");
-		toolBar.setName("MatchMaker Toolbar");
+		toolBar.setToolTipText("Project Planner Toolbar");
+		toolBar.setName("Project Planner Toolbar");
 
 		Container projectBarPane = frame.getContentPane();
 		projectBarPane.setLayout(new BorderLayout());
@@ -1307,7 +1185,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			if (selectNewChild && !evt.isUndoEvent()) {
 				if (evt.getChildren().size() == 1) {
 					final MatchMakerObject insertedMMO = (MatchMakerObject)evt.getChildren().get(0);
-					if (!(insertedMMO instanceof MungeStepOutput)) {
+                    
+					if (!(insertedMMO instanceof MungeStepOutput || isParentProjectPopulating(insertedMMO))) {
 						SwingUtilities.invokeLater(new Runnable(){
 							public void run() {
 								MatchMakerTreeModel treeModel = (MatchMakerTreeModel)getTree().getModel();
@@ -1323,7 +1202,22 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			}
 		}
 
-		public void mmChildrenRemoved(MatchMakerEvent evt) {
+        /**
+         * Tells if any ancestor of the given MMO is a project that's
+         * currently populating.
+         */
+		private boolean isParentProjectPopulating(MatchMakerObject mmo) {
+            while (mmo != null && !(mmo instanceof Project)) {
+                mmo = mmo.getParent();
+            }
+            if (mmo == null) {
+                return false;
+            } else {
+                return ((Project) mmo).isPopulating();
+            }
+        }
+
+        public void mmChildrenRemoved(MatchMakerEvent evt) {
 			//sets the current editor pane to null if object is removed.
 			if (oldPane instanceof MatchMakerEditorPane) {
 				for (MatchMakerObject removedChild : (List<MatchMakerObject>)evt.getChildren()) {

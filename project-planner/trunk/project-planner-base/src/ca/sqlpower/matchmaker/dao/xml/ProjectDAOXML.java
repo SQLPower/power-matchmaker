@@ -55,7 +55,6 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
-import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
@@ -157,6 +156,7 @@ public class ProjectDAOXML implements ProjectDAO {
     public ProjectDAOXML(MatchMakerXMLSession session, IOHandler ioHandler) {
         this.session = session;
         this.ioHandler = ioHandler;
+        ioHandler.setDAO(this);
     }
     
     public long countProjectByName(String name) {
@@ -188,15 +188,21 @@ public class ProjectDAOXML implements ProjectDAO {
         logger.debug("Stub call: ProjectDAOXML.delete()");
         
     }
-
-    public List<Project> findAll() {
-        InputStream rawInputStream = ioHandler.createInputStream();
-        if (rawInputStream == null) {
-            return new ArrayList<Project>();
+    
+    /**
+     * Refreshes the given project by reading in the appropriate project description
+     * XML file.
+     * 
+     * @param project The project to refresh. It must have a non-null OID.
+     */
+    public void refresh(Project project) {
+        if (project.getOid() == null) {
+            throw new NullPointerException("Can't update project with null oid");
         }
-        InputStream inStream = new BufferedInputStream(rawInputStream);
+        InputStream rawInStream = ioHandler.getInputStream(project);
+        InputStream inStream = new BufferedInputStream(rawInStream);
         
-        ProjectSAXHandler handler = new ProjectSAXHandler(session.getContext(), session.getDefaultPlFolder());
+        ProjectSAXHandler handler = new ProjectSAXHandler(project.getSession().getContext(), project);
         try {
             SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
             // turn off validation parser.setProperty()
@@ -217,7 +223,16 @@ public class ProjectDAOXML implements ProjectDAO {
                 logger.error("Couldn't close input stream", ex);
             }
         }
-        return handler.getProjects();
+    }
+
+    /**
+     * Returns all the projects the current user has access to, but these
+     * projects are sparsely populated (probably just the name and oid fields).
+     * They will fill in their details by making another call to this DAO when
+     * they are asked for information they don't have.
+     */
+    public List<Project> findAll() {
+        return ioHandler.createProjectList();
     }
 
     public Class<Project> getBusinessClass() {
@@ -566,11 +581,6 @@ public class ProjectDAOXML implements ProjectDAO {
     static class ProjectSAXHandler extends DefaultHandler {
         
         /**
-         * The list of projects we read from the XML file.
-         */
-        private List<Project> projects;
-        
-        /**
          * The current project we're reading from the file.
          */
         private Project project;
@@ -580,11 +590,6 @@ public class ProjectDAOXML implements ProjectDAO {
          */
         Stack<String> xmlContext = new Stack<String>();
 
-        /**
-         * The parent folder we add the loaded projects to.
-         */
-        private final PlFolder<Project> parentFolder;
-        
         private Map<String, Project> projectIdMap;
         
         private Locator locator;
@@ -635,14 +640,9 @@ public class ProjectDAOXML implements ProjectDAO {
 
         private List<AbstractMungeStep> steps;
         
-        ProjectSAXHandler(MatchMakerSessionContext sessionContext, PlFolder<Project> parentFolder) {
+        ProjectSAXHandler(MatchMakerSessionContext sessionContext, Project project) {
             this.sessionContext = sessionContext;
-            this.parentFolder = parentFolder;
-            
-        }
-        
-        public List<Project> getProjects() {
-            return projects;
+            this.project = project;
         }
         
         @Override
@@ -651,13 +651,9 @@ public class ProjectDAOXML implements ProjectDAO {
                 xmlContext.push(qName);
                 
                 if (qName.equals("matchmaker-projects")) {
-                    projects = new ArrayList<Project>();
                     projectIdMap = new HashMap<String, Project>();
 
                 } else if (qName.equals("project")) {
-                    project = new Project();
-                    projects.add(project);
-                    
                     String id = null;
                     
                     for (int i = 0; i < attributes.getLength(); i++) {
@@ -781,7 +777,7 @@ public class ProjectDAOXML implements ProjectDAO {
                     checkMandatory("id", id);
                     checkMandatory("name", process.getName());
 
-                    project.addMungeProcess(process);
+                    project.addMungeProcess(process); // FIXME have to do this in endElement
                     
                 } else if (qName.equals("munge-step") && parentIs("munge-process")) {
                     String type = attributes.getValue("step-type");

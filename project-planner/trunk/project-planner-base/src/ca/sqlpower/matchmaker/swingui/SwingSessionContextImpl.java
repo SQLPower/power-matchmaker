@@ -20,12 +20,8 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -38,15 +34,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import org.apache.log4j.Logger;
@@ -55,27 +43,17 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
-import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
-import ca.sqlpower.sql.PlDotIni;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.swingui.DataEntryPanelBuilder;
-import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
-import ca.sqlpower.swingui.db.DataSourceDialogFactory;
-import ca.sqlpower.swingui.db.DataSourceTypeDialogFactory;
-import ca.sqlpower.swingui.db.DataSourceTypeEditor;
-import ca.sqlpower.swingui.db.DatabaseConnectionManager;
 import ca.sqlpower.util.ExceptionReport;
 import ca.sqlpower.util.VersionFormatException;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
-
-import com.jgoodies.forms.factories.ButtonBarFactory;
 
 
 public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingSessionContext {
@@ -110,79 +88,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
     private final Preferences swingPrefs;
     
     /**
-     * Action that implements an extra button we put on the database connection manager
-     * dialog. It hides that dialog, then shows the login dialog, where the connection
-     * that was selected in the connection manager is made into the current selection.
-     */
-    private final Action loginDatabaseConnectionAction = new AbstractAction("Login") {
-
-		public void actionPerformed(ActionEvent e) {
-            throw new UnsupportedOperationException("Not implemented");
-		}
-	};
-
-    /**
-     * This factory just passes the request through to the {@link MMSUtils#showDbcsDialog(Window, SPDataSource, Runnable)}
-     * method.
-     */
-    private final DataSourceDialogFactory dsDialogFactory = new DataSourceDialogFactory() {
-
-		public JDialog showDialog(Window parentWindow, SPDataSource dataSource,	Runnable onAccept) {
-			return MMSUtils.showDbcsDialog(parentWindow, dataSource, onAccept);
-		}
-    	
-    };
-    
-    /**
-     * Implementation of DataSourceTypeDialogFactory that will display a DataSourceTypeEditor dialog
-     */
-    private final DataSourceTypeDialogFactory dsTypeDialogFactory = new DataSourceTypeDialogFactory() {
-        
-    	private JDialog d; 
-    	private DataSourceTypeEditor editor;
-    	
-    	public Window showDialog(Window owner) {
-        	if (d == null) {
-	    		d = SPSUtils.makeOwnedDialog(owner, "JDBC Drivers");
-	        	editor = new DataSourceTypeEditor(context.getPlDotIni());
-	        	
-	        	JPanel cp = new JPanel(new BorderLayout(12,12));
-	            cp.add(editor.getPanel(), BorderLayout.CENTER);
-	            cp.setBorder(BorderFactory.createEmptyBorder(12,12,12,12));
-	        	
-	        	JDefaultButton okButton = new JDefaultButton(DataEntryPanelBuilder.OK_BUTTON_LABEL);
-	            okButton.addActionListener(new ActionListener() {
-	                    public void actionPerformed(ActionEvent evt) {
-	                        editor.applyChanges();
-	                        d.dispose();
-	                    }
-	                });
-	        
-	            Action cancelAction = new AbstractAction() {
-	                    public void actionPerformed(ActionEvent evt) {
-	                        editor.discardChanges();
-	                        d.dispose();
-	                    }
-	            };
-	            cancelAction.putValue(Action.NAME, DataEntryPanelBuilder.CANCEL_BUTTON_LABEL);
-	            JButton cancelButton = new JButton(cancelAction);
-	    
-	            JPanel buttonPanel = ButtonBarFactory.buildOKCancelBar(okButton, cancelButton);
-	    
-	            SPSUtils.makeJDialogCancellable(d, cancelAction);
-	            d.getRootPane().setDefaultButton(okButton);
-	            cp.add(buttonPanel, BorderLayout.SOUTH);
-	        	
-	        	d.setContentPane(cp);
-	        	d.pack();
-	        	d.setLocationRelativeTo(owner);
-        	}
-        	d.setVisible(true);
-            return d;
-        }
-    };
-    
-    /**
      * Creates a new Swing session context, which is a holding place for all the basic
      * settings in the MatchMaker GUI application.  This constructor creates its own delegate
      * session context object based on information in the given prefs node, or failing that,
@@ -190,7 +95,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
      * @throws ClassNotFoundException 
      */
     public SwingSessionContextImpl(Preferences prefsRootNode) throws IOException, ClassNotFoundException {
-        this(prefsRootNode, createDelegateContext(prefsRootNode));
+        throw new UnsupportedOperationException("You can't launch the project planner this way. Try creating a MatchMakerXMLSessionContext instead.");
     }
 
     /**
@@ -213,9 +118,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         } catch (Exception ex) {
         	logger.error("Unable to set native look and feel. Continuing with default.", ex);
         }
-        // Set a login action property so that if there is no connection selected 
-        // in the dbConnectionManager GUI, the corresponding button will be disabled.
-        loginDatabaseConnectionAction.putValue(DatabaseConnectionManager.DISABLE_IF_NO_CONNECTION_SELECTED, Boolean.TRUE);
         
         generatePropertiesList();
         
@@ -369,99 +271,6 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 
     ///////// Private implementation details ///////////
 
-    /**
-     * Creates the delegate context, prompting the user (GUI) for any missing information.
-     * @throws IOException
-     */
-    private static MatchMakerSessionContext createDelegateContext(Preferences prefs) throws IOException {
-        DataSourceCollection plDotIni = null;
-        String plDotIniPath = prefs.get(MatchMakerSessionContext.PREFS_PL_INI_PATH, null);
-        while ((plDotIni = readPlDotIni(plDotIniPath)) == null) {
-            logger.debug("readPlDotIni returns null, trying again...");
-            String message;
-            String[] options = new String[] {"Browse", "Create"};
-            final int BROWSE = 0; // indices into above array
-            final int CREATE = 1;
-            if (plDotIniPath == null) {
-                message = "location is not set";
-            } else if (new File(plDotIniPath).isFile()) {
-                message = "file \n\n\""+plDotIniPath+"\"\n\n could not be read";
-            } else {
-                message = "file \n\n\""+plDotIniPath+"\"\n\n does not exist";
-            }
-            int choice = JOptionPane.showOptionDialog(null,   // blocking wait
-                    "The MatchMaker keeps its list of database connections" +
-                    "\nin a file called PL.INI.  Your PL.INI "+message+"." +
-                    "\n\nYou can browse for an existing PL.INI file on your system" +
-                    "\nor allow the Architect to create a new one in your home directory." +
-                    "\n\nHint: If you are a Power*Loader Suite user, you should browse for" +
-                    "\nan existing PL.INI in your Power*Loader installation directory.",
-                    "Missing PL.INI", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null);
-
-            if (choice == JOptionPane.CLOSED_OPTION) {
-                throw new RuntimeException("Can't start without a pl.ini file");
-            } else if (choice == BROWSE) {
-                JFileChooser fc = new JFileChooser();
-                fc.setFileFilter(SPSUtils.INI_FILE_FILTER);
-                fc.setDialogTitle("Locate your PL.INI file");
-                int fcChoice = fc.showOpenDialog(null);       // blocking wait
-                if (fcChoice == JFileChooser.APPROVE_OPTION) {
-                    plDotIniPath = fc.getSelectedFile().getAbsolutePath();
-                } else {
-                    plDotIniPath = null;
-                }
-            } else if (choice == CREATE) {
-                String userHome = System.getProperty("user.home");
-                if (userHome == null) {
-                	throw new IllegalStateException("user.home property is null!");
-                }
-				plDotIniPath = userHome + File.separator + "pl.ini";
-				// Create an empty file so the read won't throw an IOE
-				if (new File(plDotIniPath).createNewFile()) {
-					logger.debug("Created file " + plDotIniPath);
-				} else {
-					logger.debug("Did NOT create file " + plDotIniPath +
-							"; mayhap it already exists?");
-				}
-            } else {
-                throw new RuntimeException(
-                "Unexpected return from JOptionPane.showOptionDialog to get pl.ini");
-            }
-        }
-        
-        prefs.put(MatchMakerSessionContext.PREFS_PL_INI_PATH, plDotIniPath);
-        return new MatchMakerHibernateSessionContext(prefs, plDotIni);
-    }
-
-    private static DataSourceCollection readPlDotIni(String plDotIniPath) {
-        if (plDotIniPath == null) {
-            return null;
-        }
-        File pf = new File(plDotIniPath);
-        if (!pf.exists() || !pf.canRead()) {
-            return null;
-        }
-
-        DataSourceCollection pld = new PlDotIni();
-        
-        // First, read the defaults
-        try {
-            logger.debug("Reading PL.INI defaults");
-            pld.read(SwingSessionContextImpl.class.getClassLoader().getResourceAsStream("ca/sqlpower/sql/default_database_types.ini"));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read system resource default_database_types.ini", e);
-        }
-        
-        // Now, merge in the user's own config
-        try {
-            pld.read(pf);
-            return pld;
-        } catch (IOException e) {
-            MMSUtils.showExceptionDialogNoReport("Could not read " + pf, e);
-            return null;
-        }
-    }
-    
     /**
      * NOTE: This method creates a new munge component, it does not get an existing one!
      * <p>

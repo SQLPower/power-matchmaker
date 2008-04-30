@@ -21,17 +21,26 @@ package ca.sqlpower.matchmaker.dao.xml;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 import ca.sqlpower.matchmaker.Project;
 
 public interface IOHandler {
     
     /**
-     * Returns an input stream containing all project definitions that the
-     * current user has access to. Later, we'll want a variant of this method
-     * that only returns certain projects.
+     * Returns a list of sparsely populated project descriptions that the current 
+     * user has access to. At least the name and oid fields will be available.
      */
-    InputStream createInputStream();
+    List<Project> createProjectList();
+    
+    /**
+     * Returns an input stream where a single project definition can be loaded
+     * (as a single XML document). The input stream is specific for the given
+     * project.
+     * 
+     * @param project The project to load. It must have a non-null OID.
+     */
+    InputStream getInputStream(Project project);
     
     /**
      * Returns an output stream where a single project definition can be written
@@ -41,4 +50,12 @@ public interface IOHandler {
      * @param project The project you intend to save.
      */
     OutputStream createOutputStream(Project project);
+    
+    /**
+     * Tells this IO Handler which DAO it belongs to. Normally this will be called
+     * by the DAO itself.
+     * 
+     * @param dao The new parent DAO.
+     */
+    public void setDAO(ProjectDAOXML dao);
 }

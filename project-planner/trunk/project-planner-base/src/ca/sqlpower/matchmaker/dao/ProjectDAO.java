@@ -62,7 +62,13 @@ public interface ProjectDAO extends MatchMakerDAO<Project> {
 	 * @return number of project entity by given name
 	 */
 	public long countProjectByName(String name);
-	
 
+    /**
+     * Sets all the properties and children of the given Project to the values
+     * stored in the persistent object store.
+     * 
+     * @param project The project instance to refresh. Its oid must be non-null.
+     */
+    public void refresh(Project project);
 	
 }
