@@ -109,6 +109,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 
     /** indicates whether the project is in midst of updating info */
     private boolean populating = false;
+
+    /** indicates whether the project has been deleted in the persistent layer */
+    private boolean deleted;
     
     /** Folder name for merge rules (table). */
     public static final String MERGE_RULES_FOLDER_NAME = "Merge Rules";
@@ -124,7 +127,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
             
             @Override
             public List<MungeProcess> getChildren() {
-                if (!populated) {
+                if (!populated && !deleted) {
                     try {
                         populating = true;  
                         populated = true;
@@ -836,5 +839,13 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 
     public boolean isPopulating() {
         return populating;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }

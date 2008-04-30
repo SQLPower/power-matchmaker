@@ -892,6 +892,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		    if (mmo instanceof Project) {
 		        ProjectDAO dao = (ProjectDAO) getDAO(Project.class);
 		        dao.delete((Project) mmo);
+                ((Project)mmo).setDeleted(true);
+                setCurrentEditorComponent(null);
             }
             if (!(mmo instanceof MungeStep)) {
                 mmo.getParent().removeChild(mmo);
