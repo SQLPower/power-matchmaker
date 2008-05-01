@@ -39,11 +39,9 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
-import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
-import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
@@ -59,7 +57,6 @@ import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
-import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
 
 /**
  * This appears to be a mouse event listener for the MatchMaker tree component
@@ -200,19 +197,6 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 
 		m.addSeparator();
 		m.add(new JMenuItem(new NewMungeProcessAction(swingSession, project)));
-		
-		m.addSeparator();
-		if (project.getType() == ProjectMode.CLEANSE) {
-			m.add(new JMenuItem(new AbstractAction("Run Cleanse") {
-				public void actionPerformed(ActionEvent e) {
-					CleanseEnginePanel f = swingSession.getCleanseEnginePanel(project.getCleansingEngine(), project);
-					swingSession.setCurrentEditorComponent(f);
-				}
-			}));
-		}
-
-		m.addSeparator();
-
         m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
 		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
 
@@ -354,43 +338,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 						swingSession
 								.setCurrentEditorComponent(new ProjectInfoEditor(
 										node.getProject()));
-					} else if (node.getActionType() == MatchActionType.RUN_CLEANSING) {
-						swingSession.setCurrentEditorComponent(swingSession.getCleanseEnginePanel(node.getProject().getCleansingEngine(), node.getProject()));
 					}
-				} else if (o instanceof TranslateGroupParent) {
-					swingSession
-							.setCurrentEditorComponent(new TranslateGroupsEditor(
-									swingSession));
-				} else if (o instanceof MatchMakerTranslateGroup) {
-					// Checks if the original pane is the same as the new one
-					if (swingSession.getOldPane() instanceof TranslateWordsEditor) {
-						TranslateWordsEditor originalPane = (TranslateWordsEditor) swingSession.getOldPane();
-						if (originalPane.getGroup() == o) {
-							return;
-						}
-					}
-					MatchMakerTranslateGroup group = (MatchMakerTranslateGroup) o;
-					TranslateWordsEditor editor = new TranslateWordsEditor(swingSession, group);
-					logger.debug("Created new translate word editor " + System.identityHashCode(editor));
-					swingSession.setCurrentEditorComponent(editor);
-				} else if (o instanceof MatchMakerTranslateWord) {
-					MatchMakerTranslateWord word = (MatchMakerTranslateWord) o;
-					// Checks if the original pane is the same as the new one
-					if (swingSession.getOldPane() instanceof TranslateWordsEditor) {
-						TranslateWordsEditor originalPane = (TranslateWordsEditor) swingSession.getOldPane();
-						if (originalPane.getGroup() == word.getParent()) {
-							originalPane.setSelectedWord(word);
-							return;
-						}
-					}
-					MatchMakerTranslateGroup group = (MatchMakerTranslateGroup) word.getParent();
-					TranslateWordsEditor editor = new TranslateWordsEditor(swingSession, group);
-					logger.debug("Created new translate word editor " + System.identityHashCode(editor));
-					swingSession.setCurrentEditorComponent(editor);
-					editor.setSelectedWord(word);
-
 				}
-
 			} catch (Exception ex) {
 				MMSUtils.showExceptionDialog(owningFrame,
 						"Couldn't create editor for selected component", ex);

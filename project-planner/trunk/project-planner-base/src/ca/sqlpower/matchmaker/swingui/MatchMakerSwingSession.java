@@ -36,10 +36,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 
@@ -75,7 +73,6 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.matchmaker.CleanseEngineImpl;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -95,7 +92,6 @@ import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
 import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
-import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.sql.PLSchemaException;
@@ -312,12 +308,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      */
     private boolean editorComponentUpdateInProgress = false;
 	
-	 /**
-     * A map that links an engine to a panel. This is used so that only
-     * one of each engine and panel ever exist per project.
-     */
-	private Map<CleanseEngineImpl, CleanseEnginePanel> cleanseEnginPanels;
-
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
      * would use a LoginDialog instead of calling this constructor directly.
@@ -339,8 +329,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         //Need to set the session on the default folder so it is a swing session
         sessionImpl.getDefaultPlFolder().setSession(this);
         
-        cleanseEnginPanels = new HashMap<CleanseEngineImpl, CleanseEnginePanel>();
-
         // this grabs warnings from the business model and DAO's and lets us handle them.
         sessionImpl.addWarningListener(new WarningListener() {
 			public void handleWarning(String message) {
@@ -1054,22 +1042,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		return oldPane;
 	}
 	
-	/**
-	 * Returns or creates the editor panel linked to the given engine
-	 * 
-	 * @param mei The current engine
-	 * @param project The current project
-	 */
-	public CleanseEnginePanel getCleanseEnginePanel(CleanseEngineImpl mei, Project project) {
-		CleanseEnginePanel ep = cleanseEnginPanels.get(mei);
-		if (ep == null) {
-			ep = new CleanseEnginePanel(this,project, getFrame());
-			cleanseEnginPanels.put(mei,ep); 
-			ep.setEngineEnabled(enginesEnabled);
-		}
-		return ep;
-	}
-
 	//undo stuff
 	
 	protected UndoAction undoAction = new UndoAction();
@@ -1151,19 +1123,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		undoAction.updateUndoState();
 		redoAction.updateRedoState();
 	}
-
-	
-	/**
-	 *	Enables/Disables all of this session's engine panels' 
-	 *	run engine actions. Note that the actions will only
-	 *	be enabled if the form status in the panel is not fail.
-	 */
-	public void setAllEnginesEnabled(boolean enabled){
-		enginesEnabled  = enabled;
-		for (CleanseEnginePanel ep : cleanseEnginPanels.values()) {
-			ep.setEngineEnabled(enabled);
-		}
- 	}
 
 	/**
 	 * Returns whether the run engine actions have been 

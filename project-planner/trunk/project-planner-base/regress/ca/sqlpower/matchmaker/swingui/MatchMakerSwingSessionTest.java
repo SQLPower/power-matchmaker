@@ -20,13 +20,10 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
-import java.sql.Connection;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerSession;
@@ -73,15 +70,6 @@ public class MatchMakerSwingSessionTest extends TestCase {
                 TranslateGroupParent tgp = new TranslateGroupParent(this);
                 return tgp;
             }
-            
-            @Override
-            public Connection getConnection() {
-            	try {
-            	return getDatabase().getConnection();
-            	} catch (ArchitectException e) {
-            		throw new RuntimeException("Error getting Connection!", e);
-            	}
-            }
         };
         
         session = new MatchMakerSwingSession(stubContext, stubSessionImp);
@@ -99,12 +87,4 @@ public class MatchMakerSwingSessionTest extends TestCase {
         assertEquals("Got the wrong folder", folder1, session.findFolder("Test Folder"));
         assertEquals("Got the wrong folder", folder2, session.findFolder("Test Folder2"));
     }  
-    
-    public void testConnectionCloses() {
-    	//opens the connection
-    	session.getConnection();
-    	assertTrue("Test is not very usefull if the connection starts closed!",session.getDatabase().isConnected());
-    	session.close();
-    	assertFalse("Database connection is not closed! ", session.getDatabase().isConnected());
-    }
 }

@@ -48,7 +48,6 @@ import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
-import ca.sqlpower.matchmaker.util.ViewSpec;
 
 /**
  * A base test that all test cases of MatchMakerObject implementations should extend.
@@ -227,8 +226,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		    return oldVal;
 		} else if (property.getPropertyType() == SQLTable.class) {
 			return new SQLTable();
-		} else if (property.getPropertyType() == ViewSpec.class) {
-			return new ViewSpec("select *"," FROM table ", " where true");
 		} else if (property.getPropertyType() == File.class) {
 			oldVal = File.createTempFile("mmTest2",".tmp");
 			((File)oldVal).deleteOnExit();
@@ -400,8 +397,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		    ((MatchMakerSettings) newVal).setProcessCount(processCount);
 		} else if (property.getPropertyType() == SQLTable.class) {
 			newVal = new SQLTable();
-		} else if (property.getPropertyType() == ViewSpec.class) {
-			newVal = new ViewSpec();
 		} else if (property.getPropertyType() == File.class) {
 			newVal = File.createTempFile("mmTest",".tmp");
 			((File)newVal).deleteOnExit();

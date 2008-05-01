@@ -50,7 +50,6 @@ import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingAbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
-import ca.sqlpower.matchmaker.util.ViewSpec;
 
 public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends MatchMakerDAO> extends TestCase {
 
@@ -278,8 +277,6 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 						newVal = mergeSettings;
 					} else if (property.getPropertyType() == SQLTable.class) {
 						newVal = getSession().findPhysicalTableByName("", "MM_TEST", "fake_table");
-					} else if (property.getPropertyType() == ViewSpec.class) {
-						newVal = new ViewSpec("select clause", "from clause", "where clause");
 					} else if (property.getPropertyType() == File.class) {
 						newVal = File.createTempFile("mmTest",".tmp");
 						((File)newVal).deleteOnExit();

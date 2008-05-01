@@ -41,7 +41,6 @@ import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.util.ViewSpec;
 
 /**
  * folder is the parent of project. should be not null.
@@ -101,9 +100,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 
 	/** a filter for the tables that are matched */
     private String filter;
-
-	/** an optional source for the match created from a view */
-    private ViewSpec view;
 
     private String description;
 
@@ -548,17 +544,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		getEventSupport().firePropertyChange("type", oldValue, this.type);
 	}
 
-	public ViewSpec getView() {
-		return view;
-	}
-
-	public void setView(ViewSpec view) {
-		ViewSpec oldValue = this.view;
-		this.view = view;
-		getEventSupport().firePropertyChange("view", oldValue, this.view);
-	}
-
-
 	public List<MungeProcess> getMungeProcesses() {
 		return getMungeProcessesFolder().getChildren();
 	}
@@ -595,7 +580,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         sb.append("; mungeSettings=").append(mungeSettings);
         sb.append("; mergeSettings=").append(mergeSettings);
         sb.append("; filter=").append(filter);
-        sb.append("; view=").append(view);
         return sb.toString();
     }
     
@@ -646,7 +630,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		
 		newProject.setXrefTable(getXrefTable());
 		newProject.setType(getType());
-		newProject.setView(getView()==null?null:getView().duplicate());
 		newProject.setSession(s);
 		newProject.setVisible(isVisible());
 		

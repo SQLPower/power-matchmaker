@@ -92,13 +92,13 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		Project m1 = new Project();
 		Project m2 = new Project();
 		assertTrue("Project1 <> project2", (m1 != m2) );
-		assertTrue("Project1 equals project2", m1.equals(m2) );
+		assertFalse(m1.equals(m2) );
 		m1.setName("project1");
 		m2.setName("project2");
-		assertFalse("Project1 should not equals project2", m1.equals(m2) );
+		assertFalse(m1.equals(m2) );
 		m1.setName("project");
 		m2.setName("project");
-		assertTrue("Project1 should equals project2", m1.equals(m2) );
+		assertFalse(m1.equals(m2) );
 	}
 
     public void testMatchMakerFolderFiresEventForMungeProcesses(){
