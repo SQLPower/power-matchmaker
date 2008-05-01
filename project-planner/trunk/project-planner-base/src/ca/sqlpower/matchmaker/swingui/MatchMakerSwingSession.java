@@ -90,7 +90,6 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
-import ca.sqlpower.matchmaker.swingui.action.HelpAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
@@ -104,6 +103,7 @@ import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
+import ca.sqlpower.util.BrowserUtil;
 import ca.sqlpower.util.Version;
 
 /**
@@ -402,7 +402,18 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 //        windowMenu.setMnemonic('w');
 //        menuBar.add(windowMenu);
         
-        helpAction = new HelpAction(frame);
+        helpAction = new AbstractAction("Help",
+                // Alas this is now static so the size can't be gotten from sprefs...
+                SPSUtils.createIcon("world","New Project")) {
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    BrowserUtil.launch(SPSUtils.FORUM_URL);
+                } catch (IOException e) {
+                    SPSUtils.showExceptionDialogNoReport(frame,
+                            "Could not launch browser for Help View", e);
+                }
+            }
+        };
 
 		JMenu helpMenu = new JMenu("Help");
 		helpMenu.setMnemonic('h');
