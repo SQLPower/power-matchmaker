@@ -137,16 +137,6 @@
 		    <version>1.6</version>
 		</dependency>
 		<dependency>
-		    <groupId>javax.help</groupId>
-		    <artifactId>javahelp</artifactId>
-		    <version>2.0.02</version>
-		</dependency>
-		<dependency>
-		    <groupId>javax.help</groupId>
-		    <artifactId>javahelp</artifactId>
-		    <version>2.0.02</version>
-		</dependency>
-		<dependency>
 		    <groupId>org.apache.ant</groupId>
 		    <artifactId>ant</artifactId>
 		    <version>1.7.0</version>
@@ -157,60 +147,16 @@
 		    <version>2.1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.darwinsys</groupId>
-			<artifactId>darwinsys</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gdata</groupId>
-			<artifactId>gdata-client</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gdata</groupId>
-			<artifactId>gdata-core</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gdata</groupId>
-			<artifactId>gdata-base</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gdata</groupId>
-			<artifactId>gdata-spreadsheet</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.gdata</groupId>
-			<artifactId>gdata-spreadsheet-meta</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.hibernate</groupId>
-		    <artifactId>hibernate</artifactId>
-		    <version>3.2.0.cr4</version>
-		</dependency>
-		<dependency>
 		    <groupId>gsbase</groupId>
 		    <artifactId>gsbase</artifactId>
 		    <version>2.0.1</version>
-		</dependency>
-		<dependency>
-		    <groupId>commons-collections</groupId>
-		    <artifactId>commons-collections</artifactId>
-		    <version>2.1.1</version>
-		</dependency>
-		 <dependency>
-		    <groupId>hsqldb</groupId>
-		    <artifactId>hsqldb</artifactId>
-		    <version>1.8.0.9</version>
+		    <scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
