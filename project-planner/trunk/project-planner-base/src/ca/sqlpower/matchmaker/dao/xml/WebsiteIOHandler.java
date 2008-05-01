@@ -103,8 +103,8 @@ public class WebsiteIOHandler implements IOHandler {
 					// Incorrect login info
 					JOptionPane.showMessageDialog(null, "Couldn't retrieve projects!",
 							"Login failed", JOptionPane.ERROR_MESSAGE);
+					password = null;
 				}
-        		password = null;
         	}
 			
 			if (cancelled) {
@@ -195,8 +195,8 @@ public class WebsiteIOHandler implements IOHandler {
     					// Incorrect login info
     					JOptionPane.showMessageDialog(null, "Couldn't save project!",
     							"Login failed", JOptionPane.ERROR_MESSAGE);
+    					password = null;
     				}
-            		password = null;
             	}
                 
                 String xmlDoc = new String(toByteArray());
@@ -391,8 +391,8 @@ public class WebsiteIOHandler implements IOHandler {
 					// Incorrect login info
 					JOptionPane.showMessageDialog(null, "Couldn't update project, incorrect login info!",
 							"Login failed", JOptionPane.ERROR_MESSAGE);
+					password = null;
 				}
-        		password = null;
         	}
             
             URL baseURL = new URL(WEBSITE_BASE_URL);
@@ -427,8 +427,8 @@ public class WebsiteIOHandler implements IOHandler {
 					// Incorrect login info
 					JOptionPane.showMessageDialog(null, "Couldn't delete project!",
 							"Login failed", JOptionPane.ERROR_MESSAGE);
+					password = null;
 				}
-        		password = null;
         	}
             
             URL baseURL = new URL(WEBSITE_BASE_URL);
