@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker.dao.xml;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -47,6 +51,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.swingui.JDefaultButton;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -60,16 +65,20 @@ public class WebsiteIOHandler implements IOHandler {
 
     private static final Logger logger = Logger.getLogger(WebsiteIOHandler.class);
     
+    private JDialog d = new JDialog();
+    
     /**
      * Base URL where the SQL Power website lives. The various action paths will be appended
      * to this string to form the actual request URLs.
      */
-    private static final String WEBSITE_BASE_URL = "http://localhost:9999/sqlpower_website/page/";
+    private static final String WEBSITE_BASE_URL = "http://dhcp-126:8080/sqlpower_website/page/";
 
     private String sessionCookie = null;
     
     private String username = null;
     private String password = null;
+    
+    private boolean cancelled = false;
     
     /**
      * The DAO that's using this IO Handler. Gets set when this handler is given
@@ -79,10 +88,29 @@ public class WebsiteIOHandler implements IOHandler {
     
     public List<Project> createProjectList() {
         try {
-            while (!login(true)) {
-                JOptionPane.showMessageDialog(null, "Couldn't retrieve projects", "Login failed", JOptionPane.WARNING_MESSAGE);
-            }
-            
+        	boolean loggedIn = false;
+			while (!loggedIn && !cancelled) {
+				try {
+					loggedIn = login();
+				} catch (IOException e) {
+					// Errors connecting to server
+					MMSUtils.showExceptionDialog(d, "Failed to connect to server!", e).requestFocus();
+					password = null;
+					continue;
+				}
+				
+				if (!loggedIn && !cancelled) {
+					// Incorrect login info
+					JOptionPane.showMessageDialog(null, "Couldn't retrieve projects!",
+							"Login failed", JOptionPane.ERROR_MESSAGE);
+				}
+        		password = null;
+        	}
+			
+			if (cancelled) {
+				throw new UnsupportedOperationException("You must be logged in to use the application!");
+			}
+
             URL baseURL = new URL(WEBSITE_BASE_URL);
             URL url = new URL(baseURL, "get_pp_project_list");
             HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
@@ -152,11 +180,24 @@ public class WebsiteIOHandler implements IOHandler {
             super.close();
             
             try {
-                if (!login(false)) {
-                    JOptionPane.showMessageDialog(null, "Project not saved!", "Login failed", JOptionPane.WARNING_MESSAGE);
-                    password = null;
-                    return;
-                }
+            	boolean loggedIn = false;
+    			while (!loggedIn && !cancelled) {
+    				try {
+    					loggedIn = login();
+    				} catch (IOException e) {
+    					// Errors connecting to server
+    					MMSUtils.showExceptionDialog(d, "Failed to connect to server!", e).requestFocus();
+    					password = null;
+    					continue;
+    				}
+    				
+    				if (!loggedIn && !cancelled) {
+    					// Incorrect login info
+    					JOptionPane.showMessageDialog(null, "Couldn't save project!",
+    							"Login failed", JOptionPane.ERROR_MESSAGE);
+    				}
+            		password = null;
+            	}
                 
                 String xmlDoc = new String(toByteArray());
                 StringBuilder sb = new StringBuilder();
@@ -210,9 +251,10 @@ public class WebsiteIOHandler implements IOHandler {
         }
     }
     
-    private boolean login(boolean  alwaysShowPrompt) throws IOException {
-        if (username == null || password == null || alwaysShowPrompt) {
-            if (!showLoginPrompt()){
+    private boolean login() throws IOException {
+    	cancelled = false;
+        if (username == null || password == null) {
+			if (!showLoginPrompt()){
                 return false;
             }
         }
@@ -240,7 +282,7 @@ public class WebsiteIOHandler implements IOHandler {
         out.flush();
         out.close();
         logger.debug("response headers: " + urlc.getHeaderFields());
-        
+
         // have to read in order to send request!
         InputStream in = urlc.getInputStream();
         in.read();
@@ -273,7 +315,6 @@ public class WebsiteIOHandler implements IOHandler {
      * @return Whether or not the user accepted to login.
      */
     private boolean showLoginPrompt() {
-        final JDialog d = new JDialog();
         final JTextField usernameField = new JTextField(username);
         final JPasswordField passwordField = new JPasswordField(password);
         JDefaultButton okButton = new JDefaultButton("OK");
@@ -290,18 +331,19 @@ public class WebsiteIOHandler implements IOHandler {
             
         });
         
-        cancelButton.addActionListener(new ActionListener(){
-
-            public void actionPerformed(ActionEvent e) {
-                d.dispose();
-            }
-            
+        cancelButton = new JButton(cancelAction);
+        
+        d.addWindowListener(new WindowAdapter(){
+        	@Override
+        	public void windowClosing(WindowEvent e) {
+        		cancel();
+        	}
         });
         
-        DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("pref,3dlu,30dlu:grow"));
+        DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("pref,3dlu,5dlu:grow"));
         b.append("Username", usernameField);
         b.append("Password", passwordField);
-        b.append(ButtonBarFactory.buildOKCancelBar(okButton,cancelButton), 3);
+        b.append(ButtonBarFactory.buildOKCancelBar(okButton, cancelButton), 3);
         b.setDefaultDialogBorder();
         passwordField.setPreferredSize(new Dimension(200, 20));
         
@@ -317,17 +359,41 @@ public class WebsiteIOHandler implements IOHandler {
         return doLogin != null && doLogin == true;
     }
     
+	private Action cancelAction = new AbstractAction("Cancel") {
+	    public void actionPerformed(ActionEvent e) {
+	        cancel();
+	    }
+	};
+	
+	private void cancel() {
+		cancelled = true;
+		d.dispose();
+	}
+    
     public void setDAO(ProjectDAOXML dao) {
         this.dao = dao;
     }
 
     public InputStream getInputStream(Project project) {
         try {
-            if (!login(false)) {
-                JOptionPane.showMessageDialog(null, "Project not updated!", "Login failed", JOptionPane.WARNING_MESSAGE);
-                password = null;
-                // If login failed, the next request will also fail and it will provide the appropriate error message
-            }
+        	boolean loggedIn = false;
+			while (!loggedIn && !cancelled) {
+				try {
+					loggedIn = login();
+				} catch (IOException e) {
+					// Errors connecting to server
+					MMSUtils.showExceptionDialog(d, "Failed to connect to server!", e).requestFocus();
+					password = null;
+					continue;
+				}
+				
+				if (!loggedIn && !cancelled) {
+					// Incorrect login info
+					JOptionPane.showMessageDialog(null, "Couldn't update project, incorrect login info!",
+							"Login failed", JOptionPane.ERROR_MESSAGE);
+				}
+        		password = null;
+        	}
             
             URL baseURL = new URL(WEBSITE_BASE_URL);
             URL url = new URL(baseURL, "load_pp_project?projectId="+project.getOid());
@@ -346,11 +412,24 @@ public class WebsiteIOHandler implements IOHandler {
 
     public void delete(Project project) {
         try {
-            if (!login(false)) {
-                JOptionPane.showMessageDialog(null, "Project not deleted!", "Login failed", JOptionPane.WARNING_MESSAGE);
-                password = null;
-                // If login failed, the next request will also fail and it will provide the appropriate error message
-            }
+        	boolean loggedIn = false;
+			while (!loggedIn && !cancelled) {
+				try {
+					loggedIn = login();
+				} catch (IOException e) {
+					// Errors connecting to server
+					MMSUtils.showExceptionDialog(d, "Failed to connect to server!", e).requestFocus();
+					password = null;
+					continue;
+				}
+				
+				if (!loggedIn && !cancelled) {
+					// Incorrect login info
+					JOptionPane.showMessageDialog(null, "Couldn't delete project!",
+							"Login failed", JOptionPane.ERROR_MESSAGE);
+				}
+        		password = null;
+        	}
             
             URL baseURL = new URL(WEBSITE_BASE_URL);
             URL url = new URL(baseURL, "delete_pp_project?projectId="+project.getOid());
