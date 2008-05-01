@@ -79,8 +79,8 @@ public class WebsiteIOHandler implements IOHandler {
     
     public List<Project> createProjectList() {
         try {
-            if (!login()) {
-                throw new RuntimeException("Couldn't retrieve projects (login failed)");
+            while (!login(true)) {
+                JOptionPane.showMessageDialog(null, "Couldn't retrieve projects", "Login failed", JOptionPane.WARNING_MESSAGE);
             }
             
             URL baseURL = new URL(WEBSITE_BASE_URL);
@@ -152,7 +152,7 @@ public class WebsiteIOHandler implements IOHandler {
             super.close();
             
             try {
-                if (!login()) {
+                if (!login(false)) {
                     JOptionPane.showMessageDialog(null, "Project not saved!", "Login failed", JOptionPane.WARNING_MESSAGE);
                     password = null;
                     return;
@@ -210,8 +210,8 @@ public class WebsiteIOHandler implements IOHandler {
         }
     }
     
-    private boolean login() throws IOException {
-        if (username == null || password == null) {
+    private boolean login(boolean  alwaysShowPrompt) throws IOException {
+        if (username == null || password == null || alwaysShowPrompt) {
             if (!showLoginPrompt()){
                 return false;
             }
@@ -323,7 +323,7 @@ public class WebsiteIOHandler implements IOHandler {
 
     public InputStream getInputStream(Project project) {
         try {
-            if (!login()) {
+            if (!login(false)) {
                 JOptionPane.showMessageDialog(null, "Project not updated!", "Login failed", JOptionPane.WARNING_MESSAGE);
                 password = null;
                 // If login failed, the next request will also fail and it will provide the appropriate error message
@@ -346,7 +346,7 @@ public class WebsiteIOHandler implements IOHandler {
 
     public void delete(Project project) {
         try {
-            if (!login()) {
+            if (!login(false)) {
                 JOptionPane.showMessageDialog(null, "Project not deleted!", "Login failed", JOptionPane.WARNING_MESSAGE);
                 password = null;
                 // If login failed, the next request will also fail and it will provide the appropriate error message
