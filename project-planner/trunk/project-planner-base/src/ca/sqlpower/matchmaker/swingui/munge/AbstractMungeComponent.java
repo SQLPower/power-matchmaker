@@ -122,7 +122,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * The background colour to use when this component is not selected.
 	 */
-	private Color normalBackground = new Color(0xee, 0xee, 0xee);
+	protected Color normalBackground = new Color(0xee, 0xee, 0xee);
 	
 	/**
 	 * The shadow colour to use when this component is not selected.
@@ -132,7 +132,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * The background colour to use when this component is selected.
 	 */
-	private Color selectedBackground = new Color(0xc5, 0xdd, 0xf7);
+	protected Color selectedBackground = new Color(0xc5, 0xdd, 0xf7);
 	
 	/**
 	 * The shadow colour to use when this component is selected.
@@ -342,7 +342,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 			public void componentShown(ComponentEvent e) {
 			}
 		});
-
+		
 		addFocusListener(new FocusListener(){
 			public void focusGained(FocusEvent e) {
 				//if it is being deleted
@@ -363,7 +363,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 				}
 			}
 		});
-		
 		
 		root.setOpaque(false);
 		tmp.setOpaque(false);
@@ -386,7 +385,6 @@ public abstract class AbstractMungeComponent extends JPanel {
 		deOpaquify(this);
 		deOpaquify(inputNames);
 		setExpanded(true);
-
 	}
 	
 	private void buildInputNamesPanel() {
@@ -533,12 +531,16 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 
 	private void configureWidthFromMMO() {
+		// both size and preferred size need to be changed for labels to be sized correctly
 		content.setSize(getWidthFromMMO(), content.getHeight());
+		content.setPreferredSize(new Dimension(getWidthFromMMO(), content.getHeight()));
 		setSize(getPreferredSize());
 	}
 	
 	private void configureHeightFromMMO() {
+		// both size and preferred size need to be changed for labels to be sized correctly
 		content.setSize(content.getWidth(), getHeightFromMMO());
+		content.setPreferredSize(new Dimension(content.getWidth(), getHeightFromMMO()));
 		setSize(getPreferredSize());
 	}
 	
@@ -1133,25 +1135,34 @@ public abstract class AbstractMungeComponent extends JPanel {
 					//unlocks the bounds (because the pen has no idea when the mouse is moving
 					getPen().lockAutoScroll(false);
 					e.translatePoint(getX(), getY());
-					
 					if (currentDragState.equals(DragState.RESIZING)) {
 						int xModifier = (int)(e.getX() - diff.getX() - getX());
 						int yModifier = (int)(e.getY()-diff.getY() - getY());
 						
+						// both size and preferred size need to be changed for the labels to be sized correctly
+						Dimension dim = new Dimension();
 						if (content.getMinimumSize().getWidth() < content.getWidth() + xModifier) {
-							content.setSize(content.getWidth() + xModifier, content.getHeight());
+							dim.setSize(content.getWidth() + xModifier, content.getHeight());
+							content.setSize(dim);
+							content.setPreferredSize(dim);
 							diff.setLocation(diff.getX() + xModifier, diff.getY());
 						} else {
-							content.setSize((int)content.getMinimumSize().getWidth(), content.getHeight());
+							dim.setSize((int)content.getMinimumSize().getWidth(), content.getHeight());
+							content.setSize(dim);
+							content.setPreferredSize(dim);
 							diff.setLocation(getPreferredSize().getWidth() - getInsets().right, diff.getY());
 						}
 						
 						logger.debug("Minimum height is " + content.getMinimumSize().getHeight() + ", user changing to " + content.getHeight() + " + " + yModifier);
 						if (content.getMinimumSize().getHeight() < content.getHeight() + yModifier) {
-							content.setSize(content.getWidth(), content.getHeight() + yModifier);
+							dim.setSize(content.getWidth(), content.getHeight() + yModifier);
+							content.setSize(dim);
+							content.setPreferredSize(dim);
 							diff.setLocation(diff.getX(), diff.getY() + yModifier);
 						} else {
-							content.setSize(content.getWidth(), (int)content.getMinimumSize().getHeight());
+							dim.setSize(content.getWidth(), (int)content.getMinimumSize().getHeight());
+							content.setSize(dim);
+							content.setPreferredSize(dim);
 							diff.setLocation(diff.getX(), getPreferredSize().getHeight() - getInsets().bottom);
 						}
 						
@@ -1441,6 +1452,5 @@ public abstract class AbstractMungeComponent extends JPanel {
 	public Icon getMainIcon() {
 		return mainIcon;
 	}
-	
 }
 

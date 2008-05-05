@@ -26,9 +26,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.MouseInfo;
 import java.awt.Point;
-import java.awt.PointerInfo;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.Transferable;
@@ -76,13 +74,12 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.munge.LabelMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
-import ca.sqlpower.matchmaker.swingui.LabelPane;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
-import ca.sqlpower.matchmaker.swingui.action.AddLabelAction;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
@@ -204,15 +201,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	private Point magic = new Point(0,0);
 	
 	/**
-	 * This is the number that will be used by the JLayeredPane, in order to 
-	 * correctly add Labels to the munge pen.
-	 */
-	public static int LABELS_LAYER = new Integer(Integer.MIN_VALUE);
-	
-	
-	private List<LabelPane> labelsList;
-	
-	/**
 	 * The session this munge pen belongs to.
 	 */
 	private final MatchMakerSwingSession session;
@@ -282,40 +270,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			}
 		
 		});
-		
-		labelsList = new ArrayList<LabelPane>();
-			
 	}
-	
-	/**
-	 * This will return a list of LabelPane objects that have been added to
-	 * MungePen. Even thought we add all of these components to the MungePen itself, it
-	 * would be nice to have this alternate place to search for the labels, instead of
-	 * traversing every component in the MungePen and picking out all of the labels.
-	 * This is normally used to switch the z-ordering of the labels in the MungePen,
-	 * yet keep them isolated from all of the other munge components.
-	 * @return
-	 */
-	public List<LabelPane> getLabels(){
-		return this.labelsList;
-	}
-	
-	/**
-	 * This method will find the highest layer of all the labels in the MungePen.
-	 * This method will be used to bring a label to the top of it's own layer in order
-	 * to avoid overlapping with other Munge Components in the MungePen.
-	 * @return The layer index of the label with the highest z-ordering.
-	 */
-	public int findHighestLabelLayer() {
-		int highest = Integer.MIN_VALUE;
-		for(LabelPane label : getLabels()){
-			if(getLayer(label) > highest){
-				highest = getLayer(label);
-			}
-		}
-		return highest+1;
-	}
-
 	
 	/**
 	 * Tells us if we can move multiple components or not.
@@ -326,7 +281,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	}
 	
 	/**
-	 * Tries to remove all of the validation from the removed coponent.
+	 * Tries to remove all of the validation from the removed component.
 	 * @param com
 	 */
 	private void removeAllValidation(Component com) {
@@ -346,15 +301,8 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		JPopupMenu pop = new JPopupMenu();
 		
 		JMenu add = new JMenu("Add Munge Step");
-		JMenuItem labelMenuItem = new JMenuItem("Add Label");
-		//figure out where the user clicked
-		
-		PointerInfo pi = MouseInfo.getPointerInfo();
-        Point startLocation = pi.getLocation();
-        SwingUtilities.convertPointFromScreen(startLocation,this);
-        labelMenuItem.addActionListener(new AddLabelAction(this, startLocation));
+
 		pop.add(add);
-		pop.add(labelMenuItem);
 		
 		StepDescription[] sds = stepMap.values().toArray(new StepDescription[0]);
 		Arrays.sort(sds);
@@ -397,7 +345,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			SwingSessionContext ssc = (session.getContext());
 			AbstractMungeComponent mcom = ssc.getMungeComponent(ms, handler, session);
 			modelMap.put(ms, mcom);
-			add(mcom,DEFAULT_LAYER);
+			add(mcom, DEFAULT_LAYER);
+			if (mcom instanceof LabelMungeComponent) {
+				// this is weird but when the munge component is made, it can't find it's parent (munge pen).
+				setLayer(mcom, ((LabelMungeStep) ms).getLayer());
+			} 
 		}
 		
 		//This is done in an other loop to ensure that all the MungeComponets have been mapped
@@ -413,11 +365,6 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				}
 			}
 		}
-	}
-	
-	@Override
-	public void moveToFront(Component c) {
-		super.moveToFront(c);
 	}
 	
 	/**
@@ -801,6 +748,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				AbstractMungeComponent mcom = (ssc.getMungeComponent(evt.getSource().getChildren().get(x),
 						handler, session));
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
+				if (mcom instanceof LabelMungeComponent) {
+					setLayer(mcom, findHighestLabelLayer()+1);
+					// MUST be done every time a label's layer is changed or bad things will happen.
+					((LabelMungeStep)mcom.getStep()).setLayer(getLayer(mcom));
+				} 
 				add(mcom);
 				logger.debug("Generating positions from properites");
 			}
@@ -840,6 +792,67 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		public void mmStructureChanged(MatchMakerEvent<MungeProcess, MungeStep> evt) {
 		}
     }
+    
+    /**
+     * Moves the given label to the top label populated layer and reorders other labels
+     * accordingly. Also updates the step's layer parameter.
+     */
+    public void moveLabelToFront(LabelMungeComponent com) {
+    	int pos = findHighestLabelLayer();
+    	for (Component c : getComponents()) {
+    		if (c instanceof LabelMungeComponent && c != com && getLayer(c) > getLayer(com)) {
+    			setLayer(c, getLayer(c) - 1);
+    		}
+    	}
+    	setLayer(com, pos);
+    	((LabelMungeStep)com.getStep()).setLayer(pos);
+    }
+    
+    /**
+     * Moves the given label to the bottom label populated layer and reorders other labels
+     * accordingly. Also updates the step's layer parameter.
+     */
+    public void moveLabelToBack(LabelMungeComponent com) {
+    	int pos = findLowestLabelLayer();
+    	for (Component c : getComponents()) {
+    		if (c instanceof LabelMungeComponent && c != com && getLayer(c) < getLayer(com)) {
+    			setLayer(c, getLayer(c) + 1);
+    		}
+    	}
+    	setLayer(com, pos - 1);
+    	((LabelMungeStep)com.getStep()).setLayer(pos);
+    }
+    
+	/**
+	 * This method will find the lowest layer of all the labels in the MungePen.
+	 * 
+	 * @return The layer index of the label with the highest z-ordering.
+	 */
+	private int findLowestLabelLayer() {
+		int lowest = DEFAULT_LAYER - 1;
+		for(Component com : getComponents()){
+			if(com instanceof LabelMungeComponent && getLayer(com) < lowest){
+				lowest = getLayer(com);
+			}
+		}
+		return lowest;
+	}
+	
+	/**
+	 * This method will find the highest layer of all the labels in the MungePen.
+	 * 
+	 * @return The layer index of the label with the highest z-ordering.
+	 */
+	private int findHighestLabelLayer() {
+		int highest = Integer.MIN_VALUE;
+		for(Component com : getComponents()){
+			if(com instanceof LabelMungeComponent && getLayer(com) > highest){
+				highest = getLayer(com);
+			}
+		}
+		return highest;
+	}
+    
 	///////////////////////////////////// Listener for the MungeStep /////////////////////////
     
 
