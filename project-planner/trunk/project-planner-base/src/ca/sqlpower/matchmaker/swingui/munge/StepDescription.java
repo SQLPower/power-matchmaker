@@ -40,7 +40,7 @@ StepDescription extends JComponent implements Comparable<StepDescription> {
 
 	private static final String DEFAULT_ICON = "icons/famfamfam/color_wheel.png";
 
-	private static final String DEFAULT_MAIN_ICON = "icons/wt_sqlp_logo.png";
+	private static final String DEFAULT_MAIN_ICON = "icons/sqlpower_transparent.png";
 	
 	/**
      * The name of the type of step this description represents.
