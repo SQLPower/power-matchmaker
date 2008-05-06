@@ -22,14 +22,18 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,6 +41,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
@@ -64,24 +71,40 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	/**
 	 * The panel that holds this editor's GUI.
 	 */
+	protected static final String EMAIL_PROPERTY_KEY = "email";
+	 private static final String WEBSITE_BASE_URL = "http://dhcp-126:8080/sqlpower_website/page/";
+
 	private final JPanel panel;
 
 	private StatusComponent status = new StatusComponent();
-    private JTextField projectName = new JTextField();
-    private JTextArea desc = new JTextArea();
+	private JTextField projectName = new JTextField();
+	private JTextArea desc = new JTextArea();
 
-    private final MatchMakerSwingSession swingSession;
+	private JCheckBox isSharingWithEveryone;
+	private JList viewOnlyList;
+	private JList viewAndModifyList;
+	private JTextField toViewOnly;
+	private JTextField toViewAndModify;
+	private JButton addToViewOnly;
+	private JButton removeFromViewOnly;
+	private JButton addToViewAndModify;
+	private JButton removeFromViewAndModify;
+	private JSONArray viewOnlyUsers = new JSONArray();;
+	private JSONArray viewAndModifyUsers = new JSONArray();;
+	private ArrayList<String> vArray = new ArrayList<String>();
+	private ArrayList<String> vamArray = new ArrayList<String>();
 
-    /**
-     * The project that this editor is editing.  If you want to edit a different match,
-     * create a new ProjectEditor.
-     */
+	private final MatchMakerSwingSession swingSession;
+
+	/**
+	 * The project that this editor is editing.  If you want to edit a different match,
+	 * create a new ProjectEditor.
+	 */
 	private final Project project;
 	private FormValidationHandler handler;
 
-    private PlFolder<Project> folder;
+	private PlFolder<Project> folder;
 
-	
 	/**
 	 * Construct a ProjectEditor; for a project that is not new, we create a backup for it,
 	 * and give it the name of the old one, when we save it, we will remove
@@ -90,97 +113,170 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * @param project the project Object to be edited
 	 * @param folder the project's parent folder
 	 */
-    public ProjectEditor(final MatchMakerSwingSession swingSession, Project project, PlFolder<Project> folder) throws ArchitectException {
-        if (project == null) throw new IllegalArgumentException("You can't edit a null project");
-        folder = swingSession.getDefaultPlFolder();
-        
-        this.swingSession = swingSession;
-        this.project = project;
-        this.folder = folder;
-        handler = new FormValidationHandler(status, true);
-        handler.setValidatedAction(saveAction);
-        panel = buildUI();
-        setDefaultSelections();
-        addValidators();
-        
-        handler.resetHasValidated(); // avoid false hits when newly created
-    }
+	public ProjectEditor(final MatchMakerSwingSession swingSession,
+			Project project, PlFolder<Project> folder)
+			throws ArchitectException {
+		if (project == null)
+			throw new IllegalArgumentException("You can't edit a null project");
+		folder = swingSession.getDefaultPlFolder();
 
-    private void addValidators() {
-    	Validator v = new ProjectNameValidator(swingSession,project);
-        handler.addValidateObject(projectName,v);
-        	
-        Validator v6 = new AlwaysOKValidator();
-        handler.addValidateObject(desc, v6);
-    }
-    
-    /**
-     * Saves the current project (which is referenced in the plMatch member variable of this editor instance).
-     * If there is no current plMatch, a new one will be created and its properties will be set just like
-     * they would if one had existed.  In either case, this action will then use Hibernate to save the
-     * project object back to the database (but it should use the MatchHome interface instead).
-     */
+		this.swingSession = swingSession;
+		this.project = project;
+		this.folder = folder;
+		handler = new FormValidationHandler(status, true);
+		handler.setValidatedAction(saveAction);
+		panel = buildUI();
+		setDefaultSelections();
+		addValidators();
+
+		handler.resetHasValidated(); // avoid false hits when newly created
+	}
+
+	private void addValidators() {
+		Validator v = new ProjectNameValidator(swingSession, project);
+		handler.addValidateObject(projectName, v);
+
+		Validator v6 = new AlwaysOKValidator();
+		handler.addValidateObject(desc, v6);
+	}
+
+	/**
+	 * Saves the current project (which is referenced in the plMatch member variable of this editor instance).
+	 * If there is no current plMatch, a new one will be created and its properties will be set just like
+	 * they would if one had existed.  In either case, this action will then use Hibernate to save the
+	 * project object back to the database (but it should use the MatchHome interface instead).
+	 */
 	private Action saveAction = new AbstractAction("Save") {
 		public void actionPerformed(final ActionEvent e) {
-            try {
-                boolean ok = applyChanges();
-                if (!ok) { 
-                	JOptionPane.showMessageDialog(swingSession.getFrame(),
-                			"Project Not Saved",
-                			"Not Saved",JOptionPane.WARNING_MESSAGE);
-                }
-            } catch (Exception ex) {
-                MMSUtils.showExceptionDialog(swingSession.getFrame(),
-                		"Project Not Saved", ex);
-            }
+			try {
+				boolean ok = applyChanges();
+				if (!ok) {
+					JOptionPane.showMessageDialog(swingSession.getFrame(),
+							"Project Not Saved", "Not Saved",
+							JOptionPane.WARNING_MESSAGE);
+				}
+			} catch (Exception ex) {
+				MMSUtils.showExceptionDialog(swingSession.getFrame(),
+						"Project Not Saved", ex);
+			}
 		}
 	};
 
 	private Window getParentWindow() {
-	    return SPSUtils.getWindowInHierarchy(panel);
+		return SPSUtils.getWindowInHierarchy(panel);
 	}
 
-    /**
-     * Returns the parent (owning) frame of this project editor.  If the owner
-     * isn't a frame (it might be a dialog or AWT Window) then null is returned.
-     * You should always use {@link #getParentWindow()} in preference to
-     * this method unless you really really need a JFrame.
-     *
-     * @return the parent JFrame of this project editor's panel, or null if
-     * the owner is not a JFrame.
-     */
-    private JFrame getParentFrame() {
-        Window owner = getParentWindow();
-        if (owner instanceof JFrame) return (JFrame) owner;
-        else return null;
-    }
+	/**
+	 * Returns the parent (owning) frame of this project editor.  If the owner
+	 * isn't a frame (it might be a dialog or AWT Window) then null is returned.
+	 * You should always use {@link #getParentWindow()} in preference to
+	 * this method unless you really really need a JFrame.
+	 *
+	 * @return the parent JFrame of this project editor's panel, or null if
+	 * the owner is not a JFrame.
+	 */
+	private JFrame getParentFrame() {
+		Window owner = getParentWindow();
+		if (owner instanceof JFrame)
+			return (JFrame) owner;
+		else
+			return null;
+	}
 
-    private JPanel buildUI() {
+	private JPanel buildUI() {
 
-    	projectName.setName("Project Name");
-    	JButton saveProject = new JButton(saveAction);
+		projectName.setName("Project Name");
+		JButton saveProject = new JButton(saveAction);
 
-    	FormLayout layout = new FormLayout(
-				"4dlu,pref,4dlu,fill:min(pref;"+new JComboBox().getMinimumSize().width+"px):grow, 4dlu,pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,80dlu,4dlu,pref,10dlu"); // rows
+		FormLayout layout = new FormLayout("4dlu,pref,4dlu,fill:min(pref;"
+				+ new JComboBox().getMinimumSize().width
+				+ "px):grow, 4dlu,pref,4dlu", // columns
+				"10dlu,pref,4dlu,pref,4dlu,80dlu," + //Up to the text area for project description
+						"4dlu,10dlu,16dlu,pref,2dlu,pref,4dlu,pref"); // rows
 
 		PanelBuilder pb;
 
-		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout) : new JPanel(layout);
+		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
+				: new JPanel(layout);
 		pb = new PanelBuilder(layout, p);
 		CellConstraints cc = new CellConstraints();
 		int row = 2;
-		pb.add(status, cc.xy(4,row));
+		pb.add(status, cc.xy(4, row));
 		row += 2;
-		pb.add(new JLabel("Project Name:"), cc.xy(2,row,"r,c"));
-		pb.add(projectName, cc.xy(4,row));
+		pb.add(new JLabel("Project Name:"), cc.xy(2, row, "r,c"));
+		pb.add(projectName, cc.xy(4, row));
 		row += 2;
-        desc.setWrapStyleWord(true);
-        desc.setLineWrap(true);
-		pb.add(new JLabel("Description:"), cc.xy(2,row,"r,t"));
-		pb.add(new JScrollPane(desc), cc.xy(4,row,"f,f"));
+		desc.setWrapStyleWord(true);
+		desc.setLineWrap(true);
+		pb.add(new JLabel("Description:"), cc.xy(2, row, "r,t"));
+		pb.add(new JScrollPane(desc), cc.xy(4, row, "f,f"));
+
 		row += 2;
-		
+		pb.add(new JLabel("Sharing:"), cc.xy(2, row, "r,t"));
+		isSharingWithEveryone = new JCheckBox(
+				"Share with Everyone. (Your Project will appear in the gallery)");
+		pb.add(isSharingWithEveryone, cc.xy(4, row, "l,t"));
+		row += 2;
+		pb.add(new JLabel("Share with the following people:"), cc.xy(4, row,
+				"l,t"));
+		row += 2;
+
+		//sharingListPane contains the 2 jlists which would list the id's of those who have the permission to access the project.
+		JPanel sharingListPane = new JPanel(new FormLayout("pref,8dlu,pref",
+				"pref"));
+		JPanel viewOnlyPane = new JPanel(new FormLayout(
+				"20dlu,4dlu,20dlu,4dlu,100dlu", "20dlu,100dlu,pref,pref"));
+		JPanel viewAndModifyPane = new JPanel(new FormLayout(
+				"20dlu,4dlu,20dlu,4dlu,100dlu", "20dlu,100dlu,pref,pref"));
+
+		//viewOnlyPane contains the list of those who are permitted to view the project. At the same time, it also
+		//contains the add and remove button to edit the list.
+		viewOnlyPane.add(new JLabel("View Only:"), cc.xywh(1, 1, 5, 1));
+		this.viewOnlyList = new JList();
+		JScrollPane viewOnlyScrollPane = new JScrollPane(viewOnlyList);
+		viewOnlyScrollPane
+				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		viewOnlyScrollPane
+				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		viewOnlyPane.add(viewOnlyScrollPane, cc.xywh(1, 2, 5, 1));
+		this.toViewOnly = new JTextField();
+		viewOnlyPane.add(toViewOnly, cc.xywh(1, 3, 5, 1));
+		this.addToViewOnly = new JButton();
+		this.addToViewOnly.setIcon(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
+		viewOnlyPane.add(this.addToViewOnly, cc.xy(1, 4));
+		this.removeFromViewOnly = new JButton();
+		this.removeFromViewOnly.setIcon(new AddRemoveIcon(
+				AddRemoveIcon.Type.REMOVE));
+		viewOnlyPane.add(this.removeFromViewOnly, cc.xy(3, 4));
+
+		//viewAndModifyPane contains the list of those who are permitted to view and to modify the project. At the same time,
+		//it also contains the add and remove button to edit this list.
+		viewAndModifyPane.add(new JLabel("View and Modify:"), cc.xywh(1, 1, 5,
+				1));
+		this.viewAndModifyList = new JList();
+		JScrollPane viewAndModifyScrollPane = new JScrollPane(viewAndModifyList);
+		viewAndModifyScrollPane
+				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		viewAndModifyScrollPane
+				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		viewAndModifyPane.add(viewAndModifyScrollPane, cc.xywh(1, 2, 5, 1));
+		this.toViewAndModify = new JTextField();
+		viewAndModifyPane.add(this.toViewAndModify, cc.xywh(1, 3, 5, 1));
+		this.addToViewAndModify = new JButton();
+		this.addToViewAndModify.setIcon(new AddRemoveIcon(
+				AddRemoveIcon.Type.ADD));
+		viewAndModifyPane.add(this.addToViewAndModify, cc.xy(1, 4));
+		this.removeFromViewAndModify = new JButton();
+		this.removeFromViewAndModify.setIcon(new AddRemoveIcon(
+				AddRemoveIcon.Type.REMOVE));
+		viewAndModifyPane.add(this.removeFromViewAndModify, cc.xy(3, 4));
+
+		sharingListPane.add(viewOnlyPane, cc.xy(1, 1));
+		sharingListPane.add(viewAndModifyPane, cc.xy(3, 1));
+
+		pb.add(sharingListPane, cc.xy(4, row, "l, t"));
+		row += 2;
+
 		// We don't want the save button to take up the whole column width
 		// so we wrap it in a JPanel with a FlowLayout. If there is a better
 		// way, please fix this.
@@ -188,75 +284,177 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		savePanel.add(saveProject);
 		pb.add(savePanel, cc.xy(4, row));
 
+		//Set up the action events associated with the add and remove buttons.
+		configureActions();
+
 		return pb.getPanel();
-    }
+	}
+
+	private void configureActions() {
+		this.addToViewOnly.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				addToViewOnlyList();
+				refreshLists();
+			}
+		});
+
+		this.addToViewAndModify.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				addToViewAndModifyList();
+				refreshLists();
+			}
+		});
+
+		this.removeFromViewOnly.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				removeFromViewOnlyList();
+				refreshLists();
+			}
+		});
+
+		this.removeFromViewAndModify.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				removeFromViewAndModifyList();
+				refreshLists();
+			}
+		});
+	}
+
+	private void addToViewOnlyList() {
+
+		if (toViewOnly.getText() != null || !toViewOnly.getText().equals(""))
+			vArray.add(toViewOnly.getText());
+		else 
+			return;
+	}
+
+	private void addToViewAndModifyList() {
+
+		if (toViewAndModify.getText() != null || !toViewAndModify.getText().equals("")) 
+			vamArray.add(toViewAndModify.getText());
+		else 
+			return;
+	}
+
+	private void removeFromViewOnlyList() {
+		if (this.viewOnlyList.isSelectionEmpty())
+			return;
+		else {
+			int[] selectedIndices = this.viewOnlyList.getSelectedIndices();
+			for (int i = 0; i < selectedIndices.length; i++) {
+				this.vArray.remove(selectedIndices[i] - i);
+			}
+		}
+	}
+
+	private void removeFromViewAndModifyList() {
+		if (this.viewAndModifyList.isSelectionEmpty())
+			return;
+		else {
+			int[] selectedIndices = this.viewAndModifyList.getSelectedIndices();
+			for (int i = 0; i < selectedIndices.length; i++) {
+				this.vamArray.remove(selectedIndices[i] - i);
+			}
+		}
+	}
+	
+	private void savePermissions(){
+		try {
+			for(int i = 0; i < vArray.size(); i++){
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put(EMAIL_PROPERTY_KEY, vArray.get(i));
+				viewOnlyUsers.put(jsonObject);
+			}
+		} catch (JSONException jex) {
+			System.err.println("JSONException thrown while handling another exception." + 
+					"\n The JSON exception is: \n" + jex);
+		}
+		try{
+			for(int i = 0; i < vamArray.size(); i++){
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put(EMAIL_PROPERTY_KEY, vamArray.get(i));
+				viewAndModifyUsers.put(jsonObject);
+			}
+		} catch (JSONException jex) {
+			System.err.println("JSONException thrown while handling another exception." + 
+					"\n The JSON exception is: \n" + jex);
+		}
+		
+		
+	}
 
 
-    private void setDefaultSelections() throws ArchitectException {
 
-        projectName.setText(project.getName());
-        desc.setText(project.getDescription());
+	private void refreshLists() {
+		viewOnlyList.setListData(vArray.toArray());
+		viewAndModifyList.setListData(vamArray.toArray());
 
-    }
+	}
+
+	private void setDefaultSelections() throws ArchitectException {
+
+		projectName.setText(project.getName());
+		desc.setText(project.getDescription());
+
+	}
 
 	public JPanel getPanel() {
 		return panel;
 	}
 
-    /**
-     * Copies all the values from the GUI components into the PlMatch
-     * object this component is editing, then persists it to the database.
-     * @return true if save OK
-     * @throws ArchitectRuntimeException if we cannot set the result table on a project
-     */
-    public boolean applyChanges() {
-    	List<String> fail = handler.getFailResults();
+	/**
+	 * Copies all the values from the GUI components into the PlMatch
+	 * object this component is editing, then persists it to the database.
+	 * @return true if save OK
+	 * @throws ArchitectRuntimeException if we cannot set the result table on a project
+	 */
+	public boolean applyChanges() {
+		List<String> fail = handler.getFailResults();
 
-    	if ( fail.size() > 0 ) {
-    		StringBuffer failMessage = new StringBuffer();
-    		for ( String f : fail ) {
-    			failMessage.append(f).append("\n");
-    		}
-    		JOptionPane.showMessageDialog(swingSession.getFrame(),
-    				"You have to fix these errors before saving:\n"+failMessage.toString(),
-    				"Project error",
-    				JOptionPane.ERROR_MESSAGE);
-    		return false;
-    	}
+		if (fail.size() > 0) {
+			StringBuffer failMessage = new StringBuffer();
+			for (String f : fail) {
+				failMessage.append(f).append("\n");
+			}
+			JOptionPane.showMessageDialog(swingSession.getFrame(),
+					"You have to fix these errors before saving:\n"
+							+ failMessage.toString(), "Project error",
+					JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
 
-        //sets the project name, id and desc
-        project.setDescription(desc.getText());
-        String id = projectName.getText();
+		//sets the project name, id and desc
+		project.setDescription(desc.getText());
+		String id = projectName.getText();
 
 		if (!id.equals(project.getName())) {
-        	if (!swingSession.isThisProjectNameAcceptable(id)) {
-        		JOptionPane.showMessageDialog(getPanel(),
-        				"<html>Project name \"" + projectName.getText() +
-        					"\" does not exist or is invalid.\n" +
-        					"The project has not been saved",
-        				"Project name invalid",
-        				JOptionPane.ERROR_MESSAGE);
-        		return false;
-        	}
-        	project.setName(id);
-        }
+			if (!swingSession.isThisProjectNameAcceptable(id)) {
+				JOptionPane.showMessageDialog(getPanel(),
+						"<html>Project name \"" + projectName.getText()
+								+ "\" does not exist or is invalid.\n"
+								+ "The project has not been saved",
+						"Project name invalid", JOptionPane.ERROR_MESSAGE);
+				return false;
+			}
+			project.setName(id);
+		}
 
-        logger.debug(project.getResultTable());
+		logger.debug(project.getResultTable());
 		logger.debug("Saving Project:" + project.getName());
 		handler.resetHasValidated();
-        
-        if (project.getParent() != swingSession.getDefaultPlFolder()) {
-        	swingSession.getDefaultPlFolder().addChild(project);
-        }
-        logger.debug("Parent is " + project.getParent().getName());
-        
-        logger.debug(project.getResultTable());
-        logger.debug("saving");
-        swingSession.save(project);
+
+		if (project.getParent() != swingSession.getDefaultPlFolder()) {
+			swingSession.getDefaultPlFolder().addChild(project);
+		}
+		logger.debug("Parent is " + project.getParent().getName());
+
+		logger.debug(project.getResultTable());
+		logger.debug("saving");
+		swingSession.save(project);
 
 		return true;
-    }
-    
+	}
+
 	public boolean hasUnsavedChanges() {
 		return handler.hasPerformedValidation();
 	}
