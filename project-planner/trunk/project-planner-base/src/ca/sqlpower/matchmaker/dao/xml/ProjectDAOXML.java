@@ -53,6 +53,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.Project;
@@ -145,7 +146,7 @@ public class ProjectDAOXML implements ProjectDAO {
      */
     private final IOHandler ioHandler;
 
-    private final MatchMakerXMLSession session;
+    private final MatchMakerSession session;
     
     /**
      * Creates a new write-only Project DAO. All of the findXXX() methods of
@@ -153,7 +154,7 @@ public class ProjectDAOXML implements ProjectDAO {
      * 
      * @param out The output stream the XML project description will be written to.
      */
-    public ProjectDAOXML(MatchMakerXMLSession session, IOHandler ioHandler) {
+    public ProjectDAOXML(MatchMakerSession session, IOHandler ioHandler) {
         this.session = session;
         this.ioHandler = ioHandler;
         ioHandler.setDAO(this);

@@ -21,17 +21,11 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -224,34 +218,8 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
             parentProject.addMungeProcess(mmo);
         }
         
-        generateMungePenImage();
-        
         return super.applyChanges();
     }
-
-    /**
-     * Generates a small image of the munge pen to be used as a thumbnail
-     * on the website.
-     */
-    private void generateMungePenImage() {
-    	Dimension mungePenArea = getMungePen().getUsedArea();
-    	double scaleFactor = Math.max(THUMBNAIL_WIDTH/mungePenArea.getWidth(), THUMBNAIL_HEIGHT/mungePenArea.getHeight());
-		BufferedImage imageBuffer = new BufferedImage((int)(scaleFactor * mungePenArea.getWidth()), (int)(scaleFactor * mungePenArea.getHeight()), BufferedImage.TYPE_INT_RGB);
-    	
-    	Graphics2D g = (Graphics2D)imageBuffer.getGraphics();
-    	g.scale(scaleFactor, scaleFactor);
-    	getMungePen().paint(g);
-    	g.dispose();
-    	
-    	File thumbnail = new File(mmo.getName() + ".png");
-    	try {
-			ImageIO.write(imageBuffer, "png", thumbnail);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
-    	
-	}
 
 	public boolean hasUnsavedChanges() {
     	if (mmo.getParent() == null) {
