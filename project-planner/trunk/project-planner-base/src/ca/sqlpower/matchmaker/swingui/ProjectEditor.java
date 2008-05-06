@@ -46,7 +46,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
@@ -73,6 +72,9 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 */
 	protected static final String EMAIL_PROPERTY_KEY = "email";
 	 private static final String WEBSITE_BASE_URL = "http://dhcp-126:8080/sqlpower_website/page/";
+
+	private static final String VIEW_ONLY_USERS_KEY = "viewOnlyUsers";
+	private static final String VIEW_AND_MODIFY_USERS_KEY = "viewAndModifyUsers";
 
 	private final JPanel panel;
 
@@ -358,29 +360,19 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		}
 	}
 	
-	private void savePermissions(){
-		try {
-			for(int i = 0; i < vArray.size(); i++){
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.put(EMAIL_PROPERTY_KEY, vArray.get(i));
-				viewOnlyUsers.put(jsonObject);
-			}
-		} catch (JSONException jex) {
-			System.err.println("JSONException thrown while handling another exception." + 
-					"\n The JSON exception is: \n" + jex);
+	private String getPermissions() throws JSONException{
+		viewOnlyUsers = new JSONArray();
+		for(int i = 0; i < vArray.size(); i++){
+			viewOnlyUsers.put(vArray.get(i));
 		}
-		try{
-			for(int i = 0; i < vamArray.size(); i++){
-				JSONObject jsonObject = new JSONObject();
-				jsonObject.put(EMAIL_PROPERTY_KEY, vamArray.get(i));
-				viewAndModifyUsers.put(jsonObject);
-			}
-		} catch (JSONException jex) {
-			System.err.println("JSONException thrown while handling another exception." + 
-					"\n The JSON exception is: \n" + jex);
+		viewAndModifyUsers = new JSONArray();
+		for(int i = 0; i < vamArray.size(); i++){
+			viewAndModifyUsers.put(vamArray.get(i));
 		}
-		
-		
+		JSONObject permissions = new JSONObject();
+		permissions.put(VIEW_ONLY_USERS_KEY, viewOnlyUsers);
+		permissions.put(VIEW_AND_MODIFY_USERS_KEY, viewAndModifyUsers);
+		return permissions.toString();
 	}
 
 
@@ -406,7 +398,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * Copies all the values from the GUI components into the PlMatch
 	 * object this component is editing, then persists it to the database.
 	 * @return true if save OK
-	 * @throws ArchitectRuntimeException if we cannot set the result table on a project
 	 */
 	public boolean applyChanges() {
 		List<String> fail = handler.getFailResults();
@@ -451,6 +442,12 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		logger.debug(project.getResultTable());
 		logger.debug("saving");
 		swingSession.save(project);
+		
+		try {
+			swingSession.savePermissions(project.getOid(), getPermissions());
+		} catch (JSONException ex) {
+			throw new RuntimeException(ex);
+		}
 
 		return true;
 	}

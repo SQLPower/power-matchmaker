@@ -204,4 +204,8 @@ private static final Logger logger = Logger.getLogger(MatchMakerXMLSession.class
 	public IOHandler getIoHandler() {
 		return ioHandler;
 	}
+	
+	public void savePermissions(long projectId, String permissions) {
+		throw new UnsupportedOperationException("Not implemented yet");	
+	}
 }

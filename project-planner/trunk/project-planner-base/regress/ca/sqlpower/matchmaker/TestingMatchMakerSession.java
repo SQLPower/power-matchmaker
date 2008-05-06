@@ -331,7 +331,12 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     public void save(MatchMakerObject mmo) {
         logger.debug("Stub call: TestingMatchMakerSession.save()");
     }
-	
+
+	public void savePermissions(long projectId, String permissions) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: TestingMatchMakerSession.savePermissions()");
+		
+	}
 }
 
 

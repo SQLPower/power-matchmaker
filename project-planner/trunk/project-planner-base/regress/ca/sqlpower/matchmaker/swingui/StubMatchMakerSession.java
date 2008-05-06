@@ -196,4 +196,10 @@ public class StubMatchMakerSession implements MatchMakerSession{
         logger.debug("Stub call: StubMatchMakerSession.save()");
     }
 
+	public void savePermissions(long projectId, String permissions) {
+		// TODO Auto-generated method stub
+		logger.debug("Stub call: StubMatchMakerSession.savePermissions()");
+		
+	}
+
 }

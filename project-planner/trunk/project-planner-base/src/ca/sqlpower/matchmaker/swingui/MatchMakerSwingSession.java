@@ -1227,4 +1227,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     public PlFolder<Project> getDefaultPlFolder() {
     	return sessionImpl.getDefaultPlFolder();
     }
+
+	public void savePermissions(long projectId, String permissions) {
+		sessionImpl.savePermissions(projectId, permissions);
+	}
 }

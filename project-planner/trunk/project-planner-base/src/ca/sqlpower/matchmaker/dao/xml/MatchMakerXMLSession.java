@@ -66,7 +66,8 @@ public class MatchMakerXMLSession implements MatchMakerSession {
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
     private String dbUser = "SQL Power Person";
 
-    private final ProjectDAOXML projectDAO = new ProjectDAOXML(this, new WebsiteIOHandler());
+    private final IOHandler ioHandler = new WebsiteIOHandler();
+    private final ProjectDAOXML projectDAO = new ProjectDAOXML(this, ioHandler);
     
     public MatchMakerXMLSession(MatchMakerSessionContext context) {
         this.context = context;
@@ -254,4 +255,8 @@ public class MatchMakerXMLSession implements MatchMakerSession {
             throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");
         }        
     }
+
+	public void savePermissions(long projectId, String permissions) {
+		ioHandler.savePermissions(projectId, permissions);
+	}
 }

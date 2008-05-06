@@ -81,4 +81,8 @@ public final class LocalFileIOHandler implements IOHandler {
     public void delete(Project project) {
         throw new UnsupportedOperationException("Not implemented yet...");
     }
+
+	public void savePermissions(long projectId, String string) {
+		throw new UnsupportedOperationException("Not implemented yet...");
+	}
 }

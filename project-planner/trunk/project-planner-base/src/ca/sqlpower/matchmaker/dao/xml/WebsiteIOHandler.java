@@ -459,4 +459,54 @@ public class WebsiteIOHandler implements IOHandler {
             throw new RuntimeException(e);
         }        
     }
+
+	public void savePermissions(long projectId, String permissions) {
+		try {
+        	boolean loggedIn = false;
+			while (!loggedIn && !cancelled) {
+				try {
+					loggedIn = login();
+				} catch (IOException e) {
+					// Errors connecting to server
+					MMSUtils.showExceptionDialog(d, "Failed to connect to server!", e).requestFocus();
+					password = null;
+					continue;
+				}
+				
+				if (!loggedIn && !cancelled) {
+					// Incorrect login info
+					JOptionPane.showMessageDialog(null, "Couldn't delete project!",
+							"Login failed", JOptionPane.ERROR_MESSAGE);
+					password = null;
+				}
+        	}
+            
+            URL baseURL = new URL(WEBSITE_BASE_URL);
+            URL url = new URL(baseURL, "save_pp_project_permissions?projectId=" + projectId + "&permissions=" + permissions);
+            HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+            urlc.setRequestMethod("GET");
+            urlc.setRequestProperty("Cookie", sessionCookie);
+            urlc.setDoOutput(false);
+            urlc.setDoInput(true);
+            urlc.connect();
+
+            // have to read in order to send request!
+            Reader in = new InputStreamReader(urlc.getInputStream());
+            StringBuilder responseString = new StringBuilder();
+            char[] buf = new char[2000];
+            while (in.read(buf) > 0) {
+                responseString.append(buf);
+            }
+            in.close();
+            urlc.disconnect();
+
+            JSONObject response = new JSONObject(responseString.toString());
+            boolean success = response.getBoolean("success");
+            if (!success) {
+                throw new IOException("Failed to save project permissions: " + response.getString("message"));
+            }             
+        } catch (Exception e) {
+            throw new RuntimeException("Exception occured while trying to save project permissions", e);
+        }        
+	}
 }

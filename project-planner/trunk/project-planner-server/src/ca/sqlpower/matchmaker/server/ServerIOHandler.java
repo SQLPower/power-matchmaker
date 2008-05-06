@@ -68,4 +68,9 @@ public class ServerIOHandler implements IOHandler {
 	public void addProject(Long id, String xml) {
 		projects.put(id, xml);
 	}
+	
+	public void savePermissions(long projectId, String string) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
 }

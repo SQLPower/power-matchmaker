@@ -260,4 +260,15 @@ public interface MatchMakerSession {
      */
     public void save(MatchMakerObject mmo);
 
+	/**
+	 * Saves permissions for a given project specified by the user id. The
+	 * specific permissions are given through a String representation of a
+	 * JSONObject containing two JSONArrays containing a list of user ids to
+	 * grant view only and view and modify permissions to.
+	 * 
+	 * @param projectId
+	 * @param string
+	 */
+	public void savePermissions(long projectId, String permissions);
+
 }

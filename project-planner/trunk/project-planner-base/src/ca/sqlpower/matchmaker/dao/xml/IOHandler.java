@@ -65,4 +65,6 @@ public interface IOHandler {
      * @param project The project you intend to delete.
      */
     void delete(Project project);
+
+	void savePermissions(long projectId, String string);
 }
