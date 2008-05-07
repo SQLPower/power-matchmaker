@@ -68,6 +68,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectUtils;
@@ -1225,5 +1226,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 	public void savePermissions(long projectId, String permissions) {
 		sessionImpl.savePermissions(projectId, permissions);
+	}
+
+	public JSONObject loadPermissions(long projectId) {
+		return sessionImpl.loadPermissions(projectId);
 	}
 }

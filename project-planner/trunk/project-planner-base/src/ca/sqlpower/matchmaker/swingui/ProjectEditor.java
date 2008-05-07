@@ -71,11 +71,11 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * The panel that holds this editor's GUI.
 	 */
 	protected static final String EMAIL_PROPERTY_KEY = "email";
-	 private static final String WEBSITE_BASE_URL = "http://dhcp-126:8080/sqlpower_website/page/";
 
 	private static final String VIEW_ONLY_USERS_KEY = "viewOnlyUsers";
 	private static final String VIEW_AND_MODIFY_USERS_KEY = "viewAndModifyUsers";
-
+	private static final String PUBLIC_GROUP_KEY = "publicGroup";
+	private static final String PROJECT_OWNER_KEY = "projectOwner";
 	private final JPanel panel;
 
 	private StatusComponent status = new StatusComponent();
@@ -186,7 +186,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	}
 
 	private JPanel buildUI() {
-
+		
 		projectName.setName("Project Name");
 		JButton saveProject = new JButton(saveAction);
 
@@ -288,10 +288,13 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
 		//Set up the action events associated with the add and remove buttons.
 		configureActions();
-
+		loadPermissionList();
 		return pb.getPanel();
 	}
 
+	/**
+	 * This sets up the action events associated to the components in the panel.
+	 */
 	private void configureActions() {
 		this.addToViewOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -360,6 +363,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		}
 	}
 	
+	//this method packs the two lists of users into a jsonObject for transmission.
 	private String getPermissions() throws JSONException{
 		viewOnlyUsers = new JSONArray();
 		for(int i = 0; i < vArray.size(); i++){
@@ -372,10 +376,10 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		JSONObject permissions = new JSONObject();
 		permissions.put(VIEW_ONLY_USERS_KEY, viewOnlyUsers);
 		permissions.put(VIEW_AND_MODIFY_USERS_KEY, viewAndModifyUsers);
+		permissions.put(PUBLIC_GROUP_KEY, isSharingWithEveryone.isSelected());
+		
 		return permissions.toString();
 	}
-
-
 
 	private void refreshLists() {
 		viewOnlyList.setListData(vArray.toArray());
@@ -443,6 +447,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		logger.debug("saving");
 		swingSession.save(project);
 		
+		
 		try {
 			swingSession.savePermissions(project.getOid(), getPermissions());
 		} catch (JSONException ex) {
@@ -450,6 +455,32 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		}
 
 		return true;
+	}
+	
+	/**
+	 * Load permission lists and group status at start
+	 */
+	public void loadPermissionList() {
+		JSONObject loadList = swingSession.loadPermissions(project.getOid());
+		JSONArray vJArray = new JSONArray();
+		JSONArray vamJArray = new JSONArray();
+		Boolean isPublic = false;
+		try{
+			vJArray = (JSONArray)loadList.get(VIEW_ONLY_USERS_KEY);
+			vamJArray = (JSONArray)loadList.get(VIEW_AND_MODIFY_USERS_KEY);
+			for(int i = 0; i < vJArray.length(); i++){
+				vArray.add(vJArray.getString(i));
+			}
+			for(int i = 0; i < vamJArray.length(); i++){
+				vamArray.add(vamJArray.getString(i));
+			}
+			isPublic = (Boolean)loadList.get(PUBLIC_GROUP_KEY);
+		} catch (JSONException ex){
+			throw new RuntimeException(ex);
+		}
+		this.isSharingWithEveryone.setSelected(isPublic);
+		refreshLists();
+		
 	}
 
 	public boolean hasUnsavedChanges() {
