@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.dao.xml;
 
+import org.json.JSONObject;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
@@ -67,4 +68,6 @@ public interface IOHandler {
     void delete(Project project);
 
 	void savePermissions(long projectId, String string);
+
+	JSONObject loadPermissions(long projectId);
 }

@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
@@ -333,9 +334,13 @@ public class TestingMatchMakerSession implements MatchMakerSession {
     }
 
 	public void savePermissions(long projectId, String permissions) {
-		// TODO Auto-generated method stub
 		logger.debug("Stub call: TestingMatchMakerSession.savePermissions()");
 		
+	}
+
+	public JSONObject loadPermissions(long projectId) {
+		logger.debug("Stub call: TestingMatchMakerSession.loadPermissions()");
+		return null;
 	}
 }
 

@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.dao.xml;
 
+import org.json.JSONObject;
 import java.net.URL;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -258,5 +259,9 @@ public class MatchMakerXMLSession implements MatchMakerSession {
 
 	public void savePermissions(long projectId, String permissions) {
 		ioHandler.savePermissions(projectId, permissions);
+	}
+	
+	public JSONObject loadPermissions(long projectId) {
+		return ioHandler.loadPermissions(projectId);
 	}
 }

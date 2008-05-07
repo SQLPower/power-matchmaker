@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONObject;
 
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.xml.IOHandler;
@@ -70,7 +71,10 @@ public class ServerIOHandler implements IOHandler {
 	}
 	
 	public void savePermissions(long projectId, String string) {
-		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
+
+	public JSONObject loadPermissions(long projectId) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 }

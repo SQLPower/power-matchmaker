@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import org.json.JSONObject;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
@@ -207,5 +208,9 @@ private static final Logger logger = Logger.getLogger(MatchMakerXMLSession.class
 	
 	public void savePermissions(long projectId, String permissions) {
 		throw new UnsupportedOperationException("Not implemented yet");	
+	}
+
+	public JSONObject loadPermissions(long projectId) {
+		throw new UnsupportedOperationException("Not implemented yet");
 	}
 }
