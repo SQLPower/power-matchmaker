@@ -495,7 +495,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     }
 
     public void setDescription(String description) {
+    	String oldValue = this.description;
         this.description = description;
+        getEventSupport().firePropertyChange("description", oldValue, this.description);
     }
 
     public String getFilter() {
@@ -622,6 +624,8 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		newProject.setParent(getParent());
 		newProject.setName(getName());
 		newProject.setFilter(getFilter());
+		newProject.setDeleted(isDeleted());
+		newProject.setDescription(getDescription());
 		newProject.setMergeSettings(getMergeSettings().duplicate(newProject,s));
 		newProject.setMungeSettings(getMungeSettings().duplicate(newProject,s));
 		
@@ -829,6 +833,8 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     }
 
     public void setDeleted(boolean deleted) {
+    	boolean oldValue = this.deleted;
         this.deleted = deleted;
+        getEventSupport().firePropertyChange("deleted", oldValue, this.deleted);
     }
 }
