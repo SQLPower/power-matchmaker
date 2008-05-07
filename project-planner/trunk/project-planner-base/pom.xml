@@ -3,10 +3,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ca.sqlpower.</groupId>
+	<parent>
+		<groupId>ca.sqlpower</groupId>
+		<artifactId>project-planner</artifactId>
+		<version>0.9-SNAPSHOT</version>
+	</parent>
 	<artifactId>project-planner-base</artifactId>
 	<packaging>jar</packaging>
 	<version>0.9-SNAPSHOT</version>
-	<name>project-planner</name>
+	<name>project-planner-base</name>
 
 	<organization>
 		<name>SQL Power Group Inc.</name>
@@ -103,6 +108,14 @@
 	  </plugins>
 	</reporting>
 	
+<!--	<distributionManagement>-->
+<!--	   <snapshotRepository>-->
+<!--	      <id>Snapshots</id>-->
+<!--	      <name>Internal Snapshots</name>-->
+<!--	      <url>http://localhost:8081/nexus/content/repositories/snapshots</url>-->
+<!--	    </snapshotRepository>-->
+<!--	</distributionManagement>-->
+	
 	<dependencies>
 		<dependency>
 			<groupId>ca.sqlpower</groupId>
@@ -115,16 +128,6 @@
 			<version>1.0-SNAPSHOT</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>ca.sqlpower</groupId>
-			<artifactId>architect-lib</artifactId>
-			<version>0.9.9-alpha</version>
-		</dependency>
-		<dependency>
-		    <groupId>log4j</groupId>
-		    <artifactId>log4j</artifactId>
-		    <version>1.2.8</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.jgoodies</groupId>

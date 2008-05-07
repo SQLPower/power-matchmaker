@@ -24,8 +24,8 @@
 	
 	<modules>
 		<module>project-planner-client</module>
-		<module>project-planner-server</module>
 		<module>project-planner-base</module>
+		<module>project-planner-server</module>
 	</modules>
 
 	<build>
@@ -50,7 +50,25 @@
 		</plugins>
 	</build>
 	
+	<distributionManagement>
+	   <snapshotRepository>
+	      <id>Snapshots</id>
+	      <name>Internal Snapshots</name>
+	      <url>http://localhost:8081/nexus/content/repositories/snapshots</url>
+	    </snapshotRepository>
+	</distributionManagement>
+	
 	<dependencies>
+		<dependency>
+			<groupId>ca.sqlpower</groupId>
+			<artifactId>architect-lib</artifactId>
+			<version>0.9.9-alpha</version>
+		</dependency>
+		<dependency>
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		    <version>1.2.8</version>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
