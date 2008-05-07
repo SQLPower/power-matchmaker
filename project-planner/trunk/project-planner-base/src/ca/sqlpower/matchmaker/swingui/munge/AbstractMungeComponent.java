@@ -345,11 +345,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		addFocusListener(new FocusListener(){
 			public void focusGained(FocusEvent e) {
-				//if it is being deleted
-				if (getParent() != null) {
+				// weird part to prevent some weird behaviour from labels
+				Object selectedObj = session.getTree().getSelectionPath().getLastPathComponent();
+				if (getParent() != null && selectedObj.equals(getStep())) {
 					getParent().repaint();
 	                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) session.getTree().getModel();
-	                
 	    	        TreePath menuPath = treeModel.getPathForNode(getStep());
 	    	        session.getTree().setSelectionPath(menuPath);
 				}
