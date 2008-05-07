@@ -461,6 +461,9 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * Load permission lists and group status at start
 	 */
 	public void loadPermissionList() {
+		if(project.getOid() == null){
+			return;
+		}
 		JSONObject loadList = swingSession.loadPermissions(project.getOid());
 		JSONArray vJArray = new JSONArray();
 		JSONArray vamJArray = new JSONArray();
