@@ -321,7 +321,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @throws PLSchemaException
 	 * @throws SchemaVersionFormatException
      */
-	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) throws IOException, SchemaVersionFormatException, PLSchemaException, SQLException {
+	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) {
         this.sessionImpl = sessionImpl;
         this.sessionContext = context;
         this.smallMMIcon = MMSUtils.getFrameImageIcon();

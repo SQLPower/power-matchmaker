@@ -22,12 +22,9 @@ package ca.sqlpower.matchmaker.server;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.prefs.Preferences;
 
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -39,8 +36,6 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
-import ca.sqlpower.sql.PLSchemaException;
-import ca.sqlpower.sql.SchemaVersionFormatException;
 
 /**
  * A set of utility methods used by the server from requests of the client.
@@ -67,9 +62,8 @@ public class ProjectPlannerServerUtils {
 	 * @param projectXML
 	 *            the xml represtation of the project's contents
 	 */
-	public static byte [] generateProjectThumbnail(String projectId, String projectXML)
-			throws IOException, ClassNotFoundException, PLSchemaException,
-			SchemaVersionFormatException, SQLException, ArchitectException {
+	public static BufferedImage generateProjectThumbnail(String projectId, String projectXML)
+			throws IOException, ClassNotFoundException, ArchitectException {
 		
 		MatchmakerXMLSessionContext context = new MatchmakerXMLSessionContext();
 		SwingSessionContext sscontext = new SwingSessionContextImpl(Preferences
@@ -106,11 +100,6 @@ public class ProjectPlannerServerUtils {
     	mungePen.paint(g);
     	g.dispose();
     	
-    	ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    	ImageIO.write(imageBuffer, "png",outputStream);
-    	
-    	byte [] fileData= outputStream.toByteArray();
-
-    	return fileData;
+    	return imageBuffer;
 	}
 }
