@@ -93,9 +93,7 @@ import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
-import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
-import ca.sqlpower.sql.SchemaVersionFormatException;
 import ca.sqlpower.swingui.CommonCloseAction;
 import ca.sqlpower.swingui.DataEntryPanel;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
@@ -317,9 +315,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * @param sessionImpl
      *            The session that actually does the dirty work (ORM and stuff
      *            like that).
-	 * @throws SQLException
-	 * @throws PLSchemaException
-	 * @throws SchemaVersionFormatException
      */
 	public MatchMakerSwingSession(SwingSessionContext context, MatchMakerSession sessionImpl) {
         this.sessionImpl = sessionImpl;
