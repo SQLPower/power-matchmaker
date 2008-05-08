@@ -34,6 +34,16 @@
 		<outputDirectory>build</outputDirectory>
 		<testOutputDirectory>build-tests</testOutputDirectory>
 		
+		<resources>
+			<resource>
+				<directory>src/icons</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+				<targetPath>icons</targetPath>
+			</resource>
+		</resources>
+		
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
