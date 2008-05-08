@@ -306,17 +306,17 @@ public class ConnectorIcon implements Icon {
 		Image base = null;
 		Image background = null;
 		if (includeTop) {
-			base = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/base/base_cover.png")).getImage();
+			base = new ImageIcon(ConnectorIcon.class.getClassLoader().getResource("icons/plugs/base/base_cover.png")).getImage();
 			logger.debug("background resource path: icons/plugs/base/base_" + hexColour(c) + ".png");
-			background = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/base/base_" + hexColour(c) + ".png")).getImage();
+			background = new ImageIcon(ConnectorIcon.class.getClassLoader().getResource("icons/plugs/base/base_" + hexColour(c) + ".png")).getImage();
 		}
 		
 		Image nibBackground = null;
 		Image nibCover = null;
 		if (includeNib) {
 			logger.debug("nib resource path: icons/plugs/nib/nib_" + hexColour(c) + ".png");
-			nibBackground = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/nib/nib_" + hexColour(c) + ".png")).getImage();
-			nibCover = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/nib/nib_cover.png")).getImage();
+			nibBackground = new ImageIcon(ConnectorIcon.class.getClassLoader().getResource("icons/plugs/nib/nib_" + hexColour(c) + ".png")).getImage();
+			nibCover = new ImageIcon(ConnectorIcon.class.getClassLoader().getResource("icons/plugs/nib/nib_cover.png")).getImage();
 		}
 		return new ConnectorIcon(base, background, nibCover, nibBackground);
 	}
@@ -379,8 +379,8 @@ public class ConnectorIcon implements Icon {
 	public static ConnectorIcon getFemaleInstance(Class c) {
 		ConnectorIcon curr = femaleCache.get(c); 
 		if (curr == null) {
-			Image base = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/port/port_cover.png")).getImage();
-			Image background = new ImageIcon(ClassLoader.getSystemResource("icons/plugs/port/port_" + hexColour(c) + ".png")).getImage();
+			Image base = new ImageIcon(ConnectorIcon.class.getClassLoader().getResource("icons/plugs/port/port_cover.png")).getImage();
+			Image background = new ImageIcon(ConnectorIcon.class.getClassLoader().getResource("icons/plugs/port/port_" + hexColour(c) + ".png")).getImage();
 			curr = new ConnectorIcon(base, background, null, null);
 			femaleCache.put(c, curr);
 		}
