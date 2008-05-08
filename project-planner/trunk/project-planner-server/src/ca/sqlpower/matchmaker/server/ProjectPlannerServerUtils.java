@@ -25,6 +25,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.prefs.Preferences;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -42,7 +43,7 @@ import ca.sqlpower.matchmaker.swingui.munge.MungePen;
  */
 public class ProjectPlannerServerUtils {
 	
-    /**
+	/**
      * The width of all thumbnails generated from the munge pen on a save.
      */
     private static final int THUMBNAIL_WIDTH = 150;
@@ -82,23 +83,28 @@ public class ProjectPlannerServerUtils {
 		ServerIOHandler ioHandler = (ServerIOHandler) sessionDelegate.getIoHandler();
 		ioHandler.addProject(projectIdLong, projectXML);
 		projectDAO.refresh(project);
+		
+		BufferedImage imageBuffer;
+		if (project.getMungeProcesses().size() == 0) {
+			imageBuffer = ImageIO.read(ProjectPlannerServerUtils.class.getResource("/icons/no_thumbnail.png"));
+		} else {
+			MungePen mungePen = new MungePen(project.getMungeProcesses().get(0),
+					null, session);
 
-		MungePen mungePen = new MungePen(project.getMungeProcesses().get(0),
-				null, session);
-		
-		// weird hack to get the thumbnail to actually display
-		final JFrame f = new JFrame();
-		f.add(mungePen);
-		f.pack();
-		
-    	Dimension mungePenArea = mungePen.getUsedArea();
-    	double scaleFactor = Math.max(THUMBNAIL_WIDTH/mungePenArea.getWidth(), THUMBNAIL_HEIGHT/mungePenArea.getHeight());
-		BufferedImage imageBuffer = new BufferedImage((int)(scaleFactor * mungePenArea.getWidth()), (int)(scaleFactor * mungePenArea.getHeight()), BufferedImage.TYPE_INT_RGB);
-    	
-    	Graphics2D g = (Graphics2D)imageBuffer.getGraphics();
-    	g.scale(scaleFactor, scaleFactor);
-    	mungePen.paint(g);
-    	g.dispose();
+			// weird hack to get the thumbnail to actually display
+			final JFrame f = new JFrame();
+			f.add(mungePen);
+			f.pack();
+
+			Dimension mungePenArea = mungePen.getUsedArea();
+			double scaleFactor = Math.max(THUMBNAIL_WIDTH/mungePenArea.getWidth(), THUMBNAIL_HEIGHT/mungePenArea.getHeight());
+			imageBuffer = new BufferedImage((int)(scaleFactor * mungePenArea.getWidth()), (int)(scaleFactor * mungePenArea.getHeight()), BufferedImage.TYPE_INT_RGB);
+
+			Graphics2D g = (Graphics2D)imageBuffer.getGraphics();
+			g.scale(scaleFactor, scaleFactor);
+			mungePen.paint(g);
+			g.dispose();
+		}
     	
     	return imageBuffer;
 	}
