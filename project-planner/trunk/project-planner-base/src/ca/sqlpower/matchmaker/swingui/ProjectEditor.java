@@ -75,9 +75,10 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private static final String VIEW_ONLY_USERS_KEY = "viewOnlyUsers";
 	private static final String VIEW_AND_MODIFY_USERS_KEY = "viewAndModifyUsers";
 	private static final String PUBLIC_GROUP_KEY = "publicGroup";
-	private static final String PROJECT_OWNER_KEY = "projectOwner";
+	private static final String OWNERSHIP_KEY = "owner";
 	private final JPanel panel;
 
+	private JPanel sharingListPane;
 	private StatusComponent status = new StatusComponent();
 	private JTextField projectName = new JTextField();
 	private JTextArea desc = new JTextArea();
@@ -91,10 +92,14 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private JButton removeFromViewOnly;
 	private JButton addToViewAndModify;
 	private JButton removeFromViewAndModify;
+	private JButton saveProject;
+	private JLabel sharingLabel;
+	private JLabel sharingWithEveryoneLabel;
 	private JSONArray viewOnlyUsers = new JSONArray();;
 	private JSONArray viewAndModifyUsers = new JSONArray();;
 	private ArrayList<String> vArray = new ArrayList<String>();
 	private ArrayList<String> vamArray = new ArrayList<String>();
+	private Boolean isOwner;
 
 	private final MatchMakerSwingSession swingSession;
 
@@ -188,7 +193,10 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private JPanel buildUI() {
 		
 		projectName.setName("Project Name");
-		JButton saveProject = new JButton(saveAction);
+		saveProject = new JButton(saveAction);
+		isSharingWithEveryone = new JCheckBox("Share with Everyone. (Your Project will appear in the gallery)");
+		sharingLabel = new JLabel("Sharing:");
+		sharingWithEveryoneLabel = new JLabel("Share with the following people:");
 
 		FormLayout layout = new FormLayout("4dlu,pref,4dlu,fill:min(pref;"
 				+ new JComboBox().getMinimumSize().width
@@ -214,17 +222,17 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		pb.add(new JScrollPane(desc), cc.xy(4, row, "f,f"));
 
 		row += 2;
-		pb.add(new JLabel("Sharing:"), cc.xy(2, row, "r,t"));
-		isSharingWithEveryone = new JCheckBox(
-				"Share with Everyone. (Your Project will appear in the gallery)");
+		
+		pb.add(sharingLabel, cc.xy(2, row, "r,t"));
 		pb.add(isSharingWithEveryone, cc.xy(4, row, "l,t"));
 		row += 2;
-		pb.add(new JLabel("Share with the following people:"), cc.xy(4, row,
+		
+		pb.add(sharingWithEveryoneLabel, cc.xy(4, row,
 				"l,t"));
 		row += 2;
 
 		//sharingListPane contains the 2 jlists which would list the id's of those who have the permission to access the project.
-		JPanel sharingListPane = new JPanel(new FormLayout("pref,8dlu,pref",
+		sharingListPane = new JPanel(new FormLayout("pref,8dlu,pref",
 				"pref"));
 		JPanel viewOnlyPane = new JPanel(new FormLayout(
 				"20dlu,4dlu,20dlu,4dlu,100dlu", "20dlu,100dlu,pref,pref"));
@@ -320,6 +328,24 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		this.removeFromViewAndModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				removeFromViewAndModifyList();
+				refreshLists();
+			}
+		});
+		
+		this.isSharingWithEveryone.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(isSharingWithEveryone.isSelected()) {
+					viewOnlyList.setEnabled(false);
+					addToViewOnly.setEnabled(false);
+					removeFromViewOnly.setEnabled(false);
+					toViewOnly.setEnabled(false);
+				}
+				else {
+					viewOnlyList.setEnabled(true);
+					addToViewOnly.setEnabled(true);
+					removeFromViewOnly.setEnabled(true);
+					toViewOnly.setEnabled(true);
+				}
 				refreshLists();
 			}
 		});
@@ -442,11 +468,9 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			swingSession.getDefaultPlFolder().addChild(project);
 		}
 		logger.debug("Parent is " + project.getParent().getName());
-
 		logger.debug(project.getResultTable());
 		logger.debug("saving");
 		swingSession.save(project);
-		
 		
 		try {
 			swingSession.savePermissions(project.getOid(), getPermissions());
@@ -468,9 +492,11 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		JSONArray vJArray = new JSONArray();
 		JSONArray vamJArray = new JSONArray();
 		Boolean isPublic = false;
+		System.out.println("JSONObject = " + loadList.toString());
 		try{
 			vJArray = (JSONArray)loadList.get(VIEW_ONLY_USERS_KEY);
 			vamJArray = (JSONArray)loadList.get(VIEW_AND_MODIFY_USERS_KEY);
+			isOwner = (Boolean)loadList.get(OWNERSHIP_KEY);
 			for(int i = 0; i < vJArray.length(); i++){
 				vArray.add(vJArray.getString(i));
 			}
@@ -482,8 +508,21 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			throw new RuntimeException(ex);
 		}
 		this.isSharingWithEveryone.setSelected(isPublic);
-		refreshLists();
 		
+		if(!isOwner) {
+			this.sharingLabel.setVisible(false);
+			this.sharingWithEveryoneLabel.setVisible(false);
+			this.isSharingWithEveryone.setVisible(false);
+			this.sharingListPane.setVisible(false);
+			this.saveProject.setVisible(false);
+		}
+		else if(isPublic) {
+			this.viewOnlyList.setEnabled(false);
+			this.addToViewOnly.setEnabled(false);
+			this.removeFromViewOnly.setEnabled(false);
+			this.toViewOnly.setEnabled(false);
+		}
+		refreshLists();
 	}
 
 	public boolean hasUnsavedChanges() {
