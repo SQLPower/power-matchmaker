@@ -345,9 +345,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		
 		addFocusListener(new FocusListener(){
 			public void focusGained(FocusEvent e) {
-				// weird part to prevent some weird behaviour from labels
-				Object selectedObj = session.getTree().getSelectionPath().getLastPathComponent();
-				if (getParent() != null && selectedObj.equals(getStep())) {
+				if (getParent() != null) {
 					getParent().repaint();
 	                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) session.getTree().getModel();
 	    	        TreePath menuPath = treeModel.getPathForNode(getStep());
