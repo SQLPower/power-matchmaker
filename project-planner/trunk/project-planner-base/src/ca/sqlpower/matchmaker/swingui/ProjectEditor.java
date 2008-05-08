@@ -242,44 +242,44 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		//viewOnlyPane contains the list of those who are permitted to view the project. At the same time, it also
 		//contains the add and remove button to edit the list.
 		viewOnlyPane.add(new JLabel("View Only:"), cc.xywh(1, 1, 5, 1));
-		this.viewOnlyList = new JList();
+		viewOnlyList = new JList();
 		JScrollPane viewOnlyScrollPane = new JScrollPane(viewOnlyList);
 		viewOnlyScrollPane
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		viewOnlyScrollPane
 				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		viewOnlyPane.add(viewOnlyScrollPane, cc.xywh(1, 2, 5, 1));
-		this.toViewOnly = new JTextField();
+		toViewOnly = new JTextField();
 		viewOnlyPane.add(toViewOnly, cc.xywh(1, 3, 5, 1));
-		this.addToViewOnly = new JButton();
-		this.addToViewOnly.setIcon(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
-		viewOnlyPane.add(this.addToViewOnly, cc.xy(1, 4));
-		this.removeFromViewOnly = new JButton();
-		this.removeFromViewOnly.setIcon(new AddRemoveIcon(
+		addToViewOnly = new JButton();
+		addToViewOnly.setIcon(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
+		viewOnlyPane.add(addToViewOnly, cc.xy(1, 4));
+		removeFromViewOnly = new JButton();
+		removeFromViewOnly.setIcon(new AddRemoveIcon(
 				AddRemoveIcon.Type.REMOVE));
-		viewOnlyPane.add(this.removeFromViewOnly, cc.xy(3, 4));
+		viewOnlyPane.add(removeFromViewOnly, cc.xy(3, 4));
 
 		//viewAndModifyPane contains the list of those who are permitted to view and to modify the project. At the same time,
 		//it also contains the add and remove button to edit this list.
 		viewAndModifyPane.add(new JLabel("View and Modify:"), cc.xywh(1, 1, 5,
 				1));
-		this.viewAndModifyList = new JList();
+		viewAndModifyList = new JList();
 		JScrollPane viewAndModifyScrollPane = new JScrollPane(viewAndModifyList);
 		viewAndModifyScrollPane
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		viewAndModifyScrollPane
 				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		viewAndModifyPane.add(viewAndModifyScrollPane, cc.xywh(1, 2, 5, 1));
-		this.toViewAndModify = new JTextField();
-		viewAndModifyPane.add(this.toViewAndModify, cc.xywh(1, 3, 5, 1));
-		this.addToViewAndModify = new JButton();
-		this.addToViewAndModify.setIcon(new AddRemoveIcon(
+		toViewAndModify = new JTextField();
+		viewAndModifyPane.add(toViewAndModify, cc.xywh(1, 3, 5, 1));
+		addToViewAndModify = new JButton();
+		addToViewAndModify.setIcon(new AddRemoveIcon(
 				AddRemoveIcon.Type.ADD));
-		viewAndModifyPane.add(this.addToViewAndModify, cc.xy(1, 4));
-		this.removeFromViewAndModify = new JButton();
-		this.removeFromViewAndModify.setIcon(new AddRemoveIcon(
+		viewAndModifyPane.add(addToViewAndModify, cc.xy(1, 4));
+		removeFromViewAndModify = new JButton();
+		removeFromViewAndModify.setIcon(new AddRemoveIcon(
 				AddRemoveIcon.Type.REMOVE));
-		viewAndModifyPane.add(this.removeFromViewAndModify, cc.xy(3, 4));
+		viewAndModifyPane.add(removeFromViewAndModify, cc.xy(3, 4));
 
 		sharingListPane.add(viewOnlyPane, cc.xy(1, 1));
 		sharingListPane.add(viewAndModifyPane, cc.xy(3, 1));
@@ -304,35 +304,35 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * This sets up the action events associated to the components in the panel.
 	 */
 	private void configureActions() {
-		this.addToViewOnly.addActionListener(new ActionListener() {
+		addToViewOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				addToViewOnlyList();
 				refreshLists();
 			}
 		});
 
-		this.addToViewAndModify.addActionListener(new ActionListener() {
+		addToViewAndModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				addToViewAndModifyList();
 				refreshLists();
 			}
 		});
 
-		this.removeFromViewOnly.addActionListener(new ActionListener() {
+		removeFromViewOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				removeFromViewOnlyList();
 				refreshLists();
 			}
 		});
 
-		this.removeFromViewAndModify.addActionListener(new ActionListener() {
+		removeFromViewAndModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				removeFromViewAndModifyList();
 				refreshLists();
 			}
 		});
 		
-		this.isSharingWithEveryone.addActionListener(new ActionListener() {
+		isSharingWithEveryone.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if(isSharingWithEveryone.isSelected()) {
 					viewOnlyList.setEnabled(false);
@@ -352,39 +352,35 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	}
 
 	private void addToViewOnlyList() {
-
-		if (toViewOnly.getText() != null || !toViewOnly.getText().equals(""))
-			vArray.add(toViewOnly.getText());
-		else 
-			return;
+		if (toViewOnly.getText() != null && !toViewOnly.getText().trim().equals("")) {
+			if (!vArray.contains(toViewOnly.getText())) {
+				vArray.add(toViewOnly.getText());
+			}
+		}
 	}
 
 	private void addToViewAndModifyList() {
-
-		if (toViewAndModify.getText() != null || !toViewAndModify.getText().equals("")) 
-			vamArray.add(toViewAndModify.getText());
-		else 
-			return;
+		if (toViewAndModify.getText() != null && !toViewAndModify.getText().trim().equals("")) {
+			if (!vamArray.contains(toViewAndModify.getText())) {
+				vamArray.add(toViewAndModify.getText());
+			}
+		}
 	}
 
 	private void removeFromViewOnlyList() {
-		if (this.viewOnlyList.isSelectionEmpty())
-			return;
-		else {
-			int[] selectedIndices = this.viewOnlyList.getSelectedIndices();
+		if (!viewOnlyList.isSelectionEmpty()) {
+			int[] selectedIndices = viewOnlyList.getSelectedIndices();
 			for (int i = 0; i < selectedIndices.length; i++) {
-				this.vArray.remove(selectedIndices[i] - i);
+				vArray.remove(selectedIndices[i] - i);
 			}
 		}
 	}
 
 	private void removeFromViewAndModifyList() {
-		if (this.viewAndModifyList.isSelectionEmpty())
-			return;
-		else {
-			int[] selectedIndices = this.viewAndModifyList.getSelectedIndices();
+		if (viewAndModifyList.isSelectionEmpty()) {
+			int[] selectedIndices = viewAndModifyList.getSelectedIndices();
 			for (int i = 0; i < selectedIndices.length; i++) {
-				this.vamArray.remove(selectedIndices[i] - i);
+				vamArray.remove(selectedIndices[i] - i);
 			}
 		}
 	}
@@ -507,20 +503,20 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		} catch (JSONException ex){
 			throw new RuntimeException(ex);
 		}
-		this.isSharingWithEveryone.setSelected(isPublic);
+		isSharingWithEveryone.setSelected(isPublic);
 		
 		if(!isOwner) {
-			this.sharingLabel.setVisible(false);
-			this.sharingWithEveryoneLabel.setVisible(false);
-			this.isSharingWithEveryone.setVisible(false);
-			this.sharingListPane.setVisible(false);
-			this.saveProject.setVisible(false);
+			sharingLabel.setVisible(false);
+			sharingWithEveryoneLabel.setVisible(false);
+			isSharingWithEveryone.setVisible(false);
+			sharingListPane.setVisible(false);
+			saveProject.setVisible(false);
 		}
 		else if(isPublic) {
-			this.viewOnlyList.setEnabled(false);
-			this.addToViewOnly.setEnabled(false);
-			this.removeFromViewOnly.setEnabled(false);
-			this.toViewOnly.setEnabled(false);
+			viewOnlyList.setEnabled(false);
+			addToViewOnly.setEnabled(false);
+			removeFromViewOnly.setEnabled(false);
+			toViewOnly.setEnabled(false);
 		}
 		refreshLists();
 	}
