@@ -186,6 +186,19 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 			public void insertUpdate(DocumentEvent e) {
 				step.setText(textArea.getText());
 				textArea.setSize(textArea.getPreferredSize());
+				
+				// resize content pane to fit text area
+				if (content != null) {
+					if (content.getWidth() < textArea.getWidth()) {
+						content.setSize(textArea.getWidth(), content.getHeight());
+						content.setPreferredSize(content.getSize());
+					}
+					if (content.getHeight() < textArea.getHeight()) {
+						content.setSize(content.getWidth(), textArea.getHeight());
+						content.setPreferredSize(content.getSize());
+					}
+					applyChanges();
+				}
 			}
 				
 				public void changedUpdate(DocumentEvent e) {
@@ -333,7 +346,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 			if (p.y == 0) {
 				setLocation(getLocation().x, getLocation().y + e.getPoint().y);
 			}
-			getPen().updatePositionsToMMO();
+			applyChanges();
 		}
 		logger.debug(textArea.getLocation());
 	}
