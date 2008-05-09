@@ -82,7 +82,6 @@
 		
 		           <jnlp>
 		             <resources>resources</resources>
-		             <inputTemplateResourcePath>.</inputTemplateResourcePath>
 		             <inputTemplate>project-planner.jnlp.template</inputTemplate>
 		             <outputFile>project-planner.jnlp</outputFile>
 		             <mainClass>ca.sqlpower.matchmaker.dao.xml.MatchMakerXMLSession</mainClass>

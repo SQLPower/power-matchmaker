@@ -23,9 +23,9 @@
 	</licenses>
 	
 	<modules>
-		<module>project-planner-client</module>
 		<module>project-planner-base</module>
 		<module>project-planner-server</module>
+		<module>project-planner-client</module>
 	</modules>
 
 	<build>
