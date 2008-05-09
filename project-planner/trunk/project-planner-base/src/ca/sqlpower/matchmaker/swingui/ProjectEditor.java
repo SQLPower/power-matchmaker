@@ -377,7 +377,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	}
 
 	private void removeFromViewAndModifyList() {
-		if (viewAndModifyList.isSelectionEmpty()) {
+		if (!viewAndModifyList.isSelectionEmpty()) {
 			int[] selectedIndices = viewAndModifyList.getSelectedIndices();
 			for (int i = 0; i < selectedIndices.length; i++) {
 				vamArray.remove(selectedIndices[i] - i);
