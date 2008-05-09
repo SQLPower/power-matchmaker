@@ -23,11 +23,11 @@ import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -85,22 +85,23 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private JTextArea desc = new JTextArea();
 
 	private JCheckBox isSharingWithEveryone;
+	private JLabel sharingLabel;
+	private JLabel sharingWithEveryoneLabel;
+
 	private JList viewOnlyList;
 	private JList viewAndModifyList;
+	private DefaultListModel viewOnlyListModel = new DefaultListModel();
+	private DefaultListModel viewAndModifyListModel = new DefaultListModel();
+
 	private JTextField toViewOnly;
 	private JTextField toViewAndModify;
+
 	private JButton addToViewOnly;
 	private JButton removeFromViewOnly;
 	private JButton addToViewAndModify;
 	private JButton removeFromViewAndModify;
+
 	private JButton saveProject;
-	private JLabel sharingLabel;
-	private JLabel sharingWithEveryoneLabel;
-	private JSONArray viewOnlyUsers = new JSONArray();;
-	private JSONArray viewAndModifyUsers = new JSONArray();;
-	private ArrayList<String> vArray = new ArrayList<String>();
-	private ArrayList<String> vamArray = new ArrayList<String>();
-	private Boolean isOwner;
 
 	private final MatchMakerSwingSession swingSession;
 
@@ -243,43 +244,27 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		//viewOnlyPane contains the list of those who are permitted to view the project. At the same time, it also
 		//contains the add and remove button to edit the list.
 		viewOnlyPane.add(new JLabel("View Only:"), cc.xywh(1, 1, 5, 1));
-		viewOnlyList = new JList();
+		viewOnlyList = new JList(viewOnlyListModel);
 		JScrollPane viewOnlyScrollPane = new JScrollPane(viewOnlyList);
-		viewOnlyScrollPane
-				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		viewOnlyScrollPane
-				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		viewOnlyPane.add(viewOnlyScrollPane, cc.xywh(1, 2, 5, 1));
 		toViewOnly = new JTextField();
 		viewOnlyPane.add(toViewOnly, cc.xywh(1, 3, 5, 1));
-		addToViewOnly = new JButton();
-		addToViewOnly.setIcon(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
+		addToViewOnly = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
 		viewOnlyPane.add(addToViewOnly, cc.xy(1, 4));
-		removeFromViewOnly = new JButton();
-		removeFromViewOnly.setIcon(new AddRemoveIcon(
-				AddRemoveIcon.Type.REMOVE));
+		removeFromViewOnly = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
 		viewOnlyPane.add(removeFromViewOnly, cc.xy(3, 4));
 
 		//viewAndModifyPane contains the list of those who are permitted to view and to modify the project. At the same time,
 		//it also contains the add and remove button to edit this list.
-		viewAndModifyPane.add(new JLabel("View and Modify:"), cc.xywh(1, 1, 5,
-				1));
-		viewAndModifyList = new JList();
+		viewAndModifyPane.add(new JLabel("View and Modify:"), cc.xywh(1, 1, 5, 1));
+		viewAndModifyList = new JList(viewAndModifyListModel);
 		JScrollPane viewAndModifyScrollPane = new JScrollPane(viewAndModifyList);
-		viewAndModifyScrollPane
-				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		viewAndModifyScrollPane
-				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		viewAndModifyPane.add(viewAndModifyScrollPane, cc.xywh(1, 2, 5, 1));
 		toViewAndModify = new JTextField();
 		viewAndModifyPane.add(toViewAndModify, cc.xywh(1, 3, 5, 1));
-		addToViewAndModify = new JButton();
-		addToViewAndModify.setIcon(new AddRemoveIcon(
-				AddRemoveIcon.Type.ADD));
+		addToViewAndModify = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
 		viewAndModifyPane.add(addToViewAndModify, cc.xy(1, 4));
-		removeFromViewAndModify = new JButton();
-		removeFromViewAndModify.setIcon(new AddRemoveIcon(
-				AddRemoveIcon.Type.REMOVE));
+		removeFromViewAndModify = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
 		viewAndModifyPane.add(removeFromViewAndModify, cc.xy(3, 4));
 
 		sharingListPane.add(viewOnlyPane, cc.xy(1, 1));
@@ -307,29 +292,45 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private void configureActions() {
 		addToViewOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				addToViewOnlyList();
-				refreshLists();
+				String memberId = toViewOnly.getText();
+				if (memberId != null && !memberId.trim().equals("")) {
+					if (!viewOnlyListModel.contains(memberId)) {
+						viewOnlyListModel.addElement(memberId);
+					}
+					viewOnlyList.setSelectedValue(memberId, true);
+				}
 			}
 		});
 
 		addToViewAndModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				addToViewAndModifyList();
-				refreshLists();
+				String memberId = toViewAndModify.getText();
+				if (memberId != null && !memberId.trim().equals("")) {
+					if (!viewAndModifyListModel.contains(memberId)) {
+						viewAndModifyListModel.addElement(memberId);
+					}
+					viewAndModifyList.setSelectedValue(memberId, true);
+				}
 			}
 		});
 
 		removeFromViewOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				removeFromViewOnlyList();
-				refreshLists();
+				if (!viewOnlyList.isSelectionEmpty()) {
+					for (Object obj : viewOnlyList.getSelectedValues()) {
+						viewOnlyListModel.removeElement(obj);
+					}
+				}
 			}
 		});
 
 		removeFromViewAndModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				removeFromViewAndModifyList();
-				refreshLists();
+				if (!viewAndModifyList.isSelectionEmpty()) {
+					for (Object obj : viewAndModifyList.getSelectedValues()) {
+						viewAndModifyListModel.removeElement(obj);
+					}
+				}
 			}
 		});
 		
@@ -347,55 +348,21 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 					removeFromViewOnly.setEnabled(true);
 					toViewOnly.setEnabled(true);
 				}
-				refreshLists();
 			}
 		});
 	}
 
-	private void addToViewOnlyList() {
-		if (toViewOnly.getText() != null && !toViewOnly.getText().trim().equals("")) {
-			if (!vArray.contains(toViewOnly.getText())) {
-				vArray.add(toViewOnly.getText());
-			}
-		}
-	}
-
-	private void addToViewAndModifyList() {
-		if (toViewAndModify.getText() != null && !toViewAndModify.getText().trim().equals("")) {
-			if (!vamArray.contains(toViewAndModify.getText())) {
-				vamArray.add(toViewAndModify.getText());
-			}
-		}
-	}
-
-	private void removeFromViewOnlyList() {
-		if (!viewOnlyList.isSelectionEmpty()) {
-			int[] selectedIndices = viewOnlyList.getSelectedIndices();
-			for (int i = 0; i < selectedIndices.length; i++) {
-				vArray.remove(selectedIndices[i] - i);
-			}
-		}
-	}
-
-	private void removeFromViewAndModifyList() {
-		if (!viewAndModifyList.isSelectionEmpty()) {
-			int[] selectedIndices = viewAndModifyList.getSelectedIndices();
-			for (int i = 0; i < selectedIndices.length; i++) {
-				vamArray.remove(selectedIndices[i] - i);
-			}
-		}
-	}
-	
 	//this method packs the two lists of users into a jsonObject for transmission.
 	private String getPermissions() throws JSONException{
-		viewOnlyUsers = new JSONArray();
-		for(int i = 0; i < vArray.size(); i++){
-			viewOnlyUsers.put(vArray.get(i));
+		JSONArray viewOnlyUsers = new JSONArray();
+		for (Object obj : viewOnlyListModel.toArray()) {
+			viewOnlyUsers.put((String) obj);
 		}
-		viewAndModifyUsers = new JSONArray();
-		for(int i = 0; i < vamArray.size(); i++){
-			viewAndModifyUsers.put(vamArray.get(i));
+		JSONArray viewAndModifyUsers = new JSONArray();
+		for (Object obj : viewAndModifyListModel.toArray()) {
+			viewAndModifyUsers.put((String) obj);
 		}
+
 		JSONObject permissions = new JSONObject();
 		permissions.put(VIEW_ONLY_USERS_KEY, viewOnlyUsers);
 		permissions.put(VIEW_AND_MODIFY_USERS_KEY, viewAndModifyUsers);
@@ -404,17 +371,9 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		return permissions.toString();
 	}
 
-	private void refreshLists() {
-		viewOnlyList.setListData(vArray.toArray());
-		viewAndModifyList.setListData(vamArray.toArray());
-
-	}
-
 	private void setDefaultSelections() throws ArchitectException {
-
 		projectName.setText(project.getName());
 		desc.setText(project.getDescription());
-
 	}
 
 	public JPanel getPanel() {
@@ -472,7 +431,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			boolean validSave = swingSession.savePermissions(project.getOid(), getPermissions());
 			if(!validSave) {
 				JOptionPane.showMessageDialog(getParentFrame(), "Invalid user(s) when saving permissions.", "Error on save permission lists", JOptionPane.WARNING_MESSAGE);
-				refreshLists();
 			}
 			loadPermissionList();
 		} catch (JSONException ex) {
@@ -486,45 +444,47 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * Load permission lists and group status at start
 	 */
 	public void loadPermissionList() {
-		if(project.getOid() == null){
+		boolean isOwner = false;
+		if (project.getOid() == null){
 			return;
 		}
-		this.vArray = new ArrayList<String>();
-		this.vamArray = new ArrayList<String>();
 		JSONObject loadList = swingSession.loadPermissions(project.getOid());
 		JSONArray vJArray = new JSONArray();
 		JSONArray vamJArray = new JSONArray();
 		Boolean isPublic = false;
-		try{
-			vJArray = (JSONArray)loadList.get(VIEW_ONLY_USERS_KEY);
-			vamJArray = (JSONArray)loadList.get(VIEW_AND_MODIFY_USERS_KEY);
-			isOwner = (Boolean)loadList.get(OWNERSHIP_KEY);
-			for(int i = 0; i < vJArray.length(); i++){
-				vArray.add(vJArray.getString(i));
+		
+		viewOnlyListModel.clear();
+		viewAndModifyListModel.clear();
+		
+		logger.debug("JSONObject = " + loadList.toString());
+		try {
+			vJArray = loadList.getJSONArray(VIEW_ONLY_USERS_KEY);
+			vamJArray = loadList.getJSONArray(VIEW_AND_MODIFY_USERS_KEY);
+			isOwner = loadList.getBoolean(OWNERSHIP_KEY);
+			for (int i = 0; i < vJArray.length(); i++){
+				viewOnlyListModel.addElement(vJArray.getString(i));
 			}
-			for(int i = 0; i < vamJArray.length(); i++){
-				vamArray.add(vamJArray.getString(i));
+			for (int i = 0; i < vamJArray.length(); i++) {
+				viewAndModifyListModel.addElement(vamJArray.getString(i));
 			}
-			isPublic = (Boolean)loadList.get(PUBLIC_GROUP_KEY);
+			isPublic = loadList.getBoolean(PUBLIC_GROUP_KEY);
 		} catch (JSONException ex){
 			throw new RuntimeException(ex);
 		}
 		isSharingWithEveryone.setSelected(isPublic);
 		
-		if(!isOwner) {
+		if (!isOwner) {
 			sharingLabel.setVisible(false);
 			sharingWithEveryoneLabel.setVisible(false);
 			isSharingWithEveryone.setVisible(false);
 			sharingListPane.setVisible(false);
 			saveProject.setVisible(false);
-		}
-		else if(isPublic) {
+		} else if (isPublic) {
 			viewOnlyList.setEnabled(false);
 			addToViewOnly.setEnabled(false);
 			removeFromViewOnly.setEnabled(false);
 			toViewOnly.setEnabled(false);
 		}
-		refreshLists();
 	}
 
 	public boolean hasUnsavedChanges() {
