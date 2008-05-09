@@ -70,7 +70,7 @@ public class ServerIOHandler implements IOHandler {
 		projects.put(id, xml);
 	}
 	
-	public void savePermissions(long projectId, String string) {
+	public boolean savePermissions(long projectId, String string) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 

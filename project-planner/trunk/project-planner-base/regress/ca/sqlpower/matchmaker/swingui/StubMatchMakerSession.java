@@ -197,8 +197,9 @@ public class StubMatchMakerSession implements MatchMakerSession{
         logger.debug("Stub call: StubMatchMakerSession.save()");
     }
 
-	public void savePermissions(long projectId, String permissions) {
+	public boolean savePermissions(long projectId, String permissions) {
 		logger.debug("Stub call: StubMatchMakerSession.savePermissions()");
+		return false;
 		
 	}
 

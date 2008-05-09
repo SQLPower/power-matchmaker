@@ -333,8 +333,9 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         logger.debug("Stub call: TestingMatchMakerSession.save()");
     }
 
-	public void savePermissions(long projectId, String permissions) {
+	public boolean savePermissions(long projectId, String permissions) {
 		logger.debug("Stub call: TestingMatchMakerSession.savePermissions()");
+		return false;
 		
 	}
 
