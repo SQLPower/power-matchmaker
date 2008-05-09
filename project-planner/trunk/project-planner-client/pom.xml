@@ -53,12 +53,64 @@
 			</plugin>
 			
 			<plugin>
-			  <artifactId>maven-assembly-plugin</artifactId>
-			  <configuration>
-			    <descriptorRefs>
-			      <descriptorRef>jar-with-dependencies</descriptorRef>
-			    </descriptorRefs>
-			  </configuration>
+		        <groupId>org.codehaus.mojo</groupId>
+		        <artifactId>webstart-maven-plugin</artifactId>
+		        <executions>
+		           <execution>
+		              <goals>
+		                 <goal>jnlp</goal>
+		              </goals>
+		           </execution>
+		        </executions>
+		        <configuration>
+		           <outputDirectory>dist/jnlp</outputDirectory>
+		           <libPath>lib</libPath>
+		
+		           <dependencies>
+		             <includes>
+		                <include>ca.sqlpower:project-planner-base</include>
+		                <include>ca.sqlpower:sqlpower-library</include>
+		                <include>ca.sqlpower:architect-lib</include>
+		                <include>log4j:log4j</include>
+		                <include>com.jgoodies:forms</include>
+		                <include>commons-beanutils:commons-beanutils</include>
+		                <include>commons-collections:commons-collections</include>
+		                <include>commons-logging:commons-logging</include>
+		                <include>com.lowagie:itext</include>
+		             </includes>
+		           </dependencies>
+		
+		           <jnlp>
+		             <resources>resources</resources>
+		             <inputTemplateResourcePath>.</inputTemplateResourcePath>
+		             <inputTemplate>project-planner.jnlp.template</inputTemplate>
+		             <outputFile>project-planner.jnlp</outputFile>
+		             <mainClass>ca.sqlpower.matchmaker.dao.xml.MatchMakerXMLSession</mainClass>
+		           </jnlp>
+		
+		           <sign>
+		             <keystore><!-- Put own keystore here --></keystore>
+		             <keypass><!-- Put own keypass --></keypass>  
+		             <storepass><!-- Put own storepass --></storepass>
+		             <storetype>jks</storetype>
+		             <alias><!-- Put own alias --></alias>
+		             <validity></validity>
+		
+		             <dnameCn>SQL Power Group Inc.</dnameCn>
+		             <dnameOu>SQL Power Group Inc.</dnameOu>
+		             <dnameO>SQL Power Group Inc.</dnameO>
+		             <dnameL>Toronto</dnameL>
+		             <dnameSt>Ontario</dnameSt>
+		             <dnameC>CA</dnameC>
+		
+		             <verify>true</verify>
+		           </sign>
+		
+		           <pack200>false</pack200>
+		           <gzip>true</gzip>
+		           <outputJarVersions>false</outputJarVersions>
+		           <verbose>true</verbose>
+		        </configuration>
 			</plugin>
 		</plugins>
 		

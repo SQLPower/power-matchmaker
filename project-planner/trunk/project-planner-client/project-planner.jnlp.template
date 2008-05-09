@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<jnlp
-  spec="1.5+"
-  codebase="http://www.sqlpower.ca/"
-  href="project-planner.jnlp">
+<jnlp spec="1.5+" 
+	codebase="http://dhcp-126.sqlpower.ca:8080/sqlpower_website/" 
+	href="$outputFile">
   <information>
     <title>Project Planner Client</title>
     <vendor>SQL Power Group Inc.</vendor>
@@ -10,18 +9,18 @@
     <description>Project Planner Client Application</description>
     <description kind="short">A simple project diagramming tool</description>
     <icon href="pp_64.png"/>
-    <icon kind="splash" href="png_128.png"/>
+    <icon kind="splash" href="pp_128.png"/>
     <shortcut online="true">
       <desktop/>
       <menu submenu="SQL Power"/>
     </shortcut>
   </information>
-<!--  <security>-->
-<!--      <all-permissions/>-->
-<!--  </security>-->
+  <security>
+      <all-permissions/>
+  </security>
   <resources>
     <j2se version="1.5+" java-vm-args=""/>
-    <jar href="project-planner-client.jar"/>
+    $dependencies
   </resources>
-  <application-desc main-class="ca.sqlpower.matchmaker.dao.xml.MatchMakerXMLSession"/>
+  <application-desc main-class="$mainClass"/>
 </jnlp> 
