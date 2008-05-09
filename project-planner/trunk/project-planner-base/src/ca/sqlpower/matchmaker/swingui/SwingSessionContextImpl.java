@@ -265,7 +265,7 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 session.showGUI();
             }
         } catch (Exception ex) {
-           	MMSUtils.showExceptionDialogNoReport("MatchMaker Startup Failed", ex);
+           	MMSUtils.showExceptionDialogNoReport("Project Planner Startup Failed", ex);
         }
     }
 

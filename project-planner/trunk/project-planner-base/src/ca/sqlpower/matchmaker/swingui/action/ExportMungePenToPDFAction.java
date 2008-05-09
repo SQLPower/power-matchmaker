@@ -189,9 +189,9 @@ public class ExportMungePenToPDFAction extends ProgressAction {
             out = new BufferedOutputStream(new FileOutputStream((File)properties.get(FILE_KEY)));
             d = new Document(ppSize);
             
-            d.addTitle("MatchMaker Munge Pen PDF Export");
+            d.addTitle("Project Planner Munge Pen PDF Export");
             d.addAuthor(System.getProperty("user.name"));
-            d.addCreator("Power*MatchMaker version "+MatchMakerVersion.APP_VERSION);
+            d.addCreator("Project Planner version "+MatchMakerVersion.APP_VERSION);
             
             PdfWriter writer = PdfWriter.getInstance(d, out);
             d.open();

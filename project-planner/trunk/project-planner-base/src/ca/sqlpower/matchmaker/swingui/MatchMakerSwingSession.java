@@ -332,9 +332,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			}
 		});
 
-        frame = new JFrame("Power*MatchMaker: "+sessionImpl.getDBUser());
+        frame = new JFrame("Project Planner: "+sessionImpl.getDBUser());
 
-        warningDialog = new JFrame("Power*MatchMaker Warnings");
+        warningDialog = new JFrame("Project Planner Warnings");
         warningDialog.setIconImage(smallMMIcon.getImage());
         warningTextArea = new JTextArea(6, 40);
         JComponent cp = (JComponent) warningDialog.getContentPane();
