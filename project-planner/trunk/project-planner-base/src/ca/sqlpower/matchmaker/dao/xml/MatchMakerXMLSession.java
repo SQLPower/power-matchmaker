@@ -257,8 +257,8 @@ public class MatchMakerXMLSession implements MatchMakerSession {
         }        
     }
 
-	public void savePermissions(long projectId, String permissions) {
-		ioHandler.savePermissions(projectId, permissions);
+	public boolean savePermissions(long projectId, String permissions) {
+		return ioHandler.savePermissions(projectId, permissions);
 	}
 	
 	public JSONObject loadPermissions(long projectId) {

@@ -71,7 +71,7 @@ public class WebsiteIOHandler implements IOHandler {
      * Base URL where the SQL Power website lives. The various action paths will be appended
      * to this string to form the actual request URLs.
      */
-    private static final String WEBSITE_BASE_URL = "http://dhcp-126:8080/sqlpower_website/page/";
+    private static final String WEBSITE_BASE_URL = "http://localhost:8080/sqlpower_website/page/";
 
     private String sessionCookie = null;
     
@@ -111,7 +111,7 @@ public class WebsiteIOHandler implements IOHandler {
 				throw new UnsupportedOperationException("You must be logged in to use the application!");
 			}
 
-            URL baseURL = new URL(WEBSITE_BASE_URL);
+	        URL baseURL = new URL(WEBSITE_BASE_URL);
             URL url = new URL(baseURL, "get_pp_project_list");
             HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
             urlc.setRequestMethod("GET");
@@ -199,6 +199,7 @@ public class WebsiteIOHandler implements IOHandler {
     				}
             	}
                 
+    			
                 String xmlDoc = new String(toByteArray());
                 StringBuilder sb = new StringBuilder();
                 sb.append("projectXML=").append(URLEncoder.encode(xmlDoc, "UTF-8"));
@@ -459,7 +460,7 @@ public class WebsiteIOHandler implements IOHandler {
         }        
     }
 
-	public void savePermissions(long projectId, String permissions) {
+	public boolean savePermissions(long projectId, String permissions) {
 		try {
         	boolean loggedIn = false;
 			while (!loggedIn && !cancelled) {
@@ -503,7 +504,8 @@ public class WebsiteIOHandler implements IOHandler {
             boolean success = response.getBoolean("success");
             if (!success) {
                 throw new IOException("Failed to save project permissions: " + response.getString("message"));
-            }             
+            }         
+            return !response.getBoolean("failedEntry");
         } catch (Exception e) {
             throw new RuntimeException("Exception occured while trying to save project permissions", e);
         }        

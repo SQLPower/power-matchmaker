@@ -67,7 +67,7 @@ public interface IOHandler {
      */
     void delete(Project project);
 
-	void savePermissions(long projectId, String string);
+	boolean savePermissions(long projectId, String string);
 
 	JSONObject loadPermissions(long projectId);
 }

@@ -84,7 +84,7 @@ public final class LocalFileIOHandler implements IOHandler {
         throw new UnsupportedOperationException("Not implemented yet...");
     }
 
-	public void savePermissions(long projectId, String string) {
+	public boolean savePermissions(long projectId, String string) {
 		throw new UnsupportedOperationException("Not implemented yet...");
 	}
 

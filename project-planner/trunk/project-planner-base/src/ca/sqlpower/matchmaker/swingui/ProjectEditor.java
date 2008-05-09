@@ -71,6 +71,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * The panel that holds this editor's GUI.
 	 */
 	protected static final String EMAIL_PROPERTY_KEY = "email";
+	private static final String FAILED_ENTRY = "failedEntry";
 
 	private static final String VIEW_ONLY_USERS_KEY = "viewOnlyUsers";
 	private static final String VIEW_AND_MODIFY_USERS_KEY = "viewAndModifyUsers";
@@ -286,7 +287,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
 		pb.add(sharingListPane, cc.xy(4, row, "l, t"));
 		row += 2;
-
+		
 		// We don't want the save button to take up the whole column width
 		// so we wrap it in a JPanel with a FlowLayout. If there is a better
 		// way, please fix this.
@@ -467,13 +468,17 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		logger.debug(project.getResultTable());
 		logger.debug("saving");
 		swingSession.save(project);
-		
 		try {
-			swingSession.savePermissions(project.getOid(), getPermissions());
+			boolean validSave = swingSession.savePermissions(project.getOid(), getPermissions());
+			if(!validSave) {
+				JOptionPane.showMessageDialog(getParentFrame(), "Invalid user(s) when saving permissions.", "Error on save permission lists", JOptionPane.WARNING_MESSAGE);
+				refreshLists();
+			}
+			loadPermissionList();
 		} catch (JSONException ex) {
 			throw new RuntimeException(ex);
 		}
-
+		
 		return true;
 	}
 	
@@ -484,11 +489,12 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		if(project.getOid() == null){
 			return;
 		}
+		this.vArray = new ArrayList<String>();
+		this.vamArray = new ArrayList<String>();
 		JSONObject loadList = swingSession.loadPermissions(project.getOid());
 		JSONArray vJArray = new JSONArray();
 		JSONArray vamJArray = new JSONArray();
 		Boolean isPublic = false;
-		System.out.println("JSONObject = " + loadList.toString());
 		try{
 			vJArray = (JSONArray)loadList.get(VIEW_ONLY_USERS_KEY);
 			vamJArray = (JSONArray)loadList.get(VIEW_AND_MODIFY_USERS_KEY);

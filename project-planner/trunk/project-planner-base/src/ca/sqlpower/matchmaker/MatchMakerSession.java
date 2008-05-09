@@ -270,7 +270,7 @@ public interface MatchMakerSession {
 	 * @param projectId
 	 * @param string
 	 */
-	public void savePermissions(long projectId, String permissions);
+	public boolean savePermissions(long projectId, String permissions);
 
 	/**
 	 * Loads permissions for a given project specified by the projectId The
