@@ -117,7 +117,7 @@ public class WebsiteIOHandler implements IOHandler {
         	}
 			
 			if (cancelled) {
-				throw new UnsupportedOperationException("You must be logged in to use the application!");
+				System.exit(0);
 			}
 
 	        URL baseURL = new URL(WEBSITE_BASE_URL);
@@ -215,7 +215,7 @@ public class WebsiteIOHandler implements IOHandler {
                 StringBuilder sb = new StringBuilder();
                 sb.append("projectXML=").append(URLEncoder.encode(xmlDoc, "UTF-8"));
                 //saves a new copy if you are not the owner
-                if (project.getOid() != null && project.isOwner()) {
+                if (project.getOid() != null && project.getIsOwner()) {
                     sb.append("&projectId=").append(project.getOid());
                 }
                 sb.append("&projectName=").append(URLEncoder.encode(project.getName(), "UTF-8"));
@@ -505,7 +505,7 @@ public class WebsiteIOHandler implements IOHandler {
 			JSONObject permissions = new JSONObject();
 			permissions.put(VIEW_ONLY_USERS_KEY, viewOnlyUsers);
 			permissions.put(VIEW_AND_MODIFY_USERS_KEY, viewAndModifyUsers);
-			permissions.put(PUBLIC_GROUP_KEY, project.isPublic());
+			permissions.put(PUBLIC_GROUP_KEY, project.getIsPublic());
 			
             URL baseURL = new URL(WEBSITE_BASE_URL);
             URL url = new URL(baseURL, "save_pp_project_permissions?projectId=" +
@@ -589,7 +589,7 @@ public class WebsiteIOHandler implements IOHandler {
     		logger.debug("JSONObject = " + response.toString());
     		
     		// sets the permission objects within the project
-    		project.setPublic(response.getBoolean(PUBLIC_GROUP_KEY));
+    		project.setIsPublic(response.getBoolean(PUBLIC_GROUP_KEY));
     		project.setIsOwner(response.getBoolean(OWNERSHIP_KEY));
     		project.setCanModify(response.getBoolean(CAN_MODIFY_KEY));
 
