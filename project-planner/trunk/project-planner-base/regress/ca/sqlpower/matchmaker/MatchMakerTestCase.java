@@ -101,8 +101,16 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForDuplication.add("cleansingEngine");
         propertiesToIgnoreForDuplication.add("undoing");
         
+        
         //this throws an exception if the DS does not exist
         propertiesToIgnoreForDuplication.add("spDataSource");
+        
+        // permissions should not be duplicated
+        propertiesToIgnoreForDuplication.add("isPublic");
+        propertiesToIgnoreForDuplication.add("isOwner");
+        propertiesToIgnoreForDuplication.add("canModify");
+        propertiesToIgnoreForDuplication.add("viewOnlyUsers");
+        propertiesToIgnoreForDuplication.add("viewModifyUsers");
         
         // First pass set all settable properties
 		for (PropertyDescriptor property : settableProperties) {
@@ -290,6 +298,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForEventGeneration.add("session");
         propertiesToIgnoreForEventGeneration.add("parentProject");
         propertiesToIgnoreForEventGeneration.add("undoing");
+        propertiesToIgnoreForEventGeneration.add("canModify");
+        propertiesToIgnoreForEventGeneration.add("isPublic");
+        propertiesToIgnoreForEventGeneration.add("isOwner");
+        propertiesToIgnoreForEventGeneration.add("viewOnlyUsers");
+        propertiesToIgnoreForEventGeneration.add("viewModifyUsers");
         
 		for (PropertyDescriptor property : settableProperties) {
 			if (propertiesToIgnoreForEventGeneration.contains(property.getName())) continue;
