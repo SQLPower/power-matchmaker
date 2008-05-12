@@ -419,8 +419,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         }
         helpMenu.add(helpAction);
 		
-        supportOnTheWebAction = SPSUtils.forumAction;
-        helpMenu.add(supportOnTheWebAction);
+        //supportOnTheWebAction = SPSUtils.forumAction;
+        //helpMenu.add(supportOnTheWebAction);
         
         menuBar.add(helpMenu);
 		
