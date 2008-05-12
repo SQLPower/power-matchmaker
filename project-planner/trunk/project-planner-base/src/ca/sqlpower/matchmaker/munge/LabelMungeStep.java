@@ -56,6 +56,7 @@ public class LabelMungeStep extends AbstractMungeStep {
 		defineIO();
         setColour(new Color(0xee, 0xee, 0xee));
         setupTextArea();
+        setDefaultInputClass(String.class);
 	}
 
     /**
