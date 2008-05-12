@@ -144,14 +144,17 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 		scrollPane = new JScrollPane(mungeProcessTable);
 		pb.add(scrollPane, cc.xy(4,row,"f,f"));
 		
-		ButtonBarBuilder bbb = new ButtonBarBuilder();
-		//new actions for delete and save should be extracted and be put into its own file.
-		bbb.addGridded(new JButton(new NewMungeProcessAction(swingSession, project)));
-		bbb.addRelatedGap();
-		bbb.addGridded(new JButton(deleteAction));
+		// does not create the modification buttons if you do not have rights 
+		if (project.isOwner()){
+			ButtonBarBuilder bbb = new ButtonBarBuilder();
+			// new actions for delete and save should be extracted and be put into its own file.
+			bbb.addGridded(new JButton(new NewMungeProcessAction(swingSession, project)));
+			bbb.addRelatedGap();
+			bbb.addGridded(new JButton(deleteAction));
 
-		row+=2;
-		pb.add(bbb.getPanel(), cc.xy(4,row,"c,c"));
+			row+=2;
+			pb.add(bbb.getPanel(), cc.xy(4,row,"c,c"));
+		}
 		
 		return pb.getPanel();
 	}

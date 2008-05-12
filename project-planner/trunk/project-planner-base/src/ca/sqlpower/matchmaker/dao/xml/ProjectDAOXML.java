@@ -161,25 +161,21 @@ public class ProjectDAOXML implements ProjectDAO {
     }
     
     public long countProjectByName(String name) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: ProjectDAOXML.countProjectByName()");
         return 0;
     }
 
     public List<Project> findAllProjectsWithoutFolders() {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: ProjectDAOXML.findAllProjectsWithoutFolders()");
         return null;
     }
 
     public Project findByName(String name) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: ProjectDAOXML.findByName()");
         return null;
     }
 
     public boolean isThisProjectNameAcceptable(String name) {
-        // TODO Auto-generated method stub
         logger.debug("Stub call: ProjectDAOXML.isThisProjectNameAcceptable()");
         return true;
     }
@@ -232,6 +228,18 @@ public class ProjectDAOXML implements ProjectDAO {
 
     public Class<Project> getBusinessClass() {
         return Project.class;
+    }
+   
+    public Project duplicate(Project p, String name) {
+    	long oldId = p.getOid();
+    	String oldName = p.getName();
+    	p.setName(name);
+    	save(p);	
+    	Project newProject = new Project(p.getOid(), name, p.getDescription(), (ProjectDAO) session.getDAO(Project.class));
+    	p.setOid(oldId);
+    	p.setName(oldName);
+    	newProject.setSession(p.getSession());
+    	return newProject;
     }
 
     public void save(Project p) {
@@ -809,7 +817,7 @@ public class ProjectDAOXML implements ProjectDAO {
                     checkMandatory("name", step.getName());
                     
                     stepChildren = new ArrayList<MungeStepOutput>();
-                    System.out.println("enqueuing step " + step.getName());
+                    logger.debug("enqueuing step " + step.getName());
                     steps.add(step);
 
                 } else if (qName.equals("parameter") && parentIs("munge-step")) {
@@ -964,13 +972,13 @@ public class ProjectDAOXML implements ProjectDAO {
                 project = null;
             } else if (qName.equals("munge-process") && parentIs("project")) {
                 for (AbstractMungeStep step : steps) {
-                    System.out.println("adding step " + step.getName());
+                    logger.debug("adding step " + step.getName());
                     process.addChild(step);
                 }
                 process = null;
                 mungeStepOutputIdMap = null;
             } else if (qName.equals("munge-step") && parentIs("munge-process")) {
-                System.out.println("setting children to " + stepChildren);
+                logger.debug("setting children to " + stepChildren);
                 step.setChildren(stepChildren);
                 stepChildren = null;
                 step = null;

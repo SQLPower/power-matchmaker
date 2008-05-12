@@ -39,11 +39,9 @@ import javax.swing.JTextField;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.ArchitectException;
-import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
-import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
@@ -65,16 +63,6 @@ import com.jgoodies.forms.layout.FormLayout;
  */
 public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess, MungeStep> {
     private static final Logger logger = Logger.getLogger(MungeProcessEditor.class);
-    
-    /**
-     * The width of all thumbnails generated from the munge pen on a save.
-     */
-    private static final int THUMBNAIL_WIDTH = 150;
-    
-    /**
-     * The height of all thumbnails generated from the munge pen on a save.
-     */
-    private static final int THUMBNAIL_HEIGHT = 100;
 	
 	/**
 	 * The dark blue colour to be used as a background to the project steps
@@ -102,6 +90,8 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
     private final StatusComponent status = new StatusComponent();
     private final FormValidationHandler handler;
     
+    private final MatchMakerSwingSession swingSession;
+    
     /**
      * Creates a new editor for the given session's given munge process.
      * 
@@ -114,12 +104,13 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
     public MungeProcessEditor(MatchMakerSwingSession swingSession,
             Project project, MungeProcess process) throws ArchitectException {
         super(swingSession, process);
+		this.swingSession = swingSession;
         logger.debug("Creating a new munge process editor");
         
         this.parentProject = project;
         if (mmo.getParentProject() != null && mmo.getParentProject() != parentProject) {
         	throw new IllegalStateException(
-        	"The given process has a parent which is not the given parent match obejct!");
+        	"The given process has a parent which is not the given parent match object!");
         }
 
         // the handler stuff
@@ -155,7 +146,11 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         
         subPanel.add(name, cc.xy(4, 4));
         
-		subPanel.add(new JButton(saveAction), cc.xy(6,4));
+        // removes save button if the user does not have rights
+        if (parentProject.isOwner()) {
+        	subPanel.add(new JButton(saveAction), cc.xy(6,4));
+        } 
+        
         panel.add(subPanel,BorderLayout.NORTH);
         
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -171,7 +166,6 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
         							  msl.getScrollPane(), "PROJECT STEPS", "(Drag into playpen)",
         							  DARK_BLUE).getToolbar());
         panel.add(splitPane, BorderLayout.CENTER);
-        
     }
     
 	private void addListenerToComponents() {
@@ -209,12 +203,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
             return false;
         }
         
-        MungeProcessGraphModel gm = new MungeProcessGraphModel(mmo.getChildren());
-        logger.debug("There are " + mmo.getChildren().size() + " children in the current process");
-        DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge> dfs = new DepthFirstSearch<MungeStep, MungeProcessGraphModel.Edge>();
-        dfs.performSearch(gm);
-
-        if (mmo.getParentProject() == null) {
+        if (parentProject == null) {
             parentProject.addMungeProcess(mmo);
         }
         
@@ -224,8 +213,21 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 	public boolean hasUnsavedChanges() {
     	if (mmo.getParent() == null) {
 			return true;
-		}
-        return super.hasUnsavedChanges();
+		} 
+    	if (super.hasUnsavedChanges()) {
+    		if (!parentProject.isOwner()) {
+    			String warningMsg = "Only owners of the project can make changes!";
+    			if (parentProject.canModify()) {
+    				warningMsg += "\nPlease make a duplicate of the project instead.";
+    			}
+    			JOptionPane.showMessageDialog(swingSession.getFrame(), warningMsg, 
+    					"Discarding changes", JOptionPane.WARNING_MESSAGE);
+    			discardChanges();
+    			return false;
+    		}
+    		return true;
+    	}
+    	return false;
     }
     
 	private class MungeProcessNameValidator implements Validator {

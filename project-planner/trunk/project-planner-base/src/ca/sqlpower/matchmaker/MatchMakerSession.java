@@ -21,7 +21,6 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
 import java.util.Date;
-import org.json.JSONObject;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
@@ -261,27 +260,20 @@ public interface MatchMakerSession {
      */
     public void save(MatchMakerObject mmo);
 
-	/**
-	 * Saves permissions for a given project specified by the user id. The
-	 * specific permissions are given through a String representation of a
-	 * JSONObject containing two JSONArrays containing a list of user ids to
-	 * grant view only and view and modify permissions to.
-	 * 
-	 * @param projectId
-	 * @param string
-	 */
-	public boolean savePermissions(long projectId, String permissions);
+    /**
+     * Saves the project's permissions (view and modify rights).
+     * 
+     * @param project The project of the permissions to save.
+     * @return true if all permissions were saved, false if
+     * otherwise (invalid user)
+     */
+	public boolean savePermissions(Project project);
 
 	/**
-	 * Loads permissions for a given project specified by the projectId The
-	 * specific permissions are given through a String representation of a
-	 * JSONObject containing two JSONArrays containing a list of user ids to
-	 * grant view only and view and modify permissions to. At the same time,
-	 * the JSONObject also contains a boolean that indicates if the project is
-	 * in the public group.
+	 * Loads the project permissions (view and modify rights).
 	 * 
-	 * @param projectId
+	 * @param project The project of the permissions to laod.
 	 */
-	public JSONObject loadPermissions(long projectId);
+	public void loadPermissions(Project project);
 	
 }

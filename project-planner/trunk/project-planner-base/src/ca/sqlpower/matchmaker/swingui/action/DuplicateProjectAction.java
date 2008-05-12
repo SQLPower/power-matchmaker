@@ -21,22 +21,17 @@ package ca.sqlpower.matchmaker.swingui.action;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.swingui.MatchMakerObjectComboBoxCellRenderer;
+import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
@@ -54,7 +49,6 @@ public class DuplicateProjectAction extends AbstractAction {
 	private Project project;
 	private Callable<Boolean> okCall;
 	private Callable<Boolean> cancelCall;
-	private JComboBox folderComboBox;
 	private FormValidationHandler handler;
 	
 	public DuplicateProjectAction(MatchMakerSwingSession swingSession, Project project) {
@@ -68,13 +62,11 @@ public class DuplicateProjectAction extends AbstractAction {
 
 		private JTextField targetNameField;
 
-		public DuplicatePanel(String newName, JComboBox folderComboBox) {
-			JPanel panel = new JPanel(new GridLayout(5,1));
+		public DuplicatePanel(String newName) {
+			JPanel panel = new JPanel(new GridLayout(3,1));
 			panel.add(status);
-			targetNameField = new JTextField(newName,60);
+			targetNameField = new JTextField(newName, 30);
 			panel.add(targetNameField);
-			panel.add(new JLabel(""));
-			panel.add(folderComboBox);
 			setPanel(panel);
 		}
 
@@ -90,31 +82,23 @@ public class DuplicateProjectAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 
 		String newName = null;
-		for ( int count=0; ; count++) {
+		for (int count=0; ; count++) {
 			newName = project.getName() +
 								"_DUP" +
 								(count==0?"":String.valueOf(count));
-			if ( swingSession.isThisProjectNameAcceptable(newName) )
+			if (swingSession.isThisProjectNameAcceptable(newName) )
 				break;
 		}
 		final JDialog dialog;
 
-		final List<PlFolder> folders = swingSession.getCurrentFolderParent().getChildren();
-		folderComboBox = new JComboBox(new DefaultComboBoxModel(folders.toArray()));
-		folderComboBox.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
-		folderComboBox.setSelectedItem(project.getParent());
-		
-		final DuplicatePanel archPanel = new DuplicatePanel(newName,folderComboBox);
+		final DuplicatePanel archPanel = new DuplicatePanel(newName);
 
 		okCall = new Callable<Boolean>() {
 			public Boolean call() {
 				String newName = archPanel.getDupName();
-				PlFolder<Project> folder = (PlFolder<Project>) folderComboBox
-				.getSelectedItem();
-				Project newProject = project.duplicate(folder,swingSession);
-				newProject.setName(newName);
-				folder.addChild(newProject);
+				Project newProject = ((ProjectDAO) swingSession.getDAO(Project.class)).duplicate(project, newName);
 				swingSession.save(newProject);
+				project.getParent().addChild(newProject);
 				return new Boolean(true);
 			}};
 			

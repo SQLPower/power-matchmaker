@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.json.JSONObject;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
@@ -197,15 +196,14 @@ public class StubMatchMakerSession implements MatchMakerSession{
         logger.debug("Stub call: StubMatchMakerSession.save()");
     }
 
-	public boolean savePermissions(long projectId, String permissions) {
+	public boolean savePermissions(Project project) {
 		logger.debug("Stub call: StubMatchMakerSession.savePermissions()");
 		return false;
 		
 	}
 
-	public JSONObject loadPermissions(long projectId) {
+	public void loadPermissions(Project project) {
 		logger.debug("Stub call: StubMatchMakerSession.loadPermissions()");
-		return null;
 	}
 
 }

@@ -19,7 +19,6 @@
 
 package ca.sqlpower.matchmaker.dao.xml;
 
-import org.json.JSONObject;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
@@ -67,7 +66,22 @@ public interface IOHandler {
      */
     void delete(Project project);
 
-	boolean savePermissions(long projectId, String string);
-
-	JSONObject loadPermissions(long projectId);
+    /**
+     * Saves the project's permissions (view and modify rights).
+     * It also loads the permissions to set the list properly.
+     * 
+     * @param project The project of the permissions to save.
+     * @return true if all permissions were saved, false if
+     * otherwise (invalid user)
+     */
+	boolean savePermissions(Project project);
+	
+	/**
+	 * Loads the project permissions (view and modify rights).
+	 * Also sets canModify, viewOnlyUsers and viewModifyUsers
+	 * within the Project
+	 * 
+	 * @param project The project of the permissions to load.
+	 */
+	void loadPermissions(Project project);
 }

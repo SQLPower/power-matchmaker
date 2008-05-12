@@ -34,8 +34,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import org.json.JSONObject;
-
 import ca.sqlpower.matchmaker.Project;
 
 public final class LocalFileIOHandler implements IOHandler {
@@ -84,11 +82,11 @@ public final class LocalFileIOHandler implements IOHandler {
         throw new UnsupportedOperationException("Not implemented yet...");
     }
 
-	public boolean savePermissions(long projectId, String string) {
+	public boolean savePermissions(Project project) {
 		throw new UnsupportedOperationException("Not implemented yet...");
 	}
 
-	public JSONObject loadPermissions(long projectId) {
+	public void loadPermissions(Project project) {
 		throw new UnsupportedOperationException("Not implemented yet...");
 	}
 }

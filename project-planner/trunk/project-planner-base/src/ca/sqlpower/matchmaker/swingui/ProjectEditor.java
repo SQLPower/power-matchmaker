@@ -23,6 +23,7 @@ import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -41,13 +42,11 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -77,6 +76,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private static final String VIEW_AND_MODIFY_USERS_KEY = "viewAndModifyUsers";
 	private static final String PUBLIC_GROUP_KEY = "publicGroup";
 	private static final String OWNERSHIP_KEY = "owner";
+	
 	private final JPanel panel;
 
 	private JPanel sharingListPane;
@@ -352,25 +352,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		});
 	}
 
-	//this method packs the two lists of users into a jsonObject for transmission.
-	private String getPermissions() throws JSONException{
-		JSONArray viewOnlyUsers = new JSONArray();
-		for (Object obj : viewOnlyListModel.toArray()) {
-			viewOnlyUsers.put((String) obj);
-		}
-		JSONArray viewAndModifyUsers = new JSONArray();
-		for (Object obj : viewAndModifyListModel.toArray()) {
-			viewAndModifyUsers.put((String) obj);
-		}
-
-		JSONObject permissions = new JSONObject();
-		permissions.put(VIEW_ONLY_USERS_KEY, viewOnlyUsers);
-		permissions.put(VIEW_AND_MODIFY_USERS_KEY, viewAndModifyUsers);
-		permissions.put(PUBLIC_GROUP_KEY, isSharingWithEveryone.isSelected());
-		
-		return permissions.toString();
-	}
-
 	private void setDefaultSelections() throws ArchitectException {
 		projectName.setText(project.getName());
 		desc.setText(project.getDescription());
@@ -427,64 +408,59 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		logger.debug(project.getResultTable());
 		logger.debug("saving");
 		swingSession.save(project);
-		try {
-			boolean validSave = swingSession.savePermissions(project.getOid(), getPermissions());
-			if(!validSave) {
-				JOptionPane.showMessageDialog(getParentFrame(), "Invalid user(s) when saving permissions.", "Error on save permission lists", JOptionPane.WARNING_MESSAGE);
-			}
-			loadPermissionList();
-		} catch (JSONException ex) {
-			throw new RuntimeException(ex);
+		
+		project.setPublic(isSharingWithEveryone.isSelected());
+
+		List<String> viewOnlyUsers = new ArrayList<String>();
+		List<String> viewModifyUsers = new ArrayList<String>();
+
+		for (Object obj : viewOnlyListModel.toArray()) {
+			viewOnlyUsers.add((String) obj);
 		}
+		for (Object obj : viewAndModifyListModel.toArray()) {
+			viewModifyUsers.add((String) obj);
+		}
+
+		project.setViewOnlyUsers(viewOnlyUsers);
+		project.setViewModifyUsers(viewModifyUsers);
+
+		boolean validSave = swingSession.savePermissions(project);
+		if(!validSave) {
+			JOptionPane.showMessageDialog(getParentFrame(), "Invalid user(s) when saving permissions.", "Error on save permission lists", JOptionPane.WARNING_MESSAGE);
+		}
+		loadPermissionList();
 		
 		return true;
 	}
 	
 	/**
-	 * Load permission lists and group status at start
+	 * Load permission lists and group status
 	 */
 	public void loadPermissionList() {
-		boolean isOwner = false;
-		if (project.getOid() == null){
-			return;
-		}
-		JSONObject loadList = swingSession.loadPermissions(project.getOid());
-		JSONArray vJArray = new JSONArray();
-		JSONArray vamJArray = new JSONArray();
-		Boolean isPublic = false;
+		swingSession.loadPermissions(project);
+		isSharingWithEveryone.setSelected(project.isPublic());
 		
-		viewOnlyListModel.clear();
 		viewAndModifyListModel.clear();
-		
-		logger.debug("JSONObject = " + loadList.toString());
-		try {
-			vJArray = loadList.getJSONArray(VIEW_ONLY_USERS_KEY);
-			vamJArray = loadList.getJSONArray(VIEW_AND_MODIFY_USERS_KEY);
-			isOwner = loadList.getBoolean(OWNERSHIP_KEY);
-			for (int i = 0; i < vJArray.length(); i++){
-				viewOnlyListModel.addElement(vJArray.getString(i));
-			}
-			for (int i = 0; i < vamJArray.length(); i++) {
-				viewAndModifyListModel.addElement(vamJArray.getString(i));
-			}
-			isPublic = loadList.getBoolean(PUBLIC_GROUP_KEY);
-		} catch (JSONException ex){
-			throw new RuntimeException(ex);
+		for (String userId : project.getViewModifyUsers()){
+			viewAndModifyListModel.addElement(userId);
 		}
-		isSharingWithEveryone.setSelected(isPublic);
+		viewOnlyListModel.clear();
+		for (String userId : project.getViewOnlyUsers()){
+			viewOnlyListModel.addElement(userId);
+		}
 		
-		if (!isOwner) {
+		if (!project.isOwner()) {
+			if (project.canModify()) {
+				saveProject.setAction(new DuplicateProjectAction(swingSession, project));
+			} 
 			sharingLabel.setVisible(false);
 			sharingWithEveryoneLabel.setVisible(false);
 			isSharingWithEveryone.setVisible(false);
 			sharingListPane.setVisible(false);
-			saveProject.setVisible(false);
-		} else if (isPublic) {
-			viewOnlyList.setEnabled(false);
-			addToViewOnly.setEnabled(false);
-			removeFromViewOnly.setEnabled(false);
-			toViewOnly.setEnabled(false);
-		}
+			saveProject.setVisible(project.canModify());
+			projectName.setEnabled(false);
+			desc.setEnabled(false);
+		} 
 	}
 
 	public boolean hasUnsavedChanges() {

@@ -71,7 +71,16 @@ public class WebsiteIOHandler implements IOHandler {
      * Base URL where the SQL Power website lives. The various action paths will be appended
      * to this string to form the actual request URLs.
      */
-    private static final String WEBSITE_BASE_URL = "http://localhost:8080/sqlpower_website/page/";
+    private static final String WEBSITE_BASE_URL = "http://localhost:9999/sqlpower_website/page/";
+    
+    /**
+     * Keys for the JSONObject used with save and load permissions.
+     */
+	private static final String VIEW_ONLY_USERS_KEY = "viewOnlyUsers";
+	private static final String VIEW_AND_MODIFY_USERS_KEY = "viewAndModifyUsers";
+	private static final String PUBLIC_GROUP_KEY = "publicGroup";
+	private static final String OWNERSHIP_KEY = "owner";
+	private static final String CAN_MODIFY_KEY = "canModify";
 
     private String sessionCookie = null;
     
@@ -144,7 +153,9 @@ public class WebsiteIOHandler implements IOHandler {
                     if (!pdesc.isNull("projectDescription")) {
                         description = pdesc.getString("projectDescription");
                     }
+                    
                     Project p = new Project(oid, pdesc.getString("projectName"), description, dao);
+                    loadPermissions(p);
                     projects.add(p);
                     oids.add(p.getOid());
                 }
@@ -203,7 +214,8 @@ public class WebsiteIOHandler implements IOHandler {
                 String xmlDoc = new String(toByteArray());
                 StringBuilder sb = new StringBuilder();
                 sb.append("projectXML=").append(URLEncoder.encode(xmlDoc, "UTF-8"));
-                if (project.getOid() != null) {
+                //saves a new copy if you are not the owner
+                if (project.getOid() != null && project.isOwner()) {
                     sb.append("&projectId=").append(project.getOid());
                 }
                 sb.append("&projectName=").append(URLEncoder.encode(project.getName(), "UTF-8"));
@@ -460,7 +472,7 @@ public class WebsiteIOHandler implements IOHandler {
         }        
     }
 
-	public boolean savePermissions(long projectId, String permissions) {
+	public boolean savePermissions(Project project) {
 		try {
         	boolean loggedIn = false;
 			while (!loggedIn && !cancelled) {
@@ -480,9 +492,24 @@ public class WebsiteIOHandler implements IOHandler {
 					password = null;
 				}
         	}
-            
+			
+			JSONArray viewOnlyUsers = new JSONArray();
+			for (String userId : project.getViewOnlyUsers()) {
+				viewOnlyUsers.put(userId);
+			}
+			JSONArray viewAndModifyUsers = new JSONArray();
+			for (String userId : project.getViewModifyUsers()) {
+				viewAndModifyUsers.put(userId);
+			}
+
+			JSONObject permissions = new JSONObject();
+			permissions.put(VIEW_ONLY_USERS_KEY, viewOnlyUsers);
+			permissions.put(VIEW_AND_MODIFY_USERS_KEY, viewAndModifyUsers);
+			permissions.put(PUBLIC_GROUP_KEY, project.isPublic());
+			
             URL baseURL = new URL(WEBSITE_BASE_URL);
-            URL url = new URL(baseURL, "save_pp_project_permissions?projectId=" + projectId + "&permissions=" + permissions);
+            URL url = new URL(baseURL, "save_pp_project_permissions?projectId=" +
+            		project.getOid() + "&permissions=" + permissions.toString());
             HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
             urlc.setRequestMethod("GET");
             urlc.setRequestProperty("Cookie", sessionCookie);
@@ -500,6 +527,9 @@ public class WebsiteIOHandler implements IOHandler {
             in.close();
             urlc.disconnect();
             JSONObject response = new JSONObject(responseString.toString());
+            
+            // refreshes the permission objects in the project
+            loadPermissions(project);
             
             boolean success = response.getBoolean("success");
             if (!success) {
@@ -511,8 +541,12 @@ public class WebsiteIOHandler implements IOHandler {
         }        
 	}
 	
-	public JSONObject loadPermissions(long projectId) {
+	public void loadPermissions(Project project) {
 		try {
+            if (project.getOid() == null){
+    			return;
+    		}
+            
         	boolean loggedIn = false;
 			while (!loggedIn && !cancelled) {
 				try {
@@ -533,7 +567,7 @@ public class WebsiteIOHandler implements IOHandler {
         	}
             
             URL baseURL = new URL(WEBSITE_BASE_URL);
-            URL url = new URL(baseURL, "load_pp_project_permissions?projectId=" + projectId);
+            URL url = new URL(baseURL, "load_pp_project_permissions?projectId=" + project.getOid());
             HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
             urlc.setRequestMethod("GET");
             urlc.setRequestProperty("Cookie", sessionCookie);
@@ -551,12 +585,34 @@ public class WebsiteIOHandler implements IOHandler {
             in.close();
             urlc.disconnect();
             JSONObject response = new JSONObject(responseString.toString());
-            
+
+    		logger.debug("JSONObject = " + response.toString());
+    		
+    		// sets the permission objects within the project
+    		project.setPublic(response.getBoolean(PUBLIC_GROUP_KEY));
+    		project.setIsOwner(response.getBoolean(OWNERSHIP_KEY));
+    		project.setCanModify(response.getBoolean(CAN_MODIFY_KEY));
+
+    		JSONArray vJArray = response.getJSONArray(VIEW_ONLY_USERS_KEY);
+    		JSONArray vamJArray = response.getJSONArray(VIEW_AND_MODIFY_USERS_KEY);
+ 
+    		List<String> viewOnlyUsers = new ArrayList<String>();
+    		List<String> viewModifyUsers = new ArrayList<String>();
+
+    		for (int i = 0; i < vJArray.length(); i++) {
+    			viewOnlyUsers.add(vJArray.getString(i));
+    		}
+    		for (int i = 0; i < vamJArray.length(); i++) {
+    			viewModifyUsers.add(vamJArray.getString(i));
+    		}
+    		
+    		project.setViewOnlyUsers(viewOnlyUsers);
+    		project.setViewModifyUsers(viewModifyUsers);
+
             boolean success = response.getBoolean("success");
             if (!success) {
                 throw new IOException("Failed to load project permissions: " + response.getString("message"));
             }  
-            return response;
         } catch (Exception e) {
             throw new RuntimeException("Exception occured while trying to load project permissions", e);
         }        

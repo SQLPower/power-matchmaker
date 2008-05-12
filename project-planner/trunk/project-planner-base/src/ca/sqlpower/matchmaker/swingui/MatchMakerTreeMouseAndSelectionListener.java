@@ -146,7 +146,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	}
 
 	/**
-	 * Attaches a menu item for the actions of a munge process.
+	 * Attaches a menu item for the actions of a munge process, if the user
+	 * has rights.
 	 * 
 	 * @param m
 	 *            The popup menu that the menu item would be attached onto.
@@ -155,12 +156,15 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 */
 	private void addMungeProcessesFolderMenuItems(JPopupMenu m,
 			MatchMakerFolder<?> folder) {
-		m.add(new JMenuItem(new NewMungeProcessAction(swingSession,
-				(Project) folder.getParent())));
+		if (((Project) folder.getParent()).isOwner()) {
+			m.add(new JMenuItem(new NewMungeProcessAction(swingSession,
+					(Project) folder.getParent())));
+		}
 	}
 
 	/**
-	 * Attaches a menu item for the actions of a munge step.
+	 * Attaches a menu item for the actions of a munge step, if the user
+	 * has rights.
 	 * 
 	 * @param m
 	 *            The popup menu that the menu item would be attached onto.
@@ -168,11 +172,14 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMungeStepMenuItems(JPopupMenu m, MungeStep step) {
-		m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
+		if (((Project)step.getParent().getParent()).isOwner()) {
+			m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
+		}
 	}
 
 	/**
-	 * Attaches a menu item for the actions of a munge process.
+	 * Attaches a menu item for the actions of a munge process, if the user
+	 * has rights.
 	 * 
 	 * @param m
 	 *            The popup menu that the menu item would be attached onto.
@@ -180,7 +187,9 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMungeProcessMenuItems(JPopupMenu m, MungeProcess mungeProcess) {
-		m.add(new JMenuItem(new DeleteMungeProcessAction(swingSession, mungeProcess)));
+		if (mungeProcess.getParentProject().isOwner()) { 
+			m.add(new JMenuItem(new DeleteMungeProcessAction(swingSession, mungeProcess)));
+		}
 	}
 
 	private void createNewFolderMenuItem(JPopupMenu m) {
@@ -194,12 +203,14 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	}
 
 	private void addProjectMenuItems(JPopupMenu m, final Project project) {
-
 		m.addSeparator();
-		m.add(new JMenuItem(new NewMungeProcessAction(swingSession, project)));
-        m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
-		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
-
+		if (project.isOwner()) {
+			m.add(new JMenuItem(new NewMungeProcessAction(swingSession, project)));
+			m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
+		}
+		if (project.canModify()) {
+			m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
+		}
 	}
 
 	private void addFolderMenuItems(JPopupMenu m, final PlFolder folder) {

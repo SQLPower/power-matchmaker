@@ -71,4 +71,12 @@ public interface ProjectDAO extends MatchMakerDAO<Project> {
      */
     public void refresh(Project project);
 
+    /**
+     * Makes a complete duplicate of the given project.
+     * 
+     * @param project The project to be duplicated 
+     * @param name The name of the duplicate
+     * @return a deep copy of the given project with the given name
+     */
+    public Project duplicate(Project project, String name);
 }

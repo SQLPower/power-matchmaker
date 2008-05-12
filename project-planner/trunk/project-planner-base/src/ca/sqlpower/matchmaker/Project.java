@@ -115,6 +115,19 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     /** Folder name for munge processes. */
     public static final String MUNGE_PROCESSES_FOLDER_NAME = "Munge Processes";
     
+    /** The lists of permitted users for the project */
+    private List<String> viewOnlyUsers = new ArrayList<String>();
+    private List<String> viewModifyUsers = new ArrayList<String>();
+    
+    /** indicates whether the project is visible to everyone. */
+    private boolean isPublic = false;
+    
+    /** indicates whether the user is the creator of the project. */
+    private boolean isOwner = true;
+    
+    /** indicates whether the user has modifying right to this project. */
+    private boolean canModify = true;
+    
     /**
      * Contains the Munge Processes and the Munge Steps
      */
@@ -837,4 +850,45 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         this.deleted = deleted;
         getEventSupport().firePropertyChange("deleted", oldValue, this.deleted);
     }
+
+	public List<String> getViewOnlyUsers() {
+		return viewOnlyUsers;
+	}
+
+	public void setViewOnlyUsers(List<String> viewOnlyUsers) {
+		this.viewOnlyUsers = viewOnlyUsers;
+	}
+
+	public List<String> getViewModifyUsers() {
+		return viewModifyUsers;
+	}
+
+	public void setViewModifyUsers(List<String> viewModifyUsers) {
+		this.viewModifyUsers = viewModifyUsers;
+	}
+
+	public boolean isPublic() {
+		return isPublic;
+	}
+
+	public void setPublic(boolean isPublic) {
+		this.isPublic = isPublic;
+	}
+
+	public boolean isOwner() {
+		return isOwner;
+	}
+
+	public void setIsOwner(boolean isOwner) {
+		this.isOwner = isOwner;
+		this.canModify = true;
+	}
+
+	public boolean canModify() {
+		return canModify;
+	}
+
+	public void setCanModify(boolean canModify) {
+		this.canModify = canModify;
+	}
 }
