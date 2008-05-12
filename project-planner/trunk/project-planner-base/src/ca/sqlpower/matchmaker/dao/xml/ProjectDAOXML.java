@@ -801,7 +801,7 @@ public class ProjectDAOXML implements ProjectDAO {
                         if (aname.equals("id")) {
                             mungeStepIdMap.put(aval, step);
                             id = aval;
-                        } else if (aname.equals("type")) {
+                        } else if (aname.equals("step-type")) {
                             // taken care of above (so we could create the instance!)
                         } else if (aname.equals("name")) {
                             step.setName(aval);
