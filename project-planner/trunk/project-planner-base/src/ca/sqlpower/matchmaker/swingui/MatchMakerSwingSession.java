@@ -90,7 +90,6 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
-import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
@@ -375,7 +374,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		//Settingup
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
-		fileMenu.add(new ExportMungePenToPDFAction(this));
+		fileMenu.add(new DummyAction("Receive a PDF of my Munge Pen", 
+				"Please contact our sales team, who will be happy to provide you with a PDF of your project plan."));
 		fileMenu.add(exitAction);
 		menuBar.add(fileMenu);
 		
@@ -843,22 +843,21 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		private String label;
 		private JFrame parent;
+		private String message;
 
 		public void actionPerformed(ActionEvent e) {
-			JOptionPane.showMessageDialog(parent,
-				String.format("The %s function is not yet implemented", label),
-				"Apologies",
-				JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(parent, message, label, JOptionPane.INFORMATION_MESSAGE);
 		}
 
-		public DummyAction(JFrame parent, String label) {
+		public DummyAction(JFrame parent, String label, String message) {
 			super(label);
 			this.label = label;
 			this.parent = parent;
+			this.message = message;
 		}
 
-		DummyAction(String label) {
-			this(frame != null ? frame : null, label);
+		DummyAction(String label, String message) {
+			this(frame != null ? frame : null, label, message);
 		}
 
 	}
