@@ -106,7 +106,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForDuplication.add("spDataSource");
         
         // permissions should not be duplicated
-        propertiesToIgnoreForDuplication.add("isPublic");
+        propertiesToIgnoreForDuplication.add("public");
         propertiesToIgnoreForDuplication.add("isOwner");
         propertiesToIgnoreForDuplication.add("canModify");
         propertiesToIgnoreForDuplication.add("viewOnlyUsers");
@@ -299,7 +299,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         propertiesToIgnoreForEventGeneration.add("parentProject");
         propertiesToIgnoreForEventGeneration.add("undoing");
         propertiesToIgnoreForEventGeneration.add("canModify");
-        propertiesToIgnoreForEventGeneration.add("isPublic");
+        propertiesToIgnoreForEventGeneration.add("public");
         propertiesToIgnoreForEventGeneration.add("isOwner");
         propertiesToIgnoreForEventGeneration.add("viewOnlyUsers");
         propertiesToIgnoreForEventGeneration.add("viewModifyUsers");
