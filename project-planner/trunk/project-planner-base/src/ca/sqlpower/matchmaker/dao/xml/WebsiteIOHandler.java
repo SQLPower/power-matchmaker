@@ -311,6 +311,9 @@ public class WebsiteIOHandler implements IOHandler {
                 sessionCookie = setCookie;
             }
         } else if (sessionCookie == null){
+        	// Added the sessionCookie == null condition to prevent this exception when using
+        	// the client normally with Web Start, which would send an existing cookie with the
+        	// login request, resulting in the response not having a set-cookie header
             throw new IllegalStateException("Failed to log in (no set-cookie header found).");
         }
         
