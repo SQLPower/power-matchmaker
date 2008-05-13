@@ -57,7 +57,7 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 	/**
 	 * The minimum width components can be in pixels.
 	 */
-	private static final int MIN_COMPONENT_WIDTH = 100;
+	private static final int MIN_COMPONENT_WIDTH = 70;
 	
 	/**
 	 * The text pane used to display a description of this munge step
