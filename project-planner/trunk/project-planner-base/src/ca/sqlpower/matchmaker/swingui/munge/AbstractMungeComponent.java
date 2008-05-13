@@ -918,7 +918,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 			} else if (evt.getPropertyName().equals("addInputs")){
 				repaint();
 			} else if (!evt.getPropertyName().equals("connectInputs")
-					&& !evt.isUndoEvent()) {
+					&& evt.isUndoEvent()) {
 				reload();
 			}
 		}

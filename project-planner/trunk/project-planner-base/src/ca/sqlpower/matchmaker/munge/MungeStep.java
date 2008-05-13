@@ -129,7 +129,7 @@ public interface MungeStep extends MatchMakerObject<MungeStep, MungeStepOutput>,
 	 * <p>
 	 * Additionally, this method fires a property change event using the
 	 * {@ MatchMakerEventSupport#firePropertyChange(String, Object, Object)
-	 * , with property name of "connectInputs" and old and new values.
+	 * , with property name of "addInputs" and old and new values.
 	 * <p>
 	 * Note that this method may throw {@link UnsupportedOperationException)
 	 * if the munge step does not allow adding new IOConnectors.
