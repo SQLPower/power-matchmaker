@@ -168,8 +168,9 @@ public abstract class AbstractMungeStep extends
                     + " of step " + getName() + " does not support data type "
                     + o.getType());
         }
+        MungeStepOutput<?> oldVal = inputs.get(index).current;
         inputs.get(index).current = o;
-        getEventSupport().firePropertyChange("inputs", index, null, o);
+        getEventSupport().firePropertyChange("connectInputs", index, null, o);
         boolean noEmptyInputs = true;
         for (Input input : inputs) {
             if (input.getCurrent() == null)
@@ -185,7 +186,7 @@ public abstract class AbstractMungeStep extends
             throw new IndexOutOfBoundsException(
                     "There is no input at the given index");
         }
-        getEventSupport().firePropertyChange("inputs", index,
+        getEventSupport().firePropertyChange("connectInputs", index,
                 inputs.get(index).current, null);
         inputs.get(index).current = null;
     }
@@ -198,7 +199,7 @@ public abstract class AbstractMungeStep extends
         for (int i = 0; i < inputs.size(); i++) {
             Input in = inputs.get(i);
             if (in.current == mso) {
-                getEventSupport().firePropertyChange("inputs", i, in.current,
+                getEventSupport().firePropertyChange("connectInputs", i, in.current,
                         null);
                 in.current = null;
             }

@@ -917,8 +917,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 				configureHeightFromMMO();
 			} else if (evt.getPropertyName().equals("addInputs")){
 				repaint();
-			} else if (!evt.getPropertyName().equals("inputs")
-					&& evt.isUndoEvent()) {
+			} else if (!evt.getPropertyName().equals("connectInputs")
+					&& !evt.isUndoEvent()) {
 				reload();
 			}
 		}

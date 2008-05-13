@@ -32,7 +32,6 @@ import javax.swing.undo.CannotUndoException;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeStep;
@@ -43,12 +42,10 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 	private static final Logger logger = Logger.getLogger(MMOPropertyChangeUndoableEdit.class);
 	
 	private MatchMakerEvent undoEvent;
-	private MatchMakerObject mmo;
 
-	public MMOPropertyChangeUndoableEdit(MatchMakerEvent e, MatchMakerObject mmo){
+	public MMOPropertyChangeUndoableEdit(MatchMakerEvent e){
 		super();
 		undoEvent = e;
-		this.mmo = mmo;
 	}
 
 	public void undo(){
@@ -113,20 +110,18 @@ public class MMOPropertyChangeUndoableEdit extends AbstractUndoableEdit{
 		    }
 		}
 		if (undoEvent.getSource() instanceof MungeStep) {
-			if (undoEvent.getPropertyName().equals("inputs")) {
+			if (undoEvent.getPropertyName().equals("connectInputs")) {
 				MungeStep step = (MungeStep)undoEvent.getSource();
 				if (value == null) {
-					for(int index : undoEvent.getChangeIndices()) {
+					for (int index : undoEvent.getChangeIndices()) {
 						step.disconnectInput(index);
+					} 
+				} else if (value instanceof MungeStepOutput) {
+					for (int index : undoEvent.getChangeIndices()) {
+						step.connectInput(index, (MungeStepOutput) value);
 					}
 				} else {
-					if (value instanceof MungeStepOutput) { 
-						for(int index : undoEvent.getChangeIndices()) {
-							step.connectInput(index, (MungeStepOutput) value);
-						}
-					} else {
-						throw new IllegalStateException("inputs of wrong type: " + value.getClass());
-					}
+					throw new IllegalStateException("inputs of wrong type: " + value.getClass());
 				}
 			} else if (undoEvent.getPropertyName().equals("addInputs")) {
 				MungeStep step = (MungeStep)undoEvent.getSource();

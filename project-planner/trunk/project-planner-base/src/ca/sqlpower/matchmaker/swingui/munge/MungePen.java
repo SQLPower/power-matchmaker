@@ -869,7 +869,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		}
 
 		public void mmPropertyChanged(MatchMakerEvent<MungeStep, MungeStepOutput> evt) {
-			if (evt.getPropertyName().equals("inputs")) {
+			if (evt.getPropertyName().equals("connectInputs")) {
 				if (evt.getOldValue() == null && evt.getNewValue() != null) {
 					if (evt.getNewValue() instanceof MungeStepOutput) {
 						logger.debug("connection caught");
