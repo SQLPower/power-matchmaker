@@ -172,7 +172,8 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMungeStepMenuItems(JPopupMenu m, MungeStep step) {
-		if (((Project)step.getParent().getParent()).isOwner()) {
+		MungeProcess parentProcess = (MungeProcess) step.getParent();
+		if (((Project)parentProcess.getParentProject()).isOwner()) {
 			m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
 		}
 	}

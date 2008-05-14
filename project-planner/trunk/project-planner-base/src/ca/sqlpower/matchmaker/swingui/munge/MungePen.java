@@ -1002,7 +1002,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	 * @param ms The mungeStep to select.
 	 */
 	public void setSelectedStep(MungeStep ms) {
-		modelMap.get(ms).requestFocusInWindow();
+		if (!modelMap.get(ms).hasFocus()) {
+			modelMap.get(ms).requestFocusInWindow();
+		}
 	}
 	
 	/**

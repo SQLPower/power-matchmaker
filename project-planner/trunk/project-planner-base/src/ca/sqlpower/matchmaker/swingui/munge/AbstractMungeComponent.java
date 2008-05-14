@@ -349,7 +349,11 @@ public abstract class AbstractMungeComponent extends JPanel {
 					getParent().repaint();
 	                MatchMakerTreeModel treeModel = (MatchMakerTreeModel) session.getTree().getModel();
 	    	        TreePath menuPath = treeModel.getPathForNode(getStep());
-	    	        session.getTree().setSelectionPath(menuPath);
+       				logger.debug("focusGained: " + getStep());
+	    	        if (!session.getTree().getSelectionPath().getLastPathComponent().equals(getStep())) {
+	    	        	logger.debug("Setting tree path for focusGained");
+	    	        	session.getTree().setSelectionPath(menuPath);
+	    	        }
 				}
 			}
 			public void focusLost(FocusEvent e) {
