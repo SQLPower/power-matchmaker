@@ -46,12 +46,12 @@ public class ProjectPlannerServerUtils {
 	/**
      * The width of all thumbnails generated from the munge pen on a save.
      */
-    private static final int THUMBNAIL_WIDTH = 150;
+    private static final int THUMBNAIL_WIDTH = 400;
     
     /**
      * The height of all thumbnails generated from the munge pen on a save.
      */
-    private static final int THUMBNAIL_HEIGHT = 100;
+    private static final int THUMBNAIL_HEIGHT = 400;
 	
 	/**
 	 * Generates a small image of the munge pen from the first munge process to
