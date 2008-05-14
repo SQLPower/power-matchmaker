@@ -36,6 +36,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.Icon;
 import javax.swing.UIManager;
+import javax.swing.tree.TreePath;
 
 import org.apache.log4j.Logger;
 
@@ -43,6 +44,8 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
+import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.munge.AbstractMungeComponent;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
@@ -267,6 +270,33 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
         } catch (Exception ex) {
            	MMSUtils.showExceptionDialogNoReport("Project Planner Startup Failed", ex);
         }
+    }
+    
+    public void launchDefaultSession(long projectId) {
+    	try {
+            if (!isAutoLoginEnabled()) {
+                showLoginDialog(getLastLoginDataSource());
+            } else {
+                MatchMakerSession sessionDelegate = context.createDefaultSession();
+                MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
+                session.showGUI();
+                for (Project p : sessionDelegate.getDefaultPlFolder().getChildren()) {
+                	if (p.getOid() == projectId) {
+                		TreePath treePath;
+                		if (p.getMungeProcesses().size() > 0) {
+                			MungeProcess mp = p.getMungeProcesses().get(0);
+                			treePath = (((MatchMakerTreeModel)session.getTree().getModel()).getPathForNode(mp));
+                		} else {
+                			treePath = ((MatchMakerTreeModel)session.getTree().getModel()).getPathForNode(p);
+                		}
+        				session.getTree().setSelectionPath(treePath);
+                	}
+                }
+            }
+        } catch (Exception ex) {
+           	MMSUtils.showExceptionDialogNoReport("Project Planner Startup Failed", ex);
+        }
+    	
     }
 
     ///////// Private implementation details ///////////

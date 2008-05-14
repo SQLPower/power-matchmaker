@@ -112,6 +112,13 @@ public interface SwingSessionContext extends MatchMakerSessionContext {
     public void launchDefaultSession();
     
     /**
+     * This does the normal start up but also loads up the screen of the given project.
+     * 
+     * @param projectId Id of project to start up at.
+     */
+    public void launchDefaultSession(long projectId);
+    
+    /**
      * Returns a new instance of the appropriate MungeComponent that is associated with the given MungeStep.
      * Theses are provided in the munge_component.properties in the ca.sqlpower.matchmaker.swingui.munge, and 
      * from the $HOME/.matchmaker/munge_components.properties file.

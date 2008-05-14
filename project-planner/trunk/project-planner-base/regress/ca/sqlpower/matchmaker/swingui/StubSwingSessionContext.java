@@ -137,6 +137,10 @@ public class StubSwingSessionContext implements SwingSessionContext {
     public void launchDefaultSession() {
         logger.debug("Stub call: StubSwingSessionContext.launchDefaultSession()");
     }
+    
+    public void launchDefaultSession(long projectId) {
+        logger.debug("Stub call: StubSwingSessionContext.launchDefaultSession()");
+    }
 
     public MatchMakerSession createDefaultSession() {
         logger.debug("Stub call: StubSwingSessionContext.createDefaultSession()");

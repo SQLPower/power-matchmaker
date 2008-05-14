@@ -221,18 +221,37 @@ public class MatchMakerXMLSession implements MatchMakerSession {
             org.apache.log4j.PropertyConfigurator.configure(config);
             logger.info("Log4J configured successfully");
         }
-
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    MatchmakerXMLSessionContext context = new MatchmakerXMLSessionContext();
-                    SwingSessionContext sscontext = new SwingSessionContextImpl(Preferences.userNodeForPackage(MatchMakerXMLSession.class), context);
-                    sscontext.launchDefaultSession();
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        });
+        
+        if (args.length > 0) {
+        	String projectId = args[0];
+        	final long projectIdLong = Long.parseLong(projectId);
+        	SwingUtilities.invokeLater(new Runnable() {
+        		public void run() {
+        			try {
+        				MatchmakerXMLSessionContext context = new MatchmakerXMLSessionContext();
+        				
+        				SwingSessionContext sscontext = new SwingSessionContextImpl(Preferences.userNodeForPackage(MatchMakerXMLSession.class), context);
+        				sscontext.launchDefaultSession(projectIdLong);
+        			} catch (Exception ex) {
+        				throw new RuntimeException(ex);
+        			}
+        		}
+        	});
+        } else {
+        	SwingUtilities.invokeLater(new Runnable() {
+        		public void run() {
+        			try {
+        				MatchmakerXMLSessionContext context = new MatchmakerXMLSessionContext();
+        				
+        				SwingSessionContext sscontext = new SwingSessionContextImpl(Preferences.userNodeForPackage(MatchMakerXMLSession.class), context);
+        				sscontext.launchDefaultSession();
+        			} catch (Exception ex) {
+        				throw new RuntimeException(ex);
+        			}
+        		}
+        	});
+        }
+        
     }
 
     public void save(MatchMakerObject mmo) {
