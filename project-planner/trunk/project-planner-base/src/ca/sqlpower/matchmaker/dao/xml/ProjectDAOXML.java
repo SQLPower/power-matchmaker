@@ -231,14 +231,32 @@ public class ProjectDAOXML implements ProjectDAO {
     }
    
     public Project duplicate(Project p, String name) {
+    	boolean isOwner = p.isOwner();
+    	boolean canModify = p.canModify();
+    	if (p.getOid() == null){
+    		save(p);
+    	}
     	long oldId = p.getOid();
     	String oldName = p.getName();
+    	p.setIsOwner(false);
+    	
     	p.setName(name);
-    	save(p);	
-    	Project newProject = new Project(p.getOid(), name, p.getDescription(), (ProjectDAO) session.getDAO(Project.class));
-    	p.setOid(oldId);
-    	p.setName(oldName);
+    	Long newOid = null;
+    	try {
+    		save(p);	
+    		newOid = p.getOid();
+    	} finally {
+    		p.setOid(oldId);
+    		p.setName(oldName);
+    		p.setIsOwner(isOwner);
+    		p.setCanModify(canModify);
+    	}
+    	
+    	Project newProject = new Project(newOid, name, p.getDescription(), (ProjectDAO) session.getDAO(Project.class));
+
     	newProject.setSession(p.getSession());
+    	refresh(newProject);
+    	
     	return newProject;
     }
 

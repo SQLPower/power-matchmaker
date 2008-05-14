@@ -198,7 +198,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
 	}
 	
-	public Project(long oid, String name, String description, ProjectDAO dao) {
+	public Project(Long oid, String name, String description, ProjectDAO dao) {
         this();
         setOid(oid);
         setDescription(description);
