@@ -214,7 +214,7 @@ public class WebsiteIOHandler implements IOHandler {
                 String xmlDoc = new String(toByteArray());
                 StringBuilder sb = new StringBuilder();
                 sb.append("projectXML=").append(URLEncoder.encode(xmlDoc, "UTF-8"));
-                //saves a new copy if you are not the owner
+                // saves a new copy if you are not the owner, duplicate depends on this condition
                 if (project.getOid() != null && project.isOwner()) {
                     sb.append("&projectId=").append(project.getOid());
                 }
