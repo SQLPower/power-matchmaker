@@ -138,6 +138,17 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 			public void insertUpdate(DocumentEvent e) {
 				logger.debug("The document's text changed to " + text.getText());
 				((ProjectPlannerMungeStep) getStep()).setText(text.getText());
+
+				// resize content pane to fit text area
+				if (content != null) {
+					text.setSize(content.getSize().width, text.getPreferredSize().height);
+					double height = iconLabel.getPreferredSize().getHeight() + text.getSize().getHeight() + 10;
+					if (content.getHeight() < height) {
+						content.setSize(content.getWidth(), (int) height);
+						content.setPreferredSize(content.getSize());
+					}
+					applyChanges();
+				}
 			}
 			public void changedUpdate(DocumentEvent e) {
 			}
@@ -146,7 +157,8 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 		
 		panel.add(iconLabel, cc.xy(1, 1));
 		panel.add(text, cc.xy(1, 2));
-		
+		text.setSize(MIN_COMPONENT_WIDTH, text.getPreferredSize().height);
+
 		return panel;
 	}
 

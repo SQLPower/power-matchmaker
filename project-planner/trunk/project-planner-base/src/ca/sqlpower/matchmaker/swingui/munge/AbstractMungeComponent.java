@@ -530,15 +530,15 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 	private void configureWidthFromMMO() {
 		// both size and preferred size need to be changed for labels to be sized correctly
-		content.setSize(getWidthFromMMO(), content.getHeight());
-		content.setPreferredSize(new Dimension(getWidthFromMMO(), content.getHeight()));
+		content.setSize(Math.max(getWidthFromMMO(), (int)content.getMinimumSize().getWidth()), content.getHeight());
+		content.setPreferredSize(content.getSize());
 		setSize(getPreferredSize());
 	}
 	
 	private void configureHeightFromMMO() {
 		// both size and preferred size need to be changed for labels to be sized correctly
-		content.setSize(content.getWidth(), getHeightFromMMO());
-		content.setPreferredSize(new Dimension(content.getWidth(), getHeightFromMMO()));
+		content.setSize(content.getWidth(), Math.max(getHeightFromMMO(), (int)content.getMinimumSize().getHeight()));
+		content.setPreferredSize(content.getSize());
 		setSize(getPreferredSize());
 	}
 	
@@ -708,10 +708,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 	}
 	
 	private int getWidthFromMMO() {
-		return getStepParameter(MungeStep.MUNGECOMPONENT_WIDTH, (int)content.getMinimumSize().getWidth());
+		return getStepParameter(MungeStep.MUNGECOMPONENT_WIDTH, 0);
 	}
 	private int getHeightFromMMO() {
-		return getStepParameter(MungeStep.MUNGECOMPONENT_HEIGHT, (int)content.getMinimumSize().getHeight());
+		return getStepParameter(MungeStep.MUNGECOMPONENT_HEIGHT, 0);
 	}
 	
 	@Override

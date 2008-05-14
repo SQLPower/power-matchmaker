@@ -201,7 +201,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 				}
 			}
 				
-				public void changedUpdate(DocumentEvent e) {
+			public void changedUpdate(DocumentEvent e) {
 			}
 		
 		});
