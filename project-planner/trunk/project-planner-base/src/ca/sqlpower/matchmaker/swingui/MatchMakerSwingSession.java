@@ -27,6 +27,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -61,6 +63,7 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import javax.swing.undo.CannotRedoException;
@@ -452,11 +455,21 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         tree.setBackground(MatchMakerTreeCellRenderer.LIGHT_ORANGE);
-        JScrollPane savedProcessesPanel = new JScrollPane(tree);
+        final JScrollPane savedProcessesPanel = new JScrollPane(tree);
+        savedProcessesPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        savedProcessesPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         savedProcessesPanel.getViewport().setBackground(MatchMakerTreeCellRenderer.LIGHT_ORANGE);
         JPanel hiddenPanel = new JPanel();
         hiddenPanel.setVisible(false);
-        splitPane.setLeftComponent(new MungePenSideBar(hiddenPanel, savedProcessesPanel, "SAVED PROJECTS", "(Double-click to open)", DARK_ORANGE).getToolbar());
+        JToolBar leftPanel = new MungePenSideBar(hiddenPanel, savedProcessesPanel, "SAVED PROJECTS", "(Double-click to open)", DARK_ORANGE).getToolbar();
+		splitPane.setLeftComponent(leftPanel);
+        
+        BasicSplitPaneUI ui = (BasicSplitPaneUI)splitPane.getUI();
+        ui.getDivider().addMouseListener(new MouseAdapter() {
+        	public void mouseReleased(MouseEvent e) {
+        		savedProcessesPanel.setPreferredSize(new Dimension(0, 0));
+        	}
+        });
         
 		setCurrentEditorComponent(null);
 		cp.add(splitPane);
@@ -645,7 +658,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 // If this line was not here, the left component would get 
                 // forced to its minimum size. This sets the divider to remain
                 // at the location that has been set before the editor change.
+                splitPane.getLeftComponent().setMinimumSize(new Dimension(0, 0));
     			splitPane.setDividerLocation(splitPane.getDividerLocation());
+    			
             }
         } finally {
             editorComponentUpdateInProgress = false;
