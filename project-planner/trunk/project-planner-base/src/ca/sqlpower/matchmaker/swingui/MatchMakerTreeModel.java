@@ -234,15 +234,14 @@ public class MatchMakerTreeModel implements TreeModel {
                 logger.debug("   Looking at project " + o);
 				Project p = (Project) o;
 				
-				if (session.getDefaultPlFolder().equals(p.getParent())) {
-					defaultFolder.addChild(p);
-				} else if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(p.getParent())) {
+				if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(p.getParent())) {
 					sharedFolder.addChild(p);
 				} else if (session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME).equals(p.getParent())) {
 					galleryFolder.addChild(p);
 				} else {
-					throw new IllegalStateException("Invalid parent folder.");
+					defaultFolder.addChild(p);
 				}
+				
 			}
 		}
 		root.addChild(defaultFolder);
@@ -445,15 +444,12 @@ public class MatchMakerTreeModel implements TreeModel {
 				if (child instanceof Project) {
 					Project project = (Project) child;
 
-
-					if (session.getDefaultPlFolder().equals(project.getParent())) {
-						defaultFolder.addChild(project);
-					} else if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(project.getParent())) {
+					if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(project.getParent())) {
 						sharedFolder.addChild(project);
 					} else if (session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME).equals(project.getParent())) {
 						galleryFolder.addChild(project);
 					} else {
-						throw new IllegalStateException("Invalid parent folder.");
+						defaultFolder.addChild(project);
 					}
 				}
 			}
@@ -496,14 +492,12 @@ public class MatchMakerTreeModel implements TreeModel {
 				if (child instanceof Project) {
 					Project p = (Project) child;
 
-					if (session.getDefaultPlFolder().equals(p.getParent())) {
-						defaultFolder.removeChild(p);
-					} else if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(p.getParent())) {
+					if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(p.getParent())) {
 						sharedFolder.removeChild(p);
 					} else if (session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME).equals(p.getParent())) {
 						galleryFolder.removeChild(p);
 					} else {
-						throw new IllegalStateException("Invalid parent folder.");
+						defaultFolder.removeChild(p);
 					}
 				}
 			}
