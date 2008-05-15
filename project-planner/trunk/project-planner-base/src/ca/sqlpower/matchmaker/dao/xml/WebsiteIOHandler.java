@@ -53,6 +53,8 @@ import org.json.JSONObject;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.MMSUtils;
 import ca.sqlpower.swingui.JDefaultButton;
+import ca.sqlpower.swingui.SPSUtils;
+import ca.sqlpower.util.BrowserUtil;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -71,7 +73,7 @@ public class WebsiteIOHandler implements IOHandler {
      * Base URL where the SQL Power website lives. The various action paths will be appended
      * to this string to form the actual request URLs.
      */
-    private static final String WEBSITE_BASE_URL = "http://localhost:9999/sqlpower_website/page/";
+    private static final String WEBSITE_BASE_URL = "http://dhcp-126.sqlpower.ca:8080/sqlpower_website/page/";
     
     /**
      * Keys for the JSONObject used with save and load permissions.
@@ -360,6 +362,17 @@ public class WebsiteIOHandler implements IOHandler {
         b.append("Username", usernameField);
         b.append("Password", passwordField);
         b.append(ButtonBarFactory.buildOKCancelBar(okButton, cancelButton), 3);
+        b.append(ButtonBarFactory.buildRightAlignedBar(new JButton(new AbstractAction("Sign Up...") {
+			public void actionPerformed(ActionEvent e) {
+				try {
+                    BrowserUtil.launch("http://www.sqlpower.ca/page/register");
+                } catch (IOException ex) {
+                    SPSUtils.showExceptionDialogNoReport(d.getComponent(0),
+                            "Could not launch browser to view Sign Up page", ex);
+                }
+				
+			}
+        })), 3);
         b.setDefaultDialogBorder();
         passwordField.setPreferredSize(new Dimension(200, 20));
         
