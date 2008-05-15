@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
@@ -56,6 +57,7 @@ public class MungeStepLibrary {
 	
 	private static final Logger logger = Logger.getLogger(MungeStepLibrary.class);
 	public static final DataFlavor STEP_DESC_FLAVOR = new DataFlavor(StepDescription.class, "Step Description");
+	public static final ImageIcon FOLDER_ICON = new ImageIcon(MungeStepLibrary.class.getResource("/icons/famfamfam/folder.png")); 
 	
 	/**
 	 * The light blue colour to be used as a background to the munge step
@@ -109,6 +111,10 @@ public class MungeStepLibrary {
 		
 		List<String> categoryNames = new ArrayList<String>(CategoryToStepMap.keySet());
 		Collections.sort(categoryNames);
+		if (categoryNames.contains("")) {
+			categoryNames.add("");
+			categoryNames.remove("");
+		}
 		for (String categoryName : categoryNames) {
 			DefaultMutableTreeNode node;
 			if (!categoryName.equals("")) {
@@ -143,18 +149,19 @@ public class MungeStepLibrary {
 				}
 				
 				String nodeText;
+				Icon icon = null;
 				if (node.getUserObject() instanceof StepDescription) {
 					StepDescription sd = (StepDescription) node.getUserObject();
 					nodeText = sd.getName();
+					icon = ((StepDescription) node.getUserObject()).getIcon();
 				} else {
 					nodeText = node.getUserObject().toString();
+					icon = FOLDER_ICON;
 				}
 				super.getTreeCellRendererComponent(tree, nodeText, sel, expanded, leaf, row, hasFocus);
 				setBackgroundNonSelectionColor(tree.getBackground());
-				
-				if (node.getUserObject() instanceof StepDescription) {
-					setIcon(((StepDescription) node.getUserObject()).getIcon());
-				}
+				setIcon(icon);
+
 				return this;
 			}
 		});
