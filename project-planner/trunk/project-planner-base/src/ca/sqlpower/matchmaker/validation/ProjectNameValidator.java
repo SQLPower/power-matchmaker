@@ -41,7 +41,10 @@ public class ProjectNameValidator implements Validator {
 		if ( value == null || value.length() == 0 ) {
 			return ValidateResult.createValidateResult(Status.FAIL,
 					"Project name is required");
-		} else if ( !value.equals(project.getName()) &&
+		} else if (value.length() > 40) {
+			return ValidateResult.createValidateResult(Status.FAIL, "Project name must not be longer than 40 characters.");
+		}
+		else if ( !value.equals(project.getName()) &&
 					!session.isThisProjectNameAcceptable(value) ) {
 			return ValidateResult.createValidateResult(Status.FAIL,
 					"Project name is invalid or already exists.");
