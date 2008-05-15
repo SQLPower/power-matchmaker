@@ -35,6 +35,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
 import ca.sqlpower.matchmaker.MatchMakerTranslateWord;
 import ca.sqlpower.matchmaker.PlFolder;
@@ -56,6 +57,8 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 	final private Icon projectIcon = new ImageIcon(getClass().getResource("/icons/match_project.png"));
 	final private Icon mungeIcon = new ImageIcon(getClass().getResource("/icons/cog.png"));
 	final private Icon folderIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/folder.png"));
+	final private Icon sharedFolderIcon = new ImageIcon(getClass().getResource("/icons/share.png"));
+	final private Icon galleryFolderIcon = new ImageIcon(getClass().getResource("/icons/gallery.png"));
 	final private Icon validateIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/tick.png"));
 	final private Icon infoIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/page_white_gear.png"));
 	final private Icon matchEngineIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/cog_go.png"));
@@ -106,10 +109,18 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 			} else { 
 				setIcon(infoIcon);
 			}
-		} else if (value instanceof PlFolder || value instanceof MatchMakerFolder ||
-				value instanceof TranslateGroupParent || 
+		} else if (value instanceof DisconnectedTreeModelSpecificContainer) {
+			MatchMakerObject container = (MatchMakerObject) value;
+			if (container.getName().equals(MatchMakerSession.SHARED_FOLDER_NAME)) {
+				setIcon(sharedFolderIcon);
+			} else if (container.getName().equals(MatchMakerSession.GALLERY_FOLDER_NAME)) {
+				setIcon(galleryFolderIcon);
+			} else {
+				setIcon(folderIcon);
+			}
+		} else if (value instanceof MatchMakerFolder ||	value instanceof TranslateGroupParent || 
 				value instanceof FolderParent || value instanceof MatchMakerTranslateGroup ||
-				value instanceof DisconnectedTreeModelSpecificContainer){
+				value instanceof PlFolder){
 			setIcon(folderIcon);
 		} else if (value instanceof MatchMakerTranslateWord) {
 			setIcon(translateWordIcon);

@@ -224,17 +224,30 @@ public class MatchMakerTreeModel implements TreeModel {
 		root.setSession(s);
 		this.current = current;
 		
-		myProjectsFolder = new DisconnectedTreeModelSpecificContainer<Project>("My Projects", s);
+		defaultFolder = new DisconnectedTreeModelSpecificContainer<Project>(MatchMakerSession.DEFAULT_FOLDER_NAME, s);
+		galleryFolder = new DisconnectedTreeModelSpecificContainer<Project>(MatchMakerSession.GALLERY_FOLDER_NAME, s);
+		sharedFolder = new DisconnectedTreeModelSpecificContainer<Project>(MatchMakerSession.SHARED_FOLDER_NAME, s);
+		
 		for (PlFolder folder : current.getChildren()) {
             logger.debug("Looking at folder " + folder);
 			for (Object o : folder.getChildren()) {
                 logger.debug("   Looking at project " + o);
 				Project p = (Project) o;
 				
-				myProjectsFolder.addChild(p);
+				if (session.getDefaultPlFolder().equals(p.getParent())) {
+					defaultFolder.addChild(p);
+				} else if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(p.getParent())) {
+					sharedFolder.addChild(p);
+				} else if (session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME).equals(p.getParent())) {
+					galleryFolder.addChild(p);
+				} else {
+					throw new IllegalStateException("Invalid parent folder.");
+				}
 			}
 		}
-		root.addChild(myProjectsFolder);
+		root.addChild(defaultFolder);
+		root.addChild(sharedFolder);
+		root.addChild(galleryFolder);
 		
 		root.addMatchMakerListener(listener);
 		MatchMakerUtils.listenToHierarchy(listener, current);
@@ -355,7 +368,9 @@ public class MatchMakerTreeModel implements TreeModel {
 	 * At current this is all of the projects but this should be a sub set once
 	 * we can define permissions.
 	 */
-	private DisconnectedTreeModelSpecificContainer<Project> myProjectsFolder;
+	private DisconnectedTreeModelSpecificContainer<Project> defaultFolder;
+	private DisconnectedTreeModelSpecificContainer<Project> sharedFolder;
+	private DisconnectedTreeModelSpecificContainer<Project> galleryFolder;
 
 	public void addTreeModelListener(TreeModelListener l) {
 		treeModelListeners.add(l);
@@ -430,10 +445,21 @@ public class MatchMakerTreeModel implements TreeModel {
 				if (child instanceof Project) {
 					Project project = (Project) child;
 
-					myProjectsFolder.addChild(project);
-					logger.debug("My Projects should contain " + myProjectsFolder.getChildCount() + " children.");
+
+					if (session.getDefaultPlFolder().equals(project.getParent())) {
+						defaultFolder.addChild(project);
+					} else if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(project.getParent())) {
+						sharedFolder.addChild(project);
+					} else if (session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME).equals(project.getParent())) {
+						galleryFolder.addChild(project);
+					} else {
+						throw new IllegalStateException("Invalid parent folder.");
+					}
 				}
 			}
+			logger.debug(MatchMakerSession.DEFAULT_FOLDER_NAME + " should contain " + defaultFolder.getChildCount() + " children.");
+			logger.debug(MatchMakerSession.SHARED_FOLDER_NAME + " should contain " + sharedFolder.getChildCount() + " children.");
+			logger.debug(MatchMakerSession.GALLERY_FOLDER_NAME + " should contain " + galleryFolder.getChildCount() + " children.");
 			
 			TreePath paths = getPathForNode(evt.getSource());
 			TreeModelEvent e = new TreeModelEvent(evt.getSource(), paths, evt
@@ -469,10 +495,19 @@ public class MatchMakerTreeModel implements TreeModel {
 			for(Object child : evt.getChildren()) {
 				if (child instanceof Project) {
 					Project p = (Project) child;
-					myProjectsFolder.removeChild(p);
+
+					if (session.getDefaultPlFolder().equals(p.getParent())) {
+						defaultFolder.removeChild(p);
+					} else if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(p.getParent())) {
+						sharedFolder.removeChild(p);
+					} else if (session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME).equals(p.getParent())) {
+						galleryFolder.removeChild(p);
+					} else {
+						throw new IllegalStateException("Invalid parent folder.");
+					}
 				}
 			}
-			
+
 			TreePath path = getPathForNode(evt.getSource());
             if (logger.isDebugEnabled()) {
                 logger.debug("Got MM children removed event!");
@@ -515,13 +550,18 @@ public class MatchMakerTreeModel implements TreeModel {
 	public TreePath getPathForNode(MatchMakerObject<?, ?> source) {
 		List<MatchMakerObject> path = new LinkedList<MatchMakerObject>();
 		while (source != null) {
-			
-			//The path to the node should be for the tree, hence project
-			//parents are always the myProjectsFolder
 			if (source == session.getDefaultPlFolder()) {
 				logger.debug("Adding my project folder");
-				path.add(0, myProjectsFolder);
-				source = myProjectsFolder.getParent();
+				path.add(0, defaultFolder);
+				source = defaultFolder.getParent();
+			} else if (source == session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME)) {
+				logger.debug("Adding gallery folder");
+				path.add(0, galleryFolder);
+				source = galleryFolder.getParent();
+			} else if (source == session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME)) {
+				logger.debug("Adding shared folder");
+				path.add(0, sharedFolder);
+				source = sharedFolder.getParent();
 			} else {
 				logger.debug("Adding source is " + source + " with name " + source.getName());
 				path.add(0, source);

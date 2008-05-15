@@ -28,6 +28,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.matchmaker.FolderParent;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 
 public class MatchMakerSwingSessionTest extends TestCase {
@@ -61,6 +62,9 @@ public class MatchMakerSwingSessionTest extends TestCase {
             public PlFolder findFolder(String foldername) {
                 for (PlFolder folder : getCurrentFolderParent().getChildren()){
                     if (folder.getName().equals(foldername)) return folder;
+                }
+                if (SHARED_FOLDER_NAME.equals(foldername) || GALLERY_FOLDER_NAME.equals(foldername)) {
+                	return new PlFolder<Project>(foldername);
                 }
                 return null;
             }

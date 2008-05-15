@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -280,7 +281,13 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 MatchMakerSession sessionDelegate = context.createDefaultSession();
                 MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
                 session.showGUI();
-                for (Project p : sessionDelegate.getDefaultPlFolder().getChildren()) {
+                
+                List<Project> projects = new ArrayList<Project>();
+                projects.addAll(sessionDelegate.getDefaultPlFolder().getChildren());
+                projects.addAll(sessionDelegate.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).getChildren());
+                projects.addAll(sessionDelegate.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME).getChildren());
+                
+                for (Project p : projects) {
                 	if (p.getOid() == projectId) {
                 		TreePath treePath;
                 		if (p.getMungeProcesses().size() > 0) {

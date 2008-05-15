@@ -320,8 +320,11 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         this.sessionContext = context;
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
 
-        //Need to set the session on the default folder so it is a swing session
+        //Need to set the session on the folders so it is a swing session
         sessionImpl.getDefaultPlFolder().setSession(this);
+        sessionImpl.findFolder(SHARED_FOLDER_NAME).setSession(this);
+        sessionImpl.findFolder(GALLERY_FOLDER_NAME).setSession(this);
+        
         
         // this grabs warnings from the business model and DAO's and lets us handle them.
         sessionImpl.addWarningListener(new WarningListener() {
@@ -805,7 +808,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         return sessionImpl.getSessionStartTime();
     }
 
-    public PlFolder findFolder(String foldername) {
+    public PlFolder<Project> findFolder(String foldername) {
         return sessionImpl.findFolder(foldername);
     }
 

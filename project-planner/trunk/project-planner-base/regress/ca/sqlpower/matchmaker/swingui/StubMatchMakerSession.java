@@ -48,7 +48,7 @@ public class StubMatchMakerSession implements MatchMakerSession{
 
     private static final Logger logger = Logger.getLogger(StubMatchMakerSession.class);
     
-    public PlFolder findFolder(String foldername) {
+    public PlFolder<Project> findFolder(String foldername) {
         logger.debug("Stub call: StubMatchMakerSession.findFolder()");
         return null;
     }
@@ -189,7 +189,7 @@ public class StubMatchMakerSession implements MatchMakerSession{
 	
 	public PlFolder<Project> getDefaultPlFolder() {
 		logger.debug("Stub call: StubMatchMakerSession.getDefaultPlFolder()");
-		return new PlFolder<Project>(DEFAULT_PLFOLDER_NAME);
+		return new PlFolder<Project>(DEFAULT_FOLDER_NAME);
 	}
 
     public void save(MatchMakerObject mmo) {

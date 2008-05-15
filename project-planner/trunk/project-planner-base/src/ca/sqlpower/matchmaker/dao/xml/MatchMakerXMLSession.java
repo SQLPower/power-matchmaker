@@ -61,22 +61,37 @@ public class MatchMakerXMLSession implements MatchMakerSession {
     
     private final MatchMakerSessionContext context;
     private final FolderParent folderParent = new FolderParent(this);
-    private final PlFolder<Project> defaultFolder = new PlFolder<Project>();
+    
     private final Date startTime = new Date();
     private List<WarningListener> warningListeners = new ArrayList<WarningListener>();
     private String dbUser = "SQL Power Person";
-
+    
     private final IOHandler ioHandler = new WebsiteIOHandler();
     private final ProjectDAOXML projectDAO = new ProjectDAOXML(this, ioHandler);
     
     public MatchMakerXMLSession(MatchMakerSessionContext context) {
         this.context = context;
-        folderParent.addChild(defaultFolder);
+        
+        // Default folder contains the current user's projects
+        // Shared folder contains the projects the user has permissions to (view/viewAndModify)
+        // Gallery contains all the public projects
+        folderParent.addChild(new PlFolder<Project>(DEFAULT_FOLDER_NAME));
+        folderParent.addChild(new PlFolder<Project>(SHARED_FOLDER_NAME));
+        folderParent.addChild(new PlFolder<Project>(GALLERY_FOLDER_NAME));
+
         for (Project p : getDAO(Project.class).findAll()) {
-            logger.debug("Adding " + p + " to default folder!");
-            defaultFolder.addChild(p);
+        	if (p.isOwner()) {
+        		logger.debug("Adding " + p + " to default folder!");
+            	getDefaultPlFolder().addChild(p);
+        	} else if (p.isPublic() && !p.canModify()) {
+        		logger.debug("Adding " + p + " to gallery folder!");
+        		findFolder(GALLERY_FOLDER_NAME).addChild(p);
+        	} else {
+        		logger.debug("Adding " + p + " to shared folder!");
+        		findFolder(SHARED_FOLDER_NAME).addChild(p);
+        	}
         }
-        logger.debug("Default folder size: " + defaultFolder.getChildCount());
+        logger.debug("Default folder size: " + getDefaultPlFolder().getChildCount());
     }
     
     /**
@@ -117,8 +132,13 @@ public class MatchMakerXMLSession implements MatchMakerSession {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public PlFolder findFolder(String foldername) {
-        throw new UnsupportedOperationException("Not implemented");
+    public PlFolder<Project> findFolder(String foldername) {
+    	for (PlFolder<Project> folder : folderParent.getChildren()) {
+    		if (folder.getName() != null && folder.getName().equals(foldername)) {
+    			return folder;
+    		}
+    	}
+    	return null;
     }
 
     public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {
@@ -174,7 +194,7 @@ public class MatchMakerXMLSession implements MatchMakerSession {
     }
 
     public PlFolder<Project> getDefaultPlFolder() {
-        return defaultFolder;
+        return findFolder(DEFAULT_FOLDER_NAME);
     }
 
     public Version getPLSchemaVersion() {

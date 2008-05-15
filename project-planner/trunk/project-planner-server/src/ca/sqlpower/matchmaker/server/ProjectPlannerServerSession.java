@@ -103,7 +103,7 @@ private static final Logger logger = Logger.getLogger(MatchMakerXMLSession.class
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public PlFolder findFolder(String foldername) {
+    public PlFolder<Project> findFolder(String foldername) {
         throw new UnsupportedOperationException("Not implemented");
     }
 

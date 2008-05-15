@@ -45,11 +45,12 @@ import ca.sqlpower.util.Version;
  */
 public interface MatchMakerSession {
 	
-    /**
-	 * The default PlFolder name. All projects should have this folder as its parent.
-	 * This folder should always exist or be created if it doesn't.
+	/**
+	 * These are the default names for the folders.  They will always be created. 
 	 */
-	public static final String DEFAULT_PLFOLDER_NAME = "Default"; 
+    public final static String DEFAULT_FOLDER_NAME = "My Projects";
+    public final static String SHARED_FOLDER_NAME = "Shared Projects";
+    public final static String GALLERY_FOLDER_NAME = "Gallery";
 
     /**
      * The session context that created this session.
@@ -101,9 +102,9 @@ public interface MatchMakerSession {
     /**
      * Returns the folder that matches with the name
      * @param foldername the name of the folder that is desired
-     * @return the folder with that matches with the foldername, returns null if no results are avaiable
+     * @return the folder with that matches with the foldername, returns null if no results are available
      */
-    public PlFolder findFolder(String foldername);
+    public PlFolder<Project> findFolder(String foldername);
 
     /**
      * Returns the DAO Object for the given business class

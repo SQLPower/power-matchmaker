@@ -68,7 +68,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		folders =  new ArrayList<PlFolder>();
         translateGroupParent= new TranslateGroupParent(this);
         context = new TestingMatchMakerContext();
-        defaultFolder = new PlFolder<Project>(DEFAULT_PLFOLDER_NAME);
+        defaultFolder = new PlFolder<Project>(DEFAULT_FOLDER_NAME);
 	}
 
 	public String getAppUser() {
@@ -118,9 +118,12 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		return context;
 	}
 
-    public PlFolder findFolder(String foldername) {
+    public PlFolder<Project> findFolder(String foldername) {
         for (PlFolder folder : folders){
             if (folder.getName().equals(foldername)) return folder;
+        }
+        if (SHARED_FOLDER_NAME.equals(foldername) || GALLERY_FOLDER_NAME.equals(foldername)) {
+        	return new PlFolder<Project>(foldername);
         }
         return null;
     }
