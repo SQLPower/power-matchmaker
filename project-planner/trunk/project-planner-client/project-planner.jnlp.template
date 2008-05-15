@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp spec="1.5+" 
-	codebase="http://dhcp-126.sqlpower.ca:8080/sqlpower_website/" 
-	href="$outputFile">
+	codebase="http://localhost:8080/sqlpower_website/">
   <information>
     <title>Project Planner Client</title>
     <vendor>SQL Power Group Inc.</vendor>
@@ -22,5 +21,7 @@
     <j2se version="1.5+" java-vm-args=""/>
     $dependencies
   </resources>
-  <application-desc main-class="$mainClass"/>
+  <application-desc main-class="$mainClass">
+  	<argument>$projectID</argument>
+  </application-desc>
 </jnlp> 
