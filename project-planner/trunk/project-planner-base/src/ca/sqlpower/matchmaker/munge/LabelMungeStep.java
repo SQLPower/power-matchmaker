@@ -30,16 +30,20 @@ import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
  */
 public class LabelMungeStep extends AbstractMungeStep {
 	
-	// parameter for the background colour of the step component
+	/**
+	 * Parameter for the background colour of the step component
+	 */
 	private static final String COLOUR_PARAM = "stepColour";
 	
-	// parameter for the position of the step component relatively in the munge pen
+	/**
+	 * Parameter for the position of the step component relatively in the munge pen.
+	 * Bottom most layer is at layer 0.
+	 */
 	private static final String LAYER_PARAM = "layerPos";
 	
-	// the default layer of a label is set to the bottom most layer
-	private static final int DEFAULT_LAYER = Integer.MIN_VALUE;
-	
-	// parameters that deal with the text area
+	/**
+	 * Parameters that deal with the text area
+	 */
 	private static final String AREA_X_PARAM = "areaX";
 	private static final String AREA_Y_PARAM = "areaY";
 	private static final String AREA_COLOUR_PARAM = "areaColour";
@@ -96,8 +100,8 @@ public class LabelMungeStep extends AbstractMungeStep {
 	}
 	
 	public int getLayer() {
-		if (getParameter(LAYER_PARAM) == null) {
-			return DEFAULT_LAYER;
+		if (getParameter(LAYER_PARAM) == null || getIntegerParameter(LAYER_PARAM) < 0) {
+			return -1;
 		} else {
 			return getIntegerParameter(LAYER_PARAM);
 		}
