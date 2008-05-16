@@ -142,7 +142,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 		
 		// modify properties from munge step
 		String stepText = step.getText();
-		if (stepText != null && stepText.trim().length() != 0) {
+		if (stepText != null) {
 			textArea.setText(stepText);
 		}
 		changeColor(step.getColour(), true);
@@ -170,7 +170,6 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 		textArea.setToolTipText(TEXT_AREA_TOOL_TIP);
 		textArea.setOpaque(false);
 		textArea.setLocation(step.getTextAreaLocation());
-		textArea.setSize(step.getTextAreaSize());
 		
 		StyledDocument doc = new DefaultStyledDocument();
 		MutableAttributeSet standard = new SimpleAttributeSet();

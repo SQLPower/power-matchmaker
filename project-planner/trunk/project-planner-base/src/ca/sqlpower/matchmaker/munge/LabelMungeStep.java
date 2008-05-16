@@ -20,7 +20,6 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Point;
 
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
@@ -32,7 +31,7 @@ import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 public class LabelMungeStep extends AbstractMungeStep {
 	
 	// parameter for the background colour of the step component
-	private static final String COLOUR_PARAM = "colour";
+	private static final String COLOUR_PARAM = "stepColour";
 	
 	// parameter for the position of the step component relatively in the munge pen
 	private static final String LAYER_PARAM = "layerPos";
@@ -43,13 +42,8 @@ public class LabelMungeStep extends AbstractMungeStep {
 	// parameters that deal with the text area
 	private static final String AREA_X_PARAM = "areaX";
 	private static final String AREA_Y_PARAM = "areaY";
-	private static final String AREA_HEIGHT = "areaHeight";
-	private static final String AREA_WIDTH = "areaWidth";
 	private static final String AREA_COLOUR_PARAM = "areaColour";
 	private static final String AREA_TEXT_PARAM = "areaText";
-	
-	// default size for the text area
-	private static final Dimension DEFAULT_AREA_SIZE = new Dimension(100, 20);
 	
 	public LabelMungeStep(StepDescription sd) {
 		super(sd, true);
@@ -72,7 +66,6 @@ public class LabelMungeStep extends AbstractMungeStep {
 		setText("Enter Text Here");
 		setTextAreaColour(Color.BLACK);
 		setTextAreaLocation(new Point(0,0));
-		setTextAreaSize(DEFAULT_AREA_SIZE);
 	}
 
 	/**
@@ -91,7 +84,11 @@ public class LabelMungeStep extends AbstractMungeStep {
 	}
 	
 	public Color getColour() {
-		return Color.decode(getParameter(COLOUR_PARAM)); 
+		if (getParameter(COLOUR_PARAM) == null) {
+			return new Color(0xee, 0xee, 0xee);
+		} else {
+			return Color.decode(getParameter(COLOUR_PARAM));
+		}
 	}
 	
 	public void setLayer(int pos) {
@@ -132,14 +129,5 @@ public class LabelMungeStep extends AbstractMungeStep {
 	
 	public String getText() {
 		return getParameter(AREA_TEXT_PARAM);
-	}
-	
-	public void setTextAreaSize(Dimension d) {
-		setParameter(AREA_WIDTH, d.width);
-		setParameter(AREA_HEIGHT, d.height);
-	}
-	
-	public Dimension getTextAreaSize() {
-		return new Dimension(getIntegerParameter(AREA_WIDTH), getIntegerParameter(AREA_HEIGHT));
 	}
 }

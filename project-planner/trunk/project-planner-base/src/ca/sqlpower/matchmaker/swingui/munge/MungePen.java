@@ -749,9 +749,12 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 						handler, session));
 				modelMap.put(evt.getSource().getChildren().get(x), mcom);
 				if (mcom instanceof LabelMungeComponent) {
-					setLayer(mcom, findHighestLabelLayer()+1);
-					// MUST be done every time a label's layer is changed or bad things will happen.
-					((LabelMungeStep)mcom.getStep()).setLayer(getLayer(mcom));
+					if (!evt.isUndoEvent()) {
+						setLayer(mcom, findHighestLabelLayer() + 1);
+						((LabelMungeStep)mcom.getStep()).setLayer(getLayer(mcom));
+					} else {
+						setLayer(mcom, ((LabelMungeStep)mcom.getStep()).getLayer());
+					}
 				} 
 				add(mcom);
 				logger.debug("Generating positions from properites");
@@ -799,13 +802,15 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
      */
     public void moveLabelToFront(LabelMungeComponent com) {
     	int pos = findHighestLabelLayer();
-    	for (Component c : getComponents()) {
-    		if (c instanceof LabelMungeComponent && c != com && getLayer(c) > getLayer(com)) {
-    			setLayer(c, getLayer(c) - 1);
-    		}
+    	if (getLayer(com) != pos) {
+	    	for (Component c : getComponents()) {
+	    		if (c instanceof LabelMungeComponent && c != com && getLayer(c) > getLayer(com)) {
+	    			setLayer(c, getLayer(c) - 1);
+	    		}
+	    	}
+	    	setLayer(com, pos);
+	    	((LabelMungeStep)com.getStep()).setLayer(pos);
     	}
-    	setLayer(com, pos);
-    	((LabelMungeStep)com.getStep()).setLayer(pos);
     }
     
     /**
@@ -814,13 +819,15 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
      */
     public void moveLabelToBack(LabelMungeComponent com) {
     	int pos = findLowestLabelLayer();
-    	for (Component c : getComponents()) {
-    		if (c instanceof LabelMungeComponent && c != com && getLayer(c) < getLayer(com)) {
-    			setLayer(c, getLayer(c) + 1);
-    		}
+    	if (getLayer(com) != pos) {
+	    	for (Component c : getComponents()) {
+	    		if (c instanceof LabelMungeComponent && c != com && getLayer(c) < getLayer(com)) {
+	    			setLayer(c, getLayer(c) + 1);
+	    		}
+	    	}
+	    	setLayer(com, pos - 1);
+	    	((LabelMungeStep)com.getStep()).setLayer(pos);
     	}
-    	setLayer(com, pos - 1);
-    	((LabelMungeStep)com.getStep()).setLayer(pos);
     }
     
 	/**
