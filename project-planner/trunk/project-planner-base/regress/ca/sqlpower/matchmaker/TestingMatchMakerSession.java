@@ -122,9 +122,6 @@ public class TestingMatchMakerSession implements MatchMakerSession {
         for (PlFolder folder : folders){
             if (folder.getName().equals(foldername)) return folder;
         }
-        if (SHARED_FOLDER_NAME.equals(foldername) || GALLERY_FOLDER_NAME.equals(foldername)) {
-        	return new PlFolder<Project>(foldername);
-        }
         return null;
     }
 

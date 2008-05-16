@@ -104,7 +104,12 @@ private static final Logger logger = Logger.getLogger(MatchMakerXMLSession.class
     }
 
     public PlFolder<Project> findFolder(String foldername) {
-        throw new UnsupportedOperationException("Not implemented");
+        for (PlFolder<Project> folder : folderParent.getChildren()) {
+        	if (folder.getName().equals(foldername)) {
+        		return folder;
+        	}
+        }
+        return null;
     }
 
     public SQLTable findPhysicalTableByName(String catalog, String schema, String tableName) throws ArchitectException {

@@ -322,8 +322,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
         //Need to set the session on the folders so it is a swing session
         sessionImpl.getDefaultPlFolder().setSession(this);
-        sessionImpl.findFolder(SHARED_FOLDER_NAME).setSession(this);
-        sessionImpl.findFolder(GALLERY_FOLDER_NAME).setSession(this);
+        if (sessionImpl.findFolder(SHARED_FOLDER_NAME) != null) {
+        	sessionImpl.findFolder(SHARED_FOLDER_NAME).setSession(this);
+        }
+        if (sessionImpl.findFolder(GALLERY_FOLDER_NAME) != null) {
+        	sessionImpl.findFolder(GALLERY_FOLDER_NAME).setSession(this);
+        }
         
         
         // this grabs warnings from the business model and DAO's and lets us handle them.
@@ -598,10 +602,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 case O_CANCEL:
                     save = false;
                     doit = false;
-                    //The treepath should never be null if it reaches here
-                    //since prompting this means that the right side of the splitpane
-                    //must have at least been replaced once.
-                    tree.setSelectionPath(lastTreePath);
                     break;
                 }
                 if (save) {

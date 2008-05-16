@@ -228,15 +228,18 @@ public class MatchMakerTreeModel implements TreeModel {
 		galleryFolder = new DisconnectedTreeModelSpecificContainer<Project>(MatchMakerSession.GALLERY_FOLDER_NAME, s);
 		sharedFolder = new DisconnectedTreeModelSpecificContainer<Project>(MatchMakerSession.SHARED_FOLDER_NAME, s);
 		
+		PlFolder<Project> sharedPlFolder = session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME);
+		PlFolder<Project> galleryPlFolder = session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME);
+		
 		for (PlFolder folder : current.getChildren()) {
             logger.debug("Looking at folder " + folder);
 			for (Object o : folder.getChildren()) {
                 logger.debug("   Looking at project " + o);
 				Project p = (Project) o;
 				
-				if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(p.getParent())) {
+				if (sharedPlFolder != null && sharedPlFolder.equals(p.getParent())) {
 					sharedFolder.addChild(p);
-				} else if (session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME).equals(p.getParent())) {
+				} else if (galleryPlFolder != null && galleryPlFolder.equals(p.getParent())) {
 					galleryFolder.addChild(p);
 				} else {
 					defaultFolder.addChild(p);
@@ -440,13 +443,15 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 
 		public void mmChildrenInserted(MatchMakerEvent<T, C> evt) {
+			PlFolder<Project> sharedPlFolder = session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME);
+			PlFolder<Project> galleryPlFolder = session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME);
 			for(Object child : evt.getChildren()) {
 				if (child instanceof Project) {
 					Project project = (Project) child;
 
-					if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(project.getParent())) {
+					if (sharedPlFolder != null && sharedPlFolder.equals(project.getParent())) {
 						sharedFolder.addChild(project);
-					} else if (session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME).equals(project.getParent())) {
+					} else if (galleryPlFolder != null && galleryPlFolder.equals(project.getParent())) {
 						galleryFolder.addChild(project);
 					} else {
 						defaultFolder.addChild(project);
@@ -488,13 +493,15 @@ public class MatchMakerTreeModel implements TreeModel {
 		}
 
 		public void mmChildrenRemoved(MatchMakerEvent<T, C> evt) {
+			PlFolder<Project> sharedPlFolder = session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME);
+			PlFolder<Project> galleryPlFolder = session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME);
 			for(Object child : evt.getChildren()) {
 				if (child instanceof Project) {
 					Project p = (Project) child;
 
-					if (session.findFolder(MatchMakerSession.SHARED_FOLDER_NAME).equals(p.getParent())) {
+					if (sharedPlFolder != null && sharedPlFolder.equals(p.getParent())) {
 						sharedFolder.removeChild(p);
-					} else if (session.findFolder(MatchMakerSession.GALLERY_FOLDER_NAME).equals(p.getParent())) {
+					} else if (galleryPlFolder != null && galleryPlFolder.equals(p.getParent())) {
 						galleryFolder.removeChild(p);
 					} else {
 						defaultFolder.removeChild(p);
