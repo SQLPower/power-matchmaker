@@ -455,6 +455,13 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			projectName.setEnabled(false);
 			desc.setEnabled(false);
 		} 
+		
+		if(project.isPublic()) {
+			this.viewOnlyList.setEnabled(false);
+			this.addToViewOnly.setEnabled(false);
+			this.removeFromViewOnly.setEnabled(false);
+			this.toViewOnly.setEnabled(false);
+		}
 	}
 
 	public boolean hasUnsavedChanges() {
