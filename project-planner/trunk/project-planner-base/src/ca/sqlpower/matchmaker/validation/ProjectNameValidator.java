@@ -29,7 +29,7 @@ public class ProjectNameValidator implements Validator {
 
 	private MatchMakerSwingSession session;
 	private Project project;
-    private static final int MAX_CHAR_PROJECT_NAME = 80;
+    private static final int MAX_CHAR_PROJECT_NAME = 40;
 
 	public ProjectNameValidator(MatchMakerSwingSession session, Project project) {
 		this.session = session;
@@ -41,15 +41,12 @@ public class ProjectNameValidator implements Validator {
 		if ( value == null || value.length() == 0 ) {
 			return ValidateResult.createValidateResult(Status.FAIL,
 					"Project name is required");
-		} else if (value.length() > 40) {
-			return ValidateResult.createValidateResult(Status.FAIL, "Project name must not be longer than 40 characters.");
-		}
-		else if ( !value.equals(project.getName()) &&
+		} else if ( !value.equals(project.getName()) &&
 					!session.isThisProjectNameAcceptable(value) ) {
 			return ValidateResult.createValidateResult(Status.FAIL,
 					"Project name is invalid or already exists.");
 		} else if (value.length() > MAX_CHAR_PROJECT_NAME){
-		    return ValidateResult.createValidateResult(Status.FAIL, "Match ID cannot be more than "+
+		    return ValidateResult.createValidateResult(Status.FAIL, "Project name cannot be more than "+
                     MAX_CHAR_PROJECT_NAME + " characters long");
         }
 		return ValidateResult.createValidateResult(Status.OK, "");
