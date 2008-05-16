@@ -40,6 +40,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.apache.log4j.Logger;
 
@@ -328,8 +330,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			}
 		});
 		
-		isSharingWithEveryone.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		isSharingWithEveryone.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
 				if(isSharingWithEveryone.isSelected()) {
 					viewOnlyList.setEnabled(false);
 					addToViewOnly.setEnabled(false);
@@ -455,13 +457,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			projectName.setEnabled(false);
 			desc.setEnabled(false);
 		} 
-		
-		if(project.isPublic()) {
-			this.viewOnlyList.setEnabled(false);
-			this.addToViewOnly.setEnabled(false);
-			this.removeFromViewOnly.setEnabled(false);
-			this.toViewOnly.setEnabled(false);
-		}
 	}
 
 	public boolean hasUnsavedChanges() {
