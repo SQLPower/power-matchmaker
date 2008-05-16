@@ -70,12 +70,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * The panel that holds this editor's GUI.
 	 */
 	protected static final String EMAIL_PROPERTY_KEY = "email";
-	private static final String FAILED_ENTRY = "failedEntry";
-
-	private static final String VIEW_ONLY_USERS_KEY = "viewOnlyUsers";
-	private static final String VIEW_AND_MODIFY_USERS_KEY = "viewAndModifyUsers";
-	private static final String PUBLIC_GROUP_KEY = "publicGroup";
-	private static final String OWNERSHIP_KEY = "owner";
 	
 	private final JPanel panel;
 
