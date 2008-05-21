@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, SQL Power Group Inc.
+ * Copyright (c) 2008, SQL Power Group Inc.
  *
  * This file is part of Power*MatchMaker.
  *
@@ -52,7 +52,7 @@ public class AboutPanel extends JPanel implements DataEntryPanel {
             "<html>" +
             "<h1>Power*MatchMaker</h1>" +
             "<p>Version " + MatchMakerVersion.APP_VERSION + "</p>" +
-            "<p>Copyright 2007 SQL Power Group Inc.</p>" +
+            "<p>Copyright 2008 SQL Power Group Inc.</p>" +
             "</html>";
 		content = new JLabel(message);
 		add(content);
