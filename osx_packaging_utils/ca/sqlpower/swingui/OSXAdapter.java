@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, SQL Power Group Inc.
+ * Copyright (c) 2008, SQL Power Group Inc.
  * 
  * All rights reserved.
  * 
