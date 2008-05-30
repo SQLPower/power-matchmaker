@@ -32,7 +32,6 @@ import javax.swing.event.DocumentListener;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.MungeStep;
-import ca.sqlpower.matchmaker.munge.SubstringByWordMungeStep;
 import ca.sqlpower.matchmaker.munge.WordCountMungeStep;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
@@ -72,7 +71,7 @@ public class WordCountMungeComponent extends AbstractMungeComponent {
 		caseSensitive.addActionListener(new ActionListener(){
 
 			public void actionPerformed(ActionEvent e) {
-				SubstringByWordMungeStep step = (SubstringByWordMungeStep) getStep();
+				WordCountMungeStep step = (WordCountMungeStep) getStep();
 				step.setParameter(step.CASE_SENSITIVE_PARAMETER_NAME, caseSensitive.isSelected());
 			}
 			

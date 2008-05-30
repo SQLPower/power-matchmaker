@@ -82,7 +82,6 @@ public class CSVWriterMungeStep extends AbstractMungeStep {
 		setDoClearFile(true);
 		setQuoteChar(CSVWriter.DEFAULT_QUOTE_CHARACTER);
 		setEscapeChar(CSVWriter.DEFAULT_ESCAPE_CHARACTER);
-		setDoClearFile(true);
 	}
 
 	public Boolean doCall() throws Exception {

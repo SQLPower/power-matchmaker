@@ -22,6 +22,8 @@ package ca.sqlpower.matchmaker.swingui.munge;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.ConcatMungeStep;
@@ -48,10 +50,28 @@ public class ConcatMungeComponent extends AbstractMungeComponent {
 	
 	@Override
 	protected JPanel buildUI() {
+		ConcatMungeStep step = (ConcatMungeStep) getStep();
+		
 		addInputButton = new JButton(new AddInputAction("Add Input"));
 		removeInputsButton = new JButton(new RemoveUnusedInputAction("Clean Up"));
-        delimiterField = new JTextField(getStepParameter(ConcatMungeStep.DELIMITER_PARAMETER_NAME, ""));
-
+        
+        delimiterField = new JTextField(step.getParameter(ConcatMungeStep.DELIMITER_PARAMETER_NAME));
+		delimiterField.getDocument().addDocumentListener(new DocumentListener(){
+            public void insertUpdate(DocumentEvent e) {
+                doStuff();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                doStuff();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                doStuff();
+            }
+            private void doStuff() {
+            	ConcatMungeStep step = (ConcatMungeStep) getStep();
+				step.setParameter(ConcatMungeStep.DELIMITER_PARAMETER_NAME, delimiterField.getText());
+            }
+        });
+        
         FormLayout fl = new FormLayout("pref:grow,4dlu,pref:grow");
         DefaultFormBuilder b = new DefaultFormBuilder(fl);
         b.append("Delimiter", delimiterField);

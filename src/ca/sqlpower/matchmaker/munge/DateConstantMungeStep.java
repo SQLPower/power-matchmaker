@@ -20,6 +20,7 @@
 package ca.sqlpower.matchmaker.munge;
 
 import java.sql.Time;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -72,6 +73,7 @@ public class DateConstantMungeStep extends AbstractMungeStep {
         setParameter(RETURN_NULL, "False");
         setParameter(USE_CURRENT_TIME, "False");
         setParameter(FORMAT_PARAMETER_NAME, FORMAT[0]);
+        setValue(Calendar.getInstance().getTime());
         addChild(new MungeStepOutput<Date>("Value", Date.class));
     }
     
@@ -81,19 +83,19 @@ public class DateConstantMungeStep extends AbstractMungeStep {
         return Boolean.TRUE;
     }
     
-    public void setValue(Date newValue) throws Exception {
+    public void setValue(Date newValue) {
     	SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
     	String date = df.format(newValue);
 	    setParameter(VALUE_PARAMETER_NAME, date);
     }
     
-    public Date getValue() throws Exception {
-    if (getUseCurrentTime()) {
-    	return Calendar.getInstance().getTime();
-    } else if (!isReturningNull()) {
+    public Date getValue() throws ParseException {
+    	if (getUseCurrentTime()) {
+    		return Calendar.getInstance().getTime();
+    	} else if (!isReturningNull()) {
     		SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
     		Date date = df.parse(getParameter(VALUE_PARAMETER_NAME));
-    		
+
     		if (getParameter(FORMAT_PARAMETER_NAME).equals(FORMAT[1])) {
     			return new java.sql.Date(date.getTime());
     		} else if (getParameter(FORMAT_PARAMETER_NAME).equals(FORMAT[2])) {

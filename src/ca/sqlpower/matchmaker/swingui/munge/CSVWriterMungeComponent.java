@@ -120,7 +120,6 @@ public class CSVWriterMungeComponent extends AbstractMungeComponent {
         });
         
         escapeField = new JTextField(step.getEscapeChar() + "", 1);
-        escapeField = new JTextField(step.getEscapeChar() + "", 1);
         escapeField.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
 				doStuff();
@@ -170,6 +169,7 @@ public class CSVWriterMungeComponent extends AbstractMungeComponent {
         });
         
         clrFileCheckBox = new JCheckBox();
+        clrFileCheckBox.setSelected(step.getDoClearFile());
         clrFileCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				step.setDoClearFile(clrFileCheckBox.isSelected());
