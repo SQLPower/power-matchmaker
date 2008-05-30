@@ -69,6 +69,11 @@ public class EngineOutputPanel {
 	private JScrollPane outputComponent;
 	
 	/**
+	 * The actual text area that displays the engine output
+	 */
+	private JTextArea outputTextArea;
+	
+	/**
 	 * The progress bar that should indicate engine run progress.
 	 */
 	private JProgressBar progressBar;
@@ -94,7 +99,7 @@ public class EngineOutputPanel {
 		}
 		engineOutputDoc = new DefaultStyledDocument();
 
-		final JTextArea outputTextArea = new JTextArea(20, 80);
+		outputTextArea = new JTextArea(20, 80);
 		outputTextArea.setDocument(engineOutputDoc);
 		outputTextArea.setEditable(false);
 		outputTextArea.setWrapStyleWord(true);
@@ -132,6 +137,16 @@ public class EngineOutputPanel {
 		ButtonBarBuilder bbBuilder = new ButtonBarBuilder();
 		bbBuilder.addGlue();
 
+		Action clearAction = new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				outputTextArea.setText("");
+			}
+		};
+		JButton clearButton = new JButton(clearAction);
+		clearButton.setText("Clear");
+		bbBuilder.addGridded(clearButton);
+		bbBuilder.addRelatedGap();
+		
 		Action saveAsAction = new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
 				SwingUtilities.invokeLater(new Runnable() {
