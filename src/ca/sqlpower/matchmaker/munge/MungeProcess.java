@@ -28,6 +28,7 @@ import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.swingui.ColorScheme;
 
 /**
  * A set of MungeSteps. The child type is {@link MungeStep}.
@@ -48,7 +49,7 @@ public class MungeProcess
 	/**
 	 * The default color of a munge process is red
 	 */
-	public static final Color DEFAULT_COLOR = new Color(255, 0, 0);
+	public static final Color DEFAULT_COLOR = ColorScheme.BREWER_SET19[0];
 	
 	/**
 	 * Object ID needed by Hibernate 

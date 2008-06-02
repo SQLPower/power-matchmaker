@@ -19,7 +19,10 @@
 
 package ca.sqlpower.matchmaker.swingui.action;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 
@@ -31,6 +34,7 @@ import ca.sqlpower.matchmaker.munge.CleanseResultStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.SQLInputStep;
+import ca.sqlpower.matchmaker.swingui.ColorScheme;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 
@@ -55,6 +59,25 @@ public class NewMungeProcessAction extends AbstractAction {
 		int count;
     	for (count = 1; project.getMungeProcessByName("New Munge Process " + count) != null ; count++);
     	process.setName("New Munge Process " + count);
+    	
+    	// default not to reuse colours
+    	List<Color> usedColors = new ArrayList<Color>();
+    	for (MungeProcess mp : project.getMungeProcesses()) {
+    		usedColors.add(mp.getColour());
+    	}
+    	Color color = null;
+    	for (Color c : ColorScheme.BREWER_SET19) {
+    		if (!usedColors.contains(c)) {
+    			color = c;
+    			break;
+    		}
+    	}
+    	// if all colours were used, use the default
+    	if (color == null) {
+    		color = MungeProcess.DEFAULT_COLOR;
+    	}
+    	process.setColour(color);
+    	
     	project.addMungeProcess(process);
     	SQLInputStep inputStep = new SQLInputStep();
 		inputStep.setParameter(MungeStep.MUNGECOMPONENT_EXPANDED, true);
