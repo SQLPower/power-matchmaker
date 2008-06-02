@@ -145,8 +145,13 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 		if (stepText != null) {
 			textArea.setText(stepText);
 		}
-		changeColor(step.getColour(), true);
-		changeColor(step.getTextAreaColour(), false);
+		
+		Color stepColor = step.getColour();
+		normalBackground = stepColor;
+		selectedBackground = stepColor;
+		
+		Color textColor = step.getTextAreaColour();
+		textArea.setForeground(textColor);
 		
 		setUpColorChanger();
 		
@@ -435,6 +440,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 				((LabelMungeStep)getStep()).setTextAreaColour(c);
 				textArea.setForeground(c);
 			}
+			repaint();
 		}
 	}
 	
@@ -461,7 +467,6 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 			}
 		});
 		ok.addActionListener(new ActionListener() {
-
 			public void actionPerformed(ActionEvent e) {
 				changeColor(colorPanel.getColor(), true);
 				colorChanger.setVisible(false);
