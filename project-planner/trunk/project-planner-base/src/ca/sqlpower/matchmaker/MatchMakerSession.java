@@ -50,7 +50,7 @@ public interface MatchMakerSession {
 	 */
     public final static String DEFAULT_FOLDER_NAME = "My Projects";
     public final static String SHARED_FOLDER_NAME = "Shared Projects";
-    public final static String GALLERY_FOLDER_NAME = "Gallery";
+    public final static String GALLERY_FOLDER_NAME = "Public Gallery";
 
     /**
      * The session context that created this session.

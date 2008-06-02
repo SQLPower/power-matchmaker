@@ -90,7 +90,7 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 		mungeProcessTable = new JTable(mungeProcessTableModel);
 		TableCellRenderer renderer = new ColorRenderer(true);
         mungeProcessTable.setDefaultRenderer(Color.class, renderer );
-        mungeProcessTable.setName("Munge Processes");
+        mungeProcessTable.setName("Workflows");
         
         // adds a selection listener that enables/disables delete button
         mungeProcessTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
@@ -138,7 +138,7 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 		pb.add(status, cc.xy(4,row));
 		
 		row += 2;
-		pb.add(new JLabel("Munge Processes:"), cc.xy(4,row,"l,t"));
+		pb.add(new JLabel("Workflows:"), cc.xy(4,row,"l,t"));
 		
 		row += 2;
 		scrollPane = new JScrollPane(mungeProcessTable);
@@ -159,15 +159,15 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 		return pb.getPanel();
 	}
 
-	Action deleteAction = new AbstractAction("Delete Munge Process") {
+	Action deleteAction = new AbstractAction("Delete Workflow") {
 		public void actionPerformed(ActionEvent e) {
 			int selectedRow = mungeProcessTable.getSelectedRow();
 		
-			logger.debug("deleting munge process:"+selectedRow);
+			logger.debug("deleting workflow:"+selectedRow);
 			
 			if ( selectedRow >= 0 && selectedRow < mungeProcessTable.getRowCount()) {
 				int response = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-				"Are you sure you want to delete the munge process?");
+				"Are you sure you want to delete the workflow?");
 				if (response != JOptionPane.YES_OPTION) {
 					return;
 				}
@@ -183,7 +183,7 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 				}
 			} else {
 				JOptionPane.showMessageDialog(swingSession.getFrame(),
-						"Please select one munge process to delete");
+						"Please select one workflow to delete");
 			}
 		}
 	};

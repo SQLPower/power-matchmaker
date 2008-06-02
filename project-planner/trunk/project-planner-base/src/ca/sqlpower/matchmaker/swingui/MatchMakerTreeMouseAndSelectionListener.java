@@ -294,44 +294,44 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 					swingSession.setCurrentEditorComponent(me);
 
 				} else if (o instanceof MungeProcess) {
-					if (swingSession.getOldPane() instanceof MungeProcessEditor) {
-						MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
+					if (swingSession.getOldPane() instanceof WorkflowEditor) {
+						WorkflowEditor originalPane = (WorkflowEditor) swingSession.getOldPane();
 						if (originalPane.getProcess() == o) {
 							return;
 						}
 					}
 					Project m = ((MungeProcess) o).getParentProject();
-					MungeProcessEditor editor = new MungeProcessEditor(swingSession, m, (MungeProcess) o);
-					logger.debug("Created new munge process editor "
+					WorkflowEditor editor = new WorkflowEditor(swingSession, m, (MungeProcess) o);
+					logger.debug("Created new workflow editor "
 							+ System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 				} else if (o instanceof MungeStep) {
 					MungeProcess mp = (MungeProcess)((MungeStep) o).getParent();
 					Project m = mp.getParentProject();
-					if (swingSession.getOldPane() instanceof MungeProcessEditor) {
-					    MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
+					if (swingSession.getOldPane() instanceof WorkflowEditor) {
+					    WorkflowEditor originalPane = (WorkflowEditor) swingSession.getOldPane();
 					    if (originalPane.getProcess() == mp) {
 					        originalPane.setSelectedStep((MungeStep) o);
 					        return;
 					    }
 					}
-					MungeProcessEditor editor = new MungeProcessEditor(swingSession, m, mp);
-					logger.debug("Created new munge process editor " + System.identityHashCode(editor));
+					WorkflowEditor editor = new WorkflowEditor(swingSession, m, mp);
+					logger.debug("Created new workflow editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 					editor.setSelectedStep((MungeStep) o);
 				} else if (o instanceof MungeStepOutput) {
 					MungeStep ms = (MungeStep)((MungeStepOutput) o).getParent();
 					MungeProcess mp = (MungeProcess)(ms.getParent());
 					Project m = mp.getParentProject();
-					if (swingSession.getOldPane() instanceof MungeProcessEditor) {
-						MungeProcessEditor originalPane = (MungeProcessEditor) swingSession.getOldPane();
+					if (swingSession.getOldPane() instanceof WorkflowEditor) {
+						WorkflowEditor originalPane = (WorkflowEditor) swingSession.getOldPane();
 						if (originalPane.getProcess() == mp) {
 							originalPane.setSelectedStepOutput((MungeStepOutput) o);
 							return;
 						}
 					}
-					MungeProcessEditor editor = new MungeProcessEditor(swingSession, m, mp);
-					logger.debug("Created new munge process editor " + System.identityHashCode(editor));
+					WorkflowEditor editor = new WorkflowEditor(swingSession, m, mp);
+					logger.debug("Created new workflow editor " + System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 					editor.setSelectedStepOutput((MungeStepOutput) o);
 				} else if (o instanceof MatchMakerFolder) {
@@ -340,7 +340,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 
 					if (f.getName().equals(Project.MUNGE_PROCESSES_FOLDER_NAME)) {
 						MungeProcessGroupEditor editor = new MungeProcessGroupEditor(swingSession, m);
-						logger.debug("Created new munge process group editor "
+						logger.debug("Created new workflow group editor "
 								+ System.identityHashCode(editor));
 						swingSession.setCurrentEditorComponent(editor);
 					}

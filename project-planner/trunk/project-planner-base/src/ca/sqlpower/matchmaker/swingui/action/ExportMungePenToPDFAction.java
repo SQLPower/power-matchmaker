@@ -38,7 +38,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.MatchMakerVersion;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.MungeProcessEditor;
+import ca.sqlpower.matchmaker.swingui.WorkflowEditor;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.util.MonitorableImpl;
@@ -120,11 +120,11 @@ public class ExportMungePenToPDFAction extends ProgressAction {
         monitor.setStarted(true);
         JFileChooser chooser = new JFileChooser();
         chooser.addChoosableFileFilter(SPSUtils.PDF_FILE_FILTER);
-        if (!(session.getOldPane() instanceof MungeProcessEditor)) {
+        if (!(session.getOldPane() instanceof WorkflowEditor)) {
         	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the munge pen at current.", "Cannot Export MungePen", JOptionPane.WARNING_MESSAGE);
         	return false;
         }
-        monitor.setJobSize(((MungeProcessEditor) session.getOldPane()).getMungePen().getComponentCount());
+        monitor.setJobSize(((WorkflowEditor) session.getOldPane()).getMungePen().getComponentCount());
         
         File file = null;
         while (true) {
@@ -167,12 +167,12 @@ public class ExportMungePenToPDFAction extends ProgressAction {
 
     @Override
     public void doStuff(MonitorableImpl monitor, Map<String, Object> properties) {
-        if (!(session.getOldPane() instanceof MungeProcessEditor)) {
+        if (!(session.getOldPane() instanceof WorkflowEditor)) {
         	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the munge pen at current.", "Cannot Export MungePen", JOptionPane.WARNING_MESSAGE);
         	return;
         }
 
-        MungePen mungePen = ((MungeProcessEditor) session.getOldPane()).getMungePen();
+        MungePen mungePen = ((WorkflowEditor) session.getOldPane()).getMungePen();
         
         /* We translate the graphics to (OUTSIDE_PADDING, OUTSIDE_PADDING) 
          * so nothing is drawn right on the edge of the document. So

@@ -192,7 +192,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		
 		projectName.setName("Project Name");
 		saveProject = new JButton(saveAction);
-		isSharingWithEveryone = new JCheckBox("Share with Everyone. (Your Project will appear in the gallery)");
+		isSharingWithEveryone = new JCheckBox("Share with Everyone. (Your Project will appear in the public gallery)");
 		sharingLabel = new JLabel("Sharing:");
 		sharingWithEveryoneLabel = new JLabel("Share with the following people:");
 

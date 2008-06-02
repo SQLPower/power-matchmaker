@@ -39,7 +39,7 @@ public class NewMungeProcessAction extends AbstractAction {
 	private final Project project;
 
 	public NewMungeProcessAction(MatchMakerSwingSession swingSession, Project parent) {
-	    super("New Munge Process");
+	    super("New Workflow");
         this.swingSession = swingSession;
         this.project = parent;
         if (parent == null) throw new IllegalArgumentException("Parent must be non null");
@@ -48,8 +48,8 @@ public class NewMungeProcessAction extends AbstractAction {
 	public void actionPerformed(ActionEvent e) {
 		MungeProcess process = new MungeProcess();
 		int count;
-    	for (count = 1; project.getMungeProcessByName("New Munge Process " + count) != null ; count++);
-    	process.setName("New Munge Process " + count);
+    	for (count = 1; project.getMungeProcessByName("New Workflow " + count) != null ; count++);
+    	process.setName("New Workflow " + count);
     	project.addMungeProcess(process);
 		
     	swingSession.save(process);

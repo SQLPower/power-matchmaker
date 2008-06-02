@@ -113,7 +113,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     public static final String MERGE_RULES_FOLDER_NAME = "Merge Rules";
     
     /** Folder name for munge processes. */
-    public static final String MUNGE_PROCESSES_FOLDER_NAME = "Munge Processes";
+    public static final String MUNGE_PROCESSES_FOLDER_NAME = "Workflows";
     
     /** The lists of permitted users for the project */
     private List<String> viewOnlyUsers = new ArrayList<String>();
@@ -129,7 +129,7 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     private boolean canModify = true;
     
     /**
-     * Contains the Munge Processes and the Munge Steps
+     * Contains the munge processes and the Munge Steps
      */
     private MatchMakerFolder<MungeProcess> mungeProcessesFolder =
     	new MatchMakerFolder<MungeProcess>(MungeProcess.class) {

@@ -34,14 +34,14 @@ public class DeleteMungeProcessAction extends AbstractAction {
     private final MungeProcess mungeProcess;
 
 	public DeleteMungeProcessAction(MatchMakerSwingSession swingSession, MungeProcess mungeProcess) {
-		super("Delete Munge Process");
+		super("Delete Workflow");
         this.swingSession = swingSession;
 		this.mungeProcess = mungeProcess;
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		int responds = JOptionPane.showConfirmDialog(swingSession.getFrame(),
-		"Are you sure you want to delete the munge process?");
+		"Are you sure you want to delete the workflow?");
 		if (responds != JOptionPane.YES_OPTION)
 			return;
 		swingSession.delete(mungeProcess);

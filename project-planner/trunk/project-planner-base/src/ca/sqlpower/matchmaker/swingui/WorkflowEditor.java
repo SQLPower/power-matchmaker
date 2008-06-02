@@ -59,10 +59,10 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * Implements the DataEntryPanel functionality for editing a munge process (MatchRuleSet).
+ * Implements the DataEntryPanel functionality for editing a "munge process" (workflow).
  */
-public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess, MungeStep> {
-    private static final Logger logger = Logger.getLogger(MungeProcessEditor.class);
+public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, MungeStep> {
+    private static final Logger logger = Logger.getLogger(WorkflowEditor.class);
 	
 	/**
 	 * The dark blue colour to be used as a background to the project steps
@@ -93,7 +93,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
     private final MatchMakerSwingSession swingSession;
     
     /**
-     * Creates a new editor for the given session's given munge process.
+     * Creates a new editor for the given session's given "munge process" (workflow).
      * 
      * @param swingSession The session the given project and process belong to
      * @param project The project that is or will become the process's parent. If the
@@ -101,16 +101,16 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
      * connect the process to this project when saving. 
      * @param process The process to edit
      */
-    public MungeProcessEditor(MatchMakerSwingSession swingSession,
+    public WorkflowEditor(MatchMakerSwingSession swingSession,
             Project project, MungeProcess process) throws ArchitectException {
         super(swingSession, process);
 		this.swingSession = swingSession;
-        logger.debug("Creating a new munge process editor");
+        logger.debug("Creating a new workflow editor");
         
         this.parentProject = project;
         if (mmo.getParentProject() != null && mmo.getParentProject() != parentProject) {
         	throw new IllegalStateException(
-        	"The given process has a parent which is not the given parent match object!");
+        	"The given workflow has a parent which is not the given parent project!");
         }
 
         // the handler stuff
@@ -142,7 +142,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		CellConstraints cc = new CellConstraints();
 		JPanel subPanel = new JPanel(layout);
         subPanel.add(status, cc.xyw(2, 2, 5));
-        subPanel.add(new JLabel("Process Name: "), cc.xy(2, 4));
+        subPanel.add(new JLabel("Workflow Name: "), cc.xy(2, 4));
         
         subPanel.add(name, cc.xy(4, 4));
         
@@ -183,7 +183,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 		name.setText(mmo.getName());
 	}
 	
-	Action saveAction = new AbstractAction("Save Munge Process"){
+	Action saveAction = new AbstractAction("Save Workflow"){
 		public void actionPerformed(ActionEvent e) {
             applyChanges();
 		}
@@ -197,7 +197,7 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
     	ValidateResult result = handler.getWorstValidationStatus();
         if ( result.getStatus() == Status.FAIL) {
             JOptionPane.showMessageDialog(swingSession.getFrame(),
-                    "You have to fix the error before you can save the munge process",
+                    "You have to fix the error before you can save the workflow",
                     "Save",
                     JOptionPane.ERROR_MESSAGE);
             return false;
@@ -236,16 +236,16 @@ public class MungeProcessEditor extends AbstractUndoableEditorPane<MungeProcess,
 			String value = (String)contents;
 			if ( value == null || value.length() == 0 ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						"Munge Process name is required");
+						"Workflow name is required");
 			} else if ( !value.equals(mmo.getName()) &&
 					parentProject.getMungeProcessByName(name.getText()) != null ) {
 				return ValidateResult.createValidateResult(Status.FAIL,
-						"Munge Process name is invalid or already exists.");
+						"Workflow name is invalid or already exists.");
 			} else if (value.length() > MAX_RULE_SET_NAME_CHAR){
 			    return ValidateResult.createValidateResult(Status.FAIL, 
-                        "Munge Process name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
+                        "Workflow name cannot be more than " + MAX_RULE_SET_NAME_CHAR + " characters long");
             } else if (mmo.getParent() == null && parentProject.getMungeProcessByName(name.getText()) != null) {
-            	return ValidateResult.createValidateResult(Status.FAIL, "Munge Process name is invalid or already exists.");
+            	return ValidateResult.createValidateResult(Status.FAIL, "Workflow name is invalid or already exists.");
             }
 			return ValidateResult.createValidateResult(Status.OK, "");
 		}
