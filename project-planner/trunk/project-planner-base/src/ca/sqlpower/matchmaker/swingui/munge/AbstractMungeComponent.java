@@ -173,7 +173,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 	/**
 	 * The dimensions of the resize icon in the bottom right of the munge components.
 	 */
-	public static final Dimension RESIZE_ICON_SIZE = new Dimension(15, 15);
+	public static final Dimension RESIZE_ICON_SIZE = new Dimension(12, 12);
 	
 	/**
 	 * The image to be placed in the bottom right corner of the component to allow users
@@ -788,7 +788,7 @@ public abstract class AbstractMungeComponent extends JPanel {
 		}
 		g.fillRect(0, 0, dim.width-1, dim.height-1);
 		
-		g.drawImage(RESIZE_ICON, dim.width - RESIZE_ICON_SIZE.width, dim.height - RESIZE_ICON_SIZE.height, null);
+		g.drawImage(RESIZE_ICON, dim.width - RESIZE_ICON_SIZE.width -1, dim.height - RESIZE_ICON_SIZE.height - 1, null);
 	}
 	
 	/**

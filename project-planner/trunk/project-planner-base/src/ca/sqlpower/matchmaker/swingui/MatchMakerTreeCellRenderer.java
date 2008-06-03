@@ -54,7 +54,7 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
      */
     public static final Color LIGHT_ORANGE = new Color(0xfff5e5);
 
-	final private Icon projectIcon = new ImageIcon(getClass().getResource("/icons/match_project.png"));
+	final private Icon projectIcon = new ImageIcon(getClass().getResource("/icons/pp_project.png"));
 	final private Icon mungeIcon = new ImageIcon(getClass().getResource("/icons/cog.png"));
 	final private Icon folderIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/folder.png"));
 	final private Icon sharedFolderIcon = new ImageIcon(getClass().getResource("/icons/share.png"));

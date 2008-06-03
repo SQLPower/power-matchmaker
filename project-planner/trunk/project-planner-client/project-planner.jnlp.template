@@ -7,7 +7,7 @@
     <homepage href="page/project_planner"/>
     <description>Project Planner Client Application</description>
     <description kind="short">A simple project diagramming tool</description>
-    <icon href="pp_64.png"/>
+    <icon href="pp_128.png"/>
     <icon kind="splash" href="pp_128.png"/>
     <shortcut online="true">
       <desktop/>

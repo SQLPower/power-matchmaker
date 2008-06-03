@@ -41,7 +41,7 @@ public class MMSUtils {
      * in the MatchMaker.
      */
     public static ImageIcon getFrameImageIcon() {
-        return SPSUtils.createIcon("pp_16", "Project Planner Logo");
+        return SPSUtils.createIcon("pp_24", "Project Planner Logo");
     }
 
     /**
