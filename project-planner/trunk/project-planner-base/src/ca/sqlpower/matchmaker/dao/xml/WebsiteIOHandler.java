@@ -42,6 +42,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -67,7 +68,7 @@ public class WebsiteIOHandler implements IOHandler {
 
     private static final Logger logger = Logger.getLogger(WebsiteIOHandler.class);
     
-    private JDialog d = new JDialog();
+    private JDialog d;
     
     /**
      * Base URL where the SQL Power website lives. The various action paths will be appended
@@ -337,6 +338,12 @@ public class WebsiteIOHandler implements IOHandler {
         final JPasswordField passwordField = new JPasswordField(password);
         JDefaultButton okButton = new JDefaultButton("OK");
         JButton cancelButton = new JButton("Cancel");
+        
+        if (d == null) {
+        	JFrame dummyFrame = new JFrame();
+        	dummyFrame.setIconImage(MMSUtils.getFrameImageIcon().getImage());
+        	d = new JDialog(dummyFrame);
+        }
         
         okButton.addActionListener(new ActionListener(){
 
