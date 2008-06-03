@@ -20,14 +20,15 @@
 package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.Dimension;
+import java.awt.Font;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -117,11 +118,23 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 		text.setBorder(null);
 		text.setBackground(null);
 		text.setOpaque(false);
-		StyledDocument doc = new DefaultStyledDocument();
-		MutableAttributeSet standard = new SimpleAttributeSet();
+		
+		
+		
+		MutableAttributeSet attrs = text.getInputAttributes();
+
+		// gets the system default font
+		Font font = (Font)UIManager.get("Label.font");
+		StyleConstants.setFontFamily(attrs, font.getFamily());
+        StyleConstants.setFontSize(attrs, font.getSize());
+        StyledDocument doc = text.getStyledDocument();
+        doc.setCharacterAttributes(0, doc.getLength() + 1, attrs, false);
+		
+        MutableAttributeSet standard = new SimpleAttributeSet();
 		StyleConstants.setAlignment(standard, StyleConstants.ALIGN_CENTER);
 		doc.setParagraphAttributes(0, 0, standard, true);
-		text.setDocument(doc);
+		
+		text.setStyledDocument(doc);
 		text.setText(getStep().getName());
 		
 		String stepText = ((ProjectPlannerMungeStep) getStep()).getText();
