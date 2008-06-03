@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -35,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 
 import org.apache.log4j.Logger;
 
@@ -162,9 +164,11 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
 		
         splitPane.setLeftComponent(new JScrollPane(mungePen));
         MungeStepLibrary msl = new MungeStepLibrary(mungePen, ((SwingSessionContext) swingSession.getContext()).getStepMap());
-        splitPane.setRightComponent(new MungePenSideBar(new MungeStepInfoComponent(mungePen).getPanel(),
-        							  msl.getScrollPane(), "PROJECT STEPS", "(Drag into playpen)",
-        							  DARK_BLUE).getToolbar());
+        MungeStepInfoComponent stepInfoComp = new MungeStepInfoComponent(msl);
+		JToolBar sideBar = new MungePenSideBar(stepInfoComp.getScrollPane(), msl.getScrollPane(), "PROJECT STEPS",
+				"(Drag into playpen)", DARK_BLUE).getToolbar();
+        sideBar.setMinimumSize(new Dimension(0, 0));
+		splitPane.setRightComponent(sideBar);
         panel.add(splitPane, BorderLayout.CENTER);
     }
     

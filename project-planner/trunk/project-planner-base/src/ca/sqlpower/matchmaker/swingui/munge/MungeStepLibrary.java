@@ -190,6 +190,10 @@ public class MungeStepLibrary {
 		return libraryPane;
 	}
 	
+	public JTree getTree() {
+		return tree;
+	}
+	
 	private class StepDescriptionTransferHandler extends TransferHandler {
 		 public boolean importData(JComponent c, Transferable t) {
 			 return c == pen;

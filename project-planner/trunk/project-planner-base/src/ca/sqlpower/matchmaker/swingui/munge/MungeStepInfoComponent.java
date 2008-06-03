@@ -20,26 +20,24 @@
 package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.JTextPane;
+import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 
-import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.util.BrowserUtil;
-
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Creates the component that will listen to the munge pen for the selection
@@ -54,74 +52,55 @@ public class MungeStepInfoComponent {
 	private static final Color MEDIUM_BLUE = new Color(0xb7c5dc);
 	
 	/**
-	 * This listener will listen on all munge steps in the munge pen and update
-	 * the description field when a component receives focus.
+	 * The scroll pane that holds info component.
 	 */
-	private FocusListener mungeStepFocusListener = new FocusListener() {
-		public void focusLost(FocusEvent e) {
-		}
-		public void focusGained(FocusEvent e) {
-			if (e.getComponent() instanceof AbstractMungeComponent) {
-				AbstractMungeComponent comp = (AbstractMungeComponent) e.getComponent();
-				MungeStep mungeStep = comp.getStep();
-				stepInfoText.setText(mungeStep.getName() +
-						(mungeStep.getDescription() != null ? "\n" + mungeStep.getDescription() : ""));
-				if (mungeStep.getInfoURL() != null && mungeStep.getInfoURL().trim().length() > 0) {
-					moreInfo.setText("<html><body><p><a href=\"" + mungeStep.getInfoURL() + "\">More Info</a>");
-				} else {
-					moreInfo.setText("");
-				}
-			}
-		}
-	};
+	private JScrollPane scrollPane;
 	
 	/**
-	 * The text pane that will display the step description for selected steps
-	 * in the munge pen.
+	 * Default font to use.
 	 */
-	private JTextPane stepInfoText = new JTextPane();
-
+	private Font font = (Font)UIManager.get("Label.font");
+	
+	private final static int SCROLLPANE_HEIGHT = 75;
+	
 	/**
-	 * This panel holds all of the text components that describe the selected munge
-	 * component.
+	 *	Updates the info with given step description 
 	 */
-	private JPanel stepInfoPanel;
+	private void updateInfo(StepDescription sd) {
+		
+		String stepInfoText = (sd.getName() + (sd.getDescription() != null ? "<p>" + sd.getDescription() + "</p>": ""));
+		String moreInfo = "";
+		if (sd.getInfoURL() != null && sd.getInfoURL().trim().length() > 0) {
+			moreInfo = "<p><a href=\"" + sd.getInfoURL() + "\">More Info</a></p>";
+		}
+		
+		// bad approach in diving by 4 but the html text with the same font appears huge
+		stepInfo.setText("<html><body><font face =\"" + font.getFamily() + "\" size=\"" +
+				font.getSize()/4 + "\">" + stepInfoText + moreInfo + "</font>");
+		// "anti-autoscroll"
+		
+		stepInfo.setCaretPosition(0);
+	}
 	
 	/**
 	 * If the user clicks on the url in this pane then a web browser should open with the
 	 * page specified by the selected munge step's more information URL.
 	 */
 
-	private JEditorPane moreInfo;
+	private JEditorPane stepInfo;
 	
-	public MungeStepInfoComponent(MungePen mungePen) {
-		stepInfoText = new JTextPane();
-		stepInfoText.setEditable(false);
-		stepInfoText.setBackground(null);
-		
-		mungePen.addContainerListener(new ContainerListener() {
-			public void componentAdded(ContainerEvent e) {
-				e.getChild().addFocusListener(mungeStepFocusListener);
-			}
-			public void componentRemoved(ContainerEvent e) {
-				e.getChild().removeFocusListener(mungeStepFocusListener);
-			}
-		});
-		for (Component comp : mungePen.getComponents()) {
-			comp.addFocusListener(mungeStepFocusListener);
-		}
-		
+	public MungeStepInfoComponent(MungeStepLibrary msl) {
 		HTMLEditorKit htmlKit = new HTMLEditorKit();
-        moreInfo = new JEditorPane();
-        moreInfo.setText("test");
-		moreInfo.setEditorKit(htmlKit);
-        moreInfo.setEditable(false);
-        moreInfo.setBackground(null);
+        stepInfo = new JEditorPane();
+        stepInfo.setText("test");
+		stepInfo.setEditorKit(htmlKit);
+        stepInfo.setEditable(false);
+        stepInfo.setBackground(MEDIUM_BLUE);
         
         /* Jump to the URL (in the user's configured browser)
          * when a link is clicked.
          */
-        moreInfo.addHyperlinkListener(new HyperlinkListener() {
+        stepInfo.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent evt) {
                 if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     URL url = evt.getURL();
@@ -134,16 +113,21 @@ public class MungeStepInfoComponent {
             }
         });
 		
-		stepInfoPanel = new JPanel();
-		stepInfoPanel.setBackground(MEDIUM_BLUE);
-		FormLayout infoPanelLayout = new FormLayout("pref:grow", "pref, pref");
-		stepInfoPanel.setLayout(infoPanelLayout);
-		CellConstraints infoPanelCC = new CellConstraints();
-		stepInfoPanel.add(stepInfoText, infoPanelCC.xy(1, 1));
-		stepInfoPanel.add(moreInfo, infoPanelCC.xy(1, 2));
+		msl.getTree().addTreeSelectionListener(new TreeSelectionListener(){
+			public void valueChanged(TreeSelectionEvent e) {
+				TreePath tp = e.getPath();
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) tp.getLastPathComponent();
+				if (tp != null && node.getUserObject() instanceof StepDescription) {
+					updateInfo(((StepDescription) node.getUserObject()));
+				}
+			}
+		});
+		
+		scrollPane = new JScrollPane(stepInfo);
+		scrollPane.setPreferredSize(new Dimension(msl.getScrollPane().getPreferredSize().width, SCROLLPANE_HEIGHT));
 	}
 	
-	public JPanel getPanel() {
-		return stepInfoPanel;
+	public JComponent getScrollPane() {
+		return scrollPane;
 	}
 }
