@@ -602,9 +602,14 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 case O_CANCEL:
                     save = false;
                     doit = false;
+                    
                     //The treepath should never be null if it reaches here
                     //since prompting this means that the right side of the splitpane
                     //must have at least been replaced once.
+                    if (lastTreePath == null) {
+                    	throw new IllegalStateException("Last tree path (selection) should not be null.");
+                    }
+                    
                     tree.setSelectionPath(lastTreePath);
                     break;
                 }
