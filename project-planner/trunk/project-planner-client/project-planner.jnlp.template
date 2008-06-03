@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp spec="1.5+" 
-	codebase="http://localhost:8080/sqlpower_website/">
+	codebase="$$codebase">
   <information>
     <title>Project Planner Client</title>
     <vendor>SQL Power Group Inc.</vendor>
