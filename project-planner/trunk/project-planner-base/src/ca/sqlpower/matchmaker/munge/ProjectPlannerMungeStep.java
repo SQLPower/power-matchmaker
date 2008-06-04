@@ -36,6 +36,7 @@ public class ProjectPlannerMungeStep extends AbstractMungeStep {
 		super(sd, true);
 		setDefaultInputClass(String.class);
 		defineIO();
+		setText(getName());
 	}
 
     /**
