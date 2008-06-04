@@ -2040,7 +2040,7 @@
 				<imageobject>
 
 					<imagedata fileref="doc/images/MatchMakerUI.png"
-						format="PNG" width="2in" />
+						format="PNG" width="2.5in" />
 
 				</imageobject>
 
@@ -2264,7 +2264,7 @@
 					<listitem>
 						<para>
 							Retain Characters - Retains only the
-							characters specified and removes all other
+							specified characters and removes all other
 							characters.
 						</para>
 					</listitem>
@@ -2474,8 +2474,7 @@
 				</itemizedlist>
 
 				<para>
-					For more information on running a Power*MatchMaker
-					engine, see
+					For more information, see
 					<xref
 						linkend="working_with.overview_project.engines" />
 					.
@@ -2524,8 +2523,7 @@
 
 							Note: You can use the Power*MatchMaker
 							default repository or create your own
-							repository. For more information on creating
-							your own repository, see
+							repository. For more information, see
 							<xref linkend="repositories" />
 							.
 
@@ -2798,7 +2796,7 @@
 
 				</para>
 
-				<itemizedlist>
+				<orderedlist>
 					<listitem>
 
 						<para>
@@ -2857,7 +2855,7 @@
 
 					</listitem>
 
-				</itemizedlist>
+				</orderedlist>
 
 			</section>
 
@@ -2924,7 +2922,7 @@
 
 							To import an active project, select a
 							subfolder in the Current Projects folder in
-							the Power*MatchMaker Tree. Or, to import a
+							the Power*MatchMaker Tree. Or to import a
 							backup copy of a project, select the Backup
 							Projects folder.
 
@@ -3167,7 +3165,7 @@
 						<mediaobject>
 							<imageobject>
 								<imagedata
-									fileref="doc/images/MungePen.png" format="PNG" width="4in" />
+									fileref="doc/images/MungePen.png" format="PNG" width="4.5in" />
 							</imageobject>
 						</mediaobject>
 
@@ -3719,7 +3717,7 @@
 							<imageobject>
 								<imagedata
 									fileref="doc/images/MungePenExample.png" format="PNG"
-									width="2in" />
+									width="2.5in" />
 							</imageobject>
 						</mediaobject>
 
@@ -3966,7 +3964,7 @@
 									results. If you set the message
 									level to DEBUG, you should limit the
 									number of records to process, since
-									processing all records can be very
+									processing all records at the DEBUG message level can be very
 									time-consuming.
 								</para>
 							</listitem>
@@ -4019,7 +4017,7 @@
 							<imageobject>
 								<imagedata
 									fileref="doc/images/ValidateMatches01.png" format="PNG"
-									width="2in" />
+									width="2.5in" />
 							</imageobject>
 						</mediaobject>
 
@@ -4131,9 +4129,8 @@
 				<title>Step 7: Merge Duplicate Records</title>
 
 				<para>
-					Next, you will merge the records that have been
-					matched, based on the merge rules you define. When
-					you merge the records, the data in your source table
+					Next, you will create merge rules and merge the records you've marked as matched.
+					When you merge the records, the data in your source table
 					will be modified.
 				</para>
 
@@ -4378,9 +4375,6 @@
 				.
 			</para>
 
-			<itemizedlist>
-
-				<listitem>
 					<para>
 						General settings for several database platforms
 						are already pre-configured in Power*MatchMaker.
@@ -4390,22 +4384,14 @@
 						information, see
 						<xref
 							linkend="setup_database.database_types.jdbc_driver" />
-						.
-					</para>
-				</listitem>
-
-				<listitem>
-					<para>
-						You can also define additional database
+						. You can also define additional database
 						platforms in Power*MatchMaker. For more
 						information, see
 						<xref
 							linkend="setup_database.database_types.new" />
 						.
 					</para>
-				</listitem>
 
-			</itemizedlist>
 
 			<section id="setup_database.database_types.new">
 
@@ -4889,7 +4875,7 @@
 						<mediaobject>
 							<imageobject>
 								<imagedata
-									fileref="doc/images/DBConnectionMgr.png" format="PNG"
+									fileref="doc/images/DBConnection.png" format="PNG"
 									width="4in" />
 							</imageobject>
 						</mediaobject>
@@ -5062,25 +5048,50 @@
 									</row>
 
 
+
+
+								</tbody>
+
+							</tgroup>
+
+						</informaltable>
+
+						<mediaobject>
+							<imageobject>
+								<imagedata
+									fileref="doc/images/database_conn_window_setup.png"
+									format="PNG" width="4in" />
+							</imageobject>
+						</mediaobject>
+
+						<informaltable frame="all">
+
+							<tgroup cols="2">
+
+								<colspec colname="c1" />
+								<colspec colname="c2" />
+								<spanspec spanname="horiz_span"
+									namest="c1" nameend="c2" />
+
+								<thead>
 									<row>
-										<entry spanname="horiz_span">
 
-
-
-											<mediaobject>
-												<imageobject>
-													<imagedata
-														fileref="doc/images/database_conn_window_setup.png"
-														format="PNG" width="4in" />
-												</imageobject>
-											</mediaobject>
-
-
-
+										<entry>
+											<para>
+												In this field ...
+											</para>
 										</entry>
+
+
+										<entry>
+											<para>Do this ...</para>
+										</entry>
+
 									</row>
 
+								</thead>
 
+								<tbody>
 
 									<row>
 
@@ -5629,7 +5640,7 @@
 				By default, Power*MatchMaker will login to the
 				MatchMaker Default Repository at startup. You can change
 				your preferences so that you login to a remote
-				repository automatically when Power*MatchMaker starts,
+				repository automatically when Power*MatchMaker starts
 				or so that you are prompted to choose a repository at
 				startup. For example, if you typically work in the same
 				remote repository all the time, you may want to login to
