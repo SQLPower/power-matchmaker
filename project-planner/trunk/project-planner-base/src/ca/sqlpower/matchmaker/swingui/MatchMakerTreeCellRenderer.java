@@ -23,6 +23,7 @@ package ca.sqlpower.matchmaker.swingui;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -42,7 +43,9 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.munge.AbstractMungeStep;
+import ca.sqlpower.matchmaker.munge.LabelMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
+import ca.sqlpower.matchmaker.munge.ProjectPlannerMungeStep;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionNode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerTreeModel.MatchActionType;
 import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
@@ -65,6 +68,8 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 	final private Icon mergeEngineIcon = new ImageIcon(getClass().getResource("/icons/cog_double_go.png"));
 	final private Icon translateWordIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/cog_edit.png"));
 	final private Icon mungeCompIcon = new ImageIcon(getClass().getResource("/icons/famfamfam/color_wheel.png"));
+	
+	private static final int MAX_CELL_WIDTH = 175;
 
 	/**
 	 * This is the session that contains the tree this renderer is being used on.
@@ -79,9 +84,18 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 			boolean selected, boolean expanded, boolean leaf, int row,
 			boolean hasFocus) {
 
+		setPreferredSize(null);
         String text;
         if (value instanceof MatchMakerObject) {
-            text = (((MatchMakerObject) value).getName());
+        	if (value instanceof ProjectPlannerMungeStep) {
+        		text = ((ProjectPlannerMungeStep) value).getText();
+        		setPreferredSize(new Dimension(MAX_CELL_WIDTH, getPreferredSize().height));
+			} else if (value instanceof LabelMungeStep) {
+				text = ((LabelMungeStep) value).getText();
+        		setPreferredSize(new Dimension(MAX_CELL_WIDTH, getPreferredSize().height));
+			} else {
+        		text = ((MatchMakerObject) value).getName();
+        	}
         } else {
             text = value.toString();
         }
@@ -125,9 +139,10 @@ public class MatchMakerTreeCellRenderer extends DefaultTreeCellRenderer {
 		} else if (value instanceof MatchMakerTranslateWord) {
 			setIcon(translateWordIcon);
 		} else if (value instanceof AbstractMungeStep) {
-			MatchMakerSwingSession session = (MatchMakerSwingSession) ((AbstractMungeStep)value).getSession();
+			AbstractMungeStep step = (AbstractMungeStep) value;
+			MatchMakerSwingSession session = (MatchMakerSwingSession) step.getSession();
 			SwingSessionContext context = (SwingSessionContext) session.getContext();
-			StepDescription stepDesc = context.getStepMap().get(((AbstractMungeStep) value).getName());
+			StepDescription stepDesc = context.getStepMap().get(step.getName());
 			if (stepDesc == null) {
 				setIcon(mungeCompIcon);
 			} else {

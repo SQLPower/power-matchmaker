@@ -457,8 +457,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         tree.setShowsRootHandles(true);
         tree.setBackground(MatchMakerTreeCellRenderer.LIGHT_ORANGE);
         JScrollPane savedProcessesPanel = new JScrollPane(tree);
-        savedProcessesPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        savedProcessesPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         savedProcessesPanel.getViewport().setBackground(MatchMakerTreeCellRenderer.LIGHT_ORANGE);
         savedProcessesPanel.setPreferredSize(new Dimension(0, 0));
         JPanel hiddenPanel = new JPanel();

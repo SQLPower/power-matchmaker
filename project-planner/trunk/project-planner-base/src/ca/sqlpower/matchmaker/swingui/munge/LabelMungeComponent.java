@@ -176,19 +176,6 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 		textArea.setOpaque(false);
 		textArea.setLocation(step.getTextAreaLocation());
 		
-		// overwrites tab's to transfer focus
-		textArea.addKeyListener(new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
-					textArea.transferFocusBackward();
-				} else {
-					textArea.transferFocus();
-				}
-				// don't make changes to the text
-				e.consume();
-			};
-		});
-		
 		StyledDocument doc = new DefaultStyledDocument();
 		MutableAttributeSet standard = new SimpleAttributeSet();
 		doc.setParagraphAttributes(0, 0, standard, true);
@@ -234,6 +221,17 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 			public void keyPressed(KeyEvent e) {
 				if ((e.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) != 0) {
 					dragTextArea = true;
+				}
+				
+				// overwrites tab's to transfer focus
+				if (e.getKeyCode() == KeyEvent.VK_TAB) {
+					if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+						textArea.transferFocusBackward();
+					} else {
+						textArea.transferFocus();
+					}
+					// don't make changes to the text
+					e.consume();
 				}
 			}
 

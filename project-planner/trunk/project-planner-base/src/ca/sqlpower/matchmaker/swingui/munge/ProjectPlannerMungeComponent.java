@@ -150,7 +150,6 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 		doc.setParagraphAttributes(0, 0, standard, true);
 		
 		text.setStyledDocument(doc);
-		text.setText(getStep().getName());
 		
 		String stepText = ((ProjectPlannerMungeStep) getStep()).getText();
 		if (stepText != null && stepText.trim().length() != 0) {
