@@ -82,8 +82,9 @@ public class WebsiteIOHandler implements IOHandler {
 	private static final String VIEW_ONLY_USERS_KEY = "viewOnlyUsers";
 	private static final String VIEW_AND_MODIFY_USERS_KEY = "viewAndModifyUsers";
 	private static final String PUBLIC_GROUP_KEY = "publicGroup";
-	private static final String OWNERSHIP_KEY = "owner";
+	private static final String OWNERSHIP_KEY = "isOwner";
 	private static final String CAN_MODIFY_KEY = "canModify";
+	private static final String OWNER_KEY = "owner";
 
     private String sessionCookie = null;
     
@@ -615,6 +616,7 @@ public class WebsiteIOHandler implements IOHandler {
     		project.setPublic(response.getBoolean(PUBLIC_GROUP_KEY));
     		project.setIsOwner(response.getBoolean(OWNERSHIP_KEY));
     		project.setCanModify(response.getBoolean(CAN_MODIFY_KEY));
+    		project.setOwner(response.getString(OWNER_KEY));
 
     		JSONArray vJArray = response.getJSONArray(VIEW_ONLY_USERS_KEY);
     		JSONArray vamJArray = response.getJSONArray(VIEW_AND_MODIFY_USERS_KEY);

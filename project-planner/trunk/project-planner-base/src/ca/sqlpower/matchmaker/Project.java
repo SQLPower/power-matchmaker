@@ -128,6 +128,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     /** indicates whether the user has modifying right to this project. */
     private boolean canModify = true;
     
+    /** indicates the owner of this project */
+    private String owner = "";
+    
     /**
      * Contains the munge processes and the Munge Steps
      */
@@ -890,5 +893,13 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 
 	public void setCanModify(boolean canModify) {
 		this.canModify = canModify;
+	}
+
+	public String getOwner() {
+		return owner;
+	}
+
+	public void setOwner(String owner) {
+		this.owner = owner;
 	}
 }

@@ -77,6 +77,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
 	private JPanel sharingListPane;
 	private StatusComponent status = new StatusComponent();
+	private JLabel projectOwner = new JLabel();
 	private JTextField projectName = new JTextField();
 	private JTextArea desc = new JTextArea();
 
@@ -88,9 +89,6 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private JList viewAndModifyList;
 	private DefaultListModel viewOnlyListModel = new DefaultListModel();
 	private DefaultListModel viewAndModifyListModel = new DefaultListModel();
-
-	private JTextField toViewOnly;
-	private JTextField toViewAndModify;
 
 	private JButton addToViewOnly;
 	private JButton removeFromViewOnly;
@@ -189,7 +187,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	}
 
 	private JPanel buildUI() {
-		
+		projectOwner.setName("Project Owner");
 		projectName.setName("Project Name");
 		saveProject = new JButton(saveAction);
 		isSharingWithEveryone = new JCheckBox("Share with Everyone. (Your Project will appear in the public gallery)");
@@ -199,8 +197,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		FormLayout layout = new FormLayout("4dlu,pref,4dlu,fill:min(pref;"
 				+ new JComboBox().getMinimumSize().width
 				+ "px):grow, 4dlu,pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,80dlu," + //Up to the text area for project description
-						"4dlu,10dlu,16dlu,pref,2dlu,pref,4dlu,pref"); // rows
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,80dlu," + //Up to the text area for project description
+						"4dlu,pref,8dlu,pref,8dlu,pref,4dlu,pref"); // rows
 
 		PanelBuilder pb;
 
@@ -210,6 +208,9 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		CellConstraints cc = new CellConstraints();
 		int row = 2;
 		pb.add(status, cc.xy(4, row));
+		row += 2;
+		pb.add(new JLabel("Project Owner:"), cc.xy(2, row, "r,c"));
+		pb.add(projectOwner, cc.xy(4, row));
 		row += 2;
 		pb.add(new JLabel("Project Name:"), cc.xy(2, row, "r,c"));
 		pb.add(projectName, cc.xy(4, row));
@@ -225,43 +226,38 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		pb.add(isSharingWithEveryone, cc.xy(4, row, "l,t"));
 		row += 2;
 		
-		pb.add(sharingWithEveryoneLabel, cc.xy(4, row,
-				"l,t"));
+		pb.add(sharingWithEveryoneLabel, cc.xy(4, row, "l,t"));
 		row += 2;
 
 		//sharingListPane contains the 2 jlists which would list the id's of those who have the permission to access the project.
 		sharingListPane = new JPanel(new FormLayout("pref,8dlu,pref",
 				"pref"));
 		JPanel viewOnlyPane = new JPanel(new FormLayout(
-				"20dlu,4dlu,20dlu,4dlu,100dlu", "20dlu,100dlu,pref,pref"));
+				"20dlu,4dlu,20dlu,4dlu,100dlu", "pref,4dlu,100dlu,4dlu,pref"));
 		JPanel viewAndModifyPane = new JPanel(new FormLayout(
-				"20dlu,4dlu,20dlu,4dlu,100dlu", "20dlu,100dlu,pref,pref"));
+				"20dlu,4dlu,20dlu,4dlu,100dlu", "pref,4dlu,100dlu,4dlu,pref"));
 
 		//viewOnlyPane contains the list of those who are permitted to view the project. At the same time, it also
 		//contains the add and remove button to edit the list.
-		viewOnlyPane.add(new JLabel("View Only:"), cc.xywh(1, 1, 5, 1));
+		viewOnlyPane.add(new JLabel("View Only:"), cc.xyw(1, 1, 5));
 		viewOnlyList = new JList(viewOnlyListModel);
 		JScrollPane viewOnlyScrollPane = new JScrollPane(viewOnlyList);
-		viewOnlyPane.add(viewOnlyScrollPane, cc.xywh(1, 2, 5, 1));
-		toViewOnly = new JTextField();
-		viewOnlyPane.add(toViewOnly, cc.xywh(1, 3, 5, 1));
+		viewOnlyPane.add(viewOnlyScrollPane, cc.xyw(1, 3, 5, "f,f"));
 		addToViewOnly = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
-		viewOnlyPane.add(addToViewOnly, cc.xy(1, 4));
+		viewOnlyPane.add(addToViewOnly, cc.xy(1, 5));
 		removeFromViewOnly = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
-		viewOnlyPane.add(removeFromViewOnly, cc.xy(3, 4));
+		viewOnlyPane.add(removeFromViewOnly, cc.xy(3, 5));
 
 		//viewAndModifyPane contains the list of those who are permitted to view and to modify the project. At the same time,
 		//it also contains the add and remove button to edit this list.
-		viewAndModifyPane.add(new JLabel("View and Modify:"), cc.xywh(1, 1, 5, 1));
+		viewAndModifyPane.add(new JLabel("View and Modify:"), cc.xyw(1, 1, 5));
 		viewAndModifyList = new JList(viewAndModifyListModel);
 		JScrollPane viewAndModifyScrollPane = new JScrollPane(viewAndModifyList);
-		viewAndModifyPane.add(viewAndModifyScrollPane, cc.xywh(1, 2, 5, 1));
-		toViewAndModify = new JTextField();
-		viewAndModifyPane.add(toViewAndModify, cc.xywh(1, 3, 5, 1));
+		viewAndModifyPane.add(viewAndModifyScrollPane, cc.xyw(1, 3, 5, "f,f"));
 		addToViewAndModify = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
-		viewAndModifyPane.add(addToViewAndModify, cc.xy(1, 4));
+		viewAndModifyPane.add(addToViewAndModify, cc.xy(1, 5));
 		removeFromViewAndModify = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
-		viewAndModifyPane.add(removeFromViewAndModify, cc.xy(3, 4));
+		viewAndModifyPane.add(removeFromViewAndModify, cc.xy(3, 5));
 
 		sharingListPane.add(viewOnlyPane, cc.xy(1, 1));
 		sharingListPane.add(viewAndModifyPane, cc.xy(3, 1));
@@ -288,7 +284,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private void configureActions() {
 		addToViewOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String memberId = toViewOnly.getText();
+				String memberId = JOptionPane.showInputDialog(swingSession.getFrame(),
+						"Please enter the user's email:", "Add View Only Permission", JOptionPane.QUESTION_MESSAGE);
 				if (memberId != null && !memberId.trim().equals("")) {
 					if (!viewOnlyListModel.contains(memberId)) {
 						viewOnlyListModel.addElement(memberId);
@@ -300,7 +297,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 
 		addToViewAndModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				String memberId = toViewAndModify.getText();
+				String memberId = JOptionPane.showInputDialog(swingSession.getFrame(),
+						"Please enter the user's email:", "Add View and Modify Permission", JOptionPane.QUESTION_MESSAGE);
 				if (memberId != null && !memberId.trim().equals("")) {
 					if (!viewAndModifyListModel.contains(memberId)) {
 						viewAndModifyListModel.addElement(memberId);
@@ -336,13 +334,11 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 					viewOnlyList.setEnabled(false);
 					addToViewOnly.setEnabled(false);
 					removeFromViewOnly.setEnabled(false);
-					toViewOnly.setEnabled(false);
 				}
 				else {
 					viewOnlyList.setEnabled(true);
 					addToViewOnly.setEnabled(true);
 					removeFromViewOnly.setEnabled(true);
-					toViewOnly.setEnabled(true);
 				}
 			}
 		});
@@ -445,6 +441,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			viewOnlyListModel.addElement(userId);
 		}
 		
+		projectOwner.setText(project.getOwner());
 		if (!project.isOwner()) {
 			if (project.canModify()) {
 				saveProject.setAction(new DuplicateProjectAction(swingSession, project));
@@ -454,8 +451,8 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			isSharingWithEveryone.setVisible(false);
 			sharingListPane.setVisible(false);
 			saveProject.setVisible(project.canModify());
-			projectName.setEnabled(false);
-			desc.setEnabled(false);
+			projectName.setEditable(false);
+			desc.setEditable(false);
 		} 
 	}
 
