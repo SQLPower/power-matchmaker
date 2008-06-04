@@ -290,8 +290,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 for (Project p : projects) {
                 	if (p.getOid() == projectId) {
                 		TreePath treePath;
-                		if (p.getMungeProcesses().size() > 0) {
-                			MungeProcess mp = p.getMungeProcesses().get(0);
+                		if (p.getChildren().size() > 0) {
+                			MungeProcess mp = p.getChildren().get(0);
                 			treePath = (((MatchMakerTreeModel)session.getTree().getModel()).getPathForNode(mp));
                 		} else {
                 			treePath = ((MatchMakerTreeModel)session.getTree().getModel()).getPathForNode(p);

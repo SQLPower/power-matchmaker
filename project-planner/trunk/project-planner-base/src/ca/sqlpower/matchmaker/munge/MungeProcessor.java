@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.graph.DepthFirstSearch;
 import ca.sqlpower.matchmaker.AbstractProcessor;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.munge.MungeProcessGraphModel.Edge;
 
 public class MungeProcessor extends AbstractProcessor {
@@ -60,7 +61,7 @@ public class MungeProcessor extends AbstractProcessor {
     }
     
     public Boolean call(int rowCount) throws Exception {
-    	if (mungeProcess.getParentProject().getMungeSettings().getDebug()) {
+    	if (((Project)mungeProcess.getParent()).getMungeSettings().getDebug()) {
     		logger.setLevel(Level.DEBUG);
     	}
     	

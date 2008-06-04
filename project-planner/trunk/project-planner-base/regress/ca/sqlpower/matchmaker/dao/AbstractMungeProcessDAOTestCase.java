@@ -75,7 +75,7 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
 		try {
 			setAllSetters(mungeProcess, getNonPersitingProperties());
             mungeProcess.setName("Munge Process "+count);
-            project.addMungeProcess(mungeProcess);
+            project.addChild(mungeProcess);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (InvocationTargetException e) {
@@ -104,7 +104,7 @@ public abstract class AbstractMungeProcessDAOTestCase extends AbstractDAOTestCas
         Statement stmt = null;
         try {
 
-            MungeProcess process = project.getMungeProcesses().get(0);
+            MungeProcess process = project.getChildren().get(0);
             String processName = process.getName();
 
             MungeProcessDAO dao = getDataAccessObject();

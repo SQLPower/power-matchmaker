@@ -50,7 +50,7 @@ public class NewMungeProcessAction extends AbstractAction {
 		int count;
     	for (count = 1; project.getMungeProcessByName("New Workflow " + count) != null ; count++);
     	process.setName("New Workflow " + count);
-    	project.addMungeProcess(process);
+    	project.addChild(process);
 		
     	swingSession.save(process);
 	}

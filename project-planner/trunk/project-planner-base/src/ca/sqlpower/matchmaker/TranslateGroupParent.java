@@ -77,7 +77,7 @@ public class TranslateGroupParent extends AbstractMatchMakerObject<TranslateGrou
     private boolean checkMMOContainsTranslateGroup(MatchMakerObject mmo,MatchMakerTranslateGroup tg){
         if (mmo instanceof Project) {
             Project projectChild = (Project) mmo;
-            for (MungeProcess critGroup : projectChild.getMungeProcesses()) {
+            for (MungeProcess critGroup : projectChild.getChildren()) {
                 if (checkMMOContainsTranslateGroup(critGroup, tg)) return true;
             }
         } else {

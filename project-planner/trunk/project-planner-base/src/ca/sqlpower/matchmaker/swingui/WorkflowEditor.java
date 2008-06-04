@@ -110,7 +110,7 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
         logger.debug("Creating a new workflow editor");
         
         this.parentProject = project;
-        if (mmo.getParentProject() != null && mmo.getParentProject() != parentProject) {
+        if (mmo.getParent() != null && mmo.getParent() != parentProject) {
         	throw new IllegalStateException(
         	"The given workflow has a parent which is not the given parent project!");
         }
@@ -208,7 +208,7 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
         }
         
         if (parentProject == null) {
-            parentProject.addMungeProcess(mmo);
+            parentProject.addChild(mmo);
         }
         
         return super.applyChanges();

@@ -25,7 +25,6 @@ import java.util.List;
 import ca.sqlpower.matchmaker.AbstractMatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
-import ca.sqlpower.matchmaker.Project;
 
 /**
  * A set of MungeSteps. The child type is {@link MungeStep}.
@@ -95,32 +94,6 @@ public class MungeProcess
         this.oid = oid;
     }
     
-    /**
-     * Gets the grandparent of this object in the MatchMaker object tree.  If the parent
-     * (a folder) is null, returns null.
-     */
-    public Project getParentProject() {
-        MatchMakerObject parentFolder = getParent();
-        if (parentFolder == null) {
-            return null;
-        } else {
-            return (Project) parentFolder.getParent();
-        }
-    }
-
-    /**
-     * Sets the parent of this object to be the rule set folder of the given project object
-     *
-     * this will fire a <b>parent</b> changed event not a parent match event
-     */
-    public void setParentProject(Project grandparent) {
-        if (grandparent == null) {
-            setParent(null);
-        } else {
-            setParent(grandparent.getMungeProcessesFolder());
-        }
-    }
-
 	public String getDesc() {
 		return desc;
 	}

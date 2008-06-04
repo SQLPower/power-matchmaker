@@ -20,12 +20,7 @@
 
 package ca.sqlpower.matchmaker;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ca.sqlpower.architect.SQLDatabase;
-import ca.sqlpower.matchmaker.event.MatchMakerEventCounter;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 
 public class ProjectTest extends MatchMakerTestCase<Project> {
 
@@ -100,13 +95,4 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
 		m2.setName("project");
 		assertFalse(m1.equals(m2) );
 	}
-
-    public void testMatchMakerFolderFiresEventForMungeProcesses(){
-        MatchMakerEventCounter l = new MatchMakerEventCounter();
-        project.getMungeProcessesFolder().addMatchMakerListener(l);
-        List<MungeProcess> mmoList = new ArrayList<MungeProcess>();
-        project.setMungeProcesses(mmoList);
-        assertEquals("Wrong number of events fired",1,l.getAllEventCounts());
-        assertEquals("Wrong type of event fired",1,l.getStructureChangedCount());
-    }
 }

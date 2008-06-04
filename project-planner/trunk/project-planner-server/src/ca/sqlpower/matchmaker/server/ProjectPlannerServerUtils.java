@@ -85,10 +85,10 @@ public class ProjectPlannerServerUtils {
 		projectDAO.refresh(project);
 		
 		BufferedImage imageBuffer;
-		if (project.getMungeProcesses().size() == 0) {
+		if (project.getChildren().size() == 0) {
 			imageBuffer = ImageIO.read(ProjectPlannerServerUtils.class.getResource("/icons/no_thumbnail.png"));
 		} else {
-			MungePen mungePen = new MungePen(project.getMungeProcesses().get(0),
+			MungePen mungePen = new MungePen(project.getChildren().get(0),
 					null, session);
 
 			// weird hack to get the thumbnail to actually display

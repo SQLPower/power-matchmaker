@@ -44,7 +44,6 @@ import javax.swing.table.TableCellRenderer;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.MatchMakerFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
@@ -113,7 +112,7 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 				if (e.getClickCount() == 2) {
 					int row = MungeProcessGroupEditor.this.mungeProcessTable.getSelectedRow();
 					JTree tree = swingSession.getTree();					
-					tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(project.getMungeProcesses().get(row)));
+					tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(project.getChildren().get(row)));
 				}
 			}		
         });
@@ -172,8 +171,8 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 					return;
 				}
 				
-				MungeProcess mp = project.getMungeProcesses().get(selectedRow);
-				project.removeMungeProcess(mp);
+				MungeProcess mp = project.getChildren().get(selectedRow);
+				project.removeChild(mp);
 				swingSession.save(project);
 				if (selectedRow >= mungeProcessTable.getRowCount()) {
 					selectedRow = mungeProcessTable.getRowCount() - 1;
@@ -201,10 +200,10 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 	 * 								multiple munge process produce the same match
 	 * </dl>
 	 */
-	private class MungeProcessTableModel extends AbstractMatchMakerTableModel<MatchMakerFolder<MungeProcess>, MungeProcess>{
+	private class MungeProcessTableModel extends AbstractMatchMakerTableModel<Project, MungeProcess>{
 
 		public MungeProcessTableModel(Project project) {
-			super(project.getMungeProcessesFolder());
+			super(project);
 		}
 
 		public int getColumnCount() {

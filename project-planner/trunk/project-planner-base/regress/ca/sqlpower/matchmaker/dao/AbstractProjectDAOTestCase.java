@@ -202,7 +202,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         insertSampleMungeStepData(processOid, "test_rule_"+time);
         
         Project project = getDataAccessObject().findByName(projectName);
-            List<MungeProcess> mungeProcesses = project.getMungeProcesses();
+            List<MungeProcess> mungeProcesses = project.getChildren();
 		assertEquals("There should be one munge process", 1, mungeProcesses.size());
 
 		MungeProcess mungeProcess = mungeProcesses.get(0);
@@ -304,7 +304,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
         newProject.setResultTableName("new_result_table");
 		newProject.setSession(getSession());
         
-        oldProject.addMungeProcess(process);
+        oldProject.addChild(process);
 
         ProjectDAO dao = getDataAccessObject();
         
@@ -332,13 +332,13 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
                 try { rs.close(); } catch (Exception e) { System.err.println("Couldn't close result set"); e.printStackTrace(); }
             }
             
-            oldProject.removeMungeProcess(process);
+            oldProject.removeChild(process);
             dao.save(oldProject);
             
             //A temporary fix for moving munge processes. This makes a copy of the mungeProcess and 
             //adds it to the newProject.
             MungeProcess mungeProcess2 = process.duplicate(newProject, getSession());
-            newProject.addMungeProcess(mungeProcess2);
+            newProject.addChild(mungeProcess2);
             dao.save(newProject);
             
             try { 
@@ -388,7 +388,7 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
          PlFolderDAO plFolderDAO = (PlFolderDAO) getSession().getDAO(PlFolder.class);
          plFolderDAO.save(f);
 
-         oldProject.addMungeProcess(process);
+         oldProject.addChild(process);
 
          ProjectDAO dao = getDataAccessObject();
 

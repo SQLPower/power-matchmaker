@@ -288,7 +288,7 @@ public class MatchMakerXMLSession implements MatchMakerSession {
             }
         } else if (mmo instanceof MungeProcess) {
             MungeProcess cg = (MungeProcess)mmo;
-            Project project = (Project)cg.getParentProject();
+            Project project = (Project)cg.getParent();
             save(project);
         } else {
             throw new UnsupportedOperationException("We do not yet support "+mmo.getClass() + " persistance");

@@ -348,7 +348,7 @@ public class ProjectDAOXML implements ProjectDAO {
 
         int processID = 0;
         
-        for (MungeProcess mp : p.getMungeProcesses()) {
+        for (MungeProcess mp : p.getChildren()) {
             print("<munge-process");
             printAttribute("id", "process." + projectID + "." + processID);
             printCommonAttributes(mp);
@@ -803,7 +803,7 @@ public class ProjectDAOXML implements ProjectDAO {
                     checkMandatory("id", id);
                     checkMandatory("name", process.getName());
 
-                    project.addMungeProcess(process); // FIXME have to do this in endElement
+                    project.addChild(process); // FIXME have to do this in endElement
                     
                 } else if (qName.equals("munge-step") && parentIs("munge-process")) {
                     String type = attributes.getValue("step-type");

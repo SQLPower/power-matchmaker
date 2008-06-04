@@ -98,7 +98,7 @@ public class MungeProcessorTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         MungeProcess mungeProcess = new MungeProcess();
-        mungeProcess.setParentProject(new Project());
+        mungeProcess.setParent(new Project());
         
         StepDescription sd = new StepDescription();
         sd.setName("A");

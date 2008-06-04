@@ -173,7 +173,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 */
 	private void addMungeStepMenuItems(JPopupMenu m, MungeStep step) {
 		MungeProcess parentProcess = (MungeProcess) step.getParent();
-		if (((Project)parentProcess.getParentProject()).isOwner()) {
+		if (((Project)parentProcess.getParent()).isOwner()) {
 			m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
 		}
 	}
@@ -188,7 +188,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMungeProcessMenuItems(JPopupMenu m, MungeProcess mungeProcess) {
-		if (mungeProcess.getParentProject().isOwner()) { 
+		if (((Project)mungeProcess.getParent()).isOwner()) { 
 			m.add(new JMenuItem(new DeleteMungeProcessAction(swingSession, mungeProcess)));
 		}
 	}
@@ -300,14 +300,14 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 							return;
 						}
 					}
-					Project m = ((MungeProcess) o).getParentProject();
+					Project m = (Project) ((MungeProcess) o).getParent();
 					WorkflowEditor editor = new WorkflowEditor(swingSession, m, (MungeProcess) o);
 					logger.debug("Created new workflow editor "
 							+ System.identityHashCode(editor));
 					swingSession.setCurrentEditorComponent(editor);
 				} else if (o instanceof MungeStep) {
 					MungeProcess mp = (MungeProcess)((MungeStep) o).getParent();
-					Project m = mp.getParentProject();
+					Project m = (Project) mp.getParent();
 					if (swingSession.getOldPane() instanceof WorkflowEditor) {
 					    WorkflowEditor originalPane = (WorkflowEditor) swingSession.getOldPane();
 					    if (originalPane.getProcess() == mp) {
@@ -322,7 +322,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 				} else if (o instanceof MungeStepOutput) {
 					MungeStep ms = (MungeStep)((MungeStepOutput) o).getParent();
 					MungeProcess mp = (MungeProcess)(ms.getParent());
-					Project m = mp.getParentProject();
+					Project m = (Project) mp.getParent();
 					if (swingSession.getOldPane() instanceof WorkflowEditor) {
 						WorkflowEditor originalPane = (WorkflowEditor) swingSession.getOldPane();
 						if (originalPane.getProcess() == mp) {

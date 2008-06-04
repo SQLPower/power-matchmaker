@@ -45,7 +45,7 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 /**
  * folder is the parent of project. should be not null.
  */
-public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder> {
+public class Project extends AbstractMatchMakerObject<Project, MungeProcess> {
 
     static final Logger logger = Logger.getLogger(Project.class);
     
@@ -131,26 +131,19 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
     /** indicates the owner of this project */
     private String owner = "";
     
-    /**
-     * Contains the munge processes and the Munge Steps
-     */
-    private MatchMakerFolder<MungeProcess> mungeProcessesFolder =
-    	new MatchMakerFolder<MungeProcess>(MungeProcess.class) {
-            
-            @Override
-            public List<MungeProcess> getChildren() {
-                if (!populated && !deleted) {
-                    try {
-                        populating = true;  
-                        populated = true;
-                        dao.refresh(Project.this);
-                    } finally {
-                        populating  = false;
-                    }
-                }
-                return super.getChildren();
-            }
-        };
+    @Override
+    public List<MungeProcess> getChildren() {
+    	if (!populated && !deleted) {
+    		try {
+    			populating = true;  
+    			populated = true;
+    			dao.refresh(Project.this);
+    		} finally {
+    			populating  = false;
+    		}
+    	}
+    	return super.getChildren();
+    }
     
     /**
      * Cached source table 
@@ -171,11 +164,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	 * arbitrary set of columns.
 	 */
     private TableIndex sourceTableIndex;
-    
-    /**
-     * The Cleansing engine this will be created lazyily, because we only need one instance per project.
-     */
-    private CleanseEngineImpl cleansingEngine = null;
 
     /**
      * The DAO that can populate this project, if it is not already populated. If the project
@@ -194,8 +182,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 	    sourceTablePropertiesDelegate = new CachableTable(this, "sourceTable");
 	    resultTablePropertiesDelegate = new CachableTable(this,"resultTable");
 	    xrefTablePropertiesDelegate = new CachableTable(this, "xrefTable");
-		mungeProcessesFolder.setName(MUNGE_PROCESSES_FOLDER_NAME);
-        this.addChild(mungeProcessesFolder);
         
         setType(ProjectMode.FIND_DUPES);
         sourceTableIndex = new TableIndex(this,sourceTablePropertiesDelegate,"sourceTableIndex");
@@ -549,9 +535,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 				this.mergeSettings);
 	}
 
-
-
-
 	public ProjectMode getType() {
 		return type;
 	}
@@ -562,12 +545,8 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		getEventSupport().firePropertyChange("type", oldValue, this.type);
 	}
 
-	public List<MungeProcess> getMungeProcesses() {
-		return getMungeProcessesFolder().getChildren();
-	}
-
 	public MungeProcess getMungeProcessByName(String name) {
-		List <MungeProcess> mungeProcesses = getMungeProcesses();
+		List <MungeProcess> mungeProcesses = getChildren();
 		for ( MungeProcess g : mungeProcesses) {
 			if ( g.getName() != null && g.getName().equals(name)) {
 				return g;
@@ -600,34 +579,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
         sb.append("; filter=").append(filter);
         return sb.toString();
     }
-    
-    /**
-     * Adds a munge process to the munge process folder of this project
-     *
-     * @param mungeProcess
-     */
-    public void addMungeProcess(MungeProcess mungeProcess) {
-        // The folder will fire the child inserted event
-        mungeProcessesFolder.addChild(mungeProcess);
-    }
-
-    /**
-     * Removes the munge process from the rule set folder of this process
-     *
-     * @param process
-     */
-    public void removeMungeProcess(MungeProcess process) {
-        // The folder will fire the child removed event
-        mungeProcessesFolder.removeChild(process);
-    }
-
-    public void setMungeProcesses(List<MungeProcess> processes){
-        mungeProcessesFolder.setChildren(processes);
-    }
-
-    public MatchMakerFolder<MungeProcess> getMungeProcessesFolder() {
-        return mungeProcessesFolder;
-    }
 
     /**
      * duplicate the project object. by inserting a new set of record 
@@ -653,9 +604,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		newProject.setSession(s);
 		newProject.setVisible(isVisible());
 		
-		for (MungeProcess g : getMungeProcesses()) {
-			MungeProcess newGroup = g.duplicate(newProject.getMungeProcessesFolder(),s);
-			newProject.addMungeProcess(newGroup);
+		for (MungeProcess g : getChildren()) {
+			MungeProcess newGroup = g.duplicate(newProject, s);
+			newProject.addChild(newGroup);
 		}
 		
 		return newProject;
@@ -790,18 +741,6 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
      */
 	public void setSourceTableIndex(SQLIndex index) {
 		sourceTableIndex.setTableIndex(index);
-	}
-	
-	/**
-	 * Gets the cleansing engine editor panel. This is done to ensure that only one panel is created per project.
-	 * 
-	 * @return The editor panel.
-	 */
-	public CleanseEngineImpl getCleansingEngine() {
-		if (cleansingEngine == null) {
-			cleansingEngine = new CleanseEngineImpl(getSession(), this); 
-		}
-		return cleansingEngine;
 	}
 	
 	/**
