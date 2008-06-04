@@ -21,6 +21,8 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -119,7 +121,20 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 		text.setBackground(null);
 		text.setOpaque(false);
 		
-		
+		// overwrites tab's to transfer focus
+		text.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_TAB) {
+					if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+						text.transferFocusBackward();
+					} else {
+						text.transferFocus();
+					}
+					// don't make changes to the text
+					e.consume();
+				}
+			};
+		});
 		
 		MutableAttributeSet attrs = text.getInputAttributes();
 
