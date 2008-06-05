@@ -19,16 +19,22 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -38,8 +44,10 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -48,7 +56,9 @@ import org.apache.log4j.Logger;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.validation.AlwaysOKValidator;
@@ -73,6 +83,9 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 */
 	protected static final String EMAIL_PROPERTY_KEY = "email";
 	
+	final private Icon galleryIcon = new ImageIcon(getClass().getResource("/icons/gallery.png"));
+	final private Icon shareIcon = new ImageIcon(getClass().getResource("/icons/share.png"));
+	
 	private final JPanel panel;
 
 	private JPanel sharingListPane;
@@ -82,19 +95,27 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	private JTextArea desc = new JTextArea();
 
 	private JCheckBox isSharingWithEveryone;
-	private JLabel sharingLabel;
+	private JLabel sharingIcon;
 	private JLabel sharingWithEveryoneLabel;
 
 	private JList viewOnlyList;
 	private JList viewAndModifyList;
+	private JList workflowList;
 	private DefaultListModel viewOnlyListModel = new DefaultListModel();
 	private DefaultListModel viewAndModifyListModel = new DefaultListModel();
+	private DefaultListModel workflowListModel = new DefaultListModel();
+	
+	private List<MungeProcess> removedWorkflows = new ArrayList<MungeProcess>();
 
 	private JButton addToViewOnly;
 	private JButton removeFromViewOnly;
 	private JButton addToViewAndModify;
 	private JButton removeFromViewAndModify;
+	private JButton addWorkflow;
+	private JButton removeWorkflow;
 
+	private boolean changed;
+	
 	private JButton saveProject;
 
 	private final MatchMakerSwingSession swingSession;
@@ -122,13 +143,14 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		if (project == null)
 			throw new IllegalArgumentException("You can't edit a null project");
 		folder = swingSession.getDefaultPlFolder();
-
 		this.swingSession = swingSession;
 		this.project = project;
 		this.folder = folder;
 		handler = new FormValidationHandler(status, true);
 		handler.setValidatedAction(saveAction);
 		panel = buildUI();
+		loadPermissionList();
+		loadWorkflowList();
 		setDefaultSelections();
 		addValidators();
 
@@ -191,14 +213,17 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		projectName.setName("Project Name");
 		saveProject = new JButton(saveAction);
 		isSharingWithEveryone = new JCheckBox("Share with Everyone. (Your Project will appear in the public gallery)");
-		sharingLabel = new JLabel("Sharing:");
+		sharingIcon = new JLabel();
 		sharingWithEveryoneLabel = new JLabel("Share with the following people:");
 
 		FormLayout layout = new FormLayout("4dlu,pref,4dlu,fill:min(pref;"
 				+ new JComboBox().getMinimumSize().width
-				+ "px):grow, 4dlu,pref,4dlu", // columns
-				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,80dlu," + //Up to the text area for project description
-						"4dlu,pref,8dlu,pref,8dlu,pref,4dlu,pref"); // rows
+				+ "px):grow, 50dlu,pref,4dlu", // Columns
+				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,50dlu," + //Up to the text area for project description
+						"8dlu,4dlu,8dlu," + // First separator
+						"pref,8dlu,pref,8dlu,pref," + // Up to second separator
+						"20dlu,4dlu,8dlu," + // Second separator
+						"pref,8dlu,pref"); // Rows
 
 		PanelBuilder pb;
 
@@ -219,62 +244,97 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		desc.setLineWrap(true);
 		pb.add(new JLabel("Description:"), cc.xy(2, row, "r,t"));
 		pb.add(new JScrollPane(desc), cc.xy(4, row, "f,f"));
-
 		row += 2;
 		
-		pb.add(sharingLabel, cc.xy(2, row, "r,t"));
+		pb.add(new JSeparator(), cc.xyw(2, row, 3));
+		row += 2;
+		
+		sharingIcon.setIcon(galleryIcon);
+		pb.add(sharingIcon, cc.xy(2, row, "r,c"));
+		
+		isSharingWithEveryone.setSelected(project.isPublic());
 		pb.add(isSharingWithEveryone, cc.xy(4, row, "l,t"));
 		row += 2;
 		
+		JLabel permissionIcon = new JLabel(shareIcon);
+		pb.add(permissionIcon, cc.xy(2, row, "r, c"));
 		pb.add(sharingWithEveryoneLabel, cc.xy(4, row, "l,t"));
 		row += 2;
 
 		//sharingListPane contains the 2 jlists which would list the id's of those who have the permission to access the project.
-		sharingListPane = new JPanel(new FormLayout("pref,8dlu,pref",
+		sharingListPane = logger.isDebugEnabled() ? new FormDebugPanel(new FormLayout("left:pref:grow,10px,right:pref:grow",
+				"pref")) : new JPanel(new FormLayout("left:pref:grow,10px,right:pref:grow",
 				"pref"));
-		JPanel viewOnlyPane = new JPanel(new FormLayout(
-				"20dlu,4dlu,20dlu,4dlu,100dlu", "pref,4dlu,100dlu,4dlu,pref"));
-		JPanel viewAndModifyPane = new JPanel(new FormLayout(
-				"20dlu,4dlu,20dlu,4dlu,100dlu", "pref,4dlu,100dlu,4dlu,pref"));
-
+		FormLayout permissionPaneLayout = new FormLayout(
+				"20dlu,4dlu,20dlu,4dlu,fill:pref:grow", "pref,4dlu,50dlu,4dlu,pref");
+		
+		JPanel viewOnlyPane = logger.isDebugEnabled() ? new FormDebugPanel(permissionPaneLayout)
+				: new JPanel(permissionPaneLayout);
+		
+		JPanel viewAndModifyPane = logger.isDebugEnabled() ? new FormDebugPanel(permissionPaneLayout)
+				: new JPanel(permissionPaneLayout);
+		
 		//viewOnlyPane contains the list of those who are permitted to view the project. At the same time, it also
 		//contains the add and remove button to edit the list.
 		viewOnlyPane.add(new JLabel("View Only:"), cc.xyw(1, 1, 5));
 		viewOnlyList = new JList(viewOnlyListModel);
-		JScrollPane viewOnlyScrollPane = new JScrollPane(viewOnlyList);
-		viewOnlyPane.add(viewOnlyScrollPane, cc.xyw(1, 3, 5, "f,f"));
+		viewOnlyPane.add(new JScrollPane(viewOnlyList), cc.xyw(1, 3, 5, "f,f"));
+		viewOnlyList.setEnabled(!project.isPublic());
 		addToViewOnly = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
 		viewOnlyPane.add(addToViewOnly, cc.xy(1, 5));
+		addToViewOnly.setEnabled(!project.isPublic());
 		removeFromViewOnly = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
 		viewOnlyPane.add(removeFromViewOnly, cc.xy(3, 5));
+		removeFromViewOnly.setEnabled(!project.isPublic());
+		viewOnlyPane.setPreferredSize(new Dimension(140, 135));
 
 		//viewAndModifyPane contains the list of those who are permitted to view and to modify the project. At the same time,
 		//it also contains the add and remove button to edit this list.
 		viewAndModifyPane.add(new JLabel("View and Modify:"), cc.xyw(1, 1, 5));
 		viewAndModifyList = new JList(viewAndModifyListModel);
-		JScrollPane viewAndModifyScrollPane = new JScrollPane(viewAndModifyList);
-		viewAndModifyPane.add(viewAndModifyScrollPane, cc.xyw(1, 3, 5, "f,f"));
+		viewAndModifyPane.add(new JScrollPane(viewAndModifyList), cc.xyw(1, 3, 5, "f,f"));
 		addToViewAndModify = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
 		viewAndModifyPane.add(addToViewAndModify, cc.xy(1, 5));
 		removeFromViewAndModify = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
 		viewAndModifyPane.add(removeFromViewAndModify, cc.xy(3, 5));
+		viewAndModifyPane.setPreferredSize(new Dimension(140, 135));
 
-		sharingListPane.add(viewOnlyPane, cc.xy(1, 1));
-		sharingListPane.add(viewAndModifyPane, cc.xy(3, 1));
+		sharingListPane.add(viewOnlyPane, cc.xy(1, 1, "f, t"));
+		sharingListPane.add(viewAndModifyPane, cc.xy(3, 1, "f, t"));
 
-		pb.add(sharingListPane, cc.xy(4, row, "l, t"));
+		pb.add(sharingListPane, cc.xy(4, row, "f, t"));
 		row += 2;
 		
+		pb.add(new JSeparator(), cc.xyw(2, row, 3));
+		row += 2;
+		
+		
+		pb.add(new JLabel("Workflows:"), cc.xy(2, row, "r,t"));
+		
+		JPanel workflowListPane = new JPanel(new GridLayout(1, 2, 10, 0));
+		JPanel workflowPane = logger.isDebugEnabled() ? new FormDebugPanel(new FormLayout("20dlu,4dlu,20dlu,4dlu,fill:pref:grow", "50dlu,4dlu,pref"))
+				: new JPanel(new FormLayout("20dlu,4dlu,20dlu,4dlu,fill:pref:grow", "50dlu,4dlu,pref"));
+		workflowList = new JList(workflowListModel);
+		workflowPane.add(new JScrollPane(workflowList), cc.xyw(1, 1, 5, "f,f"));
+		addWorkflow = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
+		workflowPane.add(addWorkflow, cc.xy(1, 3));
+		removeWorkflow = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
+		workflowPane.add(removeWorkflow, cc.xy(3, 3));
+		workflowPane.setPreferredSize(new Dimension(140, 112));
+		
+		workflowListPane.add(workflowPane);
+		workflowListPane.add(new JPanel());
+		pb.add(workflowListPane, cc.xy(4, row, "f, t"));
+		row += 2;
 		// We don't want the save button to take up the whole column width
 		// so we wrap it in a JPanel with a FlowLayout. If there is a better
 		// way, please fix this.
 		JPanel savePanel = new JPanel(new FlowLayout());
 		savePanel.add(saveProject);
-		pb.add(savePanel, cc.xy(4, row));
+		pb.add(savePanel, cc.xy(4, row, "l, t"));
 
 		//Set up the action events associated with the add and remove buttons.
 		configureActions();
-		loadPermissionList();
 		return pb.getPanel();
 	}
 
@@ -282,6 +342,17 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 	 * This sets up the action events associated to the components in the panel.
 	 */
 	private void configureActions() {
+		workflowList.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2) {
+					int row = workflowList.getSelectedIndex();
+					JTree tree = swingSession.getTree();					
+					tree.setSelectionPath(tree.getSelectionPath().pathByAddingChild(project.getChildren().get(row)));
+					System.out.println(workflowList.getSelectedValue());
+				}
+			}
+		});
+		
 		addToViewOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String memberId = JOptionPane.showInputDialog(swingSession.getFrame(),
@@ -289,6 +360,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				if (memberId != null && !memberId.trim().equals("")) {
 					if (!viewOnlyListModel.contains(memberId)) {
 						viewOnlyListModel.addElement(memberId);
+						changed = true;
 					}
 					viewOnlyList.setSelectedValue(memberId, true);
 				}
@@ -302,15 +374,19 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 				if (memberId != null && !memberId.trim().equals("")) {
 					if (!viewAndModifyListModel.contains(memberId)) {
 						viewAndModifyListModel.addElement(memberId);
+						changed = true;
 					}
 					viewAndModifyList.setSelectedValue(memberId, true);
 				}
 			}
 		});
 
+		addWorkflow.addActionListener(new NewMungeProcessAction(swingSession, project));
+		
 		removeFromViewOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (!viewOnlyList.isSelectionEmpty()) {
+					changed = true;
 					for (Object obj : viewOnlyList.getSelectedValues()) {
 						viewOnlyListModel.removeElement(obj);
 					}
@@ -321,6 +397,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		removeFromViewAndModify.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (!viewAndModifyList.isSelectionEmpty()) {
+					changed = true;
 					for (Object obj : viewAndModifyList.getSelectedValues()) {
 						viewAndModifyListModel.removeElement(obj);
 					}
@@ -328,8 +405,30 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			}
 		});
 		
+		removeWorkflow.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (!workflowList.isSelectionEmpty()) {
+					int response = JOptionPane.showConfirmDialog(swingSession.getFrame(),
+							"Are you sure you want to delete the " + workflowList.getSelectedValues().length + 
+					" selected workflow(s)?");
+					if (response == JOptionPane.NO_OPTION) {
+						return;
+					}
+					changed = true;
+					for (Object obj : workflowList.getSelectedValues()) {
+						workflowListModel.removeElement(obj);
+						removedWorkflows.add((MungeProcess)obj);
+					}
+				} else {
+					JOptionPane.showMessageDialog(swingSession.getFrame(),
+					"Please select one workflow to delete");
+				}
+			}
+		});
+		
 		isSharingWithEveryone.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
+				changed = true;
 				if(isSharingWithEveryone.isSelected()) {
 					viewOnlyList.setEnabled(false);
 					addToViewOnly.setEnabled(false);
@@ -396,6 +495,9 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		if (project.getParent() != swingSession.getDefaultPlFolder()) {
 			swingSession.getDefaultPlFolder().addChild(project);
 		}
+		for(MungeProcess workflow : removedWorkflows) {
+			project.removeChild(workflow);
+		}
 		logger.debug("Parent is " + project.getParent().getName());
 		logger.debug(project.getResultTable());
 		logger.debug("saving");
@@ -421,16 +523,16 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			JOptionPane.showMessageDialog(getParentFrame(), "Invalid user(s) when saving permissions.", "Error on save permission lists", JOptionPane.WARNING_MESSAGE);
 		}
 		loadPermissionList();
-		
+		loadWorkflowList();
+		changed = false;
 		return true;
 	}
 	
 	/**
 	 * Load permission lists and group status
 	 */
-	public void loadPermissionList() {
+	private void loadPermissionList() {
 		swingSession.loadPermissions(project);
-		isSharingWithEveryone.setSelected(project.isPublic());
 		
 		viewAndModifyListModel.clear();
 		for (String userId : project.getViewModifyUsers()){
@@ -446,7 +548,7 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			if (project.canModify()) {
 				saveProject.setAction(new DuplicateProjectAction(swingSession, project));
 			} 
-			sharingLabel.setVisible(false);
+			sharingIcon.setVisible(false);
 			sharingWithEveryoneLabel.setVisible(false);
 			isSharingWithEveryone.setVisible(false);
 			sharingListPane.setVisible(false);
@@ -455,9 +557,18 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 			desc.setEditable(false);
 		} 
 	}
+	
+	private void loadWorkflowList() { 
+		this.workflowListModel.clear();
+		
+		for (MungeProcess workflow: project.getChildren()) {
+			workflowListModel.addElement(workflow); 
+		}
+	}
+	
 
 	public boolean hasUnsavedChanges() {
-		return handler.hasPerformedValidation();
+		return handler.hasPerformedValidation() || changed;
 	}
 
 	public void discardChanges() {
