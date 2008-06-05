@@ -86,6 +86,7 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
+import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
@@ -320,15 +321,35 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         this.sessionContext = context;
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
 
+        List<Project> readOnlyProjects = new ArrayList<Project>();
+        
         //Need to set the session on the folders so it is a swing session
         sessionImpl.getDefaultPlFolder().setSession(this);
-        if (sessionImpl.findFolder(SHARED_FOLDER_NAME) != null) {
-        	sessionImpl.findFolder(SHARED_FOLDER_NAME).setSession(this);
-        }
-        if (sessionImpl.findFolder(GALLERY_FOLDER_NAME) != null) {
-        	sessionImpl.findFolder(GALLERY_FOLDER_NAME).setSession(this);
-        }
         
+        PlFolder<Project> sharedFolder = sessionImpl.findFolder(SHARED_FOLDER_NAME);
+		if (sharedFolder != null) {
+        	sharedFolder.setSession(this);
+        	for (Project p : sharedFolder.getChildren()) {
+        		if (!p.canModify()) {
+        			readOnlyProjects.add(p);
+        		}
+        	}
+        }
+		
+        PlFolder<Project> findFolder = sessionImpl.findFolder(GALLERY_FOLDER_NAME);
+		if (findFolder != null) {
+        	findFolder.setSession(this);
+        	for (Project p : findFolder.getChildren()) {
+        		if (!p.canModify()) {
+        			readOnlyProjects.add(p);
+        		}
+        	}
+        }
+		
+		// add modify watchers to warn user about read only projects
+        for (Project p : readOnlyProjects) {
+        	ProjectModifyWatcher.watchProject(p);
+        }
         
         // this grabs warnings from the business model and DAO's and lets us handle them.
         sessionImpl.addWarningListener(new WarningListener() {
@@ -1231,6 +1252,53 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		public void setSelectNewChild(Boolean selectNewChild) {
 			this.selectNewChild = selectNewChild;
+		}
+	}
+	
+	/**
+	 * Listens for all modifications to a read-only project to provide the user with an initial warning
+	 * about not being able to save changes. 
+	 * 
+	 */
+	private static class ProjectModifyWatcher implements MatchMakerListener<MatchMakerObject, MungeProcess> {
+		
+		private final Project project;
+		
+		private ProjectModifyWatcher(Project project) {
+			this.project = project;
+            MatchMakerUtils.listenToHierarchy(this, (MatchMakerObject) project);
+        }
+		
+		public static void watchProject(Project project) {
+			new ProjectModifyWatcher(project);
+		}
+
+		public void mmChildrenInserted(MatchMakerEvent<MatchMakerObject, MungeProcess> evt) {
+			for (MatchMakerObject obj : evt.getChildren()) {
+				MatchMakerUtils.listenToHierarchy(this, obj);
+			}
+			warnUser(evt);
+		}
+
+		public void mmChildrenRemoved(MatchMakerEvent evt) {
+			warnUser(evt);
+		}
+
+		public void mmPropertyChanged(MatchMakerEvent evt) {
+			warnUser(evt);
+		}
+
+		public void mmStructureChanged(MatchMakerEvent evt) {
+			warnUser(evt);
+		}
+
+		private void warnUser(MatchMakerEvent evt) {
+			if (!project.isPopulating()) {
+				MatchMakerUtils.unlistenToHierarchy(this, (MatchMakerObject) project);
+				JOptionPane.showMessageDialog(((MatchMakerSwingSession)project.getSession()).getFrame(),
+					"You do not have permissions to modify this project, changes will not be saved!",
+						"Read-Only Project", JOptionPane.WARNING_MESSAGE);
+			} 
 		}
 	}
 	
