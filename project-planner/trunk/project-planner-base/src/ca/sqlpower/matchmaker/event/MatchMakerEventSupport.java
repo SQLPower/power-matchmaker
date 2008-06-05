@@ -80,6 +80,12 @@ public class MatchMakerEventSupport<T extends MatchMakerObject, C extends MatchM
 	 */
 	public void addMatchMakerListener(MatchMakerListener<T, C> l) {
 		if (l == null) throw new NullPointerException("Null listener is not allowed");
+		if (listeners.contains(l)) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("NOT Adding duplicate listener " + l + " to MatchMakerObject " + source);
+			}
+			return;
+		}		
 		listeners.add(l);
 	}
 
