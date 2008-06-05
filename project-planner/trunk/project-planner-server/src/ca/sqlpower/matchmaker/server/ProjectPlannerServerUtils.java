@@ -32,7 +32,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.dao.xml.MatchMakerXMLSession;
-import ca.sqlpower.matchmaker.dao.xml.MatchmakerXMLSessionContext;
+import ca.sqlpower.matchmaker.dao.xml.MatchMakerXMLSessionContext;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContext;
 import ca.sqlpower.matchmaker.swingui.SwingSessionContextImpl;
@@ -66,7 +66,7 @@ public class ProjectPlannerServerUtils {
 	public static BufferedImage generateProjectThumbnail(String projectId, String projectXML)
 			throws IOException, ClassNotFoundException, ArchitectException {
 		
-		MatchmakerXMLSessionContext context = new MatchmakerXMLSessionContext();
+		MatchMakerXMLSessionContext context = new MatchMakerXMLSessionContext(null);
 		SwingSessionContext sscontext = new SwingSessionContextImpl(Preferences
 				.userNodeForPackage(MatchMakerXMLSession.class), context);
 		ProjectPlannerServerSession sessionDelegate = new ProjectPlannerServerSession(context);

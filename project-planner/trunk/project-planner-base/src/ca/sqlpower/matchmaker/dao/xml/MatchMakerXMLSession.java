@@ -67,10 +67,11 @@ public class MatchMakerXMLSession implements MatchMakerSession {
     private String dbUser = "SQL Power Person";
     
     private final IOHandler ioHandler = new WebsiteIOHandler();
-    private final ProjectDAOXML projectDAO = new ProjectDAOXML(this, ioHandler);
+    private final ProjectDAOXML projectDAO;
     
     public MatchMakerXMLSession(MatchMakerSessionContext context) {
         this.context = context;
+        this.projectDAO = new ProjectDAOXML(this, ioHandler);
         
         // Default folder contains the current user's projects
         // Shared folder contains the projects the user has permissions to (view/viewAndModify)
@@ -248,7 +249,7 @@ public class MatchMakerXMLSession implements MatchMakerSession {
         	SwingUtilities.invokeLater(new Runnable() {
         		public void run() {
         			try {
-        				MatchmakerXMLSessionContext context = new MatchmakerXMLSessionContext();
+        				MatchMakerXMLSessionContext context = new MatchMakerXMLSessionContext(Preferences.userNodeForPackage(MatchMakerXMLSession.class));
         				
         				SwingSessionContext sscontext = new SwingSessionContextImpl(Preferences.userNodeForPackage(MatchMakerXMLSession.class), context);
         				sscontext.launchDefaultSession(projectIdLong);
@@ -261,7 +262,7 @@ public class MatchMakerXMLSession implements MatchMakerSession {
         	SwingUtilities.invokeLater(new Runnable() {
         		public void run() {
         			try {
-        				MatchmakerXMLSessionContext context = new MatchmakerXMLSessionContext();
+        				MatchMakerXMLSessionContext context = new MatchMakerXMLSessionContext(Preferences.userNodeForPackage(MatchMakerXMLSession.class));
         				
         				SwingSessionContext sscontext = new SwingSessionContextImpl(Preferences.userNodeForPackage(MatchMakerXMLSession.class), context);
         				sscontext.launchDefaultSession();

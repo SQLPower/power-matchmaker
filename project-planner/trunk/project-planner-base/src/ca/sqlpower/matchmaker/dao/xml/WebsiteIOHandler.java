@@ -99,6 +99,8 @@ public class WebsiteIOHandler implements IOHandler {
      */
     private ProjectDAOXML dao;
     
+    private MatchMakerXMLSessionContext context;
+    
     public List<Project> createProjectList() {
         try {
         	boolean loggedIn = false;
@@ -324,6 +326,7 @@ public class WebsiteIOHandler implements IOHandler {
         // If the login worked, we will be redirected to the nextAction specified in the request
         String redirectLocation = urlc.getHeaderField("Location");
         if (redirectLocation != null && redirectLocation.contains("THE_LOGIN_WORKED")) {
+        	context.setLastLoginUsername(username);
             return true;
         } else {
             return false;
@@ -335,16 +338,19 @@ public class WebsiteIOHandler implements IOHandler {
      * @return Whether or not the user accepted to login.
      */
     private boolean showLoginPrompt() {
-        final JTextField usernameField = new JTextField(username);
+    	if (d == null) {
+    		JFrame dummyFrame = new JFrame();
+    		dummyFrame.setIconImage(MMSUtils.getFrameImageIcon().getImage());
+    		d = new JDialog(dummyFrame);
+    		
+    		// start with the last login username from app prefs
+    		username = context.getLastLoginUsername();
+    	}
+
+    	final JTextField usernameField = new JTextField(username);
         final JPasswordField passwordField = new JPasswordField(password);
         JDefaultButton okButton = new JDefaultButton("OK");
         JButton cancelButton = new JButton("Cancel");
-        
-        if (d == null) {
-        	JFrame dummyFrame = new JFrame();
-        	dummyFrame.setIconImage(MMSUtils.getFrameImageIcon().getImage());
-        	d = new JDialog(dummyFrame);
-        }
         
         okButton.addActionListener(new ActionListener(){
 
@@ -409,6 +415,8 @@ public class WebsiteIOHandler implements IOHandler {
     
     public void setDAO(ProjectDAOXML dao) {
         this.dao = dao;
+        MatchMakerXMLSession session = (MatchMakerXMLSession) dao.getSession();
+        this.context = (MatchMakerXMLSessionContext) session.getContext();
     }
 
     public InputStream getInputStream(Project project) {

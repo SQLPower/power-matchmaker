@@ -1056,4 +1056,8 @@ public class ProjectDAOXML implements ProjectDAO {
             ioHandler.delete(project);
         }
     }
+
+	public MatchMakerSession getSession() {
+		return session;
+	}
 }

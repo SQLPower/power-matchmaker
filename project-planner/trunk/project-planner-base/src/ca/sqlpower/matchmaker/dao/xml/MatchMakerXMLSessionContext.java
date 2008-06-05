@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.dao.xml;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.matchmaker.MatchMakerConfigurationException;
@@ -33,7 +34,18 @@ import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.util.VersionFormatException;
 
-public class MatchmakerXMLSessionContext implements MatchMakerSessionContext {
+public class MatchMakerXMLSessionContext implements MatchMakerSessionContext {
+	
+	private final Preferences prefs;
+	
+	/**
+	 * Used to store last login username to be retrieved across app launches
+	 */
+	private static final String LAST_LOGIN_USERNAME = "last.login.username";
+	
+	public MatchMakerXMLSessionContext(Preferences prefsRootNode) {
+		this.prefs = prefsRootNode;
+	}
 
     public MatchMakerXMLSession createDefaultSession() {
         return new MatchMakerXMLSession(this);
@@ -62,4 +74,11 @@ public class MatchmakerXMLSessionContext implements MatchMakerSessionContext {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    public String getLastLoginUsername() {
+    	return prefs.get(LAST_LOGIN_USERNAME, null);
+    }
+    
+    public void setLastLoginUsername(String name) {
+    	prefs.put(LAST_LOGIN_USERNAME, name);
+    }
 }
