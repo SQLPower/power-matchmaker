@@ -86,7 +86,6 @@ import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.ProjectDAO;
 import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.event.MatchMakerListener;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
@@ -1260,7 +1259,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * about not being able to save changes. 
 	 * 
 	 */
-	private static class ProjectModifyWatcher implements MatchMakerListener<MatchMakerObject, MungeProcess> {
+	private static class ProjectModifyWatcher implements MatchMakerListener<MatchMakerObject, MatchMakerObject> {
 		
 		private final Project project;
 		
@@ -1273,7 +1272,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			new ProjectModifyWatcher(project);
 		}
 
-		public void mmChildrenInserted(MatchMakerEvent<MatchMakerObject, MungeProcess> evt) {
+		public void mmChildrenInserted(MatchMakerEvent<MatchMakerObject, MatchMakerObject> evt) {
 			for (MatchMakerObject obj : evt.getChildren()) {
 				MatchMakerUtils.listenToHierarchy(this, obj);
 			}
