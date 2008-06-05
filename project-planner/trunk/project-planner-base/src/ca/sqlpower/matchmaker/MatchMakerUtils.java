@@ -31,12 +31,6 @@ public class MatchMakerUtils {
 	
 	private static final Logger logger = Logger.getLogger(MatchMakerUtils.class);
 
-    /**
-     * You can't make instances of this class.
-     */
-	private MatchMakerUtils() {
-	}
-
 	/**
 	 * Adds the given listener to the given root MatchMakerObject and each
 	 * MatchMakerObject descendant reachable from it.
@@ -52,8 +46,8 @@ public class MatchMakerUtils {
 		void listenToHierarchy(MatchMakerListener<T,C> listener, MatchMakerObject<T,C> root) {
 		root.addMatchMakerListener(listener);
 
-        if (root.getParent() instanceof Project) {
-            if (!((Project) root.getParent()).isPopulated()) {
+        if (root instanceof Project) {
+            if (!((Project) root).isPopulated()) {
                 // don't force projects to populate just so we can listen to them
                 // (the listeners will get attached later when the project
                 return;
