@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.swingui;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -48,6 +49,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -242,6 +244,11 @@ public class ProjectEditor implements MatchMakerEditorPane<Project> {
 		row += 2;
 		desc.setWrapStyleWord(true);
 		desc.setLineWrap(true);
+		
+		// gets the system default font
+		Font defaultFont = (Font)UIManager.get("Label.font");
+		desc.setFont(defaultFont);
+		
 		pb.add(new JLabel("Description:"), cc.xy(2, row, "r,t"));
 		pb.add(new JScrollPane(desc), cc.xy(4, row, "f,f"));
 		row += 2;

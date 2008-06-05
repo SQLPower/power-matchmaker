@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.swingui.munge;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -43,6 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -180,6 +182,10 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 		MutableAttributeSet standard = new SimpleAttributeSet();
 		doc.setParagraphAttributes(0, 0, standard, true);
 		textArea.setDocument(doc);
+		
+		// gets the system default font
+		Font font = (Font)UIManager.get("Label.font");
+		textArea.setFont(font);
 		
 		// when the text is being changed inside the text area
 		doc.addDocumentListener(new DocumentListener() {
