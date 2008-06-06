@@ -288,8 +288,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 				} else if (o instanceof Project) {
 
 					ProjectEditor me;
-					me = new ProjectEditor(swingSession, (Project) o,
-							(PlFolder<Project>) ((Project) o).getParent());
+					me = new ProjectEditor(swingSession, (Project) o);
 
 					swingSession.setCurrentEditorComponent(me);
 

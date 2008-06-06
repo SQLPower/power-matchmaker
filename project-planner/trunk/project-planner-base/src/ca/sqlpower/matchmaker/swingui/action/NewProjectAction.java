@@ -26,7 +26,6 @@ import javax.swing.JOptionPane;
 
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
@@ -61,8 +60,6 @@ public final class NewProjectAction extends AbstractAction {
 			return;
 		}
 		
-		PlFolder<Project> folder = swingSession.getDefaultPlFolder();
-
 		final Project project = new Project();
 		project.setSession(swingSession);	
 		project.setType(type);
@@ -75,7 +72,7 @@ public final class NewProjectAction extends AbstractAction {
         swingSession.getDefaultPlFolder().addChild(project);
         
 		try {
-			ProjectEditor me = new ProjectEditor(swingSession, project, folder);
+			ProjectEditor me = new ProjectEditor(swingSession, project);
 			swingSession.setCurrentEditorComponent(me);
 		} catch (Exception ex) {
 			SPSUtils.showExceptionDialogNoReport(swingSession.getFrame(), "Couldn't create match", ex);
