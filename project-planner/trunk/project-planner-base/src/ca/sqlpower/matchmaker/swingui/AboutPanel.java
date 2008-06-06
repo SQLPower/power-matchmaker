@@ -41,7 +41,7 @@ public class AboutPanel extends JPanel implements DataEntryPanel {
 		setLayout(new FlowLayout());
 
         // Include the product's 128x128 Icon
-		ImageIcon icon = SPSUtils.createIcon("pp", "Project Planner Logo");
+		ImageIcon icon = SPSUtils.createIcon("pp_200", "Project Planner Logo");
 
         if (icon != null) {
             add(new JLabel(icon));

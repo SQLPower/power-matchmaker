@@ -722,7 +722,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
     private void macOSXRegistration() {
         if (MAC_OS_X) {
             try {
-                Class osxAdapter = ClassLoader.getSystemClassLoader().loadClass("ca.sqlpower.architect.swingui.OSXAdapter");
+                Class osxAdapter = Thread.currentThread().getContextClassLoader().loadClass("ca.sqlpower.architect.swingui.OSXAdapter");
 
                 // The main registration method.  Takes quitAction, prefsAction, aboutAction.
                 Class[] defArgs = { Action.class, Action.class, Action.class };
