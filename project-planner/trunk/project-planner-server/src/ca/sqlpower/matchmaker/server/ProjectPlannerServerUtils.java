@@ -44,14 +44,9 @@ import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 public class ProjectPlannerServerUtils {
 	
 	/**
-     * The width of all thumbnails generated from the munge pen on a save.
+     * The length of all thumbnails generated from the munge pen on a save.
      */
-    private static final int THUMBNAIL_WIDTH = 400;
-    
-    /**
-     * The height of all thumbnails generated from the munge pen on a save.
-     */
-    private static final int THUMBNAIL_HEIGHT = 400;
+    private static final int THUMBNAIL_LENGTH = 400;
 	
 	/**
 	 * Generates a small image of the munge pen from the first munge process to
@@ -97,10 +92,13 @@ public class ProjectPlannerServerUtils {
 			f.pack();
 
 			Dimension mungePenArea = mungePen.getUsedArea();
-			double scaleFactor = Math.max(THUMBNAIL_WIDTH/mungePenArea.getWidth(), THUMBNAIL_HEIGHT/mungePenArea.getHeight());
-			imageBuffer = new BufferedImage((int)(scaleFactor * mungePenArea.getWidth()), (int)(scaleFactor * mungePenArea.getHeight()), BufferedImage.TYPE_INT_RGB);
+			double scaleFactor = Math.min(THUMBNAIL_LENGTH/mungePenArea.getWidth(), THUMBNAIL_LENGTH/mungePenArea.getHeight());
+			imageBuffer = new BufferedImage(THUMBNAIL_LENGTH, THUMBNAIL_LENGTH, BufferedImage.TYPE_INT_RGB);
 
 			Graphics2D g = (Graphics2D)imageBuffer.getGraphics();
+			g.setColor(mungePen.getBackground());
+			g.fillRect(0, 0, THUMBNAIL_LENGTH, THUMBNAIL_LENGTH);
+			
 			g.scale(scaleFactor, scaleFactor);
 			mungePen.paint(g);
 			g.dispose();

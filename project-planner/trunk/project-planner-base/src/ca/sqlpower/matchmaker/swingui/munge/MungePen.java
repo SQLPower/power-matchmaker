@@ -709,7 +709,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		}
 		return new Dimension(Math.max(maxx - minx, getMinimumSize().width), Math.max(maxy - miny, getMinimumSize().height));
 	}
-
+	
  	public Dimension getPreferredScrollableViewportSize() {
 		//return getPreferredSize();
 		return new Dimension(800,600);
@@ -768,6 +768,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 			}
 			revalidate();
 		}
+		updatePositionsToMMO();
 		normalizing = false;
 	}
 
