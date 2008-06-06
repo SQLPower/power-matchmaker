@@ -101,12 +101,12 @@ public class ProjectPlannerServerUtils {
 			g.setColor(mungePen.getBackground());
 			g.fillRect(0, 0, THUMBNAIL_LENGTH, THUMBNAIL_LENGTH);
 
-			g.scale(scaleFactor, scaleFactor);
-			
 			// center the image
 			double x = (THUMBNAIL_LENGTH - mungePenArea.getWidth()*scaleFactor)/2;
 			double y = (THUMBNAIL_LENGTH - mungePenArea.getHeight()*scaleFactor)/2;
 			g.translate(x, y);
+			
+			g.scale(scaleFactor, scaleFactor);
 			
 			mungePen.paint(g);
 			g.dispose();
