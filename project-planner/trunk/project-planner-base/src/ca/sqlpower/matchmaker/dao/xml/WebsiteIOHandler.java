@@ -116,7 +116,7 @@ public class WebsiteIOHandler implements IOHandler {
 				
 				if (!loggedIn && !cancelled) {
 					// Incorrect login info
-					JOptionPane.showMessageDialog(null, "Couldn't retrieve projects!",
+					JOptionPane.showMessageDialog(null, "Invalid username or password.\nPlease verify that you did not have capslock turned on by mistake.",
 							"Login failed", JOptionPane.ERROR_MESSAGE);
 					password = null;
 				}
