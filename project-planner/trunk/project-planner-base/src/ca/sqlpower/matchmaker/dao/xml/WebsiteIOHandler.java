@@ -348,6 +348,7 @@ public class WebsiteIOHandler implements IOHandler {
     	}
 
     	final JTextField usernameField = new JTextField(username);
+    	usernameField.selectAll();
         final JPasswordField passwordField = new JPasswordField(password);
         JDefaultButton okButton = new JDefaultButton("OK");
         JButton cancelButton = new JButton("Cancel");
