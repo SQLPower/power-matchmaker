@@ -96,10 +96,18 @@ public class ProjectPlannerServerUtils {
 			imageBuffer = new BufferedImage(THUMBNAIL_LENGTH, THUMBNAIL_LENGTH, BufferedImage.TYPE_INT_RGB);
 
 			Graphics2D g = (Graphics2D)imageBuffer.getGraphics();
+			
+			// fill the background
 			g.setColor(mungePen.getBackground());
 			g.fillRect(0, 0, THUMBNAIL_LENGTH, THUMBNAIL_LENGTH);
-			
+
 			g.scale(scaleFactor, scaleFactor);
+			
+			// center the image
+			double x = (THUMBNAIL_LENGTH - mungePenArea.getWidth()*scaleFactor)/2;
+			double y = (THUMBNAIL_LENGTH - mungePenArea.getHeight()*scaleFactor)/2;
+			g.translate(x, y);
+			
 			mungePen.paint(g);
 			g.dispose();
 		}
