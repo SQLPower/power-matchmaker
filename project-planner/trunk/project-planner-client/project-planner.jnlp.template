@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp spec="1.5+" 
-	codebase="$$codebase">
-  <information>
-    <title>Project Planner Client</title>
-    <vendor>SQL Power Group Inc.</vendor>
-    <homepage href="page/project_planner"/>
-    <description>Project Planner Client Application</description>
-    <description kind="short">A simple project diagramming tool</description>
-    <icon href="pp_128.png"/>
-    <icon kind="splash" href="pp_128.png"/>
-    <shortcut online="true">
-      <desktop/>
-      <menu submenu="SQL Power"/>
-    </shortcut>
-  </information>
-  <security>
-      <all-permissions/>
-  </security>
-  <resources>
-    <j2se version="1.5+" java-vm-args=""/>
-    $dependencies
-  </resources>
-  <application-desc main-class="$mainClass">
-  	<argument>$projectID</argument>
-  </application-desc>
+	codebase="http://webstart.sqlpower.ca/project_planner/">
+	<information>
+		<title>Project Planner</title>
+		<vendor>SQL Power Group Inc.</vendor>
+		<homepage href="http://www.sqlpower.ca/page/project_planner"/>
+		<description>Project Planner Client Application</description>
+		<description kind="short">A simple project diagramming tool</description>
+		<icon href="pp_128.png"/>
+		<icon kind="splash" href="pp_128.png"/>
+  	</information>
+  	<security>
+    	<all-permissions/>
+  	</security>
+  	<resources>
+    	<j2se version="1.5+" java-vm-args=""/>
+    	$dependencies
+  	</resources>
+  	<application-desc main-class="$mainClass">
+  		<argument>$projectID</argument>
+  	</application-desc>
 </jnlp> 
