@@ -372,7 +372,7 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 					int response = JOptionPane.showConfirmDialog(swingSession.getFrame(),
 							"Are you sure you want to delete the " + workflowList.getSelectedValues().length + 
 					" selected workflow(s)?");
-					if (response == JOptionPane.NO_OPTION) {
+					if (response != JOptionPane.YES_OPTION) {
 						return;
 					}
 					changed = true;
@@ -514,7 +514,7 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 		logger.debug("Parent is " + project.getParent().getName());
 		logger.debug(project.getResultTable());
 		logger.debug("saving");
-		swingSession.save(project);
+		super.applyChanges();
 
 		project.setPublic(isSharingWithEveryone.isSelected());
 
