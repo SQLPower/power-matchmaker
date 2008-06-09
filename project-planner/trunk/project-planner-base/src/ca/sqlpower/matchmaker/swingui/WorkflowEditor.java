@@ -165,7 +165,7 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
         splitPane.setLeftComponent(new JScrollPane(mungePen));
         MungeStepLibrary msl = new MungeStepLibrary(mungePen, ((SwingSessionContext) swingSession.getContext()).getStepMap());
         MungeStepInfoComponent stepInfoComp = new MungeStepInfoComponent(msl);
-		JToolBar sideBar = new MungePenSideBar(stepInfoComp.getScrollPane(), msl.getScrollPane(), "PROJECT STEPS",
+		JToolBar sideBar = new MungePenSideBar(stepInfoComp.getScrollPane(), msl.getScrollPane(), "WORKFLOW STEPS",
 				"(Drag into playpen)", DARK_BLUE).getToolbar();
         sideBar.setMinimumSize(new Dimension(0, 0));
 		splitPane.setRightComponent(sideBar);
