@@ -19,22 +19,13 @@
 
 package ca.sqlpower.matchmaker.validation;
 
-import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.validation.Status;
 import ca.sqlpower.validation.ValidateResult;
 import ca.sqlpower.validation.Validator;
 
 public class ProjectDescriptionValidator implements Validator {
 	
-	private MatchMakerSwingSession session;
-	private Project project;
     private static final int MAX_CHAR_PROJECT_DESC = 15000;
-
-	public ProjectDescriptionValidator(MatchMakerSwingSession session, Project project) {
-		this.session = session;
-		this.project = project;
-	}
 
 	public ValidateResult validate(Object contents) {	    
 		String value = (String)contents;

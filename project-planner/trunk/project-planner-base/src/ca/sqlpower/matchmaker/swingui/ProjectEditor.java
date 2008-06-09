@@ -159,7 +159,7 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 		Validator v = new ProjectNameValidator(swingSession, project);
 		handler.addValidateObject(projectName, v);
 
-		Validator v6 = new ProjectDescriptionValidator(swingSession, project);
+		Validator v6 = new ProjectDescriptionValidator();
 		handler.addValidateObject(desc, v6);
 	}
 
