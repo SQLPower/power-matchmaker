@@ -460,7 +460,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             helpMenu.addSeparator();
         }
         JMenuItem helpMenuItem = new JMenuItem(helpAction);
-        ImageIcon helpIcon = SPSUtils.createIcon("help", "helpAction", 16);
+        ImageIcon helpIcon = SPSUtils.createIcon("help", "helpAction");
 		helpMenuItem.setIcon(helpIcon);
         helpMenu.add(helpMenuItem);
 		

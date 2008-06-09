@@ -1178,20 +1178,21 @@ public abstract class AbstractMungeComponent extends JPanel {
 						Insets autoScroll = pen.getAutoscrollInsets();
 						//does not use the mouse point because this looks better
 						autoScrollPoint = new Point(pen.getWidth()/2, pen.getHeight()/2);
+						Point mouseLocation = e.getPoint();
 						boolean asChanged = false;
-						if (getX() + getWidth() > pen.getWidth() - autoScroll.right) {
+						if (mouseLocation.x > pen.getWidth() - autoScroll.right) {
 							autoScrollPoint.x = getX() + getWidth();
 							asChanged = true;
 						}
-						if (getY() + getHeight() > pen.getHeight() - autoScroll.bottom) {
+						if (mouseLocation.y > pen.getHeight() - autoScroll.bottom) {
 							autoScrollPoint.y = getY() + getHeight();
 							asChanged = true;
 						}
-						if (getX() < autoScroll.left) {
+						if (mouseLocation.x < autoScroll.left) {
 							autoScrollPoint.x = getX();
 							asChanged = true;
 						}
-						if (getY() < autoScroll.top) {
+						if (mouseLocation.y < autoScroll.top) {
 							autoScrollPoint.y = getY();
 							asChanged = true;
 						}
