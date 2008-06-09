@@ -803,6 +803,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 					}
 				} 
 				add(mcom);
+				moveToFront(mcom);
 				logger.debug("Generating positions from properites");
 			}
 			
