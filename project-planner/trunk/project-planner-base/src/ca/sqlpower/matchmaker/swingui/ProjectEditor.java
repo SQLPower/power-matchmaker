@@ -61,9 +61,9 @@ import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
+import ca.sqlpower.matchmaker.validation.ProjectDescriptionValidator;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.swingui.SPSUtils;
-import ca.sqlpower.validation.AlwaysOKValidator;
 import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
@@ -159,7 +159,7 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 		Validator v = new ProjectNameValidator(swingSession, project);
 		handler.addValidateObject(projectName, v);
 
-		Validator v6 = new AlwaysOKValidator();
+		Validator v6 = new ProjectDescriptionValidator(swingSession, project);
 		handler.addValidateObject(desc, v6);
 	}
 
