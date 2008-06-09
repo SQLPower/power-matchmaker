@@ -19,9 +19,13 @@
 
 package ca.sqlpower.matchmaker.dao.xml;
 
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.ByteArrayOutputStream;
@@ -42,10 +46,18 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLEditorKit;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -350,8 +362,56 @@ public class WebsiteIOHandler implements IOHandler {
     	final JTextField usernameField = new JTextField(username);
     	usernameField.selectAll();
         final JPasswordField passwordField = new JPasswordField(password);
+
+        HTMLEditorKit htmlKit = new HTMLEditorKit();
+        JEditorPane needAccount = new JEditorPane();
+        needAccount.setEditorKit(htmlKit);
+        needAccount.setEditable(false);
+        needAccount.setOpaque(false);
+        Font font = (Font)UIManager.get("Label.font");
+        needAccount.setText("<html><body><font face =\"" + font.getFamily() + "\" size=\"" +
+				font.getSize()/4 + "\">Need an account?</font>");
+        
+        final JEditorPane signUp = new JEditorPane();
+		signUp.setEditorKit(htmlKit);
+        signUp.setEditable(false);
+        signUp.setOpaque(false);
+        signUp.setText("<html><body><font face =\"" + font.getFamily() + "\" size=\"" +
+				font.getSize()/4 + "\"><a href=\"http://www.sqlpower.ca/page/register\">Sign up!</a></font>");
+        
+        /* Jump to the URL (in the user's configured browser)
+         * when a link is clicked.
+         */
+        signUp.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent evt) {
+                if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    URL url = evt.getURL();
+                    try {
+                        BrowserUtil.launch(url.toString());
+                    } catch (IOException e1) {
+                        throw new RuntimeException("Unexpected error in launch", e1);
+                    }
+                }
+            }
+        });
+        
+        // This listener is used to change the cursor when it is over the hyperlink
+        signUp.addMouseListener(new MouseAdapter(){
+			public void mouseEntered(MouseEvent arg0) {
+				d.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+			}
+
+			public void mouseExited(MouseEvent arg0) {
+				d.setCursor(Cursor.getDefaultCursor());
+			}
+        });
+        
+        JPanel signUpPanel = new JPanel();
+        signUpPanel.add(needAccount);
+        signUpPanel.add(signUp);
+        
         JDefaultButton okButton = new JDefaultButton("OK");
-        JButton cancelButton = new JButton("Cancel");
+        JButton quitButton = new JButton("Quit");
         
         okButton.addActionListener(new ActionListener(){
 
@@ -364,7 +424,7 @@ public class WebsiteIOHandler implements IOHandler {
             
         });
         
-        cancelButton = new JButton(cancelAction);
+        quitButton = new JButton(quitAction);
         
         d.addWindowListener(new WindowAdapter(){
         	@Override
@@ -373,28 +433,28 @@ public class WebsiteIOHandler implements IOHandler {
         	}
         });
         
+        SPSUtils.makeJDialogCancellable(d, quitAction);
+        
+        JLabel ppLogo = new JLabel(SPSUtils.createIcon("pp_128", "Project Planner Icon"), JLabel.CENTER);
+       
         DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("pref,3dlu,5dlu:grow"));
         b.append("Username", usernameField);
         b.append("Password", passwordField);
-        b.append(ButtonBarFactory.buildOKCancelBar(okButton, cancelButton), 3);
-        b.append(ButtonBarFactory.buildRightAlignedBar(new JButton(new AbstractAction("Sign Up...") {
-			public void actionPerformed(ActionEvent e) {
-				try {
-                    BrowserUtil.launch("http://www.sqlpower.ca/page/register");
-                } catch (IOException ex) {
-                    SPSUtils.showExceptionDialogNoReport(d.getComponent(0),
-                            "Could not launch browser to view Sign Up page", ex);
-                }
-				
-			}
-        })), 3);
+        b.append(signUpPanel, 3);
+        b.append(ButtonBarFactory.buildOKCancelBar(okButton, quitButton), 3);
         b.setDefaultDialogBorder();
         passwordField.setPreferredSize(new Dimension(200, 20));
         
-        d.setTitle("Please log in to the SQL Power Web Site");
+        // The Panel which contains the PP Icon and the sign up area
+        JPanel outerPanel = new JPanel();
+        outerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        outerPanel.add(ppLogo);
+        outerPanel.add(b.getPanel());
+        
+        d.setTitle("SQL Power Project Planner");
         d.setModal(true);
         d.getRootPane().setDefaultButton(okButton);
-        d.setContentPane(b.getPanel());
+        d.setContentPane(outerPanel);
         d.pack();
         d.setLocationRelativeTo(null);
         d.setVisible(true);
@@ -403,7 +463,7 @@ public class WebsiteIOHandler implements IOHandler {
         return doLogin != null && doLogin == true;
     }
     
-	private Action cancelAction = new AbstractAction("Cancel") {
+	private Action quitAction = new AbstractAction("Quit") {
 	    public void actionPerformed(ActionEvent e) {
 	        cancel();
 	    }
