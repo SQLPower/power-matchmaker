@@ -52,6 +52,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -400,15 +401,30 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		//Settingup
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
-		fileMenu.add(new DummyAction("Receive a PDF of my Munge Pen", 
-				"Please contact our sales team, who will be happy to provide you with a PDF of your project plan."));
-		fileMenu.add(exitAction);
+		
+		DummyAction exportPDFAction = new DummyAction("Export to PDF", 
+				"Please contact our sales team, who will be happy to provide you with a PDF of your project plan.");
+		JMenuItem pdfMenuItem = new JMenuItem(exportPDFAction);
+		pdfMenuItem.setIcon(SPSUtils.createIcon("exportPDF", "exportPDFAction"));
+		fileMenu.add(pdfMenuItem);
+		
+		JMenuItem exitMenuItem = new JMenuItem(exitAction);
+        ImageIcon exitIcon = SPSUtils.createIcon("exit", "exitAction");
+        exitMenuItem.setIcon(exitIcon);
+		fileMenu.add(exitMenuItem);
 		menuBar.add(fileMenu);
 		
 		JMenu editMenu = new JMenu("Edit");
 		editMenu.setMnemonic('e');
-		editMenu.add(undoAction);
-		editMenu.add(redoAction);
+		
+		JMenuItem undoMenuItem = new JMenuItem(undoAction);
+		undoMenuItem.setIcon(SPSUtils.createIcon("undo", "undoAction"));
+		editMenu.add(undoMenuItem);
+		
+		JMenuItem redoMenuItem = new JMenuItem(redoAction);
+		redoMenuItem.setIcon(SPSUtils.createIcon("redo", "redoAction"));
+		editMenu.add(redoMenuItem);
+		
 		menuBar.add(editMenu);
 
 		JMenu projectMenu = new JMenu("Project");
@@ -443,7 +459,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
             helpMenu.add(aboutAction);
             helpMenu.addSeparator();
         }
-        helpMenu.add(helpAction);
+        JMenuItem helpMenuItem = new JMenuItem(helpAction);
+        ImageIcon helpIcon = SPSUtils.createIcon("help", "helpAction", 16);
+		helpMenuItem.setIcon(helpIcon);
+        helpMenu.add(helpMenuItem);
 		
         //supportOnTheWebAction = SPSUtils.forumAction;
         //helpMenu.add(supportOnTheWebAction);
@@ -454,10 +473,19 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
 
-		toolBar.add(newProjectAction);
+        JButton newProjectButton = new JButton(newProjectAction);
+        newProjectButton.setIcon(SPSUtils.createIcon("pp_project", "newProjectAction"));
+		toolBar.add(newProjectButton);
         toolBar.addSeparator();
-        toolBar.add(helpAction);
-        toolBar.add(exitAction);
+        
+        JButton helpButton = new JButton(helpAction);
+        helpButton.setIcon(helpIcon);
+		toolBar.add(helpButton);
+		
+        JButton exitButton = new JButton(exitAction);
+		exitButton.setIcon(exitIcon);
+        toolBar.add(exitButton);
+        
 		toolBar.setToolTipText("Project Planner Toolbar");
 		toolBar.setName("Project Planner Toolbar");
 
