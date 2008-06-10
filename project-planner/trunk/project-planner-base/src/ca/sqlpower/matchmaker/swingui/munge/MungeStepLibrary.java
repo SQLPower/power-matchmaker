@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker.swingui.munge;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -140,14 +141,6 @@ public class MungeStepLibrary {
 					boolean expanded, boolean leaf, int row, boolean hasFocus) {
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
 				
-				//don't show the root node of the tree
-				if (node == tree.getModel().getRoot()) {
-					super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-					setVisible(false);
-					setIcon(null);
-					return this;
-				}
-				
 				String nodeText;
 				Icon icon = null;
 				if (node.getUserObject() instanceof StepDescription) {
@@ -183,7 +176,7 @@ public class MungeStepLibrary {
 		
 		libraryPane = new JScrollPane(tree);
 		libraryPane.getViewport().setBackground(LIGHT_BLUE);
-		
+		libraryPane.setPreferredSize(new Dimension(0, 0));
 	}
 	
 	public JScrollPane getScrollPane() {

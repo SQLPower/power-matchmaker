@@ -107,6 +107,7 @@ public class MungePenSideBar {
 		toolbar.add(pb.getPanel(), BorderLayout.CENTER);
 		toolbar.setBorder(BorderFactory.createRaisedBevelBorder());
 		toolbar.setFloatable(false);
+		toolbar.setMinimumSize(titlePanel.getPreferredSize());
 	}
 
 	public JToolBar getToolbar() {

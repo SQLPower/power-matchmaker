@@ -545,6 +545,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 		JPanel cp = new JPanel(new BorderLayout());
 		projectBarPane.add(cp, BorderLayout.CENTER);
+		
         tree = new JTree(new MatchMakerTreeModel(getCurrentFolderParent(), this));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		MatchMakerTreeMouseAndSelectionListener matchMakerTreeMouseAndSelectionListener = new MatchMakerTreeMouseAndSelectionListener(this);
@@ -554,14 +555,16 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         tree.setBackground(MatchMakerTreeCellRenderer.LIGHT_ORANGE);
+        
         JScrollPane savedProcessesPanel = new JScrollPane(tree);
         savedProcessesPanel.getViewport().setBackground(MatchMakerTreeCellRenderer.LIGHT_ORANGE);
         savedProcessesPanel.setPreferredSize(new Dimension(0, 0));
+        
         JPanel hiddenPanel = new JPanel();
         hiddenPanel.setVisible(false);
+        
         JToolBar sideBar = new MungePenSideBar(hiddenPanel, savedProcessesPanel, "SAVED PROJECTS",
         		"(Double-click to open)", DARK_ORANGE).getToolbar();
-        sideBar.setMinimumSize(new Dimension(0, 0));
         
         CollapsableSideBar leftBar = new CollapsableSideBar(sideBar, splitPane, "SAVED PROJECTS", DARK_ORANGE, false);
         splitPane.setLeftComponent(leftBar.getPanel());
@@ -758,7 +761,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 // If this line was not here, the left component would get 
                 // forced to its minimum size. This sets the divider to remain
                 // at the location that has been set before the editor change.
-                splitPane.getLeftComponent().setMinimumSize(new Dimension(0, 0));
     			splitPane.setDividerLocation(splitPane.getDividerLocation());
     			
             }
