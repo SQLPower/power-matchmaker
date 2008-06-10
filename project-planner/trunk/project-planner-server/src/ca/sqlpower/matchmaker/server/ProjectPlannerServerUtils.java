@@ -110,6 +110,7 @@ public class ProjectPlannerServerUtils {
 			
 			mungePen.paint(g);
 			g.dispose();
+			imageBuffer.flush();
 			f.dispose();
 		}
     	

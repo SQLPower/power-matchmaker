@@ -85,7 +85,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 	 * This is a JDialog that contains the JColorChooser, used to set color of
 	 * labels and their components
 	 */
-	protected JDialog colorChanger;
+	protected static JDialog colorChanger;
 	
 	/**
 	 * This is a color chooser used to generate colors.
@@ -154,8 +154,6 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 		
 		Color textColor = step.getTextAreaColour();
 		textArea.setForeground(textColor);
-		
-		setUpColorChanger();
 		
 		panel.add(textArea);
 		return panel;
@@ -428,6 +426,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 		JMenuItem changeColor = new JMenuItem("Custom Color");
 		changeColor.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (colorChanger == null) setUpColorChanger();
 				colorChanger.setVisible(true);
 			}
 		});
@@ -447,6 +446,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 	 */
 	private void changeColor(Color c, boolean isBackgroundColor) {
 		if (c == null) {
+			if (colorChanger == null) setUpColorChanger();
 			colorChanger.setVisible(true);
 		} else {
 			if (isBackgroundColor) {
@@ -495,5 +495,11 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 		colorChanger.getContentPane().add(builder.getPanel());
 		colorChanger.pack();
 		colorChanger.setLocationRelativeTo(this);
+	}
+	
+	@Override
+	protected void remove() {
+		super.remove();
+		colorChanger.dispose();
 	}
 }
