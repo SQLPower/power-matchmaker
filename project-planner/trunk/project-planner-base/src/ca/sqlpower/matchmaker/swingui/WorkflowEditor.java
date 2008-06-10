@@ -37,6 +37,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
 
 import org.apache.log4j.Logger;
 
@@ -46,6 +47,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.swingui.munge.CollapsableSideBar;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
 import ca.sqlpower.matchmaker.swingui.munge.MungeStepInfoComponent;
@@ -137,7 +139,7 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
     }
 
 	private void buildUI(MungeProcess process) throws ArchitectException {
-		panel = new JPanel(new BorderLayout());
+		JPanel innerPanel = new JPanel(new BorderLayout());
 		FormLayout layout = new FormLayout(
 				"4dlu,pref,4dlu,fill:pref:grow,4dlu,pref,4dlu", // columns
 				"4dlu,pref,4dlu,pref,4dlu"); // rows
@@ -153,7 +155,9 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
         	subPanel.add(new JButton(saveAction), cc.xy(6,4));
         } 
         
-        panel.add(subPanel,BorderLayout.NORTH);
+        innerPanel.add(subPanel,BorderLayout.NORTH);
+        innerPanel.add(new JScrollPane(mungePen), BorderLayout.CENTER);
+        innerPanel.setBorder(new EmptyBorder(10,10,10,10));
         
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setResizeWeight(0.8);
@@ -162,14 +166,19 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
 		splitPane.setDividerSize(10);
 		splitPane.setOneTouchExpandable(true);
 		
-        splitPane.setLeftComponent(new JScrollPane(mungePen));
+        splitPane.setLeftComponent(innerPanel);
         MungeStepLibrary msl = new MungeStepLibrary(mungePen, ((SwingSessionContext) swingSession.getContext()).getStepMap());
         MungeStepInfoComponent stepInfoComp = new MungeStepInfoComponent(msl);
 		JToolBar sideBar = new MungePenSideBar(stepInfoComp.getScrollPane(), msl.getScrollPane(), "WORKFLOW STEPS",
 				"(Drag into playpen)", DARK_BLUE).getToolbar();
         sideBar.setMinimumSize(new Dimension(0, 0));
-		splitPane.setRightComponent(sideBar);
-        panel.add(splitPane, BorderLayout.CENTER);
+        
+		CollapsableSideBar rightBar = new CollapsableSideBar(sideBar, splitPane, "WORKFLOW STEPS", DARK_BLUE, true);
+		splitPane.setRightComponent(rightBar.getPanel());
+		splitPane.setBorder(null);
+		
+		panel = new JPanel(new BorderLayout());
+		panel.add(splitPane, BorderLayout.CENTER);
     }
     
 	private void addListenerToComponents() {

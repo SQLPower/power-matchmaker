@@ -91,6 +91,7 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
+import ca.sqlpower.matchmaker.swingui.munge.CollapsableSideBar;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.sql.SPDataSource;
@@ -509,8 +510,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         savedProcessesPanel.setPreferredSize(new Dimension(0, 0));
         JPanel hiddenPanel = new JPanel();
         hiddenPanel.setVisible(false);
-        JToolBar leftPanel = new MungePenSideBar(hiddenPanel, savedProcessesPanel, "SAVED PROJECTS", "(Double-click to open)", DARK_ORANGE).getToolbar();
-		splitPane.setLeftComponent(leftPanel);
+        JToolBar sideBar = new MungePenSideBar(hiddenPanel, savedProcessesPanel, "SAVED PROJECTS",
+        		"(Double-click to open)", DARK_ORANGE).getToolbar();
+        sideBar.setMinimumSize(new Dimension(0, 0));
+        
+        CollapsableSideBar leftBar = new CollapsableSideBar(sideBar, splitPane, "SAVED PROJECTS", DARK_ORANGE, false);
+        splitPane.setLeftComponent(leftBar.getPanel());
         
 		setCurrentEditorComponent(null);
 		cp.add(splitPane);
