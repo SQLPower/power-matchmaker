@@ -85,7 +85,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 	 * This is a JDialog that contains the JColorChooser, used to set color of
 	 * labels and their components
 	 */
-	protected static JDialog colorChanger;
+	protected JDialog colorChanger;
 	
 	/**
 	 * This is a color chooser used to generate colors.
