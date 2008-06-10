@@ -19,6 +19,7 @@
 
 package ca.sqlpower.matchmaker.swingui;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -85,7 +86,6 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 	 */
 	protected static final String EMAIL_PROPERTY_KEY = "email";
 
-	private final JPanel panel;
 	private JPanel workflowListPane;
 
 	private JPanel sharingListPane;
@@ -147,7 +147,7 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 		saveProject = new JButton(saveAction);
 		swingSession.loadPermissions(project);
 		loadPermissionList();
-		panel = buildUI();
+		buildUI();
 		loadWorkflowList();
 		setDefaultSelections();
 		addValidators();
@@ -206,21 +206,35 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 			return null;
 	}
 
-	private JPanel buildUI() {
+	private void buildUI() {
 		projectOwner.setName("Project Owner");
 		projectName.setName("Project Name");
-		isSharingWithEveryone = new JCheckBox("Share with Everyone. (Your Project will appear in the public gallery)");
+		isSharingWithEveryone = new JCheckBox("Display in public gallery");
 		galleryIcon = new JLabel();
+
+		StringBuilder rowSpecs = new StringBuilder();
+		//Up to the text area for project description
+		rowSpecs.append("8dlu,pref,4dlu,pref,4dlu,pref,4dlu,50dlu,");
+		// First separator
+		rowSpecs.append("8dlu,pref,8dlu,");
+
+		if (project.isOwner()) {
+			// permission gui
+			rowSpecs.append("pref,8dlu,pref,8dlu,pref");
+			// Second separator
+			rowSpecs.append(",8dlu,pref,8dlu,");
+			// Workflowlist and save button
+			rowSpecs.append("pref,1dlu,pref");
+		} else {
+			// Workflowlist (and save button)
+			rowSpecs.append("pref,1dlu,pref");
+		}
 
 		// the project editor panel layout
 		FormLayout layout = new FormLayout("4dlu,pref,4dlu,fill:min(pref;"
 				+ new JComboBox().getMinimumSize().width
 				+ "px):grow, 50dlu,pref,4dlu", // Columns
-				"10dlu,pref,4dlu,pref,4dlu,pref,4dlu,50dlu," + //Up to the text area for project description
-				"8dlu,4dlu,8dlu," + // First separator
-				"pref,8dlu,pref,8dlu,pref," + // Up to second separator
-				"20dlu,4dlu,8dlu," + // Second separator
-				"pref,8dlu,pref"); // Rows
+				rowSpecs.toString()); 
 
 		PanelBuilder pb;
 
@@ -253,6 +267,7 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 		pb.add(new JSeparator(), cc.xyw(2, row, 3));
 		row += 2;
 
+		final int listsWidth = 100;
 		if (project.isOwner()) {
 			galleryIcon.setIcon(new ImageIcon(getClass().getResource("/icons/gallery.png")));
 			pb.add(galleryIcon, cc.xy(2, row, "r,c"));
@@ -267,9 +282,8 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 			row += 2;
 
 			//sharingListPane contains the 2 jlists which would list the id's of those who have the permission to access the project.
-			sharingListPane = logger.isDebugEnabled() ? new FormDebugPanel(new FormLayout("left:pref:grow,10px,right:pref:grow",
-			"pref")) : new JPanel(new FormLayout("left:pref:grow,10px,right:pref:grow",
-			"pref"));
+			FormLayout sharingLayout = new FormLayout("left:pref:grow,10px,right:pref:grow", "pref");
+			sharingListPane = logger.isDebugEnabled() ? new FormDebugPanel(sharingLayout) : new JPanel(sharingLayout);
 			FormLayout permissionPaneLayout = new FormLayout(
 					"20dlu,4dlu,20dlu,4dlu,fill:pref:grow", "pref,4dlu,50dlu,4dlu,pref");
 
@@ -279,30 +293,36 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 			JPanel viewAndModifyPane = logger.isDebugEnabled() ? new FormDebugPanel(permissionPaneLayout)
 			: new JPanel(permissionPaneLayout);
 
-			//viewOnlyPane contains the list of those who are permitted to view the project. At the same time, it also
-			//contains the add and remove button to edit the list.
+			// list of users allowed to view the project
 			viewOnlyPane.add(new JLabel("View Only:"), cc.xyw(1, 1, 5));
 			viewOnlyList = new JList(viewOnlyListModel);
 			viewOnlyPane.add(new JScrollPane(viewOnlyList), cc.xyw(1, 3, 5, "f,f"));
 			viewOnlyList.setEnabled(!project.isPublic());
+			
+			// buttons to modify the list
 			addToViewOnly = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
 			viewOnlyPane.add(addToViewOnly, cc.xy(1, 5));
 			addToViewOnly.setEnabled(!project.isPublic());
 			removeFromViewOnly = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
 			viewOnlyPane.add(removeFromViewOnly, cc.xy(3, 5));
 			removeFromViewOnly.setEnabled(!project.isPublic());
-			viewOnlyPane.setPreferredSize(new Dimension(140, 135));
+			
+			viewOnlyPane.setPreferredSize(new Dimension(listsWidth, viewOnlyPane.getPreferredSize().height));
+			viewOnlyPane.setMinimumSize(new Dimension(listsWidth, 0));
 
-			//viewAndModifyPane contains the list of those who are permitted to view and to modify the project. At the same time,
-			//it also contains the add and remove button to edit this list.
+			// list of users allowed to view and modify the project
 			viewAndModifyPane.add(new JLabel("View and Modify:"), cc.xyw(1, 1, 5));
 			viewAndModifyList = new JList(viewAndModifyListModel);
 			viewAndModifyPane.add(new JScrollPane(viewAndModifyList), cc.xyw(1, 3, 5, "f,f"));
+			
+			// buttons to modify the list
 			addToViewAndModify = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
 			viewAndModifyPane.add(addToViewAndModify, cc.xy(1, 5));
 			removeFromViewAndModify = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
 			viewAndModifyPane.add(removeFromViewAndModify, cc.xy(3, 5));
-			viewAndModifyPane.setPreferredSize(new Dimension(140, 135));
+			
+			viewAndModifyPane.setPreferredSize(new Dimension(listsWidth, viewAndModifyPane.getPreferredSize().height));
+			viewAndModifyPane.setMinimumSize(new Dimension(listsWidth, 0));
 
 			sharingListPane.add(viewOnlyPane, cc.xy(1, 1, "f, t"));
 			sharingListPane.add(viewAndModifyPane, cc.xy(3, 1, "f, t"));
@@ -310,34 +330,37 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 			pb.add(sharingListPane, cc.xy(4, row, "f, t"));
 			row += 2;
 			
+			pb.add(new JSeparator(), cc.xyw(2, row, 3));
+			row += 2;
 		} else {
 			disableComponents();
 		}
 
-		pb.add(new JSeparator(), cc.xyw(2, row, 3));
-		row += 2;
-
-
 		pb.add(new JLabel("Workflows:"), cc.xy(2, row, "r,t"));
 
 		workflowListPane = new JPanel(new GridLayout(1, 2, 10, 0));
-		JPanel workflowPane = logger.isDebugEnabled() ? new FormDebugPanel(new FormLayout("20dlu,4dlu,20dlu,4dlu,fill:pref:grow", "50dlu,4dlu,pref"))
-			: new JPanel(new FormLayout("20dlu,4dlu,20dlu,4dlu,fill:pref:grow", "50dlu,4dlu,pref"));
+		FormLayout workflowLayout = new FormLayout("20dlu,4dlu,20dlu,4dlu,fill:pref:grow", "50dlu,4dlu,pref");
+		JPanel workflowPane = logger.isDebugEnabled() ? new FormDebugPanel(workflowLayout)
+			: new JPanel(workflowLayout);
 		workflowList = new JList(workflowListModel);
 		workflowPane.add(new JScrollPane(workflowList), cc.xyw(1, 1, 5, "f,f"));
-		addWorkflow = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
-		workflowPane.add(addWorkflow, cc.xy(1, 3));
-		removeWorkflow = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
-		workflowPane.add(removeWorkflow, cc.xy(3, 3));
-		workflowPane.setPreferredSize(new Dimension(140, 112));
-		if (!project.isOwner()) {
-			addWorkflow.setVisible(false);
-			removeWorkflow.setVisible(false);
+		
+		// workflow editting not allowed for non-owners
+		if (project.isOwner()) {
+			addWorkflow = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
+			workflowPane.add(addWorkflow, cc.xy(1, 3));
+			removeWorkflow = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
+			workflowPane.add(removeWorkflow, cc.xy(3, 3));
 		}
+		
+		workflowPane.setPreferredSize(new Dimension(listsWidth, workflowPane.getPreferredSize().height));
+		workflowPane.setMinimumSize(new Dimension(listsWidth, 0));
+		
 		workflowListPane.add(workflowPane);
 		workflowListPane.add(new JPanel());
-		pb.add(workflowListPane, cc.xy(4, row, "f, t"));
+		pb.add(workflowListPane, cc.xy(4, row, "f, f"));
 		row += 2;
+		
 		// We don't want the save button to take up the whole column width
 		// so we wrap it in a JPanel with a FlowLayout. If there is a better
 		// way, please fix this.
@@ -347,7 +370,15 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 
 		//Set up the action events associated with the add and remove buttons.
 		configureActions();
-		return pb.getPanel();
+		
+		// put the panel into a scroll pane for lower resolution screens
+		JPanel innerPanel = pb.getPanel();
+		innerPanel.setPreferredSize(new Dimension(500, innerPanel.getPreferredSize().height));
+		JScrollPane scrollPane = new JScrollPane(innerPanel);
+		scrollPane.setBorder(null);
+		
+		panel = new JPanel(new BorderLayout());
+		panel.add(scrollPane, BorderLayout.CENTER);
 	}
 
 	/**
@@ -364,6 +395,9 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 			}
 		});
 
+		// all the rest are actions available EXCLUSIVELY to owners
+		if (!project.isOwner()) return;
+		
 		addWorkflow.addActionListener(new NewMungeProcessAction(swingSession, project));
 
 		removeWorkflow.addActionListener(new ActionListener() {
@@ -387,7 +421,6 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 			}
 		});
 		
-		if (!project.isOwner()) return;
 
 		addToViewOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -460,10 +493,6 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 	private void setDefaultSelections() throws ArchitectException {
 		projectName.setText(project.getName());
 		desc.setText(project.getDescription());
-	}
-
-	public JPanel getPanel() {
-		return panel;
 	}
 
 	/**
