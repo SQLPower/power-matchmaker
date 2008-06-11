@@ -86,7 +86,7 @@ public class WebsiteIOHandler implements IOHandler {
      * Base URL where the SQL Power website lives. The various action paths will be appended
      * to this string to form the actual request URLs.
      */
-    private static final String WEBSITE_BASE_URL = "http://dhcp-126.sqlpower.ca:8080/sqlpower_website/page/";
+    private static final String WEBSITE_BASE_URL = "http://www.sqlpower.ca/page/";
     
     /**
      * Keys for the JSONObject used with save and load permissions.
