@@ -96,6 +96,11 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
     private final MatchMakerSwingSession swingSession;
     
     /**
+     * Keep a reference to the keyListener so that we can remove it during cleanup.
+     */
+    private KeyListener keyListener;
+    
+    /**
      * Creates a new editor for the given session's given "munge process" (workflow).
      * 
      * @param swingSession The session the given project and process belong to
@@ -180,14 +185,16 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
     }
     
 	private void addListenerToComponents() {
-		name.addKeyListener(new KeyListener() {
-			public void keyPressed(KeyEvent e) {
-			}
-			public void keyReleased(KeyEvent e) {
-				mmo.setName(name.getText());
-			}
-			public void keyTyped(KeyEvent e) {
-			}});
+		keyListener = new KeyListener() {
+						public void keyPressed(KeyEvent e) {
+						}
+						public void keyReleased(KeyEvent e) {
+							mmo.setName(name.getText());
+						}
+						public void keyTyped(KeyEvent e) {
+						}
+					  };
+		name.addKeyListener(keyListener);
 	}
 	
 	private void setDefaults() {
@@ -282,5 +289,11 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
 	public MungePen getMungePen() {
 		return mungePen;
 	}
-
+	
+	@Override
+	public void cleanup() {
+		super.cleanup();
+		mungePen.cleanUp();
+		name.removeKeyListener(keyListener);
+	}
 }

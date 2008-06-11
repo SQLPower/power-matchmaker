@@ -38,9 +38,11 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentListener;
 import java.awt.event.ContainerAdapter;
 import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -209,11 +211,27 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	private final MatchMakerSwingSession session;
 	
 	/**
+	 * Need to kep a reference to this listener in order to remove it on cleanup.
+	 */
+	private final MungePenMungeProcessListener mungePenMungeProcessListener;
+	
+	/**
 	 * The list of LabelMungeComponents in this MungePen. The order in the list 
 	 * corresponds to the layer of the MungeComponent. The first item on the list
 	 * has the bottom layer (Integer.MIN_VALUE).
 	 */
 	private final List<LabelMungeComponent> labels = new LinkedList<LabelMungeComponent>();
+	
+	/**
+     * The popup menu that shows up when you right-click on the MungePen
+     */
+	private final JPopupMenu popUp;
+	
+	/**
+	 * The JMenu contained within the popup menu. Keeping a reference so that the
+	 * action listeners on its Items can be removed during cleanup.
+	 */
+	private JMenu add;
 	
 	/**
 	 * Creates a new empty mungepen.
@@ -229,7 +247,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 		setOpaque(true);
 
 		buildComponents(process);
-		buildPopup((session.getContext()).getStepMap());
+		popUp = buildPopup((session.getContext()).getStepMap());
 	
 		normalizing = false;
 		
@@ -247,7 +265,9 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				}
 			}
 		});
-		process.addMatchMakerListener(new MungePenMungeProcessListener());
+		
+		mungePenMungeProcessListener = new MungePenMungeProcessListener();
+		process.addMatchMakerListener(mungePenMungeProcessListener);
 		
 		setDropTarget(new DropTarget(this,this));
 		
@@ -310,7 +330,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 	private JPopupMenu buildPopup(Map<String, StepDescription> stepMap) {
 		JPopupMenu pop = new JPopupMenu();
 		
-		JMenu add = new JMenu("Add Munge Step");
+		add = new JMenu("Add Munge Step");
 
 		pop.add(add);
 		
@@ -648,8 +668,7 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 
 		private void maybeShowPopup(MouseEvent e) {
 			if (e.isPopupTrigger()) {
-				JPopupMenu pop = buildPopup((session.getContext()).getStepMap());
-				pop.show(MungePen.this, (int)e.getX(), (int)e.getY());
+				popUp.show(MungePen.this, (int)e.getX(), (int)e.getY());
 			}
 		}
 	}	
@@ -1210,6 +1229,45 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				}
 			} finally {
 				process.endCompoundEdit();
+			}
+		}
+	}
+	
+	/**
+	 * Clean up all the listeners made in the MungePen
+	 */
+	public void cleanUp() {
+		
+		for (MouseListener ml : getMouseListeners()) {
+			removeMouseListener(ml);
+		}
+		
+		for (MouseMotionListener ml : getMouseMotionListeners()) {
+			removeMouseMotionListener(ml);
+		}
+		
+		for (ContainerListener cl : getContainerListeners()) {
+			removeContainerListener(cl);
+		}
+		
+		for (KeyListener kl : getKeyListeners()) {
+			removeKeyListener(kl);
+		}
+		
+		process.removeMatchMakerListener(mungePenMungeProcessListener);
+		
+		for (MungeStep ms : process.getChildren()) {
+			ms.removeMatchMakerListener(mungeStepListener);
+		}
+		
+		if (add != null) {
+			for (int i = 0; i < add.getItemCount(); i++) {
+				JMenuItem item = add.getItem(i);
+				if (item != null) {
+					for (ActionListener al: item.getActionListeners()) {
+						item.removeActionListener(al);
+					}
+				}
 			}
 		}
 	}
