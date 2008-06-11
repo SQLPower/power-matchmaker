@@ -184,6 +184,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
             plSchemaVersion = new Version();
             plSchemaVersion.setVersion(rs.getString(1));
         } catch (SQLException e) {
+        	con.close();
             String plSchema = ds.getPlSchema();
             if (plSchema == null || plSchema.length() == 0) {
                 // this case is unlikely to happen because we have to check for null when setting up hibernate 
