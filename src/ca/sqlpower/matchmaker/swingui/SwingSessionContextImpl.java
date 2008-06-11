@@ -25,6 +25,8 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -379,9 +381,28 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             if (!isAutoLoginEnabled()) {
                 showLoginDialog(getLastLoginDataSource());
             } else {
-                MatchMakerSession sessionDelegate = context.createDefaultSession();
-                MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
-                session.showGUI();
+            	try {
+            		// tries to login to the auto login database
+            		SPDataSource dbSource = getAutoLoginDataSource();
+            		MatchMakerSwingSession session = createSession(dbSource,
+            				dbSource.getUser(), dbSource.getPass());
+            		session.showGUI();
+            	} catch (Exception ex) {
+            		JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Auto Login Failed", ex);
+            		errorDialog.addWindowListener(new WindowAdapter() {
+            			
+            			// called by both dispose
+						public void windowClosed(WindowEvent e) {
+							showLoginDialog(getAutoLoginDataSource());
+						}
+						
+						// called by x button
+						public void windowClosing(WindowEvent e) {
+							showLoginDialog(getAutoLoginDataSource());
+						}
+						
+            		});
+            	}
             }
         } catch (Exception ex) {
            	MMSUtils.showExceptionDialogNoReport("MatchMaker Startup Failed", ex);
