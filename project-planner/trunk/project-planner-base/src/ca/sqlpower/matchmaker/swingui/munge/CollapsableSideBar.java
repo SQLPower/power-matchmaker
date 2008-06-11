@@ -75,10 +75,10 @@ public class CollapsableSideBar {
 			public void actionPerformed(ActionEvent arg0) {
 				parent.setDividerSize(10);
 				if (rightComponent) {
-					parent.setDividerLocation(parent.getWidth() - sideComp.getPreferredSize().width - dividerBorder);
+					parent.setDividerLocation(parent.getLastDividerLocation());
 					parent.setRightComponent(expandedPanel);
 				} else {
-					parent.setDividerLocation(sideComp.getPreferredSize().width + dividerBorder);
+					parent.setDividerLocation(parent.getLastDividerLocation());
 					parent.setLeftComponent(expandedPanel);
 				}
 			}
