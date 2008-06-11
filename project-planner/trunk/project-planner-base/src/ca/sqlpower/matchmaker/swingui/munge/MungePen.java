@@ -54,7 +54,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.geom.CubicCurve2D;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -334,12 +334,60 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 
 		pop.add(add);
 		
-		StepDescription[] sds = stepMap.values().toArray(new StepDescription[0]);
-		Arrays.sort(sds);
-		for (StepDescription sd : sds) {
-			JMenuItem item = new JMenuItem(sd.getName(), sd.getIcon());
-			item.addActionListener(new AddStepActon(sd));
-			add.add(item);
+		Collection<StepDescription> vals = stepMap.values();
+		
+		// builds a map of the steps according to their category
+		Map<String, List<StepDescription>> CategoryToStepMap = new HashMap<String, List<StepDescription>>();
+		for (StepDescription sd : vals) {
+			if (sd.getCategory() != null) {
+				// first step of this category, add to map
+				if (CategoryToStepMap.get(sd.getCategory()) == null) {
+					CategoryToStepMap.put(sd.getCategory(), new ArrayList<StepDescription>());
+				}
+				CategoryToStepMap.get(sd.getCategory()).add(sd);
+			} else {
+				// the steps with null categories are in the "" category in the map
+				if (CategoryToStepMap.get("") == null) {
+					CategoryToStepMap.put("", new ArrayList<StepDescription>());
+				}
+				CategoryToStepMap.get("").add(sd);
+			}
+		}
+		
+		// sort the categories alphabetically
+		List<String> categoryNames = new ArrayList<String>(CategoryToStepMap.keySet());
+		Collections.sort(categoryNames);
+		
+		// forces steps without categories to be at the bottom
+		if (categoryNames.contains("")) {
+			categoryNames.add("");
+			categoryNames.remove("");
+		}
+		
+		for (String categoryName : categoryNames) {
+			JMenu categoryMenu = null;
+			
+			// add the sub menus for categories
+			if (!categoryName.equals("")) {
+				categoryMenu = new JMenu(categoryName);
+				add.add(categoryMenu);
+			} 
+			
+			// sort the steps alphabetically within the sub menu
+			List<StepDescription> steps = CategoryToStepMap.get(categoryName);
+			Collections.sort(steps);
+
+			for (StepDescription sd : steps) {
+				JMenuItem item = new JMenuItem(sd.getName(), sd.getIcon());
+				item.addActionListener(new AddStepActon(sd));
+				if (categoryMenu != null) {
+					// add to the step's category sub menu
+					categoryMenu.add(item);
+				} else {
+					// steps without categories
+					add.add(item);
+				}
+			}
 		}
 		
 		return pop;
