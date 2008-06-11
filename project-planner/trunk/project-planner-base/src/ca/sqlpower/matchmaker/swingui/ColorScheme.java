@@ -43,4 +43,18 @@ public class ColorScheme {
         new WebColour("#f781bf"),
         new WebColour("#999999")
     };
+    
+    public static final WebColour[] LABEL_COLOURS = {
+    	new WebColour("#9ba6bb"),
+    	new WebColour("#7fabff"),
+    	new WebColour("#6f70e5"),
+    	new WebColour("#987ecd"),
+    	new WebColour("#c09baa"),
+    	new WebColour("#e57171"),
+    	new WebColour("#d6a459"),
+    	new WebColour("#ceb859"),
+    	new WebColour("#b0b081"),
+    	new WebColour("#aecb8d"),
+    	new WebColour("#78ad8f"),
+    };
 }

@@ -411,7 +411,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 	private JMenu generateColorSelectSubMenu(final boolean isBackgroundColor) {
 		JMenu menu = new JMenu("Change color");
 
-		for (final Color c : ColorScheme.BREWER_SET19) {
+		for (final Color c : ColorScheme.LABEL_COLOURS) {
 			JMenuItem i = new JMenuItem();
 			menu.add(i);
 			i.setBackground(c);
