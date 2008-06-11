@@ -1270,5 +1270,11 @@ public class MungePen extends JLayeredPane implements Scrollable, DropTargetList
 				}
 			}
 		}
+		
+		for (Component c: getComponents()) {
+			if (c instanceof AbstractMungeComponent) {
+				((AbstractMungeComponent) c).cleanUp();
+			}
+		}
 	}
 }

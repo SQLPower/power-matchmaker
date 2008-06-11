@@ -73,6 +73,10 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 	 */
 	private JLabel iconLabel;
 
+	private KeyAdapter keyListener;
+
+	private DocumentListener documentListener;
+
 	public ProjectPlannerMungeComponent(MungeStep step,
 			FormValidationHandler handler, MatchMakerSession session, Icon mainIcon) {
 		super(step, handler, session, mainIcon);
@@ -122,7 +126,7 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 		text.setOpaque(false);
 		
 		// overwrites tab's to transfer focus
-		text.addKeyListener(new KeyAdapter() {
+		keyListener = new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_TAB) {
 					if ((e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0) {
@@ -134,7 +138,8 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 					e.consume();
 				}
 			};
-		});
+		};
+		text.addKeyListener(keyListener);
 		
 		MutableAttributeSet attrs = text.getInputAttributes();
 
@@ -156,7 +161,7 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 			text.setText(stepText);
 		}
 		
-		doc.addDocumentListener(new DocumentListener() {
+		documentListener = new DocumentListener() {
 		
 			public void removeUpdate(DocumentEvent e) {
 				logger.debug("The document's text changed to " + text.getText());
@@ -180,7 +185,8 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 			public void changedUpdate(DocumentEvent e) {
 			}
 		
-		});
+		};
+		doc.addDocumentListener(documentListener);
 		
 		panel.add(iconLabel, cc.xy(1, 1));
 		panel.add(text, cc.xy(1, 2));
@@ -189,4 +195,10 @@ public class ProjectPlannerMungeComponent extends AbstractMungeComponent {
 		return panel;
 	}
 
+	@Override
+	public void cleanUp() {
+		super.cleanUp();
+		text.removeKeyListener(keyListener);
+		text.getStyledDocument().removeDocumentListener(documentListener);
+	}
 }

@@ -500,6 +500,12 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 	@Override
 	protected void remove() {
 		super.remove();
-		colorChanger.dispose();
+		cleanUp();
+	}
+	
+	@Override
+	public void cleanUp() {
+		super.cleanUp();
+		if (colorChanger != null) colorChanger.dispose();
 	}
 }

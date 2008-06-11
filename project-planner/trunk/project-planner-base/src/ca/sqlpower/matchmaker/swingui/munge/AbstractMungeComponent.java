@@ -245,6 +245,15 @@ public abstract class AbstractMungeComponent extends JPanel {
 	 * Holds the lables with the names of the outputs.
 	 */
 	private CoolJLabel[] outputLabels;
+
+	/**
+	 * Reference to the listeners so that we can remove them during cleanup.
+	 */
+	private MungeComponentMouseListener mungeComponentMouseListener;
+	private MungeComponentMouseMoveListener mungeComponentMouseMoveListener;
+	private FocusListener focusListener;
+	private ComponentListener componentListener;
+	private StepEventHandler stepEventHandler;
 	
 	/**
 	 * Creates a AbstractMungeComponent for the given step that will be in the munge pen.
@@ -284,7 +293,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 		mungeComKeyListener = new MungeComponentKeyListener();
 		addKeyListener(mungeComKeyListener);
 		
-		step.addMatchMakerListener(new StepEventHandler());
+		stepEventHandler = new StepEventHandler();
+		step.addMatchMakerListener(stepEventHandler);
 		setName(step.getName());
 		
 		int borderTop;
@@ -323,10 +333,12 @@ public abstract class AbstractMungeComponent extends JPanel {
 		root.add(tmp,BorderLayout.CENTER);
 		add(root);
 		
-		addMouseListener(new MungeComponentMouseListener());
-		addMouseMotionListener(new MungeComponentMouseMoveListener());
+		mungeComponentMouseListener = new MungeComponentMouseListener();
+		addMouseListener(mungeComponentMouseListener);
+		mungeComponentMouseMoveListener = new MungeComponentMouseMoveListener();
+		addMouseMotionListener(mungeComponentMouseMoveListener);
 		
-		root.addComponentListener(new ComponentListener(){
+		componentListener = new ComponentListener(){
 
 			public void componentHidden(ComponentEvent e) {
 			}
@@ -341,9 +353,10 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 			public void componentShown(ComponentEvent e) {
 			}
-		});
+		};
+		root.addComponentListener(componentListener);
 		
-		addFocusListener(new FocusListener(){
+		focusListener = new FocusListener(){
 			public void focusGained(FocusEvent e) {
 				if (getParent() != null) {
 					getParent().repaint();
@@ -365,7 +378,8 @@ public abstract class AbstractMungeComponent extends JPanel {
 					autoScrollTimer.stop();
 				}
 			}
-		});
+		};
+		addFocusListener(focusListener);
 		
 		root.setOpaque(false);
 		tmp.setOpaque(false);
@@ -442,10 +456,12 @@ public abstract class AbstractMungeComponent extends JPanel {
      * a label that can expand or collapse
      */
     private class CoolJLabel extends JLabel {
-    	public CoolJLabel(String id, Class type) {
+    	private MouseAdapter mouseListener;
+
+		public CoolJLabel(String id, Class type) {
     		super(id);
     		setToolTipText(id + " (" + shortClassName(type) + ")");
-    		addMouseListener(new MouseAdapter(){
+    		mouseListener = new MouseAdapter(){
     			@Override
     			public void mouseClicked(MouseEvent e) {
     				changeState();
@@ -464,7 +480,8 @@ public abstract class AbstractMungeComponent extends JPanel {
     					setIcon(PLUS_OFF);
     				}
     			}
-    		});
+    		};
+			addMouseListener(mouseListener);
     		
     		setBorder(BorderFactory.createEtchedBorder());
     	}
@@ -486,6 +503,10 @@ public abstract class AbstractMungeComponent extends JPanel {
     			collapse();
     		}
     		validate();
+    	}
+    	
+    	public void cleanUp() {
+    		removeMouseListener(mouseListener);
     	}
     }
     
@@ -1452,6 +1473,26 @@ public abstract class AbstractMungeComponent extends JPanel {
 
 	public Icon getMainIcon() {
 		return mainIcon;
+	}
+	
+	/**
+	 * Used to clean up all the listeners on this Munge Component
+	 */
+	public void cleanUp(){
+		removeKeyListener(mungeComKeyListener);
+		removeMouseListener(mungeComponentMouseListener);
+		removeMouseMotionListener(mungeComponentMouseMoveListener);
+		removeFocusListener(focusListener);
+		root.removeComponentListener(componentListener);
+		step.removeMatchMakerListener(stepEventHandler);
+		
+		for (CoolJLabel l: inputLabels) {
+			l.cleanUp();
+		}
+		
+		for (CoolJLabel l: outputLabels) {
+			l.cleanUp();
+		}
 	}
 }
 
