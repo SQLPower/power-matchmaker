@@ -246,55 +246,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 	private Action exitAction = new AbstractAction("Exit") {
 	    public void actionPerformed(ActionEvent e) {
-	    	boolean save = false, doit = true;
-	    	if (oldPane != null && oldPane.hasUnsavedChanges()) {
-                String[] options = { "Save", "Discard Changes", "Cancel" };
-                final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
-                int ret = JOptionPane.showOptionDialog(
-                        frame,
-                        String.format("Your %s has unsaved changes", SPSUtils.niceClassName(oldPane)),
-                        "Warning", JOptionPane.OK_CANCEL_OPTION,
-                        JOptionPane.QUESTION_MESSAGE, null, options,
-                        options[0]);
-
-                switch (ret) {
-                case JOptionPane.CLOSED_OPTION:
-                    save = false;
-                    doit = false;
-                    return;
-                case O_SAVE:
-                    save = true;
-                    doit = false;
-                    break;
-                case O_DISCARD:
-                    save = false;
-                    doit = true;
-                    break;
-                case O_CANCEL:
-                    save = false;
-                    doit = false;
-                    
-                    return;
-                }
-                if (save) {
-                    if (oldPane != null) {
-                        doit = oldPane.applyChanges();
-                    }
-                } else if (doit) {
-                	if (oldPane != null) {
-                        oldPane.discardChanges();
-                        doit = true;
-                    }
-                }
-            }
-            if (doit) {
-            	// clears the undo stack and the listeners to the match
-            	// maker object
-            	if (oldPane instanceof CleanupModel) {
-            		((CleanupModel) oldPane).cleanup();
-            	}
-            }
-	    	
 	        exit();
 	    }
 	};
@@ -645,12 +596,61 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	}
 
 	/**
-	 * Calling this method checks if there are any remaining SPSwingWorker threads
-	 * registered with this session. If there are, then it warns the user to wait 
-	 * for the threads to close first before exiting again. Otherwise, it quits 
-	 * the application and terminates the JVM.
+	 * Calling this method checks if there are any unsaved changes, any remaining 
+	 * SPSwingWorker threads registered with this session. If there are, then it 
+	 * warns the user to wait for the threads to close first before exiting again.
+	 * Otherwise, it quits the application and terminates the JVM.
 	 */
 	public void exit() {
+		boolean save = false, doit = true;
+    	if (oldPane != null && oldPane.hasUnsavedChanges()) {
+            String[] options = { "Save", "Discard Changes", "Cancel" };
+            final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
+            int ret = JOptionPane.showOptionDialog(
+                    frame,
+                    String.format("Your %s has unsaved changes", SPSUtils.niceClassName(oldPane)),
+                    "Warning", JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE, null, options,
+                    options[0]);
+
+            switch (ret) {
+            case JOptionPane.CLOSED_OPTION:
+                save = false;
+                doit = false;
+                return;
+            case O_SAVE:
+                save = true;
+                doit = false;
+                break;
+            case O_DISCARD:
+                save = false;
+                doit = true;
+                break;
+            case O_CANCEL:
+                save = false;
+                doit = false;
+                
+                return;
+            }
+            if (save) {
+                if (oldPane != null) {
+                    doit = oldPane.applyChanges();
+                }
+            } else if (doit) {
+            	if (oldPane != null) {
+                    oldPane.discardChanges();
+                    doit = true;
+                }
+            }
+        }
+        if (doit) {
+        	// clears the undo stack and the listeners to the match
+        	// maker object
+        	if (oldPane instanceof CleanupModel) {
+        		((CleanupModel) oldPane).cleanup();
+        	}
+        }
+		
 		if (close()){
 			saveSettings();
 			System.exit(0);
