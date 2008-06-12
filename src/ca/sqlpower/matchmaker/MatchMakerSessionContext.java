@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 
 import ca.sqlpower.architect.ArchitectException;
@@ -28,6 +29,7 @@ import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.VersionFormatException;
 
 /**
@@ -117,4 +119,20 @@ public interface MatchMakerSessionContext {
      * Sets the email smtp host address in the preferences 
      */
     public void setEmailSmtpHost(String host);
+    
+    /**
+     * Returns a collection containing all the sessions from this context. 
+     */
+    public Collection<MatchMakerSession> getSessions();
+    
+    /**
+     * Returns the listener that deals with closing sessions for this context.
+     */
+    public SessionLifecycleListener<MatchMakerSession> getSessionLifecycleListener();
+    
+    /**
+     * Closes all sessions and terminates the VM.  This is the typical "exit"
+     * action for a project.
+     */
+    public void closeAll();
 }

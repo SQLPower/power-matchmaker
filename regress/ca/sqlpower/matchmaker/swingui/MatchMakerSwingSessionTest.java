@@ -103,6 +103,12 @@ public class MatchMakerSwingSessionTest extends TestCase {
             		throw new RuntimeException("Error getting Connection!", e);
             	}
             }
+            
+            @Override
+            public void close() {
+                // hibernate session impl is supposed to close its database
+            	if (db.isConnected()) db.disconnect();
+            }
         };
         
         session = new MatchMakerSwingSession(stubContext, stubSessionImp);

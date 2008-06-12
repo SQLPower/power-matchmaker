@@ -37,6 +37,8 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.event.SessionLifecycleEvent;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
 public class TestingMatchMakerSession implements MatchMakerSession {
@@ -53,6 +55,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	MatchMakerSessionContext context;
 	Connection con;
 	List<String> warnings = new ArrayList<String>();
+	List<SessionLifecycleListener<MatchMakerSession>> lifecycleListener;
 	
     /**
      * The map of SQLDatabases to SPDatasources so they can be cached.
@@ -63,6 +66,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		folders =  new ArrayList<PlFolder>();
         translateGroupParent= new TranslateGroupParent(this);
         context = new TestingMatchMakerContext();
+        lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
 	}
 
 	public String getAppUser() {
@@ -318,4 +322,27 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		return db;
 	}
 
+	public void close() {
+		if (db.isConnected()) db.disconnect();
+		fireSessionClosing();
+	}
+
+	public void addSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener) {
+		lifecycleListener.add(listener);
+	}
+	
+	public void removeSessionLifecycleListener(
+			SessionLifecycleListener<MatchMakerSession> listener) {
+		lifecycleListener.remove(listener);
+	}
+
+	private void fireSessionClosing() {
+		SessionLifecycleEvent<MatchMakerSession> evt = 
+			new SessionLifecycleEvent<MatchMakerSession>(this);
+		final List<SessionLifecycleListener<MatchMakerSession>> listeners = 
+			new ArrayList<SessionLifecycleListener<MatchMakerSession>>(lifecycleListener);
+		for (SessionLifecycleListener<MatchMakerSession> listener: listeners) {
+			listener.sessionClosing(evt);
+		}
+	}
 }

@@ -70,6 +70,8 @@ import ca.sqlpower.security.PLSecurityManager;
 import ca.sqlpower.security.PLUser;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.event.SessionLifecycleEvent;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.UnknownFreqCodeException;
 import ca.sqlpower.util.Version;
 import ca.sqlpower.util.VersionFormatException;
@@ -111,6 +113,11 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
      * The ID of this instance. A string version of this value is the key in the {@link #sessions} map.
      */
     private final long instanceID;
+    
+	/**
+	 * A list that helps keep track of the created sessions
+	 */
+	private List<SessionLifecycleListener<MatchMakerSession>> lifecycleListener;
 
     private final MatchMakerSessionContext context;
     private final SessionFactory hibernateSessionFactory;
@@ -119,7 +126,7 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	private PLUser appUser;
 	private String dbUser;
 	private Date sessionStartTime;
-
+	
     private FolderParent currentProjectFolderParent;
     private FolderParent backupProjectFolderParent;
 
@@ -158,6 +165,8 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
                 MatchMakerConfigurationException {
         this.instanceID = nextInstanceID++;
         sessions.put(String.valueOf(instanceID), this);
+        
+        lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
 
         this.context = context;
 		database = new SQLDatabase(ds);
@@ -594,5 +603,35 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 			databases.put(dataSource,db);
 		}
 		return db;
+	}
+	
+	/**
+	 * Call this method to close the hibernate resources and database connection.
+	 */
+	public void close() {
+		if (hSession.isConnected()) hSession.close();
+		if (database.isConnected()) database.disconnect();
+		if (!hibernateSessionFactory.isClosed()) hibernateSessionFactory.close();
+
+		fireSessionClosing();
+	}
+	
+	public void addSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener) {
+		lifecycleListener.add(listener);
+	}
+	
+	public void removeSessionLifecycleListener(
+			SessionLifecycleListener<MatchMakerSession> listener) {
+		lifecycleListener.remove(listener);
+	}
+
+	private void fireSessionClosing() {
+		SessionLifecycleEvent<MatchMakerSession> evt = 
+			new SessionLifecycleEvent<MatchMakerSession>(this);
+		final List<SessionLifecycleListener<MatchMakerSession>> listeners = 
+			new ArrayList<SessionLifecycleListener<MatchMakerSession>>(lifecycleListener);
+		for (SessionLifecycleListener<MatchMakerSession> listener: listeners) {
+			listener.sessionClosing(evt);
+		}
 	}
 }

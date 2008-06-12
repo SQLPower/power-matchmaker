@@ -28,6 +28,7 @@ import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.dao.hibernate.MatchMakerHibernateSessionContext;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
 /**
@@ -237,4 +238,22 @@ public interface MatchMakerSession {
      * be created and remembered for next time.
      */
     public SQLDatabase getDatabase(SPDataSource dataSource);
+
+	/**
+	 * Call this method to close the session's opened resources.
+	 */
+	public void close();
+	
+	/**
+     * Subscribes the given listener to the session closing events.
+     */
+	public void addSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener);
+	
+    /**
+     * Removes the given listener from the session closing events
+     * 
+     * @param l The listener to remove. If it was not actually listening, calling
+     * this method has no effect.
+     */
+	public void removeSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener);
 }

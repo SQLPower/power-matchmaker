@@ -126,6 +126,8 @@ import ca.sqlpower.swingui.JDefaultButton;
 import ca.sqlpower.swingui.SPSUtils;
 import ca.sqlpower.swingui.SPSwingWorker;
 import ca.sqlpower.swingui.SwingWorkerRegistry;
+import ca.sqlpower.swingui.event.SessionLifecycleEvent;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
 /**
@@ -214,6 +216,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * should be enabled.
      */
 	private boolean enginesEnabled = true;
+	
+	/**
+	 * A list that helps keep track of the created sessions
+	 */
+	private List<SessionLifecycleListener<MatchMakerSession>> lifecycleListener;
+	
     
     private Action userPrefsAction = new AbstractAction("User Preferences...") {
 		public void actionPerformed(ActionEvent e) {
@@ -263,7 +271,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 	private Action exitAction = new AbstractAction("Exit") {
 	    public void actionPerformed(ActionEvent e) {
-	        exit();
+	        getContext().closeAll();
 	    }
 	};
 
@@ -441,7 +449,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         matchEnginePanels = new HashMap<MatchEngineImpl, MatchEnginePanel>();
         mergeEnginPanels = new HashMap<MergeEngineImpl, MergeEnginePanel>();
         cleanseEnginPanels = new HashMap<CleanseEngineImpl, CleanseEnginePanel>();
-
+        
+        lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
+        
         // this grabs warnings from the business model and DAO's and lets us handle them.
         sessionImpl.addWarningListener(new WarningListener() {
 			public void handleWarning(String message) {
@@ -664,7 +674,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	class MatchMakerFrameWindowListener extends WindowAdapter {
 		@Override
 		public void windowClosing(WindowEvent e) {
-			exit();
+			close();
 		}
 
 	}
@@ -675,19 +685,6 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      */
 	public void saveSettings() {
 		sessionContext.setFrameBounds(frame.getBounds());  // XXX we should do this in a component listener
-	}
-
-	/**
-	 * Calling this method checks if there are any remaining SPSwingWorker threads
-	 * registered with this session. If there are, then it warns the user to wait 
-	 * for the threads to close first before exiting again. Otherwise, it quits 
-	 * the application and terminates the JVM.
-	 */
-	public void exit() {
-		if (close()){
-			saveSettings();
-			System.exit(0);
-		}
 	}
 
     /**
@@ -1171,39 +1168,48 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	}
 
 	/**
-	 * Call this method to close the database connection and cancel
+	 * Call this method to close the delegate session and cancel
 	 * running SPSwingWorker threads. If there are any remaining SPSwingWorker
-	 * threads, the GUI will warn the user that there are threads still
-	 * waiting to cancel, and to try closing again after the threads are finished.
-	 * @return Returns false if there are SPSwingWorker threads remaining.
-	 * 	In this case, the application should not close yet.
-	 * 	Otherwise, returns true.
+	 * threads, the GUI will warn the user and force quit if necessary.
 	 */
-	public boolean close() {
-        // If we still have ArchitectSwingWorker threads running, 
+	public void close() {
+        // If we still have SwingWorker threads running, 
         // tell them to cancel, and then ask the user to try again later.
-        // Note that it is not safe to force threads to stop, so we will
-        // have to wait until the threads stop themselves.
+		// Note that it is not safe to force threads to stop, so we will
+		// have to wait until the threads stop themselves.
 		if (swingWorkers.size() > 0) {
-            for (SPSwingWorker currentWorker : swingWorkers) {
-                currentWorker.setCancelled(true);
-            }
-            
-            Object[] options = {"Wait", "Force Quit"};
-    		int n = JOptionPane.showOptionDialog(frame, 
-    				"There are still unfinished tasks running in the MatchMaker.\n" +
-    				"You can either wait for them to finish and try closing again later" +
-    				", or force the application to close. Quitting will leave these tasks unfinished.", 
-    				"Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, 
-    				null, options, options[0]);
-            if (n == 0) {
-            	return false;
-            }
-        }
-		
-		//closes the connection to the repository database.
-		getDatabase().disconnect();
-		return true;
+			for (SPSwingWorker currentWorker : swingWorkers) {
+				currentWorker.setCancelled(true);
+			}
+
+			Object[] options = {"Wait", "Force Quit"};
+			int n = JOptionPane.showOptionDialog(frame, 
+					"There are still unfinished tasks running in the MatchMaker.\n" +
+					"You can either wait for them to finish and try closing again later" +
+					", or force the application to close. Quitting will leave these tasks unfinished.", 
+					"Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, 
+					null, options, options[0]);
+			if (n == 0) {
+				return;
+			} else {
+				for (SPSwingWorker currentWorker : swingWorkers) {
+					currentWorker.kill();
+				}
+			}
+		}
+
+		saveSettings();
+
+		// It is possible this method will be called again via indirect recursion
+		// because the frame has a windowClosing listener that calls session.close().
+		// It should be harmless to have this close() method invoked a second time.
+		if (frame != null) {
+			// XXX this could/should be done by the frame with a session closing listener
+			frame.dispose();
+		}
+
+		sessionImpl.close();
+		fireSessionClosing();
 	}
 	
 	/**
@@ -1437,4 +1443,22 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		}
 	}
 	
+	public void addSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener) {
+		lifecycleListener.add(listener);
+	}
+	
+	public void removeSessionLifecycleListener(
+			SessionLifecycleListener<MatchMakerSession> listener) {
+		lifecycleListener.remove(listener);
+	}
+
+	private void fireSessionClosing() {
+		SessionLifecycleEvent<MatchMakerSession> evt = 
+			new SessionLifecycleEvent<MatchMakerSession>(this);
+		final List<SessionLifecycleListener<MatchMakerSession>> listeners = 
+			new ArrayList<SessionLifecycleListener<MatchMakerSession>>(lifecycleListener);
+		for (SessionLifecycleListener<MatchMakerSession> listener: listeners) {
+			listener.sessionClosing(evt);
+		}
+	}
 }

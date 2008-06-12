@@ -39,6 +39,7 @@ import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
 /**
@@ -187,4 +188,18 @@ public class StubMatchMakerSession implements MatchMakerSession{
 		return null;
 	}
 
+	public void close() {
+		logger.debug("Stub call: StubMatchMakerSession.close()");
+	}
+
+	public void addSessionLifecycleListener(
+			SessionLifecycleListener<MatchMakerSession> listener) {
+		logger.debug("Stub call: StubMatchMakerSession.addSessionLifecycleListener()");
+		
+	}
+
+	public void removeSessionLifecycleListener(
+			SessionLifecycleListener<MatchMakerSession> listener) {
+		logger.debug("Stub call: StubMatchMakerSession.removeSessionLifecycleListener()");
+	}
 }

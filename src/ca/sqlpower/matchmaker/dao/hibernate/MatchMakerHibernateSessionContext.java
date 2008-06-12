@@ -21,6 +21,9 @@ package ca.sqlpower.matchmaker.dao.hibernate;
 
 import java.io.File;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -36,6 +39,8 @@ import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SPDataSourceType;
+import ca.sqlpower.swingui.event.SessionLifecycleEvent;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.UnknownFreqCodeException;
 import ca.sqlpower.util.VersionFormatException;
 
@@ -66,12 +71,20 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
     private final Preferences prefs;
     
     /**
+     * All live sessions that exist in (and were created by) this context.  Sessions
+     * will be removed from this list when they fire their sessionClosing lifecycle
+     * event.
+     */
+    private final Collection<MatchMakerSession> sessions;
+    
+    /**
      * Creates a new session context that uses the Hibernate DAO's to interact with the PL Schema.
      * 
      * @param plIni The data source collection that this context will use.
      */
     public MatchMakerHibernateSessionContext(Preferences prefs, DataSourceCollection plIni) {
         logger.debug("Creating new session context");
+        this.sessions = new HashSet<MatchMakerSession>();
         this.plDotIni = plIni;
         this.prefs = prefs;
     }
@@ -129,7 +142,10 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         tempDbSource.setPass(password);
 
         try {
-            return new MatchMakerHibernateSessionImpl(this, tempDbSource);
+            MatchMakerSession session = new MatchMakerHibernateSessionImpl(this, tempDbSource);
+            sessions.add(session);
+            session.addSessionLifecycleListener(sessionLifecycleListener);
+            return session;
         } catch (UnknownFreqCodeException ex) {
             throw new RuntimeException("This user doesn't have a valid default Dashboard date frequency, so you can't log in?!", ex);
         }
@@ -149,6 +165,21 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
                     "Couldn't create session. See nested exception for details.", ex);
         }
     }
+    
+    /**
+     * Removes the closed session from the list, and terminates the VM
+     * if there are no more sessions.
+     */
+    private SessionLifecycleListener<MatchMakerSession> sessionLifecycleListener =
+        new SessionLifecycleListener<MatchMakerSession>() {
+        public void sessionClosing(SessionLifecycleEvent<MatchMakerSession> e) {
+            getSessions().remove(e.getSource());
+            if (getSessions().isEmpty()) {
+                System.exit(0);
+            }
+            e.getSource().removeSessionLifecycleListener(this);
+        }
+    };
 
     /**
      * Finds the default repository schema entry in this context's data source
@@ -205,6 +236,23 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 	 */
 	public void setEmailSmtpHost(String host) {
 		prefs.put(EMAIL_HOST_PREFS, host);
+	}
+	
+    public Collection<MatchMakerSession> getSessions() {
+        return sessions;
+    }
+
+	public SessionLifecycleListener<MatchMakerSession> getSessionLifecycleListener() {
+		return sessionLifecycleListener;
+	}
+
+	public void closeAll() {
+		List<MatchMakerSession> doomedSessions =
+			new ArrayList<MatchMakerSession>(getSessions());
+
+		for (MatchMakerSession s : doomedSessions) {
+			((MatchMakerSession) s).close();
+		}
 	}
 }
 

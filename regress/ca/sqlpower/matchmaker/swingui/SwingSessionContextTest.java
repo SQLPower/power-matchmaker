@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.prefs.Preferences;
 import prefs.PreferencesFactory;
@@ -38,6 +39,7 @@ import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.DatabaseListChangeListener;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SPDataSourceType;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 public class SwingSessionContextTest extends TestCase {
 
@@ -145,6 +147,20 @@ public class SwingSessionContextTest extends TestCase {
 
 			public void setEmailSmtpHost(String host) {
 				System.out.println("Stub call: MMSContext.setEmailHost()");
+			}
+
+			public Collection<MatchMakerSession> getSessions() {
+				System.out.println("Stub call: .getSessions()");
+				return null;
+			}
+
+			public SessionLifecycleListener<MatchMakerSession> getSessionLifecycleListener() {
+				System.out.println("Stub call: .getSessionLifecycleListener()");
+				return null;
+			}
+
+			public void closeAll() {
+				System.out.println("Stub call: .closeAll()");
 			}
         };
         System.getProperties().setProperty("java.util.prefs.PreferencesFactory", "prefs.PreferencesFactory");
