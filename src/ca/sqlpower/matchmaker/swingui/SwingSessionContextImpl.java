@@ -395,10 +395,17 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
                 showLoginDialog(getLastLoginDataSource());
             } else {
             	try {
-            		// tries to login to the auto login database
             		SPDataSource dbSource = getAutoLoginDataSource();
-            		MatchMakerSwingSession session = createSession(dbSource,
+            		final MatchMakerSession sessionDelegate;
+            		if (dbSource != null) {
+            			// tries to login to the auto login database
+            			sessionDelegate = context.createSession(dbSource,
             				dbSource.getUser(), dbSource.getPass());
+            		} else {
+            			// first time running match maker, run default
+            			sessionDelegate = context.createDefaultSession();
+            		}
+            		MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
             		session.showGUI();
             	} catch (Exception ex) {
             		JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Auto Login Failed", ex);
