@@ -346,11 +346,12 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 		return db;
 	}
 
-	public void close() {
+	public boolean close() {
 		if (db.isConnected()) db.disconnect();
 		if (hSession.isConnected()) hSession.close();
 		if (!hibernateSessionFactory.isClosed()) hibernateSessionFactory.close();
 		fireSessionClosing();
+		return true;
 	}
 	
 	public void addSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener) {

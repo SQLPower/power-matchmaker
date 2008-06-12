@@ -121,7 +121,7 @@ public interface MatchMakerSessionContext {
     public void setEmailSmtpHost(String host);
     
     /**
-     * Returns a collection containing all the sessions from this context. 
+     * Returns a linked list containing all the sessions from this context. 
      */
     public Collection<MatchMakerSession> getSessions();
     

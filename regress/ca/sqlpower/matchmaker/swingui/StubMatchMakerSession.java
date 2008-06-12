@@ -188,8 +188,9 @@ public class StubMatchMakerSession implements MatchMakerSession{
 		return null;
 	}
 
-	public void close() {
+	public boolean close() {
 		logger.debug("Stub call: StubMatchMakerSession.close()");
+		return true;
 	}
 
 	public void addSessionLifecycleListener(

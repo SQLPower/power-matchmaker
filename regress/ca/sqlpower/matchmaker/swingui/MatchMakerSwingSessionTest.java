@@ -105,9 +105,10 @@ public class MatchMakerSwingSessionTest extends TestCase {
             }
             
             @Override
-            public void close() {
+            public boolean close() {
                 // hibernate session impl is supposed to close its database
             	if (db.isConnected()) db.disconnect();
+            	return true;
             }
         };
         

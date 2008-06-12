@@ -241,8 +241,9 @@ public interface MatchMakerSession {
 
 	/**
 	 * Call this method to close the session's opened resources.
+	 * @return true if successful close, false if failed or cancelled
 	 */
-	public void close();
+	public boolean close();
 	
 	/**
      * Subscribes the given listener to the session closing events.

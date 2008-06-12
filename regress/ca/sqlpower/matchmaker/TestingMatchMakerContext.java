@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -39,7 +39,7 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	List<SPDataSource> dataSources = new ArrayList<SPDataSource>();
 	DataSourceCollection plDotIni;
 	MatchMakerSession session;
-	Collection<MatchMakerSession> sessions = new HashSet<MatchMakerSession>();
+	Collection<MatchMakerSession> sessions = new LinkedList<MatchMakerSession>();
 	
 	/**
 	 * The Preferences node for the TestingMatchMakerContext. We want to keep

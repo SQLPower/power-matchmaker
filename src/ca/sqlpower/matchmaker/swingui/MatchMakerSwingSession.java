@@ -1179,8 +1179,57 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * running SPSwingWorker threads. If there are any remaining SPSwingWorker
 	 * threads, the GUI will warn the user and force quit if necessary.
 	 */
-	public void close() {
-        // If we still have SwingWorker threads running, 
+	public boolean close() {
+		boolean save = false, doit = true;
+
+        if (oldPane != null && oldPane.hasUnsavedChanges()) {
+            String[] options = { "Save", "Discard Changes", "Cancel" };
+            final int O_SAVE = 0, O_DISCARD = 1, O_CANCEL = 2;
+            int ret = JOptionPane.showOptionDialog(
+                    frame,
+                    String.format("Your %s has unsaved changes", SPSUtils.niceClassName(oldPane)),
+                    "Warning", JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE, null, options,
+                    options[0]);
+
+            switch (ret) {
+            case JOptionPane.CLOSED_OPTION:
+                save = false;
+                doit = false;
+                return false;
+            case O_SAVE:
+                save = true;
+                doit = false;
+                break;
+            case O_DISCARD:
+                save = false;
+                doit = true;
+                break;
+            case O_CANCEL:
+                save = false;
+                doit = false;
+                return false;
+            }
+            if (save) {
+                if (oldPane != null) {
+                    doit = oldPane.applyChanges();
+                }
+            } else if (doit) {
+            	if (oldPane != null) {
+                    oldPane.discardChanges();
+                    doit = true;
+                }
+            }
+        }
+        if (doit) {
+        	// clears the undo stack and the listeners to the match
+        	// maker object
+        	if (oldPane instanceof CleanupModel) {
+        		((CleanupModel) oldPane).cleanup();
+        	}
+        }
+		
+		// If we still have SwingWorker threads running, 
         // tell them to cancel, and then ask the user to try again later.
 		// Note that it is not safe to force threads to stop, so we will
 		// have to wait until the threads stop themselves.
@@ -1197,7 +1246,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 					"Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, 
 					null, options, options[0]);
 			if (n == 0) {
-				return;
+				return false;
 			} else {
 				for (SPSwingWorker currentWorker : swingWorkers) {
 					currentWorker.kill();
@@ -1215,8 +1264,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 			frame.dispose();
 		}
 
-		sessionImpl.close();
+		if (!sessionImpl.close()) {
+			return false;
+		}
 		fireSessionClosing();
+		
+		return true;
 	}
 	
 	/**

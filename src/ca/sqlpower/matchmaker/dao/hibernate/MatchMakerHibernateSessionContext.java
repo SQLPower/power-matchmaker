@@ -23,7 +23,8 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -84,7 +85,7 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
      */
     public MatchMakerHibernateSessionContext(Preferences prefs, DataSourceCollection plIni) {
         logger.debug("Creating new session context");
-        this.sessions = new HashSet<MatchMakerSession>();
+        this.sessions = new LinkedList<MatchMakerSession>();
         this.plDotIni = plIni;
         this.prefs = prefs;
     }
@@ -249,9 +250,11 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
 	public void closeAll() {
 		List<MatchMakerSession> doomedSessions =
 			new ArrayList<MatchMakerSession>(getSessions());
-
+		// reverse the list so the oldest sessions close first
+		// also so the swing sessions get closed before the hibernate (a MUST)
+		Collections.reverse(doomedSessions);
 		for (MatchMakerSession s : doomedSessions) {
-			((MatchMakerSession) s).close();
+			if (!((MatchMakerSession) s).close()) return;
 		}
 	}
 }
