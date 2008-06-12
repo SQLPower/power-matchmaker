@@ -59,6 +59,7 @@ import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.munge.LabelMungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.swingui.ColorScheme;
+import ca.sqlpower.util.WebColour;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -98,6 +99,8 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 	private boolean dragTextArea = false;
 
 	private LabelMungeStep step;
+	
+	private boolean isChangingBackgroundColor;
 	
 	public LabelMungeComponent(MungeStep ms, FormValidationHandler handler,
 			MatchMakerSession session, Icon mainIcon) {
@@ -411,12 +414,21 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 	private JMenu generateColorSelectSubMenu(final boolean isBackgroundColor) {
 		JMenu menu = new JMenu("Change color");
 
-		for (final Color c : ColorScheme.LABEL_COLOURS) {
+		WebColour[] colors;
+		
+		isChangingBackgroundColor = isBackgroundColor;
+		
+		if (isBackgroundColor) {
+			colors = ColorScheme.LABEL_COLOURS;
+		} else {
+			colors = ColorScheme.TEXT_COLOURS;
+		}
+		
+		for (final WebColour c : colors) {
 			JMenuItem i = new JMenuItem();
 			menu.add(i);
 			i.setBackground(c);
 			i.addActionListener(new ActionListener() {
-
 				public void actionPerformed(ActionEvent e) {
 					changeColor(c, isBackgroundColor);
 				}
@@ -447,6 +459,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 	private void changeColor(Color c, boolean isBackgroundColor) {
 		if (c == null) {
 			if (colorChanger == null) setUpColorChanger();
+			isChangingBackgroundColor = isBackgroundColor;
 			colorChanger.setVisible(true);
 		} else {
 			if (isBackgroundColor) {
@@ -485,7 +498,7 @@ public class LabelMungeComponent extends AbstractMungeComponent {
 		});
 		ok.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				changeColor(colorPanel.getColor(), true);
+				changeColor(colorPanel.getColor(), isChangingBackgroundColor);
 				colorChanger.setVisible(false);
 			}
 

@@ -23,38 +23,39 @@ package ca.sqlpower.matchmaker.swingui;
 import ca.sqlpower.util.WebColour;
 
 /**
- * A simple holding place for colour schemes we want to use in the MatchMaker class.
+ * A simple holding place for colour schemes we want to use in the Project Planner class.
  */
 public class ColorScheme {
 
-    /**
-     * Brewer Colour Scheme "set19".  A nice collection of colours for colour coding
-     * sets of information with up to 9 elements.
-     */
-    public static final WebColour[] BREWER_SET19 = {
-        new WebColour("#e41a1c"),
-        new WebColour("#377eb8"),
-        new WebColour("#4daf4a"),
-        new WebColour("#80b1d3"),
-        new WebColour("#984ea3"),
-        new WebColour("#ff7f00"),
-        new WebColour("#ffff33"),
-        new WebColour("#a65628"),
-        new WebColour("#f781bf"),
-        new WebColour("#999999")
+	public static final WebColour[] LABEL_COLOURS = {
+		new WebColour("#eeeeee"),
+    	new WebColour("#c7d0df"),
+    	new WebColour("#bfd6ff"),
+    	new WebColour("#b9bbf6"),
+    	new WebColour("#c8b7ea"),
+    	new WebColour("#e8cfdb"),
+    	new WebColour("#f6bcbc"),
+    	new WebColour("#fbdabb"),
+    	new WebColour("#eec994"),
+    	new WebColour("#e6d794"),
+    	new WebColour("#e4e4b8"),
+    	new WebColour("#dfedce"),
+    	new WebColour("#c8dccc")
     };
     
-    public static final WebColour[] LABEL_COLOURS = {
-    	new WebColour("#9ba6bb"),
-    	new WebColour("#7fabff"),
-    	new WebColour("#6f70e5"),
-    	new WebColour("#987ecd"),
-    	new WebColour("#c09baa"),
-    	new WebColour("#e57171"),
-    	new WebColour("#d6a459"),
-    	new WebColour("#ceb859"),
-    	new WebColour("#b0b081"),
-    	new WebColour("#aecb8d"),
-    	new WebColour("#78ad8f"),
+    public static final WebColour[] TEXT_COLOURS = {
+    	new WebColour("#000000"),
+    	new WebColour("#5a6986"),
+    	new WebColour("#206cff"),
+    	new WebColour("#0000cc"),
+    	new WebColour("#5229a3"),
+    	new WebColour("#854f61"),
+    	new WebColour("#cc0000"),
+    	new WebColour("#ec7000"),
+    	new WebColour("#b36d00"),
+    	new WebColour("#ab8b00"),
+    	new WebColour("#636330"),
+    	new WebColour("#64992c"),
+    	new WebColour("#006633")
     };
 }
