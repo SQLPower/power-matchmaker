@@ -241,7 +241,7 @@ public class LoginDialog implements SwingWorkerRegistry {
     
     private final Action cancelAction = new AbstractAction("Cancel") {
         public void actionPerformed(ActionEvent e) {
-        	if (session == null) {
+        	if (sessionContext.getSessions().isEmpty()) {
         		// no sessions have been created yet
         		System.exit(0);
         	} else {

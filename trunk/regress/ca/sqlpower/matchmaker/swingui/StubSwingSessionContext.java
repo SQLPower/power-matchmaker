@@ -23,6 +23,7 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ import ca.sqlpower.matchmaker.swingui.munge.StepDescription;
 import ca.sqlpower.security.PLSecurityException;
 import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 
 /**
@@ -151,4 +153,18 @@ public class StubSwingSessionContext implements SwingSessionContext {
     public void setAutoLoginDataSource(SPDataSource selectedItem) {
         logger.debug("Stub call: StubSwingSessionContext.setAutoLoginDataSource()");
     }
+
+	public Collection<MatchMakerSession> getSessions() {
+		logger.debug("Stub call: StubSwingSessionContext.getSessions()");
+		return null;
+	}
+
+	public void closeAll() {
+		logger.debug("Stub call: StubSwingSessionContext.closeAll()");
+	}
+
+	public SessionLifecycleListener<MatchMakerSession> getSessionLifecycleListener() {
+		logger.debug("Stub call: StubSwingSessionContext.getSessionLifecycleListener()");
+		return null;
+	}
 }

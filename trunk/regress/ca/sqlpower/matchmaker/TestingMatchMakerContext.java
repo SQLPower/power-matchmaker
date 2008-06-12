@@ -23,6 +23,8 @@ package ca.sqlpower.matchmaker;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -31,11 +33,13 @@ import ca.sqlpower.sql.DataSourceCollection;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.sql.SchemaVersionFormatException;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 
 public class TestingMatchMakerContext implements MatchMakerSessionContext {
 	List<SPDataSource> dataSources = new ArrayList<SPDataSource>();
 	DataSourceCollection plDotIni;
 	MatchMakerSession session;
+	Collection<MatchMakerSession> sessions = new HashSet<MatchMakerSession>();
 	
 	/**
 	 * The Preferences node for the TestingMatchMakerContext. We want to keep
@@ -48,6 +52,7 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 		dataSources.add(DBTestUtil.getHSQLDBInMemoryDS());
 		dataSources.add(DBTestUtil.getOracleDS());
 		dataSources.add(DBTestUtil.getSqlServerDS());
+		sessions.add(session);
 	}
 	
 	public List<SPDataSource> getDataSources() {
@@ -72,6 +77,8 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 
 	public void setSession(MatchMakerSession session) {
 		this.session = session;
+		sessions.clear();
+		sessions.add(session);
 	}
 
 	public MatchMakerSession createSession(SPDataSource ds,
@@ -91,5 +98,17 @@ public class TestingMatchMakerContext implements MatchMakerSessionContext {
 
 	public void setEmailSmtpHost(String host) {
 		prefs.put(EMAIL_HOST_PREFS, host);
+	}
+
+	public Collection<MatchMakerSession> getSessions() {
+		return sessions;
+	}
+
+	public SessionLifecycleListener<MatchMakerSession> getSessionLifecycleListener() {
+		return null;
+	}
+
+	public void closeAll() {
+		session.close();
 	}
 }

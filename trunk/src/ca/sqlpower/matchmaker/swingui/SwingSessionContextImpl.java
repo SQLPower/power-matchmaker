@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +79,7 @@ import ca.sqlpower.swingui.db.DataSourceDialogFactory;
 import ca.sqlpower.swingui.db.DataSourceTypeDialogFactory;
 import ca.sqlpower.swingui.db.DataSourceTypeEditor;
 import ca.sqlpower.swingui.db.DatabaseConnectionManager;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.ExceptionReport;
 import ca.sqlpower.util.VersionFormatException;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
@@ -256,11 +258,22 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             SPDataSource ds, String username, String password)
     throws PLSecurityException, SQLException, IOException, VersionFormatException,
             PLSchemaException, ArchitectException, MatchMakerConfigurationException {
-        return new MatchMakerSwingSession(this, context.createSession(ds, username, password));
+    	MatchMakerSwingSession session = new MatchMakerSwingSession(this, context.createSession(ds, username, password));
+    	getSessions().add(session);
+        session.addSessionLifecycleListener(getSessionLifecycleListener());
+        return session;
     }
 
     public MatchMakerSession createDefaultSession() {
-        return context.createDefaultSession();
+    	try {
+    		MatchMakerSession session = new MatchMakerSwingSession(this, context.createDefaultSession());
+    		getSessions().add(session);
+    		session.addSessionLifecycleListener(getSessionLifecycleListener());
+    		return session;
+        } catch (Exception ex) {
+            throw new RuntimeException(
+                    "Couldn't create session. See nested exception for details.", ex);
+        }
     }
     
     /* (non-Javadoc)
@@ -622,10 +635,22 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
 	}
     
     public boolean isAutoLoginEnabled() {
-        return swingPrefs.getBoolean(MatchMakerSwingUserSettings.AUTO_LOGIN_ENABLED, true);
+    	return swingPrefs.getBoolean(MatchMakerSwingUserSettings.AUTO_LOGIN_ENABLED, true);
     }
 
     public void setAutoLoginEnabled(boolean enabled) {
-        swingPrefs.putBoolean(MatchMakerSwingUserSettings.AUTO_LOGIN_ENABLED, enabled);
+    	swingPrefs.putBoolean(MatchMakerSwingUserSettings.AUTO_LOGIN_ENABLED, enabled);
+    }
+
+    public Collection<MatchMakerSession> getSessions() {
+    	return context.getSessions();
+    }
+
+    public void closeAll() {
+    	context.closeAll();
+    }
+
+    public SessionLifecycleListener<MatchMakerSession> getSessionLifecycleListener() {
+    	return context.getSessionLifecycleListener();
     }
 }

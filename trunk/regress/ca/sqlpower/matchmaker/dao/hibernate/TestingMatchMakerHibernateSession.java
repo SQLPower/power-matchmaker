@@ -31,20 +31,23 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import ca.sqlpower.sql.SPDataSource;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLTable;
 import ca.sqlpower.matchmaker.DBTestUtil;
 import ca.sqlpower.matchmaker.FolderParent;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
+import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerSessionContext;
 import ca.sqlpower.matchmaker.PlFolder;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.TestingMatchMakerContext;
 import ca.sqlpower.matchmaker.TranslateGroupParent;
 import ca.sqlpower.matchmaker.WarningListener;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
+import ca.sqlpower.sql.SPDataSource;
+import ca.sqlpower.swingui.event.SessionLifecycleEvent;
+import ca.sqlpower.swingui.event.SessionLifecycleListener;
 import ca.sqlpower.util.Version;
 
 public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSession {
@@ -58,6 +61,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
     private SQLDatabase db;
     private List<String> warnings = new ArrayList<String>();
     private TranslateGroupParent tgp = new TranslateGroupParent(this);
+	private List<SessionLifecycleListener<MatchMakerSession>> lifecycleListener;
 
 	private Session hSession;
     
@@ -82,6 +86,7 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
         resetSession();
     }
     
@@ -339,5 +344,31 @@ public class TestingMatchMakerHibernateSession implements MatchMakerHibernateSes
 			databases.put(dataSource,db);
 		}
 		return db;
+	}
+
+	public void close() {
+		if (db.isConnected()) db.disconnect();
+		if (hSession.isConnected()) hSession.close();
+		if (!hibernateSessionFactory.isClosed()) hibernateSessionFactory.close();
+		fireSessionClosing();
+	}
+	
+	public void addSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener) {
+		lifecycleListener.add(listener);
+	}
+	
+	public void removeSessionLifecycleListener(
+			SessionLifecycleListener<MatchMakerSession> listener) {
+		lifecycleListener.remove(listener);
+	}
+
+	private void fireSessionClosing() {
+		SessionLifecycleEvent<MatchMakerSession> evt = 
+			new SessionLifecycleEvent<MatchMakerSession>(this);
+		final List<SessionLifecycleListener<MatchMakerSession>> listeners = 
+			new ArrayList<SessionLifecycleListener<MatchMakerSession>>(lifecycleListener);
+		for (SessionLifecycleListener<MatchMakerSession> listener: listeners) {
+			listener.sessionClosing(evt);
+		}
 	}
 }
