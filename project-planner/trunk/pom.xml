@@ -5,7 +5,7 @@
 	<groupId>ca.sqlpower.</groupId>
 	<artifactId>project-planner</artifactId>
 	<packaging>pom</packaging>
-	<version>0.9-SNAPSHOT</version>
+	<version>1.0</version>
 	<name>project-planner</name>
 
 	<organization>

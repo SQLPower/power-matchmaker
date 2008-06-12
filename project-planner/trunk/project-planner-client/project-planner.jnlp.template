@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp spec="1.5+" 
-	codebase="http://webstart.sqlpower.ca/project_planner/">
+	codebase="http://webstart.sqlpower.ca/project-planner/">
 	<information>
 		<title>Project Planner</title>
 		<vendor>SQL Power Group Inc.</vendor>

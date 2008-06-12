@@ -6,12 +6,13 @@
 	<parent>
 		<groupId>ca.sqlpower</groupId>
 		<artifactId>project-planner</artifactId>
-		<version>0.9-SNAPSHOT</version>
+		<version>1.0</version>
 	</parent>
 	<artifactId>project-planner-client</artifactId>
 	<packaging>jar</packaging>
-	<version>0.9-SNAPSHOT</version>
+	<version>1.0</version>
 	<name>project-planner-client</name>
+	<url>http://www.sqlpower.ca/page/project_planner</url>
 
 	<organization>
 		<name>SQL Power Group Inc.</name>
@@ -60,6 +61,7 @@
 		              <goals>
 		                 <goal>jnlp</goal>
 		              </goals>
+		              <phase>install</phase>
 		           </execution>
 		        </executions>
 		        <configuration>
@@ -68,9 +70,11 @@
 		
 		           <dependencies>
 		             <includes>
+		             	<include>ca.sqlpower:project-planner-client</include>
 		                <include>ca.sqlpower:project-planner-base</include>
 		                <include>ca.sqlpower:sqlpower-library</include>
 		                <include>ca.sqlpower:architect-lib</include>
+		                <include>ca.sqlpower:osx-adapter</include>
 		                <include>log4j:log4j</include>
 		                <include>com.jgoodies:forms</include>
 		                <include>commons-beanutils:commons-beanutils</include>
@@ -112,14 +116,13 @@
 		        </configuration>
 			</plugin>
 		</plugins>
-		
 	</build>
 	
 	<dependencies>
 		<dependency>
 			<groupId>ca.sqlpower</groupId>
 			<artifactId>project-planner-base</artifactId>
-			<version>0.9-SNAPSHOT</version>			
+			<version>1.0</version>			
 		</dependency>
 	</dependencies>
 </project>
