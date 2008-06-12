@@ -406,6 +406,8 @@ public class SwingSessionContextImpl implements MatchMakerSessionContext, SwingS
             			sessionDelegate = context.createDefaultSession();
             		}
             		MatchMakerSwingSession session = new MatchMakerSwingSession(this, sessionDelegate);
+            		getSessions().add(session);
+                    session.addSessionLifecycleListener(getSessionLifecycleListener());
             		session.showGUI();
             	} catch (Exception ex) {
             		JDialog errorDialog = MMSUtils.showExceptionDialogNoReport("Auto Login Failed", ex);

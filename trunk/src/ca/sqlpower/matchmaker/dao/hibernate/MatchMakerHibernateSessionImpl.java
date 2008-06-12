@@ -608,12 +608,14 @@ public class MatchMakerHibernateSessionImpl implements MatchMakerHibernateSessio
 	/**
 	 * Call this method to close the hibernate resources and database connection.
 	 */
-	public void close() {
+	public boolean close() {
 		if (hSession.isConnected()) hSession.close();
 		if (database.isConnected()) database.disconnect();
 		if (!hibernateSessionFactory.isClosed()) hibernateSessionFactory.close();
 
 		fireSessionClosing();
+		
+		return true;
 	}
 	
 	public void addSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener) {

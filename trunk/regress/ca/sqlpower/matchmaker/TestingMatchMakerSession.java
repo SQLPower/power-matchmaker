@@ -322,9 +322,10 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		return db;
 	}
 
-	public void close() {
+	public boolean close() {
 		if (db.isConnected()) db.disconnect();
 		fireSessionClosing();
+		return true;
 	}
 
 	public void addSessionLifecycleListener(SessionLifecycleListener<MatchMakerSession> listener) {
