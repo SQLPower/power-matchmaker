@@ -505,8 +505,15 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		//Settingup
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
+
+		if (!MAC_OS_X) {
+			fileMenu.add(userPrefsAction);
+		}
 		fileMenu.add(new ExportMungePenToPDFAction(this));
-		fileMenu.add(exitAction);
+		if (!MAC_OS_X) {
+			fileMenu.addSeparator();
+			fileMenu.add(exitAction);
+		}
 		menuBar.add(fileMenu);
 		
 		JMenu editMenu = new JMenu("Edit");
