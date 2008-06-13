@@ -543,8 +543,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		projectMenu.add(runMergeAction);
 		projectMenu.add(runCleanseAction);
 		projectMenu.addSeparator();
-		projectMenu.add(showMatchStatisticInfoAction);
-		projectMenu.addSeparator();
+		
+		// TODO: Match statistics has been disabled until re-implementation
+//		projectMenu.add(showMatchStatisticInfoAction);
+//		projectMenu.addSeparator();
 		
 		projectMenu.add(new ProjectImportAction(this, frame));
 		projectMenu.add(new ProjectExportAction(this, frame));

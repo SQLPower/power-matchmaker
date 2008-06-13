@@ -175,10 +175,10 @@ public class MatchMakerHibernateSessionContext implements MatchMakerSessionConte
         new SessionLifecycleListener<MatchMakerSession>() {
         public void sessionClosing(SessionLifecycleEvent<MatchMakerSession> e) {
             getSessions().remove(e.getSource());
+            e.getSource().removeSessionLifecycleListener(this);
             if (getSessions().isEmpty()) {
                 System.exit(0);
             }
-            e.getSource().removeSessionLifecycleListener(this);
         }
     };
 
