@@ -84,7 +84,7 @@ public class DuplicateProjectAction extends AbstractAction {
 		String newName = null;
 		for (int count=0; ; count++) {
 			newName = project.getName() +
-								"_DUP" +
+								" copy" +
 								(count==0?"":String.valueOf(count));
 			if (swingSession.isThisProjectNameAcceptable(newName) )
 				break;
