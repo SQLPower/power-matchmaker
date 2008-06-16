@@ -243,7 +243,7 @@ public class ProjectDAOXML implements ProjectDAO {
     	String oldName = p.getName();
     	
     	// this causes the save to save as a new entry, the "duplicate"
-    	p.setIsOwner(false);
+    	p.setOid(null);
     	
     	p.setName(name);
     	Long newOid = null;

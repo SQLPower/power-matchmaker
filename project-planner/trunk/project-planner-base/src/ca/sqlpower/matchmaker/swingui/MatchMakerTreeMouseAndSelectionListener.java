@@ -156,7 +156,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 */
 	private void addMungeProcessesFolderMenuItems(JPopupMenu m,
 			MatchMakerFolder<?> folder) {
-		if (((Project) folder.getParent()).isOwner()) {
+		if (((Project) folder.getParent()).canModify()) {
 			m.add(new JMenuItem(new NewMungeProcessAction(swingSession,
 					(Project) folder.getParent())));
 		}
@@ -173,7 +173,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 */
 	private void addMungeStepMenuItems(JPopupMenu m, MungeStep step) {
 		MungeProcess parentProcess = (MungeProcess) step.getParent();
-		if (((Project)parentProcess.getParent()).isOwner()) {
+		if (((Project)parentProcess.getParent()).canModify()) {
 			m.add(new JMenuItem(new DeleteMungeStepAction(swingSession, step)));
 		}
 	}
@@ -188,7 +188,7 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 	 *            The current folder being right-clicked on.
 	 */
 	private void addMungeProcessMenuItems(JPopupMenu m, MungeProcess mungeProcess) {
-		if (((Project)mungeProcess.getParent()).isOwner()) { 
+		if (((Project)mungeProcess.getParent()).canModify()) { 
 			m.add(new JMenuItem(new DeleteMungeProcessAction(swingSession, mungeProcess)));
 		}
 	}
@@ -205,12 +205,12 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 
 	private void addProjectMenuItems(JPopupMenu m, final Project project) {
 		m.addSeparator();
+		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
 		if (project.isOwner()) {
-			m.add(new JMenuItem(new NewMungeProcessAction(swingSession, project)));
 			m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
 		}
 		if (project.canModify()) {
-			m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
+			m.add(new JMenuItem(new NewMungeProcessAction(swingSession, project)));
 		}
 	}
 

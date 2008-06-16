@@ -250,7 +250,7 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 		row += 2;
 		pb.add(new JLabel("Project Name:"), cc.xy(2, row, "r,c"));
 		pb.add(projectName, cc.xy(4, row));
-		projectName.setEnabled(project.isOwner());
+		projectName.setEnabled(project.canModify());
 		row += 2;
 		desc.setWrapStyleWord(true);
 		desc.setLineWrap(true);
@@ -261,7 +261,7 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 		
 		pb.add(new JLabel("Description:"), cc.xy(2, row, "r,t"));
 		pb.add(new JScrollPane(desc), cc.xy(4, row, "f,f"));
-		desc.setEnabled(project.isOwner());
+		desc.setEnabled(project.canModify());
 		row += 2;
 
 		pb.add(new JSeparator(), cc.xyw(2, row, 3));
@@ -345,8 +345,8 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 		workflowList = new JList(workflowListModel);
 		workflowPane.add(new JScrollPane(workflowList), cc.xyw(1, 1, 5, "f,f"));
 		
-		// workflow editting not allowed for non-owners
-		if (project.isOwner()) {
+		// workflow editting not allowed for view only
+		if (project.canModify()) {
 			addWorkflow = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.ADD));
 			workflowPane.add(addWorkflow, cc.xy(1, 3));
 			removeWorkflow = new JButton(new AddRemoveIcon(AddRemoveIcon.Type.REMOVE));
@@ -395,11 +395,11 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 			}
 		});
 
-		// all the rest are actions available EXCLUSIVELY to owners
-		if (!project.isOwner()) return;
+		// all the rest are actions available EXCLUSIVELY to modifiers
+		if (!project.canModify()) return;
 		
 		addWorkflow.addActionListener(new NewMungeProcessAction(swingSession, project));
-
+		
 		removeWorkflow.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (!workflowList.isSelectionEmpty()) {
@@ -420,8 +420,10 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 				}
 			}
 		});
-		
 
+		// all the rest actions available EXLUSIVELY to owners
+		if (!project.isOwner()) return;
+		
 		addToViewOnly.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String memberId = JOptionPane.showInputDialog(swingSession.getFrame(),
@@ -536,7 +538,7 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 		logger.debug("Saving Project:" + project.getName());
 		handler.resetHasValidated();
 
-		if (project.getParent() != swingSession.getDefaultPlFolder()) {
+		if (project.isOwner() && project.getParent() != swingSession.getDefaultPlFolder()) {
 			swingSession.getDefaultPlFolder().addChild(project);
 		}
 		
@@ -560,11 +562,14 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 		project.setViewOnlyUsers(viewOnlyUsers);
 		project.setViewModifyUsers(viewModifyUsers);
 
-		boolean validSave = swingSession.savePermissions(project);
-		if(!validSave) {
-			JOptionPane.showMessageDialog(getParentFrame(), "Invalid user(s) when saving permissions.", "Error on save permission lists", JOptionPane.WARNING_MESSAGE);
+		if (project.isOwner()) {
+			boolean validSave = swingSession.savePermissions(project);
+			if(!validSave) {
+				JOptionPane.showMessageDialog(getParentFrame(), "Invalid user(s) when saving permissions.", "Error on save permission lists", JOptionPane.WARNING_MESSAGE);
+			}
+			loadPermissionList();
 		}
-		loadPermissionList();
+		
 		changed = false;
 		return true;
 	}
@@ -582,18 +587,12 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 			viewOnlyListModel.addElement(userId);
 		}
 		projectOwner.setText(project.getOwner());
-		if (!project.isOwner()) {
-			if (project.canModify()) {
-				saveProject.setAction(new DuplicateProjectAction(swingSession, project));
-			} 
-		}
 	}	
 
 	private void disableComponents() {
-		if (project.canModify()) {
+		if (!project.canModify()) {
 			saveProject.setAction(new DuplicateProjectAction(swingSession, project));
 		} 
-		saveProject.setVisible(project.canModify());
 	}
 
 

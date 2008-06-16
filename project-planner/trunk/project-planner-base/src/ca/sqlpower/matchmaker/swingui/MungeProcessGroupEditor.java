@@ -144,7 +144,7 @@ public class MungeProcessGroupEditor extends NoEditEditorPane {
 		pb.add(scrollPane, cc.xy(4,row,"f,f"));
 		
 		// does not create the modification buttons if you do not have rights 
-		if (project.isOwner()){
+		if (project.canModify()){
 			ButtonBarBuilder bbb = new ButtonBarBuilder();
 			// new actions for delete and save should be extracted and be put into its own file.
 			bbb.addGridded(new JButton(new NewMungeProcessAction(swingSession, project)));

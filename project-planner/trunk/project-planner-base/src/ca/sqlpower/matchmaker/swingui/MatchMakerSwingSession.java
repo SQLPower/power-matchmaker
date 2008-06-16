@@ -90,6 +90,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerListener;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.munge.CollapsableSideBar;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
@@ -349,7 +350,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		
 		// add modify watchers to warn user about read only projects
         for (Project p : readOnlyProjects) {
-        	ProjectModifyWatcher.watchProject(p);
+        	ProjectModifyWatcher.watchProject(this, p);
         }
         
         // this grabs warnings from the business model and DAO's and lets us handle them.
@@ -446,7 +447,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
                 SPSUtils.createIcon("world","New Project")) {
             public void actionPerformed(ActionEvent evt) {
                 try {
-                    BrowserUtil.launch(SPSUtils.FORUM_URL);
+                    BrowserUtil.launch("http://www.sqlpower.ca/page/project_planner_help");
                 } catch (IOException e) {
                     SPSUtils.showExceptionDialogNoReport(frame,
                             "Could not launch browser for Help View", e);
@@ -1346,14 +1347,16 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private static class ProjectModifyWatcher implements MatchMakerListener<MatchMakerObject, MatchMakerObject> {
 		
 		private final Project project;
+		private final MatchMakerSwingSession session;
 		
-		private ProjectModifyWatcher(Project project) {
+		private ProjectModifyWatcher(MatchMakerSwingSession session, Project project) {
 			this.project = project;
+			this.session = session;
             MatchMakerUtils.listenToHierarchy(this, (MatchMakerObject) project);
         }
 		
-		public static void watchProject(Project project) {
-			new ProjectModifyWatcher(project);
+		public static void watchProject(MatchMakerSwingSession session, Project project) {
+			new ProjectModifyWatcher(session, project);
 		}
 
 		public void mmChildrenInserted(MatchMakerEvent<MatchMakerObject, MatchMakerObject> evt) {
@@ -1378,9 +1381,15 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		private void warnUser(MatchMakerEvent evt) {
 			if (!project.isPopulating()) {
 				MatchMakerUtils.unlistenToHierarchy(this, (MatchMakerObject) project);
-				JOptionPane.showMessageDialog(((MatchMakerSwingSession)project.getSession()).getFrame(),
-					"You do not have permissions to modify this project, changes will not be saved!",
-						"Read-Only Project", JOptionPane.WARNING_MESSAGE);
+				DuplicateProjectAction duplicate = new DuplicateProjectAction(session, project);
+    			int response = JOptionPane.showOptionDialog(session.getFrame(),
+    					"You do not have permissions to modify this project, all changes will be discarded!",
+    					"Read-Only Project", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
+    					null,  new String[] {"Duplicate Project","Discard Changes"},
+                        "Duplicate Project");
+    			if (response == 0) {
+    				duplicate.actionPerformed(null);
+    			}
 			} 
 		}
 	}

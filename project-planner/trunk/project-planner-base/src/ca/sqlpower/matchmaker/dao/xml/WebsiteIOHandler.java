@@ -128,7 +128,7 @@ public class WebsiteIOHandler implements IOHandler {
 				
 				if (!loggedIn && !cancelled) {
 					// Incorrect login info
-					JOptionPane.showMessageDialog(null, "Invalid username or password.\nPlease verify that you did not have capslock turned on by mistake.",
+					JOptionPane.showMessageDialog(null, "Invalid username or password.",
 							"Login failed", JOptionPane.ERROR_MESSAGE);
 					password = null;
 				}
@@ -232,8 +232,8 @@ public class WebsiteIOHandler implements IOHandler {
                 String xmlDoc = new String(toByteArray());
                 StringBuilder sb = new StringBuilder();
                 sb.append("projectXML=").append(URLEncoder.encode(xmlDoc, "UTF-8"));
-                // saves a new copy if you are not the owner, duplicate depends on this condition
-                if (project.getOid() != null && project.isOwner()) {
+                // saves a only if you can modify, otherwise makes a copy
+                if (project.getOid() != null && project.canModify()) {
                     sb.append("&projectId=").append(project.getOid());
                 }
                 sb.append("&projectName=").append(URLEncoder.encode(project.getName(), "UTF-8"));

@@ -155,7 +155,7 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
         subPanel.add(name, cc.xy(4, 4));
         
         // removes save button if the user does not have rights
-        if (parentProject.isOwner()) {
+        if (parentProject.canModify()) {
         	subPanel.add(new JButton(saveAction), cc.xy(6,4));
         } 
         
@@ -186,14 +186,14 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
     
 	private void addListenerToComponents() {
 		keyListener = new KeyListener() {
-						public void keyPressed(KeyEvent e) {
-						}
-						public void keyReleased(KeyEvent e) {
-							mmo.setName(name.getText());
-						}
-						public void keyTyped(KeyEvent e) {
-						}
-					  };
+			public void keyPressed(KeyEvent e) {
+			}
+			public void keyReleased(KeyEvent e) {
+				mmo.setName(name.getText());
+			}
+			public void keyTyped(KeyEvent e) {
+			}
+		};
 		name.addKeyListener(keyListener);
 	}
 	
@@ -233,14 +233,12 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
 			return true;
 		} 
     	if (super.hasUnsavedChanges()) {
-    		if (!parentProject.isOwner()) {
-    			String warningMsg = "Only owners of the project can make changes!";
-    			if (parentProject.canModify()) {
-    				warningMsg += "\nPlease make a duplicate of the project instead.";
-    			}
-    			JOptionPane.showMessageDialog(swingSession.getFrame(), warningMsg, 
-    					"Discarding changes", JOptionPane.WARNING_MESSAGE);
-    			discardChanges();
+    		if (!parentProject.canModify()) {
+    			JOptionPane.showMessageDialog(swingSession.getFrame(),
+    					"You do not have permissions to modify this project, discarding changes!\n" +
+    					"You should make a duplicate of this project instead.",
+    					"Read-Only Project", JOptionPane.WARNING_MESSAGE, null);
+   				discardChanges();
     			return false;
     		}
     		return true;

@@ -115,6 +115,7 @@ public class DuplicateProjectAction extends AbstractAction {
 				okCall,
 				cancelCall);
 		
+		dialog.setModal(true);
 		dialog.pack();
 		dialog.setLocationRelativeTo(swingSession.getFrame());
 		dialog.setVisible(true);
