@@ -67,18 +67,28 @@ public class MungeStepInfoComponent {
 	 *	Updates the info with given step description 
 	 */
 	private void updateInfo(StepDescription sd) {
+		StringBuilder stepInfoText = new StringBuilder();
 		
-		String stepInfoText = (sd.getName() + (sd.getDescription() != null ? "<p>" + sd.getDescription() + "</p>": ""));
-		String moreInfo = "";
-		if (sd.getInfoURL() != null && sd.getInfoURL().trim().length() > 0) {
-			moreInfo = "<p><a href=\"" + sd.getInfoURL() + "\">More Info</a></p>";
+		// begins by setting font
+		// bad approach in diving by 4 but the html text with the same font appears huge
+		stepInfoText.append("<html><body><font face =\"" + font.getFamily() 
+				+ "\" size=\"" + font.getSize()/4 + "\">");
+		
+		stepInfoText.append("<b>" + sd.getName() + "</b>");
+		
+		if (sd.getDescription() != null) {
+			stepInfoText.append("<br>" + sd.getDescription());
 		}
 		
-		// bad approach in diving by 4 but the html text with the same font appears huge
-		stepInfo.setText("<html><body><font face =\"" + font.getFamily() + "\" size=\"" +
-				font.getSize()/4 + "\">" + stepInfoText + moreInfo + "</font>");
-		// "anti-autoscroll"
+		if (sd.getInfoURL() != null && sd.getInfoURL().trim().length() > 0) {
+			stepInfoText.append("<br><a href=\"" + sd.getInfoURL() + "\">More Info</a>");
+		}
 		
+		stepInfoText.append("</font>");
+		
+		stepInfo.setText(stepInfoText.toString());
+		
+		// "anti-autoscroll"
 		stepInfo.setCaretPosition(0);
 	}
 	
