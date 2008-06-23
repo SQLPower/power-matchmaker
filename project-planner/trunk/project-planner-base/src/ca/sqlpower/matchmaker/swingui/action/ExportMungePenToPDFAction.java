@@ -86,7 +86,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
 	private static Method paintBorder;
     
     public ExportMungePenToPDFAction(MatchMakerSwingSession session) {
-        super(session, "Export Munge Pen to PDF", "Export Munge Pen to PDF");
+        super(session, "Export to PDF", "Export Workflow to PDF");
 
         try {
         	paintComponent = JComponent.class.getDeclaredMethod("paintComponent", Graphics.class);
@@ -121,7 +121,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
         JFileChooser chooser = new JFileChooser();
         chooser.addChoosableFileFilter(SPSUtils.PDF_FILE_FILTER);
         if (!(session.getOldPane() instanceof WorkflowEditor)) {
-        	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the munge pen at current.", "Cannot Export MungePen", JOptionPane.WARNING_MESSAGE);
+        	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the workflow at current.", "Cannot Perform Export", JOptionPane.WARNING_MESSAGE);
         	return false;
         }
         monitor.setJobSize(((WorkflowEditor) session.getOldPane()).getMungePen().getComponentCount());
@@ -168,7 +168,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
     @Override
     public void doStuff(MonitorableImpl monitor, Map<String, Object> properties) {
         if (!(session.getOldPane() instanceof WorkflowEditor)) {
-        	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the munge pen at current.", "Cannot Export MungePen", JOptionPane.WARNING_MESSAGE);
+        	JOptionPane.showMessageDialog(session.getFrame(), "We only allow PDF exports of the workflow at current.", "Cannot Perform Export", JOptionPane.WARNING_MESSAGE);
         	return;
         }
 
@@ -189,7 +189,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
             out = new BufferedOutputStream(new FileOutputStream((File)properties.get(FILE_KEY)));
             d = new Document(ppSize);
             
-            d.addTitle("Project Planner Munge Pen PDF Export");
+            d.addTitle("Project Planner Workflow PDF Export");
             d.addAuthor(System.getProperty("user.name"));
             d.addCreator("Project Planner version "+MatchMakerVersion.APP_VERSION);
             
@@ -221,7 +221,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
             g.dispose();
         } catch (Exception ex) {
             SPSUtils.showExceptionDialogNoReport(session.getFrame(), 
-                    "Could not export the munge pen", 
+                    "Could not export the workflow", 
                     ex);
         } finally {
             if (d != null) {
@@ -229,7 +229,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
                     d.close();
                 } catch (Exception ex) {
                     SPSUtils.showExceptionDialogNoReport(session.getFrame(),
-                            "Could not close document for exporting munge pen", 
+                            "Could not close document for exporting workflow", 
                             ex);
                 }
             }
@@ -239,7 +239,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
                     out.close();
                 } catch (IOException ex) {
                     SPSUtils.showExceptionDialogNoReport(session.getFrame(),
-                        "Could not close pdf file for exporting munge pen", 
+                        "Could not close pdf file for exporting workflow", 
                         ex);
                 }
             }

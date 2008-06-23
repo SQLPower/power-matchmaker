@@ -408,8 +408,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
 		
-		JMenuItem pdfMenuItem = new JMenuItem(new ExportMungePenToPDFAction(this));
-		pdfMenuItem.setIcon(SPSUtils.createIcon("exportPDF", "exportPDFAction"));
+		ExportMungePenToPDFAction exportAction = new ExportMungePenToPDFAction(this);
+		JMenuItem pdfMenuItem = new JMenuItem(exportAction);
+		ImageIcon exportIcon = SPSUtils.createIcon("exportPDF", "exportPDFAction");
+		pdfMenuItem.setIcon(exportIcon);
 		fileMenu.add(pdfMenuItem);
 		
 		JMenuItem quoteMenuItem = new JMenuItem(requestQuoteAction);
@@ -488,6 +490,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         newProjectButton.setIcon(SPSUtils.createIcon("pp_project", "newProjectAction"));
 		toolBar.add(newProjectButton);
 
+		JButton exportButton = new JButton(exportAction);
+		exportButton.setIcon(exportIcon);
+		toolBar.add(exportButton);
+		
 		JButton quoteButton = new JButton(requestQuoteAction);
 		quoteButton.setIcon(quoteIcon);
 		toolBar.add(quoteButton);
