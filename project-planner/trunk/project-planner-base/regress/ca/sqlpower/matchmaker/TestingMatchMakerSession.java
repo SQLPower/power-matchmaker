@@ -341,6 +341,11 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 	public void loadPermissions(Project project) {
 		logger.debug("Stub call: TestingMatchMakerSession.loadPermissions()");
 	}
+
+	public boolean requestQuote(Project project) {
+		logger.debug("Stub call: TestingMatchMakerSession.getQuote()");
+		return false;
+	}
 }
 
 

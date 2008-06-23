@@ -61,6 +61,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
+import ca.sqlpower.matchmaker.swingui.action.RequestQuoteAction;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.matchmaker.validation.ProjectDescriptionValidator;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
@@ -177,6 +178,17 @@ public class ProjectEditor extends AbstractUndoableEditorPane<Project, MungeProc
 					JOptionPane.showMessageDialog(swingSession.getFrame(),
 							"Project Not Saved", "Not Saved",
 							JOptionPane.WARNING_MESSAGE);
+				} else {
+					RequestQuoteAction quoteAction = new RequestQuoteAction(swingSession, project);
+					int response = JOptionPane.showOptionDialog(swingSession.getFrame(),
+							"SQL Power would be happy to present you with a quote on your project.\n" +
+							"Would you like to send a request now?", "Request Quote", JOptionPane.YES_NO_OPTION,
+							JOptionPane.INFORMATION_MESSAGE,
+							null,  new String[] {"Send Request","Not Now"},
+					"Send Request");
+					if (response == 0) {
+						quoteAction.actionPerformed(null);
+					}
 				}
 			} catch (Exception ex) {
 				MMSUtils.showExceptionDialog(swingSession.getFrame(),

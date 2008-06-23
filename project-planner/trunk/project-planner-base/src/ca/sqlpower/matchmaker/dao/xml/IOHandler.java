@@ -84,4 +84,12 @@ public interface IOHandler {
 	 * @param project The project of the permissions to load.
 	 */
 	void loadPermissions(Project project);
+	
+	/**
+	 * Sends a request for a quotation on the given project.
+	 * 
+	 * @param project The project for quoting.
+	 * @return whether sending the request was successful.
+	 */
+	boolean requestQuote(Project project);
 }

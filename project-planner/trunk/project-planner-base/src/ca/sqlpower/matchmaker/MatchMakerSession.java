@@ -277,4 +277,11 @@ public interface MatchMakerSession {
 	 */
 	public void loadPermissions(Project project);
 	
+	/**
+	 * Sends a request for quotation on the project.
+	 * 
+	 * @param project The project for quoting.
+	 * @return whether sending the request was successful.
+	 */
+	public boolean requestQuote(Project project);
 }

@@ -303,4 +303,8 @@ public class MatchMakerXMLSession implements MatchMakerSession {
 	public void loadPermissions(Project project) {
 		ioHandler.loadPermissions(project);
 	}
+	
+	public boolean requestQuote(Project project) {
+		return ioHandler.requestQuote(project);
+	}
 }

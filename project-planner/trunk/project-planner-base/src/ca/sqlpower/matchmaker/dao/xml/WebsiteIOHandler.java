@@ -580,7 +580,7 @@ public class WebsiteIOHandler implements IOHandler {
 				
 				if (!loggedIn && !cancelled) {
 					// Incorrect login info
-					JOptionPane.showMessageDialog(null, "Couldn't delete project!",
+					JOptionPane.showMessageDialog(null, "Couldn't save permissions!",
 							"Login failed", JOptionPane.ERROR_MESSAGE);
 					password = null;
 				}
@@ -653,7 +653,7 @@ public class WebsiteIOHandler implements IOHandler {
 				
 				if (!loggedIn && !cancelled) {
 					// Incorrect login info
-					JOptionPane.showMessageDialog(null, "Couldn't delete project!",
+					JOptionPane.showMessageDialog(null, "Couldn't load permissions!",
 							"Login failed", JOptionPane.ERROR_MESSAGE);
 					password = null;
 				}
@@ -710,6 +710,56 @@ public class WebsiteIOHandler implements IOHandler {
         } catch (Exception e) {
             throw new RuntimeException("Exception occured while trying to load project permissions", e);
         }        
+	}
+
+	public boolean requestQuote(Project project) {
+		try {
+        	boolean loggedIn = false;
+			while (!loggedIn && !cancelled) {
+				try {
+					loggedIn = login();
+				} catch (IOException e) {
+					// Errors connecting to server
+					MMSUtils.showExceptionDialog(d, "Failed to connect to server!", e).requestFocus();
+					password = null;
+					continue;
+				}
+				
+				if (!loggedIn && !cancelled) {
+					// Incorrect login info
+					JOptionPane.showMessageDialog(null, "Couldn't send request for quote!",
+							"Login failed", JOptionPane.ERROR_MESSAGE);
+					password = null;
+				}
+        	}
+            
+			URL baseURL = new URL(WEBSITE_BASE_URL);
+			URL url = new URL(baseURL, "request_quote?projectId="+project.getOid());
+			HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
+			urlc.setRequestMethod("GET");
+			urlc.setRequestProperty("Cookie", sessionCookie);
+			urlc.setDoOutput(false);
+			urlc.setDoInput(true);
+			urlc.connect();
+
+			// have to read in order to send request!
+			Reader in = new InputStreamReader(urlc.getInputStream());
+			StringBuilder responseString = new StringBuilder();
+			char[] buf = new char[2000];
+			while (in.read(buf) > 0) {
+				responseString.append(buf);
+			}
+			in.close();
+			urlc.disconnect();
+			JSONObject response = new JSONObject(responseString.toString());
+			boolean success = response.getBoolean("success");
+			if (!success) {
+				throw new IOException("Failed to send request for quote: " + response.getString("message"));
+			} 
+			return success;
+        } catch (Exception e) {
+            throw new RuntimeException("Exception occured while trying to send request for quote", e);
+        }
 	}
 	
 }

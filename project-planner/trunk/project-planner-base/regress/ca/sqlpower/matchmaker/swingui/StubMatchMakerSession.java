@@ -206,4 +206,9 @@ public class StubMatchMakerSession implements MatchMakerSession{
 		logger.debug("Stub call: StubMatchMakerSession.loadPermissions()");
 	}
 
+	public boolean requestQuote(Project project) {
+		logger.debug("Stub call: StubMatchMakerSession.getQuote()");
+		return false;
+	}
+
 }

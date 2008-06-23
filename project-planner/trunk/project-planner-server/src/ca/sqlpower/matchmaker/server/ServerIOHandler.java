@@ -76,4 +76,8 @@ public class ServerIOHandler implements IOHandler {
 	public void loadPermissions(Project project) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
+
+	public boolean requestQuote(Project project) {
+		throw new UnsupportedOperationException("Not implemented yet");		
+	}
 }

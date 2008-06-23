@@ -57,6 +57,7 @@ import ca.sqlpower.matchmaker.swingui.action.NewMungeProcessAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
+import ca.sqlpower.matchmaker.swingui.action.RequestQuoteAction;
 
 /**
  * This appears to be a mouse event listener for the MatchMaker tree component
@@ -205,10 +206,13 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 
 	private void addProjectMenuItems(JPopupMenu m, final Project project) {
 		m.addSeparator();
+		m.add(new JMenuItem(new RequestQuoteAction(swingSession, project)));
+		m.addSeparator();
 		m.add(new JMenuItem(new DuplicateProjectAction(swingSession, project)));
 		if (project.isOwner()) {
 			m.add(new JMenuItem(new DeleteProjectAction(swingSession, project)));
 		}
+		m.addSeparator();
 		if (project.canModify()) {
 			m.add(new JMenuItem(new NewMungeProcessAction(swingSession, project)));
 		}

@@ -46,6 +46,7 @@ import ca.sqlpower.matchmaker.event.MatchMakerEvent;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
+import ca.sqlpower.matchmaker.swingui.action.RequestQuoteAction;
 import ca.sqlpower.matchmaker.swingui.munge.CollapsableSideBar;
 import ca.sqlpower.matchmaker.swingui.munge.MungePen;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
@@ -203,7 +204,20 @@ public class WorkflowEditor extends AbstractUndoableEditorPane<MungeProcess, Mun
 	
 	Action saveAction = new AbstractAction("Save Workflow"){
 		public void actionPerformed(ActionEvent e) {
-            applyChanges();
+            boolean ok = applyChanges();
+
+            if (ok) {
+            	RequestQuoteAction quoteAction = new RequestQuoteAction(swingSession, parentProject);
+	            int response = JOptionPane.showOptionDialog(swingSession.getFrame(),
+						"SQL Power would be happy to present you with a quote on your project.\n" +
+						"Would you like to send a request now?", "Request Quote", JOptionPane.YES_NO_OPTION,
+						JOptionPane.INFORMATION_MESSAGE,
+						null,  new String[] {"Send Request","Not Now"},
+	                    "Send Request");
+				if (response == 0) {
+					quoteAction.actionPerformed(null);
+				}
+            }
 		}
 	};
     

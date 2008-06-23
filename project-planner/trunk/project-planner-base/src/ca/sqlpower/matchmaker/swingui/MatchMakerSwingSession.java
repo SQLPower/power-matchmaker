@@ -91,6 +91,8 @@ import ca.sqlpower.matchmaker.munge.MungeStep;
 import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
+import ca.sqlpower.matchmaker.swingui.action.RequestQuoteAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.munge.CollapsableSideBar;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
@@ -262,6 +264,8 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action helpAction;
 	private Action supportOnTheWebAction;
 	
+	private Action requestQuoteAction = new RequestQuoteAction(this, null);
+	
     private Action clearWarningsAction = new AbstractAction("Clear") {
         public void actionPerformed(ActionEvent e) {
             warningTextArea.setText("");
@@ -404,11 +408,16 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic('f');
 		
-		DummyAction exportPDFAction = new DummyAction("Export to PDF", 
-				"Please contact our sales team, who will be happy to provide you with a PDF of your project plan.");
-		JMenuItem pdfMenuItem = new JMenuItem(exportPDFAction);
+		JMenuItem pdfMenuItem = new JMenuItem(new ExportMungePenToPDFAction(this));
 		pdfMenuItem.setIcon(SPSUtils.createIcon("exportPDF", "exportPDFAction"));
 		fileMenu.add(pdfMenuItem);
+		
+		JMenuItem quoteMenuItem = new JMenuItem(requestQuoteAction);
+		ImageIcon quoteIcon = SPSUtils.createIcon("quote", "requestQuoteAction");
+		quoteMenuItem.setIcon(quoteIcon);
+		fileMenu.add(quoteMenuItem);
+		
+		fileMenu.addSeparator();
 		
 		JMenuItem exitMenuItem = new JMenuItem(exitAction);
         ImageIcon exitIcon = SPSUtils.createIcon("exit", "exitAction");
@@ -478,7 +487,12 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         JButton newProjectButton = new JButton(newProjectAction);
         newProjectButton.setIcon(SPSUtils.createIcon("pp_project", "newProjectAction"));
 		toolBar.add(newProjectButton);
-        toolBar.addSeparator();
+
+		JButton quoteButton = new JButton(requestQuoteAction);
+		quoteButton.setIcon(quoteIcon);
+		toolBar.add(quoteButton);
+
+		toolBar.addSeparator();
         
         JButton helpButton = new JButton(helpAction);
         helpButton.setIcon(helpIcon);
@@ -1404,5 +1418,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 
 	public void loadPermissions(Project project) {
 		sessionImpl.loadPermissions(project);
+	}
+	
+	public boolean requestQuote(Project project) {
+		return sessionImpl.requestQuote(project);
 	}
 }
