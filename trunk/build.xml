@@ -747,8 +747,9 @@
 		</ant>
 		<ant dir="${sqlpower.library.home}">
 			<property name="build" value="${sqlpower.library.home}/build"/>
+			<property name="dist.dir" value="${sqlpower.library.home}/dist"/>
 		</ant>
-		<copy file="${sqlpower.library.home}/deploy/sqlpower_library.jar" todir="${lib}"/>
+		<copy file="${sqlpower.library.home}/dist/sqlpower_library.jar" todir="${lib}"/>
 		
 		<copy todir="${build}/ca/sqlpower/validation/swingui">
 			<fileset dir="${sqlpower.library.home}/src/ca/sqlpower/validation/swingui/">
