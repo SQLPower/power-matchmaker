@@ -113,6 +113,7 @@
 	<target name="compile-tests" depends="compile">
 		<ant dir="${sqlpower.library.home}" target="compile-tests">
 			<property name="build" value="${sqlpower.library.home}/build"/>
+			<property name="build.tests" value="${sqlpower.library.home}/build/tests"/>
 		</ant>
 		<mkdir dir="${build.tests}"/>
 		<javac srcdir="regress" destdir="${build.tests}"
