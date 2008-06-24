@@ -77,9 +77,29 @@
 		<mkdir dir="${build}"/>
 		<javac 	srcdir="${src}" 
 				destdir="${build}" 
-				classpathref="compile.classpath"/>
+				classpathref="compile.classpath"
+			    source="1.5"
+		/>
 	</target>
-	
+
+	<!-- Compiles the MatchMaker and places the .class files into build-->
+	<target name="javadoc" depends="getAppVersion,compile">
+		<mkdir dir="${dist.dir}/doc/api"/>
+		<javadoc sourcepath="${src}" destdir="${dist.dir}/doc/api"
+			packagenames="ca.sqlpower.*"
+			maxmemory="100m"
+			windowtitle="ca.sqlpower.matchmaker.* Power*MatchMaker"
+			Version="true" Author="true" Use="true"
+			classpathref="test.classpath"
+			>
+			<packageset dir="${src}" defaultexcludes="yes">
+				<include name="ca/sqlpower/**" />
+				<exclude name="regress/**"/>
+			</packageset>
+			<bottom><![CDATA[<i>Copyright &#169; 2003-2008 SQL Power Group Inc. <a href="http://www.sqlpower.ca/">www.sqlpower.ca</a>]]></bottom>
+		</javadoc>
+	</target>
+
 	
 	<target name="copyfiles">
 		<mkdir dir="${build}/icons"/>
@@ -122,7 +142,7 @@
 	</target>
 	
 	<!-- Creates distributables for all supported OSes -->
-	<target name="dist" depends="junit, pmd, pmd-cpd, userguide,osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz">
+	<target name="dist" depends="junit, pmd, pmd-cpd, userguide, javadoc, osx_tgz,osx_dmg,windows_exe_installer_with_python,windows_exe_installer_without_python,generic_install,source_only_tgz">
 		<echo>Don't forget to turn off all the debugging in log4j.properties!</echo>
 		<mkdir dir="${dist.dir}/doc"/>
 		<copy todir="${dist.dir}/doc" overwrite="true">
