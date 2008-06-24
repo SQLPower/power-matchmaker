@@ -230,22 +230,17 @@ public class ProjectDAOXML implements ProjectDAO {
         return Project.class;
     }
    
-    public Project duplicate(Project p, String name) {
-    	boolean isOwner = p.isOwner();
-    	boolean canModify = p.canModify();
-
+    public Project duplicate(Project p, String newName) {
     	if (p.getOid() == null){
     		// if the original project was a new project itself
     		save(p);
     	}
     	
     	long oldId = p.getOid();
-    	String oldName = p.getName();
     	
     	// this causes the save to save as a new entry, the "duplicate"
     	p.setOid(null);
     	
-    	p.setName(name);
     	Long newOid = null;
     	try {
     		save(p);	
@@ -254,13 +249,17 @@ public class ProjectDAOXML implements ProjectDAO {
     		// we don't want to mess up the original project if anything goes wrong
     		// returns original project to its original state
     		p.setOid(oldId);
-    		p.setName(oldName);
-    		p.setIsOwner(isOwner);
-    		p.setCanModify(canModify);
     	}
     	
-    	Project newProject = new Project(newOid, name, p.getDescription(), (ProjectDAO) session.getDAO(Project.class));
+    	// loads the new project from the database
+    	Project newProject = new Project();
     	newProject.setSession(p.getSession());
+    	newProject.setOid(newOid);
+    	refresh(newProject);
+    	
+    	// still need to change the name here
+    	newProject.setName(newName);
+    	save(newProject);
     	
     	return newProject;
     }

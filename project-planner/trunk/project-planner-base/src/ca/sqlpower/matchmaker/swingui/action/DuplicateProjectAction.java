@@ -103,7 +103,6 @@ public class DuplicateProjectAction extends AbstractAction {
 			public Boolean call() {
 				String newName = archPanel.getDupName();
 				Project newProject = ((ProjectDAO) swingSession.getDAO(Project.class)).duplicate(project, newName);
-				swingSession.save(newProject);
 				// Duplicated projects should only be created in the default folder
 				swingSession.getDefaultPlFolder().addChild(newProject);
 				return new Boolean(true);
