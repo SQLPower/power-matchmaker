@@ -36,9 +36,11 @@ import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
 import ca.sqlpower.matchmaker.validation.ProjectNameValidator;
 import ca.sqlpower.swingui.DataEntryPanelBuilder;
+import ca.sqlpower.validation.Validated;
 import ca.sqlpower.validation.Validator;
 import ca.sqlpower.validation.swingui.FormValidationHandler;
 import ca.sqlpower.validation.swingui.StatusComponent;
+import ca.sqlpower.validation.swingui.ValidationHandler;
 
 public class DuplicateProjectAction extends AbstractAction {
 	
@@ -49,18 +51,18 @@ public class DuplicateProjectAction extends AbstractAction {
 	private Project project;
 	private Callable<Boolean> okCall;
 	private Callable<Boolean> cancelCall;
-	private FormValidationHandler handler;
 	
 	public DuplicateProjectAction(MatchMakerSwingSession swingSession, Project project) {
 		super("Duplicate Project");
 		this.swingSession = swingSession;
 		this.project = project;
-		handler = new FormValidationHandler(status);
+
 	}
 	
-	private class DuplicatePanel extends NoEditEditorPane {
+	private class DuplicatePanel extends NoEditEditorPane implements Validated {
 
 		private JTextField targetNameField;
+		private FormValidationHandler handler;
 
 		public DuplicatePanel(String newName) {
 			JPanel panel = new JPanel(new GridLayout(3,1));
@@ -68,14 +70,18 @@ public class DuplicateProjectAction extends AbstractAction {
 			targetNameField = new JTextField(newName, 30);
 			panel.add(targetNameField);
 			setPanel(panel);
+			
+			handler = new FormValidationHandler(status);
+			Validator v = new ProjectNameValidator(swingSession,new Project());
+			handler.addValidateObject(targetNameField,v);
 		}
 
 		public String getDupName() {
 			return targetNameField.getText();
 		}
 
-		public JTextField getProjectNameField() {
-			return targetNameField;
+		public ValidationHandler getHandler() {
+			return handler;
 		}
 	}
 	
@@ -119,9 +125,6 @@ public class DuplicateProjectAction extends AbstractAction {
 		dialog.pack();
 		dialog.setLocationRelativeTo(swingSession.getFrame());
 		dialog.setVisible(true);
-		
-		Validator v = new ProjectNameValidator(swingSession,new Project());
-        handler.addValidateObject(archPanel.getProjectNameField(),v);
 	}
 
 }
