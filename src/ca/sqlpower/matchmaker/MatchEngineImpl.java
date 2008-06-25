@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 
@@ -176,7 +177,14 @@ public class MatchEngineImpl extends AbstractEngine {
 			logger.info(progressMessage);
 			
 			rowCount = getNumRowsToProcess();
-			List<MungeProcess> mungeProcesses = getProject().getMungeProcessesFolder().getChildren();
+			
+			List<MungeProcess> mungeProcesses = new ArrayList<MungeProcess>();
+			for (MungeProcess mp: getProject().getMungeProcessesFolder().getChildren()) {
+				if (mp.getActive()) {
+					mungeProcesses.add(mp);
+				}
+			}
+			
 			jobSize = rowCount * mungeProcesses.size() * 2 + rowCount;
 			
 			MatchPool pool = new MatchPool(getProject());
