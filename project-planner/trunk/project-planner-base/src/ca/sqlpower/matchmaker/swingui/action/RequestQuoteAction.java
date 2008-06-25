@@ -87,7 +87,7 @@ public class RequestQuoteAction extends AbstractAction {
 		}
 		
 		private void buildUI() {
-	        FormLayout layout = new FormLayout("pref,4dlu,150dlu", "40dlu,4dlu,pref,4dlu");
+	        FormLayout layout = new FormLayout("pref,4dlu,150dlu", "60dlu,4dlu,pref,4dlu");
 	        JPanel panel = new JPanel(layout);
 	        CellConstraints cc = new CellConstraints();
 			
