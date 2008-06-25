@@ -340,7 +340,7 @@ public class CleanseEnginePanel implements DataEntryPanel {
 		getPopupMenu();
 		setPopupButtonText();
 		
-		pb.add(new JLabel("Cleansing Processes to run: "), cc.xy(2, y, "r,t"));
+		pb.add(new JLabel("Munge Processes to run: "), cc.xy(2, y, "r,t"));
 		pb.add(showPopupButton, cc.xy(4, y, "l,c"));
 		
 		y += 2;
