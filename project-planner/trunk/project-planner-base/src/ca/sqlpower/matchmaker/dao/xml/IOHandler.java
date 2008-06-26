@@ -88,8 +88,9 @@ public interface IOHandler {
 	/**
 	 * Sends a request for a quotation on the given project.
 	 * 
-	 * @param project The project for quoting.
+	 * @param projects a list of projects requested for quoting.
+     * @param comments user provided comments on the quote
 	 * @return whether sending the request was successful.
 	 */
-	boolean requestQuote(Project project);
+	boolean requestQuote(List<Project> projects, String comments);
 }

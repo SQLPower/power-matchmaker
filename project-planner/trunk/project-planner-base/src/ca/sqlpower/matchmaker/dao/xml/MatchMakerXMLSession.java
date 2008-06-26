@@ -304,7 +304,7 @@ public class MatchMakerXMLSession implements MatchMakerSession {
 		ioHandler.loadPermissions(project);
 	}
 	
-	public boolean requestQuote(Project project) {
-		return ioHandler.requestQuote(project);
+	public boolean requestQuote(List<Project> projects, String comments) {
+		return ioHandler.requestQuote(projects, comments);
 	}
 }

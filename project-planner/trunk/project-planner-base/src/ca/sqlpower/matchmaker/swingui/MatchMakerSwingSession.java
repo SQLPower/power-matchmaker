@@ -92,8 +92,8 @@ import ca.sqlpower.matchmaker.munge.MungeStepOutput;
 import ca.sqlpower.matchmaker.swingui.action.DeleteProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.DuplicateProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ExportMungePenToPDFAction;
-import ca.sqlpower.matchmaker.swingui.action.RequestQuoteAction;
 import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
+import ca.sqlpower.matchmaker.swingui.action.RequestQuoteAction;
 import ca.sqlpower.matchmaker.swingui.munge.CollapsableSideBar;
 import ca.sqlpower.matchmaker.swingui.munge.MungePenSideBar;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
@@ -264,7 +264,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	private Action helpAction;
 	private Action supportOnTheWebAction;
 	
-	private Action requestQuoteAction = new RequestQuoteAction(this, null);
+	private Action requestQuoteAction = new RequestQuoteAction(this);
 	
     private Action clearWarningsAction = new AbstractAction("Clear") {
         public void actionPerformed(ActionEvent e) {
@@ -671,11 +671,33 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         		((CleanupModel) oldPane).cleanup();
         	}
         }
-		
-		if (close()){
-			saveSettings();
-			System.exit(0);
-		}
+        
+        boolean done = true;
+        
+        RequestQuoteAction quoteAction = new RequestQuoteAction(this);
+        int response = JOptionPane.showOptionDialog(getFrame(),
+        		"SQL Power would be happy to provide you a quote for your project implementations.\n" +
+				"Would you like to send a request now?", "Request Quote", JOptionPane.YES_NO_OPTION,
+				JOptionPane.INFORMATION_MESSAGE,
+				null,  new String[] {"Send Request","Not Now"},
+                "Not Now");
+        if (response == JOptionPane.YES_OPTION) {
+        	done = false;
+        	quoteAction.actionPerformed(null);
+        	quoteAction.getDialog().addWindowListener(new WindowAdapter() {
+        		public void windowDeactivated(WindowEvent e) {
+        			if (close()){
+        				saveSettings();
+        				System.exit(0);
+        			}
+        		}
+        	});
+        } else {
+        	if (close()){
+        		saveSettings();
+        		System.exit(0);
+        	}
+        }
 	}
 
     /**
@@ -1401,14 +1423,15 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		private void warnUser(MatchMakerEvent evt) {
 			if (!project.isPopulating()) {
 				MatchMakerUtils.unlistenToHierarchy(this, (MatchMakerObject) project);
-				DuplicateProjectAction duplicate = new DuplicateProjectAction(session, project);
     			int response = JOptionPane.showOptionDialog(session.getFrame(),
-    					"You do not have permissions to modify this project, all changes will be discarded!",
+    					"You do not have permissions to modify this project, all changes will be discarded!\n" +
+    					"You should duplicate this project instead.",
     					"Read-Only Project", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,
     					null,  new String[] {"Duplicate Project","Discard Changes"},
                         "Duplicate Project");
-    			if (response == 0) {
-    				duplicate.actionPerformed(null);
+    			if (response == JOptionPane.YES_OPTION) {
+    				DuplicateProjectAction duplicateAction = new DuplicateProjectAction(session, project);
+    				duplicateAction.actionPerformed(null);
     			}
 			} 
 		}
@@ -1426,7 +1449,7 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 		sessionImpl.loadPermissions(project);
 	}
 	
-	public boolean requestQuote(Project project) {
-		return sessionImpl.requestQuote(project);
+	public boolean requestQuote(List<Project> projects, String comments) {
+		return sessionImpl.requestQuote(projects, comments);
 	}
 }

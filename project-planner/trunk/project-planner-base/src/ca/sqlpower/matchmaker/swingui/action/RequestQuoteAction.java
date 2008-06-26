@@ -22,14 +22,16 @@ package ca.sqlpower.matchmaker.swingui.action;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import javax.swing.AbstractAction;
-import javax.swing.JComboBox;
+import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 import ca.sqlpower.matchmaker.FolderParent;
@@ -37,9 +39,10 @@ import ca.sqlpower.matchmaker.PlFolder;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.swingui.MatchMakerObjectComboBoxCellRenderer;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
-import ca.sqlpower.matchmaker.swingui.NoEditEditorPane;
-import ca.sqlpower.swingui.DataEntryPanelBuilder;
+import ca.sqlpower.swingui.JDefaultButton;
+import ca.sqlpower.swingui.SPSUtils;
 
+import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -49,77 +52,25 @@ import com.jgoodies.forms.layout.FormLayout;
 public class RequestQuoteAction extends AbstractAction {
 
 	private MatchMakerSwingSession swingSession;
+	
+	// if not null, dialog appears with selected
 	private Project project;
+	
+	private JList projectList;
+	private JTextPane comments;
+	private JDialog dialog;
 
-	public RequestQuoteAction(MatchMakerSwingSession swingSession, Project project) {
+	public RequestQuoteAction(MatchMakerSwingSession swingSession) {
 		super("Request Quote");
 		this.swingSession = swingSession;
+	}
+	
+	public RequestQuoteAction(MatchMakerSwingSession swingSession, Project project) {
+		this(swingSession);
 		this.project = project;
 	}
 	
 	public void actionPerformed(ActionEvent e) {
-		if (project == null) {
-			showDialog();
-		} else {
-			sendRequest();
-		}
-	}
-	
-	/**
-	 * Actually does the call to send request and displays a success message if appropriate.
-	 */
-	private void sendRequest() {
-		if (swingSession.requestQuote(project)) {
-			JOptionPane.showMessageDialog(swingSession.getFrame(), 
-					"Thank you for your request. One of our sales representatives will contact you soon for the results!",
-					"Quote Request Sent", JOptionPane.INFORMATION_MESSAGE);
-		}	
-	}
-	
-	private class RequestQuotePanel extends NoEditEditorPane {
-
-		private final List<Project> projects;
-		private JComboBox projectList;
-		
-		public RequestQuotePanel(List<Project> projects) {
-	        this.projects = projects;
-	        buildUI();
-		}
-		
-		private void buildUI() {
-	        FormLayout layout = new FormLayout("pref,4dlu,150dlu", "60dlu,4dlu,pref,4dlu");
-	        JPanel panel = new JPanel(layout);
-	        CellConstraints cc = new CellConstraints();
-			
-	        String message = "The <i>request quote</i> feature lets you send your project diagram to the SQL Power " +
-	        		"sales team, who will review it and then provide you with an estimate of the work involved.";
-	        JTextPane infoTextPane = new JTextPane();
-	        infoTextPane.setContentType("text/html");
-	        infoTextPane.setText(message);
-	        infoTextPane.setBackground(null);
-	        infoTextPane.setEditable(false);
-	        panel.add(infoTextPane, cc.xyw(1, 1, 3));
-
-	        JLabel projectLabel = new JLabel("Project:");
-			panel.add(projectLabel, cc.xy(1, 3));
-	        
-	        projectList = new JComboBox(projects.toArray());
-	        projectList.setEditable(false);
-	        projectList.setRenderer(new MatchMakerObjectComboBoxCellRenderer());
-	        panel.add(projectList, cc.xy(3, 3, "f,f"));
-
-	        setPanel(panel);		
-		}
-		
-		public Project getSelectedProject() {
-			return (Project) projectList.getSelectedItem();
-		}
-	}
-
-	/**
-	 * Builds a dialog for the user to choose the project for quoting.
-	 */
-	private void showDialog() {
 		// builds the list of all projects
 		final List<Project> projects = new ArrayList<Project>();
 		FolderParent folderParent = swingSession.getCurrentFolderParent();
@@ -130,38 +81,101 @@ public class RequestQuoteAction extends AbstractAction {
 		if (projects.size() == 0) {
 			JOptionPane.showMessageDialog(swingSession.getFrame(),
 					"Please first create a project for quoting.",
-					"Failed to Send Request for Quote", JOptionPane.WARNING_MESSAGE);
+					"Failed to Send Quote Request", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 		
+		buildUI(projects);
 		
-		final RequestQuotePanel requestQuotePanel = new RequestQuotePanel(projects);
+		if (project != null) {
+			projectList.setSelectedValue(project, true);
+			projectList.ensureIndexIsVisible(projectList.getSelectedIndex());
+		}
 
-		final JDialog dialog = DataEntryPanelBuilder.createDataEntryPanelDialog (
-				requestQuotePanel,
-				swingSession.getFrame(),
-				"Request Quote",
-				"OK",
-				new Callable<Boolean>(){
-					public Boolean call() {
-						// makes call to send request on selected project
-						project = requestQuotePanel.getSelectedProject();
-						sendRequest();
-						
-						// next call need to show dialog regardless
-						project = null;
-						
-						return new Boolean(true);
-					}
-				}, 
-				new Callable<Boolean>(){
-					public Boolean call() {
-						return new Boolean(true);
-					}
-				});
-
-		dialog.pack();
 		dialog.setLocationRelativeTo(swingSession.getFrame());
 		dialog.setVisible(true);
+	}
+
+	private void buildUI(List<Project> projects) {
+		FormLayout layout = new FormLayout("10dlu,fill:250dlu:grow,10dlu",
+				"10dlu,pref,4dlu,pref,4dlu,fill:default:grow,4dlu,pref,4dlu,50dlu,4dlu,pref,10dlu");
+		JPanel panel = new JPanel(layout);
+		CellConstraints cc = new CellConstraints();
+
+		int row = 2;
+
+		String message = "The <i>request quote</i> feature lets you send your project diagrams to the SQL Power " +
+		"sales team, who will review it and then provide you with an estimate of the work involved.";
+		JTextPane infoTextPane = new JTextPane();
+		infoTextPane.setContentType("text/html");
+		infoTextPane.setText(message);
+		infoTextPane.setBackground(null);
+		infoTextPane.setEditable(false);
+		panel.add(infoTextPane, cc.xy(2, row));
+
+		row += 2;
+		panel.add(new JLabel("Projects:"), cc.xy(2, row));
+
+		row += 2;
+		projectList = new JList(projects.toArray());
+		projectList.setCellRenderer(new MatchMakerObjectComboBoxCellRenderer());
+		panel.add(new JScrollPane(projectList), cc.xy(2, row));
+
+		row += 2;
+		panel.add(new JLabel("Comment:"), cc.xy(2, row));
+
+		row += 2;
+		comments = new JTextPane();
+		panel.add(new JScrollPane(comments), cc.xy(2, row, "f,f"));
+
+		JDefaultButton okButton = new JDefaultButton(new AbstractAction("OK") {
+			public void actionPerformed(ActionEvent arg0) {
+				// find selected projects
+				List<Project> projects = new ArrayList<Project>();
+				for (Object obj : projectList.getSelectedValues()) {
+					projects.add((Project) obj);
+				}
+
+				if (projects.size() > 0) {
+					// makes call to send request on selected projects
+					if (swingSession.requestQuote(projects, comments.getText())) {
+						JOptionPane.showMessageDialog(dialog, 
+								"Thank you for your request. One of our sales representatives will contact you soon for the results!",
+								"Quote Request Sent", JOptionPane.INFORMATION_MESSAGE);
+					}
+					
+					dialog.dispose();
+				} else {
+					JOptionPane.showMessageDialog(dialog, "Please select at least one project!" ,
+						"No Projects Selected", JOptionPane.WARNING_MESSAGE);
+				}
+			}
+		});
+
+		Action cancelAction = new AbstractAction("Cancel") {
+			public void actionPerformed(ActionEvent arg0) {
+				dialog.dispose();
+			}
+			
+		};
+		JButton cancelButton = new JButton(cancelAction);
+		
+		row += 2;
+		panel.add(ButtonBarFactory.buildOKCancelBar(okButton, cancelButton), cc.xy(2, row));
+
+		dialog = new JDialog(swingSession.getFrame());
+		dialog.getRootPane().setDefaultButton(okButton);
+		dialog.setContentPane(panel);
+		dialog.setTitle("Request Quote");
+		dialog.pack();
+		
+		// we don't want the user to be modifying projects at this point
+		dialog.setModal(true);
+		
+		SPSUtils.makeJDialogCancellable(dialog, cancelAction);
+	}
+	
+	public JDialog getDialog() {
+		return dialog;
 	}
 }

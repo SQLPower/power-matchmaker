@@ -342,7 +342,7 @@ public class TestingMatchMakerSession implements MatchMakerSession {
 		logger.debug("Stub call: TestingMatchMakerSession.loadPermissions()");
 	}
 
-	public boolean requestQuote(Project project) {
+	public boolean requestQuote(List<Project> projects, String comments) {
 		logger.debug("Stub call: TestingMatchMakerSession.getQuote()");
 		return false;
 	}

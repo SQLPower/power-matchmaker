@@ -712,7 +712,7 @@ public class WebsiteIOHandler implements IOHandler {
         }        
 	}
 
-	public boolean requestQuote(Project project) {
+	public boolean requestQuote(List<Project> projects, String comments) {
 		try {
         	boolean loggedIn = false;
 			while (!loggedIn && !cancelled) {
@@ -732,9 +732,16 @@ public class WebsiteIOHandler implements IOHandler {
 					password = null;
 				}
         	}
+			
+			
+			JSONArray projectIds = new JSONArray();
+			for (Project p : projects) {
+				projectIds.put(p.getOid());
+			}
             
 			URL baseURL = new URL(WEBSITE_BASE_URL);
-			URL url = new URL(baseURL, "request_quote?projectId="+project.getOid());
+			URL url = new URL(baseURL, "request_quote?projectIds="+projectIds.toString() + "&comments=" +
+					URLEncoder.encode(comments, "UTF-8"));
 			HttpURLConnection urlc = (HttpURLConnection) url.openConnection();
 			urlc.setRequestMethod("GET");
 			urlc.setRequestProperty("Cookie", sessionCookie);

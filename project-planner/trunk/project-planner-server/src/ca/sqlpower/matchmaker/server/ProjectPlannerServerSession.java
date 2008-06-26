@@ -218,7 +218,7 @@ private static final Logger logger = Logger.getLogger(MatchMakerXMLSession.class
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 	
-	public boolean requestQuote(Project project) {
+	public boolean requestQuote(List<Project> projects, String comments) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}	
 }

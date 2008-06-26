@@ -86,7 +86,7 @@ public class ExportMungePenToPDFAction extends ProgressAction {
 	private static Method paintBorder;
     
     public ExportMungePenToPDFAction(MatchMakerSwingSession session) {
-        super(session, "Export to PDF", "Export Workflow to PDF");
+        super(session, "Print", "Print Workflow");
 
         try {
         	paintComponent = JComponent.class.getDeclaredMethod("paintComponent", Graphics.class);

@@ -21,6 +21,7 @@ package ca.sqlpower.matchmaker;
 
 import java.sql.Connection;
 import java.util.Date;
+import java.util.List;
 
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLDatabase;
@@ -280,8 +281,9 @@ public interface MatchMakerSession {
 	/**
 	 * Sends a request for quotation on the project.
 	 * 
-	 * @param project The project for quoting.
+	 * @param projects a list of projects requested for quoting.
+     * @param comments user's comments on the quote
 	 * @return whether sending the request was successful.
 	 */
-	public boolean requestQuote(Project project);
+	public boolean requestQuote(List<Project> projects, String comments);
 }

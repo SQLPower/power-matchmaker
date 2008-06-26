@@ -77,7 +77,7 @@ public class ServerIOHandler implements IOHandler {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-	public boolean requestQuote(Project project) {
+	public boolean requestQuote(List<Project> projects, String comments) {
 		throw new UnsupportedOperationException("Not implemented yet");		
 	}
 }
