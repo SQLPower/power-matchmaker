@@ -73,6 +73,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
     public MatchMakerSession session = new TestingMatchMakerSession();
 
 	protected Set<String> propertiesToIgnoreForDuplication = new HashSet<String>();
+	
+	/**
+	 * List of properties that share instances between duplicate and original.
+	 */
+	protected Set<String> propertiesShareInstanceForDuplication = new HashSet<String>();
 
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -108,7 +113,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
         //this throws an exception if the DS does not exist
         propertiesToIgnoreForDuplication.add("spDataSource");
         
-        // First pass set all settable properties
+        // First pass: set all settable properties, because testing the duplication of
+        //             an object with all its properties at their defaults is not a
+        //             very convincing test of duplication!
 		for (PropertyDescriptor property : settableProperties) {
 			if (propertiesToIgnoreForDuplication.contains(property.getName())) continue;
 			Object oldVal;
@@ -125,7 +132,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			}
 		}
 		// Second pass get a copy make sure all of 
-		// the origional mutable objects returned from getters are different
+		// the original mutable objects returned from getters are different
 		// between the two objects, but have the same values. 
 		MatchMakerObject duplicate = mmo.duplicate(mmo.getParent(),session);
 		for (PropertyDescriptor property : settableProperties) {
@@ -169,6 +176,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 					} else {
 						assertEquals("The two values for property "+property.getDisplayName() + " in " + mmo.getClass().getName() + " should be equal",oldVal,copyVal);
 
+						if (propertiesShareInstanceForDuplication.contains(property.getName())) return;
 
 						// Ok, the duplicate object's property value compared equal.
 						// Now we want to make sure if we modify that property on the original,
@@ -190,7 +198,9 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	 * Returns a new value that is not equal to oldVal. If oldVal is immutable, the
 	 * returned object will be a new instance compatible with oldVal.  If oldVal is 
 	 * mutable, it will be modified in some way so it is no longer equal to its original
-	 * value.
+	 * value. {@link #getNewDifferentValue(MatchMakerObject, PropertyDescriptor, Object)}
+	 * is a similar method that does not take mutability into account and always returns 
+	 * a new value.
 	 * 
 	 * @param mmo The object to which the property belongs.  You might need this
 	 *  if you have a special case for certain types of objects.
@@ -199,7 +209,6 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	 * will not equal this one at the time this method was first called, although it may
 	 * be the same instance as this one, but modified in some way.
 	 */
-	
 	private Object modifyObject(MatchMakerObject mmo, PropertyDescriptor property, Object oldVal) throws IOException {
 		if (property.getPropertyType() == Integer.TYPE
 				|| property.getPropertyType() == Integer.class) {
@@ -229,9 +238,11 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		    ((MatchMakerSettings) oldVal).setProcessCount(processCount);
 		    return oldVal;
 		} else if (property.getPropertyType() == SQLTable.class) {
-			return new SQLTable();
+			((SQLTable) oldVal).setRemarks("Testing Remarks");
+			return oldVal;
 		} else if (property.getPropertyType() == ViewSpec.class) {
-			return new ViewSpec("select *"," FROM table ", " where true");
+			((ViewSpec) oldVal).setName("Testing New Name");
+			return oldVal;
 		} else if (property.getPropertyType() == File.class) {
 			oldVal = File.createTempFile("mmTest2",".tmp");
 			((File)oldVal).deleteOnExit();
@@ -258,7 +269,8 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			((MatchMakerObject) oldVal).setName("Testing New Name2");
 			return oldVal;
 		} else if (property.getPropertyType() == SQLColumn.class) {
-			return new SQLColumn();
+			((SQLColumn) oldVal).setRemarks("Testing Remarks");
+			return oldVal;
 		} else if (property.getPropertyType() == Date.class) {
 			((Date)oldVal).setTime(((Date)oldVal).getTime()+10000);
 			return oldVal;
@@ -361,9 +373,15 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 	}
 
 	/**
-	 * Get a new value for the property 'property' of mmo that
-	 * is different from old Val.
-	 * @throws IOException
+	 * Returns a new value that is not equal to oldVal. The returned object
+	 * will always be a NEW instance compatible with oldVal. This differs from
+	 * {@link #modifyObject(MatchMakerObject, PropertyDescriptor, Object)} in that
+	 * this does not take mutability into account.
+	 * 
+	 * @param mmo The object to which the property belongs.  You might need this
+	 *  if you have a special case for certain types of objects.
+	 * @param property The property that should be modified.  It belongs to mmo.
+	 * @param oldVal The existing value of the property.
 	 */
 	private Object getNewDifferentValue(MatchMakerObject mmo, PropertyDescriptor property, Object oldVal) throws IOException {
 		Object newVal; // don't init here so compiler can warn if the
@@ -426,7 +444,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		} else if (property.getPropertyType() == SQLTable.class) {
 			newVal = new SQLTable();
 		} else if (property.getPropertyType() == ViewSpec.class) {
-			newVal = new ViewSpec();
+			newVal = new ViewSpec("*", "test_table", "true");
 		} else if (property.getPropertyType() == File.class) {
 			newVal = File.createTempFile("mmTest",".tmp");
 			((File)newVal).deleteOnExit();
@@ -493,7 +511,14 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		return newVal;
 	}
 	
-	public void testWhatSettersSetGettersGet() throws Exception {
+	/**
+	 * Tests for inconsistent getter/setter pairs. It checks to see if a call to
+	 * the getter of a property will return the same value that has been previously
+	 * used in a setter of the property.
+	 * 
+	 * @throws Exception
+	 */
+	public void testInconsistentGetterSetterPairs() throws Exception {
 		MatchMakerObject mmo = getTarget();
 		propertiesThatDifferOnSetAndGet.add("session");
 		List<PropertyDescriptor> settableProperties;
@@ -518,11 +543,14 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 			}
 		}
 	}
+	
 	/**
-	 * This test isn't all that good because given the right order we
+	 * Tests for getters and setters that have side effects on other properties of the object.
+	 * 
+	 * Note: This test isn't all that good because given the right order we
 	 * can override the side effects
 	 */
-	public void testWhatSettersSetGettersGetWithNoSideffects() throws Exception {
+	public void testGettersAndSettersSideEffects() throws Exception {
 		MatchMakerObject mmo = getTarget();
 		propertiesThatDifferOnSetAndGet.add("session");
 		propertiesThatDifferOnSetAndGet.add("undoing");
