@@ -27,7 +27,6 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -42,7 +41,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
@@ -50,14 +48,10 @@ import javax.swing.SpinnerNumberModel;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import ca.sqlpower.matchmaker.CleanseEngineImpl;
-import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
-import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
 import ca.sqlpower.swingui.DataEntryPanel;
@@ -73,8 +67,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * A panel that provides a GUI for setting the parameters for running the Merge engine,
- * as well as running the Merge engine itself and displaying its output on the GUI.
+ * A panel that provides a GUI for setting the parameters for running the MatchMakerEngine,
+ * as well as running the MatchMakerEngine itself and displaying its output on the GUI.
  */
 public class EngineSettingsPanel implements DataEntryPanel {
 
@@ -98,7 +92,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 	}
 
 	/**
-	 * The session this MergeEnginePanel belongs to.
+	 * The session this panel belongs to.
 	 */
 	private MatchMakerSwingSession swingSession;
 
@@ -147,12 +141,12 @@ public class EngineSettingsPanel implements DataEntryPanel {
 	private Project project;
 	
 	/**
-	 * The panel that displays all the information for the merge engine.
+	 * The panel that displays all the information for the engine.
 	 */
 	private JPanel panel;
 	
 	/**
-	 * Displays the validation status of the match engine preconditions.
+	 * Displays the validation status of the engine preconditions.
 	 */
 	private StatusComponent status = new StatusComponent();
 
@@ -173,7 +167,7 @@ public class EngineSettingsPanel implements DataEntryPanel {
 	private Action runEngineAction;
 
 	/**
-	 * The merge engine for this panel
+	 * The MatchMakerEngine for this panel
 	 */
 	private final MatchMakerEngine engine;
 
@@ -204,26 +198,6 @@ public class EngineSettingsPanel implements DataEntryPanel {
 			abortB.setEnabled(true);
 		}
 	};
-	
-	/**
-	 * The button to close the popup.
-	 */
-	private JButton showPopupButton;
-	
-	/**
-	 * The scrollpane containing the JList of munge processes
-	 */
-	private JScrollPane processesPane;
-	
-	/**
-	 * The actual JList of munge processes
-	 */
-	private JList processesList;
-	
-	/**
-	 * A list of the MungeProcesses ordered by priority
-	 */
-	private List<MungeProcess> mps;
 
 	/**
 	 * The engine type for this panel.
@@ -248,18 +222,20 @@ public class EngineSettingsPanel implements DataEntryPanel {
 			}
 		});
 		this.engineOutputPanel = new EngineOutputPanel(parentFrame);
+		
 		if (type == EngineType.MATCH_ENGINE) {
-			engine = new MatchEngineImpl(swingSession, project);
+			engine = project.getMatchingEngine();
 			engineSettings = project.getMungeSettings();
 		} else if (type == EngineType.MERGE_ENGINE) {
-			engine = new MergeEngineImpl(swingSession, project);
+			engine = project.getMergingEngine();
 			engineSettings = project.getMergeSettings();
 		} else if (type == EngineType.CLEANSE_ENGINE) {
-			engine = new CleanseEngineImpl(swingSession, project);
+			engine = project.getCleansingEngine();
 			engineSettings = project.getMungeSettings();
 		} else {
 			throw new IllegalArgumentException("There is no engine type with a string " + type);
 		}
+		
 		this.runEngineAction = new RunEngineAction(swingSession, engine, "Run " + engineType,
 				engineOutputPanel, this, engineStart, engineFinish);
 		
