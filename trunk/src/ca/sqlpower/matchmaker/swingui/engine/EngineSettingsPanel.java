@@ -21,16 +21,12 @@ package ca.sqlpower.matchmaker.swingui.engine;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -46,13 +42,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -62,7 +55,6 @@ import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
 import ca.sqlpower.matchmaker.MatchMakerSettings;
 import ca.sqlpower.matchmaker.MergeEngineImpl;
-import ca.sqlpower.matchmaker.MungeProcessPriorityComparator;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -406,18 +398,10 @@ public class EngineSettingsPanel implements DataEntryPanel {
 
 		if (type == EngineType.MATCH_ENGINE || type == EngineType.CLEANSE_ENGINE) {
 			y += 2;
-			showPopupButton = new JButton();
-			showPopupButton.addActionListener(new AbstractAction(){
-				public void actionPerformed(ActionEvent e) {
-					getPopupMenu().show(panel, showPopupButton.getX(), showPopupButton.getY());
-				}
-			});
-
-			getPopupMenu();
-			setPopupButtonText();
+		
 
 			pb.add(new JLabel("Munge Processes to run: "), cc.xy(2, y, "r,t"));
-			pb.add(showPopupButton, cc.xy(4, y, "l,c"));
+			pb.add(new MungeProcessSelectionList(project), cc.xy(4, y, "l,c"));
 		}
 
 		y += 2;
@@ -519,139 +503,6 @@ public class EngineSettingsPanel implements DataEntryPanel {
 
 	public void discardChanges() {
 		logger.error("Cannot discard chagnes");
-	}
-	
-	/** 
-	 * This sets the popup button text according to the number
-	 * of munge processes selected.
-	 */
-	private void setPopupButtonText() {
-		int count = processesList.getSelectedIndices().length;
-		
-		showPopupButton.setText("Choose Munge Processes");
-		
-		if (count == 0) {
-			showPopupButton.setText(showPopupButton.getText() + " (None Selected)");
-		} else if (count == mps.size()) {
-			showPopupButton.setText(showPopupButton.getText() + " (All Selected)");
-		} else {
-			showPopupButton.setText(showPopupButton.getText() + " (" + count + " Selected)");
-		}
-		if (panel != null) {
-			panel.revalidate();
-		}
-	}
-
-	/**
-	 * Builds and returns the popup menu for choosing the munge processes. 
-	 */
-	private JPopupMenu getPopupMenu() {
-		final JPopupMenu processMenu = new JPopupMenu("Choose Processes");
-		
-		processMenu.addPopupMenuListener(new PopupMenuListener(){
-
-			public void popupMenuCanceled(PopupMenuEvent e) {
-				// not used
-			}
-
-			/**
-			 * Saves the selections and updates the text on the button.
-			 */
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-				int index = 0;
-				for (MungeProcess mp : mps) {
-					mp.setActive(processesList.isSelectedIndex(index));
-					index++;
-				}
-				setPopupButtonText();
-			}
-
-			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-				// not used
-			}
-			
-		});
-		
-		processMenu.setBorder(BorderFactory.createRaisedBevelBorder());
-		
-		final JButton selectAll = new JButton("Select All");
-		selectAll.addActionListener(new AbstractAction(){
-			public void actionPerformed(ActionEvent e) {
-				processesList.setSelectionInterval(0, mps.size()-1);
-			}			
-		});
-		
-		
-		final JButton unselectAll = new JButton(new AbstractAction("Unselect All"){
-			public void actionPerformed(ActionEvent e) {
-				processesList.clearSelection();
-			}			
-		});
-		
-		final JButton close = new JButton(new AbstractAction("Close"){
-			public void actionPerformed(ActionEvent e) {
-				processMenu.setVisible(false);
-			}
-		});
-		
-		FormLayout layout = new FormLayout("10dlu,pref,10dlu",
-				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
-		JPanel menu = logger.isDebugEnabled() ? new FormDebugPanel(layout) : new JPanel(layout);
-		
-		JPanel top = new JPanel(new FlowLayout());
-		top.add(selectAll);
-		top.add(unselectAll);
-
-		CellConstraints cc = new CellConstraints();
-		
-		int row = 2;
-		menu.add(top, cc.xy(2, row));		
-		
-		row += 2;
-		mps = new ArrayList<MungeProcess>(project.getMungeProcesses());
-		Collections.sort(mps, new MungeProcessPriorityComparator());
-		processesList = new JList(mps.toArray());
-		processesList.setSelectedIndices(getSelectedIndices());
-		processesPane = new JScrollPane(processesList);
-		processesPane.setPreferredSize(new Dimension(160, 100));
-		menu.add(processesPane, cc.xy(2, row));
-		
-		row += 2;
-		JPanel tmp = new JPanel(new FlowLayout());
-		tmp.add(close);
-		menu.add(tmp, cc.xy(2 ,row));
-		
-		processMenu.add(menu);
-		return processMenu;
-	}
-	
-	/** 
-	 * Returns an int[] of the active munge processes.
-	 */
-	private int[] getSelectedIndices() {
-		int count = 0;
-		int index = 0;
-		int[] indices;
-		
-		// This determines the size required for the array
-		for (MungeProcess mp : mps) {
-			if (mp.getActive()) {
-				count++;
-			}
-		}
-		indices = new int[count];
-		count = 0;
-		
-		// This fills in the array with the active indices.
-		// A List.toArray() was not used instead because it
-		// returns a Integer[] instead of a int[].
-		for (MungeProcess mp : mps) {
-			if (mp.getActive()) {
-				indices[count++] = index;
-			}
-			index++;
-		}
-		return indices;
 	}
 	
 }
