@@ -112,9 +112,8 @@ import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.ProjectExportAction;
 import ca.sqlpower.matchmaker.swingui.action.ProjectImportAction;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
-import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
-import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
-import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
+import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
+import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel.EngineType;
 import ca.sqlpower.matchmaker.undo.AbstractUndoableEditorPane;
 import ca.sqlpower.sql.PLSchemaException;
 import ca.sqlpower.sql.SPDataSource;
@@ -414,19 +413,19 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
      * A map that links an engine to a panel. This is used so that only
      * one of each engine and panel ever exist per project.
      */
-	private Map<MergeEngineImpl, MergeEnginePanel> mergeEnginPanels;
+	private Map<MergeEngineImpl, EngineSettingsPanel> mergeEnginPanels;
 	
 	 /**
      * A map that links an engine to a panel. This is used so that only
      * one of each engine and panel ever exist per project.
      */
-	private Map<MatchEngineImpl, MatchEnginePanel> matchEnginePanels;
+	private Map<MatchEngineImpl, EngineSettingsPanel> matchEnginePanels;
 	
 	 /**
      * A map that links an engine to a panel. This is used so that only
      * one of each engine and panel ever exist per project.
      */
-	private Map<CleanseEngineImpl, CleanseEnginePanel> cleanseEnginPanels;
+	private Map<CleanseEngineImpl, EngineSettingsPanel> cleanseEnginPanels;
 
 	/**
      * Creates a new MatchMaker session, complete with Swing GUI. Normally you
@@ -446,9 +445,9 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
         this.sessionContext = context;
         this.smallMMIcon = MMSUtils.getFrameImageIcon();
         
-        matchEnginePanels = new HashMap<MatchEngineImpl, MatchEnginePanel>();
-        mergeEnginPanels = new HashMap<MergeEngineImpl, MergeEnginePanel>();
-        cleanseEnginPanels = new HashMap<CleanseEngineImpl, CleanseEnginePanel>();
+        matchEnginePanels = new HashMap<MatchEngineImpl, EngineSettingsPanel>();
+        mergeEnginPanels = new HashMap<MergeEngineImpl, EngineSettingsPanel>();
+        cleanseEnginPanels = new HashMap<CleanseEngineImpl, EngineSettingsPanel>();
         
         lifecycleListener = new ArrayList<SessionLifecycleListener<MatchMakerSession>>();
         
@@ -1287,10 +1286,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param mei The current engine
 	 * @param project The current project
 	 */
-	public MergeEnginePanel getMergeEnginePanel(MergeEngineImpl mei, Project project) {
-		MergeEnginePanel ep = mergeEnginPanels.get(mei);
+	public EngineSettingsPanel getMergeEnginePanel(MergeEngineImpl mei, Project project) {
+		EngineSettingsPanel ep = mergeEnginPanels.get(mei);
 		if (mergeEnginPanels.get(mei) == null) {
-			ep = new MergeEnginePanel(this,project, getFrame());
+			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.MERGE_ENGINE);
 			mergeEnginPanels.put(mei,ep); 
 			ep.setEngineEnabled(enginesEnabled);
 		}
@@ -1303,10 +1302,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param mei The current engine
 	 * @param project The current project
 	 */
-	public MatchEnginePanel getMatchEnginePanel(MatchEngineImpl mei, Project project) {
-		MatchEnginePanel ep = matchEnginePanels.get(mei);
+	public EngineSettingsPanel getMatchEnginePanel(MatchEngineImpl mei, Project project) {
+		EngineSettingsPanel ep = matchEnginePanels.get(mei);
 		if (ep == null) {
-			ep = new MatchEnginePanel(this,project, getFrame());
+			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.MATCH_ENGINE);
 			matchEnginePanels.put(mei,ep); 
 			ep.setEngineEnabled(enginesEnabled);
 		}
@@ -1319,10 +1318,10 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 * @param mei The current engine
 	 * @param project The current project
 	 */
-	public CleanseEnginePanel getCleanseEnginePanel(CleanseEngineImpl mei, Project project) {
-		CleanseEnginePanel ep = cleanseEnginPanels.get(mei);
+	public EngineSettingsPanel getCleanseEnginePanel(CleanseEngineImpl mei, Project project) {
+		EngineSettingsPanel ep = cleanseEnginPanels.get(mei);
 		if (ep == null) {
-			ep = new CleanseEnginePanel(this,project, getFrame());
+			ep = new EngineSettingsPanel(this,project, getFrame(), EngineType.CLEANSE_ENGINE);
 			cleanseEnginPanels.put(mei,ep); 
 			ep.setEngineEnabled(enginesEnabled);
 		}
@@ -1419,13 +1418,13 @@ public class MatchMakerSwingSession implements MatchMakerSession, SwingWorkerReg
 	 */
 	public void setAllEnginesEnabled(boolean enabled){
 		enginesEnabled  = enabled;
-		for (MatchEnginePanel ep: matchEnginePanels.values()) {
+		for (EngineSettingsPanel ep: matchEnginePanels.values()) {
 			ep.setEngineEnabled(enabled);
 		}
-		for (MergeEnginePanel ep : mergeEnginPanels.values()){
+		for (EngineSettingsPanel ep : mergeEnginPanels.values()){
 			ep.setEngineEnabled(enabled);
 		}
-		for (CleanseEnginePanel ep : cleanseEnginPanels.values()) {
+		for (EngineSettingsPanel ep : cleanseEnginPanels.values()) {
 			ep.setEngineEnabled(enabled);
 		}
  	}
