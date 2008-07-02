@@ -67,9 +67,7 @@ import ca.sqlpower.matchmaker.swingui.action.NewProjectAction;
 import ca.sqlpower.matchmaker.swingui.action.NewTranslateGroupAction;
 import ca.sqlpower.matchmaker.swingui.action.Refresh;
 import ca.sqlpower.matchmaker.swingui.action.ShowMatchStatisticInfoAction;
-import ca.sqlpower.matchmaker.swingui.engine.CleanseEnginePanel;
-import ca.sqlpower.matchmaker.swingui.engine.MatchEnginePanel;
-import ca.sqlpower.matchmaker.swingui.engine.MergeEnginePanel;
+import ca.sqlpower.matchmaker.swingui.engine.EngineSettingsPanel;
 
 /**
  * This appears to be a mouse event listener for the MatchMaker tree component
@@ -255,20 +253,20 @@ public class MatchMakerTreeMouseAndSelectionListener extends MouseAdapter
 		if (project.getType() == ProjectMode.FIND_DUPES) {
 			m.add(new JMenuItem(new AbstractAction("Run Match") {
 				public void actionPerformed(ActionEvent e) {
-					MatchEnginePanel f = swingSession.getMatchEnginePanel(project.getMatchingEngine(), project);
+					EngineSettingsPanel f = swingSession.getMatchEnginePanel(project.getMatchingEngine(), project);
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));
 			m.add(new JMenuItem(new AbstractAction("Run Merge") {
 				public void actionPerformed(ActionEvent e) {
-					MergeEnginePanel f = swingSession.getMergeEnginePanel(project.getMergingEngine(), project);
+					EngineSettingsPanel f = swingSession.getMergeEnginePanel(project.getMergingEngine(), project);
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));
 		} else if (project.getType() == ProjectMode.CLEANSE) {
 			m.add(new JMenuItem(new AbstractAction("Run Cleanse") {
 				public void actionPerformed(ActionEvent e) {
-					CleanseEnginePanel f = swingSession.getCleanseEnginePanel(project.getCleansingEngine(), project);
+					EngineSettingsPanel f = swingSession.getCleanseEnginePanel(project.getCleansingEngine(), project);
 					swingSession.setCurrentEditorComponent(f);
 				}
 			}));

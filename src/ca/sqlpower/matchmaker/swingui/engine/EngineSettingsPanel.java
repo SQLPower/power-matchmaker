@@ -24,6 +24,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -38,9 +40,11 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -54,11 +58,13 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import ca.sqlpower.matchmaker.CleanseEngineImpl;
+import ca.sqlpower.matchmaker.MatchEngineImpl;
 import ca.sqlpower.matchmaker.MatchMakerEngine;
+import ca.sqlpower.matchmaker.MatchMakerSettings;
+import ca.sqlpower.matchmaker.MergeEngineImpl;
 import ca.sqlpower.matchmaker.MungeProcessPriorityComparator;
 import ca.sqlpower.matchmaker.MungeSettings;
 import ca.sqlpower.matchmaker.Project;
-import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
 import ca.sqlpower.matchmaker.swingui.MatchMakerSwingSession;
 import ca.sqlpower.swingui.BrowseFileAction;
@@ -75,16 +81,34 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * An editor pane to allow the user to configure, run and monitor the engine.
+ * A panel that provides a GUI for setting the parameters for running the Merge engine,
+ * as well as running the Merge engine itself and displaying its output on the GUI.
  */
-public class CleanseEnginePanel implements DataEntryPanel {
+public class EngineSettingsPanel implements DataEntryPanel {
 
-	private static final Logger logger = Logger.getLogger(CleanseEnginePanel.class);
+	private static final Logger logger = Logger.getLogger(EngineSettingsPanel.class);
+	
+	/**
+	 * An enumeration for all the different types of MatchMakerEngines.
+	 */
+	public enum EngineType {
+		MATCH_ENGINE("Match Engine"), MERGE_ENGINE("Merge Engine"), CLEANSE_ENGINE("Cleanse Engine");
+		String engineName;
+		
+		private EngineType(String engineName) {
+			this.engineName = engineName;
+		}
+		
+		@Override
+		public String toString() {
+			return engineName;
+		}
+	}
 
 	/**
-	 * The session this CleanseEnginePanel belongs to.
+	 * The session this MergeEnginePanel belongs to.
 	 */
-	private final MatchMakerSwingSession swingSession;
+	private MatchMakerSwingSession swingSession;
 
 	/**
 	 * The file path to which the engine logs will be written to.
@@ -103,13 +127,23 @@ public class CleanseEnginePanel implements DataEntryPanel {
 	 * appended to.
 	 */
 	private JCheckBox appendToLog;
-
+	
 	/**
 	 * A field for the user to specify how many records they want the
 	 * engine to process.
 	 */
 	private JSpinner recordsToProcess;
-
+	
+	/**
+	 * A flag for the engine to run in debug mode or not.
+	 */
+	private JCheckBox debugMode;
+	
+	/**
+	 * A flag for telling the engine to delete all the records from the match result table before running the match
+	 */
+	private JCheckBox clearMatchPool;
+	
 	/**
 	 * The frame that this editor lives in.
 	 */
@@ -121,10 +155,10 @@ public class CleanseEnginePanel implements DataEntryPanel {
 	private Project project;
 	
 	/**
-	 * The panel that holds all components of this DataEntryPanel.
+	 * The panel that displays all the information for the merge engine.
 	 */
 	private JPanel panel;
-
+	
 	/**
 	 * Displays the validation status of the match engine preconditions.
 	 */
@@ -135,7 +169,7 @@ public class CleanseEnginePanel implements DataEntryPanel {
 	 * of the editor pane.
 	 */
 	private FormValidationHandler handler;
-
+	
 	/**
 	 * The collection of components that show the user what the engine is doing.
 	 */
@@ -145,34 +179,14 @@ public class CleanseEnginePanel implements DataEntryPanel {
 	 * An action to run the engine and print the output to the engineOutputPanel
 	 */
 	private Action runEngineAction;
-	
+
 	/**
-	 * The button to close the popup.
+	 * The merge engine for this panel
 	 */
-	private JButton showPopupButton;
-	
+	private final MatchMakerEngine engine;
+
 	/**
-	 * The scrollpane containing the JList of munge processes
-	 */
-	private JScrollPane processesPane;
-	
-	/**
-	 * The actual JList of munge processes
-	 */
-	private JList processesList;
-	
-	/**
-	 * A list of the MungeProcesses ordered by priority
-	 */
-	private List<MungeProcess> mps;
-	
-	/**
-	 * The match engine for this panel
-	 */
-	private MatchMakerEngine engine;
-	
-	/**
-	 * The combobox to select the message level for the logger to show
+	 * Keeps track of which level to show the logger info to the panel
 	 */
 	private JComboBox messageLevel;
 
@@ -200,26 +214,64 @@ public class CleanseEnginePanel implements DataEntryPanel {
 	};
 	
 	/**
-	 * @param swingSession The application Swing session
-	 * @param project The Project that this panel is running the engine on
-	 * @param parentFrame The JFrame that contains this panel
+	 * The button to close the popup.
 	 */
-	public CleanseEnginePanel(MatchMakerSwingSession swingSession, Project project,
-			JFrame parentFrame) {
+	private JButton showPopupButton;
+	
+	/**
+	 * The scrollpane containing the JList of munge processes
+	 */
+	private JScrollPane processesPane;
+	
+	/**
+	 * The actual JList of munge processes
+	 */
+	private JList processesList;
+	
+	/**
+	 * A list of the MungeProcesses ordered by priority
+	 */
+	private List<MungeProcess> mps;
+
+	/**
+	 * The engine type for this panel.
+	 */
+	private final EngineType type;
+	
+	/**
+	 * 
+	 */
+	private final MatchMakerSettings engineSettings;
+	
+	public EngineSettingsPanel(MatchMakerSwingSession swingSession, Project project, JFrame parentFrame, 
+			EngineType engineType) {
 		this.swingSession = swingSession;
 		this.parentFrame = parentFrame;
 		this.project = project;
+		this.type = engineType;
 		handler = new FormValidationHandler(status);
 		handler.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
 				refreshActionStatus();
 			}
 		});
-		engineOutputPanel = new EngineOutputPanel(parentFrame);
-		engine = new CleanseEngineImpl(swingSession, project);
-		runEngineAction = new RunEngineAction(swingSession, engine,
-				"Run Cleanse Engine", engineOutputPanel, this, engineStart, engineFinish);
-		panel = buildUI();
+		this.engineOutputPanel = new EngineOutputPanel(parentFrame);
+		if (type == EngineType.MATCH_ENGINE) {
+			engine = new MatchEngineImpl(swingSession, project);
+			engineSettings = project.getMungeSettings();
+		} else if (type == EngineType.MERGE_ENGINE) {
+			engine = new MergeEngineImpl(swingSession, project);
+			engineSettings = project.getMergeSettings();
+		} else if (type == EngineType.CLEANSE_ENGINE) {
+			engine = new CleanseEngineImpl(swingSession, project);
+			engineSettings = project.getMungeSettings();
+		} else {
+			throw new IllegalArgumentException("There is no engine type with a string " + type);
+		}
+		this.runEngineAction = new RunEngineAction(swingSession, engine, "Run " + engineType,
+				engineOutputPanel, this, engineStart, engineFinish);
+		
+		this.panel = buildUI();
 	}
 	
 	/**
@@ -236,7 +288,7 @@ public class CleanseEnginePanel implements DataEntryPanel {
 			runEngineAction.setEnabled(enabled);
 		}
 	}
-
+	
 	/**
 	 * Performs a form validation on the configuration portion and sets the
 	 * status accordingly as well as disabling the button to run the engine if
@@ -250,7 +302,7 @@ public class CleanseEnginePanel implements DataEntryPanel {
 			runEngineAction.setEnabled(false);
 		}
 	}
-
+	
 	/**
 	 * An action that just calls {@link #doSave}.
 	 */
@@ -263,44 +315,67 @@ public class CleanseEnginePanel implements DataEntryPanel {
 			applyChanges();
 		}
 	}
-
+	
 	/**
 	 * Builds the UI for this editor pane. This is broken into two parts,
 	 * the configuration and output. Configuration is done in this method
 	 * while the output section is handled by the EngineOutputPanel and
 	 * this method simply lays out the components that class provides.
-	 */
+	 */	
 	private JPanel buildUI() {
 		FormLayout layout = new FormLayout(
-				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,4dlu,pref,4dlu,pref,4dlu",
+				"4dlu,fill:pref,4dlu,fill:pref:grow, pref,4dlu,pref,4dlu",
 				//  1         2    3         4     5     6    7     8
-				"10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
-		        //   1    2     3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21
+		"10dlu,pref,10dlu,pref,3dlu,pref,3dlu,pref,3dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
+		//   1    2     3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20   21
 		PanelBuilder pb;
 		JPanel p = logger.isDebugEnabled() ? new FormDebugPanel(layout)
-				: new JPanel(layout);
+		: new JPanel(layout);
 		pb = new PanelBuilder(layout, p);
 
 		CellConstraints cc = new CellConstraints();
 
-		MungeSettings settings = project.getMungeSettings();
-
-		if (settings.getLog() == null) {
-			settings.setLog(new File(project.getName() + ".log"));
+	
+		if (engineSettings.getLog() == null) {
+			engineSettings.setLog(new File(project.getName() + ".log"));
 		}
-		File logFile = settings.getLog();
+
+		File logFile = engineSettings.getLog();
 		logFilePath = new JTextField(logFile.getAbsolutePath());
 		handler.addValidateObject(logFilePath, new FileNameValidator("Log"));
-		
+
 		browseLogFileAction = new BrowseFileAction(parentFrame, logFilePath);
-		
-		appendToLog = new JCheckBox("Append to old Log File?", settings.getAppendToLog());
-		
+
+		appendToLog = new JCheckBox("Append to old Log File?", engineSettings.getAppendToLog());
+
 		recordsToProcess = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 100));
-		if (settings.getProcessCount() != null) {
-			recordsToProcess.setValue(settings.getProcessCount());
+		if (engineSettings.getProcessCount() != null) {
+			recordsToProcess.setValue(engineSettings.getProcessCount());
 		}
-		
+
+		debugMode = new JCheckBox("Debug Mode?", engineSettings.getDebug());
+		debugMode.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				if (((JCheckBox) e.getSource()).isSelected()) {
+					if (type == EngineType.MATCH_ENGINE) {
+						clearMatchPool.setSelected(true);
+					}
+					recordsToProcess.setValue(new Integer(1));
+					engine.setMessageLevel(Level.ALL);
+					messageLevel.setSelectedItem(engine.getMessageLevel());
+				} else {
+					if (type == EngineType.MATCH_ENGINE) {
+						clearMatchPool.setSelected(false);
+					}
+					recordsToProcess.setValue(new Integer(0));
+				}
+			}
+		});
+
+		if (type == EngineType.MATCH_ENGINE) {
+			clearMatchPool = new JCheckBox("Clear match pool?", ((MungeSettings)engineSettings).isClearMatchPool());
+		}
+
 		messageLevel = new JComboBox(new Level[] {Level.OFF, Level.FATAL, Level.ERROR, Level.WARN, Level.INFO, Level.DEBUG, Level.ALL});
 		messageLevel.setSelectedItem(engine.getMessageLevel());
 		messageLevel.setRenderer(new DefaultListCellRenderer(){
@@ -313,14 +388,14 @@ public class CleanseEnginePanel implements DataEntryPanel {
 				return this;
 			}
 		});
-		
+
 		messageLevel.addActionListener(new AbstractAction(){
 			public void actionPerformed(ActionEvent e) {
 				Level sel = (Level)messageLevel.getSelectedItem();
 				engine.setMessageLevel(sel);
 			}
 		});
-		
+
 		pb.add(status, cc.xyw(4, 2, 5, "l,c"));
 
 		int y = 4;
@@ -328,93 +403,122 @@ public class CleanseEnginePanel implements DataEntryPanel {
 		pb.add(logFilePath, cc.xy(4, y, "f,f"));
 		pb.add(new JButton(browseLogFileAction), cc.xy(5, y, "r,f"));
 		pb.add(appendToLog, cc.xy(7, y, "l,f"));
-	
-		y+=2;
-		showPopupButton = new JButton();
-		showPopupButton.addActionListener(new AbstractAction(){
-			public void actionPerformed(ActionEvent e) {
-				getPopupMenu().show(panel, showPopupButton.getX(), showPopupButton.getY());
-			}
-		});
-		
-		getPopupMenu();
-		setPopupButtonText();
-		
-		pb.add(new JLabel("Munge Processes to run: "), cc.xy(2, y, "r,t"));
-		pb.add(showPopupButton, cc.xy(4, y, "l,c"));
-		
+
+		if (type == EngineType.MATCH_ENGINE || type == EngineType.CLEANSE_ENGINE) {
+			y += 2;
+			showPopupButton = new JButton();
+			showPopupButton.addActionListener(new AbstractAction(){
+				public void actionPerformed(ActionEvent e) {
+					getPopupMenu().show(panel, showPopupButton.getX(), showPopupButton.getY());
+				}
+			});
+
+			getPopupMenu();
+			setPopupButtonText();
+
+			pb.add(new JLabel("Munge Processes to run: "), cc.xy(2, y, "r,t"));
+			pb.add(showPopupButton, cc.xy(4, y, "l,c"));
+		}
+
 		y += 2;
 		pb.add(new JLabel("Records to Process (0 for no limit):"), cc.xy(2, y, "r,c"));
 		pb.add(recordsToProcess, cc.xy(4, y, "l,c"));
 
 		y += 2;
-		pb.add(new JLabel("Message Level:"),cc.xy(2,y,"r,c"));
+		pb.add(debugMode, cc.xy(4, y, "l,c"));
+
+		if (type == EngineType.MATCH_ENGINE) {
+			y += 2;
+			pb.add(clearMatchPool, cc.xy(4, y, "l,c"));
+		}
+
+		y += 2;
+		pb.add(new JLabel("Message Level:"), cc.xy(2,y, "r,c"));
 		pb.add(messageLevel, cc.xy(4,y,"l,c"));
-		
+
 		FormLayout bbLayout = new FormLayout(
-				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu,pref,4dlu",
-				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
+				"4dlu,pref,4dlu,pref,4dlu,pref,4dlu",
+		"4dlu,pref,4dlu,pref,4dlu,pref,4dlu");
 		PanelBuilder bbpb;
 		JPanel bbp = logger.isDebugEnabled() ? new FormDebugPanel(bbLayout)
-				: new JPanel(bbLayout);
+		: new JPanel(bbLayout);
 		bbpb = new PanelBuilder(bbLayout, bbp);
 		bbpb.add(new JButton(new ShowLogFileAction(logFilePath)), cc.xy(2, 2, "f,f"));
 		bbpb.add(new JButton(new ShowCommandAction(parentFrame, this, engine)), cc.xy(4, 2, "f,f"));
 		bbpb.add(new JButton(runEngineAction), cc.xy(6, 2, "f,f"));
+
+		// TODO: Match statistics has been disabled for now until we
+		// re-implement it.
+//		Action showMatchStatsActon = new ShowMatchStatisticInfoAction(swingSession, project, parentFrame);
+		if (type == EngineType.MATCH_ENGINE || type == EngineType.MERGE_ENGINE) {
+			Action showMatchStatsAction = new AbstractAction("Match Statistics...") {
+				public void actionPerformed(ActionEvent e) {
+					JOptionPane.showMessageDialog(parentFrame,
+					"Match statistics is not yet available. We apologize for the inconvenience");
+				}
+			};
+			bbpb.add(new JButton(showMatchStatsAction), cc.xy(2, 4, "f,f"));
+		}
 		bbpb.add(new JButton(new SaveAction()), cc.xy(4, 4, "f,f"));
-		
+
 		abortB = new JButton(new AbstractAction("Abort!"){
 			public void actionPerformed(ActionEvent e) {
 				engine.setCancelled(true);
 			}
 		});
-		
+
 		abortB.setEnabled(false);
-		
+
 		bbpb.add(abortB,cc.xy(6,4));
+
 		pb.add(bbpb.getPanel(), cc.xyw(2, 18, 6, "r,c"));
-		
-		
+
 		JPanel engineAccessoryPanel = new JPanel(new BorderLayout());
 		engineAccessoryPanel.add(engineOutputPanel.getProgressBar(), BorderLayout.NORTH);
 		engineAccessoryPanel.add(engineOutputPanel.getButtonBar(), BorderLayout.SOUTH);
-		
+
 		JPanel anotherP = new JPanel(new BorderLayout(12, 12));
 		anotherP.add(pb.getPanel(), BorderLayout.NORTH);
 		anotherP.add(engineOutputPanel.getOutputComponent(), BorderLayout.CENTER);
 		anotherP.add(engineAccessoryPanel, BorderLayout.SOUTH);
 		anotherP.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-		
+
 		return anotherP;
 	}
-	
-	/** 
-	 * Returns an int[] of the active munge processes.
+
+	/**
+	 * Saves the engine settings
 	 */
-	private int[] getSelectedIndices() {
-		int count = 0;
-		int index = 0;
-		int[] indices;
-		
-		// This determines the size required for the array
-		for (MungeProcess mp : mps) {
-			if (mp.getActive()) {
-				count++;
-			}
+	public boolean applyChanges() {
+		refreshActionStatus();
+		engineSettings.setDebug(debugMode.isSelected());
+		if (type == EngineType.MATCH_ENGINE) {
+			((MungeSettings)engineSettings).setClearMatchPool(clearMatchPool.isSelected());
 		}
-		indices = new int[count];
-		count = 0;
-		
-		// This fills in the array with the active indices.
-		// A List.toArray() was not used instead because it
-		// returns a Integer[] instead of a int[].
-		for (MungeProcess mp : mps) {
-			if (mp.getActive()) {
-				indices[count++] = index;
-			}
-			index++;
+		engineSettings.setLog(new File(logFilePath.getText()));
+		engineSettings.setAppendToLog(appendToLog.isSelected());
+		if (recordsToProcess.getValue().equals(new Integer(0))) {
+			engineSettings.setProcessCount(null);
+		} else {
+			engineSettings.setProcessCount((Integer) recordsToProcess.getValue());
 		}
-		return indices;
+
+		swingSession.save(project);
+		return true;
+	}
+	
+	public JComponent getPanel() {
+		return panel;
+	}
+
+	public boolean hasUnsavedChanges() {
+		//XXX This is stubbed for now, should look over the check boxes
+		//and text fields in the configuration section
+		return false;
+	}
+
+	public void discardChanges() {
+		logger.error("Cannot discard chagnes");
 	}
 	
 	/** 
@@ -437,7 +541,7 @@ public class CleanseEnginePanel implements DataEntryPanel {
 			panel.revalidate();
 		}
 	}
-	
+
 	/**
 	 * Builds and returns the popup menu for choosing the munge processes. 
 	 */
@@ -521,40 +625,33 @@ public class CleanseEnginePanel implements DataEntryPanel {
 		return processMenu;
 	}
 	
-	/*===================== DataEntryPanel implementation ==================*/
-
-	public JPanel getPanel() {
-		return panel;
-	}
-	
-	public boolean hasUnsavedChanges() {
-		//XXX This is stubbed for now, should look over the check boxes
-		//and text fields in the configuration section
-		return false;
-	}
-	
-	/**
-	 * Updates the engine settings in the project based on the current values in
-	 * the GUI, then stores the project using its DAO.
+	/** 
+	 * Returns an int[] of the active munge processes.
 	 */
-	public boolean applyChanges() {
-		refreshActionStatus();
-		MungeSettings settings = project.getMungeSettings();
-		settings.setLog(new File(logFilePath.getText()));
-		settings.setAppendToLog(appendToLog.isSelected());
-		if (recordsToProcess.getValue().equals(new Integer(0))) {
-			settings.setProcessCount(null);
-		} else {
-			settings.setProcessCount((Integer) recordsToProcess.getValue());
-		}
+	private int[] getSelectedIndices() {
+		int count = 0;
+		int index = 0;
+		int[] indices;
 		
-		MatchMakerDAO<Project> dao = swingSession.getDAO(Project.class);
-		dao.save(project);
-		return true;
+		// This determines the size required for the array
+		for (MungeProcess mp : mps) {
+			if (mp.getActive()) {
+				count++;
+			}
+		}
+		indices = new int[count];
+		count = 0;
+		
+		// This fills in the array with the active indices.
+		// A List.toArray() was not used instead because it
+		// returns a Integer[] instead of a int[].
+		for (MungeProcess mp : mps) {
+			if (mp.getActive()) {
+				indices[count++] = index;
+			}
+			index++;
+		}
+		return indices;
 	}
-
-	public void discardChanges() {
-		logger.error("Cannot discard changes");
-	}
-
+	
 }
