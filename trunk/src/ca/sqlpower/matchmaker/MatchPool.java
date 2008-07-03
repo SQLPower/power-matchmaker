@@ -385,6 +385,7 @@ public class MatchPool extends MonitorableImpl {
             lastSQL = sql.toString();
             logger.debug("The SQL statement we are running is " + lastSQL);
             
+            if (ps != null) ps.close();
             ps = con.prepareStatement(lastSQL);
             
             for (Iterator<PotentialMatchRecord> it = deletedMatches.iterator(); it.hasNext(); ) {
@@ -396,7 +397,9 @@ public class MatchPool extends MonitorableImpl {
             	logger.debug("Dropping " + pmr + " from the database.");
             	for (int i = 0; i < numKeyValues; i++) {
             		ps.setObject(i * 2 + 1, pmr.getOriginalLhs().getKeyValues().get(i));
+            		logger.debug("Param " + (i * 2 + 1) + ": " + pmr.getOriginalLhs().getKeyValues().get(i));
             		ps.setObject(i * 2 + 2, pmr.getOriginalRhs().getKeyValues().get(i));
+                    logger.debug("Param " + (i * 2 + 2) + ": " + pmr.getOriginalRhs().getKeyValues().get(i));
             	}
             	ps.executeUpdate();
             	it.remove();
@@ -420,6 +423,7 @@ public class MatchPool extends MonitorableImpl {
             lastSQL = sql.toString();
             logger.debug("The SQL statement we are running is " + lastSQL);
             
+            if (ps != null) ps.close();
             ps = con.prepareStatement(lastSQL);
             
             for (PotentialMatchRecord pmr : potentialMatches.keySet()) {
@@ -489,6 +493,7 @@ public class MatchPool extends MonitorableImpl {
             lastSQL = sql.toString();
             logger.debug("The SQL statement we are running is " + lastSQL);
             
+            if (ps != null) ps.close();
             ps = con.prepareStatement(lastSQL);
             
             for (PotentialMatchRecord pmr : potentialMatches.keySet()) {
@@ -542,6 +547,9 @@ public class MatchPool extends MonitorableImpl {
             		pmr.setStoreState(StoreState.CLEAN);
             	}
             }
+            
+            if (ps != null) ps.close();
+            ps = null;
             
             con.commit();
             
