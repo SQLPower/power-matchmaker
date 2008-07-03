@@ -38,7 +38,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.dao.MatchMakerDAO;
@@ -80,10 +80,9 @@ public class MatchPoolTest extends TestCase {
 		resultTable = db.getTableByName(null, "pl", "match_results");
 		sourceTable = db.getTableByName(null, "pl", "source_table");
 		
-		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null,
-				IndexType.OTHER, null);
-		sourceTableIndex.addChild(sourceTableIndex.new Column(sourceTable
-				.getColumn(0), false, false));
+		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, null, null);
+		sourceTableIndex.addChild(
+		        sourceTableIndex.new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
 		sourceTable.addIndex(sourceTableIndex);
 
 		plSchema.addChild(sourceTable);

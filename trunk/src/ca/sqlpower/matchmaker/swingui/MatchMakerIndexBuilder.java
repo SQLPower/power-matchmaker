@@ -35,7 +35,7 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.ddl.DDLUtils;
 import ca.sqlpower.matchmaker.util.EditableJTable;
 import ca.sqlpower.swingui.DataEntryPanel;
@@ -143,21 +143,20 @@ public class MatchMakerIndexBuilder implements DataEntryPanel, Validated{
 				if (index.getName().equalsIgnoreCase(newName)) {
 					index.setUnique(true);
 					index.setQualifier(null);
-					index.setType(IndexType.OTHER);
 					index.setFilterCondition(null);
-					for (int j = 0; j < index.getChildCount(); j++) {
+					while (index.getChildCount() > 0) {
 						index.removeChild(0);
 					}
 					contains = true;
 				}
 			}
 	        if (!contains) {
-	        	index = new SQLIndex(newName,true,null,IndexType.OTHER,null);
+	        	index = new SQLIndex(newName, true, null, null, null);
 	    		indexModel.addElement(index);
 	        }
 	        
 	        for (SQLColumn column : selectedColumns) {
-	    		index.addChild(index.new Column(column,false,false));
+	    		index.addChild(index.new Column(column, AscendDescend.UNSPECIFIED));
 			}
 	    	indexModel.setSelectedItem(index);
 			logger.debug("Index columns after save: "+index.getChildren());

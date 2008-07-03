@@ -34,8 +34,8 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLObject;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.SQLIndex.Column;
-import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.diff.CompareSQL;
 import ca.sqlpower.architect.diff.DiffChunk;
 import ca.sqlpower.architect.diff.DiffType;
@@ -320,9 +320,9 @@ public class Project extends AbstractMatchMakerObject<Project, MatchMakerFolder>
 		col = new SQLColumn(t, "dup1_master_ind", Types.VARCHAR, 1, 0);
 		t.addColumn(col);
 
-		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, IndexType.HASHED, null);
+		SQLIndex newidx = new SQLIndex(t.getName()+"_uniq", true, null, null, null);
 		for (int i = 0; i < si.getChildCount() * 2; i++) {
-			newidx.addChild(newidx.new Column(t.getColumn(i), true, false));
+			newidx.addChild(newidx.new Column(t.getColumn(i), AscendDescend.ASCENDING));
 		}
 		t.addIndex(newidx);
 		
