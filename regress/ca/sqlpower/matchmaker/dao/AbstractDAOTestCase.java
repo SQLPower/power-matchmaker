@@ -39,7 +39,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.MatchMakerTranslateGroup;
@@ -306,7 +305,7 @@ public abstract class AbstractDAOTestCase<T extends MatchMakerObject, D extends 
 					} else if (property.getPropertyType() == Short.class) {
 						newVal = new Short("10");
                     } else if (property.getPropertyType() == SQLIndex.class) {
-                        newVal = new SQLIndex("new index",false,"",IndexType.HASHED,"");
+                        newVal = new SQLIndex("new index", false, "", "HASHED", "");
                     } else if (property.getPropertyType() == Color.class) {
                         if (oldVal == null) {
                             newVal = new Color(0xFAC157);

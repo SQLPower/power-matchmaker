@@ -32,8 +32,8 @@ import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.SQLIndex.Column;
-import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -125,9 +125,9 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
 		table.addColumn(new SQLColumn(table, "test3", 4, 10, 0));
 		
 		SQLIndex idx = new SQLIndex("test_index", true, null, null, null);
-		idx.addChild(idx.new Column("test1", false, false));
-		idx.addChild(idx.new Column("test2", false, false));
-		idx.addChild(idx.new Column("test3", false, false));
+		idx.addChild(idx.new Column("test1", AscendDescend.UNSPECIFIED));
+		idx.addChild(idx.new Column("test2", AscendDescend.UNSPECIFIED));
+		idx.addChild(idx.new Column("test3", AscendDescend.UNSPECIFIED));
 		m.setSourceTableIndex(idx);
 		
 		table.addIndex(idx);
@@ -223,11 +223,11 @@ public abstract class AbstractProjectDAOTestCase extends AbstractDAOTestCase<Pro
     	SQLTable sourceTable = new SQLTable(db,
     			"my_COOL_source_table", "", "TABLE", true);
     	SQLIndex sourceTableIndex = new SQLIndex("my_COOL_source_table_index",
-    			true, null, IndexType.CLUSTERED, null);
+    			true, null, null, null);
     	SQLColumn sqlCol = new SQLColumn(sourceTable, "testSQLCol",
     			Types.INTEGER, 10, 10);
     	sourceTable.addColumn(sqlCol);
-    	Column col = sourceTableIndex.new Column(sqlCol, false, false);
+    	Column col = sourceTableIndex.new Column(sqlCol, AscendDescend.UNSPECIFIED);
     	sourceTableIndex.addChild(col);
     	
     	Project project = createNewObjectUnderTest();

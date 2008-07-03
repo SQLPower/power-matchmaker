@@ -33,6 +33,7 @@ import org.hibernate.usertype.UserType;
 import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.ArchitectRuntimeException;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 
 /**
  * This is a class that implements UserType and is used for
@@ -67,13 +68,11 @@ public class ListToSQLIndex implements UserType  {
 				if (oldIndexColumn.getColumn() != null) {
 					c = newIndex.new Column(
 							oldIndexColumn.getColumn(),
-							oldIndexColumn.isAscending(),
-							oldIndexColumn.isDescending());
+							oldIndexColumn.getAscendingOrDescending());
 				} else {
 					c = newIndex.new Column(
 							oldIndexColumn.getName(),
-							oldIndexColumn.isAscending(),
-							oldIndexColumn.isDescending());
+							oldIndexColumn.getAscendingOrDescending());
 				}
 				newIndex.addChild(c);
 			}
@@ -149,7 +148,7 @@ public class ListToSQLIndex implements UserType  {
                     if (columnName != null) {
                     	try {
 							SQLIndex.Column c;
-							c = index.new Column(columnName, false, false);
+							c = index.new Column(columnName, AscendDescend.UNSPECIFIED);
 							index.addChild(c);
 						} catch (ArchitectException e) {
 							throw new ArchitectRuntimeException(e);

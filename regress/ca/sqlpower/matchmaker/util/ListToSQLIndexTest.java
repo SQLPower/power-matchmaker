@@ -22,6 +22,7 @@ package ca.sqlpower.matchmaker.util;
 
 import junit.framework.TestCase;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.SQLIndex.Column;
 import ca.sqlpower.testutil.MockJDBCPreparedStatement;
 import ca.sqlpower.testutil.MockJDBCResultSet;
@@ -63,16 +64,16 @@ public class ListToSQLIndexTest extends TestCase {
 		index2 = new SQLIndex();
 		index2.setName("TestIndex");
 		
-		c0 = index.new Column("Test0", false, false);
-		c1 = index.new Column("Test1", false, false);
-		c2 = index.new Column("Test2", false, false);
-		c3 = index.new Column("Test3", false, false);
-		c4 = index.new Column("Test4", false, false);
-		c5 = index.new Column("Test5", false, false);
-		c6 = index.new Column("Test6", false, false);
-		c7 = index.new Column("Test7", false, false);
-		c8 = index.new Column("Test8", false, false);
-		c9 = index.new Column("Test9", false, false);		
+		c0 = index.new Column("Test0", AscendDescend.UNSPECIFIED);
+		c1 = index.new Column("Test1", AscendDescend.UNSPECIFIED);
+		c2 = index.new Column("Test2", AscendDescend.UNSPECIFIED);
+		c3 = index.new Column("Test3", AscendDescend.UNSPECIFIED);
+		c4 = index.new Column("Test4", AscendDescend.UNSPECIFIED);
+		c5 = index.new Column("Test5", AscendDescend.UNSPECIFIED);
+		c6 = index.new Column("Test6", AscendDescend.UNSPECIFIED);
+		c7 = index.new Column("Test7", AscendDescend.UNSPECIFIED);
+		c8 = index.new Column("Test8", AscendDescend.UNSPECIFIED);
+		c9 = index.new Column("Test9", AscendDescend.UNSPECIFIED);		
 		index.addChild(c0);
 		index.addChild(c1);
 		index.addChild(c2);
@@ -84,16 +85,16 @@ public class ListToSQLIndexTest extends TestCase {
 		index.addChild(c8);
 		index.addChild(c9);	
 		
-		c20 = index2.new Column("Test0", false, false);
-		c21 = index2.new Column("Test1", false, false);
-		c22 = index2.new Column("Test2", false, false);
-		c23 = index2.new Column("Test3", false, false);
-		c24 = index2.new Column("Test4", false, false);
-		c25 = index2.new Column("Test5", false, false);
-		c26 = index2.new Column("Test6", false, false);
-		c27 = index2.new Column("Test7", false, false);
-		c28 = index2.new Column("Test8", false, false);
-		c29 = index2.new Column("Test9", false, false);
+		c20 = index2.new Column("Test0", AscendDescend.UNSPECIFIED);
+		c21 = index2.new Column("Test1", AscendDescend.UNSPECIFIED);
+		c22 = index2.new Column("Test2", AscendDescend.UNSPECIFIED);
+		c23 = index2.new Column("Test3", AscendDescend.UNSPECIFIED);
+		c24 = index2.new Column("Test4", AscendDescend.UNSPECIFIED);
+		c25 = index2.new Column("Test5", AscendDescend.UNSPECIFIED);
+		c26 = index2.new Column("Test6", AscendDescend.UNSPECIFIED);
+		c27 = index2.new Column("Test7", AscendDescend.UNSPECIFIED);
+		c28 = index2.new Column("Test8", AscendDescend.UNSPECIFIED);
+		c29 = index2.new Column("Test9", AscendDescend.UNSPECIFIED);
 		index2.addChild(c20);
 		index2.addChild(c21);
 		index2.addChild(c22);
@@ -128,10 +129,8 @@ public class ListToSQLIndexTest extends TestCase {
 			SQLIndex.Column copyChild = (Column) testCopy.getChild(i);			
 			assertEquals("The two elements should have the same name",
 									testChild.getName(), copyChild.getName());
-			assertEquals("The two elements should have the same ascending state",
-					testChild.isAscending(), copyChild.isAscending());
-			assertEquals("The two elements should have the descending state",
-					testChild.isDescending(), copyChild.isDescending());
+			assertEquals("The two elements should have the same ordering",
+					testChild.getAscendingOrDescending(), copyChild.getAscendingOrDescending());
 		}		
 	}
 	
@@ -212,7 +211,7 @@ public class ListToSQLIndexTest extends TestCase {
 		index2.setName("some other name");
 		assertFalse("The two indices are equal, but should not be",userType.equals(index,index2));
 		index2.setName(oldName);
-		index2.addChild(index2.new Column("Test10", false, false));
+		index2.addChild(index2.new Column("Test10", AscendDescend.UNSPECIFIED));
 		assertFalse("The two indices are equal, but should not be",userType.equals(index,index2));
 	}
 }

@@ -43,7 +43,6 @@ import ca.sqlpower.architect.ArchitectException;
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.IndexType;
 import ca.sqlpower.matchmaker.ColumnMergeRules.MergeActionType;
 import ca.sqlpower.matchmaker.Project.ProjectMode;
 import ca.sqlpower.matchmaker.TableMergeRules.ChildMergeActionType;
@@ -476,7 +475,7 @@ public abstract class MatchMakerTestCase<C extends MatchMakerObject> extends Tes
 		    newVal = new Project();
 		    ((Project) newVal).setName("Fake_Project_"+System.currentTimeMillis());
 		} else if (property.getPropertyType() == SQLIndex.class) {
-			return new SQLIndex("new index",false,"",IndexType.HASHED,"");
+			return new SQLIndex("new index", false, "", "HASHED", "");
         } else if (property.getPropertyType() == Color.class) {
             if (oldVal == null) {
                 newVal = new Color(0xFAC157);

@@ -31,7 +31,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
 import ca.sqlpower.matchmaker.munge.InputDescriptor;
 import ca.sqlpower.matchmaker.munge.MungeProcess;
@@ -62,8 +62,8 @@ public class MatchEngineImplTest extends TestCase {
 		SQLSchema plSchema = db.getSchemaByName("pl");
 
 		sourceTable = db.getTableByName(null, "pl", "source_table");
-		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, IndexType.OTHER, null);
-		sourceTableIndex.addChild(sourceTableIndex.new Column(sourceTable.getColumn(0), false, false));
+		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, null, null);
+		sourceTableIndex.addChild(sourceTableIndex.new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
 		sourceTable.addIndex(sourceTableIndex);
 		plSchema.addChild(sourceTable);
 

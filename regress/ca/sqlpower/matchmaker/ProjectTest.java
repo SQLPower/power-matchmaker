@@ -36,7 +36,7 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.architect.ddl.DDLGenerator;
 import ca.sqlpower.architect.ddl.DDLStatement;
 import ca.sqlpower.architect.ddl.DDLUtils;
@@ -144,9 +144,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	col.setNullable(DatabaseMetaData.columnNullable);
     	sourceTable.addColumn(col);
     	
-    	SQLIndex idx = new SQLIndex("source_pk", true, null, IndexType.HASHED, null);
-    	idx.addChild(idx.new Column(pk1, true, false));
-    	idx.addChild(idx.new Column(pk2, true, false));
+    	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
+    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	project.setSourceTable(sourceTable);
@@ -223,9 +223,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	col.setNullable(DatabaseMetaData.columnNullable);
     	sourceTable.addColumn(col);
     	
-    	SQLIndex idx = new SQLIndex("source_pk", true, null, IndexType.HASHED, null);
-    	idx.addChild(idx.new Column(pk1, true, false));
-    	idx.addChild(idx.new Column(pk2, true, false));
+    	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
+    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	project.setSourceTable(sourceTable);
@@ -253,7 +253,7 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     public void testCreateResultTableInCorrectCatalogSchema() throws Exception {
     	// dumb source table and index with no columns to satisfy createResultsTable() preconditions
     	SQLTable tab = new SQLTable(session.getDatabase(), true);
-    	SQLIndex idx = new SQLIndex("my_index", true, null, IndexType.CLUSTERED, null);
+    	SQLIndex idx = new SQLIndex("my_index", true, null, null, null);
     	project.setSourceTable(tab);
     	project.setSourceTableIndex(idx);
     	
@@ -418,9 +418,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	col.setNullable(DatabaseMetaData.columnNullable);
     	sourceTable.addColumn(col);
     	
-    	SQLIndex idx = new SQLIndex("source_pk", true, null, IndexType.HASHED, null);
-    	idx.addChild(idx.new Column(pk1, true, false));
-    	idx.addChild(idx.new Column(pk2, true, false));
+    	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
+    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	try {
@@ -529,9 +529,9 @@ public class ProjectTest extends MatchMakerTestCase<Project> {
     	col.setNullable(DatabaseMetaData.columnNullable);
     	sourceTable.addColumn(col);
     	
-    	SQLIndex idx = new SQLIndex("source_pk", true, null, IndexType.HASHED, null);
-    	idx.addChild(idx.new Column(pk1, true, false));
-    	idx.addChild(idx.new Column(pk2, true, false));
+    	SQLIndex idx = new SQLIndex("source_pk", true, null, null, null);
+    	idx.addChild(idx.new Column(pk1, AscendDescend.UNSPECIFIED));
+    	idx.addChild(idx.new Column(pk2, AscendDescend.UNSPECIFIED));
     	sourceTable.addIndex(idx);
 
     	try {

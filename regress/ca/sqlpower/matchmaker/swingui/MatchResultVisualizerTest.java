@@ -35,12 +35,12 @@ import ca.sqlpower.architect.SQLDatabase;
 import ca.sqlpower.architect.SQLIndex;
 import ca.sqlpower.architect.SQLSchema;
 import ca.sqlpower.architect.SQLTable;
-import ca.sqlpower.architect.SQLIndex.IndexType;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.matchmaker.DBTestUtil;
-import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.MatchMakerObject;
 import ca.sqlpower.matchmaker.MatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord;
+import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 import ca.sqlpower.matchmaker.TestingMatchMakerSession;
 import ca.sqlpower.matchmaker.PotentialMatchRecord.MatchType;
@@ -89,10 +89,9 @@ public class MatchResultVisualizerTest extends TestCase {
 //		sourceTable.addColumn(new SQLColumn(sourceTable, "BAR", Types.VARCHAR,
 //				10, 0));
 
-		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null,
-				IndexType.OTHER, null);
-		sourceTableIndex.addChild(sourceTableIndex.new Column(sourceTable
-				.getColumn(0), false, false));
+		SQLIndex sourceTableIndex = new SQLIndex("SOURCE_PK", true, null, null, null);
+		sourceTableIndex.addChild(
+		        sourceTableIndex.new Column(sourceTable.getColumn(0), AscendDescend.UNSPECIFIED));
 		sourceTable.addIndex(sourceTableIndex);
 
 		plSchema.addChild(sourceTable);

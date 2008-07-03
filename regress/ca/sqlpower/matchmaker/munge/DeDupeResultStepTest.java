@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 
 import ca.sqlpower.architect.SQLColumn;
 import ca.sqlpower.architect.SQLIndex;
+import ca.sqlpower.architect.SQLIndex.AscendDescend;
 import ca.sqlpower.matchmaker.Project;
 import ca.sqlpower.matchmaker.SourceTableRecord;
 
@@ -49,17 +50,17 @@ public class DeDupeResultStepTest extends TestCase {
 		
 		SQLColumn col1 = new SQLColumn();
 		col1.setName("output_0");
-		index.addIndexColumn(col1, false, false);
+		index.addIndexColumn(col1, AscendDescend.UNSPECIFIED);
 		inputStep.getOutputByName("output_0").setData("output_0");
 
 		SQLColumn col2 = new SQLColumn();
 		col2.setName("output_1");
-		index.addIndexColumn(col2, false, false);
+		index.addIndexColumn(col2, AscendDescend.UNSPECIFIED);
 		inputStep.getOutputByName("output_1").setData("output_1");
 		
 		SQLColumn col3 = new SQLColumn();
 		col3.setName("output_2");
-		index.addIndexColumn(col3, false, false);
+		index.addIndexColumn(col3, AscendDescend.UNSPECIFIED);
 		inputStep.getOutputByName("output_2").setData("output_2");
 		
 		project.setSourceTableIndex(index);
